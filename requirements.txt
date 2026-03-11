@@ -1,0 +1,10 @@
+# --- Interfaz Gráfica ---
+PyQt6
+
+# --- Motor de Red (API, WebSockets y Login) ---
+aiohttp
+
+# --- Sistema de Voces (TTS) ---
+edge-tts
+pyttsx3
+pygame

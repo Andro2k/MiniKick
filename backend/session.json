@@ -1,0 +1,7 @@
+{
+    "access_token": "MWU3YTMXMMQTNJBIOS0ZMGEXLTLMNZKTYTVLMTUXMGQYOWYX",
+    "expires_in": 7200,
+    "refresh_token": "OGQZZDK3MTYTNZVLYI01NJRILTG1NZYTMJI4MZHIZMNIM2IW",
+    "scope": "user:read channel:read channel:write chat:write events:subscribe channel:rewards:read channel:rewards:write",
+    "token_type": "Bearer"
+}
