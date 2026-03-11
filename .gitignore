@@ -1,0 +1,25 @@
+# .gitignore
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+venv/
+.idea/
+.vscode/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+session.json
+*.tmp
+*.iss
+*.spotify_cache
+exporter.txt
+installer/*.exe
+build.py
+backend/config/
+*.csv
+*.log
+venv.txt
+test/
