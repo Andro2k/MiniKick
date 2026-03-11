@@ -1,0 +1,5 @@
+{
+    "client_id": "01KDVXPSFEFB93AW07VA0PVN7R",      
+    "client_secret": "cb1654b2c9518f5669fdf4b526ea0bea4aa726e56bb7a717bd3ae6b15d40d80b",
+    "redirect_uri": "http://localhost:8080/callback"
+}
