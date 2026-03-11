@@ -1,7 +1,0 @@
-{
-    "access_token": "OWRLNDDMOTGTMDEYNY0ZMWNKLTK2NGETOTBIMZFINZLJMGQX",
-    "expires_in": 7200,
-    "refresh_token": "NZM5ZDY4Y2UTOTZHOC01MDG4LTG2M2YTZGM5NZHIYZG1YTNL",
-    "scope": "user:read channel:read channel:write chat:write events:subscribe channel:rewards:read channel:rewards:write",
-    "token_type": "Bearer"
-}

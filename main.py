@@ -4,12 +4,13 @@ import re
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QWidget, QPushButton, QTabWidget, QLabel, QHBoxLayout)
 
-# --- BACKEND ---
-from backend.core.kick_core import KickMinimalBackend
-from backend.services.chat.tts_worker import TTSWorker
-from backend.services.triggers.overlay_server import OverlayMinimalServer
+# --- BACKEND (CORE & SERVICIOS) ---
+from backend.core.db_manager import DBManager
+from backend.core.kick_bot import KickBot
+from backend.services.tts_worker import TTSWorker
+from backend.services.trigger_worker import OverlayServer
 
-# --- FRONTEND ---
+# --- FRONTEND (PÁGINAS) ---
 from frontend.pages.chat_page import ChatPage
 from frontend.pages.rewards_page import RewardsPage
 
@@ -20,24 +21,26 @@ class KickMonitorLiteUI(QMainWindow):
         self.resize(700, 450)
         self.setStyleSheet("background-color: #0b0e0f; color: #ffffff;")
 
-        # --- MOTORES INTERNOS ---
-        self.backend = None
+        # --- 1. INICIALIZAR BASE DE DATOS Y SERVICIOS ---
+        self.db = DBManager()  # ✅ Ahora la BD se inicializa primero
+        
         self.tts = TTSWorker()
         self.tts.start()
-        self.overlay = OverlayMinimalServer()
+        
+        self.overlay = OverlayServer()
         self.overlay.start()
 
-        # Filtro de emotes
+        self.backend = None # El bot de Kick se inicia al pulsar el botón
+        
+        # Filtro de emotes (para el TTS)
         self.re_emote_clean = re.compile(r'\[emote:\d+:[^\]]+\]')
 
-        # --- DIBUJAR INTERFAZ ---
+        # --- 2. DIBUJAR INTERFAZ ---
         self.init_ui()
-        
-        # Conectar errores/logs internos a las páginas
-        self.tts.error_signal.connect(lambda msg: self.page_chat.log(f"❌ [TTS Error] {msg}"))
-        self.overlay.log_signal.connect(lambda msg: self.page_rewards.log(f"🖥️ {msg}"))
+        self._conectar_senales_servicios()
 
     def init_ui(self):
+        """Construye la interfaz principal y las pestañas."""
         main_widget = QWidget()
         main_layout = QVBoxLayout()
 
@@ -57,7 +60,7 @@ class KickMonitorLiteUI(QMainWindow):
         header_layout.addWidget(self.lbl_status)
         header_layout.addStretch()
 
-        # === PESTAÑAS (TABS) IMPORTADAS ===
+        # === PESTAÑAS (TABS) ===
         self.tabs = QTabWidget()
         self.tabs.setStyleSheet("""
             QTabWidget::pane { border: 1px solid #333333; border-radius: 5px; top: -1px; }
@@ -66,8 +69,9 @@ class KickMonitorLiteUI(QMainWindow):
         """)
 
         # Instanciar las páginas modulares
-        self.page_chat = ChatPage(self.tts)
-        self.page_rewards = RewardsPage()
+        self.page_chat = ChatPage(self.tts, self.db)
+        # 💡 Nota: En el futuro próximo le pasaremos self.db a RewardsPage
+        self.page_rewards = RewardsPage(self.db)
 
         self.tabs.addTab(self.page_chat, "💬 Chat & Voz")
         self.tabs.addTab(self.page_rewards, "🎁 Canjes & Overlay")
@@ -77,8 +81,15 @@ class KickMonitorLiteUI(QMainWindow):
         main_widget.setLayout(main_layout)
         self.setCentralWidget(main_widget)
 
-    # === LÓGICA DE CONEXIÓN ===
+    def _conectar_senales_servicios(self):
+        """Conecta los logs de los servicios en segundo plano a las consolas visuales."""
+        self.tts.error_signal.connect(lambda msg: self.page_chat.log(f"❌ [TTS Error] {msg}"))
+        self.overlay.log_signal.connect(lambda msg: self.page_rewards.log(f"🖥️ {msg}"))
+
+    # === 3. LÓGICA DE CONEXIÓN KICK ===
+    
     def iniciar_backend(self):
+        """Lee credenciales, instancia el bot de Kick y conecta sus señales."""
         try:
             with open("backend/config.json", "r") as f:
                 config = json.load(f)
@@ -94,64 +105,80 @@ class KickMonitorLiteUI(QMainWindow):
             self.page_chat.log("❌ ERROR: Faltan datos en config.json")
             return
 
+        # Actualizar UI
         self.btn_iniciar.setEnabled(False)
         self.btn_iniciar.setText("Conectado")
         self.lbl_status.setText("Estado: 🟢 En Línea")
         self.lbl_status.setStyleSheet("color: #53fc18; font-weight: bold; font-size: 14px; margin-left: 15px;")
         self.page_chat.log("🚀 Conectando a los servidores de Kick...")
 
-        self.backend = KickMinimalBackend(client_id, client_secret, redirect_uri)
+        # Iniciar y conectar el Bot (Pasándole la BD)
+        self.backend = KickBot(client_id, client_secret, redirect_uri, self.db)
         self.backend.log_signal.connect(self.page_chat.log)
         self.backend.chat_signal.connect(self.on_chat_recibido)
         self.backend.redemption_signal.connect(self.on_canje_recibido)
-        
-        # AÑADE ESTA LÍNEA PARA CONECTAR LOS PUNTOS DE KICK AL COMBOBOX:
         self.backend.rewards_list_signal.connect(self.page_rewards.cargar_recompensas_kick)
-
+        self.page_rewards.request_kick_update.connect(self.backend.update_kick_reward_sync)
         self.backend.start()
 
+    # === 4. PROCESAMIENTO DE EVENTOS EN VIVO ===
+
     def on_chat_recibido(self, usuario, mensaje):
+        """Procesa los mensajes de chat entrantes."""
         self.page_chat.log(f"[{usuario}]: {mensaje}")
         
         # Ignorar bots
         if usuario.startswith("@") or usuario.lower() in ["streamelements", "botrix", "nightbot"]:
             return
+            
+        # ✅ VERIFICAR BLACKLIST EN LA BASE DE DATOS
+        if usuario.lower() in self.db.get_ignored_users():
+            return
 
-        # Limpiar emotes y delegar al ChatPage para que hable si el TTS está activo
+        # Limpiar emotes y enviar al TTS
         mensaje_limpio = self.re_emote_clean.sub('', mensaje).strip()
         self.page_chat.procesar_mensaje_tts(usuario, mensaje_limpio)
 
     def on_canje_recibido(self, usuario, recompensa, input_texto):
+        """Procesa los canjes y dispara el overlay."""
         msg = f"🎁 {usuario} canjeó '{recompensa}'"
-        if input_texto: msg += f" (Mensaje: {input_texto})"
+        if input_texto: 
+            msg += f" (Mensaje: {input_texto})"
         self.page_rewards.log(msg)
 
-        try:
-            with open("triggers.json", "r", encoding="utf-8") as f:
-                triggers = json.load(f)
-        except:
-            triggers = {}
-
         nombre_recompensa = recompensa.lower().strip()
+        
+        # ✅ LEER TRIGGERS DESDE SQLITE EN LUGAR DE JSON
+        triggers_db = self.db.get_all_triggers()
 
-        if nombre_recompensa in triggers:
-            data = triggers[nombre_recompensa]
+        if nombre_recompensa in triggers_db:
+            data = triggers_db[nombre_recompensa]
             
+            # Verificar si el trigger está activado en la base de datos
+            if not data.get("enabled", True):
+                self.page_rewards.log(f"⚠️ El trigger '{recompensa}' está desactivado.")
+                return
+
             # Mandamos toda la info al servidor del overlay
             self.overlay.play_media(
-                filename=data["file"], 
+                filepath=data.get("file"), # Cambiado de 'filename' a 'filepath'
                 media_type=data.get("type", "audio"), 
                 volume=data.get("volume", 100),
-                duration=data.get("duration", 0),
                 scale=data.get("scale", 1.0),
+                pos_x=data.get("pos_x", 0),  # Añadimos X
+                pos_y=data.get("pos_y", 0),  # Añadimos Y
                 random_pos=data.get("random", False)
+                # Eliminamos la línea de duration
             )
-            self.page_rewards.log(f"▶️ Enviando alerta a OBS: {data['file']}")
+            self.page_rewards.log(f"▶️ Enviando alerta a OBS: {data.get('file')}")
         else:
-            self.page_rewards.log(f"⚠️ '{recompensa}' no está en triggers.json.")
+            self.page_rewards.log(f"⚠️ '{recompensa}' no está configurado localmente.")
             self.page_chat.procesar_mensaje_tts("Sistema", f"{usuario} acaba de canjear {recompensa}")
 
+    # === 5. CIERRE SEGURO ===
+
     def closeEvent(self, event):
+        """Apaga los hilos de forma segura al cerrar la ventana."""
         if self.backend and self.backend.isRunning(): self.backend.stop()
         if self.tts and self.tts.isRunning(): self.tts.stop()
         if self.overlay and self.overlay.isRunning(): self.overlay.stop()
