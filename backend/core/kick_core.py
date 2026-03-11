@@ -1,3 +1,5 @@
+# backend/core/kick_core.py
+
 import asyncio
 import json
 import os

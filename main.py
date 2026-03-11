@@ -5,9 +5,9 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QVBoxLayout,
                              QWidget, QPushButton, QTabWidget, QLabel, QHBoxLayout)
 
 # --- BACKEND ---
-from backend.kick_core import KickMinimalBackend
-from backend.tts_worker import TTSWorker
-from backend.overlay_server import OverlayMinimalServer
+from backend.core.kick_core import KickMinimalBackend
+from backend.services.chat.tts_worker import TTSWorker
+from backend.services.triggers.overlay_server import OverlayMinimalServer
 
 # --- FRONTEND ---
 from frontend.pages.chat_page import ChatPage
@@ -136,7 +136,6 @@ class KickMonitorLiteUI(QMainWindow):
             self.page_rewards.log(f"▶️ Enviando alerta a OBS: {data['file']}")
         else:
             self.page_rewards.log(f"⚠️ '{recompensa}' no está en triggers.json.")
-            # Si no hay trigger, que lo lea el TTS
             self.page_chat.procesar_mensaje_tts("Sistema", f"{usuario} acaba de canjear {recompensa}")
 
     def closeEvent(self, event):

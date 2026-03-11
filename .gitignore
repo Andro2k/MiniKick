@@ -17,3 +17,4 @@ installer/*.exe
 build.py
 *.log
 venv.txt
+backend/*.json
