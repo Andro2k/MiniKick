@@ -1,4 +1,4 @@
-# .gitignore
+
 __pycache__/
 build/
 dist/
@@ -18,3 +18,4 @@ build.py
 *.log
 venv.txt
 backend/*.json
+media/*

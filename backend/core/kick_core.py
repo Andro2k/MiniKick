@@ -148,6 +148,7 @@ class KickMinimalBackend(QThread):
     log_signal = pyqtSignal(str)
     chat_signal = pyqtSignal(str, str)
     redemption_signal = pyqtSignal(str, str, str)
+    rewards_list_signal = pyqtSignal(list)
 
     def __init__(self, client_id, client_secret, redirect_uri):
         super().__init__()
@@ -227,6 +228,16 @@ class KickMinimalBackend(QThread):
         else:
             self.log_signal.emit(f"❌ Error consultando el usuario de la API. Status: {status}")
             return
+
+        self.log_signal.emit("📦 Obteniendo recompensas disponibles en Kick...")
+        status, rewards_data = await self.api.request("GET", "https://api.kick.com/public/v1/channels/rewards")
+        
+        if status == 200:
+            lista_recompensas = rewards_data.get("data", [])
+            self.rewards_list_signal.emit(lista_recompensas) # Enviamos los datos a la interfaz
+            self.log_signal.emit(f"✅ Se encontraron {len(lista_recompensas)} recompensas en tu canal.")
+        else:
+            self.log_signal.emit(f"⚠️ No se pudieron cargar las recompensas de Kick. Status: {status}")
 
         # 4. Iniciar sistemas paralelos
         self.log_signal.emit("🚀 Iniciando motores de Chat y Recompensas...")

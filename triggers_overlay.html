@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Kick Overlay</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: transparent;
+      }
+      #media-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        display: block;
+      }
+      video,
+      img,
+      audio {
+        max-width: 100%;
+        max-height: 100%;
+        will-change: transform, opacity;
+        position: absolute;
+        transition: opacity 0.2s ease-out; /* Suaviza la desaparición */
+      }
+    </style>
+  </head>
+  <body>
+    <div id="media-container"></div>
+
+    <script>
+      const container = document.getElementById("media-container");
+      let socket = null;
+      let retryInterval = 2000;
+      let wasConnected = false; 
+
+      function connect() {
+        socket = new WebSocket("ws://127.0.0.1:8081/ws/triggers");
+        
+        socket.onopen = () => {
+          console.log("🟢 Conectado al Overlay");
+          if (wasConnected) {
+              location.reload();
+          }
+          wasConnected = true;
+        };
+
+        socket.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.action === "play_media") playMedia(data);
+          } catch (e) {
+            console.error(e);
+          }
+        };
+
+        socket.onclose = () => {
+            setTimeout(connect, retryInterval);
+        };
+
+        socket.onerror = () => {
+            socket.close();
+        };
+      }
+
+      function playMedia(data) {
+        let element;
+        const vol = data.volume !== undefined ? data.volume / 100 : 1.0;
+        const duration = data.duration ? parseFloat(data.duration) : 0;
+
+        const removeElement = () => {
+          if (!element) return;
+          element.style.opacity = "0";
+          setTimeout(() => {
+            if (element && element.parentNode) {
+              element.parentNode.removeChild(element);
+            }
+            element = null;
+          }, 200);
+        };
+
+        // LÓGICA DE VISUALIZACIÓN (VIDEO E IMAGEN)
+        if (data.type === "video" || data.type === "image") {
+          
+          if (data.type === "video") {
+            element = document.createElement("video");
+            element.autoplay = true;
+            element.volume = vol;
+            element.addEventListener("ended", removeElement);
+          } else {
+            element = document.createElement("img");
+          }
+          
+          element.src = data.url;
+          element.style.opacity = "0"; 
+
+          if (duration > 0 || data.type === "image") {
+            const time = duration > 0 ? duration : 5; 
+            setTimeout(removeElement, time * 1000);
+          }
+
+          const onReady = () => {
+            const scale = data.scale || 1.0;
+            const posX = parseInt(data.pos_x) || 0;
+            const posY = parseInt(data.pos_y) || 0;
+
+            // 1. PRIORIDAD: Coordenadas
+            if (posX !== 0 || posY !== 0) {
+              element.style.transformOrigin = "top left";
+              element.style.transform = `scale(${scale})`;
+              element.style.left = posX + "px";
+              element.style.top = posY + "px";
+            }
+            // 2. PRIORIDAD: Aleatorio
+            else if (data.random) {
+              const contW = container.clientWidth;
+              const contH = container.clientHeight;
+              
+              const vidW = (element.videoWidth || element.naturalWidth || element.width) * scale;
+              const vidH = (element.videoHeight || element.naturalHeight || element.height) * scale;
+
+              element.style.transformOrigin = "top left";
+              element.style.transform = `scale(${scale})`;
+
+              const maxLeft = Math.max(0, contW - vidW);
+              const maxTop = Math.max(0, contH - vidH);
+
+              element.style.left = Math.floor(Math.random() * maxLeft) + "px";
+              element.style.top = Math.floor(Math.random() * maxTop) + "px";
+            }
+            // 3. PRIORIDAD: Centro
+            else {
+              element.style.transformOrigin = "center center";
+              element.style.left = "50%";
+              element.style.top = "50%";
+              element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+
+            element.style.opacity = "1";
+            if (element.play) element.play().catch((e) => console.log("Error play:", e));
+          };
+
+          if (data.type === "video") {
+            element.onloadedmetadata = onReady;
+          } else {
+            element.onload = onReady;
+          }
+
+        } else if (data.type === "audio") {
+          element = document.createElement("audio");
+          element.src = data.url;
+          element.autoplay = true;
+          element.volume = vol;
+          element.addEventListener("ended", removeElement);
+          if (duration > 0) setTimeout(removeElement, duration * 1000);
+        }
+
+        if (element) container.appendChild(element);
+      }
+
+      connect();
+    </script>
+  </body>
+</html>

@@ -104,6 +104,10 @@ class KickMonitorLiteUI(QMainWindow):
         self.backend.log_signal.connect(self.page_chat.log)
         self.backend.chat_signal.connect(self.on_chat_recibido)
         self.backend.redemption_signal.connect(self.on_canje_recibido)
+        
+        # AÑADE ESTA LÍNEA PARA CONECTAR LOS PUNTOS DE KICK AL COMBOBOX:
+        self.backend.rewards_list_signal.connect(self.page_rewards.cargar_recompensas_kick)
+
         self.backend.start()
 
     def on_chat_recibido(self, usuario, mensaje):
@@ -132,7 +136,16 @@ class KickMonitorLiteUI(QMainWindow):
 
         if nombre_recompensa in triggers:
             data = triggers[nombre_recompensa]
-            self.overlay.play_media(data["file"], data.get("type", "audio"), data.get("volume", 100))
+            
+            # Mandamos toda la info al servidor del overlay
+            self.overlay.play_media(
+                filename=data["file"], 
+                media_type=data.get("type", "audio"), 
+                volume=data.get("volume", 100),
+                duration=data.get("duration", 0),
+                scale=data.get("scale", 1.0),
+                random_pos=data.get("random", False)
+            )
             self.page_rewards.log(f"▶️ Enviando alerta a OBS: {data['file']}")
         else:
             self.page_rewards.log(f"⚠️ '{recompensa}' no está en triggers.json.")
