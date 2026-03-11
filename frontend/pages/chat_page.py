@@ -2,23 +2,19 @@
 
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QCheckBox, 
                              QTextEdit, QFrame, QLabel, QComboBox, 
-                             QDoubleSpinBox, QSpinBox, QFormLayout)
+                             QDoubleSpinBox, QSpinBox, QFormLayout, QLineEdit)
 from PyQt6.QtGui import QTextCursor
-from PyQt6.QtCore import Qt
-
-# Importamos los estilos y utilidades del tema
 from frontend.theme import STYLES, get_switch_style
+from frontend.utils import get_icon
 
 class ChatPage(QWidget):
     def __init__(self, tts_worker, db_manager):
         super().__init__()
         self.tts = tts_worker
-        self.db = db_manager  # Recibimos la base de datos para guardar ajustes
-        
-        # Variables de estado
+        self.db = db_manager  
         self.tts_enabled = True
         self.command_mode = False
-        self.trigger_command = "!tts" # Comando por defecto
+        self.trigger_command = "!tts"
         
         self.init_ui()
         self.cargar_configuraciones()
@@ -32,27 +28,44 @@ class ChatPage(QWidget):
         # PANEL SUPERIOR: CONFIGURACIÓN DE VOZ
         # ==========================================
         config_frame = QFrame()
-        config_frame.setStyleSheet(STYLES["card"]) # Estilo de tarjeta del theme.py
+        config_frame.setStyleSheet(STYLES["card"])
         config_layout = QVBoxLayout(config_frame)
         config_layout.setContentsMargins(15, 15, 15, 15)
 
+        # Título con icono SVG
+        title_layout = QHBoxLayout()
+        lbl_icon = QLabel()
+        lbl_icon.setPixmap(get_icon("chat.svg").pixmap(20, 20)) 
+        
         lbl_titulo = QLabel("Ajustes de Texto a Voz (TTS)")
         lbl_titulo.setStyleSheet(STYLES["label_title"])
-        config_layout.addWidget(lbl_titulo)
+        
+        title_layout.addWidget(lbl_icon)
+        title_layout.addWidget(lbl_titulo)
+        title_layout.addStretch()
+        config_layout.addLayout(title_layout)
 
-        # --- FILA 1: Switches (Interruptores) ---
+        # --- FILA 1: Switches (Interruptores) y Comando ---
         switches_layout = QHBoxLayout()
         
         self.chk_tts = QCheckBox(" Habilitar Voz IA")
         self.chk_tts.setStyleSheet(get_switch_style())
         self.chk_tts.toggled.connect(self.on_tts_toggled)
 
-        self.chk_cmd = QCheckBox(" Solo con Comando (!tts)")
+        self.chk_cmd = QCheckBox(" Usar Comando:")
         self.chk_cmd.setStyleSheet(get_switch_style())
         self.chk_cmd.toggled.connect(self.on_cmd_toggled)
 
+        self.inp_cmd = QLineEdit()
+        self.inp_cmd.setStyleSheet(STYLES["input_cmd"])
+        self.inp_cmd.setFixedWidth(120)
+        self.inp_cmd.setPlaceholderText("Ej. !tts")
+        self.inp_cmd.textChanged.connect(self.on_cmd_text_changed)
+
         switches_layout.addWidget(self.chk_tts)
+        switches_layout.addSpacing(20)
         switches_layout.addWidget(self.chk_cmd)
+        switches_layout.addWidget(self.inp_cmd)
         switches_layout.addStretch()
         config_layout.addLayout(switches_layout)
 
@@ -111,9 +124,9 @@ class ChatPage(QWidget):
         # ==========================================
         self.consola = QTextEdit()
         self.consola.setReadOnly(True)
-        self.consola.setStyleSheet(STYLES["text_edit_console"]) # Estilo de consola
-        
+        self.consola.setStyleSheet(STYLES["text_edit_console"])
         main_layout.addWidget(self.consola)
+
         self.setLayout(main_layout)
 
     # --- CARGA Y GUARDADO DE DATOS (SQLite) ---
@@ -125,10 +138,12 @@ class ChatPage(QWidget):
         self.combo_voice.blockSignals(True)
         self.spin_vol.blockSignals(True)
         self.spin_rate.blockSignals(True)
+        self.inp_cmd.blockSignals(True)
 
         # Leer de base de datos o usar valores por defecto
         self.tts_enabled = self.db.get_config("tts_enabled", "True") == "True"
         self.command_mode = self.db.get_config("tts_cmd_mode", "False") == "True"
+        self.trigger_command = self.db.get_config("tts_command", "!tts")
         voz = self.db.get_config("tts_voice", "es-MX-JorgeNeural")
         vol = float(self.db.get_config("tts_volume", 1.0))
         rate = int(self.db.get_config("tts_rate", 175))
@@ -136,6 +151,8 @@ class ChatPage(QWidget):
         # Actualizar UI
         self.chk_tts.setChecked(self.tts_enabled)
         self.chk_cmd.setChecked(self.command_mode)
+        self.inp_cmd.setText(self.trigger_command)
+        self.inp_cmd.setEnabled(self.command_mode)
         self.combo_voice.setCurrentText(voz)
         self.spin_vol.setValue(vol)
         self.spin_rate.setValue(rate)
@@ -150,17 +167,27 @@ class ChatPage(QWidget):
         self.combo_voice.blockSignals(False)
         self.spin_vol.blockSignals(False)
         self.spin_rate.blockSignals(False)
+        self.inp_cmd.blockSignals(False)
 
     def on_tts_toggled(self, checked):
         self.tts_enabled = checked
         self.db.set_config("tts_enabled", str(checked))
         if not checked: self.tts.immediate_stop()
-        self.log(f"🎙️ [SISTEMA] TTS {'Activado' if checked else 'Desactivado'}.")
+        self.log(f"[SISTEMA] TTS {'Activado' if checked else 'Desactivado'}.")
 
     def on_cmd_toggled(self, checked):
         self.command_mode = checked
         self.db.set_config("tts_cmd_mode", str(checked))
-        self.log(f"⚙️ [SISTEMA] Modo Comando {'Activado (!tts)' if checked else 'Desactivado (Lee todo)'}.")
+        self.inp_cmd.setEnabled(checked)
+        estado = f"Activado ({self.trigger_command})" if checked else "Desactivado (Lee todo)"
+        self.log(f"[SISTEMA] Modo Comando {estado}.")
+
+    def on_cmd_text_changed(self, text):
+        """Guarda el nuevo comando cuando el usuario escribe en la caja de texto."""
+        cmd = text.strip().lower()
+        if cmd:
+            self.trigger_command = cmd
+            self.db.set_config("tts_command", cmd)
 
     def on_voice_changed(self, voice):
         self.tts.edge_voice = voice
@@ -188,15 +215,13 @@ class ChatPage(QWidget):
 
         texto_a_leer = mensaje_limpio
 
-        # Si el modo comando está activo, verificamos si el mensaje empieza por !tts
         if self.command_mode:
             if not texto_a_leer.lower().startswith(self.trigger_command):
-                return # Ignoramos el mensaje si no tiene el comando
-            
-            # Removemos el "!tts " del inicio para que no lo lea en voz alta
+                return
+
             texto_a_leer = texto_a_leer[len(self.trigger_command):].strip()
             
             if not texto_a_leer:
-                return # Si solo mandaron "!tts" sin texto, ignoramos
+                return
 
         self.tts.add_message(f"{usuario} dice: {texto_a_leer}")

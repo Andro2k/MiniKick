@@ -4,16 +4,14 @@ import os
 from PyQt6.QtWidgets import (QDoubleSpinBox, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, 
                              QPushButton, QLineEdit, QSpinBox, QCheckBox, 
                              QFileDialog, QFormLayout, QTableWidget, QTableWidgetItem, 
-                             QHeaderView, QAbstractItemView, QFrame, QMessageBox)
-from PyQt6.QtGui import QTextCursor
-from PyQt6.QtCore import Qt, pyqtSignal
+                             QHeaderView, QAbstractItemView, QFrame, QMessageBox, QApplication)
+from PyQt6.QtGui import QTextCursor, QPixmap
+from PyQt6.QtCore import Qt, pyqtSignal, QThreadPool
 
-# Importamos utilidades y temas
 from frontend.theme import STYLES, get_switch_style
-from frontend.utils import get_icon
+from frontend.utils import get_icon, ThumbnailWorker
 
 class RewardsPage(QWidget):
-    # Señal opcional para cuando queramos que main.py actualice Kick en la web
     request_kick_update = pyqtSignal(str, int, str, bool, str)
 
     def __init__(self, db_manager):
@@ -21,10 +19,12 @@ class RewardsPage(QWidget):
         self.db = db_manager
         self.kick_rewards_data = {}
         
-        # Variables de estado del formulario
         self.current_file_path = ""
         self.current_file_type = "audio"
         self.current_kick_id = ""
+        
+        # Pool de hilos para generar miniaturas de video sin lag
+        self.threadpool = QThreadPool.globalInstance()
         
         self.init_ui()
         self.actualizar_tabla()
@@ -34,24 +34,43 @@ class RewardsPage(QWidget):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
         
-        # --- INFO SUPERIOR ---
-        info_obs = QLabel("🔗 URL para OBS: <b style='color:#53fc18;'>http://127.0.0.1:8081</b> (Ancho 1920, Alto 1080)")
+        # --- INFO SUPERIOR (Con botón de copiar) ---
+        info_frame = QFrame()
+        info_frame.setStyleSheet("background-color: #121516; border-radius: 6px;")
+        info_frame_layout = QHBoxLayout(info_frame)
+        info_frame_layout.setContentsMargins(10, 10, 10, 10)
+        
+        lbl_link_icon = QLabel()
+        lbl_link_icon.setPixmap(get_icon("link.svg").pixmap(18, 18))
+        
+        info_obs = QLabel("URL para OBS: <b style='color:#53fc18;'>http://127.0.0.1:8081</b> (Ancho 1920, Alto 1080)")
         info_obs.setTextFormat(Qt.TextFormat.RichText)
-        info_obs.setStyleSheet("background-color: #121516; padding: 10px; border-radius: 6px; margin-bottom: 5px;")
         info_obs.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        main_layout.addWidget(info_obs)
+        
+        # NUEVO: Botón copiar URL
+        self.btn_copy_url = QPushButton()
+        self.btn_copy_url.setIcon(get_icon("copy.svg"))
+        self.btn_copy_url.setToolTip("Copiar URL al portapapeles")
+        self.btn_copy_url.setStyleSheet(STYLES["btn_icon_ghost"])
+        self.btn_copy_url.clicked.connect(lambda: QApplication.clipboard().setText("http://127.0.0.1:8081"))
+        
+        info_frame_layout.addWidget(lbl_link_icon)
+        info_frame_layout.addWidget(info_obs)
+        info_frame_layout.addStretch()
+        info_frame_layout.addWidget(self.btn_copy_url)
+        
+        main_layout.addWidget(info_frame)
 
-        # --- CONTENEDOR DIVIDIDO (Tabla Izquierda | Menú Derecha) ---
+        # --- CONTENEDOR DIVIDIDO ---
         split_layout = QHBoxLayout()
         
         # ==========================================
-        # PANEL IZQUIERDO: TABLA DE RECOMPENSAS
+        # PANEL IZQUIERDO: TABLA
         # ==========================================
         left_panel = QFrame()
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Botonera de la tabla
         table_toolbar = QHBoxLayout()
         self.btn_refresh = QPushButton(" Actualizar Puntos")
         self.btn_refresh.setIcon(get_icon("refresh.svg"))
@@ -68,16 +87,14 @@ class RewardsPage(QWidget):
         table_toolbar.addStretch()
         left_layout.addLayout(table_toolbar)
         
-        # Configuración de la Tabla
         self.table = QTableWidget(0, 4)
         self.table.setHorizontalHeaderLabels(["Origen", "Nombre del Punto", "Costo", "Estado"])
         self.table.setStyleSheet(STYLES["table_clean"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers) # Solo lectura
+        self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
         
-        # Ajuste de columnas
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
@@ -92,7 +109,7 @@ class RewardsPage(QWidget):
         # ==========================================
         right_panel = QFrame()
         right_panel.setStyleSheet(STYLES["card"])
-        right_panel.setFixedWidth(350)
+        right_panel.setFixedWidth(360)
         right_layout = QVBoxLayout(right_panel)
         
         lbl_edit_title = QLabel("Detalles de Recompensa")
@@ -103,7 +120,6 @@ class RewardsPage(QWidget):
         form_layout.setContentsMargins(0, 10, 0, 10)
         form_layout.setVerticalSpacing(12)
         
-        # Campos de Kick/Info Básica
         self.inp_name = QLineEdit()
         self.inp_name.setStyleSheet(STYLES["input"])
         self.inp_name.setPlaceholderText("ID o Nombre exacto")
@@ -120,7 +136,7 @@ class RewardsPage(QWidget):
         self.inp_desc.setStyleSheet(STYLES["input"])
         self.inp_desc.setPlaceholderText("Descripción breve...")
         
-        self.chk_enabled = QCheckBox(" Activo en Kick/Local")
+        self.chk_enabled = QCheckBox("Activo en Kick/Local")
         self.chk_enabled.setStyleSheet(get_switch_style())
         self.chk_enabled.setChecked(True)
         
@@ -130,14 +146,13 @@ class RewardsPage(QWidget):
         form_layout.addRow("Descrip:", self.inp_desc)
         form_layout.addRow("", self.chk_enabled)
         
-        # Separador visual
         sep = QFrame()
         sep.setFrameShape(QFrame.Shape.HLine)
         sep.setStyleSheet("background-color: #333;")
         right_layout.addLayout(form_layout)
         right_layout.addWidget(sep)
         
-        # Controles del Overlay (Multimedia)
+        # --- SECCIÓN MULTIMEDIA Y PREVISUALIZACIÓN ---
         overlay_layout = QFormLayout()
         overlay_layout.setContentsMargins(0, 10, 0, 0)
         
@@ -145,12 +160,18 @@ class RewardsPage(QWidget):
         lbl_overlay_title.setStyleSheet("font-weight: bold; color: #8B8B8B; margin-bottom: 5px;")
         right_layout.addWidget(lbl_overlay_title)
         
-        # Selector de Archivo (Ruta Absoluta)
+        # Caja de Previsualización Visual (Miniatura)
+        self.lbl_preview = QLabel()
+        self.lbl_preview.setFixedSize(160, 90)
+        self.lbl_preview.setStyleSheet("background-color: #1a1d1e; border-radius: 6px; border: 1px dashed #444;")
+        self.lbl_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Selector de Archivo
         file_layout = QHBoxLayout()
         self.lbl_file = QLineEdit()
         self.lbl_file.setStyleSheet(STYLES["input_readonly"])
         self.lbl_file.setReadOnly(True)
-        self.lbl_file.setPlaceholderText("Sin archivo vinculado")
+        self.lbl_file.setPlaceholderText("Sin archivo...")
         
         self.btn_file = QPushButton()
         self.btn_file.setIcon(get_icon("folder.svg"))
@@ -159,9 +180,10 @@ class RewardsPage(QWidget):
         
         file_layout.addWidget(self.lbl_file)
         file_layout.addWidget(self.btn_file)
+        
+        overlay_layout.addRow("", self.lbl_preview) # Agregamos la miniatura al formulario
         overlay_layout.addRow("Archivo:", file_layout)
         
-        # Escala
         self.inp_scale = QDoubleSpinBox()
         self.inp_scale.setStyleSheet(STYLES["spinbox_modern"])
         self.inp_scale.setRange(0.1, 5.0)
@@ -169,7 +191,6 @@ class RewardsPage(QWidget):
         self.inp_scale.setValue(1.0)
         overlay_layout.addRow("Escala:", self.inp_scale)
         
-        # Posición
         pos_layout = QHBoxLayout()
         self.inp_x = QSpinBox()
         self.inp_x.setStyleSheet(STYLES["spinbox_modern"])
@@ -185,22 +206,20 @@ class RewardsPage(QWidget):
         pos_layout.addWidget(self.inp_y)
         overlay_layout.addRow("Posición:", pos_layout)
         
-        # Checkbox Aleatorio
-        self.chk_random = QCheckBox(" Posición Aleatoria")
+        self.chk_random = QCheckBox("Posición Aleatoria")
         self.chk_random.setStyleSheet(get_switch_style())
         overlay_layout.addRow("", self.chk_random)
         
         right_layout.addLayout(overlay_layout)
         right_layout.addStretch()
         
-        # Botonera de Guardar/Borrar
         action_layout = QHBoxLayout()
         self.btn_delete = QPushButton(" Borrar")
         self.btn_delete.setIcon(get_icon("trash.svg"))
         self.btn_delete.setStyleSheet(STYLES["btn_danger_outlined"])
         self.btn_delete.clicked.connect(self.delete_reward)
         
-        self.btn_save = QPushButton(" Guardar Ajustes")
+        self.btn_save = QPushButton(" Guardar")
         self.btn_save.setIcon(get_icon("save.svg"))
         self.btn_save.setStyleSheet(STYLES["btn_primary"])
         self.btn_save.clicked.connect(self.save_reward)
@@ -209,12 +228,10 @@ class RewardsPage(QWidget):
         action_layout.addWidget(self.btn_save)
         right_layout.addLayout(action_layout)
         
-        # Añadimos los paneles al contenedor dividido
         split_layout.addWidget(left_panel, stretch=2)
         split_layout.addWidget(right_panel, stretch=1)
         main_layout.addLayout(split_layout, stretch=3)
 
-        # --- CONSOLA INFERIOR ---
         self.consola = QTextEdit()
         self.consola.setReadOnly(True)
         self.consola.setStyleSheet(STYLES["text_edit_console"])
@@ -223,25 +240,18 @@ class RewardsPage(QWidget):
 
         self.setLayout(main_layout)
 
-    # --- LÓGICA Y DATOS ---
+    # --- LÓGICA DE DATOS Y PREVISUALIZACIÓN ---
 
     def cargar_recompensas_kick(self, lista_recompensas):
-        """Llamado por el KickBot cuando descarga los puntos de la web."""
         self.kick_rewards_data.clear()
         for recompensa in lista_recompensas:
             titulo = recompensa.get("title", "").strip().lower()
             self.kick_rewards_data[titulo] = recompensa
-        
         self.actualizar_tabla()
 
     def actualizar_tabla(self):
-        """Mezcla los puntos de Kick y los locales (SQLite) y reconstruye la tabla."""
         self.table.setRowCount(0)
-        
-        # Obtenemos triggers de SQLite
         triggers_db = self.db.get_all_triggers()
-        
-        # Creamos un conjunto único de todos los nombres (Kick + Locales)
         todos_los_nombres = set(self.kick_rewards_data.keys()).union(set(triggers_db.keys()))
         
         for idx, titulo in enumerate(sorted(todos_los_nombres)):
@@ -251,43 +261,75 @@ class RewardsPage(QWidget):
             datos_kick = self.kick_rewards_data.get(titulo, {})
             datos_db = triggers_db.get(titulo, {})
             
-            # 1. Columna Origen
-            item_origen = QTableWidgetItem("🟢 Kick" if es_kick else "💻 Local")
+            # 1. Columna Origen (CON ICONOS SVG)
+            item_origen = QTableWidgetItem("Kick" if es_kick else "Local")
+            item_origen.setIcon(get_icon("kick.svg" if es_kick else "file.svg"))
             item_origen.setForeground(Qt.GlobalColor.green if es_kick else Qt.GlobalColor.cyan)
             
-            # 2. Columna Nombre (ID real)
             nombre_real = datos_kick.get("title", titulo).title()
             item_nombre = QTableWidgetItem(nombre_real)
-            # Guardamos la llave interna en el item para buscarlo al hacer click
             item_nombre.setData(Qt.ItemDataRole.UserRole, titulo) 
             
-            # 3. Columna Costo
             costo = datos_kick.get("cost", datos_db.get("cost", 100))
             item_costo = QTableWidgetItem(str(costo))
             
-            # 4. Columna Estado
             activo = datos_kick.get("is_enabled", datos_db.get("enabled", True))
-            item_estado = QTableWidgetItem("✅ Activo" if activo else "❌ Inactivo")
+            item_estado = QTableWidgetItem("Activo" if activo else "Inactivo")
+            if not activo: item_estado.setForeground(Qt.GlobalColor.darkGray)
             
             self.table.setItem(idx, 0, item_origen)
             self.table.setItem(idx, 1, item_nombre)
             self.table.setItem(idx, 2, item_costo)
             self.table.setItem(idx, 3, item_estado)
 
+    def _actualizar_preview(self, path, ftype):
+        """Valida si el archivo existe y muestra la miniatura o icono correspondiente."""
+        if not path:
+            self.lbl_file.setStyleSheet(STYLES["input_readonly"])
+            self.lbl_file.setText("Sin archivo vinculado")
+            self.lbl_preview.clear()
+            return
+            
+        # Validar Ruta Rota (Rojo si no existe)
+        if not os.path.exists(path):
+            self.lbl_file.setStyleSheet("background: rgba(255, 69, 58, 0.1); color: #FF453A; border: 1px solid #FF453A; border-radius: 4px; padding: 4px;")
+            self.lbl_file.setText(path)
+            self.lbl_preview.setPixmap(get_icon("warning.svg").pixmap(40, 40))
+            self.log(f"[WARN] El archivo no se encuentra en la ruta: {path}")
+            return
+            
+        # Si existe, estilo normal
+        self.lbl_file.setStyleSheet(STYLES["input_readonly"])
+        self.lbl_file.setText(path)
+
+        # Cargar Miniatura / Icono
+        self.lbl_preview.clear()
+        if ftype == "audio":
+            self.lbl_preview.setPixmap(get_icon("audio.svg").pixmap(40, 40))
+        elif ftype == "image":
+            pixmap = QPixmap(path)
+            self.lbl_preview.setPixmap(pixmap.scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        elif ftype == "video":
+            # Icono temporal mientras se carga el frame del video
+            self.lbl_preview.setPixmap(get_icon("video.svg").pixmap(40, 40)) 
+            worker = ThumbnailWorker(path, 160)
+            worker.signals.finished.connect(self._on_thumbnail_ready)
+            self.threadpool.start(worker)
+
+    def _on_thumbnail_ready(self, pixmap):
+        """Se ejecuta cuando OpenCV termina de sacar el frame del video."""
+        if pixmap and not pixmap.isNull():
+            self.lbl_preview.setPixmap(pixmap)
+
     def on_table_select(self):
-        """Se activa al hacer clic en una fila de la tabla."""
         selected_items = self.table.selectedItems()
         if not selected_items: return
         
-        # Extraemos la llave interna (nombre en minúsculas)
         titulo_key = self.table.item(selected_items[0].row(), 1).data(Qt.ItemDataRole.UserRole)
-        
         datos_kick = self.kick_rewards_data.get(titulo_key, {})
         datos_db = self.db.get_all_triggers().get(titulo_key, {})
 
-        # Rellenar Formulario
         self.inp_name.setText(datos_kick.get("title", titulo_key))
-        # Si viene de Kick, no dejamos cambiar el nombre para no romper el vínculo
         self.inp_name.setReadOnly(bool(datos_kick)) 
         
         self.inp_cost.setValue(datos_kick.get("cost", datos_db.get("cost", 100)))
@@ -295,19 +337,19 @@ class RewardsPage(QWidget):
         self.inp_color.setText(datos_kick.get("color", datos_db.get("color", "")))
         self.chk_enabled.setChecked(datos_kick.get("is_enabled", datos_db.get("enabled", True)))
         
-        # Datos del Overlay (Solo existen localmente en DB)
         self.current_file_path = datos_db.get("file", "")
         self.current_file_type = datos_db.get("type", "audio")
         self.current_kick_id = str(datos_kick.get("id", datos_db.get("kick_id", "")))
         
-        self.lbl_file.setText(self.current_file_path if self.current_file_path else "Sin archivo vinculado")
+        # Actualizamos la previsualización visual
+        self._actualizar_preview(self.current_file_path, self.current_file_type)
+        
         self.inp_scale.setValue(datos_db.get("scale", 1.0))
         self.inp_x.setValue(datos_db.get("pos_x", 0))
         self.inp_y.setValue(datos_db.get("pos_y", 0))
         self.chk_random.setChecked(datos_db.get("random", False))
 
     def limpiar_formulario(self):
-        """Prepara el formulario para crear un punto local nuevo."""
         self.table.clearSelection()
         self.inp_name.setReadOnly(False)
         self.inp_name.clear()
@@ -320,7 +362,7 @@ class RewardsPage(QWidget):
         self.current_file_path = ""
         self.current_file_type = "audio"
         self.current_kick_id = ""
-        self.lbl_file.clear()
+        self._actualizar_preview("", "")
         
         self.inp_scale.setValue(1.0)
         self.inp_x.setValue(0)
@@ -328,18 +370,13 @@ class RewardsPage(QWidget):
         self.chk_random.setChecked(False)
 
     def select_file(self):
-        """Abre el explorador y guarda la ruta ABSOLUTA del archivo (no lo copia)."""
         file_filter = "Multimedia (*.mp3 *.wav *.ogg *.mp4 *.webm *.png *.jpg *.gif);;Audio (*.mp3 *.wav *.ogg);;Video (*.mp4 *.webm);;Imagen (*.png *.jpg *.gif)"
         file_path, _ = QFileDialog.getOpenFileName(self, "Seleccionar Archivo Multimedia", "", file_filter)
         
         if file_path:
-            # Reemplazamos barras invertidas por normales para evitar problemas de escape en HTML/Python
             ruta_absoluta = os.path.normpath(file_path).replace("\\", "/")
-            
             self.current_file_path = ruta_absoluta
-            self.lbl_file.setText(ruta_absoluta)
             
-            # Detectar tipo
             ext = ruta_absoluta.split('.')[-1].lower()
             if ext in ['mp4', 'webm', 'mkv']:
                 self.current_file_type = "video"
@@ -347,6 +384,8 @@ class RewardsPage(QWidget):
                 self.current_file_type = "image"
             else:
                 self.current_file_type = "audio"
+                
+            self._actualizar_preview(self.current_file_path, self.current_file_type)
 
     def save_reward(self):
         name = self.inp_name.text().strip().lower()
@@ -354,12 +393,11 @@ class RewardsPage(QWidget):
             QMessageBox.warning(self, "Aviso", "El nombre de la recompensa no puede estar vacío.")
             return
 
-        # Preparamos los datos para la BD Local
         trigger_data = {
             "name": name,
             "file": self.current_file_path,
             "type": self.current_file_type,
-            "volume": 100, # Volumen predeterminado por ahora
+            "volume": 100,
             "cost": self.inp_cost.value(),
             "color": self.inp_color.text(),
             "description": self.inp_desc.text(),
@@ -371,12 +409,10 @@ class RewardsPage(QWidget):
             "kick_id": self.current_kick_id
         }
 
-        # Guardar en SQLite
         self.db.save_trigger(trigger_data)
-        self.log(f"✅ Ajustes locales guardados para '{name}'.")
+        self.log(f"[ÉXITO] Ajustes locales guardados para '{name}'.")
         self.actualizar_tabla()
 
-        # Si el punto pertenece a Kick, emitimos la señal para que main.py lo envíe a la API
         if self.current_kick_id:
             self.request_kick_update.emit(
                 self.current_kick_id, 
@@ -394,7 +430,7 @@ class RewardsPage(QWidget):
         
         if reply == QMessageBox.StandardButton.Yes:
             self.db.delete_trigger(name)
-            self.log(f"🗑️ Configuración local borrada para '{name}'.")
+            self.log(f"[BORRADO] Configuración local borrada para '{name}'.")
             self.limpiar_formulario()
             self.actualizar_tabla()
 

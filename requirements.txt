@@ -9,3 +9,4 @@ cloudscraper
 edge-tts
 pyttsx3
 pygame
+opencv-python
