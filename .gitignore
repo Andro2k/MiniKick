@@ -11,3 +11,4 @@ build.py
 venv.txt
 backend/*.json
 media/*
+config.py

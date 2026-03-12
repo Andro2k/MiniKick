@@ -44,10 +44,6 @@ class MiniKickUI(QMainWindow):
         self.init_ui()
         self._conectar_senales_servicios()
         
-        # --- 4. AUTOCONEXIÓN ---
-        # Si el botón quedó activado en la sesión anterior, conectamos automáticamente.
-        # Usamos un QTimer de medio segundo para darle tiempo a la interfaz a dibujarse 
-        # primero y así poder ver los mensajes en la consola.
         if self.btn_autoconectar.isChecked():
             QTimer.singleShot(500, self.iniciar_backend)
 
@@ -174,20 +170,16 @@ class MiniKickUI(QMainWindow):
         # Si ya está corriendo, no hacemos nada (evita doble click o fallos del autoconnect)
         if self.btn_iniciar.text() == "Conectado":
             return
-            
         try:
-            with open("backend/config.json", "r") as f:
-                config = json.load(f)
-        except FileNotFoundError:
-            self.page_chat.log("[ERROR] Crea el archivo backend/config.json con tus claves.")
+            # Importamos las variables directamente desde tu archivo Python
+            from backend.config import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
+        except ImportError:
+            self.page_chat.log("[ERROR] No se encontró el archivo backend/config.py")
             return
 
-        client_id = config.get("client_id")
-        client_secret = config.get("client_secret")
-        redirect_uri = config.get("redirect_uri")
-
-        if not all([client_id, client_secret, redirect_uri]):
-            self.page_chat.log("[ERROR] Faltan datos en config.json")
+        # Validamos que no estén vacías o con el texto por defecto
+        if not all([CLIENT_ID, CLIENT_SECRET, REDIRECT_URI]) or CLIENT_ID == "tu_client_id_aqui":
+            self.page_chat.log("[ERROR] Faltan datos en backend/config.py. Por favor, pon tus claves.")
             return
 
         self.btn_iniciar.setEnabled(False)
@@ -196,7 +188,7 @@ class MiniKickUI(QMainWindow):
         self.lbl_status.setStyleSheet("color: #53fc18; font-weight: bold; font-size: 14px; margin-left: 15px;")
         self.page_chat.log("[INFO] Conectando a los servidores de Kick...")
 
-        self.backend = KickBot(client_id, client_secret, redirect_uri, self.db)
+        self.backend = KickBot(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, self.db)
         self.backend.log_signal.connect(self.page_chat.log)
         self.backend.chat_signal.connect(self.on_chat_recibido)
         self.backend.redemption_signal.connect(self.on_canje_recibido)
