@@ -65,7 +65,7 @@ class KickAuthManager:
         async def callback_handler(request):
             if code := request.query.get("code"):
                 future_code.set_result(code)
-                return web.Response(text="<h2>¡Exito!</h2><p>Ya puedes volver a KickMonitor.</p>", content_type="text/html")
+                return web.Response(text="<h2>¡Exito!</h2><p>Ya puedes volver a MiniKick.</p>", content_type="text/html")
             return web.Response(text="Error de Login.", content_type="text/html")
             
         app = web.Application()
