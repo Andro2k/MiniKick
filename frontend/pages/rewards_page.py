@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import (QDoubleSpinBox, QWidget, QVBoxLayout, QHBoxLayout, 
                              QPushButton, QLineEdit, QSpinBox, QCheckBox, 
                              QFileDialog, QFormLayout, QTableWidget, QTableWidgetItem, 
                              QHeaderView, QAbstractItemView, QFrame, QMessageBox, QApplication)
-from PyQt6.QtGui import QTextCursor, QPixmap
-from PyQt6.QtCore import Qt, pyqtSignal, QThreadPool
+from PyQt6.QtGui import QTextCursor, QPixmap, QColor
+from PyQt6.QtCore import Qt, pyqtSignal, QThreadPool, QSize
 
 from frontend.theme import STYLES, get_switch_style
 from frontend.utils import get_icon, ThumbnailWorker
@@ -23,35 +23,43 @@ class RewardsPage(QWidget):
         self.current_file_type = "audio"
         self.current_kick_id = ""
         
-        # Pool de hilos para generar miniaturas de video sin lag
         self.threadpool = QThreadPool.globalInstance()
         
         self.init_ui()
         self.actualizar_tabla()
 
     def init_ui(self):
-        main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
+        # Fondo principal oscuro estilo dashboard
+        self.setStyleSheet("background-color: #0E0E0E; color: #FFFFFF; font-family: 'Segoe UI', Ubuntu, sans-serif;")
         
-        # --- INFO SUPERIOR (Con botón de copiar) ---
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(15)
+        
+        # --- INFO SUPERIOR (OBS URL) ---
         info_frame = QFrame()
-        info_frame.setStyleSheet("background-color: #121516; border-radius: 6px;")
+        info_frame.setStyleSheet("""
+            QFrame { background-color: #161616; border-radius: 8px; border: 1px solid #252525; }
+            QLabel { color: #A0A0A0; font-size: 13px; }
+        """)
         info_frame_layout = QHBoxLayout(info_frame)
-        info_frame_layout.setContentsMargins(10, 10, 10, 10)
+        info_frame_layout.setContentsMargins(15, 10, 15, 10)
         
         lbl_link_icon = QLabel()
         lbl_link_icon.setPixmap(get_icon("link.svg").pixmap(18, 18))
         
-        info_obs = QLabel("URL para OBS: <b style='color:#53fc18;'>http://127.0.0.1:8081</b> (Ancho 1920, Alto 1080)")
+        info_obs = QLabel("URL para OBS: <b style='color:#53fc18;'>http://127.0.0.1:8081</b> <span style='color:#666;'>(1920x1080)</span>")
         info_obs.setTextFormat(Qt.TextFormat.RichText)
         info_obs.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        info_obs.setStyleSheet("border: none; background: transparent;")
         
-        # NUEVO: Botón copiar URL
-        self.btn_copy_url = QPushButton()
+        self.btn_copy_url = QPushButton(" Copiar")
         self.btn_copy_url.setIcon(get_icon("copy.svg"))
-        self.btn_copy_url.setToolTip("Copiar URL al portapapeles")
-        self.btn_copy_url.setStyleSheet(STYLES["btn_icon_ghost"])
+        self.btn_copy_url.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_copy_url.setStyleSheet("""
+            QPushButton { background-color: transparent; color: #888; border: 1px solid #333; border-radius: 4px; padding: 4px 10px; }
+            QPushButton:hover { background-color: #252525; color: #FFF; }
+        """)
         self.btn_copy_url.clicked.connect(lambda: QApplication.clipboard().setText("http://127.0.0.1:8081"))
         
         info_frame_layout.addWidget(lbl_link_icon)
@@ -63,43 +71,66 @@ class RewardsPage(QWidget):
 
         # --- CONTENEDOR DIVIDIDO ---
         split_layout = QHBoxLayout()
+        split_layout.setSpacing(20)
         
         # ==========================================
-        # PANEL IZQUIERDO: TABLA
+        # PANEL IZQUIERDO: TABLA ESTILO DASHBOARD
         # ==========================================
         left_panel = QFrame()
         left_layout = QVBoxLayout(left_panel)
         left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(10)
         
+        # Toolbar de la tabla
         table_toolbar = QHBoxLayout()
-        self.btn_refresh = QPushButton(" Actualizar Puntos")
+        
+        lbl_table_title = QLabel("Recompensas y Triggers")
+        lbl_table_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFF; border: none; background: transparent;")
+        
+        self.btn_refresh = QPushButton()
         self.btn_refresh.setIcon(get_icon("refresh.svg"))
-        self.btn_refresh.setStyleSheet(STYLES["btn_outlined"])
+        self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_refresh.setStyleSheet("QPushButton { background: transparent; border: none; padding: 5px; } QPushButton:hover { background: #252525; border-radius: 4px; }")
         self.btn_refresh.clicked.connect(self.actualizar_tabla)
         
-        self.btn_new = QPushButton(" Crear Local")
-        self.btn_new.setIcon(get_icon("add.svg"))
-        self.btn_new.setStyleSheet(STYLES["btn_primary"])
+        self.btn_new = QPushButton(" + Nueva Local")
+        self.btn_new.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_new.setStyleSheet("""
+            QPushButton { background-color: #252525; color: #FFF; border: 1px solid #333; border-radius: 6px; padding: 6px 12px; font-weight: bold; }
+            QPushButton:hover { background-color: #333; }
+        """)
         self.btn_new.clicked.connect(self.limpiar_formulario)
         
+        table_toolbar.addWidget(lbl_table_title)
+        table_toolbar.addStretch()
         table_toolbar.addWidget(self.btn_refresh)
         table_toolbar.addWidget(self.btn_new)
-        table_toolbar.addStretch()
         left_layout.addLayout(table_toolbar)
         
+        # La Tabla
         self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Origen", "Nombre del Punto", "Costo", "Estado"])
-        self.table.setStyleSheet(STYLES["table_clean"])
+        self.table.setHorizontalHeaderLabels(["Origen", "Descripción", "Costo", "Estado"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
+        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.table.setIconSize(QSize(16, 16))
+        
+        # Estilos de la tabla para imitar el diseño
+        self.table.setStyleSheet("""
+            QTableWidget { background-color: transparent; border: none; color: #D0D0D0; }
+            QTableWidget::item { border-bottom: 1px solid #1E1E1E; padding: 8px 5px; }
+            QTableWidget::item:selected { background-color: #1A1D1E; color: #FFF; }
+            QHeaderView::section { background-color: transparent; color: #777; font-weight: 600; font-size: 12px; border: none; border-bottom: 1px solid #252525; padding-bottom: 5px; text-align: left; }
+        """)
         
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        header.setDefaultAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         
         self.table.itemSelectionChanged.connect(self.on_table_select)
         left_layout.addWidget(self.table)
@@ -108,134 +139,150 @@ class RewardsPage(QWidget):
         # PANEL DERECHO: MENÚ DE EDICIÓN
         # ==========================================
         right_panel = QFrame()
-        right_panel.setStyleSheet(STYLES["card"])
-        right_panel.setFixedWidth(360)
+        right_panel.setFixedWidth(340)
+        right_panel.setStyleSheet("""
+            QFrame { background-color: #121212; border-radius: 10px; border: 1px solid #1E1E1E; }
+            QLabel { background: transparent; border: none; color: #A0A0A0; font-size: 12px; }
+            QLineEdit { background-color: #1A1A1A; border: 1px solid #2A2A2A; border-radius: 6px; padding: 6px 10px; color: #FFF; font-size: 13px; }
+            QLineEdit:focus { border: 1px solid #53fc18; }
+        """)
         right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(20, 20, 20, 20)
+        right_layout.setSpacing(15)
         
         lbl_edit_title = QLabel("Detalles de Recompensa")
-        lbl_edit_title.setStyleSheet(STYLES["label_title"])
+        lbl_edit_title.setStyleSheet("font-size: 14px; font-weight: bold; color: #FFF; margin-bottom: 5px;")
         right_layout.addWidget(lbl_edit_title)
         
-        form_layout = QFormLayout()
-        form_layout.setContentsMargins(0, 10, 0, 10)
-        form_layout.setVerticalSpacing(12)
-        
+        # Campos de texto simples
         self.inp_name = QLineEdit()
-        self.inp_name.setStyleSheet(STYLES["input"])
-        self.inp_name.setPlaceholderText("ID o Nombre exacto")
-        
-        self.inp_cost = QSpinBox()
-        self.inp_cost.setStyleSheet(STYLES["spinbox_modern"])
-        self.inp_cost.setRange(1, 9999999)
-        
-        self.inp_color = QLineEdit()
-        self.inp_color.setStyleSheet(STYLES["input"])
-        self.inp_color.setPlaceholderText("#53fc18")
+        self.inp_name.setPlaceholderText("Ej. Sonido de victoria")
         
         self.inp_desc = QLineEdit()
-        self.inp_desc.setStyleSheet(STYLES["input"])
         self.inp_desc.setPlaceholderText("Descripción breve...")
         
-        self.chk_enabled = QCheckBox("Activo en Kick/Local")
-        self.chk_enabled.setStyleSheet(get_switch_style())
+        # Fila doble: Costo y Color
+        cost_color_layout = QHBoxLayout()
+        self.inp_cost = QSpinBox()
+        self.inp_cost.setRange(1, 9999999)
+        self.inp_cost.setPrefix("Pts: ")
+        
+        self.inp_color = QLineEdit()
+        self.inp_color.setPlaceholderText("Color Hex (Ej. #53fc18)")
+        
+        cost_color_layout.addWidget(self.inp_cost)
+        cost_color_layout.addWidget(self.inp_color)
+        
+        right_layout.addWidget(QLabel("Descripción"))
+        right_layout.addWidget(self.inp_name)
+        right_layout.addWidget(self.inp_desc)
+        right_layout.addWidget(QLabel("Costo y Color"))
+        right_layout.addLayout(cost_color_layout)
+        
+        self.chk_enabled = QCheckBox(" Activo")
+        self.chk_enabled.setStyleSheet("QCheckBox { color: #FFF; background: transparent; border: none; font-size: 13px; }")
         self.chk_enabled.setChecked(True)
+        right_layout.addWidget(self.chk_enabled)
         
-        form_layout.addRow("Nombre:", self.inp_name)
-        form_layout.addRow("Costo:", self.inp_cost)
-        form_layout.addRow("Color:", self.inp_color)
-        form_layout.addRow("Descrip:", self.inp_desc)
-        form_layout.addRow("", self.chk_enabled)
-        
+        # Separador
         sep = QFrame()
-        sep.setFrameShape(QFrame.Shape.HLine)
-        sep.setStyleSheet("background-color: #333;")
-        right_layout.addLayout(form_layout)
+        sep.setFixedHeight(1)
+        sep.setStyleSheet("background-color: #252525; border: none;")
         right_layout.addWidget(sep)
         
-        # --- SECCIÓN MULTIMEDIA Y PREVISUALIZACIÓN ---
-        overlay_layout = QFormLayout()
-        overlay_layout.setContentsMargins(0, 10, 0, 0)
-        
-        lbl_overlay_title = QLabel("Acción en Pantalla (Overlay)")
-        lbl_overlay_title.setStyleSheet("font-weight: bold; color: #8B8B8B; margin-bottom: 5px;")
+        # --- SECCIÓN ATTACHMENTS (Drag & Drop Look) ---
+        lbl_overlay_title = QLabel("Attachments (Overlay)")
+        lbl_overlay_title.setStyleSheet("font-size: 13px; font-weight: bold; color: #FFF;")
         right_layout.addWidget(lbl_overlay_title)
         
-        # Caja de Previsualización Visual (Miniatura)
+        # Caja estilo Drag & Drop
+        self.box_file = QFrame()
+        self.box_file.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.box_file.setStyleSheet("""
+            QFrame { background-color: #161616; border: 1px dashed #444; border-radius: 8px; }
+            QFrame:hover { border: 1px dashed #777; background-color: #1A1A1A; }
+        """)
+        box_file_layout = QVBoxLayout(self.box_file)
+        box_file_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        box_file_layout.setContentsMargins(10, 15, 10, 15)
+        
         self.lbl_preview = QLabel()
-        self.lbl_preview.setFixedSize(160, 90)
-        self.lbl_preview.setStyleSheet("background-color: #1a1d1e; border-radius: 6px; border: 1px dashed #444;")
+        self.lbl_preview.setFixedSize(140, 80)
         self.lbl_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_preview.setStyleSheet("background: transparent; border: none;")
         
-        # Selector de Archivo
-        file_layout = QHBoxLayout()
-        self.lbl_file = QLineEdit()
-        self.lbl_file.setStyleSheet(STYLES["input_readonly"])
-        self.lbl_file.setReadOnly(True)
-        self.lbl_file.setPlaceholderText("Sin archivo...")
+        self.lbl_file_text = QLabel("Haz clic para buscar archivo\nJPG, PNG, MP4, MP3")
+        self.lbl_file_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_file_text.setStyleSheet("color: #777; font-size: 11px; background: transparent; border: none;")
         
-        self.btn_file = QPushButton()
-        self.btn_file.setIcon(get_icon("folder.svg"))
-        self.btn_file.setStyleSheet(STYLES["btn_outlined"])
-        self.btn_file.clicked.connect(self.select_file)
+        box_file_layout.addWidget(self.lbl_preview, alignment=Qt.AlignmentFlag.AlignCenter)
+        box_file_layout.addWidget(self.lbl_file_text)
         
-        file_layout.addWidget(self.lbl_file)
-        file_layout.addWidget(self.btn_file)
+        # Truco para que la caja entera funcione como botón
+        self.box_file.mousePressEvent = lambda e: self.select_file()
+        right_layout.addWidget(self.box_file)
         
-        overlay_layout.addRow("", self.lbl_preview) # Agregamos la miniatura al formulario
-        overlay_layout.addRow("Archivo:", file_layout)
-        
+        # Opciones de posición
+        pos_layout = QHBoxLayout()
         self.inp_scale = QDoubleSpinBox()
-        self.inp_scale.setStyleSheet(STYLES["spinbox_modern"])
         self.inp_scale.setRange(0.1, 5.0)
         self.inp_scale.setSingleStep(0.1)
         self.inp_scale.setValue(1.0)
-        overlay_layout.addRow("Escala:", self.inp_scale)
+        self.inp_scale.setPrefix("Esc: ")
         
-        pos_layout = QHBoxLayout()
         self.inp_x = QSpinBox()
-        self.inp_x.setStyleSheet(STYLES["spinbox_modern"])
         self.inp_x.setRange(0, 4000)
         self.inp_x.setPrefix("X: ")
         
         self.inp_y = QSpinBox()
-        self.inp_y.setStyleSheet(STYLES["spinbox_modern"])
         self.inp_y.setRange(0, 4000)
         self.inp_y.setPrefix("Y: ")
         
+        pos_layout.addWidget(self.inp_scale)
         pos_layout.addWidget(self.inp_x)
         pos_layout.addWidget(self.inp_y)
-        overlay_layout.addRow("Posición:", pos_layout)
+        right_layout.addWidget(QLabel("Escala y Posición"))
+        right_layout.addLayout(pos_layout)
         
-        self.chk_random = QCheckBox("Posición Aleatoria")
-        self.chk_random.setStyleSheet(get_switch_style())
-        overlay_layout.addRow("", self.chk_random)
+        self.chk_random = QCheckBox(" Posición Aleatoria")
+        self.chk_random.setStyleSheet("QCheckBox { color: #A0A0A0; background: transparent; border: none; }")
+        right_layout.addWidget(self.chk_random)
         
-        right_layout.addLayout(overlay_layout)
         right_layout.addStretch()
         
+        # Botones de Acción final
         action_layout = QHBoxLayout()
-        self.btn_delete = QPushButton(" Borrar")
-        self.btn_delete.setIcon(get_icon("trash.svg"))
-        self.btn_delete.setStyleSheet(STYLES["btn_danger_outlined"])
+        self.btn_delete = QPushButton("Borrar")
+        self.btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_delete.setStyleSheet("""
+            QPushButton { background-color: transparent; color: #FF453A; border: 1px solid #FF453A; border-radius: 6px; padding: 8px; font-weight: bold; }
+            QPushButton:hover { background-color: rgba(255, 69, 58, 0.1); }
+        """)
         self.btn_delete.clicked.connect(self.delete_reward)
         
-        self.btn_save = QPushButton(" Guardar")
-        self.btn_save.setIcon(get_icon("save.svg"))
-        self.btn_save.setStyleSheet(STYLES["btn_primary"])
+        self.btn_save = QPushButton("Guardar")
+        self.btn_save.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_save.setStyleSheet("""
+            QPushButton { background-color: #EDEDED; color: #000; border: none; border-radius: 6px; padding: 8px; font-weight: bold; }
+            QPushButton:hover { background-color: #FFF; }
+        """)
         self.btn_save.clicked.connect(self.save_reward)
         
         action_layout.addWidget(self.btn_delete)
         action_layout.addWidget(self.btn_save)
         right_layout.addLayout(action_layout)
         
-        split_layout.addWidget(left_panel, stretch=2)
-        split_layout.addWidget(right_panel, stretch=1)
-        main_layout.addLayout(split_layout, stretch=3)
+        split_layout.addWidget(left_panel, stretch=1)
+        split_layout.addWidget(right_panel)
+        main_layout.addLayout(split_layout)
 
+        # Consola minimizada/limpia
         self.consola = QTextEdit()
         self.consola.setReadOnly(True)
-        self.consola.setStyleSheet(STYLES["text_edit_console"])
-        self.consola.setFixedHeight(120)
+        self.consola.setFixedHeight(80)
+        self.consola.setStyleSheet("""
+            QTextEdit { background-color: #121212; border: 1px solid #1E1E1E; border-radius: 6px; color: #666; font-family: monospace; font-size: 11px; padding: 5px; }
+        """)
         main_layout.addWidget(self.consola)
 
         self.setLayout(main_layout)
@@ -261,21 +308,22 @@ class RewardsPage(QWidget):
             datos_kick = self.kick_rewards_data.get(titulo, {})
             datos_db = triggers_db.get(titulo, {})
             
-            # 1. Columna Origen (CON ICONOS SVG)
-            item_origen = QTableWidgetItem("Kick" if es_kick else "Local")
+            # 1. Columna Origen
+            item_origen = QTableWidgetItem(" Kick" if es_kick else " Local")
             item_origen.setIcon(get_icon("kick.svg" if es_kick else "file.svg"))
-            item_origen.setForeground(Qt.GlobalColor.green if es_kick else Qt.GlobalColor.cyan)
+            item_origen.setForeground(QColor("#53fc18") if es_kick else QColor("#A0A0A0"))
             
             nombre_real = datos_kick.get("title", titulo).title()
             item_nombre = QTableWidgetItem(nombre_real)
             item_nombre.setData(Qt.ItemDataRole.UserRole, titulo) 
             
             costo = datos_kick.get("cost", datos_db.get("cost", 100))
-            item_costo = QTableWidgetItem(str(costo))
+            item_costo = QTableWidgetItem(f"{costo} pts")
+            item_costo.setForeground(QColor("#53fc18")) # Resaltamos el costo en verde
             
             activo = datos_kick.get("is_enabled", datos_db.get("enabled", True))
             item_estado = QTableWidgetItem("Activo" if activo else "Inactivo")
-            if not activo: item_estado.setForeground(Qt.GlobalColor.darkGray)
+            item_estado.setForeground(QColor("#D0D0D0") if activo else QColor("#555555"))
             
             self.table.setItem(idx, 0, item_origen)
             self.table.setItem(idx, 1, item_nombre)
@@ -283,41 +331,38 @@ class RewardsPage(QWidget):
             self.table.setItem(idx, 3, item_estado)
 
     def _actualizar_preview(self, path, ftype):
-        """Valida si el archivo existe y muestra la miniatura o icono correspondiente."""
         if not path:
-            self.lbl_file.setStyleSheet(STYLES["input_readonly"])
-            self.lbl_file.setText("Sin archivo vinculado")
+            self.lbl_file_text.setText("Haz clic para buscar archivo\nJPG, PNG, MP4, MP3")
             self.lbl_preview.clear()
+            self.box_file.setStyleSheet("QFrame { background-color: #161616; border: 1px dashed #444; border-radius: 8px; } QFrame:hover { border: 1px dashed #777; background-color: #1A1A1A; }")
             return
             
-        # Validar Ruta Rota (Rojo si no existe)
+        nombre_archivo = os.path.basename(path)
+        
         if not os.path.exists(path):
-            self.lbl_file.setStyleSheet("background: rgba(255, 69, 58, 0.1); color: #FF453A; border: 1px solid #FF453A; border-radius: 4px; padding: 4px;")
-            self.lbl_file.setText(path)
+            self.lbl_file_text.setText(f"Error: {nombre_archivo} no encontrado")
+            self.lbl_file_text.setStyleSheet("color: #FF453A; font-size: 11px;")
             self.lbl_preview.setPixmap(get_icon("warning.svg").pixmap(40, 40))
-            self.log(f"[WARN] El archivo no se encuentra en la ruta: {path}")
+            self.box_file.setStyleSheet("QFrame { background: rgba(255, 69, 58, 0.05); border: 1px dashed #FF453A; border-radius: 8px; }")
             return
             
-        # Si existe, estilo normal
-        self.lbl_file.setStyleSheet(STYLES["input_readonly"])
-        self.lbl_file.setText(path)
+        self.lbl_file_text.setText(nombre_archivo)
+        self.lbl_file_text.setStyleSheet("color: #53fc18; font-size: 11px;")
+        self.box_file.setStyleSheet("QFrame { background-color: #1A1A1A; border: 1px solid #333; border-radius: 8px; }")
 
-        # Cargar Miniatura / Icono
         self.lbl_preview.clear()
         if ftype == "audio":
             self.lbl_preview.setPixmap(get_icon("audio.svg").pixmap(40, 40))
         elif ftype == "image":
             pixmap = QPixmap(path)
-            self.lbl_preview.setPixmap(pixmap.scaled(160, 90, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            self.lbl_preview.setPixmap(pixmap.scaled(140, 80, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         elif ftype == "video":
-            # Icono temporal mientras se carga el frame del video
             self.lbl_preview.setPixmap(get_icon("video.svg").pixmap(40, 40)) 
-            worker = ThumbnailWorker(path, 160)
+            worker = ThumbnailWorker(path, 140)
             worker.signals.finished.connect(self._on_thumbnail_ready)
             self.threadpool.start(worker)
 
     def _on_thumbnail_ready(self, pixmap):
-        """Se ejecuta cuando OpenCV termina de sacar el frame del video."""
         if pixmap and not pixmap.isNull():
             self.lbl_preview.setPixmap(pixmap)
 
@@ -341,7 +386,6 @@ class RewardsPage(QWidget):
         self.current_file_type = datos_db.get("type", "audio")
         self.current_kick_id = str(datos_kick.get("id", datos_db.get("kick_id", "")))
         
-        # Actualizamos la previsualización visual
         self._actualizar_preview(self.current_file_path, self.current_file_type)
         
         self.inp_scale.setValue(datos_db.get("scale", 1.0))

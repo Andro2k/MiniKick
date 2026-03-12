@@ -1,10 +1,9 @@
 # frontend/main_frontend.py
 
-import json
 import re
 from PyQt6.QtWidgets import (QMainWindow, QVBoxLayout, QWidget, QPushButton, 
-                             QTabWidget, QLabel, QHBoxLayout, QSystemTrayIcon, 
-                             QMenu, QApplication)
+                             QLabel, QHBoxLayout, QSystemTrayIcon, QStackedWidget,
+                             QMenu, QFrame)
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import Qt, QTimer
 
@@ -25,7 +24,9 @@ class MiniKickUI(QMainWindow):
         super().__init__()
         self.setWindowTitle("MiniKick")
         self.resize(1200, 700)
-        self.setStyleSheet("background-color: #0b0e0f; color: #ffffff;")
+        
+        # Establecemos la fuente y un fondo base para toda la ventana
+        self.setStyleSheet("background-color: #0E0E0E; color: #ffffff; font-family: 'Segoe UI', Ubuntu, sans-serif;")
         self.setWindowIcon(QIcon(resource_path("icon.ico")))
 
         # --- 1. INICIALIZAR BASE DE DATOS Y SERVICIOS ---
@@ -48,12 +49,10 @@ class MiniKickUI(QMainWindow):
             QTimer.singleShot(500, self.iniciar_backend)
 
     def _configurar_tray_icon(self):
-        """Prepara el icono en la bandeja del sistema (junto al reloj)."""
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon(resource_path("icon.ico")))
         
         tray_menu = QMenu()
-        
         action_mostrar = QAction(get_icon("layers.svg"), "Mostrar Dashboard", self)
         action_mostrar.triggered.connect(self.mostrar_ventana)
         
@@ -69,34 +68,97 @@ class MiniKickUI(QMainWindow):
         self.tray_icon.show()
 
     def init_ui(self):
+        # Contenedor principal que dividirá la pantalla en Izquierda (Sidebar) y Derecha (Contenido)
         main_widget = QWidget()
-        main_layout = QVBoxLayout()
+        main_h_layout = QHBoxLayout(main_widget)
+        main_h_layout.setContentsMargins(0, 0, 0, 0)
+        main_h_layout.setSpacing(0)
 
-        # === CABECERA ===
+        # ==========================================
+        # 1. BARRA LATERAL (SIDEBAR)
+        # ==========================================
+        sidebar = QFrame()
+        sidebar.setFixedWidth(64)
+        sidebar.setStyleSheet("""
+            QFrame { background-color: #121212; border-right: 1px solid #1E1E1E; }
+            QPushButton { background: transparent; border: none; padding: 15px 0px; margin: 4px 0px; }
+            QPushButton:checked { border-left: 3px solid #53fc18; background-color: #1A1A1A; }
+            QPushButton:hover:!checked { background-color: #1A1A1A; border-left: 3px solid #333; }
+        """)
+        sidebar_layout = QVBoxLayout(sidebar)
+        sidebar_layout.setContentsMargins(0, 20, 0, 20)
+        sidebar_layout.setSpacing(5)
+
+        # Logo o icono decorativo superior
+        lbl_logo = QLabel()
+        lbl_logo.setPixmap(get_icon("kick.svg").pixmap(24, 24))
+        lbl_logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_logo.setStyleSheet("border: none;")
+        
+        sidebar_layout.addWidget(lbl_logo)
+        sidebar_layout.addSpacing(30)
+
+        # Botones de navegación
+        self.btn_nav_chat = QPushButton()
+        self.btn_nav_chat.setIcon(get_icon("chat.svg"))
+        self.btn_nav_chat.setCheckable(True)
+        self.btn_nav_chat.setChecked(True) # Inicia activo
+        self.btn_nav_chat.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_nav_chat.setToolTip("Chat & Voz (TTS)")
+        
+        self.btn_nav_rewards = QPushButton()
+        self.btn_nav_rewards.setIcon(get_icon("layers.svg"))
+        self.btn_nav_rewards.setCheckable(True)
+        self.btn_nav_rewards.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_nav_rewards.setToolTip("Canjes & Overlay")
+
+        sidebar_layout.addWidget(self.btn_nav_chat)
+        sidebar_layout.addWidget(self.btn_nav_rewards)
+        sidebar_layout.addStretch() # Empuja todo hacia arriba
+
+        # ==========================================
+        # 2. ÁREA DE CONTENIDO PRINCIPAL (DERECHA)
+        # ==========================================
+        content_frame = QFrame()
+        content_layout = QVBoxLayout(content_frame)
+        content_layout.setContentsMargins(20, 20, 20, 20)
+        content_layout.setSpacing(15)
+
+        # --- CABECERA SUPERIOR ---
         header_layout = QHBoxLayout()
         
-        self.btn_iniciar = QPushButton("Conectar a Kick")
+        self.btn_iniciar = QPushButton(" Conectar")
+        self.btn_iniciar.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_iniciar.setStyleSheet("""
-            QPushButton { background-color: #53fc18; color: black; font-weight: bold; padding: 10px; border-radius: 5px; }
+            QPushButton { background-color: #53fc18; color: black; font-weight: bold; padding: 8px 16px; border-radius: 6px; }
             QPushButton:disabled { background-color: #2c5914; color: #888888; }
+            QPushButton:hover:!disabled { background-color: #4ceb15; }
         """)
         self.btn_iniciar.clicked.connect(self.iniciar_backend)
 
-        self.lbl_status = QLabel("Estado: Desconectado")
-        self.lbl_status.setStyleSheet("color: #a0a0a0; font-weight: bold; font-size: 14px; margin-left: 15px;")
+        self.lbl_status = QLabel("Desconectado")
+        self.lbl_status.setStyleSheet("color: #777; font-weight: bold; font-size: 13px; margin-left: 10px;")
 
-        # Botón Autoconectar
-        self.btn_autoconectar = QPushButton(" Autoconectar")
+        # Botón Autoconectar (Icono Plug)
+        self.btn_autoconectar = QPushButton(" Auto")
         self.btn_autoconectar.setIcon(get_icon("plug.svg"))
-        self.btn_autoconectar.setToolTip("Conectar automáticamente al abrir la aplicación")
+        self.btn_autoconectar.setToolTip("Autoconectar al abrir la app")
         self.btn_autoconectar.setCheckable(True)
-        self.btn_autoconectar.setStyleSheet(STYLES["btn_toggle"])
-        # Conectamos la señal aquí, pero NO cambiamos su estado todavía
+        self.btn_autoconectar.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_autoconectar.setStyleSheet("""
+            QPushButton { background-color: transparent; color: #A0A0A0; border: 1px solid #333; padding: 6px 12px; border-radius: 6px; font-weight: bold; }
+            QPushButton:checked { color: #53fc18; border: 1px solid #53fc18; background-color: rgba(83, 252, 24, 0.05); }
+            QPushButton:hover:!checked { background-color: #1A1A1A; color: #FFF; border: 1px solid #555; }
+        """)
         self.btn_autoconectar.toggled.connect(self.on_autoconect_toggled)
 
-        self.btn_mini = QPushButton(" Segundo Plano")
+        self.btn_mini = QPushButton(" Ocultar")
         self.btn_mini.setIcon(get_icon("minimize.svg"))
-        self.btn_mini.setStyleSheet(STYLES["btn_outlined"])
+        self.btn_mini.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_mini.setStyleSheet("""
+            QPushButton { background-color: transparent; color: #A0A0A0; border: 1px solid #333; padding: 6px 12px; border-radius: 6px; font-weight: bold; }
+            QPushButton:hover { background-color: #1A1A1A; color: #FFF; border: 1px solid #555; }
+        """)
         self.btn_mini.clicked.connect(self.activar_modo_segundo_plano)
 
         header_layout.addWidget(self.btn_iniciar)
@@ -105,46 +167,57 @@ class MiniKickUI(QMainWindow):
         header_layout.addWidget(self.btn_autoconectar)
         header_layout.addWidget(self.btn_mini)
 
-        # === PESTAÑAS (TABS) ===
-        self.tabs = QTabWidget()
-        self.tabs.setStyleSheet("""
-            QTabWidget::pane { border: 1px solid #333333;}
-            QTabBar::tab { background: #1a1d1e; color: #a0a0a0; padding: 10px 20px; border: 1px solid #333; border-bottom: none; border-top-left-radius: 4px; border-top-right-radius: 4px; }
-            QTabBar::tab:selected { background: #0b0e0f; color: #53fc18; font-weight: bold; }
-        """)
-
-        # ✅ IMPORTANTE: Primero creamos las páginas
+        # --- GESTOR DE PÁGINAS (QStackedWidget) ---
+        self.stacked_widget = QStackedWidget()
+        
         self.page_chat = ChatPage(self.tts, self.db)
         self.page_rewards = RewardsPage(self.db)
 
-        self.tabs.addTab(self.page_chat, get_icon("chat.svg"), "Chat & Voz")
-        self.tabs.addTab(self.page_rewards, get_icon("layers.svg"), "Canjes & Overlay")
+        self.stacked_widget.addWidget(self.page_chat)    # Índice 0
+        self.stacked_widget.addWidget(self.page_rewards) # Índice 1
 
-        main_layout.addLayout(header_layout)
-        main_layout.addWidget(self.tabs)
-        main_widget.setLayout(main_layout)
+        # Agregar cabecera y páginas al layout de contenido
+        content_layout.addLayout(header_layout)
+        content_layout.addWidget(self.stacked_widget)
+
+        # ENSAMBLAR TODO
+        main_h_layout.addWidget(sidebar)
+        main_h_layout.addWidget(content_frame, stretch=1)
+        
         self.setCentralWidget(main_widget)
 
-        # ✅ AHORA SÍ: Cargamos el estado después de que page_chat ya existe
+        # Conectar botones del sidebar para cambiar de página
+        self.btn_nav_chat.clicked.connect(lambda: self.cambiar_pagina(0, self.btn_nav_chat))
+        self.btn_nav_rewards.clicked.connect(lambda: self.cambiar_pagina(1, self.btn_nav_rewards))
+
+        # Cargamos el estado de autoconexión
         is_auto = self.db.get_config("autoconnect", "False") == "True"
         self.btn_autoconectar.blockSignals(True)
         self.btn_autoconectar.setChecked(is_auto)
         self.btn_autoconectar.blockSignals(False)
 
+    def cambiar_pagina(self, index, boton_activo):
+        """Maneja el cambio de páginas y el estado visual de los botones del sidebar."""
+        self.stacked_widget.setCurrentIndex(index)
+        
+        # Apagamos todos
+        self.btn_nav_chat.setChecked(False)
+        self.btn_nav_rewards.setChecked(False)
+        
+        # Encendemos solo el seleccionado
+        boton_activo.setChecked(True)
+
     def _conectar_senales_servicios(self):
         self.tts.error_signal.connect(lambda msg: self.page_chat.log(f"[TTS ERROR] {msg}"))
         self.overlay.log_signal.connect(lambda msg: self.page_rewards.log(f"[OVERLAY] {msg}"))
 
-    # --- LÓGICA DEL BOTÓN AUTOCONECTAR ---
     def on_autoconect_toggled(self, checked):
-        """Guarda en la base de datos si queremos autoconectarnos en el futuro."""
         self.db.set_config("autoconnect", str(checked))
         if checked:
             self.page_chat.log("[SISTEMA] 🔌 Autoconexión activada para el próximo inicio.")
         else:
             self.page_chat.log("[SISTEMA] 🔌 Autoconexión desactivada.")
 
-    # --- CONTROLES DEL TRAY (SEGUNDO PLANO) ---
     def activar_modo_segundo_plano(self):
         self.hide()
         self.tray_icon.showMessage(
@@ -165,27 +238,23 @@ class MiniKickUI(QMainWindow):
     def cerrar_completamente(self):
         self.close()
 
-    # --- LÓGICA DE CONEXIÓN KICK ---   
     def iniciar_backend(self):
-        # Si ya está corriendo, no hacemos nada (evita doble click o fallos del autoconnect)
-        if self.btn_iniciar.text() == "Conectado":
+        if self.btn_iniciar.text() == " Conectado":
             return
         try:
-            # Importamos las variables directamente desde tu archivo Python
             from backend.config import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
         except ImportError:
             self.page_chat.log("[ERROR] No se encontró el archivo backend/config.py")
             return
 
-        # Validamos que no estén vacías o con el texto por defecto
         if not all([CLIENT_ID, CLIENT_SECRET, REDIRECT_URI]) or CLIENT_ID == "tu_client_id_aqui":
             self.page_chat.log("[ERROR] Faltan datos en backend/config.py. Por favor, pon tus claves.")
             return
 
         self.btn_iniciar.setEnabled(False)
-        self.btn_iniciar.setText("Conectado")
-        self.lbl_status.setText("Estado: En Línea")
-        self.lbl_status.setStyleSheet("color: #53fc18; font-weight: bold; font-size: 14px; margin-left: 15px;")
+        self.btn_iniciar.setText(" Conectado")
+        self.lbl_status.setText("En Línea")
+        self.lbl_status.setStyleSheet("color: #53fc18; font-weight: bold; font-size: 13px; margin-left: 10px;")
         self.page_chat.log("[INFO] Conectando a los servidores de Kick...")
 
         self.backend = KickBot(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, self.db)
@@ -196,7 +265,6 @@ class MiniKickUI(QMainWindow):
         self.page_rewards.request_kick_update.connect(self.backend.update_kick_reward_sync)
         self.backend.start()
 
-    # --- PROCESAMIENTO DE EVENTOS EN VIVO ---
     def on_chat_recibido(self, usuario, mensaje):
         self.page_chat.log(f"[{usuario}]: {mensaje}")
         
@@ -239,7 +307,6 @@ class MiniKickUI(QMainWindow):
             self.page_rewards.log(f"[WARN] '{recompensa}' no está configurado localmente.")
             self.page_chat.procesar_mensaje_tts("Sistema", f"{usuario} acaba de canjear {recompensa}")
 
-    # --- CIERRE SEGURO ---
     def closeEvent(self, event):
         if self.backend and self.backend.isRunning(): self.backend.stop()
         if self.tts and self.tts.isRunning(): self.tts.stop()

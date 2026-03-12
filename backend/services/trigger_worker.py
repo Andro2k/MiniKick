@@ -19,11 +19,10 @@ class OverlayServer(QThread):
         self.is_running = True
         self.base_dir = self._get_base_dir()
 
-        # Ya no creamos la carpeta media aquí porque usaremos rutas absolutas
-
     def _get_base_dir(self):
+        """Obtiene la ruta base correcta, ya sea en desarrollo o compilado con PyInstaller."""
         if getattr(sys, 'frozen', False):
-            return os.path.dirname(sys.executable)
+            return sys._MEIPASS
         else:
             return os.getcwd()
 
@@ -42,12 +41,10 @@ class OverlayServer(QThread):
 
     async def _start_server(self):
         app = web.Application()
-        
-        # Rutas HTTP
+
         app.router.add_get('/', self._index_handler)
         app.router.add_get('/ws/triggers', self._websocket_handler)
-        
-        # NUEVO: Endpoint dinámico para servir archivos desde cualquier ruta de la PC
+
         app.router.add_get('/media', self._media_handler)
         
         self.runner = web.AppRunner(app)
@@ -91,14 +88,12 @@ class OverlayServer(QThread):
             self.log_signal.emit("🔴 OBS desconectado del Overlay.")
         return ws
 
-    # ELIMINADO: 'duration'. 'filename' ahora es 'filepath' (ruta absoluta)
     def play_media(self, filepath: str, media_type: str, volume: int = 100, 
                    scale: float = 1.0, pos_x: int = 0, pos_y: int = 0, random_pos: bool = False):
         if not self.loop or self.loop.is_closed(): return
             
         payload = {
             "action": "play_media",
-            # Pasamos la ruta absoluta codificada en la URL
             "url": f"/media?path={urllib.parse.quote(filepath)}",
             "type": media_type,
             "volume": volume,

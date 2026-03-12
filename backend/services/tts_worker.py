@@ -2,7 +2,6 @@
 
 import os
 import warnings
-# Ocultar el mensaje de bienvenida de pygame en la consola
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 warnings.filterwarnings("ignore", category=UserWarning, module="pygame.pkgdata")
 
@@ -22,8 +21,6 @@ from PyQt6.QtCore import QThread, pyqtSignal
 class TTSWorker(QThread):
     """
     Motor de Texto a Voz (TTS) que procesa una cola de mensajes en segundo plano.
-    Utiliza Edge-TTS (voces neuronales de alta calidad) por defecto, 
-    con fallback a pyttsx3 (voces locales offline) en caso de error.
     """
     error_signal = pyqtSignal(str)
 
