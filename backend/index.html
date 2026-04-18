@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alertas y TTS Kick</title>
+    <style>
+        /* Fondo transparente para que no tape tu stream */
+        body { margin: 0; overflow: hidden; background-color: transparent; color: white; font-family: sans-serif; text-align: center; margin-top: 50px; }
+        #estado { padding: 10px; background: rgba(0,0,0,0.5); display: inline-block; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div id="estado">🔴 Desconectado del Bot</div>
+    
+    <audio id="reproductor-audio"></audio>
+
+    <script>
+        const estadoText = document.getElementById('estado');
+        const reproductor = document.getElementById('reproductor-audio');
+        
+        // Conectar al WebSocket de nuestro Core en Node.js
+        const ws = new WebSocket('ws://localhost:3000');
+
+        ws.onopen = () => {
+            estadoText.innerHTML = '🟢 Conectado a MiniKick';
+            setTimeout(() => estadoText.style.display = 'none', 3000); // Ocultar mensaje tras 3 segundos
+        };
+
+        ws.onmessage = (evento) => {
+            const datos = JSON.parse(evento.data);
+
+            if (datos.evento === 'reproducir_audio') {
+                console.log('Reproduciendo audio desde:', datos.url);
+                reproductor.src = datos.url;
+                reproductor.play().catch(err => console.error('Error al reproducir:', err));
+            }
+        };
+
+        ws.onclose = () => {
+            estadoText.style.display = 'inline-block';
+            estadoText.innerHTML = '🔴 Conexión perdida. Reconectando...';
+        };
+    </script>
+</body>
+</html>

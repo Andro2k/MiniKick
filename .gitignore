@@ -1,0 +1,31 @@
+# =========================
+# Entornos y Secretos
+# =========================
+venv/
+.env
+
+# =========================
+# Node.js (Carpeta Core)
+# =========================
+node_modules/
+npm-debug.log*
+
+# =========================
+# Python (Carpeta Backend)
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+
+# =========================
+# Archivos Generados por MiniKick
+# =========================
+# Ignoramos los audios generados para no saturar el repositorio de GitHub
+media/audios/*.mp3
+media/audios/*.wav
+
+# =========================
+# Editores y Sistema Operativo
+# =========================
+.vscode/
+Thumbs.db
