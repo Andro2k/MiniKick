@@ -178,7 +178,7 @@ STYLES = {
     # --- LOGS Y CONSOLAS ---
     "text_edit_log": f"""
         QTextEdit {{
-            background-color: {c.Black_N2};
+            background-color: {c.Black_N3};
             color: {c.White_N1};
             padding: 8px;
             font-size: 12px;
@@ -188,18 +188,6 @@ STYLES = {
          QTextEdit {{
             background-color: {c.Black_N3}; color: {c.Gray_N1};
             font-family: Consolas, monospace; font-size: 12px; padding: 10px; border: none;
-        }}
-    """,
-    "textarea": f"""
-        QPlainTextEdit {{
-            background-color: {c.Black_N3};
-            color: {c.White_N1};
-            
-            border-radius: {r['input']};
-            padding: 8px;
-        }}
-        QPlainTextEdit:focus {{
-            border: 1px solid {c.Gray_N1}; 
         }}
     """,
 
@@ -240,18 +228,6 @@ STYLES = {
         QPushButton {{ background: transparent; border: none; border-radius: 6px; }} 
         QPushButton:hover {{ background-color: {c.White_N2}; }}
     """,
-    # Botón grande del Dashboard (Accesos directos)
-    "btn_shortcut": f"""
-        QPushButton {{ 
-            background-color: {c.Black_N4}; 
-            border-radius: 10px; 
-            border: 1px solid {c.Black_N2};
-        }} 
-        QPushButton:hover {{ 
-            background-color: {c.Black_N2}; 
-            border-color: {c.NeonGreen_Main}; 
-        }}
-    """,
     # Botón verde translucido
     "btn_toggle": f"""
         QPushButton {{
@@ -275,12 +251,6 @@ STYLES = {
     """,
 
     # --- LISTAS Y TABLAS ---
-    "list_clean": f"""
-        QListWidget {{ background-color: {c.Black_N2}; outline: none; border-radius: {r['card']}; }}
-        QListWidget::item {{ border-bottom: 1px solid {c.Black_N4}; padding: 6px; }}
-        QListWidget::item:hover {{ background: {c.White_N2}; }}
-        QListWidget::item:selected {{ background: {c.Black_N4}; }}
-    """,
     "table_clean": f"""
         QTableWidget {{
             background-color: {c.Black_N2}; gridline-color: {c.Black_N4}; outline: none; border: none;
@@ -289,7 +259,7 @@ STYLES = {
             background-color: {c.Black_N3}; color: {c.Gray_N1}; border: none;
             padding: 8px; font-weight: bold; text-transform: uppercase; font-size: 12px;
         }}
-        QTableWidget::item {{ padding: 6px; border-bottom: 1px solid {c.Black_N4}; }}
+        QTableWidget::item {{ padding: 6px; }}
         QTableWidget::item:selected {{ background-color: {c.White_N2}; color: {c.NeonGreen_Main}; }}
     """,
     
@@ -300,7 +270,7 @@ STYLES = {
             color: {c.White_N1}; border-radius: 6px; padding: 6px; min-height: 18px;
         }}
         QComboBox:hover, QComboBox:focus {{
-            background-color: {c.Black_N4};
+            background-color: {c.Black_N1};
         }}
         
         QComboBox::drop-down{{border: none;}}
@@ -312,6 +282,7 @@ STYLES = {
             selection-background-color: {c.NeonGreen_Light}; selection-color: {c.Black_N2}; padding: 4px;
         }}
     """,
+    
     "spinbox_modern": f"""
         QSpinBox, QDoubleSpinBox {{
             background-color: {c.Black_N3}; color: {c.White_N1}; border-radius: {r['input']};

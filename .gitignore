@@ -27,5 +27,10 @@ Thumbs.db
 
 # Logs
 *.log
-
+*.iss
 */media/*
+*.spec
+
+# Archivos de configuración de IDEs
+*build/
+*dist/

@@ -110,7 +110,7 @@ class DashboardView(QWidget):
         # --- CONSOLA DE MENSAJES ---
         self.log_view = QTextEdit()
         self.log_view.setReadOnly(True)
-        self.log_view.setStyleSheet(STYLES["text_edit_console"])
+        self.log_view.setStyleSheet(STYLES["text_edit_log"])
         self.log_view.setPlaceholderText("> Esperando mensajes del chat...")
         layout.addWidget(self.log_view)
 

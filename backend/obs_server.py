@@ -88,11 +88,3 @@ async def trigger_media(data: dict):
     print(f"[*] Disparando alerta en OBS: {data.get('type')}")
     await manager.broadcast(data)
     return {"status": "ok", "message": "Alerta enviada a OBS"}
-
-if __name__ == "__main__":
-    print("==================================================")
-    print("📡 SERVIDOR OBS MINIKICK INICIADO")
-    print("▶️ Pon esta URL en tu Fuente de Navegador de OBS:")
-    print("   http://127.0.0.1:8081/")
-    print("==================================================")
-    uvicorn.run(app, host="127.0.0.1", port=8081, log_level="error")
