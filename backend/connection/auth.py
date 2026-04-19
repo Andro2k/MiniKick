@@ -5,7 +5,7 @@ import requests
 import base64
 import hashlib
 import secrets
-from backend.config import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, PORT
+from backend.connection.config import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, PORT
 
 # Variables globales para el servidor temporal
 codigo_autorizacion = None

@@ -1,5 +1,5 @@
 import sqlite3
-from backend.config import DB_FILE
+from backend.connection.config import DB_FILE
 
 def iniciar_db():
     """Crea la tabla de sesión si no existe."""

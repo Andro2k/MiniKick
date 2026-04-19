@@ -1,6 +1,7 @@
 import json
 import websocket
-from backend.config import PUSHER_KEY, PUSHER_CLUSTER
+import time
+from backend.connection.config import PUSHER_KEY, PUSHER_CLUSTER
 from backend.tts import hablar
 
 def on_message(ws, message):
@@ -15,7 +16,7 @@ def on_message(ws, message):
             
         # Suscripción exitosa
         elif evento == "pusher_internal:subscription_succeeded":
-            mensaje_bienvenida = "Conectado al chat de Kick exitosamente. Sistema TTS en línea."
+            mensaje_bienvenida = "Conexión con Kick completada exitosamente. Sistema en línea."
             print(f"[+] {mensaje_bienvenida}\n" + "="*50)
             hablar(mensaje_bienvenida) # ¡Hacemos que el bot hable al iniciar!
             
@@ -37,16 +38,28 @@ def on_message(ws, message):
 
 def iniciar_chat(chatroom_id):
     ws_url = f"wss://ws-{PUSHER_CLUSTER}.pusher.com/app/{PUSHER_KEY}?protocol=7&client=js&version=8.4.0-rc2&flash=false"
-    
-    wsapp = websocket.WebSocketApp(
-        ws_url,
-        on_open=lambda ws: ws.send(json.dumps({
-            "event": "pusher:subscribe", 
-            "data": {"auth": "", "channel": f"chatrooms.{chatroom_id}.v2"}
-        })),
-        on_message=on_message,
-        on_error=lambda ws, e: print(f"[!] Error: {e}"),
-        on_close=lambda ws, a, b: print("\n[*] Desconectado del servidor de chat.")
-    )
-    
-    wsapp.run_forever(ping_interval=30, ping_timeout=10)
+
+    # Envolvemos todo en un bucle infinito
+    while True:
+        try:
+            wsapp = websocket.WebSocketApp(
+                ws_url,
+                on_open=lambda ws: ws.send(json.dumps({
+                    "event": "pusher:subscribe", 
+                    "data": {"auth": "", "channel": f"chatrooms.{chatroom_id}.v2"}
+                })),
+                on_message=on_message,
+                on_error=lambda ws, e: print(f"[!] Error de conexión: {e}"),
+                on_close=lambda ws, a, b: print("\n[*] Desconectado del servidor de chat.")
+            )
+
+            # Esto correrá hasta que Pusher nos desconecte
+            wsapp.run_forever(ping_interval=30, ping_timeout=10)
+
+            # Si llegamos a esta línea, es porque Pusher cerró la conexión.
+            print("[*] Intentando reconectar en 3 segundos...")
+            time.sleep(3) # Pausa breve para no saturar al servidor
+
+        except Exception as e:
+            print(f"[!] Error crítico en el bucle principal: {e}")
+            time.sleep(5)

@@ -1,6 +1,6 @@
 from backend.database import iniciar_db, cargar_sesion, guardar_sesion
-from backend.auth import autenticar_usuario
-from backend.kick_api import obtener_mi_perfil, obtener_chatroom_id
+from backend.connection.auth import autenticar_usuario
+from backend.connection.kick_api import obtener_mi_perfil, obtener_chatroom_id
 from backend.chat import iniciar_chat
 
 if __name__ == "__main__":
