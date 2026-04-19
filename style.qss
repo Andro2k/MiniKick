@@ -1,0 +1,50 @@
+/* style.qss */
+QWidget {
+    background-color: #0b0e0f;
+    color: #ffffff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+QLineEdit {
+    background-color: #191f24;
+    border: 1px solid #9ba0a5;
+    padding: 8px;
+    border-radius: 4px;
+    color: white;
+}
+
+QLineEdit:focus {
+    border: 1px solid #53fc18;
+}
+
+QPushButton {
+    background-color: #53fc18;
+    color: black;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+}
+
+QPushButton:hover {
+    background-color: #3db812;
+}
+
+QPushButton:disabled {
+    background-color: #2a5a18;
+    color: #888888;
+}
+
+QTextEdit {
+    background-color: #191f24;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* Identificador específico para la etiqueta de estado */
+#statusLabel {
+    color: #9ba0a5;
+    font-size: 12px;
+}

@@ -1,31 +1,16 @@
-# =========================
-# Entornos y Secretos
-# =========================
+# Entornos virtuales
 venv/
-.env
+env/
+.venv/
 
-# =========================
-# Node.js (Carpeta Core)
-# =========================
-node_modules/
-npm-debug.log*
-
-# =========================
-# Python (Carpeta Backend)
-# =========================
+# Archivos compilados de Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
 
-# =========================
-# Archivos Generados por MiniKick
-# =========================
-# Ignoramos los audios generados para no saturar el repositorio de GitHub
-media/audios/*.mp3
-media/audios/*.wav
-
-# =========================
-# Editores y Sistema Operativo
-# =========================
-.vscode/
-Thumbs.db
+# Variables de entorno (¡MUY IMPORTANTE PARA SEGURIDAD!)
+.env
+kick_token.json
+# Logs y bases de datos locales (opcional por ahora, pero útil a futuro)
+*.log
+*.sqlite3
