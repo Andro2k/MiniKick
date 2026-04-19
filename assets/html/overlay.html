@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>MiniKick OBS Overlay</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent; /* Vital para que se vea el juego de fondo en OBS */
+        }
+        #media-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* Evita que el overlay bloquee clics accidentales */
+            display: block;
+        }
+        video, img, audio {
+            max-width: 100%;
+            max-height: 100%;
+            will-change: transform, opacity;
+            position: absolute;
+            transition: opacity 0.3s ease-out; /* Suavizado al desaparecer */
+        }
+    </style>
+</head>
+<body>
+    <div id="media-container"></div>
+
+    <script>
+        const container = document.getElementById("media-container");
+        let socket = null;
+        let retryInterval = 2000;
+        let wasConnected = false; 
+
+        function connect() {
+            // Se conecta al servidor local que crearemos en Python
+            socket = new WebSocket("ws://127.0.0.1:8081/ws/triggers");
+            
+            socket.onopen = () => {
+                console.log("🟢 Conectado al Servidor de MiniKick");
+                if (wasConnected) {
+                    location.reload(); // Refresca si se reconecta para limpiar pantalla
+                }
+                wasConnected = true;
+            };
+
+            socket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.action === "play_media") playMedia(data);
+                } catch (e) {
+                    console.error("Error leyendo datos del socket:", e);
+                }
+            };
+
+            socket.onclose = () => {
+                console.log("🔴 Desconectado. Reintentando...");
+                setTimeout(connect, retryInterval);
+            };
+
+            socket.onerror = () => {
+                socket.close();
+            };
+        }
+
+        function playMedia(data) {
+            let element;
+            const vol = data.volume !== undefined ? data.volume / 100 : 1.0;
+            const duration = data.duration ? parseFloat(data.duration) : 0;
+
+            const removeElement = () => {
+                if (!element) return;
+                element.style.opacity = "0"; // Efecto fade-out
+                setTimeout(() => {
+                    if (element && element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                    element = null;
+                }, 300);
+            };
+
+            // LÓGICA: VIDEO E IMAGEN
+            if (data.type === "video" || data.type === "image") {
+                if (data.type === "video") {
+                    element = document.createElement("video");
+                    element.autoplay = true;
+                    element.volume = vol;
+                    element.addEventListener("ended", removeElement);
+                } else {
+                    element = document.createElement("img");
+                }
+                
+                // IMPORTANTE: Se usa una ruta local desde el servidor Python
+                element.src = "http://127.0.0.1:8081/media/" + encodeURIComponent(data.filename);
+                element.style.opacity = "0"; 
+
+                // Si es imagen o tiene duración forzada
+                if (duration > 0 || data.type === "image") {
+                    const time = duration > 0 ? duration : 5; // 5 segundos por defecto para imágenes
+                    setTimeout(removeElement, time * 1000);
+                }
+
+                const onReady = () => {
+                    const scale = data.scale || 1.0;
+                    const posX = parseInt(data.pos_x) || 0;
+                    const posY = parseInt(data.pos_y) || 0;
+
+                    // 1. PRIORIDAD: Coordenadas fijas
+                    if (posX !== 0 || posY !== 0) {
+                        element.style.transformOrigin = "top left";
+                        element.style.transform = `scale(${scale})`;
+                        element.style.left = posX + "px";
+                        element.style.top = posY + "px";
+                    }
+                    // 2. PRIORIDAD: Posición Aleatoria
+                    else if (data.random) {
+                        const contW = container.clientWidth;
+                        const contH = container.clientHeight;
+                        
+                        const vidW = (element.videoWidth || element.naturalWidth || element.width) * scale;
+                        const vidH = (element.videoHeight || element.naturalHeight || element.height) * scale;
+
+                        element.style.transformOrigin = "top left";
+                        element.style.transform = `scale(${scale})`;
+
+                        const maxLeft = Math.max(0, contW - vidW);
+                        const maxTop = Math.max(0, contH - vidH);
+
+                        element.style.left = Math.floor(Math.random() * maxLeft) + "px";
+                        element.style.top = Math.floor(Math.random() * maxTop) + "px";
+                    }
+                    // 3. PRIORIDAD: Centrado absoluto
+                    else {
+                        element.style.transformOrigin = "center center";
+                        element.style.left = "50%";
+                        element.style.top = "50%";
+                        element.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                    }
+
+                    element.style.opacity = "1";
+                    if (element.play) element.play().catch((e) => console.log("Auto-play bloqueado por el navegador:", e));
+                };
+
+                if (data.type === "video") {
+                    element.onloadedmetadata = onReady;
+                } else {
+                    element.onload = onReady;
+                }
+
+            // LÓGICA: AUDIO
+            } else if (data.type === "audio") {
+                element = document.createElement("audio");
+                element.src = "http://127.0.0.1:8081/media/" + encodeURIComponent(data.filename);
+                element.autoplay = true;
+                element.volume = vol;
+                element.addEventListener("ended", removeElement);
+                if (duration > 0) setTimeout(removeElement, duration * 1000);
+            }
+
+            if (element) container.appendChild(element);
+        }
+
+        // Iniciar conexión
+        connect();
+    </script>
+</body>
+</html>

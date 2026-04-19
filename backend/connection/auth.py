@@ -59,7 +59,8 @@ def autenticar_usuario():
         "client_id": CLIENT_ID,
         "redirect_uri": REDIRECT_URI,
         "response_type": "code",
-        "scope": "user:read channel:read chat:write",
+        # ¡AÑADIMOS LOS SCOPES DE REWARDS AQUÍ!
+        "scope": "user:read channel:read chat:write channel:rewards:read channel:rewards:write",
         "state": state_generado,
         "code_challenge": code_challenge,
         "code_challenge_method": "S256"

@@ -2,7 +2,7 @@ import sys
 import os
 from PyQt6.QtWidgets import QApplication
 from backend.database import iniciar_db
-from frontend.gui import MiniKickGUI
+from frontend.gui import MiniKickMaster
 
 if __name__ == "__main__":
     # 1. Asegurar que la tabla en minikick.db exista antes de abrir la app
@@ -18,6 +18,6 @@ if __name__ == "__main__":
             app.setStyleSheet(f.read())
 
     # 3. Mostrar la ventana principal
-    gui = MiniKickGUI()
+    gui = MiniKickMaster()
     gui.show()
     sys.exit(app.exec())
