@@ -8,9 +8,22 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Variables de entorno (¡MUY IMPORTANTE PARA SEGURIDAD!)
+# Variables de entorno y credenciales (¡MUY IMPORTANTE PARA SEGURIDAD!)
 .env
 kick_token.json
-# Logs y bases de datos locales (opcional por ahora, pero útil a futuro)
-*.log
+
+# Bases de datos locales
+minikick.db
 *.sqlite3
+
+# Archivos temporales de audio (Generados por el TTS)
+temp_tts.mp3
+*.mp3
+*.wav
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

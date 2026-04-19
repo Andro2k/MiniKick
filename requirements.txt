@@ -1,3 +1,13 @@
-fastapi
-uvicorn[standard]
-httpx
+# Gestión de entorno y variables
+python-dotenv
+
+# Peticiones HTTP y Scraping API Interna
+requests
+curl_cffi
+
+# WebSockets para el Chat en Vivo
+websocket-client
+
+# Text-to-Speech (Motor de Voz)
+edge-tts
+pygame-ce
