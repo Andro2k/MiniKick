@@ -9,6 +9,7 @@ from backend.tts import hablar
 # Variables globales de control
 config_actual = {}
 debe_continuar = True
+ws_app_actual = None  # <-- NUEVO: Guardaremos la conexión aquí para poder matarla
 
 def limpiar_mensaje(texto):
     """Limpia emotes y procesa links para el TTS."""
@@ -36,7 +37,7 @@ def on_message(ws, message, callback_gui):
             usuario = chat_data.get("sender", {}).get("username", "Desconocido")
             contenido = chat_data.get("content", "")
 
-            # 1. ENVIAR A LA GUI (Para que se vea en el cuadro de texto)
+            # 1. ENVIAR A LA GUI
             if callback_gui:
                 callback_gui(usuario, contenido)
 
@@ -62,7 +63,7 @@ def on_message(ws, message, callback_gui):
         print(f"[!] Error: {e}")
 
 def iniciar_chat(chatroom_id, configuracion, callback_gui=None):
-    global config_actual, debe_continuar
+    global config_actual, debe_continuar, ws_app_actual
     config_actual = configuracion
     debe_continuar = True
 
@@ -70,7 +71,8 @@ def iniciar_chat(chatroom_id, configuracion, callback_gui=None):
 
     while debe_continuar:
         try:
-            wsapp = websocket.WebSocketApp(
+            # Guardamos la aplicación WebSocket en la variable global
+            ws_app_actual = websocket.WebSocketApp(
                 ws_url,
                 on_open=lambda ws: ws.send(json.dumps({
                     "event": "pusher:subscribe", 
@@ -78,13 +80,22 @@ def iniciar_chat(chatroom_id, configuracion, callback_gui=None):
                 })),
                 on_message=lambda ws, msg: on_message(ws, msg, callback_gui)
             )
-            wsapp.run_forever(ping_interval=30, ping_timeout=10)
+            
+            # Esto bloquea el hilo hasta que se cierre la conexión
+            ws_app_actual.run_forever(ping_interval=30, ping_timeout=10)
+            
+            # Al cerrarse, comprobamos si fue voluntario
             if not debe_continuar: break
             time.sleep(3)
-        except:
+        except Exception as e:
             if not debe_continuar: break
             time.sleep(5)
 
 def detener_chat():
-    global debe_continuar
+    """Fuerza el cierre inmediato de la conexión WebSocket."""
+    global debe_continuar, ws_app_actual
     debe_continuar = False
+    
+    # Si hay una conexión activa, la cerramos físicamente
+    if ws_app_actual:
+        ws_app_actual.close()
