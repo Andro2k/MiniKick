@@ -1,7 +1,7 @@
 # frontend/components/sidebar.py
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton
-from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QTimer
-from frontend.theme import Palette, STYLES
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame
+from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve
+from frontend.theme import Palette
 from frontend.utils import get_icon_colored
 
 class Sidebar(QWidget):
@@ -10,14 +10,16 @@ class Sidebar(QWidget):
     def __init__(self):
         super().__init__()
         self.is_expanded = True
-        self.width_expanded = 180  # Un poco más ancho para que respire
-        self.width_collapsed = 50  # Justo para que el icono de 20px + padding quede centrado
+        self.width_expanded = 190
+        self.width_collapsed = 60
+        self.category_labels = [] # Guardaremos las etiquetas aquí para ocultarlas luego
         
-        # Diccionarios para manejar los estados de texto e iconos
         self.btn_data = {
             "toggle": {"icon": "menu.svg", "text": " Ocultar Menú"},
             "dash": {"icon": "home.svg", "text": " Dashboard TTS"},
-            "pts": {"icon": "star.svg", "text": " Puntos de Canal"}
+            "pts": {"icon": "layers.svg", "text": " Puntos de Canal"},
+            "settings": {"icon": "settings.svg", "text": " Ajustes App"},
+            "help": {"icon": "help-circle.svg", "text": " Ayuda / Wiki"}
         }
         
         self.init_ui()
@@ -27,104 +29,159 @@ class Sidebar(QWidget):
         self.setStyleSheet(f"QWidget#Sidebar {{ background-color: {Palette.Black_N2}; border-right: 1px solid {Palette.Black_N3}; }}")
         self.setFixedWidth(self.width_expanded)
 
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(5, 20, 5, 20)
-        self.layout.setSpacing(10)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(12, 20, 12, 20)
+        self.main_layout.setSpacing(8)
 
-        # Crear botones usando el helper
-        self.btn_toggle = self.create_button("toggle")
-        self.btn_dashboard = self.create_button("dash")
-        self.btn_points = self.create_button("pts")
+        # ==========================================
+        # 0. BOTÓN TOGGLE (HAMBURGUESA)
+        # ==========================================
+        self.btn_toggle = self.create_nav_button("toggle", -1) # Index -1 para que no cambie de página
+        self.main_layout.addWidget(self.btn_toggle)
+        self.main_layout.addSpacing(10)
 
-        # Conexiones
-        self.btn_toggle.clicked.connect(self.toggle_sidebar)
-        self.btn_dashboard.clicked.connect(lambda: self.change_page(0, self.btn_dashboard))
-        self.btn_points.clicked.connect(lambda: self.change_page(1, self.btn_points))
+        # ==========================================
+        # 1. PERFIL DE USUARIO
+        # ==========================================
+        self.profile_frame = QFrame()
+        p_lay = QHBoxLayout(self.profile_frame)
+        p_lay.setContentsMargins(0, 0, 0, 15)
+        
+        self.avatar_lbl = QLabel()
+        self.avatar_lbl.setPixmap(get_icon_colored("user.svg", Palette.White_N1, 32).pixmap(32, 32))
+        self.avatar_lbl.setStyleSheet(f"background-color: {Palette.Black_N3}; border-radius: 16px; padding: 4px;")
+        
+        self.user_info_widget = QWidget()
+        ui_lay = QVBoxLayout(self.user_info_widget)
+        ui_lay.setContentsMargins(10, 0, 0, 0)
+        ui_lay.setSpacing(0)
+        
+        self.user_name = QLabel("Andro Streamer")
+        self.user_name.setStyleSheet(f"font-weight: bold; color: {Palette.White_N1}; font-size: 14px;")
+        
+        self.user_status = QLabel("● En línea")
+        self.user_status.setStyleSheet(f"color: {Palette.NeonGreen_Main}; font-size: 11px; font-weight: 600;")
+        
+        ui_lay.addWidget(self.user_name)
+        ui_lay.addWidget(self.user_status)
+        p_lay.addWidget(self.avatar_lbl)
+        p_lay.addWidget(self.user_info_widget)
+        p_lay.addStretch()
+        
+        self.main_layout.addWidget(self.profile_frame)
 
-        # Añadir al layout
-        self.layout.addWidget(self.btn_toggle)
-        self.layout.addSpacing(15)
-        self.layout.addWidget(self.btn_dashboard)
-        self.layout.addWidget(self.btn_points)
-        self.layout.addStretch()
+        # ==========================================
+        # 2. NAVEGACIÓN PRINCIPAL
+        # ==========================================
+        self.add_category_label("PÁGINAS")
+        self.btn_dashboard = self.create_nav_button("dash", 0)
+        self.btn_points = self.create_nav_button("pts", 1)
+        self.main_layout.addWidget(self.btn_dashboard)
+        self.main_layout.addWidget(self.btn_points)
+
+        # ==========================================
+        # 3. AJUSTES Y OTROS
+        # ==========================================
+        self.main_layout.addSpacing(20)
+        self.add_category_label("SISTEMA")
+        self.btn_settings = self.create_nav_button("settings", 2)
+        self.btn_help = self.create_nav_button("help", 3)
+        self.main_layout.addWidget(self.btn_settings)
+        self.main_layout.addWidget(self.btn_help)
+
+        self.main_layout.addStretch()
+
+        # ==========================================
+        # 4. BANNER INFERIOR
+        # ==========================================
+        self.pro_card = QFrame()
+        self.pro_card.setStyleSheet(f"background-color: {Palette.Black_N3}; border-radius: 12px;")
+        pro_lay = QVBoxLayout(self.pro_card)
+        pro_title = QLabel("MiniKick Studio")
+        pro_title.setStyleSheet(f"font-weight: bold; color: {Palette.NeonGreen_Main}; font-size: 12px;")
+        pro_desc = QLabel("v0.3 Beta")
+        pro_desc.setStyleSheet(f"color: {Palette.Gray_N1}; font-size: 11px;")
+        pro_lay.addWidget(pro_title)
+        pro_lay.addWidget(pro_desc)
+        self.main_layout.addWidget(self.pro_card)
 
         # Estado inicial
         self.active_button = self.btn_dashboard
         self.update_buttons_style()
 
-    def create_button(self, btn_key):
-        """Crea un botón y le asigna su texto e icono inicial."""
-        data = self.btn_data[btn_key]
-        btn = QPushButton(data["text"])
-        btn.setIcon(get_icon_colored(data["icon"], Palette.White_N1, 22))
+    def add_category_label(self, text):
+        lbl = QLabel(text)
+        lbl.setStyleSheet(f"color: {Palette.Gray_N2}; font-size: 10px; font-weight: bold; padding-left: 5px; margin-top: 10px; margin-bottom: 5px;")
+        self.category_labels.append(lbl) # La guardamos en la lista
+        self.main_layout.addWidget(lbl)
+
+    def create_nav_button(self, key, index):
+        btn = QPushButton(self.btn_data[key]["text"])
+        btn.setIcon(get_icon_colored(self.btn_data[key]["icon"], Palette.Gray_N1, 18))
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        # Se guarda el identificador en el botón para referencias futuras
-        btn.setProperty("btn_key", btn_key) 
+        btn.setProperty("btn_key", key)
+        
+        if key == "toggle":
+            btn.clicked.connect(self.toggle_sidebar)
+        else:
+            btn.clicked.connect(lambda: self.change_page(index, btn))
         return btn
 
-    def get_button_style(self, is_active, is_expanded):
-        """Genera el CSS dinámico dependiendo del estado (activo/inactivo) y tamaño (expandido/colapsado)."""
-        align = "left" if is_expanded else "center"
-        padding = "8px 10px" if is_expanded else "8px 0px" # Sin padding lateral si está colapsado
-        
-        base_style = f"QPushButton {{ text-align: {align}; padding: {padding}; font-weight: bold; border-radius: 6px; border: none; background: transparent;}}"
-        
-        if is_active:
-            # Color verde + Fondo sutil
-            color = Palette.NeonGreen_Main
-            extra = f"QPushButton {{ color: {color}; background-color: rgba(83, 252, 24, 0.1); border-left: 3px solid {color}; border-radius: 0px; }}"
-        else:
-            # Gris apagado
-            color = Palette.Gray_N1
-            extra = f"QPushButton {{ color: {color}; }} QPushButton:hover {{ background-color: {Palette.White_N2}; color: {Palette.White_N1}; }}"
-            
-        return base_style + extra
-
     def update_buttons_style(self):
-        """Aplica el estilo a todos los botones según la pestaña activa y si está colapsado o no."""
-        for btn in [self.btn_dashboard, self.btn_points]:
+        for btn in [self.btn_toggle, self.btn_dashboard, self.btn_points, self.btn_settings, self.btn_help]:
             is_active = (btn == self.active_button)
-            btn.setStyleSheet(self.get_button_style(is_active, self.is_expanded))
-            
-            # Repintar el icono del botón activo en Verde (y los inactivos en Blanco)
             key = btn.property("btn_key")
-            icon_color = Palette.NeonGreen_Main if is_active else Palette.White_N1
-            btn.setIcon(get_icon_colored(self.btn_data[key]["icon"], icon_color, 22))
+            align = "left" if self.is_expanded else "center"
             
-        # El botón toggle siempre mantiene el mismo estilo base, solo cambia la alineación
-        self.btn_toggle.setStyleSheet(self.get_button_style(False, self.is_expanded))
+            if key == "toggle":
+                color = Palette.Gray_N1; bg = "transparent"; icon_color = Palette.Gray_N1
+            elif is_active:
+                color = Palette.NeonGreen_Main; bg = "rgba(30, 215, 96, 0.1)"; icon_color = Palette.NeonGreen_Main
+            else:
+                color = Palette.Gray_N1; bg = "transparent"; icon_color = Palette.Gray_N1
+                
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    text-align: {align}; padding: 10px 15px; font-weight: 600; font-size: 12px;
+                    color: {color}; background-color: {bg}; border-radius: 8px; border: none;
+                }}
+                QPushButton:hover {{ background-color: {Palette.Black_N4}; color: {Palette.White_N1}; }}
+            """)
+            btn.setIcon(get_icon_colored(self.btn_data[key]["icon"], icon_color, 18))
 
     def toggle_sidebar(self):
-        # Determinar si vamos a contraer o expandir
         start_w = self.width_expanded if self.is_expanded else self.width_collapsed
         end_w = self.width_collapsed if self.is_expanded else self.width_expanded
-        
-        # Ocultar textos inmediatamente si colapsamos (para que no salten)
+
         if self.is_expanded:
+            # 1. Colapsando: Ocultar textos y widgets extra INMEDIATAMENTE
             self._set_button_texts("")
-            
+            self.profile_frame.setVisible(False)
+            self.pro_card.setVisible(False)
+            for lbl in self.category_labels: lbl.setVisible(False)
+
         self.animation = QPropertyAnimation(self, b"minimumWidth")
-        self.animation.setDuration(200) # Más rápido (de 250 a 200) para mayor fluidez
-        self.animation.setEasingCurve(QEasingCurve.Type.InOutSine) # Curva más suave
-        
-        # Al terminar la animación...
+        self.animation.setDuration(200)
+        self.animation.setEasingCurve(QEasingCurve.Type.InOutSine)
         self.animation.finished.connect(self._on_animation_finished)
+        
         self.animation.setStartValue(start_w)
         self.animation.setEndValue(end_w)
         
         self.is_expanded = not self.is_expanded
-        self.update_buttons_style() # Actualizar alineación del CSS al instante
+        self.update_buttons_style()
         self.animation.start()
 
     def _on_animation_finished(self):
-        """Se ejecuta cuando termina la animación."""
-        # Restaurar textos solo si acabamos de expandir
         if self.is_expanded:
+            # 2. Expandiendo: Mostrar widgets extra AL TERMINAR la animación
             self._set_button_texts(restore=True)
+            self.profile_frame.setVisible(True)
+            self.pro_card.setVisible(True)
+            for lbl in self.category_labels: lbl.setVisible(True)
 
     def _set_button_texts(self, text_override=None, restore=False):
-        """Helper para borrar o restaurar los textos de los botones."""
-        for btn in [self.btn_toggle, self.btn_dashboard, self.btn_points]:
+        for btn in [self.btn_toggle, self.btn_dashboard, self.btn_points, self.btn_settings, self.btn_help]:
             key = btn.property("btn_key")
             if restore:
                 btn.setText(self.btn_data[key]["text"])

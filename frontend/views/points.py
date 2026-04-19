@@ -86,7 +86,7 @@ class EditMediaModal(QDialog):
         btn_save.setStyleSheet(STYLES["btn_primary"])
         btn_save.clicked.connect(self.accept)
         btn_cancel = QPushButton("Cancelar")
-        btn_cancel.setStyleSheet(STYLES["btn_outlined"])
+        btn_cancel.setStyleSheet(STYLES["btn_toggle"])
         btn_cancel.clicked.connect(self.reject)
         
         btn_lay.addWidget(btn_cancel); btn_lay.addWidget(btn_save)
@@ -144,7 +144,7 @@ class PointsView(QWidget):
         self.combo_rewards = QComboBox()
         self.combo_rewards.setStyleSheet(STYLES["combobox_modern"])
         self.btn_fetch = QPushButton(" Cargar de Kick")
-        self.btn_fetch.setStyleSheet(STYLES["btn_outlined"])
+        self.btn_fetch.setStyleSheet(STYLES["btn_toggle"])
         self.btn_fetch.clicked.connect(self.fetch_rewards)
         row1.addWidget(self.combo_rewards, 1); row1.addWidget(self.btn_fetch)
         l_lay.addLayout(row1)
@@ -155,7 +155,7 @@ class PointsView(QWidget):
         self.path_input.setStyleSheet(STYLES["input_readonly"])
         self.path_input.setReadOnly(True)
         self.btn_browse = QPushButton(" Explorar...")
-        self.btn_browse.setStyleSheet(STYLES["btn_outlined"])
+        self.btn_browse.setStyleSheet(STYLES["btn_toggle"])
         self.btn_browse.clicked.connect(self.browse_file)
         row2.addWidget(self.path_input, 1); row2.addWidget(self.btn_browse)
         l_lay.addLayout(row2)
@@ -195,7 +195,7 @@ class PointsView(QWidget):
 
     def fetch_rewards(self):
         if not self.sesion: return
-        self.btn_fetch.setText(" Cargando...")
+        self.btn_fetch.setText("Cargando...")
         self.btn_fetch.setEnabled(False)
         data = obtener_recompensas_kick(self.sesion['access_token'])
         self.combo_rewards.clear()

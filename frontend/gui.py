@@ -13,7 +13,7 @@ class MiniKickMaster(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MiniKick v0.3 - Studio")
-        self.setMinimumSize(850, 700) # Más ancha para acomodar el sidebar
+        self.setMinimumSize(1000, 700) # Más ancha para acomodar el sidebar
         
         # Aplicamos el QSS global
         self.setStyleSheet(get_sheet())

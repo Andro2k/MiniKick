@@ -119,7 +119,7 @@ class DashboardView(QWidget):
         
         self.btn_save = QPushButton(" Guardar")
         self.btn_save.setIcon(get_icon_colored("save.svg", Palette.White_N1, 16))
-        self.btn_save.setStyleSheet(STYLES["btn_outlined"])
+        self.btn_save.setStyleSheet(STYLES["btn_toggle"])
         self.btn_save.clicked.connect(self.save_settings)
         
         self.btn_toggle = QPushButton(" CONECTAR KICK")
