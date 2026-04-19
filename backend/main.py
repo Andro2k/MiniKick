@@ -1,13 +1,16 @@
+import os
+import time
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import edge_tts
-import os
-import time
 
-app = FastAPI(title="Motor TTS para MiniKick")
+app = FastAPI(title="Motor TTS Portable")
 
-# Apuntamos a la carpeta media que está un nivel arriba del backend
-AUDIO_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "media", "audios"))
+# RUTA DINÁMICA: Calcula la ruta basada en donde está este script
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+AUDIO_DIR = os.path.join(BASE_DIR, "..", "media", "audios")
+
+# Asegurar que la carpeta exista
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 class Mensaje(BaseModel):
@@ -17,7 +20,7 @@ class Mensaje(BaseModel):
 @app.post("/generar-tts")
 async def generar_tts(mensaje: Mensaje):
     try:
-        filename = f"mensaje_{int(time.time())}.mp3"
+        filename = f"tts_{int(time.time())}.mp3"
         filepath = os.path.join(AUDIO_DIR, filename)
 
         communicate = edge_tts.Communicate(mensaje.texto, mensaje.voz)
@@ -25,8 +28,8 @@ async def generar_tts(mensaje: Mensaje):
 
         return {
             "status": "success", 
-            "archivo": filename, 
-            "mensaje": f"Audio generado correctamente en {filepath}"
+            "archivo": filename
         }
     except Exception as e:
+        print(f"Error en Python: {e}")
         raise HTTPException(status_code=500, detail=str(e))
