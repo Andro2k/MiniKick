@@ -1,46 +1,74 @@
 import json
 import websocket
 import time
+import re
+from urllib.parse import urlparse
 from backend.connection.config import PUSHER_KEY, PUSHER_CLUSTER
 from backend.tts import hablar
 
-def on_message(ws, message):
+# Variables globales de control
+config_actual = {}
+debe_continuar = True
+
+def limpiar_mensaje(texto):
+    """Limpia emotes y procesa links para el TTS."""
+    texto = re.sub(r'\[emote:\d+:[^\]]+\]', '', texto)
+    def procesar_link(match):
+        dominio = urlparse(match.group(0)).netloc.replace('www.', '')
+        return f" enlace de {dominio} "
+    texto = re.sub(r'http[s]?://\S+', procesar_link, texto)
+    return texto.strip()
+
+def actualizar_config_en_vivo(nueva_config):
+    """Permite cambiar la voz o el modo sin desconectar el bot."""
+    global config_actual
+    config_actual.update(nueva_config)
+
+def on_message(ws, message, callback_gui):
     try:
         data = json.loads(message)
-        evento = data.get("event")
-        
-        # El latido del corazón para no desconectarnos
-        if evento == "pusher:ping":
+        if data.get("event") == "pusher:ping":
             ws.send(json.dumps({"event": "pusher:pong", "data": {}}))
             return
             
-        # Suscripción exitosa
-        elif evento == "pusher_internal:subscription_succeeded":
-            mensaje_bienvenida = "Conexión con Kick completada exitosamente. Sistema en línea."
-            print(f"[+] {mensaje_bienvenida}\n" + "="*50)
-            hablar(mensaje_bienvenida) # ¡Hacemos que el bot hable al iniciar!
-            
-        # Mensaje de chat nuevo
-        elif evento == "App\\Events\\ChatMessageEvent":
+        if data.get("event") == "App\\Events\\ChatMessageEvent":
             chat_data = json.loads(data.get("data", "{}"))
             usuario = chat_data.get("sender", {}).get("username", "Desconocido")
             contenido = chat_data.get("content", "")
-            
-            print(f"[{usuario}]: {contenido}")
-            
-            # Enviar el formato a la voz (Ej: "theandro2k dice: hola")
-            # Más adelante podemos poner un filtro de groserías aquí antes de pasarlo al TTS
-            texto_a_hablar = f"{usuario} dice: {contenido}"
-            hablar(texto_a_hablar)
-            
-    except Exception as e:
-        print(f"[!] Error en el socket: {e}")
 
-def iniciar_chat(chatroom_id):
+            # 1. ENVIAR A LA GUI (Para que se vea en el cuadro de texto)
+            if callback_gui:
+                callback_gui(usuario, contenido)
+
+            # 2. LÓGICA DE LECTURA
+            modo = config_actual.get("modo", "auto")
+            comando = config_actual.get("comando", "!s")
+            voz = config_actual.get("voz", "es-MX-JorgeNeural")
+
+            debe_leer = False
+            texto_a_hablar = contenido
+
+            if modo == "auto":
+                debe_leer = True
+            elif modo == "comando" and contenido.lower().startswith(comando.lower() + " "):
+                debe_leer = True
+                texto_a_hablar = contenido[len(comando):].strip()
+
+            if debe_leer:
+                limpio = limpiar_mensaje(texto_a_hablar)
+                if limpio:
+                    hablar(f"{usuario} dice: {limpio}", voz)
+    except Exception as e:
+        print(f"[!] Error: {e}")
+
+def iniciar_chat(chatroom_id, configuracion, callback_gui=None):
+    global config_actual, debe_continuar
+    config_actual = configuracion
+    debe_continuar = True
+
     ws_url = f"wss://ws-{PUSHER_CLUSTER}.pusher.com/app/{PUSHER_KEY}?protocol=7&client=js&version=8.4.0-rc2&flash=false"
 
-    # Envolvemos todo en un bucle infinito
-    while True:
+    while debe_continuar:
         try:
             wsapp = websocket.WebSocketApp(
                 ws_url,
@@ -48,18 +76,15 @@ def iniciar_chat(chatroom_id):
                     "event": "pusher:subscribe", 
                     "data": {"auth": "", "channel": f"chatrooms.{chatroom_id}.v2"}
                 })),
-                on_message=on_message,
-                on_error=lambda ws, e: print(f"[!] Error de conexión: {e}"),
-                on_close=lambda ws, a, b: print("\n[*] Desconectado del servidor de chat.")
+                on_message=lambda ws, msg: on_message(ws, msg, callback_gui)
             )
-
-            # Esto correrá hasta que Pusher nos desconecte
             wsapp.run_forever(ping_interval=30, ping_timeout=10)
-
-            # Si llegamos a esta línea, es porque Pusher cerró la conexión.
-            print("[*] Intentando reconectar en 3 segundos...")
-            time.sleep(3) # Pausa breve para no saturar al servidor
-
-        except Exception as e:
-            print(f"[!] Error crítico en el bucle principal: {e}")
+            if not debe_continuar: break
+            time.sleep(3)
+        except:
+            if not debe_continuar: break
             time.sleep(5)
+
+def detener_chat():
+    global debe_continuar
+    debe_continuar = False
