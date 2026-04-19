@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QPushButton, QComboBox, QLineEdit, QTextEdit, QFrame)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
+from backend.rewards_listener import detener_escucha_recompensas, iniciar_escucha_recompensas
+
 # Ajuste de ruta para poder importar desde la carpeta 'backend' situada dos niveles arriba
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
@@ -177,7 +179,7 @@ class DashboardView(QWidget):
         return False
 
     def start_bot(self):
-        """Inicia el hilo del chat."""
+        # Lógica de Chat TTS (ya la tienes)
         config = {
             "voz": self.voice_cb.currentText(),
             "modo": "auto" if self.mode_cb.currentIndex() == 0 else "comando",
@@ -187,8 +189,11 @@ class DashboardView(QWidget):
         self.thread.new_msg_sig.connect(self.append_log)
         self.thread.start()
         
+        # --- PASO IMPORTANTE: ENCENDER PUNTOS ---
+        iniciar_escucha_recompensas()
+        
         self.bot_activo = True
-        self.btn_toggle.setText(" DESCONECTAR")
+        self.btn_toggle.setText("DESCONECTAR")
         self.btn_toggle.setIcon(get_icon_colored("stop.svg", Palette.White_N1, 18))
         self.btn_toggle.setStyleSheet(STYLES["btn_danger_outlined"])
         self.status_lbl.setText("Estado: BOT ONLINE")
@@ -196,11 +201,13 @@ class DashboardView(QWidget):
 
     def stop_bot(self):
         """Detiene el bot y cierra el socket."""
+        detener_escucha_recompensas()
         detener_chat()
         if self.thread:
             self.thread.terminate()
             self.thread.wait()
-        
+        # Apagamos el lector de puntos
+        detener_escucha_recompensas()
         self.bot_activo = False
         self.btn_toggle.setText(" CONECTAR KICK")
         self.btn_toggle.setIcon(get_icon_colored("kick.svg", Palette.NeonGreen_Main, 18))

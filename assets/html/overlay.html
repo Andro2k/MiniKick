@@ -95,7 +95,7 @@
                 }
                 
                 // IMPORTANTE: Se usa una ruta local desde el servidor Python
-                element.src = "http://127.0.0.1:8081/media/" + encodeURIComponent(data.filename);
+                element.src = data.url;
                 element.style.opacity = "0"; 
 
                 // Si es imagen o tiene duración forzada
@@ -154,7 +154,7 @@
             // LÓGICA: AUDIO
             } else if (data.type === "audio") {
                 element = document.createElement("audio");
-                element.src = "http://127.0.0.1:8081/media/" + encodeURIComponent(data.filename);
+                element.src = data.url;
                 element.autoplay = true;
                 element.volume = vol;
                 element.addEventListener("ended", removeElement);

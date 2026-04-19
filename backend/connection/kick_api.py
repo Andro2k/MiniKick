@@ -75,8 +75,8 @@ def obtener_canjes_pendientes(access_token):
         print(f"[-] Error de red al leer canjes: {e}")
     return []
 
-def aceptar_canje_kick(access_token, redemption_id):
-    """Le dice a Kick que el punto ya salió en pantalla y se cobró con éxito."""
+def aceptar_canje_kick(access_token, redemption_ids):
+    """Le dice a Kick que los puntos ya salieron en pantalla y se cobraron con éxito."""
     url = "https://api.kick.com/public/v1/channels/rewards/redemptions/accept"
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -84,10 +84,14 @@ def aceptar_canje_kick(access_token, redemption_id):
         "Accept": "application/json"
     }
     
-    payload = {"ids": [redemption_id]}
+    # Kick espera que "ids" sea una lista, por ejemplo: ["id1", "id2"]
+    payload = {"ids": redemption_ids}
     try:
         response = requests.post(url, headers=headers, json=payload)
-        return response.status_code == 200
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"[-] Error de la API de Kick al aceptar canje: HTTP {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"[-] Error aceptando canje: {e}")
+        print(f"[-] Error de red aceptando canje: {e}")
     return False
