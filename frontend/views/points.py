@@ -2,11 +2,11 @@ import sys
 import os
 import urllib.parse
 import requests
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
+from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QPushButton, QComboBox, QLineEdit, 
                              QFileDialog, QTableWidget, QTableWidgetItem, QHeaderView, QFrame,
-                             QDialog, QSlider, QSpinBox, QDoubleSpinBox)
-from PyQt6.QtCore import Qt
+                             QDialog, QSpinBox, QDoubleSpinBox)
+from PyQt6.QtCore import QTimer, Qt, QThread, pyqtSignal
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from backend.database import (cargar_sesion, guardar_vinculo_recompensa, obtener_vinculos_recompensas, 
@@ -14,6 +14,25 @@ from backend.database import (cargar_sesion, guardar_vinculo_recompensa, obtener
 from backend.connection.kick_api import obtener_recompensas_kick
 from frontend.theme import STYLES, Palette, get_sheet
 from frontend.utils import get_icon_colored
+
+# ==========================================
+# HILO SECUNDARIO PARA PETICIONES HTTP
+# ==========================================
+class TestAlertThread(QThread):
+    finished_sig = pyqtSignal(bool, str)
+
+    def __init__(self, payload):
+        super().__init__()
+        self.payload = payload
+
+    def run(self):
+        try:
+            # Añadimos un timeout corto para que no se quede colgado eternamente
+            response = requests.post("http://127.0.0.1:8081/api/trigger", json=self.payload, timeout=3)
+            response.raise_for_status()
+            self.finished_sig.emit(True, "Alerta enviada a OBS")
+        except Exception as e:
+            self.finished_sig.emit(False, str(e))
 
 # ==========================================
 # EL MODAL FLOTANTE DE EDICIÓN
@@ -95,25 +114,25 @@ class EditMediaModal(QDialog):
     def toggle_coords(self):
         self.coords_container.setVisible(self.pos_combo.currentIndex() == 2)
 
-    def get_results(self):
-        """Extrae la información ingresada por el usuario."""
-        is_random = False
-        pos_x = 0; pos_y = 0
+def get_results(self):
+    """Extrae la información ingresada por el usuario."""
+    is_random = False
+    pos_x = 0; pos_y = 0
 
-        if self.data['type'] in ['video', 'image']:
-            idx = self.pos_combo.currentIndex()
-            if idx == 1: is_random = True
-            elif idx == 2:
-                pos_x = self.x_spin.value()
-                pos_y = self.y_spin.value()
+    if self.data['type'] in ['video', 'image']:
+        idx = self.pos_combo.currentIndex()
+        if idx == 1: is_random = True
+        elif idx == 2:
+            pos_x = self.x_spin.value()
+            pos_y = self.y_spin.value()
 
-        return {
-            "volume": self.vol_spin.value() if self.data['type'] in ['video', 'audio'] else 100,
-            "scale": self.scale_spin.value() if self.data['type'] in ['video', 'image'] else 1.0,
-            "is_random": is_random,
-            "pos_x": pos_x,
-            "pos_y": pos_y
-        }
+    return {
+        "volume": self.vol_spin.value() if self.data['type'] in ['video', 'audio'] else 100,
+        "scale": self.scale_spin.value() if self.data['type'] in ['video', 'image'] else 1.0,
+        "is_random": is_random,
+        "pos_x": pos_x,
+        "pos_y": pos_y
+    }
 
 # ==========================================
 # LA VISTA PRINCIPAL
@@ -122,6 +141,7 @@ class PointsView(QWidget):
     def __init__(self):
         super().__init__()
         self.sesion = cargar_sesion()
+        self.alert_thread = None
         self.init_ui()
         self.cargar_tabla()
 
@@ -133,6 +153,26 @@ class PointsView(QWidget):
         header_lbl = QLabel("Alertas de Puntos de Canal")
         header_lbl.setObjectName("h1")
         layout.addWidget(header_lbl)
+
+        # --- NUEVA TARJETA: LINK OBS ---
+        obs_card = QFrame()
+        obs_card.setStyleSheet(STYLES["card"])
+        obs_lay = QHBoxLayout(obs_card)
+        obs_lay.setContentsMargins(15, 10, 15, 10)
+        
+        obs_lay.addWidget(QLabel("Fuente de Navegador (OBS):", objectName="h5"))
+        
+        self.obs_link_input = QLineEdit("http://127.0.0.1:8081/")
+        self.obs_link_input.setStyleSheet(STYLES["input_readonly"])
+        self.obs_link_input.setReadOnly(True)
+        obs_lay.addWidget(self.obs_link_input, 1) # El 1 es para que se expanda
+        
+        self.btn_copy_obs = QPushButton(" Copiar Link")
+        self.btn_copy_obs.setStyleSheet(STYLES["btn_toggle"])
+        self.btn_copy_obs.clicked.connect(self.copy_obs_link)
+        obs_lay.addWidget(self.btn_copy_obs)
+        
+        layout.addWidget(obs_card)
 
         # --- TARJETA 1: VINCULAR RECOMPENSA ---
         link_card = QFrame()
@@ -180,13 +220,8 @@ class PointsView(QWidget):
         self.table.setStyleSheet(STYLES["table_clean"])
         self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers) 
         self.table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        
-        # --- NUEVAS LÍNEAS ---
-        # 1. Ocultar los números (cabecera vertical)
         self.table.verticalHeader().setVisible(False)
-        
-        # 2. Controlar la altura de las filas (45px es un buen tamaño)
-        self.table.verticalHeader().setDefaultSectionSize(45)
+        self.table.verticalHeader().setDefaultSectionSize(35)
         # ---------------------
 
         t_lay.addWidget(self.table)
@@ -237,7 +272,7 @@ class PointsView(QWidget):
             # Columna 0: Nombre con Icono Dinámico
             item_nombre = QTableWidgetItem(" " + v['name'])
             icono_name = "film.svg" if v['type'] == 'video' else ("music.svg" if v['type'] == 'audio' else "image.svg")
-            item_nombre.setIcon(get_icon_colored(icono_name, Palette.White_N1, 18))
+            item_nombre.setIcon(get_icon_colored(icono_name, Palette.White_N1, 24))
             self.table.setItem(row, 0, item_nombre)
             
             # Columna 1: Nombre de archivo
@@ -250,9 +285,9 @@ class PointsView(QWidget):
             boxTools.setContentsMargins(5, 2, 5, 2)
             boxTools.setSpacing(5)
 
-            btn_test = QPushButton(); btn_test.setIcon(get_icon_colored("play.svg", Palette.status_info, 18)); btn_test.setStyleSheet(STYLES["btn_icon_ghost"]); btn_test.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn_edit = QPushButton(); btn_edit.setIcon(get_icon_colored("edit.svg", Palette.NeonGreen_Main, 18)); btn_edit.setStyleSheet(STYLES["btn_icon_ghost"]); btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn_del = QPushButton();  btn_del.setIcon(get_icon_colored("trash.svg", Palette.status_error, 18));  btn_del.setStyleSheet(STYLES["btn_icon_ghost"]); btn_del.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn_test = QPushButton(); btn_test.setIcon(get_icon_colored("play.svg", Palette.status_info, 24)); btn_test.setStyleSheet(STYLES["btn_icon_ghost"]); btn_test.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn_edit = QPushButton(); btn_edit.setIcon(get_icon_colored("edit.svg", Palette.NeonGreen_Main, 24)); btn_edit.setStyleSheet(STYLES["btn_icon_ghost"]); btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn_del = QPushButton();  btn_del.setIcon(get_icon_colored("trash.svg", Palette.status_error, 24));  btn_del.setStyleSheet(STYLES["btn_icon_ghost"]); btn_del.setCursor(Qt.CursorShape.PointingHandCursor)
 
             btn_test.clicked.connect(lambda checked, data=v: self.test_alert(data))
             btn_edit.clicked.connect(lambda checked, data=v: self.open_edit_modal(data))
@@ -262,7 +297,7 @@ class PointsView(QWidget):
             self.table.setCellWidget(row, 2, actions_widget)
 
     def test_alert(self, data):
-        """Simula la alerta enviándola al OBS Server local."""
+        """Simula la alerta enviándola al OBS Server local de forma asíncrona."""
         ruta_codificada = urllib.parse.quote(data['path'])
         url_media = f"http://127.0.0.1:8081/serve_media?path={ruta_codificada}"
         
@@ -276,10 +311,18 @@ class PointsView(QWidget):
             "pos_x": data['pos_x'],
             "pos_y": data['pos_y']
         }
-        try:
-            requests.post("http://127.0.0.1:8081/api/trigger", json=payload)
-        except Exception as e:
-            print(f"Error probando alerta (Asegúrate que el OBS server esté prendido): {e}")
+        
+        # Ejecutar en segundo plano
+        self.alert_thread = TestAlertThread(payload)
+        self.alert_thread.finished_sig.connect(self.on_alert_finished)
+        self.alert_thread.start()
+
+    def on_alert_finished(self, success, message):
+        """Callback que se ejecuta cuando el hilo de petición HTTP termina."""
+        if not success:
+            print(f"Error probando alerta (Asegúrate que el OBS server esté prendido): {message}")
+        else:
+            print(message)
 
     def open_edit_modal(self, data):
         modal = EditMediaModal(self, data)
@@ -295,3 +338,20 @@ class PointsView(QWidget):
     def delete_link(self, reward_id):
         eliminar_vinculo_recompensa(reward_id)
         self.cargar_tabla()
+
+    def copy_obs_link(self):
+        """Copia el link al portapapeles y cambia el estado del botón."""
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.obs_link_input.text())
+        
+        # Efecto visual de éxito
+        self.btn_copy_obs.setText(" ¡Copiado!")
+        self.btn_copy_obs.setStyleSheet(STYLES["btn_primary"])
+        
+        # Volver al estado normal después de 2 segundos (2000 ms)
+        QTimer.singleShot(2000, self.reset_copy_btn)
+
+    def reset_copy_btn(self):
+        """Devuelve el botón a su estado original."""
+        self.btn_copy_obs.setText(" Copiar Link")
+        self.btn_copy_obs.setStyleSheet(STYLES["btn_toggle"])

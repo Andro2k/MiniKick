@@ -116,6 +116,35 @@ def get_sheet() -> str:
     QScrollBar::handle:horizontal:hover {{ background: {c.NeonGreen_Main}; }}
     QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
     QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+
+    /* --- BOTONES DEL SIDEBAR (Propiedades Dinámicas) --- */
+    QPushButton#NavBtn {{
+        padding: 10px; 
+        font-weight: 600; 
+        font-size: 12px;
+        color: {c.Gray_N1}; 
+        background-color: transparent; 
+        border-radius: 8px; 
+        border: none;
+    }}
+    QPushButton#NavBtn:hover {{ 
+        background-color: {c.Black_N4}; 
+        color: {c.White_N1}; 
+    }}
+    QPushButton#NavBtn[active="true"] {{
+        color: {c.NeonGreen_Main}; 
+        background-color: rgba(30, 215, 96, 0.1);
+    }}
+    
+    /* --- OTROS BOTONES --- */
+    QPushButton#PrimaryBtn {{ 
+        background-color: rgba(83, 252, 24, 0.15); 
+        border: 1px solid {c.NeonGreen_Main};
+        color: {c.NeonGreen_Main};
+        padding: 6px 12px; margin: 2px; border-radius: 6px;
+        font-size: 12px; font-weight: bold; 
+    }}
+    QPushButton#PrimaryBtn:hover {{ background-color: {c.Black_N3}; }}
     """
 
 # ==========================================

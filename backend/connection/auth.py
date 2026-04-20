@@ -100,3 +100,24 @@ def autenticar_usuario():
         print(f"[-] Error de red durante la autenticación: {e}")
         
     return None
+
+def renovar_token(refresh_token):
+    """Utiliza el refresh_token para obtener un nuevo access_token de Kick."""
+    url = "https://id.kick.com/oauth/token"
+    payload = {
+        "grant_type": "refresh_token",
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "refresh_token": refresh_token
+    }
+    
+    try:
+        response = requests.post(url, data=payload)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"[-] Error al renovar token de Kick: HTTP {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"[-] Error de red intentando renovar token: {e}")
+        
+    return None

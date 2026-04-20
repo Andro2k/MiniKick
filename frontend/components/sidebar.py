@@ -11,7 +11,7 @@ class Sidebar(QWidget):
         super().__init__()
         self.is_expanded = True
         self.width_expanded = 190
-        self.width_collapsed = 60
+        self.width_collapsed = 40
         self.category_labels = [] # Guardaremos las etiquetas aquí para ocultarlas luego
         
         self.btn_data = {
@@ -26,11 +26,10 @@ class Sidebar(QWidget):
 
     def init_ui(self):
         self.setObjectName("Sidebar")
-        self.setStyleSheet(f"QWidget#Sidebar {{ background-color: {Palette.Black_N2}; border-right: 1px solid {Palette.Black_N3}; }}")
         self.setFixedWidth(self.width_expanded)
 
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(12, 20, 12, 20)
+        self.main_layout.setContentsMargins(12, 12, 12, 12)
         self.main_layout.setSpacing(8)
 
         # ==========================================
@@ -117,7 +116,8 @@ class Sidebar(QWidget):
 
     def create_nav_button(self, key, index):
         btn = QPushButton(self.btn_data[key]["text"])
-        btn.setIcon(get_icon_colored(self.btn_data[key]["icon"], Palette.Gray_N1, 18))
+        btn.setObjectName("NavBtn") # Asignamos el ID para el QSS
+        btn.setIcon(get_icon_colored(self.btn_data[key]["icon"], Palette.Gray_N1, 24))
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
         btn.setProperty("btn_key", key)
         
@@ -128,26 +128,24 @@ class Sidebar(QWidget):
         return btn
 
     def update_buttons_style(self):
-        for btn in [self.btn_toggle, self.btn_dashboard, self.btn_points, self.btn_settings, self.btn_help]:
+        for btn in [self.btn_dashboard, self.btn_points, self.btn_settings, self.btn_help]:
             is_active = (btn == self.active_button)
             key = btn.property("btn_key")
-            align = "left" if self.is_expanded else "center"
             
-            if key == "toggle":
-                color = Palette.Gray_N1; bg = "transparent"; icon_color = Palette.Gray_N1
-            elif is_active:
-                color = Palette.NeonGreen_Main; bg = "rgba(30, 215, 96, 0.1)"; icon_color = Palette.NeonGreen_Main
-            else:
-                color = Palette.Gray_N1; bg = "transparent"; icon_color = Palette.Gray_N1
-                
-            btn.setStyleSheet(f"""
-                QPushButton {{
-                    text-align: {align}; padding: 10px 15px; font-weight: 600; font-size: 12px;
-                    color: {color}; background-color: {bg}; border-radius: 8px; border: none;
-                }}
-                QPushButton:hover {{ background-color: {Palette.Black_N4}; color: {Palette.White_N1}; }}
-            """)
-            btn.setIcon(get_icon_colored(self.btn_data[key]["icon"], icon_color, 18))
+            # 1. Actualizamos la propiedad
+            btn.setProperty("active", is_active)
+            
+            # 2. Forzamos a Qt a recalcular el estilo
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
+            
+            # 3. Solo cambiamos el icono manualmente
+            icon_color = Palette.NeonGreen_Main if is_active else Palette.Gray_N1
+            btn.setIcon(get_icon_colored(self.btn_data[key]["icon"], icon_color, 24))
+            
+            # Alineación del texto
+            align = "left" if self.is_expanded else "center"
+            btn.setStyleSheet(f"text-align: {align};") # Único estilo en línea permitido
 
     def toggle_sidebar(self):
         start_w = self.width_expanded if self.is_expanded else self.width_collapsed

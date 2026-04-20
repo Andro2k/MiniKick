@@ -130,3 +130,15 @@ def borrar_sesion():
     cursor.execute('DELETE FROM sesion')
     conexion.commit()
     conexion.close()
+
+def actualizar_tokens(access_token, refresh_token):
+    """Actualiza los tokens de acceso cuando expiran, manteniendo el resto de la sesión."""
+    conexion = sqlite3.connect(DB_FILE)
+    cursor = conexion.cursor()
+    # Ahora sí le pasamos las variables al final del execute
+    cursor.execute('''
+        UPDATE sesion 
+        SET access_token = ?, refresh_token = ?
+    ''', (access_token, refresh_token)) 
+    conexion.commit()
+    conexion.close()

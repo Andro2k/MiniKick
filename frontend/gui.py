@@ -13,7 +13,7 @@ class MiniKickMaster(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("MiniKick v0.3 - Studio")
-        self.setMinimumSize(1000, 700) # Más ancha para acomodar el sidebar
+        self.setMinimumSize(720, 500) # Más ancha para acomodar el sidebar
         
         # Aplicamos el QSS global
         self.setStyleSheet(get_sheet())
@@ -45,6 +45,14 @@ class MiniKickMaster(QMainWindow):
         # 4. Conectar la señal del sidebar para cambiar la página
         self.sidebar.page_changed.connect(self.pages.setCurrentIndex)
 
+    def closeEvent(self, event):
+        """Se ejecuta al intentar cerrar la ventana."""
+        # Si el bot está activo en el dashboard, lo detenemos limpiamente
+        if hasattr(self, 'view_dashboard') and self.view_dashboard.bot_activo:
+            self.view_dashboard.stop_bot()
+        
+        event.accept()
+        
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MiniKickMaster()
