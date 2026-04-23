@@ -1,6 +1,6 @@
 # frontend/gui.py
+
 import sys
-import os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QStackedWidget
 from frontend.theme import get_sheet
 

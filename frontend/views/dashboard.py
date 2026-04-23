@@ -1,22 +1,26 @@
-import sys
 import os
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QPushButton, QComboBox, QLineEdit, QTextEdit, QFrame)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 
+# Eliminamos el sys.path.append. Al correr desde main.py, las rutas ya se resuelven correctamente.
 from backend.rewards_listener import detener_escucha_recompensas, iniciar_escucha_recompensas
-
-# Ajuste de ruta para poder importar desde la carpeta 'backend' situada dos niveles arriba
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-
 from backend.database import cargar_sesion, actualizar_configuracion, guardar_sesion
 from backend.chat import iniciar_chat, detener_chat, actualizar_config_en_vivo
 from backend.connection.auth import autenticar_usuario
 from backend.connection.kick_api import obtener_mi_perfil, obtener_chatroom_id
 
-# Sistema de diseño
-from frontend.theme import get_sheet, STYLES, Palette
+from frontend.theme import STYLES, Palette
 from frontend.utils import get_icon_colored
+
+class LoginThread(QThread):
+    """Hilo secundario para evitar que la ventana se congele durante el OAuth."""
+    finished_sig = pyqtSignal(dict) # Emite el diccionario de tokens o vacío
+
+    def run(self):
+        tokens = autenticar_usuario()
+        # pyqtSignal no acepta None fácilmente, así que enviamos un dict vacío si falla
+        self.finished_sig.emit(tokens if tokens else {})
 
 class ChatThread(QThread):
     """Hilo secundario para que el WebSocket de Kick no congele la ventana."""
@@ -28,7 +32,6 @@ class ChatThread(QThread):
         self.config = config
 
     def run(self):
-        # Iniciamos el chat pasando la función lambda para emitir señales a la GUI
         iniciar_chat(
             self.chatroom_id, 
             self.config, 
@@ -40,7 +43,8 @@ class DashboardView(QWidget):
         super().__init__()
         self.sesion = cargar_sesion()
         self.bot_activo = False
-        self.thread = None
+        self.chat_thread = None
+        self.login_thread = None
         self.init_ui()
         self.load_settings()
 
@@ -132,13 +136,11 @@ class DashboardView(QWidget):
         layout.addLayout(btn_layout)
 
     def toggle_cmd(self):
-        """Oculta o muestra el campo de comando."""
         is_cmd = self.mode_cb.currentIndex() == 1
         self.cmd_lbl.setVisible(is_cmd)
         self.cmd_in.setVisible(is_cmd)
 
     def load_settings(self):
-        """Carga las preferencias desde la base de datos local."""
         if self.sesion:
             self.voice_cb.setCurrentText(self.sesion.get('voz_tts', 'es-MX-JorgeNeural'))
             self.mode_cb.setCurrentIndex(0 if self.sesion.get('modo_lectura', 'auto') == "auto" else 1)
@@ -146,7 +148,6 @@ class DashboardView(QWidget):
         self.toggle_cmd()
 
     def save_settings(self):
-        """Guarda la configuración y actualiza el bot en tiempo real."""
         voz = self.voice_cb.currentText()
         modo = "auto" if self.mode_cb.currentIndex() == 0 else "comando"
         cmd = self.cmd_in.text().strip()
@@ -161,53 +162,65 @@ class DashboardView(QWidget):
     def toggle_connection(self):
         if not self.bot_activo:
             if not self.sesion:
-                if not self.login_flow(): return
-            self.start_bot()
+                self.iniciar_flujo_login()
+            else:
+                self.start_bot()
         else:
             self.stop_bot()
 
-    def login_flow(self):
-        """Maneja el proceso de OAuth si no hay sesión."""
-        tokens = autenticar_usuario()
+    def iniciar_flujo_login(self):
+        """Prepara la UI y arranca el hilo de login."""
+        self.btn_toggle.setEnabled(False)
+        self.btn_toggle.setText(" AUTENTICANDO...")
+        self.status_lbl.setText("Estado: Revisa tu navegador web para autorizar...")
+        self.status_lbl.setStyleSheet(f"color: {Palette.status_info};")
+        
+        self.login_thread = LoginThread()
+        self.login_thread.finished_sig.connect(self.procesar_resultado_login)
+        self.login_thread.start()
+
+    def procesar_resultado_login(self, tokens):
+        """Recibe el resultado del hilo de login."""
+        self.btn_toggle.setEnabled(True)
+        
         if tokens:
             user = obtener_mi_perfil(tokens['access_token'])
             cid = obtener_chatroom_id(user)
             guardar_sesion(tokens['access_token'], tokens['refresh_token'], user, cid)
             self.sesion = cargar_sesion()
             self.user_lbl.setText(f"Canal: {user}")
-            return True
-        return False
+            self.start_bot()
+        else:
+            self.btn_toggle.setText(" CONECTAR KICK")
+            self.status_lbl.setText("Estado: Autenticación cancelada o fallida.")
+            self.status_lbl.setStyleSheet(f"color: {Palette.status_error};")
 
     def start_bot(self):
-        # Lógica de Chat TTS (ya la tienes)
         config = {
             "voz": self.voice_cb.currentText(),
             "modo": "auto" if self.mode_cb.currentIndex() == 0 else "comando",
             "comando": self.cmd_in.text()
         }
-        self.thread = ChatThread(self.sesion['chatroom_id'], config)
-        self.thread.new_msg_sig.connect(self.append_log)
-        self.thread.start()
+        self.chat_thread = ChatThread(self.sesion['chatroom_id'], config)
+        self.chat_thread.new_msg_sig.connect(self.append_log)
+        self.chat_thread.start()
         
-        # --- PASO IMPORTANTE: ENCENDER PUNTOS ---
         iniciar_escucha_recompensas()
         
         self.bot_activo = True
-        self.btn_toggle.setText("DESCONECTAR")
+        self.btn_toggle.setText(" DESCONECTAR")
         self.btn_toggle.setIcon(get_icon_colored("stop.svg", Palette.White_N1, 18))
         self.btn_toggle.setStyleSheet(STYLES["btn_danger_outlined"])
         self.status_lbl.setText("Estado: BOT ONLINE")
         self.status_lbl.setStyleSheet(f"color: {Palette.NeonGreen_Main};")
 
     def stop_bot(self):
-        """Detiene el bot y cierra el socket."""
         detener_escucha_recompensas()
         detener_chat()
-        if self.thread:
-            self.thread.terminate()
-            self.thread.wait()
-        # Apagamos el lector de puntos
-        detener_escucha_recompensas()
+        if self.chat_thread:
+            self.chat_thread.terminate()
+            self.chat_thread.wait()
+            
         self.bot_activo = False
         self.btn_toggle.setText(" CONECTAR KICK")
         self.btn_toggle.setIcon(get_icon_colored("kick.svg", Palette.NeonGreen_Main, 18))
@@ -216,7 +229,6 @@ class DashboardView(QWidget):
         self.status_lbl.setStyleSheet(f"color: {Palette.Gray_N1};")
 
     def append_log(self, user, msg):
-        """Inyecta el mensaje en la consola visual."""
         self.log_view.append(
             f"<span style='color:{Palette.NeonGreen_Main}; font-weight:bold;'>{user}</span>"
             f"<span style='color:{Palette.White_N1};'>: {msg}</span>"

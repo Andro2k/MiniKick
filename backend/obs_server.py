@@ -1,10 +1,11 @@
 import os
 import json
+from pathlib import Path
+import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
-import uvicorn
 
 app = FastAPI()
 
@@ -17,10 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- RUTAS ---
-# Subimos un nivel desde 'backend' para llegar a la raíz de MiniKick
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-HTML_PATH = os.path.join(BASE_DIR, "assets", "html", "overlay.html")
+# --- RUTAS SEGURAS CON PATHLIB ---
+# Subimos DOS niveles desde este script (backend -> raíz)
+BASE_DIR = Path(__file__).resolve().parent.parent
+HTML_PATH = BASE_DIR / "assets" / "html" / "overlay.html"
 
 # --- GESTOR DE WEBSOCKETS ---
 class ConnectionManager:
@@ -47,14 +48,12 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 # --- ENDPOINTS ---
-
 @app.get("/")
 async def get_overlay():
     """Entrega el archivo HTML a la Fuente de Navegador de OBS."""
     try:
-        with open(HTML_PATH, "r", encoding="utf-8") as f:
-            html_content = f.read()
-        return HTMLResponse(content=html_content)
+        # pathlib nos permite leer el contenido súper fácil
+        return HTMLResponse(content=HTML_PATH.read_text(encoding="utf-8"))
     except Exception:
         return HTMLResponse(
             content=f"<h1>Error: No se encontró overlay.html en {HTML_PATH}</h1>", 
@@ -63,10 +62,7 @@ async def get_overlay():
 
 @app.get("/serve_media")
 async def serve_media(path: str):
-    """
-    Recibe la ruta absoluta del PC del streamer (ej: C:/Users/video.mp4) 
-    y la transmite como un video/audio web a OBS.
-    """
+    """Transmite el archivo multimedia local hacia OBS."""
     if os.path.exists(path):
         return FileResponse(path)
     print(f"[-] Archivo no encontrado: {path}")
@@ -84,7 +80,13 @@ async def websocket_endpoint(websocket: WebSocket):
 
 @app.post("/api/trigger")
 async def trigger_media(data: dict):
-    """El bot de Kick llamará a esta ruta cuando detecte un canje válido."""
+    """El bot de Kick o el botón de 'Test' llaman a esta ruta para disparar la alerta."""
     print(f"[*] Disparando alerta en OBS: {data.get('type')}")
     await manager.broadcast(data)
     return {"status": "ok", "message": "Alerta enviada a OBS"}
+
+# --- EL MOTOR DE ARRANQUE ---
+if __name__ == "__main__":
+    print("[*] Levantando servidor local de OBS en el puerto 8081...")
+    # Pasamos la app directamente para evitar problemas de rutas en Windows
+    uvicorn.run(app, host="127.0.0.1", port=8081, log_level="warning")
