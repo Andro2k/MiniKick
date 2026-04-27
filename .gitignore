@@ -1,0 +1,36 @@
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Variables de entorno y credenciales (¡MUY IMPORTANTE PARA SEGURIDAD!)
+.env
+token.json
+
+# Bases de datos locales
+minikick.db
+*.sqlite3
+
+# Archivos temporales de audio (Generados por el TTS)
+temp_tts.mp3
+*.mp3
+*.wav
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.iss
+*/media/*
+*.spec
+
+# Archivos de configuración de IDEs
+*build/
+*dist/

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conexión Exitosa - Kick Bot</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #0b0e11; /* Fondo oscuro estilo app de trading */
+            color: #eaecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .modal {
+            background-color: #1e2329;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 12px;
+            border: 1px solid #2b3139;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 24px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #2b3139;
+        }
+
+        .modal-header h2 {
+            font-size: 16px;
+            font-weight: 500;
+            color: #eaecef;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #848e9c;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #eaecef;
+        }
+
+        .connection-visual {
+            background-color: #0b0e11;
+            border: 1px solid #2b3139;
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .icon-box {
+            width: 56px;
+            height: 56px;
+            background-color: #1e2329;
+            border: 1px solid #2b3139;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .icon-box.success {
+            background-color: rgba(83, 252, 24, 0.1);
+            border-color: rgba(83, 252, 24, 0.3);
+        }
+
+        .connection-line {
+            flex-grow: 1;
+            height: 2px;
+            margin: 0 16px;
+            background: repeating-linear-gradient(
+                to right,
+                #474d57,
+                #474d57 6px,
+                transparent 6px,
+                transparent 12px
+            );
+            position: relative;
+        }
+
+        /* Animación opcional para la línea */
+        .connection-line::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background-color: #53fc18;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #53fc18;
+            animation: moveDot 2s ease-in-out infinite;
+        }
+
+        @keyframes moveDot {
+            0% { left: 0; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        .description {
+            text-align: center;
+            color: #848e9c;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .description span {
+            color: #eaecef;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: #53fc18; /* Color verde de Kick */
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-primary:hover {
+            background-color: #45db12;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Conexión Establecida</h2>
+            <button class="close-btn" onclick="cerrarVentana()">×</button>
+        </div>
+
+        <div class="connection-visual">
+            <div class="icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#ffffff" class="icon icon-tabler icons-tabler-filled icon-tabler-brand-kick">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 3a1 1 0 0 1 1 1v3h1v-1a1 1 0 0 1 .883 -.993l.117 -.007h1v-1a1 1 0 0 1 .883 -.993l.117 -.007h6a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-1v1a1 1 0 0 1 -.883 .993l-.117 .007h-1v2h1a1 1 0 0 1 .993 .883l.007 .117v1h1a1 1 0 0 1 .993 .883l.007 .117v4a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-1h-1a1 1 0 0 1 -.993 -.883l-.007 -.117v-1h-1v3a1 1 0 0 1 -.883 .993l-.117 .007h-5a1 1 0 0 1 -1 -1v-16a1 1 0 0 1 1 -1z" />
+                </svg>
+            </div>
+            
+            <div class="connection-line"></div>
+            
+            <div class="icon-box success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#53fc18" class="icon icon-tabler icons-tabler-filled icon-tabler-circle-check">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" />
+                </svg>
+            </div>
+        </div>
+
+        <p class="description">
+            El bot ha recibido acceso al chat y se ha autenticado correctamente en <span>Kick</span>.<br><br>
+            Ya puedes regresar a la terminal o a la aplicación para continuar.
+        </p>
+
+        <button class="btn-primary" onclick="cerrarVentana()">Cerrar ventana</button>
+    </div>
+
+    <script>
+        function cerrarVentana() {
+            // Intenta cerrar la pestaña actual. 
+            // Nota: Algunos navegadores bloquean window.close() si la pestaña no fue abierta por un script, 
+            // pero funcionará bien si usaste webbrowser.open() en Python.
+            window.close();
+            
+            // Fallback visual por si el navegador bloquea el cierre
+            document.body.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h2 style="color: #53fc18; margin-bottom: 10px;">¡Todo listo!</h2>
+                    <p style="color: #848e9c;">Puedes cerrar esta pestaña manualmente.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
