@@ -1,39 +1,56 @@
-import os, threading
+import os
+import threading
+
 from dotenv import load_dotenv
+
 from backend.auth import AuthManager
 from backend.chat import ChatManager
 from backend.tts import TTSManager
 
 load_dotenv()
 
-def run():
+
+def run() -> None:
     # 1. Auth
-    auth = AuthManager(os.getenv("KICK_CLIENT_ID"), os.getenv("KICK_CLIENT_SECRET"), os.getenv("KICK_REDIRECT_URI"))
+    auth = AuthManager(
+        client_id=os.getenv("KICK_CLIENT_ID"),
+        client_secret=os.getenv("KICK_CLIENT_SECRET"),
+        redirect_uri=os.getenv("KICK_REDIRECT_URI"),
+    )
     tokens = auth.get_tokens()
 
-    # 2. Chat Setup
-    chat = ChatManager(tokens['access_token'], os.getenv("KICK_PUSHER_CLUSTER"), os.getenv("KICK_PUSHER_KEY"))
+    # 2. TTS — inicia su propio hilo interno
+    tts = TTSManager(rate=150)
+
+    # 3. Chat
+    chat = ChatManager(
+        token=tokens["access_token"],
+        cluster=os.getenv("KICK_PUSHER_CLUSTER"),
+        key=os.getenv("KICK_PUSHER_KEY"),
+    )
     username, room_id = chat.get_user_data()
     print(f"[*] Bot activo: {username} (ID: {room_id})")
 
-    # 3. TTS Setup
-    tts = TTSManager()
-
-    def on_new_chat_msg(user, msg):
+    def on_new_chat_msg(user: str, msg: str) -> None:
         if msg:
             print(f"[CHAT] {user}: {msg}")
-            tts.queue.put(f"{user} dice {msg}")
+            tts.say(f"{user} dice {msg}")   # API limpia, sin exponer la queue
 
-    # Ejecutar Socket en hilo separado
-    threading.Thread(target=chat.start_socket, args=(room_id, on_new_chat_msg), daemon=True).start()
+    # 4. Socket en hilo separado
+    socket_thread = threading.Thread(
+        target=chat.start_socket,
+        args=(room_id, on_new_chat_msg),
+        daemon=True,
+    )
+    socket_thread.start()
 
-    # Bucle principal para el TTS (Hilo principal)
     print("[+] Escuchando... Presiona Ctrl+C para salir.")
     try:
-        while True:
-            tts.speak_next()
+        socket_thread.join()   # Bloquea en el hilo del socket en vez de un busy-loop
     except KeyboardInterrupt:
         print("\n[-] Saliendo...")
+        tts.stop()
+
 
 if __name__ == "__main__":
     run()
