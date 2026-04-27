@@ -3,3 +3,4 @@ websocket-client
 python-dotenv
 cloudscraper
 pyttsx3
+PySide6
