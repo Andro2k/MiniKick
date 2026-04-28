@@ -2,7 +2,6 @@
 # ─────────────────────────────────────────────
 # Utilidades para manejo de rutas e íconos SVG.
 # ─────────────────────────────────────────────
-
 import os
 import sys
 from PySide6.QtCore import Qt

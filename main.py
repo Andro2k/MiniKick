@@ -1,43 +1,34 @@
 # main.py
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QStackedWidget
+from PySide6.QtWidgets import QApplication
+from dotenv import load_dotenv
 
-# Importamos tu tema global y el sidebar
+# Importamos el orquestador y el estilo
+from frontend.main_window import MainWindow
 from frontend.theme import GLOBAL_QSS
-from frontend.sidebar import Sidebar
-from frontend.views.dashboard import DashboardView # Asumo que ya creaste la vista basándonos en tu prompt anterior
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Mi App - Responsive Sidebar")
-        self.resize(1100, 700)
-        
-        # Aplicamos toda tu hoja de estilos QSS centralizada
-        self.setStyleSheet(GLOBAL_QSS)
+def bootstrap():
+    """
+    Configura el entorno antes de lanzar la interfaz.
+    Sigue la regla de Separación de Responsabilidades: 
+    el inicio está aislado de la lógica.
+    """
+    # 1. Cargar variables de entorno del archivo .env
+    load_dotenv()
 
-        # Widget central y layout
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        
-        main_layout = QHBoxLayout(central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0) 
-
-        # Instanciamos los componentes
-        self.sidebar = Sidebar()
-        self.stacked_views = QStackedWidget()
-        
-        # Añadimos la vista del dashboard
-        self.dashboard_view = DashboardView()
-        self.stacked_views.addWidget(self.dashboard_view)
-
-        # Añadimos todo al layout principal
-        main_layout.addWidget(self.sidebar)
-        main_layout.addWidget(self.stacked_views)
-
-if __name__ == "__main__":
+    # 2. Crear la aplicación Qt
     app = QApplication(sys.argv)
+
+    # 3. Aplicar la hoja de estilos global (QSS)
+    # Esto asegura que toda la app herede el diseño de theme.py
+    app.setStyleSheet(GLOBAL_QSS)
+
+    # 4. Instanciar y mostrar la ventana principal (El Controlador)
     window = MainWindow()
     window.show()
+
+    # 5. Ejecutar el bucle de eventos
     sys.exit(app.exec())
+
+if __name__ == "__main__":
+    bootstrap()

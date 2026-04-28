@@ -1,65 +1,59 @@
+# backend/tts.py
+
 import queue
 import threading
 import pyttsx3
+from backend.interfaces import TTSEngine
 
-
-class TTSManager:
-    """
-    Manages Text-To-Speech in a dedicated background thread.
-
-    pyttsx3 has a known bug where runAndWait() corrupts the engine's internal
-    state after the first call on many systems. The safest fix is to
-    reinitialize the engine for every message inside a dedicated thread so
-    the main thread is never blocked.
-    """
-
-    def __init__(self, rate: int = 150):
+# --- Implementación Concreta de Hardware ---
+class Pyttsx3Engine:
+    """Implementación específica de pyttsx3."""
+    def __init__(self, rate: int = 150, initial_volume: float = 1.0):
         self.rate = rate
-        self.queue: queue.Queue[str | None] = queue.Queue()
-        self._thread = threading.Thread(target=self._worker, daemon=True)
-        self._thread.start()
+        self.volume = initial_volume
 
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
+    def set_volume(self, volume: float) -> None:
+        """Ajusta el volumen (rango de 0.0 a 1.0)"""
+        # Aseguramos que se mantenga en los límites correctos
+        self.volume = max(0.0, min(1.0, volume))
 
-    def say(self, text: str) -> None:
-        """Enqueue a message to be spoken."""
-        if text and text.strip():
-            self.queue.put(text.strip())
-
-    def stop(self) -> None:
-        """Signal the worker thread to exit cleanly."""
-        self.queue.put(None)
-        self._thread.join(timeout=5)
-
-    # ------------------------------------------------------------------
-    # Internal worker
-    # ------------------------------------------------------------------
-
-    def _worker(self) -> None:
-        """Dedicated thread: pulls messages and speaks them one by one."""
-        while True:
-            text = self.queue.get()
-
-            # Sentinel value → clean shutdown
-            if text is None:
-                self.queue.task_done()
-                break
-
-            self._speak(text)
-            self.queue.task_done()
-
-    def _speak(self, text: str) -> None:
-        """
-        Reinitialize the engine per message.
-        This avoids the runAndWait() state corruption bug in pyttsx3.
-        """
+    def speak(self, text: str) -> None:
         try:
             engine = pyttsx3.init()
             engine.setProperty("rate", self.rate)
+            engine.setProperty("volume", self.volume) # APLICAMOS EL VOLUMEN
             engine.say(text)
             engine.runAndWait()
             engine.stop()
         except Exception as e:
             print(f"[TTS] Error al hablar: {e}")
+
+# --- Orquestador (Lógica de Negocio Asíncrona) ---
+class TTSManager:
+    """
+    Gestiona una cola de mensajes en un hilo secundario.
+    """
+    def __init__(self, engine: TTSEngine):
+        self.engine = engine
+        self.queue: queue.Queue[str | None] = queue.Queue()
+        self._thread = threading.Thread(target=self._worker, daemon=True)
+        self._thread.start()
+
+    def say(self, text: str) -> None:
+        if text and text.strip():
+            self.queue.put(text.strip())
+
+    def stop(self) -> None:
+        self.queue.put(None)
+        self._thread.join(timeout=5)
+
+    def _worker(self) -> None:
+        while True:
+            text = self.queue.get()
+
+            if text is None:
+                self.queue.task_done()
+                break
+
+            self.engine.speak(text)
+            self.queue.task_done()

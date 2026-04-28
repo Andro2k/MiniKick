@@ -5,7 +5,6 @@
 # ─────────────────────────────────────────────
 
 # ─── Paleta de colores (Nueva y Refinada) ─────
-# Extraídos directamente de image_2.png
 COLOR_BG_BASE       = "#080808"   # Fondo de ventana principal (ultra-oscuro)
 COLOR_BG_SURFACE    = "#151515"   # Paneles de tarjetas / Sidebar / Contenedores
 COLOR_BG_ELEVATED   = "#1E1E1E"   # Inputs, Hover sobre elementos, botones sutiles
@@ -14,23 +13,19 @@ COLOR_BG_INPUT      = "#101010"   # Fondo específico para áreas de texto/input
 COLOR_BORDER_SVELTE = "#252525"   # Bordes extremadamente sutiles y oscuros para paneles
 COLOR_BORDER_INPUT  = "#333333"   # Bordes para inputs y botones
 
-# Color de acento Teal/Kick-Green vibrante de image_2.png
 COLOR_ACCENT        = "#0ca678"   
-COLOR_ACCENT_HOVER  = "#10c18c"   # Variante más brillante para hover
-COLOR_ACCENT_BG_OPAQUE = "rgba(12, 166, 120, 0.12)" # Fondo translúcido para estados activos
+COLOR_ACCENT_HOVER  = "#10c18c"   
+COLOR_ACCENT_BG_OPAQUE = "rgba(12, 166, 120, 0.12)" 
 
-# Indicador de estado "Conectado" (Verde brillante)
 COLOR_INDICATOR_CONNECTED = "#51cf66" 
 
-COLOR_TEXT_PRIMARY  = "#f0f0f0"   # Texto blanco-apagado para máxima legibilidad
-COLOR_TEXT_SECONDARY= "#a0a0a0"   # Texto gris medio para descripciones, subtítulos
-COLOR_TEXT_MUTED    = "#6a6a6a"   # Texto muy tenue para placeholders o secciones
+COLOR_TEXT_PRIMARY  = "#f0f0f0"   
+COLOR_TEXT_SECONDARY= "#a0a0a0"   
+COLOR_TEXT_MUTED    = "#6a6a6a"   
 
 # ─── Tipografía Modern & Minimalista ────────
-# Configuración del Font Stack priorizando Aptos
-# Fallbacks: Inter es de código abierto y casi idéntica. Segoe UI es estándar.
 FONT_FAMILY_STACK = "\"Aptos Font\", \"Inter\", \"Segoe UI\", \"San Francisco Pro Display\", \"Roboto\", sans-serif"
-FONT_DISPLAY      = "\"Inter Semibold\", sans-serif" # Para títulos de sección
+FONT_DISPLAY      = "\"Inter Semibold\", sans-serif" 
 FONT_BODY         = FONT_FAMILY_STACK
 FONT_MONO         = "\"Consolas\", \"Monospace\""
 
@@ -41,9 +36,6 @@ RADIUS_LG = 14
 SPACING = 8
 
 # ─── Stylesheet global QSS ───────────────────
-# Centralizamos TODO el diseño visual de la app.
-# Usamos selectores de clase y de objeto (#nombreObjeto).
-
 GLOBAL_QSS = f"""
 /* ── Reset y Base ─────────────────────────────── */
 * {{
@@ -56,13 +48,11 @@ QMainWindow, QDialog {{
     background-color: {COLOR_BG_BASE};
 }}
 
-/* Forzar fondos transparentes en contenedores genéricos */
 QWidget#TransparentWidget {{
     background: transparent;
 }}
 
 /* ── Scrollbar Minimalista (Invisible) ───────── */
-/* Imitando el diseño de la imagen que no los muestra */
 QScrollBar:vertical {{
     background: transparent;
     width: 6px;
@@ -98,7 +88,6 @@ QLabel[role="subtitle"] {{
     font-size: 13px;
     color: {COLOR_TEXT_SECONDARY};
 }}
-/* Estilo de secciones como "Main Sections" en image_2.png */
 QLabel[role="section"] {{
     font-family: {FONT_DISPLAY};
     font-size: 11px;
@@ -112,7 +101,6 @@ QLabel[role="stat_value"] {{
     color: {COLOR_TEXT_PRIMARY};
 }}
 
-/* Indicadores de estado */
 QLabel#State_Connected {{
     color: {COLOR_INDICATOR_CONNECTED};
     font-weight: 600;
@@ -123,14 +111,12 @@ QLabel#State_Dot {{
 }}
 
 /* ── Tarjetas (Cards y Paneles) ──────────────── */
-/* Mapeado a los paneles principales como Dashboard o GPT-4o */
 QFrame#Card {{
     background-color: {COLOR_BG_SURFACE};
     border: 1.5px solid {COLOR_BORDER_SVELTE};
     border-radius: {RADIUS_LG}px;
 }}
 
-/* Paneles del Sidebar con borde derecho */
 QFrame#Sidebar {{
     background-color: {COLOR_BG_SURFACE};
     border-right: 1.5px solid {COLOR_BORDER_SVELTE};
@@ -158,8 +144,13 @@ QPushButton#NavButton:checked {{
     border-color: {COLOR_ACCENT};
 }}
 
+/* REGLA NUEVA: Manejo automático del centrado cuando el sidebar se colapsa */
+QPushButton#NavButton[collapsed="true"] {{
+    text-align: center;
+    padding: 10px 0px;
+}}
+
 /* ── Inputs y Botones de Acción (Inputs) ────── */
-/* Como los selectores de modelo, preset, etc. */
 QPushButton#Input_Selector, QComboBox {{
     background-color: {COLOR_BG_ELEVATED};
     border: 1.5px solid {COLOR_BORDER_INPUT};
@@ -180,7 +171,6 @@ QTextEdit, QPlainTextEdit {{
     color: {COLOR_TEXT_PRIMARY};
 }}
 
-/* Botones de acción principales como "Save" o "Add Functions" en image_2.png */
 QPushButton[role="action_accent"] {{
     font-family: {FONT_DISPLAY};
     background-color: {COLOR_ACCENT};
@@ -188,7 +178,7 @@ QPushButton[role="action_accent"] {{
     border-radius: 8px;
     padding: 12px;
     font-weight: 700;
-    color: #ffffff; /* Texto blanco en el acento */
+    color: #ffffff; 
 }}
 QPushButton[role="action_accent"]:hover {{
     background-color: {COLOR_ACCENT_HOVER};

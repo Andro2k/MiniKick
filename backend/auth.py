@@ -1,3 +1,5 @@
+# backend/auth.py
+
 import base64
 import hashlib
 import json
@@ -7,15 +9,28 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
 import requests
+from backend.interfaces import TokenStorage
 
-TOKEN_FILE = "token.json"
 KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
 KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
 
+# --- Capa de Acceso a Datos ---
+class FileTokenStorage:
+    def __init__(self, filepath: str = "token.json"):
+        self.filepath = filepath
 
+    def load(self) -> dict | None:
+        if os.path.exists(self.filepath):
+            with open(self.filepath, "r") as f:
+                return json.load(f)
+        return None
+
+    def save(self, tokens: dict) -> None:
+        with open(self.filepath, "w") as f:
+            json.dump(tokens, f)
+
+# --- Capa de Presentación / Red ---
 class _OAuthCallbackHandler(BaseHTTPRequestHandler):
-    """Internal HTTP handler that captures the OAuth authorization code."""
-
     def do_GET(self) -> None:
         query = parse_qs(urlparse(self.path).query)
         if "code" in query:
@@ -29,48 +44,49 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 self.wfile.write("<h1>Autenticación exitosa. Puedes cerrar esta pestaña.</h1>".encode("utf-8"))
 
-    def log_message(self, *args) -> None:  # silencia logs del servidor
+    def log_message(self, *args) -> None:
         pass
 
+class OAuthCallbackServer:
+    @staticmethod
+    def capture_auth_code(url: str, port: int) -> str:
+        httpd = HTTPServer(("", port), _OAuthCallbackHandler)
+        httpd.auth_code = None  # type: ignore[attr-defined]
+        webbrowser.open(url)
+        while httpd.auth_code is None:
+            httpd.handle_request()
+        httpd.server_close()
+        return httpd.auth_code  # type: ignore[attr-defined]
 
+# --- Lógica de Negocio ---
 class AuthManager:
-    def __init__(self, client_id: str, client_secret: str, redirect_uri: str) -> None:
+    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage) -> None:
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
+        self.storage = storage
 
     def get_tokens(self) -> dict:
-        """Return cached tokens if available, otherwise start the OAuth flow."""
-        if os.path.exists(TOKEN_FILE):
-            with open(TOKEN_FILE) as f:
-                return json.load(f)
+        tokens = self.storage.load()
+        if tokens:
+            return tokens
         return self._new_login()
-
-    # ------------------------------------------------------------------
-    # Private helpers
-    # ------------------------------------------------------------------
 
     def _new_login(self) -> dict:
         verifier, challenge = self._pkce_pair()
         auth_url = self._build_auth_url(challenge)
 
         port = int(urlparse(self.redirect_uri).port or 8080)
-        auth_code = self._capture_auth_code(auth_url, port)
+        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port)
 
         tokens = self._exchange_code(auth_code, verifier)
-        with open(TOKEN_FILE, "w") as f:
-            json.dump(tokens, f)
+        self.storage.save(tokens)
         return tokens
 
     @staticmethod
     def _pkce_pair() -> tuple[str, str]:
-        """Generate a PKCE code verifier and its SHA-256 challenge."""
         verifier = base64.urlsafe_b64encode(os.urandom(32)).decode().rstrip("=")
-        challenge = (
-            base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest())
-            .decode()
-            .rstrip("=")
-        )
+        challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
         return verifier, challenge
 
     def _build_auth_url(self, challenge: str) -> str:
@@ -83,16 +99,6 @@ class AuthManager:
             f"&code_challenge_method=S256"
             f"&state=random"
         )
-
-    @staticmethod
-    def _capture_auth_code(url: str, port: int) -> str:
-        httpd = HTTPServer(("", port), _OAuthCallbackHandler)
-        httpd.auth_code = None  # type: ignore[attr-defined]
-        webbrowser.open(url)
-        while httpd.auth_code is None:
-            httpd.handle_request()
-        httpd.server_close()
-        return httpd.auth_code  # type: ignore[attr-defined]
 
     def _exchange_code(self, code: str, verifier: str) -> dict:
         response = requests.post(
