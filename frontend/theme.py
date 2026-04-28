@@ -1,223 +1,162 @@
 # frontend/theme.py
 # ─────────────────────────────────────────────
-# Design tokens y Hoja de Estilos Global (QSS)
-# Inspirado en la sofisticación y paleta de image_2.png.
+# Design Tokens: Deep Dark Minimalism
+# Estilo: Superficies profundas, bordes svelte (1px) y acentos Kick Green.
 # ─────────────────────────────────────────────
 
-# ─── Paleta de colores (Nueva y Refinada) ─────
-COLOR_BG_BASE       = "#080808"   # Fondo de ventana principal (ultra-oscuro)
-COLOR_BG_SURFACE    = "#151515"   # Paneles de tarjetas / Sidebar / Contenedores
-COLOR_BG_ELEVATED   = "#1E1E1E"   # Inputs, Hover sobre elementos, botones sutiles
-COLOR_BG_INPUT      = "#101010"   # Fondo específico para áreas de texto/inputs
+# ─── Paleta de Colores (Inspiración: Slate & Onyx) ───
+COLOR_BG_BASE       = "#0A0F12"   # Fondo ultra-profundo (Base)
+COLOR_BG_SURFACE    = "#161D21"   # Superficie de tarjetas (Cards)
+COLOR_BG_ELEVATED   = "#1F2937"   # Elementos sobre la superficie (Hover)
+COLOR_BG_INPUT      = "#0F171A"   # Fondo para áreas de texto y inputs
 
-COLOR_BORDER_SVELTE = "#252525"   # Bordes extremadamente sutiles y oscuros para paneles
-COLOR_BORDER_INPUT  = "#333333"   # Bordes para inputs y botones
+COLOR_BORDER_SVELTE = "#1E293B"   # El "Hairline border" de 1px (Slate muy oscuro)
+COLOR_BORDER_ACTIVE = "#334155"   # Borde más visible para estados activos
 
-COLOR_ACCENT        = "#0ca678"   
-COLOR_ACCENT_HOVER  = "#10c18c"   
-COLOR_ACCENT_BG_OPAQUE = "rgba(12, 166, 120, 0.12)" 
+COLOR_ACCENT        = "#07BB43"   # Kick Green (Marca)
+COLOR_ACCENT_HOVER  = "#048E32"   
+COLOR_ACCENT_SOFT   = "rgba(12, 166, 120, 0.08)" # Fondo sutil para activos
 
-COLOR_INDICATOR_CONNECTED = "#51cf66" 
+COLOR_TEXT_PRIMARY  = "#F8FAFC"   # Blanco roto (Casi puro)
+COLOR_TEXT_SECONDARY= "#94A3B8"   # Slate Grey (Secundario)
+COLOR_TEXT_MUTED    = "#475569"   # Texto desactivado o labels sutiles
 
-COLOR_TEXT_PRIMARY  = "#f0f0f0"   
-COLOR_TEXT_SECONDARY= "#a0a0a0"   
-COLOR_TEXT_MUTED    = "#6a6a6a"   
-
-# ─── Tipografía Modern & Minimalista ────────
-FONT_FAMILY_STACK = "\"Aptos Font\", \"Inter\", \"Segoe UI\", \"San Francisco Pro Display\", \"Roboto\", sans-serif"
-FONT_DISPLAY      = "\"Inter Semibold\", sans-serif" 
-FONT_BODY         = FONT_FAMILY_STACK
-FONT_MONO         = "\"Consolas\", \"Monospace\""
-
-# ─── Radios y Espaciado (Svelte) ────────────
+# ─── Tipografía & Radios ───
+FONT_FAMILY = "'Inter', 'Aptos', 'Segoe UI', sans-serif"
 RADIUS_SM = 6
-RADIUS_MD = 10
-RADIUS_LG = 14
-SPACING = 8
+RADIUS_MD = 12  # Radio estándar para tarjetas
+RADIUS_LG = 16
 
-# ─── Stylesheet global QSS ───────────────────
+# ─── Stylesheet Global (QSS) ───
 GLOBAL_QSS = f"""
-/* ── Reset y Base ─────────────────────────────── */
+/* ─── Reset y Base ─── */
 * {{
-    font-family: {FONT_BODY};
+    font-family: {FONT_FAMILY};
     font-size: 13px;
     color: {COLOR_TEXT_PRIMARY};
+    outline: none;
 }}
 
 QMainWindow, QDialog {{
     background-color: {COLOR_BG_BASE};
 }}
 
-QWidget#TransparentWidget {{
-    background: transparent;
-}}
-
-/* ── Scrollbar Minimalista (Invisible) ───────── */
-QScrollBar:vertical {{
-    background: transparent;
-    width: 6px;
-    margin: 0px;
-    border-radius: 3px;
-}}
-QScrollBar::handle:vertical {{
-    background: {COLOR_BORDER_SVELTE};
-    border-radius: 3px;
-    min-height: 30px;
-}}
-QScrollBar::handle:vertical:hover {{
-    background: {COLOR_BORDER_INPUT};
-}}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-    height: 0;
-}}
-QScrollArea, QScrollArea > QWidget > QWidget {{
-    background: transparent;
+/* ─── Contenedores Principales (Separación de Responsabilidades) ─── */
+QFrame#Sidebar {{
+    background-color: {COLOR_BG_INPUT};
     border: none;
+    border-right: 1px solid {COLOR_BORDER_SVELTE};
 }}
 
-/* ── Labels (Textos con Roles) ───────────────── */
-QLabel {{
-    background: transparent;
-}}
-QLabel[role="title"] {{
-    font-size: 26px;
-    font-weight: 700;
-    color: {COLOR_TEXT_PRIMARY};
-}}
-QLabel[role="subtitle"] {{
-    font-size: 13px;
-    color: {COLOR_TEXT_SECONDARY};
-}}
-QLabel[role="section"] {{
-    font-family: {FONT_DISPLAY};
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    color: {COLOR_TEXT_MUTED};
-    text-transform: uppercase;
-}}
-QLabel[role="stat_value"] {{
-    font-size: 28px;
-    font-weight: bold;
-    color: {COLOR_TEXT_PRIMARY};
-}}
-
-QLabel#State_Connected {{
-    color: {COLOR_INDICATOR_CONNECTED};
-    font-weight: 600;
-}}
-QLabel#State_Dot {{
-    font-size: 20px;
-    color: {COLOR_INDICATOR_CONNECTED};
-}}
-
-/* ── Tarjetas (Cards y Paneles) ──────────────── */
 QFrame#Card {{
     background-color: {COLOR_BG_SURFACE};
-    border: 1.5px solid {COLOR_BORDER_SVELTE};
-    border-radius: {RADIUS_LG}px;
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: {RADIUS_MD}px;
 }}
 
-QFrame#Sidebar {{
-    background-color: {COLOR_BG_SURFACE};
-    border-right: 1.5px solid {COLOR_BORDER_SVELTE};
+/* ─── Tipografía con Roles (Alta Cohesión) ─── */
+QLabel[role="title"] {{
+    font-size: 24px;
+    font-weight: 700;
+    color: {COLOR_TEXT_PRIMARY};
+    letter-spacing: -0.5px;
 }}
 
-/* ── Botones de Navegación ─────────────────── */
+QLabel[role="subtitle"] {{
+    color: {COLOR_TEXT_SECONDARY};
+    font-weight: 500;
+}}
+
+/* ─── Navegación (Sidebar) ─── */
 QPushButton#NavButton {{
     background: transparent;
-    border: 1.5px solid {COLOR_BORDER_SVELTE};
-    border-radius: 8px;
-    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: {RADIUS_SM}px;
+    padding: 10px 12px;
     text-align: left;
-    font-size: 13px;
     color: {COLOR_TEXT_SECONDARY};
 }}
-QPushButton#NavButton:hover {{  
-    background: {COLOR_BG_ELEVATED}; 
-    color: {COLOR_TEXT_PRIMARY};
-    border-color: {COLOR_BORDER_INPUT};
-}}
-QPushButton#NavButton:checked {{
-    background: {COLOR_ACCENT_BG_OPAQUE}; 
-    font-weight: 700;
-    color: {COLOR_ACCENT};
-    border-color: {COLOR_ACCENT};
-}}
 
-/* REGLA NUEVA: Manejo automático del centrado cuando el sidebar se colapsa */
-QPushButton#NavButton[collapsed="true"] {{
-    text-align: center;
-    padding: 10px 0px;
-}}
-
-/* ── Inputs y Botones de Acción (Inputs) ────── */
-QPushButton#Input_Selector, QComboBox {{
+QPushButton#NavButton:hover {{
     background-color: {COLOR_BG_ELEVATED};
-    border: 1.5px solid {COLOR_BORDER_INPUT};
-    border-radius: 8px;
-    padding: 10px;
-    text-align: left;
     color: {COLOR_TEXT_PRIMARY};
 }}
-QPushButton#Input_Selector:hover {{
-    background-color: {COLOR_BORDER_SVELTE};
+
+QPushButton#NavButton:checked {{
+    background-color: {COLOR_ACCENT_SOFT};
+    color: {COLOR_ACCENT};
+    border: 1px solid {COLOR_ACCENT};
+    font-weight: 600;
 }}
 
-QTextEdit, QPlainTextEdit {{
+/* ─── Inputs y Controles (Chat View) ─── */
+QTextEdit#ChatContainer {{
     background-color: {COLOR_BG_INPUT};
-    border: 1.5px solid {COLOR_BORDER_SVELTE};
-    border-radius: 8px;
-    padding: SPACING;
-    color: {COLOR_TEXT_PRIMARY};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: {RADIUS_MD}px;
+    padding: 12px;
+    line-height: 1.6;
 }}
 
+QLineEdit {{
+    background-color: {COLOR_BG_INPUT};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: {RADIUS_SM}px;
+    padding: 8px 12px;
+    selection-background-color: {COLOR_ACCENT};
+}}
+
+QLineEdit:focus {{
+    border: 1px solid {COLOR_ACCENT};
+}}
+
+/* ─── Botones de Acción ─── */
 QPushButton[role="action_accent"] {{
-    font-family: {FONT_DISPLAY};
     background-color: {COLOR_ACCENT};
     border: none;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: {RADIUS_SM}px;
+    padding: 10px 20px;
     font-weight: 700;
-    color: #ffffff; 
+    color: #FFFFFF;
 }}
+
 QPushButton[role="action_accent"]:hover {{
     background-color: {COLOR_ACCENT_HOVER};
 }}
 
-/* ── Slider (Barras de control) ───────────── */
-QSlider::groove:horizontal {{
-    background: {COLOR_BORDER_SVELTE};
-    height: 6px;
-    border-radius: 3px;
+/* ─── Scrollbars (Minimalistas e invisibles hasta el hover) ─── */
+QScrollBar:vertical {{
+    border: none;
+    background: transparent;
+    width: 8px;
+    margin: 0px;
 }}
+
+QScrollBar::handle:vertical {{
+    background: {COLOR_TEXT_MUTED};
+    min-height: 20px;
+    border-radius: 4px;
+}}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+    height: 0px;
+}}
+
+/* ─── Sliders (Volumen) ─── */
+QSlider::groove:horizontal {{
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    height: 4px;
+    background: {COLOR_BG_INPUT};
+    margin: 2px 0;
+    border-radius: 2px;
+}}
+
 QSlider::handle:horizontal {{
     background: {COLOR_ACCENT};
     border: none;
     width: 14px;
     height: 14px;
-    margin: -4px 0;
+    margin: -5px 0;
     border-radius: 7px;
-}}
-QSlider::handle:horizontal:hover {{
-    background: {COLOR_ACCENT_HOVER};
-}}
-
-/* ── CheckBox ───────────────────────────────── */
-QCheckBox {{
-    spacing: 8px;
-    font-size: 13px;
-    background: transparent;
-    color: {COLOR_TEXT_PRIMARY};
-}}
-QCheckBox::indicator {{
-    width: 16px;
-    height: 16px;
-    border: 1.5px solid {COLOR_BORDER_SVELTE};
-    border-radius: 4px;
-    background: {COLOR_BG_INPUT};
-}}
-QCheckBox::indicator:checked {{
-    background: {COLOR_ACCENT};
-    border-color: {COLOR_ACCENT};
 }}
 """

@@ -25,7 +25,7 @@ class ChatView(QWidget):
     def _setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
-        layout.setSpacing(15)
+        layout.setSpacing(12)
 
         title = QLabel("Chat en Vivo")
         title.setProperty("role", "title")
@@ -35,8 +35,8 @@ class ChatView(QWidget):
         controls_frame = QFrame()
         controls_frame.setObjectName("Card")
         controls_layout = QVBoxLayout(controls_frame) 
-        controls_layout.setContentsMargins(15, 15, 15, 15)
-        controls_layout.setSpacing(15)
+        controls_layout.setContentsMargins(12, 12, 12, 12)
+        controls_layout.setSpacing(12)
         
         # --- Fila 1: Configuración de Lectura ---
         row1 = QHBoxLayout()

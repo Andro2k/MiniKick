@@ -43,7 +43,7 @@ class Sidebar(QFrame):
         self.logo_btn.setIconSize(QSize(40, 40))
         self.logo_btn.setStyleSheet("border: none; background: transparent;")
         
-        self.title_label = QLabel("Folderly")
+        self.title_label = QLabel("MiniKick")
         self.title_label.setStyleSheet("font-size: 15px; font-weight: bold;")
         
         self.expanded_spacer = QWidget()
@@ -62,14 +62,13 @@ class Sidebar(QFrame):
         header_layout.addWidget(self.toggle_btn)
         
         self.main_layout.addWidget(self.header_container)
-        self.main_layout.addSpacing(15)
+        self.main_layout.addSpacing(12)
         
         # Espaciador elástico al final
         self.bottom_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.main_layout.addSpacerItem(self.bottom_spacer)
 
     # ─── SERVICIOS (Contratos para el Controlador) ───
-
     def add_tab(self, name, icon_name, is_active=False):
         """Permite al controlador añadir pestañas dinámicamente (Desacoplamiento)"""
         btn_text = f"   {name}"
