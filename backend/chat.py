@@ -22,10 +22,22 @@ class ChatFormatter:
 # --- Capa de Acceso a Datos (API externa) ---
 class KickAPIClient:
     @staticmethod
-    def fetch_user_data(token: str) -> tuple[str, int]:
+    def fetch_user_data(token: str) -> dict:
         username = KickAPIClient._fetch_username(token)
-        room_id = KickAPIClient._fetch_room_id(username)
-        return username, room_id
+        channel_data = KickAPIClient._fetch_channel_data(username)
+        
+        # Obtenemos la URL de la imagen, manejando nulos por seguridad
+        avatar_url = channel_data.get("user", {}).get("profile_pic", "")
+        
+        # Extraemos los datos interesantes (Alta Cohesión de lectura de datos)
+        return {
+            "username": username,
+            "room_id": channel_data.get("chatroom", {}).get("id"),
+            "followers": channel_data.get("followersCount", 0),
+            "is_verified": channel_data.get("user", {}).get("is_verified", False),
+            "playback_url": channel_data.get("playback_url", ""),
+            "avatar_url": avatar_url # NUEVO DATO
+        }
 
     @staticmethod
     def _fetch_username(token: str) -> str:
@@ -38,10 +50,10 @@ class KickAPIClient:
         return data[0].get("name")
 
     @staticmethod
-    def _fetch_room_id(username: str) -> int:
+    def _fetch_channel_data(username: str) -> dict:
         scraper = cloudscraper.create_scraper()
         resp = scraper.get(KICK_CHANNEL_URL.format(username=username))
-        return resp.json().get("chatroom", {}).get("id")
+        return resp.json()
 
 # --- Lógica de Negocio / Infraestructura ---
 class ChatSocketManager:

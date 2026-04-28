@@ -1,27 +1,25 @@
 # frontend/main_window.py
+
 import os
 from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget
 from PySide6.QtCore import Slot, QThread, Signal
-
 # Importamos las Vistas (Frontend)
+from backend.database import DatabaseManager, SQLiteTokenStorage
 from frontend.sidebar import Sidebar
+from frontend.utils import resource_path
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.settings_view import SettingsView
-
 # Importamos el Backend
 from backend.auth import AuthManager, FileTokenStorage
 from backend.chat import KickAPIClient, ChatSocketManager
 from backend.tts import TTSManager, Pyttsx3Engine
 
-# ─── NUEVA ABSTRACCIÓN: Hilo de Trabajo (Alta Cohesión & SoR) ───
 class ChatWorker(QThread):
-    """
-    Aísla la conexión WebSocket en un hilo secundario para evitar que la UI se congele.
-    Solo se comunica con la vista mediante Señales (Inversión de Dependencias).
-    """
-    message_received = Signal(str, str) # Emite: (usuario, mensaje)
-    error_occurred = Signal(str)        # Emite: (mensaje_de_error)
+    message_received = Signal(str, str)
+    error_occurred = Signal(str)
+    # NUEVO: Contrato para enviar los datos de la API a la vista
+    connection_success = Signal(dict) 
 
     def __init__(self, token: str, cluster: str, key: str):
         super().__init__()
@@ -32,17 +30,17 @@ class ChatWorker(QThread):
 
     def run(self):
         try:
-            # 1. Obtener datos de la API
-            username, room_id = KickAPIClient.fetch_user_data(self.token)
-            
-            # 2. Preparar el cliente WebSocket
+            # 1. Obtenemos el nuevo diccionario completo
+            user_data = KickAPIClient.fetch_user_data(self.token)            
+            # 2. Avisamos a la interfaz que ya tenemos la data
+            self.connection_success.emit(user_data)            
+            # 3. Iniciamos Websockets extrayendo el room_id
+            room_id = user_data.get("room_id")
             self.chat_manager = ChatSocketManager(self.cluster, self.key)
 
-            # 3. Función puente: Cuando el socket reciba algo, emitimos la señal a Qt
             def on_msg(user: str, msg: str):
                 self.message_received.emit(user, msg)
 
-            # 4. Iniciar el bucle bloqueante (está a salvo aquí porque es un QThread)
             self.chat_manager.start_socket(room_id, on_message=on_msg)
         except Exception as e:
             self.error_occurred.emit(str(e))
@@ -51,16 +49,22 @@ class ChatWorker(QThread):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("MiniKick - Folderly")
+        self.setWindowTitle("MiniKick - Version 1.0")
         self.resize(1100, 750)
 
-        # 1. Inyectar dependencias de Autenticación
-        self.token_storage = FileTokenStorage("token.json")
+        # 1. Inicializar componentes del Backend (Capa de Negocio)
+        html_path = resource_path(os.path.join("assets", "web", "success.html"))
+
+        # Inyectamos el nuevo Storage basado en SQLite en la carpeta AppData
+        self.db_manager = DatabaseManager()
+        self.token_storage = SQLiteTokenStorage(self.db_manager)
+        
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
             client_secret=os.getenv("KICK_CLIENT_SECRET", ""),
             redirect_uri=os.getenv("KICK_REDIRECT_URI", ""),
-            storage=self.token_storage
+            storage=self.token_storage,
+            success_html_path=html_path
         )
 
         # 2. Inyectar dependencias de TTS (Desacoplado)
@@ -120,28 +124,22 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _handle_auth_process(self):
-        """Orquesta el login y, si es exitoso, levanta los servicios de Chat y TTS"""
         self.view_dashboard.set_connecting_state()
 
         try:
             tokens = self.auth_manager.get_tokens()
             
             if tokens and "access_token" in tokens:
-                self.view_dashboard.set_connected_state()
-                
-                # --- AQUÍ OCURRE LA MAGIA ---
-                # Obtenemos las credenciales de Pusher del .env
                 cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
                 key = os.getenv("KICK_PUSHER_KEY", "")
                 
-                # Instanciamos el Worker del Chat
                 self.chat_worker = ChatWorker(tokens["access_token"], cluster, key)
+
+                self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
                 
-                # Enlazamos las señales a nuestras funciones
                 self.chat_worker.message_received.connect(self._on_chat_message)
                 self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)
                 
-                # Arrancamos el hilo secundario
                 self.chat_worker.start()
 
         except Exception as e:

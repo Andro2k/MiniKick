@@ -38,8 +38,11 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
+            
+            # Buscamos la ruta inyectada en el servidor
+            html_path = getattr(self.server, "success_html_path", "")
             try:
-                with open("success.html", "rb") as f:
+                with open(html_path, "rb") as f:
                     self.wfile.write(f.read())
             except FileNotFoundError:
                 self.wfile.write("<h1>Autenticación exitosa. Puedes cerrar esta pestaña.</h1>".encode("utf-8"))
@@ -49,9 +52,10 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
 
 class OAuthCallbackServer:
     @staticmethod
-    def capture_auth_code(url: str, port: int) -> str:
+    def capture_auth_code(url: str, port: int, success_html_path: str) -> str:
         httpd = HTTPServer(("", port), _OAuthCallbackHandler)
         httpd.auth_code = None  # type: ignore[attr-defined]
+        httpd.success_html_path = success_html_path # INYECCIÓN DE DEPENDENCIA
         webbrowser.open(url)
         while httpd.auth_code is None:
             httpd.handle_request()
@@ -60,11 +64,12 @@ class OAuthCallbackServer:
 
 # --- Lógica de Negocio ---
 class AuthManager:
-    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage) -> None:
+    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage, success_html_path: str = "") -> None:
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.storage = storage
+        self.success_html_path = success_html_path
 
     def get_tokens(self) -> dict:
         tokens = self.storage.load()
@@ -77,7 +82,8 @@ class AuthManager:
         auth_url = self._build_auth_url(challenge)
 
         port = int(urlparse(self.redirect_uri).port or 8080)
-        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port)
+        # Pasamos la ruta al servidor local
+        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path)
 
         tokens = self._exchange_code(auth_code, verifier)
         self.storage.save(tokens)
