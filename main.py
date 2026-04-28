@@ -1,116 +1,43 @@
-import os
+# main.py
 import sys
-import threading
-from dotenv import load_dotenv
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QStackedWidget
 
-from PySide6.QtCore import QThread, Signal
-from PySide6.QtWidgets import QApplication, QMainWindow
+# Importamos tu tema global y el sidebar
+from frontend.theme import GLOBAL_QSS
+from frontend.sidebar import Sidebar
+from frontend.views.dashboard import DashboardView # Asumo que ya creaste la vista basándonos en tu prompt anterior
 
-from backend.auth import AuthManager
-from backend.chat import ChatManager
-from backend.tts import TTSManager
-from frontend.theme import GLOBAL_QSS, COLOR_BG_BASE
-from frontend.views.dashboard_view import DashboardView
-
-load_dotenv()
-
-# ==========================================
-# HILO DE AUTENTICACIÓN (Evita que la UI se congele)
-# ==========================================
-class LoginWorker(QThread):
-    success = Signal(dict, str, int)  # Emite: tokens, username, room_id
-    error = Signal(str)
-
-    def __init__(self, auth_manager, pusher_cluster, pusher_key):
-        super().__init__()
-        self.auth_manager = auth_manager
-        self.pusher_cluster = pusher_cluster
-        self.pusher_key = pusher_key
-
-    def run(self):
-        try:
-            # 1. Obtiene tokens (abre navegador si es necesario)
-            tokens = self.auth_manager.get_tokens()
-            
-            # 2. Inicia un ChatManager temporal para extraer datos de la cuenta
-            temp_chat = ChatManager(tokens["access_token"], self.pusher_cluster, self.pusher_key)
-            username, room_id = temp_chat.get_user_data()
-            
-            # 3. Envía los datos de vuelta a la UI
-            self.success.emit(tokens, username, room_id)
-        except Exception as e:
-            self.error.emit(str(e))
-
-# ==========================================
-# APLICACIÓN PRINCIPAL
-# ==========================================
-class KickBotApp(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Kick TTS Bot")
-        self.setMinimumSize(1000, 650)
-        self.setStyleSheet(f"background-color: {COLOR_BG_BASE};")
-
-        client_id = os.getenv("KICK_CLIENT_ID")
-        client_secret = os.getenv("KICK_CLIENT_SECRET")
-        redirect_uri = os.getenv("KICK_REDIRECT_URI")
-        self.pusher_key = os.getenv("KICK_PUSHER_KEY")
-        self.pusher_cluster = os.getenv("KICK_PUSHER_CLUSTER")
-
-        if not all([client_id, client_secret, redirect_uri]):
-            print("[-] Error: Faltan credenciales en el archivo .env")
-            sys.exit(1)
-
-        self.auth_manager = AuthManager(client_id, client_secret, redirect_uri)
-        self.tts_manager = TTSManager()
-        self.chat_manager = None
+        self.setWindowTitle("Mi App - Responsive Sidebar")
+        self.resize(1100, 700)
         
-        # Cargamos directamente el Dashboard como vista principal
-        self.dashboard_view = DashboardView(self.tts_manager)
-        self.dashboard_view.request_login.connect(self._start_login_process)
-        self.setCentralWidget(self.dashboard_view)
+        # Aplicamos toda tu hoja de estilos QSS centralizada
+        self.setStyleSheet(GLOBAL_QSS)
 
-        # Si ya existe un token.json, iniciamos la conexión automáticamente
-        if os.path.exists("token.json"):
-            self._start_login_process()
-
-    def _start_login_process(self):
-        """Inicia el trabajador en segundo plano para no congelar la app"""
-        self.worker = LoginWorker(self.auth_manager, self.pusher_cluster, self.pusher_key)
-        self.worker.success.connect(self._on_login_success)
-        self.worker.error.connect(self.dashboard_view.set_error_state)
-        self.worker.start()
-
-    def _on_login_success(self, tokens: dict, username: str, room_id: int):
-        print(f"[+] Autenticado como {username} (Sala: {room_id})")
+        # Widget central y layout
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
         
-        # Actualiza el título y el botón en el dashboard
-        self.dashboard_view.set_connected_state(username, room_id)
+        main_layout = QHBoxLayout(central_widget)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0) 
 
-        # Inicializa el Chat definitivo
-        self.chat_manager = ChatManager(tokens["access_token"], self.pusher_cluster, self.pusher_key)
+        # Instanciamos los componentes
+        self.sidebar = Sidebar()
+        self.stacked_views = QStackedWidget()
         
-        # Inicia el WebSocket en un hilo separado
-        threading.Thread(
-            target=self.chat_manager.start_socket,
-            args=(room_id, self.dashboard_view.trigger_new_message),
-            daemon=True
-        ).start()
+        # Añadimos la vista del dashboard
+        self.dashboard_view = DashboardView()
+        self.stacked_views.addWidget(self.dashboard_view)
 
-    def closeEvent(self, event):
-        print("[*] Cerrando aplicación...")
-        self.tts_manager.stop()
-        event.accept()
+        # Añadimos todo al layout principal
+        main_layout.addWidget(self.sidebar)
+        main_layout.addWidget(self.stacked_views)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyleSheet(GLOBAL_QSS)
-    
-    font = app.font()
-    font.setFamily("Segoe UI")
-    app.setFont(font)
-
-    window = KickBotApp()
+    window = MainWindow()
     window.show()
-    
     sys.exit(app.exec())

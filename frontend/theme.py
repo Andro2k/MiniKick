@@ -1,38 +1,54 @@
 # frontend/theme.py
 # ─────────────────────────────────────────────
 # Design tokens y Hoja de Estilos Global (QSS)
+# Inspirado en la sofisticación y paleta de image_2.png.
 # ─────────────────────────────────────────────
 
-# Paleta de colores
-COLOR_BG_BASE       = "#16181D"   # Fondo principal
-COLOR_BG_SURFACE    = "#1E2128"   # Tarjetas / Paneles / Sidebar
-COLOR_BG_ELEVATED   = "#262A33"   # Inputs, Hover
-COLOR_BORDER        = "#2E3340"   # Bordes sutiles
-COLOR_ACCENT        = "#53fc18"   # Verde Kick (Ajustado a tu color original)
-COLOR_ACCENT_HOVER  = "#45db12"
-COLOR_TEXT_PRIMARY  = "#F1F5F9"
-COLOR_TEXT_SECONDARY= "#848E9C"
-COLOR_TEXT_MUTED    = "#3D4451"
+# ─── Paleta de colores (Nueva y Refinada) ─────
+# Extraídos directamente de image_2.png
+COLOR_BG_BASE       = "#080808"   # Fondo de ventana principal (ultra-oscuro)
+COLOR_BG_SURFACE    = "#151515"   # Paneles de tarjetas / Sidebar / Contenedores
+COLOR_BG_ELEVATED   = "#1E1E1E"   # Inputs, Hover sobre elementos, botones sutiles
+COLOR_BG_INPUT      = "#101010"   # Fondo específico para áreas de texto/inputs
 
-# Tipografía
-FONT_DISPLAY  = "Segoe UI"
-FONT_BODY     = "Segoe UI"
-FONT_MONO     = "Consolas"
+COLOR_BORDER_SVELTE = "#252525"   # Bordes extremadamente sutiles y oscuros para paneles
+COLOR_BORDER_INPUT  = "#333333"   # Bordes para inputs y botones
 
-# Radios y Espaciado
+# Color de acento Teal/Kick-Green vibrante de image_2.png
+COLOR_ACCENT        = "#0ca678"   
+COLOR_ACCENT_HOVER  = "#10c18c"   # Variante más brillante para hover
+COLOR_ACCENT_BG_OPAQUE = "rgba(12, 166, 120, 0.12)" # Fondo translúcido para estados activos
+
+# Indicador de estado "Conectado" (Verde brillante)
+COLOR_INDICATOR_CONNECTED = "#51cf66" 
+
+COLOR_TEXT_PRIMARY  = "#f0f0f0"   # Texto blanco-apagado para máxima legibilidad
+COLOR_TEXT_SECONDARY= "#a0a0a0"   # Texto gris medio para descripciones, subtítulos
+COLOR_TEXT_MUTED    = "#6a6a6a"   # Texto muy tenue para placeholders o secciones
+
+# ─── Tipografía Modern & Minimalista ────────
+# Configuración del Font Stack priorizando Aptos
+# Fallbacks: Inter es de código abierto y casi idéntica. Segoe UI es estándar.
+FONT_FAMILY_STACK = "\"Aptos Font\", \"Inter\", \"Segoe UI\", \"San Francisco Pro Display\", \"Roboto\", sans-serif"
+FONT_DISPLAY      = "\"Inter Semibold\", sans-serif" # Para títulos de sección
+FONT_BODY         = FONT_FAMILY_STACK
+FONT_MONO         = "\"Consolas\", \"Monospace\""
+
+# ─── Radios y Espaciado (Svelte) ────────────
 RADIUS_SM = 6
 RADIUS_MD = 10
 RADIUS_LG = 14
 SPACING = 8
 
 # ─── Stylesheet global QSS ───────────────────
-# Aquí centralizamos TODO el diseño visual de la app.
-# Usamos selectores de clase y de objeto (#nombreObjeto) para aplicar los estilos.
+# Centralizamos TODO el diseño visual de la app.
+# Usamos selectores de clase y de objeto (#nombreObjeto).
 
 GLOBAL_QSS = f"""
 /* ── Reset y Base ─────────────────────────────── */
 * {{
-    font-family: "{FONT_BODY}", sans-serif;
+    font-family: {FONT_BODY};
+    font-size: 13px;
     color: {COLOR_TEXT_PRIMARY};
 }}
 
@@ -40,24 +56,26 @@ QMainWindow, QDialog {{
     background-color: {COLOR_BG_BASE};
 }}
 
-/* Forzar fondos transparentes en contenedores genéricos para evitar solapamientos */
+/* Forzar fondos transparentes en contenedores genéricos */
 QWidget#TransparentWidget {{
     background: transparent;
 }}
 
-/* ── Scrollbar (Invisible/Minimalista) ────────── */
+/* ── Scrollbar Minimalista (Invisible) ───────── */
+/* Imitando el diseño de la imagen que no los muestra */
 QScrollBar:vertical {{
     background: transparent;
     width: 6px;
+    margin: 0px;
     border-radius: 3px;
 }}
 QScrollBar::handle:vertical {{
-    background: {COLOR_BORDER};
+    background: {COLOR_BORDER_SVELTE};
     border-radius: 3px;
     min-height: 30px;
 }}
 QScrollBar::handle:vertical:hover {{
-    background: {COLOR_TEXT_SECONDARY};
+    background: {COLOR_BORDER_INPUT};
 }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
     height: 0;
@@ -67,12 +85,12 @@ QScrollArea, QScrollArea > QWidget > QWidget {{
     border: none;
 }}
 
-/* ── Labels (Textos) ──────────────────────────── */
+/* ── Labels (Textos con Roles) ───────────────── */
 QLabel {{
     background: transparent;
 }}
 QLabel[role="title"] {{
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
     color: {COLOR_TEXT_PRIMARY};
 }}
@@ -80,68 +98,121 @@ QLabel[role="subtitle"] {{
     font-size: 13px;
     color: {COLOR_TEXT_SECONDARY};
 }}
+/* Estilo de secciones como "Main Sections" en image_2.png */
 QLabel[role="section"] {{
+    font-family: {FONT_DISPLAY};
     font-size: 11px;
-    font-weight: 700;
     letter-spacing: 1.5px;
     color: {COLOR_TEXT_MUTED};
     text-transform: uppercase;
 }}
 QLabel[role="stat_value"] {{
-    font-family: "{FONT_DISPLAY}";
     font-size: 28px;
     font-weight: bold;
     color: {COLOR_TEXT_PRIMARY};
 }}
 
-/* ── Tarjetas (Cards y StatCards) ─────────────── */
+/* Indicadores de estado */
+QLabel#State_Connected {{
+    color: {COLOR_INDICATOR_CONNECTED};
+    font-weight: 600;
+}}
+QLabel#State_Dot {{
+    font-size: 20px;
+    color: {COLOR_INDICATOR_CONNECTED};
+}}
+
+/* ── Tarjetas (Cards y Paneles) ──────────────── */
+/* Mapeado a los paneles principales como Dashboard o GPT-4o */
 QFrame#Card {{
-    background: {COLOR_BG_SURFACE};
-    border: 1.5px solid {COLOR_BORDER};
+    background-color: {COLOR_BG_SURFACE};
+    border: 1.5px solid {COLOR_BORDER_SVELTE};
     border-radius: {RADIUS_LG}px;
 }}
 
-QLabel#StatIcon {{
-    background: rgba(83, 252, 24, 0.1); /* Verde con opacidad */
-    border-radius: 8px;
-    font-size: 16px;
-    color: {COLOR_ACCENT};
-}}
-
-/* ── Menú Lateral y Botones de Navegación ─────── */
+/* Paneles del Sidebar con borde derecho */
 QFrame#Sidebar {{
-    background: {COLOR_BG_SURFACE};
-    border-right: 1px solid {COLOR_BORDER};
+    background-color: {COLOR_BG_SURFACE};
+    border-right: 1.5px solid {COLOR_BORDER_SVELTE};
 }}
 
+/* ── Botones de Navegación ─────────────────── */
 QPushButton#NavButton {{
-    background: {COLOR_TEXT_SECONDARY};
-    border: none;
-    border-radius: 8px; /* Esquinas redondeadas como en tu imagen */
+    background: transparent;
+    border: 1.5px solid {COLOR_BORDER_SVELTE};
+    border-radius: 8px;
     padding: 10px 14px;
     text-align: left;
     font-size: 13px;
-    font-weight: 500;
     color: {COLOR_TEXT_SECONDARY};
 }}
 QPushButton#NavButton:hover {{  
     background: {COLOR_BG_ELEVATED}; 
     color: {COLOR_TEXT_PRIMARY};
+    border-color: {COLOR_BORDER_INPUT};
 }}
 QPushButton#NavButton:checked {{
-    background: rgba(83, 252, 24, 0.12); /* Fondo verde translúcido */
+    background: {COLOR_ACCENT_BG_OPAQUE}; 
     font-weight: 700;
     color: {COLOR_ACCENT};
+    border-color: {COLOR_ACCENT};
 }}
 
-/* ── Contenedor del Chat ──────────────────────── */
-QFrame#ChatContainer {{
-    background: {COLOR_BG_SURFACE};
-    border: 1.5px solid {COLOR_BORDER};
-    border-radius: 14px;
+/* ── Inputs y Botones de Acción (Inputs) ────── */
+/* Como los selectores de modelo, preset, etc. */
+QPushButton#Input_Selector, QComboBox {{
+    background-color: {COLOR_BG_ELEVATED};
+    border: 1.5px solid {COLOR_BORDER_INPUT};
+    border-radius: 8px;
+    padding: 10px;
+    text-align: left;
+    color: {COLOR_TEXT_PRIMARY};
+}}
+QPushButton#Input_Selector:hover {{
+    background-color: {COLOR_BORDER_SVELTE};
 }}
 
-/* ── CheckBox ─────────────────────────────────── */
+QTextEdit, QPlainTextEdit {{
+    background-color: {COLOR_BG_INPUT};
+    border: 1.5px solid {COLOR_BORDER_SVELTE};
+    border-radius: 8px;
+    padding: SPACING;
+    color: {COLOR_TEXT_PRIMARY};
+}}
+
+/* Botones de acción principales como "Save" o "Add Functions" en image_2.png */
+QPushButton[role="action_accent"] {{
+    font-family: {FONT_DISPLAY};
+    background-color: {COLOR_ACCENT};
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 700;
+    color: #ffffff; /* Texto blanco en el acento */
+}}
+QPushButton[role="action_accent"]:hover {{
+    background-color: {COLOR_ACCENT_HOVER};
+}}
+
+/* ── Slider (Barras de control) ───────────── */
+QSlider::groove:horizontal {{
+    background: {COLOR_BORDER_SVELTE};
+    height: 6px;
+    border-radius: 3px;
+}}
+QSlider::handle:horizontal {{
+    background: {COLOR_ACCENT};
+    border: none;
+    width: 14px;
+    height: 14px;
+    margin: -4px 0;
+    border-radius: 7px;
+}}
+QSlider::handle:horizontal:hover {{
+    background: {COLOR_ACCENT_HOVER};
+}}
+
+/* ── CheckBox ───────────────────────────────── */
 QCheckBox {{
     spacing: 8px;
     font-size: 13px;
@@ -151,9 +222,9 @@ QCheckBox {{
 QCheckBox::indicator {{
     width: 16px;
     height: 16px;
-    border: 1.5px solid {COLOR_BORDER};
+    border: 1.5px solid {COLOR_BORDER_SVELTE};
     border-radius: 4px;
-    background: {COLOR_BG_ELEVATED};
+    background: {COLOR_BG_INPUT};
 }}
 QCheckBox::indicator:checked {{
     background: {COLOR_ACCENT};
