@@ -1,25 +1,37 @@
 # frontend/main_window.py
 
 import os
-from PySide6.QtWidgets import QMainWindow, QWidget, QHBoxLayout, QStackedWidget
-from PySide6.QtCore import Slot, QThread, Signal
+from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
+                               QSystemTrayIcon, QMenu, QApplication)
+from PySide6.QtCore import Slot, QThread, Signal, QEvent
+from PySide6.QtGui import QIcon
+
 # Importamos las Vistas (Frontend)
-from backend.database import DatabaseManager, SQLiteTokenStorage
 from frontend.sidebar import Sidebar
-from frontend.utils import resource_path
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.settings_view import SettingsView
+
 # Importamos el Backend
-from backend.auth import AuthManager, FileTokenStorage
+from backend.auth import AuthManager
+from backend.database import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage
 from backend.chat import KickAPIClient, ChatSocketManager
 from backend.tts import TTSManager, Pyttsx3Engine
 
+# Importamos Componentes Modernos y Utilidades
+from frontend.components.dialogs import ModernConfirmDialog
+from frontend.utils import resource_path
+
+
+# ─── Hilo de Trabajo (Alta Cohesión & SoR) ───
 class ChatWorker(QThread):
-    message_received = Signal(str, str)
-    error_occurred = Signal(str)
-    # NUEVO: Contrato para enviar los datos de la API a la vista
-    connection_success = Signal(dict) 
+    """
+    Aísla la conexión WebSocket y llamadas a la API en un hilo secundario 
+    para evitar que la interfaz gráfica se congele.
+    """
+    message_received = Signal(str, str) # Emite: (usuario, mensaje)
+    error_occurred = Signal(str)        # Emite: (mensaje_de_error)
+    connection_success = Signal(dict)   # Emite: (datos_del_streamer)
 
     def __init__(self, token: str, cluster: str, key: str):
         super().__init__()
@@ -30,34 +42,44 @@ class ChatWorker(QThread):
 
     def run(self):
         try:
-            # 1. Obtenemos el nuevo diccionario completo
-            user_data = KickAPIClient.fetch_user_data(self.token)            
-            # 2. Avisamos a la interfaz que ya tenemos la data
-            self.connection_success.emit(user_data)            
-            # 3. Iniciamos Websockets extrayendo el room_id
+            # 1. Obtener datos de la API de Kick
+            user_data = KickAPIClient.fetch_user_data(self.token)
+            
+            # 2. Notificar a la vista con la data limpia
+            self.connection_success.emit(user_data)
+            
+            # 3. Extraer el room_id para el socket
             room_id = user_data.get("room_id")
+            if not room_id:
+                raise ValueError("No se pudo obtener el ID de la sala desde la API.")
+                
             self.chat_manager = ChatSocketManager(self.cluster, self.key)
 
             def on_msg(user: str, msg: str):
                 self.message_received.emit(user, msg)
 
+            # 4. Iniciar bucle bloqueante de Websockets
             self.chat_manager.start_socket(room_id, on_message=on_msg)
         except Exception as e:
             self.error_occurred.emit(str(e))
 
+
 # ─── CONTROLADOR PRINCIPAL ───
 class MainWindow(QMainWindow):
+    # Llave de persistencia para la configuración en la DB
+    SETTING_MINIMIZE_TRAY = "minimize_to_tray"
+
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("MiniKick - Version 1.0")
+        self.setWindowTitle("MiniKick - Folderly")
         self.resize(1100, 750)
 
-        # 1. Inicializar componentes del Backend (Capa de Negocio)
+        # --- 1. Inicializar componentes del Backend ---
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
 
-        # Inyectamos el nuevo Storage basado en SQLite en la carpeta AppData
         self.db_manager = DatabaseManager()
         self.token_storage = SQLiteTokenStorage(self.db_manager)
+        self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
         
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
@@ -67,15 +89,16 @@ class MainWindow(QMainWindow):
             success_html_path=html_path
         )
 
-        # 2. Inyectar dependencias de TTS (Desacoplado)
         self.tts_engine = Pyttsx3Engine(rate=150)
         self.tts_manager = TTSManager(self.tts_engine)
-        
-        # Referencia al hilo de chat (comienza vacío)
+
         self.chat_worker = None
 
+        # --- 2. Ensamblar e iniciar UI ---
         self._setup_ui()
+        self._setup_tray() # Configurar icono de bandeja
         self._connect_signals()
+        self._load_settings_into_ui()
 
     def _setup_ui(self):
         """Estructura principal de la aplicación"""
@@ -105,13 +128,52 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
 
+    def _setup_tray(self):
+        """Configura el ícono de la bandeja del sistema (Bandeja del reloj)"""
+        self.tray_icon = QSystemTrayIcon(self)
+        icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
+        self.tray_icon.setIcon(QIcon(icon_path))
+
+        # Menú contextual de la bandeja
+        tray_menu = QMenu()
+        restore_action = tray_menu.addAction("Abrir Panel")
+        restore_action.triggered.connect(self.showNormal)
+        
+        tray_menu.addSeparator()
+        
+        quit_action = tray_menu.addAction("Cerrar MiniKick")
+        quit_action.triggered.connect(self._force_quit) 
+
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.activated.connect(self._on_tray_activated)
+        self.tray_icon.show()
+
     def _connect_signals(self):
-        """Conecta eventos de la interfaz con los procesos lógicos"""
+        """Conecta eventos visuales con lógica de negocio"""
         self.sidebar.view_selected.connect(self._handle_navigation)
         self.view_dashboard.request_connection.connect(self._handle_auth_process)
         self.view_chat.volume_changed.connect(self._update_tts_volume)
+        
+        # Escuchar cambios en la configuración de la bandeja
+        self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
 
-    @Slot(str)
+    # ─── REGLAS DE NEGOCIO Y ORQUESTACIÓN ───
+
+    def _load_settings_into_ui(self):
+        """Carga la configuración de la DB al iniciar"""
+        enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
+        self.view_settings.set_minimize_tray_enabled(enabled)
+
+    @Slot(bool)
+    def _handle_minimize_tray_change(self, enabled: bool):
+        self.settings_storage.save_bool(self.SETTING_MINIMIZE_TRAY, enabled)
+
+    @Slot(QSystemTrayIcon.ActivationReason)
+    def _on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+            self.showNormal()
+            self.activateWindow()
+
     def _handle_navigation(self, view_name):
         mapping = {
             "Dashboard": self.view_dashboard,
@@ -134,57 +196,81 @@ class MainWindow(QMainWindow):
                 key = os.getenv("KICK_PUSHER_KEY", "")
                 
                 self.chat_worker = ChatWorker(tokens["access_token"], cluster, key)
-
-                self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
                 
+                self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
                 self.chat_worker.message_received.connect(self._on_chat_message)
                 self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)
                 
                 self.chat_worker.start()
-
         except Exception as e:
             self.view_dashboard.set_error_state(str(e))
-            print(f"[Controller] Error en auth: {e}")
 
     @Slot(int)
     def _update_tts_volume(self, value):
-        # Convertimos de 0-100 (UI) a 0.0-1.0 (Engine)
         self.tts_engine.set_volume(value / 100.0)
 
     @Slot(str, str)
     def _on_chat_message(self, user: str, message: str):
-        # 1. Mostrar siempre en la UI
         self.view_chat.append_message(user, message)
-
-        # 2. Lógica de Filtrado TTS (Reglas de Negocio)
-        settings = self.view_chat.get_tts_settings()
         
-        if not settings["enabled"]:
+        settings = self.view_chat.get_tts_settings()
+        if not settings.get("enabled", False):
             return
 
         final_message = message.strip()
         
-        # Filtro de Comando
-        if settings["use_command"]:
-            cmd = settings["command"]
+        if settings.get("use_command", False):
+            cmd = settings.get("command", "")
             if not final_message.lower().startswith(cmd):
                 return
-            # Removemos el comando del audio (ej: "!tts hola" -> "hola")
             final_message = final_message[len(cmd):].strip()
 
-        # Construcción de la frase (Lectura de nombre)
-        if settings["read_name"]:
-            text_to_speak = f"{user} dice: {final_message}"
-        else:
-            text_to_speak = final_message
-
-        # 3. Ejecutar audio
+        text_to_speak = f"{user} dice: {final_message}" if settings.get("read_name", False) else final_message
         self.tts_manager.say(text_to_speak)
 
-    def closeEvent(self, event):
-        """Regla de limpieza: Asegurarnos de cerrar los hilos al salir de la app"""
+    def _notify_background(self):
+        """Muestra la notificación de confirmación con el logo (Sugerencia del usuario)"""
+        self.tray_icon.showMessage(
+            "MiniKick en segundo plano",
+            "Seguiré leyendo el chat por ti. Haz doble clic para volver.",
+            QSystemTrayIcon.MessageIcon.Information,
+            3000
+        )
+
+    # ─── GESTIÓN DE EVENTOS NATIVOS ───
+
+    def changeEvent(self, event):
+        """Maneja el botón de minimizar (-)"""
+        if event.type() == QEvent.Type.WindowStateChange:
+            if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+                self.hide()
+                self._notify_background()
+        super().changeEvent(event)
+
+    def _force_quit(self):
+        """Cierre rápido desde el menú de la bandeja"""
+        self._cleanup()
+        QApplication.quit()
+
+    def _cleanup(self):
+        """Limpieza de hilos y motores antes de cerrar"""
         self.tts_manager.stop()
         if self.chat_worker and self.chat_worker.isRunning():
             self.chat_worker.terminate()
             self.chat_worker.wait()
-        super().closeEvent(event)
+
+    def closeEvent(self, event):
+        """Maneja el botón de cerrar (X)"""
+        # Si la opción de minimizar está activa, ignoramos el cierre y ocultamos
+        if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+            self.hide()
+            self._notify_background()
+            event.ignore() # R1: Evita que el programa se cierre realmente
+        else:
+            # Si la opción está desactivada, preguntamos si quiere cerrar de verdad
+            dialog = ModernConfirmDialog(self)
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                self._cleanup()
+                super().closeEvent(event)
+            else:
+                event.ignore()

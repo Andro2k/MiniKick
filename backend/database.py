@@ -4,6 +4,7 @@ import os
 import json
 import sqlite3
 from pathlib import Path
+from typing import Any
 
 class DatabaseManager:
     """Gestiona la conexión y creación de la base de datos local (Alta Cohesión)"""
@@ -27,15 +28,22 @@ class DatabaseManager:
         """Crea las tablas necesarias si es la primera vez que se ejecuta"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            # Tabla para los tokens (Solo habrá un registro con ID 1)
+            # Tabla de tokens existente
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS tokens (
                     id INTEGER PRIMARY KEY CHECK (id = 1),
                     raw_json TEXT NOT NULL
                 )
             ''')
+            
+            # --- Configuración General (Alta Cohesión) ---
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS general_settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                )
+            ''')
             conn.commit()
-
 
 class SQLiteTokenStorage:
     """
@@ -65,3 +73,38 @@ class SQLiteTokenStorage:
                 ON CONFLICT(id) DO UPDATE SET raw_json=excluded.raw_json
             ''', (raw_json,))
             conn.commit()
+
+class SQLiteSettingsStorage:
+    def __init__(self, db_manager: DatabaseManager):
+        self.db_path = db_manager.db_path
+
+    def _save(self, key: str, value: Any) -> None:
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            # Guardamos como string, ya que SQLite maneja textos mejor
+            val_str = str(value)
+            cursor.execute('''
+                INSERT INTO general_settings (key, value) 
+                VALUES (?, ?)
+                ON CONFLICT(key) DO UPDATE SET value=excluded.value
+            ''', (key, val_str))
+            conn.commit()
+
+    def _load(self, key: str, default: Any) -> Any:
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT value FROM general_settings WHERE key = ?", (key,))
+            row = cursor.fetchone()
+            if row:
+                return row[0]
+            return default
+
+    def save_bool(self, key: str, value: bool) -> None:
+        # Convertimos boolean a 'true'/'false' string para SQLite
+        self._save(key, 'true' if value else 'false')
+
+    def load_bool(self, key: str, default: bool) -> bool:
+        val = self._load(key, None)
+        if val is None:
+            return default
+        return val == 'true'

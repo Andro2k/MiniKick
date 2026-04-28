@@ -13,8 +13,8 @@ COLOR_BG_INPUT      = "#0F171A"   # Fondo para áreas de texto y inputs
 COLOR_BORDER_SVELTE = "#1E293B"   # El "Hairline border" de 1px (Slate muy oscuro)
 COLOR_BORDER_ACTIVE = "#334155"   # Borde más visible para estados activos
 
-COLOR_ACCENT        = "#1ED770"   # Kick Green (Marca)
-COLOR_ACCENT_HOVER  = "#048E32"   
+COLOR_ACCENT        = "#0FE25F"   # Kick Green (Marca)
+COLOR_ACCENT_HOVER  = "#3cb043"   
 COLOR_ACCENT_SOFT   = "rgba(12, 166, 120, 0.08)" # Fondo sutil para activos
 
 COLOR_TEXT_PRIMARY  = "#F8FAFC"   # Blanco roto (Casi puro)

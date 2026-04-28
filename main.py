@@ -12,6 +12,10 @@ from frontend.utils import resource_path
 def bootstrap():
     load_dotenv()
     app = QApplication(sys.argv)
+    
+    # Aseguramos que la app no muera cuando la última ventana se oculta (Minimizar a tray)
+    app.setQuitOnLastWindowClosed(False)
+    
     app.setStyleSheet(GLOBAL_QSS)
 
     icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
