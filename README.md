@@ -1,12 +1,8 @@
-<!-- 1. Hacemos que la imagen flote a la izquierda -->
-<img align="left" src="assets/installer/install_bg.png" width="250" alt="MiniKick Preview" />
+<img align="left" src="assets/installer/install_bg.png" width="250" />
 
-<!-- 2. Todo esto fluirá automáticamente a la derecha de la imagen -->
 <div align="left">
-  <h1>MiniKick</h1>
-  <p><strong>El centro de control definitivo para streamers en Kick.com</strong></p>
-  
-  <p>
+  <p><strong>MiniKick</strong></p>
+  <p>El centro de control definitivo para streamers en Kick.com</strong>
     <strong>MiniKick</strong> es una aplicación de escritorio nativa diseñada para optimizar la interacción en Kick.com. Actualmente, el proyecto se centra en ofrecer un sistema de lectura de chat avanzado y personalizable, operando completamente fuera del navegador para reducir drásticamente el consumo de recursos de tu PC mientras transmites.
   </p>
 
