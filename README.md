@@ -1,4 +1,4 @@
-<img align="left" src="assets/installer/install_bg.png" width="250" />
+<img align="left" src="assets/installer/install_bg.png" width="200" />
 
 <div align="left">
   <p><strong>MiniKick</strong></p>
