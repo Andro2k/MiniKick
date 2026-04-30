@@ -144,3 +144,9 @@ class AuthManager:
         )
         response.raise_for_status()
         return response.json()
+    
+    # NUEVO MÉTODO
+    def logout(self) -> None:
+        """Limpia las credenciales almacenadas"""
+        self.storage.clear()
+        # Opcional: Si Kick tuviera un endpoint de "revoke token", se llamaría aquí.

@@ -22,7 +22,6 @@ from backend.tts import TTSManager, Pyttsx3Engine
 from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
 
-
 # --- Hilo de Trabajo (Alta Cohesión & SoR) ---
 class ChatWorker(QThread):
     """
@@ -154,8 +153,8 @@ class MainWindow(QMainWindow):
         self.view_dashboard.request_connection.connect(self._handle_auth_process)
         self.view_chat.volume_changed.connect(self._update_tts_volume)
         self.view_chat.voice_changed.connect(self._handle_voice_change)
-        # Escuchar cambios en la configuración de la bandeja
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
+        self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
 
     # ─── REGLAS DE NEGOCIO Y ORQUESTACIÓN ───
 
@@ -221,6 +220,40 @@ class MainWindow(QMainWindow):
         except Exception as e:
             self.view_dashboard.set_error_state(str(e))
 
+    @Slot()
+    def _handle_unlink_account(self):
+        dialog = ModernConfirmDialog(
+            self, 
+            title_text="Desvincular Cuenta", 
+            body_text="¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes."
+        )
+        
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            if self.chat_worker and self.chat_worker.isRunning():
+                self.chat_worker.terminate()
+                self.chat_worker.wait()
+                self.chat_worker = None
+
+            self.auth_manager.logout()
+
+            self.view_dashboard.status_label.setText("Estado: Esperando conexión...")
+            self.view_dashboard.status_label.setStyleSheet("") 
+            self.view_dashboard.btn_connect.setEnabled(True)
+            self.view_dashboard.btn_connect.setText("Conectar a Kick")
+            self.view_dashboard.profile_container.setVisible(False)
+            
+            self.view_chat.chat_display.clear()
+
+            # 5. Redirigir al usuario al Dashboard (Cambiamos la vista)
+            self._handle_navigation("Dashboard")
+            
+            # REGLA APLICADA: Iteramos la lista para actualizar visualmente el botón
+            # sin importar el índice exacto en el que fue creado.
+            for btn in self.sidebar.nav_buttons:
+                if btn.text().strip() == "Dashboard":
+                    btn.setChecked(True)
+                    break
+
     @Slot(int)
     def _update_tts_volume(self, value):
         self.tts_engine.set_volume(value / 100.0)
@@ -261,7 +294,6 @@ class MainWindow(QMainWindow):
         )
 
     # ─── GESTIÓN DE EVENTOS NATIVOS ───
-
     def changeEvent(self, event):
         """Maneja el botón de minimizar (-)"""
         if event.type() == QEvent.Type.WindowStateChange:

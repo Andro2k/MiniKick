@@ -74,6 +74,14 @@ class SQLiteTokenStorage:
             ''', (raw_json,))
             conn.commit()
 
+    # NUEVO MÉTODO
+    def clear(self) -> None:
+        """Elimina el token de la base de datos"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM tokens WHERE id = 1")
+            conn.commit()
+            
 class SQLiteSettingsStorage:
     def __init__(self, db_manager: DatabaseManager):
         self.db_path = db_manager.db_path
