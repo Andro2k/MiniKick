@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QLineEdit, QWidget, QVBoxLayout, QHBoxLayout,
                                QTextEdit, QLabel, QSlider, QFrame)
 from PySide6.QtCore import Qt, Signal, Slot
 
-from frontend.components.switch import IconSwitch
+from frontend.components.switch import ModernSwitch
 
 class ChatView(QWidget):
     # ─── CONTRATOS DE SALIDA ───
@@ -13,14 +13,6 @@ class ChatView(QWidget):
     def __init__(self):
         super().__init__()
         self._setup_ui()
-
-    def _build_control_pair(self, text: str, widget: QWidget) -> QHBoxLayout:
-        """Helper para crear grupos alineados de Etiqueta + Control (DRY)"""
-        layout = QHBoxLayout()
-        layout.setSpacing(10)
-        layout.addWidget(QLabel(text))
-        layout.addWidget(widget)
-        return layout
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
@@ -44,7 +36,7 @@ class ChatView(QWidget):
         
         # Activar TTS
         row1.addWidget(QLabel("Activar TTS:"))
-        self.chk_tts = IconSwitch(icon_on="volume-2.svg", icon_off="volume-x.svg")
+        self.chk_tts = ModernSwitch() # REGLA APLICADA: Instanciación limpia
         self.chk_tts.setChecked(True)
         row1.addWidget(self.chk_tts)
         
@@ -52,7 +44,7 @@ class ChatView(QWidget):
         
         # Leer Nombre
         row1.addWidget(QLabel("Leer Nombre:"))
-        self.chk_name = IconSwitch(icon_on="user-check.svg", icon_off="user-x.svg") 
+        self.chk_name = ModernSwitch() 
         self.chk_name.setChecked(True)
         row1.addWidget(self.chk_name)
         
@@ -64,7 +56,7 @@ class ChatView(QWidget):
         
         # Usar Comando
         row2.addWidget(QLabel("Usar Comando:"))
-        self.chk_command = IconSwitch() 
+        self.chk_command = ModernSwitch() 
         self.chk_command.setChecked(False)
         row2.addWidget(self.chk_command)
         

@@ -73,16 +73,40 @@ class AuthManager:
 
     def get_tokens(self) -> dict:
         tokens = self.storage.load()
-        if tokens:
+        if tokens and "access_token" in tokens:
             return tokens
         return self._new_login()
+
+    def refresh_token(self) -> dict:
+        tokens = self.storage.load()
+        refresh_token = tokens.get("refresh_token") if tokens else None
+
+        if not refresh_token:
+            return self._new_login()
+
+        try:
+            response = requests.post(
+                KICK_TOKEN_URL,
+                data={
+                    "grant_type": "refresh_token",
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "refresh_token": refresh_token,
+                },
+            )
+            response.raise_for_status()
+            new_tokens = response.json()
+            self.storage.save(new_tokens)
+            return new_tokens
+        except requests.exceptions.RequestException:
+            # Si el refresh falla (fue revocado o expiró), forzamos un nuevo inicio de sesión
+            return self._new_login()
 
     def _new_login(self) -> dict:
         verifier, challenge = self._pkce_pair()
         auth_url = self._build_auth_url(challenge)
 
         port = int(urlparse(self.redirect_uri).port or 8080)
-        # Pasamos la ruta al servidor local
         auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path)
 
         tokens = self._exchange_code(auth_code, verifier)

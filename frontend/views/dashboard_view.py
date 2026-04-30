@@ -2,11 +2,12 @@
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QPushButton, QFrame, QGridLayout)
-from PySide6.QtCore import QByteArray, Qt, Signal, QUrl, Slot
-from PySide6.QtGui import QPixmap, QImage, QPainter, QPainterPath, QColor
+from PySide6.QtCore import Qt, Signal, QUrl, Slot
+from PySide6.QtGui import QPixmap
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 
 from frontend.theme import COLOR_BORDER_SVELTE
+from frontend.utils import create_circular_pixmap
 
 class DashboardView(QWidget):
     # ─── CONTRATOS DE SALIDA ───
@@ -20,12 +21,18 @@ class DashboardView(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        """Construye la interfaz respetando la cohesión visual del tema oscuro"""
+        """Construye la interfaz delegando en submétodos para mejor lectura"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(18, 18, 18, 18)
         layout.setSpacing(12)
 
-        # --- Encabezado ---
+        self._setup_header(layout)
+        self._setup_connection_card(layout)
+        self._setup_profile_section(layout)
+
+        layout.addStretch() # Resorte final para empujar todo hacia arriba
+
+    def _setup_header(self, parent_layout: QVBoxLayout):
         header_layout = QVBoxLayout()
         header_layout.setSpacing(4)
         welcome = QLabel("Resumen del Sistema")
@@ -34,9 +41,9 @@ class DashboardView(QWidget):
         desc.setProperty("role", "subtitle")
         header_layout.addWidget(welcome)
         header_layout.addWidget(desc)
-        layout.addLayout(header_layout)
+        parent_layout.addLayout(header_layout)
 
-        # --- Tarjeta de Conexión ---
+    def _setup_connection_card(self, parent_layout: QVBoxLayout):
         conn_card = QFrame()
         conn_card.setObjectName("Card")
         conn_layout = QHBoxLayout(conn_card)
@@ -54,11 +61,9 @@ class DashboardView(QWidget):
         conn_layout.addWidget(self.status_label)
         conn_layout.addStretch() # Empuja el botón a la derecha
         conn_layout.addWidget(self.btn_connect)
-        layout.addWidget(conn_card)
+        parent_layout.addWidget(conn_card)
 
-        # =========================================================================
-        # --- NUEVA ESTRUCTURA DE PERFIL (Horizontal: Avatar + Stats) ---
-        # =========================================================================
+    def _setup_profile_section(self, parent_layout: QVBoxLayout):
         self.profile_container = QWidget() # Contenedor maestro oculto por defecto
         self.profile_container.setVisible(False)
         self.profile_container.setContentsMargins(0, 0, 0, 0)
@@ -84,8 +89,7 @@ class DashboardView(QWidget):
         
         avatar_layout.addWidget(self.lbl_avatar)
         profile_layout.addWidget(avatar_card)
-
-
+ 
         # --- Tarjeta 2: Estadísticas (El Grid existente) ---
         stats_card = QFrame()
         stats_card.setObjectName("Card")
@@ -127,53 +131,14 @@ class DashboardView(QWidget):
         stats_prof_layout.addLayout(stats_grid)
         profile_layout.addWidget(stats_card) # Añadimos al layout horizontal principal
 
-        layout.addWidget(self.profile_container)
-        # =========================================================================
-
-        layout.addStretch() # Resorte final para empujar todo hacia arriba
-
-    # ─── MÉTODOS PRIVADOS DE RENDERIZADO (Alta Cohesión) ───
-
-    def _apply_circular_mask(self, img_data: QByteArray) -> QPixmap:
-        """Toma los datos crudos y devuelve un Pixmap circular svelte"""
-        image = QImage.fromData(img_data)
-        
-        if image.isNull():
-            return QPixmap()
-
-        # Asegurar un cuadrado perfecto para que el círculo no sea un óvalo
-        size = min(image.width(), image.height())
-        image = image.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
-        
-        # Salida transparente
-        out_img = QImage(size, size, QImage.Format.Format_ARGB32)
-        out_img.fill(Qt.GlobalColor.transparent)
-        
-        # Pintor con Antialiasing (Svelte)
-        painter = QPainter(out_img)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
-        # Crear máscara circular
-        path = QPainterPath()
-        path.addEllipse(0, 0, size, size)
-        painter.setClipPath(path)
-        
-        # Dibujar la imagen recortada
-        painter.drawImage(0, 0, image)
-        
-        # Borde ultra-fino opcional (para que no se pierda en el fondo)
-        # painter.setPen(QPen(QColor(COLOR_BORDER_SVELTE), 1))
-        # painter.drawEllipse(0, 0, size - 1, size - 1)
-        
-        painter.end()
-        return QPixmap.fromImage(out_img)
+        parent_layout.addWidget(self.profile_container)
 
     @Slot(QNetworkReply)
     def _on_avatar_downloaded(self, reply: QNetworkReply):
         """Callback asíncrono para procesar la imagen (Separación)"""
         if reply.error() == QNetworkReply.NetworkError.NoError:
             data = reply.readAll()
-            pixmap = self._apply_circular_mask(data)
+            pixmap = create_circular_pixmap(data)
             if not pixmap.isNull():
                 self.lbl_avatar.setPixmap(pixmap)
                 # Ocultar placeholder de texto si hay imagen

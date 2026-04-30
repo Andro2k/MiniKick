@@ -2,7 +2,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QHBoxLayout
 from PySide6.QtCore import Qt, Signal
 
-from frontend.components.switch import IconSwitch
+from frontend.components.switch import ModernSwitch
 
 class SettingsView(QWidget):
     # --- NUEVO NOMBRE DE SEÑAL ---
@@ -35,7 +35,7 @@ class SettingsView(QWidget):
         # --- NUEVO TEXTO ---
         lbl_start_bg = QLabel("Minimizar a la bandeja del sistema")
         
-        self.sw_start_bg = IconSwitch(icon_on="monitor.svg", icon_off="minimize-2.svg")
+        self.sw_start_bg = ModernSwitch() # REGLA APLICADA: Instanciación limpia
         self.sw_start_bg.setCursor(Qt.CursorShape.PointingHandCursor)
         # --- ENLACE A NUEVA SEÑAL ---
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)

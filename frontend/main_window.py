@@ -23,7 +23,7 @@ from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
 
 
-# ─── Hilo de Trabajo (Alta Cohesión & SoR) ───
+# --- Hilo de Trabajo (Alta Cohesión & SoR) ---
 class ChatWorker(QThread):
     """
     Aísla la conexión WebSocket y llamadas a la API en un hilo secundario 
@@ -33,17 +33,18 @@ class ChatWorker(QThread):
     error_occurred = Signal(str)        # Emite: (mensaje_de_error)
     connection_success = Signal(dict)   # Emite: (datos_del_streamer)
 
-    def __init__(self, token: str, cluster: str, key: str):
+    # REGLA APLICADA: Inversión de dependencias. Recibe el cliente ya configurado.
+    def __init__(self, api_client: KickAPIClient, cluster: str, key: str):
         super().__init__()
-        self.token = token
+        self.api_client = api_client 
         self.cluster = cluster
         self.key = key
         self.chat_manager = None
 
     def run(self):
         try:
-            # 1. Obtener datos de la API de Kick
-            user_data = KickAPIClient.fetch_user_data(self.token)
+            # 1. Obtener datos de la API de Kick (El cliente maneja internamente sus tokens y errores 401)
+            user_data = self.api_client.fetch_user_data()
             
             # 2. Notificar a la vista con la data limpia
             self.connection_success.emit(user_data)
@@ -62,7 +63,6 @@ class ChatWorker(QThread):
             self.chat_manager.start_socket(room_id, on_message=on_msg)
         except Exception as e:
             self.error_occurred.emit(str(e))
-
 
 # ─── CONTROLADOR PRINCIPAL ───
 class MainWindow(QMainWindow):
@@ -189,19 +189,28 @@ class MainWindow(QMainWindow):
         self.view_dashboard.set_connecting_state()
 
         try:
+            # Forzamos la validación inicial (login o carga desde DB)
             tokens = self.auth_manager.get_tokens()
             
-            if tokens and "access_token" in tokens:
+            if tokens:
                 cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
                 key = os.getenv("KICK_PUSHER_KEY", "")
                 
-                self.chat_worker = ChatWorker(tokens["access_token"], cluster, key)
+                # REGLA APLICADA: Ensamblaje de dependencias en la capa superior
+                # Inyectamos el auth_manager (que cumple como TokenProvider) al cliente API
+                api_client = KickAPIClient(auth_provider=self.auth_manager)
+                
+                # Inyectamos el cliente API al hilo trabajador
+                self.chat_worker = ChatWorker(api_client, cluster, key)
                 
                 self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
                 self.chat_worker.message_received.connect(self._on_chat_message)
                 self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)
                 
                 self.chat_worker.start()
+            else:
+                self.view_dashboard.set_error_state("No se pudo obtener autorización.")
+                
         except Exception as e:
             self.view_dashboard.set_error_state(str(e))
 
@@ -265,12 +274,12 @@ class MainWindow(QMainWindow):
         if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
             self.hide()
             self._notify_background()
-            event.ignore() # R1: Evita que el programa se cierre realmente
+            event.ignore() 
         else:
             # Si la opción está desactivada, preguntamos si quiere cerrar de verdad
             dialog = ModernConfirmDialog(self)
             if dialog.exec() == dialog.DialogCode.Accepted:
-                self._cleanup()
-                super().closeEvent(event)
+                event.accept() # 1. Aceptamos el evento para que la ventana se cierre visualmente
+                self._force_quit() # 2. Reutilizamos la lógica centralizada para matar el proceso
             else:
                 event.ignore()

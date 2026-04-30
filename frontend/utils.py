@@ -4,8 +4,8 @@
 # ─────────────────────────────────────────────
 import os
 import sys
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor
+from PySide6.QtCore import Qt, QByteArray
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QImage, QPainterPath
 
 def resource_path(relative_path: str) -> str:
     """
@@ -76,3 +76,31 @@ def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
     painter.end()
     
     return QIcon(colored_pixmap)
+
+def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
+    """
+    Toma los datos crudos de una imagen y devuelve un QPixmap circular
+    con antialiasing, listo para la interfaz.
+    """
+    image = QImage.fromData(img_data)
+    
+    if image.isNull():
+        return QPixmap()
+
+    # Asegurar un cuadrado perfecto
+    size = min(image.width(), image.height())
+    image = image.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
+    
+    out_img = QImage(size, size, QImage.Format.Format_ARGB32)
+    out_img.fill(Qt.GlobalColor.transparent)
+    
+    painter = QPainter(out_img)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    
+    path = QPainterPath()
+    path.addEllipse(0, 0, size, size)
+    painter.setClipPath(path)
+    
+    painter.drawImage(0, 0, image)
+    painter.end()
+    return QPixmap.fromImage(out_img)

@@ -1,85 +1,53 @@
 # frontend/components/switch.py
 
-from PySide6.QtWidgets import QAbstractButton
-from PySide6.QtGui import QPainter, QColor, QPainterPath
-from PySide6.QtCore import Qt, QPropertyAnimation, Property, QRectF, QSize
+import os
+from PySide6.QtWidgets import QAbstractButton, QSizePolicy
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QPainter
+from PySide6.QtSvg import QSvgRenderer
 
-from frontend.theme import COLOR_ACCENT, COLOR_BG_ELEVATED
-from frontend.utils import get_icon_colored
+class ModernSwitch(QAbstractButton):
+    """
+    Componente Switch que utiliza assets SVG estáticos para los estados ON/OFF.
+    Implementado de forma nativa con PySide6 para mantener la cohesión del proyecto.
+    """
+    
+    ASSETS_DIR = "assets/icons"  # Directorio base para los SVGs, ajusta según tu estructura de proyecto
+    SVG_ON_PATH = os.path.join(ASSETS_DIR, "switch-on.svg")
+    SVG_OFF_PATH = os.path.join(ASSETS_DIR, "switch-off.svg")
 
-class IconSwitch(QAbstractButton):
-    def __init__(self, icon_on: str = "", icon_off: str = "", parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.setCheckable(True)
-        self.setFixedSize(48, 20)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-
-        # Estado de la animación (0.0 es apagado, 1.0 es encendido)
-        self._position = 0.0
-        self.anim = QPropertyAnimation(self, b"position")
-        self.anim.setDuration(250) # Milisegundos que dura el deslizamiento
-
-        self.toggled.connect(self._start_animation)
-
-        # Pre-cargar los íconos (tamaño 14x14)
-        # Si no pasas nombres de archivos, simplemente no dibujará íconos.
-        self.pix_on = None
-        self.pix_off = None
+        # QSize es la clase correcta en PySide6 para definir dimensiones
+        self._default_size = QSize(25,25)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         
-        if icon_on:
-            self.pix_on = get_icon_colored(icon_on, COLOR_ACCENT, 14).pixmap(14, 14)
-        if icon_off:
-            self.pix_off = get_icon_colored(icon_off, "#6a6a6a", 14).pixmap(14, 14)
+        # Inicializamos los renderizadores en PySide6
+        self._renderer_on = QSvgRenderer(self.SVG_ON_PATH)
+        self._renderer_off = QSvgRenderer(self.SVG_OFF_PATH)
 
-    # ─── PROPIEDAD ANIMABLE ───
-    @Property(float)
-    def position(self):
-        return self._position
+    def sizeHint(self) -> QSize:
+        """Sugerencia de tamaño para los layouts."""
+        return self._default_size
 
-    @position.setter
-    def position(self, pos):
-        self._position = pos
-        self.update() # Forzar re-dibujado cada vez que cambia la posición
-
-    def _start_animation(self, checked: bool):
-        self.anim.stop()
-        self.anim.setEndValue(1.0 if checked else 0.0)
-        self.anim.start()
-
-    # ─── MOTOR DE RENDERIZADO VISUAL ───
-    def paintEvent(self, e):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        # 1. Dibujar el fondo (Píldora)
-        rect = QRectF(0, 0, self.width(), self.height())
-        path = QPainterPath()
-        path.addRoundedRect(rect, self.height() / 2, self.height() / 2)
-
-        # Interpolar colores (Gris cuando está apagado, Acento cuando está encendido)
-        bg_color = QColor(COLOR_ACCENT) if self.isChecked() else QColor(COLOR_BG_ELEVATED)
-        p.fillPath(path, bg_color)
-
-        # 2. Calcular la posición de la bolita (Thumb)
-        thumb_radius = self.height() / 2 - 3
-        x_min = 3
-        x_max = self.width() - (thumb_radius * 2) - 3
+    def paintEvent(self, event):
+        """Dibuja el switch alternando entre los SVGs estáticos."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        # Mover la bolita basado en la posición de la animación (0.0 a 1.0)
-        thumb_x = x_min + (x_max - x_min) * self._position
-        thumb_rect = QRectF(thumb_x, 3, thumb_radius * 2, thumb_radius * 2)
+        target_rect = self.rect()
 
-        # Dibujar la bolita blanca
-        p.setBrush(Qt.GlobalColor.white)
-        p.setPen(Qt.PenStyle.NoPen)
-        p.drawEllipse(thumb_rect)
+        target_renderer = self._renderer_on if self.isChecked() else self._renderer_off
+        
+        # Verificamos si la SVG se cargó correctamente antes de renderizar
+        if target_renderer.isValid():
+            target_renderer.render(painter, target_rect)
+        else:
+            # Fallback de seguridad visual (Mantenibilidad)
+            placeholder_color = Qt.GlobalColor.magenta if self.isChecked() else Qt.GlobalColor.gray
+            painter.fillRect(target_rect, placeholder_color)
+            painter.setPen(Qt.GlobalColor.white)
+            painter.drawText(target_rect, Qt.AlignmentFlag.AlignCenter, "SVG ERROR")
 
-        # 3. Dibujar el ícono SVG dentro de la bolita (si existe)
-        pix = self.pix_on if self.isChecked() else self.pix_off
-        if pix and not pix.isNull():
-            icon_rect = pix.rect()
-            # Centrar el ícono dentro de la bolita
-            icon_rect.moveCenter(thumb_rect.center().toPoint())
-            p.drawPixmap(icon_rect, pix)
-
-        p.end()
+        painter.end()

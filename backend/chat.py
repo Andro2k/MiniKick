@@ -8,6 +8,8 @@ import cloudscraper
 import requests
 import websocket
 
+from backend.interfaces import TokenProvider
+
 KICK_API_URL = "https://api.kick.com/public/v1/users"
 KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{username}"
 
@@ -21,26 +23,38 @@ class ChatFormatter:
 
 # --- Capa de Acceso a Datos (API externa) ---
 class KickAPIClient:
-    @staticmethod
-    def fetch_user_data(token: str) -> dict:
-        username = KickAPIClient._fetch_username(token)
-        channel_data = KickAPIClient._fetch_channel_data(username)
+    def __init__(self, auth_provider: TokenProvider):
+        self.auth_provider = auth_provider
+
+    def fetch_user_data(self) -> dict:
+        try:
+            return self._execute_fetch()
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code == 401:
+                # El token expiró. Renovamos e intentamos una vez más.
+                self.auth_provider.refresh_token()
+                return self._execute_fetch()
+            raise e
+
+    def _execute_fetch(self) -> dict:
+        tokens = self.auth_provider.get_tokens()
+        access_token = tokens.get("access_token", "")
         
-        # Obtenemos la URL de la imagen, manejando nulos por seguridad
+        username = self._fetch_username(access_token)
+        channel_data = self._fetch_channel_data(username)
+        
         avatar_url = channel_data.get("user", {}).get("profile_pic", "")
         
-        # Extraemos los datos interesantes (Alta Cohesión de lectura de datos)
         return {
             "username": username,
             "room_id": channel_data.get("chatroom", {}).get("id"),
             "followers": channel_data.get("followersCount", 0),
             "is_verified": channel_data.get("user", {}).get("is_verified", False),
             "playback_url": channel_data.get("playback_url", ""),
-            "avatar_url": avatar_url # NUEVO DATO
+            "avatar_url": avatar_url
         }
 
-    @staticmethod
-    def _fetch_username(token: str) -> str:
+    def _fetch_username(self, token: str) -> str:
         resp = requests.get(
             KICK_API_URL,
             headers={"Authorization": f"Bearer {token}"},
@@ -49,8 +63,7 @@ class KickAPIClient:
         data = resp.json().get("data", [resp.json()])
         return data[0].get("name")
 
-    @staticmethod
-    def _fetch_channel_data(username: str) -> dict:
+    def _fetch_channel_data(self, username: str) -> dict:
         scraper = cloudscraper.create_scraper()
         resp = scraper.get(KICK_CHANNEL_URL.format(username=username))
         return resp.json()
