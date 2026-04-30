@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
         self.sidebar.view_selected.connect(self._handle_navigation)
         self.view_dashboard.request_connection.connect(self._handle_auth_process)
         self.view_chat.volume_changed.connect(self._update_tts_volume)
-        
+        self.view_chat.voice_changed.connect(self._handle_voice_change)
         # Escuchar cambios en la configuración de la bandeja
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
 
@@ -163,6 +163,13 @@ class MainWindow(QMainWindow):
         """Carga la configuración de la DB al iniciar"""
         enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.view_settings.set_minimize_tray_enabled(enabled)
+        # NUEVO: Orquestación de voces
+        saved_voice_id = self.settings_storage.load_string("tts_voice", "")
+        available_voices = self.tts_engine.get_available_voices()
+        
+        self.view_chat.populate_voices(available_voices, saved_voice_id)
+        if saved_voice_id:
+            self.tts_engine.set_voice(saved_voice_id)
 
     @Slot(bool)
     def _handle_minimize_tray_change(self, enabled: bool):
@@ -237,6 +244,13 @@ class MainWindow(QMainWindow):
         text_to_speak = f"{user} dice: {final_message}" if settings.get("read_name", False) else final_message
         self.tts_manager.say(text_to_speak)
 
+    @Slot(str)
+    def _handle_voice_change(self, voice_id: str):
+        self.tts_engine.set_voice(voice_id)
+        self.settings_storage.save_string("tts_voice", voice_id)
+        # Opcional: Hacer que el bot hable para confirmar la voz
+        self.tts_manager.say("Voz actualizada.")
+        
     def _notify_background(self):
         """Muestra la notificación de confirmación con el logo (Sugerencia del usuario)"""
         self.tray_icon.showMessage(

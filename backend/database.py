@@ -108,3 +108,10 @@ class SQLiteSettingsStorage:
         if val is None:
             return default
         return val == 'true'
+
+    def save_string(self, key: str, value: str) -> None:
+        self._save(key, value)
+
+    def load_string(self, key: str, default: str) -> str:
+        val = self._load(key, None)
+        return default if val is None else str(val)

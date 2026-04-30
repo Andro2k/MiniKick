@@ -3,6 +3,10 @@
 # Design Tokens: Deep Dark Minimalism
 # Estilo: Superficies profundas, bordes svelte (1px) y acentos Kick Green.
 # ─────────────────────────────────────────────
+from frontend.utils import get_assets_path
+
+
+PATH_CHEVRON = get_assets_path("icons/chevron-down.svg")
 
 # ─── Paleta de Colores (Inspiración: Slate & Onyx) ───
 COLOR_BG_BASE       = "#0A0F12"   # Fondo ultra-profundo (Base)
@@ -158,5 +162,40 @@ QSlider::handle:horizontal {{
     height: 14px;
     margin: -5px 0;
     border-radius: 7px;
+}}
+
+/* ─── ComboBox (Selector de Voz) ─── */
+QComboBox {{
+    background-color: {COLOR_BG_INPUT};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: {RADIUS_SM}px;
+    padding: 6px 12px;
+    color: {COLOR_TEXT_PRIMARY};
+}}
+
+QComboBox:hover, QComboBox:focus {{
+    border: 1px solid {COLOR_ACCENT};
+}}
+
+QComboBox::drop-down {{
+    border: none;
+    width: 28px;
+}}
+
+QComboBox::down-arrow {{
+    image: url('{PATH_CHEVRON}');
+    width: 14px;
+    height: 14px;
+    margin-right: 8px;
+}}
+
+/* El menú desplegable */
+QComboBox QAbstractItemView {{
+    background-color: {COLOR_BG_SURFACE};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: {RADIUS_SM}px;
+    color: {COLOR_TEXT_PRIMARY};
+    selection-background-color: {COLOR_ACCENT_SOFT};
+    selection-color: {COLOR_ACCENT};
 }}
 """

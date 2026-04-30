@@ -1,6 +1,6 @@
 # frontend/views/chat_view.py
 
-from PySide6.QtWidgets import (QLineEdit, QWidget, QVBoxLayout, QHBoxLayout, 
+from PySide6.QtWidgets import (QComboBox, QLineEdit, QWidget, QVBoxLayout, QHBoxLayout, 
                                QTextEdit, QLabel, QSlider, QFrame)
 from PySide6.QtCore import Qt, Signal, Slot
 
@@ -9,6 +9,7 @@ from frontend.components.switch import ModernSwitch
 class ChatView(QWidget):
     # ─── CONTRATOS DE SALIDA ───
     volume_changed = Signal(int)
+    voice_changed = Signal(str) # NUEVA SEÑAL para orquestar
 
     def __init__(self):
         super().__init__()
@@ -23,7 +24,6 @@ class ChatView(QWidget):
         title.setProperty("role", "title")
         layout.addWidget(title)
         
-        # --- Panel de Controles ---
         controls_frame = QFrame()
         controls_frame.setObjectName("Card")
         controls_layout = QVBoxLayout(controls_frame) 
@@ -32,23 +32,29 @@ class ChatView(QWidget):
         
         # --- Fila 1: Configuración de Lectura ---
         row1 = QHBoxLayout()
-        row1.setSpacing(10) # Espacio pequeño entre etiqueta y switch
+        row1.setSpacing(10)
         
-        # Activar TTS
         row1.addWidget(QLabel("Activar TTS:"))
-        self.chk_tts = ModernSwitch() # REGLA APLICADA: Instanciación limpia
+        self.chk_tts = ModernSwitch()
         self.chk_tts.setChecked(True)
         row1.addWidget(self.chk_tts)
         
-        row1.addSpacing(30) # Espacio rígido entre los dos grupos
+        row1.addSpacing(30)
         
-        # Leer Nombre
         row1.addWidget(QLabel("Leer Nombre:"))
         self.chk_name = ModernSwitch() 
         self.chk_name.setChecked(True)
         row1.addWidget(self.chk_name)
         
-        row1.addStretch() # Este resorte empuja todo lo anterior a la izquierda
+        row1.addStretch() 
+        
+        # --- NUEVO: Selector de Voz (Anclado a la derecha en la fila 1) ---
+        row1.addWidget(QLabel("Voz:"))
+        self.combo_voice = QComboBox()
+        self.combo_voice.setFixedWidth(200)
+        self.combo_voice.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
+        row1.addWidget(self.combo_voice)
         
         # --- Fila 2: Filtros y Volumen ---
         row2 = QHBoxLayout()
@@ -75,7 +81,7 @@ class ChatView(QWidget):
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
-        self.slider_vol.setFixedWidth(120)
+        self.slider_vol.setFixedWidth(200)
         self.slider_vol.valueChanged.connect(self.volume_changed.emit)
         row2.addWidget(self.slider_vol)
         
@@ -110,3 +116,22 @@ class ChatView(QWidget):
         """Agrega un nuevo mensaje con el nombre en verde en la UI"""
         html_msg = f'<b style="color: #0ca678;">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
         self.chat_display.append(html_msg)
+
+    # --- Añadir al final de ChatView ---
+    def populate_voices(self, voices: list[dict], selected_id: str):
+        """Carga las voces sin romper la capa de presentación (SoR)"""
+        self.combo_voice.blockSignals(True) # Evitamos bucles infinitos al cargar
+        self.combo_voice.clear()
+        
+        for index, voice in enumerate(voices):
+            # Guardamos el nombre para el usuario, y el ID interno como "UserData"
+            self.combo_voice.addItem(voice["name"], userData=voice["id"])
+            if voice["id"] == selected_id:
+                self.combo_voice.setCurrentIndex(index)
+                
+        self.combo_voice.blockSignals(False)
+
+    def _on_voice_selected(self, index: int):
+        voice_id = self.combo_voice.itemData(index)
+        if voice_id:
+            self.voice_changed.emit(voice_id)
