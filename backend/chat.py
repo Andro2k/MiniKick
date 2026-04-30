@@ -65,7 +65,14 @@ class KickAPIClient:
 
     def _fetch_channel_data(self, username: str) -> dict:
         scraper = cloudscraper.create_scraper()
-        resp = scraper.get(KICK_CHANNEL_URL.format(username=username))
+        url_slug = username.replace("_", "-").replace(" ", "")
+        
+        resp = scraper.get(KICK_CHANNEL_URL.format(username=url_slug))
+        
+        # Opcional pero recomendado: Manejo seguro de la respuesta por si el canal realmente no existe
+        if resp.status_code != 200:
+            raise ValueError(f"No se pudo localizar el canal usando el slug: {url_slug}")
+            
         return resp.json()
 
 # --- Lógica de Negocio / Infraestructura ---
