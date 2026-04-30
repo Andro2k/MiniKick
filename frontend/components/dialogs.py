@@ -1,92 +1,98 @@
 # frontend/components/dialogs.py
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QGraphicsDropShadowEffect
+
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QWidget
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QIcon
+from frontend.theme import COLOR_ACCENT_HOVER, PATH_ICON_HELP
 
 class ModernConfirmDialog(QDialog):
     """
-    Diálogo de confirmación con estética Minimalista Svelte (1px border).
-    Imita el look de image_e10234.png.
+    Diálogo de confirmación con diseño plano (Flat) centralizado.
     """
-    def __init__(self, parent=None, title_text="Cerrar Aplicación", body_text="¿Estás seguro de que quieres cerrar MiniKick?"):
+    def __init__(self, parent=None, title_text="Confirmar Acción", body_text="¿Estás seguro de que deseas continuar?"):
         super().__init__(parent)
         self.setWindowTitle(title_text)
-        # Importante: Ocultar barra de título nativa y fondo transparente para esquinas redondeadas
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-
         self._setup_ui(title_text, body_text)
 
     def _setup_ui(self, title_text, body_text):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10) # Espacio para la sombra
+        # Margen 0: Al no haber sombra, no necesitamos espacio extra invisible
+        main_layout.setContentsMargins(0, 0, 0, 0) 
+        main_layout.setAlignment(Qt.AlignCenter)
 
-        # --- El Contenedor Real (Simula la imagen) ---
+        # --- Contenedor Principal (Tarjeta sin sombra) ---
         self.container = QFrame()
-        self.container.setObjectName("Card") # Hereda el borde de 1px profunda svelte
-        
-        # Efecto de sombra sutil (Svelte look)
-        shadow = QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(20)
-        shadow.setXOffset(0)
-        shadow.setYOffset(4)
-        shadow.setColor(QColor(0, 0, 0, 80))
-        self.container.setGraphicsEffect(shadow)
+        self.container.setObjectName("Card")
+        self.container.setFixedWidth(400) 
 
         layout = QVBoxLayout(self.container)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(15)
+        layout.setContentsMargins(0, 0, 0, 30) 
+        layout.setSpacing(0)
+        layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
 
-        # Icono o Título Principal (Imitando el ! de la imagen)
-        header_layout = QHBoxLayout()
-        icon_lbl = QLabel("!")
-        icon_lbl.setStyleSheet("font-size: 32px; font-weight: bold; color: #ff6b6b; margin-right: 10px;") # Rojo svelte
-        
-        title_lbl = QLabel(title_text)
-        title_lbl.setProperty("role", "subtitle") # Usamos rol svelte
-        title_lbl.setStyleSheet("font-size: 18px; font-weight: 700;")
-        
-        header_layout.addWidget(icon_lbl)
-        header_layout.addWidget(title_lbl)
-        header_layout.addStretch()
-        layout.addLayout(header_layout)
+        # ─── Acento Superior (Círculo con Icono) ───
+        header_widget = QWidget()
+        header_widget.setFixedHeight(60) 
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setAlignment(Qt.AlignCenter)
 
-        # Texto del Cuerpo
-        self.body_label = QLabel(body_text)
-        self.body_label.setProperty("role", "subtitle") # Color slate svelte
-        self.body_label.setWordWrap(True)
-        self.body_label.setStyleSheet("font-size: 13px; line-height: 1.5; margin-left: 36px;") # Alineado con el titulo
-        layout.addWidget(self.body_label)
-
-        # Botones de Acción (Anclados a la derecha)
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(10)
-        btn_layout.addStretch()
-
-        # Botón Cancelar (Svelte Muted Look)
-        self.btn_cancel = QPushButton("Cancelar")
-        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_cancel.setFixedSize(100, 36)
-        self.btn_cancel.setStyleSheet("""
-            QPushButton {
-                background: transparent;
-                border: 1px solid #2D3748;
-                border-radius: 6px;
-                color: #94A3B8;
-            }
-            QPushButton:hover {
-                background: rgba(148, 163, 184, 0.1);
-                color: #f0f0f0;
-            }
+        icon_container = QFrame()
+        icon_size = 60
+        icon_container.setFixedSize(icon_size, icon_size)
+        icon_container.setStyleSheet(f"""
+            QFrame {{
+                background-color: {COLOR_ACCENT_HOVER};
+                border-radius: {icon_size // 2}px;
+                border: none;
+            }}
         """)
-        self.btn_cancel.clicked.connect(self.reject) # QDialog.reject
+        
+        icon_inner_layout = QVBoxLayout(icon_container)
+        icon_inner_layout.setContentsMargins(10, 10, 10, 10)
+        icon_lbl = QLabel()
+        icon_lbl.setPixmap(QIcon(PATH_ICON_HELP).pixmap(30, 30))
+        icon_lbl.setAlignment(Qt.AlignCenter)
+        icon_inner_layout.addWidget(icon_lbl)
 
-        # Botón Confirmar (Kick Green Accent Pill Shape)
-        self.btn_confirm = QPushButton("Sí, cerrar")
-        self.btn_confirm.setProperty("role", "action_accent") # Usamos tu estilo pill green
+        header_layout.addWidget(icon_container)
+        
+        layout.addWidget(header_widget)
+        layout.setContentsMargins(24, -20, 24, 24) 
+
+        # ─── Contenido Centrado ───
+        title_lbl = QLabel(title_text)
+        title_lbl.setProperty("role", "title") 
+        title_lbl.setAlignment(Qt.AlignCenter)
+        title_lbl.setWordWrap(True)
+        layout.addWidget(title_lbl)
+        layout.addSpacing(10)
+
+        self.body_label = QLabel(body_text)
+        self.body_label.setStyleSheet("color: #94A3B8; font-size: 14px; line-height: 1.5;")
+        self.body_label.setAlignment(Qt.AlignCenter)
+        self.body_label.setWordWrap(True)
+        layout.addWidget(self.body_label)
+        layout.addSpacing(30)
+
+        # Botones de Acción
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(15)
+        btn_layout.setAlignment(Qt.AlignCenter)
+
+        self.btn_cancel = QPushButton("Cancelar")
+        self.btn_cancel.setProperty("role", "action_outlined") 
+        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_cancel.setMinimumWidth(120)
+        self.btn_cancel.clicked.connect(self.reject) 
+
+        self.btn_confirm = QPushButton("Confirmar")
+        self.btn_confirm.setProperty("role", "action_accent") 
         self.btn_confirm.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_confirm.setFixedSize(110, 36)
-        self.btn_confirm.clicked.connect(self.accept) # QDialog.accept
+        self.btn_confirm.setMinimumWidth(120)
+        self.btn_confirm.clicked.connect(self.accept) 
 
         btn_layout.addWidget(self.btn_cancel)
         btn_layout.addWidget(self.btn_confirm)

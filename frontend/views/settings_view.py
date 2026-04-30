@@ -1,4 +1,5 @@
 # frontend/views/settings_view.py
+
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QPushButton
 from PySide6.QtCore import Qt, Signal
 

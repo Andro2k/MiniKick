@@ -7,8 +7,6 @@ from PySide6.QtCore import Slot, QThread, Signal, QEvent
 from PySide6.QtGui import QIcon
 
 # Importamos las Vistas (Frontend)
-from backend import updater_manager
-from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
 from frontend.sidebar import Sidebar
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
@@ -21,14 +19,12 @@ from frontend.components.update_dialog import UpdateDialog
 from backend.auth import AuthManager
 from backend.database import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage
 from backend.chat import KickAPIClient, ChatSocketManager
-from backend.tts import TTSManager, Pyttsx3Engine
-
-# Importamos el Sistema de Actualizaciones (Backend)
-from backend.updater_manager import UpdateManager
+from backend.tts import TTSManager
 
 # Importamos Componentes Modernos y Utilidades
 from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
+from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
 # --- Hilo de Trabajo (Alta Cohesión & SoR) ---
 class ChatWorker(QThread):
@@ -68,7 +64,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.updater_manager = updater_manager
         
-        self.setWindowTitle("MiniKick - Folderly")
+        self.setWindowTitle("MiniKick - Versión 1.0.2")
         self.resize(1100, 750)
 
         self.updater_manager = updater_manager
@@ -88,9 +84,7 @@ class MainWindow(QMainWindow):
             success_html_path=html_path
         )
 
-        self.tts_engine = Pyttsx3Engine(rate=150)
-        self.tts_manager = TTSManager(self.tts_engine)
-
+        self.tts_manager = TTSManager()
         self.chat_worker = None
 
         # --- 2. Ensamblar e iniciar UI ---
@@ -144,14 +138,16 @@ class MainWindow(QMainWindow):
 
     def _connect_signals(self):
         self.sidebar.view_selected.connect(self._handle_navigation)
+        # Conexiones de DashboardView
         self.view_dashboard.request_connection.connect(self._handle_auth_process)
+        # Conexiones de ChatView
         self.view_chat.volume_changed.connect(self._update_tts_volume)
         self.view_chat.voice_changed.connect(self._handle_voice_change)
-        
+        # 3. NUEVA CONEXIÓN: Atrapamos cuando el usuario cambia de Local a Web
+        self.view_chat.provider_changed.connect(self._handle_provider_change)
         # Conexiones de SettingsView
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
         self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
-        # NUEVA CONEXIÓN: Atrapamos la señal del botón de actualizar
         self.view_settings.check_update_requested.connect(self._handle_update_check)
 
     # ─── REGLAS DE NEGOCIO Y ORQUESTACIÓN ───
@@ -160,18 +156,57 @@ class MainWindow(QMainWindow):
         enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.view_settings.set_minimize_tray_enabled(enabled)
         
-        saved_voice_id = self.settings_storage.load_string("tts_voice", "")
-        available_voices = self.tts_engine.get_available_voices()
+        # 4. Cargar estado guardado del proveedor (por defecto local)
+        saved_provider = self.settings_storage.load_string("tts_provider", "local")
+        self.view_chat.chk_provider.setChecked(saved_provider == "web")
         
-        self.view_chat.populate_voices(available_voices, saved_voice_id)
-        if saved_voice_id:
-            self.tts_engine.set_voice(saved_voice_id)
+        # 5. Inicializar el motor y cargar las voces iniciales
+        self._handle_provider_change(saved_provider)
 
     @Slot()
     def _handle_update_check(self):
-        """Abre el diálogo de actualizaciones cuando el usuario lo solicita."""
-        dialog = UpdateDialog(manager=self.updater_manager, parent=self)
-        dialog.exec() # Abre la ventana en modo modal (bloquea la ventana principal hasta que se cierre)
+        """Orquesta la búsqueda y descarga de actualizaciones (SoR)."""
+        # 1. Instanciamos el diálogo pasivo (sin enviarle el manager)
+        dialog = UpdateDialog(parent=self)
+        
+        # Variable local para almacenar la URL de descarga si se encuentra
+        update_info = {"url": ""}
+        
+        # 2. Creamos los workers de búsqueda aquí en el controlador
+        self.check_worker = UpdateCheckWorker(self.updater_manager)
+        
+        # 3. Conectamos señales del worker de búsqueda a las vistas del diálogo
+        def on_update_found(info):
+            update_info["url"] = info['download_url']
+            dialog.show_update_available(info['version'])
+            
+        self.check_worker.update_found.connect(on_update_found)
+        self.check_worker.no_update.connect(dialog.show_no_update)
+        self.check_worker.error.connect(dialog.show_error)
+
+        # 4. Conectamos el botón de descarga del diálogo al worker de descarga
+        def on_download_requested():
+            dialog.show_downloading()
+            self.download_worker = UpdateDownloadWorker(self.updater_manager, update_info["url"])
+            
+            def on_download_finished(success):
+                if success:
+                    dialog.status_label.setText("Instalación completada. Reiniciando...")
+                    dialog.progress_bar.setRange(0, 100)
+                    dialog.progress_bar.setValue(100)
+                else:
+                    dialog.show_error("Fallo inesperado al descargar el archivo.")
+                    
+            self.download_worker.finished.connect(on_download_finished)
+            self.download_worker.error.connect(dialog.show_error)
+            self.download_worker.start()
+
+        # Atrapamos la señal del botón "Descargar e Instalar" de la vista
+        dialog.download_requested.connect(on_download_requested)
+
+        # 5. Iniciamos la búsqueda en 2do plano y mostramos la ventana modal
+        self.check_worker.start()
+        dialog.exec()
 
     @Slot(bool)
     def _handle_minimize_tray_change(self, enabled: bool):
@@ -249,10 +284,25 @@ class MainWindow(QMainWindow):
                 if btn.text().strip() == "Dashboard":
                     btn.setChecked(True)
                     break
-
+    
+    # 6. AÑADIR ESTE NUEVO MÉTODO
+    @Slot(str)
+    def _handle_provider_change(self, provider: str):
+        """Cambia el motor en el backend y actualiza las voces en la UI (High Cohesion)."""
+        self.tts_manager.set_provider(provider)
+        self.settings_storage.save_string("tts_provider", provider)
+        
+        # Obtenemos las voces del nuevo motor
+        available_voices = self.tts_manager.get_available_voices(provider)
+        
+        # Guardamos la voz seleccionada de forma independiente para no mezclar IDs de Web y Local
+        saved_voice_id = self.settings_storage.load_string(f"tts_voice_{provider}", "")
+        
+        self.view_chat.populate_voices(available_voices, saved_voice_id)
+    
     @Slot(int)
     def _update_tts_volume(self, value):
-        self.tts_engine.set_volume(value / 100.0)
+        self.tts_manager.set_volume(value / 100.0)
 
     @Slot(str, str)
     def _on_chat_message(self, user: str, message: str):
@@ -275,8 +325,11 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):
-        self.tts_engine.set_voice(voice_id)
-        self.settings_storage.save_string("tts_voice", voice_id)
+        # Guardamos la preferencia dependiendo de si estamos en web o local
+        current_provider = "web" if self.view_chat.chk_provider.isChecked() else "local"
+        self.settings_storage.save_string(f"tts_voice_{current_provider}", voice_id)
+        
+        self.tts_manager.set_voice(voice_id)
         self.tts_manager.say("Voz actualizada.")
         
     def _notify_background(self):
@@ -317,3 +370,5 @@ class MainWindow(QMainWindow):
                 self._force_quit() 
             else:
                 event.ignore()
+
+    

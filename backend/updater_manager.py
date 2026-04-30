@@ -1,4 +1,5 @@
 # backend/updater_manager.py
+
 import os
 from backend.interfaces.updater_interfaces import (
     IUpdateChecker, 

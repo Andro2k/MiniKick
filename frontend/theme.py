@@ -1,34 +1,33 @@
 # frontend/theme.py
-# ─────────────────────────────────────────────
-# Design Tokens: Deep Dark Minimalism
-# Estilo: Superficies profundas, bordes svelte (1px) y acentos Kick Green.
-# ─────────────────────────────────────────────
+
 from frontend.utils import get_assets_path
 
-
 PATH_CHEVRON = get_assets_path("icons/chevron-down.svg")
+# NUEVOS ICONOS PARA DIÁLOGOS
+PATH_ICON_HELP = get_assets_path("icons/help-circle.svg")
+PATH_ICON_UPDATE = get_assets_path("icons/download.svg")
 
-# ─── Paleta de Colores (Inspiración: Slate & Onyx) ───
-COLOR_BG_BASE       = "#0A0F12"   # Fondo ultra-profundo (Base)
-COLOR_BG_SURFACE    = "#161D21"   # Superficie de tarjetas (Cards)
-COLOR_BG_ELEVATED   = "#1F2937"   # Elementos sobre la superficie (Hover)
-COLOR_BG_INPUT      = "#0F171A"   # Fondo para áreas de texto y inputs
+# ─── Paleta de Colores ( Slate & Onyx) ───
+COLOR_BG_BASE       = "#0A0F12"   
+COLOR_BG_SURFACE    = "#161D21"   # Tarjetas
+COLOR_BG_ELEVATED   = "#1F2937"   
+COLOR_BG_INPUT      = "#0F171A"   
 
-COLOR_BORDER_SVELTE = "#1E293B"   # El "Hairline border" de 1px (Slate muy oscuro)
-COLOR_BORDER_ACTIVE = "#334155"   # Borde más visible para estados activos
+COLOR_BORDER_SVELTE = "#1E293B"   # Borde 1px
+COLOR_BORDER_ACTIVE = "#334155"   
 
-COLOR_ACCENT        = "#0FE25F"   # Kick Green (Marca)
+COLOR_ACCENT        = "#0FE25F"   # Kick Green
 COLOR_ACCENT_HOVER  = "#3cb043"   
-COLOR_ACCENT_SOFT   = "rgba(12, 166, 120, 0.08)" # Fondo sutil para activos
+COLOR_ACCENT_SOFT   = "rgba(12, 166, 120, 0.08)" 
 
-COLOR_TEXT_PRIMARY  = "#F8FAFC"   # Blanco roto (Casi puro)
-COLOR_TEXT_SECONDARY= "#94A3B8"   # Slate Grey (Secundario)
-COLOR_TEXT_MUTED    = "#475569"   # Texto desactivado o labels sutiles
+COLOR_TEXT_PRIMARY  = "#F8FAFC"   # Casi blanco
+COLOR_TEXT_SECONDARY= "#94A3B8"   # Slate Grey
+COLOR_TEXT_MUTED    = "#475569"   
 
 # ─── Tipografía & Radios ───
 FONT_FAMILY = "'Inter', 'Aptos', 'Segoe UI', sans-serif"
 RADIUS_SM = 6
-RADIUS_MD = 12  # Radio estándar para tarjetas
+RADIUS_MD = 12  
 RADIUS_LG = 16
 
 # ─── Stylesheet Global (QSS) ───
@@ -45,7 +44,7 @@ QMainWindow, QDialog {{
     background-color: {COLOR_BG_BASE};
 }}
 
-/* ─── Contenedores Principales (Separación de Responsabilidades) ─── */
+/* ─── Contenedores Principales ─── */
 QFrame#Sidebar {{
     background-color: {COLOR_BG_INPUT};
     border: none;
@@ -58,7 +57,7 @@ QFrame#Card {{
     border-radius: {RADIUS_MD}px;
 }}
 
-/* ─── Tipografía con Roles (Alta Cohesión) ─── */
+/* ─── Tipografía con Roles ─── */
 QLabel[role="title"] {{
     font-size: 24px;
     font-weight: 700;
@@ -115,6 +114,7 @@ QLineEdit:focus {{
 }}
 
 /* ─── Botones de Acción ─── */
+/* Estilo Principal (Lleno) */
 QPushButton[role="action_accent"] {{
     background-color: {COLOR_ACCENT};
     border: none;
@@ -128,7 +128,39 @@ QPushButton[role="action_accent"]:hover {{
     background-color: {COLOR_ACCENT_HOVER};
 }}
 
-/* ─── Scrollbars (Minimalistas e invisibles hasta el hover) ─── */
+/* Estilo Secundario (Outlined / Esquemático) */
+QPushButton[role="action_outlined"] {{
+    background-color: transparent;
+    border: 1px solid {COLOR_BORDER_ACTIVE};
+    border-radius: {RADIUS_SM}px;
+    padding: 10px 20px;
+    font-weight: 500;
+    color: {COLOR_TEXT_SECONDARY};
+}}
+
+QPushButton[role="action_outlined"]:hover {{
+    background-color: {COLOR_BG_ELEVATED};
+    color: {COLOR_TEXT_PRIMARY};
+    border: 1px solid {COLOR_TEXT_SECONDARY};
+}}
+
+/* ─── Barra de Progreso (Minimalista) ─── */
+QProgressBar {{
+    background-color: {COLOR_BG_INPUT};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: {RADIUS_SM}px;
+    text-align: center;
+    color: transparent; /* Ocultar texto de porcentaje */
+    height: 10px;
+}}
+
+QProgressBar::chunk {{
+    background-color: {COLOR_ACCENT};
+    border-radius: {RADIUS_SM - 1}px;
+    margin: 1px;
+}}
+
+/* ─── Scrollbars (Minimalistas) ─── */
 QScrollBar:vertical {{
     border: none;
     background: transparent;
@@ -189,7 +221,6 @@ QComboBox::down-arrow {{
     margin-right: 8px;
 }}
 
-/* El menú desplegable */
 QComboBox QAbstractItemView {{
     background-color: {COLOR_BG_SURFACE};
     border: 1px solid {COLOR_BORDER_SVELTE};

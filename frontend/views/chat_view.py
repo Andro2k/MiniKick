@@ -7,9 +7,10 @@ from PySide6.QtCore import Qt, Signal, Slot
 from frontend.components.switch import ModernSwitch
 
 class ChatView(QWidget):
-    # ─── CONTRATOS DE SALIDA ───
+    # ─── CONTRATOS DE SALIDA (Para el Controlador) ───
     volume_changed = Signal(int)
-    voice_changed = Signal(str) # NUEVA SEÑAL para orquestar
+    voice_changed = Signal(str)
+    provider_changed = Signal(str) # NUEVO: Informa al controlador que debe cambiar de motor
 
     def __init__(self):
         super().__init__()
@@ -30,7 +31,7 @@ class ChatView(QWidget):
         controls_layout.setContentsMargins(12, 12, 12, 12)
         controls_layout.setSpacing(12)
         
-        # --- Fila 1: Configuración de Lectura ---
+        # --- Fila 1: Configuración de Lectura y Motor ---
         row1 = QHBoxLayout()
         row1.setSpacing(10)
         
@@ -39,19 +40,31 @@ class ChatView(QWidget):
         self.chk_tts.setChecked(True)
         row1.addWidget(self.chk_tts)
         
-        row1.addSpacing(30)
+        row1.addSpacing(20)
         
         row1.addWidget(QLabel("Leer Nombre:"))
         self.chk_name = ModernSwitch() 
         self.chk_name.setChecked(True)
         row1.addWidget(self.chk_name)
+
+        row1.addSpacing(20)
+
+        # --- NUEVO: Switch de Motor (Local vs Web IA) ---
+        self.lbl_provider_state = QLabel("Motor: Local")
+        self.lbl_provider_state.setStyleSheet("font-weight: bold;")
+        row1.addWidget(self.lbl_provider_state)
+        
+        self.chk_provider = ModernSwitch()
+        self.chk_provider.setChecked(False) # False = Local, True = Web
+        self.chk_provider.toggled.connect(self._on_provider_toggled)
+        row1.addWidget(self.chk_provider)
         
         row1.addStretch() 
         
-        # --- NUEVO: Selector de Voz (Anclado a la derecha en la fila 1) ---
+        # --- Selector de Voz ---
         row1.addWidget(QLabel("Voz:"))
         self.combo_voice = QComboBox()
-        self.combo_voice.setFixedWidth(200)
+        self.combo_voice.setFixedWidth(300)
         self.combo_voice.setCursor(Qt.CursorShape.PointingHandCursor)
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
         row1.addWidget(self.combo_voice)
@@ -72,16 +85,14 @@ class ChatView(QWidget):
         self.txt_command.textChanged.connect(self._validate_command)
         row2.addWidget(self.txt_command)
         
-        # --- EL "ANCLA" CENTRAL ---
-        # Este stretch separa el bloque de comando (izquierda) del bloque de volumen (derecha)
         row2.addStretch() 
         
-        # Volumen (Anclado a la derecha)
+        # Volumen
         row2.addWidget(QLabel("Volumen:"))
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
-        self.slider_vol.setFixedWidth(200)
+        self.slider_vol.setFixedWidth(300)
         self.slider_vol.valueChanged.connect(self.volume_changed.emit)
         row2.addWidget(self.slider_vol)
         
@@ -101,6 +112,20 @@ class ChatView(QWidget):
         if not text.startswith("!"):
             self.txt_command.setText("!" + text.replace("!", ""))
 
+    def _on_provider_toggled(self, is_web: bool):
+        """Maneja el cambio visual y emite la señal al controlador"""
+        provider = "web" if is_web else "local"
+        self.lbl_provider_state.setText("Motor: Web IA" if is_web else "Motor: Local")
+        
+        # Damos un feedback visual inmediato mientras el controlador trae las nuevas voces
+        self.combo_voice.blockSignals(True)
+        self.combo_voice.clear()
+        self.combo_voice.addItem("Cargando voces...", userData=None)
+        self.combo_voice.blockSignals(False)
+        
+        # Delegamos la carga real de voces al controlador
+        self.provider_changed.emit(provider)
+
     # ─── CONTRATOS DE ESTADO (Para el Controlador) ───
     def get_tts_settings(self) -> dict:
         """Única fuente de verdad para la configuración actual (Alta Cohesión)"""
@@ -108,7 +133,8 @@ class ChatView(QWidget):
             "enabled": self.chk_tts.isChecked(),
             "read_name": self.chk_name.isChecked(),
             "use_command": self.chk_command.isChecked(),
-            "command": self.txt_command.text().strip().lower()
+            "command": self.txt_command.text().strip().lower(),
+            "provider": "web" if self.chk_provider.isChecked() else "local" # Añadido
         }
 
     @Slot(str, str)
@@ -117,19 +143,21 @@ class ChatView(QWidget):
         html_msg = f'<b style="color: #0ca678;">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
         self.chat_display.append(html_msg)
 
-    # --- Añadir al final de ChatView ---
-    def populate_voices(self, voices: list[dict], selected_id: str):
+    def populate_voices(self, voices: list[dict], selected_id: str = None):
         """Carga las voces sin romper la capa de presentación (SoR)"""
-        self.combo_voice.blockSignals(True) # Evitamos bucles infinitos al cargar
+        self.combo_voice.blockSignals(True) 
         self.combo_voice.clear()
         
         for index, voice in enumerate(voices):
-            # Guardamos el nombre para el usuario, y el ID interno como "UserData"
             self.combo_voice.addItem(voice["name"], userData=voice["id"])
             if voice["id"] == selected_id:
                 self.combo_voice.setCurrentIndex(index)
                 
         self.combo_voice.blockSignals(False)
+        
+        # Si no había un selected_id pero se cargaron voces, forzamos emitir la primera por defecto
+        if not selected_id and self.combo_voice.count() > 0:
+            self._on_voice_selected(0)
 
     def _on_voice_selected(self, index: int):
         voice_id = self.combo_voice.itemData(index)

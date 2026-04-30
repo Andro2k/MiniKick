@@ -1,79 +1,151 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QProgressBar
-from PySide6.QtCore import Qt
-from backend.updater_manager import UpdateManager
-from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
+# frontend/components/update_dialog.py
+
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QWidget, QProgressBar
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QIcon
+from frontend.theme import COLOR_ACCENT_HOVER, PATH_ICON_UPDATE
 
 class UpdateDialog(QDialog):
-    def __init__(self, manager: UpdateManager, parent=None):
+    """
+    Diálogo de actualización con diseño plano (Flat).
+    Vista pasiva (SoR): La lógica de hilos la gestiona el controlador.
+    """
+    download_requested = Signal() 
+
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.manager = manager
         self.setWindowTitle("Actualización del Sistema")
-        self.setFixedSize(350, 150)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        main_layout = QVBoxLayout(self)
+        # Margen 0: Ajuste exacto al tamaño de la tarjeta
+        main_layout.setContentsMargins(0, 0, 0, 0) 
+        main_layout.setAlignment(Qt.AlignCenter)
+
+        # --- Contenedor Principal (Tarjeta sin sombra) ---
+        self.container = QFrame()
+        self.container.setObjectName("Card")
+        self.container.setFixedWidth(400)
+
+        layout = QVBoxLayout(self.container)
+        layout.setContentsMargins(0, 0, 0, 30)
+        layout.setSpacing(0)
+        layout.setAlignment(Qt.AlignTop | Qt.AlignHCenter)
+
+        # ─── Acento Superior (Círculo con Icono) ───
+        header_widget = QWidget()
+        header_widget.setFixedHeight(60) 
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setAlignment(Qt.AlignCenter)
+
+        icon_container = QFrame()
+        icon_size = 60
+        icon_container.setFixedSize(icon_size, icon_size)
+        icon_container.setStyleSheet(f"""
+            QFrame {{
+                background-color: {COLOR_ACCENT_HOVER};
+                border-radius: {icon_size // 2}px;
+                border: none;
+            }}
+        """)
         
-        # --- UI Setup ---
-        self.layout = QVBoxLayout(self)
+        icon_inner_layout = QVBoxLayout(icon_container)
+        icon_inner_layout.setContentsMargins(10, 10, 10, 10)
+        icon_lbl = QLabel()
+        icon_lbl.setPixmap(QIcon(PATH_ICON_UPDATE).pixmap(30, 30))
+        icon_lbl.setAlignment(Qt.AlignCenter)
+        icon_inner_layout.addWidget(icon_lbl)
+
+        header_layout.addWidget(icon_container)
         
-        self.status_label = QLabel("Buscando actualizaciones en el servidor...")
+        layout.addWidget(header_widget)
+        layout.setContentsMargins(24, -20, 24, 24)
+
+        # ─── Contenido Centrado ───
+        self.title_lbl = QLabel("Buscando Actualizaciones")
+        self.title_lbl.setProperty("role", "title")
+        self.title_lbl.setAlignment(Qt.AlignCenter)
+        self.title_lbl.setWordWrap(True)
+        layout.addWidget(self.title_lbl)
+        layout.addSpacing(10)
+
+        self.status_label = QLabel("Conectando con el servidor...")
+        self.status_label.setStyleSheet("color: #94A3B8; font-size: 14px;")
         self.status_label.setAlignment(Qt.AlignCenter)
-        self.layout.addWidget(self.status_label)
-        
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        layout.addSpacing(25)
+
         self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0) # Rango 0,0 crea una animación de carga infinita (YAGNI)
-        self.layout.addWidget(self.progress_bar)
+        self.progress_bar.setObjectName("UpdateProgress")
+        self.progress_bar.setRange(0, 0) 
+        self.progress_bar.setFixedWidth(300)
         
-        self.action_button = QPushButton("Cancelar")
-        self.action_button.clicked.connect(self.reject)
-        self.layout.addWidget(self.action_button)
+        # --- AÑADE ESTAS 3 LÍNEAS AQUÍ ---
+        sp = self.progress_bar.sizePolicy()
+        sp.setRetainSizeWhenHidden(True)  # Mantiene el espacio aunque sea invisible
+        self.progress_bar.setSizePolicy(sp)
+        # ---------------------------------
         
-        # --- Inicio de la lógica ---
-        self._start_checking()
+        layout.addWidget(self.progress_bar)
+        layout.addSpacing(30)
 
-    def _start_checking(self):
-        self.check_worker = UpdateCheckWorker(self.manager)
-        self.check_worker.update_found.connect(self.on_update_found)
-        self.check_worker.no_update.connect(self.on_no_update)
-        self.check_worker.error.connect(self.on_error)
-        self.check_worker.start() # Ejecuta el método run() en 2do plano
+        # Botones de Acción
+        btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(15)
+        btn_layout.setAlignment(Qt.AlignCenter)
 
-    def on_update_found(self, info: dict):
-        self.progress_bar.setRange(0, 100) # Detenemos la animación infinita
+        self.action_button = QPushButton("Descargar e Instalar")
+        self.action_button.setProperty("role", "action_accent")
+        self.action_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.action_button.setMinimumWidth(160)
+        self.action_button.setVisible(False)
+        self.action_button.clicked.connect(self.download_requested.emit) 
+
+        self.btn_close = QPushButton("Cancelar")
+        self.btn_close.setProperty("role", "action_outlined")
+        self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_close.setMinimumWidth(120)
+        self.btn_close.clicked.connect(self.reject) 
+
+        btn_layout.addWidget(self.btn_close)
+        btn_layout.addWidget(self.action_button)
+        layout.addLayout(btn_layout)
+
+        main_layout.addWidget(self.container)
+
+    # ... (Mismos métodos de estado que ya tenías: show_update_available, etc.) ...
+    def show_update_available(self, version: str):
+        self.title_lbl.setText("Actualización Disponible")
+        self.status_label.setText(f"¡Nueva versión {version} está lista para descargar!")
+        self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
-        self.status_label.setText(f"¡Nueva versión {info['version']} disponible!")
-        self.action_button.setText("Descargar e Instalar")
-        
-        # Cambiamos lo que hace el botón: Ahora descargará la actualización
-        self.action_button.clicked.disconnect()
-        self.action_button.clicked.connect(lambda: self._start_download(info['download_url']))
+        self.action_button.setVisible(True) 
+        self.btn_close.setText("Quizás luego")
 
-    def _start_download(self, url: str):
+    def show_downloading(self):
+        self.title_lbl.setText("Descargando Actualización")
+        self.status_label.setText("Por favor espera, no cierres la aplicación.")
+        self.progress_bar.setRange(0, 0) 
         self.action_button.setEnabled(False)
-        self.progress_bar.setRange(0, 0) # Volvemos a la animación de carga infinita
-        self.status_label.setText("Descargando... Por favor espera, no cierres la app.")
-        
-        self.download_worker = UpdateDownloadWorker(self.manager, url)
-        self.download_worker.finished.connect(self.on_download_finished)
-        self.download_worker.error.connect(self.on_error)
-        self.download_worker.start()
+        self.btn_close.setVisible(False) 
 
-    def on_download_finished(self, success: bool):
-        if success:
-            self.status_label.setText("Instalación completada. Reiniciando...")
-            self.progress_bar.setRange(0, 100)
-            self.progress_bar.setValue(100)
-        else:
-            self.on_error("Fallo inesperado al descargar el archivo.")
+    def show_no_update(self):
+        self.title_lbl.setText("Sistema Actualizado")
+        self.status_label.setText("Tu versión de MiniKick ya es la última disponible.")
+        self.progress_bar.setVisible(False)
+        self.btn_close.setText("Cerrar")
+        self.btn_close.setProperty("role", "action_accent") 
 
-    def on_no_update(self):
+    def show_error(self, message: str):
+        self.title_lbl.setText("Error de Actualización")
+        self.status_label.setText(f"Ocurrió un fallo: {message}")
         self.progress_bar.hide()
-        self.status_label.setText("Tu sistema ya está en la última versión.")
-        self.action_button.setText("Cerrar")
-        self.action_button.clicked.disconnect()
-        self.action_button.clicked.connect(self.accept)
-
-    def on_error(self, message: str):
-        self.progress_bar.hide()
-        self.status_label.setText(f"Error: {message}")
-        self.action_button.setText("Cerrar")
-        self.action_button.setEnabled(True)
-        self.action_button.clicked.disconnect()
-        self.action_button.clicked.connect(self.reject)
+        self.action_button.setVisible(False)
+        self.btn_close.setText("Cerrar")
+        self.btn_close.setVisible(True)
+        self.btn_close.setEnabled(True)

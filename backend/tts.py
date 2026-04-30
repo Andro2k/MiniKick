@@ -2,62 +2,38 @@
 
 import queue
 import threading
-import pyttsx3
-from backend.interfaces.tts_interfaces import TTSEngine
+from backend.interfaces.tts_interfaces import ITTSProvider
+from backend.TTS.local_tts import LocalTTSProvider
+from backend.TTS.web_tts import WebTTSProvider
 
-# --- Implementación Concreta de Hardware ---
-class Pyttsx3Engine:
-    """Implementación específica de pyttsx3 (Alta Cohesión con el hardware)"""
-    def __init__(self, rate: int = 150, initial_volume: float = 1.0):
-        self.rate = rate
-        self.volume = initial_volume
-        self.voice_id = None # Voz por defecto del sistema
-
-    def get_available_voices(self) -> list[dict[str, str]]:
-        """Interroga al OS por las voces instaladas"""
-        engine = pyttsx3.init()
-        voices = engine.getProperty('voices')
-        # Limpiamos el nombre para que la UI no reciba texto basura
-        return [{"id": v.id, "name": v.name.split(" - ")[0]} for v in voices]
-
-    def set_voice(self, voice_id: str) -> None:
-        self.voice_id = voice_id
-
-    def set_volume(self, volume: float) -> None:
-        self.volume = max(0.0, min(1.0, volume))
-
-    def speak(self, text: str) -> None:
-        try:
-            # Inicializamos dentro del hilo para evitar colisiones de memoria (COM errors)
-            engine = pyttsx3.init()
-            engine.setProperty("rate", self.rate)
-            engine.setProperty("volume", self.volume)
-            if self.voice_id:
-                engine.setProperty("voice", self.voice_id)
-                
-            engine.say(text)
-            engine.runAndWait()
-        except Exception as e:
-            print(f"[TTS] Error al hablar: {e}")
-
-# --- Orquestador (Lógica de Negocio Asíncrona) ---
 class TTSManager:
     """
-    Gestiona una cola de mensajes en un hilo secundario.
+    Gestiona una cola de mensajes en un hilo secundario y delega
+    la reproducción al proveedor inyectado (Patrón Estrategia).
     """
-    def __init__(self, engine: TTSEngine):
-        self.engine = engine
+    def __init__(self):
+        # Default fallback provider
+        self._provider: ITTSProvider = LocalTTSProvider()
+        
         self.queue: queue.Queue[str | None] = queue.Queue()
         self._thread = threading.Thread(target=self._worker, daemon=True)
         self._thread.start()
+
+    def set_provider(self, provider_type: str) -> None:
+        """Cambia el motor en caliente (Factory)."""
+        if provider_type == "web":
+            self._provider = WebTTSProvider()
+        else:
+            self._provider = LocalTTSProvider()
 
     def say(self, text: str) -> None:
         if text and text.strip():
             self.queue.put(text.strip())
 
     def stop(self) -> None:
+        """Detiene la cola y el motor actual."""
         self.queue.put(None)
-        self._thread.join(timeout=5)
+        self._provider.stop() 
 
     def _worker(self) -> None:
         while True:
@@ -67,5 +43,47 @@ class TTSManager:
                 self.queue.task_done()
                 break
 
-            self.engine.speak(text)
+            self._provider.speak(text)
             self.queue.task_done()
+
+    def get_available_voices(self, provider_type: str) -> list[dict]:
+        """Obtiene las voces disponibles según el motor activo."""
+        if provider_type == "web":
+            import asyncio
+            import edge_tts
+            try:
+                # Ejecutamos asíncronamente la petición de voces
+                voices = asyncio.run(edge_tts.list_voices())
+                # Filtramos solo las voces en español
+                return [{"id": v["ShortName"], "name": v["FriendlyName"]} for v in voices if "es-" in v["Locale"]]
+            except Exception as e:
+                print(f"[TTS Web] Error al conectar con Microsoft Edge: {e}")
+                # Si el servidor falla, devolvemos una lista de fallback (Alta Cohesión)
+                # para que el ComboBox no se quede vacío o rompa la UI.
+                return [
+                    {"id": "es-ES-AlvaroNeural", "name": "Álvaro (España) - Modo Desconectado"},
+                    {"id": "es-ES-ElviraNeural", "name": "Elvira (España) - Modo Desconectado"},
+                    {"id": "es-MX-JorgeNeural", "name": "Jorge (México) - Modo Desconectado"},
+                    {"id": "es-MX-DaliaNeural", "name": "Dalia (México) - Modo Desconectado"}
+                ]
+        else:
+            import pyttsx3
+            try:
+                engine = pyttsx3.init()
+                return [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
+            except Exception as e:
+                print(f"[TTS Local] Error obteniendo voces locales: {e}")
+                return [{"id": "default", "name": "Voz del Sistema (Por Defecto)"}]
+
+    def set_volume(self, volume: float) -> None:
+        """Delega el cambio de volumen al proveedor activo."""
+        # Aseguramos que el proveedor tenga el método antes de llamarlo
+        if hasattr(self._provider, 'set_volume'):
+            self._provider.set_volume(volume)
+
+    def set_voice(self, voice_id: str) -> None:
+        """Delega el cambio de voz al proveedor activo."""
+        if hasattr(self._provider, 'voice_id'): # Para pyttsx3
+            self._provider.voice_id = voice_id
+        elif hasattr(self._provider, 'voice'):  # Para edge-tts
+            self._provider.voice = voice_id

@@ -25,7 +25,7 @@ def bootstrap():
     
     # Ensamblamos el manager UNA SOLA VEZ
     updater = UpdateManager(
-        current_version="v1.0.0", # Asegúrate de que tenga la "v" si usas tags con "v" en GitHub
+        current_version="v1.0.2", # Asegúrate de que tenga la "v" si usas tags con "v" en GitHub
         checker=github_provider,
         downloader=github_provider,
         installer=windows_installer
