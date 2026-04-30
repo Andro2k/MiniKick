@@ -1,13 +1,30 @@
-<div align="center">
-  <img src="assets/installer/install_small.png" height="150" alt="MiniKick Logo" />
+<!-- 1. Hacemos que la imagen flote a la izquierda -->
+<img align="left" src="assets/installer/install_bg.png" width="250" alt="MiniKick Preview" />
+
+<!-- 2. Todo esto fluirá automáticamente a la derecha de la imagen -->
+<div align="left">
   <h1>MiniKick</h1>
   <p><strong>El centro de control definitivo para streamers en Kick.com</strong></p>
+  
+  <p>
+    <strong>MiniKick</strong> es una aplicación de escritorio nativa diseñada para optimizar la interacción en Kick.com. Actualmente, el proyecto se centra en ofrecer un sistema de lectura de chat avanzado y personalizable, operando completamente fuera del navegador para reducir drásticamente el consumo de recursos de tu PC mientras transmites.
+  </p>
+
+  <br>
 
   <p>
-    <img src="https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919" alt="Latest Release" height="28"/>
-    <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919" alt="Python Version" height="28"/>
-    <img src="https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919" alt="PySide6" height="28"/>
-    <img src="https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919" alt="License" height="28"/>
+    <a href="https://github.com/Andro2k/MiniKick/releases/latest">
+      <img src="https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919" alt="Latest Release"/>
+    </a>
+    <img src="https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919" alt="Windows Support"/>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919" alt="Python Version"/>
+    <img src="https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919" alt="PySide6"/>
+  </p>
+  <p>
+    <img src="https://img.shields.io/badge/Arquitectura-Clean_Code-FFb900?style=for-the-badge&logo=dataiku&logoColor=white&labelColor=191919" alt="Clean Architecture"/>
+    <img src="https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919" alt="License"/>
   </p>
   
   <a href="https://github.com/Andro2k/MiniKick/releases/latest">
@@ -15,11 +32,7 @@
   </a>
 </div>
 
----
-
-## 📖 Descripción General
-
-**MiniKick** es una aplicación de escritorio nativa diseñada para optimizar la interacción en Kick.com. Actualmente, el proyecto se centra en ofrecer un sistema de lectura de chat avanzado y personalizable, operando completamente fuera del navegador para reducir drásticamente el consumo de recursos de tu PC mientras transmites.
+<br clear="both" />
 
 ---
 

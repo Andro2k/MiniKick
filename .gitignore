@@ -30,7 +30,7 @@ Thumbs.db
 *.iss
 */media/*
 *.spec
-
+pyinstaller.txt
 # Archivos de configuración de IDEs
 *build/
 *dist/
