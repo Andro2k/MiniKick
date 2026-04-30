@@ -1,10 +1,12 @@
 # frontend/components/switch.py
 
-import os
 from PySide6.QtWidgets import QAbstractButton, QSizePolicy
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QPainter
 from PySide6.QtSvg import QSvgRenderer
+
+# REGLA APLICADA: Alta Cohesión. Importamos tu utilidad centralizada para rutas.
+from frontend.utils import get_assets_path
 
 class ModernSwitch(QAbstractButton):
     """
@@ -12,15 +14,14 @@ class ModernSwitch(QAbstractButton):
     Implementado de forma nativa con PySide6 para mantener la cohesión del proyecto.
     """
     
-    ASSETS_DIR = "assets/icons"  # Directorio base para los SVGs, ajusta según tu estructura de proyecto
-    SVG_ON_PATH = os.path.join(ASSETS_DIR, "switch-on.svg")
-    SVG_OFF_PATH = os.path.join(ASSETS_DIR, "switch-off.svg")
+    # REGLA APLICADA: DRY. Delegamos la resolución de la ruta absoluta a utils.py
+    SVG_ON_PATH = get_assets_path("icons/switch-on.svg")
+    SVG_OFF_PATH = get_assets_path("icons/switch-off.svg")
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setCheckable(True)
-        # QSize es la clase correcta en PySide6 para definir dimensiones
-        self._default_size = QSize(25,25)
+        self._default_size = QSize(25, 25)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         
         # Inicializamos los renderizadores en PySide6
@@ -48,6 +49,6 @@ class ModernSwitch(QAbstractButton):
             placeholder_color = Qt.GlobalColor.magenta if self.isChecked() else Qt.GlobalColor.gray
             painter.fillRect(target_rect, placeholder_color)
             painter.setPen(Qt.GlobalColor.white)
-            painter.drawText(target_rect, Qt.AlignmentFlag.AlignCenter, "SVG ERROR")
+            painter.drawText(target_rect, Qt.AlignmentFlag.AlignCenter, "SVG ERR")
 
         painter.end()

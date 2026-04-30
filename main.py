@@ -10,7 +10,9 @@ from frontend.theme import GLOBAL_QSS
 from frontend.utils import resource_path
 
 def bootstrap():
-    load_dotenv()
+    env_path = resource_path(".env")
+    load_dotenv(env_path)
+    
     app = QApplication(sys.argv)
     
     # Aseguramos que la app no muera cuando la última ventana se oculta (Minimizar a tray)
