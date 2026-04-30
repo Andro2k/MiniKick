@@ -3,7 +3,7 @@
 import queue
 import threading
 import pyttsx3
-from backend.interfaces import TTSEngine
+from backend.interfaces.tts_interfaces import TTSEngine
 
 # --- Implementación Concreta de Hardware ---
 class Pyttsx3Engine:

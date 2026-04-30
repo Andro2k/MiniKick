@@ -6,8 +6,9 @@ from frontend.components.switch import ModernSwitch
 
 class SettingsView(QWidget):
     minimize_tray_toggled = Signal(bool)
-    # NUEVA SEÑAL: Emitida cuando el usuario hace clic en el botón de desvincular
     unlink_account_requested = Signal() 
+    # NUEVA SEÑAL: Emitida cuando el usuario quiere buscar actualizaciones
+    check_update_requested = Signal() 
 
     def __init__(self):
         super().__init__()
@@ -47,7 +48,7 @@ class SettingsView(QWidget):
         sys_layout.addLayout(start_bg_layout)
         layout.addWidget(sys_card)
 
-        # --- NUEVA Tarjeta 2: Gestión de Cuenta ---
+        # --- Tarjeta 2: Gestión de Cuenta ---
         account_card = QFrame()
         account_card.setObjectName("Card")
         account_layout = QVBoxLayout(account_card)
@@ -64,11 +65,10 @@ class SettingsView(QWidget):
         
         self.btn_unlink = QPushButton("Desvincular")
         self.btn_unlink.setCursor(Qt.CursorShape.PointingHandCursor)
-        # Reutilizamos el estilo de botones, pero quizás con un toque destructivo
         self.btn_unlink.setStyleSheet("""
             QPushButton {
                 background-color: transparent;
-                border: 1px solid #ef4444; /* Rojo para acción destructiva */
+                border: 1px solid #ef4444; 
                 color: #ef4444;
                 border-radius: 6px;
                 padding: 6px 12px;
@@ -86,6 +86,47 @@ class SettingsView(QWidget):
 
         account_layout.addLayout(unlink_layout)
         layout.addWidget(account_card)
+
+        # --- NUEVA Tarjeta 3: Sistema y Actualizaciones ---
+        update_card = QFrame()
+        update_card.setObjectName("Card")
+        update_layout = QVBoxLayout(update_card)
+        update_layout.setContentsMargins(20, 20, 20, 20)
+        update_layout.setSpacing(15)
+
+        update_title = QLabel("SISTEMA")
+        update_title.setProperty("role", "section")
+        update_layout.addWidget(update_title)
+
+        check_update_layout = QHBoxLayout()
+        lbl_update = QLabel("Buscar e instalar nuevas versiones de la aplicación")
+        lbl_update.setProperty("role", "subtitle")
+
+        self.btn_update = QPushButton("Buscar actualizaciones")
+        self.btn_update.setCursor(Qt.CursorShape.PointingHandCursor)
+        # Usamos un color verde neón neutro o el primario de tu tema
+        self.btn_update.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: 1px solid #53ff1a; 
+                color: #53ff1a;
+                border-radius: 6px;
+                padding: 6px 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: rgba(83, 255, 26, 0.1);
+            }
+        """)
+        # Conectamos el clic del botón a la nueva señal
+        self.btn_update.clicked.connect(self.check_update_requested.emit)
+
+        check_update_layout.addWidget(lbl_update)
+        check_update_layout.addStretch()
+        check_update_layout.addWidget(self.btn_update)
+
+        update_layout.addLayout(check_update_layout)
+        layout.addWidget(update_card)
 
         layout.addStretch() # Empuja todo hacia arriba
 

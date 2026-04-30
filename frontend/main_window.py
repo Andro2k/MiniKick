@@ -7,10 +7,15 @@ from PySide6.QtCore import Slot, QThread, Signal, QEvent
 from PySide6.QtGui import QIcon
 
 # Importamos las Vistas (Frontend)
+from backend import updater_manager
+from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
 from frontend.sidebar import Sidebar
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.settings_view import SettingsView
+
+# Importamos Componentes de Actualización (Frontend)
+from frontend.components.update_dialog import UpdateDialog
 
 # Importamos el Backend
 from backend.auth import AuthManager
@@ -18,21 +23,19 @@ from backend.database import DatabaseManager, SQLiteTokenStorage, SQLiteSettings
 from backend.chat import KickAPIClient, ChatSocketManager
 from backend.tts import TTSManager, Pyttsx3Engine
 
+# Importamos el Sistema de Actualizaciones (Backend)
+from backend.updater_manager import UpdateManager
+
 # Importamos Componentes Modernos y Utilidades
 from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
 
 # --- Hilo de Trabajo (Alta Cohesión & SoR) ---
 class ChatWorker(QThread):
-    """
-    Aísla la conexión WebSocket y llamadas a la API en un hilo secundario 
-    para evitar que la interfaz gráfica se congele.
-    """
-    message_received = Signal(str, str) # Emite: (usuario, mensaje)
-    error_occurred = Signal(str)        # Emite: (mensaje_de_error)
-    connection_success = Signal(dict)   # Emite: (datos_del_streamer)
+    message_received = Signal(str, str) 
+    error_occurred = Signal(str)        
+    connection_success = Signal(dict)   
 
-    # REGLA APLICADA: Inversión de dependencias. Recibe el cliente ya configurado.
     def __init__(self, api_client: KickAPIClient, cluster: str, key: str):
         super().__init__()
         self.api_client = api_client 
@@ -42,13 +45,8 @@ class ChatWorker(QThread):
 
     def run(self):
         try:
-            # 1. Obtener datos de la API de Kick (El cliente maneja internamente sus tokens y errores 401)
             user_data = self.api_client.fetch_user_data()
-            
-            # 2. Notificar a la vista con la data limpia
             self.connection_success.emit(user_data)
-            
-            # 3. Extraer el room_id para el socket
             room_id = user_data.get("room_id")
             if not room_id:
                 raise ValueError("No se pudo obtener el ID de la sala desde la API.")
@@ -58,20 +56,22 @@ class ChatWorker(QThread):
             def on_msg(user: str, msg: str):
                 self.message_received.emit(user, msg)
 
-            # 4. Iniciar bucle bloqueante de Websockets
             self.chat_manager.start_socket(room_id, on_message=on_msg)
         except Exception as e:
             self.error_occurred.emit(str(e))
 
 # ─── CONTROLADOR PRINCIPAL ───
 class MainWindow(QMainWindow):
-    # Llave de persistencia para la configuración en la DB
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
 
-    def __init__(self):
+    def __init__(self, updater_manager):
         super().__init__()
+        self.updater_manager = updater_manager
+        
         self.setWindowTitle("MiniKick - Folderly")
         self.resize(1100, 750)
+
+        self.updater_manager = updater_manager
 
         # --- 1. Inicializar componentes del Backend ---
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
@@ -95,25 +95,22 @@ class MainWindow(QMainWindow):
 
         # --- 2. Ensamblar e iniciar UI ---
         self._setup_ui()
-        self._setup_tray() # Configurar icono de bandeja
+        self._setup_tray() 
         self._connect_signals()
         self._load_settings_into_ui()
 
     def _setup_ui(self):
-        """Estructura principal de la aplicación"""
         self.central_widget = QWidget()
         self.setCentralWidget(self.central_widget)
         self.main_layout = QHBoxLayout(self.central_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        # --- Sidebar ---
         self.sidebar = Sidebar()
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
         self.sidebar.add_tab("Chat", "chat.svg")
         self.sidebar.add_tab("Settings", "settings.svg")
         
-        # --- Contenedor de Vistas (Stacked Widget) ---
         self.content_stack = QStackedWidget()
         
         self.view_dashboard = DashboardView()
@@ -128,12 +125,10 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.content_stack)
 
     def _setup_tray(self):
-        """Configura el ícono de la bandeja del sistema (Bandeja del reloj)"""
         self.tray_icon = QSystemTrayIcon(self)
         icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
         self.tray_icon.setIcon(QIcon(icon_path))
 
-        # Menú contextual de la bandeja
         tray_menu = QMenu()
         restore_action = tray_menu.addAction("Abrir Panel")
         restore_action.triggered.connect(self.showNormal)
@@ -148,27 +143,35 @@ class MainWindow(QMainWindow):
         self.tray_icon.show()
 
     def _connect_signals(self):
-        """Conecta eventos visuales con lógica de negocio"""
         self.sidebar.view_selected.connect(self._handle_navigation)
         self.view_dashboard.request_connection.connect(self._handle_auth_process)
         self.view_chat.volume_changed.connect(self._update_tts_volume)
         self.view_chat.voice_changed.connect(self._handle_voice_change)
+        
+        # Conexiones de SettingsView
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
         self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
+        # NUEVA CONEXIÓN: Atrapamos la señal del botón de actualizar
+        self.view_settings.check_update_requested.connect(self._handle_update_check)
 
     # ─── REGLAS DE NEGOCIO Y ORQUESTACIÓN ───
 
     def _load_settings_into_ui(self):
-        """Carga la configuración de la DB al iniciar"""
         enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.view_settings.set_minimize_tray_enabled(enabled)
-        # NUEVO: Orquestación de voces
+        
         saved_voice_id = self.settings_storage.load_string("tts_voice", "")
         available_voices = self.tts_engine.get_available_voices()
         
         self.view_chat.populate_voices(available_voices, saved_voice_id)
         if saved_voice_id:
             self.tts_engine.set_voice(saved_voice_id)
+
+    @Slot()
+    def _handle_update_check(self):
+        """Abre el diálogo de actualizaciones cuando el usuario lo solicita."""
+        dialog = UpdateDialog(manager=self.updater_manager, parent=self)
+        dialog.exec() # Abre la ventana en modo modal (bloquea la ventana principal hasta que se cierre)
 
     @Slot(bool)
     def _handle_minimize_tray_change(self, enabled: bool):
@@ -195,18 +198,14 @@ class MainWindow(QMainWindow):
         self.view_dashboard.set_connecting_state()
 
         try:
-            # Forzamos la validación inicial (login o carga desde DB)
             tokens = self.auth_manager.get_tokens()
             
             if tokens:
                 cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
                 key = os.getenv("KICK_PUSHER_KEY", "")
-                
-                # REGLA APLICADA: Ensamblaje de dependencias en la capa superior
-                # Inyectamos el auth_manager (que cumple como TokenProvider) al cliente API
+
                 api_client = KickAPIClient(auth_provider=self.auth_manager)
                 
-                # Inyectamos el cliente API al hilo trabajador
                 self.chat_worker = ChatWorker(api_client, cluster, key)
                 
                 self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
@@ -244,11 +243,8 @@ class MainWindow(QMainWindow):
             
             self.view_chat.chat_display.clear()
 
-            # 5. Redirigir al usuario al Dashboard (Cambiamos la vista)
             self._handle_navigation("Dashboard")
             
-            # REGLA APLICADA: Iteramos la lista para actualizar visualmente el botón
-            # sin importar el índice exacto en el que fue creado.
             for btn in self.sidebar.nav_buttons:
                 if btn.text().strip() == "Dashboard":
                     btn.setChecked(True)
@@ -281,11 +277,9 @@ class MainWindow(QMainWindow):
     def _handle_voice_change(self, voice_id: str):
         self.tts_engine.set_voice(voice_id)
         self.settings_storage.save_string("tts_voice", voice_id)
-        # Opcional: Hacer que el bot hable para confirmar la voz
         self.tts_manager.say("Voz actualizada.")
         
     def _notify_background(self):
-        """Muestra la notificación de confirmación con el logo (Sugerencia del usuario)"""
         self.tray_icon.showMessage(
             "MiniKick en segundo plano",
             "Seguiré leyendo el chat por ti. Haz doble clic para volver.",
@@ -295,7 +289,6 @@ class MainWindow(QMainWindow):
 
     # ─── GESTIÓN DE EVENTOS NATIVOS ───
     def changeEvent(self, event):
-        """Maneja el botón de minimizar (-)"""
         if event.type() == QEvent.Type.WindowStateChange:
             if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
                 self.hide()
@@ -303,29 +296,24 @@ class MainWindow(QMainWindow):
         super().changeEvent(event)
 
     def _force_quit(self):
-        """Cierre rápido desde el menú de la bandeja"""
         self._cleanup()
         QApplication.quit()
 
     def _cleanup(self):
-        """Limpieza de hilos y motores antes de cerrar"""
         self.tts_manager.stop()
         if self.chat_worker and self.chat_worker.isRunning():
             self.chat_worker.terminate()
             self.chat_worker.wait()
 
     def closeEvent(self, event):
-        """Maneja el botón de cerrar (X)"""
-        # Si la opción de minimizar está activa, ignoramos el cierre y ocultamos
         if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
             self.hide()
             self._notify_background()
             event.ignore() 
         else:
-            # Si la opción está desactivada, preguntamos si quiere cerrar de verdad
             dialog = ModernConfirmDialog(self)
             if dialog.exec() == dialog.DialogCode.Accepted:
-                event.accept() # 1. Aceptamos el evento para que la ventana se cierre visualmente
-                self._force_quit() # 2. Reutilizamos la lógica centralizada para matar el proceso
+                event.accept() 
+                self._force_quit() 
             else:
                 event.ignore()

@@ -24,7 +24,7 @@ temp_tts.mp3
 # Archivos del sistema operativo
 .DS_Store
 Thumbs.db
-
+*.exe
 # Logs
 *.log
 *.iss

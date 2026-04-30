@@ -8,7 +8,7 @@ import cloudscraper
 import requests
 import websocket
 
-from backend.interfaces import TokenProvider
+from backend.interfaces.auth_interfaces import TokenProvider
 
 KICK_API_URL = "https://api.kick.com/public/v1/users"
 KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{username}"
