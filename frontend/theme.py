@@ -121,7 +121,7 @@ QPushButton[role="action_accent"] {{
     border-radius: {RADIUS_SM}px;
     padding: 10px 20px;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #000000;
 }}
 
 QPushButton[role="action_accent"]:hover {{

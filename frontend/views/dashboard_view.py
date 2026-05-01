@@ -1,17 +1,17 @@
-# frontend/views/dashboard_view.py
-
+import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QPushButton, QFrame, QGridLayout)
 from PySide6.QtCore import Qt, Signal, QUrl, Slot
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 
 from frontend.theme import COLOR_BORDER_SVELTE
-from frontend.utils import create_circular_pixmap
+from frontend.utils import create_circular_pixmap, get_icon, get_icon_colored
 
 class DashboardView(QWidget):
     # ─── CONTRATOS DE SALIDA ───
     request_connection = Signal()
+    auto_start_toggled = Signal(bool)
 
     def __init__(self):
         super().__init__()
@@ -52,6 +52,22 @@ class DashboardView(QWidget):
         self.status_label = QLabel("Estado: Esperando conexión...")
         self.status_label.setProperty("role", "subtitle")
         
+        # --- Botón Cuadrado de Inicio Automático ---
+        self.btn_autostart = QPushButton()
+        self.btn_autostart.setFixedSize(40, 40)
+        self.btn_autostart.setCheckable(True) 
+        self.btn_autostart.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        # Conectamos señal interna para el aspecto visual
+        self.btn_autostart.toggled.connect(self._update_autostart_visuals)
+        
+        # Forzamos estado inicial visual (falso por defecto)
+        self._update_autostart_visuals(False)
+
+        # Conectamos la señal de salida para el Controlador (MainWindow)
+        self.btn_autostart.toggled.connect(self.auto_start_toggled.emit)
+        # --------------------------------------------------
+
         self.btn_connect = QPushButton("Conectar a Kick")
         self.btn_connect.setProperty("role", "action_accent")
         self.btn_connect.setFixedSize(160, 40)
@@ -59,38 +75,38 @@ class DashboardView(QWidget):
         self.btn_connect.clicked.connect(self.request_connection.emit)
 
         conn_layout.addWidget(self.status_label)
-        conn_layout.addStretch() # Empuja el botón a la derecha
+        conn_layout.addStretch() 
+        conn_layout.addWidget(self.btn_autostart) 
         conn_layout.addWidget(self.btn_connect)
         parent_layout.addWidget(conn_card)
 
     def _setup_profile_section(self, parent_layout: QVBoxLayout):
-        self.profile_container = QWidget() # Contenedor maestro oculto por defecto
+        self.profile_container = QWidget()
         self.profile_container.setVisible(False)
         self.profile_container.setContentsMargins(0, 0, 0, 0)
         
         profile_layout = QHBoxLayout(self.profile_container)
         profile_layout.setContentsMargins(0, 0, 0, 0)
-        profile_layout.setSpacing(12) # Espacio entre la tarjeta de avatar y la de stats
+        profile_layout.setSpacing(12) 
 
         # --- Tarjeta 1: Avatar (Anclado a la izquierda) ---
         avatar_card = QFrame()
-        avatar_card.setObjectName("Card") # DRY: Reutiliza estilo de tarjeta
-        avatar_card.setFixedSize(140, 140) # Tamaño fijo y minimalista
+        avatar_card.setObjectName("Card") 
+        avatar_card.setFixedSize(140, 140) 
         avatar_layout = QVBoxLayout(avatar_card)
-        avatar_layout.setContentsMargins(10, 10, 10, 10) # Padding interno svelte
+        avatar_layout.setContentsMargins(10, 10, 10, 10) 
 
         self.lbl_avatar = QLabel()
-        self.lbl_avatar.setScaledContents(True) # Se expande para llenar
+        self.lbl_avatar.setScaledContents(True) 
         self.lbl_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # Placeholder sutil (Alta Cohesión visual)
         self.lbl_avatar.setText("?")
         self.lbl_avatar.setStyleSheet(f"font-size: 40px; color: {COLOR_BORDER_SVELTE}; font-weight: bold;")
         
         avatar_layout.addWidget(self.lbl_avatar)
         profile_layout.addWidget(avatar_card)
  
-        # --- Tarjeta 2: Estadísticas (El Grid existente) ---
+        # --- Tarjeta 2: Estadísticas ---
         stats_card = QFrame()
         stats_card.setObjectName("Card")
         stats_prof_layout = QVBoxLayout(stats_card)
@@ -110,51 +126,66 @@ class DashboardView(QWidget):
             lbl.setProperty("role", "section")
             return lbl
 
-        # Column 0: Streamer
         self.lbl_username = QLabel("-")
         self.lbl_username.setProperty("role", "stat_value")
         stats_grid.addWidget(make_header("STREAMER"), 0, 0)
         stats_grid.addWidget(self.lbl_username, 1, 0)
 
-        # Column 1: Seguidores
         self.lbl_followers = QLabel("0")
         self.lbl_followers.setProperty("role", "stat_value")
         stats_grid.addWidget(make_header("SEGUIDORES"), 0, 1)
         stats_grid.addWidget(self.lbl_followers, 1, 1)
 
-        # Column 2: ID de Sala
         self.lbl_room = QLabel("-")
         self.lbl_room.setProperty("role", "stat_value")
         stats_grid.addWidget(make_header("ID DE SALA"), 0, 2)
         stats_grid.addWidget(self.lbl_room, 1, 2)
 
         stats_prof_layout.addLayout(stats_grid)
-        profile_layout.addWidget(stats_card) # Añadimos al layout horizontal principal
+        profile_layout.addWidget(stats_card) 
 
         parent_layout.addWidget(self.profile_container)
 
     @Slot(QNetworkReply)
     def _on_avatar_downloaded(self, reply: QNetworkReply):
-        """Callback asíncrono para procesar la imagen (Separación)"""
         if reply.error() == QNetworkReply.NetworkError.NoError:
             data = reply.readAll()
             pixmap = create_circular_pixmap(data)
             if not pixmap.isNull():
                 self.lbl_avatar.setPixmap(pixmap)
-                # Ocultar placeholder de texto si hay imagen
                 self.lbl_avatar.setStyleSheet("border: none;") 
         reply.deleteLater()
 
+   # ─── NUEVO SLOT INTERNO USANDO UTILS.PY ───
+    @Slot(bool)
+    def _update_autostart_visuals(self, checked: bool):
+        """Maneja el cambio de icono usando la utilidad centralizada de frontend/utils.py"""
+        
+        if checked:
+            icon = get_icon_colored("plug.svg", "black", size=22)
+            self.btn_autostart.setToolTip("Desactivar Inicio Automático")
+        else:
+            icon = get_icon("plug.svg") 
+            self.btn_autostart.setToolTip("Activar Inicio Automático")
+            
+        self.btn_autostart.setIcon(icon)
+
 
     # ─── CONTRATOS DE ESTADO (Controlador -> Vista) ───
+    def set_autostart_state(self, enabled: bool):
+        self.btn_autostart.blockSignals(True)
+        self.btn_autostart.setChecked(enabled)
+        # Actualizamos la UI manualmente al cargar los datos
+        self._update_autostart_visuals(enabled) 
+        self.btn_autostart.blockSignals(False)
+
     def set_connecting_state(self):
         self.status_label.setText("Estado: Autenticando...")
         self.btn_connect.setEnabled(False)
         self.profile_container.setVisible(False)
-        self.lbl_avatar.setPixmap(QPixmap()) # Resetear avatar previo
+        self.lbl_avatar.setPixmap(QPixmap()) 
 
     def set_connected_state(self, user_data: dict):
-        """Recibe el diccionario limpio del backend y pinta la interfaz"""
         self.status_label.setText("Estado: Conectado y Escuchando")
         self.status_label.setObjectName("State_Connected") 
         self.status_label.style().unpolish(self.status_label)
@@ -163,7 +194,6 @@ class DashboardView(QWidget):
         self.btn_connect.setText("Sistema Activo")
         self.btn_connect.setEnabled(False)
 
-        # Parsear los datos numéricos/texto
         username = user_data.get("username", "Desconocido")
         if user_data.get("is_verified"):
             username += " ✓"
@@ -172,13 +202,10 @@ class DashboardView(QWidget):
         self.lbl_followers.setText(f"{user_data.get('followers', 0):,}")
         self.lbl_room.setText(str(user_data.get("room_id", "-")))
 
-        # --- NUEVO: Iniciar descarga asíncrona del avatar ---
         url_str = user_data.get("avatar_url", "")
         if url_str:
             self.network_manager.get(QNetworkRequest(QUrl(url_str)))
-        # ---------------------------------------------------
 
-        # Revelar el contenedor completo (Avatar + Stats)
         self.profile_container.setVisible(True)
 
     def set_error_state(self, error_message: str):

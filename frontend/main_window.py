@@ -59,12 +59,14 @@ class ChatWorker(QThread):
 # ─── CONTROLADOR PRINCIPAL ───
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
+    SETTING_AUTOSTART = "dashboard_autostart" # NUEVO: Constante para la base de datos
 
-    def __init__(self, updater_manager):
+    def __init__(self, updater_manager, app_version: str):
         super().__init__()
         self.updater_manager = updater_manager
         
-        self.setWindowTitle("MiniKick - Versión 1.0.2")
+        # Asignamos el título dinámicamente usando la versión inyectada
+        self.setWindowTitle(f"MiniKick - Versión {app_version}")
         self.resize(1100, 750)
 
         self.updater_manager = updater_manager
@@ -140,10 +142,10 @@ class MainWindow(QMainWindow):
         self.sidebar.view_selected.connect(self._handle_navigation)
         # Conexiones de DashboardView
         self.view_dashboard.request_connection.connect(self._handle_auth_process)
+        self.view_dashboard.auto_start_toggled.connect(self._handle_autostart_change)
         # Conexiones de ChatView
         self.view_chat.volume_changed.connect(self._update_tts_volume)
         self.view_chat.voice_changed.connect(self._handle_voice_change)
-        # 3. NUEVA CONEXIÓN: Atrapamos cuando el usuario cambia de Local a Web
         self.view_chat.provider_changed.connect(self._handle_provider_change)
         # Conexiones de SettingsView
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
@@ -155,13 +157,15 @@ class MainWindow(QMainWindow):
     def _load_settings_into_ui(self):
         enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.view_settings.set_minimize_tray_enabled(enabled)
-        
-        # 4. Cargar estado guardado del proveedor (por defecto local)
         saved_provider = self.settings_storage.load_string("tts_provider", "local")
         self.view_chat.chk_provider.setChecked(saved_provider == "web")
-        
-        # 5. Inicializar el motor y cargar las voces iniciales
         self._handle_provider_change(saved_provider)
+
+        auto_start_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
+        self.view_dashboard.set_autostart_state(auto_start_enabled)
+
+        if auto_start_enabled:
+            self.view_dashboard.btn_connect.click()
 
     @Slot()
     def _handle_update_check(self):
@@ -253,6 +257,10 @@ class MainWindow(QMainWindow):
                 
         except Exception as e:
             self.view_dashboard.set_error_state(str(e))
+
+    @Slot(bool)
+    def _handle_autostart_change(self, enabled: bool):
+        self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
 
     @Slot()
     def _handle_unlink_account(self):
