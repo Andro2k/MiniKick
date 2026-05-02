@@ -15,7 +15,6 @@ class DashboardView(QWidget):
 
     def __init__(self):
         super().__init__()
-        # Gestor de red local a la vista para descargar el avatar asíncronamente (SoR)
         self.network_manager = QNetworkAccessManager(self)
         self.network_manager.finished.connect(self._on_avatar_downloaded)
         self._setup_ui()
@@ -23,14 +22,14 @@ class DashboardView(QWidget):
     def _setup_ui(self):
         """Construye la interfaz delegando en submétodos para mejor lectura"""
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
         self._setup_header(layout)
         self._setup_connection_card(layout)
         self._setup_profile_section(layout)
 
-        layout.addStretch() # Resorte final para empujar todo hacia arriba
+        layout.addStretch()
 
     def _setup_header(self, parent_layout: QVBoxLayout):
         header_layout = QVBoxLayout()
@@ -52,13 +51,10 @@ class DashboardView(QWidget):
         self.status_label = QLabel("Estado: Esperando conexión...")
         self.status_label.setProperty("role", "subtitle")
         
-        # --- Botón Cuadrado de Inicio Automático ---
         self.btn_autostart = QPushButton()
         self.btn_autostart.setFixedSize(40, 40)
         self.btn_autostart.setCheckable(True) 
         self.btn_autostart.setCursor(Qt.CursorShape.PointingHandCursor)
-        
-        # Conectamos señal interna para el aspecto visual
         self.btn_autostart.toggled.connect(self._update_autostart_visuals)
         
         # Forzamos estado inicial visual (falso por defecto)
@@ -66,7 +62,6 @@ class DashboardView(QWidget):
 
         # Conectamos la señal de salida para el Controlador (MainWindow)
         self.btn_autostart.toggled.connect(self.auto_start_toggled.emit)
-        # --------------------------------------------------
 
         self.btn_connect = QPushButton("Conectar a Kick")
         self.btn_connect.setProperty("role", "action_accent")
@@ -110,7 +105,7 @@ class DashboardView(QWidget):
         stats_card = QFrame()
         stats_card.setObjectName("Card")
         stats_prof_layout = QVBoxLayout(stats_card)
-        stats_prof_layout.setContentsMargins(18, 18, 18, 18)
+        stats_prof_layout.setContentsMargins(16, 16, 16, 16)
         stats_prof_layout.setSpacing(12)
 
         prof_title = QLabel("ESTADÍSTICAS DEL CANAL")
@@ -175,7 +170,6 @@ class DashboardView(QWidget):
     def set_autostart_state(self, enabled: bool):
         self.btn_autostart.blockSignals(True)
         self.btn_autostart.setChecked(enabled)
-        # Actualizamos la UI manualmente al cargar los datos
         self._update_autostart_visuals(enabled) 
         self.btn_autostart.blockSignals(False)
 

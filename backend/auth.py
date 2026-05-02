@@ -34,7 +34,7 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         query = parse_qs(urlparse(self.path).query)
         if "code" in query:
-            self.server.auth_code = query["code"][0]  # type: ignore[attr-defined]
+            self.server.auth_code = query["code"][0]
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
@@ -54,13 +54,13 @@ class OAuthCallbackServer:
     @staticmethod
     def capture_auth_code(url: str, port: int, success_html_path: str) -> str:
         httpd = HTTPServer(("", port), _OAuthCallbackHandler)
-        httpd.auth_code = None  # type: ignore[attr-defined]
-        httpd.success_html_path = success_html_path # INYECCIÓN DE DEPENDENCIA
+        httpd.auth_code = None
+        httpd.success_html_path = success_html_path
         webbrowser.open(url)
         while httpd.auth_code is None:
             httpd.handle_request()
         httpd.server_close()
-        return httpd.auth_code  # type: ignore[attr-defined]
+        return httpd.auth_code
 
 # --- Lógica de Negocio ---
 class AuthManager:
@@ -99,7 +99,6 @@ class AuthManager:
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException:
-            # Si el refresh falla (fue revocado o expiró), forzamos un nuevo inicio de sesión
             return self._new_login()
 
     def _new_login(self) -> dict:
@@ -144,9 +143,7 @@ class AuthManager:
         )
         response.raise_for_status()
         return response.json()
-    
-    # NUEVO MÉTODO
+
     def logout(self) -> None:
         """Limpia las credenciales almacenadas"""
         self.storage.clear()
-        # Opcional: Si Kick tuviera un endpoint de "revoke token", se llamaría aquí.

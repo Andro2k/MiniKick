@@ -1,7 +1,5 @@
 # frontend/utils.py
-# ─────────────────────────────────────────────
-# Utilidades para manejo de rutas e íconos SVG.
-# ─────────────────────────────────────────────
+
 import os
 import sys
 from PySide6.QtCore import Qt, QByteArray
@@ -9,13 +7,11 @@ from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QImage, QPainterPath
 
 def resource_path(relative_path: str) -> str:
     """
-    Obtiene la ruta absoluta al recurso. 
-    Compatible con el empaquetado de PyInstaller (sys._MEIPASS).
+    Obtiene la ruta absoluta al recurso.
     """
     try:
         base_path = sys._MEIPASS
     except Exception:
-        # Asume que utils.py está en /frontend, por lo que subimos un nivel a la raíz
         base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
 
@@ -40,7 +36,6 @@ def get_icon(name: str) -> QIcon:
 def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
     """
     Carga un ícono SVG y lo repinta completamente del color especificado.
-    Ideal para adaptar los íconos al tema claro/oscuro o estados (hover, active).
     """
     full_path = resource_path(os.path.join("assets", "icons", name))
     
@@ -48,10 +43,8 @@ def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
         print(f"[-] Advertencia: No se encontró el ícono '{name}' en {full_path}")
         return QIcon()
 
-    # Cargamos el SVG original en un Pixmap
     pixmap = QPixmap(full_path)
     
-    # Lo escalamos con suavizado para evitar bordes pixelados
     if size:
         pixmap = pixmap.scaled(
             size, size, 
@@ -87,7 +80,6 @@ def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
     if image.isNull():
         return QPixmap()
 
-    # Asegurar un cuadrado perfecto
     size = min(image.width(), image.height())
     image = image.scaled(size, size, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
     

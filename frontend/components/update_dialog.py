@@ -8,7 +8,6 @@ from frontend.theme import COLOR_ACCENT_HOVER, PATH_ICON_UPDATE
 class UpdateDialog(QDialog):
     """
     Diálogo de actualización con diseño plano (Flat).
-    Vista pasiva (SoR): La lógica de hilos la gestiona el controlador.
     """
     download_requested = Signal() 
 
@@ -21,7 +20,6 @@ class UpdateDialog(QDialog):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        # Margen 0: Ajuste exacto al tamaño de la tarjeta
         main_layout.setContentsMargins(0, 0, 0, 0) 
         main_layout.setAlignment(Qt.AlignCenter)
 
@@ -87,7 +85,7 @@ class UpdateDialog(QDialog):
         
         # --- AÑADE ESTAS 3 LÍNEAS AQUÍ ---
         sp = self.progress_bar.sizePolicy()
-        sp.setRetainSizeWhenHidden(True)  # Mantiene el espacio aunque sea invisible
+        sp.setRetainSizeWhenHidden(True)
         self.progress_bar.setSizePolicy(sp)
         # ---------------------------------
         
@@ -118,7 +116,6 @@ class UpdateDialog(QDialog):
 
         main_layout.addWidget(self.container)
 
-    # ... (Mismos métodos de estado que ya tenías: show_update_available, etc.) ...
     def show_update_available(self, version: str):
         self.title_lbl.setText("Actualización Disponible")
         self.status_label.setText(f"¡Nueva versión {version} está lista para descargar!")

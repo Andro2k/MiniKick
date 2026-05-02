@@ -7,8 +7,7 @@ from frontend.components.switch import ModernSwitch
 
 class SettingsView(QWidget):
     minimize_tray_toggled = Signal(bool)
-    unlink_account_requested = Signal() 
-    # NUEVA SEÑAL: Emitida cuando el usuario quiere buscar actualizaciones
+    unlink_account_requested = Signal()
     check_update_requested = Signal() 
 
     def __init__(self):
@@ -17,7 +16,7 @@ class SettingsView(QWidget):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(20)
 
         title = QLabel("Configuración General")

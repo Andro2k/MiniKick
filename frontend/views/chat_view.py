@@ -10,7 +10,7 @@ class ChatView(QWidget):
     # ─── CONTRATOS DE SALIDA (Para el Controlador) ───
     volume_changed = Signal(int)
     voice_changed = Signal(str)
-    provider_changed = Signal(str) # NUEVO: Informa al controlador que debe cambiar de motor
+    provider_changed = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -18,7 +18,7 @@ class ChatView(QWidget):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(18, 18, 18, 18)
+        layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
         title = QLabel("Chat en Vivo")
@@ -49,13 +49,12 @@ class ChatView(QWidget):
 
         row1.addSpacing(20)
 
-        # --- NUEVO: Switch de Motor (Local vs Web IA) ---
         self.lbl_provider_state = QLabel("Motor: Local")
         self.lbl_provider_state.setStyleSheet("font-weight: bold;")
         row1.addWidget(self.lbl_provider_state)
         
         self.chk_provider = ModernSwitch()
-        self.chk_provider.setChecked(False) # False = Local, True = Web
+        self.chk_provider.setChecked(False)
         self.chk_provider.toggled.connect(self._on_provider_toggled)
         row1.addWidget(self.chk_provider)
         
@@ -154,8 +153,6 @@ class ChatView(QWidget):
                 self.combo_voice.setCurrentIndex(index)
                 
         self.combo_voice.blockSignals(False)
-        
-        # Si no había un selected_id pero se cargaron voces, forzamos emitir la primera por defecto
         if not selected_id and self.combo_voice.count() > 0:
             self._on_voice_selected(0)
 

@@ -14,13 +14,13 @@ class DatabaseManager:
 
     def _get_appdata_path(self) -> Path:
         """Resuelve la ruta correcta según el sistema operativo (SoR)"""
-        if os.name == 'nt':  # Windows
+        if os.name == 'nt':
             base_dir = Path(os.getenv('LOCALAPPDATA', Path.home()))
         else:  # Mac / Linux
             base_dir = Path.home() / '.config'
             
         app_dir = base_dir / '.Minikick' / 'data'
-        app_dir.mkdir(parents=True, exist_ok=True) # Crea las carpetas si no existen
+        app_dir.mkdir(parents=True, exist_ok=True)
         
         return app_dir / 'minikick.db'
 
@@ -48,7 +48,6 @@ class DatabaseManager:
 class SQLiteTokenStorage:
     """
     Cumple el contrato de TokenStorage (Inversión de Dependencias).
-    El AuthManager usará esto sin saber que es una base de datos.
     """
     def __init__(self, db_manager: DatabaseManager):
         self.db_path = db_manager.db_path
@@ -66,7 +65,6 @@ class SQLiteTokenStorage:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             raw_json = json.dumps(tokens)
-            # INSERT OR REPLACE: Actualiza si ya existe, inserta si es nuevo
             cursor.execute('''
                 INSERT INTO tokens (id, raw_json) 
                 VALUES (1, ?)
@@ -89,7 +87,6 @@ class SQLiteSettingsStorage:
     def _save(self, key: str, value: Any) -> None:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            # Guardamos como string, ya que SQLite maneja textos mejor
             val_str = str(value)
             cursor.execute('''
                 INSERT INTO general_settings (key, value) 
@@ -108,7 +105,6 @@ class SQLiteSettingsStorage:
             return default
 
     def save_bool(self, key: str, value: bool) -> None:
-        # Convertimos boolean a 'true'/'false' string para SQLite
         self._save(key, 'true' if value else 'false')
 
     def load_bool(self, key: str, default: bool) -> bool:

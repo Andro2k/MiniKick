@@ -9,10 +9,8 @@ from backend.TTS.web_tts import WebTTSProvider
 class TTSManager:
     """
     Gestiona una cola de mensajes en un hilo secundario y delega
-    la reproducción al proveedor inyectado (Patrón Estrategia).
     """
     def __init__(self):
-        # Default fallback provider
         self._provider: ITTSProvider = LocalTTSProvider()
         
         self.queue: queue.Queue[str | None] = queue.Queue()
@@ -52,14 +50,10 @@ class TTSManager:
             import asyncio
             import edge_tts
             try:
-                # Ejecutamos asíncronamente la petición de voces
                 voices = asyncio.run(edge_tts.list_voices())
-                # Filtramos solo las voces en español
                 return [{"id": v["ShortName"], "name": v["FriendlyName"]} for v in voices if "es-" in v["Locale"]]
             except Exception as e:
                 print(f"[TTS Web] Error al conectar con Microsoft Edge: {e}")
-                # Si el servidor falla, devolvemos una lista de fallback (Alta Cohesión)
-                # para que el ComboBox no se quede vacío o rompa la UI.
                 return [
                     {"id": "es-ES-AlvaroNeural", "name": "Álvaro (España) - Modo Desconectado"},
                     {"id": "es-ES-ElviraNeural", "name": "Elvira (España) - Modo Desconectado"},
@@ -77,13 +71,12 @@ class TTSManager:
 
     def set_volume(self, volume: float) -> None:
         """Delega el cambio de volumen al proveedor activo."""
-        # Aseguramos que el proveedor tenga el método antes de llamarlo
         if hasattr(self._provider, 'set_volume'):
             self._provider.set_volume(volume)
 
     def set_voice(self, voice_id: str) -> None:
         """Delega el cambio de voz al proveedor activo."""
-        if hasattr(self._provider, 'voice_id'): # Para pyttsx3
+        if hasattr(self._provider, 'voice_id'):
             self._provider.voice_id = voice_id
-        elif hasattr(self._provider, 'voice'):  # Para edge-tts
+        elif hasattr(self._provider, 'voice'):
             self._provider.voice = voice_id

@@ -22,7 +22,7 @@ class UpdateManager:
 
     def check_for_updates(self) -> dict | None:
         info = self.checker.get_latest_version_info()
-        if info and info["version"] > self.current_version: # Lógica simple de versión
+        if info and info["version"] > self.current_version:
             return info
         return None
 

@@ -30,7 +30,7 @@ class Sidebar(QFrame):
     def _setup_ui(self):
         """Construye la estructura base sin contenido fijo (Alta Cohesión)"""
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(12, 20, 12, 20)
+        self.main_layout.setContentsMargins(12, 16, 12, 16)
         self.main_layout.setSpacing(4)
         
         # --- HEADER ---
@@ -116,9 +116,8 @@ class Sidebar(QFrame):
         for btn in self.nav_buttons:
             # Si está colapsado, quitamos el texto. Si no, lo restauramos.
             btn.setText(btn.property("original_text") if self.is_expanded else "")
-            # Usamos una propiedad dinámica para que el CSS (theme.py) haga el centrado
             btn.setProperty("collapsed", not self.is_expanded)
-            btn.style().unpolish(btn) # Refrescar estilo
+            btn.style().unpolish(btn)
             btn.style().polish(btn)
 
     def _run_width_animation(self, target):

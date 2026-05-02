@@ -3,7 +3,6 @@
 from frontend.utils import get_assets_path
 
 PATH_CHEVRON = get_assets_path("icons/chevron-down.svg")
-# NUEVOS ICONOS PARA DIÁLOGOS
 PATH_ICON_HELP = get_assets_path("icons/help-circle.svg")
 PATH_ICON_UPDATE = get_assets_path("icons/download.svg")
 
@@ -160,23 +159,18 @@ QProgressBar::chunk {{
     margin: 1px;
 }}
 
-/* ─── Scrollbars (Minimalistas) ─── */
-QScrollBar:vertical {{
-    border: none;
-    background: transparent;
-    width: 8px;
-    margin: 0px;
-}}
+/* --- SCROLLBARS --- */
+    QScrollBar:vertical {{ border: none; background: {COLOR_BG_BASE}; width: 8px; margin: 0; }}
+    QScrollBar::handle:vertical {{ background: {COLOR_TEXT_MUTED}; border-radius: {RADIUS_SM}; min-height: 20px; }}
+    QScrollBar::handle:vertical:hover {{ background: {COLOR_ACCENT}; }}
+    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+    QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
 
-QScrollBar::handle:vertical {{
-    background: {COLOR_TEXT_MUTED};
-    min-height: 20px;
-    border-radius: 4px;
-}}
-
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
-    height: 0px;
-}}
+    QScrollBar:horizontal {{ background: {COLOR_BG_BASE}; height: 8px; margin: 0; }}
+    QScrollBar::handle:horizontal {{ background: #444; border-radius: {RADIUS_SM}; min-width: 20px; }}
+    QScrollBar::handle:horizontal:hover {{ background: {COLOR_ACCENT}; }}
+    QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
+    QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
 
 /* ─── Sliders (Volumen) ─── */
 QSlider::groove:horizontal {{

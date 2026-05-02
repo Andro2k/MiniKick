@@ -17,8 +17,8 @@ KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{username}"
 class ChatFormatter:
     @staticmethod
     def clean(text: str) -> str:
-        text = re.sub(r"https?://\S+|www\.\S+", "", text)   # URLs
-        text = re.sub(r"\[emote:[^\]]*\]", "", text)         # Emotes
+        text = re.sub(r"https?://\S+|www\.\S+", "", text)
+        text = re.sub(r"\[emote:[^\]]*\]", "", text)
         return text.strip()
 
 # --- Capa de Acceso a Datos (API externa) ---
@@ -31,18 +31,15 @@ class KickAPIClient:
             return self._execute_fetch()
         except requests.exceptions.HTTPError as e:
             if e.response is not None and e.response.status_code == 401:
-                # El token expiró. Renovamos e intentamos una vez más.
                 self.auth_provider.refresh_token()
                 return self._execute_fetch()
             raise e
 
     def _execute_fetch(self) -> dict:
         tokens = self.auth_provider.get_tokens()
-        access_token = tokens.get("access_token", "")
-        
+        access_token = tokens.get("access_token", "")       
         username = self._fetch_username(access_token)
-        channel_data = self._fetch_channel_data(username)
-        
+        channel_data = self._fetch_channel_data(username)       
         avatar_url = channel_data.get("user", {}).get("profile_pic", "")
         
         return {
@@ -65,11 +62,9 @@ class KickAPIClient:
 
     def _fetch_channel_data(self, username: str) -> dict:
         scraper = cloudscraper.create_scraper()
-        url_slug = username.replace("_", "-").replace(" ", "")
-        
+        url_slug = username.replace("_", "-").replace(" ", "")        
         resp = scraper.get(KICK_CHANNEL_URL.format(username=url_slug))
         
-        # Opcional pero recomendado: Manejo seguro de la respuesta por si el canal realmente no existe
         if resp.status_code != 200:
             raise ValueError(f"No se pudo localizar el canal usando el slug: {url_slug}")
             
@@ -101,7 +96,6 @@ class ChatSocketManager:
                 payload = json.loads(data.get("data", "{}"))
                 user = payload.get("sender", {}).get("username", "")
                 
-                # Usamos la utilidad centralizada
                 msg = ChatFormatter.clean(payload.get("content", ""))
                 
                 if user and msg:

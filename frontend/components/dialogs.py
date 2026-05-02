@@ -18,7 +18,6 @@ class ModernConfirmDialog(QDialog):
 
     def _setup_ui(self, title_text, body_text):
         main_layout = QVBoxLayout(self)
-        # Margen 0: Al no haber sombra, no necesitamos espacio extra invisible
         main_layout.setContentsMargins(0, 0, 0, 0) 
         main_layout.setAlignment(Qt.AlignCenter)
 

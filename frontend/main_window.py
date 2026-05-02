@@ -59,13 +59,12 @@ class ChatWorker(QThread):
 # ─── CONTROLADOR PRINCIPAL ───
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
-    SETTING_AUTOSTART = "dashboard_autostart" # NUEVO: Constante para la base de datos
+    SETTING_AUTOSTART = "dashboard_autostart"
 
     def __init__(self, updater_manager, app_version: str):
         super().__init__()
         self.updater_manager = updater_manager
         
-        # Asignamos el título dinámicamente usando la versión inyectada
         self.setWindowTitle(f"MiniKick - Versión {app_version}")
         self.resize(1100, 750)
 
@@ -129,8 +128,7 @@ class MainWindow(QMainWindow):
         restore_action = tray_menu.addAction("Abrir Panel")
         restore_action.triggered.connect(self.showNormal)
         
-        tray_menu.addSeparator()
-        
+        tray_menu.addSeparator()       
         quit_action = tray_menu.addAction("Cerrar MiniKick")
         quit_action.triggered.connect(self._force_quit) 
 
@@ -153,7 +151,6 @@ class MainWindow(QMainWindow):
         self.view_settings.check_update_requested.connect(self._handle_update_check)
 
     # ─── REGLAS DE NEGOCIO Y ORQUESTACIÓN ───
-
     def _load_settings_into_ui(self):
         enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.view_settings.set_minimize_tray_enabled(enabled)
@@ -171,8 +168,7 @@ class MainWindow(QMainWindow):
     def _handle_update_check(self):
         """Orquesta la búsqueda y descarga de actualizaciones (SoR)."""
         # 1. Instanciamos el diálogo pasivo (sin enviarle el manager)
-        dialog = UpdateDialog(parent=self)
-        
+        dialog = UpdateDialog(parent=self)       
         # Variable local para almacenar la URL de descarga si se encuentra
         update_info = {"url": ""}
         
@@ -242,15 +238,12 @@ class MainWindow(QMainWindow):
             if tokens:
                 cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
                 key = os.getenv("KICK_PUSHER_KEY", "")
-
                 api_client = KickAPIClient(auth_provider=self.auth_manager)
                 
-                self.chat_worker = ChatWorker(api_client, cluster, key)
-                
+                self.chat_worker = ChatWorker(api_client, cluster, key)                
                 self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
                 self.chat_worker.message_received.connect(self._on_chat_message)
-                self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)
-                
+                self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)                
                 self.chat_worker.start()
             else:
                 self.view_dashboard.set_error_state("No se pudo obtener autorización.")
@@ -293,7 +286,6 @@ class MainWindow(QMainWindow):
                     btn.setChecked(True)
                     break
     
-    # 6. AÑADIR ESTE NUEVO MÉTODO
     @Slot(str)
     def _handle_provider_change(self, provider: str):
         """Cambia el motor en el backend y actualiza las voces en la UI (High Cohesion)."""
@@ -333,7 +325,6 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):
-        # Guardamos la preferencia dependiendo de si estamos en web o local
         current_provider = "web" if self.view_chat.chk_provider.isChecked() else "local"
         self.settings_storage.save_string(f"tts_voice_{current_provider}", voice_id)
         
