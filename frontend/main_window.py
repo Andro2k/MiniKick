@@ -191,9 +191,11 @@ class MainWindow(QMainWindow):
             
             def on_download_finished(success):
                 if success:
-                    dialog.status_label.setText("Instalación completada. Reiniciando...")
+                    dialog.status_label.setText("Instalación en marcha. Cerrando aplicación...")
                     dialog.progress_bar.setRange(0, 100)
                     dialog.progress_bar.setValue(100)
+
+                    self._force_quit() 
                 else:
                     dialog.show_error("Fallo inesperado al descargar el archivo.")
                     

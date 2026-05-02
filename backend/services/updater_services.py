@@ -58,6 +58,10 @@ class WindowsInstaller(IUpdateInstaller):
     Se encarga exclusivamente de ejecutar el archivo en el sistema operativo.
     """
     def install_and_restart(self, installer_path: str) -> None:
-        # El parámetro /SILENT es común si usas InnoSetup para compilar tu .exe
-        subprocess.Popen([installer_path, "/SILENT"])
-        sys.exit(0) # Cerramos la aplicación actual de PySide6
+        DETACHED_PROCESS = 0x00000008
+        
+        subprocess.Popen(
+            [installer_path, "/SILENT"],
+            creationflags=DETACHED_PROCESS,
+            close_fds=True 
+        )

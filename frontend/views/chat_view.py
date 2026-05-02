@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (QComboBox, QLineEdit, QWidget, QVBoxLayout, QHBox
                                QTextEdit, QLabel, QSlider, QFrame)
 from PySide6.QtCore import Qt, Signal, Slot
 
+from frontend.components.segmented_toggle import SegmentedToggle
 from frontend.components.switch import ModernSwitch
 
 class ChatView(QWidget):
@@ -49,16 +50,13 @@ class ChatView(QWidget):
 
         row1.addSpacing(20)
 
-        self.lbl_provider_state = QLabel("Motor: Local")
-        self.lbl_provider_state.setStyleSheet("font-weight: bold;")
-        row1.addWidget(self.lbl_provider_state)
-        
-        self.chk_provider = ModernSwitch()
-        self.chk_provider.setChecked(False)
+        # 2. Instanciamos el nuevo control
+        row1.addWidget(QLabel("Motor:"))
+        self.chk_provider = SegmentedToggle("LOCAL", "WEB IA", default_right=False)
         self.chk_provider.toggled.connect(self._on_provider_toggled)
         row1.addWidget(self.chk_provider)
         
-        row1.addStretch() 
+        row1.addStretch()
         
         # --- Selector de Voz ---
         row1.addWidget(QLabel("Voz:"))
@@ -114,7 +112,6 @@ class ChatView(QWidget):
     def _on_provider_toggled(self, is_web: bool):
         """Maneja el cambio visual y emite la señal al controlador"""
         provider = "web" if is_web else "local"
-        self.lbl_provider_state.setText("Motor: Web IA" if is_web else "Motor: Local")
         
         # Damos un feedback visual inmediato mientras el controlador trae las nuevas voces
         self.combo_voice.blockSignals(True)

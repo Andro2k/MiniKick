@@ -143,6 +143,68 @@ QPushButton[role="action_outlined"]:hover {{
     border: 1px solid {COLOR_TEXT_SECONDARY};
 }}
 
+/* Estilo Peligro / Advertencia (Rojo) */
+QPushButton[role="action_danger"] {{
+    background-color: transparent;
+    border: 1px solid #ef4444; 
+    color: #ef4444;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: bold;
+}}
+QPushButton[role="action_danger"]:hover {{
+    background-color: rgba(239, 68, 68, 0.1);
+}}
+
+/* Estilo Éxito / Actualización (Verde Neón) */
+QPushButton[role="action_success"] {{   
+    background-color: transparent;
+    border: 1px solid #53ff1a; 
+    color: #53ff1a;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: bold;
+}}
+QPushButton[role="action_success"]:hover {{
+    background-color: rgba(83, 255, 26, 0.1);
+}}
+
+/* ─── Segmented Toggle (Botón Doble) ─── */
+QPushButton#ToggleLeft, QPushButton#ToggleRight {{
+    background-color: {COLOR_BG_INPUT};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    padding: 6px 16px;
+    font-weight: 600;
+    color: {COLOR_TEXT_SECONDARY};
+}}
+
+/* Redondeo solo en los extremos exteriores */
+QPushButton#ToggleLeft {{
+    border-top-left-radius: {RADIUS_SM}px;
+    border-bottom-left-radius: {RADIUS_SM}px;
+    border-right: none; /* Evitamos borde doble en el centro */
+}}
+
+QPushButton#ToggleRight {{
+    border-top-right-radius: {RADIUS_SM}px;
+    border-bottom-right-radius: {RADIUS_SM}px;
+    border-left: 1px solid {COLOR_BORDER_SVELTE};
+}}
+
+/* Estado Activo: Izquierda (LOCAL - Rojo/Gris) */
+QPushButton#ToggleLeft[active="true"] {{
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}}
+
+/* Estado Activo: Derecha (WEB IA - Verde) */
+QPushButton#ToggleRight[active="true"] {{
+    background-color: {COLOR_ACCENT_SOFT};
+    color: {COLOR_ACCENT};
+    border: 1px solid {COLOR_ACCENT};
+}}
+
 /* ─── Barra de Progreso (Minimalista) ─── */
 QProgressBar {{
     background-color: {COLOR_BG_INPUT};

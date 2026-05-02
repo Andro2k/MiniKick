@@ -3,6 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QPushButton
 from PySide6.QtCore import Qt, Signal
 
+from frontend.components.button import ModernButton
 from frontend.components.switch import ModernSwitch
 
 class SettingsView(QWidget):
@@ -63,21 +64,8 @@ class SettingsView(QWidget):
         lbl_unlink = QLabel("Desvincular cuenta de Kick (Cierra la sesión actual)")
         lbl_unlink.setProperty("role", "subtitle")
         
-        self.btn_unlink = QPushButton("Desvincular")
-        self.btn_unlink.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_unlink.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: 1px solid #ef4444; 
-                color: #ef4444;
-                border-radius: 6px;
-                padding: 6px 12px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: rgba(239, 68, 68, 0.1);
-            }
-        """)
+        # 2. Uso del ModernButton (Variante Peligro)
+        self.btn_unlink = ModernButton("Desvincular", role="action_danger")
         self.btn_unlink.clicked.connect(self.unlink_account_requested.emit)
 
         unlink_layout.addWidget(lbl_unlink)
@@ -102,23 +90,8 @@ class SettingsView(QWidget):
         lbl_update = QLabel("Buscar e instalar nuevas versiones de la aplicación")
         lbl_update.setProperty("role", "subtitle")
 
-        self.btn_update = QPushButton("Buscar actualizaciones")
-        self.btn_update.setCursor(Qt.CursorShape.PointingHandCursor)
-        # Usamos un color verde neón neutro o el primario de tu tema
-        self.btn_update.setStyleSheet("""
-            QPushButton {
-                background-color: transparent;
-                border: 1px solid #53ff1a; 
-                color: #53ff1a;
-                border-radius: 6px;
-                padding: 6px 12px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: rgba(83, 255, 26, 0.1);
-            }
-        """)
-        # Conectamos el clic del botón a la nueva señal
+        # 3. Uso del ModernButton (Variante Éxito)
+        self.btn_update = ModernButton("Buscar actualizaciones", role="action_success")
         self.btn_update.clicked.connect(self.check_update_requested.emit)
 
         check_update_layout.addWidget(lbl_update)
