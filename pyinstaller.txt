@@ -1,1 +1,3 @@
 pyinstaller --noconfirm --onedir --windowed --icon="assets/icons/icon.ico" --name="MiniKick" --add-data="assets;assets" --add-data=".env;." main.py
+
+pyinstaller --clean --noconfirm MiniKick.spec
