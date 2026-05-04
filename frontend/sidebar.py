@@ -62,7 +62,7 @@ class Sidebar(QFrame):
         header_layout.addWidget(self.toggle_btn)
         
         self.main_layout.addWidget(self.header_container)
-        self.main_layout.addSpacing(12)
+        self.main_layout.addSpacing(8)
         
         # Espaciador elástico al final
         self.bottom_spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)

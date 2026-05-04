@@ -145,6 +145,7 @@ class MainWindow(QMainWindow):
         self.view_chat.volume_changed.connect(self._update_tts_volume)
         self.view_chat.voice_changed.connect(self._handle_voice_change)
         self.view_chat.provider_changed.connect(self._handle_provider_change)
+        self.view_chat.settings_changed.connect(self._handle_chat_settings_change)
         # Conexiones de SettingsView
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
         self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
@@ -154,13 +155,28 @@ class MainWindow(QMainWindow):
     def _load_settings_into_ui(self):
         enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.view_settings.set_minimize_tray_enabled(enabled)
+
+        # NUEVO: Agrupar y cargar configuraciones de chat
+        chat_settings = {
+            "enabled": self.settings_storage.load_bool("tts_enabled", True),
+            "read_name": self.settings_storage.load_bool("tts_read_name", True),
+            "use_command": self.settings_storage.load_bool("tts_use_command", False),
+            "command": self.settings_storage.load_string("tts_command", "!tts"),
+            "ignored_users": self.settings_storage.load_string("tts_ignored_users", "bot1, bot2"),
+            "provider": self.settings_storage.load_string("tts_provider", "local")
+        }
+        # Inyectamos el estado inicial en la vista (Alta Cohesión)
+        self.view_chat.set_initial_settings(chat_settings)
+        
+        # Aplicar el motor (esto dispara la carga de voces y selección)
+        self._handle_provider_change(chat_settings["provider"])
+
         saved_provider = self.settings_storage.load_string("tts_provider", "local")
         self.view_chat.chk_provider.setChecked(saved_provider == "web")
         self._handle_provider_change(saved_provider)
 
         auto_start_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(auto_start_enabled)
-
         if auto_start_enabled:
             self.view_dashboard.btn_connect.click()
 
@@ -290,22 +306,32 @@ class MainWindow(QMainWindow):
     
     @Slot(str)
     def _handle_provider_change(self, provider: str):
-        """Cambia el motor en el backend y actualiza las voces en la UI (High Cohesion)."""
         self.tts_manager.set_provider(provider)
         self.settings_storage.save_string("tts_provider", provider)
         
-        # Obtenemos las voces del nuevo motor
         available_voices = self.tts_manager.get_available_voices(provider)
-        
-        # Guardamos la voz seleccionada de forma independiente para no mezclar IDs de Web y Local
         saved_voice_id = self.settings_storage.load_string(f"tts_voice_{provider}", "")
         
         self.view_chat.populate_voices(available_voices, saved_voice_id)
+        
+        # ARREGLO: Asegurarnos de que el TTS reciba el ID de la voz cargada en memoria
+        if saved_voice_id:
+            self.tts_manager.set_voice(saved_voice_id)
     
     @Slot(int)
     def _update_tts_volume(self, value):
         self.tts_manager.set_volume(value / 100.0)
 
+    # 4. Slot para persistir configuraciones
+    @Slot(dict)
+    def _handle_chat_settings_change(self, settings: dict):
+        self.settings_storage.save_bool("tts_enabled", settings["enabled"])
+        self.settings_storage.save_bool("tts_read_name", settings["read_name"])
+        self.settings_storage.save_bool("tts_use_command", settings["use_command"])
+        self.settings_storage.save_string("tts_command", settings["command"])
+        self.settings_storage.save_string("tts_ignored_users", settings["ignored_users"])
+
+    # 5. Modificar la lógica de recepción para aplicar la lista de ignorados
     @Slot(str, str)
     def _on_chat_message(self, user: str, message: str):
         self.view_chat.append_message(user, message)
@@ -314,8 +340,14 @@ class MainWindow(QMainWindow):
         if not settings.get("enabled", False):
             return
 
-        final_message = message.strip()
+        # NUEVO: Lógica de usuarios ignorados (DRY: parsear lista)
+        ignored_string = settings.get("ignored_users", "")
+        ignored_list = [u.strip().lower() for u in ignored_string.split(",") if u.strip()]
         
+        if user.lower() in ignored_list:
+            return # Evitamos mandar al TTS si es un bot
+
+        final_message = message.strip()
         if settings.get("use_command", False):
             cmd = settings.get("command", "")
             if not final_message.lower().startswith(cmd):

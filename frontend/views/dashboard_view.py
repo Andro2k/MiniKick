@@ -23,7 +23,7 @@ class DashboardView(QWidget):
         """Construye la interfaz delegando en submétodos para mejor lectura"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
 
         self._setup_header(layout)
         self._setup_connection_card(layout)
@@ -82,7 +82,7 @@ class DashboardView(QWidget):
         
         profile_layout = QHBoxLayout(self.profile_container)
         profile_layout.setContentsMargins(0, 0, 0, 0)
-        profile_layout.setSpacing(12) 
+        profile_layout.setSpacing(8) 
 
         # --- Tarjeta 1: Avatar (Anclado a la izquierda) ---
         avatar_card = QFrame()
@@ -106,7 +106,7 @@ class DashboardView(QWidget):
         stats_card.setObjectName("Card")
         stats_prof_layout = QVBoxLayout(stats_card)
         stats_prof_layout.setContentsMargins(16, 16, 16, 16)
-        stats_prof_layout.setSpacing(12)
+        stats_prof_layout.setSpacing(8)
 
         prof_title = QLabel("ESTADÍSTICAS DEL CANAL")
         prof_title.setProperty("role", "section")
