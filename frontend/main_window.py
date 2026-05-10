@@ -7,19 +7,19 @@ from PySide6.QtCore import Slot, QThread, Signal, QEvent
 from PySide6.QtGui import QIcon
 
 # Importamos las Vistas (Frontend)
-from frontend.sidebar import Sidebar
+from frontend.components.sidebar import Sidebar
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.settings_view import SettingsView
 
 # Importamos Componentes de Actualización (Frontend)
-from frontend.components.update_dialog import UpdateDialog
+from frontend.components.dialogs import UpdateDialog
 
 # Importamos el Backend
-from backend.auth import AuthManager
-from backend.database import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage
-from backend.chat import KickAPIClient, ChatSocketManager
-from backend.tts import TTSManager
+from backend.auth_manager import AuthManager
+from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage
+from backend.chat_manager import KickAPIClient, ChatSocketManager
+from backend.tts_manager import TTSManager
 
 # Importamos Componentes Modernos y Utilidades
 from frontend.components.dialogs import ModernConfirmDialog

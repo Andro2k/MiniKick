@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QPushButton
 from PySide6.QtCore import Qt, Signal
 
-from frontend.components.button import ModernButton
-from frontend.components.switch import ModernSwitch
+from frontend.components.controls import ModernSwitch, ModernButton
 
 class SettingsView(QWidget):
     minimize_tray_toggled = Signal(bool)

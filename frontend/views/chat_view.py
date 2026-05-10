@@ -7,9 +7,7 @@ from PySide6.QtWidgets import (QComboBox, QLineEdit, QWidget, QVBoxLayout, QHBox
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QIcon
 
-from frontend.components.segmented_toggle import SegmentedToggle
-from frontend.components.switch import ModernSwitch
-from frontend.components.button import ModernButton  # Importamos tu componente reutilizable
+from frontend.components.controls import SegmentedToggle, ModernButton, ModernSwitch
 from frontend.utils import resource_path, get_icon_colored 
 
 class ChatView(QWidget):

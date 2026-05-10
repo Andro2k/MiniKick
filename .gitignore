@@ -1,6 +1,5 @@
 # Entornos virtuales
-venv/
-env/
+.vscode/
 .venv/
 
 # Archivos compilados de Python
@@ -13,22 +12,20 @@ __pycache__/
 token.json
 
 # Bases de datos locales
-minikick.db
+*.db
 *.sqlite3
 
 # Archivos temporales de audio (Generados por el TTS)
-temp_tts.mp3
 *.mp3
 *.wav
 
 # Archivos del sistema operativo
 .DS_Store
-Thumbs.db
 *.exe
 # Logs
 *.log
 *.iss
-*/media/*
+media/
 *.spec
 pyinstaller.txt
 # Archivos de configuración de IDEs

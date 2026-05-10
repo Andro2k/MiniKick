@@ -222,17 +222,17 @@ QProgressBar::chunk {{
 }}
 
 /* --- SCROLLBARS --- */
-    QScrollBar:vertical {{ border: none; background: {COLOR_BG_BASE}; width: 8px; margin: 0; }}
-    QScrollBar::handle:vertical {{ background: {COLOR_TEXT_MUTED}; border-radius: {RADIUS_SM}; min-height: 20px; }}
-    QScrollBar::handle:vertical:hover {{ background: {COLOR_ACCENT}; }}
-    QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
-    QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
+QScrollBar:vertical {{ border: none; background: {COLOR_BG_BASE}; width: 8px; margin: 0; }}
+QScrollBar::handle:vertical {{ background: {COLOR_TEXT_MUTED}; border-radius: {RADIUS_SM}; min-height: 20px; }}
+QScrollBar::handle:vertical:hover {{ background: {COLOR_ACCENT}; }}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
 
-    QScrollBar:horizontal {{ background: {COLOR_BG_BASE}; height: 8px; margin: 0; }}
-    QScrollBar::handle:horizontal {{ background: #444; border-radius: {RADIUS_SM}; min-width: 20px; }}
-    QScrollBar::handle:horizontal:hover {{ background: {COLOR_ACCENT}; }}
-    QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
-    QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+QScrollBar:horizontal {{ background: {COLOR_BG_BASE}; height: 8px; margin: 0; }}
+QScrollBar::handle:horizontal {{ background: #444; border-radius: {RADIUS_SM}; min-width: 20px; }}
+QScrollBar::handle:horizontal:hover {{ background: {COLOR_ACCENT}; }}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
 
 /* ─── Sliders (Volumen) ─── */
 QSlider::groove:horizontal {{
@@ -252,37 +252,18 @@ QSlider::handle:horizontal {{
     border-radius: 7px;
 }}
 
-/* ─── ComboBox (Selector de Voz) ─── */
+/* ─── ComboBox ─── */
 QComboBox {{
-    background-color: {COLOR_BG_INPUT};
-    border: 1px solid {COLOR_BORDER_SVELTE};
-    border-radius: {RADIUS_SM}px;
-    padding: 6px 12px;
-    color: {COLOR_TEXT_PRIMARY};
+    background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY};
+    border-radius: {RADIUS_SM}px; padding: 10px; border: 1px solid {COLOR_BORDER_SVELTE}; 
 }}
-
-QComboBox:hover, QComboBox:focus {{
-    border: 1px solid {COLOR_ACCENT};
-}}
-
-QComboBox::drop-down {{
-    border: none;
-    width: 28px;
-}}
-
-QComboBox::down-arrow {{
-    image: url('{PATH_CHEVRON}');
-    width: 14px;
-    height: 14px;
-    margin-right: 8px;
-}}
+QComboBox:hover {{ border: 1px solid {COLOR_ACCENT}; }}
+QComboBox::drop-down {{ border: none;}}
+QComboBox::down-arrow {{ image: url('{PATH_CHEVRON}'); width: 14px; height: 14px; margin-right: 8px; }}
 
 QComboBox QAbstractItemView {{
-    background-color: {COLOR_BG_SURFACE};
-    border: 1px solid {COLOR_BORDER_SVELTE};
-    border-radius: {RADIUS_SM}px;
-    color: {COLOR_TEXT_PRIMARY};
-    selection-background-color: {COLOR_ACCENT_SOFT};
-    selection-color: {COLOR_ACCENT};
+    background-color: {COLOR_BG_SURFACE}; color: {COLOR_TEXT_PRIMARY};
+    selection-background-color: {COLOR_ACCENT_SOFT}; selection-color: {COLOR_ACCENT};
+    border: 1px solid {COLOR_BORDER_SVELTE}; outline: none;
 }}
 """
