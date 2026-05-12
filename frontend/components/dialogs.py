@@ -83,14 +83,14 @@ class ModernConfirmDialog(ModernBaseDialog):
         title_lbl.setAlignment(Qt.AlignCenter)
         title_lbl.setWordWrap(True)
         self.content_layout.addWidget(title_lbl)
-        self.content_layout.addSpacing(10)
+        self.content_layout.addSpacing(15)
 
         body_label = QLabel(body_text)
-        body_label.setStyleSheet("color: #94A3B8; font-size: 14px; line-height: 1.5;")
+        body_label.setStyleSheet("color: #94A3B8; font-size: 12px; line-height: 1;")
         body_label.setAlignment(Qt.AlignCenter)
         body_label.setWordWrap(True)
         self.content_layout.addWidget(body_label)
-        self.content_layout.addSpacing(30)
+        self.content_layout.addSpacing(40)
 
         # Botones
         self.btn_cancel = self._create_btn("Cancelar", "action_outlined", self.reject)

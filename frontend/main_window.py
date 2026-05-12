@@ -413,10 +413,15 @@ class MainWindow(QMainWindow):
         QApplication.quit()
 
     def _cleanup(self):
-        self.tts_manager.stop()
+        self.tts_manager.stop()        
+        # Limpieza del chat
         if self.chat_worker and self.chat_worker.isRunning():
             self.chat_worker.terminate()
-            self.chat_worker.wait()
+            self.chat_worker.wait()            
+        # NUEVO: Limpieza de la autenticación
+        if hasattr(self, 'auth_worker') and self.auth_worker and self.auth_worker.isRunning():
+            self.auth_worker.terminate()
+            self.auth_worker.wait()
 
     def closeEvent(self, event):
         if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
