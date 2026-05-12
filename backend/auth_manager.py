@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 import os
+import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -52,13 +53,22 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
 
 class OAuthCallbackServer:
     @staticmethod
-    def capture_auth_code(url: str, port: int, success_html_path: str) -> str:
+    def capture_auth_code(url: str, port: int, success_html_path: str, timeout_seconds: int = 120) -> str | None:
         httpd = HTTPServer(("", port), _OAuthCallbackHandler)
+        # 1. Configuramos un timeout corto de 1 segundo para que handle_request no bloquee el hilo para siempre
+        httpd.timeout = 1 
         httpd.auth_code = None
         httpd.success_html_path = success_html_path
+        
         webbrowser.open(url)
+        start_time = time.time()
+        
+        # 2. Bucle con válvula de escape: Si pasan 120 segundos, se rinde.
         while httpd.auth_code is None:
-            httpd.handle_request()
+            if time.time() - start_time > timeout_seconds:
+                break
+            httpd.handle_request() # Espera máximo 1 segundo por ciclo
+            
         httpd.server_close()
         return httpd.auth_code
 
@@ -107,6 +117,10 @@ class AuthManager:
 
         port = int(urlparse(self.redirect_uri).port or 8080)
         auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path)
+
+        # 3. Si el usuario cerró el navegador o tardó mucho, abortamos limpiamente
+        if not auth_code:
+            raise TimeoutError("Se agotó el tiempo de espera o se canceló el inicio de sesión.")
 
         tokens = self._exchange_code(auth_code, verifier)
         self.storage.save(tokens)
