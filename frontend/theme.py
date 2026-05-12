@@ -118,8 +118,7 @@ QPushButton[role="action_accent"] {{
     background-color: {COLOR_ACCENT};
     border: none;
     border-radius: {RADIUS_SM}px;
-    padding: 10px 20px;
-    font-weight: 700;
+    padding: 10px;
     color: #000000;
 }}
 
@@ -132,8 +131,7 @@ QPushButton[role="action_outlined"] {{
     background-color: transparent;
     border: 1px solid {COLOR_BORDER_ACTIVE};
     border-radius: {RADIUS_SM}px;
-    padding: 10px 20px;
-    font-weight: 500;
+    padding: 10px;
     color: {COLOR_TEXT_SECONDARY};
 }}
 
