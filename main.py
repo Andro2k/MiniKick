@@ -29,7 +29,7 @@ def bootstrap():
         app.setQuitOnLastWindowClosed(False)
         
         # --- DEFINIMOS LA VERSIÓN AQUÍ (Única fuente de verdad) ---
-        APP_VERSION = "v1.0.5"
+        APP_VERSION = "v1.0.6"  # <--- ¡CAMBIA ESTO EN CADA VERSIÓN!
         
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()
