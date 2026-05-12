@@ -38,7 +38,7 @@ class ChatView(QWidget):
         controls_frame.setObjectName("Card")
         controls_layout = QVBoxLayout(controls_frame) 
         controls_layout.setContentsMargins(16, 16, 16, 16)
-        controls_layout.setSpacing(16)
+        controls_layout.setSpacing(12)
         
         controls_layout.addLayout(self._build_toggles_row())
         controls_layout.addLayout(self._build_voice_and_volume_section()) # <-- CAMBIO AQUÍ
@@ -65,7 +65,7 @@ class ChatView(QWidget):
 
     def _build_toggles_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
-        row.setSpacing(15)
+        row.setSpacing(12)
         row.addWidget(QLabel("Activar TTS:"))
         self.chk_tts = ModernSwitch()
         row.addWidget(self.chk_tts)
@@ -80,39 +80,50 @@ class ChatView(QWidget):
         return row
 
     def _build_voice_and_volume_section(self) -> QVBoxLayout:
-        """Sección vertical que contiene la fila de Voz y la fila de Volumen."""
         section = QVBoxLayout()
         section.setSpacing(12)
         
-        # --- Fila 1: Selector de Voz ---
+        # --- Fila 1: Selector de Idioma y Voz ---
         row_voice = QHBoxLayout()
-        row_voice.setSpacing(15)
+        row_voice.setSpacing(12)
         row_voice.addWidget(QLabel("Voz:"))
+        
+        self.combo_lang = QComboBox()
+        self.combo_lang.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.combo_lang.setFixedWidth(100)
+        row_voice.addWidget(self.combo_lang)
+
         self.combo_voice = QComboBox()
         self.combo_voice.setCursor(Qt.CursorShape.PointingHandCursor)
-        # Hacemos que ocupe todo el ancho disponible de manera fluida (Flex-grow)
+        self.combo_voice.setStyleSheet("QAbstractItemView { font-size: 13px; }")
         self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         row_voice.addWidget(self.combo_voice)
         
-        # --- Fila 2: Control de Volumen ---
-        row_volume = QHBoxLayout()
-        row_volume.setSpacing(15)
-        row_volume.addWidget(QLabel("Volumen:"))
+        # --- Fila 2: Volumen con Indicador ---
+        row_vol = QHBoxLayout()
+        row_vol.addWidget(QLabel("Volumen:"))
+        
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
-        # Cambiamos el ancho fijo por Expanding para que se alinee perfectamente con el combo superior
-        self.slider_vol.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        row_volume.addWidget(self.slider_vol)
         
-        # Ensamblamos ambas filas en la sección vertical
-        section.addLayout(row_voice)
-        section.addLayout(row_volume)
+        self.lbl_vol_perc = QLabel("100%")
+        self.lbl_vol_perc.setFixedWidth(40)
+        self.lbl_vol_perc.setStyleSheet("color: #0ca678; font-weight: bold;")
+        
+        row_vol.addWidget(self.slider_vol)
+        row_vol.addWidget(self.lbl_vol_perc)
+        
+        self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
+        
+        # AQUÍ ESTABA EL ERROR: Cambiamos self._build_voice_row() por row_voice
+        section.addLayout(row_voice) 
+        section.addLayout(row_vol)
         
         return section
 
     def _build_filters_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
-        row.setSpacing(10)
+        row.setSpacing(12)
         row.addWidget(QLabel("Usar Comando:"))
         self.chk_command = ModernSwitch() 
         row.addWidget(self.chk_command)
@@ -129,7 +140,7 @@ class ChatView(QWidget):
         panel.setFixedWidth(260)
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(10)
+        layout.setSpacing(12)
 
         title = QLabel("Silenciar Usuarios/Bots")
         title.setStyleSheet("font-weight: bold; font-size: 13px;")
@@ -226,6 +237,7 @@ class ChatView(QWidget):
     def _connect_internal_signals(self):
         # Combos y Sliders
         self.chk_provider.toggled.connect(self._on_provider_toggled)
+        self.combo_lang.currentIndexChanged.connect(self._filter_voices_by_lang) # <-- NUEVO
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
         self.slider_vol.valueChanged.connect(self.volume_changed.emit)
         self.txt_command.textChanged.connect(self._validate_command)
@@ -306,15 +318,70 @@ class ChatView(QWidget):
         html_msg = f'<b style="color: #0ca678;">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
         self.chat_display.append(html_msg)
 
-    def populate_voices(self, voices: list[dict], selected_id: str = None):
-        self.combo_voice.blockSignals(True) 
+    def populate_voices(self, voices: list[dict], selected_id: str = None, mute_signal: bool = False):
+        """Carga las voces iniciales y extrae los idiomas disponibles."""
+        self._all_voices = voices
+        
+        langs = []
+        for v in voices:
+            prefix = "-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local"
+            if prefix not in langs:
+                langs.append(prefix)
+
+        # Llenamos el combo de idiomas sin disparar señales
+        self.combo_lang.blockSignals(True)
+        self.combo_lang.clear()
+        self.combo_lang.addItems(langs)
+        self.combo_lang.blockSignals(False)
+
+        if selected_id:
+            sel_prefix = "-".join(selected_id.split("-")[:2]) if "-" in selected_id else "Local"
+            idx = self.combo_lang.findText(sel_prefix)
+            if idx >= 0:
+                self.combo_lang.blockSignals(True)
+                self.combo_lang.setCurrentIndex(idx)
+                self.combo_lang.blockSignals(False)
+
+        # Aplicamos el filtro de voces con el flag de silencio
+        self._apply_voice_filter(selected_id, mute_signal)
+
+    @Slot()
+    def _filter_voices_by_lang(self):
+        """Slot que se ejecuta cuando el USUARIO cambia el idioma manualmente."""
+        # Al cambiar de idioma manualmente, no hay voz seleccionada previamente ni queremos mutearlo
+        self._apply_voice_filter(selected_id=None, mute_signal=False)
+
+    def _apply_voice_filter(self, selected_id=None, mute_signal=False):
+        """Lógica centralizada para filtrar las voces según el idioma actual."""
+        current_lang = self.combo_lang.currentText()
+        
+        # Bloqueamos el combo de voces si estamos en la carga inicial
+        if mute_signal:
+            self.combo_voice.blockSignals(True) 
+            
         self.combo_voice.clear()
         
-        for index, voice in enumerate(voices):
-            self.combo_voice.addItem(voice["name"], userData=voice["id"])
-            if voice["id"] == selected_id:
-                self.combo_voice.setCurrentIndex(index)
+        index_to_select = 0
+        count = 0
+        
+        for voice in getattr(self, '_all_voices', []):
+            prefix = "-".join(voice["id"].split("-")[:2]) if "-" in voice["id"] else "Local"
+            
+            if prefix == current_lang:
+                self.combo_voice.addItem(voice["name"], userData=voice["id"])
                 
-        self.combo_voice.blockSignals(False)
-        if not selected_id and self.combo_voice.count() > 0:
-            self._on_voice_selected(0)
+                if voice["id"] == selected_id:
+                    index_to_select = count
+                count += 1
+                
+        # Seleccionamos la voz correspondiente
+        if self.combo_voice.count() > 0:
+            self.combo_voice.setCurrentIndex(index_to_select)
+            
+            # Si NO estamos en modo silencioso, emitimos la señal para que el bot hable
+            if not mute_signal:
+                self._on_voice_selected(index_to_select)
+                
+        # Desbloqueamos si lo habíamos bloqueado
+        if mute_signal:
+            self.combo_voice.blockSignals(False)

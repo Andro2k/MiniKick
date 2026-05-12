@@ -12,7 +12,7 @@ class Sidebar(QFrame):
         self.setObjectName("Sidebar")
         self.is_expanded = True
         self.expanded_width = 250
-        self.collapsed_width = 72
+        self.collapsed_width = 65
         self.setFixedWidth(self.expanded_width)
         
         self.button_group = QButtonGroup(self)
@@ -24,7 +24,7 @@ class Sidebar(QFrame):
 
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(12, 24, 12, 24)
+        self.main_layout.setContentsMargins(10, 20, 10, 20)
         self.main_layout.setSpacing(8)
         
         # --- HEADER ---

@@ -16,14 +16,14 @@ class WebTTSProvider(ITTSProvider):
         pygame.mixer.init()
 
     def set_volume(self, volume: float) -> None:
-        """Convierte el float (0.0 - 1.0) al formato relativo de edge-tts"""
+        """Ajusta el volumen de la música de Pygame en tiempo real."""
         volume = max(0.0, min(1.0, volume))
-        percent = int((volume - 1.0) * 100)
+        # Esto afecta lo que se está reproduciendo AHORA
+        pygame.mixer.music.set_volume(volume)
         
-        if percent >= 0:
-            self.volume_str = f"+{percent}%"
-        else:
-            self.volume_str = f"{percent}%"
+        # Guardamos para futuras generaciones de audio
+        percent = int((volume - 1.0) * 100)
+        self.volume_str = f"{percent}%" if percent < 0 else f"+{percent}%"
 
     def speak(self, text: str) -> None:
         # Ejecuta el flujo asíncrono bloqueando este hilo específico del worker

@@ -36,13 +36,19 @@ class TTSManager:
     def _worker(self) -> None:
         while True:
             text = self.queue.get()
-
-            if text is None:
+            try:
+                if text is None:
+                    break # Salimos del bucle
+                
+                # Encapsulamos el llamado al proveedor
+                self._provider.speak(text)
+                
+            except Exception as e:
+                import logging
+                logging.error(f"[TTS Manager] Fallo crítico evitado en el motor: {e}")
+            finally:
+                # Se llama una sola vez, sin importar si fue None o si hubo error
                 self.queue.task_done()
-                break
-
-            self._provider.speak(text)
-            self.queue.task_done()
 
     def get_available_voices(self, provider_type: str) -> list[dict]:
         """Obtiene las voces disponibles según el motor activo."""

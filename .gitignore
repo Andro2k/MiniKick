@@ -25,7 +25,6 @@ token.json
 # Logs
 *.log
 *.iss
-media/
 *.spec
 pyinstaller.txt
 # Archivos de configuración de IDEs

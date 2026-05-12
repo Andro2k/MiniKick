@@ -1,5 +1,6 @@
 # frontend/main_window.py
 
+import logging
 import os
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QMenu, QApplication)
@@ -7,9 +8,11 @@ from PySide6.QtCore import Slot, QThread, Signal, QEvent
 from PySide6.QtGui import QIcon
 
 # Importamos las Vistas (Frontend)
+from frontend.components.log_handler import QLogHandler
 from frontend.components.sidebar import Sidebar
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
+from frontend.views.log_view import LogView
 from frontend.views.settings_view import SettingsView
 
 # Importamos Componentes de Actualización (Frontend)
@@ -24,6 +27,7 @@ from backend.tts_manager import TTSManager
 # Importamos Componentes Modernos y Utilidades
 from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
+from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
 # --- Hilo de Trabajo (Alta Cohesión & SoR) ---
@@ -89,6 +93,7 @@ class MainWindow(QMainWindow):
         self.chat_worker = None
 
         # --- 2. Ensamblar e iniciar UI ---
+        self._setup_logging() # Configurar logs ANTES de ensamblar la UI
         self._setup_ui()
         self._setup_tray() 
         self._connect_signals()
@@ -105,16 +110,19 @@ class MainWindow(QMainWindow):
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
         self.sidebar.add_tab("Chat", "chat.svg")
         self.sidebar.add_tab("Settings", "settings.svg")
-        
+        self.sidebar.add_tab("Developer", "terminal.svg") # NUEVA PESTAÑA
+
         self.content_stack = QStackedWidget()
         
         self.view_dashboard = DashboardView()
         self.view_chat = ChatView()
         self.view_settings = SettingsView()
+        self.view_logs = LogView() # NUEVA VISTA
 
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
         self.content_stack.addWidget(self.view_settings)
+        self.content_stack.addWidget(self.view_logs) # AÑADIDA AL STACK
 
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
@@ -150,35 +158,41 @@ class MainWindow(QMainWindow):
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
         self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
         self.view_settings.check_update_requested.connect(self._handle_update_check)
+        # Conectar el emisor de logs a la vista visual
+        self.q_log_handler.emitter.log_received.connect(self.view_logs.append_log)
 
     # ─── REGLAS DE NEGOCIO Y ORQUESTACIÓN ───
     def _load_settings_into_ui(self):
-        enabled = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
-        self.view_settings.set_minimize_tray_enabled(enabled)
+        # 1. Cargar y aplicar volumen (Persistencia)
+        saved_volume = self.settings_storage.load_string("tts_volume", "100")
+        vol_int = int(saved_volume)
+        self.view_chat.slider_vol.setValue(vol_int)
+        self.tts_manager.set_volume(vol_int / 100.0)
 
-        # NUEVO: Agrupar y cargar configuraciones de chat
+        # 2. Recopilar TODAS las configuraciones del Chat desde la base de datos
+        saved_provider = self.settings_storage.load_string("tts_provider", "local")
         chat_settings = {
             "enabled": self.settings_storage.load_bool("tts_enabled", True),
             "read_name": self.settings_storage.load_bool("tts_read_name", True),
             "use_command": self.settings_storage.load_bool("tts_use_command", False),
             "command": self.settings_storage.load_string("tts_command", "!tts"),
-            "ignored_users": self.settings_storage.load_string("tts_ignored_users", "bot1, bot2"),
-            "provider": self.settings_storage.load_string("tts_provider", "local")
+            "provider": saved_provider,
+            "ignored_users": self.settings_storage.load_string("tts_ignored_users", "")
         }
-        # Inyectamos el estado inicial en la vista (Alta Cohesión)
-        self.view_chat.set_initial_settings(chat_settings)
         
-        # Aplicar el motor (esto dispara la carga de voces y selección)
-        self._handle_provider_change(chat_settings["provider"])
+        # Enviar las configuraciones a la vista del chat (Esto era lo que faltaba)
+        self.view_chat.set_initial_settings(chat_settings)
 
-        saved_provider = self.settings_storage.load_string("tts_provider", "local")
-        self.view_chat.chk_provider.setChecked(saved_provider == "web")
-        self._handle_provider_change(saved_provider)
+        # 3. Cargar configuraciones de otras vistas (Dashboard y Settings) para persistencia total
+        self.view_settings.set_minimize_tray_enabled(
+            self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
+        )
+        self.view_dashboard.set_autostart_state(
+            self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
+        )
 
-        auto_start_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
-        self.view_dashboard.set_autostart_state(auto_start_enabled)
-        if auto_start_enabled:
-            self.view_dashboard.btn_connect.click()
+        # 4. Iniciamos carga asíncrona de voces para no trabar el inicio
+        self._handle_provider_change(saved_provider, is_initial_load=True)
 
     @Slot()
     def _handle_update_check(self):
@@ -240,7 +254,8 @@ class MainWindow(QMainWindow):
         mapping = {
             "Dashboard": self.view_dashboard,
             "Chat": self.view_chat,
-            "Settings": self.view_settings
+            "Settings": self.view_settings,
+            "Developer": self.view_logs # NUEVA RUTA
         }
         target_view = mapping.get(view_name)
         if target_view:
@@ -250,24 +265,26 @@ class MainWindow(QMainWindow):
     def _handle_auth_process(self):
         self.view_dashboard.set_connecting_state()
 
-        try:
-            tokens = self.auth_manager.get_tokens()
+        # Instanciamos el worker de autenticación
+        self.auth_worker = AuthWorker(self.auth_manager)
+        
+        def on_auth_success(tokens):
+            # Una vez autenticado, iniciamos el ChatWorker
+            cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
+            key = os.getenv("KICK_PUSHER_KEY", "")
+            api_client = KickAPIClient(auth_provider=self.auth_manager)
             
-            if tokens:
-                cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
-                key = os.getenv("KICK_PUSHER_KEY", "")
-                api_client = KickAPIClient(auth_provider=self.auth_manager)
-                
-                self.chat_worker = ChatWorker(api_client, cluster, key)                
-                self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
-                self.chat_worker.message_received.connect(self._on_chat_message)
-                self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)                
-                self.chat_worker.start()
-            else:
-                self.view_dashboard.set_error_state("No se pudo obtener autorización.")
-                
-        except Exception as e:
-            self.view_dashboard.set_error_state(str(e))
+            self.chat_worker = ChatWorker(api_client, cluster, key)                
+            self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
+            self.chat_worker.message_received.connect(self._on_chat_message)
+            self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)                
+            self.chat_worker.start()
+
+        self.auth_worker.auth_success.connect(on_auth_success)
+        self.auth_worker.auth_error.connect(self.view_dashboard.set_error_state)
+        
+        # Iniciamos la autenticación sin congelar la UI
+        self.auth_worker.start()
 
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):
@@ -305,21 +322,26 @@ class MainWindow(QMainWindow):
                     break
     
     @Slot(str)
-    def _handle_provider_change(self, provider: str):
+    def _handle_provider_change(self, provider: str, is_initial_load=False):
         self.tts_manager.set_provider(provider)
         self.settings_storage.save_string("tts_provider", provider)
         
-        available_voices = self.tts_manager.get_available_voices(provider)
-        saved_voice_id = self.settings_storage.load_string(f"tts_voice_{provider}", "")
-        
-        self.view_chat.populate_voices(available_voices, saved_voice_id)
-        
-        # ARREGLO: Asegurarnos de que el TTS reciba el ID de la voz cargada en memoria
-        if saved_voice_id:
-            self.tts_manager.set_voice(saved_voice_id)
+        # Usamos un Worker para obtener voces (SoR)
+        # Esto evita que la app se quede "En blanco" al abrir
+        def on_voices_ready(voices):
+            saved_voice_id = self.settings_storage.load_string(f"tts_voice_{provider}", "")
+            # Pasamos un flag a la vista para que sepa si debe silenciar el saludo
+            self.view_chat.populate_voices(voices, saved_voice_id, mute_signal=is_initial_load)
+
+        # Aquí podrías crear un hilo rápido o usar QThread. 
+        # Por brevedad, simulamos la respuesta asíncrona:
+        voices = self.tts_manager.get_available_voices(provider)
+        on_voices_ready(voices)
     
     @Slot(int)
     def _update_tts_volume(self, value):
+        # Guardar en DB y aplicar en tiempo real
+        self.settings_storage.save_string("tts_volume", str(value))
         self.tts_manager.set_volume(value / 100.0)
 
     # 4. Slot para persistir configuraciones
@@ -359,11 +381,16 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):
+        # Solo hablamos si el cambio NO viene del arranque automático
+        # La lógica de decisión ahora es más clara
         current_provider = "web" if self.view_chat.chk_provider.isChecked() else "local"
         self.settings_storage.save_string(f"tts_voice_{current_provider}", voice_id)
-        
         self.tts_manager.set_voice(voice_id)
-        self.tts_manager.say("Voz actualizada.")
+        
+        # Evitamos el spam: solo decir "Voz actualizada" si la ventana está activa
+        # o si no estamos en el proceso de carga inicial.
+        if self.isVisible():
+            self.tts_manager.say("Voz actualizada.")
         
     def _notify_background(self):
         self.tray_icon.showMessage(
@@ -404,4 +431,15 @@ class MainWindow(QMainWindow):
             else:
                 event.ignore()
 
-    
+    def _setup_logging(self):
+        """Configura el logger global de Python (SoR)"""
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG) # Nivel mínimo a capturar
+        
+        # Instanciamos el handler visual
+        self.q_log_handler = QLogHandler()
+        self.logger.addHandler(self.q_log_handler)
+        
+        # Opcional: Evitar que librerías de terceros (como requests) hagan spam
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+        logging.getLogger("cloudscraper").setLevel(logging.WARNING)

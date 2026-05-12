@@ -2,6 +2,7 @@
 
 import json
 import re
+import time
 from typing import Callable
 
 import cloudscraper
@@ -75,12 +76,14 @@ class ChatSocketManager:
     def __init__(self, cluster: str, key: str) -> None:
         self.cluster = cluster
         self.key = key
+        self._running = False # Bandera de control
 
     def start_socket(self, room_id: int, on_message: Callable[[str, str], None]) -> None:
         url = (
             f"wss://ws-{self.cluster}.pusher.com/app/{self.key}"
             f"?protocol=7&client=js&version=7.6.0"
         )
+        self._running = True
 
         def _on_message(ws: websocket.WebSocketApp, raw: str) -> None:
             data = json.loads(raw)
@@ -104,5 +107,19 @@ class ChatSocketManager:
             elif event == "pusher:ping":
                 ws.send(json.dumps({"event": "pusher:pong"}))
 
-        ws = websocket.WebSocketApp(url, on_message=_on_message)
-        ws.run_forever()
+        # Bucle de Resiliencia: Si el socket muere, se reinicia.
+        while self._running:
+            try:
+                ws = websocket.WebSocketApp(url, on_message=_on_message)
+                # Añadimos ping_interval para mantener viva la conexión
+                ws.run_forever(ping_interval=30, ping_timeout=10)
+            except Exception as e:
+                print(f"[Chat] Socket interrumpido: {e}")
+
+            if self._running:
+                print("[Chat] Reconectando en 5 segundos...")
+                time.sleep(5) # Evita saturar el servidor si falla inmediatamente
+
+    def stop_socket(self) -> None:
+        """Permite detener el bucle de reconexión limpiamente."""
+        self._running = False

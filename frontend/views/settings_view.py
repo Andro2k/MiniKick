@@ -17,7 +17,7 @@ class SettingsView(QWidget):
     def _setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(20)
+        layout.setSpacing(12)
 
         title = QLabel("Configuración General")
         title.setProperty("role", "title")
@@ -27,8 +27,8 @@ class SettingsView(QWidget):
         sys_card = QFrame()
         sys_card.setObjectName("Card")
         sys_layout = QVBoxLayout(sys_card)
-        sys_layout.setContentsMargins(20, 20, 20, 20)
-        sys_layout.setSpacing(15)
+        sys_layout.setContentsMargins(16, 16, 16, 16)
+        sys_layout.setSpacing(12)
 
         sys_title = QLabel("COMPORTAMIENTO DE VENTANA")
         sys_title.setProperty("role", "section")
@@ -52,8 +52,8 @@ class SettingsView(QWidget):
         account_card = QFrame()
         account_card.setObjectName("Card")
         account_layout = QVBoxLayout(account_card)
-        account_layout.setContentsMargins(20, 20, 20, 20)
-        account_layout.setSpacing(15)
+        account_layout.setContentsMargins(16, 16, 16, 16)
+        account_layout.setSpacing(12)
 
         account_title = QLabel("GESTIÓN DE CUENTA")
         account_title.setProperty("role", "section")
@@ -78,8 +78,8 @@ class SettingsView(QWidget):
         update_card = QFrame()
         update_card.setObjectName("Card")
         update_layout = QVBoxLayout(update_card)
-        update_layout.setContentsMargins(20, 20, 20, 20)
-        update_layout.setSpacing(15)
+        update_layout.setContentsMargins(16, 16, 16, 16)
+        update_layout.setSpacing(12)
 
         update_title = QLabel("SISTEMA")
         update_title.setProperty("role", "section")

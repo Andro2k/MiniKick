@@ -74,7 +74,7 @@ QPushButton#NavButton {{
     background: transparent;
     border: 1px solid transparent;
     border-radius: {RADIUS_SM}px;
-    padding: 10px 12px;
+    padding: 10px;
     text-align: left;
     color: {COLOR_TEXT_SECONDARY};
 }}

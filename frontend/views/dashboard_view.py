@@ -23,7 +23,7 @@ class DashboardView(QWidget):
         """Construye la interfaz delegando en submétodos para mejor lectura"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(8)
+        layout.setSpacing(12)
 
         self._setup_header(layout)
         self._setup_connection_card(layout)
@@ -46,7 +46,7 @@ class DashboardView(QWidget):
         conn_card = QFrame()
         conn_card.setObjectName("Card")
         conn_layout = QHBoxLayout(conn_card)
-        conn_layout.setContentsMargins(20, 20, 20, 20)
+        conn_layout.setContentsMargins(16, 16, 16, 16)
 
         self.status_label = QLabel("Estado: Esperando conexión...")
         self.status_label.setProperty("role", "subtitle")
@@ -106,7 +106,7 @@ class DashboardView(QWidget):
         stats_card.setObjectName("Card")
         stats_prof_layout = QVBoxLayout(stats_card)
         stats_prof_layout.setContentsMargins(16, 16, 16, 16)
-        stats_prof_layout.setSpacing(8)
+        stats_prof_layout.setSpacing(12)
 
         prof_title = QLabel("ESTADÍSTICAS DEL CANAL")
         prof_title.setProperty("role", "section")
@@ -114,7 +114,7 @@ class DashboardView(QWidget):
 
         stats_grid = QGridLayout()
         stats_grid.setHorizontalSpacing(60)
-        stats_grid.setVerticalSpacing(8)
+        stats_grid.setVerticalSpacing(12)
 
         def make_header(text):
             lbl = QLabel(text)
