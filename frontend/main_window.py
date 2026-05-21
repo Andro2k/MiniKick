@@ -1,5 +1,6 @@
 # frontend/main_window.py
 
+import json
 import logging
 import os
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
@@ -8,8 +9,11 @@ from PySide6.QtCore import Slot, QThread, Signal, QEvent
 from PySide6.QtGui import QIcon
 
 # Importamos las Vistas (Frontend)
+from backend.services.media_trigger_service import MediaTriggerService
+from backend.services.overlay_server import OverlayServerManager # <-- NUEVO: Servidor OBS
 from frontend.components.log_handler import QLogHandler
 from frontend.components.sidebar import Sidebar
+from frontend.views.alerts_view import AlertsView
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.log_view import LogView
@@ -28,7 +32,26 @@ from backend.tts_manager import TTSManager
 from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
 from frontend.workers.auth_worker import AuthWorker
+from frontend.workers.reward_worker import RewardWorker
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
+
+# --- Hilos de Trabajo (SoR: Separación de Responsabilidades) ---
+class FetchRewardsWorker(QThread):
+    rewards_fetched = Signal(list)
+    error_occurred = Signal(str)
+
+    def __init__(self, api_client: KickAPIClient):
+        super().__init__()
+        self.api_client = api_client
+
+    def run(self):
+        try:
+            resp = self.api_client.fetch_channel_rewards()
+            # La API de Kick devuelve un "data" con la lista de recompensas
+            rewards = [item["title"] for item in resp.get("data", [])]
+            self.rewards_fetched.emit(rewards)
+        except Exception as e:
+            self.error_occurred.emit(str(e))
 
 # --- Hilo de Trabajo (Alta Cohesión & SoR) ---
 class ChatWorker(QThread):
@@ -91,6 +114,11 @@ class MainWindow(QMainWindow):
 
         self.tts_manager = TTSManager()
         self.chat_worker = None
+        self.media_trigger_service = MediaTriggerService(self)
+
+        # NUEVO: Encendemos el servidor web local para OBS en el puerto 8080
+        self.overlay_server = OverlayServerManager(port=8080)
+        self.overlay_server.start()
 
         # --- 2. Ensamblar e iniciar UI ---
         self._setup_logging() # Configurar logs ANTES de ensamblar la UI
@@ -109,20 +137,23 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar()
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
         self.sidebar.add_tab("Chat", "chat.svg")
+        self.sidebar.add_tab("Alertas OBS", "kick.svg") 
         self.sidebar.add_tab("Settings", "settings.svg")
-        self.sidebar.add_tab("Developer", "terminal.svg") # NUEVA PESTAÑA
+        self.sidebar.add_tab("Developer", "terminal.svg") 
 
         self.content_stack = QStackedWidget()
         
         self.view_dashboard = DashboardView()
         self.view_chat = ChatView()
         self.view_settings = SettingsView()
-        self.view_logs = LogView() # NUEVA VISTA
+        self.view_logs = LogView() 
+        self.view_alerts = AlertsView() 
 
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
         self.content_stack.addWidget(self.view_settings)
-        self.content_stack.addWidget(self.view_logs) # AÑADIDA AL STACK
+        self.content_stack.addWidget(self.view_logs) 
+        self.content_stack.addWidget(self.view_alerts) 
 
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
@@ -154,6 +185,14 @@ class MainWindow(QMainWindow):
         self.view_chat.voice_changed.connect(self._handle_voice_change)
         self.view_chat.provider_changed.connect(self._handle_provider_change)
         self.view_chat.settings_changed.connect(self._handle_chat_settings_change)
+        # Conexiones de AlertsView
+        self.view_alerts.alerts_mapping_changed.connect(self._handle_alerts_mapping_change)      
+        # NUEVO: Previsualizar en OBS manualmente
+        self.view_alerts.preview_requested.connect(
+            lambda reward, config: self.overlay_server.trigger_alert(reward, config)
+        )
+        # NUEVO: Refrescar la lista de puntos del canal desde la API
+        self.view_alerts.refresh_rewards_requested.connect(self._fetch_api_rewards)
         # Conexiones de SettingsView
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
         self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
@@ -169,7 +208,7 @@ class MainWindow(QMainWindow):
         self.view_chat.slider_vol.setValue(vol_int)
         self.tts_manager.set_volume(vol_int / 100.0)
 
-        # 2. Recopilar TODAS las configuraciones del Chat desde la base de datos
+        # 2. Recopilar TODAS las configuraciones del Chat
         saved_provider = self.settings_storage.load_string("tts_provider", "local")
         chat_settings = {
             "enabled": self.settings_storage.load_bool("tts_enabled", True),
@@ -179,20 +218,32 @@ class MainWindow(QMainWindow):
             "provider": saved_provider,
             "ignored_users": self.settings_storage.load_string("tts_ignored_users", "")
         }
-        
-        # Enviar las configuraciones a la vista del chat (Esto era lo que faltaba)
         self.view_chat.set_initial_settings(chat_settings)
 
-        # 3. Cargar configuraciones de otras vistas (Dashboard y Settings) para persistencia total
+        # 3. Cargar configuraciones de otras vistas
         self.view_settings.set_minimize_tray_enabled(
             self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         )
-        self.view_dashboard.set_autostart_state(
-            self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
-        )
 
-        # 4. Iniciamos carga asíncrona de voces para no trabar el inicio
+        # 4. Cargar configuraciones de Alertas OBS
+        alerts_json = self.settings_storage.load_string("obs_alerts_mapping", "{}")
+        try:
+            mappings = json.loads(alerts_json)
+        except json.JSONDecodeError:
+            mappings = {}
+        self.view_alerts.set_initial_mappings(mappings)
+
+        # Guardamos el estado de autostart en una variable local
+        autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
+        self.view_dashboard.set_autostart_state(autostart_enabled)
+
+        # 4. Iniciamos carga asíncrona de voces
         self._handle_provider_change(saved_provider, is_initial_load=True)
+
+        # 5. NUEVO: Disparar el flujo de conexión si el auto-arranque está activo
+        if autostart_enabled:
+            # Reutilizamos el slot de autenticación (DRY)
+            self._handle_auth_process()
 
     @Slot()
     def _handle_update_check(self):
@@ -255,7 +306,8 @@ class MainWindow(QMainWindow):
             "Dashboard": self.view_dashboard,
             "Chat": self.view_chat,
             "Settings": self.view_settings,
-            "Developer": self.view_logs # NUEVA RUTA
+            "Developer": self.view_logs,
+            "Alertas OBS": self.view_alerts # <-- SOLUCIÓN AQUÍ
         }
         target_view = mapping.get(view_name)
         if target_view:
@@ -265,27 +317,71 @@ class MainWindow(QMainWindow):
     def _handle_auth_process(self):
         self.view_dashboard.set_connecting_state()
 
-        # Instanciamos el worker de autenticación
         self.auth_worker = AuthWorker(self.auth_manager)
         
         def on_auth_success(tokens):
-            # Una vez autenticado, iniciamos el ChatWorker
             cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
             key = os.getenv("KICK_PUSHER_KEY", "")
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             
+            # 1. Iniciar el Chat Worker
             self.chat_worker = ChatWorker(api_client, cluster, key)                
             self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
             self.chat_worker.message_received.connect(self._on_chat_message)
             self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)                
             self.chat_worker.start()
 
+            # 2. Iniciar el Reward Worker (Polling)
+            self.reward_worker = RewardWorker(api_client, poll_interval_seconds=15)
+            self.reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
+            self.reward_worker.start()
+
         self.auth_worker.auth_success.connect(on_auth_success)
         self.auth_worker.auth_error.connect(self.view_dashboard.set_error_state)
-        
-        # Iniciamos la autenticación sin congelar la UI
         self.auth_worker.start()
 
+    @Slot(str, str, str)
+    def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
+        # 1. Registro visual en la caja de chat
+        log_msg = f'<b style="color: #00e701;">[PUNTOS] {user} canjeó {reward_name}</b>'
+        self.view_chat.chat_display.append(log_msg)
+        
+        # 2. Disparar el efecto multimedia local (Opcional)
+        self.media_trigger_service.play_reward_alert(reward_name)
+
+        # 3. Disparar la alerta al overlay de OBS
+        alerts_json = self.settings_storage.load_string("obs_alerts_mapping", "{}")
+        try:
+            mappings = json.loads(alerts_json)
+            # Si la recompensa está vinculada a un archivo, enviamos la alerta al HTML
+            if reward_name in mappings:
+                filepath = mappings[reward_name]
+                self.overlay_server.trigger_alert(reward_name, filepath)
+        except json.JSONDecodeError:
+            pass
+        
+        # 4. Mandar al TTS
+        settings = self.view_chat.get_tts_settings()
+        if settings.get("enabled", False) and message:
+            self.tts_manager.say(f"Mensaje de {user}: {message}")
+
+    @Slot(dict)
+    def _handle_alerts_mapping_change(self, mappings: dict):
+        # Convertimos el diccionario a string JSON para guardarlo en la DB
+        json_str = json.dumps(mappings)
+        self.settings_storage.save_string("obs_alerts_mapping", json_str)
+
+    @Slot()
+    def _fetch_api_rewards(self):
+        """Inicia el worker para obtener recompensas de Kick sin bloquear la interfaz."""
+        try:
+            api_client = KickAPIClient(auth_provider=self.auth_manager)
+            self.fetch_rewards_worker = FetchRewardsWorker(api_client)
+            self.fetch_rewards_worker.rewards_fetched.connect(self.view_alerts.update_rewards_combo)
+            self.fetch_rewards_worker.start()
+        except Exception as e:
+            self.logger.error(f"No se pudo consultar recompensas. ¿Estás conectado? {e}")
+            
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):
         self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
@@ -326,25 +422,18 @@ class MainWindow(QMainWindow):
         self.tts_manager.set_provider(provider)
         self.settings_storage.save_string("tts_provider", provider)
         
-        # Usamos un Worker para obtener voces (SoR)
-        # Esto evita que la app se quede "En blanco" al abrir
         def on_voices_ready(voices):
             saved_voice_id = self.settings_storage.load_string(f"tts_voice_{provider}", "")
-            # Pasamos un flag a la vista para que sepa si debe silenciar el saludo
             self.view_chat.populate_voices(voices, saved_voice_id, mute_signal=is_initial_load)
 
-        # Aquí podrías crear un hilo rápido o usar QThread. 
-        # Por brevedad, simulamos la respuesta asíncrona:
         voices = self.tts_manager.get_available_voices(provider)
         on_voices_ready(voices)
     
     @Slot(int)
     def _update_tts_volume(self, value):
-        # Guardar en DB y aplicar en tiempo real
         self.settings_storage.save_string("tts_volume", str(value))
         self.tts_manager.set_volume(value / 100.0)
 
-    # 4. Slot para persistir configuraciones
     @Slot(dict)
     def _handle_chat_settings_change(self, settings: dict):
         self.settings_storage.save_bool("tts_enabled", settings["enabled"])
@@ -353,7 +442,6 @@ class MainWindow(QMainWindow):
         self.settings_storage.save_string("tts_command", settings["command"])
         self.settings_storage.save_string("tts_ignored_users", settings["ignored_users"])
 
-    # 5. Modificar la lógica de recepción para aplicar la lista de ignorados
     @Slot(str, str)
     def _on_chat_message(self, user: str, message: str):
         self.view_chat.append_message(user, message)
@@ -362,12 +450,11 @@ class MainWindow(QMainWindow):
         if not settings.get("enabled", False):
             return
 
-        # NUEVO: Lógica de usuarios ignorados (DRY: parsear lista)
         ignored_string = settings.get("ignored_users", "")
         ignored_list = [u.strip().lower() for u in ignored_string.split(",") if u.strip()]
         
         if user.lower() in ignored_list:
-            return # Evitamos mandar al TTS si es un bot
+            return 
 
         final_message = message.strip()
         if settings.get("use_command", False):
@@ -381,14 +468,10 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):
-        # Solo hablamos si el cambio NO viene del arranque automático
-        # La lógica de decisión ahora es más clara
         current_provider = "web" if self.view_chat.chk_provider.isChecked() else "local"
         self.settings_storage.save_string(f"tts_voice_{current_provider}", voice_id)
         self.tts_manager.set_voice(voice_id)
         
-        # Evitamos el spam: solo decir "Voz actualizada" si la ventana está activa
-        # o si no estamos en el proceso de carga inicial.
         if self.isVisible():
             self.tts_manager.say("Voz actualizada.")
         
@@ -414,14 +497,19 @@ class MainWindow(QMainWindow):
 
     def _cleanup(self):
         self.tts_manager.stop()        
-        # Limpieza del chat
+        self.overlay_server.stop() # <-- Apagamos servidor OBS local
+        
         if self.chat_worker and self.chat_worker.isRunning():
             self.chat_worker.terminate()
             self.chat_worker.wait()            
-        # NUEVO: Limpieza de la autenticación
+            
         if hasattr(self, 'auth_worker') and self.auth_worker and self.auth_worker.isRunning():
             self.auth_worker.terminate()
             self.auth_worker.wait()
+
+        if hasattr(self, 'reward_worker') and self.reward_worker and self.reward_worker.isRunning():
+            self.reward_worker.stop()
+            self.reward_worker.wait()
 
     def closeEvent(self, event):
         if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
@@ -437,14 +525,11 @@ class MainWindow(QMainWindow):
                 event.ignore()
 
     def _setup_logging(self):
-        """Configura el logger global de Python (SoR)"""
         self.logger = logging.getLogger()
-        self.logger.setLevel(logging.DEBUG) # Nivel mínimo a capturar
+        self.logger.setLevel(logging.DEBUG) 
         
-        # Instanciamos el handler visual
         self.q_log_handler = QLogHandler()
         self.logger.addHandler(self.q_log_handler)
         
-        # Opcional: Evitar que librerías de terceros (como requests) hagan spam
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("cloudscraper").setLevel(logging.WARNING)

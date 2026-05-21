@@ -133,11 +133,15 @@ class AuthManager:
         return verifier, challenge
 
     def _build_auth_url(self, challenge: str) -> str:
+        # Agregamos los scopes necesarios separados por espacio URL-encoded o espacio normal
+        # Dependiendo de tu configuración de chat, añadimos también chat:write si lo usas
+        scopes = "user:read channel:rewards:read channel:rewards:write"
+        
         return (
             f"{KICK_AUTH_URL}?response_type=code"
             f"&client_id={self.client_id}"
             f"&redirect_uri={self.redirect_uri}"
-            f"&scope=user:read"
+            f"&scope={scopes}"  # <- Scopes actualizados de manera limpia
             f"&code_challenge={challenge}"
             f"&code_challenge_method=S256"
             f"&state=random"

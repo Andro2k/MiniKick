@@ -71,6 +71,93 @@ class KickAPIClient:
             
         return resp.json()
 
+    def fetch_pending_redemptions(self, cursor: str = "") -> dict:
+        """Obtiene las recompensas pendientes usando el token OAuth."""
+        tokens = self.auth_provider.get_tokens()
+        access_token = tokens.get("access_token", "")
+        
+        url = "https://api.kick.com/public/v1/channels/rewards/redemptions?status=pending"
+        if cursor:
+            url += f"&cursor={cursor}"
+            
+        try:
+            resp = requests.get(
+                url,
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=10
+            )
+            resp.raise_for_status()
+            return resp.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code == 401:
+                self.auth_provider.refresh_token()
+                # Reintento recursivo simple (YAGNI)
+                tokens = self.auth_provider.get_tokens()
+                access_token = tokens.get("access_token", "")
+                resp = requests.get(
+                    url,
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    timeout=10
+                )
+                resp.raise_for_status()
+                return resp.json()
+            raise e
+
+    def fetch_channel_rewards(self) -> dict:
+        """Obtiene la lista de recompensas de puntos de canal creadas por el streamer."""
+        tokens = self.auth_provider.get_tokens()
+        access_token = tokens.get("access_token", "")
+        
+        url = "https://api.kick.com/public/v1/channels/rewards"
+        
+        try:
+            resp = requests.get(url, headers={"Authorization": f"Bearer {access_token}"}, timeout=10)
+            resp.raise_for_status()
+            return resp.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code == 401:
+                self.auth_provider.refresh_token()
+                tokens = self.auth_provider.get_tokens()
+                access_token = tokens.get("access_token", "")
+                resp = requests.get(url, headers={"Authorization": f"Bearer {access_token}"}, timeout=10)
+                resp.raise_for_status()
+                return resp.json()
+            raise e
+
+    def accept_redemptions(self, redemption_ids: list[str]) -> dict:
+        """Marca una lista de redemptions como aceptadas en Kick para removerlas de pendientes.
+        
+        Requiere el scope: channel:rewards:write
+        """
+        if not redemption_ids:
+            return {}
+            
+        tokens = self.auth_provider.get_tokens()
+        access_token = tokens.get("access_token", "")
+        
+        url = "https://api.kick.com/public/v1/channels/rewards/redemptions/accept"
+        payload = {"ids": redemption_ids}
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            resp = requests.post(url, json=payload, headers=headers, timeout=10)
+            resp.raise_for_status()
+            return resp.json()
+        except requests.exceptions.HTTPError as e:
+            if e.response is not None and e.response.status_code == 401:
+                # Si el token expiró, refrescamos y reintentamos una vez
+                self.auth_provider.refresh_token()
+                tokens = self.auth_provider.get_tokens()
+                access_token = tokens.get("access_token", "")
+                headers["Authorization"] = f"Bearer {access_token}"
+                
+                resp = requests.post(url, json=payload, headers=headers, timeout=10)
+                resp.raise_for_status()
+                return resp.json()
+            raise e
 # --- Lógica de Negocio / Infraestructura ---
 class ChatSocketManager:
     def __init__(self, cluster: str, key: str) -> None:

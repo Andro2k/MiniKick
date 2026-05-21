@@ -355,9 +355,9 @@ class ChatView(QWidget):
         """Lógica centralizada para filtrar las voces según el idioma actual."""
         current_lang = self.combo_lang.currentText()
         
-        # Bloqueamos el combo de voces si estamos en la carga inicial
-        if mute_signal:
-            self.combo_voice.blockSignals(True) 
+        # 1. SIEMPRE bloqueamos las señales al reconstruir la lista para evitar 
+        # que PySide6 dispare eventos fantasma por cada addItem o clear.
+        self.combo_voice.blockSignals(True) 
             
         self.combo_voice.clear()
         
@@ -374,14 +374,14 @@ class ChatView(QWidget):
                     index_to_select = count
                 count += 1
                 
-        # Seleccionamos la voz correspondiente
+        # 2. Seleccionamos la voz correspondiente de forma silenciosa
         if self.combo_voice.count() > 0:
             self.combo_voice.setCurrentIndex(index_to_select)
-            
-            # Si NO estamos en modo silencioso, emitimos la señal para que el bot hable
-            if not mute_signal:
-                self._on_voice_selected(index_to_select)
                 
-        # Desbloqueamos si lo habíamos bloqueado
-        if mute_signal:
-            self.combo_voice.blockSignals(False)
+        # 3. SIEMPRE Desbloqueamos después de terminar la reconstrucción
+        self.combo_voice.blockSignals(False)
+
+        # 4. Emisión controlada (Single Source of Truth): 
+        # Si NO estamos en modo silencioso, emitimos la señal explícitamente UNA sola vez.
+        if not mute_signal and self.combo_voice.count() > 0:
+            self._on_voice_selected(index_to_select)
