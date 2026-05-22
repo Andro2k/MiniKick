@@ -4,7 +4,7 @@ import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QFrame, QTableWidget, QTableWidgetItem, 
                                QHeaderView, QFileDialog, QApplication, QComboBox,
-                               QSlider, QDoubleSpinBox)
+                               QSlider, QDoubleSpinBox, QSpinBox)
 from PySide6.QtCore import Qt, Signal, Slot
 
 from frontend.components.controls import ModernButton
@@ -12,8 +12,8 @@ from frontend.utils import get_icon_colored
 
 class AlertsView(QWidget):
     alerts_mapping_changed = Signal(dict)
-    preview_requested = Signal(str, dict) # Nueva señal: Nombre, Configuración
-    refresh_rewards_requested = Signal()  # Nueva señal para pedir lista a la API
+    preview_requested = Signal(str, dict)
+    refresh_rewards_requested = Signal()
 
     def __init__(self):
         super().__init__()
@@ -35,11 +35,11 @@ class AlertsView(QWidget):
         obs_layout = QHBoxLayout(obs_card)
         obs_layout.setContentsMargins(16, 16, 16, 16)
         
-        lbl_obs_url = QLabel("URL Browser Source:  http://localhost:8080/overlay")
+        lbl_obs_url = QLabel("URL Browser Source:  http://localhost:8090/overlay")
         lbl_obs_url.setStyleSheet("font-family: monospace; font-weight: bold;")
         
         self.btn_copy_url = ModernButton("Copiar", role="action_accent")
-        self.btn_copy_url.clicked.connect(lambda: QApplication.clipboard().setText("http://localhost:8080/overlay"))
+        self.btn_copy_url.clicked.connect(lambda: QApplication.clipboard().setText("http://localhost:8090/overlay"))
         
         obs_layout.addWidget(lbl_obs_url)
         obs_layout.addStretch()
@@ -52,7 +52,6 @@ class AlertsView(QWidget):
         form_layout = QVBoxLayout(form_card)
         form_layout.setContentsMargins(16, 16, 16, 16)
         
-        # SOLUCIÓN AQUÍ: Instanciar y asignar propiedad por separado
         lbl_step1 = QLabel("1. SELECCIONA LA RECOMPENSA DE KICK")
         lbl_step1.setProperty("role", "section")
         form_layout.addWidget(lbl_step1)
@@ -68,7 +67,6 @@ class AlertsView(QWidget):
 
         form_layout.addSpacing(10)
         
-        # SOLUCIÓN AQUÍ: Instanciar y asignar propiedad por separado
         lbl_step2 = QLabel("2. ARCHIVO Y AJUSTES (Audio/Video)")
         lbl_step2.setProperty("role", "section")
         form_layout.addWidget(lbl_step2)
@@ -82,15 +80,24 @@ class AlertsView(QWidget):
         row2.addWidget(self.btn_browse)
         form_layout.addLayout(row2)
 
-        # Ajustes de Visualización
+        # Ajustes de Visualización (X, Y, Escala, Volumen)
         row3 = QHBoxLayout()
-        row3.addWidget(QLabel("Posición (Video):"))
-        self.combo_pos = QComboBox()
-        self.combo_pos.addItems(["center", "top-left", "top-right", "bottom-left", "bottom-right"])
-        row3.addWidget(self.combo_pos)
+        
+        row3.addWidget(QLabel("Pos X:"))
+        self.spin_x = QSpinBox()
+        self.spin_x.setRange(-5000, 5000)
+        self.spin_x.setValue(0)
+        row3.addWidget(self.spin_x)
+        
+        row3.addSpacing(10)
+        row3.addWidget(QLabel("Pos Y:"))
+        self.spin_y = QSpinBox()
+        self.spin_y.setRange(-5000, 5000)
+        self.spin_y.setValue(0)
+        row3.addWidget(self.spin_y)
         
         row3.addSpacing(15)
-        row3.addWidget(QLabel("Escala (Video):"))
+        row3.addWidget(QLabel("Escala:"))
         self.spin_scale = QDoubleSpinBox()
         self.spin_scale.setRange(0.1, 5.0)
         self.spin_scale.setSingleStep(0.1)
@@ -119,7 +126,7 @@ class AlertsView(QWidget):
         self.table_alerts.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table_alerts.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table_alerts.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.table_alerts.setColumnWidth(2, 120) # Más espacio para 2 botones
+        self.table_alerts.setColumnWidth(2, 120) 
         self.table_alerts.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         
         main_layout.addWidget(self.table_alerts)
@@ -140,12 +147,12 @@ class AlertsView(QWidget):
         if not filepath:
             return
 
-        # Alta Cohesión: Guardamos el objeto complejo
         self.mappings[reward] = {
             "filepath": filepath,
             "volume": self.slider_vol.value() / 100.0,
             "scale": self.spin_scale.value(),
-            "position": self.combo_pos.currentText()
+            "pos_x": self.spin_x.value(),
+            "pos_y": self.spin_y.value()
         }
         self._refresh_table()
         self.txt_file_path.clear()
@@ -171,7 +178,6 @@ class AlertsView(QWidget):
             item_reward.setFlags(item_reward.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_alerts.setItem(row, 0, item_reward)
             
-            # Retrocompatibilidad defensiva
             filepath = config if isinstance(config, str) else config.get("filepath", "Desconocido")
             
             item_file = QTableWidgetItem(os.path.basename(filepath))
@@ -179,7 +185,6 @@ class AlertsView(QWidget):
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_alerts.setItem(row, 1, item_file)
             
-            # Celda de Acciones (Contiene 2 botones)
             actions_widget = QWidget()
             actions_layout = QHBoxLayout(actions_widget)
             actions_layout.setContentsMargins(0,0,0,0)
@@ -202,7 +207,6 @@ class AlertsView(QWidget):
         
     @Slot(list)
     def update_rewards_combo(self, rewards_list: list):
-        """Recibe la lista de la API y puebla el ComboBox"""
         self.combo_rewards.clear()
         if not rewards_list:
             self.combo_rewards.addItem("No hay recompensas")

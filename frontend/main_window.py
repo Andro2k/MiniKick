@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
         self.tts_manager = TTSManager()
         self.chat_worker = None
         self.media_trigger_service = MediaTriggerService(self)
-        self.overlay_server = OverlayServerManager(port=8080)
+        self.overlay_server = OverlayServerManager(port=8090)
         self.overlay_server.start()
 
         # --- 2. Ensamblar e iniciar UI ---

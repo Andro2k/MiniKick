@@ -2,11 +2,18 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniKick Overlay</title>
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background-color: transparent; height: 100vh; width: 100vw; position: relative; }
-        .media-layer { position: absolute; }
+        body { 
+            margin: 0; padding: 0; 
+            overflow: hidden; 
+            background-color: transparent; 
+            height: 100vh; width: 100vw; 
+            position: relative; 
+        }
+        .media-layer { 
+            position: absolute; 
+        }
     </style>
 </head>
 <body>
@@ -27,36 +34,23 @@
             mediaEl.className = 'media-layer';
             mediaEl.autoplay = true;
             
-            // 1. Aplicar Volumen
             mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
 
-            // 2. Aplicar Posición y Escala (Solo visible en videos)
             const scale = data.scale || 1.0;
-            const pos = data.position || "center";
+            const px = data.pos_x || 0;
+            const py = data.pos_y || 0;
 
-            if (pos === "center") {
-                mediaEl.style.top = "50%"; mediaEl.style.left = "50%";
-                mediaEl.style.transform = `translate(-50%, -50%) scale(${scale})`;
-            } else if (pos === "top-left") {
-                mediaEl.style.top = "0"; mediaEl.style.left = "0";
-                mediaEl.style.transform = `scale(${scale})`;
-                mediaEl.style.transformOrigin = "top left";
-            } else if (pos === "top-right") {
-                mediaEl.style.top = "0"; mediaEl.style.right = "0";
-                mediaEl.style.transform = `scale(${scale})`;
-                mediaEl.style.transformOrigin = "top right";
-            } else if (pos === "bottom-left") {
-                mediaEl.style.bottom = "0"; mediaEl.style.left = "0";
-                mediaEl.style.transform = `scale(${scale})`;
-                mediaEl.style.transformOrigin = "bottom left";
-            } else if (pos === "bottom-right") {
-                mediaEl.style.bottom = "0"; mediaEl.style.right = "0";
-                mediaEl.style.transform = `scale(${scale})`;
-                mediaEl.style.transformOrigin = "bottom right";
-            }
+            // Posicionamiento estricto por coordenadas X e Y
+            mediaEl.style.left = px + "px";
+            mediaEl.style.top = py + "px";
+            mediaEl.style.transform = `scale(${scale})`;
+            mediaEl.style.transformOrigin = "top left"; // El punto 0,0 es la esquina sup-izq del video
 
             mediaEl.onended = () => mediaEl.remove();
-            mediaEl.onerror = () => mediaEl.remove();
+            mediaEl.onerror = (e) => {
+                console.error("No se pudo reproducir. Verifica la ruta.", e);
+                mediaEl.remove();
+            };
 
             container.appendChild(mediaEl);
         }

@@ -5,6 +5,7 @@ import json
 import queue
 import threading
 import mimetypes
+import urllib.parse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -13,7 +14,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         
-        # 1. Servir la plantilla HTML a OBS
+        # 1. Servir el HTML del overlay
         if path == "/overlay":
             html_path = os.path.abspath(os.path.join("assets", "overlays", "rewards.html"))
             try:
@@ -23,9 +24,9 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(f.read())
             except FileNotFoundError:
-                self.send_error(404, "Overlay HTML no encontrado. Verifica la carpeta assets/overlays.")
+                self.send_error(404, "Overlay HTML no encontrado.")
                 
-        # 2. Servir los archivos multimedia locales
+        # 2. Servir la multimedia de forma robusta a OBS
         elif path == "/media":
             query = parse_qs(parsed.query)
             if "path" not in query:
@@ -34,22 +35,37 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 
             filepath = query["path"][0]
             if not os.path.exists(filepath):
-                self.send_error(404, "Archivo multimedia no encontrado en el disco")
+                self.send_error(404, "Archivo multimedia no encontrado")
                 return
                 
             mime_type, _ = mimetypes.guess_type(filepath)
             
             try:
-                with open(filepath, "rb") as f:
-                    self.send_response(200)
-                    self.send_header("Content-Type", mime_type or "application/octet-stream")
-                    self.send_header("Access-Control-Allow-Origin", "*")
-                    self.end_headers()
-                    self.wfile.write(f.read())
-            except Exception as e:
-                self.send_error(500, f"Error leyendo archivo: {e}")
+                self.send_response(200)
+                self.send_header("Content-Type", mime_type or "application/octet-stream")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
                 
-        # 3. Mantener viva la conexión SSE para mandar las alertas
+                # Leemos y enviamos en trozos (chunks) de 64KB en lugar de saturar la RAM
+                with open(filepath, "rb") as f:
+                    chunk_size = 1024 * 64 
+                    while True:
+                        chunk = f.read(chunk_size)
+                        if not chunk:
+                            break
+                        self.wfile.write(chunk)
+                        
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                # OBS o el navegador cerraron la conexión (comportamiento normal en streaming de video)
+                pass
+            except Exception as e:
+                # Solo intentamos notificar el 500 si la conexión sigue viva
+                try:
+                    self.send_error(500, f"Error interno: {e}")
+                except:
+                    pass
+                
+        # 3. Mantener viva la conexión SSE
         elif path == "/events":
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream")
@@ -57,21 +73,20 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             
-            # Cada conexión (OBS, navegador) tiene su propia cola de mensajes
             client_queue = queue.Queue()
             self.server.manager.clients.append(client_queue)
             
             try:
                 while True:
-                    alert = client_queue.get() # Se queda esperando aquí sin consumir CPU
+                    alert = client_queue.get()
                     if alert is None:
-                        break # Señal de apagado
-                    
-                    # Formato estricto de SSE: "data: {json}\n\n"
+                        break
                     self.wfile.write(f"data: {json.dumps(alert)}\n\n".encode("utf-8"))
                     self.wfile.flush()
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                pass # El cliente se desconectó
             except Exception:
-                pass # El cliente (OBS) cerró la conexión o recargó la página
+                pass
             finally:
                 if client_queue in self.server.manager.clients:
                     self.server.manager.clients.remove(client_queue)
@@ -79,44 +94,46 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.send_error(404, "Endpoint no válido")
 
     def log_message(self, format, *args):
-        pass # Anulamos los logs por defecto para no saturar la terminal
+        pass # Mantenemos silenciados los logs por defecto para una terminal limpia
 
 class OverlayServerManager:
     def __init__(self, port=8080):
         self.port = port
         self.server = None
         self.thread = None
-        self.clients = [] # Lista de conexiones activas
+        self.clients = [] 
 
     def start(self):
-        """Inicia el servidor en un hilo secundario (Separación de Responsabilidades)."""
-        self.server = HTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
-        self.server.manager = self # Referencia cruzada segura
-        
-        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-        self.thread.start()
-        print(f"🌐 Servidor Overlay activo: http://localhost:{self.port}/overlay")
+        try:
+            self.server = HTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
+            self.server.manager = self 
+            
+            self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+            self.thread.start()
+            print(f"🌐 Servidor Overlay activo: http://localhost:{self.port}/overlay")
+        except OSError as e:
+            print(f"❌ ERROR CRÍTICO: No se pudo iniciar el servidor Overlay en el puerto {self.port}.")
+            print(f"Detalles: {e}")
 
     def trigger_alert(self, reward_name: str, config: dict):
-        """Envía la alerta y sus parámetros a todos los clientes (OBS) conectados."""
-        
-        # Retrocompatibilidad por si había strings guardados en la versión anterior
         if isinstance(config, str):
-            config = {"filepath": config, "volume": 1.0, "scale": 1.0, "position": "center"}
+            config = {"filepath": config, "volume": 1.0, "scale": 1.0, "pos_x": 0, "pos_y": 0}
             
+        safe_path = urllib.parse.quote(config['filepath'])
+        
         payload = {
             "reward": reward_name,
-            "file_url": f"http://localhost:{self.port}/media?path={config['filepath']}",
+            "file_url": f"http://localhost:{self.port}/media?path={safe_path}",
             "volume": config.get("volume", 1.0),
             "scale": config.get("scale", 1.0),
-            "position": config.get("position", "center")
+            "pos_x": config.get("pos_x", 0),
+            "pos_y": config.get("pos_y", 0)
         }
         for client_queue in self.clients:
             client_queue.put(payload)
 
     def stop(self):
         if self.server:
-            # Enviar pastilla de cianuro a todos los hilos en espera
             for client_queue in self.clients:
                 client_queue.put(None)
             self.server.shutdown()
