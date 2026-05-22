@@ -11,8 +11,8 @@ class Sidebar(QFrame):
         super().__init__()
         self.setObjectName("Sidebar")
         self.is_expanded = True
-        self.expanded_width = 250
-        self.collapsed_width = 65
+        self.expanded_width = 230
+        self.collapsed_width = 60
         self.setFixedWidth(self.expanded_width)
         
         self.button_group = QButtonGroup(self)
@@ -68,16 +68,12 @@ class Sidebar(QFrame):
         btn = QPushButton(name)
         btn.setObjectName("NavButton")
         btn.setCheckable(True)
-        btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)       
         btn.setProperty("original_text", name)
         btn.setProperty("view_name", name)
-        btn.setProperty("icon_name", icon_name)
-        
+        btn.setProperty("icon_name", icon_name)        
         icon_color = COLOR_ACCENT if is_active else COLOR_TEXT_SECONDARY
         btn.setIcon(get_icon_colored(icon_name, icon_color, 22))
-        
-        # Estilo inicial expandido
         btn.setStyleSheet("text-align: left; padding-left: 12px;")
         
         if is_active:
@@ -120,8 +116,7 @@ class Sidebar(QFrame):
             if show:
                 btn.setStyleSheet("text-align: left; padding-left: 12px;")
             else:
-                # El padding 0px garantiza el centrado absoluto al contraer
-                btn.setStyleSheet("text-align: center; padding: 10px;")
+                btn.setStyleSheet("text-align: center; padding: 6px;")
                 
             btn.setProperty("collapsed", not show)
             btn.style().unpolish(btn)

@@ -7,20 +7,20 @@ PATH_ICON_HELP = get_assets_path("icons/help-circle.svg")
 PATH_ICON_UPDATE = get_assets_path("icons/download.svg")
 
 # ─── Paleta de Colores ( Slate & Onyx) ───
-COLOR_BG_BASE       = "#0A0F12"   
-COLOR_BG_SURFACE    = "#161D21"   # Tarjetas
-COLOR_BG_ELEVATED   = "#1F2937"   
-COLOR_BG_INPUT      = "#0F171A"   
+COLOR_BG_BASE       = "#111113"     #0A0F12 #0E1116 #111113
+COLOR_BG_SURFACE    = "#1B1B1D"     #161D21 #151A1E #1B1B1D
+COLOR_BG_ELEVATED   = "#1F2937"     #1E293B #1F2937
+COLOR_BG_INPUT      = "#0F0F0F"     #0F171A #0F0F0F
 
-COLOR_BORDER_SVELTE = "#1E293B"   # Borde 1px
+COLOR_BORDER_SVELTE = "#161618"     #1E293B #8A8A8C
 COLOR_BORDER_ACTIVE = "#334155"   
 
-COLOR_ACCENT        = "#0FE25F"   # Kick Green
+COLOR_ACCENT        = "#0FE25F"   
 COLOR_ACCENT_HOVER  = "#3cb043"   
 COLOR_ACCENT_SOFT   = "rgba(12, 166, 120, 0.08)" 
 
 COLOR_TEXT_PRIMARY  = "#F8FAFC"   # Casi blanco
-COLOR_TEXT_SECONDARY= "#94A3B8"   # Slate Grey
+COLOR_TEXT_SECONDARY= "#8B8B8D"   # Slate Grey
 COLOR_TEXT_MUTED    = "#475569"   
 
 # ─── Tipografía & Radios ───
@@ -72,9 +72,8 @@ QLabel[role="subtitle"] {{
 /* ─── Navegación (Sidebar) ─── */
 QPushButton#NavButton {{
     background: transparent;
-    border: 1px solid transparent;
     border-radius: {RADIUS_SM}px;
-    padding: 10px;
+    padding: 6px;
     text-align: left;
     color: {COLOR_TEXT_SECONDARY};
 }}
@@ -88,7 +87,7 @@ QPushButton#NavButton:checked {{
     background-color: {COLOR_ACCENT_SOFT};
     color: {COLOR_ACCENT};
     border: 1px solid {COLOR_ACCENT};
-    font-weight: 600;
+    font-weight: 500;
 }}
 
 /* ─── Inputs y Controles (Chat View) ─── */
@@ -118,8 +117,9 @@ QPushButton[role="action_accent"] {{
     background-color: {COLOR_ACCENT};
     border: none;
     border-radius: {RADIUS_SM}px;
-    padding: 10px;
+    padding: 6px;
     color: #000000;
+    font-weight: bold;
 }}
 
 QPushButton[role="action_accent"]:hover {{
@@ -131,7 +131,7 @@ QPushButton[role="action_outlined"] {{
     background-color: transparent;
     border: 1px solid {COLOR_BORDER_ACTIVE};
     border-radius: {RADIUS_SM}px;
-    padding: 10px;
+    padding: 6px;
     color: {COLOR_TEXT_SECONDARY};
 }}
 
@@ -147,7 +147,7 @@ QPushButton[role="action_danger"] {{
     border: 1px solid #ef4444; 
     color: #ef4444;
     border-radius: 6px;
-    padding: 6px 12px;
+    padding: 6px;
     font-weight: bold;
 }}
 QPushButton[role="action_danger"]:hover {{
@@ -160,7 +160,7 @@ QPushButton[role="action_success"] {{
     border: 1px solid #53ff1a; 
     color: #53ff1a;
     border-radius: 6px;
-    padding: 6px 12px;
+    padding: 6px;
     font-weight: bold;
 }}
 QPushButton[role="action_success"]:hover {{
@@ -210,7 +210,7 @@ QProgressBar {{
     border-radius: {RADIUS_SM}px;
     text-align: center;
     color: transparent; /* Ocultar texto de porcentaje */
-    height: 10px;
+    height: 6px;
 }}
 
 QProgressBar::chunk {{
@@ -253,9 +253,9 @@ QSlider::handle:horizontal {{
 /* ─── ComboBox ─── */
 QComboBox {{
     background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY};
-    border-radius: {RADIUS_SM}px; padding: 10px; border: 1px solid {COLOR_BORDER_SVELTE}; 
+    border-radius: {RADIUS_SM}px; padding: 8px; border: 1px solid {COLOR_BORDER_SVELTE}; 
 }}
-QComboBox:hover {{ border: 1px solid {COLOR_ACCENT}; }}
+QComboBox:hover {{ border: 1px solid {COLOR_ACCENT_HOVER}; }}
 QComboBox::drop-down {{ border: none;}}
 QComboBox::down-arrow {{ image: url('{PATH_CHEVRON}'); width: 14px; height: 14px; margin-right: 8px; }}
 

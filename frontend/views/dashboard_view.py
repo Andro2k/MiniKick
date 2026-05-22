@@ -65,7 +65,7 @@ class DashboardView(QWidget):
 
         self.btn_connect = QPushButton("Conectar a Kick")
         self.btn_connect.setProperty("role", "action_accent")
-        self.btn_connect.setFixedSize(160, 40)
+        self.btn_connect.setFixedSize(160, 36)
         self.btn_connect.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_connect.clicked.connect(self.request_connection.emit)
 
@@ -154,8 +154,6 @@ class DashboardView(QWidget):
    # ─── NUEVO SLOT INTERNO USANDO UTILS.PY ───
     @Slot(bool)
     def _update_autostart_visuals(self, checked: bool):
-        """Maneja el cambio de icono usando la utilidad centralizada de frontend/utils.py"""
-        
         if checked:
             icon = get_icon_colored("plug.svg", "black", size=22)
             self.btn_autostart.setToolTip("Desactivar Inicio Automático")

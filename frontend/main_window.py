@@ -10,7 +10,7 @@ from PySide6.QtGui import QIcon
 
 # Importamos las Vistas (Frontend)
 from backend.services.media_trigger_service import MediaTriggerService
-from backend.services.overlay_server import OverlayServerManager # <-- NUEVO: Servidor OBS
+from backend.services.overlay_server import OverlayServerManager
 from frontend.components.log_handler import QLogHandler
 from frontend.components.sidebar import Sidebar
 from frontend.views.alerts_view import AlertsView
@@ -47,7 +47,6 @@ class FetchRewardsWorker(QThread):
     def run(self):
         try:
             resp = self.api_client.fetch_channel_rewards()
-            # La API de Kick devuelve un "data" con la lista de recompensas
             rewards = [item["title"] for item in resp.get("data", [])]
             self.rewards_fetched.emit(rewards)
         except Exception as e:
@@ -58,7 +57,7 @@ class ChatWorker(QThread):
     message_received = Signal(str, str) 
     error_occurred = Signal(str)        
     connection_success = Signal(dict)   
-
+    
     def __init__(self, api_client: KickAPIClient, cluster: str, key: str):
         super().__init__()
         self.api_client = api_client 
@@ -96,8 +95,6 @@ class MainWindow(QMainWindow):
         self.resize(1100, 750)
 
         self.updater_manager = updater_manager
-
-        # --- 1. Inicializar componentes del Backend ---
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
 
         self.db_manager = DatabaseManager()
@@ -115,13 +112,11 @@ class MainWindow(QMainWindow):
         self.tts_manager = TTSManager()
         self.chat_worker = None
         self.media_trigger_service = MediaTriggerService(self)
-
-        # NUEVO: Encendemos el servidor web local para OBS en el puerto 8080
         self.overlay_server = OverlayServerManager(port=8080)
         self.overlay_server.start()
 
         # --- 2. Ensamblar e iniciar UI ---
-        self._setup_logging() # Configurar logs ANTES de ensamblar la UI
+        self._setup_logging()
         self._setup_ui()
         self._setup_tray() 
         self._connect_signals()
@@ -482,8 +477,7 @@ class MainWindow(QMainWindow):
             QSystemTrayIcon.MessageIcon.Information,
             3000
         )
-
-    # ─── GESTIÓN DE EVENTOS NATIVOS ───
+    
     def changeEvent(self, event):
         if event.type() == QEvent.Type.WindowStateChange:
             if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
