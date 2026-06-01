@@ -44,7 +44,7 @@ GLOBAL_QSS = f"""
 }}
 
 QMainWindow, QDialog, QWidget {{
-    background-color: transparent; /* El fondo real lo maneja el contenedor principal */
+    background-color: {COLOR_BG_BASE} /* El fondo real lo maneja el contenedor principal */
 }}
 
 /* Evitar que componentes internos hereden el fondo negro por error */
@@ -66,9 +66,14 @@ QFrame#Card {{
 }}
 
 /* ─── Tipografía con Roles ─── */
+QLabel{{
+    background-color: transparent;
+}}
+
 QLabel[role="title"] {{
     font-size: 22px;
     font-weight: bold;
+    background-color: transparent;
     color: {COLOR_TEXT_PRIMARY};
     letter-spacing: -0.5px;
 }}
@@ -76,10 +81,12 @@ QLabel[role="title"] {{
 QLabel[role="section"] {{
     font-size: 14px;
     font-weight: bold;
+    background-color: transparent;
     color: {COLOR_TEXT_PRIMARY};
 }}
 
 QLabel[role="subtitle"] {{
+    background-color: transparent;
     color: {COLOR_TEXT_SECONDARY};
     font-size: 14px;
 }}
@@ -223,9 +230,13 @@ QComboBox QAbstractItemView::item:selected {{
 }}
 
 /* ─── Sliders (Volumen) ─── */
+QSlider {{
+    background-color: transparent;
+}}
+
 QSlider::groove:horizontal {{
     border: none;
-    height: 6px;
+    height: 6.5px;
     background: {COLOR_BG_INPUT};
     border-radius: 3px;
 }}

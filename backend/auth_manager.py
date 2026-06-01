@@ -40,13 +40,16 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "text/html")
             self.end_headers()
             
-            # Buscamos la ruta inyectada en el servidor
             html_path = getattr(self.server, "success_html_path", "")
             try:
                 with open(html_path, "rb") as f:
                     self.wfile.write(f.read())
             except FileNotFoundError:
                 self.wfile.write("<h1>Autenticación exitosa. Puedes cerrar esta pestaña.</h1>".encode("utf-8"))
+            except (BrokenPipeError, ConnectionResetError):
+                # ALTA COHESIÓN: Si el navegador cierra la conexión prematuramente, 
+                # ignoramos el error de red en lugar de romper el servidor.
+                pass
 
     def log_message(self, *args) -> None:
         pass
