@@ -2,143 +2,129 @@
 
 from frontend.utils import get_assets_path
 
-PATH_CHEVRON = get_assets_path("icons/chevron-down.svg")
+# ─── Recursos Base ───
 PATH_ICON_HELP = get_assets_path("icons/help-circle.svg")
 PATH_ICON_UPDATE = get_assets_path("icons/download.svg")
 
-# ─── Paleta de Colores ( Slate & Onyx) ───
-COLOR_BG_BASE       = "#111113"     #0A0F12 #0E1116 #111113
-COLOR_BG_SURFACE    = "#1B1B1D"     #161D21 #151A1E #1B1B1D
-COLOR_BG_ELEVATED   = "#1F2937"     #1E293B #1F2937
-COLOR_BG_INPUT      = "#0F0F0F"     #0F171A #0F0F0F
+# ─── Paleta de Colores (Basada en la referencia Dark/Mint) ───
+COLOR_BG_BASE       = "#111111"   # Fondo de la aplicación (Negro profundo)
+COLOR_BG_SURFACE    = "#1C1C1C"   # Tarjetas y paneles (Gris oscuro cálido)
+COLOR_BG_INPUT      = "#2A2A2A"   # Fondos de inputs y campos de texto
+COLOR_BG_HOVER      = "#333333"   
 
-COLOR_BORDER_SVELTE = "#161618"     #1E293B #8A8A8C
-COLOR_BORDER_ACTIVE = "#334155"   
+COLOR_BORDER_SVELTE = "#333333"   # Bordes inactivos y divisores
+COLOR_BORDER_ACTIVE = "#00E573"   # Borde activo al enfocar (Verde Menta)
 
-COLOR_ACCENT        = "#0FE25F"   
-COLOR_ACCENT_HOVER  = "#3cb043"   
-COLOR_ACCENT_SOFT   = "rgba(12, 166, 120, 0.08)" 
+COLOR_ACCENT        = "#00E573"   # Verde Menta vibrante
+COLOR_ACCENT_HOVER  = "#00C864"   
+COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)" # Verde translúcido
 
-COLOR_TEXT_PRIMARY  = "#F8FAFC"   # Casi blanco
-COLOR_TEXT_SECONDARY= "#8B8B8D"   # Slate Grey
-COLOR_TEXT_MUTED    = "#475569"   
+COLOR_TEXT_PRIMARY  = "#F3F4F6"   # Blanco suave
+COLOR_TEXT_SECONDARY= "#9CA3AF"   # Gris para subtítulos
+COLOR_TEXT_MUTED    = "#6B7280"
 
-# ─── Tipografía & Radios ───
-FONT_FAMILY = "'Inter', 'Aptos', 'Segoe UI', sans-serif"
-RADIUS_SM = 6
-RADIUS_MD = 12  
-RADIUS_LG = 16
+# ─── Tipografía, Radios & Espaciados (Paddings) ───
+FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
+RADIUS_SM = 8
+RADIUS_MD = 12  # Cajas de texto y botones redondeados
+RADIUS_LG = 20  # Tarjetas principales altamente redondeadas
 
+# Variables para controlar el padding globalmente (Arriba/Abajo Izquierda/Derecha)
+PADDING_INPUT   = "4px 12px"
+PADDING_BUTTON  = "4px 8px"
+PADDING_SPINBOX = "4px 12px 4px 12px"
 # ─── Stylesheet Global (QSS) ───
 GLOBAL_QSS = f"""
 /* ─── Reset y Base ─── */
 * {{
     font-family: {FONT_FAMILY};
-    font-size: 13px;
+    font-size: 14px;
     color: {COLOR_TEXT_PRIMARY};
     outline: none;
 }}
 
-QMainWindow, QDialog {{
-    background-color: {COLOR_BG_BASE};
+QMainWindow, QDialog, QWidget {{
+    background-color: transparent; /* El fondo real lo maneja el contenedor principal */
+}}
+
+/* Evitar que componentes internos hereden el fondo negro por error */
+QFrame#Card, QTextEdit, QLineEdit, QComboBox, QTableWidget {{
+    background-color: {COLOR_BG_SURFACE};
 }}
 
 /* ─── Contenedores Principales ─── */
 QFrame#Sidebar {{
-    background-color: {COLOR_BG_INPUT};
-    border: none;
+    background-color: {COLOR_BG_BASE};
     border-right: 1px solid {COLOR_BORDER_SVELTE};
 }}
 
+/* Tarjetas altamente redondeadas de la imagen */
 QFrame#Card {{
     background-color: {COLOR_BG_SURFACE};
-    border: 1px solid {COLOR_BORDER_SVELTE};
-    border-radius: {RADIUS_MD}px;
+    border: 1px solid transparent; /* Sin borde agresivo */
+    border-radius: {RADIUS_LG}px;
 }}
 
 /* ─── Tipografía con Roles ─── */
 QLabel[role="title"] {{
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: bold;
     color: {COLOR_TEXT_PRIMARY};
     letter-spacing: -0.5px;
 }}
 
-QLabel[role="subtitle"] {{
-    color: {COLOR_TEXT_SECONDARY};
-    font-weight: 500;
-}}
-
-/* ─── Navegación (Sidebar) ─── */
-QPushButton#NavButton {{
-    background: transparent;
-    border-radius: {RADIUS_SM}px;
-    padding: 6px;
-    text-align: left;
-    color: {COLOR_TEXT_SECONDARY};
-}}
-
-QPushButton#NavButton:hover {{
-    background-color: {COLOR_BG_ELEVATED};
+QLabel[role="section"] {{
+    font-size: 14px;
+    font-weight: bold;
     color: {COLOR_TEXT_PRIMARY};
 }}
 
-QPushButton#NavButton:checked {{
-    background-color: {COLOR_ACCENT_SOFT};
-    color: {COLOR_ACCENT};
-    border: 1px solid {COLOR_ACCENT};
-    font-weight: 500;
+QLabel[role="subtitle"] {{
+    color: {COLOR_TEXT_SECONDARY};
+    font-size: 14px;
 }}
 
-/* ─── Inputs y Controles (Chat View) ─── */
-QTextEdit#ChatContainer {{
+/* ─── Inputs y Controles (Estilo Píldora/Redondeado) ─── */
+QLineEdit, QTextEdit#ChatContainer {{
     background-color: {COLOR_BG_INPUT};
-    border: 1px solid {COLOR_BORDER_SVELTE};
+    border: 1px solid transparent;
     border-radius: {RADIUS_MD}px;
-    padding: 12px;
-    line-height: 1.6;
+    padding: {PADDING_INPUT};
+    color: {COLOR_TEXT_PRIMARY};
 }}
 
-QLineEdit {{
-    background-color: {COLOR_BG_INPUT};
-    border: 1px solid {COLOR_BORDER_SVELTE};
-    border-radius: {RADIUS_SM}px;
-    padding: 8px 12px;
-    selection-background-color: {COLOR_ACCENT};
-}}
-
-QLineEdit:focus {{
-    border: 1px solid {COLOR_ACCENT};
+QLineEdit:focus, QTextEdit#ChatContainer:focus {{
+    border: 1px solid {COLOR_BORDER_ACTIVE};
+    background-color: {COLOR_BG_HOVER};
 }}
 
 /* ─── Botones de Acción ─── */
-/* Estilo Principal (Lleno) */
+/* Estilo Principal (Verde con texto oscuro) */
 QPushButton[role="action_accent"] {{
     background-color: {COLOR_ACCENT};
     border: none;
-    border-radius: {RADIUS_SM}px;
-    padding: 6px;
+    border-radius: {RADIUS_MD}px;
+    padding: {PADDING_BUTTON};
     color: #000000;
-    font-weight: bold;
+    font-weight: 600;
 }}
 
 QPushButton[role="action_accent"]:hover {{
     background-color: {COLOR_ACCENT_HOVER};
 }}
 
-/* Estilo Secundario (Outlined / Esquemático) */
+/* Estilo Secundario (Gris Oscuro) */
 QPushButton[role="action_outlined"] {{
-    background-color: transparent;
-    border: 1px solid {COLOR_BORDER_ACTIVE};
-    border-radius: {RADIUS_SM}px;
-    padding: 6px;
-    color: {COLOR_TEXT_SECONDARY};
+    background-color: {COLOR_BG_INPUT};
+    border: 1px solid transparent;
+    border-radius: {RADIUS_MD}px;
+    padding: {PADDING_BUTTON};
+    color: {COLOR_TEXT_PRIMARY};
+    font-weight: 500;
 }}
 
 QPushButton[role="action_outlined"]:hover {{
-    background-color: {COLOR_BG_ELEVATED};
-    color: {COLOR_TEXT_PRIMARY};
-    border: 1px solid {COLOR_TEXT_SECONDARY};
+    background-color: {COLOR_BG_HOVER};
 }}
 
 /* Estilo Peligro / Advertencia (Rojo) */
@@ -146,122 +132,190 @@ QPushButton[role="action_danger"] {{
     background-color: transparent;
     border: 1px solid #ef4444; 
     color: #ef4444;
-    border-radius: 6px;
-    padding: 6px;
-    font-weight: bold;
+    border-radius: {RADIUS_MD}px;
+    padding: {PADDING_BUTTON};
+    font-weight: 600;
 }}
 QPushButton[role="action_danger"]:hover {{
     background-color: rgba(239, 68, 68, 0.1);
 }}
 
-/* Estilo Éxito / Actualización (Verde Neón) */
+/* Estilo Éxito (Verde Outline) */
 QPushButton[role="action_success"] {{   
     background-color: transparent;
-    border: 1px solid #53ff1a; 
-    color: #53ff1a;
-    border-radius: 6px;
-    padding: 6px;
-    font-weight: bold;
+    border: 1px solid {COLOR_ACCENT}; 
+    color: {COLOR_ACCENT};
+    border-radius: {RADIUS_MD}px;
+    padding: {PADDING_BUTTON};
+    font-weight: 600;
 }}
 QPushButton[role="action_success"]:hover {{
-    background-color: rgba(83, 255, 26, 0.1);
+    background-color: {COLOR_ACCENT_SOFT};
 }}
 
-/* ─── Segmented Toggle (Botón Doble) ─── */
-QPushButton#ToggleLeft, QPushButton#ToggleRight {{
-    background-color: {COLOR_BG_INPUT};
-    border: 1px solid {COLOR_BORDER_SVELTE};
-    padding: 6px 16px;
-    font-weight: 600;
+/* ─── Navegación (Sidebar) ─── */
+QPushButton#NavButton {{
+    background: transparent;
+    border-radius: {RADIUS_SM}px;
+    padding: {PADDING_BUTTON};
+    text-align: left;
     color: {COLOR_TEXT_SECONDARY};
+    font-weight: 500;
 }}
 
-/* Redondeo solo en los extremos exteriores */
-QPushButton#ToggleLeft {{
-    border-top-left-radius: {RADIUS_SM}px;
-    border-bottom-left-radius: {RADIUS_SM}px;
-    border-right: none; /* Evitamos borde doble en el centro */
+QPushButton#NavButton:hover {{
+    background-color: {COLOR_BG_HOVER};
+    color: {COLOR_TEXT_PRIMARY};
 }}
 
-QPushButton#ToggleRight {{
-    border-top-right-radius: {RADIUS_SM}px;
-    border-bottom-right-radius: {RADIUS_SM}px;
-    border-left: 1px solid {COLOR_BORDER_SVELTE};
-}}
-
-/* Estado Activo: Izquierda (LOCAL - Rojo/Gris) */
-QPushButton#ToggleLeft[active="true"] {{
-    background-color: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: 1px solid #ef4444;
-}}
-
-/* Estado Activo: Derecha (WEB IA - Verde) */
-QPushButton#ToggleRight[active="true"] {{
+QPushButton#NavButton:checked {{
     background-color: {COLOR_ACCENT_SOFT};
     color: {COLOR_ACCENT};
-    border: 1px solid {COLOR_ACCENT};
 }}
 
-/* ─── Barra de Progreso (Minimalista) ─── */
-QProgressBar {{
+/* ─── Dropdown (ComboBox) ─── */
+QComboBox {{
     background-color: {COLOR_BG_INPUT};
+    color: {COLOR_TEXT_PRIMARY};
+    border-radius: {RADIUS_MD}px;
+    padding: {PADDING_BUTTON};
+    border: 1px solid transparent;
+}}
+
+QComboBox:focus, QComboBox:hover {{
     border: 1px solid {COLOR_BORDER_SVELTE};
+    background-color: {COLOR_BG_HOVER};
+}}
+
+QComboBox::drop-down {{
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 35px;
+    border-left: none;
+}}
+
+/* Forzamos a Qt a usar su flecha (triángulo) nativa */
+QComboBox::down-arrow {{
+    image: none; 
+    width: 10px; 
+    height: 10px;
+}}
+
+QComboBox QAbstractItemView {{
+    background-color: {COLOR_BG_SURFACE};
+    color: {COLOR_TEXT_PRIMARY};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: {RADIUS_MD}px;
+    outline: none;
+    padding: 4px;
+}}
+
+/* Diseño de los ítems internos del Dropdown (Como en Figma) */
+QComboBox QAbstractItemView::item {{
     border-radius: {RADIUS_SM}px;
-    text-align: center;
-    color: transparent; /* Ocultar texto de porcentaje */
-    height: 6px;
+    padding: 4px;
+    margin: 2px;
 }}
 
-QProgressBar::chunk {{
-    background-color: {COLOR_ACCENT};
-    border-radius: {RADIUS_SM - 1}px;
-    margin: 1px;
+QComboBox QAbstractItemView::item:selected {{
+    background-color: {COLOR_BG_HOVER};
+    color: {COLOR_ACCENT};
 }}
-
-/* --- SCROLLBARS --- */
-QScrollBar:vertical {{ border: none; background: {COLOR_BG_BASE}; width: 8px; margin: 0; }}
-QScrollBar::handle:vertical {{ background: {COLOR_TEXT_MUTED}; border-radius: {RADIUS_SM}; min-height: 20px; }}
-QScrollBar::handle:vertical:hover {{ background: {COLOR_ACCENT}; }}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
-
-QScrollBar:horizontal {{ background: {COLOR_BG_BASE}; height: 8px; margin: 0; }}
-QScrollBar::handle:horizontal {{ background: #444; border-radius: {RADIUS_SM}; min-width: 20px; }}
-QScrollBar::handle:horizontal:hover {{ background: {COLOR_ACCENT}; }}
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
 
 /* ─── Sliders (Volumen) ─── */
 QSlider::groove:horizontal {{
-    border: 1px solid {COLOR_BORDER_SVELTE};
-    height: 4px;
+    border: none;
+    height: 6px;
     background: {COLOR_BG_INPUT};
-    margin: 2px 0;
-    border-radius: 2px;
+    border-radius: 3px;
+}}
+
+QSlider::sub-page:horizontal {{
+    background: {COLOR_ACCENT}; 
+    border-radius: 3px;
 }}
 
 QSlider::handle:horizontal {{
-    background: {COLOR_ACCENT};
+    background: #FFFFFF;
     border: none;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     margin: -5px 0;
-    border-radius: 7px;
+    border-radius: 8px;
 }}
 
-/* ─── ComboBox ─── */
-QComboBox {{
-    background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY};
-    border-radius: {RADIUS_SM}px; padding: 8px; border: 1px solid {COLOR_BORDER_SVELTE}; 
+/* ─── Checkboxes & Switches Nativos ─── */
+QCheckBox::indicator {{
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    background-color: {COLOR_BG_INPUT};
 }}
-QComboBox:hover {{ border: 1px solid {COLOR_ACCENT_HOVER}; }}
-QComboBox::drop-down {{ border: none;}}
-QComboBox::down-arrow {{ image: url('{PATH_CHEVRON}'); width: 14px; height: 14px; margin-right: 8px; }}
+QCheckBox::indicator:checked {{
+    background-color: {COLOR_ACCENT};
+    border: 1px solid {COLOR_ACCENT};
+}}
 
-QComboBox QAbstractItemView {{
-    background-color: {COLOR_BG_SURFACE}; color: {COLOR_TEXT_PRIMARY};
-    selection-background-color: {COLOR_ACCENT_SOFT}; selection-color: {COLOR_ACCENT};
-    border: 1px solid {COLOR_BORDER_SVELTE}; outline: none;
+/* --- SCROLLBARS LIGEROS --- */
+QScrollBar:vertical {{ border: none; background: transparent; width: 8px; margin: 0; }}
+QScrollBar::handle:vertical {{ background: {COLOR_BORDER_SVELTE}; border-radius: 4px; min-height: 20px; }}
+QScrollBar::handle:vertical:hover {{ background: {COLOR_TEXT_MUTED}; }}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
+
+QScrollBar:horizontal {{ background: transparent; height: 8px; margin: 0; }}
+QScrollBar::handle:horizontal {{ background: {COLOR_BORDER_SVELTE}; border-radius: 4px; min-width: 20px; }}
+QScrollBar::handle:horizontal:hover {{ background: {COLOR_TEXT_MUTED}; }}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+
+/* ─── SpinBoxes (Contadores Numéricos / Stepper) ─── */
+QSpinBox, QDoubleSpinBox {{
+    background-color: {COLOR_BG_INPUT};
+    color: {COLOR_TEXT_PRIMARY};
+    border-radius: {RADIUS_MD}px;
+    padding: {PADDING_SPINBOX};
+    border: 1px solid transparent;
 }}
+
+QSpinBox:focus, QDoubleSpinBox:focus {{
+    border: 1px solid {COLOR_BORDER_ACTIVE};
+    background-color: {COLOR_BG_HOVER};
+}}
+
+/* Contenedor Agrupado de las Flechas (El bloque oscuro de la imagen) */
+QSpinBox::up-button, QDoubleSpinBox::up-button {{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 16px;
+    background-color: {COLOR_ACCENT};
+    border-top-left-radius: {RADIUS_SM}px;
+    border-top-right-radius: {RADIUS_SM}px;
+    margin-top: 4px;
+    margin-right: 4px;
+}}
+
+QSpinBox::down-button, QDoubleSpinBox::down-button {{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 16px;
+    background-color: {COLOR_ACCENT};
+    border-bottom-left-radius: {RADIUS_SM}px;
+    border-bottom-right-radius: {RADIUS_SM}px;
+    margin-bottom: 4px;
+    margin-right: 4px;
+}}
+
+/* Efectos de interacción en los botones del Stepper */
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover,
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{
+    background-color: {COLOR_ACCENT};
+}}
+
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed,
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{
+    background-color: {COLOR_ACCENT_HOVER};
+}}
+
 """

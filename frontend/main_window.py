@@ -325,13 +325,34 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _fetch_api_rewards(self):
+        # 1. FAIL-FAST: Validación temprana sin tocar la red
+        if not self.auth_manager.get_tokens():
+            self.logger.error("Intento de actualizar recompensas sin estar conectado a Kick.")
+            self.view_alerts.update_rewards_combo([]) # Forzará el mensaje "No hay recompensas"
+            return
+
+        # 2. GESTIÓN DE HILOS: Evitar sobrescribir un hilo en ejecución
+        if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker.isRunning():
+            self.logger.warning("Ya se están consultando las recompensas. Por favor espera.")
+            return
+
         try:
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             self.fetch_rewards_worker = FetchRewardsWorker(api_client)
+            
+            # 3. ALTA COHESIÓN: Escuchar tanto el éxito como el fracaso
             self.fetch_rewards_worker.rewards_fetched.connect(self.view_alerts.update_rewards_combo)
+            self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
+            
             self.fetch_rewards_worker.start()
         except Exception as e:
-            self.logger.error(f"No se pudo consultar recompensas. ¿Estás conectado? {e}")
+            self.logger.error(f"Error al preparar la consulta de recompensas: {e}")
+
+    @Slot(str)
+    def _handle_rewards_error(self, error_msg: str):
+        """Maneja los errores del hilo de recompensas para evitar bloqueos silenciosos."""
+        self.logger.error(f"Fallo en la API de recompensas: {error_msg}")
+        self.view_alerts.update_rewards_combo([]) # Limpia la lista en la UI
             
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):
@@ -467,7 +488,11 @@ class MainWindow(QMainWindow):
             self._notify_background()
             event.ignore() 
         else:
-            dialog = ModernConfirmDialog(self)
+            dialog = ModernConfirmDialog(
+                parent=None, 
+                title_text="Cerrar MiniKick", 
+                body_text="¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat."
+            )
             if dialog.exec() == dialog.DialogCode.Accepted:
                 event.accept() 
                 self._force_quit() 

@@ -1,10 +1,9 @@
 # frontend/components/controls.py
 
 from PySide6.QtWidgets import QPushButton, QWidget, QHBoxLayout, QAbstractButton, QSizePolicy
-from PySide6.QtCore import Qt, Signal, QSize
-from PySide6.QtGui import QPainter
-from PySide6.QtSvg import QSvgRenderer
-from frontend.utils import get_assets_path
+from PySide6.QtCore import QRectF, Qt, Signal, QSize
+from PySide6.QtGui import QColor, QPainter, QPainterPath
+from frontend.theme import COLOR_ACCENT, COLOR_BG_SURFACE, COLOR_BORDER_SVELTE
 
 # ─── BOTONES BÁSICOS ─────────────────────────────────────────────────────────
 class ModernButton(QPushButton):
@@ -13,10 +12,51 @@ class ModernButton(QPushButton):
         super().__init__(text, parent)
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        
-        if role in ["action_accent", "action_outlined"]:
-            self.setMinimumHeight(38)
 
+class ModernSwitch(QAbstractButton):
+    """Componente Switch dibujado nativamente (Alta Cohesión, cero dependencias SVG)."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setCheckable(True)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self._position = 0.5
+        self.toggled.connect(self.update)
+
+    def sizeHint(self) -> QSize:
+        return QSize(48, 24)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        rect = QRectF(0, 0, self.width(), self.height())
+        radius = self.height() / 2
+
+        # Colores
+        bg_color = QColor(COLOR_ACCENT) if self.isChecked() else QColor(COLOR_BG_SURFACE)
+        border_color = QColor(COLOR_ACCENT) if self.isChecked() else QColor(COLOR_BORDER_SVELTE)
+        
+        # Dibujar Fondo (Pill)
+        path = QPainterPath()
+        path.addRoundedRect(rect, radius, radius)
+        painter.fillPath(path, bg_color)
+        
+        # Dibujar Borde
+        painter.setPen(border_color)
+        painter.drawPath(path)
+
+        # Dibujar el "Handle" (Círculo blanco)
+        handle_radius = radius - 3
+        handle_y = 3
+        handle_x = self.width() - handle_radius * 2 - 3 if self.isChecked() else 3
+        
+        handle_rect = QRectF(handle_x, handle_y, handle_radius * 2, handle_radius * 2)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor("#FFFFFF") if self.isChecked() else QColor("#8C8E96"))
+        painter.drawEllipse(handle_rect)
+        
+        painter.end()
 
 # ─── CONTROLES DE ESTADO (TOGGLES Y SWITCHES) ────────────────────────────────
 class SegmentedToggle(QWidget):
@@ -66,34 +106,3 @@ class SegmentedToggle(QWidget):
             btn.style().unpolish(btn)
             btn.style().polish(btn)
 
-class ModernSwitch(QAbstractButton):
-    """Componente Switch que utiliza assets SVG estáticos."""
-    SVG_ON_PATH = get_assets_path("icons/switch-on.svg")
-    SVG_OFF_PATH = get_assets_path("icons/switch-off.svg")
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setCheckable(True)
-        self._default_size = QSize(25, 25)
-        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        
-        self._renderer_on = QSvgRenderer(self.SVG_ON_PATH)
-        self._renderer_off = QSvgRenderer(self.SVG_OFF_PATH)
-
-    def sizeHint(self) -> QSize:
-        return self._default_size
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        target_rect = self.rect()
-        target_renderer = self._renderer_on if self.isChecked() else self._renderer_off
-        
-        if target_renderer.isValid():
-            target_renderer.render(painter, target_rect)
-        else:
-            placeholder_color = Qt.GlobalColor.magenta if self.isChecked() else Qt.GlobalColor.gray
-            painter.fillRect(target_rect, placeholder_color)
-            painter.setPen(Qt.GlobalColor.white)
-            painter.drawText(target_rect, Qt.AlignmentFlag.AlignCenter, "ERR")
-        painter.end()

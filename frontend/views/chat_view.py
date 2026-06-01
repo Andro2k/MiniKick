@@ -167,7 +167,7 @@ class ChatView(QWidget):
         self.table_bots.verticalHeader().setVisible(False)
         self.table_bots.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.table_bots.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        self.table_bots.setColumnWidth(1, 45) # Ancho ajustado para acomodar el padding de theme.py
+        self.table_bots.setColumnWidth(1, 45)
         self.table_bots.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.table_bots.setShowGrid(False)
         self.table_bots.setStyleSheet("QTableWidget { border: none; background: transparent; }")

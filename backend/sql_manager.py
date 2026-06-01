@@ -5,7 +5,7 @@ import os
 import json
 
 class DatabaseManager:
-    def __init__(self, db_name="minikick.sqlite"):
+    def __init__(self, db_name="minikick.db"):
         self.db_name = db_name
         self._create_tables()
 

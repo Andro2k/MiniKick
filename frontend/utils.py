@@ -23,9 +23,7 @@ def get_assets_path(subfolder: str = "") -> str:
     return os.path.normpath(path).replace("\\", "/")
 
 def get_icon(name: str) -> QIcon:
-    """
-    Carga un ícono SVG tal cual está, sin alterar sus colores.
-    """
+
     full_path = resource_path(os.path.join("assets", "icons", name))
     if not os.path.exists(full_path):
         print(f"[-] Advertencia: No se encontró el ícono '{name}' en {full_path}")

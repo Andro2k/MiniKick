@@ -7,10 +7,11 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QSlider, QDoubleSpinBox, QSpinBox)
 from PySide6.QtCore import Qt, Signal, Slot
 
-from frontend.components.controls import ModernButton
+from frontend.components.controls import ModernButton, ModernSwitch
 from frontend.utils import get_icon_colored
 
 class AlertsView(QWidget):
+    # ─── SEÑALES (Comunicación con el Controlador) ───
     alerts_mapping_changed = Signal(dict)
     preview_requested = Signal(str, dict)
     refresh_rewards_requested = Signal()
@@ -20,16 +21,24 @@ class AlertsView(QWidget):
         self.mappings = {} 
         self._setup_ui()
 
+    # =========================================================================
+    # ─── CAPA DE PRESENTACIÓN (SoR: Solo construcción visual) ───
+    # =========================================================================
     def _setup_ui(self):
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(16, 16, 16, 16)
-        main_layout.setSpacing(12)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(16, 16, 16, 16)
+        self.main_layout.setSpacing(12)
 
         title = QLabel("Alertas OBS (TriggerFyre)")
         title.setProperty("role", "title")
-        main_layout.addWidget(title)
+        self.main_layout.addWidget(title)
 
-        # --- Tarjeta 1: Conexión OBS ---
+        self._build_obs_card()
+        self._build_form_card()
+        self._build_table_card()
+
+    def _build_obs_card(self):
+        """Construye la tarjeta de conexión de OBS (Alta Cohesión)."""
         obs_card = QFrame()
         obs_card.setObjectName("Card")
         obs_layout = QHBoxLayout(obs_card)
@@ -44,15 +53,17 @@ class AlertsView(QWidget):
         obs_layout.addWidget(lbl_obs_url)
         obs_layout.addStretch()
         obs_layout.addWidget(self.btn_copy_url)
-        main_layout.addWidget(obs_card)
+        self.main_layout.addWidget(obs_card)
 
-        # --- Tarjeta 2: Formulario Avanzado ---
+    def _build_form_card(self):
+        """Construye el formulario de configuración de alertas."""
         form_card = QFrame()
         form_card.setObjectName("Card")
         form_layout = QVBoxLayout(form_card)
         form_layout.setContentsMargins(16, 16, 16, 16)
         
-        lbl_step1 = QLabel("1. SELECCIONA LA RECOMPENSA DE KICK")
+        # Paso 1: Recompensa
+        lbl_step1 = QLabel("1. Seleccione la recompensa de KICK")
         lbl_step1.setProperty("role", "section")
         form_layout.addWidget(lbl_step1)
         
@@ -67,7 +78,8 @@ class AlertsView(QWidget):
 
         form_layout.addSpacing(10)
         
-        lbl_step2 = QLabel("2. ARCHIVO Y AJUSTES (Audio/Video)")
+        # Paso 2: Archivo y Ajustes
+        lbl_step2 = QLabel("2. Archivo y Ajustes (Audio/Video)")
         lbl_step2.setProperty("role", "section")
         form_layout.addWidget(lbl_step2)
 
@@ -80,98 +92,112 @@ class AlertsView(QWidget):
         row2.addWidget(self.btn_browse)
         form_layout.addLayout(row2)
 
-        # Ajustes de Visualización (X, Y, Escala, Volumen)
+        # Fila de Posiciones y Escala
         row3 = QHBoxLayout()
         
+        # NUEVO: Control de Posición Aleatoria
+        row3.addWidget(QLabel("Pos Random:"))
+        self.chk_random_pos = ModernSwitch()
+        self.chk_random_pos.setEnabled(False) # Desactivado por defecto hasta cargar un video
+        self.chk_random_pos.toggled.connect(self._on_random_pos_toggled)
+        row3.addWidget(self.chk_random_pos)
+        row3.addSpacing(8)
+
         row3.addWidget(QLabel("Pos X:"))
         self.spin_x = QSpinBox()
         self.spin_x.setRange(-5000, 5000)
         self.spin_x.setValue(0)
         row3.addWidget(self.spin_x)
         
-        row3.addSpacing(10)
+        row3.addSpacing(8)
         row3.addWidget(QLabel("Pos Y:"))
         self.spin_y = QSpinBox()
         self.spin_y.setRange(-5000, 5000)
         self.spin_y.setValue(0)
         row3.addWidget(self.spin_y)
         
-        row3.addSpacing(15)
+        row3.addSpacing(8)
         row3.addWidget(QLabel("Escala:"))
         self.spin_scale = QDoubleSpinBox()
         self.spin_scale.setRange(0.1, 5.0)
         self.spin_scale.setSingleStep(0.1)
         self.spin_scale.setValue(1.0)
         row3.addWidget(self.spin_scale)
+        row3.addStretch()
+        form_layout.addLayout(row3)
 
-        row3.addSpacing(15)
-        row3.addWidget(QLabel("Volumen:"))
+        # Nueva Fila Exclusiva para Volumen
+        row_vol = QHBoxLayout()
+        row_vol.addWidget(QLabel("Volumen:"))
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
-        row3.addWidget(self.slider_vol)
-
-        form_layout.addLayout(row3)
+        row_vol.addWidget(self.slider_vol)
+        form_layout.addLayout(row_vol)
         
+        # Botón Guardar
         self.btn_add = ModernButton("Guardar Alerta", role="action_success")
         self.btn_add.clicked.connect(self._add_mapping)
         form_layout.addSpacing(10)
         form_layout.addWidget(self.btn_add)
 
-        main_layout.addWidget(form_card)
+        self.main_layout.addWidget(form_card)
 
-        # --- Tarjeta 3: Tabla de Alertas ---
+    def _build_table_card(self):
+        """Construye y configura la tabla de gestión de alertas."""
         self.table_alerts = QTableWidget(0, 3)
         self.table_alerts.setHorizontalHeaderLabels(["Recompensa de Kick", "Archivo", "Acciones"])
         self.table_alerts.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table_alerts.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table_alerts.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.table_alerts.setColumnWidth(2, 200) # Espacio ampliado para 3 botones
+        self.table_alerts.setColumnWidth(2, 140) 
         
-        # Ocultar la cabecera vertical (números de fila) para un look más limpio
         self.table_alerts.verticalHeader().setVisible(False)
-        self.table_alerts.verticalHeader().setDefaultSectionSize(50)
+        self.table_alerts.verticalHeader().setDefaultSectionSize(45)
         self.table_alerts.setShowGrid(False)
-        self.table_alerts.setAlternatingRowColors(True)
         self.table_alerts.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        self.table_alerts.setFocusPolicy(Qt.FocusPolicy.NoFocus) # Quita el borde de foco al hacer clic
+        self.table_alerts.setFocusPolicy(Qt.FocusPolicy.NoFocus) 
         
-        # --- THEME STYLING PARA LA TABLA ---
-        self.table_alerts.setStyleSheet("""
-            QTableWidget {
-                background-color: #1a1a1a;
-                alternate-background-color: #222222;
-                color: #e0e0e0;
-                border: 1px solid #333333;
-                border-radius: 6px;
-            }
-            QHeaderView::section {
-                background-color: #111111;
-                color: #ffffff;
-                font-weight: bold;
-                padding: 10px;
-                border: none;
-                border-bottom: 2px solid #00e701; /* Acento verde Kick */
-                text-align: left;
-            }
-            QTableWidget::item {
-                padding: 5px 10px;
-                border-bottom: 1px solid #2a2a2a;
-            }
-        """)
+        self.main_layout.addWidget(self.table_alerts)
+
+    def _create_table_action_btn(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
+        """Helper para generar botones de acción en la tabla (DRY Principle)."""
+        btn = ModernButton("", role=role)
+        btn.setFixedSize(28, 28)
+        btn.setIcon(get_icon_colored(icon_name, color, size=16))
+        btn.setToolTip(tooltip)
+        btn.clicked.connect(callback)
+        return btn
+
+    # =========================================================================
+    # ─── CAPA LOGICA (SoR: Solo gestión de datos y eventos) ───
+    # =========================================================================
+    
+    @Slot(bool)
+    def _on_random_pos_toggled(self, checked: bool):
+        """Bloquea o desbloquea las coordenadas según el estado del switch."""
+        self.spin_x.setEnabled(not checked)
+        self.spin_y.setEnabled(not checked)
+
+    def _evaluate_media_type(self, filepath: str):
+        """Valida si es video para habilitar la opción aleatoria."""
+        is_video = filepath.lower().endswith(('.mp4', '.webm'))
+        self.chk_random_pos.setEnabled(is_video)
         
-        main_layout.addWidget(self.table_alerts)
+        if not is_video:
+            self.chk_random_pos.setChecked(False)
 
     @Slot()
     def _browse_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Seleccionar Multimedia", "", "Media (*.mp4 *.webm *.mp3 *.wav *.ogg);;Todos (*.*)")
         if file_path:
             self.txt_file_path.setText(file_path)
+            self._evaluate_media_type(file_path)
 
     @Slot()
     def _add_mapping(self):
         reward = self.combo_rewards.currentText()
-        if reward == "Cargando recompensas..." or reward == "No hay recompensas":
+        if reward in ["Cargando recompensas...", "No hay recompensas"]:
             return
             
         filepath = self.txt_file_path.text().strip()
@@ -183,14 +209,15 @@ class AlertsView(QWidget):
             "volume": self.slider_vol.value() / 100.0,
             "scale": self.spin_scale.value(),
             "pos_x": self.spin_x.value(),
-            "pos_y": self.spin_y.value()
+            "pos_y": self.spin_y.value(),
+            "random_pos": self.chk_random_pos.isChecked()
         }
         self._refresh_table()
         
-        # Reseteamos el formulario y el botón a estado original
         self.txt_file_path.clear()
+        self.chk_random_pos.setChecked(False)
+        self.chk_random_pos.setEnabled(False)
         self.btn_add.setText("Guardar Alerta")
-        
         self.alerts_mapping_changed.emit(self.mappings)
 
     def _remove_mapping(self, reward_name: str):
@@ -200,18 +227,17 @@ class AlertsView(QWidget):
             self.alerts_mapping_changed.emit(self.mappings)
 
     def _request_preview(self, reward_name: str):
+        """Emite la señal al controlador principal para reproducir en OBS."""
         if reward_name in self.mappings:
             self.preview_requested.emit(reward_name, self.mappings[reward_name])
 
     @Slot(str)
     def _edit_mapping(self, reward_name: str):
-        """Carga la configuración existente en el formulario para modificarla."""
         if reward_name not in self.mappings:
             return
             
         config = self.mappings[reward_name]
         
-        # 1. Ajustar el ComboBox
         index = self.combo_rewards.findText(reward_name)
         if index >= 0:
             self.combo_rewards.setCurrentIndex(index)
@@ -219,18 +245,18 @@ class AlertsView(QWidget):
             self.combo_rewards.addItem(reward_name)
             self.combo_rewards.setCurrentText(reward_name)
             
-        # 2. Cargar Ruta
         filepath = config if isinstance(config, str) else config.get("filepath", "")
         self.txt_file_path.setText(filepath)
         
-        # 3. Cargar parámetros (Asegurando retrocompatibilidad si config era un string)
         if isinstance(config, dict):
             self.spin_x.setValue(config.get("pos_x", 0))
             self.spin_y.setValue(config.get("pos_y", 0))
             self.spin_scale.setValue(config.get("scale", 1.0))
             self.slider_vol.setValue(int(config.get("volume", 1.0) * 100))
             
-        # 4. Cambiar el texto del botón para indicar actualización
+            self._evaluate_media_type(filepath)
+            self.chk_random_pos.setChecked(config.get("random_pos", False))
+            
         self.btn_add.setText("Actualizar Alerta")
 
     def _refresh_table(self):
@@ -239,39 +265,25 @@ class AlertsView(QWidget):
             row = self.table_alerts.rowCount()
             self.table_alerts.insertRow(row)
             
-            # Columna 0: Recompensa
             item_reward = QTableWidgetItem(reward)
             item_reward.setFlags(item_reward.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_alerts.setItem(row, 0, item_reward)
             
-            # Columna 1: Archivo
             filepath = config if isinstance(config, str) else config.get("filepath", "Desconocido")
             item_file = QTableWidgetItem(os.path.basename(filepath))
             item_file.setToolTip(filepath)
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_alerts.setItem(row, 1, item_file)
             
-            # Columna 2: Acciones (Play, Edit, Trash)
             actions_widget = QWidget()
             actions_layout = QHBoxLayout(actions_widget)
-            actions_layout.setContentsMargins(4, 4, 4, 4) # Ajustar márgenes internos
-            actions_layout.setSpacing(6)
+            actions_layout.setContentsMargins(0, 0, 0, 0) 
+            actions_layout.setSpacing(8)
+            actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
-            btn_play = ModernButton("▶", role="action_accent")
-            btn_play.setFixedHeight(30) # <-- AÑADIR ESTO
-            btn_play.setToolTip("Probar en OBS")
-            btn_play.clicked.connect(lambda checked=False, r=reward: self._request_preview(r))
-            
-            btn_edit = ModernButton("Editar", role="action_accent")
-            btn_edit.setFixedHeight(30) # <-- AÑADIR ESTO
-            btn_edit.setToolTip("Modificar ajustes")
-            btn_edit.clicked.connect(lambda checked=False, r=reward: self._edit_mapping(r))
-            
-            btn_del = ModernButton("", role="action_danger")
-            btn_del.setFixedHeight(30) # <-- AÑADIR ESTO
-            btn_del.setIcon(get_icon_colored("trash.svg", "#FFFFFF", size=16))
-            btn_del.setToolTip("Eliminar alerta")
-            btn_del.clicked.connect(lambda checked=False, r=reward: self._remove_mapping(r))
+            btn_play = self._create_table_action_btn("play.svg", "#000000", "action_accent", "Probar en OBS", lambda checked=False, r=reward: self._request_preview(r))
+            btn_edit = self._create_table_action_btn("edit.svg", "#000000", "action_accent", "Modificar ajustes", lambda checked=False, r=reward: self._edit_mapping(r))
+            btn_del = self._create_table_action_btn("trash.svg", "#ef4444", "action_danger", "Eliminar alerta", lambda checked=False, r=reward: self._remove_mapping(r))
             
             actions_layout.addWidget(btn_play)
             actions_layout.addWidget(btn_edit)
