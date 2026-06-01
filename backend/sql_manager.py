@@ -1,121 +1,167 @@
-# backend/database.py
+# backend/sql_manager.py
 
+import sqlite3
 import os
 import json
-import sqlite3
-from pathlib import Path
-from typing import Any
 
 class DatabaseManager:
-    """Gestiona la conexión y creación de la base de datos local (Alta Cohesión)"""
-    def __init__(self):
-        self.db_path = self._get_appdata_path()
-        self._init_db()
+    def __init__(self, db_name="minikick.sqlite"):
+        self.db_name = db_name
+        self._create_tables()
 
-    def _get_appdata_path(self) -> Path:
-        """Resuelve la ruta correcta según el sistema operativo (SoR)"""
-        if os.name == 'nt':
-            base_dir = Path(os.getenv('LOCALAPPDATA', Path.home()))
-        else:  # Mac / Linux
-            base_dir = Path.home() / '.config'
-            
-        app_dir = base_dir / '.Minikick' / 'data'
-        app_dir.mkdir(parents=True, exist_ok=True)
-        
-        return app_dir / 'minikick.db'
+    def get_connection(self):
+        return sqlite3.connect(self.db_name)
 
-    def _init_db(self):
-        """Crea las tablas necesarias si es la primera vez que se ejecuta"""
-        with sqlite3.connect(self.db_path) as conn:
+    def _create_tables(self):
+        with self.get_connection() as conn:
             cursor = conn.cursor()
-            # Tabla de tokens existente
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS tokens (
-                    id INTEGER PRIMARY KEY CHECK (id = 1),
-                    raw_json TEXT NOT NULL
-                )
-            ''')
             
-            # --- Configuración General (Alta Cohesión) ---
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS general_settings (
-                    key TEXT PRIMARY KEY,
-                    value TEXT NOT NULL
+            # Tabla de Tokens
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS tokens (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    access_token TEXT,
+                    refresh_token TEXT,
+                    expires_in INTEGER,
+                    scope TEXT,
+                    token_type TEXT
                 )
-            ''')
+            """)
+            
+            # Tabla de Configuraciones Genéricas
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS settings (
+                    key TEXT PRIMARY KEY,
+                    value TEXT
+                )
+            """)
+            
+            # NUEVA TABLA: Estructura Relacional para Alertas OBS
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS obs_alerts (
+                    reward_name TEXT PRIMARY KEY,
+                    filepath TEXT NOT NULL,
+                    volume REAL DEFAULT 1.0,
+                    scale REAL DEFAULT 1.0,
+                    pos_x INTEGER DEFAULT 0,
+                    pos_y INTEGER DEFAULT 0
+                )
+            """)
             conn.commit()
 
 class SQLiteTokenStorage:
-    """
-    Cumple el contrato de TokenStorage (Inversión de Dependencias).
-    """
     def __init__(self, db_manager: DatabaseManager):
-        self.db_path = db_manager.db_path
+        self.db_manager = db_manager
 
     def load(self) -> dict | None:
-        with sqlite3.connect(self.db_path) as conn:
+        with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT raw_json FROM tokens WHERE id = 1")
+            cursor.execute("SELECT access_token, refresh_token, expires_in, scope, token_type FROM tokens ORDER BY id DESC LIMIT 1")
             row = cursor.fetchone()
-            if row and row[0]:
-                return json.loads(row[0])
+            if row:
+                return {
+                    "access_token": row[0],
+                    "refresh_token": row[1],
+                    "expires_in": row[2],
+                    "scope": row[3],
+                    "token_type": row[4],
+                }
         return None
 
     def save(self, tokens: dict) -> None:
-        with sqlite3.connect(self.db_path) as conn:
+        with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            raw_json = json.dumps(tokens)
-            cursor.execute('''
-                INSERT INTO tokens (id, raw_json) 
-                VALUES (1, ?)
-                ON CONFLICT(id) DO UPDATE SET raw_json=excluded.raw_json
-            ''', (raw_json,))
+            cursor.execute("DELETE FROM tokens")
+            cursor.execute("""
+                INSERT INTO tokens (access_token, refresh_token, expires_in, scope, token_type)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                tokens.get("access_token"),
+                tokens.get("refresh_token"),
+                tokens.get("expires_in"),
+                tokens.get("scope"),
+                tokens.get("token_type"),
+            ))
             conn.commit()
 
-    # NUEVO MÉTODO
     def clear(self) -> None:
-        """Elimina el token de la base de datos"""
-        with sqlite3.connect(self.db_path) as conn:
+        with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM tokens WHERE id = 1")
+            cursor.execute("DELETE FROM tokens")
             conn.commit()
-            
+
 class SQLiteSettingsStorage:
     def __init__(self, db_manager: DatabaseManager):
-        self.db_path = db_manager.db_path
+        self.db_manager = db_manager
 
-    def _save(self, key: str, value: Any) -> None:
-        with sqlite3.connect(self.db_path) as conn:
+    def save_string(self, key: str, value: str) -> None:
+        with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            val_str = str(value)
-            cursor.execute('''
-                INSERT INTO general_settings (key, value) 
-                VALUES (?, ?)
+            cursor.execute("""
+                INSERT INTO settings (key, value) VALUES (?, ?)
                 ON CONFLICT(key) DO UPDATE SET value=excluded.value
-            ''', (key, val_str))
+            """, (key, value))
             conn.commit()
 
-    def _load(self, key: str, default: Any) -> Any:
-        with sqlite3.connect(self.db_path) as conn:
+    def load_string(self, key: str, default: str = "") -> str:
+        with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT value FROM general_settings WHERE key = ?", (key,))
+            cursor.execute("SELECT value FROM settings WHERE key=?", (key,))
             row = cursor.fetchone()
             if row:
                 return row[0]
             return default
 
     def save_bool(self, key: str, value: bool) -> None:
-        self._save(key, 'true' if value else 'false')
+        self.save_string(key, "1" if value else "0")
 
-    def load_bool(self, key: str, default: bool) -> bool:
-        val = self._load(key, None)
+    def load_bool(self, key: str, default: bool = False) -> bool:
+        val = self.load_string(key, None)
         if val is None:
             return default
-        return val == 'true'
+        return val == "1"
 
-    def save_string(self, key: str, value: str) -> None:
-        self._save(key, value)
+# --- NUEVA CLASE: ALTA COHESIÓN PARA LAS ALERTAS OBS ---
+class SQLiteAlertsStorage:
+    """Capa de acceso a datos exclusiva para la gestión de la tabla obs_alerts."""
+    def __init__(self, db_manager: DatabaseManager):
+        self.db_manager = db_manager
 
-    def load_string(self, key: str, default: str) -> str:
-        val = self._load(key, None)
-        return default if val is None else str(val)
+    def load_all(self) -> dict:
+        """Devuelve un diccionario estructurado listo para la vista."""
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT reward_name, filepath, volume, scale, pos_x, pos_y FROM obs_alerts")
+            rows = cursor.fetchall()
+            
+            mappings = {}
+            for row in rows:
+                mappings[row[0]] = {
+                    "filepath": row[1],
+                    "volume": row[2],
+                    "scale": row[3],
+                    "pos_x": row[4],
+                    "pos_y": row[5]
+                }
+            return mappings
+
+    def save_all(self, mappings: dict) -> None:
+        """Sincroniza la base de datos con el estado en memoria de la vista."""
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("DELETE FROM obs_alerts")
+            
+            for reward, config in mappings.items():
+                cursor.execute("""
+                    INSERT INTO obs_alerts (reward_name, filepath, volume, scale, pos_x, pos_y)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    reward,
+                    config.get("filepath", ""),
+                    config.get("volume", 1.0),
+                    config.get("scale", 1.0),
+                    config.get("pos_x", 0),
+                    config.get("pos_y", 0)
+                ))
+            conn.commit()

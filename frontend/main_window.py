@@ -1,6 +1,5 @@
 # frontend/main_window.py
 
-import json
 import logging
 import os
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
@@ -24,7 +23,7 @@ from frontend.components.dialogs import UpdateDialog
 
 # Importamos el Backend
 from backend.auth_manager import AuthManager
-from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage
+from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage # <-- NUEVO IMPORT
 from backend.chat_manager import KickAPIClient, ChatSocketManager
 from backend.tts_manager import TTSManager
 
@@ -35,7 +34,6 @@ from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.reward_worker import RewardWorker
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
-# --- Hilos de Trabajo (SoR: Separación de Responsabilidades) ---
 class FetchRewardsWorker(QThread):
     rewards_fetched = Signal(list)
     error_occurred = Signal(str)
@@ -52,7 +50,6 @@ class FetchRewardsWorker(QThread):
         except Exception as e:
             self.error_occurred.emit(str(e))
 
-# --- Hilo de Trabajo (Alta Cohesión & SoR) ---
 class ChatWorker(QThread):
     message_received = Signal(str, str) 
     error_occurred = Signal(str)        
@@ -82,7 +79,6 @@ class ChatWorker(QThread):
         except Exception as e:
             self.error_occurred.emit(str(e))
 
-# ─── CONTROLADOR PRINCIPAL ───
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
@@ -97,9 +93,11 @@ class MainWindow(QMainWindow):
         self.updater_manager = updater_manager
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
 
+        # --- Base de Datos Inyectada (Dependency Inversion) ---
         self.db_manager = DatabaseManager()
         self.token_storage = SQLiteTokenStorage(self.db_manager)
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
+        self.alerts_storage = SQLiteAlertsStorage(self.db_manager) # <-- NUEVO REPOSITORIO
         
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
@@ -112,10 +110,10 @@ class MainWindow(QMainWindow):
         self.tts_manager = TTSManager()
         self.chat_worker = None
         self.media_trigger_service = MediaTriggerService(self)
+        
         self.overlay_server = OverlayServerManager(port=8090)
         self.overlay_server.start()
 
-        # --- 2. Ensamblar e iniciar UI ---
         self._setup_logging()
         self._setup_ui()
         self._setup_tray() 
@@ -172,38 +170,29 @@ class MainWindow(QMainWindow):
 
     def _connect_signals(self):
         self.sidebar.view_selected.connect(self._handle_navigation)
-        # Conexiones de DashboardView
         self.view_dashboard.request_connection.connect(self._handle_auth_process)
         self.view_dashboard.auto_start_toggled.connect(self._handle_autostart_change)
-        # Conexiones de ChatView
+        
         self.view_chat.volume_changed.connect(self._update_tts_volume)
         self.view_chat.voice_changed.connect(self._handle_voice_change)
         self.view_chat.provider_changed.connect(self._handle_provider_change)
         self.view_chat.settings_changed.connect(self._handle_chat_settings_change)
-        # Conexiones de AlertsView
+        
         self.view_alerts.alerts_mapping_changed.connect(self._handle_alerts_mapping_change)      
-        # NUEVO: Previsualizar en OBS manualmente
-        self.view_alerts.preview_requested.connect(
-            lambda reward, config: self.overlay_server.trigger_alert(reward, config)
-        )
-        # NUEVO: Refrescar la lista de puntos del canal desde la API
+        self.view_alerts.preview_requested.connect(lambda reward, config: self.overlay_server.trigger_alert(reward, config))
         self.view_alerts.refresh_rewards_requested.connect(self._fetch_api_rewards)
-        # Conexiones de SettingsView
+        
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
         self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
         self.view_settings.check_update_requested.connect(self._handle_update_check)
-        # Conectar el emisor de logs a la vista visual
         self.q_log_handler.emitter.log_received.connect(self.view_logs.append_log)
 
-    # ─── REGLAS DE NEGOCIO Y ORQUESTACIÓN ───
     def _load_settings_into_ui(self):
-        # 1. Cargar y aplicar volumen (Persistencia)
         saved_volume = self.settings_storage.load_string("tts_volume", "100")
         vol_int = int(saved_volume)
         self.view_chat.slider_vol.setValue(vol_int)
         self.tts_manager.set_volume(vol_int / 100.0)
 
-        # 2. Recopilar TODAS las configuraciones del Chat
         saved_provider = self.settings_storage.load_string("tts_provider", "local")
         chat_settings = {
             "enabled": self.settings_storage.load_bool("tts_enabled", True),
@@ -215,43 +204,27 @@ class MainWindow(QMainWindow):
         }
         self.view_chat.set_initial_settings(chat_settings)
 
-        # 3. Cargar configuraciones de otras vistas
-        self.view_settings.set_minimize_tray_enabled(
-            self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
-        )
+        self.view_settings.set_minimize_tray_enabled(self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False))
 
-        # 4. Cargar configuraciones de Alertas OBS
-        alerts_json = self.settings_storage.load_string("obs_alerts_mapping", "{}")
-        try:
-            mappings = json.loads(alerts_json)
-        except json.JSONDecodeError:
-            mappings = {}
+        # --- LECTURA DESDE NUEVA TABLA (Alta Cohesión) ---
+        mappings = self.alerts_storage.load_all()
         self.view_alerts.set_initial_mappings(mappings)
 
-        # Guardamos el estado de autostart en una variable local
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
 
-        # 4. Iniciamos carga asíncrona de voces
         self._handle_provider_change(saved_provider, is_initial_load=True)
 
-        # 5. NUEVO: Disparar el flujo de conexión si el auto-arranque está activo
         if autostart_enabled:
-            # Reutilizamos el slot de autenticación (DRY)
             self._handle_auth_process()
 
     @Slot()
     def _handle_update_check(self):
-        """Orquesta la búsqueda y descarga de actualizaciones (SoR)."""
-        # 1. Instanciamos el diálogo pasivo (sin enviarle el manager)
         dialog = UpdateDialog(parent=self)       
-        # Variable local para almacenar la URL de descarga si se encuentra
         update_info = {"url": ""}
         
-        # 2. Creamos los workers de búsqueda aquí en el controlador
         self.check_worker = UpdateCheckWorker(self.updater_manager)
         
-        # 3. Conectamos señales del worker de búsqueda a las vistas del diálogo
         def on_update_found(info):
             update_info["url"] = info['download_url']
             dialog.show_update_available(info['version'])
@@ -260,7 +233,6 @@ class MainWindow(QMainWindow):
         self.check_worker.no_update.connect(dialog.show_no_update)
         self.check_worker.error.connect(dialog.show_error)
 
-        # 4. Conectamos el botón de descarga del diálogo al worker de descarga
         def on_download_requested():
             dialog.show_downloading()
             self.download_worker = UpdateDownloadWorker(self.updater_manager, update_info["url"])
@@ -270,7 +242,6 @@ class MainWindow(QMainWindow):
                     dialog.status_label.setText("Instalación en marcha. Cerrando aplicación...")
                     dialog.progress_bar.setRange(0, 100)
                     dialog.progress_bar.setValue(100)
-
                     self._force_quit() 
                 else:
                     dialog.show_error("Fallo inesperado al descargar el archivo.")
@@ -279,10 +250,7 @@ class MainWindow(QMainWindow):
             self.download_worker.error.connect(dialog.show_error)
             self.download_worker.start()
 
-        # Atrapamos la señal del botón "Descargar e Instalar" de la vista
         dialog.download_requested.connect(on_download_requested)
-
-        # 5. Iniciamos la búsqueda en 2do plano y mostramos la ventana modal
         self.check_worker.start()
         dialog.exec()
 
@@ -302,7 +270,7 @@ class MainWindow(QMainWindow):
             "Chat": self.view_chat,
             "Settings": self.view_settings,
             "Developer": self.view_logs,
-            "Alertas OBS": self.view_alerts # <-- SOLUCIÓN AQUÍ
+            "Alertas OBS": self.view_alerts
         }
         target_view = mapping.get(view_name)
         if target_view:
@@ -319,14 +287,12 @@ class MainWindow(QMainWindow):
             key = os.getenv("KICK_PUSHER_KEY", "")
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             
-            # 1. Iniciar el Chat Worker
             self.chat_worker = ChatWorker(api_client, cluster, key)                
             self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
             self.chat_worker.message_received.connect(self._on_chat_message)
             self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)                
             self.chat_worker.start()
 
-            # 2. Iniciar el Reward Worker (Polling)
             self.reward_worker = RewardWorker(api_client, poll_interval_seconds=15)
             self.reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
             self.reward_worker.start()
@@ -337,38 +303,28 @@ class MainWindow(QMainWindow):
 
     @Slot(str, str, str)
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
-        # 1. Registro visual en la caja de chat
         log_msg = f'<b style="color: #00e701;">[PUNTOS] {user} canjeó {reward_name}</b>'
         self.view_chat.chat_display.append(log_msg)
         
-        # 2. Disparar el efecto multimedia local (Opcional)
         self.media_trigger_service.play_reward_alert(reward_name)
 
-        # 3. Disparar la alerta al overlay de OBS
-        alerts_json = self.settings_storage.load_string("obs_alerts_mapping", "{}")
-        try:
-            mappings = json.loads(alerts_json)
-            # Si la recompensa está vinculada a un archivo, enviamos la alerta al HTML
-            if reward_name in mappings:
-                filepath = mappings[reward_name]
-                self.overlay_server.trigger_alert(reward_name, filepath)
-        except json.JSONDecodeError:
-            pass
+        # --- LECTURA DESDE NUEVA TABLA ---
+        mappings = self.alerts_storage.load_all()
+        if reward_name in mappings:
+            config = mappings[reward_name]
+            self.overlay_server.trigger_alert(reward_name, config)
         
-        # 4. Mandar al TTS
         settings = self.view_chat.get_tts_settings()
         if settings.get("enabled", False) and message:
             self.tts_manager.say(f"Mensaje de {user}: {message}")
 
     @Slot(dict)
     def _handle_alerts_mapping_change(self, mappings: dict):
-        # Convertimos el diccionario a string JSON para guardarlo en la DB
-        json_str = json.dumps(mappings)
-        self.settings_storage.save_string("obs_alerts_mapping", json_str)
+        # --- ESCRITURA HACIA NUEVA TABLA (Separación de Responsabilidades) ---
+        self.alerts_storage.save_all(mappings)
 
     @Slot()
     def _fetch_api_rewards(self):
-        """Inicia el worker para obtener recompensas de Kick sin bloquear la interfaz."""
         try:
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             self.fetch_rewards_worker = FetchRewardsWorker(api_client)
@@ -491,7 +447,7 @@ class MainWindow(QMainWindow):
 
     def _cleanup(self):
         self.tts_manager.stop()        
-        self.overlay_server.stop() # <-- Apagamos servidor OBS local
+        self.overlay_server.stop() 
         
         if self.chat_worker and self.chat_worker.isRunning():
             self.chat_worker.terminate()

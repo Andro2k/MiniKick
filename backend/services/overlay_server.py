@@ -6,7 +6,7 @@ import queue
 import threading
 import mimetypes
 import urllib.parse
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 class OverlayRequestHandler(BaseHTTPRequestHandler):
@@ -97,7 +97,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         pass # Mantenemos silenciados los logs por defecto para una terminal limpia
 
 class OverlayServerManager:
-    def __init__(self, port=8080):
+    def __init__(self, port=8090):
         self.port = port
         self.server = None
         self.thread = None
@@ -105,7 +105,8 @@ class OverlayServerManager:
 
     def start(self):
         try:
-            self.server = HTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
+            # <-- CAMBIO AQUÍ: Usamos ThreadingHTTPServer en lugar de HTTPServer
+            self.server = ThreadingHTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
             self.server.manager = self 
             
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
