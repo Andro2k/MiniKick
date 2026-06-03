@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QMenu, QApplication)
 from PySide6.QtCore import Slot, QThread, Signal, QEvent
@@ -10,7 +11,7 @@ from PySide6.QtGui import QIcon
 # Importamos las Vistas (Frontend)
 from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager
-from frontend.components.log_handler import QLogHandler
+from frontend.components.log_handler import QLogHandler, StreamToLogger
 from frontend.components.sidebar import Sidebar
 from frontend.views.alerts_view import AlertsView
 from frontend.views.dashboard_view import DashboardView
@@ -384,7 +385,6 @@ class MainWindow(QMainWindow):
             self.auth_manager.logout()
 
             self.view_dashboard.status_label.setText("Estado: Esperando conexión...")
-            self.view_dashboard.status_label.setStyleSheet("") 
             self.view_dashboard.btn_connect.setEnabled(True)
             self.view_dashboard.btn_connect.setText("Conectar a Kick")
             self.view_dashboard.profile_container.setVisible(False)
@@ -480,45 +480,37 @@ class MainWindow(QMainWindow):
             return
         self._is_shutting_down = True
         
-        print("🛑 Iniciando secuencia de apagado...")
+        self.logger.info("🛑 Iniciando secuencia de apagado...")
         
         # 1. Detenemos servicios
-        print("-> Apagando TTS y Overlay...")
+        self.logger.info("-> Apagando TTS y Overlay...")
         self.tts_manager.stop()        
         self.overlay_server.stop() 
         
-        # 2. Apagado auditable de hilos (¡Sin usar .quit()!)
-        if self.chat_worker and self.chat_worker.isRunning():
-            print("-> Solicitando parada de Worker_Chat_Socket...")
-            self.chat_worker.stop()
-
-            if not self.chat_worker.wait(2000):
-                print("❌ ALERTA: Worker_Chat_Socket se negó a cerrarse. Posible bloqueo de red.")
-            else:
-                print("✅ Worker_Chat_Socket cerrado limpiamente.")
+        # [DRY Principle] Centralizamos la lógica de terminación segura de hilos.
+        def safe_stop_thread(worker_name: str, worker_instance):
+            if worker_instance and worker_instance.isRunning():
+                self.logger.info(f"-> Solicitando parada de {worker_name}...")
                 
-        if hasattr(self, 'auth_worker') and self.auth_worker and self.auth_worker.isRunning():
-            print("-> Solicitando parada de Worker_Auth...")
-            if not self.auth_worker.wait(2000):
-                print("❌ ALERTA: Worker_Auth se negó a cerrarse.")
-            else:
-                print("✅ Worker_Auth cerrado limpiamente.")
+                # Intentamos el cierre en gracia (Alta Cohesión)
+                if hasattr(worker_instance, 'stop'):
+                    worker_instance.stop()
+                
+                # Esperamos 2 segundos. Si falla por I/O bloqueante, forzamos la guillotina.
+                if not worker_instance.wait(2000):
+                    self.logger.warning(f"❌ {worker_name} atascado (posible bloqueo de red). Forzando terminación...")
+                    worker_instance.terminate() # Aborta la ejecución a nivel C++
+                    worker_instance.wait()      # Asegura que el SO liberó el recurso
+                else:
+                    self.logger.info(f"✅ {worker_name} cerrado limpiamente.")
 
-        if hasattr(self, 'reward_worker') and self.reward_worker and self.reward_worker.isRunning():
-            print("-> Solicitando parada de Worker_Reward_Polling...")
-            self.reward_worker.stop() 
+        # 2. Apagado auditable y garantizado de todos los hilos
+        safe_stop_thread("Worker_Chat_Socket", self.chat_worker)
+        safe_stop_thread("Worker_Auth", getattr(self, 'auth_worker', None))
+        safe_stop_thread("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
+        safe_stop_thread("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
 
-            if not self.reward_worker.wait(2000):
-                print("❌ ALERTA: Worker_Reward_Polling se negó a cerrarse. ¿Petición HTTP en curso?")
-            else:
-                print("✅ Worker_Reward_Polling cerrado limpiamente.")
-
-        if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker and self.fetch_rewards_worker.isRunning():
-            print("-> Solicitando parada de Worker_Fetch_Rewards...")
-
-            self.fetch_rewards_worker.wait(1000)
-
-        print("🛑 Secuencia de apagado de hilos completada.")
+        self.logger.info("🛑 Secuencia de apagado de hilos completada.")
 
     def closeEvent(self, event):
         if self._is_shutting_down:
@@ -548,5 +540,12 @@ class MainWindow(QMainWindow):
         self.q_log_handler = QLogHandler()
         self.logger.addHandler(self.q_log_handler)
         
+        # 1. Silenciar librerías de terceros ruidosas (YAGNI / Limpieza)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("cloudscraper").setLevel(logging.WARNING)
+        logging.getLogger("comtypes").setLevel(logging.WARNING) # <-- SILENCIA SAPI (TTS)
+        
+        # 2. Redirigir consola estándar al sistema de logging
+        # Todo print() será INFO, todo error de Python (Traceback) será ERROR
+        sys.stdout = StreamToLogger(self.logger, logging.INFO)
+        sys.stderr = StreamToLogger(self.logger, logging.ERROR)

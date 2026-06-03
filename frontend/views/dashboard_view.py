@@ -52,7 +52,7 @@ class DashboardView(QWidget):
         self.status_label.setProperty("role", "subtitle")
         
         self.btn_autostart = QPushButton()
-        self.btn_autostart.setFixedSize(40, 40)
+        self.btn_autostart.setFixedSize(36, 36)
         self.btn_autostart.setCheckable(True) 
         self.btn_autostart.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_autostart.toggled.connect(self._update_autostart_visuals)
@@ -151,15 +151,40 @@ class DashboardView(QWidget):
                 self.lbl_avatar.setStyleSheet("border: none;") 
         reply.deleteLater()
 
-   # ─── NUEVO SLOT INTERNO USANDO UTILS.PY ───
     @Slot(bool)
     def _update_autostart_visuals(self, checked: bool):
         if checked:
-            icon = get_icon_colored("plug.svg", "black", size=22)
+            icon = get_icon_colored("plug.svg", "#000000", size=24)
             self.btn_autostart.setToolTip("Desactivar Inicio Automático")
+            self.btn_autostart.setStyleSheet("""
+                QPushButton {
+                    background-color: #10B981;
+                    border-radius: 12px;
+                }
+                QPushButton:hover {
+                    background-color: #059669; 
+                }
+                QPushButton:pressed {
+                    background-color: #047857; 
+                }
+            """)
         else:
-            icon = get_icon("plug.svg") 
+            # Estado Inactivo: Se restaura a tu tema base
+            icon = get_icon_colored("plug.svg", "#059669", size=24) 
             self.btn_autostart.setToolTip("Activar Inicio Automático")
+            self.btn_autostart.setStyleSheet("""
+                QPushButton {
+                    background-color: #1E2329;
+                    border: 1px solid #059669;
+                    border-radius: 12px;
+                }
+                QPushButton:hover {
+                    background-color: #059669; 
+                }
+                QPushButton:pressed {
+                    background-color: #047857; 
+                }
+            """)
             
         self.btn_autostart.setIcon(icon)
 

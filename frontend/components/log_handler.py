@@ -24,3 +24,22 @@ class QLogHandler(logging.Handler):
             self.emitter.log_received.emit(record.levelname, msg)
         except Exception:
             self.handleError(record)
+
+class StreamToLogger:
+    """
+    Interviene sys.stdout y sys.stderr.
+    Cualquier print() o error fatal de Python se redirige aquí.
+    """
+    def __init__(self, logger, log_level=logging.INFO):
+        self.logger = logger
+        self.log_level = log_level
+
+    def write(self, buf):
+        # Evita procesar líneas vacías que causan saltos de línea extra
+        for line in buf.rstrip().splitlines():
+            if line.strip():
+                self.logger.log(self.log_level, line.rstrip())
+
+    def flush(self):
+        """Requerido por la interfaz de sys.stdout/stderr"""
+        pass

@@ -27,8 +27,7 @@ class ModernBaseDialog(QDialog):
         # Alta Cohesión: El estilo cuadrado vive estrictamente en el componente que lo necesita
         self.container.setStyleSheet(f"""
             QFrame#SquareDialog {{
-                background-color: #1E2329; 
-                border-radius: 0px; 
+                background-color: #1E2329;
                 border: 1px solid #333333; 
             }}
         """)

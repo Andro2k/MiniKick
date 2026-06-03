@@ -1,10 +1,19 @@
 # backend/sql_manager.py
 
+import os
 import sqlite3
 
 class DatabaseManager:
     def __init__(self, db_name="minikick.db"):
-        self.db_name = db_name
+        # Resolvemos la ruta de AppData\Local de forma segura
+        app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
+        self.db_dir = os.path.join(app_data_dir, '.Minikick')
+        
+        # Creamos el directorio si no existe (Separación de Responsabilidades)
+        os.makedirs(self.db_dir, exist_ok=True)
+        
+        # Construimos la ruta absoluta final
+        self.db_name = os.path.join(self.db_dir, db_name)
         self._create_tables()
 
     def get_connection(self):

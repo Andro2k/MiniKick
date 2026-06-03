@@ -3,11 +3,27 @@
 import os
 import json
 import queue
+import sys
 import threading
 import mimetypes
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
+
+def get_resource_path(relative_path: str) -> str:
+    """
+    [DRY PRINCIPLE]
+    Resuelve la ruta absoluta de un asset, garantizando que funcione 
+    tanto en desarrollo (script) como en producción (.exe de PyInstaller).
+    """
+    if hasattr(sys, '_MEIPASS'):
+        # PyInstaller extrae o monta los datos aquí
+        base_path = sys._MEIPASS
+    else:
+        # En desarrollo, usamos la carpeta actual
+        base_path = os.path.abspath(".")
+    
+    return os.path.join(base_path, relative_path)
 
 class OverlayRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -16,7 +32,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         
         # 1. Servir el HTML del overlay
         if path == "/overlay":
-            html_path = os.path.abspath(os.path.join("assets", "overlays", "rewards.html"))
+            html_path = get_resource_path(os.path.join("assets", "overlays", "rewards.html"))
             try:
                 with open(html_path, "rb") as f:
                     self.send_response(200)
@@ -24,7 +40,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(f.read())
             except FileNotFoundError:
-                self.send_error(404, "Overlay HTML no encontrado.")
+                self.send_error(404, f"Overlay HTML no encontrado en: {html_path}")
                 
         # 2. Servir la multimedia de forma robusta a OBS
         elif path == "/media":

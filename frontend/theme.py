@@ -25,9 +25,9 @@ COLOR_TEXT_MUTED    = "#6B7280"
 
 # ─── Tipografía, Radios & Espaciados (Paddings) ───
 FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
-RADIUS_SM = 8
-RADIUS_MD = 12  # Cajas de texto y botones redondeados
-RADIUS_LG = 16  # Tarjetas principales altamente redondeadas
+RADIUS_SM = 6
+RADIUS_MD = 8  # Cajas de texto y botones redondeados
+RADIUS_LG = 12  # Tarjetas principales altamente redondeadas
 
 # Variables para controlar el padding globalmente (Arriba/Abajo Izquierda/Derecha)
 PADDING_INPUT   = "4px 12px"
@@ -163,10 +163,10 @@ QHeaderView {{
 QPushButton[role="action_accent"] {{
     background-color: {COLOR_ACCENT};
     border: none;
-    border-radius: {RADIUS_MD}px;
+    border-radius: {RADIUS_LG}px;
     padding: {PADDING_BUTTON};
     color: #000000;
-    font-weight: 600;
+    font-weight: 800;
 }}
 
 QPushButton[role="action_accent"]:hover {{
@@ -289,23 +289,22 @@ QSlider {{
 
 QSlider::groove:horizontal {{
     border: none;
-    height: 6.5px;
     background: {COLOR_BG_INPUT};
-    border-radius: 3px;
+    border-radius: 6px;
 }}
 
 QSlider::sub-page:horizontal {{
     background: {COLOR_ACCENT}; 
-    border-radius: 3px;
+    border-radius: 6px;
 }}
 
 QSlider::handle:horizontal {{
-    background: #FFFFFF;
+    background: #F3F4F6;
     border: none;
-    width: 16px;
+    width: 10px;
     height: 16px;
-    margin: -5px 0;
-    border-radius: 8px;
+    margin: -4px 0px;
+    border-radius: 16px;
 }}
 
 /* ─── Checkboxes & Switches Nativos ─── */
