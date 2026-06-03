@@ -304,7 +304,6 @@ QSlider::handle:horizontal {{
     width: 10px;
     height: 16px;
     margin: -4px 0px;
-    border-radius: 16px;
 }}
 
 /* ─── Checkboxes & Switches Nativos ─── */
