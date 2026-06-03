@@ -467,25 +467,19 @@ class MainWindow(QMainWindow):
         QApplication.quit()
 
     def _cleanup(self):
-        # 1. Detenemos servicios
         self.tts_manager.stop()        
         self.overlay_server.stop() 
         
-        # 2. SEPARACIÓN DE RESPONSABILIDADES:
-        # En lugar de "asesinar" los hilos con terminate(), les pedimos civilizadamente 
-        # que se detengan con quit() y esperamos su cierre con wait()
-        
         if self.chat_worker and self.chat_worker.isRunning():
-            self.chat_worker.quit()
+            self.chat_worker.terminate()
             self.chat_worker.wait()            
             
         if hasattr(self, 'auth_worker') and self.auth_worker and self.auth_worker.isRunning():
-            self.auth_worker.quit()
+            self.auth_worker.terminate()
             self.auth_worker.wait()
 
         if hasattr(self, 'reward_worker') and self.reward_worker and self.reward_worker.isRunning():
-            self.reward_worker.stop() # Llama a la bandera interna _running = False
-            self.reward_worker.quit()
+            self.reward_worker.stop()
             self.reward_worker.wait()
 
     def closeEvent(self, event):

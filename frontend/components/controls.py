@@ -20,7 +20,7 @@ class ModernSwitch(QAbstractButton):
         self.setCheckable(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self._position = 0.5
+        self._position = 0.0
         self.toggled.connect(self.update)
 
     def sizeHint(self) -> QSize:
