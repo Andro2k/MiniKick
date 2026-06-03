@@ -1,8 +1,6 @@
 # backend/sql_manager.py
 
 import sqlite3
-import os
-import json
 
 class DatabaseManager:
     def __init__(self, db_name="minikick.db"):
@@ -36,7 +34,7 @@ class DatabaseManager:
                 )
             """)
             
-            # NUEVA TABLA: Estructura Relacional para Alertas OBS
+            # Tabla Relacional para Alertas OBS
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS obs_alerts (
                     reward_name TEXT PRIMARY KEY,
@@ -47,6 +45,15 @@ class DatabaseManager:
                     pos_y INTEGER DEFAULT 0
                 )
             """)
+            
+            # --- MIGRACIÓN AUTOMÁTICA ---
+            cursor.execute("PRAGMA table_info(obs_alerts)")
+            columns = [info[1] for info in cursor.fetchall()]
+            
+            if "is_random_pos" not in columns:
+                print("🔄 Actualizando base de datos: Agregando 'is_random_pos' a obs_alerts...")
+                cursor.execute("ALTER TABLE obs_alerts ADD COLUMN is_random_pos INTEGER DEFAULT 0")
+                
             conn.commit()
 
 class SQLiteTokenStorage:
@@ -54,6 +61,7 @@ class SQLiteTokenStorage:
         self.db_manager = db_manager
 
     def load(self) -> dict | None:
+        """Carga los tokens de Kick desde la base de datos."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT access_token, refresh_token, expires_in, scope, token_type FROM tokens ORDER BY id DESC LIMIT 1")
@@ -64,11 +72,12 @@ class SQLiteTokenStorage:
                     "refresh_token": row[1],
                     "expires_in": row[2],
                     "scope": row[3],
-                    "token_type": row[4],
+                    "token_type": row[4]
                 }
-        return None
+            return None
 
     def save(self, tokens: dict) -> None:
+        """Guarda los nuevos tokens."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM tokens")
@@ -121,7 +130,6 @@ class SQLiteSettingsStorage:
             return default
         return val == "1"
 
-# --- NUEVA CLASE: ALTA COHESIÓN PARA LAS ALERTAS OBS ---
 class SQLiteAlertsStorage:
     """Capa de acceso a datos exclusiva para la gestión de la tabla obs_alerts."""
     def __init__(self, db_manager: DatabaseManager):
@@ -131,7 +139,7 @@ class SQLiteAlertsStorage:
         """Devuelve un diccionario estructurado listo para la vista."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT reward_name, filepath, volume, scale, pos_x, pos_y FROM obs_alerts")
+            cursor.execute("SELECT reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos FROM obs_alerts")
             rows = cursor.fetchall()
             
             mappings = {}
@@ -141,7 +149,8 @@ class SQLiteAlertsStorage:
                     "volume": row[2],
                     "scale": row[3],
                     "pos_x": row[4],
-                    "pos_y": row[5]
+                    "pos_y": row[5],
+                    "is_random_pos": bool(row[6]) # Convertimos el 0/1 a Booleano
                 }
             return mappings
 
@@ -149,19 +158,19 @@ class SQLiteAlertsStorage:
         """Sincroniza la base de datos con el estado en memoria de la vista."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-
             cursor.execute("DELETE FROM obs_alerts")
             
             for reward, config in mappings.items():
                 cursor.execute("""
-                    INSERT INTO obs_alerts (reward_name, filepath, volume, scale, pos_x, pos_y)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO obs_alerts (reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (
                     reward,
                     config.get("filepath", ""),
                     config.get("volume", 1.0),
                     config.get("scale", 1.0),
                     config.get("pos_x", 0),
-                    config.get("pos_y", 0)
+                    config.get("pos_y", 0),
+                    int(config.get("is_random_pos", False)) # Convertimos Booleano a 0/1
                 ))
             conn.commit()

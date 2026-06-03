@@ -8,15 +8,13 @@ class LocalTTSProvider(ITTSProvider):
         self.rate = rate
         self.volume = initial_volume
         self.voice_id = None
-        self._engine = None # Mantenemos una única referencia al motor
+        self._engine = None 
 
     def set_volume(self, volume: float) -> None:
         self.volume = max(0.0, min(1.0, volume))
 
     def speak(self, text: str) -> None:
         try:
-            # Lazy Initialization: Iniciamos el motor solo la primera vez que se usa
-            # Esto evita crear miles de procesos de espeak en Linux
             if self._engine is None:
                 self._engine = pyttsx3.init()
                 
@@ -31,6 +29,15 @@ class LocalTTSProvider(ITTSProvider):
             print(f"[TTS Local] Error al hablar: {e}")
 
     def stop(self) -> None:
-        # Limpieza correcta de la memoria del motor C
         if self._engine:
             self._engine.stop()
+
+    def get_available_voices(self) -> list[dict]:
+        """Implementación nativa (SoR)"""
+        try:
+            # Aprovechamos el engine si ya existe, o lo iniciamos
+            engine = self._engine if self._engine else pyttsx3.init()
+            return [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
+        except Exception as e:
+            print(f"[TTS Local] Error obteniendo voces locales: {e}")
+            return [{"id": "default", "name": "Voz del Sistema (Por Defecto)"}]

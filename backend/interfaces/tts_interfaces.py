@@ -7,15 +7,17 @@ class ITTSProvider(ABC):
     
     @abstractmethod
     def speak(self, text: str) -> None:
-        """Reproduce el texto enviado."""
         pass
         
     @abstractmethod
     def stop(self) -> None:
-        """Detiene la reproducción actual."""
         pass
 
     @abstractmethod
     def set_volume(self, volume: float) -> None:
-        """Ajusta el volumen del motor (0.0 a 1.0)."""
+        pass
+
+    @abstractmethod
+    def get_available_voices(self) -> list[dict]:
+        """Debe retornar una lista de diccionarios con 'id' y 'name'."""
         pass

@@ -8,14 +8,14 @@ PATH_ICON_UPDATE = get_assets_path("icons/download.svg")
 
 # ─── Paleta de Colores (Basada en la referencia Dark/Mint) ───
 COLOR_BG_BASE       = "#111111"   # Fondo de la aplicación (Negro profundo)
-COLOR_BG_SURFACE    = "#1C1C1C"   # Tarjetas y paneles (Gris oscuro cálido)
+COLOR_BG_SURFACE    = "#1E2329"   # Tarjetas y paneles (Gris oscuro cálido)
 COLOR_BG_INPUT      = "#2A2A2A"   # Fondos de inputs y campos de texto
 COLOR_BG_HOVER      = "#333333"   
 
 COLOR_BORDER_SVELTE = "#333333"   # Bordes inactivos y divisores
-COLOR_BORDER_ACTIVE = "#00E573"   # Borde activo al enfocar (Verde Menta)
+COLOR_BORDER_ACTIVE = "#53FC18"   # Borde activo al enfocar (Verde Menta)
 
-COLOR_ACCENT        = "#00E573"   # Verde Menta vibrante
+COLOR_ACCENT        = "#53FC18"   # Verde Menta vibrante
 COLOR_ACCENT_HOVER  = "#00C864"   
 COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)" # Verde translúcido
 
@@ -27,7 +27,7 @@ COLOR_TEXT_MUTED    = "#6B7280"
 FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
 RADIUS_SM = 8
 RADIUS_MD = 12  # Cajas de texto y botones redondeados
-RADIUS_LG = 20  # Tarjetas principales altamente redondeadas
+RADIUS_LG = 16  # Tarjetas principales altamente redondeadas
 
 # Variables para controlar el padding globalmente (Arriba/Abajo Izquierda/Derecha)
 PADDING_INPUT   = "4px 12px"

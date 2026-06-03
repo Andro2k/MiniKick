@@ -24,7 +24,8 @@ from frontend.components.dialogs import UpdateDialog
 # Importamos el Backend
 from backend.auth_manager import AuthManager
 from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage # <-- NUEVO IMPORT
-from backend.chat_manager import KickAPIClient, ChatSocketManager
+from backend.kick_api_client import KickAPIClient
+from backend.kick_websocket import ChatSocketManager
 from backend.tts_manager import TTSManager
 
 # Importamos Componentes Modernos y Utilidades
@@ -40,7 +41,9 @@ class FetchRewardsWorker(QThread):
 
     def __init__(self, api_client: KickAPIClient):
         super().__init__()
+        self.setObjectName("Worker_Fetch_Rewards") # <--- AÑADIR
         self.api_client = api_client
+        self._is_shutting_down = False
 
     def run(self):
         try:
@@ -57,6 +60,7 @@ class ChatWorker(QThread):
     
     def __init__(self, api_client: KickAPIClient, cluster: str, key: str):
         super().__init__()
+        self.setObjectName("Worker_Chat_Socket") # <--- ESTO ES LA CLAVE
         self.api_client = api_client 
         self.cluster = cluster
         self.key = key
@@ -79,12 +83,18 @@ class ChatWorker(QThread):
         except Exception as e:
             self.error_occurred.emit(str(e))
 
+    def stop(self):
+        """Delega el cierre de la conexión al Manager (SoR)"""
+        if self.chat_manager:
+            self.chat_manager.stop_socket()
+
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
 
     def __init__(self, updater_manager, app_version: str):
         super().__init__()
+        self._is_shutting_down = False
         self.updater_manager = updater_manager
         
         self.setWindowTitle(f"MiniKick - Versión {app_version}")
@@ -305,22 +315,21 @@ class MainWindow(QMainWindow):
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
         log_msg = f'<b style="color: #00e701;">[PUNTOS] {user} canjeó {reward_name}</b>'
         self.view_chat.chat_display.append(log_msg)
-        
-        self.media_trigger_service.play_reward_alert(reward_name)
 
-        # --- LECTURA DESDE NUEVA TABLA ---
         mappings = self.alerts_storage.load_all()
+        
         if reward_name in mappings:
             config = mappings[reward_name]
             self.overlay_server.trigger_alert(reward_name, config)
+        else:
+            self.logger.debug(f"Recompensa '{reward_name}' no tiene una alerta configurada en la base de datos.")
         
         settings = self.view_chat.get_tts_settings()
         if settings.get("enabled", False) and message:
-            self.tts_manager.say(f"Mensaje de {user}: {message}")
+            self._on_chat_message(user, message)
 
     @Slot(dict)
     def _handle_alerts_mapping_change(self, mappings: dict):
-        # --- ESCRITURA HACIA NUEVA TABLA (Separación de Responsabilidades) ---
         self.alerts_storage.save_all(mappings)
 
     @Slot()
@@ -467,22 +476,55 @@ class MainWindow(QMainWindow):
         QApplication.quit()
 
     def _cleanup(self):
+        if self._is_shutting_down:
+            return
+        self._is_shutting_down = True
+        
+        print("🛑 Iniciando secuencia de apagado...")
+        
+        # 1. Detenemos servicios
+        print("-> Apagando TTS y Overlay...")
         self.tts_manager.stop()        
         self.overlay_server.stop() 
         
+        # 2. Apagado auditable de hilos (¡Sin usar .quit()!)
         if self.chat_worker and self.chat_worker.isRunning():
-            self.chat_worker.terminate()
-            self.chat_worker.wait()            
-            
+            print("-> Solicitando parada de Worker_Chat_Socket...")
+            self.chat_worker.stop()
+
+            if not self.chat_worker.wait(2000):
+                print("❌ ALERTA: Worker_Chat_Socket se negó a cerrarse. Posible bloqueo de red.")
+            else:
+                print("✅ Worker_Chat_Socket cerrado limpiamente.")
+                
         if hasattr(self, 'auth_worker') and self.auth_worker and self.auth_worker.isRunning():
-            self.auth_worker.terminate()
-            self.auth_worker.wait()
+            print("-> Solicitando parada de Worker_Auth...")
+            if not self.auth_worker.wait(2000):
+                print("❌ ALERTA: Worker_Auth se negó a cerrarse.")
+            else:
+                print("✅ Worker_Auth cerrado limpiamente.")
 
         if hasattr(self, 'reward_worker') and self.reward_worker and self.reward_worker.isRunning():
-            self.reward_worker.stop()
-            self.reward_worker.wait()
+            print("-> Solicitando parada de Worker_Reward_Polling...")
+            self.reward_worker.stop() 
+
+            if not self.reward_worker.wait(2000):
+                print("❌ ALERTA: Worker_Reward_Polling se negó a cerrarse. ¿Petición HTTP en curso?")
+            else:
+                print("✅ Worker_Reward_Polling cerrado limpiamente.")
+
+        if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker and self.fetch_rewards_worker.isRunning():
+            print("-> Solicitando parada de Worker_Fetch_Rewards...")
+
+            self.fetch_rewards_worker.wait(1000)
+
+        print("🛑 Secuencia de apagado de hilos completada.")
 
     def closeEvent(self, event):
+        if self._is_shutting_down:
+            event.accept()
+            return
+            
         if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
             self.hide()
             self._notify_background()

@@ -128,7 +128,8 @@ class OverlayServerManager:
             "volume": config.get("volume", 1.0),
             "scale": config.get("scale", 1.0),
             "pos_x": config.get("pos_x", 0),
-            "pos_y": config.get("pos_y", 0)
+            "pos_y": config.get("pos_y", 0),
+            "is_random_pos": config.get("is_random_pos", False)
         }
         for client_queue in self.clients:
             client_queue.put(payload)

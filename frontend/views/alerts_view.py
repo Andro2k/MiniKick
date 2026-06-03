@@ -210,7 +210,7 @@ class AlertsView(QWidget):
             "scale": self.spin_scale.value(),
             "pos_x": self.spin_x.value(),
             "pos_y": self.spin_y.value(),
-            "random_pos": self.chk_random_pos.isChecked()
+            "is_random_pos": self.chk_random_pos.isChecked() # <-- CORRECCIÓN: is_random_pos
         }
         self._refresh_table()
         
@@ -255,7 +255,9 @@ class AlertsView(QWidget):
             self.slider_vol.setValue(int(config.get("volume", 1.0) * 100))
             
             self._evaluate_media_type(filepath)
-            self.chk_random_pos.setChecked(config.get("random_pos", False))
+            
+            # <-- CORRECCIÓN: Carga correctamente la variable
+            self.chk_random_pos.setChecked(config.get("is_random_pos", False)) 
             
         self.btn_add.setText("Actualizar Alerta")
 

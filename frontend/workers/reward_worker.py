@@ -2,16 +2,15 @@
 
 import time
 from PySide6.QtCore import QThread, Signal
-from backend.chat_manager import KickAPIClient
+from backend.kick_api_client import KickAPIClient
 
 class RewardWorker(QThread):
-    """Hilo dedicado a consultar periódicamente los canjes de puntos de canal."""
-    # Señal: Nombre del usuario, Nombre de la recompensa, Mensaje del usuario (si hay)
     reward_redeemed = Signal(str, str, str)
     error_occurred = Signal(str)
 
     def __init__(self, api_client: KickAPIClient, poll_interval_seconds: int = 15):
         super().__init__()
+        self.setObjectName("Worker_Reward_Polling") # <--- AÑADIR
         self.api_client = api_client
         self.poll_interval = poll_interval_seconds
         self._running = False
@@ -33,26 +32,18 @@ class RewardWorker(QThread):
                     
                     for red in redemptions:
                         red_id = red.get("id")
-                        
-                        # Si ya se procesó en esta sesión, lo ignoramos por seguridad
+
                         if red_id in self._processed_ids:
                             continue
                             
                         user_id = red.get("redeemer", {}).get("user_id", "Alguien")
                         user_input = red.get("user_input", "")
-                        
-                        # 1. Guardar en la caché local en memoria
+
                         self._processed_ids.add(red_id)
-                        # 2. Agregar a la lista para limpiar en Kick
                         new_ids_to_accept.append(red_id)
-                        
-                        # 3. Notificar a la UI / Trigger de sonido de inmediato
                         self.reward_redeemed.emit(str(user_id), reward_title, user_input)
                 
-                # --- LIMPIEZA EN EL SERVIDOR DE KICK ---
                 if new_ids_to_accept:
-                    # La documentación de Kick exige un máximo de 25 IDs únicos por petición.
-                    # Hacemos una segmentación limpia (batching) en trozos de 25.
                     for i in range(0, len(new_ids_to_accept), 25):
                         batch = new_ids_to_accept[i:i+25]
                         try:
@@ -63,8 +54,7 @@ class RewardWorker(QThread):
                 
             except Exception as e:
                 self.error_occurred.emit(f"Error consultando recompensas: {str(e)}")
-            
-            # Pausa inteligente del bucle
+
             for _ in range(self.poll_interval * 2):
                 if not self._running:
                     break

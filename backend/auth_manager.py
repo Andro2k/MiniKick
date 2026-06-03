@@ -1,8 +1,7 @@
-# backend/auth.py
+# backend/auth_manager.py
 
 import base64
 import hashlib
-import json
 import os
 import time
 import webbrowser
@@ -14,21 +13,6 @@ from backend.interfaces.auth_interfaces import TokenStorage
 
 KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
 KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
-
-# --- Capa de Acceso a Datos ---
-class FileTokenStorage:
-    def __init__(self, filepath: str = "token.json"):
-        self.filepath = filepath
-
-    def load(self) -> dict | None:
-        if os.path.exists(self.filepath):
-            with open(self.filepath, "r") as f:
-                return json.load(f)
-        return None
-
-    def save(self, tokens: dict) -> None:
-        with open(self.filepath, "w") as f:
-            json.dump(tokens, f)
 
 # --- Capa de Presentación / Red ---
 class _OAuthCallbackHandler(BaseHTTPRequestHandler):
@@ -47,8 +31,6 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 self.wfile.write("<h1>Autenticación exitosa. Puedes cerrar esta pestaña.</h1>".encode("utf-8"))
             except (BrokenPipeError, ConnectionResetError):
-                # ALTA COHESIÓN: Si el navegador cierra la conexión prematuramente, 
-                # ignoramos el error de red en lugar de romper el servidor.
                 pass
 
     def log_message(self, *args) -> None:
@@ -58,7 +40,6 @@ class OAuthCallbackServer:
     @staticmethod
     def capture_auth_code(url: str, port: int, success_html_path: str, timeout_seconds: int = 120) -> str | None:
         httpd = HTTPServer(("", port), _OAuthCallbackHandler)
-        # 1. Configuramos un timeout corto de 1 segundo para que handle_request no bloquee el hilo para siempre
         httpd.timeout = 1 
         httpd.auth_code = None
         httpd.success_html_path = success_html_path
@@ -66,11 +47,10 @@ class OAuthCallbackServer:
         webbrowser.open(url)
         start_time = time.time()
         
-        # 2. Bucle con válvula de escape: Si pasan 120 segundos, se rinde.
         while httpd.auth_code is None:
             if time.time() - start_time > timeout_seconds:
                 break
-            httpd.handle_request() # Espera máximo 1 segundo por ciclo
+            httpd.handle_request()
             
         httpd.server_close()
         return httpd.auth_code
@@ -81,7 +61,7 @@ class AuthManager:
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
-        self.storage = storage
+        self.storage = storage  # Inyección estricta de la dependencia
         self.success_html_path = success_html_path
 
     def get_tokens(self) -> dict:
@@ -121,7 +101,6 @@ class AuthManager:
         port = int(urlparse(self.redirect_uri).port or 8080)
         auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path)
 
-        # 3. Si el usuario cerró el navegador o tardó mucho, abortamos limpiamente
         if not auth_code:
             raise TimeoutError("Se agotó el tiempo de espera o se canceló el inicio de sesión.")
 
@@ -136,15 +115,12 @@ class AuthManager:
         return verifier, challenge
 
     def _build_auth_url(self, challenge: str) -> str:
-        # Agregamos los scopes necesarios separados por espacio URL-encoded o espacio normal
-        # Dependiendo de tu configuración de chat, añadimos también chat:write si lo usas
         scopes = "user:read channel:rewards:read channel:rewards:write"
-        
         return (
             f"{KICK_AUTH_URL}?response_type=code"
             f"&client_id={self.client_id}"
             f"&redirect_uri={self.redirect_uri}"
-            f"&scope={scopes}"  # <- Scopes actualizados de manera limpia
+            f"&scope={scopes}"
             f"&code_challenge={challenge}"
             f"&code_challenge_method=S256"
             f"&state=random"
@@ -166,5 +142,5 @@ class AuthManager:
         return response.json()
 
     def logout(self) -> None:
-        """Limpia las credenciales almacenadas"""
+        """Limpia las credenciales almacenadas delegando en el storage."""
         self.storage.clear()

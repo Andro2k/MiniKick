@@ -37,18 +37,27 @@
             mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
 
             const scale = data.scale || 1.0;
-            const px = data.pos_x || 0;
-            const py = data.pos_y || 0;
-
-            // Posicionamiento estricto por coordenadas X e Y
-            mediaEl.style.left = px + "px";
-            mediaEl.style.top = py + "px";
             mediaEl.style.transform = `scale(${scale})`;
-            mediaEl.style.transformOrigin = "top left"; // El punto 0,0 es la esquina sup-izq del video
+            mediaEl.style.transformOrigin = "top left"; 
+
+            // --- LÓGICA DE POSICIONAMIENTO ---
+            if (data.is_random_pos) {
+                // Genera una posición aleatoria entre el 0% y el 75% del tamaño de la pantalla
+                const randX = Math.floor(Math.random() * 75);
+                const randY = Math.floor(Math.random() * 75);
+                mediaEl.style.left = randX + "%";
+                mediaEl.style.top = randY + "%";
+            } else {
+                // Usa las coordenadas fijas
+                const px = data.pos_x || 0;
+                const py = data.pos_y || 0;
+                mediaEl.style.left = px + "px";
+                mediaEl.style.top = py + "px";
+            }
 
             mediaEl.onended = () => mediaEl.remove();
             mediaEl.onerror = (e) => {
-                console.error("No se pudo reproducir. Verifica la ruta.", e);
+                console.error("Error reproduciendo media:", e);
                 mediaEl.remove();
             };
 
