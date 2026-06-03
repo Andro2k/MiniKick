@@ -7,7 +7,7 @@ PATH_ICON_HELP = get_assets_path("icons/help-circle.svg")
 PATH_ICON_UPDATE = get_assets_path("icons/download.svg")
 
 # ─── Paleta de Colores (Basada en la referencia Dark/Mint) ───
-COLOR_BG_BASE       = "#111111"   # Fondo de la aplicación (Negro profundo)
+COLOR_BG_BASE       = "#0B0E11"   # Fondo de la aplicación (Negro profundo)
 COLOR_BG_SURFACE    = "#1E2329"   # Tarjetas y paneles (Gris oscuro cálido)
 COLOR_BG_INPUT      = "#2A2A2A"   # Fondos de inputs y campos de texto
 COLOR_BG_HOVER      = "#333333"   
@@ -48,7 +48,7 @@ QMainWindow, QDialog, QWidget {{
 }}
 
 /* Evitar que componentes internos hereden el fondo negro por error */
-QFrame#Card, QTextEdit, QLineEdit, QComboBox, QTableWidget {{
+QFrame#Card, QTextEdit, QComboBox {{
     background-color: {COLOR_BG_SURFACE};
 }}
 
@@ -61,7 +61,7 @@ QFrame#Sidebar {{
 /* Tarjetas altamente redondeadas de la imagen */
 QFrame#Card {{
     background-color: {COLOR_BG_SURFACE};
-    border: 1px solid transparent; /* Sin borde agresivo */
+    border: none; /* Sin borde agresivo */
     border-radius: {RADIUS_LG}px;
 }}
 
@@ -91,18 +91,71 @@ QLabel[role="subtitle"] {{
     font-size: 14px;
 }}
 
-/* ─── Inputs y Controles (Estilo Píldora/Redondeado) ─── */
-QLineEdit, QTextEdit#ChatContainer {{
+/* ─── Inputs de Texto (Una sola línea) ─── */
+QLineEdit {{
     background-color: {COLOR_BG_INPUT};
-    border: 1px solid transparent;
+    border: none;
     border-radius: {RADIUS_MD}px;
     padding: {PADDING_INPUT};
     color: {COLOR_TEXT_PRIMARY};
 }}
 
-QLineEdit:focus, QTextEdit#ChatContainer:focus {{
+QLineEdit:focus {{
     border: 1px solid {COLOR_BORDER_ACTIVE};
     background-color: {COLOR_BG_HOVER};
+}}
+/* ─── Áreas de Texto (Multilínea) ─── */
+QTextEdit, QTextEdit#ChatContainer {{
+    background-color: {COLOR_BG_SURFACE};
+    border: 1px solid {COLOR_BORDER_SVELTE}; /* Borde sutil por defecto para distinguirlo */
+    border-radius: {RADIUS_MD}px;
+    padding: {PADDING_INPUT};
+    color: {COLOR_TEXT_PRIMARY};
+}}
+
+QTextEdit:focus, QTextEdit#ChatContainer:focus {{
+    border: 1px solid {COLOR_BORDER_ACTIVE};
+    background-color: {COLOR_BG_HOVER};
+}}
+
+/* ─── Tablas (QTableWidget) ─── */
+QTableWidget {{
+    background-color: {COLOR_BG_SURFACE};
+    border: none;
+    gridline-color: transparent;
+    color: {COLOR_TEXT_PRIMARY};
+    outline: none;
+}}
+
+/* Celdas de la tabla */
+QTableWidget::item {{
+    padding: 8px;
+    border-bottom: 1px solid {COLOR_BORDER_SVELTE};
+}}
+
+/* Celdas seleccionadas (aunque tengas la selección desactivada, es buena práctica) */
+QTableWidget::item:selected {{
+    background-color: {COLOR_BG_HOVER};
+    color: {COLOR_ACCENT};
+}}
+/* ─── Contenedor de Acciones en Tablas ─── */
+QFrame#TableActions {{
+    background-color:  {COLOR_BG_SURFACE};
+}}
+/* Cabecera superior de la tabla */
+QHeaderView::section {{
+    background-color: {COLOR_BG_INPUT};
+    color: {COLOR_TEXT_SECONDARY};
+    font-weight: bold;
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 2px solid {COLOR_BORDER_SVELTE};
+    text-align: left;
+}}
+
+QHeaderView {{
+    background-color: transparent;
+    border: none;
 }}
 
 /* ─── Botones de Acción ─── */
@@ -123,7 +176,7 @@ QPushButton[role="action_accent"]:hover {{
 /* Estilo Secundario (Gris Oscuro) */
 QPushButton[role="action_outlined"] {{
     background-color: {COLOR_BG_INPUT};
-    border: 1px solid transparent;
+    border: none;
     border-radius: {RADIUS_MD}px;
     padding: {PADDING_BUTTON};
     color: {COLOR_TEXT_PRIMARY};
@@ -186,7 +239,7 @@ QComboBox {{
     color: {COLOR_TEXT_PRIMARY};
     border-radius: {RADIUS_MD}px;
     padding: {PADDING_BUTTON};
-    border: 1px solid transparent;
+    border: none;
 }}
 
 QComboBox:focus, QComboBox:hover {{
@@ -287,7 +340,7 @@ QSpinBox, QDoubleSpinBox {{
     color: {COLOR_TEXT_PRIMARY};
     border-radius: {RADIUS_MD}px;
     padding: {PADDING_SPINBOX};
-    border: 1px solid transparent;
+    border: none;
 }}
 
 QSpinBox:focus, QDoubleSpinBox:focus {{

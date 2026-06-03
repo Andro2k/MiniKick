@@ -35,9 +35,8 @@ class LocalTTSProvider(ITTSProvider):
     def get_available_voices(self) -> list[dict]:
         """Implementación nativa (SoR)"""
         try:
-            # Aprovechamos el engine si ya existe, o lo iniciamos
-            engine = self._engine if self._engine else pyttsx3.init()
-            return [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
+            temp_engine = pyttsx3.init()
+            return [{"id": v.id, "name": v.name.split(" - ")[0]} for v in temp_engine.getProperty('voices')]
         except Exception as e:
             print(f"[TTS Local] Error obteniendo voces locales: {e}")
             return [{"id": "default", "name": "Voz del Sistema (Por Defecto)"}]

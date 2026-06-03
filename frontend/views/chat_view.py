@@ -1,13 +1,13 @@
 # frontend/views/chat_view.py
 
 import os
-from PySide6.QtWidgets import (QComboBox, QLineEdit, QWidget, QVBoxLayout, QHBoxLayout, 
+from PySide6.QtWidgets import (QComboBox, QLineEdit, QListView, QListWidget, QListWidgetItem, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, 
                                QTextEdit, QLabel, QSlider, QFrame, QSizePolicy, 
                                QTableWidget, QTableWidgetItem, QHeaderView)
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QIcon
 
-from frontend.components.controls import SegmentedToggle, ModernButton, ModernSwitch
+from frontend.components.controls import ModernButton, ModernSwitch
 from frontend.utils import resource_path, get_icon_colored 
 
 class ChatView(QWidget):
@@ -66,16 +66,22 @@ class ChatView(QWidget):
     def _build_toggles_row(self) -> QHBoxLayout:
         row = QHBoxLayout()
         row.setSpacing(12)
+        
         row.addWidget(QLabel("Activar TTS:"))
         self.chk_tts = ModernSwitch()
         row.addWidget(self.chk_tts)
+        
         row.addWidget(QLabel("Leer Nombre:"))
         self.chk_name = ModernSwitch() 
         row.addWidget(self.chk_name)
+        
         row.addSpacing(20)
-        row.addWidget(QLabel("Motor:"))
-        self.chk_provider = SegmentedToggle("LOCAL", "WEB IA", default_right=False)
+        
+        # --- NUEVO ENFOQUE (YAGNI / DRY) ---
+        row.addWidget(QLabel("Motor IA Web:"))
+        self.chk_provider = ModernSwitch() # Reutilizamos tu componente estable
         row.addWidget(self.chk_provider)
+        
         row.addStretch()
         return row
 
@@ -139,8 +145,8 @@ class ChatView(QWidget):
         panel.setObjectName("Card") 
         panel.setFixedWidth(260)
         layout = QVBoxLayout(panel)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(6)
 
         title = QLabel("Silenciar Usuarios/Bots")
         title.setStyleSheet("font-weight: bold; font-size: 13px;")
@@ -161,17 +167,27 @@ class ChatView(QWidget):
         input_row.addWidget(self.btn_add_bot)
         layout.addLayout(input_row)
 
-        # Tabla (Lista visual)
-        self.table_bots = QTableWidget(0, 2)
-        self.table_bots.horizontalHeader().setVisible(False)
-        self.table_bots.verticalHeader().setVisible(False)
-        self.table_bots.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.table_bots.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        self.table_bots.setColumnWidth(1, 45)
-        self.table_bots.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        self.table_bots.setShowGrid(False)
-        self.table_bots.setStyleSheet("QTableWidget { border: none; background: transparent; }")
-        layout.addWidget(self.table_bots)
+        # --- REFACTORIZACIÓN: QListWidget en modo Flow ---
+        self.list_bots = QListWidget()
+        self.list_bots.setFlow(QListView.Flow.LeftToRight) 
+        self.list_bots.setWrapping(True) 
+        self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
+        self.list_bots.setSpacing(3)
+        
+        # Estilo base transparente (el diseño ahora va en cada Tag)
+        self.list_bots.setStyleSheet("""
+            QListWidget { 
+                background: transparent; 
+                border: none; 
+                outline: none; 
+            }
+            QListWidget::item {
+                background: transparent;
+            }
+        """)
+        
+        # (ELIMINAR la línea: self.list_bots.itemClicked.connect(...))
+        layout.addWidget(self.list_bots)
 
         return panel
 
@@ -179,58 +195,94 @@ class ChatView(QWidget):
     @Slot()
     def _handle_add_bot_request(self):
         bot_name = self.txt_bot_input.text()
-        self._add_bot_to_table(bot_name, trigger_update=True)
+        self._add_bot_to_list(bot_name, trigger_update=True)
 
-    def _add_bot_to_table(self, bot_name: str, trigger_update: bool = True):
-        # Limpieza del string: conservamos el @
+    def _add_bot_to_list(self, bot_name: str, trigger_update: bool = True):
         bot_name = bot_name.strip().lower()
         if not bot_name: 
             return
 
-        # Evitar duplicados (DRY)
-        for row in range(self.table_bots.rowCount()):
-            item = self.table_bots.item(row, 0)
-            if item and item.text() == bot_name:
-                self.txt_bot_input.clear()
-                return 
+        # Evitar duplicados
+        if self.list_bots.findItems(bot_name, Qt.MatchFlag.MatchExactly):
+            self.txt_bot_input.clear()
+            return 
 
-        row_idx = self.table_bots.rowCount()
-        self.table_bots.insertRow(row_idx)
+        item = QListWidgetItem(bot_name)
+        self.list_bots.addItem(item)
         
-        # Nombre (Celda Izquierda)
-        name_item = QTableWidgetItem(bot_name)
-        name_item.setFlags(name_item.flags() & ~Qt.ItemFlag.ItemIsEditable) 
-        self.table_bots.setItem(row_idx, 0, name_item)
+        tag_widget = QFrame()
+        tag_widget.setObjectName("BotTag")
+        tag_widget.setStyleSheet("""
+            QFrame#BotTag {
+                background-color: #2A2A2A;
+                border: 1px solid #333333;
+                border-radius: 6px;
+            }
+            QFrame#BotTag:hover {
+                border: 1px solid #D74141; 
+            }
+            QLabel {
+                color: #F3F4F6;
+                padding-right: 4px;
+                font-size: 13px;
+            }
+            QPushButton {
+                background: transparent;
+                border: none;
+                border-radius: 4px;
+                padding: 2px;
+            }
+            QPushButton:hover {
+                background-color: rgba(239, 68, 68, 0.15);
+            }
+        """)
         
-        # Botón Eliminar usando ModernButton con el rol action_danger (DRY)
-        btn_delete = ModernButton("", role="action_danger")
-        btn_delete.setIcon(get_icon_colored("trash.svg", "#FFFFFF", size=16))
-        btn_delete.setToolTip("Eliminar de la lista")
+        layout = QHBoxLayout(tag_widget)
+        layout.setContentsMargins(4, 4, 8, 4) 
+        layout.setSpacing(4)
         
-        btn_delete.clicked.connect(lambda checked=False, b=bot_name: self._remove_bot(b))
-        self.table_bots.setCellWidget(row_idx, 1, btn_delete)
+        # CRÍTICO: Obliga al contenedor a envolver el texto y el botón con precisión
+        layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
         
+        lbl_name = QLabel(bot_name)
+        # (Se eliminó la línea de QSizePolicy que colapsaba el texto)
+        
+        btn_delete = QPushButton()
+        btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_delete.setIcon(get_icon_colored("trash.svg", "#ef4444", size=14))
+        btn_delete.setFixedSize(22, 22)
+        btn_delete.setToolTip("Eliminar bot")
+        btn_delete.clicked.connect(lambda checked=False, i=item: self._remove_bot_item(i))
+        
+        layout.addWidget(btn_delete)
+        layout.addWidget(lbl_name)
+        
+        item.setSizeHint(tag_widget.sizeHint())
+        self.list_bots.setItemWidget(item, tag_widget)
         self.txt_bot_input.clear()
         
         if trigger_update:
             self._on_settings_modified()
 
-    def _remove_bot(self, bot_name: str):
-        """Busca el bot por nombre y elimina la fila."""
-        for row in range(self.table_bots.rowCount()):
-            item = self.table_bots.item(row, 0)
-            if item and item.text() == bot_name:
-                self.table_bots.removeRow(row)
-                self._on_settings_modified()
-                break
+    @Slot(QListWidgetItem)
+    def _remove_bot_item(self, item: QListWidgetItem):
+        """Elimina el tag específico usando su referencia exacta."""
+        row = self.list_bots.row(item)
+        self.list_bots.takeItem(row)
+        self._on_settings_modified()
+
+    @Slot(QListWidgetItem)
+    def _handle_bot_clicked(self, item):
+        """Elimina el bot al hacer clic sobre su etiqueta (Alta Cohesión)."""
+        row = self.list_bots.row(item)
+        self.list_bots.takeItem(row)
+        self._on_settings_modified()
 
     def _get_bots_as_string(self) -> str:
-        """Recorre la tabla y devuelve un string separado por comas para guardar."""
+        """Recorre la lista y devuelve un string separado por comas para guardar."""
         bots = []
-        for row in range(self.table_bots.rowCount()):
-            item = self.table_bots.item(row, 0)
-            if item:
-                bots.append(item.text())
+        for i in range(self.list_bots.count()):
+            bots.append(self.list_bots.item(i).text())
         return ", ".join(bots)
 
     # ─── GESTIÓN DE EVENTOS INTERNOS ───
@@ -272,6 +324,8 @@ class ChatView(QWidget):
         self.settings_changed.emit(self.get_tts_settings())
 
     def _on_voice_selected(self, index: int):
+        if index < 0:
+            return       
         voice_id = self.combo_voice.itemData(index)
         if voice_id:
             self.voice_changed.emit(voice_id)
@@ -301,11 +355,11 @@ class ChatView(QWidget):
         self.chk_provider.setChecked(settings.get("provider") == "web")
 
         # Cargar los bots ignorados en la tabla
-        self.table_bots.setRowCount(0) 
+        self.list_bots.clear() 
         ignored_str = settings.get("ignored_users", "")
         if ignored_str:
             for bot in ignored_str.split(","):
-                self._add_bot_to_table(bot, trigger_update=False)
+                self._add_bot_to_list(bot, trigger_update=False)
 
         self.chk_tts.blockSignals(False)
         self.chk_name.blockSignals(False)

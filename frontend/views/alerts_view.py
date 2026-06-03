@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QLineEdit, QFrame, QTableWidget, QTableWidgetItem, 
                                QHeaderView, QFileDialog, QApplication, QComboBox,
                                QSlider, QDoubleSpinBox, QSpinBox)
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
 from frontend.components.controls import ModernButton, ModernSwitch
 from frontend.utils import get_icon_colored
@@ -38,17 +38,18 @@ class AlertsView(QWidget):
         self._build_table_card()
 
     def _build_obs_card(self):
-        """Construye la tarjeta de conexión de OBS (Alta Cohesión)."""
+        """Construye la tarjeta de conexión de OBS."""
         obs_card = QFrame()
         obs_card.setObjectName("Card")
         obs_layout = QHBoxLayout(obs_card)
         obs_layout.setContentsMargins(16, 16, 16, 16)
         
-        lbl_obs_url = QLabel("URL Browser Source:  http://localhost:8090/overlay")
-        lbl_obs_url.setStyleSheet("font-family: monospace; font-weight: bold;")
+        lbl_obs_url = QLabel("URL Browser Source:")
+        lbl_obs_url.setStyleSheet("font-family: monospace;")
         
-        self.btn_copy_url = ModernButton("Copiar", role="action_accent")
-        self.btn_copy_url.clicked.connect(lambda: QApplication.clipboard().setText("http://localhost:8090/overlay"))
+        self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_accent")
+        # DELEGACIÓN: Conectamos a un Slot dedicado en lugar de un lambda anónimo.
+        self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_layout.addWidget(lbl_obs_url)
         obs_layout.addStretch()
@@ -94,11 +95,10 @@ class AlertsView(QWidget):
 
         # Fila de Posiciones y Escala
         row3 = QHBoxLayout()
-        
-        # NUEVO: Control de Posición Aleatoria
+
         row3.addWidget(QLabel("Pos Random:"))
         self.chk_random_pos = ModernSwitch()
-        self.chk_random_pos.setEnabled(False) # Desactivado por defecto hasta cargar un video
+        self.chk_random_pos.setEnabled(False)
         self.chk_random_pos.toggled.connect(self._on_random_pos_toggled)
         row3.addWidget(self.chk_random_pos)
         row3.addSpacing(8)
@@ -126,21 +126,24 @@ class AlertsView(QWidget):
         row3.addStretch()
         form_layout.addLayout(row3)
 
-        # Nueva Fila Exclusiva para Volumen
-        row_vol = QHBoxLayout()
-        row_vol.addWidget(QLabel("Volumen:"))
+        # Fila Exclusiva para Volumen y Botón Guardar agrupados
+        row4 = QHBoxLayout()
+        
+        row4.addWidget(QLabel("Volumen:"))
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
-        row_vol.addWidget(self.slider_vol)
-        form_layout.addLayout(row_vol)
+        row4.addWidget(self.slider_vol)
         
-        # Botón Guardar
+        # Agregamos un espaciado para separar el slider del botón
+        row4.addSpacing(16) 
+        
         self.btn_add = ModernButton("Guardar Alerta", role="action_success")
         self.btn_add.clicked.connect(self._add_mapping)
-        form_layout.addSpacing(10)
-        form_layout.addWidget(self.btn_add)
-
+        row4.addWidget(self.btn_add)
+        
+        form_layout.addLayout(row4)
+        
         self.main_layout.addWidget(form_card)
 
     def _build_table_card(self):
@@ -173,6 +176,24 @@ class AlertsView(QWidget):
     # ─── CAPA LOGICA (SoR: Solo gestión de datos y eventos) ───
     # =========================================================================
     
+    @Slot()
+    def _copy_obs_url(self):
+        """Copia la URL al portapapeles y provee feedback visual temporal."""
+        url = "http://localhost:8090/overlay"
+        QApplication.clipboard().setText(url)
+        
+        # Cambiamos el texto y lo devolvemos a la normalidad después de 2 segundos
+        original_text = self.btn_copy_url.text()
+        self.btn_copy_url.setText("¡Enlace Copiado!")
+        self.btn_copy_url.setEnabled(False) # Evita spam de clics
+        
+        QTimer.singleShot(2000, lambda: self._reset_copy_btn(original_text))
+
+    def _reset_copy_btn(self, original_text: str):
+        """Devuelve el botón de copiar a su estado original."""
+        self.btn_copy_url.setText(original_text)
+        self.btn_copy_url.setEnabled(True)
+
     @Slot(bool)
     def _on_random_pos_toggled(self, checked: bool):
         """Bloquea o desbloquea las coordenadas según el estado del switch."""
@@ -277,7 +298,8 @@ class AlertsView(QWidget):
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_alerts.setItem(row, 1, item_file)
             
-            actions_widget = QWidget()
+            actions_widget = QFrame()
+            actions_widget.setObjectName("TableActions")
             actions_layout = QHBoxLayout(actions_widget)
             actions_layout.setContentsMargins(0, 0, 0, 0) 
             actions_layout.setSpacing(8)

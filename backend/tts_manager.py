@@ -10,6 +10,8 @@ class TTSManager:
     """Gestiona una cola de mensajes en un hilo secundario y delega."""
     def __init__(self):
         self._provider: ITTSProvider = LocalTTSProvider()
+
+        self._voices_cache = {"web": [], "local": []}
         
         self.queue: queue.Queue[str | None] = queue.Queue()
         self._thread = threading.Thread(target=self._worker, daemon=True)
@@ -36,7 +38,9 @@ class TTSManager:
             try:
                 if text is None:
                     break 
-                self._provider.speak(text)
+                active_provider = self._provider
+                active_provider.speak(text)
+                
             except Exception as e:
                 import logging
                 logging.error(f"[TTS Manager] Fallo crítico evitado en el motor: {e}")
@@ -44,9 +48,12 @@ class TTSManager:
                 self.queue.task_done()
 
     def get_available_voices(self, provider_type: str) -> list[dict]:
-        """Delega la búsqueda de voces al motor activo sin saber cómo lo hace (Decoupling)"""
-        # (El parámetro provider_type se mantiene por compatibilidad con tu frontend)
-        return self._provider.get_available_voices()
+        """Delega la búsqueda de voces utilizando una caché para evitar saturación."""
+        if provider_type in self._voices_cache and self._voices_cache[provider_type]:
+            return self._voices_cache[provider_type]
+        voices = self._provider.get_available_voices()
+        self._voices_cache[provider_type] = voices
+        return voices
 
     def set_volume(self, volume: float) -> None:
         self._provider.set_volume(volume)
