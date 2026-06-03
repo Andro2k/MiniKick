@@ -90,7 +90,7 @@ Si deseas explorar el código fuente o contribuir al proyecto en local:
 
 ```bash
 # Clonar el repositorio
-git clone [https://github.com/Andro2k/MiniKick.git](https://github.com/Andro2k/MiniKick.git)
+git clone https://github.com/Andro2k/MiniKick.git
 cd MiniKick
 
 # Crear y activar entorno virtual
@@ -105,8 +105,9 @@ python main.py
 ```
 
 ---
-[!TIP]
-Si descubres algún comportamiento inesperado o un crash del sistema, por favor revisa primero los Issues abiertos en el repositorio y la consola de desarrollador interna de la app antes de abrir un reporte nuevo.
+> [!TIP]
+> Si descubres algún comportamiento inesperado o un crash del sistema, por favor revisa primero los Issues abiertos en el repositorio y la consola de desarrollador interna de la app antes de abrir un reporte nuevo.
+
 ## Licencia
 
 Este proyecto se distribuye bajo la Licencia MIT. Consulte el archivo LICENSE para mas detalles.
