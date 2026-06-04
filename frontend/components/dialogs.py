@@ -18,19 +18,10 @@ class ModernBaseDialog(QDialog):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # Forzar al diálogo a adaptarse dinámicamente al contenido (Evita cortes de texto)
         self.main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
 
         self.container = QFrame()
-        # Se elimina objectName("Card") para no heredar los bordes redondeados de theme.py
         self.container.setObjectName("SquareDialog")
-        # Alta Cohesión: El estilo cuadrado vive estrictamente en el componente que lo necesita
-        self.container.setStyleSheet(f"""
-            QFrame#SquareDialog {{
-                background-color: #1E2329;
-                border: 1px solid #333333; 
-            }}
-        """)
         self.container.setFixedWidth(420)
         self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
@@ -49,13 +40,8 @@ class ModernBaseDialog(QDialog):
         icon_container = QFrame()
         icon_size = 52
         icon_container.setFixedSize(icon_size, icon_size)
-        icon_container.setStyleSheet(f"""
-            QFrame {{
-                background-color: {bg_color};
-                border-radius: {icon_size // 2}px;
-                border: none;
-            }}
-        """)
+        role = "danger_icon" if bg_color == "#EF4444" else "accent_icon"
+        icon_container.setProperty("dialog_role", role)
         
         icon_inner_layout = QVBoxLayout(icon_container)
         icon_inner_layout.setContentsMargins(0, 0, 0, 0)
@@ -97,7 +83,7 @@ class ModernConfirmDialog(ModernBaseDialog):
         self.content_layout.addWidget(title_lbl)
 
         body_label = QLabel(body_text)
-        body_label.setStyleSheet("color: #9CA3AF; font-size: 13px; line-height: 1.5;")
+        body_label.setProperty("role", "body")
         body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body_label.setWordWrap(True)
         # Política para asegurar que empuje el layout hacia abajo en lugar de cortarse
@@ -131,7 +117,7 @@ class UpdateDialog(ModernBaseDialog):
         self.content_layout.addWidget(self.title_lbl)
 
         self.status_label = QLabel("Conectando con el servidor...")
-        self.status_label.setStyleSheet("color: #9CA3AF; font-size: 13px;")
+        self.status_label.setProperty("role", "status")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.status_label.setWordWrap(True)
         self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)

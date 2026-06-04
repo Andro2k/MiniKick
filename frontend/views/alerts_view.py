@@ -29,7 +29,7 @@ class AlertsView(QWidget):
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
 
-        title = QLabel("Alertas OBS (TriggerFyre)")
+        title = QLabel("Triggers")
         title.setProperty("role", "title")
         self.main_layout.addWidget(title)
 
@@ -45,10 +45,9 @@ class AlertsView(QWidget):
         obs_layout.setContentsMargins(16, 16, 16, 16)
         
         lbl_obs_url = QLabel("URL Browser Source:")
-        lbl_obs_url.setStyleSheet("font-family: monospace;")
+        lbl_obs_url.setProperty("role", "monospace")
         
-        self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_accent")
-        # DELEGACIÓN: Conectamos a un Slot dedicado en lugar de un lambda anónimo.
+        self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_layout.addWidget(lbl_obs_url)
@@ -62,8 +61,7 @@ class AlertsView(QWidget):
         form_card.setObjectName("Card")
         form_layout = QVBoxLayout(form_card)
         form_layout.setContentsMargins(16, 16, 16, 16)
-        
-        # Paso 1: Recompensa
+
         lbl_step1 = QLabel("1. Seleccione la recompensa de KICK")
         lbl_step1.setProperty("role", "section")
         form_layout.addWidget(lbl_step1)
@@ -78,8 +76,7 @@ class AlertsView(QWidget):
         form_layout.addLayout(row1)
 
         form_layout.addSpacing(10)
-        
-        # Paso 2: Archivo y Ajustes
+
         lbl_step2 = QLabel("2. Archivo y Ajustes (Audio/Video)")
         lbl_step2.setProperty("role", "section")
         form_layout.addWidget(lbl_step2)
@@ -93,7 +90,6 @@ class AlertsView(QWidget):
         row2.addWidget(self.btn_browse)
         form_layout.addLayout(row2)
 
-        # Fila de Posiciones y Escala
         row3 = QHBoxLayout()
 
         row3.addWidget(QLabel("Pos Random:"))
@@ -126,7 +122,6 @@ class AlertsView(QWidget):
         row3.addStretch()
         form_layout.addLayout(row3)
 
-        # Fila Exclusiva para Volumen y Botón Guardar agrupados
         row4 = QHBoxLayout()
         
         row4.addWidget(QLabel("Volumen:"))
@@ -134,8 +129,7 @@ class AlertsView(QWidget):
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         row4.addWidget(self.slider_vol)
-        
-        # Agregamos un espaciado para separar el slider del botón
+
         row4.addSpacing(16) 
         
         self.btn_add = ModernButton("Guardar Alerta", role="action_success")
@@ -181,11 +175,10 @@ class AlertsView(QWidget):
         """Copia la URL al portapapeles y provee feedback visual temporal."""
         url = "http://localhost:8090/overlay"
         QApplication.clipboard().setText(url)
-        
-        # Cambiamos el texto y lo devolvemos a la normalidad después de 2 segundos
+
         original_text = self.btn_copy_url.text()
         self.btn_copy_url.setText("¡Enlace Copiado!")
-        self.btn_copy_url.setEnabled(False) # Evita spam de clics
+        self.btn_copy_url.setEnabled(False)
         
         QTimer.singleShot(2000, lambda: self._reset_copy_btn(original_text))
 
@@ -231,7 +224,7 @@ class AlertsView(QWidget):
             "scale": self.spin_scale.value(),
             "pos_x": self.spin_x.value(),
             "pos_y": self.spin_y.value(),
-            "is_random_pos": self.chk_random_pos.isChecked() # <-- CORRECCIÓN: is_random_pos
+            "is_random_pos": self.chk_random_pos.isChecked()
         }
         self._refresh_table()
         
@@ -276,8 +269,7 @@ class AlertsView(QWidget):
             self.slider_vol.setValue(int(config.get("volume", 1.0) * 100))
             
             self._evaluate_media_type(filepath)
-            
-            # <-- CORRECCIÓN: Carga correctamente la variable
+
             self.chk_random_pos.setChecked(config.get("is_random_pos", False)) 
             
         self.btn_add.setText("Actualizar Alerta")

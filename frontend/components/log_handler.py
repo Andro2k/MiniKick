@@ -3,7 +3,7 @@ from PySide6.QtCore import QObject, Signal
 
 class LogEmitter(QObject):
     """Objeto QObject necesario para emitir señales, ya que logging.Handler no lo es."""
-    log_received = Signal(str, str)  # (Nivel, Mensaje Formateado)
+    log_received = Signal(str, str)
 
 class QLogHandler(logging.Handler):
     """
@@ -12,13 +12,11 @@ class QLogHandler(logging.Handler):
     def __init__(self):
         super().__init__()
         self.emitter = LogEmitter()
-        
-        # Formato estándar del log
+
         formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', datefmt='%H:%M:%S')
         self.setFormatter(formatter)
 
     def emit(self, record: logging.LogRecord):
-        # Evita que el formateo bloquee o rompa si hay caracteres extraños
         try:
             msg = self.format(record)
             self.emitter.log_received.emit(record.levelname, msg)
@@ -35,7 +33,6 @@ class StreamToLogger:
         self.log_level = log_level
 
     def write(self, buf):
-        # Evita procesar líneas vacías que causan saltos de línea extra
         for line in buf.rstrip().splitlines():
             if line.strip():
                 self.logger.log(self.log_level, line.rstrip())

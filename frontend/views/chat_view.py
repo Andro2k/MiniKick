@@ -101,7 +101,7 @@ class ChatView(QWidget):
 
         self.combo_voice = QComboBox()
         self.combo_voice.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.combo_voice.setStyleSheet("QAbstractItemView { font-size: 13px; }")
+        
         self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         row_voice.addWidget(self.combo_voice)
         
@@ -114,7 +114,7 @@ class ChatView(QWidget):
         
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setFixedWidth(40)
-        self.lbl_vol_perc.setStyleSheet("color: #0ca678; font-weight: bold;")
+        self.lbl_vol_perc.setProperty("role", "section_small")
         
         row_vol.addWidget(self.slider_vol)
         row_vol.addWidget(self.lbl_vol_perc)
@@ -149,7 +149,7 @@ class ChatView(QWidget):
         layout.setSpacing(6)
 
         title = QLabel("Silenciar Usuarios/Bots")
-        title.setStyleSheet("font-weight: bold; font-size: 13px;")
+        title.setProperty("role", "section_small")
         layout.addWidget(title)
 
         # Fila de Input + Botón
@@ -157,7 +157,7 @@ class ChatView(QWidget):
         self.txt_bot_input = QLineEdit()
         self.txt_bot_input.setPlaceholderText("ej. @botrix")
         
-        self.btn_add_bot = ModernButton(" Agregar", role="action_accent")
+        self.btn_add_bot = ModernButton("Agregar", role="action_accent")
         self.btn_add_bot.setIcon(get_icon_colored("add.svg", "#FFFFFF", size=16))
         icon_add_path = resource_path(os.path.join("assets", "icons", "add.svg"))
         if os.path.exists(icon_add_path):
@@ -175,18 +175,8 @@ class ChatView(QWidget):
         self.list_bots.setSpacing(3)
         
         # Estilo base transparente (el diseño ahora va en cada Tag)
-        self.list_bots.setStyleSheet("""
-            QListWidget { 
-                background: transparent; 
-                border: none; 
-                outline: none; 
-            }
-            QListWidget::item {
-                background: transparent;
-            }
-        """)
-        
-        # (ELIMINAR la línea: self.list_bots.itemClicked.connect(...))
+        self.list_bots.setObjectName("BotsList")
+
         layout.addWidget(self.list_bots)
 
         return panel
@@ -212,30 +202,6 @@ class ChatView(QWidget):
         
         tag_widget = QFrame()
         tag_widget.setObjectName("BotTag")
-        tag_widget.setStyleSheet("""
-            QFrame#BotTag {
-                background-color: #2A2A2A;
-                border: 1px solid #333333;
-                border-radius: 6px;
-            }
-            QFrame#BotTag:hover {
-                border: 1px solid #D74141; 
-            }
-            QLabel {
-                color: #F3F4F6;
-                padding-right: 4px;
-                font-size: 13px;
-            }
-            QPushButton {
-                background: transparent;
-                border: none;
-                border-radius: 4px;
-                padding: 2px;
-            }
-            QPushButton:hover {
-                background-color: rgba(239, 68, 68, 0.15);
-            }
-        """)
         
         layout = QHBoxLayout(tag_widget)
         layout.setContentsMargins(4, 4, 8, 4) 

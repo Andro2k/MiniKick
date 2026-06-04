@@ -13,6 +13,7 @@ from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager
 from frontend.components.log_handler import QLogHandler, StreamToLogger
 from frontend.components.sidebar import Sidebar
+from frontend.components.tray_menu import SystemTrayManager
 from frontend.views.alerts_view import AlertsView
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
@@ -141,7 +142,7 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar()
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
         self.sidebar.add_tab("Chat", "chat.svg")
-        self.sidebar.add_tab("Alertas OBS", "kick.svg") 
+        self.sidebar.add_tab("Triggers", "kick.svg") 
         self.sidebar.add_tab("Settings", "settings.svg")
         self.sidebar.add_tab("Developer", "terminal.svg") 
 
@@ -163,21 +164,32 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.content_stack)
 
     def _setup_tray(self):
-        self.tray_icon = QSystemTrayIcon(self)
-        icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
-        self.tray_icon.setIcon(QIcon(icon_path))
-
-        tray_menu = QMenu()
-        restore_action = tray_menu.addAction("Abrir Panel")
-        restore_action.triggered.connect(self.showNormal)
+        self.tray_manager = SystemTrayManager(self)
         
-        tray_menu.addSeparator()       
-        quit_action = tray_menu.addAction("Cerrar MiniKick")
-        quit_action.triggered.connect(self._force_quit) 
+        # Conectamos las señales del componente a los métodos de MainWindow
+        self.tray_manager.restore_requested.connect(self._restore_from_tray)
+        self.tray_manager.quit_requested.connect(self._force_quit)
+        self.tray_manager.tts_toggled.connect(self._handle_tray_tts_toggle)
+        
+        self.tray_manager.show()
 
-        self.tray_icon.setContextMenu(tray_menu)
-        self.tray_icon.activated.connect(self._on_tray_activated)
-        self.tray_icon.show()
+    @Slot()
+    def _restore_from_tray(self):
+        """Restaura la ventana desde la bandeja."""
+        self.showNormal()
+        self.activateWindow()
+
+    @Slot(bool)
+    def _handle_tray_tts_toggle(self, enabled: bool):
+        """Se ejecuta cuando el usuario activa/desactiva el TTS desde el menú minimizado."""
+        self.settings_storage.save_bool("tts_enabled", enabled)
+
+        self.view_chat.chk_tts.blockSignals(True)
+        self.view_chat.chk_tts.setChecked(enabled)
+        self.view_chat.chk_tts.blockSignals(False)
+
+        estado = "Activado" if enabled else "Silenciado"
+        self.tray_manager.showMessage("MiniKick", f"Lectura de chat: {estado}", QSystemTrayIcon.MessageIcon.Information, 2000)
 
     def _connect_signals(self):
         self.sidebar.view_selected.connect(self._handle_navigation)
@@ -203,7 +215,6 @@ class MainWindow(QMainWindow):
         vol_int = int(saved_volume)
         self.view_chat.slider_vol.setValue(vol_int)
         self.tts_manager.set_volume(vol_int / 100.0)
-
         saved_provider = self.settings_storage.load_string("tts_provider", "local")
         chat_settings = {
             "enabled": self.settings_storage.load_bool("tts_enabled", True),
@@ -214,16 +225,13 @@ class MainWindow(QMainWindow):
             "ignored_users": self.settings_storage.load_string("tts_ignored_users", "")
         }
         self.view_chat.set_initial_settings(chat_settings)
-
         self.view_settings.set_minimize_tray_enabled(self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False))
-
-        # --- LECTURA DESDE NUEVA TABLA (Alta Cohesión) ---
         mappings = self.alerts_storage.load_all()
         self.view_alerts.set_initial_mappings(mappings)
-
+        tts_enabled = self.settings_storage.load_bool("tts_enabled", True)
+        self.tray_manager.set_tts_state(tts_enabled)
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
-
         self._handle_provider_change(saved_provider, is_initial_load=True)
 
         if autostart_enabled:
@@ -281,7 +289,7 @@ class MainWindow(QMainWindow):
             "Chat": self.view_chat,
             "Settings": self.view_settings,
             "Developer": self.view_logs,
-            "Alertas OBS": self.view_alerts
+            "Triggers": self.view_alerts
         }
         target_view = mapping.get(view_name)
         if target_view:
@@ -335,13 +343,11 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _fetch_api_rewards(self):
-        # 1. FAIL-FAST: Validación temprana sin tocar la red
         if not self.auth_manager.get_tokens():
             self.logger.error("Intento de actualizar recompensas sin estar conectado a Kick.")
-            self.view_alerts.update_rewards_combo([]) # Forzará el mensaje "No hay recompensas"
+            self.view_alerts.update_rewards_combo([])
             return
 
-        # 2. GESTIÓN DE HILOS: Evitar sobrescribir un hilo en ejecución
         if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker.isRunning():
             self.logger.warning("Ya se están consultando las recompensas. Por favor espera.")
             return
@@ -349,11 +355,8 @@ class MainWindow(QMainWindow):
         try:
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             self.fetch_rewards_worker = FetchRewardsWorker(api_client)
-            
-            # 3. ALTA COHESIÓN: Escuchar tanto el éxito como el fracaso
             self.fetch_rewards_worker.rewards_fetched.connect(self.view_alerts.update_rewards_combo)
             self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
-            
             self.fetch_rewards_worker.start()
         except Exception as e:
             self.logger.error(f"Error al preparar la consulta de recompensas: {e}")
@@ -362,7 +365,7 @@ class MainWindow(QMainWindow):
     def _handle_rewards_error(self, error_msg: str):
         """Maneja los errores del hilo de recompensas para evitar bloqueos silenciosos."""
         self.logger.error(f"Fallo en la API de recompensas: {error_msg}")
-        self.view_alerts.update_rewards_combo([]) # Limpia la lista en la UI
+        self.view_alerts.update_rewards_combo([])
             
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):
@@ -422,6 +425,7 @@ class MainWindow(QMainWindow):
         self.settings_storage.save_bool("tts_use_command", settings["use_command"])
         self.settings_storage.save_string("tts_command", settings["command"])
         self.settings_storage.save_string("tts_ignored_users", settings["ignored_users"])
+        self.tray_manager.set_tts_state(settings["enabled"])
 
     @Slot(str, str)
     def _on_chat_message(self, user: str, message: str):
@@ -481,30 +485,25 @@ class MainWindow(QMainWindow):
         self._is_shutting_down = True
         
         self.logger.info("🛑 Iniciando secuencia de apagado...")
-        
-        # 1. Detenemos servicios
+
         self.logger.info("-> Apagando TTS y Overlay...")
         self.tts_manager.stop()        
         self.overlay_server.stop() 
-        
-        # [DRY Principle] Centralizamos la lógica de terminación segura de hilos.
+
         def safe_stop_thread(worker_name: str, worker_instance):
             if worker_instance and worker_instance.isRunning():
                 self.logger.info(f"-> Solicitando parada de {worker_name}...")
-                
-                # Intentamos el cierre en gracia (Alta Cohesión)
+
                 if hasattr(worker_instance, 'stop'):
                     worker_instance.stop()
-                
-                # Esperamos 2 segundos. Si falla por I/O bloqueante, forzamos la guillotina.
+
                 if not worker_instance.wait(2000):
                     self.logger.warning(f"❌ {worker_name} atascado (posible bloqueo de red). Forzando terminación...")
-                    worker_instance.terminate() # Aborta la ejecución a nivel C++
-                    worker_instance.wait()      # Asegura que el SO liberó el recurso
+                    worker_instance.terminate()
+                    worker_instance.wait()
                 else:
                     self.logger.info(f"✅ {worker_name} cerrado limpiamente.")
 
-        # 2. Apagado auditable y garantizado de todos los hilos
         safe_stop_thread("Worker_Chat_Socket", self.chat_worker)
         safe_stop_thread("Worker_Auth", getattr(self, 'auth_worker', None))
         safe_stop_thread("Worker_Reward_Polling", getattr(self, 'reward_worker', None))

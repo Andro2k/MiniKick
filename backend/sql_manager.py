@@ -23,7 +23,6 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
-            # Tabla de Tokens
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS tokens (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +34,6 @@ class DatabaseManager:
                 )
             """)
             
-            # Tabla de Configuraciones Genéricas
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY,
@@ -43,7 +41,6 @@ class DatabaseManager:
                 )
             """)
             
-            # Tabla Relacional para Alertas OBS
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS obs_alerts (
                     reward_name TEXT PRIMARY KEY,

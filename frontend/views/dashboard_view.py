@@ -52,6 +52,7 @@ class DashboardView(QWidget):
         self.status_label.setProperty("role", "subtitle")
         
         self.btn_autostart = QPushButton()
+        self.btn_autostart.setObjectName("AutoStartBtn")
         self.btn_autostart.setFixedSize(36, 36)
         self.btn_autostart.setCheckable(True) 
         self.btn_autostart.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -96,7 +97,7 @@ class DashboardView(QWidget):
         self.lbl_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.lbl_avatar.setText("?")
-        self.lbl_avatar.setStyleSheet(f"font-size: 40px; color: {COLOR_BORDER_SVELTE}; font-weight: bold;")
+        self.lbl_avatar.setObjectName("AvatarLabel")
         
         avatar_layout.addWidget(self.lbl_avatar)
         profile_layout.addWidget(avatar_card)
@@ -148,46 +149,17 @@ class DashboardView(QWidget):
             pixmap = create_circular_pixmap(data)
             if not pixmap.isNull():
                 self.lbl_avatar.setPixmap(pixmap)
-                self.lbl_avatar.setStyleSheet("border: none;") 
+                self.lbl_avatar.setProperty("has_image", True)
+                self.lbl_avatar.style().unpolish(self.lbl_avatar)
+                self.lbl_avatar.style().polish(self.lbl_avatar)
+
         reply.deleteLater()
 
     @Slot(bool)
     def _update_autostart_visuals(self, checked: bool):
-        if checked:
-            icon = get_icon_colored("plug.svg", "#000000", size=24)
-            self.btn_autostart.setToolTip("Desactivar Inicio Automático")
-            self.btn_autostart.setStyleSheet("""
-                QPushButton {
-                    background-color: #10B981;
-                    border-radius: 12px;
-                }
-                QPushButton:hover {
-                    background-color: #059669; 
-                }
-                QPushButton:pressed {
-                    background-color: #047857; 
-                }
-            """)
-        else:
-            # Estado Inactivo: Se restaura a tu tema base
-            icon = get_icon_colored("plug.svg", "#059669", size=24) 
-            self.btn_autostart.setToolTip("Activar Inicio Automático")
-            self.btn_autostart.setStyleSheet("""
-                QPushButton {
-                    background-color: #1E2329;
-                    border: 1px solid #059669;
-                    border-radius: 12px;
-                }
-                QPushButton:hover {
-                    background-color: #059669; 
-                }
-                QPushButton:pressed {
-                    background-color: #047857; 
-                }
-            """)
-            
+        icon = get_icon_colored("plug.svg", "#000000" if checked else "#059669", size=28)
+        self.btn_autostart.setToolTip("Desactivar Inicio Automático" if checked else "Activar Inicio Automático")
         self.btn_autostart.setIcon(icon)
-
 
     # ─── CONTRATOS DE ESTADO (Controlador -> Vista) ───
     def set_autostart_state(self, enabled: bool):
@@ -227,7 +199,9 @@ class DashboardView(QWidget):
 
     def set_error_state(self, error_message: str):
         self.status_label.setText(f"Error: {error_message}")
-        self.status_label.setStyleSheet("color: #ff6b6b;") 
+        self.status_label.setProperty("state", "error")
+        self.status_label.style().unpolish(self.status_label)
+        self.status_label.style().polish(self.status_label)
         self.btn_connect.setEnabled(True)
         self.btn_connect.setText("Reintentar")
         self.profile_container.setVisible(False)

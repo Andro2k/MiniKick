@@ -26,8 +26,7 @@ class Sidebar(QFrame):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(10, 20, 10, 20)
         self.main_layout.setSpacing(8)
-        
-        # --- HEADER ---
+
         self.header_container = QWidget()
         self.header_layout = QHBoxLayout(self.header_container)
         self.header_layout.setContentsMargins(0, 0, 0, 0) 
@@ -36,17 +35,17 @@ class Sidebar(QFrame):
         self.logo_btn = QPushButton()
         self.logo_btn.setIcon(get_icon("logo.svg")) 
         self.logo_btn.setIconSize(QSize(30, 30))
-        self.logo_btn.setStyleSheet("border: none; background: transparent;")
+        self.logo_btn.setObjectName("LogoBtn")
         
         self.title_label = QLabel("MiniKick")
-        self.title_label.setStyleSheet("font-size: 16px; font-weight: bold; padding-left: 6px;")
+        self.title_label.setObjectName("SidebarTitle")
         
         self.expanded_spacer = QWidget()
         self.expanded_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
         self.btn_toggle = QPushButton()
         self.btn_toggle.setIcon(get_icon_colored("chevron-left.svg", COLOR_TEXT_SECONDARY)) 
-        self.btn_toggle.setFixedSize(30, 30)
+        self.btn_toggle.setFixedSize(36, 36)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
         
@@ -57,7 +56,6 @@ class Sidebar(QFrame):
         self.main_layout.addWidget(self.header_container)
         self.main_layout.addSpacing(24)
         
-        # --- NAVEGACIÓN SUPERIOR ---
         self.nav_layout = QVBoxLayout()
         self.nav_layout.setSpacing(4)
         self.main_layout.addLayout(self.nav_layout)
@@ -73,7 +71,7 @@ class Sidebar(QFrame):
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)        
         icon_color = COLOR_ACCENT if is_active else COLOR_TEXT_SECONDARY
-        btn.setIcon(get_icon_colored(icon_name, icon_color, 22))
+        btn.setIcon(get_icon_colored(icon_name, icon_color, 28))
         btn.setStyleSheet("text-align: left; padding-left: 12px;")
         
         if is_active:
@@ -112,13 +110,8 @@ class Sidebar(QFrame):
     def _update_texts_and_styles(self, show: bool):
         for btn in self.nav_buttons:
             btn.setText(btn.property("original_text") if show else "")
-            
-            if show:
-                btn.setStyleSheet("text-align: left; padding-left: 12px;")
-            else:
-                btn.setStyleSheet("text-align: center; padding: 6px;")
-                
             btn.setProperty("collapsed", not show)
+
             btn.style().unpolish(btn)
             btn.style().polish(btn)
 

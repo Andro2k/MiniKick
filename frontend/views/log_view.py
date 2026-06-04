@@ -29,16 +29,6 @@ class LogView(QWidget):
         self.console = QTextEdit()
         self.console.setReadOnly(True)
         self.console.setObjectName("ConsoleDisplay")
-        self.console.setStyleSheet("""
-            QTextEdit {
-                background-color: #0F172A;
-                color: #F8FAFC;
-                font-family: 'Consolas', 'Courier New', monospace;
-                font-size: 12px;
-                border-radius: 8px;
-                padding: 10px;
-            }
-        """)
         layout.addWidget(self.console)
 
     @Slot()

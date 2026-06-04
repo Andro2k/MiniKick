@@ -30,7 +30,7 @@ class SettingsView(QWidget):
         sys_layout.setContentsMargins(16, 16, 16, 16)
         sys_layout.setSpacing(12)
 
-        sys_title = QLabel("COMPORTAMIENTO DE VENTANA")
+        sys_title = QLabel("Comportamiento de Ventana")
         sys_title.setProperty("role", "section")
         sys_layout.addWidget(sys_title)
 
@@ -55,7 +55,7 @@ class SettingsView(QWidget):
         account_layout.setContentsMargins(16, 16, 16, 16)
         account_layout.setSpacing(12)
 
-        account_title = QLabel("GESTIÓN DE CUENTA")
+        account_title = QLabel("Gestión de Cuenta")
         account_title.setProperty("role", "section")
         account_layout.addWidget(account_title)
 
@@ -81,7 +81,7 @@ class SettingsView(QWidget):
         update_layout.setContentsMargins(16, 16, 16, 16)
         update_layout.setSpacing(12)
 
-        update_title = QLabel("SISTEMA")
+        update_title = QLabel("Sistema y Actualizaciones")
         update_title.setProperty("role", "section")
         update_layout.addWidget(update_title)
 

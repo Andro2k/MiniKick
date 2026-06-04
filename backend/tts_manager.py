@@ -9,20 +9,25 @@ from backend.TTS.web_tts import WebTTSProvider
 class TTSManager:
     """Gestiona una cola de mensajes en un hilo secundario y delega."""
     def __init__(self):
-        self._provider: ITTSProvider = LocalTTSProvider()
-
+        self._providers = {
+            "local": LocalTTSProvider(),
+            "web": WebTTSProvider()
+        }
+        self._active_provider_key = "local"
         self._voices_cache = {"web": [], "local": []}
         
         self.queue: queue.Queue[str | None] = queue.Queue()
         self._thread = threading.Thread(target=self._worker, daemon=True)
         self._thread.start()
 
+    @property
+    def _provider(self) -> ITTSProvider:
+        return self._providers[self._active_provider_key]
+
     def set_provider(self, provider_type: str) -> None:
-        """Cambia el motor en caliente (Factory)."""
-        if provider_type == "web":
-            self._provider = WebTTSProvider()
-        else:
-            self._provider = LocalTTSProvider()
+        """Cambia el motor en caliente reutilizando instancias (DRY Principle)."""
+        if provider_type in self._providers:
+            self._active_provider_key = provider_type
 
     def say(self, text: str) -> None:
         if text and text.strip():
@@ -51,7 +56,9 @@ class TTSManager:
         """Delega la búsqueda de voces utilizando una caché para evitar saturación."""
         if provider_type in self._voices_cache and self._voices_cache[provider_type]:
             return self._voices_cache[provider_type]
-        voices = self._provider.get_available_voices()
+            
+        target_provider = self._providers.get(provider_type, self._provider)
+        voices = target_provider.get_available_voices()
         self._voices_cache[provider_type] = voices
         return voices
 
