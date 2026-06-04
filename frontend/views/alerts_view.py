@@ -97,7 +97,13 @@ class AlertsView(QWidget):
         self.chk_random_pos.setEnabled(False)
         self.chk_random_pos.toggled.connect(self._on_random_pos_toggled)
         row3.addWidget(self.chk_random_pos)
-        row3.addSpacing(8)
+        row3.addSpacing(16)
+
+        # ─── NUEVO: Botón del Editor Visual ───
+        self.btn_visual_editor = ModernButton("📍 Editor Visual", role="action_outlined")
+        self.btn_visual_editor.clicked.connect(self._open_visual_editor)
+        row3.addWidget(self.btn_visual_editor)
+        row3.addSpacing(16)
 
         row3.addWidget(QLabel("Pos X:"))
         self.spin_x = QSpinBox()
@@ -318,3 +324,29 @@ class AlertsView(QWidget):
             self.combo_rewards.addItem("No hay recompensas")
         else:
             self.combo_rewards.addItems(rewards_list)
+
+    @Slot()
+    def _open_visual_editor(self):
+        from frontend.components.dialogs import VisualPositionerDialog
+        
+        # Obtenemos la ruta del video y la escala actual desde los inputs
+        filepath = self.txt_file_path.text().strip()
+        current_scale = self.spin_scale.value()
+        
+        dialog = VisualPositionerDialog(
+            current_x=self.spin_x.value(), 
+            current_y=self.spin_y.value(), 
+            filepath=filepath,
+            scale_val=current_scale,
+            parent=self
+        )
+        
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            new_x, new_y = dialog.get_final_positions()
+            self.spin_x.setValue(new_x)
+            self.spin_y.setValue(new_y)
+
+        # Regla de Oro (Limpieza de Memoria): 
+        # Apagamos el reproductor de video interno al cerrar el diálogo
+        if hasattr(dialog.draggable_box, 'player'):
+            dialog.draggable_box.player.stop()

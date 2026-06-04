@@ -1,9 +1,13 @@
 # frontend/components/dialogs.py
 
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QWidget, QProgressBar, QSizePolicy
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QIcon
-
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QProgressBar, QSizePolicy
+from PySide6.QtCore import QPoint, Qt, Signal
+from PySide6.QtGui import QIcon, QMouseEvent
+import os
+from PySide6.QtCore import QPoint, QUrl
+from PySide6.QtGui import QPixmap
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PySide6.QtMultimediaWidgets import QVideoWidget
 from frontend.theme import COLOR_ACCENT, PATH_ICON_HELP, PATH_ICON_UPDATE
 
 # ─── 1. CLASE BASE (Abstracción Estructural - SoR & DRY) ──────────────────────
@@ -186,3 +190,122 @@ class UpdateDialog(ModernBaseDialog):
         self.btn_close.setVisible(True)
         self.btn_close.setEnabled(True)
 
+class DraggableAlertBox(QFrame):
+    """Componente que representa el video arrastrable con previsualización real."""
+    def __init__(self, parent, canvas_w: int, canvas_h: int, scale_factor_obs: float, filepath: str, scale_val: float):
+        super().__init__(parent)
+        self.canvas_w = canvas_w
+        self.canvas_h = canvas_h
+        self.scale_factor = scale_factor_obs 
+        
+        # Tamaño simulado (Asumimos alerta base de 300px escalada por el multiplicador del usuario)
+        base_obs_size = 300 * scale_val
+        local_size = int(base_obs_size / self.scale_factor)
+        self.setFixedSize(local_size, local_size)
+        
+        self.setStyleSheet("""
+            QFrame {
+                background-color: rgba(83, 252, 24, 0.1); 
+                border: 2px dashed #53FC18; 
+                border-radius: 4px;
+            }
+        """)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
+        
+        self._drag_active = False
+        self._drag_offset = QPoint()
+
+        # ─── MOTOR MULTIMEDIA (Previsualización en vivo) ───
+        self.media_layout = QVBoxLayout(self)
+        self.media_layout.setContentsMargins(2, 2, 2, 2)
+        
+        if filepath and os.path.exists(filepath):
+            ext = filepath.lower()
+            if ext.endswith(('.mp4', '.webm')):
+                self.video_widget = QVideoWidget()
+                # Evita que el reproductor robe los eventos del ratón para poder arrastrarlo
+                self.video_widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+                self.media_layout.addWidget(self.video_widget)
+
+                self.player = QMediaPlayer(self)
+                self.audio = QAudioOutput(self)
+                self.audio.setVolume(0.0) # Silenciado estrictamente
+                
+                self.player.setAudioOutput(self.audio)
+                self.player.setVideoOutput(self.video_widget)
+                self.player.setSource(QUrl.fromLocalFile(filepath))
+                self.player.setLoops(QMediaPlayer.Loops.Infinite) # Bucle infinito
+                self.player.play()
+                
+            elif ext.endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                self.img_lbl = QLabel()
+                self.img_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+                self.img_lbl.setScaledContents(True)
+                self.img_lbl.setPixmap(QPixmap(filepath))
+                self.media_layout.addWidget(self.img_lbl)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if event.button() == Qt.LeftButton:
+            self._drag_active = True
+            self._drag_offset = event.pos()
+            self.setCursor(Qt.CursorShape.ClosedHandCursor)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if self._drag_active:
+            new_pos = self.mapToParent(event.pos()) - self._drag_offset
+            x = max(0, min(new_pos.x(), self.canvas_w - self.width()))
+            y = max(0, min(new_pos.y(), self.canvas_h - self.height()))
+            self.move(x, y)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self._drag_active = False
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
+
+    def get_obs_coordinates(self) -> tuple[int, int]:
+        return int(self.x() * self.scale_factor), int(self.y() * self.scale_factor)
+
+    def set_obs_coordinates(self, obs_x: int, obs_y: int):
+        local_x = int(obs_x / self.scale_factor)
+        local_y = int(obs_y / self.scale_factor)
+        local_x = max(0, min(local_x, self.canvas_w - self.width()))
+        local_y = max(0, min(local_y, self.canvas_h - self.height()))
+        self.move(local_x, local_y)
+
+class VisualPositionerDialog(ModernBaseDialog):
+    def __init__(self, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
+        super().__init__(PATH_ICON_HELP, COLOR_ACCENT, parent)
+        self.setWindowTitle("Posicionador Visual (1920x1080)")
+        self.container.setFixedWidth(700)
+        
+        desc_lbl = QLabel("Arrastra tu alerta para establecer en qué parte de la pantalla aparecerá.")
+        desc_lbl.setProperty("role", "body")
+        desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.content_layout.addWidget(desc_lbl)
+        self.content_layout.addSpacing(10)
+        
+        self.canvas_w = 640
+        self.canvas_h = 360
+        self.scale_factor = 1920 / self.canvas_w
+        
+        self.canvas_container = QFrame()
+        self.canvas_container.setFixedSize(self.canvas_w, self.canvas_h)
+        self.canvas_container.setStyleSheet("background-color: #0B0E11; border: 2px solid #333333; border-radius: 8px;")
+        
+        # Pasamos el archivo de video y la escala al constructor
+        self.draggable_box = DraggableAlertBox(self.canvas_container, self.canvas_w, self.canvas_h, self.scale_factor, filepath, scale_val)
+        self.draggable_box.set_obs_coordinates(current_x, current_y)
+        
+        self.content_layout.addWidget(self.canvas_container, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        self.btn_save = QPushButton("Guardar Posición")
+        self.btn_save.setProperty("role", "action_accent")
+        self.btn_save.clicked.connect(self.accept)
+        
+        self.btn_cancel = QPushButton("Cancelar")
+        self.btn_cancel.setProperty("role", "action_outlined")
+        self.btn_cancel.clicked.connect(self.reject)
+        
+        self.add_action_buttons(self.btn_save, self.btn_cancel)
+        
+    def get_final_positions(self) -> tuple[int, int]:
+        return self.draggable_box.get_obs_coordinates()
