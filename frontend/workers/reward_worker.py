@@ -8,13 +8,14 @@ class RewardWorker(QThread):
     reward_redeemed = Signal(str, str, str)
     error_occurred = Signal(str)
 
-    def __init__(self, api_client: KickAPIClient, poll_interval_seconds: int = 15):
-        super().__init__()
-        self.setObjectName("Worker_Reward_Polling") # <--- AÑADIR
+    # Añadimos parent=None y super().__init__(parent)
+    def __init__(self, api_client: KickAPIClient, poll_interval_seconds: int = 15, parent=None):
+        super().__init__(parent) 
+        self.setObjectName("Worker_Reward_Polling") 
         self.api_client = api_client
         self.poll_interval = poll_interval_seconds
         self._running = False
-        self._processed_ids = set() # Memoria local para no repetir TTS
+        self._processed_ids = set() 
 
     def run(self):
         self._running = True

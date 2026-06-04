@@ -8,7 +8,6 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget
 from PySide6.QtCore import Slot, QThread, Signal, QEvent
 from PySide6.QtGui import QIcon
 
-# Importamos las Vistas (Frontend)
 from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager
 from frontend.components.log_handler import QLogHandler, StreamToLogger
@@ -20,30 +19,28 @@ from frontend.views.chat_view import ChatView
 from frontend.views.log_view import LogView
 from frontend.views.settings_view import SettingsView
 
-# Importamos Componentes de Actualización (Frontend)
 from frontend.components.dialogs import UpdateDialog
 
-# Importamos el Backend
 from backend.auth_manager import AuthManager
-from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage # <-- NUEVO IMPORT
+from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage 
 from backend.kick_api_client import KickAPIClient
 from backend.kick_websocket import ChatSocketManager
 from backend.tts_manager import TTSManager
 
-# Importamos Componentes Modernos y Utilidades
 from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.reward_worker import RewardWorker
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
+# --- CORRECCIÓN: Añadido parent a las inicializaciones ---
 class FetchRewardsWorker(QThread):
     rewards_fetched = Signal(list)
     error_occurred = Signal(str)
 
-    def __init__(self, api_client: KickAPIClient):
-        super().__init__()
-        self.setObjectName("Worker_Fetch_Rewards") # <--- AÑADIR
+    def __init__(self, api_client: KickAPIClient, parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Fetch_Rewards")
         self.api_client = api_client
         self._is_shutting_down = False
 
@@ -60,9 +57,9 @@ class ChatWorker(QThread):
     error_occurred = Signal(str)        
     connection_success = Signal(dict)   
     
-    def __init__(self, api_client: KickAPIClient, cluster: str, key: str):
-        super().__init__()
-        self.setObjectName("Worker_Chat_Socket") # <--- ESTO ES LA CLAVE
+    def __init__(self, api_client: KickAPIClient, cluster: str, key: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Chat_Socket")
         self.api_client = api_client 
         self.cluster = cluster
         self.key = key
@@ -86,7 +83,6 @@ class ChatWorker(QThread):
             self.error_occurred.emit(str(e))
 
     def stop(self):
-        """Delega el cierre de la conexión al Manager (SoR)"""
         if self.chat_manager:
             self.chat_manager.stop_socket()
 
@@ -105,11 +101,10 @@ class MainWindow(QMainWindow):
         self.updater_manager = updater_manager
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
 
-        # --- Base de Datos Inyectada (Dependency Inversion) ---
         self.db_manager = DatabaseManager()
         self.token_storage = SQLiteTokenStorage(self.db_manager)
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
-        self.alerts_storage = SQLiteAlertsStorage(self.db_manager) # <-- NUEVO REPOSITORIO
+        self.alerts_storage = SQLiteAlertsStorage(self.db_manager) 
         
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
@@ -121,6 +116,7 @@ class MainWindow(QMainWindow):
 
         self.tts_manager = TTSManager()
         self.chat_worker = None
+        self.reward_worker = None # Declarado aquí para evitar AttributeError
         self.media_trigger_service = MediaTriggerService(self)
         
         self.overlay_server = OverlayServerManager(port=8090)
@@ -165,29 +161,22 @@ class MainWindow(QMainWindow):
 
     def _setup_tray(self):
         self.tray_manager = SystemTrayManager(self)
-        
-        # Conectamos las señales del componente a los métodos de MainWindow
         self.tray_manager.restore_requested.connect(self._restore_from_tray)
         self.tray_manager.quit_requested.connect(self._force_quit)
         self.tray_manager.tts_toggled.connect(self._handle_tray_tts_toggle)
-        
         self.tray_manager.show()
 
     @Slot()
     def _restore_from_tray(self):
-        """Restaura la ventana desde la bandeja."""
         self.showNormal()
         self.activateWindow()
 
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
-        """Se ejecuta cuando el usuario activa/desactiva el TTS desde el menú minimizado."""
         self.settings_storage.save_bool("tts_enabled", enabled)
-
         self.view_chat.chk_tts.blockSignals(True)
         self.view_chat.chk_tts.setChecked(enabled)
         self.view_chat.chk_tts.blockSignals(False)
-
         estado = "Activado" if enabled else "Silenciado"
         self.tray_manager.showMessage("MiniKick", f"Lectura de chat: {estado}", QSystemTrayIcon.MessageIcon.Information, 2000)
 
@@ -277,12 +266,6 @@ class MainWindow(QMainWindow):
     def _handle_minimize_tray_change(self, enabled: bool):
         self.settings_storage.save_bool(self.SETTING_MINIMIZE_TRAY, enabled)
 
-    @Slot(QSystemTrayIcon.ActivationReason)
-    def _on_tray_activated(self, reason):
-        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
-            self.showNormal()
-            self.activateWindow()
-
     def _handle_navigation(self, view_name):
         mapping = {
             "Dashboard": self.view_dashboard,
@@ -300,19 +283,20 @@ class MainWindow(QMainWindow):
         self.view_dashboard.set_connecting_state()
 
         self.auth_worker = AuthWorker(self.auth_manager)
+        self.auth_worker.setParent(self) # Protección
         
         def on_auth_success(tokens):
             cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
             key = os.getenv("KICK_PUSHER_KEY", "")
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             
-            self.chat_worker = ChatWorker(api_client, cluster, key)                
+            self.chat_worker = ChatWorker(api_client, cluster, key, parent=self)                
             self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
             self.chat_worker.message_received.connect(self._on_chat_message)
             self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)                
             self.chat_worker.start()
 
-            self.reward_worker = RewardWorker(api_client, poll_interval_seconds=15)
+            self.reward_worker = RewardWorker(api_client, poll_interval_seconds=15, parent=self)
             self.reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
             self.reward_worker.start()
 
@@ -354,7 +338,7 @@ class MainWindow(QMainWindow):
 
         try:
             api_client = KickAPIClient(auth_provider=self.auth_manager)
-            self.fetch_rewards_worker = FetchRewardsWorker(api_client)
+            self.fetch_rewards_worker = FetchRewardsWorker(api_client, parent=self)
             self.fetch_rewards_worker.rewards_fetched.connect(self.view_alerts.update_rewards_combo)
             self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
             self.fetch_rewards_worker.start()
@@ -363,7 +347,6 @@ class MainWindow(QMainWindow):
 
     @Slot(str)
     def _handle_rewards_error(self, error_msg: str):
-        """Maneja los errores del hilo de recompensas para evitar bloqueos silenciosos."""
         self.logger.error(f"Fallo en la API de recompensas: {error_msg}")
         self.view_alerts.update_rewards_combo([])
             
@@ -380,10 +363,11 @@ class MainWindow(QMainWindow):
         )
         
         if dialog.exec() == dialog.DialogCode.Accepted:
-            if self.chat_worker and self.chat_worker.isRunning():
-                self.chat_worker.terminate()
-                self.chat_worker.wait()
-                self.chat_worker = None
+            # Reutilizamos nuestro limpiador seguro para TODOS los hilos de red (DRY Principle)
+            self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
+            self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
+            self.chat_worker = None
+            self.reward_worker = None
 
             self.auth_manager.logout()
 
@@ -461,7 +445,7 @@ class MainWindow(QMainWindow):
             self.tts_manager.say("Voz actualizada.")
         
     def _notify_background(self):
-        self.tray_icon.showMessage(
+        self.tray_manager.showMessage(
             "MiniKick en segundo plano",
             "Seguiré leyendo el chat por ti. Haz doble clic para volver.",
             QSystemTrayIcon.MessageIcon.Information,
@@ -479,6 +463,22 @@ class MainWindow(QMainWindow):
         self._cleanup()
         QApplication.quit()
 
+    def _stop_worker_safely(self, worker_name: str, worker_instance):
+        """Método centralizado para detener hilos con gracia (DRY & SoR)"""
+        if worker_instance and worker_instance.isRunning():
+            self.logger.info(f"-> Solicitando parada de {worker_name}...")
+
+            if hasattr(worker_instance, 'stop'):
+                worker_instance.stop()
+
+            # Esperamos 2 segundos a que el bucle interno reciba el stop()
+            if not worker_instance.wait(2000):
+                self.logger.warning(f"❌ {worker_name} atascado (posible bloqueo de red). Forzando terminación...")
+                worker_instance.terminate()
+                worker_instance.wait()
+            else:
+                self.logger.info(f"✅ {worker_name} cerrado limpiamente.")
+
     def _cleanup(self):
         if self._is_shutting_down:
             return
@@ -490,24 +490,11 @@ class MainWindow(QMainWindow):
         self.tts_manager.stop()        
         self.overlay_server.stop() 
 
-        def safe_stop_thread(worker_name: str, worker_instance):
-            if worker_instance and worker_instance.isRunning():
-                self.logger.info(f"-> Solicitando parada de {worker_name}...")
-
-                if hasattr(worker_instance, 'stop'):
-                    worker_instance.stop()
-
-                if not worker_instance.wait(2000):
-                    self.logger.warning(f"❌ {worker_name} atascado (posible bloqueo de red). Forzando terminación...")
-                    worker_instance.terminate()
-                    worker_instance.wait()
-                else:
-                    self.logger.info(f"✅ {worker_name} cerrado limpiamente.")
-
-        safe_stop_thread("Worker_Chat_Socket", self.chat_worker)
-        safe_stop_thread("Worker_Auth", getattr(self, 'auth_worker', None))
-        safe_stop_thread("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
-        safe_stop_thread("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
+        # Reutilizamos el método seguro
+        self._stop_worker_safely("Worker_Chat_Socket", self.chat_worker)
+        self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
+        self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
+        self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
 
         self.logger.info("🛑 Secuencia de apagado de hilos completada.")
 
@@ -539,12 +526,10 @@ class MainWindow(QMainWindow):
         self.q_log_handler = QLogHandler()
         self.logger.addHandler(self.q_log_handler)
         
-        # 1. Silenciar librerías de terceros ruidosas (YAGNI / Limpieza)
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("cloudscraper").setLevel(logging.WARNING)
-        logging.getLogger("comtypes").setLevel(logging.WARNING) # <-- SILENCIA SAPI (TTS)
+        logging.getLogger("comtypes").setLevel(logging.WARNING)
         
-        # 2. Redirigir consola estándar al sistema de logging
-        # Todo print() será INFO, todo error de Python (Traceback) será ERROR
         sys.stdout = StreamToLogger(self.logger, logging.INFO)
         sys.stderr = StreamToLogger(self.logger, logging.ERROR)
+        
