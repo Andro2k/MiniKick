@@ -3,14 +3,12 @@ import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtGui import QIcon
 from dotenv import load_dotenv
-
+os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
 from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
 from backend.updater_manager import UpdateManager
 from frontend.main_window import MainWindow
 from frontend.theme import GLOBAL_QSS
 from frontend.utils import resource_path
-
-# --- NUEVAS IMPORTACIONES ---
 from backend.services.instance_services import SocketInstanceProvider
 
 def bootstrap():
@@ -18,8 +16,7 @@ def bootstrap():
     load_dotenv(env_path)
     
     app = QApplication(sys.argv)
-    
-    # Control de instancia única (lo que agregamos antes)
+
     instance_provider = SocketInstanceProvider(port=45678)
     if instance_provider.is_already_running():
         QMessageBox.warning(None, "MiniKick", "La aplicación ya se encuentra en ejecución.")
@@ -27,14 +24,12 @@ def bootstrap():
         
     try:
         app.setQuitOnLastWindowClosed(False)
-        
-        # --- DEFINIMOS LA VERSIÓN AQUÍ (Única fuente de verdad) ---
-        APP_VERSION = "v1.1.3"
+
+        APP_VERSION = "v1.1.4"
         
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()
         
-        # Pasamos la variable al Updater
         updater = UpdateManager(
             current_version=APP_VERSION, 
             checker=github_provider,
@@ -46,7 +41,6 @@ def bootstrap():
         icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
         app.setWindowIcon(QIcon(icon_path))
 
-        # Pasamos la variable a la Ventana Principal
         window = MainWindow(updater_manager=updater, app_version=APP_VERSION)
         window.show()
         sys.exit(app.exec())

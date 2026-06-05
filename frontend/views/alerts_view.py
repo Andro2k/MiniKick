@@ -329,7 +329,6 @@ class AlertsView(QWidget):
     def _open_visual_editor(self):
         from frontend.components.dialogs import VisualPositionerDialog
         
-        # Obtenemos la ruta del video y la escala actual desde los inputs
         filepath = self.txt_file_path.text().strip()
         current_scale = self.spin_scale.value()
         
@@ -341,12 +340,30 @@ class AlertsView(QWidget):
             parent=self
         )
         
+        # Conectamos el evento en vivo
+        dialog.live_position_changed.connect(self._on_live_position_changed)
+        
         if dialog.exec() == dialog.DialogCode.Accepted:
-            new_x, new_y = dialog.get_final_positions()
-            self.spin_x.setValue(new_x)
-            self.spin_y.setValue(new_y)
+            # Apagamos el reproductor al cerrar para liberar RAM
+            if hasattr(dialog.draggable_box, 'player'):
+                dialog.draggable_box.player.stop()
 
-        # Regla de Oro (Limpieza de Memoria): 
-        # Apagamos el reproductor de video interno al cerrar el diálogo
-        if hasattr(dialog.draggable_box, 'player'):
-            dialog.draggable_box.player.stop()
+    @Slot(int, int)
+    def _on_live_position_changed(self, new_x: int, new_y: int):
+        """Actualiza los inputs en vivo y dispara una previsualización a OBS."""
+        # 1. Actualizamos la UI
+        self.spin_x.setValue(new_x)
+        self.spin_y.setValue(new_y)
+        
+        # 2. Armamos una configuración temporal con la nueva posición
+        temp_config = {
+            "filepath": self.txt_file_path.text().strip(),
+            "volume": self.slider_vol.value() / 100.0,
+            "scale": self.spin_scale.value(),
+            "pos_x": new_x,
+            "pos_y": new_y,
+            "is_random_pos": False
+        }
+        
+        # 3. Enviamos a OBS (Reutilizando el flujo existente)
+        self.preview_requested.emit("Previsualización en vivo", temp_config)
