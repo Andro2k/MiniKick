@@ -1,32 +1,19 @@
 # Entornos virtuales
 .vscode/
 .venv/
-
 # Archivos compilados de Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Variables de entorno y credenciales (¡MUY IMPORTANTE PARA SEGURIDAD!)
 .env
-token.json
-
 # Bases de datos locales
 *.db
-*.sqlite
-
-# Archivos temporales de audio (Generados por el TTS)
-*.mp3
-*.wav
-
 # Archivos del sistema operativo
-.DS_Store
 *.exe
-# Logs
 *.log
 *.iss
 *.spec
-pyinstaller.txt
+*.txt
 # Archivos de configuración de IDEs
 *build/
 *dist/
