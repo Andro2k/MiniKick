@@ -75,21 +75,13 @@ class SettingsView(QWidget):
         self.btn_update.clicked.connect(self.check_update_requested.emit)
         
         row_update = self._create_action_row(
-            icon_name="download.svg", 
+            icon_name="cloud-download.svg", 
             icon_color=COLOR_ACCENT,
             title_text="Actualizaciones de Software", 
             desc_text="Buscar e instalar nuevas versiones de MiniKick.", 
             button_widget=self.btn_update
         )
-
-        sys_layout.addLayout(row_tray)
-        
-        # Línea divisoria
-        line1 = QFrame()
-        line1.setFrameShape(QFrame.Shape.HLine)
-        line1.setStyleSheet("background-color: #333333;")
-        sys_layout.addWidget(line1)
-        
+        sys_layout.addLayout(row_tray)        
         sys_layout.addLayout(row_update)
         
         self.main_layout.addWidget(sys_card)

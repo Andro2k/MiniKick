@@ -17,11 +17,6 @@ from frontend.theme import (COLOR_ACCENT, COLOR_BG_BASE,
 from frontend.utils import get_icon_colored, get_assets_path
 
 class ModernBaseDialog(QDialog):
-    """
-    Clase Maestra (Plantilla) para todos los diálogos.
-    Aplica DRY: Centraliza el estilo del contenedor, el título, el ícono y los botones.
-    """
-    # CORRECCIÓN: Cambiamos 'title_text' por 'title' para que coincida con las llamadas super()
     def __init__(self, title: str, icon_path: str, icon_bg_color: str, width: int = 420, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
@@ -53,7 +48,6 @@ class ModernBaseDialog(QDialog):
 
         self._setup_header(icon_path, icon_bg_color)
         
-        # CORRECCIÓN: Usamos 'title' aquí también
         if title:
             self.title_lbl = QLabel(title)
             self.title_lbl.setProperty("role", "title")
@@ -106,6 +100,8 @@ class ModernConfirmDialog(ModernBaseDialog):
         body_label.setProperty("role", "body")
         body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body_label.setWordWrap(True)
+        body_label.setMinimumHeight(60) 
+        
         self.content_layout.addWidget(body_label)
 
         self.btn_confirm = self._create_btn("Continuar", "action_danger", self.accept)

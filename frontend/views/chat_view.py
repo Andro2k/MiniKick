@@ -4,7 +4,6 @@ import os
 from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QListView, QListWidget, QListWidgetItem, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, 
                                QTextEdit, QLabel, QSlider, QFrame, QSizePolicy,)
 from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QIcon
 
 from frontend.components.controls import ModernButton, ModernSwitch
 from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
@@ -89,7 +88,7 @@ class ChatView(QWidget):
         
         lang_voice_layout = QHBoxLayout()
         self.combo_lang = QComboBox()
-        self.combo_lang.setFixedWidth(90)
+        self.combo_lang.setFixedWidth(120)
         self.combo_voice = QComboBox()
         self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         lang_voice_layout.addWidget(self.combo_lang)
@@ -111,16 +110,10 @@ class ChatView(QWidget):
         config_layout.addLayout(lang_voice_layout)
         config_layout.addLayout(row_volume)
         
-        line = QFrame()
-        line.setFrameShape(QFrame.Shape.HLine)
-        line.setStyleSheet("background-color: #333333;")
-        config_layout.addWidget(line)
-        
         config_layout.addLayout(row_cmd)
         config_layout.addLayout(sec_layout)
         config_layout.addSpacing(10)
         
-        # El parámetro stretch=1 hace que el panel de bots ocupe TODO el espacio vertical sobrante
         config_layout.addWidget(self._build_bots_panel(), stretch=1) 
         
         # ─── 3. PANEL DE VISUALIZACIÓN DEL CHAT (DERECHO / INFERIOR) ───
@@ -232,7 +225,6 @@ class ChatView(QWidget):
         self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_bots.setSpacing(3)
         self.list_bots.setObjectName("BotsList")
-        # self.list_bots.setFixedHeight(80) 
 
         layout.addWidget(self.list_bots)
         return panel
@@ -307,7 +299,6 @@ class ChatView(QWidget):
             bots.append(self.list_bots.item(i).text())
         return ", ".join(bots)
 
-    # ─── GESTIÓN DE EVENTOS INTERNOS ───
     def _connect_internal_signals(self):
         self.chk_provider.toggled.connect(self._on_provider_toggled)
         self.combo_lang.currentIndexChanged.connect(self._filter_voices_by_lang)
@@ -327,14 +318,12 @@ class ChatView(QWidget):
             elif isinstance(control, QLineEdit):
                 control.textChanged.connect(self._on_settings_modified)
 
-    # ─── NUEVO: Lógica de Volumen ───
     @Slot(int)
     def _on_slider_vol_changed(self, value: int):
         """Actualiza la interfaz visual y luego emite la señal al controlador."""
         self.lbl_vol_perc.setText(f"{value}%")
         self.volume_changed.emit(value)
 
-    # ─── NUEVO: Lógica Flexbox (Responsividad de Layouts Qt) ───
     def resizeEvent(self, event):
         """Intercepta cambios de tamaño en la ventana para simular CSS Flexbox (wrap)."""
         super().resizeEvent(event)
@@ -444,7 +433,6 @@ class ChatView(QWidget):
         current_lang = self.combo_lang.currentText()
 
         self.combo_voice.blockSignals(True) 
-            
         self.combo_voice.clear()
         
         index_to_select = 0
