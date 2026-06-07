@@ -3,8 +3,8 @@
 from frontend.utils import get_assets_path
 
 # ─── Recursos Base ───
-PATH_ICON_HELP = get_assets_path("icons/help-circle.svg")
-PATH_ICON_UPDATE = get_assets_path("icons/download.svg")
+PATH_ICON_HELP = get_assets_path("icons/help.svg")
+PATH_ICON_UPDATE = get_assets_path("icons/cloud-download.svg")
 
 # ─── Paleta de Colores ───
 # Fondos
@@ -209,7 +209,7 @@ QComboBox {{
     background-color: {COLOR_BG_INPUT};
     color: {COLOR_TEXT_PRIMARY};
     border-radius: {RADIUS_MD}px;
-    padding: {PADDING_BUTTON};
+    padding: {PADDING_INPUT};
     border: none;
 }}
 QComboBox:focus, QComboBox:hover {{

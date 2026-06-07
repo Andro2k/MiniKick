@@ -2,16 +2,15 @@
 
 import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QLineEdit, QFrame, QTableWidget, QTableWidgetItem, 
-                               QHeaderView, QFileDialog, QApplication, QComboBox,
-                               QSlider, QDoubleSpinBox, QSpinBox)
+                               QFrame, QTableWidget, QTableWidgetItem, 
+                               QHeaderView, QApplication)
 from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
-from frontend.components.controls import ModernButton, ModernSwitch
+from frontend.components.controls import ModernButton
 from frontend.utils import get_icon_colored
+from frontend.components.dialogs import AlertConfigWizard
 
 class AlertsView(QWidget):
-    # ─── SEÑALES (Comunicación con el Controlador) ───
     alerts_mapping_changed = Signal(dict)
     preview_requested = Signal(str, dict)
     refresh_rewards_requested = Signal()
@@ -19,32 +18,37 @@ class AlertsView(QWidget):
     def __init__(self):
         super().__init__()
         self.mappings = {} 
+        self.current_rewards_list = []
+        self.active_dialog = None
         self._setup_ui()
 
-    # =========================================================================
-    # ─── CAPA DE PRESENTACIÓN (SoR: Solo construcción visual) ───
-    # =========================================================================
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
+        self.main_layout.setSpacing(16)
 
-        title = QLabel("Triggers")
+        title_layout = QHBoxLayout()
+        title = QLabel("Triggers & Alertas")
         title.setProperty("role", "title")
-        self.main_layout.addWidget(title)
+        title_layout.addWidget(title)
+        title_layout.addStretch()
+        
+        self.btn_new_alert = ModernButton("+ Nueva Alerta", role="action_accent")
+        self.btn_new_alert.clicked.connect(self._open_new_alert_dialog)
+        title_layout.addWidget(self.btn_new_alert)
+        
+        self.main_layout.addLayout(title_layout)
 
         self._build_obs_card()
-        self._build_form_card()
         self._build_table_card()
 
     def _build_obs_card(self):
-        """Construye la tarjeta de conexión de OBS."""
         obs_card = QFrame()
         obs_card.setObjectName("Card")
         obs_layout = QHBoxLayout(obs_card)
         obs_layout.setContentsMargins(16, 16, 16, 16)
         
-        lbl_obs_url = QLabel("URL Browser Source:")
+        lbl_obs_url = QLabel("URL Browser Source OBS:")
         lbl_obs_url.setProperty("role", "monospace")
         
         self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_outlined")
@@ -55,99 +59,7 @@ class AlertsView(QWidget):
         obs_layout.addWidget(self.btn_copy_url)
         self.main_layout.addWidget(obs_card)
 
-    def _build_form_card(self):
-        """Construye el formulario de configuración de alertas."""
-        form_card = QFrame()
-        form_card.setObjectName("Card")
-        form_layout = QVBoxLayout(form_card)
-        form_layout.setContentsMargins(16, 16, 16, 16)
-
-        lbl_step1 = QLabel("1. Seleccione la recompensa de KICK")
-        lbl_step1.setProperty("role", "section")
-        form_layout.addWidget(lbl_step1)
-        
-        row1 = QHBoxLayout()
-        self.combo_rewards = QComboBox()
-        self.combo_rewards.addItem("Cargando recompensas...")
-        self.btn_refresh = ModernButton("Actualizar Lista")
-        self.btn_refresh.clicked.connect(self.refresh_rewards_requested.emit)
-        row1.addWidget(self.combo_rewards, stretch=1)
-        row1.addWidget(self.btn_refresh)
-        form_layout.addLayout(row1)
-
-        form_layout.addSpacing(10)
-
-        lbl_step2 = QLabel("2. Archivo y Ajustes (Audio/Video)")
-        lbl_step2.setProperty("role", "section")
-        form_layout.addWidget(lbl_step2)
-
-        row2 = QHBoxLayout()
-        self.txt_file_path = QLineEdit()
-        self.txt_file_path.setReadOnly(True)
-        self.btn_browse = ModernButton("Explorar Archivo")
-        self.btn_browse.clicked.connect(self._browse_file)
-        row2.addWidget(self.txt_file_path, stretch=1)
-        row2.addWidget(self.btn_browse)
-        form_layout.addLayout(row2)
-
-        row3 = QHBoxLayout()
-
-        row3.addWidget(QLabel("Pos Random:"))
-        self.chk_random_pos = ModernSwitch()
-        self.chk_random_pos.setEnabled(False)
-        self.chk_random_pos.toggled.connect(self._on_random_pos_toggled)
-        row3.addWidget(self.chk_random_pos)
-        row3.addSpacing(16)
-
-        # ─── NUEVO: Botón del Editor Visual ───
-        self.btn_visual_editor = ModernButton("📍 Editor Visual", role="action_outlined")
-        self.btn_visual_editor.clicked.connect(self._open_visual_editor)
-        row3.addWidget(self.btn_visual_editor)
-        row3.addSpacing(16)
-
-        row3.addWidget(QLabel("Pos X:"))
-        self.spin_x = QSpinBox()
-        self.spin_x.setRange(-5000, 5000)
-        self.spin_x.setValue(0)
-        row3.addWidget(self.spin_x)
-        
-        row3.addSpacing(8)
-        row3.addWidget(QLabel("Pos Y:"))
-        self.spin_y = QSpinBox()
-        self.spin_y.setRange(-5000, 5000)
-        self.spin_y.setValue(0)
-        row3.addWidget(self.spin_y)
-        
-        row3.addSpacing(8)
-        row3.addWidget(QLabel("Escala:"))
-        self.spin_scale = QDoubleSpinBox()
-        self.spin_scale.setRange(0.1, 5.0)
-        self.spin_scale.setSingleStep(0.1)
-        self.spin_scale.setValue(1.0)
-        row3.addWidget(self.spin_scale)
-        row3.addStretch()
-        form_layout.addLayout(row3)
-
-        row4 = QHBoxLayout()
-        
-        row4.addWidget(QLabel("Volumen:"))
-        self.slider_vol = QSlider(Qt.Orientation.Horizontal)
-        self.slider_vol.setRange(0, 100)
-        self.slider_vol.setValue(100)
-        row4.addWidget(self.slider_vol)
-
-        row4.addSpacing(16) 
-        
-        self.btn_add = ModernButton("Guardar Alerta", role="action_success")
-        self.btn_add.clicked.connect(self._add_mapping)
-        row4.addWidget(self.btn_add)
-        
-        form_layout.addLayout(row4)
-        
-        self.main_layout.addWidget(form_card)
-
     def _build_table_card(self):
-        """Construye y configura la tabla de gestión de alertas."""
         self.table_alerts = QTableWidget(0, 3)
         self.table_alerts.setHorizontalHeaderLabels(["Recompensa de Kick", "Archivo", "Acciones"])
         self.table_alerts.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -164,7 +76,6 @@ class AlertsView(QWidget):
         self.main_layout.addWidget(self.table_alerts)
 
     def _create_table_action_btn(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
-        """Helper para generar botones de acción en la tabla (DRY Principle)."""
         btn = ModernButton("", role=role)
         btn.setFixedSize(28, 28)
         btn.setIcon(get_icon_colored(icon_name, color, size=16))
@@ -172,73 +83,52 @@ class AlertsView(QWidget):
         btn.clicked.connect(callback)
         return btn
 
-    # =========================================================================
-    # ─── CAPA LOGICA (SoR: Solo gestión de datos y eventos) ───
-    # =========================================================================
-    
     @Slot()
     def _copy_obs_url(self):
-        """Copia la URL al portapapeles y provee feedback visual temporal."""
-        url = "http://localhost:8090/overlay"
-        QApplication.clipboard().setText(url)
-
+        QApplication.clipboard().setText("http://localhost:8090/overlay")
         original_text = self.btn_copy_url.text()
         self.btn_copy_url.setText("¡Enlace Copiado!")
         self.btn_copy_url.setEnabled(False)
-        
         QTimer.singleShot(2000, lambda: self._reset_copy_btn(original_text))
 
     def _reset_copy_btn(self, original_text: str):
-        """Devuelve el botón de copiar a su estado original."""
         self.btn_copy_url.setText(original_text)
         self.btn_copy_url.setEnabled(True)
 
-    @Slot(bool)
-    def _on_random_pos_toggled(self, checked: bool):
-        """Bloquea o desbloquea las coordenadas según el estado del switch."""
-        self.spin_x.setEnabled(not checked)
-        self.spin_y.setEnabled(not checked)
-
-    def _evaluate_media_type(self, filepath: str):
-        """Valida si es video para habilitar la opción aleatoria."""
-        is_video = filepath.lower().endswith(('.mp4', '.webm'))
-        self.chk_random_pos.setEnabled(is_video)
+    @Slot()
+    def _open_new_alert_dialog(self):
+        self.active_dialog = AlertConfigWizard(self, rewards_list=self.current_rewards_list)
         
-        if not is_video:
-            self.chk_random_pos.setChecked(False)
+        # Validación limpia de ejecución
+        if self.active_dialog.exec():
+            reward, config = self.active_dialog.get_config_data()
+            if reward and reward not in ["Cargando recompensas...", "No hay recompensas"] and config["filepath"]:
+                self.mappings[reward] = config
+                self._refresh_table()
+                self.alerts_mapping_changed.emit(self.mappings)
+        self.active_dialog = None
 
-    @Slot()
-    def _browse_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Seleccionar Multimedia", "", "Media (*.mp4 *.webm *.mp3 *.wav *.ogg);;Todos (*.*)")
-        if file_path:
-            self.txt_file_path.setText(file_path)
-            self._evaluate_media_type(file_path)
-
-    @Slot()
-    def _add_mapping(self):
-        reward = self.combo_rewards.currentText()
-        if reward in ["Cargando recompensas...", "No hay recompensas"]:
+    @Slot(str)
+    def _edit_mapping(self, reward_name: str):
+        if reward_name not in self.mappings:
             return
             
-        filepath = self.txt_file_path.text().strip()
-        if not filepath:
-            return
-
-        self.mappings[reward] = {
-            "filepath": filepath,
-            "volume": self.slider_vol.value() / 100.0,
-            "scale": self.spin_scale.value(),
-            "pos_x": self.spin_x.value(),
-            "pos_y": self.spin_y.value(),
-            "is_random_pos": self.chk_random_pos.isChecked()
-        }
-        self._refresh_table()
+        config = self.mappings[reward_name]
+        self.active_dialog = AlertConfigWizard(
+            self, 
+            rewards_list=self.current_rewards_list, 
+            existing_config=config, 
+            existing_reward=reward_name
+        )
         
-        self.txt_file_path.clear()
-        self.chk_random_pos.setChecked(False)
-        self.chk_random_pos.setEnabled(False)
-        self.btn_add.setText("Guardar Alerta")
-        self.alerts_mapping_changed.emit(self.mappings)
+        # Validación limpia de ejecución
+        if self.active_dialog.exec():
+            _, updated_config = self.active_dialog.get_config_data()
+            if updated_config["filepath"]:
+                self.mappings[reward_name] = updated_config
+                self._refresh_table()
+                self.alerts_mapping_changed.emit(self.mappings)
+        self.active_dialog = None
 
     def _remove_mapping(self, reward_name: str):
         if reward_name in self.mappings:
@@ -247,38 +137,8 @@ class AlertsView(QWidget):
             self.alerts_mapping_changed.emit(self.mappings)
 
     def _request_preview(self, reward_name: str):
-        """Emite la señal al controlador principal para reproducir en OBS."""
         if reward_name in self.mappings:
             self.preview_requested.emit(reward_name, self.mappings[reward_name])
-
-    @Slot(str)
-    def _edit_mapping(self, reward_name: str):
-        if reward_name not in self.mappings:
-            return
-            
-        config = self.mappings[reward_name]
-        
-        index = self.combo_rewards.findText(reward_name)
-        if index >= 0:
-            self.combo_rewards.setCurrentIndex(index)
-        else:
-            self.combo_rewards.addItem(reward_name)
-            self.combo_rewards.setCurrentText(reward_name)
-            
-        filepath = config if isinstance(config, str) else config.get("filepath", "")
-        self.txt_file_path.setText(filepath)
-        
-        if isinstance(config, dict):
-            self.spin_x.setValue(config.get("pos_x", 0))
-            self.spin_y.setValue(config.get("pos_y", 0))
-            self.spin_scale.setValue(config.get("scale", 1.0))
-            self.slider_vol.setValue(int(config.get("volume", 1.0) * 100))
-            
-            self._evaluate_media_type(filepath)
-
-            self.chk_random_pos.setChecked(config.get("is_random_pos", False)) 
-            
-        self.btn_add.setText("Actualizar Alerta")
 
     def _refresh_table(self):
         self.table_alerts.setRowCount(0)
@@ -319,51 +179,7 @@ class AlertsView(QWidget):
         
     @Slot(list)
     def update_rewards_combo(self, rewards_list: list):
-        self.combo_rewards.clear()
-        if not rewards_list:
-            self.combo_rewards.addItem("No hay recompensas")
-        else:
-            self.combo_rewards.addItems(rewards_list)
-
-    @Slot()
-    def _open_visual_editor(self):
-        from frontend.components.dialogs import VisualPositionerDialog
-        
-        filepath = self.txt_file_path.text().strip()
-        current_scale = self.spin_scale.value()
-        
-        dialog = VisualPositionerDialog(
-            current_x=self.spin_x.value(), 
-            current_y=self.spin_y.value(), 
-            filepath=filepath,
-            scale_val=current_scale,
-            parent=self
-        )
-        
-        # Conectamos el evento en vivo
-        dialog.live_position_changed.connect(self._on_live_position_changed)
-        
-        if dialog.exec() == dialog.DialogCode.Accepted:
-            # Apagamos el reproductor al cerrar para liberar RAM
-            if hasattr(dialog.draggable_box, 'player'):
-                dialog.draggable_box.player.stop()
-
-    @Slot(int, int)
-    def _on_live_position_changed(self, new_x: int, new_y: int):
-        """Actualiza los inputs en vivo y dispara una previsualización a OBS."""
-        # 1. Actualizamos la UI
-        self.spin_x.setValue(new_x)
-        self.spin_y.setValue(new_y)
-        
-        # 2. Armamos una configuración temporal con la nueva posición
-        temp_config = {
-            "filepath": self.txt_file_path.text().strip(),
-            "volume": self.slider_vol.value() / 100.0,
-            "scale": self.spin_scale.value(),
-            "pos_x": new_x,
-            "pos_y": new_y,
-            "is_random_pos": False
-        }
-        
-        # 3. Enviamos a OBS (Reutilizando el flujo existente)
-        self.preview_requested.emit("Previsualización en vivo", temp_config)
+        self.current_rewards_list = rewards_list if rewards_list else ["No hay recompensas"]
+        # Si el diálogo está abierto mientras los datos llegan, lo actualizamos en caliente.
+        if self.active_dialog:
+            self.active_dialog.update_rewards(self.current_rewards_list)

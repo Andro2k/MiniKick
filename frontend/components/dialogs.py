@@ -1,20 +1,28 @@
 # frontend/components/dialogs.py
 
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QProgressBar, QSizePolicy
-from PySide6.QtCore import QPoint, QSize, Qt, Signal
-from PySide6.QtGui import QIcon, QMouseEvent
-import os
-from PySide6.QtCore import QPoint, QUrl
-from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import (QComboBox, QDialog, QDoubleSpinBox, QFileDialog, 
+                               QLineEdit, QSlider, QSpinBox, QStackedWidget, 
+                               QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
+                               QFrame, QProgressBar, QSizePolicy, QWidget)
+from PySide6.QtCore import QPoint, Qt, Signal, QUrl
+from PySide6.QtGui import QIcon, QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
-from frontend.theme import COLOR_ACCENT, PATH_ICON_HELP, PATH_ICON_UPDATE
+import os
 
-# ─── 1. CLASE BASE (Abstracción Estructural - SoR & DRY) ──────────────────────
+from frontend.components.controls import ModernButton, ModernSwitch
+from frontend.theme import (COLOR_ACCENT, COLOR_BG_BASE, 
+                            COLOR_BORDER_SVELTE, COLOR_TEXT_PRIMARY, 
+                            PATH_ICON_HELP, PATH_ICON_UPDATE)
+from frontend.utils import get_icon_colored, get_assets_path
+
 class ModernBaseDialog(QDialog):
-    """Provee la estructura visual base inspirada en el diseño centrado."""
-    
-    def __init__(self, icon_path: str, icon_bg_color: str, parent=None):
+    """
+    Clase Maestra (Plantilla) para todos los diálogos.
+    Aplica DRY: Centraliza el estilo del contenedor, el título, el ícono y los botones.
+    """
+    # CORRECCIÓN: Cambiamos 'title_text' por 'title' para que coincida con las llamadas super()
+    def __init__(self, title: str, icon_path: str, icon_bg_color: str, width: int = 420, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -22,12 +30,21 @@ class ModernBaseDialog(QDialog):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.main_layout.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
 
+        # Contenedor central estandarizado
         self.container = QFrame()
         self.container.setObjectName("SquareDialog")
-        self.container.setFixedWidth(420)
+        self.container.setFixedWidth(width)
         self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        
+        # Estilo inyectado globalmente para todos los diálogos hijos
+        self.container.setStyleSheet(f"""
+            QFrame#SquareDialog {{
+                background-color: {COLOR_BG_BASE};
+                border: 1px solid {COLOR_BORDER_SVELTE};
+                border-radius: 16px;
+            }}
+        """)
 
         self.content_layout = QVBoxLayout(self.container)
         self.content_layout.setContentsMargins(32, 32, 32, 32)
@@ -35,6 +52,16 @@ class ModernBaseDialog(QDialog):
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         self._setup_header(icon_path, icon_bg_color)
+        
+        # CORRECCIÓN: Usamos 'title' aquí también
+        if title:
+            self.title_lbl = QLabel(title)
+            self.title_lbl.setProperty("role", "title")
+            self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.title_lbl.setWordWrap(True)
+            self.content_layout.addWidget(self.title_lbl)
+            self.content_layout.addSpacing(16)
+
         self.main_layout.addWidget(self.container)
 
     def _setup_header(self, icon_path: str, bg_color: str):
@@ -57,7 +84,6 @@ class ModernBaseDialog(QDialog):
         icon_inner_layout.addWidget(icon_lbl)
 
         icon_wrapper.addWidget(icon_container)
-        
         self.content_layout.addLayout(icon_wrapper)
         self.content_layout.addSpacing(8) 
 
@@ -72,24 +98,14 @@ class ModernBaseDialog(QDialog):
         self.content_layout.addSpacing(16)
         self.content_layout.addLayout(btn_layout)
 
-# ─── 2. IMPLEMENTACIONES ESPECÍFICAS (Alta Cohesión) ──────────────────────────
 class ModernConfirmDialog(ModernBaseDialog):
-    
     def __init__(self, parent=None, title_text="Desvincular Cuenta", body_text="¿Estás seguro de que deseas continuar? Esta acción no se puede deshacer."):
-        super().__init__(PATH_ICON_HELP, "#EF4444", parent)
-        self.setWindowTitle(title_text)
+        super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color="#EF4444", width=420, parent=parent)
         
-        title_lbl = QLabel(title_text)
-        title_lbl.setProperty("role", "title")
-        title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title_lbl.setWordWrap(True)
-        self.content_layout.addWidget(title_lbl)
-
         body_label = QLabel(body_text)
         body_label.setProperty("role", "body")
         body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body_label.setWordWrap(True)
-        body_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.content_layout.addWidget(body_label)
 
         self.btn_confirm = self._create_btn("Continuar", "action_danger", self.accept)
@@ -108,27 +124,18 @@ class UpdateDialog(ModernBaseDialog):
     download_requested = Signal() 
 
     def __init__(self, parent=None):
-        super().__init__(PATH_ICON_UPDATE, COLOR_ACCENT, parent)
-        self.setWindowTitle("Actualización del Sistema")
+        super().__init__(title="Buscando Actualizaciones", icon_path=PATH_ICON_UPDATE, icon_bg_color=COLOR_ACCENT, width=420, parent=parent)
         
-        self.title_lbl = QLabel("Buscando Actualizaciones")
-        self.title_lbl.setProperty("role", "title")
-        self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.title_lbl.setWordWrap(True)
-        self.content_layout.addWidget(self.title_lbl)
-
         self.status_label = QLabel("Conectando con el servidor...")
         self.status_label.setProperty("role", "status")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.status_label.setWordWrap(True)
-        self.status_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.content_layout.addWidget(self.status_label)
 
         pb_layout = QHBoxLayout()
         pb_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.progress_bar = QProgressBar()
-        self.progress_bar.setObjectName("UpdateProgress")
         self.progress_bar.setRange(0, 0)
         self.progress_bar.setFixedWidth(280)
         sp = self.progress_bar.sizePolicy()
@@ -188,8 +195,6 @@ class UpdateDialog(ModernBaseDialog):
         self.btn_close.setEnabled(True)
 
 class DraggableAlertBox(QFrame):
-    """Componente que representa el video arrastrable, adapta su resolución y emite su posición."""
-    
     position_updated = Signal(int, int)
 
     def __init__(self, parent, canvas_w: int, canvas_h: int, scale_factor_obs: float, filepath: str, scale_val: float):
@@ -200,7 +205,6 @@ class DraggableAlertBox(QFrame):
         self.base_scale_val = scale_val
         
         self.setFixedSize(100, 100)
-        
         self.setStyleSheet("""
             QFrame {
                 background-color: rgba(83, 252, 24, 0.1); 
@@ -245,8 +249,6 @@ class DraggableAlertBox(QFrame):
                 self._adjust_to_media_size(pixmap.size())
 
     def _adjust_to_media_size(self, size=None):
-        """Calcula las proporciones exactas para que el cuadro coincida con OBS."""
-
         if size is None or type(size) == bool or not getattr(size, 'isValid', lambda: False)():
             if hasattr(self, 'video_widget') and self.video_widget.videoSink():
                 size = self.video_widget.videoSink().videoSize()
@@ -261,7 +263,6 @@ class DraggableAlertBox(QFrame):
         local_h = int(obs_h / self.scale_factor)
 
         self.setFixedSize(local_w, local_h)
-
         x = max(0, min(self.x(), self.canvas_w - self.width()))
         y = max(0, min(self.y(), self.canvas_h - self.height()))
         self.move(x, y)
@@ -295,14 +296,11 @@ class DraggableAlertBox(QFrame):
         local_y = max(0, min(local_y, self.canvas_h - self.height()))
         self.move(local_x, local_y)
 
-
 class VisualPositionerDialog(ModernBaseDialog):
     live_position_changed = Signal(int, int)
 
     def __init__(self, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
-        super().__init__(PATH_ICON_HELP, COLOR_ACCENT, parent)
-        self.setWindowTitle("Posicionador Visual (1920x1080)")
-        self.container.setFixedWidth(700)
+        super().__init__(title="Posicionador Visual (1920x1080)", icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_ACCENT, width=700, parent=parent)
         
         desc_lbl = QLabel("Arrastra tu alerta. Al soltarla, se mostrará una vista previa en OBS.")
         desc_lbl.setProperty("role", "body")
@@ -328,3 +326,270 @@ class VisualPositionerDialog(ModernBaseDialog):
         self.btn_save.setProperty("role", "action_accent")
         self.btn_save.clicked.connect(self.accept)
         self.add_action_buttons(self.btn_save, None)
+
+class AlertConfigWizard(ModernBaseDialog):
+    def __init__(self, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
+        self.is_edit_mode = existing_config is not None
+        title = "Editar Alerta" if self.is_edit_mode else "Nueva Alerta"
+        # Usamos el ícono de ajustes para diferenciarlo de "Actualización"
+        icon_path = get_assets_path("icons/settings.svg")
+        
+        # Heredamos la estructura base, indicando ancho 520
+        super().__init__(title=title, icon_path=icon_path, icon_bg_color=COLOR_ACCENT, width=520, parent=parent)
+        
+        self._is_video = False
+        self._build_step_indicator()
+        
+        self.stack = QStackedWidget()
+        self.content_layout.addWidget(self.stack)
+
+        self.step1_widget = QWidget()
+        self.step2_widget = QWidget()
+        
+        self.stack.addWidget(self.step1_widget)
+        self.stack.addWidget(self.step2_widget)
+        
+        self._build_step1(rewards_list, existing_reward)
+        self._build_step2()
+        
+        if self.is_edit_mode:
+            self._load_existing_data(existing_config)
+            self._set_active_step(1)
+        else:
+            self._set_active_step(0)
+
+    def _build_step_indicator(self):
+        self.indicator_layout = QHBoxLayout()
+        self.indicator_layout.setSpacing(6)
+        self.indicator_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.seg1 = QFrame()
+        self.seg2 = QFrame()
+        
+        for seg in [self.seg1, self.seg2]:
+            seg.setFixedHeight(4)
+            seg.setFixedWidth(40)
+            seg.setStyleSheet("background-color: #333333; border-radius: 2px;")
+            self.indicator_layout.addWidget(seg)
+            
+        self.content_layout.addLayout(self.indicator_layout)
+        self.content_layout.addSpacing(10)
+
+    def _set_active_step(self, index: int):
+        self.stack.setCurrentIndex(index)
+        active_style = f"background-color: {COLOR_ACCENT}; border-radius: 2px;"
+        inactive_style = "background-color: #333333; border-radius: 2px;"
+        
+        self.seg1.setStyleSheet(active_style if index == 0 else inactive_style)
+        self.seg2.setStyleSheet(active_style if index == 1 else inactive_style)
+
+    def _build_step1(self, rewards_list, existing_reward):
+        layout = QVBoxLayout(self.step1_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(12)
+        
+        lbl = QLabel("Selección de Recompensa")
+        lbl.setProperty("role", "section_small")
+        layout.addWidget(lbl)
+        
+        row1 = QHBoxLayout()
+        self.combo_rewards = QComboBox()
+        if rewards_list:
+            self.combo_rewards.addItems(rewards_list)
+        else:
+            self.combo_rewards.addItem("Cargando recompensas...")
+            
+        if existing_reward:
+            if rewards_list and existing_reward not in rewards_list:
+                self.combo_rewards.addItem(existing_reward)
+            self.combo_rewards.setCurrentText(existing_reward)
+            self.combo_rewards.setEnabled(False)
+            
+        row1.addWidget(self.combo_rewards, stretch=1)
+        
+        self.btn_refresh = ModernButton("", role="action_outlined")
+        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_refresh.setToolTip("Actualizar Recompensas de Kick")
+        self.btn_refresh.clicked.connect(self._request_refresh)
+        row1.addWidget(self.btn_refresh)
+        layout.addLayout(row1)
+        
+        layout.addSpacing(4)
+        lbl2 = QLabel("Archivo Multimedia")
+        lbl2.setProperty("role", "section_small")
+        layout.addWidget(lbl2)
+        
+        row2 = QHBoxLayout()
+        self.txt_file_path = QLineEdit()
+        self.txt_file_path.setReadOnly(True)
+        self.txt_file_path.setPlaceholderText("Ej. tu_alerta.mp4 o sonido.mp3")
+        
+        self.btn_browse = ModernButton("Explorar", role="action_outlined")
+        self.btn_browse.clicked.connect(self._browse_file)
+        row2.addWidget(self.txt_file_path, stretch=1)
+        row2.addWidget(self.btn_browse)
+        layout.addLayout(row2)
+        
+        layout.addSpacing(16)
+        
+        btn_layout = QHBoxLayout()
+        self.btn_cancel_step1 = QPushButton("Cancelar")
+        self.btn_cancel_step1.setProperty("role", "action_outlined")
+        self.btn_cancel_step1.clicked.connect(self.reject)
+        
+        self.btn_next = QPushButton("Siguiente ➔")
+        self.btn_next.setProperty("role", "action_accent")
+        self.btn_next.clicked.connect(self._go_next)
+        
+        btn_layout.addWidget(self.btn_cancel_step1)
+        btn_layout.addWidget(self.btn_next)
+        layout.addLayout(btn_layout)
+
+    def _build_step2(self):
+        layout = QVBoxLayout(self.step2_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(12)
+        
+        lbl = QLabel("Ajustes de Personalización")
+        lbl.setProperty("role", "section_small")
+        layout.addWidget(lbl)
+        
+        vol_row = QHBoxLayout()
+        vol_row.addWidget(QLabel("Volumen:"))
+        self.slider_vol = QSlider(Qt.Orientation.Horizontal)
+        self.slider_vol.setRange(0, 100)
+        self.slider_vol.setValue(100)
+        vol_row.addWidget(self.slider_vol)
+        layout.addLayout(vol_row)
+        
+        self.video_container = QWidget()
+        v_layout = QVBoxLayout(self.video_container)
+        v_layout.setContentsMargins(0, 8, 0, 0)
+        v_layout.setSpacing(12)
+        
+        row_rnd = QHBoxLayout()
+        row_rnd.addWidget(QLabel("Posición Aleatoria:"))
+        self.chk_random_pos = ModernSwitch()
+        self.chk_random_pos.toggled.connect(self._on_random_pos_toggled)
+        row_rnd.addWidget(self.chk_random_pos)
+        row_rnd.addStretch()
+        
+        # Eliminamos el emoji y aplicamos el ícono usando el estándar del sistema (DRY)
+        self.btn_visual = ModernButton("Posicionar en OBS", role="action_outlined")
+        self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_visual.clicked.connect(self._open_visual_editor)
+        
+        row_rnd.addWidget(self.btn_visual)
+        v_layout.addLayout(row_rnd)
+        
+        row_coords = QHBoxLayout()
+        row_coords.addWidget(QLabel("X:"))
+        self.spin_x = QSpinBox()
+        self.spin_x.setRange(-5000, 5000)
+        row_coords.addWidget(self.spin_x)
+        
+        row_coords.addWidget(QLabel("Y:"))
+        self.spin_y = QSpinBox()
+        self.spin_y.setRange(-5000, 5000)
+        row_coords.addWidget(self.spin_y)
+        
+        row_coords.addWidget(QLabel("Escala:"))
+        self.spin_scale = QDoubleSpinBox()
+        self.spin_scale.setRange(0.1, 5.0)
+        self.spin_scale.setSingleStep(0.1)
+        self.spin_scale.setValue(1.0)
+        row_coords.addWidget(self.spin_scale)
+        v_layout.addLayout(row_coords)
+        
+        layout.addWidget(self.video_container)
+        layout.addStretch()
+        
+        btn_layout = QHBoxLayout()
+        self.btn_back = QPushButton("🡠 Atrás")
+        self.btn_back.setProperty("role", "action_outlined")
+        self.btn_back.clicked.connect(self._go_back)
+        
+        self.btn_save = QPushButton("Listo y Guardar" if not self.is_edit_mode else "Actualizar")
+        self.btn_save.setProperty("role", "action_accent")
+        self.btn_save.clicked.connect(self.accept)
+        
+        if self.is_edit_mode:
+            self.btn_back.setText("Cancelar")
+            self.btn_back.clicked.disconnect()
+            self.btn_back.clicked.connect(self.reject)
+            
+        btn_layout.addWidget(self.btn_back)
+        btn_layout.addWidget(self.btn_save)
+        layout.addLayout(btn_layout)
+
+    def _request_refresh(self):
+        if self.parent():
+            self.btn_refresh.setEnabled(False)
+            self.parent().refresh_rewards_requested.emit()
+
+    def update_rewards(self, rewards_list):
+        current = self.combo_rewards.currentText()
+        self.combo_rewards.clear()
+        self.combo_rewards.addItems(rewards_list)
+        if current in rewards_list:
+            self.combo_rewards.setCurrentText(current)
+        self.btn_refresh.setEnabled(True)
+
+    def _browse_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Multimedia", "", "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)")
+        if file_path:
+            self.txt_file_path.setText(file_path)
+            self._evaluate_media_type(file_path)
+
+    def _evaluate_media_type(self, filepath):
+        self._is_video = filepath.lower().endswith(('.mp4', '.webm', '.gif', '.png', '.jpg'))
+        self.video_container.setVisible(self._is_video)
+        if not self._is_video:
+            self.chk_random_pos.setChecked(False)
+
+    def _go_next(self):
+        if not self.txt_file_path.text().strip():
+            return
+        self._set_active_step(1)
+
+    def _go_back(self):
+        self._set_active_step(0)
+
+    def _on_random_pos_toggled(self, checked):
+        self.spin_x.setEnabled(not checked)
+        self.spin_y.setEnabled(not checked)
+        self.btn_visual.setEnabled(not checked)
+
+    def _open_visual_editor(self):
+        from frontend.components.dialogs import VisualPositionerDialog
+        filepath = self.txt_file_path.text().strip()
+        if not filepath: return
+        dialog = VisualPositionerDialog(self.spin_x.value(), self.spin_y.value(), filepath, self.spin_scale.value(), self)
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.spin_x.setValue(dialog.draggable_box.get_obs_coordinates()[0])
+            self.spin_y.setValue(dialog.draggable_box.get_obs_coordinates()[1])
+            if hasattr(dialog.draggable_box, 'player'):
+                dialog.draggable_box.player.stop()
+
+    def _load_existing_data(self, config):
+        filepath = config if isinstance(config, str) else config.get("filepath", "")
+        self.txt_file_path.setText(filepath)
+        self._evaluate_media_type(filepath)
+        if isinstance(config, dict):
+            self.spin_x.setValue(config.get("pos_x", 0))
+            self.spin_y.setValue(config.get("pos_y", 0))
+            self.spin_scale.setValue(config.get("scale", 1.0))
+            self.slider_vol.setValue(int(config.get("volume", 1.0) * 100))
+            self.chk_random_pos.setChecked(config.get("is_random_pos", False))
+
+    def get_config_data(self):
+        reward = self.combo_rewards.currentText()
+        config = {
+            "filepath": self.txt_file_path.text().strip(),
+            "volume": self.slider_vol.value() / 100.0,
+            "scale": self.spin_scale.value() if self._is_video else 1.0,
+            "pos_x": self.spin_x.value() if self._is_video else 0,
+            "pos_y": self.spin_y.value() if self._is_video else 0,
+            "is_random_pos": self.chk_random_pos.isChecked() if self._is_video else False
+        }
+        return reward, config

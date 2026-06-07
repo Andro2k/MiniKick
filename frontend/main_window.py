@@ -137,8 +137,8 @@ class MainWindow(QMainWindow):
 
         self.sidebar = Sidebar()
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
-        self.sidebar.add_tab("Chat", "chat.svg")
-        self.sidebar.add_tab("Triggers", "kick.svg") 
+        self.sidebar.add_tab("Chat", "bubble-text.svg")
+        self.sidebar.add_tab("Triggers", "layout-dashboard.svg") 
         self.sidebar.add_tab("Settings", "settings.svg")
         self.sidebar.add_tab("Developer", "terminal.svg") 
 

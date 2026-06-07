@@ -44,7 +44,7 @@ class Sidebar(QFrame):
         self.expanded_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
         self.btn_toggle = QPushButton()
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left.svg", COLOR_TEXT_SECONDARY)) 
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_TEXT_SECONDARY)) 
         self.btn_toggle.setFixedSize(36, 36)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
@@ -85,7 +85,7 @@ class Sidebar(QFrame):
         self.is_expanded = not self.is_expanded
         target_width = self.expanded_width if self.is_expanded else self.collapsed_width
         
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left.svg" if self.is_expanded else "chevron-right.svg", COLOR_TEXT_SECONDARY))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg" if self.is_expanded else "chevron-right-pipe.svg", COLOR_TEXT_SECONDARY))
         
         self.anim_group = QParallelAnimationGroup()
         for prop in [b"minimumWidth", b"maximumWidth"]:
