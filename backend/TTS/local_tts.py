@@ -1,6 +1,5 @@
 # backend/TTS/local_tts.py
 
-import threading
 import pyttsx3
 from backend.interfaces.tts_interfaces import ITTSProvider
 
@@ -9,25 +8,16 @@ class LocalTTSProvider(ITTSProvider):
         self.rate = rate
         self.volume = initial_volume
         self.voice_id = None
-        self._thread_local = threading.local()
-
-    def _get_engine(self):
-        try:
-            import pythoncom
-            pythoncom.CoInitialize()
-        except ImportError:
-            pass
-
-        if not hasattr(self._thread_local, 'engine'):
-            self._thread_local.engine = pyttsx3.init()
-        return self._thread_local.engine
 
     def set_volume(self, volume: float) -> None:
         self.volume = max(0.0, min(1.0, volume))
 
     def speak(self, text: str) -> None:
         try:
-            engine = self._get_engine()
+            import pythoncom
+            pythoncom.CoInitialize()
+
+            engine = pyttsx3.init()
             engine.setProperty("rate", self.rate)
             engine.setProperty("volume", self.volume)
             if self.voice_id:
@@ -35,20 +25,33 @@ class LocalTTSProvider(ITTSProvider):
                 
             engine.say(text)
             engine.runAndWait()
+
         except Exception as e:
             print(f"[TTS Local] Error al hablar: {e}")
+        finally:
+            try:
+                import pythoncom
+                pythoncom.CoUninitialize()
+            except Exception:
+                pass
 
     def stop(self) -> None:
-        try:
-            if hasattr(self._thread_local, 'engine'):
-                self._thread_local.engine.stop()
-        except Exception:
-            pass
+        pass
 
     def get_available_voices(self) -> list[dict]:
         try:
-            engine = self._get_engine()
-            return [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
+            import pythoncom
+            pythoncom.CoInitialize()
+            engine = pyttsx3.init()
+            voices = [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
+            
+            return voices
         except Exception as e:
             print(f"[TTS Local] Error obteniendo voces locales: {e}")
             return [{"id": "default", "name": "Voz del Sistema (Por Defecto)"}]
+        finally:
+            try:
+                import pythoncom
+                pythoncom.CoUninitialize()
+            except Exception:
+                pass

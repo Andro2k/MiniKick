@@ -63,12 +63,12 @@ GLOBAL_QSS = f"""
     outline: none;
 }}
 
-QMainWindow, QDialog, QWidget {{
+QMainWindow, QDialog {{
     background-color: {COLOR_BG_BASE};
 }}
 
 /* Evitar herencia de fondos en contenedores clave */
-QFrame#Card, QTextEdit, QComboBox {{
+QFrame#Card, QTextEdit {{
     background-color: {COLOR_BG_SURFACE};
 }}
 
@@ -229,11 +229,11 @@ QComboBox QAbstractItemView {{
     border: 1.5px solid {COLOR_BORDER_SVELTE};
     border-radius: {RADIUS_MD}px;
     outline: none;
-    padding: 4px;
+    padding: 2px;
 }}
 QComboBox QAbstractItemView::item {{
     border-radius: {RADIUS_SM}px;
-    padding: 4px;
+    padding: 2px;
     margin: 2px;
 }}
 QComboBox QAbstractItemView::item:selected {{
