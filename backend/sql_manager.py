@@ -5,14 +5,9 @@ import sqlite3
 
 class DatabaseManager:
     def __init__(self, db_name="minikick.db"):
-        # Resolvemos la ruta de AppData\Local de forma segura
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         self.db_dir = os.path.join(app_data_dir, '.Minikick')
-        
-        # Creamos el directorio si no existe (Separación de Responsabilidades)
         os.makedirs(self.db_dir, exist_ok=True)
-        
-        # Construimos la ruta absoluta final
         self.db_name = os.path.join(self.db_dir, db_name)
         self._create_tables()
 
@@ -21,8 +16,7 @@ class DatabaseManager:
 
     def _create_tables(self):
         with self.get_connection() as conn:
-            cursor = conn.cursor()
-            
+            cursor = conn.cursor()            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS tokens (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,15 +26,13 @@ class DatabaseManager:
                     scope TEXT,
                     token_type TEXT
                 )
-            """)
-            
+            """)        
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY,
                     value TEXT
                 )
-            """)
-            
+            """)           
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS obs_alerts (
                     reward_name TEXT PRIMARY KEY,
@@ -52,12 +44,11 @@ class DatabaseManager:
                 )
             """)
             
-            # --- MIGRACIÓN AUTOMÁTICA ---
             cursor.execute("PRAGMA table_info(obs_alerts)")
             columns = [info[1] for info in cursor.fetchall()]
             
             if "is_random_pos" not in columns:
-                print("🔄 Actualizando base de datos: Agregando 'is_random_pos' a obs_alerts...")
+                print("🔄 Actualizando base de datos")
                 cursor.execute("ALTER TABLE obs_alerts ADD COLUMN is_random_pos INTEGER DEFAULT 0")
                 
             conn.commit()
@@ -67,7 +58,6 @@ class SQLiteTokenStorage:
         self.db_manager = db_manager
 
     def load(self) -> dict | None:
-        """Carga los tokens de Kick desde la base de datos."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT access_token, refresh_token, expires_in, scope, token_type FROM tokens ORDER BY id DESC LIMIT 1")
@@ -83,7 +73,6 @@ class SQLiteTokenStorage:
             return None
 
     def save(self, tokens: dict) -> None:
-        """Guarda los nuevos tokens."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM tokens")
@@ -137,12 +126,10 @@ class SQLiteSettingsStorage:
         return val == "1"
 
 class SQLiteAlertsStorage:
-    """Capa de acceso a datos exclusiva para la gestión de la tabla obs_alerts."""
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
 
     def load_all(self) -> dict:
-        """Devuelve un diccionario estructurado listo para la vista."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos FROM obs_alerts")
@@ -156,12 +143,11 @@ class SQLiteAlertsStorage:
                     "scale": row[3],
                     "pos_x": row[4],
                     "pos_y": row[5],
-                    "is_random_pos": bool(row[6]) # Convertimos el 0/1 a Booleano
+                    "is_random_pos": bool(row[6])
                 }
             return mappings
 
     def save_all(self, mappings: dict) -> None:
-        """Sincroniza la base de datos con el estado en memoria de la vista."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM obs_alerts")
@@ -177,6 +163,6 @@ class SQLiteAlertsStorage:
                     config.get("scale", 1.0),
                     config.get("pos_x", 0),
                     config.get("pos_y", 0),
-                    int(config.get("is_random_pos", False)) # Convertimos Booleano a 0/1
+                    int(config.get("is_random_pos", False))
                 ))
             conn.commit()

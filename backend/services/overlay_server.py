@@ -11,16 +11,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 def get_resource_path(relative_path: str) -> str:
-    """
-    [DRY PRINCIPLE]
-    Resuelve la ruta absoluta de un asset, garantizando que funcione 
-    tanto en desarrollo (script) como en producción (.exe de PyInstaller).
-    """
     if hasattr(sys, '_MEIPASS'):
-        # PyInstaller extrae o monta los datos aquí
         base_path = sys._MEIPASS
     else:
-        # En desarrollo, usamos la carpeta actual
         base_path = os.path.abspath(".")
     
     return os.path.join(base_path, relative_path)
@@ -29,8 +22,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
-        
-        # 1. Servir el HTML del overlay
+
         if path == "/overlay":
             html_path = get_resource_path(os.path.join("assets", "overlays", "rewards.html"))
             try:
@@ -41,8 +33,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
             except FileNotFoundError:
                 self.send_error(404, f"Overlay HTML no encontrado en: {html_path}")
-                
-        # 2. Servir la multimedia de forma robusta a OBS
+
         elif path == "/media":
             query = parse_qs(parsed.query)
             if "path" not in query:
@@ -62,7 +53,6 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 self.send_header("Access-Control-Allow-Origin", "*")
                 self.end_headers()
                 
-                # Leemos y enviamos en trozos (chunks) de 64KB en lugar de saturar la RAM
                 with open(filepath, "rb") as f:
                     chunk_size = 1024 * 64 
                     while True:
@@ -72,16 +62,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                         self.wfile.write(chunk)
                         
             except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
-                # OBS o el navegador cerraron la conexión (comportamiento normal en streaming de video)
                 pass
             except Exception as e:
-                # Solo intentamos notificar el 500 si la conexión sigue viva
                 try:
                     self.send_error(500, f"Error interno: {e}")
                 except:
                     pass
                 
-        # 3. Mantener viva la conexión SSE
         elif path == "/events":
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream")
@@ -100,7 +87,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f"data: {json.dumps(alert)}\n\n".encode("utf-8"))
                     self.wfile.flush()
             except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
-                pass # El cliente se desconectó
+                pass
             except Exception:
                 pass
             finally:
@@ -110,7 +97,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.send_error(404, "Endpoint no válido")
 
     def log_message(self, format, *args):
-        pass # Mantenemos silenciados los logs por defecto para una terminal limpia
+        pass
 
 class OverlayServerManager:
     def __init__(self, port=8090):
@@ -121,7 +108,6 @@ class OverlayServerManager:
 
     def start(self):
         try:
-            # <-- CAMBIO AQUÍ: Usamos ThreadingHTTPServer en lugar de HTTPServer
             self.server = ThreadingHTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
             self.server.manager = self 
             

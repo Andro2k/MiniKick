@@ -12,7 +12,6 @@ class LocalTTSProvider(ITTSProvider):
         self._thread_local = threading.local()
 
     def _get_engine(self):
-        """Asegura que cada hilo tenga su propia instancia COM viva y aislada."""
         try:
             import pythoncom
             pythoncom.CoInitialize()
@@ -47,7 +46,6 @@ class LocalTTSProvider(ITTSProvider):
             pass
 
     def get_available_voices(self) -> list[dict]:
-        """Alta Cohesión: Reutiliza el motor seguro del hilo, sin crear 'temp_engines'."""
         try:
             engine = self._get_engine()
             return [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]

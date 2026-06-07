@@ -7,7 +7,6 @@ from backend.TTS.local_tts import LocalTTSProvider
 from backend.TTS.web_tts import WebTTSProvider
 
 class TTSManager:
-    """Gestiona una cola de mensajes en un hilo secundario y delega."""
     def __init__(self):
         self._providers = {
             "local": LocalTTSProvider(),
@@ -25,7 +24,6 @@ class TTSManager:
         return self._providers[self._active_provider_key]
 
     def set_provider(self, provider_type: str) -> None:
-        """Cambia el motor en caliente reutilizando instancias (DRY Principle)."""
         if provider_type in self._providers:
             self._active_provider_key = provider_type
 
@@ -53,7 +51,6 @@ class TTSManager:
                 self.queue.task_done()
 
     def get_available_voices(self, provider_type: str) -> list[dict]:
-        """Delega la búsqueda de voces utilizando una caché para evitar saturación."""
         if provider_type in self._voices_cache and self._voices_cache[provider_type]:
             return self._voices_cache[provider_type]
             

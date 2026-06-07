@@ -48,7 +48,6 @@ class WebTTSProvider(ITTSProvider):
             pygame.mixer.music.stop()
 
     def get_available_voices(self) -> list[dict]:
-        """Implementación nativa (SoR)"""
         try:
             voices = asyncio.run(edge_tts.list_voices())
             return [{"id": v["ShortName"], "name": v["FriendlyName"]} for v in voices if "es-" in v["Locale"]]

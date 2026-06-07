@@ -14,7 +14,6 @@ from backend.interfaces.auth_interfaces import TokenStorage
 KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
 KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
 
-# --- Capa de Presentación / Red ---
 class _OAuthCallbackHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         query = parse_qs(urlparse(self.path).query)
@@ -55,13 +54,12 @@ class OAuthCallbackServer:
         httpd.server_close()
         return httpd.auth_code
 
-# --- Lógica de Negocio ---
 class AuthManager:
     def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage, success_html_path: str = "") -> None:
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
-        self.storage = storage  # Inyección estricta de la dependencia
+        self.storage = storage
         self.success_html_path = success_html_path
 
     def get_tokens(self) -> dict:
