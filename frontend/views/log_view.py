@@ -43,7 +43,7 @@ class LogView(QWidget):
 
         # Botón Reportar Bug (NUEVO)
         self.btn_report = ModernButton("Reportar Bug", role="action_accent")
-        self.btn_report.setIcon(get_icon_colored("help-circle.svg", "#000000", 16))
+        self.btn_report.setIcon(get_icon_colored("help.svg", "#000000", 16))
         self.btn_report.setToolTip("Abrir GitHub Issues")
         self.btn_report.clicked.connect(self._open_github_issues)
         header_layout.addWidget(self.btn_report)

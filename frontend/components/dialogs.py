@@ -327,7 +327,6 @@ class AlertConfigWizard(ModernBaseDialog):
     def __init__(self, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
         self.is_edit_mode = existing_config is not None
         title = "Editar Alerta" if self.is_edit_mode else "Nueva Alerta"
-        # Usamos el ícono de ajustes para diferenciarlo de "Actualización"
         icon_path = get_assets_path("icons/settings.svg")
         
         # Heredamos la estructura base, indicando ancho 520
