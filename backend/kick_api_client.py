@@ -5,7 +5,7 @@ import requests
 from backend.interfaces.auth_interfaces import TokenProvider
 
 KICK_API_URL = "https://api.kick.com/public/v1/users"
-KICK_CHANNEL_URL = "https://kick.com/api/v1/{username}/chatroom"
+KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{username}"
 KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
 KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redemptions"
 
@@ -39,24 +39,40 @@ class KickAPIClient:
             raise e
 
     def fetch_user_data(self) -> dict:
+        """Orquesta la obtención y mapeo de los datos del canal del usuario."""
+        username = self._fetch_authenticated_username()
+        channel_data = self._fetch_channel_details(username)
+        return self._map_channel_data(username, channel_data)
+
+    def _fetch_authenticated_username(self) -> str:
+        """Responsabilidad única: Obtener el nombre de usuario autenticado."""
         resp = self._request("GET", KICK_API_URL, timeout=10)
         data = resp.json().get("data", [resp.json()])
-        username = data[0].get("name")
-        url_slug = username.replace("_", "-").replace(" ", "")        
-        channel_resp = self.scraper.get(KICK_CHANNEL_URL.format(username=url_slug))
+        return data[0].get("name")
+
+    def _fetch_channel_details(self, username: str) -> dict:
+        """Responsabilidad única: Obtener la data en crudo del canal mediante scraper."""
+        url = KICK_CHANNEL_URL.format(username=username)
+        channel_resp = self.scraper.get(url)
         
         if channel_resp.status_code != 200:
-            raise ValueError(f"No se pudo localizar el canal usando el slug: {url_slug}")
+            raise ValueError(f"No se pudo localizar el canal usando el usuario: {username}")
             
-        channel_data = channel_resp.json()
+        return channel_resp.json()
+
+    def _map_channel_data(self, username: str, channel_data: dict) -> dict:
+        """Responsabilidad única: Formatear la respuesta externa a nuestro formato interno."""
+        user_data = channel_data.get("user", {})
+        chatroom_data = channel_data.get("chatroom", {})
+        followers = channel_data.get("followers_count", channel_data.get("followersCount", 0))
         
         return {
             "username": username,
-            "room_id": channel_data.get("chatroom", {}).get("id"),
-            "followers": channel_data.get("followersCount", 0),
-            "is_verified": channel_data.get("user", {}).get("is_verified", False),
+            "room_id": chatroom_data.get("id"),
+            "followers": followers,
+            "is_verified": user_data.get("is_verified", False),
             "playback_url": channel_data.get("playback_url", ""),
-            "avatar_url": channel_data.get("user", {}).get("profile_pic", "")
+            "avatar_url": user_data.get("profile_pic", "")
         }
 
     def fetch_pending_redemptions(self, cursor: str = "") -> dict:
