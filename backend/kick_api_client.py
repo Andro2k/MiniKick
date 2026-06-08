@@ -1,5 +1,7 @@
 # backend/kick_api_client.py
 
+import time
+
 import cloudscraper
 import requests
 from backend.interfaces.auth_interfaces import TokenProvider
@@ -50,15 +52,23 @@ class KickAPIClient:
         data = resp.json().get("data", [resp.json()])
         return data[0].get("name")
 
-    def _fetch_channel_details(self, username: str) -> dict:
-        """Responsabilidad única: Obtener la data en crudo del canal mediante scraper."""
+    def _fetch_channel_details(self, username: str, max_retries: int = 3) -> dict:
+        """
+        Responsabilidad única: Obtener la data en crudo del canal mediante scraper, 
+        manejando automáticamente los bloqueos transitorios de Cloudflare (muy comunes en Linux).
+        """
         url = KICK_CHANNEL_URL.format(username=username)
-        channel_resp = self.scraper.get(url)
         
-        if channel_resp.status_code != 200:
-            raise ValueError(f"No se pudo localizar el canal usando el usuario: {username}")
+        for attempt in range(max_retries):
+            channel_resp = self.scraper.get(url)
             
-        return channel_resp.json()
+            if channel_resp.status_code == 200:
+                return channel_resp.json()
+            if attempt < max_retries - 1:
+                time.sleep(2 * (attempt + 1))
+                
+        # Si agotamos todos los intentos, entonces sí lanzamos el error hacia la UI
+        raise ValueError(f"No se pudo localizar el canal usando el usuario: {username} tras {max_retries} intentos.")
 
     def _map_channel_data(self, username: str, channel_data: dict) -> dict:
         """Responsabilidad única: Formatear la respuesta externa a nuestro formato interno."""
