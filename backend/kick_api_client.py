@@ -74,13 +74,21 @@ class KickAPIClient:
         """Responsabilidad única: Formatear la respuesta externa a nuestro formato interno."""
         user_data = channel_data.get("user", {})
         chatroom_data = channel_data.get("chatroom", {})
-        followers = channel_data.get("followers_count", channel_data.get("followersCount", 0))
-        
+        categories = channel_data.get("recent_categories", [])
+        last_category = categories[0].get("name", "Ninguna") if categories else "Ninguna"     
+        is_verified = channel_data.get("verified") is not None
+        raw_bio = user_data.get("bio", "Sin descripción.")
+        clean_bio = " ".join(str(raw_bio).splitlines())
+
         return {
-            "username": username,
-            "room_id": chatroom_data.get("id"),
-            "followers": followers,
-            "is_verified": user_data.get("is_verified", False),
+            "username": user_data.get("username", username),
+            "bio": clean_bio,
+            "room_id": chatroom_data.get("id", "-"),
+            "followers": channel_data.get("followersCount", 0),
+            "is_verified": is_verified,
+            "is_affiliate": channel_data.get("is_affiliate", False),
+            "vod_enabled": channel_data.get("vod_enabled", False),
+            "last_category": last_category,
             "playback_url": channel_data.get("playback_url", ""),
             "avatar_url": user_data.get("profile_pic", "")
         }

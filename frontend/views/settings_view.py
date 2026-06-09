@@ -1,11 +1,11 @@
 # frontend/views/settings_view.py
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame
+from PySide6.QtCore import Signal
 
 from frontend.components.controls import ModernSwitch, ModernButton
-from frontend.utils import get_icon_colored
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, COLOR_DANGER
+from frontend.components.blocks import ViewHeader, SettingRow
+from frontend.theme import COLOR_ACCENT, COLOR_DANGER
 
 class SettingsView(QWidget):
     minimize_tray_toggled = Signal(bool)
@@ -25,31 +25,13 @@ class SettingsView(QWidget):
         self.main_layout.setSpacing(16)
 
         # ─── 1. ENCABEZADO DE LA VISTA ───
-        header_frame = QFrame()
-        header_layout = QHBoxLayout(header_frame)
-        header_layout.setContentsMargins(0, 0, 0, 8)
-        header_layout.setSpacing(12)
-
-        icon_header = QLabel()
-        icon_header.setPixmap(get_icon_colored("settings.svg", COLOR_ACCENT, size=28).pixmap(28, 28))
-        
-        header_text_layout = QVBoxLayout()
-        header_text_layout.setSpacing(2)
-        
-        title = QLabel("Configuración General")
-        title.setProperty("role", "title")
-        
-        subtitle = QLabel("Ajustes globales del sistema, gestión de cuenta y actualizaciones.")
-        subtitle.setProperty("role", "body")
-        
-        header_text_layout.addWidget(title)
-        header_text_layout.addWidget(subtitle)
-        
-        header_layout.addWidget(icon_header, alignment=Qt.AlignmentFlag.AlignTop)
-        header_layout.addLayout(header_text_layout)
-        header_layout.addStretch()
-        
-        self.main_layout.addWidget(header_frame)
+        self.header = ViewHeader(
+            title_text="Configuración General", 
+            subtitle_text="Ajustes globales del sistema, gestión de cuenta y actualizaciones.", 
+            icon_name="settings.svg", 
+            icon_color=COLOR_ACCENT
+        )
+        self.main_layout.addWidget(self.header)
 
         # ─── 2. TARJETA DE SISTEMA Y ACTUALIZACIONES ───
         sys_card = QFrame()
@@ -60,30 +42,29 @@ class SettingsView(QWidget):
 
         # Fila 1: Minimizar a la bandeja (Switch)
         self.sw_start_bg = ModernSwitch()
-        self.sw_start_bg.setCursor(Qt.CursorShape.PointingHandCursor)
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
         
-        row_tray = self._create_switch_row(
+        row_tray = SettingRow(
             icon_name="minimize.svg", 
             title_text="Ejecución en Segundo Plano", 
             desc_text="Minimizar a la bandeja del sistema en lugar de cerrar la aplicación por completo.", 
-            switch_widget=self.sw_start_bg
+            right_widget=self.sw_start_bg
         )
 
         # Fila 2: Actualizaciones (Botón de Acción Positiva)
         self.btn_update = ModernButton("Buscar actualizaciones", role="action_success")
         self.btn_update.clicked.connect(self.check_update_requested.emit)
         
-        row_update = self._create_action_row(
+        row_update = SettingRow(
             icon_name="cloud-download.svg", 
-            icon_color=COLOR_ACCENT,
             title_text="Actualizaciones de Software", 
             desc_text="Buscar e instalar nuevas versiones de MiniKick.", 
-            button_widget=self.btn_update
+            right_widget=self.btn_update,
+            icon_color=COLOR_ACCENT
         )
-        sys_layout.addLayout(row_tray)        
-        sys_layout.addLayout(row_update)
         
+        sys_layout.addWidget(row_tray)        
+        sys_layout.addWidget(row_update)
         self.main_layout.addWidget(sys_card)
 
         # ─── 3. TARJETA DE GESTIÓN DE CUENTA (Zona de Peligro) ───
@@ -96,75 +77,18 @@ class SettingsView(QWidget):
         self.btn_unlink = ModernButton("Desvincular", role="action_danger")
         self.btn_unlink.clicked.connect(self.unlink_account_requested.emit)
         
-        row_unlink = self._create_action_row(
+        row_unlink = SettingRow(
             icon_name="user-x.svg", 
-            icon_color=COLOR_DANGER,
             title_text="Desvincular Cuenta", 
             desc_text="Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez.", 
-            button_widget=self.btn_unlink
+            right_widget=self.btn_unlink,
+            icon_color=COLOR_DANGER
         )
 
-        account_layout.addLayout(row_unlink)
+        account_layout.addWidget(row_unlink)
         self.main_layout.addWidget(account_card)
 
         self.main_layout.addStretch()
-
-    # =========================================================================
-    # ─── MÉTODOS AUXILIARES DE DISEÑO ESTRUCTURAL (DRY) ───
-    # =========================================================================
-    def _create_switch_row(self, icon_name: str, title_text: str, desc_text: str, switch_widget: ModernSwitch) -> QHBoxLayout:
-        """Crea una fila estandarizada con Icono, Título y Descripción, y un Switch a la derecha."""
-        row_layout = QHBoxLayout()
-        row_layout.setSpacing(12)
-
-        icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, size=18).pixmap(18, 18))
-
-        text_v_layout = QVBoxLayout()
-        text_v_layout.setSpacing(2)
-        
-        lbl_title = QLabel(title_text)
-        lbl_title.setProperty("role", "section_small")
-        
-        lbl_desc = QLabel(desc_text)
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
-        
-        text_v_layout.addWidget(lbl_title)
-        text_v_layout.addWidget(lbl_desc)
-
-        row_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        row_layout.addLayout(text_v_layout, stretch=1)
-        row_layout.addWidget(switch_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
-        
-        return row_layout
-
-    def _create_action_row(self, icon_name: str, icon_color: str, title_text: str, desc_text: str, button_widget: QPushButton) -> QHBoxLayout:
-        """Crea una fila estandarizada con Icono (coloreable), Textos, y un Botón de Acción a la derecha."""
-        row_layout = QHBoxLayout()
-        row_layout.setSpacing(12)
-
-        icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=18).pixmap(18, 18))
-
-        text_v_layout = QVBoxLayout()
-        text_v_layout.setSpacing(2)
-        
-        lbl_title = QLabel(title_text)
-        lbl_title.setProperty("role", "section_small")
-        
-        lbl_desc = QLabel(desc_text)
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
-        
-        text_v_layout.addWidget(lbl_title)
-        text_v_layout.addWidget(lbl_desc)
-
-        row_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        row_layout.addLayout(text_v_layout, stretch=1)
-        row_layout.addWidget(button_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
-        
-        return row_layout
 
     # =========================================================================
     # ─── MÉTODOS DE LA LÓGICA DE LA VISTA ───

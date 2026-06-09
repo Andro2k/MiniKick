@@ -23,11 +23,30 @@
         const eventSource = new EventSource('/events');
         const container = document.getElementById('container');
 
+        // --- Estado de la Cola ---
+        const alertQueue = [];
+        let isPlaying = false;
+
+        // 1. Recepción de eventos
         eventSource.onmessage = function(event) {
             const data = JSON.parse(event.data);
-            playAlert(data);
+            alertQueue.push(data); // Encolar la alerta
+            processQueue();        // Intentar procesar la cola
         };
 
+        // 2. Procesamiento de la cola
+        function processQueue() {
+            // Si ya hay algo reproduciéndose o la cola está vacía, no hacemos nada
+            if (isPlaying || alertQueue.length === 0) {
+                return;
+            }
+
+            isPlaying = true;
+            const currentAlert = alertQueue.shift(); // Sacar el primero de la fila
+            playAlert(currentAlert);
+        }
+
+        // 3. Reproducción
         function playAlert(data) {
             const mediaEl = document.createElement('video');
             mediaEl.src = data.file_url;
@@ -40,25 +59,30 @@
             mediaEl.style.transform = `scale(${scale})`;
             mediaEl.style.transformOrigin = "top left"; 
 
-            // --- LÓGICA DE POSICIONAMIENTO ---
             if (data.is_random_pos) {
-                // Genera una posición aleatoria entre el 0% y el 75% del tamaño de la pantalla
                 const randX = Math.floor(Math.random() * 75);
                 const randY = Math.floor(Math.random() * 75);
                 mediaEl.style.left = randX + "%";
                 mediaEl.style.top = randY + "%";
             } else {
-                // Usa las coordenadas fijas
                 const px = data.pos_x || 0;
                 const py = data.pos_y || 0;
                 mediaEl.style.left = px + "px";
                 mediaEl.style.top = py + "px";
             }
 
-            mediaEl.onended = () => mediaEl.remove();
+            // --- Control de Flujo: Avanzar la cola al terminar o fallar ---
+            const onMediaFinished = () => {
+                mediaEl.remove();
+                isPlaying = false;
+                processQueue(); // Llamar al siguiente en la fila
+            };
+
+            mediaEl.onended = onMediaFinished;
+            
             mediaEl.onerror = (e) => {
                 console.error("Error reproduciendo media:", e);
-                mediaEl.remove();
+                onMediaFinished();
             };
 
             container.appendChild(mediaEl);

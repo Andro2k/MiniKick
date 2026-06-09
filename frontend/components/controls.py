@@ -13,7 +13,6 @@ class ModernButton(QPushButton):
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-
 class ModernSwitch(QAbstractButton):
     """Componente Switch dibujado nativamente adaptado al sistema de diseño."""
     def __init__(self, parent=None):

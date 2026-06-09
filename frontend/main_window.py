@@ -4,9 +4,8 @@ import logging
 import os
 import sys
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
-                               QSystemTrayIcon, QMenu, QApplication)
+                               QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QThread, Signal, QEvent
-from PySide6.QtGui import QIcon
 
 from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager

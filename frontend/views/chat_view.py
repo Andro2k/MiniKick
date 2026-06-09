@@ -1,13 +1,13 @@
 # frontend/views/chat_view.py
 
-import os
 from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QListView, QListWidget, QListWidgetItem, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, 
-                               QTextEdit, QLabel, QSlider, QFrame, QSizePolicy,)
+                               QTextEdit, QLabel, QSlider, QFrame, QSizePolicy)
 from PySide6.QtCore import Qt, Signal, Slot
 
 from frontend.components.controls import ModernButton, ModernSwitch
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
-from frontend.utils import resource_path, get_icon_colored 
+from frontend.components.blocks import ViewHeader, SettingRow, SettingSliderRow
+from frontend.theme import COLOR_ACCENT
+from frontend.utils import get_icon_colored 
 
 class ChatView(QWidget):
     # ─── CONTRATOS DE SALIDA (Para el Controlador) ───
@@ -30,41 +30,19 @@ class ChatView(QWidget):
         self.main_layout.setSpacing(16)
 
         # ─── 1. ENCABEZADO DE LA VISTA ───
-        header_frame = QFrame()
-        header_layout = QHBoxLayout(header_frame)
-        header_layout.setContentsMargins(0, 0, 0, 8)
-        header_layout.setSpacing(12)
+        self.header = ViewHeader(
+            title_text="Chat en Vivo",
+            subtitle_text="Gestiona la moderación, lectura de voz interactiva (TTS) y eventos del canal en tiempo real.",
+            icon_name="bubble-text.svg",
+            icon_color=COLOR_ACCENT
+        )
+        self.main_layout.addWidget(self.header)
 
-        icon_header = QLabel()
-        icon_header.setPixmap(get_icon_colored("bubble-text.svg", COLOR_ACCENT, size=28).pixmap(28, 28))
-        
-        header_text_layout = QVBoxLayout()
-        header_text_layout.setSpacing(2)
-        
-        title = QLabel("Chat en Vivo")
-        title.setProperty("role", "title")
-        
-        subtitle = QLabel("Gestiona la moderación, lectura de voz interactiva (TTS) y eventos del canal en tiempo real.")
-        subtitle.setProperty("role", "body")
-        
-        header_text_layout.addWidget(title)
-        header_text_layout.addWidget(subtitle)
-        
-        header_layout.addWidget(icon_header, alignment=Qt.AlignmentFlag.AlignTop)
-        header_layout.addLayout(header_text_layout)
-        header_layout.addStretch()
-        
-        self.main_layout.addWidget(header_frame)
-
-        # ─── CONTENEDOR FLEXIBLE (Responsive) ───
-        # Usamos QBoxLayout para poder cambiar su dirección dinámicamente
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.body_layout.setSpacing(16)
 
-        # ─── 2. PANEL DE CONFIGURACIÓN (IZQUIERDO / SUPERIOR) ───
         config_card = QFrame()
         config_card.setObjectName("Card")
-        # Quitamos el setFixedWidth para que pueda expandirse. Le damos un mínimo para que no colapse.
         config_card.setMinimumWidth(380) 
         config_layout = QVBoxLayout(config_card)
         config_layout.setContentsMargins(20, 20, 20, 20)
@@ -81,10 +59,12 @@ class ChatView(QWidget):
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setProperty("role", "monospace")
 
-        row_tts = self._create_switch_row("volume.svg", "Servicio de Voz (TTS)", "Habilita la lectura automatizada de mensajes.", self.chk_tts)
-        row_read_name = self._create_switch_row("user.svg", "Leer Nombres", "Pronuncia el nombre del emisor antes del mensaje.", self.chk_name)
-        row_provider = self._create_switch_row("globe.svg", "Motor de Voz Premium", "Alterna entre voces web de Edge o locales.", self.chk_provider)
-        row_cmd = self._create_switch_row("terminal.svg", "Requerir Comando", "Solo leer mensajes que inicien con un prefijo.", self.chk_command)
+        # --- USO DE COMPONENTES REUTILIZABLES ---
+        row_tts = SettingRow("volume.svg", "Servicio de Voz (TTS)", "Habilita la lectura automatizada de mensajes.", self.chk_tts)
+        row_read_name = SettingRow("user.svg", "Leer Nombres", "Pronuncia el nombre del emisor antes del mensaje.", self.chk_name)
+        row_provider = SettingRow("globe.svg", "Motor de Voz Premium", "Alterna entre voces web de Edge o locales.", self.chk_provider)
+        row_cmd = SettingRow("terminal.svg", "Requerir Comando", "Solo leer mensajes que inicien con un prefijo.", self.chk_command)
+        row_volume = SettingSliderRow("adjustments-alt.svg", "Volumen General", "Ajusta la intensidad del sintetizador de voz.", self.slider_vol, self.lbl_vol_perc)
         
         lang_voice_layout = QHBoxLayout()
         self.combo_lang = QComboBox()
@@ -94,24 +74,27 @@ class ChatView(QWidget):
         lang_voice_layout.addWidget(self.combo_lang)
         lang_voice_layout.addWidget(self.combo_voice)
 
-        sec_layout = QHBoxLayout()
         self.txt_command = QLineEdit()
         self.txt_command.setPlaceholderText("Ej. !tts")
         self.txt_command.setFixedWidth(80)
-        sec_layout.addWidget(QLabel("Prefijo:"), alignment=Qt.AlignmentFlag.AlignVCenter)
-        sec_layout.addWidget(self.txt_command)
-        sec_layout.addStretch()
 
-        row_volume = self._create_volume_row("adjustments-alt.svg", "Volumen General", "Ajusta la intensidad del sintetizador de voz.", self.slider_vol, self.lbl_vol_perc)
+        # Lo inyectamos en nuestro componente estandarizado
+        row_prefix = SettingRow(
+            icon_name="hash.svg", # Puedes cambiar este icono por 'keyboard.svg' o 'edit.svg' si prefieres
+            title_text="Prefijo del Comando", 
+            desc_text="Define el texto exacto que activará la lectura del bot.", 
+            right_widget=self.txt_command
+        )
 
-        config_layout.addLayout(row_tts)
-        config_layout.addLayout(row_read_name)
-        config_layout.addLayout(row_provider)
+        # Agregamos los componentes (notar el uso de addWidget en lugar de addLayout para los SettingRow)
+        config_layout.addWidget(row_tts)
+        config_layout.addWidget(row_read_name)
+        config_layout.addWidget(row_provider)
         config_layout.addLayout(lang_voice_layout)
-        config_layout.addLayout(row_volume)
+        config_layout.addWidget(row_volume)
         
-        config_layout.addLayout(row_cmd)
-        config_layout.addLayout(sec_layout)
+        config_layout.addWidget(row_cmd)
+        config_layout.addWidget(row_prefix)
         config_layout.addSpacing(10)
         
         config_layout.addWidget(self._build_bots_panel(), stretch=1) 
@@ -138,71 +121,11 @@ class ChatView(QWidget):
         
         self.main_layout.addLayout(self.body_layout)
 
-    # =========================================================================
-    # ─── MÉTODOS AUXILIARES DE DISEÑO ESTRUCTURAL (DRY) ───
-    # =========================================================================
-    def _create_switch_row(self, icon_name: str, title_text: str, desc_text: str, switch_widget: ModernSwitch) -> QHBoxLayout:
-        """Crea una fila estandarizada con Icono, Título y Descripción a la izquierda, y Switch a la derecha."""
-        row_layout = QHBoxLayout()
-        row_layout.setSpacing(12)
-
-        icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, size=18).pixmap(18, 18))
-
-        text_v_layout = QVBoxLayout()
-        text_v_layout.setSpacing(2)
-        
-        lbl_title = QLabel(title_text)
-        lbl_title.setProperty("role", "section_small")
-        
-        lbl_desc = QLabel(desc_text)
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
-        
-        text_v_layout.addWidget(lbl_title)
-        text_v_layout.addWidget(lbl_desc)
-
-        row_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
-        row_layout.addLayout(text_v_layout, stretch=1)
-        row_layout.addWidget(switch_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
-        
-        return row_layout
-
-    def _create_volume_row(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QSlider, value_label: QLabel) -> QVBoxLayout:
-        """Crea una fila estandarizada para controles de audio con el slider expandido abajo."""
-        master_layout = QVBoxLayout()
-        master_layout.setSpacing(6)
-
-        header_row = QHBoxLayout()
-        header_row.setSpacing(12)
-
-        icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, size=18).pixmap(18, 18))
-
-        lbl_title = QLabel(title_text)
-        lbl_title.setProperty("role", "section_small")
-
-        header_row.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
-        header_row.addWidget(lbl_title, alignment=Qt.AlignmentFlag.AlignVCenter)
-        header_row.addStretch()
-        header_row.addWidget(value_label, alignment=Qt.AlignmentFlag.AlignVCenter)
-
-        lbl_desc = QLabel(desc_text)
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
-
-        master_layout.addLayout(header_row)
-        master_layout.addWidget(lbl_desc)
-        master_layout.addWidget(slider_widget)
-        
-        return master_layout
-
     def _build_bots_panel(self) -> QWidget:
         """Panel integrado para silenciar bots."""
         panel = QWidget()
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
 
         title = QLabel("Usuarios Silenciados")
         title.setProperty("role", "section_small")
@@ -223,7 +146,6 @@ class ChatView(QWidget):
         self.list_bots.setFlow(QListView.Flow.LeftToRight) 
         self.list_bots.setWrapping(True) 
         self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
-        self.list_bots.setSpacing(3)
         self.list_bots.setObjectName("BotsList")
 
         layout.addWidget(self.list_bots)
@@ -239,8 +161,6 @@ class ChatView(QWidget):
         bot_name = bot_name.strip().lower()
         if not bot_name: 
             return
-
-        # Evitar duplicados
         if self.list_bots.findItems(bot_name, Qt.MatchFlag.MatchExactly):
             self.txt_bot_input.clear()
             return 
@@ -303,11 +223,8 @@ class ChatView(QWidget):
         self.chk_provider.toggled.connect(self._on_provider_toggled)
         self.combo_lang.currentIndexChanged.connect(self._filter_voices_by_lang)
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
-
         self.slider_vol.valueChanged.connect(self._on_slider_vol_changed)
-        
         self.txt_command.textChanged.connect(self._validate_command)
-        
         self.btn_add_bot.clicked.connect(self._handle_add_bot_request)
         self.txt_bot_input.returnPressed.connect(self._handle_add_bot_request)
 
@@ -342,7 +259,6 @@ class ChatView(QWidget):
         self.combo_voice.clear()
         self.combo_voice.addItem("Cargando voces...", userData=None)
         self.combo_voice.blockSignals(False)
-        
         self._on_settings_modified()
         self.provider_changed.emit(provider)
 
@@ -407,7 +323,6 @@ class ChatView(QWidget):
             if prefix not in langs:
                 langs.append(prefix)
 
-        # Llenamos el combo de idiomas sin disparar señales
         self.combo_lang.blockSignals(True)
         self.combo_lang.clear()
         self.combo_lang.addItems(langs)
@@ -421,7 +336,6 @@ class ChatView(QWidget):
                 self.combo_lang.setCurrentIndex(idx)
                 self.combo_lang.blockSignals(False)
 
-        # Aplicamos el filtro de voces con el flag de silencio
         self._apply_voice_filter(selected_id, mute_signal)
 
     @Slot()

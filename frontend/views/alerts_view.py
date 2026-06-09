@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
 from frontend.components.controls import ModernButton
+from frontend.components.blocks import ViewHeader, SettingRow
+from frontend.theme import COLOR_ACCENT
 from frontend.utils import get_icon_colored
 from frontend.components.dialogs import AlertConfigWizard
 
@@ -27,39 +29,63 @@ class AlertsView(QWidget):
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(16)
 
-        title_layout = QHBoxLayout()
-        title = QLabel("Triggers & Alertas")
-        title.setProperty("role", "title")
-        title_layout.addWidget(title)
-        title_layout.addStretch()
-        
-        self.btn_new_alert = ModernButton("+ Nueva Alerta", role="action_accent")
-        self.btn_new_alert.clicked.connect(self._open_new_alert_dialog)
-        title_layout.addWidget(self.btn_new_alert)
-        
-        self.main_layout.addLayout(title_layout)
+        # ─── 1. ENCABEZADO DE LA VISTA ───
+        self.header = ViewHeader(
+            title_text="Triggers & Alertas",
+            subtitle_text="Vincula las recompensas de tu canal con elementos multimedia en pantalla.",
+            icon_name="layout-dashboard.svg", 
+            icon_color=COLOR_ACCENT
+        )
+        self.main_layout.addWidget(self.header)
 
+        # ─── 2. TARJETA DE CONEXIÓN OBS ───
         self._build_obs_card()
+
+        # ─── 3. TARJETA DE LA TABLA ───
         self._build_table_card()
 
     def _build_obs_card(self):
         obs_card = QFrame()
         obs_card.setObjectName("Card")
-        obs_layout = QHBoxLayout(obs_card)
-        obs_layout.setContentsMargins(16, 16, 16, 16)
-        
-        lbl_obs_url = QLabel("URL Browser Source OBS:")
-        lbl_obs_url.setProperty("role", "monospace")
+        obs_layout = QVBoxLayout(obs_card)
+        obs_layout.setContentsMargins(20, 20, 20, 20)
         
         self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
-        obs_layout.addWidget(lbl_obs_url)
-        obs_layout.addStretch()
-        obs_layout.addWidget(self.btn_copy_url)
+        # Reutilizamos SettingRow para mantener coherencia visual en toda la app
+        obs_row = SettingRow(
+            icon_name="link.svg",
+            title_text="Fuente de Navegador OBS",
+            desc_text="Copia este enlace y pégalo en tu software de transmisión (Resolución recomendada: 1920x1080).",
+            right_widget=self.btn_copy_url
+        )
+        
+        obs_layout.addWidget(obs_row)
         self.main_layout.addWidget(obs_card)
 
     def _build_table_card(self):
+        table_card = QFrame()
+        table_card.setObjectName("Card")
+        table_layout = QVBoxLayout(table_card)
+        table_layout.setContentsMargins(10, 10, 10, 10)
+        table_layout.setSpacing(16)
+
+        # Encabezado de la tabla con su botón de acción
+        table_header_layout = QHBoxLayout()
+        lbl_table_title = QLabel("Recompensas Vinculadas")
+        lbl_table_title.setProperty("role", "section")
+
+        self.btn_new_alert = ModernButton("+ Nueva Alerta", role="action_accent")
+        self.btn_new_alert.clicked.connect(self._open_new_alert_dialog)
+
+        table_header_layout.addWidget(lbl_table_title)
+        table_header_layout.addStretch()
+        table_header_layout.addWidget(self.btn_new_alert)
+
+        table_layout.addLayout(table_header_layout)
+
+        # Construcción de la tabla
         self.table_alerts = QTableWidget(0, 3)
         self.table_alerts.setHorizontalHeaderLabels(["Recompensa de Kick", "Archivo", "Acciones"])
         self.table_alerts.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -73,8 +99,12 @@ class AlertsView(QWidget):
         self.table_alerts.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.table_alerts.setFocusPolicy(Qt.FocusPolicy.NoFocus) 
         
-        self.main_layout.addWidget(self.table_alerts)
+        table_layout.addWidget(self.table_alerts)
+        self.main_layout.addWidget(table_card, stretch=1) # stretch=1 empuja todo lo demás hacia arriba
 
+    # =========================================================================
+    # ─── LÓGICA DE LA VISTA ───
+    # =========================================================================
     def _create_table_action_btn(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role)
         btn.setFixedSize(28, 28)
@@ -99,7 +129,6 @@ class AlertsView(QWidget):
     def _open_new_alert_dialog(self):
         self.active_dialog = AlertConfigWizard(self, rewards_list=self.current_rewards_list)
         
-        # Validación limpia de ejecución
         if self.active_dialog.exec():
             reward, config = self.active_dialog.get_config_data()
             if reward and reward not in ["Cargando recompensas...", "No hay recompensas"] and config["filepath"]:
@@ -121,7 +150,6 @@ class AlertsView(QWidget):
             existing_reward=reward_name
         )
         
-        # Validación limpia de ejecución
         if self.active_dialog.exec():
             _, updated_config = self.active_dialog.get_config_data()
             if updated_config["filepath"]:
@@ -180,6 +208,5 @@ class AlertsView(QWidget):
     @Slot(list)
     def update_rewards_combo(self, rewards_list: list):
         self.current_rewards_list = rewards_list if rewards_list else ["No hay recompensas"]
-        # Si el diálogo está abierto mientras los datos llegan, lo actualizamos en caliente.
         if self.active_dialog:
             self.active_dialog.update_rewards(self.current_rewards_list)
