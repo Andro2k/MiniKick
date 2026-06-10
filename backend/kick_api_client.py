@@ -1,7 +1,6 @@
 # backend/kick_api_client.py
 
 import time
-
 import cloudscraper
 import requests
 from backend.interfaces.auth_interfaces import TokenProvider
@@ -16,7 +15,15 @@ class KickAPIClient:
     
     def __init__(self, auth_provider: TokenProvider):
         self.auth_provider = auth_provider
-        self.scraper = cloudscraper.create_scraper()
+        # Forzamos una huella digital específica de navegador.
+        # Esto unifica el comportamiento en cualquier sistema operativo.
+        self.scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'mobile': False
+            }
+        )
 
     def _request(self, method: str, url: str, **kwargs) -> requests.Response:
         tokens = self.auth_provider.get_tokens()
@@ -54,21 +61,25 @@ class KickAPIClient:
 
     def _fetch_channel_details(self, username: str, max_retries: int = 3) -> dict:
         """
-        Responsabilidad única: Obtener la data en crudo del canal mediante scraper, 
-        manejando automáticamente los bloqueos transitorios de Cloudflare (muy comunes en Linux).
+        Responsabilidad única: Obtener la data en crudo del canal mediante scraper.
+        Maneja bloqueos transitorios y expone el código HTTP real si falla de forma persistente.
         """
         url = KICK_CHANNEL_URL.format(username=username)
+        last_status_code = None
         
         for attempt in range(max_retries):
             channel_resp = self.scraper.get(url)
+            last_status_code = channel_resp.status_code
             
-            if channel_resp.status_code == 200:
+            if last_status_code == 200:
                 return channel_resp.json()
+                
             if attempt < max_retries - 1:
                 time.sleep(2 * (attempt + 1))
                 
-        # Si agotamos todos los intentos, entonces sí lanzamos el error hacia la UI
-        raise ValueError(f"No se pudo localizar el canal usando el usuario: {username} tras {max_retries} intentos.")
+        raise ValueError(f"No se pudo localizar el canal '{username}'. "
+                         f"Intentos agotados ({max_retries}). "
+                         f"Último código HTTP recibido: {last_status_code}")
 
     def _map_channel_data(self, username: str, channel_data: dict) -> dict:
         """Responsabilidad única: Formatear la respuesta externa a nuestro formato interno."""
