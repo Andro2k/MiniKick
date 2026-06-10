@@ -10,8 +10,8 @@ class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 8)
-        layout.setSpacing(12)
+        layout.setContentsMargins(0, 0, 0, 10)
+        layout.setSpacing(10)
 
         icon_lbl = QLabel()
         icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=28).pixmap(28, 28))
@@ -38,7 +38,7 @@ class SettingRow(QWidget):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
+        layout.setSpacing(10)
 
         icon_lbl = QLabel()
         icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=18).pixmap(18, 18))
@@ -69,7 +69,7 @@ class SettingSliderRow(QWidget):
         layout.setSpacing(6)
 
         header_row = QHBoxLayout()
-        header_row.setSpacing(12)
+        header_row.setSpacing(10)
 
         icon_lbl = QLabel()
         icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=18).pixmap(18, 18))
@@ -100,10 +100,10 @@ class StatCard(QFrame):
         self.setMinimumWidth(150)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(8)
+        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(10)
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(8)
+        header_layout.setSpacing(10)
 
         icon_lbl = QLabel()
         icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_ACCENT, size=16).pixmap(16, 16))

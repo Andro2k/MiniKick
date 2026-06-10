@@ -24,7 +24,7 @@ class DashboardView(QWidget):
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(16)
+        self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
             title_text="Dashboard",
@@ -43,8 +43,8 @@ class DashboardView(QWidget):
         conn_card = QFrame()
         conn_card.setObjectName("Card")
         conn_layout = QVBoxLayout(conn_card)
-        conn_layout.setContentsMargins(20, 20, 20, 20)
-        conn_layout.setSpacing(18)
+        conn_layout.setContentsMargins(10, 10, 10, 10)
+        conn_layout.setSpacing(10)
 
         self.sw_autostart = ModernSwitch()
         self.sw_autostart.toggled.connect(self.auto_start_toggled.emit)
@@ -131,7 +131,7 @@ class DashboardView(QWidget):
         stats_container = QWidget()
         stats_grid = QGridLayout(stats_container)
         stats_grid.setContentsMargins(0, 0, 0, 0)
-        stats_grid.setSpacing(16)
+        stats_grid.setSpacing(10)
 
         self.card_followers = StatCard("Seguidores", "users.svg")
         self.card_room = StatCard("ID Sala (Chat)", "hash.svg")

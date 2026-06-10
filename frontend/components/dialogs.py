@@ -42,7 +42,7 @@ class ModernBaseDialog(QDialog):
         """)
 
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(32, 32, 32, 32)
+        self.content_layout.setContentsMargins(24, 24, 24, 24)
         self.content_layout.setSpacing(12)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
@@ -54,7 +54,7 @@ class ModernBaseDialog(QDialog):
             self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.title_lbl.setWordWrap(True)
             self.content_layout.addWidget(self.title_lbl)
-            self.content_layout.addSpacing(16)
+            self.content_layout.addSpacing(12)
 
         self.main_layout.addWidget(self.container)
 
@@ -89,7 +89,7 @@ class ModernBaseDialog(QDialog):
         if btn_primary: btn_layout.addWidget(btn_primary)
         if btn_secondary: btn_layout.addWidget(btn_secondary)
         
-        self.content_layout.addSpacing(16)
+        self.content_layout.addSpacing(12)
         self.content_layout.addLayout(btn_layout)
 
 class ModernConfirmDialog(ModernBaseDialog):
@@ -459,7 +459,7 @@ class AlertConfigWizard(ModernBaseDialog):
         
         self.video_container = QWidget()
         v_layout = QVBoxLayout(self.video_container)
-        v_layout.setContentsMargins(0, 8, 0, 0)
+        v_layout.setContentsMargins(0, 10, 0, 0)
         v_layout.setSpacing(12)
         
         row_rnd = QHBoxLayout()

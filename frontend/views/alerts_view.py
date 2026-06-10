@@ -27,7 +27,7 @@ class AlertsView(QWidget):
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(16)
+        self.main_layout.setSpacing(12)
 
         # ─── 1. ENCABEZADO DE LA VISTA ───
         self.header = ViewHeader(
@@ -48,7 +48,7 @@ class AlertsView(QWidget):
         obs_card = QFrame()
         obs_card.setObjectName("Card")
         obs_layout = QVBoxLayout(obs_card)
-        obs_layout.setContentsMargins(20, 20, 20, 20)
+        obs_layout.setContentsMargins(10, 10, 10, 10)
         
         self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
@@ -69,7 +69,7 @@ class AlertsView(QWidget):
         table_card.setObjectName("Card")
         table_layout = QVBoxLayout(table_card)
         table_layout.setContentsMargins(10, 10, 10, 10)
-        table_layout.setSpacing(16)
+        table_layout.setSpacing(10)
 
         # Encabezado de la tabla con su botón de acción
         table_header_layout = QHBoxLayout()

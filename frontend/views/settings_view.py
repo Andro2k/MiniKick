@@ -22,7 +22,7 @@ class SettingsView(QWidget):
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(16)
+        self.main_layout.setSpacing(12)
 
         # ─── 1. ENCABEZADO DE LA VISTA ───
         self.header = ViewHeader(
@@ -37,8 +37,8 @@ class SettingsView(QWidget):
         sys_card = QFrame()
         sys_card.setObjectName("Card")
         sys_layout = QVBoxLayout(sys_card)
-        sys_layout.setContentsMargins(20, 20, 20, 20)
-        sys_layout.setSpacing(18)
+        sys_layout.setContentsMargins(10, 10, 10, 10)
+        sys_layout.setSpacing(10)
 
         # Fila 1: Minimizar a la bandeja (Switch)
         self.sw_start_bg = ModernSwitch()
@@ -71,8 +71,8 @@ class SettingsView(QWidget):
         account_card = QFrame()
         account_card.setObjectName("Card")
         account_layout = QVBoxLayout(account_card)
-        account_layout.setContentsMargins(20, 20, 20, 20)
-        account_layout.setSpacing(18)
+        account_layout.setContentsMargins(10, 10, 10, 10)
+        account_layout.setSpacing(10)
 
         self.btn_unlink = ModernButton("Desvincular", role="action_danger")
         self.btn_unlink.clicked.connect(self.unlink_account_requested.emit)

@@ -24,7 +24,7 @@ class Sidebar(QFrame):
 
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 20, 10, 20)
+        self.main_layout.setContentsMargins(10, 10, 10, 20)
         self.main_layout.setSpacing(8)
 
         self.header_container = QWidget()
@@ -44,6 +44,7 @@ class Sidebar(QFrame):
         self.expanded_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
         self.btn_toggle = QPushButton()
+        self.btn_toggle.setProperty("role", "action_outlined")
         self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_TEXT_SECONDARY)) 
         self.btn_toggle.setFixedSize(36, 36)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)

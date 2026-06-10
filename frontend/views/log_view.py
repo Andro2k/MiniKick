@@ -8,10 +8,9 @@ from frontend.theme import COLOR_TEXT_PRIMARY
 class LogView(QWidget):
     def __init__(self):
         super().__init__()
-        # ─── ESTADO LÓGICO (SoR) ───
         self._log_history = [] 
         self._current_filter = "TODOS"
-        self._max_logs = 1000  # Evita fugas de memoria si la app pasa días abierta
+        self._max_logs = 1000
         
         self._setup_ui()
 
@@ -89,12 +88,10 @@ class LogView(QWidget):
         safe_msg = message.replace("<", "&lt;").replace(">", "&gt;")
         html_msg = f'<span style="color: {color};">{safe_msg}</span>'
         
-        # 1. Guardar en el estado interno
         self._log_history.append((level, html_msg))
         if len(self._log_history) > self._max_logs:
-            self._log_history.pop(0) # Mantener la memoria limpia (YAGNI / Optimizacion Justificada)
+            self._log_history.pop(0)
         
-        # 2. Pintar solo si coincide con el filtro actual
         if self._current_filter == "TODOS" or self._current_filter == level:
             self.console.append(html_msg)
             self._scroll_to_bottom()

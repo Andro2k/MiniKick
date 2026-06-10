@@ -27,7 +27,7 @@ class ChatView(QWidget):
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(16)
+        self.main_layout.setSpacing(12)
 
         # ─── 1. ENCABEZADO DE LA VISTA ───
         self.header = ViewHeader(
@@ -45,8 +45,8 @@ class ChatView(QWidget):
         config_card.setObjectName("Card")
         config_card.setMinimumWidth(380) 
         config_layout = QVBoxLayout(config_card)
-        config_layout.setContentsMargins(20, 20, 20, 20)
-        config_layout.setSpacing(18)
+        config_layout.setContentsMargins(10, 10, 10, 10)
+        config_layout.setSpacing(10)
 
         self.chk_tts = ModernSwitch()
         self.chk_name = ModernSwitch() 
@@ -103,8 +103,8 @@ class ChatView(QWidget):
         chat_card = QFrame()
         chat_card.setObjectName("Card")
         chat_layout = QVBoxLayout(chat_card)
-        chat_layout.setContentsMargins(12, 12, 12, 12)
-        chat_layout.setSpacing(8)
+        chat_layout.setContentsMargins(10, 10, 10, 10)
+        chat_layout.setSpacing(10)
 
         lbl_chat_title = QLabel("Historial de la Sala")
         lbl_chat_title.setProperty("role", "section")
