@@ -6,7 +6,7 @@ import requests
 from backend.interfaces.auth_interfaces import TokenProvider
 
 KICK_API_URL = "https://api.kick.com/public/v1/users"
-KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{username}"
+KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
 KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
 KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redemptions"
 
@@ -15,12 +15,11 @@ class KickAPIClient:
     
     def __init__(self, auth_provider: TokenProvider):
         self.auth_provider = auth_provider
-        # Forzamos una huella digital específica de navegador.
-        # Esto unifica el comportamiento en cualquier sistema operativo.
+        # Se elimina el hardcoding de la plataforma. 
+        # Cloudscraper detectará el SO base (Win/Ubuntu) evitando discrepancias de TLS.
         self.scraper = cloudscraper.create_scraper(
             browser={
                 'browser': 'chrome',
-                'platform': 'windows',
                 'mobile': False
             }
         )
@@ -50,7 +49,8 @@ class KickAPIClient:
     def fetch_user_data(self) -> dict:
         """Orquesta la obtención y mapeo de los datos del canal del usuario."""
         username = self._fetch_authenticated_username()
-        channel_data = self._fetch_channel_details(username)
+        channel_slug = self._generate_channel_slug(username)
+        channel_data = self._fetch_channel_details(channel_slug)
         return self._map_channel_data(username, channel_data)
 
     def _fetch_authenticated_username(self) -> str:
@@ -59,12 +59,15 @@ class KickAPIClient:
         data = resp.json().get("data", [resp.json()])
         return data[0].get("name")
 
-    def _fetch_channel_details(self, username: str, max_retries: int = 3) -> dict:
+    def _generate_channel_slug(self, username: str) -> str:
+        """Responsabilidad única: Formatear el username a un formato seguro para la URL de Kick."""
+        return username.replace("_", "-").replace(" ", "")
+
+    def _fetch_channel_details(self, slug: str, max_retries: int = 3) -> dict:
         """
         Responsabilidad única: Obtener la data en crudo del canal mediante scraper.
-        Maneja bloqueos transitorios y expone el código HTTP real si falla de forma persistente.
         """
-        url = KICK_CHANNEL_URL.format(username=username)
+        url = KICK_CHANNEL_URL.format(slug=slug)
         last_status_code = None
         
         for attempt in range(max_retries):
@@ -77,7 +80,7 @@ class KickAPIClient:
             if attempt < max_retries - 1:
                 time.sleep(2 * (attempt + 1))
                 
-        raise ValueError(f"No se pudo localizar el canal '{username}'. "
+        raise ValueError(f"No se pudo localizar el canal usando el slug '{slug}'. "
                          f"Intentos agotados ({max_retries}). "
                          f"Último código HTTP recibido: {last_status_code}")
 
