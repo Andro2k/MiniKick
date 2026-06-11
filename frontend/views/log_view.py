@@ -7,7 +7,7 @@ from PySide6.QtGui import QDesktopServices
 
 from frontend.components.controls import ModernButton
 from frontend.utils import get_icon_colored
-from frontend.theme import COLOR_TEXT_PRIMARY
+from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 
 class LogView(QWidget):
     def __init__(self):
@@ -23,14 +23,13 @@ class LogView(QWidget):
         os.makedirs(self.log_dir, exist_ok=True)
         
         self._setup_ui()
-        self._load_log_files() # Cargar la lista de archivos al iniciar
+        self._load_log_files()
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
 
-        # ─── Cabecera (Se mantiene igual) ───
         header_layout = QHBoxLayout()
         title = QLabel("Registro de Desarrollador")
         title.setProperty("role", "title")
@@ -44,11 +43,10 @@ class LogView(QWidget):
         self.combo_filter.currentTextChanged.connect(self._on_filter_changed)
         header_layout.addWidget(self.combo_filter)
         
-        # Botón Volver al Vivo (NUEVO)
         self.btn_live = ModernButton("Ver en Vivo", role="action_success")
-        self.btn_live.setIcon(get_icon_colored("play.svg", "#000000", 16))
+        self.btn_live.setIcon(get_icon_colored("play.svg", COLOR_ACCENT, 16))
         self.btn_live.clicked.connect(self._restore_live_view)
-        self.btn_live.setVisible(False) # Oculto por defecto
+        self.btn_live.setVisible(False)
         header_layout.addWidget(self.btn_live)
 
         self.btn_clear = ModernButton("Limpiar", role="action_outlined")
@@ -72,7 +70,11 @@ class LogView(QWidget):
         self.console = QTextEdit()
         self.console.setReadOnly(True)
         self.console.setObjectName("ConsoleDisplay")
-        body_layout.addWidget(self.console, stretch=3) # Ocupa el 75% del espacio
+        self.console.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        self.console.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded) 
+        self.console.document().setDocumentMargin(0)
+
+        body_layout.addWidget(self.console, stretch=3)
 
         # 2. Panel de Archivos Históricos (Derecha)
         files_card = QFrame()
@@ -88,14 +90,17 @@ class LogView(QWidget):
         self.list_files.setObjectName("LogFileList")
         self.list_files.setSelectionMode(QListWidget.SelectionMode.NoSelection)
         self.list_files.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        
+        self.list_files.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.list_files.setTextElideMode(Qt.TextElideMode.ElideRight)
+        
         files_layout.addWidget(self.list_files)
 
         self.btn_refresh = ModernButton("Actualizar Lista", role="action_outlined")
         self.btn_refresh.clicked.connect(self._load_log_files)
         files_layout.addWidget(self.btn_refresh)
 
-        body_layout.addWidget(files_card, stretch=1) # Ocupa el 25% del espacio
-
+        body_layout.addWidget(files_card, stretch=1)
         layout.addLayout(body_layout)
 
     # =========================================================================
@@ -108,9 +113,8 @@ class LogView(QWidget):
             return
 
         try:
-            # Filtrar solo los archivos generados por TimedRotatingFileHandler
             files = [f for f in os.listdir(self.log_dir) if f.startswith('minikick.log')]
-            files.sort(reverse=True) # Mostrar el más reciente primero
+            files.sort(reverse=True)
 
             for file_name in files:
                 self._add_file_item(file_name)
@@ -123,33 +127,30 @@ class LogView(QWidget):
         widget = QWidget()
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(4, 2, 4, 2)
-        layout.setSpacing(4) # Importante para separar los botones
-        
-        lbl_name = QLabel(file_name)
-        lbl_name.setProperty("role", "monospace")
-        if file_name == "minikick.log":
-            lbl_name.setText(f"{file_name} (Activo)")
-            lbl_name.setStyleSheet("color: #0ca678; font-weight: bold;")
-            
-        layout.addWidget(lbl_name)
-        layout.addStretch()
-        
-        # ─── NUEVO: Botón Leer ───
-        btn_read = ModernButton("", role="action_accent")
+        layout.setSpacing(6)
+
+        btn_read = ModernButton("", role="action_success")
         btn_read.setFixedSize(24, 24)
-        btn_read.setIcon(get_icon_colored("eye.svg", "#000000", 14))
+        btn_read.setIcon(get_icon_colored("eye.svg", COLOR_ACCENT, 14))
         btn_read.setToolTip("Cargar historial en la consola")
         btn_read.clicked.connect(lambda checked, fn=file_name: self._read_log_file(fn))
+        layout.addWidget(btn_read)
         
-        # Botón Eliminar (existente)
         btn_del = ModernButton("", role="action_danger")
         btn_del.setFixedSize(24, 24)
         btn_del.setIcon(get_icon_colored("trash.svg", "#ef4444", 14))
         btn_del.setToolTip("Eliminar archivo de registro")
         btn_del.clicked.connect(lambda checked, fn=file_name: self._delete_log_file(fn))
-        
-        layout.addWidget(btn_read) # 👈 Insertamos primero el de leer
         layout.addWidget(btn_del)
+
+        lbl_name = QLabel(file_name)
+        lbl_name.setProperty("role", "monospace")
+        
+        if file_name == "minikick.log":
+            lbl_name.setText(f"{file_name} (Activo)")
+            lbl_name.setStyleSheet("color: #0ca678; font-weight: bold;")
+        
+        layout.addWidget(lbl_name)
         
         item.setSizeHint(widget.sizeHint())
         self.list_files.setItemWidget(item, widget)
@@ -159,10 +160,9 @@ class LogView(QWidget):
         file_path = os.path.join(self.log_dir, file_name)
         try:
             os.remove(file_path)
-            self._load_log_files() # Recargar la lista tras borrar
+            self._load_log_files()
             self.append_log("INFO", f"Archivo {file_name} eliminado con éxito.")
         except PermissionError:
-            # Protección Arquitectónica: Evita que crashee si intentan borrar el archivo que Python está escribiendo
             QMessageBox.warning(self, "Archivo en Uso", f"No se puede eliminar '{file_name}' porque la aplicación está escribiendo en él actualmente.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Error al eliminar el archivo: {e}")
@@ -179,9 +179,8 @@ class LogView(QWidget):
             self.console.setHtml(f"<h3 style='color: #FBBF24;'>=== MODO LECTURA: {file_name} ===</h3><br>")
             self.console.append(content)
             
-            # Cambiamos el estado de la UI
             self.btn_live.setVisible(True)
-            self.combo_filter.setEnabled(False) # Desactivar filtros mientras leemos archivo estático
+            self.combo_filter.setEnabled(False)
             self.btn_clear.setEnabled(False)
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo leer el archivo: {e}")
@@ -195,9 +194,6 @@ class LogView(QWidget):
         self.btn_clear.setEnabled(True)
         self._render_logs()
 
-    # =========================================================================
-    # ─── LÓGICA DE FILTRADO Y NAVEGACIÓN (Se mantiene igual) ───
-    # =========================================================================
     @Slot(str)
     def _on_filter_changed(self, filter_text: str):
         self._current_filter = filter_text
