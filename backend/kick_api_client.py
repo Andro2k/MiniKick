@@ -15,14 +15,15 @@ class KickAPIClient:
     
     def __init__(self, auth_provider: TokenProvider):
         self.auth_provider = auth_provider
-        # Se elimina el hardcoding de la plataforma. 
-        # Cloudscraper detectará el SO base (Win/Ubuntu) evitando discrepancias de TLS.
-        self.scraper = cloudscraper.create_scraper(
-            browser={
-                'browser': 'chrome',
-                'mobile': False
-            }
-        )
+        
+        # YAGNI: Inicializamos el scraper de la forma más simple posible sin diccionarios complejos.
+        self.scraper = cloudscraper.create_scraper()
+        
+        # Forzamos un User-Agent estático y robusto para evitar el 403 de Cloudflare
+        # y esquivamos el KeyError interno de la librería con Python 3.14.
+        self.scraper.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        })
 
     def _request(self, method: str, url: str, **kwargs) -> requests.Response:
         tokens = self.auth_provider.get_tokens()
@@ -54,19 +55,14 @@ class KickAPIClient:
         return self._map_channel_data(username, channel_data)
 
     def _fetch_authenticated_username(self) -> str:
-        """Responsabilidad única: Obtener el nombre de usuario autenticado."""
         resp = self._request("GET", KICK_API_URL, timeout=10)
         data = resp.json().get("data", [resp.json()])
         return data[0].get("name")
 
     def _generate_channel_slug(self, username: str) -> str:
-        """Responsabilidad única: Formatear el username a un formato seguro para la URL de Kick."""
         return username.replace("_", "-").replace(" ", "")
 
     def _fetch_channel_details(self, slug: str, max_retries: int = 3) -> dict:
-        """
-        Responsabilidad única: Obtener la data en crudo del canal mediante scraper.
-        """
         url = KICK_CHANNEL_URL.format(slug=slug)
         last_status_code = None
         
@@ -85,7 +81,6 @@ class KickAPIClient:
                          f"Último código HTTP recibido: {last_status_code}")
 
     def _map_channel_data(self, username: str, channel_data: dict) -> dict:
-        """Responsabilidad única: Formatear la respuesta externa a nuestro formato interno."""
         user_data = channel_data.get("user", {})
         chatroom_data = channel_data.get("chatroom", {})
         categories = channel_data.get("recent_categories", [])
