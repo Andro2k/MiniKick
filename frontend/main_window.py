@@ -1,6 +1,7 @@
 # frontend/main_window.py
 
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
@@ -522,13 +523,45 @@ class MainWindow(QMainWindow):
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG) 
         
+        # 1. Handler para la Interfaz Gráfica (Ya lo tenías)
         self.q_log_handler = QLogHandler()
         self.logger.addHandler(self.q_log_handler)
         
+        # ---------------------------------------------------------
+        # NUEVO: 2. Handler para Archivos Locales (Rotación Diaria)
+        # ---------------------------------------------------------
+        app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
+        log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
+        os.makedirs(log_dir, exist_ok=True) # Crea la carpeta si no existe
+        
+        log_file = os.path.join(log_dir, 'minikick.log')
+        
+        # Rota el archivo a la medianoche y guarda los últimos 7 días
+        file_handler = TimedRotatingFileHandler(
+            filename=log_file,
+            when='midnight',
+            interval=1,
+            backupCount=7, 
+            encoding='utf-8'
+        )
+        
+        # Formato específico para el archivo (incluimos año-mes-dia)
+        file_formatter = logging.Formatter(
+            '[%(asctime)s] [%(levelname)s] %(message)s', 
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        file_handler.setFormatter(file_formatter)
+        file_handler.setLevel(logging.DEBUG) # O INFO, según prefieras
+        
+        self.logger.addHandler(file_handler)
+        # ---------------------------------------------------------
+
+        # Silenciar librerías ruidosas
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("cloudscraper").setLevel(logging.WARNING)
         logging.getLogger("comtypes").setLevel(logging.WARNING)
         
+        # Redirigir stdout y stderr
         sys.stdout = StreamToLogger(self.logger, logging.INFO)
         sys.stderr = StreamToLogger(self.logger, logging.ERROR)
         

@@ -1,5 +1,6 @@
 # backend/kick_api_client.py
 
+import sys
 import time
 import cloudscraper
 import requests
@@ -10,20 +11,30 @@ KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
 KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
 KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redemptions"
 
+class ScraperFactory:
+    """
+    Responsabilidad Única: Construir un cliente HTTP consistente y evasivo.
+    """
+    @staticmethod
+    def create() -> cloudscraper.CloudScraper:
+        scraper = cloudscraper.create_scraper()
+        
+        if sys.platform.startswith("linux"):
+            ua = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        elif sys.platform == "darwin":
+            ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        else:
+            ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            
+        scraper.headers.update({'User-Agent': ua})
+        return scraper
+
 class KickAPIClient:
     """Cliente HTTP para interactuar con la API REST de Kick."""
     
     def __init__(self, auth_provider: TokenProvider):
         self.auth_provider = auth_provider
-        
-        # YAGNI: Inicializamos el scraper de la forma más simple posible sin diccionarios complejos.
-        self.scraper = cloudscraper.create_scraper()
-        
-        # Forzamos un User-Agent estático y robusto para evitar el 403 de Cloudflare
-        # y esquivamos el KeyError interno de la librería con Python 3.14.
-        self.scraper.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        })
+        self.scraper = ScraperFactory.create()
 
     def _request(self, method: str, url: str, **kwargs) -> requests.Response:
         tokens = self.auth_provider.get_tokens()
@@ -33,7 +44,9 @@ class KickAPIClient:
         headers["Authorization"] = f"Bearer {access_token}"
         
         try:
-            response = requests.request(method, url, headers=headers, **kwargs)
+            # CORRECCIÓN DRY/COHESIÓN: Reemplazamos `requests.request` por `self.scraper.request`
+            # Ahora TODO el tráfico usa la misma sesión, mismas cookies y misma huella TLS.
+            response = self.scraper.request(method, url, headers=headers, **kwargs)
             response.raise_for_status()
             return response
         except requests.exceptions.HTTPError as e:
@@ -42,13 +55,13 @@ class KickAPIClient:
                 tokens = self.auth_provider.get_tokens()
                 headers["Authorization"] = f"Bearer {tokens.get('access_token', '')}"
                 
-                retry_response = requests.request(method, url, headers=headers, **kwargs)
+                # CORRECCIÓN: Usamos el scraper para el reintento también
+                retry_response = self.scraper.request(method, url, headers=headers, **kwargs)
                 retry_response.raise_for_status()
                 return retry_response
             raise e
 
     def fetch_user_data(self) -> dict:
-        """Orquesta la obtención y mapeo de los datos del canal del usuario."""
         username = self._fetch_authenticated_username()
         channel_slug = self._generate_channel_slug(username)
         channel_data = self._fetch_channel_details(channel_slug)
