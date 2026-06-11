@@ -1,0 +1,25 @@
+{
+    "settings": {
+        "tts_provider": "web",
+        "tts_volume": "47",
+        "tts_enabled": true,
+        "tts_read_name": true,
+        "tts_use_command": false,
+        "tts_command": "!s",
+        "tts_ignored_users": "@streamelements, botrix, kicklet",
+        "tts_voice_web": "es-AR-TomasNeural",
+        "minimize_to_tray": false,
+        "tts_voice_local": "roa/es-419",
+        "dashboard_autostart": true
+    },
+    "alerts": {
+        "hola": {
+            "filepath": "/home/andro/Documentos/hola.mp4",
+            "volume": 1.0,
+            "scale": 0.3,
+            "pos_x": 1344,
+            "pos_y": 390,
+            "is_random_pos": false
+        }
+    }
+}

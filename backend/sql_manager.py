@@ -124,6 +124,33 @@ class SQLiteSettingsStorage:
         if val is None:
             return default
         return val == "1"
+    
+    def get_all(self) -> dict:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT key, value FROM settings")
+            rows = cursor.fetchall()
+            
+            settings_dict = {}
+            for key, value in rows:
+                # Retransformar a booleanos nativos de Python para un JSON limpio
+                if value in ("1", "0"):
+                    settings_dict[key] = (value == "1")
+                else:
+                    settings_dict[key] = value
+            return settings_dict
+
+    def save_all(self, settings: dict) -> None:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            for key, value in settings.items():
+                # Formatear de vuelta a strings compatibles con SQLite
+                str_value = "1" if value is True else "0" if value is False else str(value)
+                cursor.execute("""
+                    INSERT INTO settings (key, value) VALUES (?, ?)
+                    ON CONFLICT(key) DO UPDATE SET value=excluded.value
+                """, (key, str_value))
+            conn.commit()
 
 class SQLiteAlertsStorage:
     def __init__(self, db_manager: DatabaseManager):

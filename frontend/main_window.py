@@ -1,13 +1,15 @@
 # frontend/main_window.py
 
+import datetime
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
-from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
+from PySide6.QtWidgets import (QFileDialog, QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QThread, Signal, QEvent
 
+from backend.services.backup_service import BackupService
 from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager
 from frontend.components.log_handler import QLogHandler, StreamToLogger
@@ -33,7 +35,6 @@ from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.reward_worker import RewardWorker
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
-# --- CORRECCIÓN: Añadido parent a las inicializaciones ---
 class FetchRewardsWorker(QThread):
     rewards_fetched = Signal(list)
     error_occurred = Signal(str)
@@ -98,13 +99,13 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"MiniKick - Versión {app_version}")
         self.resize(1100, 750)
 
-        self.updater_manager = updater_manager
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
 
         self.db_manager = DatabaseManager()
         self.token_storage = SQLiteTokenStorage(self.db_manager)
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
         self.alerts_storage = SQLiteAlertsStorage(self.db_manager) 
+        self.backup_service = BackupService(self.settings_storage, self.alerts_storage)
         
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
@@ -197,6 +198,8 @@ class MainWindow(QMainWindow):
         self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
         self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
         self.view_settings.check_update_requested.connect(self._handle_update_check)
+        self.view_settings.export_requested.connect(self._handle_export)
+        self.view_settings.import_requested.connect(self._handle_import)
         self.q_log_handler.emitter.log_received.connect(self.view_logs.append_log)
 
     def _load_settings_into_ui(self):
@@ -564,4 +567,32 @@ class MainWindow(QMainWindow):
         # Redirigir stdout y stderr
         sys.stdout = StreamToLogger(self.logger, logging.INFO)
         sys.stderr = StreamToLogger(self.logger, logging.ERROR)
+
+    @Slot()
+    def _handle_export(self):
+        default_name = f"MiniKick_Backup_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
+        
+        filepath, _ = QFileDialog.getSaveFileName(
+            self, "Exportar Configuración", default_name, "JSON Files (*.json)"
+        )
+        if filepath:
+            success = self.backup_service.export_to_json(filepath)
+            if success:
+                self.tray_manager.showMessage("Exportación exitosa", "Tus configuraciones han sido guardadas.")
+            else:
+                self.logger.error("Fallo al exportar el archivo.")
+
+    @Slot()
+    def _handle_import(self):
+        filepath, _ = QFileDialog.getOpenFileName(
+            self, "Importar Configuración", "", "JSON Files (*.json)"
+        )
+        if filepath:
+            success = self.backup_service.import_from_json(filepath)
+            if success:
+                # Recargar configuraciones en memoria y actualizar UI
+                self._load_settings_into_ui()
+                self.tray_manager.showMessage("Importación exitosa", "Tus configuraciones han sido restauradas.")
+            else:
+                self.logger.error("El archivo está corrupto o es inválido.")
         
