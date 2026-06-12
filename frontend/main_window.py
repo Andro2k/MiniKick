@@ -1,13 +1,13 @@
 # frontend/main_window.py
 
-import datetime
+from datetime import datetime
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
 from PySide6.QtWidgets import (QFileDialog, QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
-from PySide6.QtCore import QTimer, Slot, QThread, Signal, QEvent
+from PySide6.QtCore import Slot, QThread, Signal, QEvent
 
 from backend.services.backup_service import BackupService
 from backend.services.media_trigger_service import MediaTriggerService

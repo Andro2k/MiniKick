@@ -14,6 +14,7 @@ __pycache__/
 *.iss
 *.spec
 *.txt
+*.json
 # Archivos de configuración de IDEs
 *build/
 *dist/
