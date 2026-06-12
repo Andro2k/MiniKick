@@ -1,20 +1,29 @@
 # frontend/main_window.py
 
-from datetime import datetime
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
-from PySide6.QtWidgets import (QFileDialog, QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
+from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent
 
+from backend.services.alerts_service import AlertsService
 from backend.services.backup_service import BackupService
+from backend.services.chat_service import ChatService
+from backend.services.dashboard_service import AvatarService
+from backend.services.log_service import LogService
 from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager
+from backend.services.settings_service import SettingsService
 from frontend.components.log_handler import QLogHandler, StreamToLogger
 from frontend.components.sidebar import Sidebar
 from frontend.components.tray_menu import SystemTrayManager
+from frontend.controllers.alerts_controller import AlertsController
+from frontend.controllers.chat_controller import ChatController
+from frontend.controllers.dashboard_controller import DashboardController
+from frontend.controllers.log_controller import LogController
+from frontend.controllers.settings_controller import SettingsController
 from frontend.views.alerts_view import AlertsView
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
@@ -95,11 +104,23 @@ class MainWindow(QMainWindow):
         self.content_stack = QStackedWidget()
         
         self.view_dashboard = DashboardView()
+        self.avatar_service = AvatarService()
+        self.dashboard_controller = DashboardController(
+            view=self.view_dashboard, 
+            avatar_service=self.avatar_service
+        )
         self.view_chat = ChatView()
+        self.chat_service = ChatService(self.tts_manager, self.settings_storage)
+        self.chat_controller = ChatController(view=self.view_chat, service=self.chat_service)
         self.view_settings = SettingsView()
-        self.view_logs = LogView() 
-        self.view_alerts = AlertsView() 
-
+        self.settings_service = SettingsService(self.settings_storage, self.backup_service)
+        self.settings_controller = SettingsController(view=self.view_settings, service=self.settings_service)
+        self.view_alerts = AlertsView()
+        self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
+        self.alerts_controller = AlertsController(view=self.view_alerts, service=self.alerts_service)
+        self.view_logs = LogView()
+        self.log_service = LogService()
+        self.log_controller = LogController(view=self.view_logs, service=self.log_service)
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
         self.content_stack.addWidget(self.view_settings)
@@ -123,57 +144,33 @@ class MainWindow(QMainWindow):
 
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
-        self.settings_storage.save_bool("tts_enabled", enabled)
-        self.view_chat.chk_tts.blockSignals(True)
-        self.view_chat.chk_tts.setChecked(enabled)
-        self.view_chat.chk_tts.blockSignals(False)
+        settings = self.chat_service.get_settings()
+        settings["enabled"] = enabled
+        self.chat_service.save_settings(settings)
+        self.view_chat.set_initial_states(settings)
         estado = "Activado" if enabled else "Silenciado"
         self.tray_manager.showMessage("MiniKick", f"Lectura de chat: {estado}", QSystemTrayIcon.MessageIcon.Information, 2000)
 
     def _connect_signals(self):
         self.sidebar.view_selected.connect(self._handle_navigation)
-        self.view_dashboard.request_connection.connect(self._handle_auth_process)
-        self.view_dashboard.auto_start_toggled.connect(self._handle_autostart_change)
-        
-        self.view_chat.volume_changed.connect(self._update_tts_volume)
-        self.view_chat.voice_changed.connect(self._handle_voice_change)
-        self.view_chat.provider_changed.connect(self._handle_provider_change)
-        self.view_chat.settings_changed.connect(self._handle_chat_settings_change)
-        
-        self.view_alerts.alerts_mapping_changed.connect(self._handle_alerts_mapping_change)      
-        self.view_alerts.preview_requested.connect(lambda reward, config: self.overlay_server.trigger_alert(reward, config))
+        self.dashboard_controller.request_connection.connect(self._handle_auth_process)
+        self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
+        self.chat_controller.tts_state_changed.connect(self.tray_manager.set_tts_state)
         self.view_alerts.refresh_rewards_requested.connect(self._fetch_api_rewards)
-        
-        self.view_settings.minimize_tray_toggled.connect(self._handle_minimize_tray_change)
-        self.view_settings.unlink_account_requested.connect(self._handle_unlink_account)
-        self.view_settings.check_update_requested.connect(self._handle_update_check)
-        self.view_settings.export_requested.connect(self._handle_export)
-        self.view_settings.import_requested.connect(self._handle_import)
+        self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
+        self.settings_controller.check_update_requested.connect(self._handle_update_check)
+        self.settings_controller.notification_requested.connect(
+            lambda title, msg: self.tray_manager.showMessage(title, msg)
+        )
+        self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
         self.q_log_handler.emitter.log_received.connect(self.view_logs.append_log)
 
     def _load_settings_into_ui(self):
-        saved_volume = self.settings_storage.load_string("tts_volume", "100")
-        vol_int = int(saved_volume)
-        self.view_chat.slider_vol.setValue(vol_int)
-        self.tts_manager.set_volume(vol_int / 100.0)
-        saved_provider = self.settings_storage.load_string("tts_provider", "local")
-        chat_settings = {
-            "enabled": self.settings_storage.load_bool("tts_enabled", True),
-            "read_name": self.settings_storage.load_bool("tts_read_name", True),
-            "use_command": self.settings_storage.load_bool("tts_use_command", False),
-            "command": self.settings_storage.load_string("tts_command", "!tts"),
-            "provider": saved_provider,
-            "ignored_users": self.settings_storage.load_string("tts_ignored_users", "")
-        }
-        self.view_chat.set_initial_settings(chat_settings)
-        self.view_settings.set_minimize_tray_enabled(self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False))
-        mappings = self.alerts_storage.load_all()
-        self.view_alerts.set_initial_mappings(mappings)
+        self.alerts_controller.load_initial_data()
         tts_enabled = self.settings_storage.load_bool("tts_enabled", True)
         self.tray_manager.set_tts_state(tts_enabled)
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
-        self._handle_provider_change(saved_provider, is_initial_load=True)
 
         if autostart_enabled:
             self._handle_auth_process()
@@ -214,10 +211,6 @@ class MainWindow(QMainWindow):
         self.check_worker.start()
         dialog.exec()
 
-    @Slot(bool)
-    def _handle_minimize_tray_change(self, enabled: bool):
-        self.settings_storage.save_bool(self.SETTING_MINIMIZE_TRAY, enabled)
-
     def _handle_navigation(self, view_name):
         mapping = {
             "Dashboard": self.view_dashboard,
@@ -232,7 +225,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _handle_auth_process(self):
-        self.view_dashboard.set_connecting_state()
+        self.dashboard_controller.handle_connecting_state()
 
         self.auth_worker = AuthWorker(self.auth_manager)
         self.auth_worker.setParent(self)
@@ -243,9 +236,9 @@ class MainWindow(QMainWindow):
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             
             self.chat_worker = ChatWorker(api_client, cluster, key, parent=self)                
-            self.chat_worker.connection_success.connect(self.view_dashboard.set_connected_state)
-            self.chat_worker.message_received.connect(self._on_chat_message)
-            self.chat_worker.error_occurred.connect(self.view_dashboard.set_error_state)                
+            self.chat_worker.connection_success.connect(self.dashboard_controller.handle_connection_success)
+            self.chat_worker.message_received.connect(self.chat_controller.handle_incoming_message)
+            self.chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)                
             self.chat_worker.start()
 
             self.reward_worker = RewardWorker(api_client, poll_interval_seconds=15, parent=self)
@@ -253,35 +246,30 @@ class MainWindow(QMainWindow):
             self.reward_worker.start()
 
         self.auth_worker.auth_success.connect(on_auth_success)
-        self.auth_worker.auth_error.connect(self.view_dashboard.set_error_state)
+        self.auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
         self.auth_worker.start()
 
     @Slot(str, str, str)
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
-        log_msg = f'<b style="color: #00e701;">[PUNTOS] {user} canjeó {reward_name}</b>'
-        self.view_chat.chat_display.append(log_msg)
-
-        mappings = self.alerts_storage.load_all()
+        msg_sistema = f'<span style="color: #00e701;">canjeó {reward_name}</span>'
+        self.view_chat.append_message(f"[PUNTOS] {user}", msg_sistema)
         
+        mappings = self.alerts_service.get_mappings()
         if reward_name in mappings:
             config = mappings[reward_name]
-            self.overlay_server.trigger_alert(reward_name, config)
+            self.alerts_service.trigger_preview(reward_name, config)
         else:
-            self.logger.debug(f"Recompensa '{reward_name}' no tiene una alerta configurada en la base de datos.")
-        
-        settings = self.view_chat.get_tts_settings()
-        if settings.get("enabled", False) and message:
-            self._on_chat_message(user, message)
+            self.logger.debug(f"Recompensa '{reward_name}' no tiene una alerta configurada.")
 
-    @Slot(dict)
-    def _handle_alerts_mapping_change(self, mappings: dict):
-        self.alerts_storage.save_all(mappings)
+        settings = self.chat_service.get_settings()
+        if settings.get("enabled", False) and message:
+            self.chat_controller.handle_incoming_message(user, message)
 
     @Slot()
     def _fetch_api_rewards(self):
         if not self.auth_manager.get_tokens():
             self.logger.error("Intento de actualizar recompensas sin estar conectado a Kick.")
-            self.view_alerts.update_rewards_combo([])
+            self.alerts_controller.update_rewards_list([])
             return
 
         if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker.isRunning():
@@ -291,7 +279,7 @@ class MainWindow(QMainWindow):
         try:
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             self.fetch_rewards_worker = FetchRewardsWorker(api_client, parent=self)
-            self.fetch_rewards_worker.rewards_fetched.connect(self.view_alerts.update_rewards_combo)
+            self.fetch_rewards_worker.rewards_fetched.connect(self.alerts_controller.update_rewards_list)
             self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
             self.fetch_rewards_worker.start()
         except Exception as e:
@@ -300,7 +288,7 @@ class MainWindow(QMainWindow):
     @Slot(str)
     def _handle_rewards_error(self, error_msg: str):
         self.logger.error(f"Fallo en la API de recompensas: {error_msg}")
-        self.view_alerts.update_rewards_combo([])
+        self.alerts_controller.update_rewards_list([])
             
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):
@@ -321,79 +309,15 @@ class MainWindow(QMainWindow):
             self.reward_worker = None
 
             self.auth_manager.logout()
-
-            self.view_dashboard.status_label.setText("Estado: Esperando conexión...")
-            self.view_dashboard.btn_connect.setEnabled(True)
-            self.view_dashboard.btn_connect.setText("Conectar a Kick")
-            self.view_dashboard.profile_container.setVisible(False)
+            self.dashboard_controller.reset_to_disconnected()
             
             self.view_chat.chat_display.clear()
-
             self._handle_navigation("Dashboard")
             
             for btn in self.sidebar.nav_buttons:
                 if btn.text().strip() == "Dashboard":
                     btn.setChecked(True)
                     break
-    
-    @Slot(str)
-    def _handle_provider_change(self, provider: str, is_initial_load=False):
-        self.tts_manager.set_provider(provider)
-        self.settings_storage.save_string("tts_provider", provider)
-        
-        def on_voices_ready(voices):
-            saved_voice_id = self.settings_storage.load_string(f"tts_voice_{provider}", "")
-            self.view_chat.populate_voices(voices, saved_voice_id, mute_signal=is_initial_load)
-
-        voices = self.tts_manager.get_available_voices(provider)
-        on_voices_ready(voices)
-    
-    @Slot(int)
-    def _update_tts_volume(self, value):
-        self.settings_storage.save_string("tts_volume", str(value))
-        self.tts_manager.set_volume(value / 100.0)
-
-    @Slot(dict)
-    def _handle_chat_settings_change(self, settings: dict):
-        self.settings_storage.save_bool("tts_enabled", settings["enabled"])
-        self.settings_storage.save_bool("tts_read_name", settings["read_name"])
-        self.settings_storage.save_bool("tts_use_command", settings["use_command"])
-        self.settings_storage.save_string("tts_command", settings["command"])
-        self.settings_storage.save_string("tts_ignored_users", settings["ignored_users"])
-        self.tray_manager.set_tts_state(settings["enabled"])
-
-    @Slot(str, str)
-    def _on_chat_message(self, user: str, message: str):
-        self.view_chat.append_message(user, message)
-        
-        settings = self.view_chat.get_tts_settings()
-        if not settings.get("enabled", False):
-            return
-
-        ignored_string = settings.get("ignored_users", "")
-        ignored_list = [u.strip().lower() for u in ignored_string.split(",") if u.strip()]
-        
-        if user.lower() in ignored_list:
-            return 
-
-        final_message = message.strip()
-        if settings.get("use_command", False):
-            cmd = settings.get("command", "")
-            if not final_message.lower().startswith(cmd):
-                return
-            final_message = final_message[len(cmd):].strip()
-
-        text_to_speak = f"{user} dice: {final_message}" if settings.get("read_name", False) else final_message
-        self.tts_manager.say(text_to_speak)
-
-    @Slot(str)
-    def _handle_voice_change(self, voice_id: str):
-        current_provider = "web" if self.view_chat.chk_provider.isChecked() else "local"
-        self.settings_storage.save_string(f"tts_voice_{current_provider}", voice_id)
-        self.tts_manager.set_voice(voice_id)
-        
-        if self.isVisible():
-            self.tts_manager.say("Voz actualizada.")
         
     def _notify_background(self):
         self.tray_manager.showMessage(
@@ -502,30 +426,4 @@ class MainWindow(QMainWindow):
         sys.stdout = StreamToLogger(self.logger, logging.INFO)
         sys.stderr = StreamToLogger(self.logger, logging.ERROR)
 
-    @Slot()
-    def _handle_export(self):
-        default_name = f"MiniKick_Backup_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-        
-        filepath, _ = QFileDialog.getSaveFileName(
-            self, "Exportar Configuración", default_name, "JSON Files (*.json)"
-        )
-        if filepath:
-            success = self.backup_service.export_to_json(filepath)
-            if success:
-                self.tray_manager.showMessage("Exportación exitosa", "Tus configuraciones han sido guardadas.")
-            else:
-                self.logger.error("Fallo al exportar el archivo.")
-
-    @Slot()
-    def _handle_import(self):
-        filepath, _ = QFileDialog.getOpenFileName(
-            self, "Importar Configuración", "", "JSON Files (*.json)"
-        )
-        if filepath:
-            success = self.backup_service.import_from_json(filepath)
-            if success:
-                self._load_settings_into_ui()
-                self.tray_manager.showMessage("Importación exitosa", "Tus configuraciones han sido restauradas.")
-            else:
-                self.logger.error("El archivo está corrupto o es inválido.")
         

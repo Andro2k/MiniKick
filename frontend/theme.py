@@ -291,6 +291,15 @@ QScrollBar::handle:horizontal:hover {{ background: {COLOR_TEXT_MUTED}; }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
 
+/* --- Contenedores de Scroll --- */
+QScrollArea, QScrollArea > QWidget > QWidget {{
+    background-color: transparent;
+    border: none;
+}}
+
+QWidget#ScrollContent {{
+    background-color: transparent;
+}}
 /* ============================================================================
    4. ESTILOS ESPECÍFICOS DE VISTAS (Alta Cohesión Visual)
    ============================================================================ */

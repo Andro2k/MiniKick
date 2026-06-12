@@ -1,4 +1,4 @@
-# backend/services/instance_services.py
+# backend/services/instance_services.py 
 
 import socket
 import logging
@@ -15,11 +15,9 @@ class SocketInstanceProvider(SingleInstanceProvider):
         
     def is_already_running(self) -> bool:
         try:
-            # Intentamos adueñarnos del puerto
             self.sock.bind(("127.0.0.1", self.port))
             return False 
         except socket.error:
-            # Si el puerto ya está en uso, otra instancia está corriendo
             return True
 
     def cleanup(self) -> None:
