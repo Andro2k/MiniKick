@@ -1,3 +1,5 @@
+# frontend/workers/update_worker.py
+
 from PySide6.QtCore import QThread, Signal
 from backend.updater_manager import UpdateManager
 

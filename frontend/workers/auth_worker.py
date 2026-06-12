@@ -1,3 +1,5 @@
+# frontend/workers/auth_worker.py
+
 from PySide6.QtCore import QThread, Signal
 from backend.auth_manager import AuthManager
 
@@ -12,7 +14,6 @@ class AuthWorker(QThread):
 
     def run(self):
         try:
-            # Esta llamada bloqueante ahora ocurre fuera del hilo de la UI (SoR)
             tokens = self.auth_manager.get_tokens()
             if tokens:
                 self.auth_success.emit(tokens)

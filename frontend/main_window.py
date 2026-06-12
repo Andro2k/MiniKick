@@ -7,7 +7,7 @@ import os
 import sys
 from PySide6.QtWidgets import (QFileDialog, QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
-from PySide6.QtCore import Slot, QThread, Signal, QEvent
+from PySide6.QtCore import Slot, QEvent
 
 from backend.services.backup_service import BackupService
 from backend.services.media_trigger_service import MediaTriggerService
@@ -26,66 +26,15 @@ from frontend.components.dialogs import UpdateDialog
 from backend.auth_manager import AuthManager
 from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage 
 from backend.kick_api_client import KickAPIClient
-from backend.kick_websocket import ChatSocketManager
 from backend.tts_manager import TTSManager
 
 from frontend.components.dialogs import ModernConfirmDialog
 from frontend.utils import resource_path
 from frontend.workers.auth_worker import AuthWorker
+from frontend.workers.chat_worker import ChatWorker
+from frontend.workers.fetch_rewards_worker import FetchRewardsWorker
 from frontend.workers.reward_worker import RewardWorker
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
-
-class FetchRewardsWorker(QThread):
-    rewards_fetched = Signal(list)
-    error_occurred = Signal(str)
-
-    def __init__(self, api_client: KickAPIClient, parent=None):
-        super().__init__(parent)
-        self.setObjectName("Worker_Fetch_Rewards")
-        self.api_client = api_client
-        self._is_shutting_down = False
-
-    def run(self):
-        try:
-            resp = self.api_client.fetch_channel_rewards()
-            rewards = [item["title"] for item in resp.get("data", [])]
-            self.rewards_fetched.emit(rewards)
-        except Exception as e:
-            self.error_occurred.emit(str(e))
-
-class ChatWorker(QThread):
-    message_received = Signal(str, str) 
-    error_occurred = Signal(str)        
-    connection_success = Signal(dict)   
-    
-    def __init__(self, api_client: KickAPIClient, cluster: str, key: str, parent=None):
-        super().__init__(parent)
-        self.setObjectName("Worker_Chat_Socket")
-        self.api_client = api_client 
-        self.cluster = cluster
-        self.key = key
-        self.chat_manager = None
-
-    def run(self):
-        try:
-            user_data = self.api_client.fetch_user_data()
-            self.connection_success.emit(user_data)
-            room_id = user_data.get("room_id")
-            if not room_id:
-                raise ValueError("No se pudo obtener el ID de la sala desde la API.")
-                
-            self.chat_manager = ChatSocketManager(self.cluster, self.key)
-
-            def on_msg(user: str, msg: str):
-                self.message_received.emit(user, msg)
-
-            self.chat_manager.start_socket(room_id, on_message=on_msg)
-        except Exception as e:
-            self.error_occurred.emit(str(e))
-
-    def stop(self):
-        if self.chat_manager:
-            self.chat_manager.stop_socket()
 
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
