@@ -1,3 +1,5 @@
+# frontend/views/log_view.py
+
 import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTextEdit, QLabel, 
                                QHBoxLayout, QComboBox, QFrame, QListWidget, 
@@ -17,7 +19,6 @@ class LogView(QWidget):
         self._max_logs = 1000
         self._is_viewing_history = False
 
-        # ─── Acceso al directorio de logs ───
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         self.log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
         os.makedirs(self.log_dir, exist_ok=True)
@@ -62,11 +63,9 @@ class LogView(QWidget):
 
         layout.addLayout(header_layout)
 
-        # ─── Cuerpo Dividido (NUEVO) ───
         body_layout = QHBoxLayout()
         body_layout.setSpacing(12)
 
-        # 1. Consola de texto (Izquierda)
         self.console = QTextEdit()
         self.console.setReadOnly(True)
         self.console.setObjectName("ConsoleDisplay")
@@ -76,7 +75,6 @@ class LogView(QWidget):
 
         body_layout.addWidget(self.console, stretch=3)
 
-        # 2. Panel de Archivos Históricos (Derecha)
         files_card = QFrame()
         files_card.setObjectName("Card")
         files_layout = QVBoxLayout(files_card)
@@ -87,7 +85,6 @@ class LogView(QWidget):
         files_layout.addWidget(lbl_files)
 
         self.list_files = QListWidget()
-        self.list_files.setObjectName("LogFileList")
         self.list_files.setSelectionMode(QListWidget.SelectionMode.NoSelection)
         self.list_files.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         
@@ -103,9 +100,7 @@ class LogView(QWidget):
         body_layout.addWidget(files_card, stretch=1)
         layout.addLayout(body_layout)
 
-    # =========================================================================
     # ─── LÓGICA DE GESTIÓN DE ARCHIVOS LOG ───
-    # =========================================================================
     @Slot()
     def _load_log_files(self):
         self.list_files.clear()
@@ -148,7 +143,7 @@ class LogView(QWidget):
         
         if file_name == "minikick.log":
             lbl_name.setText(f"{file_name} (Activo)")
-            lbl_name.setStyleSheet("color: #0ca678; font-weight: bold;")
+            lbl_name.setStyleSheet("color: #53FC18; font-weight: bold;")
         
         layout.addWidget(lbl_name)
         

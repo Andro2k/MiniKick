@@ -310,7 +310,7 @@ class ChatView(QWidget):
 
     @Slot(str, str)
     def append_message(self, user: str, message: str):
-        html_msg = f'<b style="color: #0ca678;">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
+        html_msg = f'<b style="color: #53FC18;">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
         self.chat_display.append(html_msg)
 
     def populate_voices(self, voices: list[dict], selected_id: str = None, mute_signal: bool = False):

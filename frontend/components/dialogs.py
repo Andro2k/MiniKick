@@ -31,16 +31,6 @@ class ModernBaseDialog(QDialog):
         self.container.setObjectName("SquareDialog")
         self.container.setFixedWidth(width)
         self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-        
-        # Estilo inyectado globalmente para todos los diálogos hijos
-        self.container.setStyleSheet(f"""
-            QFrame#SquareDialog {{
-                background-color: {COLOR_BG_BASE};
-                border: 1px solid {COLOR_BORDER_SVELTE};
-                border-radius: 16px;
-            }}
-        """)
-
         self.content_layout = QVBoxLayout(self.container)
         self.content_layout.setContentsMargins(24, 24, 24, 24)
         self.content_layout.setSpacing(12)
@@ -302,7 +292,7 @@ class VisualPositionerDialog(ModernBaseDialog):
         desc_lbl.setProperty("role", "body")
         desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.content_layout.addWidget(desc_lbl)
-        self.content_layout.addSpacing(10)
+        self.content_layout.addSpacing(5)
         
         self.canvas_w = 640
         self.canvas_h = 360

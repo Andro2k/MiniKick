@@ -7,7 +7,7 @@ import os
 import sys
 from PySide6.QtWidgets import (QFileDialog, QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
-from PySide6.QtCore import Slot, QThread, Signal, QEvent
+from PySide6.QtCore import QTimer, Slot, QThread, Signal, QEvent
 
 from backend.services.backup_service import BackupService
 from backend.services.media_trigger_service import MediaTriggerService
@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
 
         self.tts_manager = TTSManager()
         self.chat_worker = None
-        self.reward_worker = None # Declarado aquí para evitar AttributeError
+        self.reward_worker = None
         self.media_trigger_service = MediaTriggerService(self)
         
         self.overlay_server = OverlayServerManager(port=8090)
@@ -286,7 +286,7 @@ class MainWindow(QMainWindow):
         self.view_dashboard.set_connecting_state()
 
         self.auth_worker = AuthWorker(self.auth_manager)
-        self.auth_worker.setParent(self) # Protección
+        self.auth_worker.setParent(self)
         
         def on_auth_success(tokens):
             cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
@@ -366,7 +366,6 @@ class MainWindow(QMainWindow):
         )
         
         if dialog.exec() == dialog.DialogCode.Accepted:
-            # Reutilizamos nuestro limpiador seguro para TODOS los hilos de red (DRY Principle)
             self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
             self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
             self.chat_worker = None
@@ -473,8 +472,6 @@ class MainWindow(QMainWindow):
 
             if hasattr(worker_instance, 'stop'):
                 worker_instance.stop()
-
-            # Esperamos 2 segundos a que el bucle interno reciba el stop()
             if not worker_instance.wait(2000):
                 self.logger.warning(f"❌ {worker_name} atascado (posible bloqueo de red). Forzando terminación...")
                 worker_instance.terminate()
@@ -493,7 +490,6 @@ class MainWindow(QMainWindow):
         self.tts_manager.stop()        
         self.overlay_server.stop() 
 
-        # Reutilizamos el método seguro
         self._stop_worker_safely("Worker_Chat_Socket", self.chat_worker)
         self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
         self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
@@ -526,20 +522,15 @@ class MainWindow(QMainWindow):
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG) 
         
-        # 1. Handler para la Interfaz Gráfica (Ya lo tenías)
         self.q_log_handler = QLogHandler()
         self.logger.addHandler(self.q_log_handler)
         
-        # ---------------------------------------------------------
-        # NUEVO: 2. Handler para Archivos Locales (Rotación Diaria)
-        # ---------------------------------------------------------
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
-        os.makedirs(log_dir, exist_ok=True) # Crea la carpeta si no existe
+        os.makedirs(log_dir, exist_ok=True)
         
         log_file = os.path.join(log_dir, 'minikick.log')
         
-        # Rota el archivo a la medianoche y guarda los últimos 7 días
         file_handler = TimedRotatingFileHandler(
             filename=log_file,
             when='midnight',
@@ -548,23 +539,17 @@ class MainWindow(QMainWindow):
             encoding='utf-8'
         )
         
-        # Formato específico para el archivo (incluimos año-mes-dia)
         file_formatter = logging.Formatter(
             '[%(asctime)s] [%(levelname)s] %(message)s', 
             datefmt='%Y-%m-%d %H:%M:%S'
         )
         file_handler.setFormatter(file_formatter)
-        file_handler.setLevel(logging.DEBUG) # O INFO, según prefieras
-        
+        file_handler.setLevel(logging.DEBUG)   
         self.logger.addHandler(file_handler)
-        # ---------------------------------------------------------
-
-        # Silenciar librerías ruidosas
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("cloudscraper").setLevel(logging.WARNING)
         logging.getLogger("comtypes").setLevel(logging.WARNING)
-        
-        # Redirigir stdout y stderr
+
         sys.stdout = StreamToLogger(self.logger, logging.INFO)
         sys.stderr = StreamToLogger(self.logger, logging.ERROR)
 
@@ -590,7 +575,6 @@ class MainWindow(QMainWindow):
         if filepath:
             success = self.backup_service.import_from_json(filepath)
             if success:
-                # Recargar configuraciones en memoria y actualizar UI
                 self._load_settings_into_ui()
                 self.tray_manager.showMessage("Importación exitosa", "Tus configuraciones han sido restauradas.")
             else:

@@ -24,13 +24,10 @@ COLOR_ACCENT_HOVER  = "#00C864"
 COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)" # Verde translúcido
 
 COLOR_SUCCESS       = "#10B981"
-COLOR_SUCCESS_HOVER = "#059669"
-COLOR_SUCCESS_PRESS = "#047857"
 
 COLOR_DANGER        = "#EF4444"
 COLOR_DANGER_HOVER  = "#D74141"
 COLOR_DANGER_SOFT   = "rgba(239, 68, 68, 0.15)"
-COLOR_ERROR         = "#FF6B6B"
 
 # Textos
 COLOR_TEXT_PRIMARY   = "#F3F4F6"   # Blanco suave
@@ -65,11 +62,6 @@ GLOBAL_QSS = f"""
 
 QMainWindow, QDialog {{
     background-color: {COLOR_BG_BASE};
-}}
-
-/* Evitar herencia de fondos en contenedores clave */
-QFrame#Card, QTextEdit {{
-    background-color: {COLOR_BG_SURFACE};
 }}
 
 /* ============================================================================
@@ -257,18 +249,6 @@ QSlider::handle:horizontal {{
     margin: -4px 0px;
 }}
 
-/* --- CheckBoxes & Switches --- */
-QCheckBox::indicator {{
-    width: 20px; height: 20px;
-    border-radius: {RADIUS_SM}px;
-    border: 1.5px solid {COLOR_BORDER_SVELTE};
-    background-color: {COLOR_BG_INPUT};
-}}
-QCheckBox::indicator:checked {{
-    background-color: {COLOR_ACCENT};
-    border: 1.5px solid {COLOR_ACCENT};
-}}
-
 /* --- SpinBoxes --- */
 QSpinBox, QDoubleSpinBox {{
     background-color: {COLOR_BG_INPUT};
@@ -345,26 +325,16 @@ QPushButton#NavButton[collapsed="true"] {{ text-align: center; padding: 10px; }}
 
 /* --- Diálogos --- */
 QFrame#SquareDialog {{
-    background-color: {COLOR_BG_SURFACE};
-    border: 1.5px solid {COLOR_BORDER_SVELTE}; 
-    border-radius: 0px; 
+    background-color: {COLOR_BG_BASE};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: 16px;
 }}
 QFrame[dialog_role="danger_icon"] {{ background-color: {COLOR_DANGER}; border-radius: {RADIUS_XL}px; border: none; }}
 QFrame[dialog_role="accent_icon"] {{ background-color: {COLOR_ACCENT}; border-radius: {RADIUS_XL}px; border: none; }}
 
 /* --- Dashboard --- */
-QLabel#StatusLabel[state="error"] {{ color: {COLOR_ERROR}; }}
 QLabel#AvatarLabel {{ font-size: 40px; color: {COLOR_BORDER_SVELTE}; font-weight: bold; }}
 QLabel#AvatarLabel[has_image="true"] {{ border: none; }}
-
-QPushButton#AutoStartBtn {{
-    background-color: {COLOR_BG_SURFACE};
-    border: 1.5px solid {COLOR_SUCCESS_HOVER};
-    border-radius: {RADIUS_LG}px;
-}}
-QPushButton#AutoStartBtn:checked {{ background-color: {COLOR_SUCCESS}; border: none; }}
-QPushButton#AutoStartBtn:checked:hover {{ background-color: {COLOR_SUCCESS_HOVER}; }}
-QPushButton#AutoStartBtn:checked:pressed {{ background-color: {COLOR_SUCCESS_PRESS}; }}
 
 /* --- Componentes de Tablas --- */
 QFrame#TableActions {{ background-color: {COLOR_BG_SURFACE}; }}
@@ -390,16 +360,6 @@ QTextEdit#ConsoleDisplay {{
     font-size: 12px;
     border-radius: {RADIUS_MD}px;
     padding: 10px;
-}}
-
-/* --- ToolTips --- */
-QToolTip {{
-    background-color: {COLOR_BG_SURFACE};
-    color: {COLOR_TEXT_PRIMARY};
-    border-radius: {RADIUS_XL}px;
-    padding: 6px;
-    font-size: 12px;
-    margin: 2px; 
 }}
 
 /* --- Menús Contextuales (Bandeja del Sistema) --- */

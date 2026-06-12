@@ -62,5 +62,5 @@ class ChatSocketManager:
 
     def stop_socket(self) -> None:
         self._running = False
-        if self.ws:
+        if hasattr(self, 'ws') and self.ws:
             self.ws.close()

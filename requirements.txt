@@ -8,3 +8,5 @@ pyinstaller
 edge-tts
 asyncio
 pygame-ce
+fastapi
+uvicorn[standard]
