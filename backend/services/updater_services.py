@@ -34,14 +34,20 @@ class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
         except Exception:
             return None
 
-    def download_file(self, url: str, destination_path: str) -> bool:
+    def download_file(self, url: str, destination_path: str, progress_callback=None) -> bool:
         try:
             response = requests.get(url, stream=True, timeout=15)
             response.raise_for_status()
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded = 0
             
             with open(destination_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
+                    if chunk:
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if progress_callback and total_size > 0:
+                            progress_callback(int((downloaded / total_size) * 100))
             return True
         except Exception:
             return False

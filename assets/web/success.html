@@ -13,7 +13,7 @@
         }
 
         body {
-            background-color: #0b0e11; /* Fondo oscuro estilo app de trading */
+            background-color: #0b0e11;
             color: #eaecef;
             display: flex;
             align-items: center;
@@ -101,7 +101,6 @@
             position: relative;
         }
 
-        /* Animación opcional para la línea */
         .connection-line::after {
             content: '';
             position: absolute;
@@ -137,7 +136,7 @@
 
         .btn-primary {
             width: 100%;
-            background-color: #53fc18; /* Color verde de Kick */
+            background-color: #53fc18;
             color: #000000;
             border: none;
             border-radius: 8px;
@@ -193,12 +192,7 @@
 
     <script>
         function cerrarVentana() {
-            // Intenta cerrar la pestaña actual. 
-            // Nota: Algunos navegadores bloquean window.close() si la pestaña no fue abierta por un script, 
-            // pero funcionará bien si usaste webbrowser.open() en Python.
             window.close();
-            
-            // Fallback visual por si el navegador bloquea el cierre
             document.body.innerHTML = `
                 <div style="text-align: center; padding: 40px;">
                     <h2 style="color: #53fc18; margin-bottom: 10px;">¡Todo listo!</h2>

@@ -91,6 +91,7 @@ class MainWindow(QMainWindow):
         self._setup_tray() 
         self._connect_signals()
         self._load_settings_into_ui()
+        self._check_updates_silently()
 
     def _setup_ui(self):
         self.central_widget = QWidget()
@@ -202,13 +203,11 @@ class MainWindow(QMainWindow):
         def on_download_requested():
             dialog.show_downloading()
             self.download_worker = UpdateDownloadWorker(self.updater_manager, update_info["url"])
-            
+            self.download_worker.progress.connect(dialog.update_progress)
+
             def on_download_finished(success):
                 if success:
-                    dialog.status_label.setText("Instalación en marcha. Cerrando aplicación...")
-                    dialog.progress_bar.setRange(0, 100)
-                    dialog.progress_bar.setValue(100)
-                    self._force_quit() 
+                    dialog.show_complete()
                 else:
                     dialog.show_error("Fallo inesperado al descargar el archivo.")
                     
@@ -216,9 +215,22 @@ class MainWindow(QMainWindow):
             self.download_worker.error.connect(dialog.show_error)
             self.download_worker.start()
 
+        def on_restart_requested():
+            dialog.accept()
+            self._force_quit()
+            
         dialog.download_requested.connect(on_download_requested)
+        dialog.restart_requested.connect(on_restart_requested)
         self.check_worker.start()
         dialog.exec()
+
+    def _check_updates_silently(self):
+        """Busca actualizaciones en segundo plano sin interrumpir al usuario (Silent Check)."""
+        self.bg_update_worker = UpdateCheckWorker(self.updater_manager)
+        self.bg_update_worker.update_found.connect(
+            lambda info: self.sidebar.set_update_available(True)
+        )
+        self.bg_update_worker.start()
 
     def _handle_navigation(self, view_name):
         mapping = {

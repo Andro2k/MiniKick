@@ -160,6 +160,21 @@ QPushButton[role="action_success"] {{
 }}
 QPushButton[role="action_success"]:hover {{ background-color: {COLOR_ACCENT_SOFT}; }}
 
+QPushButton[role="action_update"] {{
+    background-color: rgba(83, 252, 24, 0.12);
+    border: 1px solid {COLOR_ACCENT};
+    border-radius: {RADIUS_SM}px;
+    padding: 6px 12px;
+    color: {COLOR_ACCENT};
+    font-weight: bold;
+    font-size: 11px;
+    text-align: center;
+}}
+QPushButton[role="action_update"]:hover {{
+    background-color: rgba(83, 252, 24, 0.25);
+    color: {COLOR_TEXT_PRIMARY};
+}}
+
 /* --- Tablas (QTableWidget) --- */
 QTableWidget {{
     background-color: {COLOR_BG_SURFACE};

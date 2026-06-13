@@ -26,10 +26,10 @@ class UpdateManager:
             return info
         return None
 
-    def perform_update(self, download_url: str) -> bool:
+    def perform_update(self, download_url: str, progress_callback=None) -> bool:
         temp_path = os.path.join(os.getenv('TEMP'), "minikick_update.exe")
         
-        if self.downloader.download_file(download_url, temp_path):
+        if self.downloader.download_file(download_url, temp_path, progress_callback):
             self.installer.install_and_restart(temp_path)
             return True
         return False

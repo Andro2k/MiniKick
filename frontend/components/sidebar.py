@@ -12,6 +12,7 @@ class Sidebar(QFrame):
     def __init__(self, app_version: str = "v1.0.0"):
         super().__init__()
         self.app_version = app_version
+        self.has_update = False  
         self.setObjectName("Sidebar")
         self.is_expanded = True
         self.expanded_width = 230
@@ -62,21 +63,45 @@ class Sidebar(QFrame):
         
         self.top_nav_layout = QVBoxLayout()
         self.top_nav_layout.setSpacing(4)
-
         self.main_layout.addLayout(self.top_nav_layout)
+        
         self.main_layout.addStretch()
 
         self.bottom_nav_layout = QVBoxLayout()
         self.bottom_nav_layout.setSpacing(4)
-
         self.main_layout.addLayout(self.bottom_nav_layout)
+
+        self.main_layout.addSpacing(4)
+        
+        self.btn_update_alert = QPushButton("Nueva Versión")
+        self.btn_update_alert.setProperty("role", "action_update")
+        self.btn_update_alert.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_update_alert.setIcon(get_icon_colored("cloud-download.svg", COLOR_ACCENT, 14))
+        
+        self.btn_update_alert.setVisible(False)
+        self.btn_update_alert.clicked.connect(self._on_update_alert_clicked)
+        self.main_layout.addWidget(self.btn_update_alert)
+
         self.lbl_version = QLabel(f"Versión {self.app_version}")
         self.lbl_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_version.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; font-size: 11px; font-weight: bold; margin-top: 8px;")
+        self.lbl_version.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; font-size: 11px; font-weight: bold; margin-top: 2px;")
         self.main_layout.addWidget(self.lbl_version)
 
+    def set_update_available(self, available: bool = True):
+        """Es llamado por MainWindow si se encuentra una actualización silenciosa."""
+        self.has_update = available
+        if self.is_expanded:
+            self.btn_update_alert.setVisible(available)
+
+    def _on_update_alert_clicked(self):
+        """Simula que el usuario hizo clic en la pestaña 'Settings'."""
+        for btn in self.nav_buttons:
+            if btn.property("view_name") == "Settings":
+                btn.setChecked(True)
+                self._on_tab_clicked(btn)
+                break
+
     def add_tab(self, name, icon_name, is_active=False, position="top"):
-        """Permite agregar un botón arriba ('top') o abajo ('bottom')."""
         btn = QPushButton(name)
         btn.setObjectName("NavButton")
         btn.setCheckable(True)
@@ -93,6 +118,7 @@ class Sidebar(QFrame):
             
         self.button_group.addButton(btn)
         self.nav_buttons.append(btn)
+
         if position == "bottom":
             self.bottom_nav_layout.addWidget(btn)
         else:
@@ -128,10 +154,12 @@ class Sidebar(QFrame):
         for btn in self.nav_buttons:
             btn.setText(btn.property("original_text") if show else "")
             btn.setProperty("collapsed", not show)
-
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+            
         self.lbl_version.setVisible(show)
+        if self.has_update:
+            self.btn_update_alert.setVisible(show)
 
     def _on_expand_finished(self):
         if self.is_expanded:
