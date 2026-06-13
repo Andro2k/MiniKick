@@ -1,7 +1,7 @@
 # frontend/components/dialogs.py
 
-from PySide6.QtWidgets import (QComboBox, QDialog, QDoubleSpinBox, QFileDialog, 
-                               QLineEdit, QSlider, QSpinBox, QStackedWidget, 
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDoubleSpinBox, QFileDialog, 
+                               QLineEdit, QSlider, QSpinBox, QStackedWidget, QTextEdit, 
                                QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
                                QFrame, QProgressBar, QSizePolicy, QWidget)
 from PySide6.QtCore import QPoint, Qt, Signal, QUrl
@@ -578,3 +578,97 @@ class AlertConfigWizard(ModernBaseDialog):
             "is_random_pos": self.chk_random_pos.isChecked() if self._is_video else False
         }
         return reward, config
+    
+class CommandConfigWizard(QDialog):
+    def __init__(self, parent=None, existing_config=None):
+        super().__init__(parent)
+        self.setWindowTitle("Configurar Comando de Chat")
+        self.setMinimumWidth(450)
+        self.setObjectName("SquareDialog")
+        self.existing_config = existing_config
+        self._setup_ui()
+        if self.existing_config:
+            self._load_existing()
+
+    def _setup_ui(self):
+        layout = QVBoxLayout(self)
+        layout.setSpacing(15)
+
+        # Trigger (CORREGIDO)
+        lbl_trigger = QLabel("Comando (Ej: !discord):")
+        lbl_trigger.setProperty("role", "section_small")
+        layout.addWidget(lbl_trigger)
+        
+        self.txt_trigger = QLineEdit()
+        layout.addWidget(self.txt_trigger)
+
+        # Respuesta (CORREGIDO)
+        lbl_response = QLabel("Respuesta del bot (puedes usar {user}):")
+        lbl_response.setProperty("role", "section_small")
+        layout.addWidget(lbl_response)
+        
+        self.txt_response = QTextEdit()
+        self.txt_response.setMaximumHeight(80)
+        layout.addWidget(self.txt_response)
+
+        # Configuraciones adicionales en fila
+        row_configs = QHBoxLayout()
+        
+        # Cooldown
+        col_cooldown = QVBoxLayout()
+        col_cooldown.addWidget(QLabel("Cooldown (seg):"))
+        self.spin_cooldown = QSpinBox()
+        self.spin_cooldown.setRange(0, 300)
+        self.spin_cooldown.setValue(5)
+        col_cooldown.addWidget(self.spin_cooldown)
+        row_configs.addLayout(col_cooldown)
+
+        # Aliases
+        col_aliases = QVBoxLayout()
+        col_aliases.addWidget(QLabel("Aliases (separados por coma):"))
+        self.txt_aliases = QLineEdit()
+        self.txt_aliases.setPlaceholderText("!dc, !discordia")
+        col_aliases.addWidget(self.txt_aliases)
+        row_configs.addLayout(col_aliases, stretch=1)
+
+        layout.addLayout(row_configs)
+
+        # Switches
+        row_switches = QHBoxLayout()
+        self.chk_regex = QCheckBox("Usar RegEx (Avanzado)")
+        self.chk_active = QCheckBox("Comando Activo")
+        self.chk_active.setChecked(True)
+        row_switches.addWidget(self.chk_regex)
+        row_switches.addWidget(self.chk_active)
+        layout.addLayout(row_switches)
+
+        # Botones
+        btn_layout = QHBoxLayout()
+        btn_cancel = ModernButton("Cancelar", role="action_outlined")
+        btn_cancel.clicked.connect(self.reject)
+        self.btn_save = ModernButton("Guardar Comando", role="action_accent")
+        self.btn_save.clicked.connect(self.accept)
+        
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(self.btn_save)
+        layout.addLayout(btn_layout)
+
+    def _load_existing(self):
+        self.txt_trigger.setText(self.existing_config.get("trigger", ""))
+        self.txt_trigger.setEnabled(False)
+        self.txt_response.setText(self.existing_config.get("response", ""))
+        self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
+        self.txt_aliases.setText(self.existing_config.get("aliases", ""))
+        self.chk_regex.setChecked(self.existing_config.get("is_regex", False))
+        self.chk_active.setChecked(self.existing_config.get("is_active", True))
+
+    def get_command_data(self):
+        return {
+            "trigger": self.txt_trigger.text().strip(),
+            "response": self.txt_response.toPlainText().strip(),
+            "cooldown": self.spin_cooldown.value(),
+            "aliases": self.txt_aliases.text().strip(),
+            "is_regex": self.chk_regex.isChecked(),
+            "is_active": self.chk_active.isChecked()
+        }

@@ -113,7 +113,7 @@ class AuthManager:
         return verifier, challenge
 
     def _build_auth_url(self, challenge: str) -> str:
-        scopes = "user:read channel:rewards:read channel:rewards:write"
+        scopes = "user:read channel:rewards:read channel:rewards:write chat:write"
         return (
             f"{KICK_AUTH_URL}?response_type=code"
             f"&client_id={self.client_id}"

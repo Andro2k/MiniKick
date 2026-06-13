@@ -73,7 +73,7 @@ class ChatView(QWidget):
         row_tts = SettingRow("volume.svg", "Servicio de Voz (TTS)", "Habilita la lectura automatizada de mensajes.", self.chk_tts)
         row_read_name = SettingRow("user.svg", "Leer Nombres", "Pronuncia el nombre del emisor antes del mensaje.", self.chk_name)
         row_provider = SettingRow("globe.svg", "Motor de Voz Premium", "Alterna entre voces web de Edge o locales.", self.chk_provider)
-        row_cmd = SettingRow("terminal.svg", "Requerir Comando", "Solo leer mensajes que inicien con un prefijo.", self.chk_command)
+        row_cmd = SettingRow("code.svg", "Requerir Comando", "Solo leer mensajes que inicien con un prefijo.", self.chk_command)
         row_volume = SettingSliderRow("adjustments-alt.svg", "Volumen General", "Ajusta la intensidad del sintetizador de voz.", self.slider_vol, self.lbl_vol_perc)
         
         lang_voice_layout = QHBoxLayout()

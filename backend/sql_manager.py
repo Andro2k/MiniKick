@@ -43,7 +43,16 @@ class DatabaseManager:
                     pos_y INTEGER DEFAULT 0
                 )
             """)
-            
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS chat_commands (
+                    trigger TEXT PRIMARY KEY,
+                    response TEXT NOT NULL,
+                    is_active INTEGER DEFAULT 1,
+                    cooldown INTEGER DEFAULT 5,
+                    aliases TEXT DEFAULT '',
+                    is_regex INTEGER DEFAULT 0
+                )
+            """)
             cursor.execute("PRAGMA table_info(obs_alerts)")
             columns = [info[1] for info in cursor.fetchall()]
             
@@ -192,4 +201,48 @@ class SQLiteAlertsStorage:
                     config.get("pos_y", 0),
                     int(config.get("is_random_pos", False))
                 ))
+            conn.commit()
+
+class SQLiteCommandsStorage:
+    def __init__(self, db_manager: DatabaseManager):
+        self.db_manager = db_manager
+
+    def load_all(self) -> list[dict]:
+        """Carga todos los comandos personalizados como una lista de diccionarios."""
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex FROM chat_commands")
+            commands = []
+            for row in cursor.fetchall():
+                commands.append({
+                    "trigger": row[0],
+                    "response": row[1],
+                    "is_active": bool(row[2]),
+                    "cooldown": row[3],
+                    "aliases": row[4],
+                    "is_regex": bool(row[5])
+                })
+            return commands
+
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool) -> None:
+        """Guarda o actualiza un comando completo en base de datos."""
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO chat_commands (trigger, response, is_active, cooldown, aliases, is_regex) 
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(trigger) DO UPDATE SET 
+                    response=excluded.response,
+                    is_active=excluded.is_active,
+                    cooldown=excluded.cooldown,
+                    aliases=excluded.aliases,
+                    is_regex=excluded.is_regex
+            """, (trigger, response, int(is_active), cooldown, aliases, int(is_regex)))
+            conn.commit()
+
+    def delete_command(self, trigger: str) -> None:
+        """Elimina un comando de la base de datos."""
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM chat_commands WHERE trigger=?", (trigger,))
             conn.commit()

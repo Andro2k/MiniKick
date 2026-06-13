@@ -11,6 +11,7 @@ from PySide6.QtCore import Slot, QEvent
 from backend.services.alerts_service import AlertsService
 from backend.services.backup_service import BackupService
 from backend.services.chat_service import ChatService
+from backend.services.command_service import CommandService
 from backend.services.dashboard_service import AvatarService
 from backend.services.log_service import LogService
 from backend.services.media_trigger_service import MediaTriggerService
@@ -21,10 +22,12 @@ from frontend.components.sidebar import Sidebar
 from frontend.components.tray_menu import SystemTrayManager
 from frontend.controllers.alerts_controller import AlertsController
 from frontend.controllers.chat_controller import ChatController
+from frontend.controllers.command_controller import CommandController
 from frontend.controllers.dashboard_controller import DashboardController
 from frontend.controllers.log_controller import LogController
 from frontend.controllers.settings_controller import SettingsController
 from frontend.views.alerts_view import AlertsView
+from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.log_view import LogView
@@ -33,7 +36,7 @@ from frontend.views.settings_view import SettingsView
 from frontend.components.dialogs import UpdateDialog
 
 from backend.auth_manager import AuthManager
-from backend.sql_manager import DatabaseManager, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage 
+from backend.sql_manager import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage 
 from backend.kick_api_client import KickAPIClient
 from backend.tts_manager import TTSManager
 
@@ -62,8 +65,9 @@ class MainWindow(QMainWindow):
         self.db_manager = DatabaseManager()
         self.token_storage = SQLiteTokenStorage(self.db_manager)
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
-        self.alerts_storage = SQLiteAlertsStorage(self.db_manager) 
-        self.backup_service = BackupService(self.settings_storage, self.alerts_storage)
+        self.alerts_storage = SQLiteAlertsStorage(self.db_manager)
+        self.commands_storage = SQLiteCommandsStorage(self.db_manager)
+        self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage)
         
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
@@ -77,7 +81,7 @@ class MainWindow(QMainWindow):
         self.chat_worker = None
         self.reward_worker = None
         self.media_trigger_service = MediaTriggerService(self)
-        
+        self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.overlay_server = OverlayServerManager(port=8090)
         self.overlay_server.start()
 
@@ -97,7 +101,8 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar()
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
         self.sidebar.add_tab("Chat", "bubble-text.svg")
-        self.sidebar.add_tab("Triggers", "layout-dashboard.svg") 
+        self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
+        self.sidebar.add_tab("Comandos", "code.svg")
         self.sidebar.add_tab("Settings", "settings.svg")
         self.sidebar.add_tab("Developer", "terminal.svg") 
 
@@ -118,6 +123,9 @@ class MainWindow(QMainWindow):
         self.view_alerts = AlertsView()
         self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
         self.alerts_controller = AlertsController(view=self.view_alerts, service=self.alerts_service)
+        self.view_commands = CommandView()
+        self.command_service = CommandService(self.commands_storage, api_client=None)
+        self.command_controller = CommandController(self.view_commands, self.command_service)
         self.view_logs = LogView()
         self.log_service = LogService()
         self.log_controller = LogController(view=self.view_logs, service=self.log_service)
@@ -126,7 +134,7 @@ class MainWindow(QMainWindow):
         self.content_stack.addWidget(self.view_settings)
         self.content_stack.addWidget(self.view_logs) 
         self.content_stack.addWidget(self.view_alerts) 
-
+        self.content_stack.addWidget(self.view_commands)
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
 
@@ -171,7 +179,7 @@ class MainWindow(QMainWindow):
         self.tray_manager.set_tts_state(tts_enabled)
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
-
+        self.command_controller.load_initial_data()
         if autostart_enabled:
             self._handle_auth_process()
 
@@ -215,9 +223,10 @@ class MainWindow(QMainWindow):
         mapping = {
             "Dashboard": self.view_dashboard,
             "Chat": self.view_chat,
+            "Triggers": self.view_alerts,
+            "Comandos": self.view_commands,
             "Settings": self.view_settings,
             "Developer": self.view_logs,
-            "Triggers": self.view_alerts
         }
         target_view = mapping.get(view_name)
         if target_view:
@@ -235,6 +244,8 @@ class MainWindow(QMainWindow):
             key = os.getenv("KICK_PUSHER_KEY", "")
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             
+            self.command_service.api_client = api_client
+            self.chat_controller.command_service = self.command_service
             self.chat_worker = ChatWorker(api_client, cluster, key, parent=self)                
             self.chat_worker.connection_success.connect(self.dashboard_controller.handle_connection_success)
             self.chat_worker.message_received.connect(self.chat_controller.handle_incoming_message)

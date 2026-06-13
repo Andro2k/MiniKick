@@ -5,16 +5,18 @@ import logging
 from backend.interfaces.settings_interfaces import SettingsStorage
 
 class BackupService:
-    def __init__(self, settings_storage: SettingsStorage, alerts_storage):
+    def __init__(self, settings_storage: SettingsStorage, alerts_storage, commands_storage):
         self.settings_storage = settings_storage
         self.alerts_storage = alerts_storage
+        self.commands_storage = commands_storage
         self.logger = logging.getLogger(__name__)
 
     def export_to_json(self, filepath: str) -> bool:
         try:
             data = {
                 "settings": self.settings_storage.get_all(),
-                "alerts": self.alerts_storage.load_all()
+                "alerts": self.alerts_storage.load_all(),
+                "commands": self.commands_storage.load_all()
             }
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
@@ -34,6 +36,17 @@ class BackupService:
             
             if "alerts" in data and isinstance(data["alerts"], dict):
                 self.alerts_storage.save_all(data["alerts"])
+            
+            if "commands" in data and isinstance(data["commands"], list):
+                for cmd in data["commands"]:
+                    self.commands_storage.save_command(
+                        trigger=cmd["trigger"],
+                        response=cmd["response"],
+                        is_active=cmd.get("is_active", True),
+                        cooldown=cmd.get("cooldown", 5),
+                        aliases=cmd.get("aliases", ""),
+                        is_regex=cmd.get("is_regex", False)
+                    )
                 
             self.logger.info(f"Configuración importada exitosamente desde {filepath}")
             return True

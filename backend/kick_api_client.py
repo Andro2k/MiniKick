@@ -44,8 +44,6 @@ class KickAPIClient:
         headers["Authorization"] = f"Bearer {access_token}"
         
         try:
-            # CORRECCIÓN DRY/COHESIÓN: Reemplazamos `requests.request` por `self.scraper.request`
-            # Ahora TODO el tráfico usa la misma sesión, mismas cookies y misma huella TLS.
             response = self.scraper.request(method, url, headers=headers, **kwargs)
             response.raise_for_status()
             return response
@@ -54,8 +52,7 @@ class KickAPIClient:
                 self.auth_provider.refresh_token()
                 tokens = self.auth_provider.get_tokens()
                 headers["Authorization"] = f"Bearer {tokens.get('access_token', '')}"
-                
-                # CORRECCIÓN: Usamos el scraper para el reintento también
+
                 retry_response = self.scraper.request(method, url, headers=headers, **kwargs)
                 retry_response.raise_for_status()
                 return retry_response
@@ -129,4 +126,13 @@ class KickAPIClient:
             return {}    
         url = f"{KICK_REDEMPTIONS_URL}/accept"
         payload = {"ids": redemption_ids}
+        return self._request("POST", url, json=payload, timeout=10).json()
+    
+    def post_chat_message(self, content: str, msg_type: str = "bot", broadcaster_id: int = None) -> dict:
+        url = "https://api.kick.com/public/v1/chat"
+        payload = {"content": content, "type": msg_type}
+        
+        if msg_type == "user" and broadcaster_id is not None:
+            payload["broadcaster_user_id"] = broadcaster_id
+            
         return self._request("POST", url, json=payload, timeout=10).json()

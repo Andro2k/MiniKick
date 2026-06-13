@@ -1,6 +1,6 @@
 # frontend/views/dashboard_view.py
 
-from PySide6.QtWidgets import (QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
+from PySide6.QtWidgets import (QBoxLayout, QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
@@ -10,7 +10,6 @@ from frontend.components.blocks import StatCard, ViewHeader, SettingRow
 from frontend.components.controls import ModernButton, ModernSwitch
 
 class DashboardView(QWidget):
-    # ─── CONTRATOS DE SALIDA ───
     connect_requested = Signal()
     autostart_toggled = Signal(bool)
 
@@ -46,12 +45,10 @@ class DashboardView(QWidget):
 
         self.main_layout.addStretch()
 
-        # ─── ENSAMBLAJE FINAL ───
         scroll_area.setWidget(scroll_content)
         base_layout.addWidget(scroll_area)
 
     def _setup_connection_card(self):
-        # [El código de setup visual se mantiene idéntico a tu versión original]
         conn_card = QFrame()
         conn_card.setObjectName("Card")
         conn_layout = QVBoxLayout(conn_card)
@@ -86,14 +83,13 @@ class DashboardView(QWidget):
         self.main_layout.addWidget(conn_card)
 
     def _setup_profile_section(self):
-        # [El código de setup visual se mantiene idéntico]
         self.profile_container = QWidget()
         self.profile_container.setVisible(False)
         profile_layout = QVBoxLayout(self.profile_container)
         profile_layout.setContentsMargins(0, 0, 0, 0)
         profile_layout.setSpacing(10) 
 
-        top_row_layout = QHBoxLayout()
+        self.top_row_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         avatar_card = QFrame()
         avatar_card.setObjectName("Card")
         avatar_layout = QVBoxLayout(avatar_card)
@@ -115,33 +111,35 @@ class DashboardView(QWidget):
         self.lbl_username = QLabel("-")
         self.lbl_username.setProperty("role", "title")
         self.lbl_username.setStyleSheet("font-size: 26px; font-weight: 800;")
+        self.lbl_username.setWordWrap(True)
 
         self.lbl_bio = QLabel("-")
         self.lbl_bio.setProperty("role", "body")
         self.lbl_bio.setStyleSheet("color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 6px;")
+        self.lbl_bio.setWordWrap(True)
 
         info_layout.addWidget(self.lbl_username)
         info_layout.addWidget(self.lbl_bio)
         info_layout.addStretch()
         
-        top_row_layout.addWidget(avatar_card)
-        top_row_layout.addWidget(info_card, stretch=1)
+        self.top_row_layout.addWidget(avatar_card)
+        self.top_row_layout.addWidget(info_card, stretch=1)
 
         stats_container = QWidget()
-        stats_grid = QGridLayout(stats_container)
+        self.stats_grid = QGridLayout(stats_container)
         self.card_followers = StatCard("Seguidores", "users.svg")
         self.card_room = StatCard("ID Sala (Chat)", "hash.svg")
         self.card_category = StatCard("Última Categoría", "device-gamepad.svg") 
         self.card_affiliate = StatCard("Estado Afiliado", "star.svg")
         self.card_vods = StatCard("VODs", "video.svg")
 
-        stats_grid.addWidget(self.card_followers, 0, 0)
-        stats_grid.addWidget(self.card_room, 0, 1)
-        stats_grid.addWidget(self.card_category, 0, 2)
-        stats_grid.addWidget(self.card_affiliate, 1, 0)
-        stats_grid.addWidget(self.card_vods, 1, 1)
+        self.stats_grid.addWidget(self.card_followers, 0, 0)
+        self.stats_grid.addWidget(self.card_room, 0, 1)
+        self.stats_grid.addWidget(self.card_category, 0, 2)
+        self.stats_grid.addWidget(self.card_affiliate, 1, 0)
+        self.stats_grid.addWidget(self.card_vods, 1, 1)
 
-        profile_layout.addLayout(top_row_layout)
+        profile_layout.addLayout(self.top_row_layout)
         profile_layout.addWidget(stats_container) 
         self.main_layout.addWidget(self.profile_container)
 
@@ -203,3 +201,24 @@ class DashboardView(QWidget):
         
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
+
+    def resizeEvent(self, event):
+        """Intercepta los cambios de tamaño de la ventana para reorganizar los layouts dinámicamente."""
+        super().resizeEvent(event)
+        width = self.width()
+
+        if hasattr(self, 'top_row_layout'):
+            if width < 600:
+                self.top_row_layout.setDirection(QBoxLayout.Direction.TopToBottom)
+            else:
+                self.top_row_layout.setDirection(QBoxLayout.Direction.LeftToRight)
+        if hasattr(self, 'stats_grid'):
+            if width < 650:
+                cols = 1
+            elif width < 950:
+                cols = 2
+            else:
+                cols = 3
+            cards = [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods]
+            for i, card in enumerate(cards):
+                self.stats_grid.addWidget(card, i // cols, i % cols)

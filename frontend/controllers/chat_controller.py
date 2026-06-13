@@ -26,6 +26,12 @@ class ChatController(QObject):
 
     def _load_initial_data(self):
         settings = self.service.get_settings()
+        provider = settings.get("provider", "local")
+        self.service.set_provider(provider)
+        saved_voice_id = self.service.get_saved_voice_id(provider)
+        if saved_voice_id:
+            self.service.set_voice(provider, saved_voice_id)
+
         self.view.set_initial_states(settings)
         self.service.set_volume(settings["volume"])
         
@@ -34,14 +40,14 @@ class ChatController(QObject):
         for bot in self.muted_bots:
             self.view.add_bot_tag(bot)
 
-        self._load_voices(settings["provider"], is_initial=True)
+        self._load_voices(provider, is_initial=True)
 
-    # ─── LÓGICA DE NEGOCIO Y FILTROS ───
     @Slot(str, str)
     def handle_incoming_message(self, user: str, message: str):
         """Recibe el mensaje desde el Worker, lo pinta y decide si lo lee (SoR)."""
         self.view.append_message(user, message)
-        
+        if hasattr(self, 'command_service') and self.command_service:
+            self.command_service.process_incoming_message(user, message)
         settings = self.service.get_settings()
         if not settings["enabled"]:
             return
@@ -59,7 +65,6 @@ class ChatController(QObject):
         text_to_speak = f"{user} dice: {final_message}" if settings["read_name"] else final_message
         self.service.speak(text_to_speak)
 
-    # ─── GESTIÓN DE VOCES (Lógica separada de la Vista) ───
     def _load_voices(self, provider: str, is_initial: bool = False):
         self._all_voices = self.service.get_available_voices(provider)
         saved_voice_id = self.service.get_saved_voice_id(provider)
@@ -96,7 +101,6 @@ class ChatController(QObject):
         self.service.set_provider(provider)
         self._load_voices(provider)
 
-    # ─── GESTIÓN DE SETTINGS Y BOTS ───
     @Slot(dict)
     def _handle_settings_save(self, partial_settings: dict):
         partial_settings["ignored_users"] = ",".join(self.muted_bots)

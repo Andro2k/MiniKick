@@ -132,8 +132,8 @@ class AlertsView(QWidget):
             actions_layout.setSpacing(8)
             actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
-            btn_play = self._create_table_action_btn("play.svg", "#000000", "action_accent", "Probar en OBS", lambda checked=False, r=reward: self.preview_requested.emit(r))
-            btn_edit = self._create_table_action_btn("edit.svg", "#000000", "action_outlined", "Modificar ajustes", lambda checked=False, r=reward: self.edit_requested.emit(r))
+            btn_play = self._create_table_action_btn("play.svg", "#53FC18", "action_success", "Probar en OBS", lambda checked=False, r=reward: self.preview_requested.emit(r))
+            btn_edit = self._create_table_action_btn("edit.svg", "#000000", "action_accent", "Modificar ajustes", lambda checked=False, r=reward: self.edit_requested.emit(r))
             btn_del = self._create_table_action_btn("trash.svg", "#ef4444", "action_danger", "Eliminar alerta", lambda checked=False, r=reward: self.delete_requested.emit(r))
             
             actions_layout.addWidget(btn_play)
