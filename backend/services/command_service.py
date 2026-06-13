@@ -41,8 +41,9 @@ class CommandService:
             is_match = False
 
             if cmd.get("is_regex", False):
+                regex_pattern = cmd.get("aliases", "")
                 try:
-                    if re.search(trigger, message, re.IGNORECASE):
+                    if re.search(regex_pattern, message, re.IGNORECASE):
                         is_match = True
                 except re.error:
                     pass

@@ -25,7 +25,6 @@ class ChatView(QWidget):
         self._setup_ui()
         self._connect_internal_signals()
 
-    # ─── CONSTRUCCIÓN DE LA INTERFAZ (Alta Cohesión y Responsividad) ───
     def _setup_ui(self):
         base_layout = QVBoxLayout(self)
         base_layout.setContentsMargins(0, 0, 0, 0)
@@ -187,7 +186,6 @@ class ChatView(QWidget):
             elif isinstance(control, QLineEdit):
                 control.textChanged.connect(self._emit_current_settings)
 
-    # ─── MÉTODOS PÚBLICOS PARA EL CONTROLADOR ───
     def set_initial_states(self, settings: dict):
         """Aplica estados sin disparar señales accidentales."""
         self.blockSignals(True)
@@ -257,7 +255,6 @@ class ChatView(QWidget):
         html_msg = f'<b style="color: #53FC18;">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
         self.chat_display.append(html_msg)
 
-    # ─── LÓGICA PURAMENTE VISUAL (Privada) ───
     @Slot(int)
     def _on_slider_vol_changed(self, value: int):
         self.lbl_vol_perc.setText(f"{value}%")

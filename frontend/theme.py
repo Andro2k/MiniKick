@@ -1,27 +1,21 @@
 # frontend/theme.py
 
 from frontend.utils import get_assets_path
-
-# ─── Recursos Base ───
 PATH_ICON_HELP = get_assets_path("icons/help.svg")
 PATH_ICON_UPDATE = get_assets_path("icons/cloud-download.svg")
 
-# ─── Paleta de Colores ───
-# Fondos
-COLOR_BG_BASE       = "#0B0E11"   # Fondo de la aplicación (Negro profundo)
-COLOR_BG_SURFACE    = "#1E2329"   # Tarjetas y paneles (Gris oscuro cálido)
-COLOR_BG_INPUT      = "#42474D"   # Fondos de inputs y campos de texto
+COLOR_BG_BASE       = "#0B0E11"
+COLOR_BG_SURFACE    = "#1E2329"
+COLOR_BG_INPUT      = "#42474D"
 COLOR_BG_HOVER      = "#333333"   
-COLOR_BG_CONSOLE    = "#0F172A"   # Fondo para terminal/logs
+COLOR_BG_CONSOLE    = "#0F172A"
 
-# Bordes
-COLOR_BORDER_SVELTE = "#333333"   # Bordes inactivos y divisores
-COLOR_BORDER_ACTIVE = "#53FC18"   # Borde activo al enfocar (Verde Menta)
+COLOR_BORDER_SVELTE = "#333333"
+COLOR_BORDER_ACTIVE = "#53FC18"
 
-# Acentos y Estados
-COLOR_ACCENT        = "#53FC18"   # Verde Menta vibrante
+COLOR_ACCENT        = "#53FC18"
 COLOR_ACCENT_HOVER  = "#00C864"   
-COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)" # Verde translúcido
+COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)"
 
 COLOR_SUCCESS       = "#10B981"
 
@@ -29,26 +23,23 @@ COLOR_DANGER        = "#EF4444"
 COLOR_DANGER_HOVER  = "#D74141"
 COLOR_DANGER_SOFT   = "rgba(239, 68, 68, 0.15)"
 
-# Textos
-COLOR_TEXT_PRIMARY   = "#F3F4F6"   # Blanco suave
-COLOR_TEXT_SECONDARY = "#9CA3AF"   # Gris para subtítulos
+COLOR_TEXT_PRIMARY   = "#F3F4F6"
+COLOR_TEXT_SECONDARY = "#9CA3AF"
 COLOR_TEXT_MUTED     = "#6B7280"
-COLOR_TEXT_INVERSE   = "#000000"   # Texto oscuro para fondos claros
-COLOR_TEXT_CONSOLE   = "#F8FAFC"   # Texto para terminal/logs
+COLOR_TEXT_INVERSE   = "#000000"
+COLOR_TEXT_CONSOLE   = "#F8FAFC"
 
-# ─── Tipografía, Radios & Espaciados (Paddings) ───
 FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
 FONT_MONO   = "'Consolas', 'Courier New', monospace"
 
 RADIUS_SM = 6
-RADIUS_MD = 8   # Cajas de texto y botones redondeados
-RADIUS_LG = 12  # Tarjetas principales altamente redondeadas
-RADIUS_XL = 26  # Iconos circulares grandes
+RADIUS_MD = 8
+RADIUS_LG = 12
+RADIUS_XL = 26
 
 PADDING_INPUT   = "4px 12px"
 PADDING_BUTTON  = "4px 8px"
 
-# ─── Stylesheet Global (QSS) ───
 GLOBAL_QSS = f"""
 /* ============================================================================
    1. RESET Y BASE GLOBAL
@@ -278,18 +269,57 @@ QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{ background-col
 QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed,
 QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{ background-color: {COLOR_ACCENT_HOVER}; }}
 
-/* --- ScrollBars --- */
-QScrollBar:vertical {{ border: none; background: transparent; width: 8px; margin: 0; }}
-QScrollBar::handle:vertical {{ background: {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_SM}px; min-height: 20px; }}
-QScrollBar::handle:vertical:hover {{ background: {COLOR_TEXT_MUTED}; }}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
+/* --- ScrollBars Premium (Estilo Píldora Flotante) --- */
+QScrollBar:vertical {{
+    border: none;
+    background: transparent;
+    width: 14px;
+    margin: 2px 4px 2px 0px;
+}}
+QScrollBar::handle:vertical {{
+    background-color: {COLOR_TEXT_MUTED};
+    border-radius: 5px;
+    min-height: 30px;
+}}
+QScrollBar::handle:vertical:hover {{
+    background-color: {COLOR_TEXT_PRIMARY};
+}}
+QScrollBar::handle:vertical:pressed {{
+    background-color: {COLOR_ACCENT};
+}}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+    height: 0px;
+    background: none;
+}}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+    background: transparent;
+}}
 
-QScrollBar:horizontal {{ background: transparent; height: 8px; margin: 0; }}
-QScrollBar::handle:horizontal {{ background: {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_SM}px; min-width: 20px; }}
-QScrollBar::handle:horizontal:hover {{ background: {COLOR_TEXT_MUTED}; }}
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{ width: 0; }}
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ background: none; }}
+/* --- Versión Horizontal --- */
+QScrollBar:horizontal {{
+    border: none;
+    background: transparent;
+    height: 14px;
+    margin: 0px 2px 4px 2px;
+}}
+QScrollBar::handle:horizontal {{
+    background-color: {COLOR_TEXT_MUTED};
+    border-radius: 5px;
+    min-width: 30px;
+}}
+QScrollBar::handle:horizontal:hover {{
+    background-color: {COLOR_TEXT_PRIMARY};
+}}
+QScrollBar::handle:horizontal:pressed {{
+    background-color: {COLOR_ACCENT};
+}}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
+    width: 0px;
+    background: none;
+}}
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+    background: transparent;
+}}
 
 /* --- Contenedores de Scroll --- */
 QScrollArea, QScrollArea > QWidget > QWidget {{
@@ -300,6 +330,30 @@ QScrollArea, QScrollArea > QWidget > QWidget {{
 QWidget#ScrollContent {{
     background-color: transparent;
 }}
+
+/* --- Pestañas (Tabs) --- */
+QTabWidget::pane {{
+    border: none;
+    background-color: transparent;
+    border-top: 1px solid {COLOR_BORDER_SVELTE};
+}}
+QTabBar::tab {{
+    background-color: transparent;
+    color: {COLOR_TEXT_SECONDARY};
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 2px solid transparent;
+}}
+QTabBar::tab:hover {{
+    color: {COLOR_TEXT_PRIMARY};
+    background-color: {COLOR_BG_HOVER};
+}}
+QTabBar::tab:selected {{
+    color: {COLOR_ACCENT};
+    border-bottom: 2px solid {COLOR_ACCENT};
+}}
+
 /* ============================================================================
    4. ESTILOS ESPECÍFICOS DE VISTAS (Alta Cohesión Visual)
    ============================================================================ */

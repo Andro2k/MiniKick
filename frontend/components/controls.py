@@ -5,7 +5,6 @@ from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import QColor, QPainter, QPainterPath
 from frontend.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, RADIUS_MD, RADIUS_SM
 
-# ─── BOTONES BÁSICOS ─────────────────────────────────────────────────────────
 class ModernButton(QPushButton):
     """Componente de botón reutilizable con roles de estilo."""
     def __init__(self, text: str, role: str = "action_success", parent=None):

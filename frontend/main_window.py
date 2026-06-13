@@ -56,6 +56,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._is_shutting_down = False
         self.updater_manager = updater_manager
+        self.app_version = app_version
         
         self.setWindowTitle(f"MiniKick - Versión {app_version}")
         self.resize(1100, 750)
@@ -98,13 +99,13 @@ class MainWindow(QMainWindow):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        self.sidebar = Sidebar()
+        self.sidebar = Sidebar(app_version=self.app_version)
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
         self.sidebar.add_tab("Chat", "bubble-text.svg")
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Comandos", "code.svg")
-        self.sidebar.add_tab("Settings", "settings.svg")
-        self.sidebar.add_tab("Developer", "terminal.svg") 
+        self.sidebar.add_tab("Settings", "settings.svg", position="bottom")
+        self.sidebar.add_tab("Developer", "terminal.svg", position="bottom")
 
         self.content_stack = QStackedWidget()
         

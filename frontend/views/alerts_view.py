@@ -12,7 +12,6 @@ from frontend.theme import COLOR_ACCENT
 from frontend.utils import get_icon_colored
 
 class AlertsView(QWidget):
-    # ─── CONTRATOS DE SALIDA (Hacia el Controlador) ───
     add_requested = Signal()
     edit_requested = Signal(str)
     delete_requested = Signal(str)

@@ -27,6 +27,7 @@ class CommandController(QObject):
         dialog = CommandConfigWizard(self.view)
         if dialog.exec():
             data = dialog.get_command_data()
+            data.pop("original_trigger")
             if data["trigger"] and data["response"]:
                 self.service.save_command(**data)
                 self.load_initial_data()
@@ -41,7 +42,12 @@ class CommandController(QObject):
         dialog = CommandConfigWizard(self.view, existing_config=existing)
         if dialog.exec():
             data = dialog.get_command_data()
-            if data["response"]:
+            original_trigger = data.pop("original_trigger")
+            
+            if data["response"] and data["trigger"]:
+                if original_trigger and original_trigger != data["trigger"]:
+                    self.service.delete_command(original_trigger)
+                    
                 self.service.save_command(**data)
                 self.load_initial_data()
 
@@ -49,8 +55,6 @@ class CommandController(QObject):
     def _handle_delete(self, trigger: str):
         self.service.delete_command(trigger)
         self.load_initial_data()
-
-    # ── LÓGICA DE LAS NUEVAS FUNCIONES VISUALES ──
 
     @Slot(str, bool)
     def _handle_status_change(self, trigger: str, is_active: bool):

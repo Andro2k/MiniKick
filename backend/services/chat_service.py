@@ -5,7 +5,6 @@ class ChatService:
         self.tts = tts_manager
         self.storage = settings_storage
 
-    # ─── GESTIÓN DE CONFIGURACIONES ───
     def get_settings(self) -> dict:
         return {
             "enabled": self.storage.load_bool("tts_enabled", True),
@@ -24,7 +23,6 @@ class ChatService:
         self.storage.save_string("tts_command", settings.get("command", "!tts"))
         self.storage.save_string("tts_ignored_users", settings.get("ignored_users", ""))
 
-    # ─── GESTIÓN DE TTS ───
     def set_volume(self, volume: int):
         self.storage.save_string("tts_volume", str(volume))
         self.tts.set_volume(volume / 100.0)

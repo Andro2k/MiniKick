@@ -8,7 +8,6 @@ from PySide6.QtCore import Signal
 from frontend.utils import resource_path
 
 class SystemTrayManager(QSystemTrayIcon):
-    # ─── CONTRATOS DE SALIDA (Hacia MainWindow) ───
     restore_requested = Signal()
     quit_requested = Signal()
     tts_toggled = Signal(bool)
@@ -23,13 +22,11 @@ class SystemTrayManager(QSystemTrayIcon):
 
         self.menu = QMenu()
 
-        # Acción: Restaurar
         self.action_restore = self.menu.addAction("Abrir Panel")
         self.action_restore.triggered.connect(self.restore_requested.emit)
 
         self.menu.addSeparator()
 
-        # Acción: Toggle TTS (Con Checkbox)
         self.action_tts = QAction("Leer chat en voz alta", self.menu)
         self.action_tts.setCheckable(True)
         self.action_tts.toggled.connect(self.tts_toggled.emit)
@@ -37,7 +34,6 @@ class SystemTrayManager(QSystemTrayIcon):
 
         self.menu.addSeparator()
 
-        # Acción: Salir
         self.action_quit = self.menu.addAction("Cerrar MiniKick")
         self.action_quit.triggered.connect(self.quit_requested.emit)
 
@@ -45,11 +41,9 @@ class SystemTrayManager(QSystemTrayIcon):
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, reason):
-        # Si hacen doble clic en el ícono, abre la app
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
             self.restore_requested.emit()
 
-    # ─── CONTRATOS DE ESTADO (Desde MainWindow) ───
     def set_tts_state(self, enabled: bool):
         """Sincroniza visualmente el checkbox del menú con el estado real de la base de datos."""
         self.action_tts.blockSignals(True)

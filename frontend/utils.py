@@ -50,18 +50,14 @@ def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
             Qt.TransformationMode.SmoothTransformation
         )
     
-    # Creamos un lienzo transparente del mismo tamaño
     colored_pixmap = QPixmap(pixmap.size())
     colored_pixmap.fill(Qt.GlobalColor.transparent)
     
-    # Inicializamos el pintor
     painter = QPainter(colored_pixmap)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-    
-    # Dibujamos el ícono original
+
     painter.drawPixmap(0, 0, pixmap)
-    
-    # Usamos el modo SourceIn: El nuevo color solo pintará donde el ícono original no sea transparente
+
     painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
     painter.fillRect(colored_pixmap.rect(), QColor(color_str))
     painter.end()

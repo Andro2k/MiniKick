@@ -143,7 +143,6 @@ class DashboardView(QWidget):
         profile_layout.addWidget(stats_container) 
         self.main_layout.addWidget(self.profile_container)
 
-    # ─── MÉTODOS PÚBLICOS PARA EL CONTROLADOR ───
     def set_autostart_state(self, enabled: bool):
         self.sw_autostart.blockSignals(True)
         self.sw_autostart.setChecked(enabled)

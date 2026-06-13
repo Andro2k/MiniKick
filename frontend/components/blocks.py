@@ -115,7 +115,6 @@ class StatCard(QFrame):
         header_layout.addWidget(self.lbl_title)
         header_layout.addStretch()
 
-        # Valor
         self.lbl_value = QLabel(initial_value)
         self.lbl_value.setProperty("role", "stat_value")
         self.lbl_value.setStyleSheet("font-size: 18 px; font-weight: 800; color: white;")

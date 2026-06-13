@@ -1,186 +1,21 @@
-# frontend/components/dialogs.py
+# frontend/components/dialogs/alert_dialogs.py
 
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDoubleSpinBox, QFileDialog, 
-                               QLineEdit, QSlider, QSpinBox, QStackedWidget, QTextEdit, 
-                               QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
-                               QFrame, QProgressBar, QSizePolicy, QWidget)
-from PySide6.QtCore import QPoint, Qt, Signal, QUrl
-from PySide6.QtGui import QIcon, QMouseEvent, QPixmap
+import os
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
+                               QComboBox, QLineEdit, QPushButton, QSlider, QSpinBox, 
+                               QDoubleSpinBox, QStackedWidget, QFileDialog)
+from PySide6.QtCore import Qt, QPoint, Signal, QUrl
+from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
-import os
 
 from frontend.components.controls import ModernButton, ModernSwitch
-from frontend.theme import (COLOR_ACCENT, COLOR_BG_BASE, 
-                            COLOR_BORDER_SVELTE, COLOR_TEXT_PRIMARY, 
-                            PATH_ICON_HELP, PATH_ICON_UPDATE)
+from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, PATH_ICON_HELP
 from frontend.utils import get_icon_colored, get_assets_path
-
-class ModernBaseDialog(QDialog):
-    def __init__(self, title: str, icon_path: str, icon_bg_color: str, width: int = 420, parent=None):
-        super().__init__(parent)
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # Contenedor central estandarizado
-        self.container = QFrame()
-        self.container.setObjectName("SquareDialog")
-        self.container.setFixedWidth(width)
-        self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-        self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(24, 24, 24, 24)
-        self.content_layout.setSpacing(12)
-        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-
-        self._setup_header(icon_path, icon_bg_color)
-        
-        if title:
-            self.title_lbl = QLabel(title)
-            self.title_lbl.setProperty("role", "title")
-            self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.title_lbl.setWordWrap(True)
-            self.content_layout.addWidget(self.title_lbl)
-            self.content_layout.addSpacing(12)
-
-        self.main_layout.addWidget(self.container)
-
-    def _setup_header(self, icon_path: str, bg_color: str):
-        icon_wrapper = QHBoxLayout()
-        icon_wrapper.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        icon_container = QFrame()
-        icon_size = 52
-        icon_container.setFixedSize(icon_size, icon_size)
-        role = "danger_icon" if bg_color == "#EF4444" else "accent_icon"
-        icon_container.setProperty("dialog_role", role)
-        
-        icon_inner_layout = QVBoxLayout(icon_container)
-        icon_inner_layout.setContentsMargins(0, 0, 0, 0)
-        icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        icon_lbl = QLabel()
-        icon_lbl.setPixmap(QIcon(icon_path).pixmap(24, 24))
-        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_inner_layout.addWidget(icon_lbl)
-
-        icon_wrapper.addWidget(icon_container)
-        self.content_layout.addLayout(icon_wrapper)
-        self.content_layout.addSpacing(8) 
-
-    def add_action_buttons(self, btn_primary: QPushButton, btn_secondary: QPushButton):
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(12)
-        btn_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        if btn_primary: btn_layout.addWidget(btn_primary)
-        if btn_secondary: btn_layout.addWidget(btn_secondary)
-        
-        self.content_layout.addSpacing(12)
-        self.content_layout.addLayout(btn_layout)
-
-class ModernConfirmDialog(ModernBaseDialog):
-    def __init__(self, parent=None, title_text="Desvincular Cuenta", body_text="¿Estás seguro de que deseas continuar? Esta acción no se puede deshacer."):
-        super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color="#EF4444", width=420, parent=parent)
-        
-        body_label = QLabel(body_text)
-        body_label.setProperty("role", "body")
-        body_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        body_label.setWordWrap(True)
-        body_label.setMinimumHeight(60) 
-        
-        self.content_layout.addWidget(body_label)
-
-        self.btn_confirm = self._create_btn("Continuar", "action_danger", self.accept)
-        self.btn_cancel = self._create_btn("Cancelar", "action_outlined", self.reject)
-        self.add_action_buttons(self.btn_confirm, self.btn_cancel)
-
-    def _create_btn(self, text, role, callback):
-        btn = QPushButton(text)
-        btn.setProperty("role", role)
-        btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn.setMinimumWidth(120)
-        btn.clicked.connect(callback)
-        return btn
-
-class UpdateDialog(ModernBaseDialog):
-    download_requested = Signal() 
-
-    def __init__(self, parent=None):
-        super().__init__(title="Buscando Actualizaciones", icon_path=PATH_ICON_UPDATE, icon_bg_color=COLOR_ACCENT, width=420, parent=parent)
-        
-        self.status_label = QLabel("Conectando con el servidor...")
-        self.status_label.setProperty("role", "status")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setWordWrap(True)
-        self.content_layout.addWidget(self.status_label)
-
-        pb_layout = QHBoxLayout()
-        pb_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0)
-        self.progress_bar.setFixedWidth(280)
-        sp = self.progress_bar.sizePolicy()
-        sp.setRetainSizeWhenHidden(True)
-        self.progress_bar.setSizePolicy(sp)
-        
-        pb_layout.addWidget(self.progress_bar)
-        self.content_layout.addSpacing(10)
-        self.content_layout.addLayout(pb_layout)
-
-        self.action_button = QPushButton("Descargar e Instalar")
-        self.action_button.setProperty("role", "action_accent")
-        self.action_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.action_button.setMinimumWidth(160)
-        self.action_button.setVisible(False)
-        self.action_button.clicked.connect(self.download_requested.emit)
-
-        self.btn_close = QPushButton("Cancelar")
-        self.btn_close.setProperty("role", "action_outlined")
-        self.btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_close.setMinimumWidth(120)
-        self.btn_close.clicked.connect(self.reject)
-
-        self.add_action_buttons(self.action_button, self.btn_close)
-
-    def show_update_available(self, version: str):
-        self.title_lbl.setText("Actualización Disponible")
-        self.status_label.setText(f"¡Nueva versión {version} está lista para descargar!")
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        self.action_button.setVisible(True) 
-        self.btn_close.setText("Quizás luego")
-
-    def show_downloading(self):
-        self.title_lbl.setText("Descargando Actualización")
-        self.status_label.setText("Por favor espera, no cierres la aplicación.")
-        self.progress_bar.setRange(0, 0) 
-        self.action_button.setEnabled(False)
-        self.btn_close.setVisible(False) 
-
-    def show_no_update(self):
-        self.title_lbl.setText("Sistema Actualizado")
-        self.status_label.setText("Tu versión de MiniKick ya es la última disponible.")
-        self.progress_bar.setVisible(False)
-        self.btn_close.setText("Cerrar")
-        self.btn_close.setProperty("role", "action_accent")
-        self.btn_close.style().unpolish(self.btn_close)
-        self.btn_close.style().polish(self.btn_close)
-
-    def show_error(self, message: str):
-        self.title_lbl.setText("Error de Actualización")
-        self.status_label.setText(f"Ocurrió un fallo: {message}")
-        self.progress_bar.hide()
-        self.action_button.setVisible(False)
-        self.btn_close.setText("Cerrar")
-        self.btn_close.setVisible(True)
-        self.btn_close.setEnabled(True)
+from frontend.components.dialogs.base_dialogs import ModernBaseDialog
 
 class DraggableAlertBox(QFrame):
+    """Caja arrastrable que previsualiza medios (Video/Imagen) en el lienzo virtual."""
     position_updated = Signal(int, int)
 
     def __init__(self, parent, canvas_w: int, canvas_h: int, scale_factor_obs: float, filepath: str, scale_val: float):
@@ -283,6 +118,7 @@ class DraggableAlertBox(QFrame):
         self.move(local_x, local_y)
 
 class VisualPositionerDialog(ModernBaseDialog):
+    """Diálogo con el lienzo virtual 16:9 para posicionar la alerta."""
     live_position_changed = Signal(int, int)
 
     def __init__(self, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
@@ -314,12 +150,12 @@ class VisualPositionerDialog(ModernBaseDialog):
         self.add_action_buttons(self.btn_save, None)
 
 class AlertConfigWizard(ModernBaseDialog):
+    """Asistente de 2 pasos para crear o editar configuraciones de Alertas."""
     def __init__(self, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
         self.is_edit_mode = existing_config is not None
         title = "Editar Alerta" if self.is_edit_mode else "Nueva Alerta"
         icon_path = get_assets_path("icons/settings.svg")
         
-        # Heredamos la estructura base, indicando ancho 520
         super().__init__(title=title, icon_path=icon_path, icon_bg_color=COLOR_ACCENT, width=520, parent=parent)
         
         self._is_video = False
@@ -459,7 +295,6 @@ class AlertConfigWizard(ModernBaseDialog):
         row_rnd.addWidget(self.chk_random_pos)
         row_rnd.addStretch()
         
-        # Eliminamos el emoji y aplicamos el ícono usando el estándar del sistema (DRY)
         self.btn_visual = ModernButton("Posicionar en OBS", role="action_outlined")
         self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
@@ -546,7 +381,6 @@ class AlertConfigWizard(ModernBaseDialog):
         self.btn_visual.setEnabled(not checked)
 
     def _open_visual_editor(self):
-        from frontend.components.dialogs import VisualPositionerDialog
         filepath = self.txt_file_path.text().strip()
         if not filepath: return
         dialog = VisualPositionerDialog(self.spin_x.value(), self.spin_y.value(), filepath, self.spin_scale.value(), self)
@@ -578,97 +412,3 @@ class AlertConfigWizard(ModernBaseDialog):
             "is_random_pos": self.chk_random_pos.isChecked() if self._is_video else False
         }
         return reward, config
-    
-class CommandConfigWizard(QDialog):
-    def __init__(self, parent=None, existing_config=None):
-        super().__init__(parent)
-        self.setWindowTitle("Configurar Comando de Chat")
-        self.setMinimumWidth(450)
-        self.setObjectName("SquareDialog")
-        self.existing_config = existing_config
-        self._setup_ui()
-        if self.existing_config:
-            self._load_existing()
-
-    def _setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(15)
-
-        # Trigger (CORREGIDO)
-        lbl_trigger = QLabel("Comando (Ej: !discord):")
-        lbl_trigger.setProperty("role", "section_small")
-        layout.addWidget(lbl_trigger)
-        
-        self.txt_trigger = QLineEdit()
-        layout.addWidget(self.txt_trigger)
-
-        # Respuesta (CORREGIDO)
-        lbl_response = QLabel("Respuesta del bot (puedes usar {user}):")
-        lbl_response.setProperty("role", "section_small")
-        layout.addWidget(lbl_response)
-        
-        self.txt_response = QTextEdit()
-        self.txt_response.setMaximumHeight(80)
-        layout.addWidget(self.txt_response)
-
-        # Configuraciones adicionales en fila
-        row_configs = QHBoxLayout()
-        
-        # Cooldown
-        col_cooldown = QVBoxLayout()
-        col_cooldown.addWidget(QLabel("Cooldown (seg):"))
-        self.spin_cooldown = QSpinBox()
-        self.spin_cooldown.setRange(0, 300)
-        self.spin_cooldown.setValue(5)
-        col_cooldown.addWidget(self.spin_cooldown)
-        row_configs.addLayout(col_cooldown)
-
-        # Aliases
-        col_aliases = QVBoxLayout()
-        col_aliases.addWidget(QLabel("Aliases (separados por coma):"))
-        self.txt_aliases = QLineEdit()
-        self.txt_aliases.setPlaceholderText("!dc, !discordia")
-        col_aliases.addWidget(self.txt_aliases)
-        row_configs.addLayout(col_aliases, stretch=1)
-
-        layout.addLayout(row_configs)
-
-        # Switches
-        row_switches = QHBoxLayout()
-        self.chk_regex = QCheckBox("Usar RegEx (Avanzado)")
-        self.chk_active = QCheckBox("Comando Activo")
-        self.chk_active.setChecked(True)
-        row_switches.addWidget(self.chk_regex)
-        row_switches.addWidget(self.chk_active)
-        layout.addLayout(row_switches)
-
-        # Botones
-        btn_layout = QHBoxLayout()
-        btn_cancel = ModernButton("Cancelar", role="action_outlined")
-        btn_cancel.clicked.connect(self.reject)
-        self.btn_save = ModernButton("Guardar Comando", role="action_accent")
-        self.btn_save.clicked.connect(self.accept)
-        
-        btn_layout.addStretch()
-        btn_layout.addWidget(btn_cancel)
-        btn_layout.addWidget(self.btn_save)
-        layout.addLayout(btn_layout)
-
-    def _load_existing(self):
-        self.txt_trigger.setText(self.existing_config.get("trigger", ""))
-        self.txt_trigger.setEnabled(False)
-        self.txt_response.setText(self.existing_config.get("response", ""))
-        self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
-        self.txt_aliases.setText(self.existing_config.get("aliases", ""))
-        self.chk_regex.setChecked(self.existing_config.get("is_regex", False))
-        self.chk_active.setChecked(self.existing_config.get("is_active", True))
-
-    def get_command_data(self):
-        return {
-            "trigger": self.txt_trigger.text().strip(),
-            "response": self.txt_response.toPlainText().strip(),
-            "cooldown": self.spin_cooldown.value(),
-            "aliases": self.txt_aliases.text().strip(),
-            "is_regex": self.chk_regex.isChecked(),
-            "is_active": self.chk_active.isChecked()
-        }

@@ -74,14 +74,13 @@ class CommandView(QWidget):
         self.table.setHorizontalHeaderLabels(["Comando", "Aliases / Regex", "Respuesta", "Acciones"])
         
         h_header = self.table.horizontalHeader()
-        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch) # Comando ajusta al texto
-        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)      # Aliases interactivo
-        h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)          # Respuesta estira
-        h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)            # Acciones fijo
+        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+        h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
         
-        # Anchos predeterminados
-        self.table.setColumnWidth(1, 200) # Aliases
-        self.table.setColumnWidth(3, 130) # Acciones (Switch + 2 botones)
+        self.table.setColumnWidth(1, 200)
+        self.table.setColumnWidth(3, 130)
         
         self.table.verticalHeader().setVisible(False)
         self.table.verticalHeader().setDefaultSectionSize(50)
@@ -110,7 +109,7 @@ class CommandView(QWidget):
             aliases_text = raw_aliases if raw_aliases else "-"
             
             if cmd.get("is_regex"):
-                aliases_text = f"⚙️ Regex: {cmd['trigger']}"
+                aliases_text = f"⚙️ Regex: {raw_aliases}"
             
             item_aliases = QTableWidgetItem(aliases_text)
             item_aliases.setToolTip(aliases_text)

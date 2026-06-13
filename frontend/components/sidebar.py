@@ -1,3 +1,5 @@
+# frontend/components/sidebar.py
+
 from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton, 
                                QLabel, QSizePolicy, QWidget, QButtonGroup)
 from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
@@ -7,8 +9,9 @@ from frontend.theme import COLOR_TEXT_SECONDARY, COLOR_ACCENT
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self):
+    def __init__(self, app_version: str = "v1.0.0"):
         super().__init__()
+        self.app_version = app_version
         self.setObjectName("Sidebar")
         self.is_expanded = True
         self.expanded_width = 230
@@ -57,13 +60,23 @@ class Sidebar(QFrame):
         self.main_layout.addWidget(self.header_container)
         self.main_layout.addSpacing(24)
         
-        self.nav_layout = QVBoxLayout()
-        self.nav_layout.setSpacing(4)
-        self.main_layout.addLayout(self.nav_layout)
-        
+        self.top_nav_layout = QVBoxLayout()
+        self.top_nav_layout.setSpacing(4)
+
+        self.main_layout.addLayout(self.top_nav_layout)
         self.main_layout.addStretch()
 
-    def add_tab(self, name, icon_name, is_active=False):
+        self.bottom_nav_layout = QVBoxLayout()
+        self.bottom_nav_layout.setSpacing(4)
+
+        self.main_layout.addLayout(self.bottom_nav_layout)
+        self.lbl_version = QLabel(f"Versión {self.app_version}")
+        self.lbl_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_version.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; font-size: 11px; font-weight: bold; margin-top: 8px;")
+        self.main_layout.addWidget(self.lbl_version)
+
+    def add_tab(self, name, icon_name, is_active=False, position="top"):
+        """Permite agregar un botón arriba ('top') o abajo ('bottom')."""
         btn = QPushButton(name)
         btn.setObjectName("NavButton")
         btn.setCheckable(True)
@@ -80,7 +93,10 @@ class Sidebar(QFrame):
             
         self.button_group.addButton(btn)
         self.nav_buttons.append(btn)
-        self.nav_layout.addWidget(btn)
+        if position == "bottom":
+            self.bottom_nav_layout.addWidget(btn)
+        else:
+            self.top_nav_layout.addWidget(btn)
 
     def toggle_sidebar(self):
         self.is_expanded = not self.is_expanded
@@ -115,6 +131,7 @@ class Sidebar(QFrame):
 
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+        self.lbl_version.setVisible(show)
 
     def _on_expand_finished(self):
         if self.is_expanded:

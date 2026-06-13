@@ -34,7 +34,6 @@ class SettingsView(QWidget):
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
 
-        # ─── CONTENIDO ORIGINAL ───
         self.header = ViewHeader(
             title_text="Configuración General", 
             subtitle_text="Ajustes globales del sistema, gestión de cuenta y actualizaciones.", 
@@ -128,7 +127,6 @@ class SettingsView(QWidget):
         scroll_area.setWidget(scroll_content)
         base_layout.addWidget(scroll_area)
 
-    # ─── MÉTODOS PÚBLICOS PARA EL CONTROLADOR ───
     def set_minimize_tray_enabled(self, enabled: bool):
         """Actualiza el estado visual del switch sin disparar señales recurrentes."""
         self.sw_start_bg.blockSignals(True)
