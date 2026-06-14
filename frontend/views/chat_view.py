@@ -196,6 +196,12 @@ class ChatView(QWidget):
         self.chk_provider.setChecked(settings.get("provider") == "web")
         self.slider_vol.setValue(settings.get("volume", 100))
         self.blockSignals(False)
+        self.clear_bots_list()
+        ignored_users_str = settings.get("ignored_users", "")
+        if ignored_users_str:
+            for bot in ignored_users_str.split(","):
+                if bot.strip():
+                    self.add_bot_tag(bot.strip())
 
     def clear_bot_input(self):
         self.txt_bot_input.clear()

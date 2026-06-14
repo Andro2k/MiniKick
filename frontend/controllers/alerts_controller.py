@@ -28,13 +28,21 @@ class AlertsController(QObject):
         self.current_rewards_list = rewards if rewards else ["No hay recompensas"]
         self.view.update_rewards_combo(self.current_rewards_list)
 
+    def _get_available_rewards(self, ignore_reward=None):
+        """NUEVO: Filtra la lista para ocultar las recompensas que ya tienen una alerta asignada."""
+        mappings = self.service.get_mappings()
+        used_rewards = mappings.keys()
+        available = [r for r in self.current_rewards_list if r not in used_rewards or r == ignore_reward]
+        return available if available else ["No hay recompensas disponibles"]
+
     @Slot()
     def _handle_add(self):
-        dialog = AlertConfigWizard(self.view, rewards_list=self.current_rewards_list)
+        available_rewards = self._get_available_rewards()
+        dialog = AlertConfigWizard(self.view, rewards_list=available_rewards)
         
         if dialog.exec():
             reward, config = dialog.get_config_data()
-            if reward and reward not in ["Cargando recompensas...", "No hay recompensas"] and config["filepath"]:
+            if reward and reward not in ["Cargando recompensas...", "No hay recompensas", "No hay recompensas disponibles"] and config["filepath"]:
                 mappings = self.service.get_mappings()
                 mappings[reward] = config
                 self.service.save_mappings(mappings)
@@ -46,17 +54,21 @@ class AlertsController(QObject):
         if reward_name not in mappings:
             return
             
+        available_rewards = self._get_available_rewards(ignore_reward=reward_name)
         dialog = AlertConfigWizard(
             self.view, 
-            rewards_list=self.current_rewards_list, 
+            rewards_list=available_rewards, 
             existing_config=mappings[reward_name], 
             existing_reward=reward_name
         )
         
         if dialog.exec():
-            _, updated_config = dialog.get_config_data()
+            new_reward, updated_config = dialog.get_config_data()
             if updated_config["filepath"]:
-                mappings[reward_name] = updated_config
+                if new_reward != reward_name:
+                    del mappings[reward_name]
+                    
+                mappings[new_reward] = updated_config
                 self.service.save_mappings(mappings)
                 self.view.populate_table(mappings)
 

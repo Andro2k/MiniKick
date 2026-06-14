@@ -144,8 +144,7 @@ class VisualPositionerDialog(ModernBaseDialog):
         
         self.content_layout.addWidget(self.canvas_container, alignment=Qt.AlignmentFlag.AlignCenter)
         
-        self.btn_save = QPushButton("Guardar y Cerrar")
-        self.btn_save.setProperty("role", "action_accent")
+        self.btn_save = ModernButton("Guardar y Cerrar", role="action_accent")
         self.btn_save.clicked.connect(self.accept)
         self.add_action_buttons(self.btn_save, None)
 
@@ -175,9 +174,7 @@ class AlertConfigWizard(ModernBaseDialog):
         
         if self.is_edit_mode:
             self._load_existing_data(existing_config)
-            self._set_active_step(1)
-        else:
-            self._set_active_step(0)
+        self._set_active_step(0)
 
     def _build_step_indicator(self):
         self.indicator_layout = QHBoxLayout()
@@ -207,7 +204,17 @@ class AlertConfigWizard(ModernBaseDialog):
     def _build_step1(self, rewards_list, existing_reward):
         layout = QVBoxLayout(self.step1_widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
+        layout.setSpacing(15)
+
+        header_layout = QVBoxLayout()
+        header_title = QLabel("Recompensa y Archivo")
+        header_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #F3F4F6;")
+        header_desc = QLabel("Configura qué punto de canal activará esta alerta.")
+        header_desc.setStyleSheet("font-size: 13px; color: #9CA3AF;")
+        header_layout.addWidget(header_title)
+        header_layout.addWidget(header_desc)
+        layout.addLayout(header_layout)
+        layout.addSpacing(5)
         
         lbl = QLabel("Selección de Recompensa")
         lbl.setProperty("role", "section_small")
@@ -224,7 +231,6 @@ class AlertConfigWizard(ModernBaseDialog):
             if rewards_list and existing_reward not in rewards_list:
                 self.combo_rewards.addItem(existing_reward)
             self.combo_rewards.setCurrentText(existing_reward)
-            self.combo_rewards.setEnabled(False)
             
         row1.addWidget(self.combo_rewards, stretch=1)
         
@@ -235,7 +241,8 @@ class AlertConfigWizard(ModernBaseDialog):
         row1.addWidget(self.btn_refresh)
         layout.addLayout(row1)
         
-        layout.addSpacing(4)
+        layout.addSpacing(5)
+        
         lbl2 = QLabel("Archivo Multimedia")
         lbl2.setProperty("role", "section_small")
         layout.addWidget(lbl2)
@@ -251,45 +258,62 @@ class AlertConfigWizard(ModernBaseDialog):
         row2.addWidget(self.btn_browse)
         layout.addLayout(row2)
         
-        layout.addSpacing(16)
+        layout.addStretch()
         
         btn_layout = QHBoxLayout()
-        self.btn_cancel_step1 = QPushButton("Cancelar")
-        self.btn_cancel_step1.setProperty("role", "action_outlined")
+        self.btn_cancel_step1 = ModernButton("Cancelar", role="action_outlined")
         self.btn_cancel_step1.clicked.connect(self.reject)
         
-        self.btn_next = QPushButton("Siguiente ➔")
-        self.btn_next.setProperty("role", "action_accent")
+        self.btn_next = ModernButton("Siguiente ➔", role="action_accent")
         self.btn_next.clicked.connect(self._go_next)
         
         btn_layout.addWidget(self.btn_cancel_step1)
+        btn_layout.addStretch()
         btn_layout.addWidget(self.btn_next)
         layout.addLayout(btn_layout)
 
     def _build_step2(self):
         layout = QVBoxLayout(self.step2_widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(12)
+        layout.setSpacing(15)
         
-        lbl = QLabel("Ajustes de Personalización")
-        lbl.setProperty("role", "section_small")
-        layout.addWidget(lbl)
+        header_layout = QVBoxLayout()
+        header_title = QLabel("Ajustes de Pantalla")
+        header_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #F3F4F6;")
+        header_desc = QLabel("Define cómo y dónde se mostrará tu alerta en el lienzo.")
+        header_desc.setStyleSheet("font-size: 13px; color: #9CA3AF;")
+        header_layout.addWidget(header_title)
+        header_layout.addWidget(header_desc)
+        layout.addLayout(header_layout)
+        layout.addSpacing(5)
         
         vol_row = QHBoxLayout()
-        vol_row.addWidget(QLabel("Volumen:"))
+        lbl_vol = QLabel("Volumen de la alerta")
+        lbl_vol.setProperty("role", "section_small")
+        vol_row.addWidget(lbl_vol)
+        
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
+        
+        self.lbl_vol_perc = QLabel("100%")
+        self.lbl_vol_perc.setProperty("role", "monospace")
+        self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
+        
         vol_row.addWidget(self.slider_vol)
+        vol_row.addWidget(self.lbl_vol_perc)
         layout.addLayout(vol_row)
         
         self.video_container = QWidget()
         v_layout = QVBoxLayout(self.video_container)
         v_layout.setContentsMargins(0, 10, 0, 0)
-        v_layout.setSpacing(12)
+        v_layout.setSpacing(15)
         
         row_rnd = QHBoxLayout()
-        row_rnd.addWidget(QLabel("Posición Aleatoria:"))
+        lbl_rnd = QLabel("Posición Aleatoria")
+        lbl_rnd.setProperty("role", "section_small")
+        row_rnd.addWidget(lbl_rnd)
+        
         self.chk_random_pos = ModernSwitch()
         self.chk_random_pos.toggled.connect(self._on_random_pos_toggled)
         row_rnd.addWidget(self.chk_random_pos)
@@ -298,8 +322,8 @@ class AlertConfigWizard(ModernBaseDialog):
         self.btn_visual = ModernButton("Posicionar en OBS", role="action_outlined")
         self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
-        
         row_rnd.addWidget(self.btn_visual)
+        
         v_layout.addLayout(row_rnd)
         
         row_coords = QHBoxLayout()
@@ -323,22 +347,16 @@ class AlertConfigWizard(ModernBaseDialog):
         
         layout.addWidget(self.video_container)
         layout.addStretch()
-        
+
         btn_layout = QHBoxLayout()
-        self.btn_back = QPushButton("🡠 Atrás")
-        self.btn_back.setProperty("role", "action_outlined")
+        self.btn_back = ModernButton("🡠 Atrás", role="action_outlined")
         self.btn_back.clicked.connect(self._go_back)
         
-        self.btn_save = QPushButton("Listo y Guardar" if not self.is_edit_mode else "Actualizar")
-        self.btn_save.setProperty("role", "action_accent")
+        self.btn_save = ModernButton("Guardar Alerta", role="action_accent")
         self.btn_save.clicked.connect(self.accept)
         
-        if self.is_edit_mode:
-            self.btn_back.setText("Cancelar")
-            self.btn_back.clicked.disconnect()
-            self.btn_back.clicked.connect(self.reject)
-            
         btn_layout.addWidget(self.btn_back)
+        btn_layout.addStretch()
         btn_layout.addWidget(self.btn_save)
         layout.addLayout(btn_layout)
 
@@ -398,7 +416,11 @@ class AlertConfigWizard(ModernBaseDialog):
             self.spin_x.setValue(config.get("pos_x", 0))
             self.spin_y.setValue(config.get("pos_y", 0))
             self.spin_scale.setValue(config.get("scale", 1.0))
-            self.slider_vol.setValue(int(config.get("volume", 1.0) * 100))
+            
+            vol_val = int(config.get("volume", 1.0) * 100)
+            self.slider_vol.setValue(vol_val)
+            self.lbl_vol_perc.setText(f"{vol_val}%")
+            
             self.chk_random_pos.setChecked(config.get("is_random_pos", False))
 
     def get_config_data(self):

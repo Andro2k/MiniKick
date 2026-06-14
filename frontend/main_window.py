@@ -182,6 +182,8 @@ class MainWindow(QMainWindow):
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_controller.load_initial_data()
+        chat_settings = self.chat_service.get_settings()
+        self.view_chat.set_initial_states(chat_settings)
         if autostart_enabled:
             self._handle_auth_process()
 
@@ -247,6 +249,9 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _handle_auth_process(self):
+        self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
+        self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
+        self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
         self.dashboard_controller.handle_connecting_state()
 
         self.auth_worker = AuthWorker(self.auth_manager)
