@@ -184,7 +184,7 @@ QTableWidget {{
     outline: none;
 }}
 QTableWidget::item {{
-    padding: 8px;
+    padding: 4px;
     border-bottom: 1px solid {COLOR_BORDER_SVELTE};
 }}
 QTableWidget::item:selected {{
@@ -195,7 +195,7 @@ QHeaderView::section {{
     background-color: {COLOR_BG_INPUT};
     color: {COLOR_TEXT_SECONDARY};
     font-weight: bold;
-    padding: 8px 12px;
+    padding: 6px 8px;
     border: none;
     border-bottom: 2px solid {COLOR_BORDER_SVELTE};
     text-align: left;
@@ -404,7 +404,7 @@ QPushButton#NavButton[collapsed="true"] {{ text-align: center; padding: 10px; }}
 /* --- Diálogos --- */
 QFrame#SquareDialog {{
     background-color: {COLOR_BG_BASE};
-    border: 1px solid {COLOR_BORDER_SVELTE};
+    border: 1.5px solid {COLOR_BORDER_SVELTE};
     border-radius: 16px;
 }}
 QFrame[dialog_role="danger_icon"] {{ background-color: {COLOR_DANGER}; border-radius: {RADIUS_XL}px; border: none; }}
@@ -472,19 +472,19 @@ QMenu::separator {{
    ============================================================================ */
 QFrame#GlowDialogContainer {{
     background-color: {COLOR_BG_BASE};
-    border: 1px solid {COLOR_BORDER_SVELTE};
+    border: 1.5px solid {COLOR_BORDER_SVELTE};
     border-radius: 16px;
 }}
 
 /* Variaciones dinámicas de estado para el contenedor */
 QFrame#GlowDialogContainer[dialog_state="accent"] {{
-    border: 1px solid rgba(83, 252, 24, 0.4);
+    border: 1.5px solid rgba(83, 252, 24, 0.4);
 }}
 QFrame#GlowDialogContainer[dialog_state="danger"] {{
-    border: 1px solid rgba(239, 68, 68, 0.4);
+    border: 1.5px solid rgba(239, 68, 68, 0.4);
 }}
 QFrame#GlowDialogContainer[dialog_state="neutral"] {{
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
 }}
 
 /* ============================================================================

@@ -87,9 +87,11 @@ class DashboardView(QWidget):
         self.profile_container.setVisible(False)
         profile_layout = QVBoxLayout(self.profile_container)
         profile_layout.setContentsMargins(0, 0, 0, 0)
-        profile_layout.setSpacing(10) 
+        profile_layout.setSpacing(12) 
 
         self.top_row_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.top_row_layout.setSpacing(12) 
+
         avatar_card = QFrame()
         avatar_card.setObjectName("Card")
         avatar_layout = QVBoxLayout(avatar_card)
@@ -127,6 +129,9 @@ class DashboardView(QWidget):
 
         stats_container = QWidget()
         self.stats_grid = QGridLayout(stats_container)
+        self.stats_grid.setContentsMargins(0, 0, 0, 0)
+        self.stats_grid.setSpacing(12)
+        
         self.card_followers = StatCard("Seguidores", "users.svg")
         self.card_room = StatCard("ID Sala (Chat)", "hash.svg")
         self.card_category = StatCard("Última Categoría", "device-gamepad.svg") 

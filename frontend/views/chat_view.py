@@ -140,6 +140,9 @@ class ChatView(QWidget):
         layout.addWidget(title)
 
         input_row = QHBoxLayout()
+        input_row.setContentsMargins(0, 0, 0, 0)
+        input_row.setSpacing(10)
+        
         self.txt_bot_input = QLineEdit()
         self.txt_bot_input.setPlaceholderText("ej. botrix")
         
@@ -155,6 +158,12 @@ class ChatView(QWidget):
         self.list_bots.setWrapping(True) 
         self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_bots.setObjectName("BotsList")
+        
+        self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
+        self.list_bots.setViewportMargins(0, 0, 0, 0)
+        self.list_bots.setContentsMargins(0, 0, 0, 0)
+        
+        self.list_bots.setSpacing(2)
 
         layout.addWidget(self.list_bots)
         return panel
