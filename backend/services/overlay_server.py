@@ -116,9 +116,9 @@ class OverlayServerManager:
             
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
-            print(f"🌐 Servidor Overlay activo: http://localhost:{self.port}/overlay")
+            print(f"Servidor Overlay activo: http://localhost:{self.port}/overlay")
         except OSError as e:
-            print(f"❌ ERROR CRÍTICO: No se pudo iniciar el servidor Overlay en el puerto {self.port}.")
+            print(f"ERROR CRÍTICO: No se pudo iniciar el servidor Overlay en el puerto {self.port}.")
             print(f"Detalles: {e}")
 
     def trigger_alert(self, reward_name: str, config: dict):

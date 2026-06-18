@@ -466,4 +466,52 @@ QMenu::separator {{
     height: 1px;
     background-color: {COLOR_BORDER_SVELTE};
 }}
+
+/* ============================================================================
+   5. CONTENEDORES DE DIÁLOGOS Y EFECTOS
+   ============================================================================ */
+QFrame#GlowDialogContainer {{
+    background-color: {COLOR_BG_BASE};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    border-radius: 16px;
+}}
+
+/* Variaciones dinámicas de estado para el contenedor */
+QFrame#GlowDialogContainer[dialog_state="accent"] {{
+    border: 1px solid rgba(83, 252, 24, 0.4);
+}}
+QFrame#GlowDialogContainer[dialog_state="danger"] {{
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}}
+QFrame#GlowDialogContainer[dialog_state="neutral"] {{
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}}
+
+/* ============================================================================
+   6. ESTILOS ESPECÍFICOS: UPDATE DIALOG
+   ============================================================================ */
+QLabel[role="update_top"] {{
+    color: {COLOR_ACCENT}; 
+    font-size: 13px; 
+    font-weight: 600;
+}}
+QLabel[role="update_top_error"] {{
+    color: {COLOR_DANGER}; 
+    font-size: 13px; 
+    font-weight: 600;
+}}
+QLabel[role="update_title"] {{
+    color: {COLOR_TEXT_PRIMARY}; 
+    font-size: 24px; 
+    font-weight: bold;
+}}
+QProgressBar[role="update_progress"] {{
+    background-color: {COLOR_BG_SURFACE};
+    border: none;
+    border-radius: 5px;
+}}
+QProgressBar[role="update_progress"]::chunk {{
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E);
+    border-radius: 5px;
+}}
 """

@@ -16,7 +16,7 @@ class MediaTriggerService(QObject):
     def play_file(self, file_path: str, volume: float = 1.0):
         """Reproduce un archivo local basado en parámetros inyectados."""
         if not file_path or not os.path.exists(file_path):
-            print(f"❌ Archivo multimedia no encontrado o vacío: {file_path}")
+            print(f"Archivo multimedia no encontrado o vacío: {file_path}")
             return
             
         self.audio_output.setVolume(volume)

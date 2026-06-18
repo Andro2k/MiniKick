@@ -2,7 +2,7 @@
 
 import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
-                               QComboBox, QLineEdit, QPushButton, QSlider, QSpinBox, 
+                               QComboBox, QLineEdit, QSlider, QSpinBox, 
                                QDoubleSpinBox, QStackedWidget, QFileDialog)
 from PySide6.QtCore import Qt, QPoint, Signal, QUrl
 from PySide6.QtGui import QMouseEvent, QPixmap

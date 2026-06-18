@@ -1,33 +1,42 @@
 # frontend/components/dialogs/base_dialogs.py
 
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QPushButton, QFrame, QSizePolicy)
+                               QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect)
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QIcon, QColor
 
 from frontend.theme import PATH_ICON_HELP
 
 class ModernBaseDialog(QDialog):
     """Clase madre de la que heredan todos los diálogos de la aplicación."""
-    def __init__(self, title: str, icon_path: str, icon_bg_color: str, width: int = 420, parent=None):
+    def __init__(self, title: str = "", icon_path: str = "", icon_bg_color: str = "", width: int = 420, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setContentsMargins(15, 15, 15, 15)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.container = QFrame()
-        self.container.setObjectName("SquareDialog")
+        self.container.setObjectName("GlowDialogContainer")
+        self.container.setProperty("dialog_state", "neutral")
         self.container.setFixedWidth(width)
         self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        
+        self.glow = QGraphicsDropShadowEffect(self)
+        self.glow.setBlurRadius(30)
+        self.glow.setOffset(0, 0)
+        self.glow.setColor(QColor(0, 0, 0, 0))
+        self.container.setGraphicsEffect(self.glow)
+
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(24, 24, 24, 24)
+        self.content_layout.setContentsMargins(12, 12, 12, 12)
         self.content_layout.setSpacing(12)
         self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
-        self._setup_header(icon_path, icon_bg_color)
+        if icon_path:
+            self._setup_header(icon_path, icon_bg_color)
         
         if title:
             self.title_lbl = QLabel(title)
@@ -39,13 +48,23 @@ class ModernBaseDialog(QDialog):
 
         self.main_layout.addWidget(self.container)
 
+    def set_dialog_state(self, state: str, glow_color: QColor = None):
+        """Cambia el borde y el color del glow de forma dinámica."""
+        self.container.setProperty("dialog_state", state)
+        self.container.style().unpolish(self.container)
+        self.container.style().polish(self.container)
+        
+        if glow_color:
+            self.glow.setColor(glow_color)
+        else:
+            self.glow.setColor(QColor(0, 0, 0, 0))
+
     def _setup_header(self, icon_path: str, bg_color: str):
         icon_wrapper = QHBoxLayout()
         icon_wrapper.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_container = QFrame()
-        icon_size = 52
-        icon_container.setFixedSize(icon_size, icon_size)
+        icon_container.setFixedSize(52, 52)
         role = "danger_icon" if bg_color == "#EF4444" else "accent_icon"
         icon_container.setProperty("dialog_role", role)
         
@@ -55,12 +74,11 @@ class ModernBaseDialog(QDialog):
         
         icon_lbl = QLabel()
         icon_lbl.setPixmap(QIcon(icon_path).pixmap(24, 24))
-        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon_inner_layout.addWidget(icon_lbl)
 
         icon_wrapper.addWidget(icon_container)
         self.content_layout.addLayout(icon_wrapper)
-        self.content_layout.addSpacing(8) 
+        self.content_layout.addSpacing(8)
 
     def add_action_buttons(self, btn_primary: QPushButton, btn_secondary: QPushButton):
         btn_layout = QHBoxLayout()
@@ -77,6 +95,7 @@ class ModernConfirmDialog(ModernBaseDialog):
     """Diálogo genérico para confirmar acciones destructivas o importantes."""
     def __init__(self, parent=None, title_text="Desvincular Cuenta", body_text="¿Estás seguro de que deseas continuar? Esta acción no se puede deshacer."):
         super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color="#EF4444", width=420, parent=parent)
+        self.set_dialog_state("danger", QColor(239, 68, 68, 60))
         
         body_label = QLabel(body_text)
         body_label.setProperty("role", "body")

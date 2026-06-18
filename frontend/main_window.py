@@ -370,25 +370,24 @@ class MainWindow(QMainWindow):
     def _stop_worker_safely(self, worker_name: str, worker_instance):
         """Método centralizado para detener hilos con gracia (DRY & SoR)"""
         if worker_instance and worker_instance.isRunning():
-            self.logger.info(f"-> Solicitando parada de {worker_name}...")
+            self.logger.info(f"Solicitando parada de {worker_name}...")
 
             if hasattr(worker_instance, 'stop'):
                 worker_instance.stop()
             if not worker_instance.wait(2000):
-                self.logger.warning(f"❌ {worker_name} atascado (posible bloqueo de red). Forzando terminación...")
+                self.logger.warning(f"{worker_name} atascado (posible bloqueo de red). Forzando terminación...")
                 worker_instance.terminate()
                 worker_instance.wait()
             else:
-                self.logger.info(f"✅ {worker_name} cerrado limpiamente.")
+                self.logger.info(f"{worker_name} cerrado limpiamente.")
 
     def _cleanup(self):
         if self._is_shutting_down:
             return
         self._is_shutting_down = True
         
-        self.logger.info("🛑 Iniciando secuencia de apagado...")
-
-        self.logger.info("-> Apagando TTS y Overlay...")
+        self.logger.info("Iniciando secuencia de apagado...")
+        self.logger.info("Apagando TTS y Overlay...")
         self.tts_manager.stop()        
         self.overlay_server.stop() 
 
@@ -397,7 +396,7 @@ class MainWindow(QMainWindow):
         self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
         self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
 
-        self.logger.info("🛑 Secuencia de apagado de hilos completada.")
+        self.logger.info("Secuencia de apagado de hilos completada.")
 
     def closeEvent(self, event):
         if self._is_shutting_down:

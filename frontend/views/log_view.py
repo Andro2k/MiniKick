@@ -132,7 +132,6 @@ class LogView(QWidget):
         base_layout.addWidget(scroll_area)
 
     def resizeEvent(self, event):
-        """Si la ventana se hace pequeña, apila los controles para no bloquear el redimensionamiento."""
         super().resizeEvent(event)
         if hasattr(self, 'controls_layout'):
             if self.width() < 800:
@@ -141,7 +140,6 @@ class LogView(QWidget):
                 self.controls_layout.setDirection(QBoxLayout.Direction.LeftToRight)
 
     def _open_file_dialog(self):
-        """Abre la ventana de selección de Windows directamente en la carpeta de logs."""
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
         file_path, _ = QFileDialog.getOpenFileName(
@@ -160,26 +158,76 @@ class LogView(QWidget):
         self._current_filter = filter_text
         self._render_logs()
 
-    @Slot(str, str)
-    def append_log(self, level: str, message: str):
+    def _process_log_data(self, default_level: str, message: str) -> tuple[bool, str, str, str]:
+        """Procesa y agrupa logs en memoria. Retorna si fue agrupado y sus componentes."""
         match = re.match(r"\[(.*?)\] \[(.*?)\] (.*)", message, re.DOTALL)
         if match:
             time_str, real_level, text_str = match.groups()
         else:
-            time_str, real_level, text_str = "-", level, message
+            time_str, real_level, text_str = "-", default_level, message
 
-        self._log_history.append((real_level, time_str, text_str))
-        if len(self._log_history) > self._max_logs:
-            self._log_history.pop(0)
+        is_grouped = False
+        if self._log_history:
+            last_level, last_time, last_text = self._log_history[-1]
+            
+            if last_level == real_level and last_time == time_str:
+                self._log_history[-1] = (last_level, last_time, f"{last_text}\n{text_str}")
+                is_grouped = True
+
+        if not is_grouped:
+            self._log_history.append((real_level, time_str, text_str))
+            if len(self._log_history) > self._max_logs:
+                self._log_history.pop(0)
+
+        return is_grouped, real_level, time_str, text_str
+
+    def _matches_search(self, level: str, time_str: str, text: str) -> bool:
+        """Centraliza la validación de búsqueda (DRY)."""
+        search_lower = self._search_term.lower()
+        if not search_lower:
+            return True
+        return (search_lower in level.lower() or 
+                search_lower in time_str.lower() or 
+                search_lower in text.lower())
+
+    @Slot(str, str)
+    def append_log(self, level: str, message: str):
+        """Recepción en vivo de nuevos logs."""
+        is_grouped, real_level, time_str, text_str = self._process_log_data(level, message)
 
         if not self.btn_live.isVisible():
-            if self._current_filter == "TODOS" or self._current_filter == real_level:
-                search_lower = self._search_term.lower()
-                if not search_lower or (search_lower in real_level.lower() or 
-                                       search_lower in time_str.lower() or 
-                                       search_lower in text_str.lower()):
+            if self._current_filter in ("TODOS", real_level) and self._matches_search(real_level, time_str, text_str):
+                if is_grouped and self.table.rowCount() > 0:
+                    self._update_last_row(text_str)
+                else:
                     self._add_row_to_table(real_level, time_str, text_str)
-                    self._scroll_to_bottom()
+                self._scroll_to_bottom()
+
+    def show_historical_content(self, file_name: str, content: str):
+        """Carga en bloque optimizada para históricos."""
+        self._clear_logs()
+        
+        lines = content.strip().split('\n')
+        for line in lines:
+            if line.strip():
+                self._process_log_data("HISTÓRICO", line)
+
+        self._render_logs()
+        
+        self.btn_live.setVisible(True)
+        self.txt_search.setEnabled(False)
+        self.combo_filter.setEnabled(False)
+        self.btn_clear.setEnabled(False)
+
+    def _update_last_row(self, appended_text: str):
+        """Actualiza la última celda de texto visible y reajusta su altura."""
+        last_row = self.table.rowCount() - 1
+        item_msg = self.table.item(last_row, 2)
+        if item_msg:
+            new_text = f"{item_msg.text()}\n{appended_text}"
+            item_msg.setText(new_text)
+            item_msg.setToolTip(new_text)
+            self.table.resizeRowToContents(last_row)
 
     def _add_row_to_table(self, level: str, time_str: str, text: str):
         row = self.table.rowCount()
@@ -192,8 +240,7 @@ class LogView(QWidget):
             "ERROR": "#EF4444",   
             "CRITICAL": "#DC2626" 
         }
-        color_hex = color_map.get(level, "#FFFFFF")
-        qcolor = QColor(color_hex)
+        qcolor = QColor(color_map.get(level, "#FFFFFF"))
 
         icon_char = "◆" if level in ["ERROR", "CRITICAL", "WARNING"] else "●"
         item_level = QTableWidgetItem(f"{icon_char}  {level.capitalize()}")
@@ -211,35 +258,22 @@ class LogView(QWidget):
         self.table.setItem(row, 0, item_level)
         self.table.setItem(row, 1, item_time)
         self.table.setItem(row, 2, item_msg)
+        self.table.resizeRowToContents(row)
 
     def _render_logs(self):
         self.table.setRowCount(0)
-        search_lower = self._search_term.lower()
+        self.table.setUpdatesEnabled(False)
         
         for level, time_str, text in self._log_history:
-            if self._current_filter != "TODOS" and self._current_filter != level:
+            if self._current_filter not in ("TODOS", level):
                 continue
-            if search_lower and (search_lower not in level.lower() and 
-                                 search_lower not in time_str.lower() and 
-                                 search_lower not in text.lower()):
+            if not self._matches_search(level, time_str, text):
                 continue
                 
             self._add_row_to_table(level, time_str, text)
+            
+        self.table.setUpdatesEnabled(True)
         self._scroll_to_bottom()
-
-    def show_historical_content(self, file_name: str, content: str):
-        self._clear_logs()
-        self.table.setRowCount(0)
-        
-        lines = content.strip().split('\n')
-        for line in lines:
-            if line.strip():
-                self.append_log("HISTÓRICO", line)
-        
-        self.btn_live.setVisible(True)
-        self.txt_search.setEnabled(False)
-        self.combo_filter.setEnabled(False)
-        self.btn_clear.setEnabled(False)
 
     def restore_live_view_state(self):
         self.btn_live.setVisible(False)
