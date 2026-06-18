@@ -109,7 +109,7 @@ class CommandView(QWidget):
             aliases_text = raw_aliases if raw_aliases else "-"
             
             if cmd.get("is_regex"):
-                aliases_text = f"⚙️ Regex: {raw_aliases}"
+                aliases_text = f"Regex: {raw_aliases}"
             
             item_aliases = QTableWidgetItem(aliases_text)
             item_aliases.setToolTip(aliases_text)

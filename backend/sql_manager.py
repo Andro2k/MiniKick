@@ -50,7 +50,8 @@ class DatabaseManager:
                     is_active INTEGER DEFAULT 1,
                     cooldown INTEGER DEFAULT 5,
                     aliases TEXT DEFAULT '',
-                    is_regex INTEGER DEFAULT 0
+                    is_regex INTEGER DEFAULT 0,
+                    permission TEXT DEFAULT 'everyone'
                 )
             """)
             cursor.execute("PRAGMA table_info(obs_alerts)")
@@ -59,6 +60,12 @@ class DatabaseManager:
             if "is_random_pos" not in columns:
                 print("🔄 Actualizando base de datos")
                 cursor.execute("ALTER TABLE obs_alerts ADD COLUMN is_random_pos INTEGER DEFAULT 0")
+                
+            cursor.execute("PRAGMA table_info(chat_commands)")
+            columns = [info[1] for info in cursor.fetchall()]
+            if "permission" not in columns:
+                print("🔄 Actualizando base de datos: chat_commands + permission")
+                cursor.execute("ALTER TABLE chat_commands ADD COLUMN permission TEXT DEFAULT 'everyone'")
                 
             conn.commit()
 
@@ -206,10 +213,9 @@ class SQLiteCommandsStorage:
         self.db_manager = db_manager
 
     def load_all(self) -> list[dict]:
-        """Carga todos los comandos personalizados como una lista de diccionarios."""
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex FROM chat_commands")
+            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission FROM chat_commands")
             commands = []
             for row in cursor.fetchall():
                 commands.append({
@@ -218,24 +224,25 @@ class SQLiteCommandsStorage:
                     "is_active": bool(row[2]),
                     "cooldown": row[3],
                     "aliases": row[4],
-                    "is_regex": bool(row[5])
+                    "is_regex": bool(row[5]),
+                    "permission": row[6]
                 })
             return commands
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool) -> None:
-        """Guarda o actualiza un comando completo en base de datos."""
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str = "everyone") -> None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO chat_commands (trigger, response, is_active, cooldown, aliases, is_regex) 
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO chat_commands (trigger, response, is_active, cooldown, aliases, is_regex, permission) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(trigger) DO UPDATE SET 
                     response=excluded.response,
                     is_active=excluded.is_active,
                     cooldown=excluded.cooldown,
                     aliases=excluded.aliases,
-                    is_regex=excluded.is_regex
-            """, (trigger, response, int(is_active), cooldown, aliases, int(is_regex)))
+                    is_regex=excluded.is_regex,
+                    permission=excluded.permission
+            """, (trigger, response, int(is_active), cooldown, aliases, int(is_regex), permission))
             conn.commit()
 
     def delete_command(self, trigger: str) -> None:

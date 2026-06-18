@@ -162,7 +162,7 @@ class ChatView(QWidget):
     def resizeEvent(self, event):
         """Intercepta cambios de tamaño en la ventana para simular CSS Flexbox (wrap)."""
         super().resizeEvent(event)
-        if self.width() < 800:
+        if self.width() < 900:
             self.body_layout.setDirection(QBoxLayout.Direction.TopToBottom)
         else:
             self.body_layout.setDirection(QBoxLayout.Direction.LeftToRight)
@@ -257,8 +257,8 @@ class ChatView(QWidget):
             self.combo_voice.setCurrentIndex(index_to_select)
         self.combo_voice.blockSignals(False)
 
-    def append_message(self, user: str, message: str):
-        html_msg = f'<b style="color: #53FC18;">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
+    def append_message(self, user: str, message: str, color: str):
+        html_msg = f'<b style="color: {color};">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
         self.chat_display.append(html_msg)
 
     @Slot(int)

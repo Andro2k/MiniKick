@@ -12,16 +12,37 @@ class CommandService:
     def get_all_commands(self) -> list[dict]:
         return self.storage.load_all()
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool):
-        self.storage.save_command(trigger.strip(), response, is_active, cooldown, aliases, is_regex)
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str):
+        self.storage.save_command(trigger.strip(), response, is_active, cooldown, aliases, is_regex, permission)
 
     def delete_command(self, trigger: str):
         if trigger in self.cooldown_timers:
             del self.cooldown_timers[trigger]
         self.storage.delete_command(trigger)
 
-    def process_incoming_message(self, user: str, message: str):
-        """Comprueba si el mensaje encaja con algún comando activo y ejecuta respuesta."""
+    def _has_permission(self, required_perm: str, user_badges: list) -> bool:
+        """Verifica jerárquicamente si los badges del usuario cumplen con el nivel requerido."""
+        if required_perm == "everyone": 
+            return True
+        
+        levels = {
+            "everyone": 0,
+            "subscriber": 1,
+            "vip": 2,
+            "moderator": 3,
+            "broadcaster": 4
+        }
+        
+        user_level = 0
+        for badge in user_badges:
+            badge_lower = badge.lower()
+            if badge_lower in levels and levels[badge_lower] > user_level:
+                user_level = levels[badge_lower]
+                
+        required_level = levels.get(required_perm, 0)
+        return user_level >= required_level
+
+    def process_incoming_message(self, user: str, message: str, badges: list):
         if not message:
             return
 
@@ -29,6 +50,9 @@ class CommandService:
         
         for cmd in commands:
             if not cmd.get("is_active", True):
+                continue
+
+            if not self._has_permission(cmd.get("permission", "everyone"), badges):
                 continue
 
             trigger = cmd["trigger"]
@@ -65,12 +89,10 @@ class CommandService:
             if is_match:
                 self.cooldown_timers[trigger] = time.time()
                 final_response = cmd["response"].replace("{user}", user)
-                
                 self.send_response(final_response)
                 break
 
     def send_response(self, response_text: str):
-        """Envía la respuesta configurada a través del cliente oficial de Kick."""
         try:
             self.api_client.post_chat_message(content=response_text, msg_type="bot")
         except Exception as e:

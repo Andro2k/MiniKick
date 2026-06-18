@@ -42,12 +42,14 @@ class ChatController(QObject):
 
         self._load_voices(provider, is_initial=True)
 
-    @Slot(str, str)
-    def handle_incoming_message(self, user: str, message: str):
+    @Slot(str, str, list, str)
+    def handle_incoming_message(self, user: str, message: str, badges: list, color: str):
         """Recibe el mensaje desde el Worker, lo pinta y decide si lo lee (SoR)."""
-        self.view.append_message(user, message)
+        self.view.append_message(user, message, color)
+        
         if hasattr(self, 'command_service') and self.command_service:
-            self.command_service.process_incoming_message(user, message)
+            self.command_service.process_incoming_message(user, message, badges)
+            
         settings = self.service.get_settings()
         if not settings["enabled"]:
             return

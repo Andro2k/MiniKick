@@ -20,7 +20,7 @@ class ChatSocketManager:
         self._running = False
         self.ws = None
 
-    def start_socket(self, room_id: int, on_message: Callable[[str, str], None]) -> None:
+    def start_socket(self, room_id: int, on_message: Callable[[str, str, list, str], None]) -> None:
         url = (
             f"wss://ws-{self.cluster}.pusher.com/app/{self.key}"
             f"?protocol=7&client=js&version=7.6.0"
@@ -39,12 +39,18 @@ class ChatSocketManager:
 
             elif event == "App\\Events\\ChatMessageEvent":
                 payload = json.loads(data.get("data", "{}"))
-                user = payload.get("sender", {}).get("username", "")
+                sender = payload.get("sender", {})
                 
+                user = sender.get("username", "")
                 msg = ChatFormatter.clean(payload.get("content", ""))
                 
+                identity = sender.get("identity", {})
+                badges_raw = identity.get("badges", [])
+                badges = [b.get("type") for b in badges_raw if isinstance(b, dict)]
+                color = identity.get("color", "") or "#53FC18"
+                
                 if user and msg:
-                    on_message(user, msg)
+                    on_message(user, msg, badges, color)
 
             elif event == "pusher:ping":
                 ws.send(json.dumps({"event": "pusher:pong"}))
@@ -66,5 +72,4 @@ class ChatSocketManager:
             self.ws.keep_running = False
             if hasattr(self.ws, 'sock') and self.ws.sock:
                 self.ws.sock.close() 
-                
             self.ws.close()

@@ -5,7 +5,7 @@ from backend.kick_api_client import KickAPIClient
 from backend.kick_websocket import ChatSocketManager
 
 class ChatWorker(QThread):
-    message_received = Signal(str, str) 
+    message_received = Signal(str, str, list, str) 
     error_occurred = Signal(str)        
     connection_success = Signal(dict)   
     
@@ -30,8 +30,8 @@ class ChatWorker(QThread):
 
             self.chat_manager = ChatSocketManager(self.cluster, self.key)
 
-            def on_msg(user: str, msg: str):
-                self.message_received.emit(user, msg)
+            def on_msg(user: str, msg: str, badges: list, color: str):
+                self.message_received.emit(user, msg, badges, color)
 
             if self._is_stopped: return 
             self.chat_manager.start_socket(room_id, on_message=on_msg)
@@ -41,7 +41,6 @@ class ChatWorker(QThread):
                 self.error_occurred.emit(str(e))
 
     def stop(self):
-        """Activa la bandera de aborto y detiene el socket si ya existe."""
         self._is_stopped = True
         if self.chat_manager:
             self.chat_manager.stop_socket()
