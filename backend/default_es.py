@@ -156,7 +156,9 @@ DEFAULT_DICTIONARY = {
                     "tooltip_refresh": "Actualizar Recompensas de Kick",
                     "file_label": "Archivo Multimedia",
                     "file_placeholder": "Ej. tu_alerta.mp4 o sonido.mp3",
-                    "btn_browse": "Explorar"
+                    "btn_browse": "Explorar",
+                    "no_rewards": "No hay recompensas",
+                    "no_available": "No hay recompensas disponibles"
                 },
                 "step2": {
                     "title": "Ajustes de Pantalla",
@@ -311,6 +313,72 @@ DEFAULT_DICTIONARY = {
             "tts_msg": "Lectura de chat: {estado}",
             "bg_title": "MiniKick en segundo plano",
             "bg_desc": "Seguiré leyendo el chat por ti. Haz doble clic para volver."
+        },
+        "controllers": {
+            "dashboard": {
+                "unknown_user": "Desconocido",
+                "no_bio": "Sin descripción",
+                "none": "Ninguna",
+                "affiliate": "Afiliado",
+                "not_affiliate": "No Afiliado",
+                "yes": "Sí",
+                "no": "No"
+            },
+            "log": {
+                "error_title": "Error",
+                "read_error": "No se pudo leer el archivo: {error}",
+                "folder_error": "No se pudo abrir la carpeta: {error}"
+            },
+            "settings": {
+                "export_success_title": "Exportación exitosa",
+                "export_success_desc": "Tus configuraciones han sido guardadas.",
+                "error_title": "Error",
+                "export_error_desc": "Fallo al exportar el archivo.",
+                "import_success_title": "Importación exitosa",
+                "import_success_desc": "Tus configuraciones han sido restauradas.",
+                "import_error_desc": "El archivo está corrupto o es inválido.",
+                "restart_title": "Reinicio Requerido",
+                "restart_desc": "Por favor, cierra y vuelve a abrir MiniKick para aplicar el nuevo idioma."
+            },
+            "chat": {
+                "voice_updated": "Voz actualizada."
+            }
+        },
+        "workers": {
+            "auth": {
+                "error_failed": "Autorización cancelada o fallida."
+            },
+            "chat": {
+                "error_room_id": "No se pudo obtener el ID de la sala desde la API."
+            },
+            "reward": {
+                "unknown_reward": "Recompensa desconocida",
+                "someone": "Alguien",
+                "batch_success": "Se marcaron exitosamente {count} canjes como completados en Kick.",
+                "batch_error": "No se pudo confirmar el lote en Kick: {error}",
+                "poll_error": "Error consultando recompensas: {error}"
+            }
+        },
+        "window": {
+            "title": "MiniKick - Versión {version}"
+        },
+        "chat": {
+            "reward_redeemed": "canjeó {reward_name}",
+            "points_tag": "PUNTOS"
+        },
+        "logs": {
+            "reward_no_alert": "Recompensa '{reward_name}' no tiene una alerta configurada.",
+            "automod_sanction": "Mensaje sancionado por Auto-Mod: {user}: {msg}",
+            "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
+            "api_fetching": "Ya se están consultando las recompensas. Por favor espera.",
+            "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
+            "api_error": "Fallo en la API de recompensas: {error}",
+            "worker_stopping": "Solicitando parada de {worker}...",
+            "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación...",
+            "worker_stopped": "{worker} cerrado limpiamente.",
+            "shutdown_init": "Iniciando secuencia de apagado...",
+            "shutdown_tts_overlay": "Apagando TTS y Overlay...",
+            "shutdown_complete": "Secuencia de apagado de hilos completada."
         }
     }
 }

@@ -91,7 +91,7 @@ class MainWindow(QMainWindow):
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
             client_secret=os.getenv("KICK_CLIENT_SECRET", ""),
-            redirect_uri=os.getenv("KICK_REDIRECT_URI", ""),
+            redirect_uri=os.getenv("KICK_REDIRECT_URI", "http://localhost:8080/auth/callback"),
             storage=self.token_storage,
             success_html_path=html_path
         )
@@ -292,8 +292,8 @@ class MainWindow(QMainWindow):
         self.auth_worker.setParent(self)
         
         def on_auth_success(tokens):
-            cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
-            key = os.getenv("KICK_PUSHER_KEY", "")
+            cluster = os.getenv("KICK_PUSHER_CLUSTER", "us2")
+            key = os.getenv("KICK_PUSHER_KEY", "32cbd69e4b950bf97679")         
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             is_missing_scopes = self.auth_manager.has_missing_scopes()
             self.dashboard_controller.evaluate_scopes(is_missing_scopes)
