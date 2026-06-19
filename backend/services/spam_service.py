@@ -81,4 +81,4 @@ class SpamService:
                 self.api_client.timeout_user(self.broadcaster_id, sender_id, duration_secs)
                 
         except Exception as e:
-            print(f"[SpamService] Error al intentar sancionar a {user}: {e}")
+            print(f"[SpamService] Error attempting to penalize {user}: {e}")

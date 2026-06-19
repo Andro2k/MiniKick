@@ -81,18 +81,16 @@ class KickAPIClient:
             if attempt < max_retries - 1:
                 time.sleep(2 * (attempt + 1))
                 
-        raise ValueError(f"No se pudo localizar el canal usando el slug '{slug}'. "
-                         f"Intentos agotados ({max_retries}). "
-                         f"Último código HTTP recibido: {last_status_code}")
+        raise ValueError(f"Channel not found: '{slug}'. Retries exhausted ({max_retries}). HTTP Status: {last_status_code}")
 
     def _map_channel_data(self, username: str, channel_data: dict) -> dict:
         user_data = channel_data.get("user", {})
         chatroom_data = channel_data.get("chatroom", {})
         categories = channel_data.get("recent_categories", [])
-        last_category = categories[0].get("name", "Ninguna") if categories else "Ninguna"     
+        last_category = categories[0].get("name", "") if categories else ""     
         is_verified = channel_data.get("verified") is not None
-        raw_bio = user_data.get("bio", "Sin descripción.")
-        clean_bio = " ".join(str(raw_bio).splitlines())
+        raw_bio = user_data.get("bio", "")
+        clean_bio = " ".join(str(raw_bio).splitlines()) if raw_bio else ""
 
         return {
             "broadcaster_id": user_data.get("id", 0),
@@ -139,7 +137,7 @@ class KickAPIClient:
             resp = self._request("DELETE", url, timeout=10)
             return resp.status_code == 204
         except Exception as e:
-            print(f"[KickAPI] Error borrando mensaje: {e}")
+            print(f"[KickAPI] Error deleting message: {e}")
             return False
 
     def timeout_user(self, broadcaster_id: int, user_id: int, duration_seconds: int) -> bool:
@@ -154,5 +152,5 @@ class KickAPIClient:
             resp = self._request("POST", url, json=payload, timeout=10)
             return resp.status_code == 200
         except Exception as e:
-            print(f"[KickAPI] Error aplicando timeout: {e}")
+            print(f"[KickAPI] Error applying timeout: {e}")
             return False

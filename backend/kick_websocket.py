@@ -62,10 +62,10 @@ class ChatSocketManager:
                 self.ws = websocket.WebSocketApp(url, on_message=_on_message)
                 self.ws.run_forever(ping_interval=30, ping_timeout=10)
             except Exception as e:
-                print(f"[Chat] Socket interrumpido: {e}")
+                print(f"[Chat] Socket interrupted: {e}")
 
             if self._running:
-                print("[Chat] Reconectando en 5 segundos...")
+                print("[Chat] Reconnecting in 5 seconds...")
                 time.sleep(5) 
 
     def stop_socket(self) -> None:

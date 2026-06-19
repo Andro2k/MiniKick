@@ -20,4 +20,4 @@ class SocketInstanceProvider(SingleInstanceProvider):
         try:
             self.sock.close()
         except Exception as e:
-            logging.error(f"Error limpiando el socket de instancia: {e}")
+            logging.error(f"Error cleaning up instance socket: {e}")

@@ -13,6 +13,7 @@ class SpamController(QObject):
         self.view.filter_updated.connect(self._handle_filter_update)
 
     def load_initial_data(self):
+        self.service.reload_filters()
         filters = self.service.filters
         self.view.populate_filters(filters)
 

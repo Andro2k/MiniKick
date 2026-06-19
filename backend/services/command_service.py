@@ -98,4 +98,4 @@ class CommandService:
         try:
             self.api_client.post_chat_message(content=response_text, msg_type="bot")
         except Exception as e:
-            print(f"[CommandService] Error al enviar comando al chat: {e}")
+            print(f"[CommandService] Error sending command to chat: {e}")

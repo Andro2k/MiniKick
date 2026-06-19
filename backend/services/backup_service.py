@@ -22,10 +22,10 @@ class BackupService:
             }
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
-            self.logger.info(f"Configuración exportada exitosamente a {filepath}")
+            self.logger.info(f"Successfully exported configuration to {filepath}")
             return True
         except Exception as e:
-            self.logger.error(f"Error al exportar configuración: {e}")
+            self.logger.error(f"Error exporting configuration: {e}")
             return False
 
     def import_from_json(self, filepath: str) -> bool:
@@ -54,8 +54,8 @@ class BackupService:
                 for f_id, config in data["spam_filters"].items():
                     self.spam_storage.save_filter(f_id, config)
                 
-            self.logger.info(f"Configuración importada exitosamente desde {filepath}")
+            self.logger.info(f"Successfully imported configuration from {filepath}")
             return True
         except Exception as e:
-            self.logger.error(f"Error al importar configuración: {e}")
+            self.logger.error(f"Error importing configuration: {e}")
             return False

@@ -46,7 +46,7 @@ class TTSManager:
                 
             except Exception as e:
                 import logging
-                logging.error(f"[TTS Manager] Fallo crítico evitado en el motor: {e}")
+                logging.error(f"[TTS Manager] Critical engine failure avoided: {e}")
             finally:
                 self.queue.task_done()
 

@@ -35,17 +35,17 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(f.read())
             except FileNotFoundError:
-                self.send_error(404, f"Overlay HTML no encontrado en: {html_path}")
+                self.send_error(404, f"Overlay HTML not found at: {html_path}")
 
         elif path == "/media":
             query = parse_qs(parsed.query)
             if "path" not in query:
-                self.send_error(400, "Ruta no especificada")
+                self.send_error(400, "Path not specified")
                 return
                 
             filepath = query["path"][0]
             if not os.path.exists(filepath):
-                self.send_error(404, "Archivo multimedia no encontrado")
+                self.send_error(404, "Media file not found")
                 return
                 
             mime_type, _ = mimetypes.guess_type(filepath)
@@ -68,7 +68,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 pass
             except Exception as e:
                 try:
-                    self.send_error(500, f"Error interno: {e}")
+                    self.send_error(500, f"Internal error: {e}")
                 except:
                     pass
                 
@@ -97,7 +97,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 if client_queue in self.server.manager.clients:
                     self.server.manager.clients.remove(client_queue)
         else:
-            self.send_error(404, "Endpoint no válido")
+            self.send_error(404, "Invalid endpoint")
 
     def log_message(self, format, *args):
         pass
@@ -116,10 +116,10 @@ class OverlayServerManager:
             
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
-            print(f"Servidor Overlay activo: http://localhost:{self.port}/overlay")
+            print(f"Overlay server active: http://localhost:{self.port}/overlay")
         except OSError as e:
-            print(f"ERROR CRÍTICO: No se pudo iniciar el servidor Overlay en el puerto {self.port}.")
-            print(f"Detalles: {e}")
+            print(f"CRITICAL ERROR: Could not start Overlay server on port {self.port}.")
+            print(f"Details: {e}")
 
     def trigger_alert(self, reward_name: str, config: dict):
         if isinstance(config, str):

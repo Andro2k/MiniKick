@@ -34,7 +34,7 @@ class WebTTSProvider(ITTSProvider):
             while pygame.mixer.music.get_busy():
                 pygame.time.Clock().tick(10)
         except Exception as e:
-            print(f"[Web TTS] Error reproduciendo audio: {e}")
+            print(f"[Web TTS] Error playing audio: {e}")
         finally:
             pygame.mixer.music.unload() 
             try:
@@ -52,10 +52,10 @@ class WebTTSProvider(ITTSProvider):
             voices = asyncio.run(edge_tts.list_voices())
             return [{"id": v["ShortName"], "name": v["FriendlyName"]} for v in voices if "es-" in v["Locale"]]
         except Exception as e:
-            print(f"[TTS Web] Error al conectar con Microsoft Edge: {e}")
+            print(f"[Web TTS] Error connecting to Microsoft Edge: {e}")
             return [
-                {"id": "es-ES-AlvaroNeural", "name": "Álvaro (España) - Desconectado"},
-                {"id": "es-ES-ElviraNeural", "name": "Elvira (España) - Desconectado"},
-                {"id": "es-MX-JorgeNeural", "name": "Jorge (México) - Desconectado"},
-                {"id": "es-MX-DaliaNeural", "name": "Dalia (México) - Desconectado"}
+                {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Spain) - Offline"},
+                {"id": "es-ES-ElviraNeural", "name": "Elvira (Spain) - Offline"},
+                {"id": "es-MX-JorgeNeural", "name": "Jorge (Mexico) - Offline"},
+                {"id": "es-MX-DaliaNeural", "name": "Dalia (Mexico) - Offline"}
             ]

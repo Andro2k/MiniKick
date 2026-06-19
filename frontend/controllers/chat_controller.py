@@ -1,5 +1,7 @@
 # frontend/controllers/chat_controller.py
 
+import re
+
 from PySide6.QtCore import QObject, Slot, Signal
 
 class ChatController(QObject):
@@ -63,6 +65,7 @@ class ChatController(QObject):
                 return
             final_message = final_message[len(cmd):].strip()
 
+        final_message = self._clean_message_for_tts(final_message)
         text_to_speak = f"{user} dice: {final_message}" if settings["read_name"] else final_message
         self.service.speak(text_to_speak)
 
@@ -129,3 +132,22 @@ class ChatController(QObject):
         settings = self.service.get_settings()
         settings["ignored_users"] = ",".join(self.muted_bots)
         self.service.save_settings(settings)
+
+    def _clean_message_for_tts(self, text: str) -> str:
+        def replacer(match):
+            url = match.group(0).lower()
+            if "youtube.com" in url or "youtu.be" in url:
+                return "un enlace de YouTube"
+            elif "kick.com" in url:
+                return "un enlace de Kick"
+            elif "twitter.com" in url or "x.com" in url:
+                return "un enlace de Twitter"
+            elif "instagram.com" in url:
+                return "un enlace de Instagram"
+            elif "tiktok.com" in url:
+                return "un enlace de TikTok"
+            elif "discord.com" in url or "discord.gg" in url:
+                return "un enlace de Discord"
+            else:
+                return "un enlace web"
+        return re.sub(r"https?://\S+|www\.\S+", replacer, text)

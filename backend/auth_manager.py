@@ -28,7 +28,8 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
                 with open(html_path, "rb") as f:
                     self.wfile.write(f.read())
             except FileNotFoundError:
-                self.wfile.write("<h1>Autenticación exitosa. Puedes cerrar esta pestaña.</h1>".encode("utf-8"))
+                html_msg = "<h1>Authentication successful / Autenticación exitosa.</h1><p>You can safely close this tab / Puedes cerrar esta pestaña de forma segura.</p>"
+                self.wfile.write(html_msg.encode("utf-8"))
             except (BrokenPipeError, ConnectionResetError):
                 pass
 
@@ -100,7 +101,7 @@ class AuthManager:
         auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path)
 
         if not auth_code:
-            raise TimeoutError("Se agotó el tiempo de espera o se canceló el inicio de sesión.")
+            raise TimeoutError("Auth timeout or user canceled login.")
 
         tokens = self._exchange_code(auth_code, verifier)
         self.storage.save(tokens)

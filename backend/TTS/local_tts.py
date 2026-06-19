@@ -27,7 +27,7 @@ class LocalTTSProvider(ITTSProvider):
             engine.runAndWait()
 
         except Exception as e:
-            print(f"[TTS Local] Error al hablar: {e}")
+            print(f"[Local TTS] Speech error: {e}")
         finally:
             try:
                 import pythoncom
@@ -47,8 +47,8 @@ class LocalTTSProvider(ITTSProvider):
             
             return voices
         except Exception as e:
-            print(f"[TTS Local] Error obteniendo voces locales: {e}")
-            return [{"id": "default", "name": "Voz del Sistema (Por Defecto)"}]
+            print(f"[Local TTS] Error fetching local voices: {e}")
+            return [{"id": "default", "name": "System Voice (Default)"}]
         finally:
             try:
                 import pythoncom
