@@ -140,11 +140,9 @@ class AuthManager:
         return response.json()
 
     def logout(self) -> None:
-        """Limpia las credenciales almacenadas delegando en el storage."""
         self.storage.clear()
 
     def has_missing_scopes(self) -> bool:
-        """Verifica si al token actual le faltan los nuevos permisos requeridos."""
         tokens = self.storage.load()
         if not tokens: 
             return False

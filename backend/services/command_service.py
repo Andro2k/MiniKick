@@ -21,7 +21,6 @@ class CommandService:
         self.storage.delete_command(trigger)
 
     def _has_permission(self, required_perm: str, user_badges: list) -> bool:
-        """Verifica jerárquicamente si los badges del usuario cumplen con el nivel requerido."""
         if required_perm == "everyone": 
             return True
         
@@ -43,7 +42,6 @@ class CommandService:
         return user_level >= required_level
 
     def process_incoming_message(self, user: str, message: str, badges: list):
-        """Comprueba si el mensaje encaja con algún comando activo y ejecuta respuesta, validando permisos."""
         if not message:
             return
 

@@ -24,7 +24,6 @@ class SettingsController(QObject):
         self.view.language_changed.connect(self.handle_language_change)
 
     def _load_initial_state(self):
-        """Inicializa los componentes visuales basándose en el servicio de datos."""
         enabled = self.service.is_minimize_tray_enabled()
         self.view.set_minimize_tray_enabled(enabled)
         lang = self.service.get_language()
@@ -51,6 +50,5 @@ class SettingsController(QObject):
 
     @Slot(str)
     def handle_language_change(self, lang_code: str):
-        """Guarda el nuevo idioma en BD y solicita reinicio."""
         self.service.set_language(lang_code)
         self.notification_requested.emit("Reinicio Requerido", "Por favor, cierra y vuelve a abrir MiniKick para aplicar el nuevo idioma.")

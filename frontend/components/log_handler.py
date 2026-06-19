@@ -2,13 +2,9 @@ import logging
 from PySide6.QtCore import QObject, Signal
 
 class LogEmitter(QObject):
-    """Objeto QObject necesario para emitir señales, ya que logging.Handler no lo es."""
     log_received = Signal(str, str)
 
 class QLogHandler(logging.Handler):
-    """
-    Captura los logs estándar de Python y los emite como señales de PySide6.
-    """
     def __init__(self):
         super().__init__()
         self.emitter = LogEmitter()
@@ -24,10 +20,6 @@ class QLogHandler(logging.Handler):
             self.handleError(record)
 
 class StreamToLogger:
-    """
-    Interviene sys.stdout y sys.stderr.
-    Cualquier print() o error fatal de Python se redirige aquí.
-    """
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
@@ -38,5 +30,4 @@ class StreamToLogger:
                 self.logger.log(self.log_level, line.rstrip())
 
     def flush(self):
-        """Requerido por la interfaz de sys.stdout/stderr"""
         pass

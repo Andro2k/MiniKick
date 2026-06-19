@@ -19,19 +19,16 @@ class AlertsController(QObject):
         self.view.preview_requested.connect(self._handle_preview)
 
     def load_initial_data(self):
-        """Carga los datos por primera vez e hidrata la vista."""
         mappings = self.service.get_mappings()
         self.view.populate_table(mappings)
 
     @Slot(list)
     def update_rewards_list(self, rewards: list):
-        """Recibe la lista fresca de recompensas y actualiza la vista."""
         self.current_rewards_list = rewards if rewards else ["No hay recompensas"]
         if self._active_dialog:
             self._active_dialog.update_rewards(self._get_available_rewards())
 
     def _get_available_rewards(self, ignore_reward=None):
-        """Filtra la lista para ocultar las recompensas que ya tienen una alerta asignada."""
         mappings = self.service.get_mappings()
         used_rewards = mappings.keys()
         available = [r for r in self.current_rewards_list if r not in used_rewards or r == ignore_reward]

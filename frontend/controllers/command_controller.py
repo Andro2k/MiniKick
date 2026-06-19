@@ -58,7 +58,6 @@ class CommandController(QObject):
 
     @Slot(str, bool)
     def _handle_status_change(self, trigger: str, is_active: bool):
-        """Actualiza silenciosamente el estado en la BD cuando se presiona el switch."""
         commands = self.service.get_all_commands()
         existing = next((c for c in commands if c["trigger"] == trigger), None)
         
@@ -75,7 +74,6 @@ class CommandController(QObject):
 
     @Slot(str)
     def _handle_search(self, text: str):
-        """Filtra la lista de comandos en memoria basándose en el buscador."""
         commands = self.service.get_all_commands()
 
         if not text.strip():

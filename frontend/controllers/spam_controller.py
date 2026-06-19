@@ -13,11 +13,9 @@ class SpamController(QObject):
         self.view.filter_updated.connect(self._handle_filter_update)
 
     def load_initial_data(self):
-        """Carga los filtros desde la BD al iniciar la aplicación."""
         filters = self.service.filters
         self.view.populate_filters(filters)
 
     @Slot(str, dict)
     def _handle_filter_update(self, filter_id: str, config: dict):
-        """Se dispara cada vez que el usuario modifica un filtro en la UI."""
         self.service.save_filter(filter_id, config)

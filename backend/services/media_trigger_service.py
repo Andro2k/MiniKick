@@ -5,8 +5,6 @@ from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import QUrl, QObject
 
 class MediaTriggerService(QObject):
-    """Capa de Servicio encargada exclusivamente de la reproducción multimedia (Alta Cohesión)."""
-    
     def __init__(self, parent=None):
         super().__init__(parent)
         self.player = QMediaPlayer(self)
@@ -14,7 +12,6 @@ class MediaTriggerService(QObject):
         self.player.setAudioOutput(self.audio_output)
 
     def play_file(self, file_path: str, volume: float = 1.0):
-        """Reproduce un archivo local basado en parámetros inyectados."""
         if not file_path or not os.path.exists(file_path):
             print(f"Archivo multimedia no encontrado o vacío: {file_path}")
             return

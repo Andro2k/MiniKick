@@ -21,7 +21,6 @@ class DashboardController(QObject):
 
     @Slot(dict)
     def handle_connection_success(self, user_data: dict):
-        """Lógica de negocio: Formatear diccionarios a textos para la UI."""
         self.view.update_connection_status(is_connecting=False)
 
         username = user_data.get("username", "Desconocido")

@@ -44,7 +44,6 @@ class ChatController(QObject):
 
     @Slot(str, str, list, str)
     def handle_incoming_message(self, user: str, message: str, badges: list, color: str):
-        """Recibe el mensaje desde el Worker, lo pinta y decide si lo lee (SoR)."""
         self.view.append_message(user, message, color)
         
         if hasattr(self, 'command_service') and self.command_service:

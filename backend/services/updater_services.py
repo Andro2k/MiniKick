@@ -7,9 +7,6 @@ from backend.interfaces.updater_interfaces import (
 )
 
 class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
-    """
-    Proveedor real que consulta la API de GitHub y descarga los binarios.
-    """
     def __init__(self, repo_owner: str, repo_name: str):
         self.api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
 
@@ -18,7 +15,6 @@ class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
             response = requests.get(self.api_url, timeout=10)
             response.raise_for_status()
             data = response.json()
-
             version = data.get("tag_name", "")
             assets = data.get("assets", [])
             
@@ -53,9 +49,6 @@ class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
             return False
 
 class WindowsInstaller(IUpdateInstaller):
-    """
-    Se encarga exclusivamente de ejecutar el archivo en el sistema operativo.
-    """
     def install_and_restart(self, installer_path: str) -> None:
         DETACHED_PROCESS = 0x00000008
         

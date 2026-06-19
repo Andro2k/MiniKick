@@ -4,7 +4,6 @@ from PySide6.QtCore import QThread, Signal
 from backend.auth_manager import AuthManager
 
 class AuthWorker(QThread):
-    """Hilo dedicado exclusivamente a la autenticación (Alta Cohesión)."""
     auth_success = Signal(dict)
     auth_error = Signal(str)
 

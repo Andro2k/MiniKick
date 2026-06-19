@@ -88,13 +88,11 @@ class Sidebar(QFrame):
         self.main_layout.addWidget(self.lbl_version)
 
     def set_update_available(self, available: bool = True):
-        """Es llamado por MainWindow si se encuentra una actualización silenciosa."""
         self.has_update = available
         if self.is_expanded:
             self.btn_update_alert.setVisible(available)
 
     def _on_update_alert_clicked(self):
-        """Simula que el usuario hizo clic en la pestaña 'Settings'."""
         for btn in self.nav_buttons:
             if btn.property("view_name") == "Settings":
                 btn.setChecked(True)

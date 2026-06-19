@@ -3,8 +3,6 @@
 from abc import ABC, abstractmethod
 
 class ITTSProvider(ABC):
-    """Contrato único para cualquier motor de Text-to-Speech."""
-    
     @abstractmethod
     def speak(self, text: str) -> None:
         pass
@@ -19,5 +17,4 @@ class ITTSProvider(ABC):
 
     @abstractmethod
     def get_available_voices(self) -> list[dict]:
-        """Debe retornar una lista de diccionarios con 'id' y 'name'."""
         pass

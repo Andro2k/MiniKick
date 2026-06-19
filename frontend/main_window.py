@@ -319,13 +319,11 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _force_reauth(self):
-        """Borra el token viejo y abre el navegador para pedir los nuevos permisos."""
         self.auth_manager.logout()
         self._handle_auth_process()
 
     @Slot(str, str, list, str, str, int)
     def _route_incoming_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
-        """Evalúa si es spam. Si lo es, bloquea el mensaje; si no, lo dibuja."""
         if self.spam_service.is_spam(user, msg, badges, msg_id, sender_id):
             self.logger.debug(f"Mensaje sancionado por Auto-Mod: {user}: {msg}")
             return 

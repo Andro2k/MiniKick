@@ -6,7 +6,6 @@ from frontend.utils import get_icon_colored
 from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 
 class ViewHeader(QFrame):
-    """Componente reutilizable para el encabezado estándar de todas las vistas."""
     def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
@@ -33,7 +32,6 @@ class ViewHeader(QFrame):
         layout.addStretch()
 
 class SettingRow(QWidget):
-    """Componente reutilizable para filas de configuración (Icono, Título, Descripción + Widget derecho)."""
     def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_TEXT_PRIMARY, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
@@ -61,7 +59,6 @@ class SettingRow(QWidget):
         layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
 
 class SettingSliderRow(QWidget):
-    """Componente estandarizado para controles de rango con el slider expandido abajo."""
     def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_TEXT_PRIMARY, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
@@ -91,7 +88,6 @@ class SettingSliderRow(QWidget):
         layout.addWidget(slider_widget)
 
 class StatCard(QFrame):
-    """Tarjeta individual para mostrar una estadística con icono (estilo Analytics)."""
     def __init__(self, title_text: str, icon_name: str, initial_value: str = "-", parent=None):
         super().__init__(parent)
         self.setProperty("role", "card")

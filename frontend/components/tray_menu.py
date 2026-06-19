@@ -45,7 +45,6 @@ class SystemTrayManager(QSystemTrayIcon):
             self.restore_requested.emit()
 
     def set_tts_state(self, enabled: bool):
-        """Sincroniza visualmente el checkbox del menú con el estado real de la base de datos."""
         self.action_tts.blockSignals(True)
         self.action_tts.setChecked(enabled)
         self.action_tts.blockSignals(False)

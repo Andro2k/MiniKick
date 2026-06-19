@@ -12,9 +12,6 @@ KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
 KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redemptions"
 
 class ScraperFactory:
-    """
-    Responsabilidad Única: Construir un cliente HTTP consistente y evasivo.
-    """
     @staticmethod
     def create() -> cloudscraper.CloudScraper:
         scraper = cloudscraper.create_scraper()
@@ -30,8 +27,6 @@ class ScraperFactory:
         return scraper
 
 class KickAPIClient:
-    """Cliente HTTP para interactuar con la API REST de Kick."""
-    
     def __init__(self, auth_provider: TokenProvider):
         self.auth_provider = auth_provider
         self.scraper = ScraperFactory.create()
@@ -139,7 +134,6 @@ class KickAPIClient:
         return self._request("POST", url, json=payload, timeout=10).json()
     
     def delete_chat_message(self, message_id: str) -> bool:
-        """Borra un mensaje específico del chat usando la API V1 de Kick."""
         url = f"https://api.kick.com/public/v1/chat/{message_id}"
         try:
             resp = self._request("DELETE", url, timeout=10)
@@ -149,7 +143,6 @@ class KickAPIClient:
             return False
 
     def timeout_user(self, broadcaster_id: int, user_id: int, duration_seconds: int) -> bool:
-        """Sanciona (Timeout) a un usuario. La API exige la duración en minutos."""
         duration_minutes = max(1, duration_seconds // 60) 
         url = "https://api.kick.com/public/v1/moderation/bans"
         payload = {

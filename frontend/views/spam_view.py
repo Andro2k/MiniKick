@@ -10,7 +10,6 @@ from frontend.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
 from frontend.utils import get_icon_colored
 
 class SpamFilterCard(QFrame):
-    """Tarjeta individual expandible (Acordeón) para cada filtro."""
     updated = Signal(str, dict)
 
     def __init__(self, filter_id: str, title: str, desc: str, icon_name: str, has_amount: bool = True, i18n=None):

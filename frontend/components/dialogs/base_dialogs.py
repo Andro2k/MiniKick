@@ -8,7 +8,6 @@ from PySide6.QtGui import QIcon, QColor
 from frontend.theme import PATH_ICON_HELP
 
 class ModernBaseDialog(QDialog):
-    """Clase madre de la que heredan todos los diálogos de la aplicación."""
     def __init__(self, title: str = "", icon_path: str = "", icon_bg_color: str = "", width: int = 420, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
@@ -49,7 +48,6 @@ class ModernBaseDialog(QDialog):
         self.main_layout.addWidget(self.container)
 
     def set_dialog_state(self, state: str, glow_color: QColor = None):
-        """Cambia el borde y el color del glow de forma dinámica."""
         self.container.setProperty("state", state)
         self.container.style().unpolish(self.container)
         self.container.style().polish(self.container)
@@ -92,7 +90,6 @@ class ModernBaseDialog(QDialog):
         self.content_layout.addLayout(btn_layout)
 
 class ModernConfirmDialog(ModernBaseDialog):
-    """Diálogo genérico para confirmar acciones destructivas o importantes."""
     def __init__(self, i18n, parent=None, title_text="", body_text=""):
         super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color="#EF4444", width=420, parent=parent)
         self.i18n = i18n

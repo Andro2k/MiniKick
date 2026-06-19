@@ -6,14 +6,12 @@ from PySide6.QtGui import QColor, QPainter, QPainterPath
 from frontend.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, RADIUS_MD, RADIUS_SM
 
 class ModernButton(QPushButton):
-    """Componente de botón reutilizable con roles de estilo."""
     def __init__(self, text: str, role: str = "action_accent", parent=None):
         super().__init__(text, parent)
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
 class ModernSwitch(QAbstractButton):
-    """Componente Switch dibujado nativamente adaptado al sistema de diseño."""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setCheckable(True)

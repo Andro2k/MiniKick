@@ -6,9 +6,6 @@ from PySide6.QtCore import Qt, QByteArray
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QImage, QPainterPath
 
 def resource_path(relative_path: str) -> str:
-    """
-    Obtiene la ruta absoluta al recurso.
-    """
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -16,7 +13,6 @@ def resource_path(relative_path: str) -> str:
     return os.path.join(base_path, relative_path)
 
 def get_assets_path(subfolder: str = "") -> str:
-    """Devuelve la ruta hacia la carpeta de assets/ o una subcarpeta."""
     path = resource_path("assets")
     if subfolder:
         path = os.path.join(path, subfolder)
@@ -32,9 +28,6 @@ def get_icon(name: str) -> QIcon:
     return QIcon(full_path)
 
 def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
-    """
-    Carga un ícono SVG y lo repinta completamente del color especificado.
-    """
     full_path = resource_path(os.path.join("assets", "icons", name))
     
     if not os.path.exists(full_path):
@@ -65,10 +58,6 @@ def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
     return QIcon(colored_pixmap)
 
 def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
-    """
-    Toma los datos crudos de una imagen y devuelve un QPixmap circular
-    con antialiasing, listo para la interfaz.
-    """
     image = QImage.fromData(img_data)
     
     if image.isNull():

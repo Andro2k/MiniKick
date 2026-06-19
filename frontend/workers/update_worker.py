@@ -4,7 +4,6 @@ from PySide6.QtCore import QThread, Signal
 from backend.updater_manager import UpdateManager
 
 class UpdateCheckWorker(QThread):
-    """Hilo para buscar actualizaciones sin congelar la UI."""
     update_found = Signal(dict)
     no_update = Signal()
     error = Signal(str)
@@ -24,7 +23,6 @@ class UpdateCheckWorker(QThread):
             self.error.emit(str(e))
 
 class UpdateDownloadWorker(QThread):
-    """Hilo para descargar e instalar sin congelar la UI."""
     finished = Signal(bool)
     error = Signal(str)
     progress = Signal(int)
