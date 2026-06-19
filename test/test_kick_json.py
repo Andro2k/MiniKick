@@ -17,14 +17,11 @@ def on_message(ws, message):
         }))
 
     elif event == "App\\Events\\ChatMessageEvent":
-        # Extraemos el payload interno del mensaje
         payload = json.loads(data.get("data", "{}"))
         
         print("\n" + "═"*60)
-        print("📥 NUEVO MENSAJE DETECTADO (JSON CRUDO)")
+        print("NUEVO MENSAJE DETECTADO (JSON CRUDO)")
         print("═"*60)
-        
-        # Imprimimos todo el JSON formateado de forma bonita (indent=4)
         print(json.dumps(payload, indent=4, ensure_ascii=False))
         print("═"*60 + "\n")
 
@@ -44,8 +41,6 @@ if __name__ == "__main__":
     print("=================================================")
     print("   🔍 PROTOTIPO: INSPECTOR DE JSON DE KICK 🔍   ")
     print("=================================================")
-    
-    # Pide el ID de la sala (puedes verlo en el Dashboard de MiniKick)
     ROOM_ID = input("Ingresa el ID de tu sala (Míralo en tu Dashboard): ").strip()
 
     url = f"wss://ws-{CLUSTER}.pusher.com/app/{KEY}?protocol=7&client=js&version=7.6.0"

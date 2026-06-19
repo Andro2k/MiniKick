@@ -5,14 +5,14 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
 from frontend.theme import COLOR_ACCENT
-from frontend.utils import create_circular_pixmap
+from frontend.utils import create_circular_pixmap, get_icon_colored
 from frontend.components.blocks import StatCard, ViewHeader, SettingRow
 from frontend.components.controls import ModernButton, ModernSwitch
 
 class DashboardView(QWidget):
     connect_requested = Signal()
     autostart_toggled = Signal(bool)
-
+    reauth_requested = Signal()
     def __init__(self):
         super().__init__()
         self._setup_ui()
@@ -40,6 +40,26 @@ class DashboardView(QWidget):
         )
         self.main_layout.addWidget(self.header)
 
+        self.banner_scopes = QFrame()
+        self.banner_scopes.setStyleSheet("background-color: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; border-radius: 8px;")
+        banner_layout = QHBoxLayout(self.banner_scopes)
+        
+        lbl_warn_icon = QLabel()
+        lbl_warn_icon.setPixmap(get_icon_colored("help.svg", "#EF4444", 24).pixmap(24, 24))
+        lbl_warn_icon.setStyleSheet("background-color: transparent; border: none;")
+        
+        lbl_warn_text = QLabel("<b>Actualización requerida:</b> Tu cuenta no tiene permisos para las nuevas funciones Anti-Spam.")
+        lbl_warn_text.setStyleSheet("background-color: transparent; color: #F3F4F6; border: none;")
+        
+        self.btn_reauth = ModernButton("Actualizar Permisos", role="action_danger")
+        self.btn_reauth.clicked.connect(self.reauth_requested.emit)
+        
+        banner_layout.addWidget(lbl_warn_icon)
+        banner_layout.addWidget(lbl_warn_text, stretch=1)
+        banner_layout.addWidget(self.btn_reauth)
+        
+        self.banner_scopes.setVisible(False)
+        self.main_layout.addWidget(self.banner_scopes)
         self._setup_connection_card()
         self._setup_profile_section()
 
@@ -205,6 +225,10 @@ class DashboardView(QWidget):
         
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
+
+    def show_scope_warning(self, show: bool):
+        """Muestra u oculta el banner de advertencia de permisos."""
+        self.banner_scopes.setVisible(show)
 
     def resizeEvent(self, event):
         """Intercepta los cambios de tamaño de la ventana para reorganizar los layouts dinámicamente."""

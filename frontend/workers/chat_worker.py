@@ -5,7 +5,7 @@ from backend.kick_api_client import KickAPIClient
 from backend.kick_websocket import ChatSocketManager
 
 class ChatWorker(QThread):
-    message_received = Signal(str, str, list, str) 
+    message_received = Signal(str, str, list, str, str, int) 
     error_occurred = Signal(str)        
     connection_success = Signal(dict)   
     
@@ -30,8 +30,8 @@ class ChatWorker(QThread):
 
             self.chat_manager = ChatSocketManager(self.cluster, self.key)
 
-            def on_msg(user: str, msg: str, badges: list, color: str):
-                self.message_received.emit(user, msg, badges, color)
+            def on_msg(user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
+                self.message_received.emit(user, msg, badges, color, msg_id, sender_id)
 
             if self._is_stopped: return 
             self.chat_manager.start_socket(room_id, on_message=on_msg)

@@ -69,7 +69,8 @@ class CommandController(QObject):
                 is_active=is_active,
                 cooldown=existing["cooldown"],
                 aliases=existing["aliases"],
-                is_regex=existing["is_regex"]
+                is_regex=existing["is_regex"],
+                permission=existing.get("permission", "everyone")
             )
 
     @Slot(str)

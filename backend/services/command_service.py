@@ -43,6 +43,7 @@ class CommandService:
         return user_level >= required_level
 
     def process_incoming_message(self, user: str, message: str, badges: list):
+        """Comprueba si el mensaje encaja con algún comando activo y ejecuta respuesta, validando permisos."""
         if not message:
             return
 
@@ -52,7 +53,10 @@ class CommandService:
             if not cmd.get("is_active", True):
                 continue
 
-            if not self._has_permission(cmd.get("permission", "everyone"), badges):
+            permission = cmd.get("permission", "everyone")
+            if permission == "moderator" and not ("moderator" in badges or "broadcaster" in badges):
+                continue
+            if permission == "broadcaster" and "broadcaster" not in badges:
                 continue
 
             trigger = cmd["trigger"]

@@ -113,7 +113,7 @@ class AuthManager:
         return verifier, challenge
 
     def _build_auth_url(self, challenge: str) -> str:
-        scopes = "user:read channel:rewards:read channel:rewards:write chat:write"
+        scopes = "user:read channel:rewards:read channel:rewards:write chat:write moderation:ban moderation:chat_message:manage"
         return (
             f"{KICK_AUTH_URL}?response_type=code"
             f"&client_id={self.client_id}"
@@ -142,3 +142,13 @@ class AuthManager:
     def logout(self) -> None:
         """Limpia las credenciales almacenadas delegando en el storage."""
         self.storage.clear()
+
+    def has_missing_scopes(self) -> bool:
+        """Verifica si al token actual le faltan los nuevos permisos requeridos."""
+        tokens = self.storage.load()
+        if not tokens: 
+            return False
+        
+        current_scopes = tokens.get("scope", "")
+        required_scopes = ["moderation:ban", "moderation:chat_message:manage"]
+        return any(scope not in current_scopes for scope in required_scopes)

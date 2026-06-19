@@ -144,6 +144,12 @@ class CommandView(QWidget):
         lbl_trigger.setProperty("role", "monospace")
         layout.addWidget(lbl_trigger)
         
+        permission = cmd_data.get("permission", "everyone")
+        if permission != "everyone":
+            lbl_perm = QLabel(permission.upper())
+            lbl_perm.setStyleSheet(f"background-color: {COLOR_ACCENT}; color: #000000; font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px;")
+            layout.addWidget(lbl_perm)
+        
         layout.addStretch()
         return container
 

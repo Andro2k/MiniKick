@@ -5,6 +5,7 @@ from PySide6.QtCore import QObject, Signal, Slot
 class DashboardController(QObject):
     request_connection = Signal()
     auto_start_toggled = Signal(bool)
+    reauth_requested = Signal()
 
     def __init__(self, view, avatar_service):
         super().__init__()
@@ -15,6 +16,7 @@ class DashboardController(QObject):
     def _connect_signals(self):
         self.view.connect_requested.connect(self.request_connection.emit)
         self.view.autostart_toggled.connect(self.auto_start_toggled.emit)
+        self.view.reauth_requested.connect(self.reauth_requested.emit)
         self.avatar_service.avatar_downloaded.connect(self.view.set_avatar_from_bytes)
 
     @Slot(dict)
@@ -54,3 +56,7 @@ class DashboardController(QObject):
     @Slot()
     def reset_to_disconnected(self):
         self.view.reset_to_disconnected()
+
+    @Slot(bool)
+    def evaluate_scopes(self, is_missing: bool):
+        self.view.show_scope_warning(is_missing)

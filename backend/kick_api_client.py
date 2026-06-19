@@ -100,6 +100,7 @@ class KickAPIClient:
         clean_bio = " ".join(str(raw_bio).splitlines())
 
         return {
+            "broadcaster_id": user_data.get("id", 0),
             "username": user_data.get("username", username),
             "bio": clean_bio,
             "room_id": chatroom_data.get("id", "-"),
@@ -136,3 +137,29 @@ class KickAPIClient:
             payload["broadcaster_user_id"] = broadcaster_id
             
         return self._request("POST", url, json=payload, timeout=10).json()
+    
+    def delete_chat_message(self, message_id: str) -> bool:
+        """Borra un mensaje específico del chat usando la API V1 de Kick."""
+        url = f"https://api.kick.com/public/v1/chat/{message_id}"
+        try:
+            resp = self._request("DELETE", url, timeout=10)
+            return resp.status_code == 204
+        except Exception as e:
+            print(f"[KickAPI] Error borrando mensaje: {e}")
+            return False
+
+    def timeout_user(self, broadcaster_id: int, user_id: int, duration_seconds: int) -> bool:
+        """Sanciona (Timeout) a un usuario. La API exige la duración en minutos."""
+        duration_minutes = max(1, duration_seconds // 60) 
+        url = "https://api.kick.com/public/v1/moderation/bans"
+        payload = {
+            "broadcaster_user_id": broadcaster_id,
+            "user_id": user_id,
+            "duration": duration_minutes
+        }
+        try:
+            resp = self._request("POST", url, json=payload, timeout=10)
+            return resp.status_code == 200
+        except Exception as e:
+            print(f"[KickAPI] Error aplicando timeout: {e}")
+            return False

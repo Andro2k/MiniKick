@@ -17,6 +17,7 @@ from backend.services.log_service import LogService
 from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager
 from backend.services.settings_service import SettingsService
+from backend.services.spam_service import SpamService
 from frontend.components.log_handler import QLogHandler, StreamToLogger
 from frontend.components.sidebar import Sidebar
 from frontend.components.tray_menu import SystemTrayManager
@@ -26,17 +27,18 @@ from frontend.controllers.command_controller import CommandController
 from frontend.controllers.dashboard_controller import DashboardController
 from frontend.controllers.log_controller import LogController
 from frontend.controllers.settings_controller import SettingsController
+from frontend.controllers.spam_controller import SpamController
 from frontend.views.alerts_view import AlertsView
 from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.log_view import LogView
 from frontend.views.settings_view import SettingsView
-
+from frontend.views.spam_view import SpamView
 from frontend.components.dialogs import UpdateDialog
 
 from backend.auth_manager import AuthManager
-from backend.sql_manager import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage 
+from backend.sql_manager import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage, SQLiteSpamStorage
 from backend.kick_api_client import KickAPIClient
 from backend.tts_manager import TTSManager
 
@@ -68,6 +70,7 @@ class MainWindow(QMainWindow):
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
         self.alerts_storage = SQLiteAlertsStorage(self.db_manager)
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
+        self.spam_storage = SQLiteSpamStorage(self.db_manager)
         self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage)
         
         self.auth_manager = AuthManager(
@@ -82,7 +85,6 @@ class MainWindow(QMainWindow):
         self.chat_worker = None
         self.reward_worker = None
         self.media_trigger_service = MediaTriggerService(self)
-        self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.overlay_server = OverlayServerManager(port=8090)
         self.overlay_server.start()
 
@@ -105,6 +107,7 @@ class MainWindow(QMainWindow):
         self.sidebar.add_tab("Chat", "bubble-text.svg")
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Comandos", "code.svg")
+        self.sidebar.add_tab("Spam Filters", "shield-half.svg")
         self.sidebar.add_tab("Settings", "settings.svg", position="bottom")
         self.sidebar.add_tab("Developer", "terminal.svg", position="bottom")
 
@@ -116,27 +119,39 @@ class MainWindow(QMainWindow):
             view=self.view_dashboard, 
             avatar_service=self.avatar_service
         )
+        
         self.view_chat = ChatView()
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.chat_controller = ChatController(view=self.view_chat, service=self.chat_service)
+        
         self.view_settings = SettingsView()
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.settings_controller = SettingsController(view=self.view_settings, service=self.settings_service)
+        
         self.view_alerts = AlertsView()
         self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
         self.alerts_controller = AlertsController(view=self.view_alerts, service=self.alerts_service)
+        
         self.view_commands = CommandView()
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.command_controller = CommandController(self.view_commands, self.command_service)
+        
+        self.view_spam = SpamView()
+        self.spam_service = SpamService(self.spam_storage, api_client=None)
+        self.spam_controller = SpamController(self.view_spam, self.spam_service)
+        
         self.view_logs = LogView()
         self.log_service = LogService()
         self.log_controller = LogController(view=self.view_logs, service=self.log_service)
+        
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
         self.content_stack.addWidget(self.view_settings)
         self.content_stack.addWidget(self.view_logs) 
         self.content_stack.addWidget(self.view_alerts) 
         self.content_stack.addWidget(self.view_commands)
+        self.content_stack.addWidget(self.view_spam)
+
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
 
@@ -165,6 +180,7 @@ class MainWindow(QMainWindow):
         self.sidebar.view_selected.connect(self._handle_navigation)
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
+        self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self.tray_manager.set_tts_state)
         self.view_alerts.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
@@ -182,6 +198,7 @@ class MainWindow(QMainWindow):
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_controller.load_initial_data()
+        self.spam_controller.load_initial_data()
         chat_settings = self.chat_service.get_settings()
         self.view_chat.set_initial_states(chat_settings)
         if autostart_enabled:
@@ -227,7 +244,6 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def _check_updates_silently(self):
-        """Busca actualizaciones en segundo plano sin interrumpir al usuario (Silent Check)."""
         self.bg_update_worker = UpdateCheckWorker(self.updater_manager)
         self.bg_update_worker.update_found.connect(
             lambda info: self.sidebar.set_update_available(True)
@@ -240,6 +256,7 @@ class MainWindow(QMainWindow):
             "Chat": self.view_chat,
             "Triggers": self.view_alerts,
             "Comandos": self.view_commands,
+            "Spam Filters": self.view_spam,
             "Settings": self.view_settings,
             "Developer": self.view_logs,
         }
@@ -262,26 +279,46 @@ class MainWindow(QMainWindow):
             key = os.getenv("KICK_PUSHER_KEY", "")
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             
+            is_missing_scopes = self.auth_manager.has_missing_scopes()
+            self.dashboard_controller.evaluate_scopes(is_missing_scopes)
             self.command_service.api_client = api_client
+            self.spam_service.api_client = api_client 
             self.chat_controller.command_service = self.command_service
+            
             self.chat_worker = ChatWorker(api_client, cluster, key, parent=self)                
-            self.chat_worker.connection_success.connect(self.dashboard_controller.handle_connection_success)
-            self.chat_worker.message_received.connect(self.chat_controller.handle_incoming_message)
+
+            def on_connection_success(user_data):
+                self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
+                self.dashboard_controller.handle_connection_success(user_data)
+                
+            self.chat_worker.connection_success.connect(on_connection_success)
+            self.chat_worker.message_received.connect(self._route_incoming_message)
             self.chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)                
             self.chat_worker.start()
-
-            self.reward_worker = RewardWorker(api_client, poll_interval_seconds=15, parent=self)
-            self.reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
-            self.reward_worker.start()
 
         self.auth_worker.auth_success.connect(on_auth_success)
         self.auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
         self.auth_worker.start()
 
+    @Slot()
+    def _force_reauth(self):
+        """Borra el token viejo y abre el navegador para pedir los nuevos permisos."""
+        self.auth_manager.logout()
+        self._handle_auth_process()
+
+    @Slot(str, str, list, str, str, int)
+    def _route_incoming_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
+        """Evalúa si es spam. Si lo es, bloquea el mensaje; si no, lo dibuja."""
+        if self.spam_service.is_spam(user, msg, badges, msg_id, sender_id):
+            self.logger.debug(f"Mensaje sancionado por Auto-Mod: {user}: {msg}")
+            return 
+            
+        self.chat_controller.handle_incoming_message(user, msg, badges, color)
+
     @Slot(str, str, str)
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
         msg_sistema = f'<span style="color: #00e701;">canjeó {reward_name}</span>'
-        self.view_chat.append_message(f"[PUNTOS] {user}", msg_sistema)
+        self.view_chat.append_message(f"[PUNTOS] {user}", msg_sistema, "#53FC18")
         
         mappings = self.alerts_service.get_mappings()
         if reward_name in mappings:
@@ -292,7 +329,7 @@ class MainWindow(QMainWindow):
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:
-            self.chat_controller.handle_incoming_message(user, message)
+            self.chat_controller.handle_incoming_message(user, message, [], "")
 
     @Slot()
     def _fetch_api_rewards(self):
@@ -368,7 +405,6 @@ class MainWindow(QMainWindow):
         QApplication.quit()
 
     def _stop_worker_safely(self, worker_name: str, worker_instance):
-        """Método centralizado para detener hilos con gracia (DRY & SoR)"""
         if worker_instance and worker_instance.isRunning():
             self.logger.info(f"Solicitando parada de {worker_name}...")
 
@@ -453,5 +489,3 @@ class MainWindow(QMainWindow):
 
         sys.stdout = StreamToLogger(self.logger, logging.INFO)
         sys.stderr = StreamToLogger(self.logger, logging.ERROR)
-
-        

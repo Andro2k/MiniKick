@@ -264,7 +264,7 @@ QSpinBox, QDoubleSpinBox {{
     border: none;
 }}
 QSpinBox:focus, QDoubleSpinBox:focus {{
-    border: 1.5px solid {COLOR_BORDER_ACTIVE};
+    border: 1px solid {COLOR_BORDER_ACTIVE};
     background-color: {COLOR_BG_HOVER};
 }}
 QSpinBox::up-button, QDoubleSpinBox::up-button {{

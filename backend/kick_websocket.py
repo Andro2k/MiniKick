@@ -40,9 +40,11 @@ class ChatSocketManager:
             elif event == "App\\Events\\ChatMessageEvent":
                 payload = json.loads(data.get("data", "{}"))
                 sender = payload.get("sender", {})
+                msg_id = payload.get("id", "")
+                sender_id = sender.get("id", 0)
                 
                 user = sender.get("username", "")
-                msg = ChatFormatter.clean(payload.get("content", ""))
+                msg = payload.get("content", "")
                 
                 identity = sender.get("identity", {})
                 badges_raw = identity.get("badges", [])
@@ -50,7 +52,7 @@ class ChatSocketManager:
                 color = identity.get("color", "") or "#53FC18"
                 
                 if user and msg:
-                    on_message(user, msg, badges, color)
+                    on_message(user, msg, badges, color, msg_id, sender_id)
 
             elif event == "pusher:ping":
                 ws.send(json.dumps({"event": "pusher:pong"}))
