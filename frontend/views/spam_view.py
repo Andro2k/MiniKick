@@ -6,15 +6,16 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.components.blocks import ViewHeader
 from frontend.components.controls import ModernSwitch
-from frontend.theme import COLOR_ACCENT, COLOR_BG_SURFACE, COLOR_BORDER_SVELTE, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY
+from frontend.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
 from frontend.utils import get_icon_colored
 
 class SpamFilterCard(QFrame):
     """Tarjeta individual expandible (Acordeón) para cada filtro."""
     updated = Signal(str, dict)
 
-    def __init__(self, filter_id: str, title: str, desc: str, icon_name: str, has_amount: bool = True):
+    def __init__(self, filter_id: str, title: str, desc: str, icon_name: str, has_amount: bool = True, i18n=None):
         super().__init__()
+        self.i18n = i18n
         self.filter_id = filter_id
         self.has_amount = has_amount
         self._is_loading = True
@@ -71,7 +72,7 @@ class SpamFilterCard(QFrame):
         b_layout.setContentsMargins(12, 12, 12, 12)
         b_layout.setSpacing(12)
         
-        lbl_gen = QLabel("Configuración de Penalización")
+        lbl_gen = QLabel(self.i18n.get("spam.card.config_title", "Configuración de Penalización"))
         lbl_gen.setProperty("role", "h3")
         b_layout.addWidget(lbl_gen)
         
@@ -79,17 +80,17 @@ class SpamFilterCard(QFrame):
         row1.setSpacing(20)
         
         col_pen = QVBoxLayout()
-        lbl_pen = QLabel("Acción")
+        lbl_pen = QLabel(self.i18n.get("spam.card.action", "Acción"))
         lbl_pen.setProperty("role", "subtitle")
         self.combo_penalty = QComboBox()
-        self.combo_penalty.addItem("Timeout al usuario", "timeout")
-        self.combo_penalty.addItem("Borrar mensaje (Delete)", "delete")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout", "Timeout al usuario"), "timeout")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete", "Borrar mensaje (Delete)"), "delete")
         self.combo_penalty.currentIndexChanged.connect(self._emit_update)
         col_pen.addWidget(lbl_pen)
         col_pen.addWidget(self.combo_penalty)
         
         col_dur = QVBoxLayout()
-        lbl_dur = QLabel("Duración (segundos)")
+        lbl_dur = QLabel(self.i18n.get("spam.card.duration", "Duración (segundos)"))
         lbl_dur.setProperty("role", "subtitle")
         self.spin_dur = QSpinBox()
         self.spin_dur.setRange(10, 86400)
@@ -103,12 +104,12 @@ class SpamFilterCard(QFrame):
         b_layout.addLayout(row1)
         
         col_exc = QVBoxLayout()
-        lbl_exc = QLabel("Excluir rango (Inmunes)")
+        lbl_exc = QLabel(self.i18n.get("spam.card.exclude", "Excluir rango (Inmunes)"))
         lbl_exc.setProperty("role", "subtitle")
         self.combo_exclude = QComboBox()
-        self.combo_exclude.addItem("Ninguno", "none")
-        self.combo_exclude.addItem("Moderadores y Broadcaster", "moderator")
-        self.combo_exclude.addItem("Suscriptores y VIPs", "subscriber")
+        self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_none", "Ninguno"), "none")
+        self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod", "Moderadores y Broadcaster"), "moderator")
+        self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_sub", "Suscriptores y VIPs"), "subscriber")
         self.combo_exclude.currentIndexChanged.connect(self._emit_update)
         col_exc.addWidget(lbl_exc)
         col_exc.addWidget(self.combo_exclude)
@@ -116,7 +117,7 @@ class SpamFilterCard(QFrame):
         
         if self.has_amount:
             col_amt = QVBoxLayout()
-            lbl_amt = QLabel("Cantidad máxima permitida")
+            lbl_amt = QLabel(self.i18n.get("spam.card.max_amount", "Cantidad máxima permitida"))
             lbl_amt.setProperty("role", "subtitle")
             self.spin_amt = QSpinBox()
             self.spin_amt.setRange(1, 500)
@@ -146,7 +147,6 @@ class SpamFilterCard(QFrame):
         self.updated.emit(self.filter_id, config)
 
     def set_data(self, config: dict):
-        """Inyecta los datos de la base de datos silenciosamente."""
         self._is_loading = True
         self.switch.setChecked(config.get("is_active", False))
         
@@ -166,8 +166,9 @@ class SpamFilterCard(QFrame):
 class SpamView(QWidget):
     filter_updated = Signal(str, dict)
 
-    def __init__(self):
+    def __init__(self, i18n):
         super().__init__()
+        self.i18n = i18n
         self.cards = {}
         self._setup_ui()
 
@@ -186,32 +187,31 @@ class SpamView(QWidget):
         self.main_layout.setSpacing(12)
 
         header = ViewHeader(
-            title_text="Filtros Anti-Spam (Auto-Mod)",
-            subtitle_text="Usa estos filtros para mantener tu chat amigable, divertido y libre de toxicidad.",
+            title_text=self.i18n.get("spam.header.title", "Filtros Anti-Spam (Auto-Mod)"),
+            subtitle_text=self.i18n.get("spam.header.subtitle", "Usa estos filtros para mantener tu chat amigable, divertido y libre de toxicidad."),
             icon_name="shield-half.svg",
             icon_color=COLOR_ACCENT
         )
         self.main_layout.addWidget(header)
         self.main_layout.addSpacing(10)
 
-        self._add_card("caps_protection", "Protección de Mayúsculas", "Elimina mensajes con una cantidad excesiva de letras mayúsculas.", "adjustments-alt.svg")
-        self._add_card("link_protection", "Protección de Links", "Elimina mensajes que contengan enlaces no autorizados.", "link.svg", has_amount=False)
-        self._add_card("emote_protection", "Protección de Emotes", "Elimina mensajes que abusen de la cantidad de emotes.", "star.svg")
-        self._add_card("paragraph_protection", "Muros de Texto", "Bloquea mensajes excesivamente largos (Muchos caracteres).", "file-text.svg")
-        self._add_card("symbol_protection", "Protección de Símbolos", "Elimina mensajes con un uso excesivo de símbolos (Ej: @#!%).", "hash.svg")
+        self._add_card("caps_protection", self.i18n.get("spam.filters.caps.title", "Protección de Mayúsculas"), self.i18n.get("spam.filters.caps.desc", "Elimina mensajes con una cantidad excesiva de letras mayúsculas."), "adjustments-alt.svg")
+        self._add_card("link_protection", self.i18n.get("spam.filters.link.title", "Protección de Links"), self.i18n.get("spam.filters.link.desc", "Elimina mensajes que contengan enlaces no autorizados."), "link.svg", has_amount=False)
+        self._add_card("emote_protection", self.i18n.get("spam.filters.emote.title", "Protección de Emotes"), self.i18n.get("spam.filters.emote.desc", "Elimina mensajes que abusen de la cantidad de emotes."), "star.svg")
+        self._add_card("paragraph_protection", self.i18n.get("spam.filters.paragraph.title", "Muros de Texto"), self.i18n.get("spam.filters.paragraph.desc", "Bloquea mensajes excesivamente largos (Muchos caracteres)."), "file-text.svg")
+        self._add_card("symbol_protection", self.i18n.get("spam.filters.symbol.title", "Protección de Símbolos"), self.i18n.get("spam.filters.symbol.desc", "Elimina mensajes con un uso excesivo de símbolos (Ej: @#!%)."), "hash.svg")
         
         self.main_layout.addStretch()
         scroll.setWidget(content)
         base_layout.addWidget(scroll)
 
     def _add_card(self, f_id, title, desc, icon, has_amount=True):
-        card = SpamFilterCard(f_id, title, desc, icon, has_amount)
+        card = SpamFilterCard(f_id, title, desc, icon, has_amount, self.i18n)
         card.updated.connect(self.filter_updated.emit)
         self.cards[f_id] = card
         self.main_layout.addWidget(card)
 
     def populate_filters(self, filters_data: dict):
-        """Puebla las tarjetas con los datos guardados en la BD."""
         for f_id, card in self.cards.items():
             if f_id in filters_data:
                 card.set_data(filters_data[f_id])

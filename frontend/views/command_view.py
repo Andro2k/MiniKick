@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.components.controls import ModernButton, ModernSwitch
 from frontend.components.blocks import ViewHeader
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, COLOR_SUCCESS, COLOR_DANGER
+from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 from frontend.utils import get_icon_colored
 
 class CommandView(QWidget):
@@ -17,8 +17,9 @@ class CommandView(QWidget):
     status_toggled = Signal(str, bool)
     search_text_changed = Signal(str)
 
-    def __init__(self):
+    def __init__(self, i18n):
         super().__init__()
+        self.i18n = i18n
         self._setup_ui()
 
     def _setup_ui(self):
@@ -37,8 +38,8 @@ class CommandView(QWidget):
         self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
-            title_text="Triggers y Respuestas de Comandos",
-            subtitle_text="Vincula comandos de chat o expresiones regulares a respuestas automatizadas del bot.",
+            title_text=self.i18n.get("command.header.title", "Triggers y Respuestas de Comandos"),
+            subtitle_text=self.i18n.get("command.header.subtitle", "Vincula comandos de chat o expresiones regulares a respuestas automatizadas del bot."),
             icon_name="code.svg",
             icon_color=COLOR_ACCENT
         )
@@ -52,26 +53,31 @@ class CommandView(QWidget):
         table_layout.setSpacing(10)
 
         table_header_layout = QHBoxLayout()
-        lbl_table_title = QLabel("Comandos Vinculados")
+        lbl_table_title = QLabel(self.i18n.get("command.table.title", "Comandos Vinculados"))
         lbl_table_title.setProperty("role", "h3")
         
         table_header_layout.addWidget(lbl_table_title)
         table_header_layout.addStretch()
 
         self.txt_search = QLineEdit()
-        self.txt_search.setPlaceholderText("Buscar comando vinculado...")
+        self.txt_search.setPlaceholderText(self.i18n.get("command.table.search_placeholder", "Buscar comando vinculado..."))
         self.txt_search.setFixedWidth(250)
         self.txt_search.textChanged.connect(self.search_text_changed.emit)
         table_header_layout.addWidget(self.txt_search)
 
-        self.btn_new_alert = ModernButton("+ Nuevo Comando", role="action_accent")
+        self.btn_new_alert = ModernButton(self.i18n.get("command.table.btn_new", "+ Nuevo Comando"), role="action_accent")
         self.btn_new_alert.clicked.connect(self.add_requested.emit)
         table_header_layout.addWidget(self.btn_new_alert)
 
         table_layout.addLayout(table_header_layout)
 
         self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Comando", "Aliases / Regex", "Respuesta", "Acciones"])
+
+        col_1 = self.i18n.get("command.table.col_command", "Comando")
+        col_2 = self.i18n.get("command.table.col_aliases", "Aliases / Regex")
+        col_3 = self.i18n.get("command.table.col_response", "Respuesta")
+        col_4 = self.i18n.get("command.table.col_actions", "Acciones")
+        self.table.setHorizontalHeaderLabels([col_1, col_2, col_3, col_4])
         
         h_header = self.table.horizontalHeader()
         h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
@@ -96,8 +102,9 @@ class CommandView(QWidget):
         base_layout.addWidget(scroll_area)
 
     def populate_table(self, commands: list[dict]):
-        """Pinta la tabla desde cero recibiendo la lista de comandos del controlador."""
         self.table.setRowCount(0)
+        prefix_regex = self.i18n.get("command.table.regex_prefix", "Regex")
+        
         for cmd in commands:
             row = self.table.rowCount()
             self.table.insertRow(row)
@@ -109,7 +116,7 @@ class CommandView(QWidget):
             aliases_text = raw_aliases if raw_aliases else "-"
             
             if cmd.get("is_regex"):
-                aliases_text = f"Regex: {raw_aliases}"
+                aliases_text = f"{prefix_regex}: {raw_aliases}"
             
             item_aliases = QTableWidgetItem(aliases_text)
             item_aliases.setToolTip(aliases_text)
@@ -125,7 +132,6 @@ class CommandView(QWidget):
             self.table.setCellWidget(row, 3, actions_widget)
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
-        """Crea un widget contenedor para la columna 'Comando'."""
         container = QWidget()
         layout = QHBoxLayout(container)
         layout.setContentsMargins(8, 0, 8, 0)
@@ -154,7 +160,6 @@ class CommandView(QWidget):
         return container
 
     def _create_actions_cell(self, cmd_data: dict) -> QWidget:
-        """Crea un widget contenedor para la columna 'Acciones'."""
         container = QWidget()
         layout = QHBoxLayout(container)
         layout.setContentsMargins(0, 0, 4, 0)
@@ -172,14 +177,14 @@ class CommandView(QWidget):
         btn_edit = ModernButton("", role="action_accent")
         btn_edit.setFixedSize(28, 28)
         btn_edit.setIcon(get_icon_colored("edit.svg", "#000000", 16))
-        btn_edit.setToolTip("Modificar configuración del comando")
+        btn_edit.setToolTip(self.i18n.get("command.table.tooltip_edit", "Modificar configuración del comando"))
         btn_edit.clicked.connect(lambda checked=False, t=trigger_name: self.edit_requested.emit(t))
         layout.addWidget(btn_edit)
         
         btn_del = ModernButton("", role="action_danger")
         btn_del.setFixedSize(28, 28)
         btn_del.setIcon(get_icon_colored("trash.svg", "#ef4444", 16))
-        btn_del.setToolTip("Eliminar comando permanentemente")
+        btn_del.setToolTip(self.i18n.get("command.table.tooltip_delete", "Eliminar comando permanentemente"))
         btn_del.clicked.connect(lambda checked=False, t=trigger_name: self.delete_requested.emit(t))
         layout.addWidget(btn_del)
         

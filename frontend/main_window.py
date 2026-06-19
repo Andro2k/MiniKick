@@ -18,6 +18,7 @@ from backend.services.media_trigger_service import MediaTriggerService
 from backend.services.overlay_server import OverlayServerManager
 from backend.services.settings_service import SettingsService
 from backend.services.spam_service import SpamService
+from backend.services.translation_service import TranslationService
 from frontend.components.log_handler import QLogHandler, StreamToLogger
 from frontend.components.sidebar import Sidebar
 from frontend.components.tray_menu import SystemTrayManager
@@ -72,7 +73,8 @@ class MainWindow(QMainWindow):
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
         self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage, self.spam_storage)
-        
+        saved_lang = self.settings_storage.load_string("app_language", "es")
+        self.i18n = TranslationService(default_lang=saved_lang)
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
             client_secret=os.getenv("KICK_CLIENT_SECRET", ""),
@@ -124,7 +126,7 @@ class MainWindow(QMainWindow):
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.chat_controller = ChatController(view=self.view_chat, service=self.chat_service)
         
-        self.view_settings = SettingsView()
+        self.view_settings = SettingsView(self.i18n)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.settings_controller = SettingsController(view=self.view_settings, service=self.settings_service)
         
@@ -132,11 +134,11 @@ class MainWindow(QMainWindow):
         self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
         self.alerts_controller = AlertsController(view=self.view_alerts, service=self.alerts_service)
         
-        self.view_commands = CommandView()
+        self.view_commands = CommandView(self.i18n)
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.command_controller = CommandController(self.view_commands, self.command_service)
         
-        self.view_spam = SpamView()
+        self.view_spam = SpamView(self.i18n)
         self.spam_service = SpamService(self.spam_storage, api_client=None)
         self.spam_controller = SpamController(self.view_spam, self.spam_service)
         
