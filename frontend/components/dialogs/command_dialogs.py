@@ -27,13 +27,13 @@ class CommandConfigWizard(ModernBaseDialog):
         basic_layout.setSpacing(12)
 
         lbl_trigger = QLabel("Nombre del Comando (Ej: !discord):")
-        lbl_trigger.setProperty("role", "section_small")
+        lbl_trigger.setProperty("role", "h3")
         self.txt_trigger = QLineEdit()
         basic_layout.addWidget(lbl_trigger)
         basic_layout.addWidget(self.txt_trigger)
 
         lbl_response = QLabel("Respuesta del bot (puedes usar {user}):")
-        lbl_response.setProperty("role", "section_small")
+        lbl_response.setProperty("role", "h3")
         self.txt_response = QTextEdit()
         self.txt_response.setMinimumHeight(80) 
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -71,7 +71,7 @@ class CommandConfigWizard(ModernBaseDialog):
         adv_layout.setSpacing(12)
 
         lbl_aliases = QLabel("Aliases Estándar (separados por coma):")
-        lbl_aliases.setProperty("role", "section_small")
+        lbl_aliases.setProperty("role", "h3")
         self.txt_aliases = QLineEdit()
         self.txt_aliases.setPlaceholderText("!dc, !discordia")
         adv_layout.addWidget(lbl_aliases)
@@ -84,7 +84,7 @@ class CommandConfigWizard(ModernBaseDialog):
         adv_layout.addWidget(self.chk_regex)
 
         lbl_regex = QLabel("Sintaxis de Expresión Regular:")
-        lbl_regex.setProperty("role", "section_small")
+        lbl_regex.setProperty("role", "h3")
         self.txt_regex = QLineEdit()
         self.txt_regex.setPlaceholderText("Ej: \\b(hola|buenas)\\b")
         self.txt_regex.setEnabled(False)
@@ -94,7 +94,7 @@ class CommandConfigWizard(ModernBaseDialog):
         
         lbl_regex_help = QLabel("Si activas RegEx, el bot buscará este patrón en todo el mensaje.")
         lbl_regex_help.setWordWrap(True)
-        lbl_regex_help.setStyleSheet("color: #94A3B8; font-style: italic;")
+        lbl_regex_help.setProperty("role", "caption")
         adv_layout.addWidget(lbl_regex_help)
         
         adv_layout.addStretch()

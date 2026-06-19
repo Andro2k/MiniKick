@@ -1,14 +1,15 @@
-# backend\services\backup_service.py
+# backend/services/backup_service.py
 
 import json
 import logging
 from backend.interfaces.settings_interfaces import SettingsStorage
 
 class BackupService:
-    def __init__(self, settings_storage: SettingsStorage, alerts_storage, commands_storage):
+    def __init__(self, settings_storage: SettingsStorage, alerts_storage, commands_storage, spam_storage):
         self.settings_storage = settings_storage
         self.alerts_storage = alerts_storage
         self.commands_storage = commands_storage
+        self.spam_storage = spam_storage
         self.logger = logging.getLogger(__name__)
 
     def export_to_json(self, filepath: str) -> bool:
@@ -16,7 +17,8 @@ class BackupService:
             data = {
                 "settings": self.settings_storage.get_all(),
                 "alerts": self.alerts_storage.load_all(),
-                "commands": self.commands_storage.load_all()
+                "commands": self.commands_storage.load_all(),
+                "spam_filters": self.spam_storage.load_all()
             }
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4, ensure_ascii=False)
@@ -45,8 +47,12 @@ class BackupService:
                         is_active=cmd.get("is_active", True),
                         cooldown=cmd.get("cooldown", 5),
                         aliases=cmd.get("aliases", ""),
-                        is_regex=cmd.get("is_regex", False)
+                        is_regex=cmd.get("is_regex", False),
+                        permission=cmd.get("permission", "everyone")
                     )
+            if "spam_filters" in data and isinstance(data["spam_filters"], dict):
+                for f_id, config in data["spam_filters"].items():
+                    self.spam_storage.save_filter(f_id, config)
                 
             self.logger.info(f"Configuración importada exitosamente desde {filepath}")
             return True

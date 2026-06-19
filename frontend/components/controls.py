@@ -7,7 +7,7 @@ from frontend.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, RA
 
 class ModernButton(QPushButton):
     """Componente de botón reutilizable con roles de estilo."""
-    def __init__(self, text: str, role: str = "action_success", parent=None):
+    def __init__(self, text: str, role: str = "action_accent", parent=None):
         super().__init__(text, parent)
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)

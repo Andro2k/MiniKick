@@ -19,8 +19,8 @@ class ModernBaseDialog(QDialog):
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.container = QFrame()
-        self.container.setObjectName("GlowDialogContainer")
-        self.container.setProperty("dialog_state", "neutral")
+        self.container.setProperty("role", "dialog")
+        self.container.setProperty("state", "neutral")
         self.container.setFixedWidth(width)
         self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         
@@ -40,7 +40,7 @@ class ModernBaseDialog(QDialog):
         
         if title:
             self.title_lbl = QLabel(title)
-            self.title_lbl.setProperty("role", "title")
+            self.title_lbl.setProperty("role", "h1")
             self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.title_lbl.setWordWrap(True)
             self.content_layout.addWidget(self.title_lbl)
@@ -50,7 +50,7 @@ class ModernBaseDialog(QDialog):
 
     def set_dialog_state(self, state: str, glow_color: QColor = None):
         """Cambia el borde y el color del glow de forma dinámica."""
-        self.container.setProperty("dialog_state", state)
+        self.container.setProperty("state", state)
         self.container.style().unpolish(self.container)
         self.container.style().polish(self.container)
         

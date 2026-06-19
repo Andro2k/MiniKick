@@ -43,7 +43,7 @@ class SettingsView(QWidget):
         self.main_layout.addWidget(self.header)
 
         sys_card = QFrame()
-        sys_card.setObjectName("Card")
+        sys_card.setProperty("role", "card")
         sys_layout = QVBoxLayout(sys_card)
         sys_layout.setContentsMargins(10, 10, 10, 10)
         sys_layout.setSpacing(10)
@@ -58,7 +58,7 @@ class SettingsView(QWidget):
             right_widget=self.sw_start_bg
         )
 
-        self.btn_update = ModernButton("Buscar actualizaciones", role="action_success")
+        self.btn_update = ModernButton("Buscar actualizaciones", role="action_accent")
         self.btn_update.clicked.connect(self.update_clicked.emit)
         
         row_update = SettingRow(
@@ -74,7 +74,7 @@ class SettingsView(QWidget):
         self.main_layout.addWidget(sys_card)
 
         backup_card = QFrame()
-        backup_card.setObjectName("Card")
+        backup_card.setProperty("role", "card")
         backup_layout = QVBoxLayout(backup_card)
         backup_layout.setContentsMargins(10, 10, 10, 10)
         backup_layout.setSpacing(10)
@@ -104,7 +104,7 @@ class SettingsView(QWidget):
         self.main_layout.addWidget(backup_card)
 
         account_card = QFrame()
-        account_card.setObjectName("Card")
+        account_card.setProperty("role", "card")
         account_layout = QVBoxLayout(account_card)
         account_layout.setContentsMargins(10, 10, 10, 10)
         account_layout.setSpacing(10)

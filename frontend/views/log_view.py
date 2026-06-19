@@ -52,7 +52,7 @@ class LogView(QWidget):
         self.main_layout.addWidget(self.header)
 
         self.controls_card = QFrame()
-        self.controls_card.setObjectName("Card")
+        self.controls_card.setProperty("role", "card")
         self.controls_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.controls_card)
         self.controls_layout.setContentsMargins(10, 10, 10, 10)
         self.controls_layout.setSpacing(10)
@@ -83,8 +83,8 @@ class LogView(QWidget):
         self.btn_load_file.setIcon(get_icon_colored("file-text.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_load_file.clicked.connect(self._open_file_dialog)
 
-        self.btn_live = ModernButton("Ver en Vivo", role="action_success")
-        self.btn_live.setIcon(get_icon_colored("play.svg", COLOR_ACCENT, 16))
+        self.btn_live = ModernButton("Ver en Vivo", role="action_accent")
+        self.btn_live.setIcon(get_icon_colored("play.svg", "#000000", 16))
         self.btn_live.clicked.connect(self._handle_live_click)
         self.btn_live.setVisible(False)
 
@@ -106,7 +106,7 @@ class LogView(QWidget):
         self.main_layout.addWidget(self.controls_card)
 
         self.table_card = QFrame()
-        self.table_card.setObjectName("Card")
+        self.table_card.setProperty("role", "card")
         self.table_card.setMinimumHeight(400)
         table_layout = QVBoxLayout(self.table_card)
         table_layout.setContentsMargins(10, 10, 10, 10)

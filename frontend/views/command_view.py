@@ -45,7 +45,7 @@ class CommandView(QWidget):
         self.main_layout.addWidget(self.header)
 
         table_card = QFrame()
-        table_card.setObjectName("Card")
+        table_card.setProperty("role", "card")
         table_card.setMinimumHeight(400)
         table_layout = QVBoxLayout(table_card)
         table_layout.setContentsMargins(10, 10, 10, 10)
@@ -53,7 +53,7 @@ class CommandView(QWidget):
 
         table_header_layout = QHBoxLayout()
         lbl_table_title = QLabel("Comandos Vinculados")
-        lbl_table_title.setProperty("role", "section")
+        lbl_table_title.setProperty("role", "h3")
         
         table_header_layout.addWidget(lbl_table_title)
         table_header_layout.addStretch()
@@ -132,8 +132,8 @@ class CommandView(QWidget):
         layout.setSpacing(6)
 
         lbl_status_dot = QLabel("●")
-        dot_color = COLOR_SUCCESS if cmd_data.get("is_active") else COLOR_DANGER
-        lbl_status_dot.setStyleSheet(f"color: {dot_color}; font-size: 16px; margin-right: 2px;")
+        lbl_status_dot.setProperty("role", "status_dot")
+        lbl_status_dot.setProperty("state", "active" if cmd_data.get("is_active") else "inactive")
         layout.addWidget(lbl_status_dot)
         
         lbl_icon = QLabel()
@@ -147,7 +147,7 @@ class CommandView(QWidget):
         permission = cmd_data.get("permission", "everyone")
         if permission != "everyone":
             lbl_perm = QLabel(permission.upper())
-            lbl_perm.setStyleSheet(f"background-color: {COLOR_ACCENT}; color: #000000; font-size: 10px; font-weight: bold; padding: 2px 4px; border-radius: 4px;")
+            lbl_perm.setProperty("role", "tag_permission")           
             layout.addWidget(lbl_perm)
         
         layout.addStretch()

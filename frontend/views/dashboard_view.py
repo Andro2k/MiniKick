@@ -41,15 +41,12 @@ class DashboardView(QWidget):
         self.main_layout.addWidget(self.header)
 
         self.banner_scopes = QFrame()
-        self.banner_scopes.setStyleSheet("background-color: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; border-radius: 8px;")
+        self.banner_scopes.setProperty("role", "banner_danger")
         banner_layout = QHBoxLayout(self.banner_scopes)
         
         lbl_warn_icon = QLabel()
         lbl_warn_icon.setPixmap(get_icon_colored("help.svg", "#EF4444", 24).pixmap(24, 24))
-        lbl_warn_icon.setStyleSheet("background-color: transparent; border: none;")
-        
         lbl_warn_text = QLabel("<b>Actualización requerida:</b> Tu cuenta no tiene permisos para las nuevas funciones Anti-Spam.")
-        lbl_warn_text.setStyleSheet("background-color: transparent; color: #F3F4F6; border: none;")
         
         self.btn_reauth = ModernButton("Actualizar Permisos", role="action_danger")
         self.btn_reauth.clicked.connect(self.reauth_requested.emit)
@@ -70,7 +67,7 @@ class DashboardView(QWidget):
 
     def _setup_connection_card(self):
         conn_card = QFrame()
-        conn_card.setObjectName("Card")
+        conn_card.setProperty("role", "card")
         conn_layout = QVBoxLayout(conn_card)
         conn_layout.setContentsMargins(10, 10, 10, 10)
         conn_layout.setSpacing(10)
@@ -96,7 +93,7 @@ class DashboardView(QWidget):
         
         divider = QFrame()
         divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setStyleSheet("background-color: rgba(255,255,255,0.05); margin: 4px 0;")
+        divider.setProperty("role", "divider")
         conn_layout.addWidget(divider)
         
         conn_layout.addLayout(status_layout)
@@ -113,7 +110,7 @@ class DashboardView(QWidget):
         self.top_row_layout.setSpacing(12) 
 
         avatar_card = QFrame()
-        avatar_card.setObjectName("Card")
+        avatar_card.setProperty("role", "card")
         avatar_layout = QVBoxLayout(avatar_card)
         avatar_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -125,19 +122,17 @@ class DashboardView(QWidget):
         avatar_layout.addWidget(self.lbl_avatar)
 
         info_card = QFrame()
-        info_card.setObjectName("Card")
+        info_card.setProperty("role", "card")
         info_card.setMinimumHeight(160)
         info_layout = QVBoxLayout(info_card)
         info_layout.setContentsMargins(10, 10, 10, 10)
 
         self.lbl_username = QLabel("-")
-        self.lbl_username.setProperty("role", "title")
-        self.lbl_username.setStyleSheet("font-size: 26px; font-weight: 800;")
+        self.lbl_username.setProperty("role", "h1")
         self.lbl_username.setWordWrap(True)
 
         self.lbl_bio = QLabel("-")
         self.lbl_bio.setProperty("role", "body")
-        self.lbl_bio.setStyleSheet("color: rgba(255,255,255,0.6); font-size: 14px; margin-top: 6px;")
         self.lbl_bio.setWordWrap(True)
 
         info_layout.addWidget(self.lbl_username)

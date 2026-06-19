@@ -25,14 +25,14 @@ class UpdateDialog(ModernBaseDialog):
 
         self.lbl_top = QLabel("Buscando...")
         self.lbl_top.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_top.setProperty("role", "update_top")
+        self.lbl_top.setProperty("role", "text_accent")
         self.content_layout.addWidget(self.lbl_top)
         
         self.content_layout.addSpacing(5)
 
         self.lbl_title = QLabel("Actualización del Sistema")
         self.lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_title.setProperty("role", "update_title")
+        self.lbl_title.setProperty("role", "h1")
         self.content_layout.addWidget(self.lbl_title)
 
         self.content_layout.addSpacing(10)
@@ -76,6 +76,7 @@ class UpdateDialog(ModernBaseDialog):
 
         self.btn_primary = QPushButton("Reiniciar ahora")
         self.btn_primary.setProperty("role", "action_accent")
+        self.btn_primary.clicked.connect(lambda: None) 
         
         self.btn_secondary = QPushButton("Cerrar")
         self.btn_secondary.setProperty("role", "action_outlined")
@@ -156,7 +157,7 @@ class UpdateDialog(ModernBaseDialog):
     def show_error(self, message: str):
         self.set_dialog_state("danger", QColor(239, 68, 68, 60))
         
-        self.lbl_top.setProperty("role", "update_top_error")
+        self.lbl_top.setProperty("role", "text_danger")
         self.lbl_top.style().unpolish(self.lbl_top)
         self.lbl_top.style().polish(self.lbl_top)
         

@@ -39,16 +39,16 @@ class Sidebar(QFrame):
         self.logo_btn = QPushButton()
         self.logo_btn.setIcon(get_icon("logo.svg")) 
         self.logo_btn.setIconSize(QSize(30, 30))
-        self.logo_btn.setObjectName("LogoBtn")
+        self.logo_btn.setProperty("role", "btn_ghost")
         
         self.title_label = QLabel("MiniKick")
-        self.title_label.setObjectName("SidebarTitle")
+        self.title_label.setProperty("role", "h3")
         
         self.expanded_spacer = QWidget()
         self.expanded_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
         self.btn_toggle = QPushButton()
-        self.btn_toggle.setProperty("role", "action_outlined")
+        self.btn_toggle.setProperty("role", "btn_ghost")
         self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_TEXT_SECONDARY)) 
         self.btn_toggle.setFixedSize(36, 36)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -74,7 +74,7 @@ class Sidebar(QFrame):
         self.main_layout.addSpacing(4)
         
         self.btn_update_alert = QPushButton("Nueva Versión")
-        self.btn_update_alert.setProperty("role", "action_update")
+        self.btn_update_alert.setProperty("role", "action_accent")
         self.btn_update_alert.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_alert.setIcon(get_icon_colored("cloud-download.svg", COLOR_ACCENT, 14))
         
@@ -84,7 +84,7 @@ class Sidebar(QFrame):
 
         self.lbl_version = QLabel(f"Versión {self.app_version}")
         self.lbl_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_version.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; font-size: 11px; font-weight: bold; margin-top: 2px;")
+        self.lbl_version.setProperty("role", "caption")
         self.main_layout.addWidget(self.lbl_version)
 
     def set_update_available(self, available: bool = True):
@@ -111,7 +111,6 @@ class Sidebar(QFrame):
         btn.setProperty("icon_name", icon_name)        
         icon_color = COLOR_ACCENT if is_active else COLOR_TEXT_SECONDARY
         btn.setIcon(get_icon_colored(icon_name, icon_color, 28))
-        btn.setStyleSheet("text-align: left; padding-left: 12px;")
         
         if is_active:
             btn.setChecked(True)

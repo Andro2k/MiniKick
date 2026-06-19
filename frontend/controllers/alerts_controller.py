@@ -9,6 +9,7 @@ class AlertsController(QObject):
         self.view = view
         self.service = service
         self.current_rewards_list = ["No hay recompensas"]
+        self._active_dialog = None
         self._connect_signals()
 
     def _connect_signals(self):
@@ -26,10 +27,11 @@ class AlertsController(QObject):
     def update_rewards_list(self, rewards: list):
         """Recibe la lista fresca de recompensas y actualiza la vista."""
         self.current_rewards_list = rewards if rewards else ["No hay recompensas"]
-        self.view.update_rewards_combo(self.current_rewards_list)
+        if self._active_dialog:
+            self._active_dialog.update_rewards(self._get_available_rewards())
 
     def _get_available_rewards(self, ignore_reward=None):
-        """NUEVO: Filtra la lista para ocultar las recompensas que ya tienen una alerta asignada."""
+        """Filtra la lista para ocultar las recompensas que ya tienen una alerta asignada."""
         mappings = self.service.get_mappings()
         used_rewards = mappings.keys()
         available = [r for r in self.current_rewards_list if r not in used_rewards or r == ignore_reward]
@@ -38,15 +40,17 @@ class AlertsController(QObject):
     @Slot()
     def _handle_add(self):
         available_rewards = self._get_available_rewards()
-        dialog = AlertConfigWizard(self.view, rewards_list=available_rewards)
+        self._active_dialog = AlertConfigWizard(self.view, rewards_list=available_rewards)
         
-        if dialog.exec():
-            reward, config = dialog.get_config_data()
+        if self._active_dialog.exec():
+            reward, config = self._active_dialog.get_config_data()
             if reward and reward not in ["Cargando recompensas...", "No hay recompensas", "No hay recompensas disponibles"] and config["filepath"]:
                 mappings = self.service.get_mappings()
                 mappings[reward] = config
                 self.service.save_mappings(mappings)
                 self.view.populate_table(mappings)
+                
+        self._active_dialog = None
 
     @Slot(str)
     def _handle_edit(self, reward_name: str):
@@ -55,15 +59,15 @@ class AlertsController(QObject):
             return
             
         available_rewards = self._get_available_rewards(ignore_reward=reward_name)
-        dialog = AlertConfigWizard(
+        self._active_dialog = AlertConfigWizard(
             self.view, 
             rewards_list=available_rewards, 
             existing_config=mappings[reward_name], 
             existing_reward=reward_name
         )
         
-        if dialog.exec():
-            new_reward, updated_config = dialog.get_config_data()
+        if self._active_dialog.exec():
+            new_reward, updated_config = self._active_dialog.get_config_data()
             if updated_config["filepath"]:
                 if new_reward != reward_name:
                     del mappings[reward_name]
@@ -71,6 +75,8 @@ class AlertsController(QObject):
                 mappings[new_reward] = updated_config
                 self.service.save_mappings(mappings)
                 self.view.populate_table(mappings)
+                
+        self._active_dialog = None
 
     @Slot(str)
     def _handle_delete(self, reward_name: str):

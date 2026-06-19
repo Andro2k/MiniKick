@@ -26,13 +26,7 @@ class DraggableAlertBox(QFrame):
         self.base_scale_val = scale_val
         
         self.setFixedSize(100, 100)
-        self.setStyleSheet("""
-            QFrame {
-                background-color: rgba(83, 252, 24, 0.1); 
-                border: 2px dashed #53FC18; 
-                border-radius: 4px;
-            }
-        """)
+        
         self.setCursor(Qt.CursorShape.OpenHandCursor)
         
         self._drag_active = False
@@ -136,7 +130,7 @@ class VisualPositionerDialog(ModernBaseDialog):
         
         self.canvas_container = QFrame()
         self.canvas_container.setFixedSize(self.canvas_w, self.canvas_h)
-        self.canvas_container.setStyleSheet("background-color: #0B0E11; border: 2px solid #333333; border-radius: 8px;")
+        self.canvas_container.setObjectName("CanvasContainer")
         
         self.draggable_box = DraggableAlertBox(self.canvas_container, self.canvas_w, self.canvas_h, self.scale_factor, filepath, scale_val)
         self.draggable_box.set_obs_coordinates(current_x, current_y)
@@ -187,7 +181,7 @@ class AlertConfigWizard(ModernBaseDialog):
         for seg in [self.seg1, self.seg2]:
             seg.setFixedHeight(4)
             seg.setFixedWidth(40)
-            seg.setStyleSheet("background-color: #333333; border-radius: 2px;")
+            seg.setProperty("role", "step_indicator")
             self.indicator_layout.addWidget(seg)
             
         self.content_layout.addLayout(self.indicator_layout)
@@ -195,11 +189,14 @@ class AlertConfigWizard(ModernBaseDialog):
 
     def _set_active_step(self, index: int):
         self.stack.setCurrentIndex(index)
-        active_style = f"background-color: {COLOR_ACCENT}; border-radius: 2px;"
-        inactive_style = "background-color: #333333; border-radius: 2px;"
+
+        self.seg1.setProperty("state", "active" if index == 0 else "inactive")
+        self.seg2.setProperty("state", "active" if index == 1 else "inactive")
         
-        self.seg1.setStyleSheet(active_style if index == 0 else inactive_style)
-        self.seg2.setStyleSheet(active_style if index == 1 else inactive_style)
+        self.seg1.style().unpolish(self.seg1)
+        self.seg1.style().polish(self.seg1)
+        self.seg2.style().unpolish(self.seg2)
+        self.seg2.style().polish(self.seg2)
 
     def _build_step1(self, rewards_list, existing_reward):
         layout = QVBoxLayout(self.step1_widget)
@@ -208,16 +205,16 @@ class AlertConfigWizard(ModernBaseDialog):
 
         header_layout = QVBoxLayout()
         header_title = QLabel("Recompensa y Archivo")
-        header_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #F3F4F6;")
+        header_title.setProperty("role", "h2")
         header_desc = QLabel("Configura qué punto de canal activará esta alerta.")
-        header_desc.setStyleSheet("font-size: 13px; color: #9CA3AF;")
+        header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
         header_layout.addWidget(header_desc)
         layout.addLayout(header_layout)
         layout.addSpacing(5)
         
         lbl = QLabel("Selección de Recompensa")
-        lbl.setProperty("role", "section_small")
+        lbl.setProperty("role", "h3")
         layout.addWidget(lbl)
         
         row1 = QHBoxLayout()
@@ -235,7 +232,7 @@ class AlertConfigWizard(ModernBaseDialog):
         row1.addWidget(self.combo_rewards, stretch=1)
         
         self.btn_refresh = ModernButton("", role="action_outlined")
-        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_TEXT_PRIMARY, 24))
         self.btn_refresh.setToolTip("Actualizar Recompensas de Kick")
         self.btn_refresh.clicked.connect(self._request_refresh)
         row1.addWidget(self.btn_refresh)
@@ -244,7 +241,7 @@ class AlertConfigWizard(ModernBaseDialog):
         layout.addSpacing(5)
         
         lbl2 = QLabel("Archivo Multimedia")
-        lbl2.setProperty("role", "section_small")
+        lbl2.setProperty("role", "h3")
         layout.addWidget(lbl2)
         
         row2 = QHBoxLayout()
@@ -279,9 +276,9 @@ class AlertConfigWizard(ModernBaseDialog):
         
         header_layout = QVBoxLayout()
         header_title = QLabel("Ajustes de Pantalla")
-        header_title.setStyleSheet("font-size: 16px; font-weight: bold; color: #F3F4F6;")
+        header_title.setProperty("role", "h2")
         header_desc = QLabel("Define cómo y dónde se mostrará tu alerta en el lienzo.")
-        header_desc.setStyleSheet("font-size: 13px; color: #9CA3AF;")
+        header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
         header_layout.addWidget(header_desc)
         layout.addLayout(header_layout)
@@ -289,7 +286,7 @@ class AlertConfigWizard(ModernBaseDialog):
         
         vol_row = QHBoxLayout()
         lbl_vol = QLabel("Volumen de la alerta")
-        lbl_vol.setProperty("role", "section_small")
+        lbl_vol.setProperty("role", "h3")
         vol_row.addWidget(lbl_vol)
         
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
@@ -311,7 +308,7 @@ class AlertConfigWizard(ModernBaseDialog):
         
         row_rnd = QHBoxLayout()
         lbl_rnd = QLabel("Posición Aleatoria")
-        lbl_rnd.setProperty("role", "section_small")
+        lbl_rnd.setProperty("role", "h3")
         row_rnd.addWidget(lbl_rnd)
         
         self.chk_random_pos = ModernSwitch()

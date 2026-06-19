@@ -53,7 +53,7 @@ class AlertsView(QWidget):
 
     def _build_obs_card(self):
         obs_card = QFrame()
-        obs_card.setObjectName("Card")
+        obs_card.setProperty("role", "card")
         obs_layout = QVBoxLayout(obs_card)
         obs_layout.setContentsMargins(10, 10, 10, 10)
         
@@ -72,7 +72,7 @@ class AlertsView(QWidget):
 
     def _build_table_card(self):
         table_card = QFrame()
-        table_card.setObjectName("Card")
+        table_card.setProperty("role", "card")
         table_card.setMinimumHeight(300)
         table_layout = QVBoxLayout(table_card)
         table_layout.setContentsMargins(10, 10, 10, 10)
@@ -80,7 +80,7 @@ class AlertsView(QWidget):
 
         table_header_layout = QHBoxLayout()
         lbl_table_title = QLabel("Recompensas Vinculadas")
-        lbl_table_title.setProperty("role", "section")
+        lbl_table_title.setProperty("role", "h3")
 
         self.btn_new_alert = ModernButton("+ Nueva Alerta", role="action_accent")
         self.btn_new_alert.clicked.connect(self.add_requested.emit)
@@ -131,7 +131,7 @@ class AlertsView(QWidget):
             actions_layout.setSpacing(8)
             actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
-            btn_play = self._create_table_action_btn("play.svg", "#53FC18", "action_success", "Probar en OBS", lambda checked=False, r=reward: self.preview_requested.emit(r))
+            btn_play = self._create_table_action_btn("play.svg", "#53FC18", "action_outlined", "Probar en OBS", lambda checked=False, r=reward: self.preview_requested.emit(r))
             btn_edit = self._create_table_action_btn("edit.svg", "#000000", "action_accent", "Modificar ajustes", lambda checked=False, r=reward: self.edit_requested.emit(r))
             btn_del = self._create_table_action_btn("trash.svg", "#ef4444", "action_danger", "Eliminar alerta", lambda checked=False, r=reward: self.delete_requested.emit(r))
             

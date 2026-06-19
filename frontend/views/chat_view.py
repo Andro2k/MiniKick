@@ -52,7 +52,7 @@ class ChatView(QWidget):
         self.body_layout.setSpacing(16)
 
         config_card = QFrame()
-        config_card.setObjectName("Card")
+        config_card.setProperty("role", "card")
         config_card.setMinimumWidth(380) 
         config_layout = QVBoxLayout(config_card)
         config_layout.setContentsMargins(10, 10, 10, 10)
@@ -105,7 +105,7 @@ class ChatView(QWidget):
         config_layout.addWidget(self._build_bots_panel(), stretch=1) 
         
         chat_card = QFrame()
-        chat_card.setObjectName("Card")
+        chat_card.setProperty("role", "card")
         chat_card.setMinimumHeight(400) 
         
         chat_layout = QVBoxLayout(chat_card)
@@ -113,11 +113,11 @@ class ChatView(QWidget):
         chat_layout.setSpacing(10)
 
         lbl_chat_title = QLabel("Historial de la Sala")
-        lbl_chat_title.setProperty("role", "section")
+        lbl_chat_title.setProperty("role", "h3")
         
         self.chat_display = QTextEdit()
         self.chat_display.setReadOnly(True)
-        self.chat_display.setObjectName("ConsoleDisplay")
+        self.chat_display.setProperty("role", "console")
 
         chat_layout.addWidget(lbl_chat_title)
         chat_layout.addWidget(self.chat_display)
@@ -136,7 +136,7 @@ class ChatView(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         title = QLabel("Usuarios Silenciados")
-        title.setProperty("role", "section_small")
+        title.setProperty("role", "h3")
         layout.addWidget(title)
 
         input_row = QHBoxLayout()
@@ -157,7 +157,7 @@ class ChatView(QWidget):
         self.list_bots.setFlow(QListView.Flow.LeftToRight) 
         self.list_bots.setWrapping(True) 
         self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
-        self.list_bots.setObjectName("BotsList")
+        self.list_bots.setProperty("role", "transparent_list")
         
         self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
         self.list_bots.setViewportMargins(0, 0, 0, 0)
@@ -220,7 +220,7 @@ class ChatView(QWidget):
         self.list_bots.addItem(item)
         
         tag_widget = QFrame()
-        tag_widget.setObjectName("BotTag")
+        tag_widget.setProperty("role", "tag")
         layout = QHBoxLayout(tag_widget)
         layout.setContentsMargins(4, 4, 8, 4) 
         layout.setSpacing(4)
@@ -228,6 +228,7 @@ class ChatView(QWidget):
         
         lbl_name = QLabel(bot_name)
         btn_delete = QPushButton()
+        btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setIcon(get_icon_colored("trash.svg", "#ef4444", size=14))
         btn_delete.setFixedSize(22, 22)

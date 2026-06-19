@@ -19,15 +19,7 @@ class SpamFilterCard(QFrame):
         self.has_amount = has_amount
         self._is_loading = True
         
-        self.setObjectName("Card")
-        self.setStyleSheet(f"""
-            QFrame#Card {{
-                background-color: {COLOR_BG_SURFACE};
-                border: 1px solid {COLOR_BORDER_SVELTE};
-                border-radius: 8px;
-            }}
-        """)
-        
+        self.setProperty("role", "card")
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
@@ -52,9 +44,9 @@ class SpamFilterCard(QFrame):
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
         lbl_title = QLabel(title)
-        lbl_title.setStyleSheet(f"color: {COLOR_TEXT_PRIMARY}; font-weight: bold; font-size: 14px;")
+        lbl_title.setProperty("role", "h3")
         lbl_desc = QLabel(desc)
-        lbl_desc.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; font-size: 13px;")
+        lbl_desc.setProperty("role", "body")
         text_layout.addWidget(lbl_title)
         text_layout.addWidget(lbl_desc)
         h_layout.addLayout(text_layout, stretch=1)
@@ -66,7 +58,7 @@ class SpamFilterCard(QFrame):
         self.btn_expand = QPushButton()
         self.btn_expand.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_TEXT_SECONDARY, 20))
         self.btn_expand.setFixedSize(30, 30)
-        self.btn_expand.setStyleSheet(f"border: none; background: transparent; border-radius: 4px;")
+        self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.clicked.connect(self.toggle_expand)
         h_layout.addWidget(self.btn_expand)
         
@@ -74,14 +66,13 @@ class SpamFilterCard(QFrame):
 
     def _build_body(self):
         self.body_widget = QWidget()
-        self.body_widget.setStyleSheet(f"border-top: 1px solid {COLOR_BORDER_SVELTE};")
+        self.body_widget.setObjectName("SpamCardBody")
         b_layout = QVBoxLayout(self.body_widget)
         b_layout.setContentsMargins(12, 12, 12, 12)
         b_layout.setSpacing(12)
         
         lbl_gen = QLabel("Configuración de Penalización")
-        lbl_gen.setProperty("role", "section_small")
-        lbl_gen.setStyleSheet("border: none;")
+        lbl_gen.setProperty("role", "h3")
         b_layout.addWidget(lbl_gen)
         
         row1 = QHBoxLayout()
@@ -89,7 +80,7 @@ class SpamFilterCard(QFrame):
         
         col_pen = QVBoxLayout()
         lbl_pen = QLabel("Acción")
-        lbl_pen.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; border: none;")
+        lbl_pen.setProperty("role", "subtitle")
         self.combo_penalty = QComboBox()
         self.combo_penalty.addItem("Timeout al usuario", "timeout")
         self.combo_penalty.addItem("Borrar mensaje (Delete)", "delete")
@@ -99,7 +90,7 @@ class SpamFilterCard(QFrame):
         
         col_dur = QVBoxLayout()
         lbl_dur = QLabel("Duración (segundos)")
-        lbl_dur.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; border: none;")
+        lbl_dur.setProperty("role", "subtitle")
         self.spin_dur = QSpinBox()
         self.spin_dur.setRange(10, 86400)
         self.spin_dur.setValue(300)
@@ -113,7 +104,7 @@ class SpamFilterCard(QFrame):
         
         col_exc = QVBoxLayout()
         lbl_exc = QLabel("Excluir rango (Inmunes)")
-        lbl_exc.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; border: none;")
+        lbl_exc.setProperty("role", "subtitle")
         self.combo_exclude = QComboBox()
         self.combo_exclude.addItem("Ninguno", "none")
         self.combo_exclude.addItem("Moderadores y Broadcaster", "moderator")
@@ -126,7 +117,7 @@ class SpamFilterCard(QFrame):
         if self.has_amount:
             col_amt = QVBoxLayout()
             lbl_amt = QLabel("Cantidad máxima permitida")
-            lbl_amt.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY}; border: none;")
+            lbl_amt.setProperty("role", "subtitle")
             self.spin_amt = QSpinBox()
             self.spin_amt.setRange(1, 500)
             self.spin_amt.setValue(10)

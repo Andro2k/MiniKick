@@ -71,7 +71,7 @@ class MainWindow(QMainWindow):
         self.alerts_storage = SQLiteAlertsStorage(self.db_manager)
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
-        self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage)
+        self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage, self.spam_storage)
         
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),

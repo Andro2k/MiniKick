@@ -20,7 +20,7 @@ class ViewHeader(QFrame):
         text_layout.setSpacing(2)
         
         title = QLabel(title_text)
-        title.setProperty("role", "title")
+        title.setProperty("role", "h1")
         
         subtitle = QLabel(subtitle_text)
         subtitle.setProperty("role", "body")
@@ -47,7 +47,7 @@ class SettingRow(QWidget):
         text_layout.setSpacing(2)
         
         lbl_title = QLabel(title_text)
-        lbl_title.setProperty("role", "section_small")
+        lbl_title.setProperty("role", "h3")
         
         lbl_desc = QLabel(desc_text)
         lbl_desc.setProperty("role", "body")
@@ -75,7 +75,7 @@ class SettingSliderRow(QWidget):
         icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=18).pixmap(18, 18))
 
         lbl_title = QLabel(title_text)
-        lbl_title.setProperty("role", "section_small")
+        lbl_title.setProperty("role", "h3")
 
         header_row.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
         header_row.addWidget(lbl_title, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -94,7 +94,7 @@ class StatCard(QFrame):
     """Tarjeta individual para mostrar una estadística con icono (estilo Analytics)."""
     def __init__(self, title_text: str, icon_name: str, initial_value: str = "-", parent=None):
         super().__init__(parent)
-        self.setObjectName("Card")
+        self.setProperty("role", "card")
         self.setFrameShape(QFrame.Shape.StyledPanel)
         
         self.setMinimumWidth(150)
@@ -109,7 +109,7 @@ class StatCard(QFrame):
         icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_ACCENT, size=16).pixmap(16, 16))
 
         self.lbl_title = QLabel(title_text)
-        self.lbl_title.setProperty("role", "section_small")
+        self.lbl_title.setProperty("role", "h3")
 
         header_layout.addWidget(icon_lbl)
         header_layout.addWidget(self.lbl_title)
@@ -117,7 +117,6 @@ class StatCard(QFrame):
 
         self.lbl_value = QLabel(initial_value)
         self.lbl_value.setProperty("role", "stat_value")
-        self.lbl_value.setStyleSheet("font-size: 18 px; font-weight: 800; color: white;")
         self.lbl_value.setWordWrap(True)
 
         layout.addLayout(header_layout)
