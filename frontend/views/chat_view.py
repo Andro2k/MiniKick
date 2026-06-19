@@ -20,8 +20,9 @@ class ChatView(QWidget):
     bot_remove_requested = Signal(str)
     language_filter_changed = Signal(str)
 
-    def __init__(self):
+    def __init__(self, i18n):
         super().__init__()
+        self.i18n = i18n
         self._setup_ui()
         self._connect_internal_signals()
 
@@ -41,8 +42,8 @@ class ChatView(QWidget):
         self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
-            title_text="Chat en Vivo",
-            subtitle_text="Gestiona la moderación, lectura de voz interactiva (TTS) y eventos del canal en tiempo real.",
+            title_text=self.i18n.get("chat.header.title"),
+            subtitle_text=self.i18n.get("chat.header.subtitle"),
             icon_name="bubble-text.svg",
             icon_color=COLOR_ACCENT
         )
@@ -69,11 +70,36 @@ class ChatView(QWidget):
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setProperty("role", "monospace")
 
-        row_tts = SettingRow("volume.svg", "Servicio de Voz (TTS)", "Habilita la lectura automatizada de mensajes.", self.chk_tts)
-        row_read_name = SettingRow("user.svg", "Leer Nombres", "Pronuncia el nombre del emisor antes del mensaje.", self.chk_name)
-        row_provider = SettingRow("globe.svg", "Motor de Voz Premium", "Alterna entre voces web de Edge o locales.", self.chk_provider)
-        row_cmd = SettingRow("code.svg", "Requerir Comando", "Solo leer mensajes que inicien con un prefijo.", self.chk_command)
-        row_volume = SettingSliderRow("adjustments-alt.svg", "Volumen General", "Ajusta la intensidad del sintetizador de voz.", self.slider_vol, self.lbl_vol_perc)
+        row_tts = SettingRow(
+            "volume.svg", 
+            self.i18n.get("chat.settings.tts_title"), 
+            self.i18n.get("chat.settings.tts_desc"), 
+            self.chk_tts
+        )
+        row_read_name = SettingRow(
+            "user.svg", 
+            self.i18n.get("chat.settings.name_title"), 
+            self.i18n.get("chat.settings.name_desc"), 
+            self.chk_name
+        )
+        row_provider = SettingRow(
+            "globe.svg", 
+            self.i18n.get("chat.settings.provider_title"), 
+            self.i18n.get("chat.settings.provider_desc"), 
+            self.chk_provider
+        )
+        row_cmd = SettingRow(
+            "code.svg", 
+            self.i18n.get("chat.settings.cmd_title"), 
+            self.i18n.get("chat.settings.cmd_desc"), 
+            self.chk_command
+        )
+        row_volume = SettingSliderRow(
+            "adjustments-alt.svg", 
+            self.i18n.get("chat.settings.vol_title"), 
+            self.i18n.get("chat.settings.vol_desc"), 
+            self.slider_vol, self.lbl_vol_perc
+        )
         
         lang_voice_layout = QHBoxLayout()
         self.combo_lang = QComboBox()
@@ -84,13 +110,13 @@ class ChatView(QWidget):
         lang_voice_layout.addWidget(self.combo_voice)
 
         self.txt_command = QLineEdit()
-        self.txt_command.setPlaceholderText("Ej. !tts")
+        self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
 
         row_prefix = SettingRow(
             icon_name="hash.svg", 
-            title_text="Prefijo del Comando", 
-            desc_text="Define el texto exacto que activará la lectura del bot.", 
+            title_text=self.i18n.get("chat.settings.prefix_title"), 
+            desc_text=self.i18n.get("chat.settings.prefix_desc"), 
             right_widget=self.txt_command
         )
 
@@ -112,7 +138,7 @@ class ChatView(QWidget):
         chat_layout.setContentsMargins(10, 10, 10, 10)
         chat_layout.setSpacing(10)
 
-        lbl_chat_title = QLabel("Historial de la Sala")
+        lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
         lbl_chat_title.setProperty("role", "h3")
         
         self.chat_display = QTextEdit()
@@ -130,12 +156,11 @@ class ChatView(QWidget):
         base_layout.addWidget(scroll_area)
 
     def _build_bots_panel(self) -> QWidget:
-        """Panel integrado para silenciar bots."""
         panel = QWidget()
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        title = QLabel("Usuarios Silenciados")
+        title = QLabel(self.i18n.get("chat.bots.title"))
         title.setProperty("role", "h3")
         layout.addWidget(title)
 
@@ -144,9 +169,9 @@ class ChatView(QWidget):
         input_row.setSpacing(10)
         
         self.txt_bot_input = QLineEdit()
-        self.txt_bot_input.setPlaceholderText("ej. botrix")
+        self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
         
-        self.btn_add_bot = ModernButton("Agregar", role="action_accent")
+        self.btn_add_bot = ModernButton(self.i18n.get("chat.bots.btn_add"), role="action_accent")
         self.btn_add_bot.setIcon(get_icon_colored("add.svg", "#000000", size=16))
             
         input_row.addWidget(self.txt_bot_input)
@@ -169,7 +194,6 @@ class ChatView(QWidget):
         return panel
 
     def resizeEvent(self, event):
-        """Intercepta cambios de tamaño en la ventana para simular CSS Flexbox (wrap)."""
         super().resizeEvent(event)
         if self.width() < 900:
             self.body_layout.setDirection(QBoxLayout.Direction.TopToBottom)
@@ -177,7 +201,6 @@ class ChatView(QWidget):
             self.body_layout.setDirection(QBoxLayout.Direction.LeftToRight)
 
     def _connect_internal_signals(self):
-        """Mapea eventos visuales nativos a nuestras señales abstractas (Decoupling)."""
         self.chk_provider.toggled.connect(self.provider_toggled.emit)
         self.slider_vol.valueChanged.connect(self._on_slider_vol_changed)
         
@@ -196,7 +219,6 @@ class ChatView(QWidget):
                 control.textChanged.connect(self._emit_current_settings)
 
     def set_initial_states(self, settings: dict):
-        """Aplica estados sin disparar señales accidentales."""
         self.blockSignals(True)
         self.chk_tts.setChecked(settings.get("enabled", True))
         self.chk_name.setChecked(settings.get("read_name", True))
@@ -254,7 +276,6 @@ class ChatView(QWidget):
         self.combo_lang.blockSignals(False)
 
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None):
-        """Recibe una lista de tuplas (id, name) para rellenar la caja."""
         self.combo_voice.blockSignals(True)
         self.combo_voice.clear()
         index_to_select = 0
@@ -277,7 +298,6 @@ class ChatView(QWidget):
         self.volume_changed.emit(value)
 
     def _enforce_prefix_mask(self, text):
-        """Máscara visual (UX): Fuerza que siempre inicie con '!'"""
         if not text.startswith("!"):
             self.txt_command.setText("!" + text.replace("!", ""))
 

@@ -16,7 +16,6 @@ class SettingsView(QWidget):
     update_clicked = Signal()
     language_changed = Signal(str)
 
-    # 1. Inyectamos i18n en el constructor
     def __init__(self, i18n):
         super().__init__()
         self.i18n = i18n
@@ -37,10 +36,9 @@ class SettingsView(QWidget):
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
 
-        # 2. Usamos i18n.get() para los textos
         self.header = ViewHeader(
-            title_text=self.i18n.get("settings.header.title", "Configuración General"), 
-            subtitle_text=self.i18n.get("settings.header.subtitle", "Ajustes globales del sistema, gestión de cuenta y actualizaciones."), 
+            title_text=self.i18n.get("settings.header.title"), 
+            subtitle_text=self.i18n.get("settings.header.subtitle"), 
             icon_name="settings.svg", 
             icon_color=COLOR_ACCENT
         )
@@ -57,12 +55,12 @@ class SettingsView(QWidget):
         
         row_tray = SettingRow(
             icon_name="minimize.svg", 
-            title_text=self.i18n.get("settings.system.tray_title", "Ejecución en Segundo Plano"), 
-            desc_text=self.i18n.get("settings.system.tray_desc", "Minimizar a la bandeja del sistema en lugar de cerrar la aplicación por completo."), 
+            title_text=self.i18n.get("settings.system.tray_title"), 
+            desc_text=self.i18n.get("settings.system.tray_desc"), 
             right_widget=self.sw_start_bg
         )
 
-        self.btn_update = ModernButton(self.i18n.get("settings.system.btn_update", "Buscar actualizaciones"), role="action_accent")
+        self.btn_update = ModernButton(self.i18n.get("settings.system.btn_update"), role="action_accent")
         self.btn_update.clicked.connect(self.update_clicked.emit)
         
         self.combo_lang = QComboBox()
@@ -72,16 +70,16 @@ class SettingsView(QWidget):
 
         row_lang = SettingRow(
             icon_name="globe.svg", 
-            title_text=self.i18n.get("settings.system.lang_title", "Idioma de la Aplicación"), 
-            desc_text=self.i18n.get("settings.system.lang_desc", "Selecciona el idioma de la interfaz (requiere reiniciar)."), 
+            title_text=self.i18n.get("settings.system.lang_title"), 
+            desc_text=self.i18n.get("settings.system.lang_desc"), 
             right_widget=self.combo_lang
         )
         
         sys_layout.addWidget(row_lang)
         row_update = SettingRow(
             icon_name="cloud-download.svg", 
-            title_text=self.i18n.get("settings.system.update_title", "Actualizaciones de Software"), 
-            desc_text=self.i18n.get("settings.system.update_desc", "Buscar e instalar nuevas versiones de MiniKick."), 
+            title_text=self.i18n.get("settings.system.update_title"), 
+            desc_text=self.i18n.get("settings.system.update_desc"), 
             right_widget=self.btn_update,
             icon_color=COLOR_ACCENT
         )
@@ -101,8 +99,8 @@ class SettingsView(QWidget):
         btn_layout.setContentsMargins(0, 0, 0, 0) 
         btn_layout.setSpacing(8)
         
-        self.btn_export = ModernButton(self.i18n.get("settings.backup.btn_export", "Exportar"), role="action_outlined")
-        self.btn_import = ModernButton(self.i18n.get("settings.backup.btn_import", "Importar"), role="action_outlined")
+        self.btn_export = ModernButton(self.i18n.get("settings.backup.btn_export"), role="action_outlined")
+        self.btn_import = ModernButton(self.i18n.get("settings.backup.btn_import"), role="action_outlined")
         
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
@@ -112,8 +110,8 @@ class SettingsView(QWidget):
 
         row_backup = SettingRow(
             icon_name="restore.svg", 
-            title_text=self.i18n.get("settings.backup.title", "Respaldo de Configuración"), 
-            desc_text=self.i18n.get("settings.backup.desc", "Exporta o importa tus alertas, voces y ajustes generales."), 
+            title_text=self.i18n.get("settings.backup.title"), 
+            desc_text=self.i18n.get("settings.backup.desc"), 
             right_widget=btn_container 
         )
 
@@ -126,13 +124,13 @@ class SettingsView(QWidget):
         account_layout.setContentsMargins(10, 10, 10, 10)
         account_layout.setSpacing(10)
 
-        self.btn_unlink = ModernButton(self.i18n.get("settings.account.btn_unlink", "Desvincular"), role="action_danger")
+        self.btn_unlink = ModernButton(self.i18n.get("settings.account.btn_unlink"), role="action_danger")
         self.btn_unlink.clicked.connect(self.unlink_clicked.emit)
         
         row_unlink = SettingRow(
             icon_name="user-x.svg", 
-            title_text=self.i18n.get("settings.account.title", "Desvincular Cuenta"), 
-            desc_text=self.i18n.get("settings.account.desc", "Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez."), 
+            title_text=self.i18n.get("settings.account.title"), 
+            desc_text=self.i18n.get("settings.account.desc"), 
             right_widget=self.btn_unlink,
             icon_color=COLOR_DANGER
         )
@@ -151,14 +149,14 @@ class SettingsView(QWidget):
 
     def ask_save_path(self) -> str:
         default_name = f"MiniKick_Backup_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
-        dialog_title = self.i18n.get("settings.dialogs.export_title", "Exportar Configuración")
+        dialog_title = self.i18n.get("settings.dialogs.export_title")
         filepath, _ = QFileDialog.getSaveFileName(
             self, dialog_title, default_name, "JSON Files (*.json)"
         )
         return filepath
 
     def ask_open_path(self) -> str:
-        dialog_title = self.i18n.get("settings.dialogs.import_title", "Importar Configuración")
+        dialog_title = self.i18n.get("settings.dialogs.import_title")
         filepath, _ = QFileDialog.getOpenFileName(
             self, dialog_title, "", "JSON Files (*.json)"
         )

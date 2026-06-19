@@ -20,10 +20,13 @@ class LogView(QWidget):
     restore_live_requested = Signal()
     open_folder_requested = Signal()
 
-    def __init__(self):
+    def __init__(self, i18n):
         super().__init__()
+        self.i18n = i18n
+        self.str_all = self.i18n.get("log.controls.filter_all")
+        
         self._log_history = [] 
-        self._current_filter = "TODOS"
+        self._current_filter = self.str_all
         self._search_term = ""
         self._max_logs = 1000
         self._setup_ui()
@@ -44,8 +47,8 @@ class LogView(QWidget):
         self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
-            title_text="Registro de Desarrollador",
-            subtitle_text="Monitorea eventos del sistema, depura errores y carga historiales usando el explorador.",
+            title_text=self.i18n.get("log.header.title"),
+            subtitle_text=self.i18n.get("log.header.subtitle"),
             icon_name="terminal.svg",
             icon_color=COLOR_ACCENT
         )
@@ -59,12 +62,12 @@ class LogView(QWidget):
 
         search_layout = QHBoxLayout()
         self.txt_search = QLineEdit()
-        self.txt_search.setPlaceholderText("Buscar en los registros...")
+        self.txt_search.setPlaceholderText(self.i18n.get("log.controls.search_placeholder"))
         self.txt_search.textChanged.connect(self._on_search_changed)
         search_layout.addWidget(self.txt_search, stretch=1)
 
         self.combo_filter = QComboBox()
-        self.combo_filter.addItems(["TODOS", "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"])
+        self.combo_filter.addItems([self.str_all, "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"])
         self.combo_filter.setCursor(Qt.CursorShape.PointingHandCursor)
         self.combo_filter.currentTextChanged.connect(self._on_filter_changed)
         search_layout.addWidget(self.combo_filter)
@@ -74,25 +77,25 @@ class LogView(QWidget):
         actions_layout = QHBoxLayout()
         actions_layout.setSpacing(8)
 
-        self.btn_open_folder = ModernButton("Carpeta", role="action_outlined")
+        self.btn_open_folder = ModernButton(self.i18n.get("log.controls.btn_folder"), role="action_outlined")
         self.btn_open_folder.setIcon(get_icon_colored("folder.svg", COLOR_TEXT_PRIMARY, 16))
-        self.btn_open_folder.setToolTip("Abrir ubicación en Windows")
+        self.btn_open_folder.setToolTip(self.i18n.get("log.controls.tooltip_folder"))
         self.btn_open_folder.clicked.connect(self.open_folder_requested.emit)
 
-        self.btn_load_file = ModernButton("Cargar Histórico", role="action_outlined")
+        self.btn_load_file = ModernButton(self.i18n.get("log.controls.btn_load"), role="action_outlined")
         self.btn_load_file.setIcon(get_icon_colored("file-text.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_load_file.clicked.connect(self._open_file_dialog)
 
-        self.btn_live = ModernButton("Ver en Vivo", role="action_accent")
+        self.btn_live = ModernButton(self.i18n.get("log.controls.btn_live"), role="action_accent")
         self.btn_live.setIcon(get_icon_colored("play.svg", "#000000", 16))
         self.btn_live.clicked.connect(self._handle_live_click)
         self.btn_live.setVisible(False)
 
-        self.btn_clear = ModernButton("Limpiar", role="action_outlined")
+        self.btn_clear = ModernButton(self.i18n.get("log.controls.btn_clear"), role="action_outlined")
         self.btn_clear.setIcon(get_icon_colored("trash.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_clear.clicked.connect(self._clear_logs)
 
-        self.btn_report = ModernButton("Reportar", role="action_accent")
+        self.btn_report = ModernButton(self.i18n.get("log.controls.btn_report"), role="action_accent")
         self.btn_report.setIcon(get_icon_colored("help.svg", "#000000", 16))
         self.btn_report.clicked.connect(self.report_bug_requested.emit)
 
@@ -112,7 +115,10 @@ class LogView(QWidget):
         table_layout.setContentsMargins(10, 10, 10, 10)
 
         self.table = QTableWidget(0, 3)
-        self.table.setHorizontalHeaderLabels(["Log Level", "Timestamp", "Log Message"])
+        col_1 = self.i18n.get("log.table.col_level")
+        col_2 = self.i18n.get("log.table.col_time")
+        col_3 = self.i18n.get("log.table.col_message")
+        self.table.setHorizontalHeaderLabels([col_1, col_2, col_3])
         
         h_header = self.table.horizontalHeader()
         h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents) 
@@ -142,8 +148,11 @@ class LogView(QWidget):
     def _open_file_dialog(self):
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
+        dialog_title = self.i18n.get("log.dialogs.select_history")
+        file_filter = self.i18n.get("log.dialogs.file_filter")
+        
         file_path, _ = QFileDialog.getOpenFileName(
-            self, "Seleccionar Histórico de Logs", log_dir, "Archivos Log (*.log*);;Todos los archivos (*.*)"
+            self, dialog_title, log_dir, file_filter
         )
         if file_path:
             self.read_file_requested.emit(file_path)
@@ -159,7 +168,6 @@ class LogView(QWidget):
         self._render_logs()
 
     def _process_log_data(self, default_level: str, message: str) -> tuple[bool, str, str, str]:
-        """Procesa y agrupa logs en memoria. Retorna si fue agrupado y sus componentes."""
         match = re.match(r"\[(.*?)\] \[(.*?)\] (.*)", message, re.DOTALL)
         if match:
             time_str, real_level, text_str = match.groups()
@@ -182,7 +190,6 @@ class LogView(QWidget):
         return is_grouped, real_level, time_str, text_str
 
     def _matches_search(self, level: str, time_str: str, text: str) -> bool:
-        """Centraliza la validación de búsqueda (DRY)."""
         search_lower = self._search_term.lower()
         if not search_lower:
             return True
@@ -192,11 +199,10 @@ class LogView(QWidget):
 
     @Slot(str, str)
     def append_log(self, level: str, message: str):
-        """Recepción en vivo de nuevos logs."""
         is_grouped, real_level, time_str, text_str = self._process_log_data(level, message)
 
         if not self.btn_live.isVisible():
-            if self._current_filter in ("TODOS", real_level) and self._matches_search(real_level, time_str, text_str):
+            if self._current_filter in (self.str_all, real_level) and self._matches_search(real_level, time_str, text_str):
                 if is_grouped and self.table.rowCount() > 0:
                     self._update_last_row(text_str)
                 else:
@@ -204,13 +210,13 @@ class LogView(QWidget):
                 self._scroll_to_bottom()
 
     def show_historical_content(self, file_name: str, content: str):
-        """Carga en bloque optimizada para históricos."""
         self._clear_logs()
         
+        hist_label = self.i18n.get("log.misc.historical")
         lines = content.strip().split('\n')
         for line in lines:
             if line.strip():
-                self._process_log_data("HISTÓRICO", line)
+                self._process_log_data(hist_label, line)
 
         self._render_logs()
         
@@ -220,7 +226,6 @@ class LogView(QWidget):
         self.btn_clear.setEnabled(False)
 
     def _update_last_row(self, appended_text: str):
-        """Actualiza la última celda de texto visible y reajusta su altura."""
         last_row = self.table.rowCount() - 1
         item_msg = self.table.item(last_row, 2)
         if item_msg:
@@ -265,7 +270,7 @@ class LogView(QWidget):
         self.table.setUpdatesEnabled(False)
         
         for level, time_str, text in self._log_history:
-            if self._current_filter not in ("TODOS", level):
+            if self._current_filter not in (self.str_all, level):
                 continue
             if not self._matches_search(level, time_str, text):
                 continue

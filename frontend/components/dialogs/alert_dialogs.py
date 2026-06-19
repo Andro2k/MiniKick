@@ -15,7 +15,6 @@ from frontend.utils import get_icon_colored, get_assets_path
 from frontend.components.dialogs.base_dialogs import ModernBaseDialog
 
 class DraggableAlertBox(QFrame):
-    """Caja arrastrable que previsualiza medios (Video/Imagen) en el lienzo virtual."""
     position_updated = Signal(int, int)
 
     def __init__(self, parent, canvas_w: int, canvas_h: int, scale_factor_obs: float, filepath: str, scale_val: float):
@@ -26,7 +25,6 @@ class DraggableAlertBox(QFrame):
         self.base_scale_val = scale_val
         
         self.setFixedSize(100, 100)
-        
         self.setCursor(Qt.CursorShape.OpenHandCursor)
         
         self._drag_active = False
@@ -112,13 +110,13 @@ class DraggableAlertBox(QFrame):
         self.move(local_x, local_y)
 
 class VisualPositionerDialog(ModernBaseDialog):
-    """Diálogo con el lienzo virtual 16:9 para posicionar la alerta."""
     live_position_changed = Signal(int, int)
 
-    def __init__(self, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
-        super().__init__(title="Posicionador Visual (1920x1080)", icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_ACCENT, width=700, parent=parent)
+    def __init__(self, i18n, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
+        self.i18n = i18n
+        super().__init__(title=self.i18n.get("alerts.dialogs.visual.title"), icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_ACCENT, width=700, parent=parent)
         
-        desc_lbl = QLabel("Arrastra tu alerta. Al soltarla, se mostrará una vista previa en OBS.")
+        desc_lbl = QLabel(self.i18n.get("alerts.dialogs.visual.desc"))
         desc_lbl.setProperty("role", "body")
         desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.content_layout.addWidget(desc_lbl)
@@ -138,15 +136,15 @@ class VisualPositionerDialog(ModernBaseDialog):
         
         self.content_layout.addWidget(self.canvas_container, alignment=Qt.AlignmentFlag.AlignCenter)
         
-        self.btn_save = ModernButton("Guardar y Cerrar", role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("alerts.dialogs.visual.btn_save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
         self.add_action_buttons(self.btn_save, None)
 
 class AlertConfigWizard(ModernBaseDialog):
-    """Asistente de 2 pasos para crear o editar configuraciones de Alertas."""
-    def __init__(self, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
+    def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
+        self.i18n = i18n
         self.is_edit_mode = existing_config is not None
-        title = "Editar Alerta" if self.is_edit_mode else "Nueva Alerta"
+        title = self.i18n.get("alerts.dialogs.wizard.title_edit") if self.is_edit_mode else self.i18n.get("alerts.dialogs.wizard.title_new")
         icon_path = get_assets_path("icons/settings.svg")
         
         super().__init__(title=title, icon_path=icon_path, icon_bg_color=COLOR_ACCENT, width=520, parent=parent)
@@ -204,16 +202,16 @@ class AlertConfigWizard(ModernBaseDialog):
         layout.setSpacing(15)
 
         header_layout = QVBoxLayout()
-        header_title = QLabel("Recompensa y Archivo")
+        header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.title"))
         header_title.setProperty("role", "h2")
-        header_desc = QLabel("Configura qué punto de canal activará esta alerta.")
+        header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
         header_layout.addWidget(header_desc)
         layout.addLayout(header_layout)
         layout.addSpacing(5)
         
-        lbl = QLabel("Selección de Recompensa")
+        lbl = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.reward_selection"))
         lbl.setProperty("role", "h3")
         layout.addWidget(lbl)
         
@@ -222,7 +220,7 @@ class AlertConfigWizard(ModernBaseDialog):
         if rewards_list:
             self.combo_rewards.addItems(rewards_list)
         else:
-            self.combo_rewards.addItem("Cargando recompensas...")
+            self.combo_rewards.addItem(self.i18n.get("alerts.dialogs.wizard.step1.loading"))
             
         if existing_reward:
             if rewards_list and existing_reward not in rewards_list:
@@ -233,23 +231,23 @@ class AlertConfigWizard(ModernBaseDialog):
         
         self.btn_refresh = ModernButton("", role="action_outlined")
         self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_TEXT_PRIMARY, 24))
-        self.btn_refresh.setToolTip("Actualizar Recompensas de Kick")
+        self.btn_refresh.setToolTip(self.i18n.get("alerts.dialogs.wizard.step1.tooltip_refresh"))
         self.btn_refresh.clicked.connect(self._request_refresh)
         row1.addWidget(self.btn_refresh)
         layout.addLayout(row1)
         
         layout.addSpacing(5)
         
-        lbl2 = QLabel("Archivo Multimedia")
+        lbl2 = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.file_label"))
         lbl2.setProperty("role", "h3")
         layout.addWidget(lbl2)
         
         row2 = QHBoxLayout()
         self.txt_file_path = QLineEdit()
         self.txt_file_path.setReadOnly(True)
-        self.txt_file_path.setPlaceholderText("Ej. tu_alerta.mp4 o sonido.mp3")
+        self.txt_file_path.setPlaceholderText(self.i18n.get("alerts.dialogs.wizard.step1.file_placeholder"))
         
-        self.btn_browse = ModernButton("Explorar", role="action_outlined")
+        self.btn_browse = ModernButton(self.i18n.get("alerts.dialogs.wizard.step1.btn_browse"), role="action_outlined")
         self.btn_browse.clicked.connect(self._browse_file)
         row2.addWidget(self.txt_file_path, stretch=1)
         row2.addWidget(self.btn_browse)
@@ -258,10 +256,10 @@ class AlertConfigWizard(ModernBaseDialog):
         layout.addStretch()
         
         btn_layout = QHBoxLayout()
-        self.btn_cancel_step1 = ModernButton("Cancelar", role="action_outlined")
+        self.btn_cancel_step1 = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_cancel"), role="action_outlined")
         self.btn_cancel_step1.clicked.connect(self.reject)
         
-        self.btn_next = ModernButton("Siguiente ➔", role="action_accent")
+        self.btn_next = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_next"), role="action_accent")
         self.btn_next.clicked.connect(self._go_next)
         
         btn_layout.addWidget(self.btn_cancel_step1)
@@ -275,9 +273,9 @@ class AlertConfigWizard(ModernBaseDialog):
         layout.setSpacing(15)
         
         header_layout = QVBoxLayout()
-        header_title = QLabel("Ajustes de Pantalla")
+        header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.title"))
         header_title.setProperty("role", "h2")
-        header_desc = QLabel("Define cómo y dónde se mostrará tu alerta en el lienzo.")
+        header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
         header_layout.addWidget(header_desc)
@@ -285,7 +283,7 @@ class AlertConfigWizard(ModernBaseDialog):
         layout.addSpacing(5)
         
         vol_row = QHBoxLayout()
-        lbl_vol = QLabel("Volumen de la alerta")
+        lbl_vol = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.volume"))
         lbl_vol.setProperty("role", "h3")
         vol_row.addWidget(lbl_vol)
         
@@ -307,7 +305,7 @@ class AlertConfigWizard(ModernBaseDialog):
         v_layout.setSpacing(15)
         
         row_rnd = QHBoxLayout()
-        lbl_rnd = QLabel("Posición Aleatoria")
+        lbl_rnd = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.random_pos"))
         lbl_rnd.setProperty("role", "h3")
         row_rnd.addWidget(lbl_rnd)
         
@@ -316,7 +314,7 @@ class AlertConfigWizard(ModernBaseDialog):
         row_rnd.addWidget(self.chk_random_pos)
         row_rnd.addStretch()
         
-        self.btn_visual = ModernButton("Posicionar en OBS", role="action_outlined")
+        self.btn_visual = ModernButton(self.i18n.get("alerts.dialogs.wizard.step2.btn_visual"), role="action_outlined")
         self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         row_rnd.addWidget(self.btn_visual)
@@ -324,17 +322,17 @@ class AlertConfigWizard(ModernBaseDialog):
         v_layout.addLayout(row_rnd)
         
         row_coords = QHBoxLayout()
-        row_coords.addWidget(QLabel("X:"))
+        row_coords.addWidget(QLabel(self.i18n.get("alerts.dialogs.wizard.step2.coord_x")))
         self.spin_x = QSpinBox()
         self.spin_x.setRange(-5000, 5000)
         row_coords.addWidget(self.spin_x)
         
-        row_coords.addWidget(QLabel("Y:"))
+        row_coords.addWidget(QLabel(self.i18n.get("alerts.dialogs.wizard.step2.coord_y")))
         self.spin_y = QSpinBox()
         self.spin_y.setRange(-5000, 5000)
         row_coords.addWidget(self.spin_y)
         
-        row_coords.addWidget(QLabel("Escala:"))
+        row_coords.addWidget(QLabel(self.i18n.get("alerts.dialogs.wizard.step2.scale")))
         self.spin_scale = QDoubleSpinBox()
         self.spin_scale.setRange(0.1, 5.0)
         self.spin_scale.setSingleStep(0.1)
@@ -346,10 +344,10 @@ class AlertConfigWizard(ModernBaseDialog):
         layout.addStretch()
 
         btn_layout = QHBoxLayout()
-        self.btn_back = ModernButton("🡠 Atrás", role="action_outlined")
+        self.btn_back = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_back"), role="action_outlined")
         self.btn_back.clicked.connect(self._go_back)
         
-        self.btn_save = ModernButton("Guardar Alerta", role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
         
         btn_layout.addWidget(self.btn_back)
@@ -371,7 +369,9 @@ class AlertConfigWizard(ModernBaseDialog):
         self.btn_refresh.setEnabled(True)
 
     def _browse_file(self):
-        file_path, _ = QFileDialog.getOpenFileName(self, "Multimedia", "", "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)")
+        title = self.i18n.get("alerts.dialogs.wizard.file_dialog_title")
+        filter_str = self.i18n.get("alerts.dialogs.wizard.file_dialog_filter")
+        file_path, _ = QFileDialog.getOpenFileName(self, title, "", filter_str)
         if file_path:
             self.txt_file_path.setText(file_path)
             self._evaluate_media_type(file_path)
@@ -398,7 +398,7 @@ class AlertConfigWizard(ModernBaseDialog):
     def _open_visual_editor(self):
         filepath = self.txt_file_path.text().strip()
         if not filepath: return
-        dialog = VisualPositionerDialog(self.spin_x.value(), self.spin_y.value(), filepath, self.spin_scale.value(), self)
+        dialog = VisualPositionerDialog(self.i18n, self.spin_x.value(), self.spin_y.value(), filepath, self.spin_scale.value(), self)
         if dialog.exec() == dialog.DialogCode.Accepted:
             self.spin_x.setValue(dialog.draggable_box.get_obs_coordinates()[0])
             self.spin_y.setValue(dialog.draggable_box.get_obs_coordinates()[1])

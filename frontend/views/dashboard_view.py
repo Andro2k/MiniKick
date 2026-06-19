@@ -13,8 +13,10 @@ class DashboardView(QWidget):
     connect_requested = Signal()
     autostart_toggled = Signal(bool)
     reauth_requested = Signal()
-    def __init__(self):
+    
+    def __init__(self, i18n):
         super().__init__()
+        self.i18n = i18n
         self._setup_ui()
 
     def _setup_ui(self):
@@ -33,8 +35,8 @@ class DashboardView(QWidget):
         self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
-            title_text="Dashboard",
-            subtitle_text="Gestión de autenticación, conexión automática y estado general del sistema.",
+            title_text=self.i18n.get("dashboard.header.title"),
+            subtitle_text=self.i18n.get("dashboard.header.subtitle"),
             icon_name="kick.svg",
             icon_color=COLOR_ACCENT
         )
@@ -46,9 +48,9 @@ class DashboardView(QWidget):
         
         lbl_warn_icon = QLabel()
         lbl_warn_icon.setPixmap(get_icon_colored("help.svg", "#EF4444", 24).pixmap(24, 24))
-        lbl_warn_text = QLabel("<b>Actualización requerida:</b> Tu cuenta no tiene permisos para las nuevas funciones Anti-Spam.")
+        lbl_warn_text = QLabel(self.i18n.get("dashboard.banner.text"))
         
-        self.btn_reauth = ModernButton("Actualizar Permisos", role="action_danger")
+        self.btn_reauth = ModernButton(self.i18n.get("dashboard.banner.btn_update"), role="action_danger")
         self.btn_reauth.clicked.connect(self.reauth_requested.emit)
         
         banner_layout.addWidget(lbl_warn_icon)
@@ -75,13 +77,18 @@ class DashboardView(QWidget):
         self.sw_autostart = ModernSwitch()
         self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
         
-        row_autostart = SettingRow("plug.svg", "Conexión Automática", "Inicia el bot automáticamente.", self.sw_autostart)
+        row_autostart = SettingRow(
+            "plug.svg", 
+            self.i18n.get("dashboard.connection.autostart_title"), 
+            self.i18n.get("dashboard.connection.autostart_desc"), 
+            self.sw_autostart
+        )
 
         status_layout = QHBoxLayout()
-        self.status_label = QLabel("Estado: Esperando conexión...")
+        self.status_label = QLabel(self.i18n.get("dashboard.connection.status_waiting"))
         self.status_label.setProperty("role", "subtitle")
 
-        self.btn_connect = ModernButton("Conectar a Kick", role="action_accent")
+        self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
         self.btn_connect.setFixedSize(160, 36)
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
@@ -147,11 +154,11 @@ class DashboardView(QWidget):
         self.stats_grid.setContentsMargins(0, 0, 0, 0)
         self.stats_grid.setSpacing(12)
         
-        self.card_followers = StatCard("Seguidores", "users.svg")
-        self.card_room = StatCard("ID Sala (Chat)", "hash.svg")
-        self.card_category = StatCard("Última Categoría", "device-gamepad.svg") 
-        self.card_affiliate = StatCard("Estado Afiliado", "star.svg")
-        self.card_vods = StatCard("VODs", "video.svg")
+        self.card_followers = StatCard(self.i18n.get("dashboard.stats.followers"), "users.svg")
+        self.card_room = StatCard(self.i18n.get("dashboard.stats.room_id"), "hash.svg")
+        self.card_category = StatCard(self.i18n.get("dashboard.stats.category"), "device-gamepad.svg") 
+        self.card_affiliate = StatCard(self.i18n.get("dashboard.stats.affiliate"), "star.svg")
+        self.card_vods = StatCard(self.i18n.get("dashboard.stats.vods"), "video.svg")
 
         self.stats_grid.addWidget(self.card_followers, 0, 0)
         self.stats_grid.addWidget(self.card_room, 0, 1)
@@ -170,20 +177,20 @@ class DashboardView(QWidget):
 
     def update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = ""):
         if is_connecting:
-            self.status_label.setText("Estado: Autenticando...")
+            self.status_label.setText(self.i18n.get("dashboard.connection.status_auth"))
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(False)
             self.lbl_avatar.setPixmap(QPixmap())
         elif has_error:
-            self.status_label.setText(f"Error: {error_msg}")
+            self.status_label.setText(f"{self.i18n.get('dashboard.connection.status_error')}: {error_msg}")
             self.status_label.setProperty("state", "error")
             self.btn_connect.setEnabled(True)
-            self.btn_connect.setText("Reintentar")
+            self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_retry"))
             self.profile_container.setVisible(False)
         else:
-            self.status_label.setText("Estado: Conectado y Escuchando")
+            self.status_label.setText(self.i18n.get("dashboard.connection.status_connected"))
             self.status_label.setObjectName("State_Connected") 
-            self.btn_connect.setText("Sistema Activo")
+            self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_active"))
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(True)
             
@@ -210,11 +217,10 @@ class DashboardView(QWidget):
             self.lbl_avatar.style().polish(self.lbl_avatar)
     
     def reset_to_disconnected(self):
-        """Devuelve la interfaz al estado de reposo inicial sin conexión."""
-        self.status_label.setText("Estado: Esperando conexión...")
+        self.status_label.setText(self.i18n.get("dashboard.connection.status_waiting"))
         self.status_label.setProperty("state", "idle")
         self.btn_connect.setEnabled(True)
-        self.btn_connect.setText("Conectar a Kick")
+        self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_connect"))
         self.profile_container.setVisible(False)
         self.lbl_avatar.setPixmap(QPixmap())
         
@@ -222,11 +228,9 @@ class DashboardView(QWidget):
         self.status_label.style().polish(self.status_label)
 
     def show_scope_warning(self, show: bool):
-        """Muestra u oculta el banner de advertencia de permisos."""
         self.banner_scopes.setVisible(show)
 
     def resizeEvent(self, event):
-        """Intercepta los cambios de tamaño de la ventana para reorganizar los layouts dinámicamente."""
         super().resizeEvent(event)
         width = self.width()
 

@@ -1,0 +1,248 @@
+{
+    "settings": {
+        "header": {
+            "title": "General Settings",
+            "subtitle": "Global system settings, account management, and updates."
+        },
+        "system": {
+            "tray_title": "Run in Background",
+            "tray_desc": "Minimize to the system tray instead of fully closing the application.",
+            "lang_title": "Application Language",
+            "lang_desc": "Select the interface language (requires restart).",
+            "update_title": "Software Updates",
+            "update_desc": "Check for and install new MiniKick versions.",
+            "btn_update": "Check for updates"
+        },
+        "backup": {
+            "title": "Configuration Backup",
+            "desc": "Export or import your alerts, voices, and general settings.",
+            "btn_export": "Export",
+            "btn_import": "Import"
+        },
+        "account": {
+            "title": "Unlink Account",
+            "desc": "Close the current session. You will need to re-authorize MiniKick next time.",
+            "btn_unlink": "Unlink"
+        },
+        "dialogs": {
+            "export_title": "Export Configuration",
+            "import_title": "Import Configuration"
+        }
+    },
+    "spam": {
+        "header": {
+            "title": "Anti-Spam Filters (Auto-Mod)",
+            "subtitle": "Use these filters to keep your chat friendly, fun, and toxicity-free."
+        },
+        "card": {
+            "config_title": "Penalty Configuration",
+            "action": "Action",
+            "action_timeout": "Timeout user",
+            "action_delete": "Delete message",
+            "duration": "Duration (seconds)",
+            "exclude": "Exclude rank (Immune)",
+            "exclude_none": "None",
+            "exclude_mod": "Moderators & Broadcaster",
+            "exclude_sub": "Subscribers & VIPs",
+            "max_amount": "Maximum allowed amount"
+        },
+        "filters": {
+            "caps": {
+                "title": "Caps Protection",
+                "desc": "Removes messages with an excessive amount of uppercase letters."
+            },
+            "link": {
+                "title": "Link Protection",
+                "desc": "Removes messages containing unauthorized links."
+            },
+            "emote": {
+                "title": "Emote Protection",
+                "desc": "Removes messages that abuse the amount of emotes."
+            },
+            "paragraph": {
+                "title": "Walls of Text",
+                "desc": "Blocks excessively long messages (Many characters)."
+            },
+            "symbol": {
+                "title": "Symbol Protection",
+                "desc": "Removes messages with excessive use of symbols (Ex: @#!%)."
+            }
+        }
+    },
+    "command": {
+        "header": {
+            "title": "Triggers and Command Responses",
+            "subtitle": "Link chat commands or regular expressions to automated bot responses."
+        },
+        "table": {
+            "title": "Linked Commands",
+            "search_placeholder": "Search linked command...",
+            "btn_new": "+ New Command",
+            "col_command": "Command",
+            "col_aliases": "Aliases / Regex",
+            "col_response": "Response",
+            "col_actions": "Actions",
+            "regex_prefix": "Regex",
+            "tooltip_edit": "Modify command configuration",
+            "tooltip_delete": "Delete command permanently"
+        }
+    },
+    "alerts": {
+        "header": {
+            "title": "Triggers & Alerts",
+            "subtitle": "Link your channel rewards with on-screen multimedia elements."
+        },
+        "obs": {
+            "title": "OBS Browser Source",
+            "desc": "Copy this link and paste it into your broadcasting software (Recommended resolution: 1920x1080).",
+            "copied": "Link Copied!"
+        },
+        "table": {
+            "title": "Linked Rewards",
+            "btn_new": "+ New Alert",
+            "col_reward": "Kick Reward",
+            "col_file": "File",
+            "col_actions": "Actions",
+            "unknown_file": "Unknown",
+            "tooltip_play": "Test in OBS",
+            "tooltip_edit": "Modify settings",
+            "tooltip_delete": "Delete alert"
+        },
+        "dialogs": {
+            "visual": {
+                "title": "Visual Positioner (1920x1080)",
+                "desc": "Drag your alert. When you release it, a preview will be shown in OBS.",
+                "btn_save": "Save and Close"
+            },
+            "wizard": {
+                "title_edit": "Edit Alert",
+                "title_new": "New Alert",
+                "btn_cancel": "Cancel",
+                "btn_next": "Next ➔",
+                "btn_back": "🡠 Back",
+                "btn_save": "Save Alert",
+                "file_dialog_title": "Multimedia",
+                "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
+                "step1": {
+                    "title": "Reward and File",
+                    "desc": "Configure which channel point will trigger this alert.",
+                    "reward_selection": "Reward Selection",
+                    "loading": "Loading rewards...",
+                    "tooltip_refresh": "Refresh Kick Rewards",
+                    "file_label": "Multimedia File",
+                    "file_placeholder": "Ex. your_alert.mp4 or sound.mp3",
+                    "btn_browse": "Browse"
+                },
+                "step2": {
+                    "title": "Display Settings",
+                    "desc": "Define how and where your alert will be displayed on the canvas.",
+                    "volume": "Alert volume",
+                    "random_pos": "Random Position",
+                    "btn_visual": "Position in OBS",
+                    "coord_x": "X:",
+                    "coord_y": "Y:",
+                    "scale": "Scale:"
+                }
+            }
+        }
+    },
+    "log": {
+        "header": {
+            "title": "Developer Logs",
+            "subtitle": "Monitor system events, debug errors, and load historical data using the file explorer."
+        },
+        "controls": {
+            "search_placeholder": "Search logs...",
+            "filter_all": "ALL",
+            "btn_folder": "Folder",
+            "tooltip_folder": "Open location in Windows",
+            "btn_load": "Load History",
+            "btn_live": "Live View",
+            "btn_clear": "Clear",
+            "btn_report": "Report Bug"
+        },
+        "table": {
+            "col_level": "Log Level",
+            "col_time": "Timestamp",
+            "col_message": "Log Message"
+        },
+        "dialogs": {
+            "select_history": "Select Log History",
+            "file_filter": "Log Files (*.log*);;All files (*.*)"
+        },
+        "misc": {
+            "historical": "HISTORICAL"
+        }
+    },
+    "chat": {
+        "header": {
+            "title": "Live Chat",
+            "subtitle": "Manage moderation, interactive Text-to-Speech (TTS), and real-time channel events."
+        },
+        "settings": {
+            "tts_title": "Voice Service (TTS)",
+            "tts_desc": "Enable automated message reading.",
+            "name_title": "Read Names",
+            "name_desc": "Pronounce the sender's name before the message.",
+            "provider_title": "Premium Voice Engine",
+            "provider_desc": "Toggle between Edge web voices or local voices.",
+            "cmd_title": "Require Command",
+            "cmd_desc": "Only read messages starting with a prefix.",
+            "vol_title": "General Volume",
+            "vol_desc": "Adjust the intensity of the speech synthesizer.",
+            "prefix_title": "Command Prefix",
+            "prefix_desc": "Define the exact text that will trigger the bot's reading.",
+            "prefix_placeholder": "Ex. !tts"
+        },
+        "bots": {
+            "title": "Muted Users",
+            "input_placeholder": "ex. botrix",
+            "btn_add": "Add"
+        },
+        "display": {
+            "title": "Room History"
+        }
+    },
+    "dashboard": {
+        "header": {
+            "title": "Dashboard",
+            "subtitle": "Authentication management, automatic connection, and general system status."
+        },
+        "banner": {
+            "text": "<b>Update required:</b> Your account does not have permissions for the new Anti-Spam features.",
+            "btn_update": "Update Permissions"
+        },
+        "connection": {
+            "autostart_title": "Automatic Connection",
+            "autostart_desc": "Start the bot automatically.",
+            "status_waiting": "Status: Waiting for connection...",
+            "status_auth": "Status: Authenticating...",
+            "status_connected": "Status: Connected and Listening",
+            "status_error": "Error",
+            "btn_connect": "Connect to Kick",
+            "btn_active": "System Active",
+            "btn_retry": "Retry"
+        },
+        "stats": {
+            "followers": "Followers",
+            "room_id": "Room ID (Chat)",
+            "category": "Last Category",
+            "affiliate": "Affiliate Status",
+            "vods": "VODs"
+        }
+    },
+    "dialogs": {
+        "confirm": {
+            "btn_continue": "Continue",
+            "btn_cancel": "Cancel"
+        }
+    },
+    "main": {
+        "dialogs": {
+            "unlink_title": "Unlink Account",
+            "unlink_desc": "Are you sure you want to log out? You will need to re-authorize MiniKick next time.",
+            "close_title": "Close MiniKick",
+            "close_desc": "Are you sure you want to exit the application? The bot will stop listening to the chat."
+        }
+    }
+}

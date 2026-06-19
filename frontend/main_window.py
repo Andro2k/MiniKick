@@ -73,6 +73,21 @@ class MainWindow(QMainWindow):
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
         self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage, self.spam_storage)
+        if getattr(sys, 'frozen', False):
+            app_dir = os.path.dirname(sys.executable)
+        else:
+            app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            
+        install_lang_path = os.path.join(app_dir, ".install_lang")
+        if os.path.exists(install_lang_path):
+            try:
+                with open(install_lang_path, 'r', encoding='utf-8') as f:
+                    install_lang = f.read().strip()
+                if install_lang in ["es", "en"]:
+                    self.settings_storage.save_string("app_language", install_lang)
+                os.remove(install_lang_path)
+            except Exception as e:
+                pass
         saved_lang = self.settings_storage.load_string("app_language", "es")
         self.i18n = TranslationService(default_lang=saved_lang)
         self.auth_manager = AuthManager(
@@ -115,14 +130,14 @@ class MainWindow(QMainWindow):
 
         self.content_stack = QStackedWidget()
         
-        self.view_dashboard = DashboardView()
+        self.view_dashboard = DashboardView(self.i18n)
         self.avatar_service = AvatarService()
         self.dashboard_controller = DashboardController(
             view=self.view_dashboard, 
             avatar_service=self.avatar_service
         )
         
-        self.view_chat = ChatView()
+        self.view_chat = ChatView(self.i18n)
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.chat_controller = ChatController(view=self.view_chat, service=self.chat_service)
         
@@ -130,7 +145,7 @@ class MainWindow(QMainWindow):
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.settings_controller = SettingsController(view=self.view_settings, service=self.settings_service)
         
-        self.view_alerts = AlertsView()
+        self.view_alerts = AlertsView(self.i18n)
         self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
         self.alerts_controller = AlertsController(view=self.view_alerts, service=self.alerts_service)
         
@@ -142,7 +157,7 @@ class MainWindow(QMainWindow):
         self.spam_service = SpamService(self.spam_storage, api_client=None)
         self.spam_controller = SpamController(self.view_spam, self.spam_service)
         
-        self.view_logs = LogView()
+        self.view_logs = LogView(self.i18n)
         self.log_service = LogService()
         self.log_controller = LogController(view=self.view_logs, service=self.log_service)
         
@@ -365,9 +380,10 @@ class MainWindow(QMainWindow):
     @Slot()
     def _handle_unlink_account(self):
         dialog = ModernConfirmDialog(
+            self.i18n,
             self, 
-            title_text="Desvincular Cuenta", 
-            body_text="¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes."
+            title_text=self.i18n.get("main.dialogs.unlink_title"), 
+            body_text=self.i18n.get("main.dialogs.unlink_desc")
         )
         
         if dialog.exec() == dialog.DialogCode.Accepted:
@@ -447,9 +463,10 @@ class MainWindow(QMainWindow):
             event.ignore() 
         else:
             dialog = ModernConfirmDialog(
+                self.i18n,
                 parent=None, 
-                title_text="Cerrar MiniKick", 
-                body_text="¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat."
+                title_text=self.i18n.get("main.dialogs.close_title"), 
+                body_text=self.i18n.get("main.dialogs.close_desc")
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
                 event.accept() 

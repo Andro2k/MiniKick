@@ -93,8 +93,9 @@ class ModernBaseDialog(QDialog):
 
 class ModernConfirmDialog(ModernBaseDialog):
     """Diálogo genérico para confirmar acciones destructivas o importantes."""
-    def __init__(self, parent=None, title_text="Desvincular Cuenta", body_text="¿Estás seguro de que deseas continuar? Esta acción no se puede deshacer."):
+    def __init__(self, i18n, parent=None, title_text="", body_text=""):
         super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color="#EF4444", width=420, parent=parent)
+        self.i18n = i18n
         self.set_dialog_state("danger", QColor(239, 68, 68, 60))
         
         body_label = QLabel(body_text)
@@ -104,9 +105,8 @@ class ModernConfirmDialog(ModernBaseDialog):
         body_label.setMinimumHeight(60) 
         
         self.content_layout.addWidget(body_label)
-
-        self.btn_confirm = self._create_btn("Continuar", "action_danger", self.accept)
-        self.btn_cancel = self._create_btn("Cancelar", "action_outlined", self.reject)
+        self.btn_confirm = self._create_btn(self.i18n.get("dialogs.confirm.btn_continue"), "action_danger", self.accept)
+        self.btn_cancel = self._create_btn(self.i18n.get("dialogs.confirm.btn_cancel"), "action_outlined", self.reject)
         self.add_action_buttons(self.btn_confirm, self.btn_cancel)
 
     def _create_btn(self, text, role, callback):

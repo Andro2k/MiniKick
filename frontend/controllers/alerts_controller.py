@@ -40,7 +40,11 @@ class AlertsController(QObject):
     @Slot()
     def _handle_add(self):
         available_rewards = self._get_available_rewards()
-        self._active_dialog = AlertConfigWizard(self.view, rewards_list=available_rewards)
+        self._active_dialog = AlertConfigWizard(
+            self.view.i18n, 
+            parent=self.view, 
+            rewards_list=available_rewards
+        )
         
         if self._active_dialog.exec():
             reward, config = self._active_dialog.get_config_data()
@@ -60,7 +64,8 @@ class AlertsController(QObject):
             
         available_rewards = self._get_available_rewards(ignore_reward=reward_name)
         self._active_dialog = AlertConfigWizard(
-            self.view, 
+            self.view.i18n, 
+            parent=self.view, 
             rewards_list=available_rewards, 
             existing_config=mappings[reward_name], 
             existing_reward=reward_name
