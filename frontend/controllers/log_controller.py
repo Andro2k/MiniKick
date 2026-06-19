@@ -24,7 +24,9 @@ class LogController(QObject):
             file_name = os.path.basename(file_path)
             self.view.show_historical_content(file_name, content)
         except Exception as e:
-            self.view.show_message("error", "Error", f"No se pudo leer el archivo: {e}")
+            error_title = self.view.i18n.get("main.controllers.log.error_title")
+            error_msg = self.view.i18n.get("main.controllers.log.read_error").replace("{error}", str(e))
+            self.view.show_message("error", error_title, error_msg)
 
     @Slot()
     def open_github_issues(self):
@@ -36,4 +38,6 @@ class LogController(QObject):
             folder_url = QUrl.fromLocalFile(self.service.log_dir)
             QDesktopServices.openUrl(folder_url)
         except Exception as e:
-            self.view.show_message("error", "Error", f"No se pudo abrir la carpeta: {e}")
+            error_title = self.view.i18n.get("main.controllers.log.error_title")
+            error_msg = self.view.i18n.get("main.controllers.log.folder_error").replace("{error}", str(e))
+            self.view.show_message("error", error_title, error_msg)

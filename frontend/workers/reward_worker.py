@@ -8,8 +8,9 @@ class RewardWorker(QThread):
     reward_redeemed = Signal(str, str, str)
     error_occurred = Signal(str)
 
-    def __init__(self, api_client: KickAPIClient, poll_interval_seconds: int = 15, parent=None):
+    def __init__(self, i18n, api_client: KickAPIClient, poll_interval_seconds: int = 15, parent=None):
         super().__init__(parent) 
+        self.i18n = i18n
         self.setObjectName("Worker_Reward_Polling") 
         self.api_client = api_client
         self.poll_interval = poll_interval_seconds
@@ -22,23 +23,19 @@ class RewardWorker(QThread):
         while self._running:
             try:
                 response = self.api_client.fetch_pending_redemptions()
-                data_list = response.get("data", [])
-                
+                data_list = response.get("data", [])           
                 new_ids_to_accept = []
                 
                 for item in data_list:
-                    reward_title = item.get("reward", {}).get("title", "Recompensa desconocida")
-                    redemptions = item.get("redemptions", [])
-                    
+                    reward_title = item.get("reward", {}).get("title", self.i18n.get("main.workers.reward.unknown_reward"))
+                    redemptions = item.get("redemptions", [])                  
                     for red in redemptions:
                         red_id = red.get("id")
 
                         if red_id in self._processed_ids:
-                            continue
-                            
-                        user_id = red.get("redeemer", {}).get("user_id", "Alguien")
+                            continue            
+                        user_id = red.get("redeemer", {}).get("user_id", self.i18n.get("main.workers.reward.someone"))
                         user_input = red.get("user_input", "")
-
                         self._processed_ids.add(red_id)
                         new_ids_to_accept.append(red_id)
                         self.reward_redeemed.emit(str(user_id), reward_title, user_input)
@@ -48,12 +45,11 @@ class RewardWorker(QThread):
                         batch = new_ids_to_accept[i:i+25]
                         try:
                             self.api_client.accept_redemptions(batch)
-                            print(f"Se marcaron exitosamente {len(batch)} canjes como completados en Kick.")
+                            print(self.i18n.get("main.workers.reward.batch_success").replace("{count}", str(len(batch))))
                         except Exception as api_err:
-                            print(f"No se pudo confirmar el lote en Kick: {api_err}")
-                
+                            print(self.i18n.get("main.workers.reward.batch_error").replace("{error}", str(api_err)))             
             except Exception as e:
-                self.error_occurred.emit(f"Error consultando recompensas: {str(e)}")
+                self.error_occurred.emit(self.i18n.get("main.workers.reward.poll_error").replace("{error}", str(e)))
 
             for _ in range(self.poll_interval * 2):
                 if not self._running:

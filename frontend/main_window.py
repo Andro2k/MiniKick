@@ -48,7 +48,6 @@ from frontend.utils import resource_path
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
 from frontend.workers.fetch_rewards_worker import FetchRewardsWorker
-from frontend.workers.reward_worker import RewardWorker
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
 class MainWindow(QMainWindow):
@@ -60,12 +59,6 @@ class MainWindow(QMainWindow):
         self._is_shutting_down = False
         self.updater_manager = updater_manager
         self.app_version = app_version
-        
-        self.setWindowTitle(f"MiniKick - Versión {app_version}")
-        self.resize(1100, 750)
-
-        html_path = resource_path(os.path.join("assets", "web", "success.html"))
-
         self.db_manager = DatabaseManager()
         self.token_storage = SQLiteTokenStorage(self.db_manager)
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
@@ -73,6 +66,7 @@ class MainWindow(QMainWindow):
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
         self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage, self.spam_storage)
+
         if getattr(sys, 'frozen', False):
             app_dir = os.path.dirname(sys.executable)
         else:
@@ -90,6 +84,10 @@ class MainWindow(QMainWindow):
                 pass
         saved_lang = self.settings_storage.load_string("app_language", "es")
         self.i18n = TranslationService(default_lang=saved_lang)
+        title = self.i18n.get("main.window.title").replace("{version}", app_version)
+        self.setWindowTitle(title)
+        self.resize(1100, 750)
+        html_path = resource_path(os.path.join("assets", "web", "success.html"))
         self.auth_manager = AuthManager(
             client_id=os.getenv("KICK_CLIENT_ID", ""),
             client_secret=os.getenv("KICK_CLIENT_SECRET", ""),
@@ -119,7 +117,7 @@ class MainWindow(QMainWindow):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        self.sidebar = Sidebar(app_version=self.app_version)
+        self.sidebar = Sidebar(self.i18n, app_version=self.app_version)
         self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
         self.sidebar.add_tab("Chat", "bubble-text.svg")
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
@@ -173,7 +171,7 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.content_stack)
 
     def _setup_tray(self):
-        self.tray_manager = SystemTrayManager(self)
+        self.tray_manager = SystemTrayManager(self.i18n, self)
         self.tray_manager.restore_requested.connect(self._restore_from_tray)
         self.tray_manager.quit_requested.connect(self._force_quit)
         self.tray_manager.tts_toggled.connect(self._handle_tray_tts_toggle)
@@ -190,8 +188,9 @@ class MainWindow(QMainWindow):
         settings["enabled"] = enabled
         self.chat_service.save_settings(settings)
         self.view_chat.set_initial_states(settings)
-        estado = "Activado" if enabled else "Silenciado"
-        self.tray_manager.showMessage("MiniKick", f"Lectura de chat: {estado}", QSystemTrayIcon.MessageIcon.Information, 2000)
+        estado = self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off")
+        msg = self.i18n.get("main.tray.tts_msg").replace("{estado}", estado)
+        self.tray_manager.showMessage("MiniKick", msg, QSystemTrayIcon.MessageIcon.Information, 2000)
 
     def _connect_signals(self):
         self.sidebar.view_selected.connect(self._handle_navigation)
@@ -223,7 +222,7 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def _handle_update_check(self):
-        dialog = UpdateDialog(parent=self)       
+        dialog = UpdateDialog(self.i18n, parent=self)       
         update_info = {"url": ""}
         
         self.check_worker = UpdateCheckWorker(self.updater_manager)
@@ -245,7 +244,8 @@ class MainWindow(QMainWindow):
                 if success:
                     dialog.show_complete()
                 else:
-                    dialog.show_error("Fallo inesperado al descargar el archivo.")
+                    error_msg = self.i18n.get("main.dialogs.update.msg_unexpected_error")
+                    dialog.show_error(error_msg)
                     
             self.download_worker.finished.connect(on_download_finished)
             self.download_worker.error.connect(dialog.show_error)
@@ -288,21 +288,19 @@ class MainWindow(QMainWindow):
         self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
         self.dashboard_controller.handle_connecting_state()
 
-        self.auth_worker = AuthWorker(self.auth_manager)
+        self.auth_worker = AuthWorker(self.i18n, self.auth_manager)
         self.auth_worker.setParent(self)
         
         def on_auth_success(tokens):
             cluster = os.getenv("KICK_PUSHER_CLUSTER", "")
             key = os.getenv("KICK_PUSHER_KEY", "")
             api_client = KickAPIClient(auth_provider=self.auth_manager)
-            
             is_missing_scopes = self.auth_manager.has_missing_scopes()
             self.dashboard_controller.evaluate_scopes(is_missing_scopes)
             self.command_service.api_client = api_client
             self.spam_service.api_client = api_client 
             self.chat_controller.command_service = self.command_service
-            
-            self.chat_worker = ChatWorker(api_client, cluster, key, parent=self)                
+            self.chat_worker = ChatWorker(self.i18n, api_client, cluster, key, parent=self)               
 
             def on_connection_success(user_data):
                 self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
@@ -325,22 +323,26 @@ class MainWindow(QMainWindow):
     @Slot(str, str, list, str, str, int)
     def _route_incoming_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
         if self.spam_service.is_spam(user, msg, badges, msg_id, sender_id):
-            self.logger.debug(f"Mensaje sancionado por Auto-Mod: {user}: {msg}")
+            log_msg = self.i18n.get("main.logs.automod_sanction").replace("{user}", user).replace("{msg}", msg)
+            self.logger.debug(log_msg)
             return 
             
         self.chat_controller.handle_incoming_message(user, msg, badges, color)
 
     @Slot(str, str, str)
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
-        msg_sistema = f'<span style="color: #00e701;">canjeó {reward_name}</span>'
-        self.view_chat.append_message(f"[PUNTOS] {user}", msg_sistema, "#53FC18")
+        texto_canje = self.i18n.get("main.chat.reward_redeemed").replace("{reward_name}", reward_name)
+        msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
+        tag = self.i18n.get("main.chat.points_tag")
+        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, "#53FC18")
         
         mappings = self.alerts_service.get_mappings()
         if reward_name in mappings:
             config = mappings[reward_name]
             self.alerts_service.trigger_preview(reward_name, config)
         else:
-            self.logger.debug(f"Recompensa '{reward_name}' no tiene una alerta configurada.")
+            log_msg = self.i18n.get("main.logs.reward_no_alert").replace("{reward_name}", reward_name)
+            self.logger.debug(log_msg)
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:
@@ -349,12 +351,12 @@ class MainWindow(QMainWindow):
     @Slot()
     def _fetch_api_rewards(self):
         if not self.auth_manager.get_tokens():
-            self.logger.error("Intento de actualizar recompensas sin estar conectado a Kick.")
+            self.logger.error(self.i18n.get("main.logs.api_offline"))
             self.alerts_controller.update_rewards_list([])
             return
 
         if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker.isRunning():
-            self.logger.warning("Ya se están consultando las recompensas. Por favor espera.")
+            self.logger.warning(self.i18n.get("main.logs.api_fetching"))
             return
 
         try:
@@ -364,11 +366,11 @@ class MainWindow(QMainWindow):
             self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
             self.fetch_rewards_worker.start()
         except Exception as e:
-            self.logger.error(f"Error al preparar la consulta de recompensas: {e}")
+            self.logger.error(self.i18n.get("main.logs.api_error_setup").replace("{error}", str(e)))
 
     @Slot(str)
     def _handle_rewards_error(self, error_msg: str):
-        self.logger.error(f"Fallo en la API de recompensas: {error_msg}")
+        self.logger.error(self.i18n.get("main.logs.api_error").replace("{error}", error_msg))
         self.alerts_controller.update_rewards_list([])
             
     @Slot(bool)
@@ -397,14 +399,14 @@ class MainWindow(QMainWindow):
             self._handle_navigation("Dashboard")
             
             for btn in self.sidebar.nav_buttons:
-                if btn.text().strip() == "Dashboard":
+                if btn.property("view_name") == "Dashboard":
                     btn.setChecked(True)
                     break
         
     def _notify_background(self):
         self.tray_manager.showMessage(
-            "MiniKick en segundo plano",
-            "Seguiré leyendo el chat por ti. Haz doble clic para volver.",
+            self.i18n.get("main.tray.bg_title"),
+            self.i18n.get("main.tray.bg_desc"),
             QSystemTrayIcon.MessageIcon.Information,
             3000
         )
@@ -422,24 +424,24 @@ class MainWindow(QMainWindow):
 
     def _stop_worker_safely(self, worker_name: str, worker_instance):
         if worker_instance and worker_instance.isRunning():
-            self.logger.info(f"Solicitando parada de {worker_name}...")
+            self.logger.info(self.i18n.get("main.logs.worker_stopping").replace("{worker}", worker_name))
 
             if hasattr(worker_instance, 'stop'):
                 worker_instance.stop()
             if not worker_instance.wait(2000):
-                self.logger.warning(f"{worker_name} atascado (posible bloqueo de red). Forzando terminación...")
+                self.logger.warning(self.i18n.get("main.logs.worker_stuck").replace("{worker}", worker_name))
                 worker_instance.terminate()
                 worker_instance.wait()
             else:
-                self.logger.info(f"{worker_name} cerrado limpiamente.")
+                self.logger.info(self.i18n.get("main.logs.worker_stopped").replace("{worker}", worker_name))
 
     def _cleanup(self):
         if self._is_shutting_down:
             return
         self._is_shutting_down = True
         
-        self.logger.info("Iniciando secuencia de apagado...")
-        self.logger.info("Apagando TTS y Overlay...")
+        self.logger.info(self.i18n.get("main.logs.shutdown_init"))
+        self.logger.info(self.i18n.get("main.logs.shutdown_tts_overlay"))
         self.tts_manager.stop()        
         self.overlay_server.stop() 
 
@@ -448,7 +450,7 @@ class MainWindow(QMainWindow):
         self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
         self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
 
-        self.logger.info("Secuencia de apagado de hilos completada.")
+        self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
 
     def closeEvent(self, event):
         if self._is_shutting_down:

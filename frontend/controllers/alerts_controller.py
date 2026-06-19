@@ -8,7 +8,7 @@ class AlertsController(QObject):
         super().__init__()
         self.view = view
         self.service = service
-        self.current_rewards_list = ["No hay recompensas"]
+        self.current_rewards_list = [self.view.i18n.get("alerts.dialogs.wizard.step1.no_rewards")]
         self._active_dialog = None
         self._connect_signals()
 
@@ -24,7 +24,7 @@ class AlertsController(QObject):
 
     @Slot(list)
     def update_rewards_list(self, rewards: list):
-        self.current_rewards_list = rewards if rewards else ["No hay recompensas"]
+        self.current_rewards_list = rewards if rewards else [self.view.i18n.get("alerts.dialogs.wizard.step1.no_rewards")]
         if self._active_dialog:
             self._active_dialog.update_rewards(self._get_available_rewards())
 
@@ -32,7 +32,7 @@ class AlertsController(QObject):
         mappings = self.service.get_mappings()
         used_rewards = mappings.keys()
         available = [r for r in self.current_rewards_list if r not in used_rewards or r == ignore_reward]
-        return available if available else ["No hay recompensas disponibles"]
+        return available if available else [self.view.i18n.get("alerts.dialogs.wizard.step1.no_available")]
 
     @Slot()
     def _handle_add(self):
@@ -45,7 +45,12 @@ class AlertsController(QObject):
         
         if self._active_dialog.exec():
             reward, config = self._active_dialog.get_config_data()
-            if reward and reward not in ["Cargando recompensas...", "No hay recompensas", "No hay recompensas disponibles"] and config["filepath"]:
+            
+            loading_str = self.view.i18n.get("alerts.dialogs.wizard.step1.loading")
+            no_rewards_str = self.view.i18n.get("alerts.dialogs.wizard.step1.no_rewards")
+            no_avail_str = self.view.i18n.get("alerts.dialogs.wizard.step1.no_available")
+            
+            if reward and reward not in [loading_str, no_rewards_str, no_avail_str] and config["filepath"]:
                 mappings = self.service.get_mappings()
                 mappings[reward] = config
                 self.service.save_mappings(mappings)

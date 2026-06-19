@@ -7,8 +7,9 @@ class AuthWorker(QThread):
     auth_success = Signal(dict)
     auth_error = Signal(str)
 
-    def __init__(self, auth_manager: AuthManager):
+    def __init__(self, i18n, auth_manager: AuthManager):
         super().__init__()
+        self.i18n = i18n
         self.auth_manager = auth_manager
 
     def run(self):
@@ -17,6 +18,6 @@ class AuthWorker(QThread):
             if tokens:
                 self.auth_success.emit(tokens)
             else:
-                self.auth_error.emit("Autorización cancelada o fallida.")
+                self.auth_error.emit(self.i18n.get("main.workers.auth.error_failed"))
         except Exception as e:
             self.auth_error.emit(str(e))

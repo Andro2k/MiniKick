@@ -9,8 +9,9 @@ from frontend.theme import COLOR_TEXT_SECONDARY, COLOR_ACCENT
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self, app_version: str = "v1.0.0"):
+    def __init__(self, i18n, app_version: str = "v1.0.0"):
         super().__init__()
+        self.i18n = i18n
         self.app_version = app_version
         self.has_update = False  
         self.setObjectName("Sidebar")
@@ -73,7 +74,7 @@ class Sidebar(QFrame):
 
         self.main_layout.addSpacing(4)
         
-        self.btn_update_alert = QPushButton("Nueva Versión")
+        self.btn_update_alert = QPushButton(self.i18n.get("main.sidebar.new_version"))
         self.btn_update_alert.setProperty("role", "action_accent")
         self.btn_update_alert.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_alert.setIcon(get_icon_colored("cloud-download.svg", COLOR_ACCENT, 14))
@@ -82,7 +83,8 @@ class Sidebar(QFrame):
         self.btn_update_alert.clicked.connect(self._on_update_alert_clicked)
         self.main_layout.addWidget(self.btn_update_alert)
 
-        self.lbl_version = QLabel(f"Versión {self.app_version}")
+        version_text = self.i18n.get("main.sidebar.version").replace("{version}", self.app_version)
+        self.lbl_version = QLabel(version_text)
         self.lbl_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_version.setProperty("role", "caption")
         self.main_layout.addWidget(self.lbl_version)
@@ -100,11 +102,13 @@ class Sidebar(QFrame):
                 break
 
     def add_tab(self, name, icon_name, is_active=False, position="top"):
-        btn = QPushButton(name)
+        key_name = name.lower().replace(" ", "_")
+        display_name = self.i18n.get(f"main.sidebar.tabs.{key_name}")
+        btn = QPushButton(display_name)
         btn.setObjectName("NavButton")
         btn.setCheckable(True)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)       
-        btn.setProperty("original_text", name)
+        btn.setProperty("original_text", display_name)
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)        
         icon_color = COLOR_ACCENT if is_active else COLOR_TEXT_SECONDARY

@@ -9,8 +9,9 @@ class ChatWorker(QThread):
     error_occurred = Signal(str)        
     connection_success = Signal(dict)   
     
-    def __init__(self, api_client: KickAPIClient, cluster: str, key: str, parent=None):
+    def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):
         super().__init__(parent)
+        self.i18n = i18n
         self.setObjectName("Worker_Chat_Socket")
         self.api_client = api_client 
         self.cluster = cluster
@@ -26,7 +27,7 @@ class ChatWorker(QThread):
             self.connection_success.emit(user_data)
             room_id = user_data.get("room_id")
             if not room_id:
-                raise ValueError("No se pudo obtener el ID de la sala desde la API.")
+                raise ValueError(self.i18n.get("main.workers.chat.error_room_id"))
 
             self.chat_manager = ChatSocketManager(self.cluster, self.key)
 

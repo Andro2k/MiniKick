@@ -8,8 +8,9 @@ from frontend.components.controls import ModernButton
 from frontend.theme import PATH_ICON_HELP
 
 class CommandConfigWizard(ModernBaseDialog):
-    def __init__(self, parent=None, existing_config=None):
-        super().__init__(title="Configurar Comando", icon_path=PATH_ICON_HELP, icon_bg_color="#53FC18", width=520, parent=parent)
+    def __init__(self, i18n, parent=None, existing_config=None):
+        self.i18n = i18n
+        super().__init__(title=self.i18n.get("command.dialog.title"), icon_path=PATH_ICON_HELP, icon_bg_color="#53FC18", width=520, parent=parent)
         self.set_dialog_state("accent")
         
         self.existing_config = existing_config
@@ -26,13 +27,13 @@ class CommandConfigWizard(ModernBaseDialog):
         basic_layout = QVBoxLayout(self.tab_basic)
         basic_layout.setSpacing(12)
 
-        lbl_trigger = QLabel("Nombre del Comando (Ej: !discord):")
+        lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
         lbl_trigger.setProperty("role", "h3")
         self.txt_trigger = QLineEdit()
         basic_layout.addWidget(lbl_trigger)
         basic_layout.addWidget(self.txt_trigger)
 
-        lbl_response = QLabel("Respuesta del bot (puedes usar {user}):")
+        lbl_response = QLabel(self.i18n.get("command.dialog.response_label"))
         lbl_response.setProperty("role", "h3")
         self.txt_response = QTextEdit()
         self.txt_response.setMinimumHeight(80) 
@@ -42,7 +43,7 @@ class CommandConfigWizard(ModernBaseDialog):
 
         row_configs = QHBoxLayout()
         col_cooldown = QVBoxLayout()
-        col_cooldown.addWidget(QLabel("Cooldown (seg):"))
+        col_cooldown.addWidget(QLabel(self.i18n.get("command.dialog.cooldown_label")))
         self.spin_cooldown = QSpinBox()
         self.spin_cooldown.setRange(0, 300)
         self.spin_cooldown.setValue(5)
@@ -50,19 +51,19 @@ class CommandConfigWizard(ModernBaseDialog):
         row_configs.addLayout(col_cooldown)
         
         col_perm = QVBoxLayout()
-        col_perm.addWidget(QLabel("Permiso Mínimo:"))
+        col_perm.addWidget(QLabel(self.i18n.get("command.dialog.permission_label")))
         self.combo_perm = QComboBox()
-        self.combo_perm.addItem("Todos", "everyone")
-        self.combo_perm.addItem("Suscriptor", "subscriber")
-        self.combo_perm.addItem("VIP", "vip")
-        self.combo_perm.addItem("Moderador", "moderator")
-        self.combo_perm.addItem("Broadcaster", "broadcaster")
+        self.combo_perm.addItem(self.i18n.get("command.dialog.perm_everyone"), "everyone")
+        self.combo_perm.addItem(self.i18n.get("command.dialog.perm_subscriber"), "subscriber")
+        self.combo_perm.addItem(self.i18n.get("command.dialog.perm_vip"), "vip")
+        self.combo_perm.addItem(self.i18n.get("command.dialog.perm_moderator"), "moderator")
+        self.combo_perm.addItem(self.i18n.get("command.dialog.perm_broadcaster"), "broadcaster")
         col_perm.addWidget(self.combo_perm)
         row_configs.addLayout(col_perm)
         
         basic_layout.addLayout(row_configs)
 
-        self.chk_active = QCheckBox("Comando Activo")
+        self.chk_active = QCheckBox(self.i18n.get("command.dialog.active_checkbox"))
         self.chk_active.setChecked(True)
         basic_layout.addWidget(self.chk_active)
 
@@ -70,42 +71,42 @@ class CommandConfigWizard(ModernBaseDialog):
         adv_layout = QVBoxLayout(self.tab_adv)
         adv_layout.setSpacing(12)
 
-        lbl_aliases = QLabel("Aliases Estándar (separados por coma):")
+        lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
         lbl_aliases.setProperty("role", "h3")
         self.txt_aliases = QLineEdit()
-        self.txt_aliases.setPlaceholderText("!dc, !discordia")
+        self.txt_aliases.setPlaceholderText(self.i18n.get("command.dialog.aliases_placeholder"))
         adv_layout.addWidget(lbl_aliases)
         adv_layout.addWidget(self.txt_aliases)
 
         adv_layout.addSpacing(10)
 
-        self.chk_regex = QCheckBox("Usar RegEx (Ignora Prefijos y Aliases)")
+        self.chk_regex = QCheckBox(self.i18n.get("command.dialog.regex_checkbox"))
         self.chk_regex.toggled.connect(self._on_regex_toggled)
         adv_layout.addWidget(self.chk_regex)
 
-        lbl_regex = QLabel("Sintaxis de Expresión Regular:")
+        lbl_regex = QLabel(self.i18n.get("command.dialog.regex_label"))
         lbl_regex.setProperty("role", "h3")
         self.txt_regex = QLineEdit()
-        self.txt_regex.setPlaceholderText("Ej: \\b(hola|buenas)\\b")
+        self.txt_regex.setPlaceholderText(self.i18n.get("command.dialog.regex_placeholder"))
         self.txt_regex.setEnabled(False)
         
         adv_layout.addWidget(lbl_regex)
         adv_layout.addWidget(self.txt_regex)
         
-        lbl_regex_help = QLabel("Si activas RegEx, el bot buscará este patrón en todo el mensaje.")
+        lbl_regex_help = QLabel(self.i18n.get("command.dialog.regex_help"))
         lbl_regex_help.setWordWrap(True)
         lbl_regex_help.setProperty("role", "caption")
         adv_layout.addWidget(lbl_regex_help)
         
         adv_layout.addStretch()
 
-        self.tabs.addTab(self.tab_basic, "Básico")
-        self.tabs.addTab(self.tab_adv, "Avanzado")
+        self.tabs.addTab(self.tab_basic, self.i18n.get("command.dialog.tab_basic"))
+        self.tabs.addTab(self.tab_adv, self.i18n.get("command.dialog.tab_advanced"))
         self.content_layout.insertWidget(self.content_layout.count() - 1, self.tabs)
 
-        self.btn_save = ModernButton("Guardar Comando", role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("command.dialog.btn_save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
-        btn_cancel = ModernButton("Cancelar", role="action_outlined")
+        btn_cancel = ModernButton(self.i18n.get("command.dialog.btn_cancel"), role="action_outlined")
         btn_cancel.clicked.connect(self.reject)
         
         self.add_action_buttons(btn_cancel, self.btn_save)

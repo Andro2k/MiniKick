@@ -94,7 +94,7 @@ class ChatController(QObject):
     def _handle_voice_change(self, voice_id: str):
         provider = "web" if ("-" in voice_id) else "local"
         self.service.set_voice(provider, voice_id)
-        self.service.speak("Voz actualizada.")
+        self.service.speak(self.view.i18n.get("main.controllers.chat.voice_updated"))
 
     @Slot(bool)
     def _handle_provider_change(self, is_web: bool):

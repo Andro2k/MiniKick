@@ -12,7 +12,8 @@ class SystemTrayManager(QSystemTrayIcon):
     quit_requested = Signal()
     tts_toggled = Signal(bool)
 
-    def __init__(self, parent=None):
+    def __init__(self, i18n, parent=None):
+        self.i18n = i18n
         super().__init__(parent)
         self._setup_ui()
 
@@ -22,19 +23,19 @@ class SystemTrayManager(QSystemTrayIcon):
 
         self.menu = QMenu()
 
-        self.action_restore = self.menu.addAction("Abrir Panel")
+        self.action_restore = self.menu.addAction(self.i18n.get("main.tray.open_panel"))
         self.action_restore.triggered.connect(self.restore_requested.emit)
 
         self.menu.addSeparator()
 
-        self.action_tts = QAction("Leer chat en voz alta", self.menu)
+        self.action_tts = QAction(self.i18n.get("main.tray.read_chat"), self.menu)
         self.action_tts.setCheckable(True)
         self.action_tts.toggled.connect(self.tts_toggled.emit)
         self.menu.addAction(self.action_tts)
 
         self.menu.addSeparator()
 
-        self.action_quit = self.menu.addAction("Cerrar MiniKick")
+        self.action_quit = self.menu.addAction(self.i18n.get("main.tray.close_app"))
         self.action_quit.triggered.connect(self.quit_requested.emit)
 
         self.setContextMenu(self.menu)

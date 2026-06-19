@@ -87,6 +87,29 @@ DEFAULT_DICTIONARY = {
             "regex_prefix": "Regex",
             "tooltip_edit": "Modificar configuración del comando",
             "tooltip_delete": "Eliminar comando permanentemente"
+        },
+        "dialog": {
+            "title": "Configurar Comando",
+            "trigger_label": "Nombre del Comando (Ej: !discord):",
+            "response_label": "Respuesta del bot (puedes usar {user}):",
+            "cooldown_label": "Cooldown (seg):",
+            "permission_label": "Permiso Mínimo:",
+            "perm_everyone": "Todos",
+            "perm_subscriber": "Suscriptor",
+            "perm_vip": "VIP",
+            "perm_moderator": "Moderador",
+            "perm_broadcaster": "Broadcaster",
+            "active_checkbox": "Comando Activo",
+            "aliases_label": "Aliases Estándar (separados por coma):",
+            "aliases_placeholder": "!dc, !discordia",
+            "regex_checkbox": "Usar RegEx (Ignora Prefijos y Aliases)",
+            "regex_label": "Sintaxis de Expresión Regular:",
+            "regex_placeholder": "Ej: \\b(hola|buenas)\\b",
+            "regex_help": "Si activas RegEx, el bot buscará este patrón en todo el mensaje.",
+            "tab_basic": "Básico",
+            "tab_advanced": "Avanzado",
+            "btn_save": "Guardar Comando",
+            "btn_cancel": "Cancelar"
         }
     },
     "alerts": {
@@ -244,7 +267,50 @@ DEFAULT_DICTIONARY = {
             "unlink_title": "Desvincular Cuenta",
             "unlink_desc": "¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes.",
             "close_title": "Cerrar MiniKick",
-            "close_desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat."
+            "close_desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat.",
+            "update": {
+                "top_searching": "Buscando...",
+                "title_default": "Actualización del Sistema",
+                "subtitle_connecting": "Conectando con el servidor...",
+                "lbl_progress": "Progreso",
+                "btn_restart": "Reiniciar ahora",
+                "btn_close": "Cerrar",
+                "top_available": "Versión {version} disponible",
+                "subtitle_restart_req": "Se requiere un reinicio para completar la instalación.",
+                "btn_download": "Descargar ahora",
+                "subtitle_downloading": "Descargando la nueva versión...",
+                "btn_downloading": "Descargando...",
+                "title_completed": "Actualización completada",
+                "subtitle_installed": "Versión {version} instalada.",
+                "title_up_to_date": "Sistema Actualizado",
+                "subtitle_up_to_date": "Tu versión del sistema ya es la última disponible.",
+                "top_error": "Error de Actualización",
+                "title_error": "Fallo en la descarga",
+                "msg_unexpected_error": "Fallo inesperado al descargar el archivo."
+            }
+        },
+        "sidebar": {
+            "new_version": "Nueva Versión",
+            "version": "Versión {version}",
+            "tabs": {
+                "dashboard": "Dashboard",
+                "chat": "Chat",
+                "triggers": "Triggers",
+                "comandos": "Comandos",
+                "spam_filters": "Filtros Spam",
+                "settings": "Ajustes",
+                "developer": "Desarrollador"
+            }
+        },
+        "tray": {
+            "open_panel": "Abrir Panel",
+            "read_chat": "Leer chat en voz alta",
+            "close_app": "Cerrar MiniKick",
+            "tts_on": "Activado",
+            "tts_off": "Silenciado",
+            "tts_msg": "Lectura de chat: {estado}",
+            "bg_title": "MiniKick en segundo plano",
+            "bg_desc": "Seguiré leyendo el chat por ti. Haz doble clic para volver."
         }
     }
 }

@@ -23,21 +23,21 @@ class DashboardController(QObject):
     def handle_connection_success(self, user_data: dict):
         self.view.update_connection_status(is_connecting=False)
 
-        username = user_data.get("username", "Desconocido")
+        username = user_data.get("username", self.view.i18n.get("main.controllers.dashboard.unknown_user"))
         if user_data.get("is_verified", False):
             username += " ✓"
-        bio = user_data.get("bio", "Sin descripción")
+        bio = user_data.get("bio", self.view.i18n.get("main.controllers.dashboard.no_bio"))
         self.view.update_profile_info(username, bio)
 
         followers_str = f"{user_data.get('followers', 0):,}"
         room_str = str(user_data.get("room_id", "-"))
-        category = user_data.get("last_category", "Ninguna")
+        category = user_data.get("last_category", self.view.i18n.get("main.controllers.dashboard.none"))
         
         is_affiliate = user_data.get("is_affiliate", False)
-        affiliate_text = "Afiliado" if is_affiliate else "No Afiliado"
+        affiliate_text = self.view.i18n.get("main.controllers.dashboard.affiliate") if is_affiliate else self.view.i18n.get("main.controllers.dashboard.not_affiliate")
         
         vods_enabled = user_data.get("vod_enabled", False)
-        vods_text = "Sí" if vods_enabled else "No"
+        vods_text = self.view.i18n.get("main.controllers.dashboard.yes") if vods_enabled else self.view.i18n.get("main.controllers.dashboard.no")
 
         self.view.update_stats(followers_str, room_str, category, affiliate_text, vods_text)
         avatar_url = user_data.get("avatar_url", "")

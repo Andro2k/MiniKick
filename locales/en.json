@@ -85,6 +85,29 @@
             "regex_prefix": "Regex",
             "tooltip_edit": "Modify command configuration",
             "tooltip_delete": "Delete command permanently"
+        },
+        "dialog": {
+            "title": "Configure Command",
+            "trigger_label": "Command Name (Ex: !discord):",
+            "response_label": "Bot Response (you can use {user}):",
+            "cooldown_label": "Cooldown (sec):",
+            "permission_label": "Minimum Permission:",
+            "perm_everyone": "Everyone",
+            "perm_subscriber": "Subscriber",
+            "perm_vip": "VIP",
+            "perm_moderator": "Moderator",
+            "perm_broadcaster": "Broadcaster",
+            "active_checkbox": "Active Command",
+            "aliases_label": "Standard Aliases (comma separated):",
+            "aliases_placeholder": "!dc, !discord server",
+            "regex_checkbox": "Use RegEx (Ignores Prefixes and Aliases)",
+            "regex_label": "Regular Expression Syntax:",
+            "regex_placeholder": "Ex: \\b(hello|hi)\\b",
+            "regex_help": "If you enable RegEx, the bot will search for this pattern anywhere in the message.",
+            "tab_basic": "Basic",
+            "tab_advanced": "Advanced",
+            "btn_save": "Save Command",
+            "btn_cancel": "Cancel"
         }
     },
     "alerts": {
@@ -131,7 +154,9 @@
                     "tooltip_refresh": "Refresh Kick Rewards",
                     "file_label": "Multimedia File",
                     "file_placeholder": "Ex. your_alert.mp4 or sound.mp3",
-                    "btn_browse": "Browse"
+                    "btn_browse": "Browse",
+                    "no_rewards": "No rewards",
+                    "no_available": "No available rewards"
                 },
                 "step2": {
                     "title": "Display Settings",
@@ -242,7 +267,116 @@
             "unlink_title": "Unlink Account",
             "unlink_desc": "Are you sure you want to log out? You will need to re-authorize MiniKick next time.",
             "close_title": "Close MiniKick",
-            "close_desc": "Are you sure you want to exit the application? The bot will stop listening to the chat."
+            "close_desc": "Are you sure you want to exit the application? The bot will stop listening to the chat.",
+            "update": {
+                "top_searching": "Searching...",
+                "title_default": "System Update",
+                "subtitle_connecting": "Connecting to the server...",
+                "lbl_progress": "Progress",
+                "btn_restart": "Restart now",
+                "btn_close": "Close",
+                "top_available": "Version {version} available",
+                "subtitle_restart_req": "A restart is required to complete the installation.",
+                "btn_download": "Download now",
+                "subtitle_downloading": "Downloading the new version...",
+                "btn_downloading": "Downloading...",
+                "title_completed": "Update completed",
+                "subtitle_installed": "Version {version} installed.",
+                "title_up_to_date": "System Up to Date",
+                "subtitle_up_to_date": "Your system version is already the latest available.",
+                "top_error": "Update Error",
+                "title_error": "Download failed",
+                "msg_unexpected_error": "Unexpected failure downloading the file."
+            }
+        },
+        "sidebar": {
+            "new_version": "New Version",
+            "version": "Version {version}",
+            "tabs": {
+                "dashboard": "Dashboard",
+                "chat": "Chat",
+                "triggers": "Triggers",
+                "comandos": "Commands",
+                "spam_filters": "Spam Filters",
+                "settings": "Settings",
+                "developer": "Developer"
+            }
+        },
+        "tray": {
+            "open_panel": "Open Panel",
+            "read_chat": "Read chat aloud",
+            "close_app": "Close MiniKick",
+            "tts_on": "Enabled",
+            "tts_off": "Muted",
+            "tts_msg": "Chat reading: {estado}",
+            "bg_title": "MiniKick in background",
+            "bg_desc": "I will keep reading the chat for you. Double click to return."
+        },
+        "controllers": {
+            "dashboard": {
+                "unknown_user": "Unknown",
+                "no_bio": "No description",
+                "none": "None",
+                "affiliate": "Affiliate",
+                "not_affiliate": "Not Affiliate",
+                "yes": "Yes",
+                "no": "No"
+            },
+            "log": {
+                "error_title": "Error",
+                "read_error": "Could not read the file: {error}",
+                "folder_error": "Could not open the folder: {error}"
+            },
+            "settings": {
+                "export_success_title": "Export successful",
+                "export_success_desc": "Your settings have been saved.",
+                "error_title": "Error",
+                "export_error_desc": "Failed to export the file.",
+                "import_success_title": "Import successful",
+                "import_success_desc": "Your settings have been restored.",
+                "import_error_desc": "The file is corrupt or invalid.",
+                "restart_title": "Restart Required",
+                "restart_desc": "Please close and reopen MiniKick to apply the new language."
+            },
+            "chat": {
+                "voice_updated": "Voice updated."
+            }
+        },
+        "workers": {
+            "auth": {
+                "error_failed": "Authorization canceled or failed."
+            },
+            "chat": {
+                "error_room_id": "Could not get the room ID from the API."
+            },
+            "reward": {
+                "unknown_reward": "Unknown reward",
+                "someone": "Someone",
+                "batch_success": "Successfully marked {count} redemptions as completed on Kick.",
+                "batch_error": "Could not confirm the batch on Kick: {error}",
+                "poll_error": "Error querying rewards: {error}"
+            }
+        },
+        "window": {
+            "title": "MiniKick - Version {version}"
+        },
+        "chat": {
+            "reward_redeemed": "redeemed {reward_name}",
+            "points_tag": "POINTS"
+        },
+        "logs": {
+            "reward_no_alert": "Reward '{reward_name}' does not have an alert configured.",
+            "automod_sanction": "Message sanctioned by Auto-Mod: {user}: {msg}",
+            "api_offline": "Attempted to update rewards without being connected to Kick.",
+            "api_fetching": "Rewards are already being fetched. Please wait.",
+            "api_error_setup": "Error setting up rewards query: {error}",
+            "api_error": "Kick Rewards API failed: {error}",
+            "worker_stopping": "Requesting {worker} to stop...",
+            "worker_stuck": "{worker} stuck (possible network lock). Forcing termination...",
+            "worker_stopped": "{worker} closed cleanly.",
+            "shutdown_init": "Initiating shutdown sequence...",
+            "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
+            "shutdown_complete": "Thread shutdown sequence completed."
         }
     }
 }

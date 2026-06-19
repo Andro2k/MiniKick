@@ -34,9 +34,9 @@ class SettingsController(QObject):
         filepath = self.view.ask_save_path()
         if filepath:
             if self.service.export_settings(filepath):
-                self.notification_requested.emit("Exportación exitosa", "Tus configuraciones han sido guardadas.")
+                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.export_success_title"), self.view.i18n.get("main.controllers.settings.export_success_desc"))
             else:
-                self.notification_requested.emit("Error", "Fallo al exportar el archivo.")
+                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.error_title"), self.view.i18n.get("main.controllers.settings.export_error_desc"))
 
     @Slot()
     def handle_import(self):
@@ -44,11 +44,11 @@ class SettingsController(QObject):
         if filepath:
             if self.service.import_settings(filepath):
                 self.backup_restored.emit()
-                self.notification_requested.emit("Importación exitosa", "Tus configuraciones han sido restauradas.")
+                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.import_success_title"), self.view.i18n.get("main.controllers.settings.import_success_desc"))
             else:
-                self.notification_requested.emit("Error", "El archivo está corrupto o es inválido.")
+                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.error_title"), self.view.i18n.get("main.controllers.settings.import_error_desc"))
 
     @Slot(str)
     def handle_language_change(self, lang_code: str):
         self.service.set_language(lang_code)
-        self.notification_requested.emit("Reinicio Requerido", "Por favor, cierra y vuelve a abrir MiniKick para aplicar el nuevo idioma.")
+        self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.restart_title"), self.view.i18n.get("main.controllers.settings.restart_desc"))

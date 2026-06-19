@@ -14,7 +14,6 @@ class CommandController(QObject):
         self.view.add_requested.connect(self._handle_add)
         self.view.edit_requested.connect(self._handle_edit)
         self.view.delete_requested.connect(self._handle_delete)
-        
         self.view.status_toggled.connect(self._handle_status_change)
         self.view.search_text_changed.connect(self._handle_search)
 
@@ -24,7 +23,8 @@ class CommandController(QObject):
 
     @Slot()
     def _handle_add(self):
-        dialog = CommandConfigWizard(self.view)
+        dialog = CommandConfigWizard(self.view.i18n, parent=self.view)
+        
         if dialog.exec():
             data = dialog.get_command_data()
             data.pop("original_trigger")
@@ -38,8 +38,8 @@ class CommandController(QObject):
         existing = next((c for c in commands if c["trigger"] == trigger), None)
         if not existing:
             return
-            
-        dialog = CommandConfigWizard(self.view, existing_config=existing)
+        dialog = CommandConfigWizard(self.view.i18n, parent=self.view, existing_config=existing)
+        
         if dialog.exec():
             data = dialog.get_command_data()
             original_trigger = data.pop("original_trigger")
