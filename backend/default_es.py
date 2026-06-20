@@ -79,7 +79,7 @@ DEFAULT_DICTIONARY = {
         "table": {
             "title": "Comandos Vinculados",
             "search_placeholder": "Buscar comando vinculado...",
-            "btn_new": "+ Nuevo Comando",
+            "btn_new": "Nuevo Comando",
             "col_command": "Comando",
             "col_aliases": "Aliases / Regex",
             "col_response": "Respuesta",
@@ -124,7 +124,7 @@ DEFAULT_DICTIONARY = {
         },
         "table": {
             "title": "Recompensas Vinculadas",
-            "btn_new": "+ Nueva Alerta",
+            "btn_new": "Nueva Alerta",
             "col_reward": "Recompensa de Kick",
             "col_file": "Archivo",
             "col_actions": "Acciones",

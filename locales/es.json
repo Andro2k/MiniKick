@@ -77,7 +77,7 @@
         "table": {
             "title": "Comandos Vinculados",
             "search_placeholder": "Buscar comando vinculado...",
-            "btn_new": "+ Nuevo Comando",
+            "btn_new": "Nuevo Comando",
             "col_command": "Comando",
             "col_aliases": "Aliases / Regex",
             "col_response": "Respuesta",
@@ -122,7 +122,7 @@
         },
         "table": {
             "title": "Recompensas Vinculadas",
-            "btn_new": "+ Nueva Alerta",
+            "btn_new": "Nueva Alerta",
             "col_reward": "Recompensa de Kick",
             "col_file": "Archivo",
             "col_actions": "Acciones",
@@ -250,7 +250,7 @@
         },
         "stats": {
             "followers": "Seguidores",
-            "room_id": "ID Sala (Chat)",
+            "room_id": "ChatID",
             "category": "Última Categoría",
             "affiliate": "Estado Afiliado",
             "vods": "VODs"

@@ -36,7 +36,6 @@ class ChatView(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         scroll_content = QWidget()
-        scroll_content.setObjectName("ScrollContent")
         self.main_layout = QVBoxLayout(scroll_content)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
@@ -56,8 +55,8 @@ class ChatView(QWidget):
         config_card.setProperty("role", "card")
         config_card.setMinimumWidth(380) 
         config_layout = QVBoxLayout(config_card)
-        config_layout.setContentsMargins(10, 10, 10, 10)
-        config_layout.setSpacing(10)
+        config_layout.setContentsMargins(8, 8, 8, 8)
+        config_layout.setSpacing(6)
 
         self.chk_tts = ModernSwitch()
         self.chk_name = ModernSwitch() 
@@ -135,8 +134,8 @@ class ChatView(QWidget):
         chat_card.setMinimumHeight(400) 
         
         chat_layout = QVBoxLayout(chat_card)
-        chat_layout.setContentsMargins(10, 10, 10, 10)
-        chat_layout.setSpacing(10)
+        chat_layout.setContentsMargins(8, 8, 8, 8)
+        chat_layout.setSpacing(6)
 
         lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
         lbl_chat_title.setProperty("role", "h3")
@@ -166,7 +165,7 @@ class ChatView(QWidget):
 
         input_row = QHBoxLayout()
         input_row.setContentsMargins(0, 0, 0, 0)
-        input_row.setSpacing(10)
+        input_row.setSpacing(6)
         
         self.txt_bot_input = QLineEdit()
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))

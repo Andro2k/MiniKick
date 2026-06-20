@@ -32,7 +32,6 @@ class CommandView(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         scroll_content = QWidget()
-        scroll_content.setObjectName("ScrollContent")
         self.main_layout = QVBoxLayout(scroll_content)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
@@ -49,8 +48,8 @@ class CommandView(QWidget):
         table_card.setProperty("role", "card")
         table_card.setMinimumHeight(400)
         table_layout = QVBoxLayout(table_card)
-        table_layout.setContentsMargins(10, 10, 10, 10)
-        table_layout.setSpacing(10)
+        table_layout.setContentsMargins(8, 8, 8, 8)
+        table_layout.setSpacing(6)
 
         table_header_layout = QHBoxLayout()
         lbl_table_title = QLabel(self.i18n.get("command.table.title"))
@@ -81,7 +80,7 @@ class CommandView(QWidget):
         
         h_header = self.table.horizontalHeader()
         h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
         

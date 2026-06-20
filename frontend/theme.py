@@ -60,13 +60,13 @@ QLabel {{ background-color: transparent; }}
 QLabel[role="h1"] {{ font-size: 24px; font-weight: 800; color: {COLOR_TEXT_PRIMARY}; }}
 QLabel[role="h2"] {{ font-size: 18px; font-weight: bold; color: {COLOR_TEXT_PRIMARY}; }}
 QLabel[role="h3"] {{ font-size: 14px; font-weight: bold; color: {COLOR_TEXT_PRIMARY}; }}
-QLabel[role="body"] {{ font-size: 13px; color: {COLOR_TEXT_SECONDARY}; line-height: 1.5; }}
-QLabel[role="caption"] {{ font-size: 12px; color: {COLOR_TEXT_MUTED}; }}
-QLabel[role="text_accent"] {{ font-size: 13px; font-weight: bold; color: {COLOR_ACCENT}; }}
-QLabel[role="text_danger"] {{ font-size: 13px; font-weight: bold; color: {COLOR_DANGER}; }}
+QLabel[role="body"] {{ font-size: 14px; color: {COLOR_TEXT_SECONDARY}; line-height: 1.5; }}
+QLabel[role="caption"] {{ font-size: 14px; color: {COLOR_TEXT_MUTED}; }}
+QLabel[role="text_accent"] {{ font-size: 12px; font-weight: bold; color: {COLOR_ACCENT}; }}
+QLabel[role="text_danger"] {{ font-size: 12px; font-weight: bold; color: {COLOR_DANGER}; }}
 QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; color: {COLOR_TEXT_SECONDARY}; }}
-QLabel[role="status_dot"][state="active"] {{ color: {COLOR_SUCCESS}; font-size: 16px; margin-right: 2px; }}
-QLabel[role="status_dot"][state="inactive"] {{ color: {COLOR_DANGER}; font-size: 16px; margin-right: 2px; }}
+QLabel[role="status_dot"][state="active"] {{ color: {COLOR_SUCCESS}; font-size: 14px; margin-right: 2px; }}
+QLabel[role="status_dot"][state="inactive"] {{ color: {COLOR_DANGER}; font-size: 14px; margin-right: 2px; }}
 
 QLabel[role="tag_permission"] {{ 
     background-color: {COLOR_ACCENT}; 
@@ -234,7 +234,7 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::ad
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 
 QTabWidget::pane {{ border: none; background-color: transparent; border-top: 1px solid {COLOR_BORDER_SVELTE}; }}
-QTabBar::tab {{ background-color: transparent; color: {COLOR_TEXT_SECONDARY}; padding: 10px 20px; font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; }}
+QTabBar::tab {{ background-color: transparent; color: {COLOR_TEXT_SECONDARY}; padding: 10px 20px; font-size: 12px; font-weight: 600; border-bottom: 2px solid transparent; }}
 QTabBar::tab:hover {{ color: {COLOR_TEXT_PRIMARY}; background-color: {COLOR_BG_HOVER}; }}
 QTabBar::tab:selected {{ color: {COLOR_ACCENT}; border-bottom: 2px solid {COLOR_ACCENT}; }}
 
@@ -274,14 +274,14 @@ QFrame[role="tag"]:hover {{
 QFrame[role="tag"] QLabel {{ 
     color: {COLOR_TEXT_PRIMARY}; 
     padding-right: 4px; 
-    font-size: 13px; 
+    font-size: 12px; 
 }}
 
 QTextEdit[role="console"] {{
     background-color: {COLOR_BG_CONSOLE};
     color: {COLOR_TEXT_CONSOLE};
     font-family: {FONT_FAMILY};
-    font-size: 13px;
+    font-size: 12px;
     border-radius: {RADIUS_MD}px;
     padding: 10px;
 }}

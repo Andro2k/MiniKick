@@ -29,7 +29,6 @@ class DashboardView(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         scroll_content = QWidget()
-        scroll_content.setObjectName("ScrollContent")
         self.main_layout = QVBoxLayout(scroll_content)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
@@ -71,8 +70,8 @@ class DashboardView(QWidget):
         conn_card = QFrame()
         conn_card.setProperty("role", "card")
         conn_layout = QVBoxLayout(conn_card)
-        conn_layout.setContentsMargins(10, 10, 10, 10)
-        conn_layout.setSpacing(10)
+        conn_layout.setContentsMargins(8, 8, 8, 8)
+        conn_layout.setSpacing(6)
 
         self.sw_autostart = ModernSwitch()
         self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
@@ -132,7 +131,7 @@ class DashboardView(QWidget):
         info_card.setProperty("role", "card")
         info_card.setMinimumHeight(160)
         info_layout = QVBoxLayout(info_card)
-        info_layout.setContentsMargins(10, 10, 10, 10)
+        info_layout.setContentsMargins(8, 8, 8, 8)
 
         self.lbl_username = QLabel("-")
         self.lbl_username.setProperty("role", "h1")

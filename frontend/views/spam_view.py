@@ -34,8 +34,8 @@ class SpamFilterCard(QFrame):
         self.header_widget = QWidget()
         self.header_widget.setCursor(Qt.CursorShape.PointingHandCursor)
         h_layout = QHBoxLayout(self.header_widget)
-        h_layout.setContentsMargins(10, 10, 10, 10)
-        h_layout.setSpacing(10)
+        h_layout.setContentsMargins(8, 8, 8, 8)
+        h_layout.setSpacing(6)
         
         lbl_icon = QLabel()
         lbl_icon.setPixmap(get_icon_colored(icon_name, COLOR_TEXT_SECONDARY, 24).pixmap(24, 24))

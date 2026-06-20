@@ -77,7 +77,7 @@
         "table": {
             "title": "Linked Commands",
             "search_placeholder": "Search linked command...",
-            "btn_new": "+ New Command",
+            "btn_new": "New Command",
             "col_command": "Command",
             "col_aliases": "Aliases / Regex",
             "col_response": "Response",
@@ -122,7 +122,7 @@
         },
         "table": {
             "title": "Linked Rewards",
-            "btn_new": "+ New Alert",
+            "btn_new": "New Alert",
             "col_reward": "Kick Reward",
             "col_file": "File",
             "col_actions": "Actions",
@@ -250,7 +250,7 @@
         },
         "stats": {
             "followers": "Followers",
-            "room_id": "Room ID (Chat)",
+            "room_id": "ChatRoom ID",
             "category": "Last Category",
             "affiliate": "Affiliate Status",
             "vods": "VODs"

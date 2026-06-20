@@ -41,7 +41,6 @@ class LogView(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         scroll_content = QWidget()
-        scroll_content.setObjectName("ScrollContent")
         self.main_layout = QVBoxLayout(scroll_content)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
@@ -57,8 +56,8 @@ class LogView(QWidget):
         self.controls_card = QFrame()
         self.controls_card.setProperty("role", "card")
         self.controls_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.controls_card)
-        self.controls_layout.setContentsMargins(10, 10, 10, 10)
-        self.controls_layout.setSpacing(10)
+        self.controls_layout.setContentsMargins(8, 8, 8, 8)
+        self.controls_layout.setSpacing(6)
 
         search_layout = QHBoxLayout()
         self.txt_search = QLineEdit()
@@ -112,7 +111,7 @@ class LogView(QWidget):
         self.table_card.setProperty("role", "card")
         self.table_card.setMinimumHeight(400)
         table_layout = QVBoxLayout(self.table_card)
-        table_layout.setContentsMargins(10, 10, 10, 10)
+        table_layout.setContentsMargins(8, 8, 8, 8)
 
         self.table = QTableWidget(0, 3)
         col_1 = self.i18n.get("log.table.col_level")

@@ -31,7 +31,6 @@ class SettingsView(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         scroll_content = QWidget()
-        scroll_content.setObjectName("ScrollContent")
         self.main_layout = QVBoxLayout(scroll_content)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
@@ -47,8 +46,8 @@ class SettingsView(QWidget):
         sys_card = QFrame()
         sys_card.setProperty("role", "card")
         sys_layout = QVBoxLayout(sys_card)
-        sys_layout.setContentsMargins(10, 10, 10, 10)
-        sys_layout.setSpacing(10)
+        sys_layout.setContentsMargins(8, 8, 8, 8)
+        sys_layout.setSpacing(6)
 
         self.sw_start_bg = ModernSwitch()
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
@@ -91,8 +90,8 @@ class SettingsView(QWidget):
         backup_card = QFrame()
         backup_card.setProperty("role", "card")
         backup_layout = QVBoxLayout(backup_card)
-        backup_layout.setContentsMargins(10, 10, 10, 10)
-        backup_layout.setSpacing(10)
+        backup_layout.setContentsMargins(8, 8, 8, 8)
+        backup_layout.setSpacing(6)
 
         btn_container = QWidget()
         btn_layout = QHBoxLayout(btn_container)
@@ -121,8 +120,8 @@ class SettingsView(QWidget):
         account_card = QFrame()
         account_card.setProperty("role", "card")
         account_layout = QVBoxLayout(account_card)
-        account_layout.setContentsMargins(10, 10, 10, 10)
-        account_layout.setSpacing(10)
+        account_layout.setContentsMargins(8, 8, 8, 8)
+        account_layout.setSpacing(6)
 
         self.btn_unlink = ModernButton(self.i18n.get("settings.account.btn_unlink"), role="action_danger")
         self.btn_unlink.clicked.connect(self.unlink_clicked.emit)

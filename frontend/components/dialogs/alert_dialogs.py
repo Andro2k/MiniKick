@@ -9,6 +9,7 @@ from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 
+from frontend.components.blocks import SettingSliderRow
 from frontend.components.controls import ModernButton, ModernSwitch
 from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, PATH_ICON_HELP
 from frontend.utils import get_icon_colored, get_assets_path
@@ -203,7 +204,7 @@ class AlertConfigWizard(ModernBaseDialog):
 
         header_layout = QVBoxLayout()
         header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.title"))
-        header_title.setProperty("role", "h2")
+        header_title.setProperty("role", "h3")
         header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
@@ -274,18 +275,13 @@ class AlertConfigWizard(ModernBaseDialog):
         
         header_layout = QVBoxLayout()
         header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.title"))
-        header_title.setProperty("role", "h2")
+        header_title.setProperty("role", "h3")
         header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
         header_layout.addWidget(header_desc)
         layout.addLayout(header_layout)
         layout.addSpacing(5)
-        
-        vol_row = QHBoxLayout()
-        lbl_vol = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.volume"))
-        lbl_vol.setProperty("role", "h3")
-        vol_row.addWidget(lbl_vol)
         
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
@@ -295,9 +291,14 @@ class AlertConfigWizard(ModernBaseDialog):
         self.lbl_vol_perc.setProperty("role", "monospace")
         self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
         
-        vol_row.addWidget(self.slider_vol)
-        vol_row.addWidget(self.lbl_vol_perc)
-        layout.addLayout(vol_row)
+        vol_row = SettingSliderRow(
+            icon_name="volume.svg",
+            title_text=self.i18n.get("alerts.dialogs.wizard.step2.volume"),
+            desc_text="",
+            slider_widget=self.slider_vol,
+            value_label=self.lbl_vol_perc
+        )
+        layout.addWidget(vol_row)
         
         self.video_container = QWidget()
         v_layout = QVBoxLayout(self.video_container)

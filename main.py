@@ -1,7 +1,7 @@
 import os
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtGui import QIcon
+from PySide6.QtGui import QFont, QFontDatabase, QIcon
 from dotenv import load_dotenv
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
 from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
@@ -16,6 +16,17 @@ def bootstrap():
     load_dotenv(env_path)
     
     app = QApplication(sys.argv)
+    font_regular = resource_path(os.path.join("assets", "fonts", "Inter-Regular.ttf"))
+    font_bold = resource_path(os.path.join("assets", "fonts", "Inter-Bold.ttf"))
+    font_semibold = resource_path(os.path.join("assets", "fonts", "Inter-SemiBold.ttf"))
+    
+    QFontDatabase.addApplicationFont(font_regular)
+    QFontDatabase.addApplicationFont(font_bold)
+    QFontDatabase.addApplicationFont(font_semibold)
+    
+    app_font = QFont("Inter")
+    app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+    app.setFont(app_font)
 
     instance_provider = SocketInstanceProvider(port=45678)
     if instance_provider.is_already_running():

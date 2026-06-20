@@ -33,7 +33,6 @@ class AlertsView(QWidget):
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         scroll_content = QWidget()
-        scroll_content.setObjectName("ScrollContent")
         self.main_layout = QVBoxLayout(scroll_content)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setSpacing(12)
@@ -56,7 +55,7 @@ class AlertsView(QWidget):
         obs_card = QFrame()
         obs_card.setProperty("role", "card")
         obs_layout = QVBoxLayout(obs_card)
-        obs_layout.setContentsMargins(10, 10, 10, 10)
+        obs_layout.setContentsMargins(8, 8, 8, 8)
 
         self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
@@ -76,8 +75,8 @@ class AlertsView(QWidget):
         table_card.setProperty("role", "card")
         table_card.setMinimumHeight(300)
         table_layout = QVBoxLayout(table_card)
-        table_layout.setContentsMargins(10, 10, 10, 10)
-        table_layout.setSpacing(10)
+        table_layout.setContentsMargins(8, 8, 8, 8)
+        table_layout.setSpacing(6)
 
         table_header_layout = QHBoxLayout()
         lbl_table_title = QLabel(self.i18n.get("alerts.table.title"))
