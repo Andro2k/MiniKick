@@ -36,7 +36,7 @@ class DashboardView(QWidget):
         self.header = ViewHeader(
             title_text=self.i18n.get("dashboard.header.title"),
             subtitle_text=self.i18n.get("dashboard.header.subtitle"),
-            icon_name="kick.svg",
+            icon_name="dashboard.svg",
             icon_color=COLOR_ACCENT
         )
         self.main_layout.addWidget(self.header)
@@ -88,6 +88,7 @@ class DashboardView(QWidget):
         self.status_label.setProperty("role", "subtitle")
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
+        self.btn_connect.setIcon(get_icon_colored("kick.svg", "#000000", 16))
         self.btn_connect.setFixedSize(160, 36)
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 

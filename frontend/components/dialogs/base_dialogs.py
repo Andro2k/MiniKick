@@ -71,7 +71,7 @@ class ModernBaseDialog(QDialog):
         icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(QIcon(icon_path).pixmap(24, 24))
+        icon_lbl.setPixmap(QIcon(icon_path).pixmap(48, 48))
         icon_inner_layout.addWidget(icon_lbl)
 
         icon_wrapper.addWidget(icon_container)

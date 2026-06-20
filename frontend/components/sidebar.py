@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
                                QLabel, QSizePolicy, QWidget, QButtonGroup)
 from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
 from frontend.utils import get_icon, get_icon_colored
-from frontend.theme import COLOR_TEXT_SECONDARY, COLOR_ACCENT
+from frontend.theme import COLOR_BG_BASE, COLOR_TEXT_SECONDARY, COLOR_ACCENT
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
@@ -77,7 +77,7 @@ class Sidebar(QFrame):
         self.btn_update_alert = QPushButton(self.i18n.get("main.sidebar.new_version"))
         self.btn_update_alert.setProperty("role", "action_accent")
         self.btn_update_alert.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_update_alert.setIcon(get_icon_colored("cloud-download.svg", COLOR_ACCENT, 14))
+        self.btn_update_alert.setIcon(get_icon_colored("cloud.svg", COLOR_BG_BASE, 14))
         
         self.btn_update_alert.setVisible(False)
         self.btn_update_alert.clicked.connect(self._on_update_alert_clicked)

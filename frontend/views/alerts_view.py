@@ -83,6 +83,7 @@ class AlertsView(QWidget):
         lbl_table_title.setProperty("role", "h3")
 
         self.btn_new_alert = ModernButton(self.i18n.get("alerts.table.btn_new"), role="action_accent")
+        self.btn_new_alert.setIcon(get_icon_colored("add.svg", "#000000", 16))
         self.btn_new_alert.clicked.connect(self.add_requested.emit)
 
         table_header_layout.addWidget(lbl_table_title)

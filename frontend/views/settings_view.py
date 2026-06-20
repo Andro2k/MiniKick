@@ -76,7 +76,7 @@ class SettingsView(QWidget):
         
         sys_layout.addWidget(row_lang)
         row_update = SettingRow(
-            icon_name="cloud-download.svg", 
+            icon_name="cloud.svg", 
             title_text=self.i18n.get("settings.system.update_title"), 
             desc_text=self.i18n.get("settings.system.update_desc"), 
             right_widget=self.btn_update,
