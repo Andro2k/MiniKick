@@ -4,8 +4,8 @@ from PySide6.QtWidgets import QComboBox, QHBoxLayout, QScrollArea, QWidget, QVBo
 from PySide6.QtCore import Qt, Signal
 from datetime import datetime
 
-from frontend.components.controls import ModernSwitch, ModernButton
-from frontend.components.blocks import ViewHeader, SettingRow
+from frontend.components.custom_controls_component import ModernSwitch, ModernButton
+from frontend.components.ui_blocks_component import ViewHeader, SettingRow
 from frontend.theme import COLOR_ACCENT, COLOR_DANGER
 
 class SettingsView(QWidget):

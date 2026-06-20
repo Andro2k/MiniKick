@@ -5,8 +5,8 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
                                QLineEdit)
 from PySide6.QtCore import Qt, Signal
 
-from frontend.components.controls import ModernButton, ModernSwitch
-from frontend.components.blocks import ViewHeader
+from frontend.components.custom_controls_component import ModernButton, ModernSwitch
+from frontend.components.ui_blocks_component import ViewHeader
 from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 from frontend.utils import get_icon_colored
 

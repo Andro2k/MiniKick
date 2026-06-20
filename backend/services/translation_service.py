@@ -2,7 +2,7 @@
 
 import json
 import os
-from backend.default_es import DEFAULT_DICTIONARY
+from backend.default_es_locale import DEFAULT_DICTIONARY
 
 class TranslationService:    
     def __init__(self, locales_dir: str = "locales", default_lang: str = "es"):

@@ -1,15 +1,14 @@
 # frontend/views/chat_view.py
 
-from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QListView, 
-                               QListWidget, QListWidgetItem, QPushButton, QScrollArea, QWidget, 
+from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget, 
                                QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSlider, 
-                               QFrame, QSizePolicy)
+                               QFrame, QSizePolicy, QScrollArea)
 from PySide6.QtCore import Qt, Signal, Slot
 
-from frontend.components.controls import ModernButton, ModernSwitch
-from frontend.components.blocks import ViewHeader, SettingRow, SettingSliderRow
+from frontend.components.custom_controls_component import ModernSwitch
+from frontend.components.ui_blocks_component import ViewHeader, SettingRow, SettingSliderRow
+from frontend.components.bot_panel_component import BotMutePanel
 from frontend.theme import COLOR_ACCENT
-from frontend.utils import get_icon_colored 
 
 class ChatView(QWidget):
     volume_changed = Signal(int)
@@ -69,36 +68,11 @@ class ChatView(QWidget):
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setProperty("role", "monospace")
 
-        row_tts = SettingRow(
-            "volume.svg", 
-            self.i18n.get("chat.settings.tts_title"), 
-            self.i18n.get("chat.settings.tts_desc"), 
-            self.chk_tts
-        )
-        row_read_name = SettingRow(
-            "user.svg", 
-            self.i18n.get("chat.settings.name_title"), 
-            self.i18n.get("chat.settings.name_desc"), 
-            self.chk_name
-        )
-        row_provider = SettingRow(
-            "globe.svg", 
-            self.i18n.get("chat.settings.provider_title"), 
-            self.i18n.get("chat.settings.provider_desc"), 
-            self.chk_provider
-        )
-        row_cmd = SettingRow(
-            "code.svg", 
-            self.i18n.get("chat.settings.cmd_title"), 
-            self.i18n.get("chat.settings.cmd_desc"), 
-            self.chk_command
-        )
-        row_volume = SettingSliderRow(
-            "adjustments.svg", 
-            self.i18n.get("chat.settings.vol_title"), 
-            self.i18n.get("chat.settings.vol_desc"), 
-            self.slider_vol, self.lbl_vol_perc
-        )
+        row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
+        row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
+        row_provider = SettingRow("globe.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.chk_provider)
+        row_cmd = SettingRow("code.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
+        row_volume = SettingSliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
         
         lang_voice_layout = QHBoxLayout()
         self.combo_lang = QComboBox()
@@ -112,12 +86,9 @@ class ChatView(QWidget):
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
 
-        row_prefix = SettingRow(
-            icon_name="grid-pattern.svg", 
-            title_text=self.i18n.get("chat.settings.prefix_title"), 
-            desc_text=self.i18n.get("chat.settings.prefix_desc"), 
-            right_widget=self.txt_command
-        )
+        row_prefix = SettingRow("grid-pattern.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
+
+        self.bot_panel = BotMutePanel(self.i18n)
 
         config_layout.addWidget(row_tts)
         config_layout.addWidget(row_read_name)
@@ -127,7 +98,7 @@ class ChatView(QWidget):
         config_layout.addWidget(row_cmd)
         config_layout.addWidget(row_prefix)
         config_layout.addSpacing(10)
-        config_layout.addWidget(self._build_bots_panel(), stretch=1) 
+        config_layout.addWidget(self.bot_panel, stretch=1) 
         
         chat_card = QFrame()
         chat_card.setProperty("role", "card")
@@ -154,44 +125,6 @@ class ChatView(QWidget):
         scroll_area.setWidget(scroll_content)
         base_layout.addWidget(scroll_area)
 
-    def _build_bots_panel(self) -> QWidget:
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        title = QLabel(self.i18n.get("chat.bots.title"))
-        title.setProperty("role", "h3")
-        layout.addWidget(title)
-
-        input_row = QHBoxLayout()
-        input_row.setContentsMargins(0, 0, 0, 0)
-        input_row.setSpacing(6)
-        
-        self.txt_bot_input = QLineEdit()
-        self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
-        
-        self.btn_add_bot = ModernButton(self.i18n.get("chat.bots.btn_add"), role="action_accent")
-        self.btn_add_bot.setIcon(get_icon_colored("add.svg", "#000000", size=16))
-            
-        input_row.addWidget(self.txt_bot_input)
-        input_row.addWidget(self.btn_add_bot)
-        layout.addLayout(input_row)
-
-        self.list_bots = QListWidget()
-        self.list_bots.setFlow(QListView.Flow.LeftToRight) 
-        self.list_bots.setWrapping(True) 
-        self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
-        self.list_bots.setProperty("role", "transparent_list")
-        
-        self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_bots.setViewportMargins(0, 0, 0, 0)
-        self.list_bots.setContentsMargins(0, 0, 0, 0)
-        
-        self.list_bots.setSpacing(2)
-
-        layout.addWidget(self.list_bots)
-        return panel
-
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if self.width() < 900:
@@ -207,8 +140,8 @@ class ChatView(QWidget):
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
         
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
-        self.btn_add_bot.clicked.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
-        self.txt_bot_input.returnPressed.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
+        self.bot_panel.bot_add_requested.connect(self.bot_add_requested.emit)
+        self.bot_panel.bot_remove_requested.connect(self.bot_remove_requested.emit)
 
         controls = [self.chk_tts, self.chk_name, self.chk_command, self.txt_command]
         for control in controls:
@@ -226,6 +159,7 @@ class ChatView(QWidget):
         self.chk_provider.setChecked(settings.get("provider") == "web")
         self.slider_vol.setValue(settings.get("volume", 100))
         self.blockSignals(False)
+        
         self.clear_bots_list()
         ignored_users_str = settings.get("ignored_users", "")
         if ignored_users_str:
@@ -234,35 +168,13 @@ class ChatView(QWidget):
                     self.add_bot_tag(bot.strip())
 
     def clear_bot_input(self):
-        self.txt_bot_input.clear()
+        self.bot_panel.clear_input()
 
     def add_bot_tag(self, bot_name: str):
-        item = QListWidgetItem(bot_name)
-        self.list_bots.addItem(item)
-        
-        tag_widget = QFrame()
-        tag_widget.setProperty("role", "tag")
-        layout = QHBoxLayout(tag_widget)
-        layout.setContentsMargins(4, 4, 8, 4) 
-        layout.setSpacing(4)
-        layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
-        
-        lbl_name = QLabel(bot_name)
-        btn_delete = QPushButton()
-        btn_delete.setProperty("role", "btn_ghost")
-        btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_delete.setIcon(get_icon_colored("trash.svg", "#ef4444", size=16))
-        btn_delete.setFixedSize(24, 24)
-        btn_delete.clicked.connect(lambda checked=False, i=item: self._on_bot_remove_click(i))
-        
-        layout.addWidget(btn_delete)
-        layout.addWidget(lbl_name)
-        
-        item.setSizeHint(tag_widget.sizeHint())
-        self.list_bots.setItemWidget(item, tag_widget)
+        self.bot_panel.add_bot_tag(bot_name)
 
     def clear_bots_list(self):
-        self.list_bots.clear()
+        self.bot_panel.clear_list()
 
     def update_languages(self, langs: list[str], select_prefix: str = None):
         self.combo_lang.blockSignals(True)
@@ -313,9 +225,3 @@ class ChatView(QWidget):
         if index >= 0:
             voice_id = self.combo_voice.itemData(index)
             self.voice_changed.emit(voice_id)
-
-    def _on_bot_remove_click(self, item: QListWidgetItem):
-        bot_name = item.text()
-        row = self.list_bots.row(item)
-        self.list_bots.takeItem(row)
-        self.bot_remove_requested.emit(bot_name)

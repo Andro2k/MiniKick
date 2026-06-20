@@ -1,145 +1,16 @@
 # frontend/components/dialogs/alert_dialogs.py
 
-import os
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
                                QComboBox, QLineEdit, QSlider, QSpinBox, 
                                QDoubleSpinBox, QStackedWidget, QFileDialog)
-from PySide6.QtCore import Qt, QPoint, Signal, QUrl
-from PySide6.QtGui import QMouseEvent, QPixmap
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PySide6.QtMultimediaWidgets import QVideoWidget
+from PySide6.QtCore import Qt
 
-from frontend.components.blocks import SettingSliderRow
-from frontend.components.controls import ModernButton, ModernSwitch
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, PATH_ICON_HELP
+from frontend.components.custom_controls_component import ModernButton, ModernSwitch
+from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 from frontend.utils import get_icon_colored, get_assets_path
 from frontend.components.dialogs.base_dialogs import ModernBaseDialog
-
-class DraggableAlertBox(QFrame):
-    position_updated = Signal(int, int)
-
-    def __init__(self, parent, canvas_w: int, canvas_h: int, scale_factor_obs: float, filepath: str, scale_val: float):
-        super().__init__(parent)
-        self.canvas_w = canvas_w
-        self.canvas_h = canvas_h
-        self.scale_factor = scale_factor_obs 
-        self.base_scale_val = scale_val
-        
-        self.setFixedSize(100, 100)
-        self.setCursor(Qt.CursorShape.OpenHandCursor)
-        
-        self._drag_active = False
-        self._drag_offset = QPoint()
-
-        self.media_layout = QVBoxLayout(self)
-        self.media_layout.setContentsMargins(2, 2, 2, 2)
-        
-        if filepath and os.path.exists(filepath):
-            ext = filepath.lower()
-            if ext.endswith(('.mp4', '.webm')):
-                self.video_widget = QVideoWidget()
-                self.video_widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-                self.media_layout.addWidget(self.video_widget)
-
-                self.player = QMediaPlayer(self)
-                self.audio = QAudioOutput(self)
-                self.audio.setVolume(0.0) 
-                
-                self.player.setAudioOutput(self.audio)
-                self.player.setVideoOutput(self.video_widget)
-                self.player.setSource(QUrl.fromLocalFile(filepath))
-                self.player.setLoops(QMediaPlayer.Loops.Infinite)
-                
-                self.video_widget.videoSink().videoSizeChanged.connect(self._adjust_to_media_size)
-                self.player.play()
-                
-            elif ext.endswith(('.png', '.jpg', '.jpeg', '.gif')):
-                self.img_lbl = QLabel()
-                self.img_lbl.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
-                self.img_lbl.setScaledContents(True)
-                pixmap = QPixmap(filepath)
-                self.img_lbl.setPixmap(pixmap)
-                self.media_layout.addWidget(self.img_lbl)
-                self._adjust_to_media_size(pixmap.size())
-
-    def _adjust_to_media_size(self, size=None):
-        if size is None or type(size) == bool or not getattr(size, 'isValid', lambda: False)():
-            if hasattr(self, 'video_widget') and self.video_widget.videoSink():
-                size = self.video_widget.videoSink().videoSize()
-
-        if not size or not getattr(size, 'isValid', lambda: False)() or size.width() == 0:
-            return
-
-        obs_w = size.width() * self.base_scale_val
-        obs_h = size.height() * self.base_scale_val
-
-        local_w = int(obs_w / self.scale_factor)
-        local_h = int(obs_h / self.scale_factor)
-
-        self.setFixedSize(local_w, local_h)
-        x = max(0, min(self.x(), self.canvas_w - self.width()))
-        y = max(0, min(self.y(), self.canvas_h - self.height()))
-        self.move(x, y)
-
-    def mousePressEvent(self, event: QMouseEvent):
-        if event.button() == Qt.LeftButton:
-            self._drag_active = True
-            self._drag_offset = event.pos()
-            self.setCursor(Qt.CursorShape.ClosedHandCursor)
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        if self._drag_active:
-            new_pos = self.mapToParent(event.pos()) - self._drag_offset
-            x = max(0, min(new_pos.x(), self.canvas_w - self.width()))
-            y = max(0, min(new_pos.y(), self.canvas_h - self.height()))
-            self.move(x, y)
-
-    def mouseReleaseEvent(self, event: QMouseEvent):
-        self._drag_active = False
-        self.setCursor(Qt.CursorShape.OpenHandCursor)
-        obs_x, obs_y = self.get_obs_coordinates()
-        self.position_updated.emit(obs_x, obs_y)
-
-    def get_obs_coordinates(self) -> tuple[int, int]:
-        return int(self.x() * self.scale_factor), int(self.y() * self.scale_factor)
-
-    def set_obs_coordinates(self, obs_x: int, obs_y: int):
-        local_x = int(obs_x / self.scale_factor)
-        local_y = int(obs_y / self.scale_factor)
-        local_x = max(0, min(local_x, self.canvas_w - self.width()))
-        local_y = max(0, min(local_y, self.canvas_h - self.height()))
-        self.move(local_x, local_y)
-
-class VisualPositionerDialog(ModernBaseDialog):
-    live_position_changed = Signal(int, int)
-
-    def __init__(self, i18n, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
-        self.i18n = i18n
-        super().__init__(title=self.i18n.get("alerts.dialogs.visual.title"), icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_ACCENT, width=700, parent=parent)
-        
-        desc_lbl = QLabel(self.i18n.get("alerts.dialogs.visual.desc"))
-        desc_lbl.setProperty("role", "body")
-        desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.content_layout.addWidget(desc_lbl)
-        self.content_layout.addSpacing(5)
-        
-        self.canvas_w = 640
-        self.canvas_h = 360
-        self.scale_factor = 1920 / self.canvas_w
-        
-        self.canvas_container = QFrame()
-        self.canvas_container.setFixedSize(self.canvas_w, self.canvas_h)
-        self.canvas_container.setObjectName("CanvasContainer")
-        
-        self.draggable_box = DraggableAlertBox(self.canvas_container, self.canvas_w, self.canvas_h, self.scale_factor, filepath, scale_val)
-        self.draggable_box.set_obs_coordinates(current_x, current_y)
-        self.draggable_box.position_updated.connect(self.live_position_changed.emit)
-        
-        self.content_layout.addWidget(self.canvas_container, alignment=Qt.AlignmentFlag.AlignCenter)
-        
-        self.btn_save = ModernButton(self.i18n.get("alerts.dialogs.visual.btn_save"), role="action_accent")
-        self.btn_save.clicked.connect(self.accept)
-        self.add_action_buttons(self.btn_save, None)
+from frontend.components.ui_blocks_component import SettingSliderRow
+from frontend.components.dialogs.visual_positioner_dialog import VisualPositionerDialog
 
 class AlertConfigWizard(ModernBaseDialog):
     def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
@@ -204,7 +75,7 @@ class AlertConfigWizard(ModernBaseDialog):
 
         header_layout = QVBoxLayout()
         header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.title"))
-        header_title.setProperty("role", "h3")
+        header_title.setProperty("role", "h2")
         header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
@@ -275,7 +146,7 @@ class AlertConfigWizard(ModernBaseDialog):
         
         header_layout = QVBoxLayout()
         header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.title"))
-        header_title.setProperty("role", "h3")
+        header_title.setProperty("role", "h2")
         header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)

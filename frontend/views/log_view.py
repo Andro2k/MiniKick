@@ -3,16 +3,15 @@
 import re
 import os
 from PySide6.QtWidgets import (QMessageBox, QWidget, QVBoxLayout, 
-                               QHBoxLayout, QComboBox, QFrame, QTableWidget, 
-                               QTableWidgetItem, QHeaderView, QLineEdit, QBoxLayout,
-                               QScrollArea, QFileDialog)
+                               QFrame, QTableWidget, QTableWidgetItem, 
+                               QHeaderView, QScrollArea, QFileDialog)
 from PySide6.QtCore import Slot, Qt, Signal
 from PySide6.QtGui import QColor
 
-from frontend.components.controls import ModernButton
-from frontend.components.blocks import ViewHeader
+from frontend.components.ui_blocks_component import ViewHeader
+from frontend.components.log_controls_component import LogControlsPanel
+from frontend.theme import COLOR_ACCENT
 from frontend.utils import get_icon_colored
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 
 class LogView(QWidget):
     read_file_requested = Signal(str)
@@ -53,59 +52,16 @@ class LogView(QWidget):
         )
         self.main_layout.addWidget(self.header)
 
-        self.controls_card = QFrame()
-        self.controls_card.setProperty("role", "card")
-        self.controls_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.controls_card)
-        self.controls_layout.setContentsMargins(8, 8, 8, 8)
-        self.controls_layout.setSpacing(6)
-
-        search_layout = QHBoxLayout()
-        self.txt_search = QLineEdit()
-        self.txt_search.setPlaceholderText(self.i18n.get("log.controls.search_placeholder"))
-        self.txt_search.textChanged.connect(self._on_search_changed)
-        search_layout.addWidget(self.txt_search, stretch=1)
-
-        self.combo_filter = QComboBox()
-        self.combo_filter.addItems([self.str_all, "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL"])
-        self.combo_filter.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.combo_filter.currentTextChanged.connect(self._on_filter_changed)
-        search_layout.addWidget(self.combo_filter)
-
-        self.controls_layout.addLayout(search_layout, stretch=1)
-
-        actions_layout = QHBoxLayout()
-        actions_layout.setSpacing(8)
-
-        self.btn_open_folder = ModernButton(self.i18n.get("log.controls.btn_folder"), role="action_outlined")
-        self.btn_open_folder.setIcon(get_icon_colored("folder-open.svg", COLOR_TEXT_PRIMARY, 16))
-        self.btn_open_folder.setToolTip(self.i18n.get("log.controls.tooltip_folder"))
-        self.btn_open_folder.clicked.connect(self.open_folder_requested.emit)
-
-        self.btn_load_file = ModernButton(self.i18n.get("log.controls.btn_load"), role="action_outlined")
-        self.btn_load_file.setIcon(get_icon_colored("file-text.svg", COLOR_TEXT_PRIMARY, 16))
-        self.btn_load_file.clicked.connect(self._open_file_dialog)
-
-        self.btn_live = ModernButton(self.i18n.get("log.controls.btn_live"), role="action_accent")
-        self.btn_live.setIcon(get_icon_colored("play.svg", "#000000", 16))
-        self.btn_live.clicked.connect(self._handle_live_click)
-        self.btn_live.setVisible(False)
-
-        self.btn_clear = ModernButton(self.i18n.get("log.controls.btn_clear"), role="action_outlined")
-        self.btn_clear.setIcon(get_icon_colored("trash.svg", COLOR_TEXT_PRIMARY, 16))
-        self.btn_clear.clicked.connect(self._clear_logs)
-
-        self.btn_report = ModernButton(self.i18n.get("log.controls.btn_report"), role="action_accent")
-        self.btn_report.setIcon(get_icon_colored("help.svg", "#000000", 16))
-        self.btn_report.clicked.connect(self.report_bug_requested.emit)
-
-        actions_layout.addWidget(self.btn_open_folder)
-        actions_layout.addWidget(self.btn_load_file)
-        actions_layout.addWidget(self.btn_live)
-        actions_layout.addWidget(self.btn_clear)
-        actions_layout.addWidget(self.btn_report)
-
-        self.controls_layout.addLayout(actions_layout)
-        self.main_layout.addWidget(self.controls_card)
+        self.controls_panel = LogControlsPanel(self.i18n)
+        self.controls_panel.search_changed.connect(self._on_search_changed)
+        self.controls_panel.filter_changed.connect(self._on_filter_changed)
+        self.controls_panel.folder_requested.connect(self.open_folder_requested.emit)
+        self.controls_panel.load_requested.connect(self._open_file_dialog)
+        self.controls_panel.live_requested.connect(self._handle_live_click)
+        self.controls_panel.clear_requested.connect(self._clear_logs)
+        self.controls_panel.report_requested.connect(self.report_bug_requested.emit)
+        
+        self.main_layout.addWidget(self.controls_panel)
 
         self.table_card = QFrame()
         self.table_card.setProperty("role", "card")
@@ -136,23 +92,13 @@ class LogView(QWidget):
         scroll_area.setWidget(scroll_content)
         base_layout.addWidget(scroll_area)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        if hasattr(self, 'controls_layout'):
-            if self.width() < 800:
-                self.controls_layout.setDirection(QBoxLayout.Direction.TopToBottom)
-            else:
-                self.controls_layout.setDirection(QBoxLayout.Direction.LeftToRight)
-
     def _open_file_dialog(self):
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
         dialog_title = self.i18n.get("log.dialogs.select_history")
         file_filter = self.i18n.get("log.dialogs.file_filter")
         
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, dialog_title, log_dir, file_filter
-        )
+        file_path, _ = QFileDialog.getOpenFileName(self, dialog_title, log_dir, file_filter)
         if file_path:
             self.read_file_requested.emit(file_path)
 
@@ -176,7 +122,6 @@ class LogView(QWidget):
         is_grouped = False
         if self._log_history:
             last_level, last_time, last_text = self._log_history[-1]
-            
             if last_level == real_level and last_time == time_str:
                 self._log_history[-1] = (last_level, last_time, f"{last_text}\n{text_str}")
                 is_grouped = True
@@ -190,17 +135,14 @@ class LogView(QWidget):
 
     def _matches_search(self, level: str, time_str: str, text: str) -> bool:
         search_lower = self._search_term.lower()
-        if not search_lower:
-            return True
-        return (search_lower in level.lower() or 
-                search_lower in time_str.lower() or 
-                search_lower in text.lower())
+        if not search_lower: return True
+        return (search_lower in level.lower() or search_lower in time_str.lower() or search_lower in text.lower())
 
     @Slot(str, str)
     def append_log(self, level: str, message: str):
         is_grouped, real_level, time_str, text_str = self._process_log_data(level, message)
 
-        if not self.btn_live.isVisible():
+        if not self.controls_panel.btn_live.isVisible():
             if self._current_filter in (self.str_all, real_level) and self._matches_search(real_level, time_str, text_str):
                 if is_grouped and self.table.rowCount() > 0:
                     self._update_last_row(text_str)
@@ -210,19 +152,13 @@ class LogView(QWidget):
 
     def show_historical_content(self, file_name: str, content: str):
         self._clear_logs()
-        
         hist_label = self.i18n.get("log.misc.historical")
-        lines = content.strip().split('\n')
-        for line in lines:
+        for line in content.strip().split('\n'):
             if line.strip():
                 self._process_log_data(hist_label, line)
 
         self._render_logs()
-        
-        self.btn_live.setVisible(True)
-        self.txt_search.setEnabled(False)
-        self.combo_filter.setEnabled(False)
-        self.btn_clear.setEnabled(False)
+        self.controls_panel.set_historical_mode(True)
 
     def _update_last_row(self, appended_text: str):
         last_row = self.table.rowCount() - 1
@@ -230,7 +166,6 @@ class LogView(QWidget):
         if item_msg:
             new_text = f"{item_msg.text()}\n{appended_text}"
             item_msg.setText(new_text)
-            item_msg.setToolTip(new_text)
             self.table.resizeRowToContents(last_row)
 
     def _add_row_to_table(self, level: str, time_str: str, text: str):
@@ -238,23 +173,25 @@ class LogView(QWidget):
         self.table.insertRow(row)
 
         color_map = {
-            "DEBUG": "#94A3B8",   
-            "INFO": "#38BDF8",    
-            "WARNING": "#FBBF24", 
-            "ERROR": "#EF4444",   
-            "CRITICAL": "#DC2626" 
+            "DEBUG": "#94A3B8", "INFO": "#38BDF8", 
+            "WARNING": "#FBBF24", "ERROR": "#EF4444", "CRITICAL": "#DC2626"
         }
-        qcolor = QColor(color_map.get(level, "#FFFFFF"))
+        icon_map = {
+            "DEBUG": "code.svg", "INFO": "info-circle.svg", 
+            "WARNING": "alert-triangle.svg", "ERROR": "bug.svg", "CRITICAL": "shield-half.svg"
+        }
 
-        icon_char = "◆" if level in ["ERROR", "CRITICAL", "WARNING"] else "●"
-        item_level = QTableWidgetItem(f"{icon_char}  {level.capitalize()}")
+        hex_color = color_map.get(level, "#FFFFFF")
+        qcolor = QColor(hex_color)
+        icon_name = icon_map.get(level, "message.svg")
+        item_level = QTableWidgetItem(f"  {level.capitalize()}")
         item_level.setForeground(qcolor)
+        item_level.setIcon(get_icon_colored(icon_name, hex_color, 16))
         
         item_time = QTableWidgetItem(time_str)
         item_time.setForeground(QColor("#94A3B8"))
         
         item_msg = QTableWidgetItem(text)
-        item_msg.setToolTip(text)
         
         for item in (item_level, item_time, item_msg):
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
@@ -267,23 +204,14 @@ class LogView(QWidget):
     def _render_logs(self):
         self.table.setRowCount(0)
         self.table.setUpdatesEnabled(False)
-        
         for level, time_str, text in self._log_history:
-            if self._current_filter not in (self.str_all, level):
-                continue
-            if not self._matches_search(level, time_str, text):
-                continue
-                
-            self._add_row_to_table(level, time_str, text)
-            
+            if self._current_filter in (self.str_all, level) and self._matches_search(level, time_str, text):
+                self._add_row_to_table(level, time_str, text)
         self.table.setUpdatesEnabled(True)
         self._scroll_to_bottom()
 
     def restore_live_view_state(self):
-        self.btn_live.setVisible(False)
-        self.txt_search.setEnabled(True)
-        self.combo_filter.setEnabled(True)
-        self.btn_clear.setEnabled(True)
+        self.controls_panel.set_historical_mode(False)
         self._clear_logs()
 
     @Slot()

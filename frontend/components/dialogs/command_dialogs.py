@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                                QTextEdit, QSpinBox, QCheckBox, QTabWidget, 
                                QWidget, QSizePolicy, QComboBox)
 from frontend.components.dialogs.base_dialogs import ModernBaseDialog
-from frontend.components.controls import ModernButton
+from frontend.components.custom_controls_component import ModernButton
 from frontend.theme import PATH_ICON_HELP
 
 class CommandConfigWizard(ModernBaseDialog):

@@ -1,27 +1,18 @@
 # frontend/main_window.py
-
-import logging
-from logging.handlers import TimedRotatingFileHandler
 import os
-import sys
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent
 
 from backend.services.alerts_service import AlertsService
-from backend.services.backup_service import BackupService
 from backend.services.chat_service import ChatService
 from backend.services.command_service import CommandService
 from backend.services.dashboard_service import AvatarService
 from backend.services.log_service import LogService
-from backend.services.media_trigger_service import MediaTriggerService
-from backend.services.overlay_server import OverlayServerManager
 from backend.services.settings_service import SettingsService
 from backend.services.spam_service import SpamService
-from backend.services.translation_service import TranslationService
-from frontend.components.log_handler import QLogHandler, StreamToLogger
-from frontend.components.sidebar import Sidebar
-from frontend.components.tray_menu import SystemTrayManager
+from frontend.components.sidebar_component import Sidebar
+from frontend.components.tray_menu_component import SystemTrayManager
 from frontend.controllers.alerts_controller import AlertsController
 from frontend.controllers.chat_controller import ChatController
 from frontend.controllers.command_controller import CommandController
@@ -29,6 +20,9 @@ from frontend.controllers.dashboard_controller import DashboardController
 from frontend.controllers.log_controller import LogController
 from frontend.controllers.settings_controller import SettingsController
 from frontend.controllers.spam_controller import SpamController
+from frontend.controllers.update_controller import UpdateController
+from frontend.core.app_container_core import AppContainer
+from frontend.core.app_logger_core import setup_application_logging
 from frontend.views.alerts_view import AlertsView
 from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
@@ -36,19 +30,11 @@ from frontend.views.chat_view import ChatView
 from frontend.views.log_view import LogView
 from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
-from frontend.components.dialogs import UpdateDialog
-
-from backend.auth_manager import AuthManager
-from backend.sql_manager import DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, SQLiteAlertsStorage, SQLiteSpamStorage
 from backend.kick_api_client import KickAPIClient
-from backend.tts_manager import TTSManager
-
 from frontend.components.dialogs import ModernConfirmDialog
-from frontend.utils import resource_path
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
 from frontend.workers.fetch_rewards_worker import FetchRewardsWorker
-from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
@@ -59,56 +45,37 @@ class MainWindow(QMainWindow):
         self._is_shutting_down = False
         self.updater_manager = updater_manager
         self.app_version = app_version
-        self.db_manager = DatabaseManager()
-        self.token_storage = SQLiteTokenStorage(self.db_manager)
-        self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
-        self.alerts_storage = SQLiteAlertsStorage(self.db_manager)
-        self.commands_storage = SQLiteCommandsStorage(self.db_manager)
-        self.spam_storage = SQLiteSpamStorage(self.db_manager)
-        self.backup_service = BackupService(self.settings_storage, self.alerts_storage, self.commands_storage, self.spam_storage)
-
-        if getattr(sys, 'frozen', False):
-            app_dir = os.path.dirname(sys.executable)
-        else:
-            app_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            
-        install_lang_path = os.path.join(app_dir, ".install_lang")
-        if os.path.exists(install_lang_path):
-            try:
-                with open(install_lang_path, 'r', encoding='utf-8') as f:
-                    install_lang = f.read().strip()
-                if install_lang in ["es", "en"]:
-                    self.settings_storage.save_string("app_language", install_lang)
-                os.remove(install_lang_path)
-            except Exception as e:
-                pass
-        saved_lang = self.settings_storage.load_string("app_language", "es")
-        self.i18n = TranslationService(default_lang=saved_lang)
+        self.container = AppContainer(self)
+        self.db_manager = self.container.db_manager
+        self.token_storage = self.container.token_storage
+        self.settings_storage = self.container.settings_storage 
+        self.alerts_storage = self.container.alerts_storage
+        self.commands_storage = self.container.commands_storage
+        self.spam_storage = self.container.spam_storage
+        self.backup_service = self.container.backup_service
+        self.i18n = self.container.i18n
+        self.auth_manager = self.container.auth_manager
+        self.tts_manager = self.container.tts_manager
+        self.media_trigger_service = self.container.media_trigger_service
+        self.overlay_server = self.container.overlay_server
+        
         title = self.i18n.get("main.window.title").replace("{version}", app_version)
         self.setWindowTitle(title)
         self.resize(1100, 750)
-        html_path = resource_path(os.path.join("assets", "web", "success.html"))
-        self.auth_manager = AuthManager(
-            client_id=os.getenv("KICK_CLIENT_ID", ""),
-            client_secret=os.getenv("KICK_CLIENT_SECRET", ""),
-            redirect_uri=os.getenv("KICK_REDIRECT_URI", "http://localhost:8080/auth/callback"),
-            storage=self.token_storage,
-            success_html_path=html_path
-        )
-
-        self.tts_manager = TTSManager()
+        
         self.chat_worker = None
         self.reward_worker = None
-        self.media_trigger_service = MediaTriggerService(self)
-        self.overlay_server = OverlayServerManager(port=8090)
-        self.overlay_server.start()
 
-        self._setup_logging()
+        self.logger, self.q_log_handler = setup_application_logging()  
+        
         self._setup_ui()
         self._setup_tray() 
-        self._connect_signals()
+        
+        self.update_controller = UpdateController(self, self.updater_manager, self.i18n)
+        self.update_controller.check_updates_silently(self.sidebar)
+        
+        self._connect_signals()     
         self._load_settings_into_ui()
-        self._check_updates_silently()
 
     def _setup_ui(self):
         self.central_widget = QWidget()
@@ -200,7 +167,7 @@ class MainWindow(QMainWindow):
         self.chat_controller.tts_state_changed.connect(self.tray_manager.set_tts_state)
         self.view_alerts.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
-        self.settings_controller.check_update_requested.connect(self._handle_update_check)
+        self.settings_controller.check_update_requested.connect(self.update_controller.handle_update_check)
         self.settings_controller.notification_requested.connect(
             lambda title, msg: self.tray_manager.showMessage(title, msg)
         )
@@ -219,53 +186,6 @@ class MainWindow(QMainWindow):
         self.view_chat.set_initial_states(chat_settings)
         if autostart_enabled:
             self._handle_auth_process()
-
-    @Slot()
-    def _handle_update_check(self):
-        dialog = UpdateDialog(self.i18n, parent=self)       
-        update_info = {"url": ""}
-        
-        self.check_worker = UpdateCheckWorker(self.updater_manager)
-        
-        def on_update_found(info):
-            update_info["url"] = info['download_url']
-            dialog.show_update_available(info['version'])
-            
-        self.check_worker.update_found.connect(on_update_found)
-        self.check_worker.no_update.connect(dialog.show_no_update)
-        self.check_worker.error.connect(dialog.show_error)
-
-        def on_download_requested():
-            dialog.show_downloading()
-            self.download_worker = UpdateDownloadWorker(self.updater_manager, update_info["url"])
-            self.download_worker.progress.connect(dialog.update_progress)
-
-            def on_download_finished(success):
-                if success:
-                    dialog.show_complete()
-                else:
-                    error_msg = self.i18n.get("main.dialogs.update.msg_unexpected_error")
-                    dialog.show_error(error_msg)
-                    
-            self.download_worker.finished.connect(on_download_finished)
-            self.download_worker.error.connect(dialog.show_error)
-            self.download_worker.start()
-
-        def on_restart_requested():
-            dialog.accept()
-            self._force_quit()
-            
-        dialog.download_requested.connect(on_download_requested)
-        dialog.restart_requested.connect(on_restart_requested)
-        self.check_worker.start()
-        dialog.exec()
-
-    def _check_updates_silently(self):
-        self.bg_update_worker = UpdateCheckWorker(self.updater_manager)
-        self.bg_update_worker.update_found.connect(
-            lambda info: self.sidebar.set_update_available(True)
-        )
-        self.bg_update_worker.start()
 
     def _handle_navigation(self, view_name):
         mapping = {
@@ -473,38 +393,3 @@ class MainWindow(QMainWindow):
                 self._force_quit() 
             else:
                 event.ignore()
-
-    def _setup_logging(self):
-        self.logger = logging.getLogger()
-        self.logger.setLevel(logging.DEBUG) 
-        
-        self.q_log_handler = QLogHandler()
-        self.logger.addHandler(self.q_log_handler)
-        
-        app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
-        log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        
-        log_file = os.path.join(log_dir, 'minikick.log')
-        
-        file_handler = TimedRotatingFileHandler(
-            filename=log_file,
-            when='midnight',
-            interval=1,
-            backupCount=7, 
-            encoding='utf-8'
-        )
-        
-        file_formatter = logging.Formatter(
-            '[%(asctime)s] [%(levelname)s] %(message)s', 
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        file_handler.setFormatter(file_formatter)
-        file_handler.setLevel(logging.DEBUG)   
-        self.logger.addHandler(file_handler)
-        logging.getLogger("urllib3").setLevel(logging.WARNING)
-        logging.getLogger("cloudscraper").setLevel(logging.WARNING)
-        logging.getLogger("comtypes").setLevel(logging.WARNING)
-
-        sys.stdout = StreamToLogger(self.logger, logging.INFO)
-        sys.stderr = StreamToLogger(self.logger, logging.ERROR)

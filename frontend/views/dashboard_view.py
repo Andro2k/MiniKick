@@ -6,8 +6,8 @@ from PySide6.QtGui import QPixmap
 
 from frontend.theme import COLOR_ACCENT
 from frontend.utils import create_circular_pixmap, get_icon_colored
-from frontend.components.blocks import StatCard, ViewHeader, SettingRow
-from frontend.components.controls import ModernButton, ModernSwitch
+from frontend.components.ui_blocks_component import StatCard, ViewHeader, SettingRow
+from frontend.components.custom_controls_component import ModernButton, ModernSwitch
 
 class DashboardView(QWidget):
     connect_requested = Signal()

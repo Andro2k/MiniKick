@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
 from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
 from backend.updater_manager import UpdateManager
-from frontend.main_window import MainWindow
+from frontend.main_window_view import MainWindow
 from frontend.theme import GLOBAL_QSS
 from frontend.utils import resource_path
 from backend.services.instance_services import SocketInstanceProvider
