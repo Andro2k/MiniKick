@@ -2,6 +2,14 @@
 
 import os
 import sys
+try:
+    from backend.api_keys import (KICK_CLIENT_ID, KICK_CLIENT_SECRET, 
+                                  KICK_REDIRECT_URI)
+except ImportError:
+    print("ADVERTENCIA: Archivo backend/api_keys.py no encontrado. Usando credenciales vacías.")
+    KICK_CLIENT_ID = ""
+    KICK_CLIENT_SECRET = ""
+    KICK_REDIRECT_URI = "http://localhost:8080/auth/callback"
 from backend.sqlite_manager import (DatabaseManager, SQLiteCommandsStorage, 
                                  SQLiteTokenStorage, SQLiteSettingsStorage, 
                                  SQLiteAlertsStorage, SQLiteSpamStorage)
@@ -29,9 +37,9 @@ class AppContainer:
         self.i18n = self._init_i18n()
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
         self.auth_manager = AuthManager(
-            client_id=os.getenv("KICK_CLIENT_ID", ""),
-            client_secret=os.getenv("KICK_CLIENT_SECRET", ""),
-            redirect_uri=os.getenv("KICK_REDIRECT_URI", "http://localhost:8080/auth/callback"),
+            client_id=KICK_CLIENT_ID,
+            client_secret=KICK_CLIENT_SECRET,
+            redirect_uri=KICK_REDIRECT_URI,
             storage=self.token_storage,
             success_html_path=html_path
         )

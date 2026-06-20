@@ -16,6 +16,7 @@ class AlertConfigWizard(ModernBaseDialog):
     def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
         self.i18n = i18n
         self.is_edit_mode = existing_config is not None
+        self.existing_reward = existing_reward
         title = self.i18n.get("alerts.dialogs.wizard.title_edit") if self.is_edit_mode else self.i18n.get("alerts.dialogs.wizard.title_new")
         icon_path = get_assets_path("icons/settings.svg")
         
@@ -235,9 +236,15 @@ class AlertConfigWizard(ModernBaseDialog):
     def update_rewards(self, rewards_list):
         current = self.combo_rewards.currentText()
         self.combo_rewards.clear()
+        if hasattr(self, 'existing_reward') and self.existing_reward:
+            if self.existing_reward not in rewards_list:
+                rewards_list.insert(0, self.existing_reward)
         self.combo_rewards.addItems(rewards_list)
         if current in rewards_list:
             self.combo_rewards.setCurrentText(current)
+        elif hasattr(self, 'existing_reward') and self.existing_reward in rewards_list:
+            self.combo_rewards.setCurrentText(self.existing_reward)
+            
         self.btn_refresh.setEnabled(True)
 
     def _browse_file(self):

@@ -35,7 +35,12 @@ from frontend.components.dialogs import ModernConfirmDialog
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
 from frontend.workers.fetch_rewards_worker import FetchRewardsWorker
-
+from frontend.workers.reward_worker import RewardWorker
+try:
+    from backend.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
+except ImportError:
+    KICK_PUSHER_CLUSTER = "us2"
+    KICK_PUSHER_KEY = "32cbd69e4b950bf97679"
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
@@ -212,15 +217,17 @@ class MainWindow(QMainWindow):
         self.auth_worker.setParent(self)
         
         def on_auth_success(tokens):
-            cluster = os.getenv("KICK_PUSHER_CLUSTER", "us2")
-            key = os.getenv("KICK_PUSHER_KEY", "32cbd69e4b950bf97679")         
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             is_missing_scopes = self.auth_manager.has_missing_scopes()
             self.dashboard_controller.evaluate_scopes(is_missing_scopes)
             self.command_service.api_client = api_client
             self.spam_service.api_client = api_client 
             self.chat_controller.command_service = self.command_service
-            self.chat_worker = ChatWorker(self.i18n, api_client, cluster, key, parent=self)               
+            self.chat_worker = ChatWorker(self.i18n, api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, parent=self)
+            
+            self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=15, parent=self)
+            self.reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
+            self.reward_worker.start()
 
             def on_connection_success(user_data):
                 self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)

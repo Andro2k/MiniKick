@@ -5,6 +5,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+# Archivos de configuración locales y secretos
+backend/api_keys.py
 .env
 # Bases de datos locales
 *.db

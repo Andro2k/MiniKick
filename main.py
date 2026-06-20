@@ -1,8 +1,9 @@
+# main.py
+
 import os
 import sys
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtGui import QFont, QFontDatabase, QIcon
-from dotenv import load_dotenv
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
 from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
 from backend.updater_manager import UpdateManager
@@ -12,9 +13,6 @@ from frontend.utils import resource_path
 from backend.services.instance_services import SocketInstanceProvider
 
 def bootstrap():
-    env_path = resource_path(".env")
-    load_dotenv(env_path)
-    
     app = QApplication(sys.argv)
     font_regular = resource_path(os.path.join("assets", "fonts", "Inter-Regular.ttf"))
     font_bold = resource_path(os.path.join("assets", "fonts", "Inter-Bold.ttf"))
@@ -36,8 +34,7 @@ def bootstrap():
     try:
         app.setQuitOnLastWindowClosed(False)
 
-        APP_VERSION = "v1.2.3"
-        
+        APP_VERSION = "v1.2.4"
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()
         
@@ -47,11 +44,9 @@ def bootstrap():
             downloader=github_provider,
             installer=windows_installer
         )
-
         app.setStyleSheet(GLOBAL_QSS)
         icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
         app.setWindowIcon(QIcon(icon_path))
-
         window = MainWindow(updater_manager=updater, app_version=APP_VERSION)
         window.show()
         sys.exit(app.exec())
