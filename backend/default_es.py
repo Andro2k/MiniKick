@@ -190,7 +190,7 @@ DEFAULT_DICTIONARY = {
         },
         "table": {
             "col_level": "Nivel",
-            "col_time": "Marca de Tiempo",
+            "col_time": "Hora",
             "col_message": "Mensaje"
         },
         "dialogs": {

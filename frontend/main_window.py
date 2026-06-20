@@ -118,13 +118,13 @@ class MainWindow(QMainWindow):
         self.main_layout.setSpacing(0)
 
         self.sidebar = Sidebar(self.i18n, app_version=self.app_version)
-        self.sidebar.add_tab("Dashboard", "home.svg", is_active=True)
-        self.sidebar.add_tab("Chat", "bubble-text.svg")
+        self.sidebar.add_tab("Dashboard", "dashboard.svg", is_active=True)
+        self.sidebar.add_tab("Chat", "message.svg")
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Comandos", "code.svg")
         self.sidebar.add_tab("Spam Filters", "shield-half.svg")
         self.sidebar.add_tab("Settings", "settings.svg", position="bottom")
-        self.sidebar.add_tab("Developer", "terminal.svg", position="bottom")
+        self.sidebar.add_tab("Developer", "brand-tabler.svg", position="bottom")
 
         self.content_stack = QStackedWidget()
         

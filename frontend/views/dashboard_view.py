@@ -154,8 +154,8 @@ class DashboardView(QWidget):
         self.stats_grid.setSpacing(12)
         
         self.card_followers = StatCard(self.i18n.get("dashboard.stats.followers"), "users.svg")
-        self.card_room = StatCard(self.i18n.get("dashboard.stats.room_id"), "hash.svg")
-        self.card_category = StatCard(self.i18n.get("dashboard.stats.category"), "device-gamepad.svg") 
+        self.card_room = StatCard(self.i18n.get("dashboard.stats.room_id"), "grid-pattern.svg")
+        self.card_category = StatCard(self.i18n.get("dashboard.stats.category"), "category.svg") 
         self.card_affiliate = StatCard(self.i18n.get("dashboard.stats.affiliate"), "star.svg")
         self.card_vods = StatCard(self.i18n.get("dashboard.stats.vods"), "video.svg")
 

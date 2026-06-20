@@ -43,7 +43,7 @@ class ChatView(QWidget):
         self.header = ViewHeader(
             title_text=self.i18n.get("chat.header.title"),
             subtitle_text=self.i18n.get("chat.header.subtitle"),
-            icon_name="bubble-text.svg",
+            icon_name="message.svg",
             icon_color=COLOR_ACCENT
         )
         self.main_layout.addWidget(self.header)
@@ -94,7 +94,7 @@ class ChatView(QWidget):
             self.chk_command
         )
         row_volume = SettingSliderRow(
-            "adjustments-alt.svg", 
+            "adjustments.svg", 
             self.i18n.get("chat.settings.vol_title"), 
             self.i18n.get("chat.settings.vol_desc"), 
             self.slider_vol, self.lbl_vol_perc
@@ -113,7 +113,7 @@ class ChatView(QWidget):
         self.txt_command.setFixedWidth(80)
 
         row_prefix = SettingRow(
-            icon_name="hash.svg", 
+            icon_name="grid-pattern.svg", 
             title_text=self.i18n.get("chat.settings.prefix_title"), 
             desc_text=self.i18n.get("chat.settings.prefix_desc"), 
             right_widget=self.txt_command
@@ -251,8 +251,8 @@ class ChatView(QWidget):
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_delete.setIcon(get_icon_colored("trash.svg", "#ef4444", size=14))
-        btn_delete.setFixedSize(22, 22)
+        btn_delete.setIcon(get_icon_colored("trash.svg", "#ef4444", size=16))
+        btn_delete.setFixedSize(24, 24)
         btn_delete.clicked.connect(lambda checked=False, i=item: self._on_bot_remove_click(i))
         
         layout.addWidget(btn_delete)

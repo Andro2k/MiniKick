@@ -48,7 +48,7 @@ class LogView(QWidget):
         self.header = ViewHeader(
             title_text=self.i18n.get("log.header.title"),
             subtitle_text=self.i18n.get("log.header.subtitle"),
-            icon_name="terminal.svg",
+            icon_name="brand-tabler.svg",
             icon_color=COLOR_ACCENT
         )
         self.main_layout.addWidget(self.header)
@@ -77,7 +77,7 @@ class LogView(QWidget):
         actions_layout.setSpacing(8)
 
         self.btn_open_folder = ModernButton(self.i18n.get("log.controls.btn_folder"), role="action_outlined")
-        self.btn_open_folder.setIcon(get_icon_colored("folder.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_open_folder.setIcon(get_icon_colored("folder-open.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_open_folder.setToolTip(self.i18n.get("log.controls.tooltip_folder"))
         self.btn_open_folder.clicked.connect(self.open_folder_requested.emit)
 

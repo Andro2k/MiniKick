@@ -142,7 +142,7 @@ class CommandView(QWidget):
         layout.addWidget(lbl_status_dot)
         
         lbl_icon = QLabel()
-        icon_obj = get_icon_colored("hash.svg", COLOR_TEXT_PRIMARY, 16)
+        icon_obj = get_icon_colored("grid-pattern.svg", COLOR_TEXT_PRIMARY, 16)
         lbl_icon.setPixmap(icon_obj.pixmap(16, 16))
         
         lbl_trigger = QLabel(cmd_data["trigger"])
