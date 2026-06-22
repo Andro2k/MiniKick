@@ -9,27 +9,20 @@ PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/'
 COLOR_BG_BASE       = "#0B0E11"
 COLOR_BG_SURFACE    = "#1E2329"
 COLOR_BG_INPUT      = "#42474D"
-COLOR_BG_HOVER      = "#333333"   
-COLOR_BG_CONSOLE    = "#0F172A"
+COLOR_BG_HOVER      = "#333333"
 
 COLOR_BORDER_SVELTE = "#333333"
-COLOR_BORDER_ACTIVE = "#53FC18"
 
 COLOR_ACCENT        = "#53FC18"
 COLOR_ACCENT_HOVER  = "#00C864"   
 COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)"
 
-COLOR_SUCCESS       = "#10B981"
-
 COLOR_DANGER        = "#EF4444"
-COLOR_DANGER_HOVER  = "#D74141"
 COLOR_DANGER_SOFT   = "rgba(239, 68, 68, 0.15)"
 
 COLOR_TEXT_PRIMARY   = "#F3F4F6"
 COLOR_TEXT_SECONDARY = "#9CA3AF"
 COLOR_TEXT_MUTED     = "#6B7280"
-COLOR_TEXT_INVERSE   = "#000000"
-COLOR_TEXT_CONSOLE   = "#F8FAFC"
 
 FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -37,8 +30,8 @@ RADIUS_SM = 6
 RADIUS_MD = 8
 RADIUS_LG = 12
 
-PADDING_INPUT   = "4px 12px"
-PADDING_BUTTON  = "4px 8px"
+PADDING_INPUT   = "5px 10px"
+PADDING_BUTTON  = "6px 12px"
 
 GLOBAL_QSS = f"""
 /* ============================================================================
@@ -65,7 +58,7 @@ QLabel[role="caption"] {{ font-size: 14px; color: {COLOR_TEXT_MUTED}; }}
 QLabel[role="text_accent"] {{ font-size: 12px; font-weight: bold; color: {COLOR_ACCENT}; }}
 QLabel[role="text_danger"] {{ font-size: 12px; font-weight: bold; color: {COLOR_DANGER}; }}
 QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; color: {COLOR_TEXT_SECONDARY}; }}
-QLabel[role="status_dot"][state="active"] {{ color: {COLOR_SUCCESS}; font-size: 14px; margin-right: 2px; }}
+QLabel[role="status_dot"][state="active"] {{ color: {COLOR_ACCENT}; font-size: 14px; margin-right: 2px; }}
 QLabel[role="status_dot"][state="inactive"] {{ color: {COLOR_DANGER}; font-size: 14px; margin-right: 2px; }}
 
 QLabel[role="tag_permission"] {{ 
@@ -127,13 +120,13 @@ QFrame[role="divider"] {{ background-color: rgba(255, 255, 255, 0.05); margin: 4
    ============================================================================ */
 QPushButton[role="action_accent"] {{
     background-color: {COLOR_ACCENT}; border: none; border-radius: {RADIUS_MD}px;
-    padding: {PADDING_BUTTON}; color: {COLOR_TEXT_INVERSE}; font-weight: 800;
+    padding: {PADDING_BUTTON}; color: {COLOR_BG_BASE}; font-weight: 600;
 }}
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_ACCENT_HOVER}; }}
 
 QPushButton[role="action_outlined"] {{
     background-color: {COLOR_BG_INPUT}; border: none; border-radius: {RADIUS_MD}px;
-    padding: {PADDING_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-weight: 500;
+    padding: {PADDING_BUTTON}; color: {COLOR_TEXT_PRIMARY}; font-weight: 600;
 }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 
@@ -156,17 +149,17 @@ QLineEdit, QTextEdit {{
     border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; color: {COLOR_TEXT_PRIMARY};
 }}
 QTextEdit {{ background-color: {COLOR_BG_SURFACE}; border: 1.5px solid {COLOR_BORDER_SVELTE}; }}
-QLineEdit:focus, QTextEdit:focus {{ border: 1.5px solid {COLOR_BORDER_ACTIVE}; background-color: {COLOR_BG_HOVER}; }}
+QLineEdit:focus, QTextEdit:focus {{ border: 1.5px solid {COLOR_ACCENT}; background-color: {COLOR_BG_HOVER}; }}
 
 QComboBox {{
     background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY};
-    border-radius: {RADIUS_MD}px; padding: 6px 28px 6px 8px; border: 1.5px solid transparent;
+    border-radius: {RADIUS_MD}px; padding: 4px 28px 4px 4px; border: 1.5px solid transparent;
 }}
 QComboBox:focus, QComboBox:hover {{ 
     border: 1.5px solid {COLOR_BORDER_SVELTE}; background-color: {COLOR_BG_HOVER}; 
 }}
 QComboBox::drop-down {{ 
-    subcontrol-origin: padding; subcontrol-position: top right; width: 30px; 
+    subcontrol-origin: padding; subcontrol-position: top right; width: 23px; 
     border-left: 1.5px solid {COLOR_BORDER_SVELTE};
     border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px;
 }}
@@ -184,8 +177,7 @@ QComboBox QAbstractItemView::item:selected, QMenu::item:selected {{ background-c
 
 QSpinBox, QDoubleSpinBox {{
     background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY};
-    border-radius: {RADIUS_MD}px; padding: 4px 28px 4px 8px; border: 1.5px solid transparent;
-    min-height: 20px;
+    border-radius: {RADIUS_MD}px; padding: 2px 20px 2px 2px; border: 1.5px solid transparent;
 }}
 QSpinBox:focus, QDoubleSpinBox:focus, QSpinBox:hover, QDoubleSpinBox:hover {{ 
     border: 1.5px solid {COLOR_BORDER_SVELTE}; background-color: {COLOR_BG_HOVER}; 
@@ -249,7 +241,7 @@ QPushButton#NavButton[collapsed="false"] {{ text-align: left; padding-left: 12px
 QPushButton#NavButton[collapsed="true"] {{ text-align: center; padding: 10px; }}
 QProgressBar[role="update_progress"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: 5px; }}
 QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E); border-radius: 5px; }}
-QTextEdit#ConsoleDisplay {{ background-color: {COLOR_BG_CONSOLE}; color: {COLOR_TEXT_CONSOLE}; font-family: {FONT_FAMILY}; font-size: 12px; border-radius: {RADIUS_MD}px; padding: 10px; }}
+QTextEdit#ConsoleDisplay {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: 12px; border-radius: {RADIUS_MD}px; padding: 10px; }}
 
 /* ============================================================================
    8. COMPONENTES ESPECÍFICOS: TAGS Y CONSOLA
@@ -269,7 +261,7 @@ QFrame[role="tag"] {{
     border-radius: {RADIUS_MD}px;
 }}
 QFrame[role="tag"]:hover {{ 
-    border: 1.5px solid {COLOR_DANGER_HOVER}; 
+    border: 1.5px solid {COLOR_DANGER}; 
 }}
 QFrame[role="tag"] QLabel {{ 
     color: {COLOR_TEXT_PRIMARY}; 
@@ -278,8 +270,8 @@ QFrame[role="tag"] QLabel {{
 }}
 
 QTextEdit[role="console"] {{
-    background-color: {COLOR_BG_CONSOLE};
-    color: {COLOR_TEXT_CONSOLE};
+    background-color: {COLOR_BG_BASE};
+    color: {COLOR_TEXT_PRIMARY};
     font-family: {FONT_FAMILY};
     font-size: 12px;
     border-radius: {RADIUS_MD}px;
