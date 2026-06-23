@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QColor, QMouseEvent
 
-from frontend.theme import PATH_ICON_HELP
+from frontend.theme import COLOR_DANGER, PATH_ICON_HELP
 
 class ModernFramelessShell(QDialog):
     def __init__(self, width: int = 420, parent=None):
@@ -80,7 +80,7 @@ class ModernModalAlert(ModernFramelessShell):
         
         icon_container = QFrame()
         icon_container.setFixedSize(52, 52)
-        role = "danger_icon" if bg_color == "#EF4444" else "accent_icon"
+        role = "danger_icon" if bg_color == COLOR_DANGER else "accent_icon"
         icon_container.setProperty("dialog_role", role)
         
         icon_inner_layout = QVBoxLayout(icon_container)
@@ -140,7 +140,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
 class ModernConfirmDialog(ModernModalAlert):
     def __init__(self, i18n, parent=None, title_text="", body_text=""):
-        super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color="#EF4444", width=420, parent=parent)
+        super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_DANGER, width=420, parent=parent)
         self.set_dialog_state("danger", QColor(239, 68, 68, 60))
         
         body_label = QLabel(body_text)
@@ -154,7 +154,7 @@ class ModernConfirmDialog(ModernModalAlert):
         btn_cancel = self._create_btn(i18n.get("dialogs.confirm.btn_cancel"), "action_outlined", self.reject)
         btn_confirm = self._create_btn(i18n.get("dialogs.confirm.btn_continue"), "action_danger", self.accept)
 
-        self.add_action_buttons(btn_cancel, btn_confirm, stretch_center=True)
+        self.add_action_buttons(btn_cancel, btn_confirm, stretch_center=False)
 
     def _create_btn(self, text, role, callback):
         btn = QPushButton(text)

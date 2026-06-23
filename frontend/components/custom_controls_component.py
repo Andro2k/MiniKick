@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import QColor, QPainter, QPainterPath
-from frontend.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, RADIUS_MD, RADIUS_SM
+from frontend.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BG_SURFACE, COLOR_BORDER_SVELTE, RADIUS_MD, RADIUS_SM
 
 class ModernButton(QPushButton):
     def __init__(self, text: str, role: str = "action_accent", parent=None):
@@ -45,7 +45,7 @@ class ModernSwitch(QAbstractButton):
         handle_rect = QRectF(handle_x, padding, handle_size, handle_size)
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor("#42474D") if self.isChecked() else QColor("#ffffff"))
+        painter.setBrush(QColor(COLOR_BG_SURFACE) if self.isChecked() else QColor("#ffffff"))
         painter.drawRoundedRect(handle_rect, RADIUS_SM, RADIUS_SM)
         
         painter.end()

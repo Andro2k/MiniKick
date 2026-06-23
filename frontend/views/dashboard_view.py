@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QBoxLayout, QScrollArea, QWidget, QVBoxLayout, QH
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
-from frontend.theme import COLOR_ACCENT
+from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
 from frontend.utils import create_circular_pixmap, get_icon_colored
 from frontend.components.ui_blocks_component import StatCard, ViewHeader, SettingRow
 from frontend.components.custom_controls_component import ModernButton, ModernSwitch
@@ -46,7 +46,7 @@ class DashboardView(QWidget):
         banner_layout = QHBoxLayout(self.banner_scopes)
         
         lbl_warn_icon = QLabel()
-        lbl_warn_icon.setPixmap(get_icon_colored("help.svg", "#EF4444", 24).pixmap(24, 24))
+        lbl_warn_icon.setPixmap(get_icon_colored("help.svg", COLOR_DANGER, 24).pixmap(24, 24))
         lbl_warn_text = QLabel(self.i18n.get("dashboard.banner.text"))
         
         self.btn_reauth = ModernButton(self.i18n.get("dashboard.banner.btn_update"), role="action_danger")
@@ -88,7 +88,7 @@ class DashboardView(QWidget):
         self.status_label.setProperty("role", "subtitle")
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
-        self.btn_connect.setIcon(get_icon_colored("kick.svg", "#000000", 16))
+        self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
         self.btn_connect.setFixedSize(160, 36)
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 

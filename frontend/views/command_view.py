@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.components.custom_controls_component import ModernButton, ModernSwitch
 from frontend.components.ui_blocks_component import ViewHeader
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
+from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
 from frontend.utils import get_icon_colored
 
 class CommandView(QWidget):
@@ -65,7 +65,7 @@ class CommandView(QWidget):
         table_header_layout.addWidget(self.txt_search)
 
         self.btn_new_alert = ModernButton(self.i18n.get("command.table.btn_new"), role="action_accent")
-        self.btn_new_alert.setIcon(get_icon_colored("add.svg", "#000000", 16))
+        self.btn_new_alert.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
         self.btn_new_alert.clicked.connect(self.add_requested.emit)
         table_header_layout.addWidget(self.btn_new_alert)
 
@@ -176,14 +176,14 @@ class CommandView(QWidget):
 
         btn_edit = ModernButton("", role="action_accent")
         btn_edit.setFixedSize(28, 28)
-        btn_edit.setIcon(get_icon_colored("edit.svg", "#000000", 16))
+        btn_edit.setIcon(get_icon_colored("edit.svg", COLOR_BLACK, 16))
         btn_edit.setToolTip(self.i18n.get("command.table.tooltip_edit"))
         btn_edit.clicked.connect(lambda checked=False, t=trigger_name: self.edit_requested.emit(t))
         layout.addWidget(btn_edit)
         
         btn_del = ModernButton("", role="action_danger")
         btn_del.setFixedSize(28, 28)
-        btn_del.setIcon(get_icon_colored("trash.svg", "#ef4444", 16))
+        btn_del.setIcon(get_icon_colored("trash.svg", COLOR_DANGER, 16))
         btn_del.setToolTip(self.i18n.get("command.table.tooltip_delete"))
         btn_del.clicked.connect(lambda checked=False, t=trigger_name: self.delete_requested.emit(t))
         layout.addWidget(btn_del)

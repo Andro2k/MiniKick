@@ -24,6 +24,7 @@ from frontend.controllers.spam_controller import SpamController
 from frontend.controllers.update_controller import UpdateController
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
+from frontend.theme import COLOR_ACCENT
 from frontend.views.alerts_view import AlertsView
 from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
@@ -276,7 +277,7 @@ class MainWindow(QMainWindow):
         texto_canje = canje_template.replace("{reward_name}", reward_name)
         msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
         tag = self.i18n.get("main.chat.points_tag")
-        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, "#53FC18")
+        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_ACCENT)
         
         mappings = self.alerts_service.get_mappings()
         if reward_name in mappings:

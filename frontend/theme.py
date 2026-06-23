@@ -13,8 +13,8 @@ COLOR_BG_HOVER      = "#333333"
 
 COLOR_BORDER_SVELTE = "#333333"
 
-COLOR_ACCENT        = "#53FC18"
-COLOR_ACCENT_HOVER  = "#00C864"   
+COLOR_ACCENT        = "#26FF8E"
+COLOR_ACCENT_HOVER  = "#2EDC85"   
 COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)"
 
 COLOR_DANGER        = "#EF4444"
@@ -27,6 +27,7 @@ COLOR_INFO_SOFT     = "rgba(59, 130, 246, 0.15)"
 COLOR_TEXT_PRIMARY   = "#F3F4F6"
 COLOR_TEXT_SECONDARY = "#9CA3AF"
 COLOR_TEXT_MUTED     = "#6B7280"
+COLOR_BLACK          = "#000000"
 
 FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -60,7 +61,7 @@ QLabel[role="text_danger"] {{ font-size: 12px; font-weight: 700; color: {COLOR_D
 QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; font-size: 12px; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="status_dot"][state="active"] {{ color: {COLOR_ACCENT}; font-size: 13px; margin-right: 2px; }}
 QLabel[role="status_dot"][state="inactive"] {{ color: {COLOR_DANGER}; font-size: 13px; margin-right: 2px; }}
-QLabel[role="tag_permission"] {{ background-color: {COLOR_ACCENT}; color: #000000; font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 4px; }}
+QLabel[role="tag_permission"] {{ background-color: {COLOR_ACCENT}; color: {COLOR_BLACK}; font-size: 10px; font-weight: 700; padding: 2px 4px; border-radius: 4px; }}
 QLabel[role="stat_value"] {{ font-size: 18px; font-weight: 800; color: {COLOR_TEXT_PRIMARY}; }}
 
 /* --- 3. CONTENEDORES --- */
@@ -163,7 +164,7 @@ QFrame[role="toast"][state="info"] {{ border-left: 4px solid {COLOR_INFO}; }}
 
 /* --- 9. TOOLTIPS (Desacoplados del Desktop OS) --- */
 QToolTip {{
-    background-color: #000000;
+    background-color: {COLOR_BLACK};
     color: {COLOR_TEXT_PRIMARY};
     border: 1px solid {COLOR_BORDER_SVELTE};
     padding: 2px 4px;

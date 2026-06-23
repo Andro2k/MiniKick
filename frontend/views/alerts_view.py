@@ -8,7 +8,7 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
 from frontend.components.custom_controls_component import ModernButton
 from frontend.components.ui_blocks_component import ViewHeader, SettingRow
-from frontend.theme import COLOR_ACCENT
+from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
 from frontend.utils import get_icon_colored
 
 class AlertsView(QWidget):
@@ -83,7 +83,7 @@ class AlertsView(QWidget):
         lbl_table_title.setProperty("role", "h3")
 
         self.btn_new_alert = ModernButton(self.i18n.get("alerts.table.btn_new"), role="action_accent")
-        self.btn_new_alert.setIcon(get_icon_colored("add.svg", "#000000", 16))
+        self.btn_new_alert.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
         self.btn_new_alert.clicked.connect(self.add_requested.emit)
 
         table_header_layout.addWidget(lbl_table_title)
@@ -137,9 +137,9 @@ class AlertsView(QWidget):
             actions_layout.setSpacing(8)
             actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
-            btn_play = self._create_table_action_btn("play.svg", "#53FC18", "action_outlined", self.i18n.get("alerts.table.tooltip_play"), lambda checked=False, r=reward: self.preview_requested.emit(r))
-            btn_edit = self._create_table_action_btn("edit.svg", "#000000", "action_accent", self.i18n.get("alerts.table.tooltip_edit"), lambda checked=False, r=reward: self.edit_requested.emit(r))
-            btn_del = self._create_table_action_btn("trash.svg", "#ef4444", "action_danger", self.i18n.get("alerts.table.tooltip_delete"), lambda checked=False, r=reward: self.delete_requested.emit(r))
+            btn_play = self._create_table_action_btn("play.svg", COLOR_ACCENT, "action_outlined", self.i18n.get("alerts.table.tooltip_play"), lambda checked=False, r=reward: self.preview_requested.emit(r))
+            btn_edit = self._create_table_action_btn("edit.svg", COLOR_BLACK, "action_accent", self.i18n.get("alerts.table.tooltip_edit"), lambda checked=False, r=reward: self.edit_requested.emit(r))
+            btn_del = self._create_table_action_btn("trash.svg", COLOR_DANGER, "action_danger", self.i18n.get("alerts.table.tooltip_delete"), lambda checked=False, r=reward: self.delete_requested.emit(r))
             
             actions_layout.addWidget(btn_play)
             actions_layout.addWidget(btn_edit)

@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
 from frontend.components.dialogs.base_dialogs import ModernModalAlert
-from frontend.theme import COLOR_ACCENT, COLOR_DANGER
+from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_INFO
 from frontend.utils import get_icon_colored, get_assets_path
 
 class UpdateDialog(ModernModalAlert):
@@ -17,7 +17,7 @@ class UpdateDialog(ModernModalAlert):
         super().__init__(
             title=self.i18n.get("main.dialogs.update.title_default"), 
             icon_path=get_assets_path("icons/cloud.svg"), 
-            icon_bg_color="#3B82F6",
+            icon_bg_color=COLOR_INFO,
             width=400, 
             parent=parent
         )
@@ -74,12 +74,12 @@ class UpdateDialog(ModernModalAlert):
         self.btn_secondary.setProperty("role", "action_outlined")
         self.btn_secondary.clicked.connect(self.reject)
 
-        self.add_action_buttons(self.btn_secondary, self.btn_primary, stretch_center=True)
+        self.add_action_buttons(self.btn_secondary, self.btn_primary, stretch_center=False)
 
     def show_update_available(self, version: str):
         self.version = version
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud.svg", "#000000", 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud.svg", COLOR_BLACK, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("main.dialogs.update.top_available").replace("{version}", version))
         self.lbl_subtitle.setText(self.i18n.get("main.dialogs.update.subtitle_restart_req"))
@@ -133,7 +133,7 @@ class UpdateDialog(ModernModalAlert):
     def show_no_update(self):
         self.set_dialog_state("neutral", QColor(0, 0, 0, 0))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("circle-check.svg", "#000000", 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("circle-check.svg", COLOR_BLACK, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("main.dialogs.update.title_up_to_date"))
         self.lbl_subtitle.setText(self.i18n.get("main.dialogs.update.subtitle_up_to_date"))

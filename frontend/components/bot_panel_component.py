@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QFrame, QPushButton, QListWidgetItem)
 from PySide6.QtCore import Qt, Signal
 from frontend.components.custom_controls_component import ModernButton
+from frontend.theme import COLOR_BLACK, COLOR_DANGER
 from frontend.utils import get_icon_colored
 
 class BotMutePanel(QWidget):
@@ -32,7 +33,7 @@ class BotMutePanel(QWidget):
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
         
         self.btn_add_bot = ModernButton(self.i18n.get("chat.bots.btn_add"), role="action_accent")
-        self.btn_add_bot.setIcon(get_icon_colored("add.svg", "#000000", size=16))
+        self.btn_add_bot.setIcon(get_icon_colored("add.svg", COLOR_BLACK, size=16))
             
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
@@ -72,7 +73,7 @@ class BotMutePanel(QWidget):
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_delete.setIcon(get_icon_colored("trash.svg", "#ef4444", size=16))
+        btn_delete.setIcon(get_icon_colored("trash.svg", COLOR_DANGER, size=16))
         btn_delete.setFixedSize(24, 24)
         btn_delete.clicked.connect(lambda checked=False, i=item: self._on_bot_remove_click(i))
         

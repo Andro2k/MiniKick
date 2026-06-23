@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QComboBox, QBoxLay
 from PySide6.QtCore import Qt, Signal
 from frontend.components.custom_controls_component import ModernButton
 from frontend.utils import get_icon_colored
-from frontend.theme import COLOR_TEXT_PRIMARY
+from frontend.theme import COLOR_BLACK, COLOR_TEXT_PRIMARY
 
 class LogControlsPanel(QFrame):
     search_changed = Signal(str)
@@ -56,7 +56,7 @@ class LogControlsPanel(QFrame):
         self.btn_load_file.clicked.connect(self.load_requested.emit)
 
         self.btn_live = ModernButton(self.i18n.get("log.controls.btn_live"), role="action_accent")
-        self.btn_live.setIcon(get_icon_colored("play.svg", "#000000", 16))
+        self.btn_live.setIcon(get_icon_colored("play.svg", COLOR_BLACK, 16))
         self.btn_live.clicked.connect(self.live_requested.emit)
         self.btn_live.setVisible(False)
 
@@ -65,7 +65,7 @@ class LogControlsPanel(QFrame):
         self.btn_clear.clicked.connect(self.clear_requested.emit)
 
         self.btn_report = ModernButton(self.i18n.get("log.controls.btn_report"), role="action_accent")
-        self.btn_report.setIcon(get_icon_colored("help.svg", "#000000", 16))
+        self.btn_report.setIcon(get_icon_colored("help.svg", COLOR_BLACK, 16))
         self.btn_report.clicked.connect(self.report_requested.emit)
 
         actions_layout.addWidget(self.btn_open_folder)

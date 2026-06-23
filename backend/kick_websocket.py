@@ -6,6 +6,8 @@ import time
 from typing import Callable
 import websocket
 
+from frontend.theme import COLOR_ACCENT
+
 class ChatFormatter:
     @staticmethod
     def clean(text: str) -> str:
@@ -49,7 +51,7 @@ class ChatSocketManager:
                 identity = sender.get("identity", {})
                 badges_raw = identity.get("badges", [])
                 badges = [b.get("type") for b in badges_raw if isinstance(b, dict)]
-                color = identity.get("color", "") or "#53FC18"
+                color = identity.get("color", "") or COLOR_ACCENT
                 
                 if user and msg:
                     on_message(user, msg, badges, color, msg_id, sender_id)

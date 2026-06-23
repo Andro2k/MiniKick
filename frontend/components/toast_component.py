@@ -75,12 +75,11 @@ class ModernToast(QFrame):
 
     def move_to_target(self, target_pos: QPoint):
         if self.pos() == QPoint(0, 0):
-            # OPTIMIZACIÓN 1: Nace 100% oculto tras el borde derecho de la ventana
             self.move(QPoint(target_pos.x() + self.width() + 20, target_pos.y()))
 
         self.anim.stop()
-        self.anim.setDuration(300) # Tiempo de entrada más lujoso
-        self.anim.setEasingCurve(QEasingCurve.Type.OutExpo) # Frenado exponencial de alta gama
+        self.anim.setDuration(300)
+        self.anim.setEasingCurve(QEasingCurve.Type.OutExpo)
         self.anim.setStartValue(self.pos())
         self.anim.setEndValue(target_pos)
         self.anim.start()
@@ -88,8 +87,8 @@ class ModernToast(QFrame):
     def dismiss(self):
         self.timer.stop()
         self.anim.stop()
-        self.anim.setDuration(200) # El desalojo debe ser veloz
-        self.anim.setEasingCurve(QEasingCurve.Type.InExpo) # Aceleración de salida tipo látigo
+        self.anim.setDuration(200)
+        self.anim.setEasingCurve(QEasingCurve.Type.InExpo)
         self.anim.setStartValue(self.pos())
         self.anim.setEndValue(QPoint(self.pos().x() + self.width() + 20, self.pos().y()))
         self.anim.finished.connect(lambda: self.expired.emit(self))
