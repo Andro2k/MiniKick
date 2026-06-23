@@ -273,6 +273,11 @@ DEFAULT_DICTIONARY = {
         },
         "display": {
             "title": "Historial de la Sala"
+        },
+        "status": {
+            "loading_voices": "Cargando voces de la nube...",
+            "provider_title": "Motor de Voz",
+            "tts_title": "Lectura de Chat"
         }
     },
     "dashboard": {

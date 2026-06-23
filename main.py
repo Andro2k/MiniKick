@@ -2,7 +2,7 @@
 
 import os
 import sys
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QFont, QFontDatabase, QIcon
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
 from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
@@ -11,6 +11,18 @@ from frontend.main_window_view import MainWindow
 from frontend.theme import GLOBAL_QSS
 from frontend.utils import resource_path
 from backend.services.instance_services import SocketInstanceProvider
+from frontend.components.dialogs.already_running_dialog import AlreadyRunningDialog
+from frontend.core.app_container_core import AppContainer
+
+
+def _get_safe_i18n():
+    """Extrae el motor de traducciones pre-boot sin disparar efectos secundarios de red"""
+    try:
+        return AppContainer(QMainWindow()).i18n
+    except Exception as e:
+        print(f"[Bootstrap] Advertencia: Falló hidratación de i18n pre-boot ({e})")
+        return None
+
 
 def bootstrap():
     app = QApplication(sys.argv)
@@ -28,14 +40,18 @@ def bootstrap():
     app_font = QFont(FONT_FAMILY_NAME)
     app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     app.setFont(app_font)
+    app.setStyleSheet(GLOBAL_QSS)
 
     instance_provider = SocketInstanceProvider(port=45678)
     if instance_provider.is_already_running():
-        QMessageBox.warning(None, "MiniKick", "La aplicación ya se encuentra en ejecución.")
+        i18n_engine = _get_safe_i18n()
+        dialog = AlreadyRunningDialog(i18n=i18n_engine)
+        dialog.exec()
         sys.exit(1)
+
     try:
         app.setQuitOnLastWindowClosed(False)
-        APP_VERSION = "v1.2.5"
+        APP_VERSION = "v1.2.6"
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()    
         updater = UpdateManager(
@@ -44,7 +60,7 @@ def bootstrap():
             downloader=github_provider,
             installer=windows_installer
         )
-        app.setStyleSheet(GLOBAL_QSS)
+        
         icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
         app.setWindowIcon(QIcon(icon_path))
         window = MainWindow(updater_manager=updater, app_version=APP_VERSION)

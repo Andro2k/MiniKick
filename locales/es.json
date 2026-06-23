@@ -341,6 +341,12 @@
                 "top_error": "Error de Actualización",
                 "title_error": "Fallo en la descarga",
                 "msg_unexpected_error": "Fallo inesperado al descargar el archivo."
+            },
+            "already_running": {
+                "title": "MiniKick ya está en ejecución",
+                "desc": "El controlador de streaming ya se encuentra operando en segundo plano. Revisa el área de iconos ocultos de Windows (al lado del reloj) para abrir su panel.",
+                "btn_exit": "Salir",
+                "btn_understood": "Entendido"
             }
         },
         "sidebar": {

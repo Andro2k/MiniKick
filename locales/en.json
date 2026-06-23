@@ -341,6 +341,12 @@
                 "top_error": "Update Error",
                 "title_error": "Download failed",
                 "msg_unexpected_error": "Unexpected failure downloading the file."
+            },
+            "already_running": {
+                "title": "MiniKick is Already Running",
+                "desc": "The broadcasting controller is already operating in the background. Please check the Windows system tray (next to the clock) to access the dashboard.",
+                "btn_exit": "Exit",
+                "btn_understood": "Understood"
             }
         },
         "sidebar": {
