@@ -160,4 +160,14 @@ QFrame[role="toast"][state="success"] {{ border-left: 4px solid {COLOR_ACCENT}; 
 QFrame[role="toast"][state="danger"] {{ border-left: 4px solid {COLOR_DANGER}; }}
 QFrame[role="toast"][state="warning"] {{ border-left: 4px solid {COLOR_WARNING}; }}
 QFrame[role="toast"][state="info"] {{ border-left: 4px solid {COLOR_INFO}; }}
+
+/* --- 9. TOOLTIPS (Desacoplados del Desktop OS) --- */
+QToolTip {{
+    background-color: #000000;
+    color: {COLOR_TEXT_PRIMARY};
+    border: 1px solid {COLOR_BORDER_SVELTE};
+    padding: 2px 4px;
+    font-family: {FONT_FAMILY};
+    font-size: 11px;
+}}
 """

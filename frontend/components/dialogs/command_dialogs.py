@@ -11,7 +11,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.i18n = i18n
         super().__init__(
             title=self.i18n.get("command.dialog.title"), 
-            subtitle=self.i18n.get("command.dialog.subtitle") or "Crea o edita comandos personalizados",
+            subtitle=self.i18n.get("command.dialog.subtitle"),
             width=520, 
             parent=parent
         )

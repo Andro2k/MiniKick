@@ -271,6 +271,11 @@
         },
         "display": {
             "title": "Room History"
+        },
+        "status": {
+            "loading_voices": "Fetching cloud voices...",
+            "provider_title": "Speech Engine",
+            "tts_title": "Chat Text-to-Speech"
         }
     },
     "dashboard": {

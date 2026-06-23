@@ -31,7 +31,7 @@ class LogView(QWidget):
     def __init__(self, i18n):
         super().__init__()
         self.i18n = i18n
-        self.str_all = self.i18n.get("log.controls.filter_all") or "Todos"
+        self.str_all = self.i18n.get("log.controls.filter_all")
 
         self._log_history = []
         self._current_filter = self.str_all
@@ -56,9 +56,8 @@ class LogView(QWidget):
         self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
-            title_text=self.i18n.get("log.header.title") or "Registros del Sistema",
-            subtitle_text=self.i18n.get("log.header.subtitle")
-            or "Consola de depuración de eventos y diagnósticos.",
+            title_text=self.i18n.get("log.header.title"),
+            subtitle_text=self.i18n.get("log.header.subtitle"),
             icon_name="brand-tabler.svg",
             icon_color=COLOR_ACCENT,
         )
@@ -86,9 +85,9 @@ class LogView(QWidget):
         table_layout.setContentsMargins(8, 8, 8, 8)
 
         self.table = QTableWidget(0, 3)
-        col_1 = self.i18n.get("log.table.col_level") or "Nivel"
-        col_2 = self.i18n.get("log.table.col_time") or "Hora"
-        col_3 = self.i18n.get("log.table.col_message") or "Mensaje"
+        col_1 = self.i18n.get("log.table.col_level")
+        col_2 = self.i18n.get("log.table.col_time")
+        col_3 = self.i18n.get("log.table.col_message")
         self.table.setHorizontalHeaderLabels([col_1, col_2, col_3])
 
         h_header = self.table.horizontalHeader()
@@ -117,11 +116,9 @@ class LogView(QWidget):
         log_dir = os.path.join(app_data_dir, ".Minikick", "logs")
         dialog_title = (
             self.i18n.get("log.dialogs.select_history")
-            or "Seleccionar Log Histórico"
         )
         file_filter = (
             self.i18n.get("log.dialogs.file_filter")
-            or "Archivos de Log (*.log *.txt)"
         )
 
         file_path, _ = QFileDialog.getOpenFileName(
@@ -195,7 +192,7 @@ class LogView(QWidget):
 
     def show_historical_content(self, file_name: str, content: str):
         self._clear_logs(show_toast=False)
-        hist_label = self.i18n.get("log.misc.historical") or "HISTORIAL"
+        hist_label = self.i18n.get("log.misc.historical")
 
         for line in content.strip().split("\n"):
             if line.strip():
@@ -207,11 +204,9 @@ class LogView(QWidget):
         if hasattr(self.window(), "toast"):
             msg_template = (
                 self.i18n.get("log.status.historical_msg")
-                or "Inspeccionando: {file}"
             )
             self.window().toast.show_toast(
-                title=self.i18n.get("log.status.historical_title")
-                or "Archivo Log Cargado",
+                title=self.i18n.get("log.status.historical_title"),
                 message=msg_template.replace("{file}", file_name),
                 state="warning",
             )
@@ -297,9 +292,8 @@ class LogView(QWidget):
         self.restore_live_requested.emit()
         if hasattr(self.window(), "toast"):
             self.window().toast.show_toast(
-                title=self.i18n.get("log.status.live_title") or "Consola en Vivo",
-                message=self.i18n.get("log.status.live_msg")
-                or "Mostrando diagnóstico de eventos en tiempo real.",
+                title=self.i18n.get("log.status.live_title"),
+                message=self.i18n.get("log.status.live_msg"),
                 state="success",
             )
 
@@ -309,10 +303,8 @@ class LogView(QWidget):
         self.table.setRowCount(0)
         if show_toast and hasattr(self.window(), "toast"):
             self.window().toast.show_toast(
-                title=self.i18n.get("log.status.cleared_title")
-                or "Registros Borrados",
-                message=self.i18n.get("log.status.cleared_msg")
-                or "La vista de logs se ha limpiado correctamente.",
+                title=self.i18n.get("log.status.cleared_title"),
+                message=self.i18n.get("log.status.cleared_msg"),
                 state="info",
             )
 
