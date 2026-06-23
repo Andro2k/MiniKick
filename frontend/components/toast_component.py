@@ -15,18 +15,17 @@ class ModernToast(QFrame):
         self.setWindowFlags(Qt.WindowType.SubWindow)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
 
-        self.setFixedWidth(320)
-        self.setMinimumHeight(64)
+        self.setFixedWidth(330)
+        self.setMinimumHeight(66)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
 
         self.setProperty("role", "toast")
         self.setProperty("state", state)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setContentsMargins(16, 12, 14, 12)
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-
         icon_map = {
             "success": ("circle-check.svg", COLOR_ACCENT),
             "danger": ("alert-circle.svg", COLOR_DANGER),
@@ -36,12 +35,12 @@ class ModernToast(QFrame):
         icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_TEXT_PRIMARY))
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, 24).pixmap(24, 24))
+        icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, 22).pixmap(22, 22))
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(icon_lbl)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(4)
+        text_layout.setSpacing(3)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         lbl_title = QLabel(title)
@@ -58,7 +57,7 @@ class ModernToast(QFrame):
 
         btn_close = QPushButton()
         btn_close.setProperty("role", "btn_ghost")
-        btn_close.setIcon(get_icon_colored("x.svg", COLOR_TEXT_SECONDARY, 16))
+        btn_close.setIcon(get_icon_colored("x.svg", COLOR_TEXT_SECONDARY, 14))
         btn_close.setFixedSize(20, 20)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.dismiss)
@@ -112,6 +111,7 @@ class ToastManager(QObject):
         toast = ModernToast(title, message, state, duration, parent=self.main_window)
         self._stack.append(toast)
         toast.expired.connect(self._on_toast_expired)  
+        
         toast.setStyleSheet(self.main_window.styleSheet())
         toast.adjustSize()
         toast.show()
@@ -132,7 +132,7 @@ class ToastManager(QObject):
         spacing = 12
 
         current_bottom = self.main_window.height() - margin_y
-        target_x = self.main_window.width() - 320 - margin_x
+        target_x = self.main_window.width() - 330 - margin_x
 
         for toast in reversed(self._stack):
             target_y = current_bottom - toast.height()

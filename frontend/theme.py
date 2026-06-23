@@ -13,16 +13,18 @@ COLOR_BG_HOVER      = "#333333"
 
 COLOR_BORDER_SVELTE = "#333333"
 
-COLOR_ACCENT        = "#26FF8E"
-COLOR_ACCENT_HOVER  = "#2EDC85"   
-COLOR_ACCENT_SOFT   = "rgba(0, 229, 115, 0.15)"
+COLOR_ACCENT        = "#64EB5F"
+COLOR_ACCENT_HOVER  = "#2FBF45"   
 
 COLOR_DANGER        = "#EF4444"
-COLOR_DANGER_SOFT   = "rgba(239, 68, 68, 0.15)"
 COLOR_WARNING       = "#F59E0B"
-COLOR_WARNING_SOFT  = "rgba(245, 158, 11, 0.15)"
 COLOR_INFO          = "#3B82F6"
-COLOR_INFO_SOFT     = "rgba(59, 130, 246, 0.15)"
+
+COLOR_BG_TOAST      = "#090C10"
+COLOR_ACCENT_GLOW   = "rgba(100, 235, 95, 0.3)"
+COLOR_DANGER_GLOW   = "rgba(239, 68, 68, 0.3)"
+COLOR_WARNING_GLOW  = "rgba(245, 158, 11, 0.3)"
+COLOR_INFO_GLOW     = "rgba(59, 130, 246, 0.3)"
 
 COLOR_TEXT_PRIMARY   = "#F3F4F6"
 COLOR_TEXT_SECONDARY = "#9CA3AF"
@@ -69,7 +71,7 @@ QFrame[role="card"] {{ background-color: {COLOR_BG_SURFACE}; border: none; borde
 QFrame[role="dialog"] {{ background-color: {COLOR_BG_BASE}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: 16px; }}
 QFrame[role="dialog"][state="accent"] {{ border-color: rgba(83, 252, 24, 0.4); }}
 QFrame[role="dialog"][state="danger"] {{ border-color: rgba(239, 68, 68, 0.4); }}
-QFrame[role="banner_danger"] {{ background-color: {COLOR_DANGER_SOFT}; border: 1px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="banner_danger"] {{ background-color: {COLOR_DANGER_GLOW}; border: 1px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_danger"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; }}
 QFrame[dialog_role="danger_icon"] {{ background-color: {COLOR_DANGER}; border-radius: 26px; }}
 QFrame[dialog_role="accent_icon"] {{ background-color: {COLOR_ACCENT}; border-radius: 26px; }}
@@ -88,12 +90,12 @@ QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_ACCENT_HOVER
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: 12px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: 7px 16px; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton[role="action_danger"] {{ background-color: transparent; color: {COLOR_DANGER}; font-size: 12px; font-weight: 700; border: 1.5px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; padding: 7px 16px; }}
-QPushButton[role="action_danger"]:hover {{ background-color: {COLOR_DANGER_SOFT}; }}
+QPushButton[role="action_danger"]:hover {{ background-color: {COLOR_DANGER_GLOW}; }}
 QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: 4px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton#NavButton {{ background: transparent; border-radius: {RADIUS_MD}px; padding: 10px; text-align: left; color: {COLOR_TEXT_SECONDARY}; font-weight: 700; }}
 QPushButton#NavButton:hover {{ background-color: {COLOR_BG_HOVER}; color: {COLOR_TEXT_PRIMARY}; }}
-QPushButton#NavButton:checked {{ background-color: {COLOR_ACCENT_SOFT}; color: {COLOR_ACCENT}; }}
+QPushButton#NavButton:checked {{ background-color: {COLOR_ACCENT_GLOW}; color: {COLOR_ACCENT}; }}
 QPushButton#NavButton[collapsed="false"] {{ text-align: left; padding-left: 12px; }}
 QPushButton#NavButton[collapsed="true"] {{ text-align: center; padding: 10px; }}
 
@@ -116,11 +118,11 @@ QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TE
 QSpinBox:focus, QDoubleSpinBox:focus, QSpinBox:hover, QDoubleSpinBox:hover {{ border-color: {COLOR_BORDER_SVELTE}; background-color: {COLOR_BG_HOVER}; }}
 QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-origin: border; subcontrol-position: top right; width: 24px; background-color: transparent; border-left: 1.5px solid {COLOR_BORDER_SVELTE}; border-bottom: 1.5px solid {COLOR_BORDER_SVELTE}; border-top-right-radius: {RADIUS_MD}px; }}
 QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{ background-color: {COLOR_BG_HOVER}; }}
-QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{ background-color: {COLOR_ACCENT_SOFT}; }}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{ background-color: {COLOR_ACCENT_GLOW}; }}
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); width: 15px; height: 15px; }}
 QSpinBox::down-button, QDoubleSpinBox::down-button {{ subcontrol-origin: border; subcontrol-position: bottom right; width: 24px; background-color: transparent; border-left: 1.5px solid {COLOR_BORDER_SVELTE}; border-bottom-right-radius: {RADIUS_MD}px; }}
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{ background-color: {COLOR_BG_HOVER}; }}
-QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{ background-color: {COLOR_ACCENT_SOFT}; }}
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{ background-color: {COLOR_ACCENT_GLOW}; }}
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 
 QTableWidget {{ background-color: {COLOR_BG_SURFACE}; border: none; gridline-color: transparent; outline: none; }}
@@ -156,19 +158,16 @@ QListWidget[role="transparent_list"] {{ background: transparent; border: none; o
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
 
 /* --- 8. TOAST NOTIFICATIONS (HUD) --- */
-QFrame[role="toast"] {{ background-color: {COLOR_BG_SURFACE}; border: 1px solid {COLOR_BORDER_SVELTE}; border-radius: 10px; }}
-QFrame[role="toast"][state="success"] {{ border-left: 4px solid {COLOR_ACCENT}; }}
-QFrame[role="toast"][state="danger"] {{ border-left: 4px solid {COLOR_DANGER}; }}
-QFrame[role="toast"][state="warning"] {{ border-left: 4px solid {COLOR_WARNING}; }}
-QFrame[role="toast"][state="info"] {{ border-left: 4px solid {COLOR_INFO}; }}
+QFrame[role="toast"] {{ background-color: {COLOR_BG_TOAST}; border: 1px solid {COLOR_BORDER_SVELTE}; border-radius: 10px;
+}}
+QFrame[role="toast"][state="success"] {{ border-color: {COLOR_ACCENT_GLOW}; }}
+QFrame[role="toast"][state="danger"] {{ border-color: {COLOR_DANGER_GLOW}; }}
+QFrame[role="toast"][state="warning"] {{ border-color: {COLOR_WARNING_GLOW}; }}
+QFrame[role="toast"][state="info"]    {{ border-color: {COLOR_INFO_GLOW}; }}
 
 /* --- 9. TOOLTIPS (Desacoplados del Desktop OS) --- */
 QToolTip {{
-    background-color: {COLOR_BLACK};
-    color: {COLOR_TEXT_PRIMARY};
-    border: 1px solid {COLOR_BORDER_SVELTE};
-    padding: 2px 4px;
-    font-family: {FONT_FAMILY};
-    font-size: 11px;
+    background-color: {COLOR_BLACK}; color: {COLOR_TEXT_PRIMARY}; border: 1px solid {COLOR_BORDER_SVELTE}; padding: 2px 4px;
+    font-family: {FONT_FAMILY}; font-size: 11px;
 }}
 """
