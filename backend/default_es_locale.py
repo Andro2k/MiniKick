@@ -29,6 +29,23 @@ DEFAULT_DICTIONARY = {
         "dialogs": {
             "export_title": "Exportar Configuración",
             "import_title": "Importar Configuración"
+        },
+        "status": {
+            "tray_enabled": "Segundo Plano Activo",
+            "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar.",
+            "tray_disabled": "Segundo Plano Inactivo",
+            "tray_disabled_msg": "La aplicación se cerrará por completo.",
+            "exported": "Respaldo Exportado",
+            "exported_msg": "Tus configuraciones se guardaron con éxito.",
+            "imported": "Respaldo Restaurado",
+            "imported_msg": "La configuración se ha cargado correctamente.",
+            "lang_changed": "Idioma Cambiado",
+            "lang_changed_msg": "Reinicia la aplicación para aplicar el nuevo idioma.",
+            "unlinked": "Cuenta Desvinculada",
+            "unlinked_msg": "Se ha cerrado tu sesión de Kick local.",
+            "error_title": "Operación Fallida",
+            "export_error": "No se pudo guardar el archivo de respaldo.",
+            "import_error": "El archivo de respaldo está corrupto o es incompatible."
         }
     },
     "spam": {
@@ -90,6 +107,7 @@ DEFAULT_DICTIONARY = {
         },
         "dialog": {
             "title": "Configurar Comando",
+            "subtitle": "Crea o edita comandos personalizados para tu chat.",
             "trigger_label": "Nombre del Comando (Ej: !discord):",
             "response_label": "Respuesta del bot (puedes usar {user}):",
             "cooldown_label": "Cooldown (seg):",
@@ -110,6 +128,17 @@ DEFAULT_DICTIONARY = {
             "tab_advanced": "Avanzado",
             "btn_save": "Guardar Comando",
             "btn_cancel": "Cancelar"
+        },
+        "status": {
+            "created": "Comando Creado",
+            "updated": "Comando Actualizado",
+            "deleted": "Comando Eliminado",
+            "enabled": "Comando Activado",
+            "disabled": "Comando Desactivado",
+            "created_msg": "Disponible en chat: {trigger}",
+            "updated_msg": "Cambios guardados en: {trigger}",
+            "deleted_msg": "Se eliminó: {trigger}",
+            "toggled_msg": "Palabra: {trigger}"
         }
     },
     "alerts": {
@@ -171,6 +200,14 @@ DEFAULT_DICTIONARY = {
                     "scale": "Escala:"
                 }
             }
+        },
+        "status": {
+            "created": "Alerta Creada",
+            "updated": "Alerta Actualizada",
+            "deleted": "Alerta Eliminada",
+            "created_msg": "Vinculada a recompensa: {reward}",
+            "updated_msg": "Configuración guardada para: {reward}",
+            "deleted_msg": "Se desvinculó el punto: {reward}"
         }
     },
     "log": {
@@ -199,6 +236,14 @@ DEFAULT_DICTIONARY = {
         },
         "misc": {
             "historical": "HISTÓRICO"
+        },
+        "status": {
+            "historical_title": "Archivo Log Cargado",
+            "historical_msg": "Inspeccionando: {file}",
+            "live_title": "Consola en Vivo",
+            "live_msg": "Mostrando diagnóstico de eventos en tiempo real.",
+            "cleared_title": "Registros Borrados",
+            "cleared_msg": "La vista de logs se ha limpiado correctamente."
         }
     },
     "chat": {
@@ -252,10 +297,14 @@ DEFAULT_DICTIONARY = {
         },
         "stats": {
             "followers": "Seguidores",
-            "room_id": "ID Sala (Chat)",
+            "room_id": "ChatID",
             "category": "Última Categoría",
             "affiliate": "Estado Afiliado",
             "vods": "VODs"
+        },
+        "status": {
+            "connected": "Conectado",
+            "connected_toast_msg": "Canal enlazado: {username}"
         }
     },
     "dialogs": {
@@ -379,6 +428,10 @@ DEFAULT_DICTIONARY = {
             "shutdown_init": "Iniciando secuencia de apagado...",
             "shutdown_tts_overlay": "Apagando TTS y Overlay...",
             "shutdown_complete": "Secuencia de apagado de hilos completada."
+        },
+        "toasts": {
+            "reward_title": "Premio Canjeado",
+            "reward_msg": "{user} canjeó: {reward_name}"
         }
     }
 }
