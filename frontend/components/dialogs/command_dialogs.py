@@ -3,15 +3,18 @@
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QTextEdit, QSpinBox, QCheckBox, QTabWidget, 
                                QWidget, QSizePolicy, QComboBox)
-from frontend.components.dialogs.base_dialogs import ModernBaseDialog
+from frontend.components.dialogs.base_dialogs import ModernWizardPanel
 from frontend.components.custom_controls_component import ModernButton
-from frontend.theme import PATH_ICON_HELP
 
-class CommandConfigWizard(ModernBaseDialog):
+class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
         self.i18n = i18n
-        super().__init__(title=self.i18n.get("command.dialog.title"), icon_path=PATH_ICON_HELP, icon_bg_color="#53FC18", width=520, parent=parent)
-        self.set_dialog_state("accent")
+        super().__init__(
+            title=self.i18n.get("command.dialog.title"), 
+            subtitle=self.i18n.get("command.dialog.subtitle") or "Crea o edita comandos personalizados",
+            width=520, 
+            parent=parent
+        )
         
         self.existing_config = existing_config
         self.original_trigger = existing_config.get("trigger", "") if existing_config else None
@@ -102,14 +105,15 @@ class CommandConfigWizard(ModernBaseDialog):
 
         self.tabs.addTab(self.tab_basic, self.i18n.get("command.dialog.tab_basic"))
         self.tabs.addTab(self.tab_adv, self.i18n.get("command.dialog.tab_advanced"))
-        self.content_layout.insertWidget(self.content_layout.count() - 1, self.tabs)
+
+        self.main_content.addWidget(self.tabs)
 
         self.btn_save = ModernButton(self.i18n.get("command.dialog.btn_save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
         btn_cancel = ModernButton(self.i18n.get("command.dialog.btn_cancel"), role="action_outlined")
         btn_cancel.clicked.connect(self.reject)
-        
-        self.add_action_buttons(btn_cancel, self.btn_save)
+
+        self.set_bottom_actions(btn_cancel, self.btn_save)
 
     def _on_regex_toggled(self, checked):
         self.txt_regex.setEnabled(checked)

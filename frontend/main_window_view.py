@@ -12,6 +12,7 @@ from backend.services.log_service import LogService
 from backend.services.settings_service import SettingsService
 from backend.services.spam_service import SpamService
 from frontend.components.sidebar_component import Sidebar
+from frontend.components.toast_component import ToastManager
 from frontend.components.tray_menu_component import SystemTrayManager
 from frontend.controllers.alerts_controller import AlertsController
 from frontend.controllers.chat_controller import ChatController
@@ -72,7 +73,7 @@ class MainWindow(QMainWindow):
         self.reward_worker = None
 
         self.logger, self.q_log_handler = setup_application_logging()  
-        
+        self.toast = ToastManager(self)
         self._setup_ui()
         self._setup_tray() 
         
@@ -232,6 +233,12 @@ class MainWindow(QMainWindow):
             def on_connection_success(user_data):
                 self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
                 self.dashboard_controller.handle_connection_success(user_data)
+                msg_template = self.i18n.get("dashboard.status.connected_toast_msg")
+                self.toast.show_toast(
+                    title=self.i18n.get("dashboard.status.connected"),
+                    message=msg_template.replace("{username}", user_data.get('username', 'Kick')),
+                    state="success"
+                )
                 
             self.chat_worker.connection_success.connect(on_connection_success)
             self.chat_worker.message_received.connect(self._route_incoming_message)
@@ -258,9 +265,16 @@ class MainWindow(QMainWindow):
 
     @Slot(str, str, str)
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
-        texto_canje = self.i18n.get("main.chat.reward_redeemed").replace("{reward_name}", reward_name)
+        toast_template = self.i18n.get("main.toasts.reward_msg") or "{user} -> {reward_name}"
+        self.toast.show_toast(
+            title=self.i18n.get("main.toasts.reward_title"), 
+            message=toast_template.replace("{user}", user).replace("{reward_name}", reward_name), 
+            state="success"
+        )
+        canje_template = self.i18n.get("main.chat.reward_redeemed")
+        texto_canje = canje_template.replace("{reward_name}", reward_name)
         msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
-        tag = self.i18n.get("main.chat.points_tag")
+        tag = self.i18n.get("main.chat.points_tag") or "PUNTOS"
         self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, "#53FC18")
         
         mappings = self.alerts_service.get_mappings()
@@ -268,8 +282,8 @@ class MainWindow(QMainWindow):
             config = mappings[reward_name]
             self.alerts_service.trigger_preview(reward_name, config)
         else:
-            log_msg = self.i18n.get("main.logs.reward_no_alert").replace("{reward_name}", reward_name)
-            self.logger.debug(log_msg)
+            no_alert_template = self.i18n.get("main.logs.reward_no_alert") or "[Recompensas] Se canjeó '{reward_name}', pero no tiene alerta."
+            self.logger.debug(no_alert_template.replace("{reward_name}", reward_name))
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:
@@ -314,6 +328,11 @@ class MainWindow(QMainWindow):
         )
         
         if dialog.exec() == dialog.DialogCode.Accepted:
+            self.toast.show_toast(
+                title=self.i18n.get("settings.status.unlinked"),
+                message=self.i18n.get("settings.status.unlinked_msg"),
+                state="warning"
+            )
             self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
             self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
             self.chat_worker = None

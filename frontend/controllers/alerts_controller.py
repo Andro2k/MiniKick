@@ -55,6 +55,12 @@ class AlertsController(QObject):
                 mappings[reward] = config
                 self.service.save_mappings(mappings)
                 self.view.populate_table(mappings)
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("alerts.status.created") or "Alerta Creada",
+                        message=(self.view.i18n.get("alerts.status.created_msg") or "Vinculada a recompensa: {reward}").replace("{reward}", reward),
+                        state="success"
+                    )
                 
         self._active_dialog = None
 
@@ -82,6 +88,12 @@ class AlertsController(QObject):
                 mappings[new_reward] = updated_config
                 self.service.save_mappings(mappings)
                 self.view.populate_table(mappings)
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("alerts.status.updated") or "Alerta Actualizada",
+                        message=(self.view.i18n.get("alerts.status.updated_msg") or "Configuración guardada para: {reward}").replace("{reward}", new_reward),
+                        state="success"
+                    )
                 
         self._active_dialog = None
 
@@ -92,6 +104,12 @@ class AlertsController(QObject):
             del mappings[reward_name]
             self.service.save_mappings(mappings)
             self.view.populate_table(mappings)
+            if hasattr(self.view.window(), 'toast'):
+                self.view.window().toast.show_toast(
+                    title=self.view.i18n.get("alerts.status.deleted") or "Alerta Eliminada",
+                    message=(self.view.i18n.get("alerts.status.deleted_msg") or "Se desvinculó el punto: {reward}").replace("{reward}", reward_name),
+                    state="warning"
+                )
 
     @Slot(str)
     def _handle_preview(self, reward_name: str):

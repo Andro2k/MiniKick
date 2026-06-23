@@ -31,6 +31,12 @@ class CommandController(QObject):
             if data["trigger"] and data["response"]:
                 self.service.save_command(**data)
                 self.load_initial_data()
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("command.status.created") or "Comando Creado",
+                        message=(self.view.i18n.get("command.status.created_msg") or "Disponible en chat: {trigger}").replace("{trigger}", data['trigger']),
+                        state="success"
+                    )
 
     @Slot(str)
     def _handle_edit(self, trigger: str):
@@ -50,11 +56,23 @@ class CommandController(QObject):
                     
                 self.service.save_command(**data)
                 self.load_initial_data()
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("command.status.updated") or "Comando Actualizado",
+                        message=(self.view.i18n.get("command.status.updated_msg") or "Cambios guardados en: {trigger}").replace("{trigger}", data['trigger']),
+                        state="success"
+                    )
 
     @Slot(str)
     def _handle_delete(self, trigger: str):
         self.service.delete_command(trigger)
         self.load_initial_data()
+        if hasattr(self.view.window(), 'toast'):
+            self.view.window().toast.show_toast(
+                title=self.view.i18n.get("command.status.deleted") or "Comando Eliminado",
+                message=(self.view.i18n.get("command.status.deleted_msg") or "Se eliminó: {trigger}").replace("{trigger}", trigger),
+                state="warning"
+            )
 
     @Slot(str, bool)
     def _handle_status_change(self, trigger: str, is_active: bool):
@@ -71,6 +89,16 @@ class CommandController(QObject):
                 is_regex=existing["is_regex"],
                 permission=existing.get("permission", "everyone")
             )
+            if hasattr(self.view.window(), 'toast'):
+                title_key = "command.status.enabled" if is_active else "command.status.disabled"
+                fallback_title = "Comando Activado" if is_active else "Comando Desactivado"
+                state_color = "success" if is_active else "info"
+
+                self.view.window().toast.show_toast(
+                    title=self.view.i18n.get(title_key) or fallback_title,
+                    message=(self.view.i18n.get("command.status.toggled_msg") or "Palabra: {trigger}").replace("{trigger}", trigger),
+                    state=state_color
+                )
 
     @Slot(str)
     def _handle_search(self, text: str):

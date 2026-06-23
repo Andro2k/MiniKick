@@ -16,7 +16,7 @@ class SettingsController(QObject):
         self._load_initial_state()
 
     def _connect_signals(self):
-        self.view.minimize_tray_toggled.connect(self.service.set_minimize_tray_enabled)
+        self.view.minimize_tray_toggled.connect(self.handle_minimize_tray)
         self.view.export_clicked.connect(self.handle_export)
         self.view.import_clicked.connect(self.handle_import)
         self.view.unlink_clicked.connect(self.unlink_account_requested.emit)
@@ -29,14 +29,41 @@ class SettingsController(QObject):
         lang = self.service.get_language()
         self.view.set_current_language(lang)
 
+    @Slot(bool)
+    def handle_minimize_tray(self, enabled: bool):
+        self.service.set_minimize_tray_enabled(enabled)
+        
+        if hasattr(self.view.window(), 'toast'):
+            title_key = "settings.status.tray_enabled" if enabled else "settings.status.tray_disabled"
+            fallback_title = "Segundo Plano Activo" if enabled else "Segundo Plano Inactivo"
+            msg_key = "settings.status.tray_enabled_msg" if enabled else "settings.status.tray_disabled_msg"
+            fallback_msg = "La app se minimizará a la bandeja" if enabled else "La app se cerrará por completo"
+            state_color = "success" if enabled else "info"
+
+            self.view.window().toast.show_toast(
+                title=self.view.i18n.get(title_key) or fallback_title,
+                message=self.view.i18n.get(msg_key) or fallback_msg,
+                state=state_color
+            )
+
     @Slot()
     def handle_export(self):
         filepath = self.view.ask_save_path()
         if filepath:
             if self.service.export_settings(filepath):
-                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.export_success_title"), self.view.i18n.get("main.controllers.settings.export_success_desc"))
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("settings.status.exported") or "Respaldo Exportado",
+                        message=self.view.i18n.get("settings.status.exported_msg") or "Archivo guardado con éxito.",
+                        state="success"
+                    )
             else:
-                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.error_title"), self.view.i18n.get("main.controllers.settings.export_error_desc"))
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("settings.status.error_title") or "Error",
+                        message=self.view.i18n.get("settings.status.export_error") or "No se pudo crear el archivo.",
+                        state="danger"
+                    )
 
     @Slot()
     def handle_import(self):
@@ -44,11 +71,32 @@ class SettingsController(QObject):
         if filepath:
             if self.service.import_settings(filepath):
                 self.backup_restored.emit()
-                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.import_success_title"), self.view.i18n.get("main.controllers.settings.import_success_desc"))
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("settings.status.imported") or "Respaldo Restaurado",
+                        message=self.view.i18n.get("settings.status.imported_msg") or "Configuración cargada correctamente.",
+                        state="success"
+                    )
             else:
-                self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.error_title"), self.view.i18n.get("main.controllers.settings.import_error_desc"))
+                if hasattr(self.view.window(), 'toast'):
+                    self.view.window().toast.show_toast(
+                        title=self.view.i18n.get("settings.status.error_title") or "Error",
+                        message=self.view.i18n.get("settings.status.import_error") or "El archivo de respaldo es inválido.",
+                        state="danger"
+                    )
 
     @Slot(str)
     def handle_language_change(self, lang_code: str):
         self.service.set_language(lang_code)
-        self.notification_requested.emit(self.view.i18n.get("main.controllers.settings.restart_title"), self.view.i18n.get("main.controllers.settings.restart_desc"))
+        
+        if hasattr(self.view.window(), 'toast'):
+            self.view.window().toast.show_toast(
+                title=self.view.i18n.get("settings.status.lang_changed") or "Idioma Cambiado",
+                message=self.view.i18n.get("settings.status.lang_changed_msg") or "Reinicia la aplicación para aplicar el idioma.",
+                state="info"
+            )
+            
+        self.notification_requested.emit(
+            self.view.i18n.get("main.controllers.settings.restart_title") or "Reinicio Requerido", 
+            self.view.i18n.get("main.controllers.settings.restart_desc") or "Por favor reinicia MiniKick."
+        )

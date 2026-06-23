@@ -6,27 +6,26 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt
 
 from frontend.components.custom_controls_component import ModernButton, ModernSwitch
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
-from frontend.utils import get_icon_colored, get_assets_path
-from frontend.components.dialogs.base_dialogs import ModernBaseDialog
+from frontend.theme import COLOR_TEXT_PRIMARY
+from frontend.utils import get_icon_colored
+from frontend.components.dialogs.base_dialogs import ModernWizardPanel
 from frontend.components.ui_blocks_component import SettingSliderRow
 from frontend.components.dialogs.visual_positioner_dialog import VisualPositionerDialog
 
-class AlertConfigWizard(ModernBaseDialog):
+class AlertConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
         self.i18n = i18n
         self.is_edit_mode = existing_config is not None
         self.existing_reward = existing_reward
         title = self.i18n.get("alerts.dialogs.wizard.title_edit") if self.is_edit_mode else self.i18n.get("alerts.dialogs.wizard.title_new")
-        icon_path = get_assets_path("icons/settings.svg")
         
-        super().__init__(title=title, icon_path=icon_path, icon_bg_color=COLOR_ACCENT, width=520, parent=parent)
+        super().__init__(title=title, subtitle="", width=520, parent=parent)
         
         self._is_video = False
         self._build_step_indicator()
         
         self.stack = QStackedWidget()
-        self.content_layout.addWidget(self.stack)
+        self.main_content.addWidget(self.stack)
 
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
@@ -55,8 +54,8 @@ class AlertConfigWizard(ModernBaseDialog):
             seg.setProperty("role", "step_indicator")
             self.indicator_layout.addWidget(seg)
             
-        self.content_layout.addLayout(self.indicator_layout)
-        self.content_layout.addSpacing(10)
+        self.main_content.addLayout(self.indicator_layout)
+        self.main_content.addSpacing(10)
 
     def _set_active_step(self, index: int):
         self.stack.setCurrentIndex(index)

@@ -27,6 +27,23 @@
         "dialogs": {
             "export_title": "Export Configuration",
             "import_title": "Import Configuration"
+        },
+        "status": {
+            "tray_enabled": "Background Execution On",
+            "tray_enabled_msg": "MiniKick will minimize to the tray when closed.",
+            "tray_disabled": "Background Execution Off",
+            "tray_disabled_msg": "The application will exit completely when closed.",
+            "exported": "Backup Exported",
+            "exported_msg": "Your settings have been saved successfully.",
+            "imported": "Backup Restored",
+            "imported_msg": "Settings have been loaded successfully.",
+            "lang_changed": "Language Changed",
+            "lang_changed_msg": "Please restart the application to apply the new language.",
+            "unlinked": "Account Unlinked",
+            "unlinked_msg": "Your local Kick session has been closed.",
+            "error_title": "Operation Failed",
+            "export_error": "Could not save the backup file.",
+            "import_error": "The backup file is corrupted or incompatible."
         }
     },
     "spam": {
@@ -88,6 +105,7 @@
         },
         "dialog": {
             "title": "Configure Command",
+            "subtitle": "Create or edit custom commands for your chat.",
             "trigger_label": "Command Name (Ex: !discord):",
             "response_label": "Bot Response (you can use {user}):",
             "cooldown_label": "Cooldown (sec):",
@@ -108,6 +126,17 @@
             "tab_advanced": "Advanced",
             "btn_save": "Save Command",
             "btn_cancel": "Cancel"
+        },
+        "status": {
+            "created": "Command Created",
+            "updated": "Command Updated",
+            "deleted": "Command Deleted",
+            "enabled": "Command Enabled",
+            "disabled": "Command Disabled",
+            "created_msg": "Available in chat: {trigger}",
+            "updated_msg": "Changes saved for: {trigger}",
+            "deleted_msg": "Deleted: {trigger}",
+            "toggled_msg": "Trigger word: {trigger}"
         }
     },
     "alerts": {
@@ -141,8 +170,8 @@
                 "title_edit": "Edit Alert",
                 "title_new": "New Alert",
                 "btn_cancel": "Cancel",
-                "btn_next": "Next ➔",
-                "btn_back": "🡠 Back",
+                "btn_next": "Next",
+                "btn_back": "Back",
                 "btn_save": "Save Alert",
                 "file_dialog_title": "Multimedia",
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
@@ -169,6 +198,14 @@
                     "scale": "Scale:"
                 }
             }
+        },
+        "status": {
+            "created": "Alert Created",
+            "updated": "Alert Updated",
+            "deleted": "Alert Deleted",
+            "created_msg": "Linked to reward: {reward}",
+            "updated_msg": "Configuration saved for: {reward}",
+            "deleted_msg": "Unlinked reward: {reward}"
         }
     },
     "log": {
@@ -254,6 +291,10 @@
             "category": "Last Category",
             "affiliate": "Affiliate Status",
             "vods": "VODs"
+        },
+        "status": {
+            "connected": "Connected",
+            "connected_toast_msg": "Channel linked: {username}"
         }
     },
     "dialogs": {
@@ -377,6 +418,10 @@
             "shutdown_init": "Initiating shutdown sequence...",
             "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
             "shutdown_complete": "Thread shutdown sequence completed."
+        },
+        "toasts": {
+            "reward_title": "Reward Redeemed",
+            "reward_msg": "{user} redeemed: {reward_name}"
         }
     }
 }

@@ -27,6 +27,23 @@
         "dialogs": {
             "export_title": "Exportar Configuración",
             "import_title": "Importar Configuración"
+        },
+        "status": {
+            "tray_enabled": "Segundo Plano Activo",
+            "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar.",
+            "tray_disabled": "Segundo Plano Inactivo",
+            "tray_disabled_msg": "La aplicación se cerrará por completo.",
+            "exported": "Respaldo Exportado",
+            "exported_msg": "Tus configuraciones se guardaron con éxito.",
+            "imported": "Respaldo Restaurado",
+            "imported_msg": "La configuración se ha cargado correctamente.",
+            "lang_changed": "Idioma Cambiado",
+            "lang_changed_msg": "Reinicia la aplicación para aplicar el nuevo idioma.",
+            "unlinked": "Cuenta Desvinculada",
+            "unlinked_msg": "Se ha cerrado tu sesión de Kick local.",
+            "error_title": "Operación Fallida",
+            "export_error": "No se pudo guardar el archivo de respaldo.",
+            "import_error": "El archivo de respaldo está corrupto o es incompatible."
         }
     },
     "spam": {
@@ -88,6 +105,7 @@
         },
         "dialog": {
             "title": "Configurar Comando",
+            "subtitle": "Crea o edita comandos personalizados para tu chat.",
             "trigger_label": "Nombre del Comando (Ej: !discord):",
             "response_label": "Respuesta del bot (puedes usar {user}):",
             "cooldown_label": "Cooldown (seg):",
@@ -108,6 +126,17 @@
             "tab_advanced": "Avanzado",
             "btn_save": "Guardar Comando",
             "btn_cancel": "Cancelar"
+        },
+        "status": {
+            "created": "Comando Creado",
+            "updated": "Comando Actualizado",
+            "deleted": "Comando Eliminado",
+            "enabled": "Comando Activado",
+            "disabled": "Comando Desactivado",
+            "created_msg": "Disponible en chat: {trigger}",
+            "updated_msg": "Cambios guardados en: {trigger}",
+            "deleted_msg": "Se eliminó: {trigger}",
+            "toggled_msg": "Palabra: {trigger}"
         }
     },
     "alerts": {
@@ -141,8 +170,8 @@
                 "title_edit": "Editar Alerta",
                 "title_new": "Nueva Alerta",
                 "btn_cancel": "Cancelar",
-                "btn_next": "Siguiente ➔",
-                "btn_back": "🡠 Atrás",
+                "btn_next": "Siguiente",
+                "btn_back": "Atrás",
                 "btn_save": "Guardar Alerta",
                 "file_dialog_title": "Multimedia",
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
@@ -169,6 +198,14 @@
                     "scale": "Escala:"
                 }
             }
+        },
+        "status": {
+            "created": "Alerta Creada",
+            "updated": "Alerta Actualizada",
+            "deleted": "Alerta Eliminada",
+            "created_msg": "Vinculada a recompensa: {reward}",
+            "updated_msg": "Configuración guardada para: {reward}",
+            "deleted_msg": "Se desvinculó el punto: {reward}"
         }
     },
     "log": {
@@ -254,6 +291,10 @@
             "category": "Última Categoría",
             "affiliate": "Estado Afiliado",
             "vods": "VODs"
+        },
+        "status": {
+            "connected": "Conectado",
+            "connected_toast_msg": "Canal enlazado: {username}"
         }
     },
     "dialogs": {
@@ -377,6 +418,10 @@
             "shutdown_init": "Iniciando secuencia de apagado...",
             "shutdown_tts_overlay": "Apagando TTS y Overlay...",
             "shutdown_complete": "Secuencia de apagado de hilos completada."
+        },
+        "toasts": {
+            "reward_title": "Premio Canjeado",
+            "reward_msg": "{user} canjeó: {reward_name}"
         }
     }
 }

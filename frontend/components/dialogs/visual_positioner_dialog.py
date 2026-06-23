@@ -1,18 +1,25 @@
-# frontend/components/dialogs/visual_positioner.py
+# frontend/components/dialogs/visual_positioner_dialog.py
 
 from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.components.custom_controls_component import ModernButton
 from frontend.theme import COLOR_ACCENT, PATH_ICON_HELP
-from frontend.components.dialogs.base_dialogs import ModernBaseDialog
+from frontend.components.dialogs.base_dialogs import ModernModalAlert
 from frontend.components.draggable_media_component import DraggableAlertBox
 
-class VisualPositionerDialog(ModernBaseDialog):
+class VisualPositionerDialog(ModernModalAlert):
     live_position_changed = Signal(int, int)
 
     def __init__(self, i18n, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
         self.i18n = i18n
-        super().__init__(title=self.i18n.get("alerts.dialogs.visual.title"), icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_ACCENT, width=700, parent=parent)
+        super().__init__(
+            title=self.i18n.get("alerts.dialogs.visual.title"), 
+            icon_path=PATH_ICON_HELP, 
+            icon_bg_color=COLOR_ACCENT, 
+            width=700, 
+            parent=parent
+        )
+        self.set_dialog_state("accent")
         
         desc_lbl = QLabel(self.i18n.get("alerts.dialogs.visual.desc"))
         desc_lbl.setProperty("role", "body")
@@ -36,4 +43,5 @@ class VisualPositionerDialog(ModernBaseDialog):
         
         self.btn_save = ModernButton(self.i18n.get("alerts.dialogs.visual.btn_save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
-        self.add_action_buttons(self.btn_save, None)
+
+        self.add_action_buttons(None, self.btn_save)

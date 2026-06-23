@@ -14,15 +14,18 @@ from backend.services.instance_services import SocketInstanceProvider
 
 def bootstrap():
     app = QApplication(sys.argv)
-    font_regular = resource_path(os.path.join("assets", "fonts", "Inter-Regular.ttf"))
-    font_bold = resource_path(os.path.join("assets", "fonts", "Inter-Bold.ttf"))
-    font_semibold = resource_path(os.path.join("assets", "fonts", "Inter-SemiBold.ttf"))
+    FONT_FILE_PREFIX = "Inter"
+    FONT_FAMILY_NAME = "Inter"
+
+    fonts_dir = resource_path(os.path.join("assets", "fonts"))
     
-    QFontDatabase.addApplicationFont(font_regular)
-    QFontDatabase.addApplicationFont(font_bold)
-    QFontDatabase.addApplicationFont(font_semibold)
-    
-    app_font = QFont("Inter")
+    if os.path.exists(fonts_dir):
+        for archivo in os.listdir(fonts_dir):
+            if archivo.startswith(FONT_FILE_PREFIX) and archivo.endswith(('.ttf', '.otf')):
+                font_path = os.path.join(fonts_dir, archivo)
+                QFontDatabase.addApplicationFont(font_path)
+
+    app_font = QFont(FONT_FAMILY_NAME)
     app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     app.setFont(app_font)
 
@@ -30,14 +33,11 @@ def bootstrap():
     if instance_provider.is_already_running():
         QMessageBox.warning(None, "MiniKick", "La aplicación ya se encuentra en ejecución.")
         sys.exit(1)
-        
     try:
         app.setQuitOnLastWindowClosed(False)
-
         APP_VERSION = "v1.2.4"
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
-        windows_installer = WindowsInstaller()
-        
+        windows_installer = WindowsInstaller()    
         updater = UpdateManager(
             current_version=APP_VERSION, 
             checker=github_provider,
