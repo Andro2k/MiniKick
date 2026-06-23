@@ -35,7 +35,7 @@ def bootstrap():
         sys.exit(1)
     try:
         app.setQuitOnLastWindowClosed(False)
-        APP_VERSION = "v1.2.4"
+        APP_VERSION = "v1.2.5"
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()    
         updater = UpdateManager(

@@ -234,6 +234,14 @@
         },
         "misc": {
             "historical": "HISTÓRICO"
+        },
+        "status": {
+            "historical_title": "Archivo Log Cargado",
+            "historical_msg": "Inspeccionando: {file}",
+            "live_title": "Consola en Vivo",
+            "live_msg": "Mostrando diagnóstico de eventos en tiempo real.",
+            "cleared_title": "Registros Borrados",
+            "cleared_msg": "La vista de logs se ha limpiado correctamente."
         }
     },
     "chat": {

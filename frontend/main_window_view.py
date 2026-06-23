@@ -1,5 +1,5 @@
 # frontend/main_window.py
-import os
+
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent
@@ -42,6 +42,7 @@ try:
 except ImportError:
     KICK_PUSHER_CLUSTER = "us2"
     KICK_PUSHER_KEY = "32cbd69e4b950bf97679"
+
 class MainWindow(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
@@ -64,9 +65,8 @@ class MainWindow(QMainWindow):
         self.tts_manager = self.container.tts_manager
         self.media_trigger_service = self.container.media_trigger_service
         self.overlay_server = self.container.overlay_server
-        
-        title = self.i18n.get("main.window.title").replace("{version}", app_version)
-        self.setWindowTitle(title)
+        title_template = self.i18n.get("main.window.title")
+        self.setWindowTitle(title_template.replace("{version}", app_version))
         self.resize(1100, 750)
         
         self.chat_worker = None
@@ -161,9 +161,9 @@ class MainWindow(QMainWindow):
         settings["enabled"] = enabled
         self.chat_service.save_settings(settings)
         self.view_chat.set_initial_states(settings)
-        estado = self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off")
-        msg = self.i18n.get("main.tray.tts_msg").replace("{estado}", estado)
-        self.tray_manager.showMessage("MiniKick", msg, QSystemTrayIcon.MessageIcon.Information, 2000)
+        estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
+        msg_template = self.i18n.get("main.tray.tts_msg")       
+        self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
 
     def _connect_signals(self):
         self.sidebar.view_selected.connect(self._handle_navigation)
@@ -226,7 +226,7 @@ class MainWindow(QMainWindow):
             self.chat_controller.command_service = self.command_service
             self.chat_worker = ChatWorker(self.i18n, api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, parent=self)
             
-            self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=15, parent=self)
+            self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=10, parent=self)
             self.reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
             self.reward_worker.start()
 
@@ -257,24 +257,25 @@ class MainWindow(QMainWindow):
     @Slot(str, str, list, str, str, int)
     def _route_incoming_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
         if self.spam_service.is_spam(user, msg, badges, msg_id, sender_id):
-            log_msg = self.i18n.get("main.logs.automod_sanction").replace("{user}", user).replace("{msg}", msg)
-            self.logger.debug(log_msg)
+            log_template = self.i18n.get("main.logs.automod_sanction")
+            self.logger.debug(log_template.replace("{user}", user).replace("{msg}", msg))
             return 
             
         self.chat_controller.handle_incoming_message(user, msg, badges, color)
 
     @Slot(str, str, str)
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
-        toast_template = self.i18n.get("main.toasts.reward_msg") or "{user} -> {reward_name}"
+        toast_template = self.i18n.get("main.toasts.reward_msg")
         self.toast.show_toast(
             title=self.i18n.get("main.toasts.reward_title"), 
             message=toast_template.replace("{user}", user).replace("{reward_name}", reward_name), 
             state="success"
         )
+        
         canje_template = self.i18n.get("main.chat.reward_redeemed")
         texto_canje = canje_template.replace("{reward_name}", reward_name)
         msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
-        tag = self.i18n.get("main.chat.points_tag") or "PUNTOS"
+        tag = self.i18n.get("main.chat.points_tag")
         self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, "#53FC18")
         
         mappings = self.alerts_service.get_mappings()
@@ -282,7 +283,7 @@ class MainWindow(QMainWindow):
             config = mappings[reward_name]
             self.alerts_service.trigger_preview(reward_name, config)
         else:
-            no_alert_template = self.i18n.get("main.logs.reward_no_alert") or "[Recompensas] Se canjeó '{reward_name}', pero no tiene alerta."
+            no_alert_template = self.i18n.get("main.logs.reward_no_alert")
             self.logger.debug(no_alert_template.replace("{reward_name}", reward_name))
 
         settings = self.chat_service.get_settings()
@@ -307,11 +308,13 @@ class MainWindow(QMainWindow):
             self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
             self.fetch_rewards_worker.start()
         except Exception as e:
-            self.logger.error(self.i18n.get("main.logs.api_error_setup").replace("{error}", str(e)))
+            err_template = self.i18n.get("main.logs.api_error_setup")
+            self.logger.error(err_template.replace("{error}", str(e)))
 
     @Slot(str)
     def _handle_rewards_error(self, error_msg: str):
-        self.logger.error(self.i18n.get("main.logs.api_error").replace("{error}", error_msg))
+        err_template = self.i18n.get("main.logs.api_error")
+        self.logger.error(err_template.replace("{error}", error_msg))
         self.alerts_controller.update_rewards_list([])
             
     @Slot(bool)
@@ -370,16 +373,19 @@ class MainWindow(QMainWindow):
 
     def _stop_worker_safely(self, worker_name: str, worker_instance):
         if worker_instance and worker_instance.isRunning():
-            self.logger.info(self.i18n.get("main.logs.worker_stopping").replace("{worker}", worker_name))
+            stop_template = self.i18n.get("main.logs.worker_stopping")
+            self.logger.info(stop_template.replace("{worker}", worker_name))
 
             if hasattr(worker_instance, 'stop'):
                 worker_instance.stop()
             if not worker_instance.wait(2000):
-                self.logger.warning(self.i18n.get("main.logs.worker_stuck").replace("{worker}", worker_name))
+                stuck_template = self.i18n.get("main.logs.worker_stuck")
+                self.logger.warning(stuck_template.replace("{worker}", worker_name))
                 worker_instance.terminate()
                 worker_instance.wait()
             else:
-                self.logger.info(self.i18n.get("main.logs.worker_stopped").replace("{worker}", worker_name))
+                stopped_template = self.i18n.get("main.logs.worker_stopped")
+                self.logger.info(stopped_template.replace("{worker}", worker_name))
 
     def _cleanup(self):
         if self._is_shutting_down:

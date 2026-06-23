@@ -234,6 +234,14 @@
         },
         "misc": {
             "historical": "HISTORICAL"
+        },
+        "status": {
+            "historical_title": "Log File Loaded",
+            "historical_msg": "Inspecting: {file}",
+            "live_title": "Live Console",
+            "live_msg": "Showing real-time event diagnostics.",
+            "cleared_title": "Logs Cleared",
+            "cleared_msg": "The log view has been cleared successfully."
         }
     },
     "chat": {
