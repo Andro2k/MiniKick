@@ -57,8 +57,8 @@ class AlertsController(QObject):
                 self.view.populate_table(mappings)
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("alerts.status.created") or "Alerta Creada",
-                        message=(self.view.i18n.get("alerts.status.created_msg") or "Vinculada a recompensa: {reward}").replace("{reward}", reward),
+                        title=self.view.i18n.get("alerts.status.created"),
+                        message=(self.view.i18n.get("alerts.status.created_msg")).replace("{reward}", reward),
                         state="success"
                     )
                 
@@ -90,8 +90,8 @@ class AlertsController(QObject):
                 self.view.populate_table(mappings)
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("alerts.status.updated") or "Alerta Actualizada",
-                        message=(self.view.i18n.get("alerts.status.updated_msg") or "Configuración guardada para: {reward}").replace("{reward}", new_reward),
+                        title=self.view.i18n.get("alerts.status.updated"),
+                        message=(self.view.i18n.get("alerts.status.updated_msg")).replace("{reward}", new_reward),
                         state="success"
                     )
                 
@@ -106,8 +106,8 @@ class AlertsController(QObject):
             self.view.populate_table(mappings)
             if hasattr(self.view.window(), 'toast'):
                 self.view.window().toast.show_toast(
-                    title=self.view.i18n.get("alerts.status.deleted") or "Alerta Eliminada",
-                    message=(self.view.i18n.get("alerts.status.deleted_msg") or "Se desvinculó el punto: {reward}").replace("{reward}", reward_name),
+                    title=self.view.i18n.get("alerts.status.deleted"),
+                    message=(self.view.i18n.get("alerts.status.deleted_msg")).replace("{reward}", reward_name),
                     state="warning"
                 )
 

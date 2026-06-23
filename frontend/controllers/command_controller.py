@@ -33,8 +33,8 @@ class CommandController(QObject):
                 self.load_initial_data()
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("command.status.created") or "Comando Creado",
-                        message=(self.view.i18n.get("command.status.created_msg") or "Disponible en chat: {trigger}").replace("{trigger}", data['trigger']),
+                        title=self.view.i18n.get("command.status.created"),
+                        message=(self.view.i18n.get("command.status.created_msg")).replace("{trigger}", data['trigger']),
                         state="success"
                     )
 
@@ -58,8 +58,8 @@ class CommandController(QObject):
                 self.load_initial_data()
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("command.status.updated") or "Comando Actualizado",
-                        message=(self.view.i18n.get("command.status.updated_msg") or "Cambios guardados en: {trigger}").replace("{trigger}", data['trigger']),
+                        title=self.view.i18n.get("command.status.updated"),
+                        message=(self.view.i18n.get("command.status.updated_msg")).replace("{trigger}", data['trigger']),
                         state="success"
                     )
 
@@ -69,8 +69,8 @@ class CommandController(QObject):
         self.load_initial_data()
         if hasattr(self.view.window(), 'toast'):
             self.view.window().toast.show_toast(
-                title=self.view.i18n.get("command.status.deleted") or "Comando Eliminado",
-                message=(self.view.i18n.get("command.status.deleted_msg") or "Se eliminó: {trigger}").replace("{trigger}", trigger),
+                title=self.view.i18n.get("command.status.deleted"),
+                message=(self.view.i18n.get("command.status.deleted_msg")).replace("{trigger}", trigger),
                 state="warning"
             )
 
@@ -96,7 +96,7 @@ class CommandController(QObject):
 
                 self.view.window().toast.show_toast(
                     title=self.view.i18n.get(title_key) or fallback_title,
-                    message=(self.view.i18n.get("command.status.toggled_msg") or "Palabra: {trigger}").replace("{trigger}", trigger),
+                    message=(self.view.i18n.get("command.status.toggled_msg")).replace("{trigger}", trigger),
                     state=state_color
                 )
 

@@ -66,8 +66,6 @@ class ModernToast(QFrame):
         layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignTop)
 
         self.anim = QPropertyAnimation(self, b"pos")
-        self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
-        self.anim.setDuration(250)
 
         self.timer = QTimer(self)
         self.timer.setInterval(duration_ms)
@@ -77,9 +75,12 @@ class ModernToast(QFrame):
 
     def move_to_target(self, target_pos: QPoint):
         if self.pos() == QPoint(0, 0):
-            self.move(QPoint(target_pos.x() + 40, target_pos.y()))
+            # OPTIMIZACIÓN 1: Nace 100% oculto tras el borde derecho de la ventana
+            self.move(QPoint(target_pos.x() + self.width() + 20, target_pos.y()))
 
         self.anim.stop()
+        self.anim.setDuration(300) # Tiempo de entrada más lujoso
+        self.anim.setEasingCurve(QEasingCurve.Type.OutExpo) # Frenado exponencial de alta gama
         self.anim.setStartValue(self.pos())
         self.anim.setEndValue(target_pos)
         self.anim.start()
@@ -87,12 +88,17 @@ class ModernToast(QFrame):
     def dismiss(self):
         self.timer.stop()
         self.anim.stop()
+        self.anim.setDuration(200) # El desalojo debe ser veloz
+        self.anim.setEasingCurve(QEasingCurve.Type.InExpo) # Aceleración de salida tipo látigo
         self.anim.setStartValue(self.pos())
-        self.anim.setEndValue(QPoint(self.pos().x() + 350, self.pos().y()))
+        self.anim.setEndValue(QPoint(self.pos().x() + self.width() + 20, self.pos().y()))
         self.anim.finished.connect(lambda: self.expired.emit(self))
         self.anim.start()
 
+
 class ToastManager(QObject):
+    MAX_VISIBLE = 4
+
     def __init__(self, main_window):
         super().__init__(main_window)
         self.main_window = main_window
@@ -100,6 +106,10 @@ class ToastManager(QObject):
         self.main_window.installEventFilter(self)
 
     def show_toast(self, title: str, message: str, state: str = "success", duration: int = 4000):
+        if len(self._stack) >= self.MAX_VISIBLE:
+            oldest_toast = self._stack.pop(0)
+            oldest_toast.dismiss()
+
         toast = ModernToast(title, message, state, duration, parent=self.main_window)
         self._stack.append(toast)
         toast.expired.connect(self._on_toast_expired)  
@@ -114,6 +124,8 @@ class ToastManager(QObject):
             self._stack.remove(toast_ref)
             toast_ref.deleteLater()
             self._calculate_positions()
+        else:
+            toast_ref.deleteLater()
 
     def _calculate_positions(self):
         margin_x = 24

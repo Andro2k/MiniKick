@@ -53,15 +53,15 @@ class SettingsController(QObject):
             if self.service.export_settings(filepath):
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("settings.status.exported") or "Respaldo Exportado",
-                        message=self.view.i18n.get("settings.status.exported_msg") or "Archivo guardado con éxito.",
+                        title=self.view.i18n.get("settings.status.exported"),
+                        message=self.view.i18n.get("settings.status.exported_msg"),
                         state="success"
                     )
             else:
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("settings.status.error_title") or "Error",
-                        message=self.view.i18n.get("settings.status.export_error") or "No se pudo crear el archivo.",
+                        title=self.view.i18n.get("settings.status.error_title"),
+                        message=self.view.i18n.get("settings.status.export_error"),
                         state="danger"
                     )
 
@@ -73,15 +73,15 @@ class SettingsController(QObject):
                 self.backup_restored.emit()
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("settings.status.imported") or "Respaldo Restaurado",
-                        message=self.view.i18n.get("settings.status.imported_msg") or "Configuración cargada correctamente.",
+                        title=self.view.i18n.get("settings.status.imported"),
+                        message=self.view.i18n.get("settings.status.imported_msg"),
                         state="success"
                     )
             else:
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("settings.status.error_title") or "Error",
-                        message=self.view.i18n.get("settings.status.import_error") or "El archivo de respaldo es inválido.",
+                        title=self.view.i18n.get("settings.status.error_title"),
+                        message=self.view.i18n.get("settings.status.import_error"),
                         state="danger"
                     )
 
@@ -91,12 +91,12 @@ class SettingsController(QObject):
         
         if hasattr(self.view.window(), 'toast'):
             self.view.window().toast.show_toast(
-                title=self.view.i18n.get("settings.status.lang_changed") or "Idioma Cambiado",
-                message=self.view.i18n.get("settings.status.lang_changed_msg") or "Reinicia la aplicación para aplicar el idioma.",
+                title=self.view.i18n.get("settings.status.lang_changed"),
+                message=self.view.i18n.get("settings.status.lang_changed_msg"),
                 state="info"
             )
             
         self.notification_requested.emit(
-            self.view.i18n.get("main.controllers.settings.restart_title") or "Reinicio Requerido", 
-            self.view.i18n.get("main.controllers.settings.restart_desc") or "Por favor reinicia MiniKick."
+            self.view.i18n.get("main.controllers.settings.restart_title"), 
+            self.view.i18n.get("main.controllers.settings.restart_desc")
         )

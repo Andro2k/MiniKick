@@ -2,6 +2,7 @@
 
 import re
 from PySide6.QtCore import QObject, Slot, Signal
+from frontend.workers.voice_worker import VoiceFetcherWorker
 
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
@@ -12,7 +13,8 @@ class ChatController(QObject):
         self.service = service
         self.muted_bots = []
         self._all_voices = []
-        
+        self._voice_worker = None
+        self._tts_enabled = True    
         self._connect_signals()
         self._load_initial_data()
 
@@ -32,10 +34,9 @@ class ChatController(QObject):
         saved_voice_id = self.service.get_saved_voice_id(provider)
         if saved_voice_id:
             self.service.set_voice(provider, saved_voice_id)
-
+        self._tts_enabled = settings.get("enabled", True)
         self.view.set_initial_states(settings)
-        self.service.set_volume(settings["volume"])
-        
+        self.service.set_volume(settings["volume"])     
         bots_str = settings.get("ignored_users", "")
         self.muted_bots = [b.strip() for b in bots_str.split(",") if b.strip()]
         for bot in self.muted_bots:
@@ -69,7 +70,26 @@ class ChatController(QObject):
         self.service.speak(text_to_speak)
 
     def _load_voices(self, provider: str, is_initial: bool = False):
-        self._all_voices = self.service.get_available_voices(provider)
+        loading_str = self.view.i18n.get("chat.status.loading_voices")
+        self.view.update_voices([("loading", loading_str)], "loading")
+        cached = self.service.tts._voices_cache.get(provider, [])
+        if cached:
+            self._on_voices_fetched(cached, provider, is_initial)
+            return
+
+        if self._voice_worker and self._voice_worker.isRunning():
+            self._voice_worker.terminate()
+
+        self._voice_worker = VoiceFetcherWorker(self.service.tts, provider, parent=self)
+        self._voice_worker.voices_fetched.connect(
+            lambda voices, prov: self._on_voices_fetched(voices, prov, is_initial)
+        )
+        self._voice_worker.error_occurred.connect(self._on_voices_error)
+        self._voice_worker.start()
+
+    @Slot(list, str, bool)
+    def _on_voices_fetched(self, voices: list, provider: str, is_initial: bool):
+        self._all_voices = voices
         saved_voice_id = self.service.get_saved_voice_id(provider)
 
         langs = []
@@ -78,9 +98,28 @@ class ChatController(QObject):
             if prefix not in langs:
                 langs.append(prefix)
 
-        sel_prefix = "-".join(saved_voice_id.split("-")[:2]) if ("-" in saved_voice_id) else "Local"
+        sel_prefix = "-".join(saved_voice_id.split("-")[:2]) if ("-" in saved_voice_id and saved_voice_id) else "Local"
         self.view.update_languages(langs, sel_prefix)
         self._filter_voices_by_language(sel_prefix, select_id=saved_voice_id, play_test=(not is_initial))
+
+        if self._voice_worker:
+            self._voice_worker.deleteLater()
+            self._voice_worker = None
+
+    @Slot(str, str)
+    def _on_voices_error(self, error_msg: str, provider: str):
+        fallback = [
+            {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Sin conexión)"},
+            {"id": "es-MX-JorgeNeural", "name": "Jorge (Sin conexión)"}
+        ]
+        self._on_voices_fetched(fallback, provider, is_initial=True)
+        
+        if hasattr(self.view.window(), 'toast'):
+            self.view.window().toast.show_toast(
+                title="Red TTS Inestable",
+                message=f"Cargado modo offline: {error_msg}",
+                state="warning"
+            )
 
     @Slot(str)
     def _filter_voices_by_language(self, lang_prefix: str, select_id: str = None, play_test: bool = False):
@@ -104,11 +143,35 @@ class ChatController(QObject):
         self.service.set_provider(provider)
         self._load_voices(provider)
 
+        if hasattr(self.view.window(), 'toast'):
+            mode_name = "Neural IA (Nube Edge)" if is_web else "SAPI5 / OS (Local)"
+            state_color = "info" if is_web else "success"
+
+            self.view.window().toast.show_toast(
+                title=self.view.i18n.get("chat.status.provider_title"),
+                message=f"Modo activo: {mode_name}",
+                state=state_color
+            )
+
     @Slot(dict)
     def _handle_settings_save(self, partial_settings: dict):
         partial_settings["ignored_users"] = ",".join(self.muted_bots)
         self.service.save_settings(partial_settings)
         self.tts_state_changed.emit(partial_settings["enabled"])
+        new_tts_state = partial_settings["enabled"]
+        if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
+            self._tts_enabled = new_tts_state
+            
+            if hasattr(self.view.window(), 'toast'):
+                status_title = self.view.i18n.get("chat.status.tts_title")
+                status_msg = "Voz automática ACTIVADA" if new_tts_state else "Chat SILENCIADO"
+                state_color = "success" if new_tts_state else "warning"
+                
+                self.view.window().toast.show_toast(
+                    title=status_title,
+                    message=status_msg,
+                    state=state_color
+                )
 
     @Slot(str)
     def _add_bot(self, bot_name: str):
@@ -135,18 +198,11 @@ class ChatController(QObject):
     def _clean_message_for_tts(self, text: str) -> str:
         def replacer(match):
             url = match.group(0).lower()
-            if "youtube.com" in url or "youtu.be" in url:
-                return "un enlace de YouTube"
-            elif "kick.com" in url:
-                return "un enlace de Kick"
-            elif "twitter.com" in url or "x.com" in url:
-                return "un enlace de Twitter"
-            elif "instagram.com" in url:
-                return "un enlace de Instagram"
-            elif "tiktok.com" in url:
-                return "un enlace de TikTok"
-            elif "discord.com" in url or "discord.gg" in url:
-                return "un enlace de Discord"
-            else:
-                return "un enlace web"
+            if "youtube.com" in url or "youtu.be" in url: return "un enlace de YouTube"
+            elif "kick.com" in url: return "un enlace de Kick"
+            elif "twitter.com" in url or "x.com" in url: return "un enlace de Twitter"
+            elif "instagram.com" in url: return "un enlace de Instagram"
+            elif "tiktok.com" in url: return "un enlace de TikTok"
+            elif "discord.com" in url or "discord.gg" in url: return "un enlace de Discord"
+            else: return "un enlace web"
         return re.sub(r"https?://\S+|www\.\S+", replacer, text)
