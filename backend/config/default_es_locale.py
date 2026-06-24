@@ -3,440 +3,513 @@
 DEFAULT_DICTIONARY = {
     "settings": {
         "header": {
-            "title": "Configuración General",
-            "subtitle": "Ajustes globales del sistema, gestión de cuenta y actualizaciones."
+            "title": "General Settings",
+            "subtitle": "Global system settings, account management, and updates."
         },
         "system": {
-            "tray_title": "Ejecución en Segundo Plano",
-            "tray_desc": "Minimizar a la bandeja del sistema en lugar de cerrar la aplicación por completo.",
-            "lang_title": "Idioma de la Aplicación",
-            "lang_desc": "Selecciona el idioma de la interfaz (requiere reiniciar).",
-            "update_title": "Actualizaciones de Software",
-            "update_desc": "Buscar e instalar nuevas versiones de MiniKick.",
-            "btn_update": "Buscar actualizaciones"
+            "tray_title": "Run in Background",
+            "tray_desc": "Minimize to the system tray instead of fully closing the application.",
+            "lang_title": "Application Language",
+            "lang_desc": "Select the interface language (requires restart).",
+            "update_title": "Software Updates",
+            "update_desc": "Check for and install new MiniKick versions.",
+            "btn_update": "Check for updates"
         },
         "backup": {
-            "title": "Respaldo de Configuración",
-            "desc": "Exporta o importa tus alertas, voces y ajustes generales.",
-            "btn_export": "Exportar",
-            "btn_import": "Importar"
+            "title": "Configuration Backup",
+            "desc": "Export or import your alerts, voices, and general settings.",
+            "btn_export": "Export",
+            "btn_import": "Import"
         },
         "account": {
-            "title": "Desvincular Cuenta",
-            "desc": "Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez.",
-            "btn_unlink": "Desvincular"
+            "title": "Unlink Account",
+            "desc": "Close the current session. You will need to re-authorize MiniKick next time.",
+            "btn_unlink": "Unlink"
         },
         "dialogs": {
-            "export_title": "Exportar Configuración",
-            "import_title": "Importar Configuración"
+            "export_title": "Export Configuration",
+            "import_title": "Import Configuration"
         },
         "status": {
-            "tray_enabled": "Segundo Plano Activo",
-            "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar.",
-            "tray_disabled": "Segundo Plano Inactivo",
-            "tray_disabled_msg": "La aplicación se cerrará por completo.",
-            "exported": "Respaldo Exportado",
-            "exported_msg": "Tus configuraciones se guardaron con éxito.",
-            "imported": "Respaldo Restaurado",
-            "imported_msg": "La configuración se ha cargado correctamente.",
-            "lang_changed": "Idioma Cambiado",
-            "lang_changed_msg": "Reinicia la aplicación para aplicar el nuevo idioma.",
-            "unlinked": "Cuenta Desvinculada",
-            "unlinked_msg": "Se ha cerrado tu sesión de Kick local.",
-            "error_title": "Operación Fallida",
-            "export_error": "No se pudo guardar el archivo de respaldo.",
-            "import_error": "El archivo de respaldo está corrupto o es incompatible."
+            "tray_enabled": "Background Execution On",
+            "tray_enabled_msg": "MiniKick will minimize to the tray when closed.",
+            "tray_disabled": "Background Execution Off",
+            "tray_disabled_msg": "The application will exit completely when closed.",
+            "exported": "Backup Exported",
+            "exported_msg": "Your settings have been saved successfully.",
+            "imported": "Backup Restored",
+            "imported_msg": "Settings have been loaded successfully.",
+            "lang_changed": "Language Changed",
+            "lang_changed_msg": "Please restart the application to apply the new language.",
+            "unlinked": "Account Unlinked",
+            "unlinked_msg": "Your local Kick session has been closed.",
+            "error_title": "Operation Failed",
+            "export_error": "Could not save the backup file.",
+            "import_error": "The backup file is corrupted or incompatible."
         }
     },
     "spam": {
         "header": {
-            "title": "Filtros Anti-Spam (Auto-Mod)",
-            "subtitle": "Usa estos filtros para mantener tu chat amigable, divertido y libre de toxicidad."
+            "title": "Anti-Spam Filters (Auto-Mod)",
+            "subtitle": "Use these filters to keep your chat friendly, fun, and toxicity-free."
         },
         "card": {
-            "config_title": "Configuración de Penalización",
-            "action": "Acción",
-            "action_timeout": "Timeout al usuario",
-            "action_delete": "Borrar mensaje (Delete)",
-            "duration": "Duración (segundos)",
-            "exclude": "Excluir rango (Inmunes)",
-            "exclude_none": "Ninguno",
-            "exclude_mod": "Moderadores y Broadcaster",
-            "exclude_sub": "Suscriptores y VIPs",
-            "max_amount": "Cantidad máxima permitida"
+            "config_title": "Penalty Configuration",
+            "action": "Action",
+            "action_timeout": "Timeout user",
+            "action_delete": "Delete message",
+            "duration": "Duration (seconds)",
+            "exclude": "Exclude rank (Immune)",
+            "exclude_none": "None",
+            "exclude_mod": "Moderators & Broadcaster",
+            "exclude_sub": "Subscribers & VIPs",
+            "max_amount": "Maximum allowed amount"
         },
         "filters": {
             "caps": {
-                "title": "Protección de Mayúsculas",
-                "desc": "Elimina mensajes con una cantidad excesiva de letras mayúsculas."
+                "title": "Caps Protection",
+                "desc": "Removes messages with an excessive amount of uppercase letters."
             },
             "link": {
-                "title": "Protección de Links",
-                "desc": "Elimina mensajes que contengan enlaces no autorizados."
+                "title": "Link Protection",
+                "desc": "Removes messages containing unauthorized links."
             },
             "emote": {
-                "title": "Protección de Emotes",
-                "desc": "Elimina mensajes que abusen de la cantidad de emotes."
+                "title": "Emote Protection",
+                "desc": "Removes messages that abuse the amount of emotes."
             },
             "paragraph": {
-                "title": "Muros de Texto",
-                "desc": "Bloquea mensajes excesivamente largos (Muchos caracteres)."
+                "title": "Walls of Text",
+                "desc": "Blocks excessively long messages (Many characters)."
             },
             "symbol": {
-                "title": "Protección de Símbolos",
-                "desc": "Elimina mensajes con un uso excesivo de símbolos (Ej: @#!%)."
+                "title": "Symbol Protection",
+                "desc": "Removes messages with excessive use of symbols (Ex: @#!%)."
             }
         }
     },
     "command": {
         "header": {
-            "title": "Triggers y Respuestas de Comandos",
-            "subtitle": "Vincula comandos de chat o expresiones regulares a respuestas automatizadas del bot."
+            "title": "Triggers and Command Responses",
+            "subtitle": "Link chat commands or regular expressions to automated bot responses."
         },
         "table": {
-            "title": "Comandos Vinculados",
-            "search_placeholder": "Buscar comando vinculado...",
-            "btn_new": "Nuevo Comando",
-            "col_command": "Comando",
+            "title": "Linked Commands",
+            "search_placeholder": "Search linked command...",
+            "btn_new": "New Command",
+            "col_command": "Command",
             "col_aliases": "Aliases / Regex",
-            "col_response": "Respuesta",
-            "col_actions": "Acciones",
+            "col_permission": "Access Level",
+            "col_actions": "Actions",
             "regex_prefix": "Regex",
-            "tooltip_edit": "Modificar configuración del comando",
-            "tooltip_delete": "Eliminar comando permanentemente"
+            "tooltip_edit": "Modify command configuration",
+            "tooltip_delete": "Delete command permanently"
         },
         "dialog": {
-            "title": "Configurar Comando",
-            "subtitle": "Crea o edita comandos personalizados para tu chat.",
-            "trigger_label": "Nombre del Comando (Ej: !discord):",
-            "response_label": "Respuesta del bot (puedes usar {user}):",
-            "cooldown_label": "Cooldown (seg):",
-            "permission_label": "Permiso Mínimo:",
-            "perm_everyone": "Todos",
-            "perm_subscriber": "Suscriptor",
+            "title": "Configure Command",
+            "subtitle": "Create or edit custom commands for your chat.",
+            "trigger_label": "Command Name (Ex: !discord):",
+            "response_label": "Bot Response (you can use {user}):",
+            "cooldown_label": "Cooldown (sec):",
+            "permission_label": "Minimum Permission:",
+            "perm_everyone": "Everyone",
+            "perm_subscriber": "Subscriber",
             "perm_vip": "VIP",
-            "perm_moderator": "Moderador",
+            "perm_moderator": "Moderator",
             "perm_broadcaster": "Broadcaster",
-            "active_checkbox": "Comando Activo",
-            "aliases_label": "Aliases Estándar (separados por coma):",
-            "aliases_placeholder": "!dc, !discordia",
-            "regex_checkbox": "Usar RegEx (Ignora Prefijos y Aliases)",
-            "regex_label": "Sintaxis de Expresión Regular:",
-            "regex_placeholder": "Ej: \\b(hola|buenas)\\b",
-            "regex_help": "Si activas RegEx, el bot buscará este patrón en todo el mensaje.",
-            "tab_basic": "Básico",
-            "tab_advanced": "Avanzado",
-            "btn_save": "Guardar Comando",
-            "btn_cancel": "Cancelar"
+            "active_checkbox": "Active Command",
+            "aliases_label": "Standard Aliases (comma separated):",
+            "aliases_placeholder": "!dc, !discord server",
+            "regex_checkbox": "Use RegEx (Ignores Prefixes and Aliases)",
+            "regex_label": "Regular Expression Syntax:",
+            "regex_placeholder": "Ex: \\b(hello|hi)\\b",
+            "regex_help": "If you enable RegEx, the bot will search for this pattern anywhere in the message.",
+            "tab_basic": "Basic",
+            "tab_advanced": "Advanced",
+            "btn_save": "Save Command",
+            "btn_cancel": "Cancel"
         },
         "status": {
-            "created": "Comando Creado",
-            "updated": "Comando Actualizado",
-            "deleted": "Comando Eliminado",
-            "enabled": "Comando Activado",
-            "disabled": "Comando Desactivado",
-            "created_msg": "Disponible en chat: {trigger}",
-            "updated_msg": "Cambios guardados en: {trigger}",
-            "deleted_msg": "Se eliminó: {trigger}",
-            "toggled_msg": "Palabra: {trigger}"
+            "created": "Command Created",
+            "updated": "Command Updated",
+            "deleted": "Command Deleted",
+            "enabled": "Command Enabled",
+            "disabled": "Command Disabled",
+            "created_msg": "Available in chat: {trigger}",
+            "updated_msg": "Changes saved for: {trigger}",
+            "deleted_msg": "Deleted: {trigger}",
+            "toggled_msg": "Trigger word: {trigger}"
         }
     },
     "alerts": {
         "header": {
-            "title": "Triggers & Alertas",
-            "subtitle": "Vincula las recompensas de tu canal con elementos multimedia en pantalla."
+            "title": "Triggers & Alerts",
+            "subtitle": "Link your channel rewards with on-screen multimedia elements."
         },
         "obs": {
-            "title": "Fuente de Navegador OBS",
-            "desc": "Copia este enlace y pégalo en tu software de transmisión (Resolución recomendada: 1920x1080).",
-            "copied": "¡Enlace Copiado!"
+            "title": "OBS Browser Source",
+            "desc": "Copy this link and paste it into your broadcasting software (Recommended resolution: 1920x1080).",
+            "copied": "Link Copied!"
         },
         "table": {
-            "title": "Recompensas Vinculadas",
-            "btn_new": "Nueva Alerta",
-            "col_reward": "Recompensa de Kick",
-            "col_file": "Archivo",
-            "col_actions": "Acciones",
-            "unknown_file": "Desconocido",
-            "tooltip_play": "Probar en OBS",
-            "tooltip_edit": "Modificar ajustes",
-            "tooltip_delete": "Eliminar alerta"
+            "title": "Linked Rewards",
+            "btn_new": "New Alert",
+            "col_reward": "Kick Reward",
+            "col_file": "File",
+            "col_actions": "Actions",
+            "unknown_file": "Unknown",
+            "tooltip_play": "Test in OBS",
+            "tooltip_edit": "Modify settings",
+            "tooltip_delete": "Delete alert"
         },
         "dialogs": {
             "visual": {
-                "title": "Posicionador Visual (1920x1080)",
-                "desc": "Arrastra tu alerta. Al soltarla, se mostrará una vista previa en OBS.",
-                "btn_save": "Guardar y Cerrar"
+                "title": "Visual Positioner (1920x1080)",
+                "desc": "Drag your alert. When you release it, a preview will be shown in OBS.",
+                "btn_save": "Save and Close"
             },
             "wizard": {
-                "title_edit": "Editar Alerta",
-                "title_new": "Nueva Alerta",
-                "btn_cancel": "Cancelar",
-                "btn_next": "Siguiente",
-                "btn_back": "Atrás",
-                "btn_save": "Guardar Alerta",
+                "title_edit": "Edit Alert",
+                "title_new": "New Alert",
+                "btn_cancel": "Cancel",
+                "btn_next": "Next",
+                "btn_back": "Back",
+                "btn_save": "Save Alert",
                 "file_dialog_title": "Multimedia",
-                "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
+                "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
                 "step1": {
-                    "title": "Recompensa y Archivo",
-                    "desc": "Configura qué punto de canal activará esta alerta.",
-                    "reward_selection": "Selección de Recompensa",
-                    "loading": "Cargando recompensas...",
-                    "tooltip_refresh": "Actualizar Recompensas de Kick",
-                    "file_label": "Archivo Multimedia",
-                    "file_placeholder": "Ej. tu_alerta.mp4 o sonido.mp3",
-                    "btn_browse": "Explorar",
-                    "no_rewards": "No hay recompensas",
-                    "no_available": "No hay recompensas disponibles"
+                    "title": "Reward and File",
+                    "desc": "Configure which channel point will trigger this alert.",
+                    "reward_selection": "Reward Selection",
+                    "loading": "Loading rewards...",
+                    "tooltip_refresh": "Refresh Kick Rewards",
+                    "file_label": "Multimedia File",
+                    "file_placeholder": "Ex. your_alert.mp4 or sound.mp3",
+                    "btn_browse": "Browse",
+                    "no_rewards": "No rewards",
+                    "no_available": "No available rewards"
                 },
                 "step2": {
-                    "title": "Ajustes de Pantalla",
-                    "desc": "Define cómo y dónde se mostrará tu alerta en el lienzo.",
-                    "volume": "Volumen de la alerta",
-                    "random_pos": "Posición Aleatoria",
-                    "btn_visual": "Posicionar en OBS",
+                    "title": "Display Settings",
+                    "desc": "Define how and where your alert will be displayed on the canvas.",
+                    "volume": "Alert volume",
+                    "random_pos": "Random Position",
+                    "btn_visual": "Position in OBS",
                     "coord_x": "X:",
                     "coord_y": "Y:",
-                    "scale": "Escala:"
+                    "scale": "Scale:"
                 }
             }
         },
         "status": {
-            "created": "Alerta Creada",
-            "updated": "Alerta Actualizada",
-            "deleted": "Alerta Eliminada",
-            "created_msg": "Vinculada a recompensa: {reward}",
-            "updated_msg": "Configuración guardada para: {reward}",
-            "deleted_msg": "Se desvinculó el punto: {reward}"
+            "created": "Alert Created",
+            "updated": "Alert Updated",
+            "deleted": "Alert Deleted",
+            "created_msg": "Linked to reward: {reward}",
+            "updated_msg": "Configuration saved for: {reward}",
+            "deleted_msg": "Unlinked reward: {reward}"
         }
     },
     "log": {
         "header": {
-            "title": "Registro de Desarrollador",
-            "subtitle": "Monitorea eventos del sistema, depura errores y carga historiales usando el explorador."
+            "title": "Developer Logs",
+            "subtitle": "Monitor system events, debug errors, and load historical data using the file explorer."
         },
         "controls": {
-            "search_placeholder": "Buscar en los registros...",
-            "filter_all": "TODOS",
-            "btn_folder": "Carpeta",
-            "tooltip_folder": "Abrir ubicación en Windows",
-            "btn_load": "Cargar Histórico",
-            "btn_live": "Ver en Vivo",
-            "btn_clear": "Limpiar",
-            "btn_report": "Reportar"
+            "search_placeholder": "Search logs...",
+            "filter_all": "ALL",
+            "btn_folder": "Folder",
+            "tooltip_folder": "Open location in Windows",
+            "btn_load": "Load History",
+            "btn_live": "Live View",
+            "btn_clear": "Clear",
+            "btn_report": "Report Bug"
         },
         "table": {
-            "col_level": "Nivel",
-            "col_time": "Hora",
-            "col_message": "Mensaje"
+            "col_level": "Log Level",
+            "col_time": "Timestamp",
+            "col_message": "Log Message"
         },
         "dialogs": {
-            "select_history": "Seleccionar Histórico de Logs",
-            "file_filter": "Archivos Log (*.log*);;Todos los archivos (*.*)"
+            "select_history": "Select Log History",
+            "file_filter": "Log Files (*.log*);;All files (*.*)"
         },
         "misc": {
-            "historical": "HISTÓRICO"
+            "historical": "HISTORICAL"
         },
         "status": {
-            "historical_title": "Archivo Log Cargado",
-            "historical_msg": "Inspeccionando: {file}",
-            "live_title": "Consola en Vivo",
-            "live_msg": "Mostrando diagnóstico de eventos en tiempo real.",
-            "cleared_title": "Registros Borrados",
-            "cleared_msg": "La vista de logs se ha limpiado correctamente."
+            "historical_title": "Log File Loaded",
+            "historical_msg": "Inspecting: {file}",
+            "live_title": "Live Console",
+            "live_msg": "Showing real-time event diagnostics.",
+            "cleared_title": "Logs Cleared",
+            "cleared_msg": "The log view has been cleared successfully."
         }
     },
     "chat": {
         "header": {
-            "title": "Chat en Vivo",
-            "subtitle": "Gestiona la moderación, lectura de voz interactiva (TTS) y eventos del canal en tiempo real."
+            "title": "Live Chat",
+            "subtitle": "Manage moderation, interactive Text-to-Speech (TTS), and real-time channel events."
         },
         "settings": {
-            "tts_title": "Servicio de Voz (TTS)",
-            "tts_desc": "Habilita la lectura automatizada de mensajes.",
-            "name_title": "Leer Nombres",
-            "name_desc": "Pronuncia el nombre del emisor antes del mensaje.",
-            "provider_title": "Motor de Voz Premium",
-            "provider_desc": "Alterna entre voces web de Edge o locales.",
-            "cmd_title": "Requerir Comando",
-            "cmd_desc": "Solo leer mensajes que inicien con un prefijo.",
-            "vol_title": "Volumen General",
-            "vol_desc": "Ajusta la intensidad del sintetizador de voz.",
-            "prefix_title": "Prefijo del Comando",
-            "prefix_desc": "Define el texto exacto que activará la lectura del bot.",
-            "prefix_placeholder": "Ej. !tts"
+            "tts_title": "Voice Service (TTS)",
+            "tts_desc": "Enable automated message reading.",
+            "name_title": "Read Names",
+            "name_desc": "Pronounce the sender's name before the message.",
+            "provider_title": "Premium Voice Engine",
+            "provider_desc": "Toggle between Edge web voices or local voices.",
+            "cmd_title": "Require Command",
+            "cmd_desc": "Only read messages starting with a prefix.",
+            "vol_title": "General Volume",
+            "vol_desc": "Adjust the intensity of the speech synthesizer.",
+            "prefix_title": "Command Prefix",
+            "prefix_desc": "Define the exact text that will trigger the bot's reading.",
+            "prefix_placeholder": "Ex. !tts"
         },
         "bots": {
-            "title": "Usuarios Silenciados",
-            "input_placeholder": "ej. botrix",
-            "btn_add": "Agregar"
+            "title": "Muted Users",
+            "input_placeholder": "ex. botrix",
+            "btn_add": "Add"
         },
         "display": {
-            "title": "Historial de la Sala"
+            "title": "Room History"
         },
         "status": {
-            "loading_voices": "Cargando voces de la nube...",
-            "provider_title": "Motor de Voz",
-            "tts_title": "Lectura de Chat"
+            "loading_voices": "Fetching cloud voices...",
+            "provider_title": "Speech Engine",
+            "tts_title": "Chat Text-to-Speech"
+        }
+    },
+    "music": {
+        "header": {
+            "title": "Music Player",
+            "subtitle": "Let your viewers control the music stream using chat commands."
+        },
+        "provider": {
+            "name": "Spotify Audio Provider"
+        },
+        "btn": {
+            "connect": "Connect Spotify",
+            "disconnect": "Disconnect"
+        },
+        "status": {
+            "disconnected": "Disconnected",
+            "connecting": "Authorize in your browser...",
+            "active": "Connected as",
+            "session_remembered": "Broadcaster (Session remembered)",
+            "connected_user": "Broadcaster (Connected)"
+        },
+        "player": {
+            "not_playing": "No song currently playing",
+            "paused_title": "Player paused...",
+            "paused_desc": "Open Spotify and press Play",
+            "unknown_song": "Unknown"
+        },
+        "cmds": {
+            "title": "Viewer Commands",
+            "sr_label": "Request Song (Default: !sr)",
+            "sr_desc": "Allows viewers to add music to the queue. You can customize the '!sr' trigger in the Commands view.",
+            "skip_label": "Skip Track (Default: !skip)",
+            "skip_desc": "Forces playback to the next song. You can customize the '!skip' trigger in the Commands view.",
+            "song_label": "Current Song (Default: !song)",
+            "song_desc": "Displays the currently playing track in chat. You can customize the '!song' trigger in the Commands view.",
+            "default_tag_name": "Music Plugin"
+        },
+        "toast": {
+            "title_spotify": "Spotify",
+            "connected": "Link with Spotify successfully established.",
+            "disconnected": "Spotify account disconnected."
+        },
+        "chat": {
+            "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",
+            "not_linked": "❌ The broadcaster has not linked their Spotify account.",
+            "skip_success": "⏩ Song skipped successfully.",
+            "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
+            "song_now_playing": "🎵 Now playing: {title} - {artist}",
+            "song_paused": "🔇 Spotify is paused or closed."
+        },
+        "queue": {
+            "not_found": "❌ Could not find any song named '{query}'.",
+            "success": "🎵 Added to queue: {track}",
+            "no_device": "❌ Error: Please open Spotify on your PC and play any track first.",
+            "rejected": "❌ Spotify rejected the request: {status}",
+            "error": "❌ Internal Spotify error: {error}"
+        },
+        "errors": {
+            "no_session": "No active Spotify session.",
+            "refresh_failed": "Could not refresh Spotify token."
+        }
+    },
+    "spotify": {
+        "error": {
+            "timeout": "Login timed out or was canceled by user.",
+            "generic": "Spotify connection error:"
         }
     },
     "dashboard": {
         "header": {
             "title": "Dashboard",
-            "subtitle": "Gestión de autenticación, conexión automática y estado general del sistema."
+            "subtitle": "Authentication management, automatic connection, and general system status."
         },
         "banner": {
-            "text": "<b>Actualización requerida:</b> Tu cuenta no tiene permisos para las nuevas funciones Anti-Spam.",
-            "btn_update": "Actualizar Permisos"
+            "text": "<b>Update required:</b> Your account does not have permissions for the new Anti-Spam features.",
+            "btn_update": "Update Permissions"
         },
         "connection": {
-            "autostart_title": "Conexión Automática",
-            "autostart_desc": "Inicia el bot automáticamente.",
-            "status_waiting": "Estado: Esperando conexión...",
-            "status_auth": "Estado: Autenticando...",
-            "status_connected": "Estado: Conectado y Escuchando",
+            "autostart_title": "Automatic Connection",
+            "autostart_desc": "Start the bot automatically.",
+            "status_waiting": "Status: Waiting for connection...",
+            "status_auth": "Status: Authenticating...",
+            "status_connected": "Status: Connected and Listening",
             "status_error": "Error",
-            "btn_connect": "Conectar a Kick",
-            "btn_active": "Sistema Activo",
-            "btn_retry": "Reintentar"
+            "btn_connect": "Connect to Kick",
+            "btn_active": "System Active",
+            "btn_retry": "Retry"
         },
         "stats": {
-            "followers": "Seguidores",
-            "room_id": "ChatID",
-            "category": "Última Categoría",
-            "affiliate": "Estado Afiliado",
+            "followers": "Followers",
+            "room_id": "ChatRoom ID",
+            "category": "Last Category",
+            "affiliate": "Affiliate Status",
             "vods": "VODs"
         },
         "status": {
-            "connected": "Conectado",
-            "connected_toast_msg": "Canal enlazado: {username}"
+            "connected": "Connected",
+            "connected_toast_msg": "Channel linked: {username}"
         }
     },
     "dialogs": {
         "confirm": {
-            "btn_continue": "Continuar",
-            "btn_cancel": "Cancelar"
+            "btn_continue": "Continue",
+            "btn_cancel": "Cancel"
         }
     },
     "main": {
         "dialogs": {
-            "unlink_title": "Desvincular Cuenta",
-            "unlink_desc": "¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes.",
-            "close_title": "Cerrar MiniKick",
-            "close_desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat.",
+            "unlink_title": "Unlink Account",
+            "unlink_desc": "Are you sure you want to log out? You will need to re-authorize MiniKick next time.",
+            "close_title": "Close MiniKick",
+            "close_desc": "Are you sure you want to exit the application? The bot will stop listening to the chat.",
             "update": {
-                "top_searching": "Buscando...",
-                "title_default": "Actualización del Sistema",
-                "subtitle_connecting": "Conectando con el servidor...",
-                "lbl_progress": "Progreso",
-                "btn_restart": "Reiniciar ahora",
-                "btn_close": "Cerrar",
-                "top_available": "Versión {version} disponible",
-                "subtitle_restart_req": "Se requiere un reinicio para completar la instalación.",
-                "btn_download": "Descargar ahora",
-                "subtitle_downloading": "Descargando la nueva versión...",
-                "btn_downloading": "Descargando...",
-                "title_completed": "Actualización completada",
-                "subtitle_installed": "Versión {version} instalada.",
-                "title_up_to_date": "Sistema Actualizado",
-                "subtitle_up_to_date": "Tu versión del sistema ya es la última disponible.",
-                "top_error": "Error de Actualización",
-                "title_error": "Fallo en la descarga",
-                "msg_unexpected_error": "Fallo inesperado al descargar el archivo."
+                "top_searching": "Searching...",
+                "title_default": "System Update",
+                "subtitle_connecting": "Connecting to the server...",
+                "lbl_progress": "Progress",
+                "btn_restart": "Restart now",
+                "btn_close": "Close",
+                "top_available": "Version {version} available",
+                "subtitle_restart_req": "A restart is required to complete the installation.",
+                "btn_download": "Download now",
+                "subtitle_downloading": "Downloading the new version...",
+                "btn_downloading": "Downloading...",
+                "title_completed": "Update completed",
+                "subtitle_installed": "Version {version} installed.",
+                "title_up_to_date": "System Up to Date",
+                "subtitle_up_to_date": "Your system version is already the latest available.",
+                "top_error": "Update Error",
+                "title_error": "Download failed",
+                "msg_unexpected_error": "Unexpected failure downloading the file."
+            },
+            "already_running": {
+                "title": "MiniKick is Already Running",
+                "desc": "The broadcasting controller is already operating in the background. Please check the Windows system tray (next to the clock) to access the dashboard.",
+                "btn_exit": "Exit",
+                "btn_understood": "Understood"
             }
         },
         "sidebar": {
-            "new_version": "Nueva Versión",
-            "version": "Versión {version}",
+            "new_version": "New Version",
+            "version": "Version {version}",
             "tabs": {
                 "dashboard": "Dashboard",
                 "chat": "Chat",
+                "music": "Music",
                 "triggers": "Triggers",
-                "comandos": "Comandos",
-                "spam_filters": "Filtros Spam",
-                "settings": "Ajustes",
-                "developer": "Desarrollador"
+                "comandos": "Commands",
+                "spam_filters": "Spam Filters",
+                "settings": "Settings",
+                "developer": "Developer"
             }
         },
         "tray": {
-            "open_panel": "Abrir Panel",
-            "read_chat": "Leer chat en voz alta",
-            "close_app": "Cerrar MiniKick",
-            "tts_on": "Activado",
-            "tts_off": "Silenciado",
-            "tts_msg": "Lectura de chat: {estado}",
-            "bg_title": "MiniKick en segundo plano",
-            "bg_desc": "Seguiré leyendo el chat por ti. Haz doble clic para volver."
+            "open_panel": "Open Panel",
+            "read_chat": "Read chat aloud",
+            "close_app": "Close MiniKick",
+            "tts_on": "Enabled",
+            "tts_off": "Muted",
+            "tts_msg": "Chat reading: {estado}",
+            "bg_title": "MiniKick in background",
+            "bg_desc": "I will keep reading the chat for you. Double click to return."
         },
         "controllers": {
             "dashboard": {
-                "unknown_user": "Desconocido",
-                "no_bio": "Sin descripción",
-                "none": "Ninguna",
-                "affiliate": "Afiliado",
-                "not_affiliate": "No Afiliado",
-                "yes": "Sí",
+                "unknown_user": "Unknown",
+                "no_bio": "No description",
+                "none": "None",
+                "affiliate": "Affiliate",
+                "not_affiliate": "Not Affiliate",
+                "yes": "Yes",
                 "no": "No"
             },
             "log": {
                 "error_title": "Error",
-                "read_error": "No se pudo leer el archivo: {error}",
-                "folder_error": "No se pudo abrir la carpeta: {error}"
+                "read_error": "Could not read the file: {error}",
+                "folder_error": "Could not open the folder: {error}"
             },
             "settings": {
-                "export_success_title": "Exportación exitosa",
-                "export_success_desc": "Tus configuraciones han sido guardadas.",
+                "export_success_title": "Export successful",
+                "export_success_desc": "Your settings have been saved.",
                 "error_title": "Error",
-                "export_error_desc": "Fallo al exportar el archivo.",
-                "import_success_title": "Importación exitosa",
-                "import_success_desc": "Tus configuraciones han sido restauradas.",
-                "import_error_desc": "El archivo está corrupto o es inválido.",
-                "restart_title": "Reinicio Requerido",
-                "restart_desc": "Por favor, cierra y vuelve a abrir MiniKick para aplicar el nuevo idioma."
+                "export_error_desc": "Failed to export the file.",
+                "import_success_title": "Import successful",
+                "import_success_desc": "Your settings have been restored.",
+                "import_error_desc": "The file is corrupt or invalid.",
+                "restart_title": "Restart Required",
+                "restart_desc": "Please close and reopen MiniKick to apply the new language."
             },
             "chat": {
-                "voice_updated": "Voz actualizada."
+                "voice_updated": "Voice updated."
             }
         },
         "workers": {
             "auth": {
-                "error_failed": "Autorización cancelada o fallida."
+                "error_failed": "Authorization canceled or failed."
             },
             "chat": {
-                "error_room_id": "No se pudo obtener el ID de la sala desde la API."
+                "error_room_id": "Could not get the room ID from the API."
             },
             "reward": {
-                "unknown_reward": "Recompensa desconocida",
-                "someone": "Alguien",
-                "batch_success": "Se marcaron exitosamente {count} canjes como completados en Kick.",
-                "batch_error": "No se pudo confirmar el lote en Kick: {error}",
-                "poll_error": "Error consultando recompensas: {error}"
+                "unknown_reward": "Unknown reward",
+                "someone": "Someone",
+                "batch_success": "Successfully marked {count} redemptions as completed on Kick.",
+                "batch_error": "Could not confirm the batch on Kick: {error}",
+                "poll_error": "Error querying rewards: {error}"
             }
         },
         "window": {
-            "title": "MiniKick - Versión {version}"
+            "title": "MiniKick - Version {version}"
         },
         "chat": {
-            "reward_redeemed": "canjeó {reward_name}",
-            "points_tag": "PUNTOS"
+            "reward_redeemed": "redeemed {reward_name}",
+            "points_tag": "POINTS"
         },
         "logs": {
-            "reward_no_alert": "Recompensa '{reward_name}' no tiene una alerta configurada.",
-            "automod_sanction": "Mensaje sancionado por Auto-Mod: {user}: {msg}",
-            "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
-            "api_fetching": "Ya se están consultando las recompensas. Por favor espera.",
-            "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
-            "api_error": "Fallo en la API de recompensas: {error}",
-            "worker_stopping": "Solicitando parada de {worker}...",
-            "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación...",
-            "worker_stopped": "{worker} cerrado limpiamente.",
-            "shutdown_init": "Iniciando secuencia de apagado...",
-            "shutdown_tts_overlay": "Apagando TTS y Overlay...",
-            "shutdown_complete": "Secuencia de apagado de hilos completada."
+            "reward_no_alert": "Reward '{reward_name}' does not have an alert configured.",
+            "automod_sanction": "Message sanctioned by Auto-Mod: {user}: {msg}",
+            "api_offline": "Attempted to update rewards without being connected to Kick.",
+            "api_fetching": "Rewards are already being fetched. Please wait.",
+            "api_error_setup": "Error setting up rewards query: {error}",
+            "api_error": "Kick Rewards API failed: {error}",
+            "worker_stopping": "Requesting {worker} to stop...",
+            "worker_stuck": "{worker} stuck (possible network lock). Forcing termination...",
+            "worker_stopped": "{worker} closed cleanly.",
+            "shutdown_init": "Initiating shutdown sequence...",
+            "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
+            "shutdown_complete": "Thread shutdown sequence completed."
         },
         "toasts": {
-            "reward_title": "Premio Canjeado",
-            "reward_msg": "{user} canjeó: {reward_name}"
+            "reward_title": "Reward Redeemed",
+            "reward_msg": "{user} redeemed: {reward_name}"
         }
     }
 }
