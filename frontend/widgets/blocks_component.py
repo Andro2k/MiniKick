@@ -1,4 +1,4 @@
-# frontend/components/blocks.py
+# frontend\widgets\blocks_component.py
 
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt

@@ -1,4 +1,4 @@
-# frontend/components/dialogs/already_running_dialog.py
+# frontend\dialogs\already_running_dialog.py
 
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt

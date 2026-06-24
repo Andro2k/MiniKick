@@ -1,4 +1,4 @@
-# frontend/components/dialogs/visual_positioner_dialog.py
+# frontend\dialogs\visual_positioner_dialog.py
 
 from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal

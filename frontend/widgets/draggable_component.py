@@ -1,4 +1,4 @@
-# frontend/components/draggable_media.py
+# frontend\widgets\draggable_component.py
 
 import os
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel

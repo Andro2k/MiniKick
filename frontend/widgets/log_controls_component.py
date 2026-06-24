@@ -1,4 +1,4 @@
-# frontend/components/log_controls.py
+# frontend\widgets\log_controls_component.py
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QComboBox, QBoxLayout
 from PySide6.QtCore import Qt, Signal

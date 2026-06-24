@@ -1,4 +1,4 @@
-# frontend/workers/reward_worker.py
+# frontend\workers\reward_worker.py
 
 import time
 from PySide6.QtCore import QThread, Signal

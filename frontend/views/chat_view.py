@@ -1,4 +1,4 @@
-# frontend/views/chat_view.py
+# frontend\views\chat_view.py
 
 from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget, 
                                QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSlider, 

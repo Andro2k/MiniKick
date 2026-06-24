@@ -1,4 +1,4 @@
-# frontend/components/bot_panel.py
+# frontend\navigation\bot_panel_component.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QListWidget, QListView, 

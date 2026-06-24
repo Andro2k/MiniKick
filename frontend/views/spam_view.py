@@ -1,4 +1,4 @@
-# frontend/views/spam_view.py
+# frontend\views\spam_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QFrame, QComboBox, QSpinBox, QScrollArea, QPushButton)

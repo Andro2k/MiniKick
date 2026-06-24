@@ -1,4 +1,4 @@
-# frontend/views/dashboard_view.py
+# frontend\views\dashboard_view.py
 
 from PySide6.QtWidgets import (QBoxLayout, QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
 from PySide6.QtCore import Qt, Signal

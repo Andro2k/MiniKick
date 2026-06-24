@@ -1,4 +1,4 @@
-# frontend/theme.py
+# frontend\common\theme.py
 
 from frontend.common.utils import get_assets_path
 PATH_ICON_HELP = get_assets_path("icons/help.svg")

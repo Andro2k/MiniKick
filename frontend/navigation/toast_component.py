@@ -1,4 +1,4 @@
-# frontend/components/toast_component.py
+# frontend\navigation\toast_component.py
 
 from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, 
                                QLabel, QPushButton, QSizePolicy)

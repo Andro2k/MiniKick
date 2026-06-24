@@ -1,4 +1,4 @@
-# frontend/components/dialogs/alert_dialogs.py
+# frontend\dialogs\alerts_dialogs.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
                                QComboBox, QLineEdit, QSlider, QSpinBox, 

@@ -1,4 +1,4 @@
-# frontend/workers/music_auth_worker.py
+# frontend\workers\music_auth_worker.py
 
 from PySide6.QtCore import QThread, Signal
 from backend.providers.spotify.spotify_client import SpotifyAuthManager

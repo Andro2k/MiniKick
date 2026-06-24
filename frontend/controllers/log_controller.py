@@ -1,4 +1,4 @@
-# frontend/controllers/log_controller.py
+# frontend\controllers\log_controller.py
 
 import os
 from PySide6.QtCore import QObject, Slot, QUrl

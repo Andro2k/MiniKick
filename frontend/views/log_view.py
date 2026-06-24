@@ -1,22 +1,15 @@
-# frontend/views/log_view.py
+# frontend\views\log_view.py
 
 import os
 import re
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
-    QFileDialog,
-    QFrame,
-    QHeaderView,
-    QMessageBox,
-    QScrollArea,
-    QTableWidget,
-    QTableWidgetItem,
-    QVBoxLayout,
-    QWidget,
+    QFileDialog, QFrame, QHeaderView, QMessageBox,
+    QScrollArea, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 )
 
-from frontend.components.log_controls_component import LogControlsPanel
+from frontend.widgets.log_controls_component import LogControlsPanel
 from frontend.widgets.blocks_component import ViewHeader
 from frontend.common.theme import COLOR_ACCENT
 from frontend.common.utils import get_icon_colored

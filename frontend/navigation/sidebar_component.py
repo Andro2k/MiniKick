@@ -1,4 +1,4 @@
-# frontend/components/sidebar.py
+# frontend\navigation\sidebar_component.py
 
 from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton, 
                                QLabel, QSizePolicy, QWidget, QButtonGroup)

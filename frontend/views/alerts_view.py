@@ -1,4 +1,4 @@
-# frontend/views/alerts_view.py
+# frontend\views\alerts_view.py
 
 import os
 from PySide6.QtWidgets import (QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 

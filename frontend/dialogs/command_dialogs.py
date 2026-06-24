@@ -1,4 +1,4 @@
-# frontend/components/dialogs/command_dialogs.py
+# frontend\dialogs\command_dialogs.py
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QTextEdit, QSpinBox, QCheckBox, QTabWidget, 

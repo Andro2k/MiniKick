@@ -1,4 +1,4 @@
-# frontend/controllers/alerts_controller.py
+# frontend\controllers\alerts_controller.py
 
 from PySide6.QtCore import QObject, Slot
 from frontend.dialogs import AlertConfigWizard

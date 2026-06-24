@@ -1,4 +1,4 @@
-# frontend/views/settings_view.py
+# frontend\views\settings_view.py
 
 from PySide6.QtWidgets import QComboBox, QHBoxLayout, QScrollArea, QWidget, QVBoxLayout, QFrame, QFileDialog
 from PySide6.QtCore import Qt, Signal

@@ -1,4 +1,4 @@
-# frontend/controllers/update_controller.py
+# frontend\controllers\update_controller.py
 
 from PySide6.QtCore import QObject, Slot
 from frontend.dialogs.update_dialog import UpdateDialog

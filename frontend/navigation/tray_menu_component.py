@@ -1,4 +1,4 @@
-# frontend/components/tray_menu.py
+# frontend\navigation\tray_menu_component.py
 
 import os
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu

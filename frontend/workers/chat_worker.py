@@ -1,4 +1,4 @@
-# frontend/workers/chat_worker.py
+# frontend\workers\chat_worker.py
 
 from PySide6.QtCore import QThread, Signal
 from backend.providers.kick.kick_api_client import KickAPIClient

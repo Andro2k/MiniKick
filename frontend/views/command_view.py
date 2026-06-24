@@ -1,4 +1,4 @@
-# frontend/views/command_view.py
+# frontend\views\command_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
                                QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea, 

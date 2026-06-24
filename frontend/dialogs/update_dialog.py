@@ -1,4 +1,4 @@
-# frontend/components/dialogs/update_dialog.py
+# frontend\dialogs\update_dialog.py
 
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QPushButton, QWidget
 from PySide6.QtCore import Qt, Signal

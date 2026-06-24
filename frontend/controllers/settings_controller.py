@@ -1,4 +1,4 @@
-# frontend/controllers/settings_controller.py
+# frontend\controllers\settings_controller.py
 
 from PySide6.QtCore import QObject, Signal, Slot
 

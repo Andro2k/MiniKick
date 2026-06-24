@@ -1,4 +1,4 @@
-# frontend/core/logger.py
+# frontend\core\app_logger_core.py
 
 import logging
 from logging.handlers import TimedRotatingFileHandler

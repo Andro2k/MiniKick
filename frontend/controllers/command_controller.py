@@ -1,4 +1,4 @@
-# frontend/controllers/command_controller.py
+# frontend\controllers\command_controller.py
 
 from PySide6.QtCore import QObject, Slot
 from frontend.dialogs import CommandConfigWizard

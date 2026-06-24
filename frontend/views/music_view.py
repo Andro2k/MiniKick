@@ -1,4 +1,4 @@
-# frontend/views/music_view.py
+# frontend\views\music_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
                                QLabel, QFrame, QScrollArea)
@@ -37,7 +37,7 @@ class MusicView(QWidget):
         self.header = ViewHeader(
             title_text=self.i18n.get("music.header.title"),
             subtitle_text=self.i18n.get("music.header.subtitle"),
-            icon_name="volume.svg",
+            icon_name="headphones.svg",
             icon_color=COLOR_ACCENT
         )
         self.main_layout.addWidget(self.header)
@@ -59,7 +59,7 @@ class MusicView(QWidget):
 
         status_layout = QHBoxLayout()
         self.lbl_provider_name = QLabel(self.i18n.get("music.provider.name"))
-        self.lbl_provider_name.setProperty("role", "h3")
+        self.lbl_provider_name.setProperty("role", "h2")
         
         self.lbl_auth_status = QLabel(self.i18n.get("music.status.disconnected"))
         self.lbl_auth_status.setProperty("role", "body")

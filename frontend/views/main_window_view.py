@@ -1,4 +1,4 @@
-# frontend/main_window.py
+# frontend\views\main_window_view.py
 
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar(self.i18n, app_version=self.app_version)
         self.sidebar.add_tab("Dashboard", "dashboard.svg", is_active=True)
         self.sidebar.add_tab("Chat", "message.svg")
-        self.sidebar.add_tab("Music", "brand-spotify.svg")
+        self.sidebar.add_tab("Music", "headphones.svg")
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Comandos", "code.svg")
         self.sidebar.add_tab("Spam Filters", "shield-half.svg")

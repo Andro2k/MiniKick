@@ -1,4 +1,4 @@
-# frontend/workers/voice_worker.py
+# frontend\workers\voice_worker.py
 
 from PySide6.QtCore import QThread, Signal
 
