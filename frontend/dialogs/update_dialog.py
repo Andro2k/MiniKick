@@ -75,6 +75,7 @@ class UpdateDialog(ModernModalAlert):
         self.btn_secondary.clicked.connect(self.reject)
 
         self.add_action_buttons(self.btn_secondary, self.btn_primary, stretch_center=False)
+        self._primary_connection = None
 
     def show_update_available(self, version: str):
         self.version = version
@@ -89,9 +90,11 @@ class UpdateDialog(ModernModalAlert):
         self.btn_primary.show()
         self.btn_primary.setEnabled(True)
         
-        try: self.btn_primary.clicked.disconnect()
-        except RuntimeError: pass
-        self.btn_primary.clicked.connect(self.download_requested.emit)
+        if self._primary_connection:
+            self.btn_primary.clicked.disconnect(self._primary_connection)
+            
+        self._primary_connection = self.btn_primary.clicked.connect(self.download_requested.emit)
+        
         self.btn_secondary.show()
     
     def show_downloading(self):
@@ -125,9 +128,11 @@ class UpdateDialog(ModernModalAlert):
         self.btn_primary.setEnabled(True)
         self.btn_primary.show()
 
-        try: self.btn_primary.clicked.disconnect()
-        except RuntimeError: pass
-        self.btn_primary.clicked.connect(self.restart_requested.emit)
+        if self._primary_connection:
+            self.btn_primary.clicked.disconnect(self._primary_connection)
+            
+        self._primary_connection = self.btn_primary.clicked.connect(self.restart_requested.emit)
+        
         self.btn_secondary.show()
 
     def show_no_update(self):
