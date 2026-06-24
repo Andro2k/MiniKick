@@ -1,4 +1,4 @@
-# backend/kick_websocket.py
+# backend\providers\kick\kick_websocket.py
 
 import json
 import re

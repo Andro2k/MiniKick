@@ -5,12 +5,11 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QFont, QFontDatabase, QIcon
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
-from backend.services.system.updater_services import GithubUpdateProvider, WindowsInstaller
-from backend.services.system.updater_manager import UpdateManager
+from backend.services.system.updater_service import GithubUpdateProvider, UpdateManager, WindowsInstaller
 from frontend.views.main_window_view import MainWindow
 from frontend.common.theme import GLOBAL_QSS
 from frontend.common.utils import resource_path
-from backend.services.instance_services import SocketInstanceProvider
+from backend.services.system.instance_services import SocketInstanceProvider
 from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.core.app_container_core import AppContainer
 
@@ -50,7 +49,7 @@ def bootstrap():
 
     try:
         app.setQuitOnLastWindowClosed(False)
-        APP_VERSION = "v1.2.7"
+        APP_VERSION = "v1.2.5"
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()    
         updater = UpdateManager(

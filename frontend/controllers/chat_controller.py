@@ -48,7 +48,6 @@ class ChatController(QObject):
     @Slot(str, str, list, str)
     def handle_incoming_message(self, user: str, message: str, badges: list, color: str):
         self.view.append_message(user, message, color)
-
         if hasattr(self, 'command_service') and self.command_service:
             handled, plugin_tag, cmd_info, prefix_used = self.command_service.process_incoming_message(user, message, badges)
             
@@ -56,22 +55,20 @@ class ChatController(QObject):
                 if plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
                     self._execute_resolved_music_plugin(plugin_tag, user, message, prefix_used)
                 return
-
         settings = self.service.get_settings()
         if not settings["enabled"]:
             return
-
         if user.lower() in [b.lower() for b in self.muted_bots]:
             return 
-
         final_message = message.strip()
         if settings["use_command"]:
             cmd = settings["command"]
             if not final_message.lower().startswith(cmd):
                 return
             final_message = final_message[len(cmd):].strip()
-
         final_message = self._clean_message_for_tts(final_message)
+        if not final_message:
+            return
         text_to_speak = f"{user} dice: {final_message}" if settings["read_name"] else final_message
         self.service.speak(text_to_speak)
 
@@ -148,7 +145,6 @@ class ChatController(QObject):
         provider = "web" if is_web else "local"
         self.service.set_provider(provider)
         self._load_voices(provider)
-
         if hasattr(self.view.window(), 'toast'):
             mode_name = "Neural IA (Nube Edge)" if is_web else "SAPI5 / OS (Local)"
             state_color = "info" if is_web else "success"
@@ -212,7 +208,10 @@ class ChatController(QObject):
             elif "discord.com" in url or "discord.gg" in url: return "un enlace de Discord"
             elif "spotify.com" in url: return "un enlace de Spotify"
             else: return "un enlace web"
-        return re.sub(r"https?://\S+|www\.\S+", replacer, text)
+        
+        cleaned = re.sub(r"https?://\S+|www\.\S+", replacer, text)
+        cleaned = re.sub(r"\[emote:[^\]]+\]", "", cleaned)
+        return re.sub(r"\s+", " ", cleaned).strip()
     
     def _execute_resolved_music_plugin(self, tag: str, user: str, message: str, prefix_used: str):
         api = getattr(self.command_service, 'api_client', None)

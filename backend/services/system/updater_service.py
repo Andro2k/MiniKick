@@ -1,9 +1,12 @@
-# backend/services/updater_services.py
+# backend\services\system\updater_service.py
 
+import os
 import requests
 import subprocess
 from backend.interfaces.updater_interfaces import (
-    IUpdateChecker, IUpdateDownloader, IUpdateInstaller
+    IUpdateChecker, 
+    IUpdateDownloader, 
+    IUpdateInstaller
 )
 
 class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
@@ -48,6 +51,7 @@ class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
         except Exception:
             return False
 
+
 class WindowsInstaller(IUpdateInstaller):
     def install_and_restart(self, installer_path: str) -> None:
         DETACHED_PROCESS = 0x00000008
@@ -57,3 +61,31 @@ class WindowsInstaller(IUpdateInstaller):
             creationflags=DETACHED_PROCESS,
             close_fds=True 
         )
+
+
+class UpdateManager:
+    def __init__(
+        self, 
+        current_version: str,
+        checker: IUpdateChecker, 
+        downloader: IUpdateDownloader, 
+        installer: IUpdateInstaller
+    ):
+        self.current_version = current_version
+        self.checker = checker
+        self.downloader = downloader
+        self.installer = installer
+
+    def check_for_updates(self) -> dict | None:
+        info = self.checker.get_latest_version_info()
+        if info and info["version"] > self.current_version:
+            return info
+        return None
+
+    def perform_update(self, download_url: str, progress_callback=None) -> bool:
+        temp_path = os.path.join(os.getenv('TEMP'), "minikick_update.exe")
+        
+        if self.downloader.download_file(download_url, temp_path, progress_callback):
+            self.installer.install_and_restart(temp_path)
+            return True
+        return False

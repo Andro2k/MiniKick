@@ -1,4 +1,4 @@
-# backend/sql_manager.py
+# backend\storage\database.py
 
 import os
 import sqlite3

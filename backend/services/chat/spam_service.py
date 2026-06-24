@@ -1,4 +1,4 @@
-# backend/services/spam_service.py
+# backend\services\chat\spam_service.py
 import re
 
 class SpamService:

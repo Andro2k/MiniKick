@@ -1,4 +1,4 @@
-# backend/services/dashboard_service.py
+# backend\services\system\dashboard_service.py
 
 from PySide6.QtCore import QObject, Signal, QUrl
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply

@@ -1,4 +1,4 @@
-# backend/auth_manager.py
+# backend\services\auth\oauth_server.py
 
 import base64
 import hashlib

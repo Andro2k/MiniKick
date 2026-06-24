@@ -1,4 +1,4 @@
-# backend/services/chat_service.py
+# backend\services\chat\chat_service.py
 
 class ChatService:
     def __init__(self, tts_manager, settings_storage):

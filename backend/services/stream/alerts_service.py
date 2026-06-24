@@ -1,4 +1,4 @@
-# backend/services/alerts_service.py
+# backend\services\stream\alerts_service.py
 
 class AlertsService:
     def __init__(self, alerts_storage, overlay_server):

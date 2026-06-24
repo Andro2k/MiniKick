@@ -1,4 +1,4 @@
-# backend/api_keys.py
+# backend\config\api_keys.py
 
 KICK_CLIENT_ID = "01KDVXPSFEFB93AW07VA0PVN7R"
 KICK_CLIENT_SECRET = "cb1654b2c9518f5669fdf4b526ea0bea4aa726e56bb7a717bd3ae6b15d40d80b"

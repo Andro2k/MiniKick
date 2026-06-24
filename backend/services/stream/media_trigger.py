@@ -1,4 +1,4 @@
-# backend/services/media_trigger_service.py
+# backend\services\stream\media_trigger.py
 
 import os
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput

@@ -7,9 +7,9 @@ from PySide6.QtCore import Slot, QEvent
 from backend.services.stream.alerts_service import AlertsService
 from backend.services.chat.chat_service import ChatService
 from backend.services.chat.command_service import CommandService
-from backend.services.dashboard_service import AvatarService
+from backend.services.system.dashboard_service import AvatarService
 from backend.services.system.log_service import LogService
-from backend.services.settings_service import SettingsService
+from backend.services.system.settings_service import SettingsService
 from backend.services.chat.spam_service import SpamService
 from frontend.navigation.sidebar_component import Sidebar
 from frontend.navigation.toast_component import ToastManager

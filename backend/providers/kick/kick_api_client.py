@@ -1,4 +1,4 @@
-# backend/kick_api_client.py
+# backend\providers\kick\kick_api_client.py
 
 import sys
 import time

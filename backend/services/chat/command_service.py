@@ -1,4 +1,4 @@
-# backend/services/command_service.py
+# backend\services\chat\command_service.py
 
 import re
 import time
