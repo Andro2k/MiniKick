@@ -16,7 +16,6 @@ from frontend.core.app_container_core import AppContainer
 
 
 def _get_safe_i18n():
-    """Extrae el motor de traducciones pre-boot sin disparar efectos secundarios de red"""
     try:
         return AppContainer(QMainWindow()).i18n
     except Exception as e:

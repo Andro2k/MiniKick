@@ -31,9 +31,11 @@ class MusicController(QObject):
 
     def _load_initial_state(self):
         saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.storage.load_all()}
+        self.view.blockSignals(True)
         self.view.sw_sr.setChecked(saved_cmds.get("!sr", False))
         self.view.sw_skip.setChecked(saved_cmds.get("!skip", False))
         self.view.sw_song.setChecked(saved_cmds.get("!song", False))
+        self.view.blockSignals(False)
 
         if self.spotify_auth.get_access_token():
             self._init_session_success("music.status.session_remembered")
@@ -85,17 +87,21 @@ class MusicController(QObject):
             "!skip": "[PLUGIN_SPOTIFY_SKIP]",
             "!song": "[PLUGIN_SPOTIFY_SONG]"
         }
+        existing = next((c for c in self.command_service.storage.load_all() if c["trigger"] == trigger), None)
 
-        default_permission = "everyone" if trigger in ("!sr", "!song") else "moderator"
+        cooldown = existing["cooldown"] if existing else 5
+        aliases = existing["aliases"] if existing else ""
+        is_regex = existing["is_regex"] if existing else False
+        permission = existing["permission"] if existing else ("everyone" if trigger in ("!sr", "!song") else "moderator")
 
         self.command_service.storage.save_command(
             trigger=trigger,
             response=plugin_tags.get(trigger, "[PLUGIN_SPOTIFY_SR]"),
             is_active=is_active,
-            cooldown=5,
-            aliases="",
-            is_regex=False,
-            permission=default_permission
+            cooldown=cooldown,
+            aliases=aliases,
+            is_regex=is_regex,
+            permission=permission
         )
 
         status_title = self.i18n.get("command.status.enabled") if is_active else self.i18n.get("command.status.disabled")

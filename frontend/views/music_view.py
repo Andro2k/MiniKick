@@ -94,7 +94,7 @@ class MusicView(QWidget):
         layout.setSpacing(12)
 
         icon_music = QLabel()
-        icon_music.setPixmap(get_icon_colored("play.svg", COLOR_ACCENT, 28).pixmap(28, 28))
+        icon_music.setPixmap(get_icon_colored("brand-spotify.svg", COLOR_ACCENT, 28).pixmap(28, 28))
         
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))

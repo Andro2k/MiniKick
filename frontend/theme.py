@@ -170,4 +170,29 @@ QToolTip {{
     background-color: {COLOR_BLACK}; color: {COLOR_TEXT_PRIMARY}; border: 1px solid {COLOR_BORDER_SVELTE}; padding: 2px 4px;
     font-family: {FONT_FAMILY}; font-size: 11px;
 }}
+
+/* --- 10. TAG PILLS Y BADGES (TABLA COMANDOS) --- */
+QLabel[role="cmd_trigger"] {{ font-size: 13px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; }}
+
+QFrame[role="tag_pill"] {{ border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; }}
+QLabel[role="pill_dot"] {{ font-size: 10px; font-weight: bold; background: transparent; }}
+QLabel[role="pill_text"] {{ color: {COLOR_TEXT_PRIMARY}; font-size: 11px; font-weight: 600; background: transparent; }}
+
+QFrame[role="tag_pill"][perm_level="everyone"] {{ background-color: rgba(16, 185, 129, 0.12); }}
+QFrame[role="tag_pill"][perm_level="everyone"] QLabel[role="pill_dot"] {{ color: #10B981; }}
+
+QFrame[role="tag_pill"][perm_level="subscriber"] {{ background-color: rgba(59, 130, 246, 0.12); }}
+QFrame[role="tag_pill"][perm_level="subscriber"] QLabel[role="pill_dot"] {{ color: #3B82F6; }}
+
+QFrame[role="tag_pill"][perm_level="vip"] {{ background-color: rgba(139, 92, 246, 0.12); }}
+QFrame[role="tag_pill"][perm_level="vip"] QLabel[role="pill_dot"] {{ color: #8B5CF6; }}
+
+QFrame[role="tag_pill"][perm_level="moderator"] {{ background-color: rgba(245, 158, 11, 0.12); }}
+QFrame[role="tag_pill"][perm_level="moderator"] QLabel[role="pill_dot"] {{ color: #F59E0B; }}
+
+QFrame[role="tag_pill"][perm_level="broadcaster"] {{ background-color: rgba(239, 68, 68, 0.12); }}
+QFrame[role="tag_pill"][perm_level="broadcaster"] QLabel[role="pill_dot"] {{ color: {COLOR_DANGER}; }}
+
+QFrame[role="badge_regex"] {{ background-color: {COLOR_BG_INPUT}; border-radius: 4px; padding: 0px 4px; }}
+QLabel[role="badge_regex_text"] {{ color: {COLOR_WARNING}; font-size: 9px; font-weight: bold; }}
 """

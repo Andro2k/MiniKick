@@ -97,7 +97,7 @@
             "btn_new": "New Command",
             "col_command": "Command",
             "col_aliases": "Aliases / Regex",
-            "col_response": "Response",
+            "col_permission": "Access Level",
             "col_actions": "Actions",
             "regex_prefix": "Regex",
             "tooltip_edit": "Modify command configuration",

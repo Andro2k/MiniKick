@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.components.custom_controls_component import ModernButton, ModernSwitch
 from frontend.components.ui_blocks_component import ViewHeader
-from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
+from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, COLOR_WARNING
 from frontend.utils import get_icon_colored
 
 class CommandView(QWidget):
@@ -74,22 +74,22 @@ class CommandView(QWidget):
         self.table = QTableWidget(0, 4)
 
         col_1 = self.i18n.get("command.table.col_command")
-        col_2 = self.i18n.get("command.table.col_aliases")
-        col_3 = self.i18n.get("command.table.col_response")
+        col_2 = self.i18n.get("command.table.col_permission")
+        col_3 = self.i18n.get("command.table.col_aliases")
         col_4 = self.i18n.get("command.table.col_actions")
         self.table.setHorizontalHeaderLabels([col_1, col_2, col_3, col_4])
         
         h_header = self.table.horizontalHeader()
-        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
         
-        self.table.setColumnWidth(1, 200)
+        self.table.setColumnWidth(1, 140)
         self.table.setColumnWidth(3, 130)
         
         self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(50)
+        self.table.verticalHeader().setDefaultSectionSize(48)
         self.table.setShowGrid(False)
         self.table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -103,59 +103,105 @@ class CommandView(QWidget):
 
     def populate_table(self, commands: list[dict]):
         self.table.setRowCount(0)
-        prefix_regex = self.i18n.get("command.table.regex_prefix")
         
         for cmd in commands:
             row = self.table.rowCount()
             self.table.insertRow(row)
-            
-            cmd_widget = self._create_command_cell(cmd)
-            self.table.setCellWidget(row, 0, cmd_widget)
-            
-            raw_aliases = cmd.get("aliases", "")
-            aliases_text = raw_aliases if raw_aliases else "-"
-            
-            if cmd.get("is_regex"):
-                aliases_text = f"{prefix_regex}: {raw_aliases}"
-            
-            item_aliases = QTableWidgetItem(aliases_text)
-            item_aliases.setToolTip(aliases_text)
-            item_aliases.setFlags(item_aliases.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 1, item_aliases)
-
-            item_response = QTableWidgetItem(cmd["response"])
-            item_response.setToolTip(cmd["response"])
-            item_response.setFlags(item_response.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table.setItem(row, 2, item_response)
-            
-            actions_widget = self._create_actions_cell(cmd)
-            self.table.setCellWidget(row, 3, actions_widget)
+            self.table.setCellWidget(row, 0, self._create_command_cell(cmd))
+            self.table.setCellWidget(row, 1, self._create_permission_cell(cmd))
+            self.table.setCellWidget(row, 2, self._create_aliases_cell(cmd))
+            self.table.setCellWidget(row, 3, self._create_actions_cell(cmd))
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setSpacing(6)
-
-        lbl_status_dot = QLabel("●")
-        lbl_status_dot.setProperty("role", "status_dot")
-        lbl_status_dot.setProperty("state", "active" if cmd_data.get("is_active") else "inactive")
-        layout.addWidget(lbl_status_dot)
-        
-        lbl_icon = QLabel()
-        icon_obj = get_icon_colored("grid-pattern.svg", COLOR_TEXT_PRIMARY, 16)
-        lbl_icon.setPixmap(icon_obj.pixmap(16, 16))
+        layout.setContentsMargins(12, 0, 8, 0)
         
         lbl_trigger = QLabel(cmd_data["trigger"])
-        lbl_trigger.setProperty("role", "monospace")
+        lbl_trigger.setProperty("role", "cmd_trigger")
         layout.addWidget(lbl_trigger)
         
-        permission = cmd_data.get("permission", "everyone")
-        if permission != "everyone":
-            lbl_perm = QLabel(permission.upper())
-            lbl_perm.setProperty("role", "tag_permission")           
-            layout.addWidget(lbl_perm)
+        layout.addStretch()
+        return container
+
+    def _create_permission_cell(self, cmd_data: dict) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 0, 8, 0)
+        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        raw_perm = cmd_data.get("permission", "everyone")
+        perm_keys = {
+            "everyone": "command.dialog.perm_everyone",
+            "subscriber": "command.dialog.perm_subscriber",
+            "vip": "command.dialog.perm_vip",
+            "moderator": "command.dialog.perm_moderator",
+            "broadcaster": "command.dialog.perm_broadcaster"
+        }
         
+        i18n_key = perm_keys.get(raw_perm, "command.dialog.perm_everyone")
+        translated_text = self.i18n.get(i18n_key) or raw_perm.upper()
+
+        tag = QFrame()
+        tag.setFixedHeight(24)
+        tag.setProperty("role", "tag_pill")
+        tag.setProperty("perm_level", raw_perm)
+        
+        tag_layout = QHBoxLayout(tag)
+        tag_layout.setContentsMargins(8, 0, 10, 0)
+        tag_layout.setSpacing(6)
+
+        lbl_dot = QLabel("●")
+        lbl_dot.setProperty("role", "pill_dot")
+        
+        lbl_txt = QLabel(translated_text)
+        lbl_txt.setProperty("role", "pill_text")
+
+        tag_layout.addWidget(lbl_dot, alignment=Qt.AlignmentFlag.AlignVCenter)
+        tag_layout.addWidget(lbl_txt, alignment=Qt.AlignmentFlag.AlignVCenter)
+        
+        layout.addWidget(tag)
+        return container
+
+    def _create_aliases_cell(self, cmd_data: dict) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 0, 8, 0)
+        layout.setSpacing(8)
+        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        raw_aliases = cmd_data.get("aliases", "").strip()
+        is_regex = cmd_data.get("is_regex", False)
+
+        if not raw_aliases:
+            lbl_empty = QLabel("-")
+            lbl_empty.setProperty("role", "body")
+            layout.addWidget(lbl_empty)
+            return container
+
+        if is_regex:
+            badge_text = (self.i18n.get("command.table.regex_prefix")).upper()
+            
+            badge = QFrame()
+            badge.setFixedHeight(20)
+            badge.setProperty("role", "badge_regex")
+            
+            b_layout = QHBoxLayout(badge)
+            b_layout.setContentsMargins(4, 2, 4, 2)
+            
+            lbl_b = QLabel(badge_text)
+            lbl_b.setProperty("role", "badge_regex_text")
+            
+            b_layout.addWidget(lbl_b)
+            layout.addWidget(badge)
+
+            lbl_text = QLabel(raw_aliases)
+            lbl_text.setProperty("role", "monospace")
+        else:
+            lbl_text = QLabel(raw_aliases)
+            lbl_text.setProperty("role", "body")
+
+        layout.addWidget(lbl_text)
         layout.addStretch()
         return container
 

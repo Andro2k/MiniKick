@@ -41,9 +41,9 @@ class CommandService:
         required_level = levels.get(required_perm, 0)
         return user_level >= required_level
 
-    def process_incoming_message(self, user: str, message: str, badges: list):
+    def process_incoming_message(self, user: str, message: str, badges: list) -> tuple[bool, str, dict, str]:
         if not message:
-            return
+            return False, "", {}, ""
 
         commands = self.get_all_commands()
         
@@ -52,9 +52,7 @@ class CommandService:
                 continue
 
             permission = cmd.get("permission", "everyone")
-            if permission == "moderator" and not ("moderator" in badges or "broadcaster" in badges):
-                continue
-            if permission == "broadcaster" and "broadcaster" not in badges:
+            if not self._has_permission(permission, badges):
                 continue
 
             trigger = cmd["trigger"]
@@ -65,12 +63,15 @@ class CommandService:
                 continue
 
             is_match = False
+            matched_prefix = ""
 
             if cmd.get("is_regex", False):
                 regex_pattern = cmd.get("aliases", "")
                 try:
-                    if re.search(regex_pattern, message, re.IGNORECASE):
+                    match = re.search(regex_pattern, message, re.IGNORECASE)
+                    if match:
                         is_match = True
+                        matched_prefix = match.group(0)
                 except re.error:
                     pass
             else:
@@ -87,12 +88,18 @@ class CommandService:
                 
                 if first_word in triggers_to_check:
                     is_match = True
+                    matched_prefix = msg_parts[0]
 
             if is_match:
                 self.cooldown_timers[trigger] = time.time()
                 final_response = cmd["response"].replace("{user}", user)
+                if final_response.startswith("[PLUGIN_"):
+                    return True, final_response, cmd, matched_prefix
+
                 self.send_response(final_response)
-                break
+                return True, "", cmd, matched_prefix
+
+        return False, "", {}, ""
 
     def send_response(self, response_text: str):
         try:
