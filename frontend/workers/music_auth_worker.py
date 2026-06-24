@@ -1,7 +1,7 @@
-# frontend/workers/spotify_auth_worker.py
+# frontend/workers/music_auth_worker.py
 
 from PySide6.QtCore import QThread, Signal
-from backend.music.spotify_client import SpotifyAuthManager
+from backend.music.music_spotify_client import SpotifyAuthManager
 
 class SpotifyAuthWorker(QThread):
     auth_success = Signal(dict)

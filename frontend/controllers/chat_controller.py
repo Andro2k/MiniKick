@@ -7,10 +7,11 @@ from frontend.workers.voice_worker import VoiceFetcherWorker
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
 
-    def __init__(self, view, service):
+    def __init__(self, view, service, i18n):
         super().__init__()
         self.view = view
         self.service = service
+        self.i18n = i18n
         self.muted_bots = []
         self._all_voices = []
         self._voice_worker = None
@@ -72,7 +73,6 @@ class ChatController(QObject):
         text_to_speak = f"{user} dice: {final_message}" if settings["read_name"] else final_message
         self.service.speak(text_to_speak)
 
-
     def _try_execute_music_plugin(self, user: str, message: str) -> bool:
         if not hasattr(self, 'command_service') or not self.command_service:
             return False
@@ -102,7 +102,7 @@ class ChatController(QObject):
                 if tag == "[PLUGIN_SPOTIFY_SR]":
                     query = message[len(cmd["trigger"]):].strip()
                     if not query:
-                        msg = self.view.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", cmd["trigger"])
+                        msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", cmd["trigger"])
                         api.post_chat_message(msg)
                         return True
 
@@ -110,26 +110,26 @@ class ChatController(QObject):
                         success, reply = provider.add_to_queue(query)
                         api.post_chat_message(reply)
                     else:
-                        api.post_chat_message(self.view.i18n.get("music.chat.not_linked"))
+                        api.post_chat_message(self.i18n.get("music.chat.not_linked"))
                     return True
 
                 elif tag == "[PLUGIN_SPOTIFY_SKIP]":
                     if provider and provider.skip_current():
-                        api.post_chat_message(self.view.i18n.get("music.chat.skip_success"))
+                        api.post_chat_message(self.i18n.get("music.chat.skip_success"))
                     else:
-                        api.post_chat_message(self.view.i18n.get("music.chat.skip_failed"))
+                        api.post_chat_message(self.i18n.get("music.chat.skip_failed"))
                     return True
                 
                 elif tag == "[PLUGIN_SPOTIFY_SONG]":
                     if provider:
                         song = provider.get_current_song()
                         if song:
-                            msg = self.view.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
+                            msg = self.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
                             api.post_chat_message(msg)
                         else:
-                            api.post_chat_message(self.view.i18n.get("music.chat.song_paused"))
+                            api.post_chat_message(self.i18n.get("music.chat.song_paused"))
                     else:
-                        api.post_chat_message(self.view.i18n.get("music.chat.not_linked"))
+                        api.post_chat_message(self.i18n.get("music.chat.not_linked"))
                     return True
 
         return False
@@ -269,5 +269,6 @@ class ChatController(QObject):
             elif "instagram.com" in url: return "un enlace de Instagram"
             elif "tiktok.com" in url: return "un enlace de TikTok"
             elif "discord.com" in url or "discord.gg" in url: return "un enlace de Discord"
+            elif "spotify.com" in url: return "un enlace de Spotify"
             else: return "un enlace web"
         return re.sub(r"https?://\S+|www\.\S+", replacer, text)

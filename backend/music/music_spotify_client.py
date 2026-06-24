@@ -1,4 +1,4 @@
-# backend/music/spotify_client.py
+# backend/music/music_spotify_client.py
 
 import base64
 import requests
@@ -99,7 +99,6 @@ class SpotifyMusicProvider(MusicPlayerProvider):
                 raise PermissionError(self.i18n.get("music.errors.refresh_failed"))
             headers["Authorization"] = f"Bearer {new_tokens['access_token']}"
             resp = requests.request(method, url, headers=headers, **kwargs)
-
         return resp
 
     def get_current_song(self) -> dict | None:
@@ -107,12 +106,10 @@ class SpotifyMusicProvider(MusicPlayerProvider):
             resp = self._request("GET", "/me/player/currently-playing")
             if resp.status_code == 204:
                 return None
-            
             data = resp.json()
             item = data.get("item")
             if not item:
                 return None
-
             artists = ", ".join(a.get("name") for a in item.get("artists", []))
             return {
                 "title": item.get("name", self.i18n.get("music.player.unknown_song")),
@@ -132,8 +129,7 @@ class SpotifyMusicProvider(MusicPlayerProvider):
                 tracks = search_resp.json().get("tracks", {}).get("items", [])
                 if not tracks:
                     msg = self.i18n.get("music.queue.not_found").replace("{query}", query_or_uri)
-                    return False, msg
-                
+                    return False, msg         
                 target = tracks[0]
                 track_uri = target.get("uri")
                 artists = ", ".join(a.get("name") for a in target.get("artists", []))

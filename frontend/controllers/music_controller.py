@@ -1,8 +1,8 @@
 # frontend/controllers/music_controller.py
 
 from PySide6.QtCore import QObject, Slot, QTimer
-from frontend.workers.spotify_auth_worker import SpotifyAuthWorker
-from backend.music.spotify_client import SpotifyMusicProvider
+from frontend.workers.music_auth_worker import SpotifyAuthWorker
+from backend.music.music_spotify_client import SpotifyMusicProvider
 
 
 class MusicController(QObject):
@@ -36,7 +36,7 @@ class MusicController(QObject):
         self.view.sw_song.setChecked(saved_cmds.get("!song", False))
 
         if self.spotify_auth.get_access_token():
-            self._init_session_success(self.i18n.get("music.status.session_remembered"))
+            self._init_session_success("music.status.session_remembered")
 
     @Slot()
     def handle_connect_request(self):
@@ -44,21 +44,21 @@ class MusicController(QObject):
         self.view.lbl_auth_status.setText(self.i18n.get("music.status.connecting"))
 
         self.auth_worker = SpotifyAuthWorker(self.i18n, self.spotify_auth)
-        self.auth_worker.auth_success.connect(lambda tokens: self._init_session_success(self.i18n.get("music.status.connected_user")))
+        self.auth_worker.auth_success.connect(lambda tokens: self._init_session_success("music.status.connected_user"))
         self.auth_worker.auth_error.connect(self._handle_auth_error)
         self.auth_worker.start()
 
-    def _init_session_success(self, label: str):
+    def _init_session_success(self, label_key: str):
         self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n)
-        self.view.set_auth_state(connected=True, user_email=label)
-        self.toast.show_toast("Spotify", self.i18n.get("music.toast.connected"), "success")
+        self.view.set_auth_state(connected=True, label_key=label_key)
+        self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.connected"), "success")
         
         self.polling_timer.start()
         self._poll_now_playing()
 
     @Slot(str)
     def _handle_auth_error(self, err_msg: str):
-        self.toast.show_toast("Spotify", err_msg, "danger")
+        self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), err_msg, "danger")
         self.view.set_auth_state(connected=False)
         self.view.btn_connect.setEnabled(True)
 
@@ -69,7 +69,7 @@ class MusicController(QObject):
         self.music_provider = None
         self.view.set_auth_state(connected=False)
         self.view.update_current_song(None)
-        self.toast.show_toast("Spotify", self.i18n.get("music.toast.disconnected"), "info")
+        self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.disconnected"), "info")
 
     @Slot()
     def _poll_now_playing(self):

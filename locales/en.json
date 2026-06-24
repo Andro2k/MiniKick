@@ -305,15 +305,16 @@
         },
         "cmds": {
             "title": "Viewer Commands",
-            "sr_label": "!sr <song>",
-            "sr_desc": "Allows users to request songs for the queue.",
-            "skip_label": "!skip",
-            "skip_desc": "Forces skipping to the next song.",
-            "song_label": "!song",
-            "song_desc": "Displays the current song name in chat.",
+            "sr_label": "Request Song (Default: !sr)",
+            "sr_desc": "Allows viewers to add music to the queue. You can customize the '!sr' trigger in the Commands view.",
+            "skip_label": "Skip Track (Default: !skip)",
+            "skip_desc": "Forces playback to the next song. You can customize the '!skip' trigger in the Commands view.",
+            "song_label": "Current Song (Default: !song)",
+            "song_desc": "Displays the currently playing track in chat. You can customize the '!song' trigger in the Commands view.",
             "default_tag_name": "Music Plugin"
         },
         "toast": {
+            "title_spotify": "Spotify",
             "connected": "Link with Spotify successfully established.",
             "disconnected": "Spotify account disconnected."
         },

@@ -127,7 +127,8 @@ class MainWindow(QMainWindow):
         )
         self.chat_controller = ChatController(
             view=self.view_chat, 
-            service=self.chat_service
+            service=self.chat_service,
+            i18n=self.i18n
         )
         self.music_controller = MusicController(
             view=self.view_music,

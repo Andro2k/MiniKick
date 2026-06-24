@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                                QLabel, QFrame, QScrollArea)
 from PySide6.QtCore import Qt, Signal
 
-from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_TEXT_SECONDARY
+from frontend.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
 from frontend.utils import get_icon_colored
 from frontend.components.ui_blocks_component import ViewHeader, SettingRow
 from frontend.components.custom_controls_component import ModernButton, ModernSwitch
@@ -127,15 +127,15 @@ class MusicView(QWidget):
 
         self.sw_sr = ModernSwitch()
         self.sw_sr.toggled.connect(lambda val: self.command_toggled.emit("!sr", val))
-        row_sr = SettingRow("add.svg", "!sr <canción>", self.i18n.get("music.cmds.sr_desc"), self.sw_sr)
+        row_sr = SettingRow("add.svg", self.i18n.get("music.cmds.sr_label"), self.i18n.get("music.cmds.sr_desc"), self.sw_sr)
 
         self.sw_skip = ModernSwitch()
         self.sw_skip.toggled.connect(lambda val: self.command_toggled.emit("!skip", val))
-        row_skip = SettingRow("chevron-right-pipe.svg", "!skip", self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
+        row_skip = SettingRow("chevron-right-pipe.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
 
         self.sw_song = ModernSwitch()
         self.sw_song.toggled.connect(lambda val: self.command_toggled.emit("!song", val))
-        row_song = SettingRow("info-circle.svg", "!song", self.i18n.get("music.cmds.song_desc"), self.sw_song)
+        row_song = SettingRow("info-circle.svg", self.i18n.get("music.cmds.song_label"), self.i18n.get("music.cmds.song_desc"), self.sw_song)
 
         layout.addWidget(row_sr)
         layout.addWidget(row_skip)
@@ -143,14 +143,15 @@ class MusicView(QWidget):
         
         self.main_layout.addWidget(self.card_cmds)
 
-    def set_auth_state(self, connected: bool, user_email: str = ""):
+    def set_auth_state(self, connected: bool, label_key: str = ""):
         self.btn_connect.setVisible(not connected)
         self.btn_disconnect.setVisible(connected)
         self.card_cmds.setEnabled(connected)
         self.card_player.setVisible(connected)
 
         if connected:
-            self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {user_email}")
+            translated_label = self.i18n.get(label_key)
+            self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
             self.lbl_auth_status.setStyleSheet(f"color: {COLOR_ACCENT}; font-weight: bold;")
         else:
             self.lbl_auth_status.setText(self.i18n.get("music.status.disconnected"))

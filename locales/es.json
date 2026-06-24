@@ -305,15 +305,16 @@
         },
         "cmds": {
             "title": "Comandos de Espectadores",
-            "sr_label": "!sr <canción>",
-            "sr_desc": "Permite a los usuarios pedir canciones para la cola.",
-            "skip_label": "!skip",
-            "skip_desc": "Fuerza el salto a la siguiente canción.",
-            "song_label": "!song",
-            "song_desc": "Muestra en el chat el nombre de la canción actual.",
+            "sr_label": "Pedir Canción (Por defecto: !sr)",
+            "sr_desc": "Permite a los usuarios añadir música a la cola. Puedes personalizar el prefijo '!sr' desde el apartado de Comandos.",
+            "skip_label": "Saltar Canción (Por defecto: !skip)",
+            "skip_desc": "Fuerza el paso a la siguiente pista. Puedes personalizar el prefijo '!skip' desde el apartado de Comandos.",
+            "song_label": "Canción Actual (Por defecto: !song)",
+            "song_desc": "Informa en el chat qué está sonando. Puedes personalizar el prefijo '!song' desde el apartado de Comandos.",
             "default_tag_name": "Plugin de Música"
         },
         "toast": {
+            "title_spotify": "Spotify",
             "connected": "Enlace con Spotify establecido correctamente.",
             "disconnected": "Cuenta de Spotify desconectada."
         },
