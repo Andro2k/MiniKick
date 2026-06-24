@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout,
                                QLabel, QPushButton, QSizePolicy)
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
 
-from frontend.theme import COLOR_ACCENT, COLOR_DANGER, COLOR_INFO, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_WARNING
-from frontend.utils import get_icon_colored
+from frontend.common.theme import COLOR_ACCENT, COLOR_DANGER, COLOR_INFO, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_WARNING
+from frontend.common.utils import get_icon_colored
 
 class ModernToast(QFrame):
     expired = Signal(object)

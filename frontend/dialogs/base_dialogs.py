@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QColor, QMouseEvent
 
-from frontend.theme import COLOR_DANGER, PATH_ICON_HELP
+from frontend.common.theme import COLOR_DANGER, PATH_ICON_HELP
 
 class ModernFramelessShell(QDialog):
     def __init__(self, width: int = 420, parent=None):

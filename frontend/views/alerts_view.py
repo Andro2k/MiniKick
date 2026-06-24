@@ -6,10 +6,10 @@ from PySide6.QtWidgets import (QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, Q
                                QHeaderView, QApplication)
 from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
-from frontend.components.custom_controls_component import ModernButton
-from frontend.components.ui_blocks_component import ViewHeader, SettingRow
-from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
-from frontend.utils import get_icon_colored
+from frontend.widgets.controls_component import ModernButton
+from frontend.widgets.blocks_component import ViewHeader, SettingRow
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
+from frontend.common.utils import get_icon_colored
 
 class AlertsView(QWidget):
     add_requested = Signal()

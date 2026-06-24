@@ -5,13 +5,13 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QFont, QFontDatabase, QIcon
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
-from backend.services.updater_services import GithubUpdateProvider, WindowsInstaller
-from backend.updater_manager import UpdateManager
-from frontend.main_window_view import MainWindow
-from frontend.theme import GLOBAL_QSS
-from frontend.utils import resource_path
+from backend.services.system.updater_services import GithubUpdateProvider, WindowsInstaller
+from backend.services.system.updater_manager import UpdateManager
+from frontend.views.main_window_view import MainWindow
+from frontend.common.theme import GLOBAL_QSS
+from frontend.common.utils import resource_path
 from backend.services.instance_services import SocketInstanceProvider
-from frontend.components.dialogs.already_running_dialog import AlreadyRunningDialog
+from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.core.app_container_core import AppContainer
 
 

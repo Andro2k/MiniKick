@@ -1,7 +1,7 @@
 # frontend/controllers/command_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.components.dialogs import CommandConfigWizard
+from frontend.dialogs import CommandConfigWizard
 
 class CommandController(QObject):
     def __init__(self, view, service):

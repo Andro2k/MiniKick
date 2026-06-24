@@ -17,9 +17,9 @@ from PySide6.QtWidgets import (
 )
 
 from frontend.components.log_controls_component import LogControlsPanel
-from frontend.components.ui_blocks_component import ViewHeader
-from frontend.theme import COLOR_ACCENT
-from frontend.utils import get_icon_colored
+from frontend.widgets.blocks_component import ViewHeader
+from frontend.common.theme import COLOR_ACCENT
+from frontend.common.utils import get_icon_colored
 
 
 class LogView(QWidget):

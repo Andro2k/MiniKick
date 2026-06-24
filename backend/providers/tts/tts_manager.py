@@ -3,8 +3,8 @@
 import queue
 import threading
 from backend.interfaces.tts_interfaces import ITTSProvider
-from backend.TTS.local_tts import LocalTTSProvider
-from backend.TTS.web_tts import WebTTSProvider
+from backend.providers.tts.local_tts import LocalTTSProvider
+from backend.providers.tts.web_tts import WebTTSProvider
 
 class TTSManager:
     def __init__(self):

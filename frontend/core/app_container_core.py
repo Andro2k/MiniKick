@@ -3,7 +3,7 @@
 import os
 import sys
 try:
-    from backend.api_keys import (
+    from backend.config.api_keys import (
         KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
         SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI
     )
@@ -16,17 +16,17 @@ except ImportError:
     SPOTIFY_CLIENT_SECRET = ""
     SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8080/auth/callback"
 
-from backend.music.music_spotify_client import SpotifyAuthManager, SpotifyMusicProvider
-from backend.sqlite_manager import (DatabaseManager, SQLiteCommandsStorage, 
+from backend.providers.spotify.spotify_client import SpotifyAuthManager, SpotifyMusicProvider
+from backend.storage.database import (DatabaseManager, SQLiteCommandsStorage, 
                                  SQLiteTokenStorage, SQLiteSettingsStorage, 
                                  SQLiteAlertsStorage, SQLiteSpamStorage)
-from backend.services.backup_service import BackupService
-from backend.services.translation_service import TranslationService
-from backend.auth_manager import AuthManager
-from backend.tts_manager import TTSManager
-from backend.services.overlay_server import OverlayServerManager
-from backend.services.media_trigger_service import MediaTriggerService
-from frontend.utils import resource_path
+from backend.services.system.backup_service import BackupService
+from backend.services.system.translation_service import TranslationService
+from backend.services.auth.oauth_server import AuthManager
+from backend.providers.tts.tts_manager import TTSManager
+from backend.services.stream.overlay_server import OverlayServerManager
+from backend.services.stream.media_trigger import MediaTriggerService
+from frontend.common.utils import resource_path
 
 class AppContainer:
     def __init__(self, parent_widget):

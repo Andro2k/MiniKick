@@ -5,10 +5,10 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
                                QLineEdit)
 from PySide6.QtCore import Qt, Signal
 
-from frontend.components.custom_controls_component import ModernButton, ModernSwitch
-from frontend.components.ui_blocks_component import ViewHeader
-from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, COLOR_WARNING
-from frontend.utils import get_icon_colored
+from frontend.widgets.controls_component import ModernButton, ModernSwitch
+from frontend.widgets.blocks_component import ViewHeader
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, COLOR_WARNING
+from frontend.common.utils import get_icon_colored
 
 class CommandView(QWidget):
     add_requested = Signal()

@@ -2,8 +2,8 @@
 
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt
-from frontend.utils import get_icon_colored
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
+from frontend.common.utils import get_icon_colored
+from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, parent=None):

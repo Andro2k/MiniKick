@@ -4,9 +4,9 @@ from PySide6.QtWidgets import QComboBox, QHBoxLayout, QScrollArea, QWidget, QVBo
 from PySide6.QtCore import Qt, Signal
 from datetime import datetime
 
-from frontend.components.custom_controls_component import ModernSwitch, ModernButton
-from frontend.components.ui_blocks_component import ViewHeader, SettingRow
-from frontend.theme import COLOR_ACCENT, COLOR_DANGER
+from frontend.widgets.controls_component import ModernSwitch, ModernButton
+from frontend.widgets.blocks_component import ViewHeader, SettingRow
+from frontend.common.theme import COLOR_ACCENT, COLOR_DANGER
 
 class SettingsView(QWidget):
     minimize_tray_toggled = Signal(bool)

@@ -1,7 +1,7 @@
 # frontend/controllers/alerts_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.components.dialogs import AlertConfigWizard
+from frontend.dialogs import AlertConfigWizard
 
 class AlertsController(QObject):
     def __init__(self, view, service):

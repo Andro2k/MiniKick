@@ -4,10 +4,10 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QFrame, QComboBox, QSpinBox, QScrollArea, QPushButton)
 from PySide6.QtCore import Qt, Signal
 
-from frontend.components.ui_blocks_component import ViewHeader
-from frontend.components.custom_controls_component import ModernSwitch
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
-from frontend.utils import get_icon_colored
+from frontend.widgets.blocks_component import ViewHeader
+from frontend.widgets.controls_component import ModernSwitch
+from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
+from frontend.common.utils import get_icon_colored
 
 class SpamFilterCard(QFrame):
     updated = Signal(str, dict)

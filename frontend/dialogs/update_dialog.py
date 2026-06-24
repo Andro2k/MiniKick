@@ -4,9 +4,9 @@ from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QP
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
-from frontend.components.dialogs.base_dialogs import ModernModalAlert
-from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_INFO
-from frontend.utils import get_icon_colored, get_assets_path
+from frontend.dialogs.base_dialogs import ModernModalAlert
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_INFO
+from frontend.common.utils import get_icon_colored, get_assets_path
 
 class UpdateDialog(ModernModalAlert):
     download_requested = Signal() 

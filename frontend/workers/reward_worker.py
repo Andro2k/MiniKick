@@ -2,7 +2,7 @@
 
 import time
 from PySide6.QtCore import QThread, Signal
-from backend.kick_api_client import KickAPIClient
+from backend.providers.kick.kick_api_client import KickAPIClient
 
 class RewardWorker(QThread):
     reward_redeemed = Signal(str, str, str)

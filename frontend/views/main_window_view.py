@@ -4,16 +4,16 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent
 
-from backend.services.alerts_service import AlertsService
-from backend.services.chat_service import ChatService
-from backend.services.command_service import CommandService
+from backend.services.stream.alerts_service import AlertsService
+from backend.services.chat.chat_service import ChatService
+from backend.services.chat.command_service import CommandService
 from backend.services.dashboard_service import AvatarService
-from backend.services.log_service import LogService
+from backend.services.system.log_service import LogService
 from backend.services.settings_service import SettingsService
-from backend.services.spam_service import SpamService
-from frontend.components.sidebar_component import Sidebar
-from frontend.components.toast_component import ToastManager
-from frontend.components.tray_menu_component import SystemTrayManager
+from backend.services.chat.spam_service import SpamService
+from frontend.navigation.sidebar_component import Sidebar
+from frontend.navigation.toast_component import ToastManager
+from frontend.navigation.tray_menu_component import SystemTrayManager
 from frontend.controllers.alerts_controller import AlertsController
 from frontend.controllers.chat_controller import ChatController
 from frontend.controllers.command_controller import CommandController
@@ -25,7 +25,7 @@ from frontend.controllers.spam_controller import SpamController
 from frontend.controllers.update_controller import UpdateController
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
-from frontend.theme import COLOR_ACCENT
+from frontend.common.theme import COLOR_ACCENT
 from frontend.views.alerts_view import AlertsView
 from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
@@ -34,14 +34,14 @@ from frontend.views.log_view import LogView
 from frontend.views.music_view import MusicView
 from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
-from backend.kick_api_client import KickAPIClient
-from frontend.components.dialogs import ModernConfirmDialog
+from backend.providers.kick.kick_api_client import KickAPIClient
+from frontend.dialogs import ModernConfirmDialog
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
 from frontend.workers.fetch_rewards_worker import FetchRewardsWorker
 from frontend.workers.reward_worker import RewardWorker
 try:
-    from backend.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
+    from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
 except ImportError:
     KICK_PUSHER_CLUSTER = "us2"
     KICK_PUSHER_KEY = "32cbd69e4b950bf97679"

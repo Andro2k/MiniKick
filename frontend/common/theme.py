@@ -1,6 +1,6 @@
 # frontend/theme.py
 
-from frontend.utils import get_assets_path
+from frontend.common.utils import get_assets_path
 PATH_ICON_HELP = get_assets_path("icons/help.svg")
 PATH_ICON_UPDATE = get_assets_path("icons/cloud.svg")
 PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')

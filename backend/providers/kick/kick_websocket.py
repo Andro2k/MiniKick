@@ -6,7 +6,7 @@ import time
 from typing import Callable
 import websocket
 
-from frontend.theme import COLOR_ACCENT
+from frontend.common.theme import COLOR_ACCENT
 
 class ChatFormatter:
     @staticmethod

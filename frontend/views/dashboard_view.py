@@ -4,10 +4,10 @@ from PySide6.QtWidgets import (QBoxLayout, QScrollArea, QWidget, QVBoxLayout, QH
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
-from frontend.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
-from frontend.utils import create_circular_pixmap, get_icon_colored
-from frontend.components.ui_blocks_component import StatCard, ViewHeader, SettingRow
-from frontend.components.custom_controls_component import ModernButton, ModernSwitch
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
+from frontend.common.utils import create_circular_pixmap, get_icon_colored
+from frontend.widgets.blocks_component import StatCard, ViewHeader, SettingRow
+from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
 class DashboardView(QWidget):
     connect_requested = Signal()

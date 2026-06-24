@@ -1,7 +1,7 @@
 # frontend/workers/auth_worker.py
 
 from PySide6.QtCore import QThread, Signal
-from backend.auth_manager import AuthManager
+from backend.services.auth.oauth_server import AuthManager
 
 class AuthWorker(QThread):
     auth_success = Signal(dict)

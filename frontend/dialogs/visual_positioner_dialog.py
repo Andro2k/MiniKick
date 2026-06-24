@@ -2,10 +2,10 @@
 
 from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
-from frontend.components.custom_controls_component import ModernButton
-from frontend.theme import COLOR_ACCENT, PATH_ICON_HELP
-from frontend.components.dialogs.base_dialogs import ModernModalAlert
-from frontend.components.draggable_media_component import DraggableAlertBox
+from frontend.widgets.controls_component import ModernButton
+from frontend.common.theme import COLOR_ACCENT, PATH_ICON_HELP
+from frontend.dialogs.base_dialogs import ModernModalAlert
+from frontend.widgets.draggable_component import DraggableAlertBox
 
 class VisualPositionerDialog(ModernModalAlert):
     live_position_changed = Signal(int, int)

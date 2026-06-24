@@ -5,12 +5,12 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
                                QDoubleSpinBox, QStackedWidget, QFileDialog)
 from PySide6.QtCore import Qt
 
-from frontend.components.custom_controls_component import ModernButton, ModernSwitch
-from frontend.theme import COLOR_TEXT_PRIMARY
-from frontend.utils import get_icon_colored
-from frontend.components.dialogs.base_dialogs import ModernWizardPanel
-from frontend.components.ui_blocks_component import SettingSliderRow
-from frontend.components.dialogs.visual_positioner_dialog import VisualPositionerDialog
+from frontend.widgets.controls_component import ModernButton, ModernSwitch
+from frontend.common.theme import COLOR_TEXT_PRIMARY
+from frontend.common.utils import get_icon_colored
+from frontend.dialogs.base_dialogs import ModernWizardPanel
+from frontend.widgets.blocks_component import SettingSliderRow
+from frontend.dialogs.visual_positioner_dialog import VisualPositionerDialog
 
 class AlertConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):

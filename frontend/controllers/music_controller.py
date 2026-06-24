@@ -2,8 +2,7 @@
 
 from PySide6.QtCore import QObject, Slot, QTimer
 from frontend.workers.music_auth_worker import SpotifyAuthWorker
-from backend.music.music_spotify_client import SpotifyMusicProvider
-
+from backend.providers.spotify.spotify_client import SpotifyMusicProvider
 
 class MusicController(QObject):
     def __init__(self, view, spotify_auth, command_service, toast_manager, i18n):

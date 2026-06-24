@@ -5,10 +5,10 @@ from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget,
                                QFrame, QSizePolicy, QScrollArea)
 from PySide6.QtCore import Qt, Signal, Slot
 
-from frontend.components.custom_controls_component import ModernSwitch
-from frontend.components.ui_blocks_component import ViewHeader, SettingRow, SettingSliderRow
-from frontend.components.bot_panel_component import BotMutePanel
-from frontend.theme import COLOR_ACCENT
+from frontend.widgets.controls_component import ModernSwitch
+from frontend.widgets.blocks_component import ViewHeader, SettingRow, SettingSliderRow
+from frontend.navigation.bot_panel_component import BotMutePanel
+from frontend.common.theme import COLOR_ACCENT
 
 class ChatView(QWidget):
     volume_changed = Signal(int)

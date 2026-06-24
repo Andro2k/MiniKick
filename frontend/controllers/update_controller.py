@@ -1,7 +1,7 @@
 # frontend/controllers/update_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.components.dialogs.update_dialog import UpdateDialog
+from frontend.dialogs.update_dialog import UpdateDialog
 from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
 class UpdateController(QObject):

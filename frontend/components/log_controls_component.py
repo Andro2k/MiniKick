@@ -2,9 +2,9 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QComboBox, QBoxLayout
 from PySide6.QtCore import Qt, Signal
-from frontend.components.custom_controls_component import ModernButton
-from frontend.utils import get_icon_colored
-from frontend.theme import COLOR_BLACK, COLOR_TEXT_PRIMARY
+from frontend.widgets.controls_component import ModernButton
+from frontend.common.utils import get_icon_colored
+from frontend.common.theme import COLOR_BLACK, COLOR_TEXT_PRIMARY
 
 class LogControlsPanel(QFrame):
     search_changed = Signal(str)

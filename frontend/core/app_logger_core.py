@@ -4,7 +4,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
-from frontend.components.log_handler import QLogHandler, StreamToLogger
+from frontend.common.log_handler import QLogHandler, StreamToLogger
 
 def setup_application_logging():
     logger = logging.getLogger()

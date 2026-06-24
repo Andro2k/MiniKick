@@ -3,7 +3,7 @@
 import base64
 import requests
 from urllib.parse import urlparse, urlencode, quote
-from backend.auth_manager import OAuthCallbackServer
+from backend.services.auth.oauth_server import OAuthCallbackServer
 from backend.interfaces.music_interfaces import MusicPlayerProvider
 
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"

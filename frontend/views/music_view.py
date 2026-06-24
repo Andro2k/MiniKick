@@ -4,10 +4,10 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                                QLabel, QFrame, QScrollArea)
 from PySide6.QtCore import Qt, Signal
 
-from frontend.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
-from frontend.utils import get_icon_colored
-from frontend.components.ui_blocks_component import ViewHeader, SettingRow
-from frontend.components.custom_controls_component import ModernButton, ModernSwitch
+from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
+from frontend.common.utils import get_icon_colored
+from frontend.widgets.blocks_component import ViewHeader, SettingRow
+from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
 
 class MusicView(QWidget):

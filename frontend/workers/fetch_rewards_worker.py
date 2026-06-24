@@ -1,7 +1,7 @@
 # frontend/workers/fetch_rewards_worker.py
 
 from PySide6.QtCore import QThread, Signal
-from backend.kick_api_client import KickAPIClient
+from backend.providers.kick.kick_api_client import KickAPIClient
 
 class FetchRewardsWorker(QThread):
     rewards_fetched = Signal(list)
