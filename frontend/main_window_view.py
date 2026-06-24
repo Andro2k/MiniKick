@@ -19,6 +19,7 @@ from frontend.controllers.chat_controller import ChatController
 from frontend.controllers.command_controller import CommandController
 from frontend.controllers.dashboard_controller import DashboardController
 from frontend.controllers.log_controller import LogController
+from frontend.controllers.music_controller import MusicController
 from frontend.controllers.settings_controller import SettingsController
 from frontend.controllers.spam_controller import SpamController
 from frontend.controllers.update_controller import UpdateController
@@ -30,6 +31,7 @@ from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
 from frontend.views.log_view import LogView
+from frontend.views.music_view import MusicView
 from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
 from backend.kick_api_client import KickAPIClient
@@ -55,7 +57,7 @@ class MainWindow(QMainWindow):
         self.app_version = app_version
         self.container = AppContainer(self)
         self.db_manager = self.container.db_manager
-        self.token_storage = self.container.token_storage
+        self.token_storage = self.container.kick_token_storage
         self.settings_storage = self.container.settings_storage 
         self.alerts_storage = self.container.alerts_storage
         self.commands_storage = self.container.commands_storage
@@ -94,6 +96,7 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar(self.i18n, app_version=self.app_version)
         self.sidebar.add_tab("Dashboard", "dashboard.svg", is_active=True)
         self.sidebar.add_tab("Chat", "message.svg")
+        self.sidebar.add_tab("Music", "brand-spotify.svg")
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Comandos", "code.svg")
         self.sidebar.add_tab("Spam Filters", "shield-half.svg")
@@ -101,45 +104,67 @@ class MainWindow(QMainWindow):
         self.sidebar.add_tab("Developer", "brand-tabler.svg", position="bottom")
 
         self.content_stack = QStackedWidget()
-        
-        self.view_dashboard = DashboardView(self.i18n)
         self.avatar_service = AvatarService()
+        self.chat_service = ChatService(self.tts_manager, self.settings_storage)
+        self.settings_service = SettingsService(self.settings_storage, self.backup_service)
+        self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
+        self.command_service = CommandService(self.commands_storage, api_client=None)
+        self.spam_service = SpamService(self.spam_storage, api_client=None)
+        self.log_service = LogService()
+
+        self.view_dashboard = DashboardView(self.i18n)
+        self.view_chat = ChatView(self.i18n)
+        self.view_music = MusicView(self.i18n)
+        self.view_alerts = AlertsView(self.i18n)
+        self.view_commands = CommandView(self.i18n)
+        self.view_spam = SpamView(self.i18n)
+        self.view_settings = SettingsView(self.i18n)
+        self.view_logs = LogView(self.i18n)
+
         self.dashboard_controller = DashboardController(
             view=self.view_dashboard, 
             avatar_service=self.avatar_service
         )
-        
-        self.view_chat = ChatView(self.i18n)
-        self.chat_service = ChatService(self.tts_manager, self.settings_storage)
-        self.chat_controller = ChatController(view=self.view_chat, service=self.chat_service)
-        
-        self.view_settings = SettingsView(self.i18n)
-        self.settings_service = SettingsService(self.settings_storage, self.backup_service)
-        self.settings_controller = SettingsController(view=self.view_settings, service=self.settings_service)
-        
-        self.view_alerts = AlertsView(self.i18n)
-        self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
-        self.alerts_controller = AlertsController(view=self.view_alerts, service=self.alerts_service)
-        
-        self.view_commands = CommandView(self.i18n)
-        self.command_service = CommandService(self.commands_storage, api_client=None)
-        self.command_controller = CommandController(self.view_commands, self.command_service)
-        
-        self.view_spam = SpamView(self.i18n)
-        self.spam_service = SpamService(self.spam_storage, api_client=None)
-        self.spam_controller = SpamController(self.view_spam, self.spam_service)
-        
-        self.view_logs = LogView(self.i18n)
-        self.log_service = LogService()
-        self.log_controller = LogController(view=self.view_logs, service=self.log_service)
-        
+        self.chat_controller = ChatController(
+            view=self.view_chat, 
+            service=self.chat_service
+        )
+        self.music_controller = MusicController(
+            view=self.view_music,
+            spotify_auth=self.container.spotify_auth,
+            command_service=self.command_service,
+            toast_manager=self.toast,
+            i18n=self.i18n
+        )
+        self.alerts_controller = AlertsController(
+            view=self.view_alerts, 
+            service=self.alerts_service
+        )
+        self.command_controller = CommandController(
+            self.view_commands, 
+            self.command_service
+        )
+        self.spam_controller = SpamController(
+            self.view_spam, 
+            self.spam_service
+        )
+        self.settings_controller = SettingsController(
+            view=self.view_settings, 
+            service=self.settings_service
+        )
+        self.log_controller = LogController(
+            view=self.view_logs, 
+            service=self.log_service
+        )
+
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
-        self.content_stack.addWidget(self.view_settings)
-        self.content_stack.addWidget(self.view_logs) 
-        self.content_stack.addWidget(self.view_alerts) 
+        self.content_stack.addWidget(self.view_music)
+        self.content_stack.addWidget(self.view_alerts)
         self.content_stack.addWidget(self.view_commands)
         self.content_stack.addWidget(self.view_spam)
+        self.content_stack.addWidget(self.view_settings)
+        self.content_stack.addWidget(self.view_logs)
 
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
@@ -198,6 +223,7 @@ class MainWindow(QMainWindow):
         mapping = {
             "Dashboard": self.view_dashboard,
             "Chat": self.view_chat,
+            "Music": self.view_music,
             "Triggers": self.view_alerts,
             "Comandos": self.view_commands,
             "Spam Filters": self.view_spam,

@@ -278,6 +278,71 @@
             "tts_title": "Chat Text-to-Speech"
         }
     },
+    "music": {
+        "header": {
+            "title": "Music Player",
+            "subtitle": "Let your viewers control the music stream using chat commands."
+        },
+        "provider": {
+            "name": "Spotify Audio Provider"
+        },
+        "btn": {
+            "connect": "Connect Spotify",
+            "disconnect": "Disconnect"
+        },
+        "status": {
+            "disconnected": "Disconnected",
+            "connecting": "Authorize in your browser...",
+            "active": "Connected as",
+            "session_remembered": "Broadcaster (Session remembered)",
+            "connected_user": "Broadcaster (Connected)"
+        },
+        "player": {
+            "not_playing": "No song currently playing",
+            "paused_title": "Player paused...",
+            "paused_desc": "Open Spotify and press Play",
+            "unknown_song": "Unknown"
+        },
+        "cmds": {
+            "title": "Viewer Commands",
+            "sr_label": "!sr <song>",
+            "sr_desc": "Allows users to request songs for the queue.",
+            "skip_label": "!skip",
+            "skip_desc": "Forces skipping to the next song.",
+            "song_label": "!song",
+            "song_desc": "Displays the current song name in chat.",
+            "default_tag_name": "Music Plugin"
+        },
+        "toast": {
+            "connected": "Link with Spotify successfully established.",
+            "disconnected": "Spotify account disconnected."
+        },
+        "chat": {
+            "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",
+            "not_linked": "❌ The broadcaster has not linked their Spotify account.",
+            "skip_success": "⏩ Song skipped successfully.",
+            "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
+            "song_now_playing": "🎵 Now playing: {title} - {artist}",
+            "song_paused": "🔇 Spotify is paused or closed."
+        },
+        "queue": {
+            "not_found": "❌ Could not find any song named '{query}'.",
+            "success": "🎵 Added to queue: {track}",
+            "no_device": "❌ Error: Please open Spotify on your PC and play any track first.",
+            "rejected": "❌ Spotify rejected the request: {status}",
+            "error": "❌ Internal Spotify error: {error}"
+        },
+        "errors": {
+            "no_session": "No active Spotify session.",
+            "refresh_failed": "Could not refresh Spotify token."
+        }
+    },
+    "spotify": {
+        "error": {
+            "timeout": "Login timed out or was canceled by user.",
+            "generic": "Spotify connection error:"
+        }
+    },
     "dashboard": {
         "header": {
             "title": "Dashboard",
@@ -355,6 +420,7 @@
             "tabs": {
                 "dashboard": "Dashboard",
                 "chat": "Chat",
+                "music": "Music",
                 "triggers": "Triggers",
                 "comandos": "Commands",
                 "spam_filters": "Spam Filters",

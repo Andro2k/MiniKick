@@ -3,13 +3,20 @@
 import os
 import sys
 try:
-    from backend.api_keys import (KICK_CLIENT_ID, KICK_CLIENT_SECRET, 
-                                  KICK_REDIRECT_URI)
+    from backend.api_keys import (
+        KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
+        SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI
+    )
 except ImportError:
     print("ADVERTENCIA: Archivo backend/api_keys.py no encontrado. Usando credenciales vacías.")
     KICK_CLIENT_ID = ""
     KICK_CLIENT_SECRET = ""
     KICK_REDIRECT_URI = "http://localhost:8080/auth/callback"
+    SPOTIFY_CLIENT_ID = ""
+    SPOTIFY_CLIENT_SECRET = ""
+    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8080/auth/callback"
+
+from backend.music.spotify_client import SpotifyAuthManager, SpotifyMusicProvider
 from backend.sqlite_manager import (DatabaseManager, SQLiteCommandsStorage, 
                                  SQLiteTokenStorage, SQLiteSettingsStorage, 
                                  SQLiteAlertsStorage, SQLiteSpamStorage)
@@ -24,7 +31,8 @@ from frontend.utils import resource_path
 class AppContainer:
     def __init__(self, parent_widget):
         self.db_manager = DatabaseManager()
-        self.token_storage = SQLiteTokenStorage(self.db_manager)
+        self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
+        self.spotify_token_storage = SQLiteTokenStorage(self.db_manager, provider="spotify")
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
         self.alerts_storage = SQLiteAlertsStorage(self.db_manager)
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
@@ -36,13 +44,24 @@ class AppContainer:
 
         self.i18n = self._init_i18n()
         html_path = resource_path(os.path.join("assets", "web", "success.html"))
+        
         self.auth_manager = AuthManager(
             client_id=KICK_CLIENT_ID,
             client_secret=KICK_CLIENT_SECRET,
             redirect_uri=KICK_REDIRECT_URI,
-            storage=self.token_storage,
+            storage=self.kick_token_storage,
             success_html_path=html_path
         )
+        
+        self.spotify_auth = SpotifyAuthManager(
+            client_id=SPOTIFY_CLIENT_ID,
+            client_secret=SPOTIFY_CLIENT_SECRET,
+            redirect_uri=SPOTIFY_REDIRECT_URI,
+            storage=self.spotify_token_storage,
+            success_html_path=html_path
+        )
+        self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n)
+        
         self.tts_manager = TTSManager()
         self.media_trigger_service = MediaTriggerService(parent_widget)
         self.overlay_server = OverlayServerManager(port=8090)

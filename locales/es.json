@@ -278,6 +278,71 @@
             "tts_title": "Lectura de Chat"
         }
     },
+    "music": {
+        "header": {
+            "title": "Reproductor de Música",
+            "subtitle": "Permite que tus espectadores controlen la música del stream mediante comandos de chat."
+        },
+        "provider": {
+            "name": "Proveedor de Audio Spotify"
+        },
+        "btn": {
+            "connect": "Conectar Spotify",
+            "disconnect": "Desconectar"
+        },
+        "status": {
+            "disconnected": "Desconectado",
+            "connecting": "Autoriza en tu navegador...",
+            "active": "Conectado como",
+            "session_remembered": "Streamer (Sesión recordada)",
+            "connected_user": "Streamer (Conectado)"
+        },
+        "player": {
+            "not_playing": "Ninguna canción en reproducción",
+            "paused_title": "Reproductor en pausa...",
+            "paused_desc": "Abre Spotify y dale a Play",
+            "unknown_song": "Desconocido"
+        },
+        "cmds": {
+            "title": "Comandos de Espectadores",
+            "sr_label": "!sr <canción>",
+            "sr_desc": "Permite a los usuarios pedir canciones para la cola.",
+            "skip_label": "!skip",
+            "skip_desc": "Fuerza el salto a la siguiente canción.",
+            "song_label": "!song",
+            "song_desc": "Muestra en el chat el nombre de la canción actual.",
+            "default_tag_name": "Plugin de Música"
+        },
+        "toast": {
+            "connected": "Enlace con Spotify establecido correctamente.",
+            "disconnected": "Cuenta de Spotify desconectada."
+        },
+        "chat": {
+            "sr_usage": "@{user} escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
+            "not_linked": "❌ El streamer no ha vinculado su cuenta de Spotify.",
+            "skip_success": "⏩ Canción saltada exitosamente.",
+            "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o sin cola).",
+            "song_now_playing": "🎵 Sonando: {title} - {artist}",
+            "song_paused": "🔇 Spotify está en pausa o cerrado."
+        },
+        "queue": {
+            "not_found": "❌ No encontré ninguna canción llamada '{query}'.",
+            "success": "🎵 En cola: {track}",
+            "no_device": "❌ Error: Abre Spotify en tu PC y dale 'Play' a cualquier cosa primero.",
+            "rejected": "❌ Spotify rechazó la petición: {status}",
+            "error": "❌ Error interno de Spotify: {error}"
+        },
+        "errors": {
+            "no_session": "No hay sesión de Spotify activa.",
+            "refresh_failed": "No se pudo refrescar el token de Spotify."
+        }
+    },
+    "spotify": {
+        "error": {
+            "timeout": "El tiempo de espera para el login caducó o el usuario canceló.",
+            "generic": "Error de conexión con Spotify:"
+        }
+    },
     "dashboard": {
         "header": {
             "title": "Dashboard",
@@ -355,6 +420,7 @@
             "tabs": {
                 "dashboard": "Dashboard",
                 "chat": "Chat",
+                "music": "Musica",
                 "triggers": "Triggers",
                 "comandos": "Comandos",
                 "spam_filters": "Filtros Spam",
