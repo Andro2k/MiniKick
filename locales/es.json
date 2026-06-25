@@ -15,7 +15,7 @@
         },
         "backup": {
             "title": "Respaldo de Configuración",
-            "desc": "Exporta o importa tus alertas, voces y ajustes generales.",
+            "desc": "Exporta o importa tus recompesas, voces y ajustes generales.",
             "btn_export": "Exportar",
             "btn_import": "Importar"
         },

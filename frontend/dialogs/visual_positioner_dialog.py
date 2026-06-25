@@ -4,10 +4,10 @@ from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import COLOR_ACCENT, PATH_ICON_HELP
-from frontend.dialogs.base_dialog import ModernModalRewards
-from frontend.widgets.draggable_component import DraggableRewardsBox
+from frontend.dialogs.base_dialog import ModernModal
+from frontend.widgets.draggable_component import DraggableBox
 
-class VisualPositionerDialog(ModernModalRewards):
+class VisualPositionerDialog(ModernModal):
     live_position_changed = Signal(int, int)
 
     def __init__(self, i18n, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
@@ -35,7 +35,7 @@ class VisualPositionerDialog(ModernModalRewards):
         self.canvas_container.setFixedSize(self.canvas_w, self.canvas_h)
         self.canvas_container.setObjectName("CanvasContainer")
         
-        self.draggable_box = DraggableRewardsBox(self.canvas_container, self.canvas_w, self.canvas_h, self.scale_factor, filepath, scale_val)
+        self.draggable_box = DraggableBox(self.canvas_container, self.canvas_w, self.canvas_h, self.scale_factor, filepath, scale_val)
         self.draggable_box.set_obs_coordinates(current_x, current_y)
         self.draggable_box.position_updated.connect(self.live_position_changed.emit)
         
