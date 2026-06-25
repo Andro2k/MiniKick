@@ -1,119 +1,100 @@
-<img align="left" src="assets/installer/install_bg.png" width="180" />
+<div align="center">
 
-<div align="left">
-  <p><strong>MiniKick v1.2.8</strong></p>
-  <p>El centro de control definitivo para streamers en Kick.com</p>
-  <p>
-    <strong>MiniKick</strong> es una aplicación de escritorio nativa diseñada para optimizar la interacción en Kick.com. Actualmente, el proyecto se centra en ofrecer un sistema de lectura de chat avanzado y personalizable, operando completamente fuera del navegador para reducir drásticamente el consumo de recursos de tu PC mientras transmites.
-  </p>
+# MiniKick
 
-  <br>
+**El centro de control definitivo, modular y ligero para streamers en Kick.com**
 
-  <p>
-    <a href="https://github.com/Andro2k/MiniKick/releases/latest">
-      <img src="https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919" alt="Latest Release"/>
-    </a>
-    <img src="https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919" alt="Windows Support"/>
-  </p>
-  <p>
-    <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919" alt="Python Version"/>
-    <img src="https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919" alt="PySide6"/>
-  </p>
-  <p>
-    <img src="https://img.shields.io/badge/Arquitectura-Clean_Code-FFb900?style=for-the-badge&logo=dataiku&logoColor=white&labelColor=191919" alt="Clean Architecture"/>
-    <img src="https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919" alt="License"/>
-  </p>
-  
-  <a href="https://github.com/Andro2k/MiniKick/releases/latest">
-    <img src="https://img.shields.io/badge/DESCARGAR_ÚLTIMA_VERSIÓN-10BB10?style=for-the-badge&logo=windows&logoColor=white" alt="Descargar Última Versión">
-  </a>
+[![Latest Release](https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest)
+[![Windows Support](https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest)
+[![Python Version](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919)](https://www.python.org/)
+[![PySide6](https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919)](https://doc.qt.io/qtforpython-6/)
+[![Clean Architecture](https://img.shields.io/badge/Arquitectura-Clean_Code-FFb900?style=for-the-badge&logo=dataiku&logoColor=white&labelColor=191919)](#arquitectura-e-ingeniería)
+[![License](https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919)](LICENSE)
+
+<br>
+
+**MiniKick** es una aplicación de escritorio nativa diseñada para orquestar la interacción en directo sin sacrificar los FPS de tu transmisión. Operando por completo fuera del navegador, reduce drásticamente el consumo de memoria RAM y ciclos de CPU, integrando lectura de chat inteligente por voz (TTS), moderación automatizada y control multimedia en tiempo real.
+
+<br>
+
+[![Descargar Última Versión](https://img.shields.io/badge/DESCARGAR_ÚLTIMA_VERSIÓN-10BB10?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Andro2k/MiniKick/releases/latest)
+
 </div>
-
-<br clear="both" />
 
 ---
 
-## Funcionalidades Principales
+## ⚡ Funcionalidades Principales
 
-| Módulo | Función | Implementación |
+| Módulo | Función | Descripción |
 | :--- | :--- | :--- |
-| **Lectura de Chat** | TTS Híbrido | Narración capaz de alternar de forma transparente entre voces naturales con IA (`edge-tts`) y motores locales de Windows (`pyttsx3`). |
-| **Interacción OBS** | Alertas Dinámicas | Posicionamiento aleatorio de video en el lienzo de OBS para evitar la obstrucción de elementos visuales clave durante el directo. |
-| **Conectividad** | Tiempo Real | Integración directa e instantánea con los eventos de Kick mediante WebSockets. |
-| **Sistema OTA** | Actualizaciones | Búsqueda, descarga e instalación de nuevas versiones en segundo plano. |
+| **Motor de Chat** | Pipeline Unidireccional | Procesamiento de mensajes mediante tubería de interceptores puros (*AutoMod ➔ Comandos ➔ UI ➔ TTS*) con cortocircuito de ejecución. |
+| **Voz Híbrida (TTS)** | Narración Inteligente | Alternancia dinámica entre voces neurales en la nube (`edge-tts`) y SAPI5 local (`pyttsx3`) con limpieza matemática de enlaces y emotes. |
+| **Integración Spotify** | Control de Puntos | Canje de canciones (`!sr`), saltos (`!skip`) y consulta de pista (`!song`) con resolución automática de alias y *cooldowns* por base de datos. |
+| **Conectividad Edge** | WebSockets $O(1)$ | Captura instantánea de eventos de Kick.com con tablas de despacho en memoria RAM y supresión de parseo JSON redundante. |
+| **AutoMod Integrado** | Filtros Anti-Spam | Protección activa contra exceso de mayúsculas, símbolos, párrafos masivos y enlaces con sanciones directas a la API de Kick. |
+| **Sistema OTA** | Actualizaciones | Verificación, descarga e instalación de parches en segundo plano de forma totalmente transparente e ininterrumpida. |
 
 > [!NOTE]
-> A partir de la versión 1.1.2, todas las configuraciones, tokens de sesión y la base de datos de alertas persisten de forma local y segura en tu directorio de Windows `AppData\Local\.Minikick`.
+> Todas las preferencias de usuario, bases de datos locales (`SQLite`) y tokens cifrados de sesión persisten de forma aislada en el directorio nativo del sistema: `AppData\Local\.Minikick`.
 
 ---
 
-## Stack Tecnológico
+## 🧠 Arquitectura e Ingeniería
 
-| Categoría | Tecnologías | Propósito |
-| :--- | :--- | :--- |
-| **Interfaz Gráfica** | ![PySide6](https://img.shields.io/badge/PySide6-41CD52?style=flat-square&logo=qt&logoColor=white) | Desarrollo de la UI moderna (Dark/Mint) y gestión del ciclo de vida de los hilos de la aplicación. |
-| **Voz y Audio** | ![Edge-TTS](https://img.shields.io/badge/Edge--TTS-0078D7?style=flat-square&logo=microsoftedge&logoColor=white) ![Pyttsx3](https://img.shields.io/badge/Pyttsx3-3776AB?style=flat-square&logo=python&logoColor=white) | Motores de síntesis de voz orquestados mediante un patrón de diseño unificado. |
-| **Conexión** | ![WebSockets](https://img.shields.io/badge/WebSockets-010101?style=flat-square&logo=socketdotio&logoColor=white) ![Requests](https://img.shields.io/badge/Requests-00599C?style=flat-square) | Gestión de sockets en tiempo real y peticiones HTTP con bypass de seguridad (Cloudscraper) y tolerancia a fallos. |
-| **Persistencia** | ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white) | Almacenamiento local estructurado y ligero sin dependencias externas. |
-| **Distribución** | ![PyInstaller](https://img.shields.io/badge/PyInstaller-191919?style=flat-square&logo=python&logoColor=white) | Compilación, gestión de rutas estáticas y empaquetado para despliegue nativo en sistemas Windows. |
+MiniKick no es un script convencional; está construido bajo estándares estrictos de **Ingeniería de Software a Escala**. Para garantizar latencias inferiores a un milisegundo y cero fugas de memoria durante streams de más de 12 horas, el código respeta los siguientes principios:
 
----
-
-## Arquitectura y Buenas Prácticas
-
-El núcleo de MiniKick está diseñado para ser altamente escalable y resistente a cuelgues (Segfaults). El desarrollo se rige estrictamente por estas 5 reglas de arquitectura para garantizar la mantenibilidad:
-
-1. **Dependency Inversion:** Uso intensivo de interfaces abstractas para desacoplar la lógica de negocio de las implementaciones concretas.
-2. **Separation of Responsibilities (SoR):** Capas claramente delimitadas. Las Vistas son pasivas, los Workers manejan la carga pesada de red/archivos, y los Controladores orquestan de forma segura.
-3. **High Cohesion:** Cada clase y módulo tiene un propósito único y bien definido en el sistema.
-4. **DRY (Don't Repeat Yourself):** Centralización de lógica repetitiva priorizando siempre la legibilidad y limpieza del código.
-5. **YAGNI (You Aren't Gonna Need It):** Abstracciones justificadas. Resolvemos problemas reales de forma simple sin caer en la sobre-ingeniería.
+1. **Eficiencia Algorítmica Big-O ($O(1)$):** Erradicación de bucles anidados en rutas críticas (*Hot-Paths*). Las validaciones de usuarios ignorados utilizan tablas hash `Set()` nativas, y los analizadores de texto reemplazan condicionales masivas por **Tablas de Despacho estáticas**.
+2. **Patrón Pipeline (Chain of Responsibility):** Desacoplamiento absoluto del flujo del chat. Cada mensaje entrante es un objeto inmutable (`DTO`) que atraviesa transformaciones puras e independientes.
+3. **Gestión Segura de Memoria C++/Qt:** Prevención de hilos huérfanos (*Memory Leaks*). Todos los procesos asíncronos aplican liberación determinista del Kernel mediante el patrón `.finished.connect(deleteLater)`.
+4. **Inversión de Dependencias y SoR:** Separación estricta entre capas de Red (*Providers*), Lógica de Dominio (*Services*) y Presentación Pasiva (*Views/PySide6*).
 
 > [!IMPORTANT]
-> Toda nueva contribución o *Pull Request* debe respetar obligatoriamente estos 5 principios de arquitectura en su código para ser aprobada.
+> **Normativa de Contribución:** Cualquier *Pull Request* propuesta para el proyecto debe pasar auditoría de complejidad temporal y respetar el desacoplamiento de capas para ser fusionada en la rama `main`.
 
 ---
 
-## Instalación
+## 🛠️ Stack Tecnológico
 
-### Entorno de Producción (Usuarios)
+* **Core & GUI:** Python 3.10+ | PySide6 (Qt for Python) | Qt Style Sheets (QSS contextual)
+* **Networking:** WebSockets | Requests | Cloudscraper (CF Bypass)
+* **Audio Engine:** Edge-TTS (Edge Cloud) | Pyttsx3 (Native OS)
+* **Database & Storage:** SQLite3 | JSON File Storage
+* **Build & Deployment:** PyInstaller | Inno Setup
 
-La forma más sencilla de usar MiniKick:
+---
 
-1. Navega a la sección de [Releases](https://github.com/Andro2k/MiniKick/releases/latest).
-2. Descarga el archivo ejecutable (`MiniKick_Installer.exe`).
-3. Sigue las instrucciones del asistente de instalación en tu máquina Windows.
+## 🚀 Guía de Despliegue
 
-### Entorno de Desarrollo (Contribuidores)
+### Entorno de Producción (Creadores)
 
-Si deseas explorar el código fuente o contribuir al proyecto en local:
+1. Dirígete a la página de [Releases Oficiales](https://github.com/Andro2k/MiniKick/releases/latest).
+2. Descarga el instalador ejecutable (`MiniKick_Installer.exe`).
+3. Ejecuta el asistente nativo en tu ordenador Windows 10/11.
+
+### Entorno de Desarrollo (Ingenieros)
+
+Configuración del entorno local para experimentación y desarrollo:
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/Andro2k/MiniKick.git
+# 1. Clonar el repositorio
+git clone [https://github.com/Andro2k/MiniKick.git](https://github.com/Andro2k/MiniKick.git)
 cd MiniKick
 
-# Crear y activar entorno virtual
-python -m venv venv
-venv\Scripts\activate  # En Windows
+# 2. Crear y activar entorno virtual
+python -m venv .venv
+.\.venv\Scripts\activate
 
-# Instalar dependencias
+# 3. Instalar dependencias de desarrollo
 pip install -r requirements.txt
 
-# Ejecutar la aplicación
+# 4. Iniciar aplicación con recolector de logs
 python main.py
+
 ```
-
----
 > [!TIP]
-> Si descubres algún comportamiento inesperado o un crash del sistema, por favor revisa primero los Issues abiertos en el repositorio y la consola de desarrollador interna de la app antes de abrir un reporte nuevo.
-
-## Licencia
-
-Este proyecto se distribuye bajo la Licencia MIT. Consulte el archivo LICENSE para mas detalles.
+> Si experimentas algún comportamiento inesperado de red o cierre abrupto, revisa primero la pestaña interna **Developer ➔ Logs** de la aplicación antes de abrir un *Issue* adjuntando el trazo de error.
 
 <div align="center">
-  <br>
-  <sub>Desarrollado por <strong>TheAndro2K</strong></sub>
+<sub>Diseñado y desarrollado con estándares de arquitectura por <a href="https://github.com/Andro2k"><strong>TheAndro2K</strong></a></sub>
+<sub>Distribuido bajo la Licencia MIT</sub>
 </div>
-
