@@ -107,3 +107,9 @@ class MusicController(QObject):
         status_msg = self.i18n.get("command.status.toggled_msg").replace("{trigger}", trigger)
         state_color = "success" if is_active else "warning"
         self.toast.show_toast(status_title, status_msg, state_color)
+
+    def shutdown(self):
+        self.polling_timer.stop()
+        if self.auth_worker and self.auth_worker.isRunning():
+            self.auth_worker.terminate()
+            self.auth_worker.wait()

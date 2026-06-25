@@ -16,32 +16,34 @@ class ChatWorker(QThread):
         self.api_client = api_client 
         self.cluster = cluster
         self.key = key
-        self.chat_manager = None
+        self.chat_manager = ChatSocketManager(cluster, key)
         self._is_stopped = False
 
     def run(self):
         try:
             user_data = self.api_client.fetch_user_data()
-            if self._is_stopped: return 
+            if self._is_stopped:
+                return 
 
-            self.connection_success.emit(user_data)
             room_id = user_data.get("room_id")
             if not room_id:
                 raise ValueError(self.i18n.get("main.workers.chat.error_room_id"))
 
-            self.chat_manager = ChatSocketManager(self.cluster, self.key)
+            self.connection_success.emit(user_data)
 
-            def on_msg(user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
-                self.message_received.emit(user, msg, badges, color, msg_id, sender_id)
+            while not self._is_stopped:
+                self.chat_manager.start_socket(room_id, on_message=self._dispatch_message)
+                if not self._is_stopped:
+                    self.msleep(5000)
 
-            if self._is_stopped: return 
-            self.chat_manager.start_socket(room_id, on_message=on_msg)
-            
         except Exception as e:
             if not self._is_stopped:
                 self.error_occurred.emit(str(e))
 
+    def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
+        if not self._is_stopped:
+            self.message_received.emit(user, msg, badges, color, msg_id, sender_id)
+
     def stop(self):
         self._is_stopped = True
-        if self.chat_manager:
-            self.chat_manager.stop_socket()
+        self.chat_manager.stop_socket()

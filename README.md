@@ -1,7 +1,7 @@
 <img align="left" src="assets/installer/install_bg.png" width="180" />
 
 <div align="left">
-  <p><strong>MiniKick v1.1.2</strong></p>
+  <p><strong>MiniKick v1.2.8</strong></p>
   <p>El centro de control definitivo para streamers en Kick.com</p>
   <p>
     <strong>MiniKick</strong> es una aplicación de escritorio nativa diseñada para optimizar la interacción en Kick.com. Actualmente, el proyecto se centra en ofrecer un sistema de lectura de chat avanzado y personalizable, operando completamente fuera del navegador para reducir drásticamente el consumo de recursos de tu PC mientras transmites.

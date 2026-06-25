@@ -9,7 +9,7 @@ from frontend.common.theme import COLOR_BG_BASE, COLOR_TEXT_SECONDARY, COLOR_ACC
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self, i18n, app_version: str = "v1.0.0"):
+    def __init__(self, i18n, app_version: str = "v1.2.8"):
         super().__init__()
         self.i18n = i18n
         self.app_version = app_version

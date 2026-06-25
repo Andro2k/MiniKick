@@ -3,21 +3,38 @@
 import re
 from PySide6.QtCore import QObject, Slot, Signal
 from frontend.workers.voice_worker import VoiceFetcherWorker
+from backend.services.chat.pipeline.message_pipeline import MessagePipeline
+from backend.services.chat.pipeline.chat_dto import ChatMessageDTO
 
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
+    _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
+    _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
+    _SPACES_REGEX = re.compile(r"\s+")
 
-    def __init__(self, view, service, i18n):
+    def __init__(self, view, service, command_service, spam_service, i18n):
         super().__init__()
         self.view = view
         self.service = service
-        self.i18n = i18n
-        self.muted_bots = []
-        self._all_voices = []
+        self.command_service = command_service
+        self.spam_service = spam_service
+        self.i18n = i18n        
+        self.muted_bots: set[str] = set()
+        self._all_voices: list[dict] = []
         self._voice_worker = None
         self._tts_enabled = True    
+        
+        self.pipeline = MessagePipeline()
+        self._build_pipeline()
+        
         self._connect_signals()
         self._load_initial_data()
+
+    def _build_pipeline(self):
+        self.pipeline.register(self._step_spam)
+        self.pipeline.register(self._step_commands)
+        self.pipeline.register(self._step_ui_render)
+        self.pipeline.register(self._step_tts)
 
     def _connect_signals(self):
         self.view.volume_changed.connect(self.service.set_volume)
@@ -32,49 +49,62 @@ class ChatController(QObject):
         settings = self.service.get_settings()
         provider = settings.get("provider", "local")
         self.service.set_provider(provider)
+        
         saved_voice_id = self.service.get_saved_voice_id(provider)
         if saved_voice_id:
             self.service.set_voice(provider, saved_voice_id)
+            
         self._tts_enabled = settings.get("enabled", True)
         self.view.set_initial_states(settings)
         self.service.set_volume(settings["volume"])     
+        
         bots_str = settings.get("ignored_users", "")
-        self.muted_bots = [b.strip() for b in bots_str.split(",") if b.strip()]
+        self.muted_bots = {b.strip().lower() for b in bots_str.split(",") if b.strip()}
+        
         for bot in self.muted_bots:
             self.view.add_bot_tag(bot)
 
         self._load_voices(provider, is_initial=True)
 
-    @Slot(str, str, list, str)
-    def handle_incoming_message(self, user: str, message: str, badges: list, color: str):
-        self.view.append_message(user, message, color)
-        if hasattr(self, 'command_service') and self.command_service:
-            handled, plugin_tag, cmd_info, prefix_used = self.command_service.process_incoming_message(user, message, badges)
-            
-            if handled:
-                if plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
-                    self._execute_resolved_music_plugin(plugin_tag, user, message, prefix_used)
-                return
+    @Slot(object)
+    def process_message(self, dto: ChatMessageDTO):
+        self.pipeline.execute(dto)
+
+    def _step_spam(self, dto: ChatMessageDTO):
+        if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id):
+            dto.is_cancelled = True
+
+    def _step_commands(self, dto: ChatMessageDTO):
+        handled, plugin_tag, _, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges)
+        if handled:
+            dto.is_cancelled = True
+            if plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
+                self._execute_resolved_music_plugin(plugin_tag, dto.user, dto.content, prefix)
+
+    def _step_ui_render(self, dto: ChatMessageDTO):
+        self.view.append_message(dto.user, dto.content, dto.color)
+
+    def _step_tts(self, dto: ChatMessageDTO):
         settings = self.service.get_settings()
-        if not settings["enabled"]:
+        if not settings["enabled"] or dto.user.lower() in self.muted_bots:
             return
-        if user.lower() in [b.lower() for b in self.muted_bots]:
-            return 
-        final_message = message.strip()
+
+        msg = dto.content.strip()
         if settings["use_command"]:
             cmd = settings["command"]
-            if not final_message.lower().startswith(cmd):
+            if not msg.lower().startswith(cmd):
                 return
-            final_message = final_message[len(cmd):].strip()
-        final_message = self._clean_message_for_tts(final_message)
-        if not final_message:
-            return
-        text_to_speak = f"{user} dice: {final_message}" if settings["read_name"] else final_message
-        self.service.speak(text_to_speak)
+            msg = msg[len(cmd):].strip()
+
+        cleaned = self._clean_message_for_tts(msg)
+        if cleaned:
+            text = f"{dto.user} dice: {cleaned}" if settings["read_name"] else cleaned
+            self.service.speak(text)
 
     def _load_voices(self, provider: str, is_initial: bool = False):
         loading_str = self.view.i18n.get("chat.status.loading_voices")
         self.view.update_voices([("loading", loading_str)], "loading")
+        
         cached = self.service.tts._voices_cache.get(provider, [])
         if cached:
             self._on_voices_fetched(cached, provider, is_initial)
@@ -95,11 +125,10 @@ class ChatController(QObject):
         self._all_voices = voices
         saved_voice_id = self.service.get_saved_voice_id(provider)
 
-        langs = []
-        for v in self._all_voices:
-            prefix = "-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local"
-            if prefix not in langs:
-                langs.append(prefix)
+        langs = list(dict.fromkeys(
+            "-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local"
+            for v in self._all_voices
+        ))
 
         sel_prefix = "-".join(saved_voice_id.split("-")[:2]) if ("-" in saved_voice_id and saved_voice_id) else "Local"
         self.view.update_languages(langs, sel_prefix)
@@ -126,12 +155,10 @@ class ChatController(QObject):
 
     @Slot(str)
     def _filter_voices_by_language(self, lang_prefix: str, select_id: str = None, play_test: bool = False):
-        filtered = []
-        for v in self._all_voices:
-            prefix = "-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local"
-            if prefix == lang_prefix:
-                filtered.append((v["id"], v["name"]))
-        
+        filtered = [
+            (v["id"], v["name"]) for v in self._all_voices
+            if ("-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local") == lang_prefix
+        ]
         self.view.update_voices(filtered, select_id)
 
     @Slot(str)
@@ -145,6 +172,7 @@ class ChatController(QObject):
         provider = "web" if is_web else "local"
         self.service.set_provider(provider)
         self._load_voices(provider)
+        
         if hasattr(self.view.window(), 'toast'):
             mode_name = "Neural IA (Nube Edge)" if is_web else "SAPI5 / OS (Local)"
             state_color = "info" if is_web else "success"
@@ -178,8 +206,8 @@ class ChatController(QObject):
     @Slot(str)
     def _add_bot(self, bot_name: str):
         clean_name = bot_name.strip().lower()
-        if clean_name and clean_name not in [b.lower() for b in self.muted_bots]:
-            self.muted_bots.append(clean_name)
+        if clean_name and clean_name not in self.muted_bots:
+            self.muted_bots.add(clean_name)
             self.view.add_bot_tag(clean_name)
             self._save_bot_list()
         self.view.clear_bot_input()
@@ -187,9 +215,8 @@ class ChatController(QObject):
     @Slot(str)
     def _remove_bot(self, bot_name: str):
         clean_name = bot_name.lower()
-        if clean_name in [b.lower() for b in self.muted_bots]:
-            idx = [b.lower() for b in self.muted_bots].index(clean_name)
-            self.muted_bots.pop(idx)
+        if clean_name in self.muted_bots:
+            self.muted_bots.remove(clean_name)
             self._save_bot_list()
 
     def _save_bot_list(self):
@@ -200,52 +227,65 @@ class ChatController(QObject):
     def _clean_message_for_tts(self, text: str) -> str:
         def replacer(match):
             url = match.group(0).lower()
-            if "youtube.com" in url or "youtu.be" in url: return "un enlace de YouTube"
-            elif "kick.com" in url: return "un enlace de Kick"
-            elif "twitter.com" in url or "x.com" in url: return "un enlace de Twitter"
-            elif "instagram.com" in url: return "un enlace de Instagram"
-            elif "tiktok.com" in url: return "un enlace de TikTok"
-            elif "discord.com" in url or "discord.gg" in url: return "un enlace de Discord"
-            elif "spotify.com" in url: return "un enlace de Spotify"
-            else: return "un enlace web"
+            keywords = {
+                "youtube.com": "un enlace de YouTube", "youtu.be": "un enlace de YouTube",
+                "kick.com": "un enlace de Kick",
+                "twitter.com": "un enlace de Twitter", "x.com": "un enlace de Twitter",
+                "instagram.com": "un enlace de Instagram",
+                "tiktok.com": "un enlace de TikTok",
+                "discord.com": "un enlace de Discord", "discord.gg": "un enlace de Discord",
+                "spotify.com": "un enlace de Spotify"
+            }
+            for kw, replacement in keywords.items():
+                if kw in url:
+                    return replacement
+            return "un enlace web"
         
-        cleaned = re.sub(r"https?://\S+|www\.\S+", replacer, text)
-        cleaned = re.sub(r"\[emote:[^\]]+\]", "", cleaned)
-        return re.sub(r"\s+", " ", cleaned).strip()
+        cleaned = self._URL_REGEX.sub(replacer, text)
+        cleaned = self._EMOTE_REGEX.sub("", cleaned)
+        return self._SPACES_REGEX.sub(" ", cleaned).strip()
     
     def _execute_resolved_music_plugin(self, tag: str, user: str, message: str, prefix_used: str):
         api = getattr(self.command_service, 'api_client', None)
-        if not api: return
-
+        if not api: 
+            return
         music_ctrl = getattr(self.view.window(), 'music_controller', None)
         provider = music_ctrl.music_provider if music_ctrl else None
+        dispatch_table = {
+            "[PLUGIN_SPOTIFY_SR]": self._handle_plugin_sr,
+            "[PLUGIN_SPOTIFY_SKIP]": self._handle_plugin_skip,
+            "[PLUGIN_SPOTIFY_SONG]": self._handle_plugin_song,
+        }
+        
+        executor = dispatch_table.get(tag)
+        if executor:
+            executor(api, provider, user, message, prefix_used)
 
-        if tag == "[PLUGIN_SPOTIFY_SR]":
-            query = message[len(prefix_used):].strip() if prefix_used else ""
-            if not query:
-                msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", prefix_used)
+    def _handle_plugin_sr(self, api, provider, user, message, prefix_used):
+        query = message[len(prefix_used):].strip() if prefix_used else ""
+        if not query:
+            msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", prefix_used)
+            api.post_chat_message(msg)
+            return
+        if provider:
+            _, reply = provider.add_to_queue(query)
+            api.post_chat_message(reply)
+        else:
+            api.post_chat_message(self.i18n.get("music.chat.not_linked"))
+
+    def _handle_plugin_skip(self, api, provider, user, message, prefix_used):
+        if provider and provider.skip_current():
+            api.post_chat_message(self.i18n.get("music.chat.skip_success"))
+        else:
+            api.post_chat_message(self.i18n.get("music.chat.skip_failed"))
+
+    def _handle_plugin_song(self, api, provider, user, message, prefix_used):
+        if provider:
+            song = provider.get_current_song()
+            if song:
+                msg = self.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
                 api.post_chat_message(msg)
-                return
-
-            if provider:
-                success, reply = provider.add_to_queue(query)
-                api.post_chat_message(reply)
             else:
-                api.post_chat_message(self.i18n.get("music.chat.not_linked"))
-
-        elif tag == "[PLUGIN_SPOTIFY_SKIP]":
-            if provider and provider.skip_current():
-                api.post_chat_message(self.i18n.get("music.chat.skip_success"))
-            else:
-                api.post_chat_message(self.i18n.get("music.chat.skip_failed"))
-
-        elif tag == "[PLUGIN_SPOTIFY_SONG]":
-            if provider:
-                song = provider.get_current_song()
-                if song:
-                    msg = self.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
-                    api.post_chat_message(msg)
-                else:
-                    api.post_chat_message(self.i18n.get("music.chat.song_paused"))
-            else:
-                api.post_chat_message(self.i18n.get("music.chat.not_linked"))
+                api.post_chat_message(self.i18n.get("music.chat.song_paused"))
+        else:
+            api.post_chat_message(self.i18n.get("music.chat.not_linked"))

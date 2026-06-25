@@ -63,7 +63,6 @@ class RewardWorker(QThread):
                 time.sleep(0.5)
 
     def _process_and_emit_redemptions(self, redemptions: list, user_ids: list):
-        """Cruza los IDs con los nombres de usuario, emite señales y acepta la redención en bloque."""
         user_names_map = {}
         new_ids_to_accept = []        
         if user_ids:
