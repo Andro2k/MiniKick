@@ -1,4 +1,4 @@
-# backend\providers\tts\local_tts.py
+# backend\providers\tts\tts_local.py
 
 import pyttsx3
 from backend.interfaces.tts_interfaces import ITTSProvider

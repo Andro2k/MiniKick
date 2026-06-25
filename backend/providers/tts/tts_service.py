@@ -1,4 +1,4 @@
-# backend\providers\tts\tts_manager.py
+# backend\providers\tts\tts_service.py
 
 import queue
 import threading
