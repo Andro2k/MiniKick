@@ -74,14 +74,14 @@ class Sidebar(QFrame):
 
         self.main_layout.addSpacing(4)
         
-        self.btn_update_alert = QPushButton(self.i18n.get("main.sidebar.new_version"))
-        self.btn_update_alert.setProperty("role", "action_accent")
-        self.btn_update_alert.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_update_alert.setIcon(get_icon_colored("cloud.svg", COLOR_BG_BASE, 14))
+        self.btn_update_rewards = QPushButton(self.i18n.get("main.sidebar.new_version"))
+        self.btn_update_rewards.setProperty("role", "action_accent")
+        self.btn_update_rewards.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_update_rewards.setIcon(get_icon_colored("cloud.svg", COLOR_BG_BASE, 14))
         
-        self.btn_update_alert.setVisible(False)
-        self.btn_update_alert.clicked.connect(self._on_update_alert_clicked)
-        self.main_layout.addWidget(self.btn_update_alert)
+        self.btn_update_rewards.setVisible(False)
+        self.btn_update_rewards.clicked.connect(self._on_update_rewards_clicked)
+        self.main_layout.addWidget(self.btn_update_rewards)
 
         version_text = self.i18n.get("main.sidebar.version").replace("{version}", self.app_version)
         self.lbl_version = QLabel(version_text)
@@ -92,9 +92,9 @@ class Sidebar(QFrame):
     def set_update_available(self, available: bool = True):
         self.has_update = available
         if self.is_expanded:
-            self.btn_update_alert.setVisible(available)
+            self.btn_update_rewards.setVisible(available)
 
-    def _on_update_alert_clicked(self):
+    def _on_update_rewards_clicked(self):
         for btn in self.nav_buttons:
             if btn.property("view_name") == "Settings":
                 btn.setChecked(True)
@@ -160,7 +160,7 @@ class Sidebar(QFrame):
             
         self.lbl_version.setVisible(show)
         if self.has_update:
-            self.btn_update_alert.setVisible(show)
+            self.btn_update_rewards.setVisible(show)
 
     def _on_expand_finished(self):
         if self.is_expanded:

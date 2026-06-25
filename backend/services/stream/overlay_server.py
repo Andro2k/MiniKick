@@ -84,10 +84,10 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             
             try:
                 while True:
-                    alert = client_queue.get()
-                    if alert is None:
+                    rewards = client_queue.get()
+                    if rewards is None:
                         break
-                    self.wfile.write(f"data: {json.dumps(alert)}\n\n".encode("utf-8"))
+                    self.wfile.write(f"data: {json.dumps(rewards)}\n\n".encode("utf-8"))
                     self.wfile.flush()
             except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
                 pass
@@ -121,7 +121,7 @@ class OverlayServerManager:
             print(f"CRITICAL ERROR: Could not start Overlay server on port {self.port}.")
             print(f"Details: {e}")
 
-    def trigger_alert(self, reward_name: str, config: dict):
+    def trigger_rewards(self, reward_name: str, config: dict):
         if isinstance(config, str):
             config = {"filepath": config, "volume": 1.0, "scale": 1.0, "pos_x": 0, "pos_y": 0}
             

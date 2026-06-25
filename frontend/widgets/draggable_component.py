@@ -7,7 +7,7 @@ from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 
-class DraggableAlertBox(QFrame):
+class DraggableRewardsBox(QFrame):
     position_updated = Signal(int, int)
 
     def __init__(self, parent, canvas_w: int, canvas_h: int, scale_factor_obs: float, filepath: str, scale_val: float):

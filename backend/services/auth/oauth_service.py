@@ -1,4 +1,4 @@
-# backend\services\auth\oauth_server.py
+# backend\services\auth\oauth_service.py
 
 import base64
 import hashlib
@@ -7,7 +7,6 @@ import time
 import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
-
 import requests
 from backend.interfaces.auth_interfaces import TokenStorage
 

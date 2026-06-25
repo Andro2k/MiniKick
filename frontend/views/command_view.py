@@ -64,10 +64,10 @@ class CommandView(QWidget):
         self.txt_search.textChanged.connect(self.search_text_changed.emit)
         table_header_layout.addWidget(self.txt_search)
 
-        self.btn_new_alert = ModernButton(self.i18n.get("command.table.btn_new"), role="action_accent")
-        self.btn_new_alert.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
-        self.btn_new_alert.clicked.connect(self.add_requested.emit)
-        table_header_layout.addWidget(self.btn_new_alert)
+        self.btn_new_rewards = ModernButton(self.i18n.get("command.table.btn_new"), role="action_accent")
+        self.btn_new_rewards.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
+        self.btn_new_rewards.clicked.connect(self.add_requested.emit)
+        table_header_layout.addWidget(self.btn_new_rewards)
 
         table_layout.addLayout(table_header_layout)
 

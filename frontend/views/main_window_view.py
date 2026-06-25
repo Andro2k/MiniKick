@@ -4,17 +4,18 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent
 
-from backend.services.stream.alerts_service import AlertsService
+from backend.services.stream.rewards_service import RewardsService
 from backend.services.chat.chat_service import ChatService
 from backend.services.chat.command_service import CommandService
 from backend.services.system.dashboard_service import AvatarService
 from backend.services.system.log_service import LogService
 from backend.services.system.settings_service import SettingsService
 from backend.services.chat.spam_service import SpamService
+from frontend.controllers.rewards_controller import RewardsController
 from frontend.navigation.sidebar_component import Sidebar
 from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
-from frontend.controllers.alerts_controller import AlertsController
+
 from frontend.controllers.chat_controller import ChatController
 from frontend.controllers.command_controller import CommandController
 from frontend.controllers.dashboard_controller import DashboardController
@@ -26,7 +27,8 @@ from frontend.controllers.update_controller import UpdateController
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
 from frontend.common.theme import COLOR_ACCENT
-from frontend.views.alerts_view import AlertsView
+
+from frontend.views.rewards_view import RewardsView
 from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
 from frontend.views.chat_view import ChatView
@@ -34,12 +36,12 @@ from frontend.views.log_view import LogView
 from frontend.views.music_view import MusicView
 from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
-from backend.providers.kick.kick_api_client import KickAPIClient
+from backend.providers.kick.kick_client import KickAPIClient
 from frontend.dialogs import ModernConfirmDialog
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
-from frontend.workers.fetch_rewards_worker import FetchRewardsWorker
-from frontend.workers.reward_worker import RewardWorker
+
+from frontend.workers.rewards_worker import FetchRewardsWorker, RewardWorker
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
 except ImportError:
@@ -59,7 +61,7 @@ class MainWindow(QMainWindow):
         self.db_manager = self.container.db_manager
         self.token_storage = self.container.kick_token_storage
         self.settings_storage = self.container.settings_storage 
-        self.alerts_storage = self.container.alerts_storage
+        self.rewards_storage = self.container.rewards_storage
         self.commands_storage = self.container.commands_storage
         self.spam_storage = self.container.spam_storage
         self.backup_service = self.container.backup_service
@@ -107,7 +109,7 @@ class MainWindow(QMainWindow):
         self.avatar_service = AvatarService()
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
-        self.alerts_service = AlertsService(self.alerts_storage, self.overlay_server)
+        self.rewards_service = RewardsService(self.rewards_storage, self.overlay_server)
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None)
         self.log_service = LogService()
@@ -115,7 +117,7 @@ class MainWindow(QMainWindow):
         self.view_dashboard = DashboardView(self.i18n)
         self.view_chat = ChatView(self.i18n)
         self.view_music = MusicView(self.i18n)
-        self.view_alerts = AlertsView(self.i18n)
+        self.view_rewards = RewardsView(self.i18n)
         self.view_commands = CommandView(self.i18n)
         self.view_spam = SpamView(self.i18n)
         self.view_settings = SettingsView(self.i18n)
@@ -137,9 +139,9 @@ class MainWindow(QMainWindow):
             toast_manager=self.toast,
             i18n=self.i18n
         )
-        self.alerts_controller = AlertsController(
-            view=self.view_alerts, 
-            service=self.alerts_service
+        self.rewards_controller = RewardsController(
+            view=self.view_rewards, 
+            service=self.rewards_service
         )
         self.command_controller = CommandController(
             self.view_commands, 
@@ -161,7 +163,7 @@ class MainWindow(QMainWindow):
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
         self.content_stack.addWidget(self.view_music)
-        self.content_stack.addWidget(self.view_alerts)
+        self.content_stack.addWidget(self.view_rewards)
         self.content_stack.addWidget(self.view_commands)
         self.content_stack.addWidget(self.view_spam)
         self.content_stack.addWidget(self.view_settings)
@@ -198,7 +200,7 @@ class MainWindow(QMainWindow):
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self.tray_manager.set_tts_state)
-        self.view_alerts.refresh_rewards_requested.connect(self._fetch_api_rewards)
+        self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.update_controller.handle_update_check)
         self.settings_controller.notification_requested.connect(
@@ -208,7 +210,7 @@ class MainWindow(QMainWindow):
         self.q_log_handler.emitter.log_received.connect(self.view_logs.append_log)
 
     def _load_settings_into_ui(self):
-        self.alerts_controller.load_initial_data()
+        self.rewards_controller.load_initial_data()
         tts_enabled = self.settings_storage.load_bool("tts_enabled", True)
         self.tray_manager.set_tts_state(tts_enabled)
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
@@ -225,7 +227,7 @@ class MainWindow(QMainWindow):
             "Dashboard": self.view_dashboard,
             "Chat": self.view_chat,
             "Music": self.view_music,
-            "Triggers": self.view_alerts,
+            "Triggers": self.view_rewards,
             "Comandos": self.view_commands,
             "Spam Filters": self.view_spam,
             "Settings": self.view_settings,
@@ -306,13 +308,13 @@ class MainWindow(QMainWindow):
         tag = self.i18n.get("main.chat.points_tag")
         self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_ACCENT)
         
-        mappings = self.alerts_service.get_mappings()
+        mappings = self.rewards_service.get_mappings()
         if reward_name in mappings:
             config = mappings[reward_name]
-            self.alerts_service.trigger_preview(reward_name, config)
+            self.rewards_service.trigger_preview(reward_name, config)
         else:
-            no_alert_template = self.i18n.get("main.logs.reward_no_alert")
-            self.logger.debug(no_alert_template.replace("{reward_name}", reward_name))
+            no_rewards_template = self.i18n.get("main.logs.reward_no_rewards")
+            self.logger.debug(no_rewards_template.replace("{reward_name}", reward_name))
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:
@@ -322,7 +324,7 @@ class MainWindow(QMainWindow):
     def _fetch_api_rewards(self):
         if not self.auth_manager.get_tokens():
             self.logger.error(self.i18n.get("main.logs.api_offline"))
-            self.alerts_controller.update_rewards_list([])
+            self.rewards_controller.update_rewards_list([])
             return
 
         if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker.isRunning():
@@ -332,7 +334,7 @@ class MainWindow(QMainWindow):
         try:
             api_client = KickAPIClient(auth_provider=self.auth_manager)
             self.fetch_rewards_worker = FetchRewardsWorker(api_client, parent=self)
-            self.fetch_rewards_worker.rewards_fetched.connect(self.alerts_controller.update_rewards_list)
+            self.fetch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
             self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
             self.fetch_rewards_worker.start()
         except Exception as e:
@@ -343,7 +345,7 @@ class MainWindow(QMainWindow):
     def _handle_rewards_error(self, error_msg: str):
         err_template = self.i18n.get("main.logs.api_error")
         self.logger.error(err_template.replace("{error}", error_msg))
-        self.alerts_controller.update_rewards_list([])
+        self.rewards_controller.update_rewards_list([])
             
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):

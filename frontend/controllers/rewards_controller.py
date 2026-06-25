@@ -1,14 +1,14 @@
-# frontend\controllers\alerts_controller.py
+# frontend\controllers\rewards_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.dialogs import AlertConfigWizard
+from frontend.dialogs.rewards_dialog import RewardsConfigWizard
 
-class AlertsController(QObject):
+class RewardsController(QObject):
     def __init__(self, view, service):
         super().__init__()
         self.view = view
         self.service = service
-        self.current_rewards_list = [self.view.i18n.get("alerts.dialogs.wizard.step1.no_rewards")]
+        self.current_rewards_list = [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
         self._active_dialog = None
         self._connect_signals()
 
@@ -24,7 +24,7 @@ class AlertsController(QObject):
 
     @Slot(list)
     def update_rewards_list(self, rewards: list):
-        self.current_rewards_list = rewards if rewards else [self.view.i18n.get("alerts.dialogs.wizard.step1.no_rewards")]
+        self.current_rewards_list = rewards if rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
         if self._active_dialog:
             self._active_dialog.update_rewards(self._get_available_rewards())
 
@@ -32,12 +32,12 @@ class AlertsController(QObject):
         mappings = self.service.get_mappings()
         used_rewards = mappings.keys()
         available = [r for r in self.current_rewards_list if r not in used_rewards or r == ignore_reward]
-        return available if available else [self.view.i18n.get("alerts.dialogs.wizard.step1.no_available")]
+        return available if available else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")]
 
     @Slot()
     def _handle_add(self):
         available_rewards = self._get_available_rewards()
-        self._active_dialog = AlertConfigWizard(
+        self._active_dialog = RewardsConfigWizard(
             self.view.i18n, 
             parent=self.view, 
             rewards_list=available_rewards
@@ -46,9 +46,9 @@ class AlertsController(QObject):
         if self._active_dialog.exec():
             reward, config = self._active_dialog.get_config_data()
             
-            loading_str = self.view.i18n.get("alerts.dialogs.wizard.step1.loading")
-            no_rewards_str = self.view.i18n.get("alerts.dialogs.wizard.step1.no_rewards")
-            no_avail_str = self.view.i18n.get("alerts.dialogs.wizard.step1.no_available")
+            loading_str = self.view.i18n.get("rewards.dialogs.wizard.step1.loading")
+            no_rewards_str = self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")
+            no_avail_str = self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")
             
             if reward and reward not in [loading_str, no_rewards_str, no_avail_str] and config["filepath"]:
                 mappings = self.service.get_mappings()
@@ -57,8 +57,8 @@ class AlertsController(QObject):
                 self.view.populate_table(mappings)
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("alerts.status.created"),
-                        message=(self.view.i18n.get("alerts.status.created_msg")).replace("{reward}", reward),
+                        title=self.view.i18n.get("rewards.status.created"),
+                        message=(self.view.i18n.get("rewards.status.created_msg")).replace("{reward}", reward),
                         state="success"
                     )
                 
@@ -71,7 +71,7 @@ class AlertsController(QObject):
             return
             
         available_rewards = self._get_available_rewards(ignore_reward=reward_name)
-        self._active_dialog = AlertConfigWizard(
+        self._active_dialog = RewardsConfigWizard(
             self.view.i18n, 
             parent=self.view, 
             rewards_list=available_rewards, 
@@ -90,8 +90,8 @@ class AlertsController(QObject):
                 self.view.populate_table(mappings)
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
-                        title=self.view.i18n.get("alerts.status.updated"),
-                        message=(self.view.i18n.get("alerts.status.updated_msg")).replace("{reward}", new_reward),
+                        title=self.view.i18n.get("rewards.status.updated"),
+                        message=(self.view.i18n.get("rewards.status.updated_msg")).replace("{reward}", new_reward),
                         state="success"
                     )
                 
@@ -106,8 +106,8 @@ class AlertsController(QObject):
             self.view.populate_table(mappings)
             if hasattr(self.view.window(), 'toast'):
                 self.view.window().toast.show_toast(
-                    title=self.view.i18n.get("alerts.status.deleted"),
-                    message=(self.view.i18n.get("alerts.status.deleted_msg")).replace("{reward}", reward_name),
+                    title=self.view.i18n.get("rewards.status.deleted"),
+                    message=(self.view.i18n.get("rewards.status.deleted_msg")).replace("{reward}", reward_name),
                     state="warning"
                 )
 

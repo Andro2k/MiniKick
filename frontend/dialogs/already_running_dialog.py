@@ -3,9 +3,7 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-
-from frontend.common.theme import COLOR_TEXT_SECONDARY
-from frontend.common.utils import get_icon, get_icon_colored
+from frontend.common.utils import get_icon
 
 class AlreadyRunningDialog(QDialog):
     def __init__(self, i18n, parent=None):
