@@ -10,7 +10,7 @@ from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
 from frontend.widgets.blocks_component import ViewHeader, SettingRow, SettingSliderRow
 from frontend.navigation.bot_panel_component import BotMutePanel
-from frontend.common.theme import COLOR_ACCENT
+from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY
 
 class ChatView(QWidget):
     volume_changed = Signal(int)
@@ -206,8 +206,8 @@ class ChatView(QWidget):
     def append_message(self, user: str, message: str, color: str):
         safe_user = html.escape(user)
         safe_message = html.escape(message)        
-        safe_color = color if (color and color.startswith("#") and len(color) <= 7) else "#FFFFFF"
-        html_msg = f'<b style="color: {safe_color};">{safe_user}:</b> <span style="color: #f0f0f0;">{safe_message}</span>'
+        safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_TEXT_PRIMARY
+        html_msg = f'<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_TEXT_PRIMARY};">{safe_message}</span>'
         self.chat_display.append(html_msg)
         self._trim_chat_history()
 

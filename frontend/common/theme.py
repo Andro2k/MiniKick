@@ -6,12 +6,12 @@ PATH_ICON_UPDATE = get_assets_path("icons/cloud.svg")
 PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
 
-COLOR_BG_BASE       = "#0B0E11"
-COLOR_BG_SURFACE    = "#1E2329"
-COLOR_BG_INPUT      = "#42474D"
-COLOR_BG_HOVER      = "#333333"
+COLOR_BG_BASE       = "#09090B"
+COLOR_BG_SURFACE    = "#121214"
+COLOR_BG_INPUT      = "#18181B"
+COLOR_BG_HOVER      = "#27272A"
 
-COLOR_BORDER_SVELTE = "#333333"
+COLOR_BORDER_SVELTE = "#27272A"
 
 COLOR_ACCENT        = "#64EB5F"
 COLOR_ACCENT_HOVER  = "#2FBF45"   
@@ -20,16 +20,17 @@ COLOR_DANGER        = "#EF4444"
 COLOR_WARNING       = "#F59E0B"
 COLOR_INFO          = "#3B82F6"
 
-COLOR_BG_TOAST      = "#090C10"
-COLOR_ACCENT_GLOW   = "rgba(100, 235, 95, 0.3)"
-COLOR_DANGER_GLOW   = "rgba(239, 68, 68, 0.3)"
-COLOR_WARNING_GLOW  = "rgba(245, 158, 11, 0.3)"
-COLOR_INFO_GLOW     = "rgba(59, 130, 246, 0.3)"
+COLOR_BG_TOAST      = "#09090B"
+COLOR_ACCENT_GLOW   = "rgba(250, 250, 250, 0.1)"
+COLOR_DANGER_GLOW   = "rgba(239, 68, 68, 0.15)"
+COLOR_WARNING_GLOW  = "rgba(245, 158, 11, 0.15)"
+COLOR_INFO_GLOW     = "rgba(59, 130, 246, 0.15)"
 
-COLOR_TEXT_PRIMARY   = "#F3F4F6"
-COLOR_TEXT_SECONDARY = "#9CA3AF"
-COLOR_TEXT_MUTED     = "#6B7280"
+COLOR_TEXT_PRIMARY   = "#FAFAFA"
+COLOR_TEXT_SECONDARY = "#A1A1AA"
+COLOR_TEXT_MUTED     = "#71717A"
 COLOR_BLACK          = "#000000"
+COLOR_WHITE          = "#FFFFFF"
 
 FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -89,7 +90,7 @@ QFrame#CanvasContainer {{ background-color: {COLOR_BG_BASE}; border: 2px solid {
 QFrame[role="step_indicator"] {{ background-color: {COLOR_BORDER_SVELTE}; border-radius: 2px; }}
 QFrame[role="step_indicator"][state="active"] {{ background-color: {COLOR_ACCENT}; }}
 QFrame[role="divider"] {{ background-color: rgba(255, 255, 255, 0.05); margin: 4px 0px; }}
-QFrame#Sidebar {{ background-color: {COLOR_BG_BASE}; border-right: 1px solid {COLOR_BORDER_SVELTE}; }}
+QFrame#Sidebar {{ background-color: {COLOR_BG_SURFACE}; border-right: 1px solid {COLOR_BORDER_SVELTE}; }}
 QFrame[role="bot_tag"] {{ background-color: {COLOR_BG_INPUT}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="bot_tag"]:hover {{ border-color: {COLOR_DANGER}; }}
 QFrame[role="bot_tag"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; padding-right: 4px; font-size: {btn_txt}px; }}

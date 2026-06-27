@@ -10,17 +10,17 @@ from PySide6.QtWidgets import (
 from frontend.widgets.log_controls_component import LogControlsPanel
 from frontend.widgets.blocks_component import ViewHeader
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_INFO, COLOR_WARNING, COLOR_DANGER
 from frontend.common.utils import get_assets_path, get_icon_colored
 
 LOG_ILLUSTRATION_FILE = "logs-idle.svg"
 
 _LEVEL_COLORS = {
-    "DEBUG": "#94A3B8",
-    "INFO": "#38BDF8",
-    "WARNING": "#FBBF24",
-    "ERROR": "#EF4444",
-    "CRITICAL": "#DC2626",
+    "DEBUG": COLOR_TEXT_SECONDARY,
+    "INFO": COLOR_INFO,
+    "WARNING": COLOR_WARNING,
+    "ERROR": COLOR_DANGER,
+    "CRITICAL": COLOR_DANGER,
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code.svg",
@@ -33,7 +33,7 @@ _LEVEL_ICONS: dict[str, QIcon] = {}
 
 def _get_level_icon(level: str) -> QIcon:
     if level not in _LEVEL_ICONS:
-        hex_color = _LEVEL_COLORS.get(level, "#FFFFFF")
+        hex_color = _LEVEL_COLORS.get(level, COLOR_TEXT_PRIMARY)
         icon_name = _LEVEL_ICON_NAMES.get(level, "message.svg")
         _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color, 16)
     return _LEVEL_ICONS[level]
@@ -315,14 +315,14 @@ class LogView(QWidget):
         scrollbar.setValue(scrollbar.maximum())
 
     def _populate_row_at(self, row: int, level: str, time_str: str, text: str):
-        hex_color = _LEVEL_COLORS.get(level, "#FFFFFF")
+        hex_color = _LEVEL_COLORS.get(level, COLOR_TEXT_PRIMARY)
         
         item_level = QTableWidgetItem(f"  {level.capitalize()}")
         item_level.setForeground(QColor(hex_color))
         item_level.setIcon(_get_level_icon(level))
 
         item_time = QTableWidgetItem(time_str)
-        item_time.setForeground(QColor("#94A3B8"))
+        item_time.setForeground(QColor(COLOR_TEXT_SECONDARY))
 
         item_msg = QTableWidgetItem(text)
 
