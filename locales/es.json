@@ -11,7 +11,9 @@
             "lang_desc": "Selecciona el idioma de la interfaz (requiere reiniciar).",
             "update_title": "Actualizaciones de Software",
             "update_desc": "Buscar e instalar nuevas versiones de MiniKick.",
-            "btn_update": "Buscar actualizaciones"
+            "btn_update": "Buscar actualizaciones",
+            "font_title": "Tamaño de Fuente Global",
+            "font_desc": "Escala el tamaño del texto en toda la interfaz de la aplicación."
         },
         "backup": {
             "title": "Respaldo de Configuración",
@@ -83,6 +85,10 @@
             "symbol": {
                 "title": "Protección de Símbolos",
                 "desc": "Elimina mensajes con un uso excesivo de símbolos (Ej: @#!%)."
+            },
+            "repetition": {
+                "title": "Protección de Repetición",
+                "desc": "Penaliza mensajes duplicados y el uso excesivo de la misma palabra en un solo mensaje."
             }
         }
     },

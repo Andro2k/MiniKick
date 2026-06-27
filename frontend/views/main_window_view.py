@@ -27,7 +27,7 @@ from frontend.controllers.spam_controller import SpamController
 from frontend.controllers.update_controller import UpdateController
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
-from frontend.common.theme import COLOR_ACCENT
+from frontend.common.theme import COLOR_ACCENT, get_global_qss
 
 from frontend.views.rewards_view import RewardsView
 from frontend.views.command_view import CommandView
@@ -216,6 +216,7 @@ class MainWindow(QMainWindow):
         self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
 
     def _connect_signals(self):
+        self.settings_controller.style_reload_requested.connect(self._apply_dynamic_theme)
         self.sidebar.view_selected.connect(self._handle_navigation)
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
@@ -241,6 +242,7 @@ class MainWindow(QMainWindow):
         chat_settings = self.chat_service.get_settings()
         self.view_chat.set_initial_states(chat_settings)
         self.chat_controller.sync_settings_cache()
+        self._apply_dynamic_theme(self.settings_service.get_font_size())
         if autostart_enabled:
             self._handle_auth_process()
 
@@ -479,3 +481,8 @@ class MainWindow(QMainWindow):
                 self._force_quit() 
             else:
                 event.ignore()
+
+    @Slot(int)
+    def _apply_dynamic_theme(self, base_size: int):
+        new_stylesheet = get_global_qss(base_size)
+        QApplication.instance().setStyleSheet(new_stylesheet)

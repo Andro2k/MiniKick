@@ -13,7 +13,9 @@ DEFAULT_DICTIONARY = {
             "lang_desc": "Select the interface language (requires restart).",
             "update_title": "Software Updates",
             "update_desc": "Check for and install new MiniKick versions.",
-            "btn_update": "Check for updates"
+            "btn_update": "Check for updates",
+            "font_title": "Global Font Size",
+            "font_desc": "Scale the interface text size across the entire application."
         },
         "backup": {
             "title": "Configuration Backup",
@@ -85,6 +87,10 @@ DEFAULT_DICTIONARY = {
             "symbol": {
                 "title": "Symbol Protection",
                 "desc": "Removes messages with excessive use of symbols (Ex: @#!%)."
+            },
+            "repetition": {
+                "title": "Repetition Protection",
+                "desc": "Penalizes duplicate messages and excessive use of the same word."
             }
         }
     },

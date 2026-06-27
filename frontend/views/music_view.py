@@ -69,11 +69,9 @@ class MusicView(QWidget):
         provider_info.addWidget(self.lbl_auth_status)
 
         self.btn_connect = ModernButton(self.i18n.get("music.btn.connect"), role="action_accent")
-        self.btn_connect.setFixedSize(150, 36)
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         self.btn_disconnect = ModernButton(self.i18n.get("music.btn.disconnect"), role="action_danger")
-        self.btn_disconnect.setFixedSize(120, 36)
         self.btn_disconnect.setVisible(False)
         self.btn_disconnect.clicked.connect(self.disconnect_requested.emit)
 

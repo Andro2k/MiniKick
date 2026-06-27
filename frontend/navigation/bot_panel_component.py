@@ -63,24 +63,35 @@ class BotMutePanel(QWidget):
         self.list_bots.addItem(item)
         
         tag_widget = QFrame()
-        tag_widget.setProperty("role", "tag")
+        tag_widget.setProperty("role", "bot_tag")
         layout = QHBoxLayout(tag_widget)
         layout.setContentsMargins(4, 4, 8, 4) 
         layout.setSpacing(4)
         layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
         
         lbl_name = QLabel(bot_name)
+        
+        font_height = self.fontMetrics().height()
+        icon_size = max(14, int(font_height * 0.75))
+        btn_size = max(22, font_height + 4)
+        
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_delete.setIcon(get_icon_colored("trash.svg", COLOR_DANGER, size=16))
-        btn_delete.setFixedSize(24, 24)
+        btn_delete.setIcon(get_icon_colored("trash.svg", COLOR_DANGER, size=icon_size))
+        btn_delete.setFixedSize(btn_size, btn_size)
         btn_delete.clicked.connect(lambda checked=False, i=item: self._on_bot_remove_click(i))
         
         layout.addWidget(btn_delete)
         layout.addWidget(lbl_name)
         
-        item.setSizeHint(tag_widget.sizeHint())
+        from PySide6.QtCore import QSize
+        fm = self.fontMetrics()
+        text_width = fm.horizontalAdvance(bot_name)
+        total_width = 4 + 4 + btn_size + text_width + 4 + 8 + 4
+        total_height = max(btn_size, fm.height()) + 8 + 4
+        
+        item.setSizeHint(QSize(total_width, total_height))
         self.list_bots.setItemWidget(item, tag_widget)
 
     def clear_list(self):

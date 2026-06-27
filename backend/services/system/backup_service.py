@@ -13,6 +13,8 @@ class BackupService:
         self.logger = logging.getLogger(__name__)
 
     def export_to_json(self, filepath: str) -> bool:
+        if not filepath.lower().endswith('.json'):
+            filepath += '.json'
         try:
             data = {
                 "settings": self.settings_storage.get_all(),

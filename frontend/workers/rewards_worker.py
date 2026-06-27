@@ -23,9 +23,7 @@ class RewardWorker(QThread):
         while self._running:
             try:
                 response = self.api_client.fetch_pending_redemptions()
-                data_list = response.get("data", [])           
-                
-                # 1. Recolectar datos en bruto
+                data_list = response.get("data", [])                           
                 pending_redemptions = []
                 user_ids_to_fetch = set()
                 
@@ -48,15 +46,11 @@ class RewardWorker(QThread):
                             "reward_title": reward_title,
                             "user_input": user_input
                         })
-
-                # Si hay redenciones nuevas, procedemos a procesarlas
                 if pending_redemptions:
                     self._process_and_emit_redemptions(pending_redemptions, list(user_ids_to_fetch))
                     
             except Exception as e:
                 self.error_occurred.emit(self.i18n.get("main.workers.reward.poll_error").replace("{error}", str(e)))
-
-            # Intervalo de espera con chequeos cortos para no bloquear el cierre del hilo
             for _ in range(self.poll_interval * 2):
                 if not self._running:
                     break
