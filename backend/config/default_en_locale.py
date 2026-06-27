@@ -223,7 +223,14 @@ DEFAULT_DICTIONARY = {
             "btn_load": "Load History",
             "btn_live": "Live View",
             "btn_clear": "Clear",
-            "btn_report": "Report Bug"
+            "btn_report": "Report Bug",
+            "btn_show_logs": "View Logs",
+            "btn_hide_logs": "Hide Logs"
+        },
+        "empty": {
+            "title": "Console paused",
+            "desc": "Events are still being recorded in the background. Press the button to view real-time diagnostics.",
+            "btn_show": "View live logs"
         },
         "table": {
             "col_level": "Log Level",
@@ -242,6 +249,8 @@ DEFAULT_DICTIONARY = {
             "historical_msg": "Inspecting: {file}",
             "live_title": "Live Console",
             "live_msg": "Showing real-time event diagnostics.",
+            "paused_title": "Live mode",
+            "paused_msg": "You returned to live mode. Use 'View Logs' whenever you want to monitor events.",
             "cleared_title": "Logs Cleared",
             "cleared_msg": "The log view has been cleared successfully."
         }

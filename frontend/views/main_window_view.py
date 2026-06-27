@@ -178,6 +178,7 @@ class MainWindow(QMainWindow):
             view=self.view_logs, 
             service=self.log_service
         )
+        self.view_logs.set_controller(self.log_controller)
 
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
@@ -227,7 +228,7 @@ class MainWindow(QMainWindow):
             lambda title, msg: self.tray_manager.showMessage(title, msg)
         )
         self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
-        self.q_log_handler.emitter.log_received.connect(self.view_logs.append_log)
+        self.q_log_handler.emitter.log_received.connect(self.log_controller.process_incoming_log)
 
     def _load_settings_into_ui(self):
         self.rewards_controller.load_initial_data()

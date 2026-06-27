@@ -1,5 +1,7 @@
 # frontend\views\chat_view.py
 
+import html
+
 from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget, 
                                QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSlider, 
                                QFrame, QSizePolicy, QScrollArea)
@@ -202,7 +204,10 @@ class ChatView(QWidget):
         self.combo_voice.blockSignals(False)
 
     def append_message(self, user: str, message: str, color: str):
-        html_msg = f'<b style="color: {color};">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
+        safe_user = html.escape(user)
+        safe_message = html.escape(message)        
+        safe_color = color if (color and color.startswith("#") and len(color) <= 7) else "#FFFFFF"
+        html_msg = f'<b style="color: {safe_color};">{safe_user}:</b> <span style="color: #f0f0f0;">{safe_message}</span>'
         self.chat_display.append(html_msg)
         self._trim_chat_history()
 

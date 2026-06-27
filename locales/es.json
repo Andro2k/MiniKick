@@ -221,7 +221,14 @@
             "btn_load": "Cargar Histórico",
             "btn_live": "Ver en Vivo",
             "btn_clear": "Limpiar",
-            "btn_report": "Reportar"
+            "btn_report": "Reportar",
+            "btn_show_logs": "Ver Logs",
+            "btn_hide_logs": "Ocultar Logs"
+        },
+        "empty": {
+            "title": "Consola en pausa",
+            "desc": "Los eventos siguen registrándose en segundo plano. Pulsa el botón para ver el diagnóstico en tiempo real.",
+            "btn_show": "Ver logs en vivo"
         },
         "table": {
             "col_level": "Nivel",
@@ -240,6 +247,8 @@
             "historical_msg": "Inspeccionando: {file}",
             "live_title": "Consola en Vivo",
             "live_msg": "Mostrando diagnóstico de eventos en tiempo real.",
+            "paused_title": "Modo en vivo",
+            "paused_msg": "Volviste a la consola en vivo. Usa 'Ver Logs' cuando quieras monitorear eventos.",
             "cleared_title": "Registros Borrados",
             "cleared_msg": "La vista de logs se ha limpiado correctamente."
         }

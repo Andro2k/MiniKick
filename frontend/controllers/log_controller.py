@@ -1,10 +1,13 @@
 # frontend\controllers\log_controller.py
 
 import os
-from PySide6.QtCore import QObject, Slot, QUrl
+import re
+from PySide6.QtCore import QObject, Slot, Signal, QUrl
 from PySide6.QtGui import QDesktopServices
 
 class LogController(QObject):
+    log_processed = Signal(bool, str, str, str)
+
     def __init__(self, view, service):
         super().__init__()
         self.view = view
@@ -15,6 +18,21 @@ class LogController(QObject):
         self.view.read_file_requested.connect(self.read_file)
         self.view.report_bug_requested.connect(self.open_github_issues)
         self.view.open_folder_requested.connect(self.open_log_folder)
+        self.view.clear_history_requested.connect(self.service.clear_history)
+
+    @Slot(str, str)
+    def process_incoming_log(self, level: str, message: str):
+        match = re.match(r"\[(.*?)\] \[(.*?)\] (.*)", message, re.DOTALL)
+        if match:
+            time_str, real_level, text_str = match.groups()
+        else:
+            time_str, real_level, text_str = "-", level, message
+
+        is_grouped = self.service.append_record(time_str, real_level, text_str)
+        self.log_processed.emit(is_grouped, real_level, time_str, text_str)
+
+    def get_live_history(self):
+        return self.service.get_history()
 
     @Slot(str)
     def read_file(self, file_path: str):
@@ -22,7 +40,18 @@ class LogController(QObject):
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             file_name = os.path.basename(file_path)
-            self.view.show_historical_content(file_name, content)
+            
+            parsed_history = []
+            hist_label = self.view.i18n.get("log.misc.historical")
+            for line in content.strip().split("\n"):
+                if not line.strip(): continue
+                match = re.match(r"\[(.*?)\] \[(.*?)\] (.*)", line, re.DOTALL)
+                if match:
+                    parsed_history.append((match.group(2), match.group(1), match.group(3)))
+                else:
+                    parsed_history.append((hist_label, "-", line))
+
+            self.view.render_historical_data(file_name, parsed_history)
         except Exception as e:
             error_title = self.view.i18n.get("main.controllers.log.error_title")
             error_msg = self.view.i18n.get("main.controllers.log.read_error").replace("{error}", str(e))

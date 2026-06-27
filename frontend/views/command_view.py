@@ -1,13 +1,13 @@
 # frontend\views\command_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
-                               QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea, 
+                               QTableWidget, QHeaderView, QScrollArea, 
                                QLineEdit)
 from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 from frontend.widgets.blocks_component import ViewHeader
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, COLOR_WARNING
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
 from frontend.common.utils import get_icon_colored
 
 class CommandView(QWidget):
