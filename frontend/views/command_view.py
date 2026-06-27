@@ -102,6 +102,7 @@ class CommandView(QWidget):
         base_layout.addWidget(scroll_area)
 
     def populate_table(self, commands: list[dict]):
+        self.table.setUpdatesEnabled(False)
         self.table.setRowCount(0)
         
         for cmd in commands:
@@ -111,6 +112,8 @@ class CommandView(QWidget):
             self.table.setCellWidget(row, 1, self._create_permission_cell(cmd))
             self.table.setCellWidget(row, 2, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 3, self._create_actions_cell(cmd))
+
+        self.table.setUpdatesEnabled(True)
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()

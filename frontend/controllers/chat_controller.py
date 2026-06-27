@@ -22,7 +22,8 @@ class ChatController(QObject):
         self.muted_bots: set[str] = set()
         self._all_voices: list[dict] = []
         self._voice_worker = None
-        self._tts_enabled = True    
+        self._tts_enabled = True
+        self._tts_settings_cache: dict = {}
         
         self.pipeline = MessagePipeline()
         self._build_pipeline()
@@ -55,6 +56,7 @@ class ChatController(QObject):
             self.service.set_voice(provider, saved_voice_id)
             
         self._tts_enabled = settings.get("enabled", True)
+        self._tts_settings_cache = dict(settings)
         self.view.set_initial_states(settings)
         self.service.set_volume(settings["volume"])     
         
@@ -65,6 +67,10 @@ class ChatController(QObject):
             self.view.add_bot_tag(bot)
 
         self._load_voices(provider, is_initial=True)
+
+    def sync_settings_cache(self) -> None:
+        self._tts_settings_cache = self.service.get_settings()
+        self._tts_enabled = self._tts_settings_cache.get("enabled", True)
 
     @Slot(object)
     def process_message(self, dto: ChatMessageDTO):
@@ -85,8 +91,8 @@ class ChatController(QObject):
         self.view.append_message(dto.user, dto.content, dto.color)
 
     def _step_tts(self, dto: ChatMessageDTO):
-        settings = self.service.get_settings()
-        if not settings["enabled"] or dto.user.lower() in self.muted_bots:
+        settings = self._tts_settings_cache
+        if not settings.get("enabled", True) or dto.user.lower() in self.muted_bots:
             return
 
         msg = dto.content.strip()
@@ -187,6 +193,7 @@ class ChatController(QObject):
     def _handle_settings_save(self, partial_settings: dict):
         partial_settings["ignored_users"] = ",".join(self.muted_bots)
         self.service.save_settings(partial_settings)
+        self._tts_settings_cache = self.service.get_settings()
         self.tts_state_changed.emit(partial_settings["enabled"])
         new_tts_state = partial_settings["enabled"]
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:

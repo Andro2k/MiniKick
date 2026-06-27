@@ -74,7 +74,7 @@ class MusicController(QObject):
 
     @Slot()
     def _poll_now_playing(self):
-        if not self.music_provider:
+        if not self.music_provider or not self.view.isVisible():
             return
         song = self.music_provider.get_current_song()
         self.view.update_current_song(song)

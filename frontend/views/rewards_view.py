@@ -113,6 +113,7 @@ class RewardsView(QWidget):
         self.main_layout.addWidget(table_card, stretch=1) 
 
     def populate_table(self, mappings: dict):
+        self.table_rewards.setUpdatesEnabled(False)
         self.table_rewards.setRowCount(0)
         str_unknown = self.i18n.get("rewards.table.unknown_file")
         
@@ -146,6 +147,8 @@ class RewardsView(QWidget):
             actions_layout.addWidget(btn_del)
             
             self.table_rewards.setCellWidget(row, 2, actions_widget)
+
+        self.table_rewards.setUpdatesEnabled(True)
 
     def _create_table_action_btn(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role)

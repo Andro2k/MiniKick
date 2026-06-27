@@ -2,8 +2,8 @@
 
 import os
 import re
-from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QColor
+from PySide6.QtCore import Qt, Signal, Slot, QTimer
+from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import (
     QFileDialog, QFrame, QHeaderView, QMessageBox,
     QScrollArea, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
@@ -13,6 +13,31 @@ from frontend.widgets.log_controls_component import LogControlsPanel
 from frontend.widgets.blocks_component import ViewHeader
 from frontend.common.theme import COLOR_ACCENT
 from frontend.common.utils import get_icon_colored
+
+
+_LEVEL_COLORS = {
+    "DEBUG": "#94A3B8",
+    "INFO": "#38BDF8",
+    "WARNING": "#FBBF24",
+    "ERROR": "#EF4444",
+    "CRITICAL": "#DC2626",
+}
+_LEVEL_ICON_NAMES = {
+    "DEBUG": "code.svg",
+    "INFO": "info-circle.svg",
+    "WARNING": "alert-triangle.svg",
+    "ERROR": "bug.svg",
+    "CRITICAL": "shield-half.svg",
+}
+_LEVEL_ICONS: dict[str, QIcon] = {}
+
+
+def _get_level_icon(level: str) -> QIcon:
+    if level not in _LEVEL_ICONS:
+        hex_color = _LEVEL_COLORS.get(level, "#FFFFFF")
+        icon_name = _LEVEL_ICON_NAMES.get(level, "message.svg")
+        _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color, 16)
+    return _LEVEL_ICONS[level]
 
 
 class LogView(QWidget):
@@ -30,6 +55,11 @@ class LogView(QWidget):
         self._current_filter = self.str_all
         self._search_term = ""
         self._max_logs = 1000
+        self._pending_ui_ops: list[tuple] = []
+        self._flush_timer = QTimer(self)
+        self._flush_timer.setSingleShot(True)
+        self._flush_timer.setInterval(120)
+        self._flush_timer.timeout.connect(self._flush_pending_ui)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -174,14 +204,27 @@ class LogView(QWidget):
         )
 
         if not self.controls_panel.btn_live.isVisible():
-            if self._current_filter in (self.str_all, real_level) and self._matches_search(
-                real_level, time_str, text_str
-            ):
-                if is_grouped and self.table.rowCount() > 0:
-                    self._update_last_row(text_str)
-                else:
-                    self._add_single_live_row(real_level, time_str, text_str)
-                self._scroll_to_bottom()
+            return
+
+        if not self._passes_filter(real_level, time_str, text_str):
+            return
+
+        if not self.isVisible():
+            return
+
+        self._pending_ui_ops.append((is_grouped, real_level, time_str, text_str))
+        if not self._flush_timer.isActive():
+            self._flush_timer.start()
+
+    def _passes_filter(self, level: str, time_str: str, text: str) -> bool:
+        return self._current_filter in (self.str_all, level) and self._matches_search(
+            level, time_str, text
+        )
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if self.controls_panel.btn_live.isVisible() and self._log_history:
+            self._render_logs()
 
     def show_historical_content(self, file_name: str, content: str):
         self._clear_logs(show_toast=False)
@@ -204,37 +247,41 @@ class LogView(QWidget):
                 state="warning",
             )
 
-    def _update_last_row(self, appended_text: str):
+    def _flush_pending_ui(self):
+        if not self._pending_ui_ops:
+            return
+
+        ops = self._pending_ui_ops
+        self._pending_ui_ops = []
+
+        self.table.setUpdatesEnabled(False)
+        for is_grouped, real_level, time_str, text_str in ops:
+            if is_grouped and self.table.rowCount() > 0:
+                self._update_last_row(text_str, resize=False)
+            else:
+                self._add_single_live_row(real_level, time_str, text_str, resize=False)
+
+        if self.table.rowCount() > 0:
+            self.table.resizeRowsToContents()
+        self.table.setUpdatesEnabled(True)
+        self._scroll_to_bottom()
+
+    def _update_last_row(self, appended_text: str, resize: bool = True):
         last_row = self.table.rowCount() - 1
         item_msg = self.table.item(last_row, 2)
         if item_msg:
             new_text = f"{item_msg.text()}\n{appended_text}"
             item_msg.setText(new_text)
-            self.table.resizeRowToContents(last_row)
+            if resize:
+                self.table.resizeRowToContents(last_row)
 
     def _populate_row_at(self, row: int, level: str, time_str: str, text: str):
-        color_map = {
-            "DEBUG": "#94A3B8",
-            "INFO": "#38BDF8",
-            "WARNING": "#FBBF24",
-            "ERROR": "#EF4444",
-            "CRITICAL": "#DC2626",
-        }
-        icon_map = {
-            "DEBUG": "code.svg",
-            "INFO": "info-circle.svg",
-            "WARNING": "alert-triangle.svg",
-            "ERROR": "bug.svg",
-            "CRITICAL": "shield-half.svg",
-        }
-
-        hex_color = color_map.get(level, "#FFFFFF")
+        hex_color = _LEVEL_COLORS.get(level, "#FFFFFF")
         qcolor = QColor(hex_color)
-        icon_name = icon_map.get(level, "message.svg")
 
         item_level = QTableWidgetItem(f"  {level.capitalize()}")
         item_level.setForeground(qcolor)
-        item_level.setIcon(get_icon_colored(icon_name, hex_color, 16))
+        item_level.setIcon(_get_level_icon(level))
 
         item_time = QTableWidgetItem(time_str)
         item_time.setForeground(QColor("#94A3B8"))
@@ -248,11 +295,12 @@ class LogView(QWidget):
         self.table.setItem(row, 1, item_time)
         self.table.setItem(row, 2, item_msg)
 
-    def _add_single_live_row(self, level: str, time_str: str, text: str):
+    def _add_single_live_row(self, level: str, time_str: str, text: str, resize: bool = True):
         row = self.table.rowCount()
         self.table.insertRow(row)
         self._populate_row_at(row, level, time_str, text)
-        self.table.resizeRowToContents(row)
+        if resize:
+            self.table.resizeRowToContents(row)
 
     def _render_logs(self):
         filtered = [
@@ -292,6 +340,8 @@ class LogView(QWidget):
 
     @Slot()
     def _clear_logs(self, show_toast: bool = True):
+        self._flush_timer.stop()
+        self._pending_ui_ops.clear()
         self._log_history.clear()
         self.table.setRowCount(0)
         if show_toast and hasattr(self.window(), "toast"):

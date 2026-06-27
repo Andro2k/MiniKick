@@ -19,6 +19,8 @@ class ChatView(QWidget):
     bot_remove_requested = Signal(str)
     language_filter_changed = Signal(str)
 
+    _MAX_CHAT_BLOCKS = 400
+
     def __init__(self, i18n):
         super().__init__()
         self.i18n = i18n
@@ -202,6 +204,19 @@ class ChatView(QWidget):
     def append_message(self, user: str, message: str, color: str):
         html_msg = f'<b style="color: {color};">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
         self.chat_display.append(html_msg)
+        self._trim_chat_history()
+
+    def _trim_chat_history(self):
+        doc = self.chat_display.document()
+        excess = doc.blockCount() - self._MAX_CHAT_BLOCKS
+        if excess <= 0:
+            return
+        cursor = self.chat_display.textCursor()
+        cursor.movePosition(cursor.MoveOperation.Start)
+        for _ in range(excess):
+            cursor.select(cursor.SelectionType.BlockUnderCursor)
+            cursor.removeSelectedText()
+            cursor.deleteChar()
 
     @Slot(int)
     def _on_slider_vol_changed(self, value: int):

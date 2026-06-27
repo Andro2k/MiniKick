@@ -209,6 +209,7 @@ class MainWindow(QMainWindow):
         settings["enabled"] = enabled
         self.chat_service.save_settings(settings)
         self.view_chat.set_initial_states(settings)
+        self.chat_controller.sync_settings_cache()
         estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
         msg_template = self.i18n.get("main.tray.tts_msg")       
         self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
@@ -238,6 +239,7 @@ class MainWindow(QMainWindow):
         self.spam_controller.load_initial_data()
         chat_settings = self.chat_service.get_settings()
         self.view_chat.set_initial_states(chat_settings)
+        self.chat_controller.sync_settings_cache()
         if autostart_enabled:
             self._handle_auth_process()
 

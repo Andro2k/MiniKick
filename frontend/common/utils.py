@@ -3,6 +3,8 @@
 import logging
 import os
 import sys
+from functools import lru_cache
+
 from PySide6.QtCore import Qt, QByteArray
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QImage, QPainterPath
 logger = logging.getLogger("minikick.utils")
@@ -27,10 +29,12 @@ def _resolve_icon_path(name: str) -> str | None:
         return None
     return full_path
 
+@lru_cache(maxsize=64)
 def get_icon(name: str) -> QIcon:
     full_path = _resolve_icon_path(name)
     return QIcon(full_path) if full_path else QIcon()
 
+@lru_cache(maxsize=128)
 def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
     full_path = _resolve_icon_path(name)
     if not full_path:
