@@ -50,6 +50,7 @@ def get_global_qss(base: int = 13) -> str:
     stat = base + 5
     btn_txt = max(10, base - 1)
     badge_txt = max(8, base - 4)
+    base_pt = max(9, int(base * 0.75))
 
     return f"""
 /* --- 1. RESET Y BASE GLOBAL --- */
@@ -121,7 +122,7 @@ QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top rig
 QComboBox::drop-down:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
-QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_BG_SURFACE}; color: {COLOR_TEXT_PRIMARY}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; outline: none; padding: 2px; }}
+QComboBox QAbstractItemView, QMenu {{ font-size: {base_pt}pt; background-color: {COLOR_BG_SURFACE}; color: {COLOR_TEXT_PRIMARY}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; outline: none; padding: 2px; }}
 QComboBox QAbstractItemView::item, QMenu::item {{ border-radius: {RADIUS_SM}px; padding: 2px; margin: 2px; }}
 QComboBox QAbstractItemView::item:selected, QMenu::item:selected {{ background-color: {COLOR_BG_HOVER}; color: {COLOR_ACCENT}; }}
 

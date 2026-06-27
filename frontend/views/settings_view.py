@@ -68,10 +68,10 @@ class SettingsView(QWidget):
 
         self.combo_font = QComboBox()
         font_sizes = [
-            ("Pequeño (11px)", 11),
-            ("Normal (13px)", 13),
-            ("Grande (14px)", 14),
-            ("Extra Grande (16px)", 16)
+            (self.i18n.get("settings.system.font_size_small"), 11),
+            (self.i18n.get("settings.system.font_size_normal"), 13),
+            (self.i18n.get("settings.system.font_size_large"), 14),
+            (self.i18n.get("settings.system.font_size_xlarge"), 16)
         ]
         for name, size in font_sizes:
             self.combo_font.addItem(name, size)
@@ -79,8 +79,8 @@ class SettingsView(QWidget):
 
         row_font = SettingRow(
             icon_name="file-text.svg", 
-            title_text=self.i18n.get("settings.system.font_title") or "Tamaño de Fuente Global", 
-            desc_text=self.i18n.get("settings.system.font_desc") or "Escala el tamaño del texto en toda la interfaz.", 
+            title_text=self.i18n.get("settings.system.font_title"), 
+            desc_text=self.i18n.get("settings.system.font_desc"), 
             right_widget=self.combo_font
         )
 

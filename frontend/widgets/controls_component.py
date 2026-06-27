@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import QColor, QPainter, QPainterPath
-from frontend.common.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BG_SURFACE, COLOR_BORDER_SVELTE, COLOR_WHITE, RADIUS_MD, RADIUS_SM
+from frontend.common.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, COLOR_WHITE, RADIUS_MD, RADIUS_SM
 
 class ModernButton(QPushButton):
     def __init__(self, text: str, role: str = "action_accent", parent=None):

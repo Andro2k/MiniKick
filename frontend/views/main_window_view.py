@@ -342,9 +342,14 @@ class MainWindow(QMainWindow):
             self.rewards_controller.update_rewards_list([])
             return
 
-        if hasattr(self, 'fetch_rewards_worker') and self.fetch_rewards_worker.isRunning():
-            self.logger.warning(self.i18n.get("main.logs.api_fetching"))
-            return
+        worker = getattr(self, 'fetch_rewards_worker', None)
+        if worker is not None:
+            try:
+                if worker.isRunning():
+                    self.logger.warning(self.i18n.get("main.logs.api_fetching"))
+                    return
+            except RuntimeError:
+                self.fetch_rewards_worker = None
 
         try:
             api_client = KickAPIClient(auth_provider=self.auth_manager)

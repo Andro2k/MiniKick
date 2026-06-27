@@ -13,7 +13,11 @@
             "update_desc": "Buscar e instalar nuevas versiones de MiniKick.",
             "btn_update": "Buscar actualizaciones",
             "font_title": "Tamaño de Fuente Global",
-            "font_desc": "Escala el tamaño del texto en toda la interfaz de la aplicación."
+            "font_desc": "Escala el tamaño del texto en toda la interfaz de la aplicación.",
+            "font_size_small": "Pequeño (11px)",
+            "font_size_normal": "Normal (13px)",
+            "font_size_large": "Grande (14px)",
+            "font_size_xlarge": "Extra Grande (16px)"
         },
         "backup": {
             "title": "Respaldo de Configuración",
