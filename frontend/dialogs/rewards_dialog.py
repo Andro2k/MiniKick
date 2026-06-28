@@ -1,8 +1,8 @@
 # frontend\dialogs\rewards_dialogs.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QComboBox, QLineEdit, QSlider, QSpinBox, 
-                               QDoubleSpinBox, QStackedWidget, QFileDialog)
+                               QDoubleSpinBox, QFileDialog)
 from PySide6.QtCore import Qt
 
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
@@ -17,71 +17,44 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.i18n = i18n
         self.is_edit_mode = existing_config is not None
         self.existing_reward = existing_reward
-        title = self.i18n.get("rewards.dialogs.wizard.title_edit") if self.is_edit_mode else self.i18n.get("rewards.dialogs.wizard.title_new")
         
-        super().__init__(title=title, subtitle="", width=520, parent=parent)
+        title_steps = [
+            self.i18n.get("rewards.dialogs.wizard.step1.title"),
+            self.i18n.get("rewards.dialogs.wizard.step2.title")
+        ]
+        subtitle_steps = [
+            self.i18n.get("rewards.dialogs.wizard.step1.desc"),
+            self.i18n.get("rewards.dialogs.wizard.step2.desc")
+        ]
+        
+        super().__init__(
+            title_steps=title_steps,
+            subtitle_steps=subtitle_steps,
+            i18n=i18n,
+            width=520,
+            parent=parent
+        )
         
         self._is_video = False
-        self._build_step_indicator()
         
-        self.stack = QStackedWidget()
-        self.main_content.addWidget(self.stack)
-
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
-        
-        self.stack.addWidget(self.step1_widget)
-        self.stack.addWidget(self.step2_widget)
         
         self._build_step1(rewards_list, existing_reward)
         self._build_step2()
         
+        self.add_page(self.step1_widget)
+        self.add_page(self.step2_widget)
+        
         if self.is_edit_mode:
             self._load_existing_data(existing_config)
-        self._set_active_step(0)
-
-    def _build_step_indicator(self):
-        self.indicator_layout = QHBoxLayout()
-        self.indicator_layout.setSpacing(6)
-        self.indicator_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
-        self.seg1 = QFrame()
-        self.seg2 = QFrame()
-        
-        for seg in [self.seg1, self.seg2]:
-            seg.setFixedHeight(4)
-            seg.setFixedWidth(40)
-            seg.setProperty("role", "step_indicator")
-            self.indicator_layout.addWidget(seg)
             
-        self.main_content.addLayout(self.indicator_layout)
-        self.main_content.addSpacing(10)
-
-    def _set_active_step(self, index: int):
-        self.stack.setCurrentIndex(index)
-
-        self.seg1.setProperty("state", "active" if index == 0 else "inactive")
-        self.seg2.setProperty("state", "active" if index == 1 else "inactive")
-        
-        self.seg1.style().unpolish(self.seg1)
-        self.seg1.style().polish(self.seg1)
-        self.seg2.style().unpolish(self.seg2)
-        self.seg2.style().polish(self.seg2)
+        self.start_wizard()
 
     def _build_step1(self, rewards_list, existing_reward):
         layout = QVBoxLayout(self.step1_widget)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(15)
-
-        header_layout = QVBoxLayout()
-        header_title = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.title"))
-        header_title.setProperty("role", "h2")
-        header_desc = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.desc"))
-        header_desc.setProperty("role", "body")
-        header_layout.addWidget(header_title)
-        header_layout.addWidget(header_desc)
-        layout.addLayout(header_layout)
-        layout.addSpacing(5)
         
         lbl = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.reward_selection"))
         lbl.setProperty("role", "h3")
@@ -127,32 +100,12 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         layout.addStretch()
         
-        btn_layout = QHBoxLayout()
-        self.btn_cancel_step1 = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_cancel"), role="action_outlined")
-        self.btn_cancel_step1.clicked.connect(self.reject)
-        
-        self.btn_next = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_next"), role="action_accent")
-        self.btn_next.clicked.connect(self._go_next)
-        
-        btn_layout.addWidget(self.btn_cancel_step1)
-        btn_layout.addStretch()
-        btn_layout.addWidget(self.btn_next)
-        layout.addLayout(btn_layout)
+        layout.addStretch()
 
     def _build_step2(self):
         layout = QVBoxLayout(self.step2_widget)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(15)
-        
-        header_layout = QVBoxLayout()
-        header_title = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.title"))
-        header_title.setProperty("role", "h2")
-        header_desc = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.desc"))
-        header_desc.setProperty("role", "body")
-        header_layout.addWidget(header_title)
-        header_layout.addWidget(header_desc)
-        layout.addLayout(header_layout)
-        layout.addSpacing(5)
         
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
@@ -215,17 +168,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.addWidget(self.video_container)
         layout.addStretch()
 
-        btn_layout = QHBoxLayout()
-        self.btn_back = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_back"), role="action_outlined")
-        self.btn_back.clicked.connect(self._go_back)
-        
-        self.btn_save = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_save"), role="action_accent")
-        self.btn_save.clicked.connect(self.accept)
-        
-        btn_layout.addWidget(self.btn_back)
-        btn_layout.addStretch()
-        btn_layout.addWidget(self.btn_save)
-        layout.addLayout(btn_layout)
+        layout.addStretch()
 
     def _request_refresh(self):
         if self.parent():
@@ -260,18 +203,16 @@ class RewardsConfigWizard(ModernWizardPanel):
         if not self._is_video:
             self.chk_random_pos.setChecked(False)
 
-    def _go_next(self):
-        if not self.txt_file_path.text().strip():
-            return
-        self._set_active_step(1)
-
-    def _go_back(self):
-        self._set_active_step(0)
-
     def _on_random_pos_toggled(self, checked):
         self.spin_x.setEnabled(not checked)
         self.spin_y.setEnabled(not checked)
         self.btn_visual.setEnabled(not checked)
+
+    def validate_step(self, step_index: int) -> bool:
+        if step_index == 0:
+            if not self.txt_file_path.text().strip():
+                return False
+        return True
 
     def _open_visual_editor(self):
         filepath = self.txt_file_path.text().strip()

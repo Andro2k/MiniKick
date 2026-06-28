@@ -399,6 +399,13 @@
         "confirm": {
             "btn_continue": "Continue",
             "btn_cancel": "Cancel"
+        },
+        "wizard": {
+            "step_indicator": "Step {current}/{total}",
+            "btn_cancel": "Cancel",
+            "btn_back": "Back",
+            "btn_next": "Next",
+            "btn_save": "Save"
         }
     },
     "main": {

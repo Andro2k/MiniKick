@@ -6,7 +6,7 @@ from frontend.common.utils import get_icon_colored
 from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 
 class ViewHeader(QFrame):
-    def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, parent=None):
+    def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, title_color: str = None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 10)
@@ -20,6 +20,8 @@ class ViewHeader(QFrame):
         
         title = QLabel(title_text)
         title.setProperty("role", "h1")
+        if title_color:
+            title.setStyleSheet(f"color: {title_color};")
         
         subtitle = QLabel(subtitle_text)
         subtitle.setProperty("role", "body")
@@ -32,7 +34,7 @@ class ViewHeader(QFrame):
         layout.addStretch()
 
 class SettingRow(QWidget):
-    def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_TEXT_PRIMARY, parent=None):
+    def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_TEXT_PRIMARY, title_color: str = None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -46,6 +48,8 @@ class SettingRow(QWidget):
         
         lbl_title = QLabel(title_text)
         lbl_title.setProperty("role", "h3")
+        if title_color:
+            lbl_title.setStyleSheet(f"color: {title_color};")
         
         lbl_desc = QLabel(desc_text)
         lbl_desc.setProperty("role", "body")

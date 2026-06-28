@@ -23,9 +23,8 @@ class ModernToast(QFrame):
         self.setProperty("state", state)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(16, 12, 14, 12)
+        layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(12)
-        layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         icon_map = {
             "success": ("circle-check.svg", COLOR_ACCENT),
             "danger": ("alert-circle.svg", COLOR_DANGER),
@@ -41,7 +40,7 @@ class ModernToast(QFrame):
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(3)
-        text_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         lbl_title = QLabel(title)
         lbl_title.setProperty("role", "h3")
@@ -113,8 +112,8 @@ class ToastManager(QObject):
         toast.expired.connect(self._on_toast_expired)  
         
         toast.setStyleSheet(self.main_window.styleSheet())
-        toast.adjustSize()
         toast.show()
+        toast.adjustSize()
         toast.raise_()
         self._calculate_positions()
 

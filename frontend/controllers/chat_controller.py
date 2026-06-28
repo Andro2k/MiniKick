@@ -116,8 +116,17 @@ class ChatController(QObject):
             self._on_voices_fetched(cached, provider, is_initial)
             return
 
-        if self._voice_worker and self._voice_worker.isRunning():
-            self._voice_worker.terminate()
+        if self._voice_worker:
+            if self._voice_worker.isRunning():
+                try:
+                    self._voice_worker.voices_fetched.disconnect()
+                    self._voice_worker.error_occurred.disconnect()
+                except Exception:
+                    pass
+                self._voice_worker.terminate()
+                self._voice_worker.wait(500)
+            self._voice_worker.deleteLater()
+            self._voice_worker = None
 
         self._voice_worker = VoiceFetcherWorker(self.service.tts, provider, parent=self)
         self._voice_worker.voices_fetched.connect(

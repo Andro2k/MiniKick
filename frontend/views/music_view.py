@@ -100,7 +100,6 @@ class MusicView(QWidget):
         
         self.lbl_song_artist = QLabel("-")
         self.lbl_song_artist.setProperty("role", "body")
-        self.lbl_song_artist.setStyleSheet(f"color: {COLOR_TEXT_SECONDARY};")
 
         info_layout.addWidget(self.lbl_song_title)
         info_layout.addWidget(self.lbl_song_artist)

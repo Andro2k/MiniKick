@@ -70,6 +70,8 @@ QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 700; color: {COLOR_TEXT_PRI
 QLabel[role="h3"] {{ font-size: {h3}px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; }}
 QLabel[role="body"] {{ font-size: {base}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; line-height: 1.5; }}
 QLabel[role="caption"] {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_MUTED}; }}
+QLabel[role="wizard_step_num"] {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}
+QLabel[role="wizard_subtitle"] {{ font-size: {base}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="text_accent"] {{ font-size: {btn_txt}px; font-weight: 700; color: {COLOR_ACCENT}; }}
 QLabel[role="text_danger"] {{ font-size: {btn_txt}px; font-weight: 700; color: {COLOR_DANGER}; }}
 QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY}; }}
@@ -165,6 +167,8 @@ QTabBar::tab:selected {{ color: {COLOR_ACCENT}; border-bottom: 2px solid {COLOR_
 /* --- 7. MISCELÁNEA Y CONSOLA --- */
 QProgressBar[role="update_progress"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: 5px; }}
 QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E); border-radius: 5px; }}
+QProgressBar[role="wizard_progress"] {{ background-color: #374151; border: none; border-radius: 2px; }}
+QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_ACCENT}; border-radius: 2px; }}
 QTextEdit#ConsoleDisplay, QTextEdit[role="console"] {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: {btn_txt}px; border-radius: {RADIUS_MD}px; padding: 10px; }}
 QListWidget[role="transparent_list"] {{ background: transparent; border: none; outline: none; }}
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}

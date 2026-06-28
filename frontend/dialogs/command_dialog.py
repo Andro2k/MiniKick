@@ -1,18 +1,26 @@
 # frontend\dialogs\command_dialogs.py
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QTextEdit, QSpinBox, QCheckBox, QTabWidget, 
+                               QTextEdit, QSpinBox, QCheckBox,
                                QWidget, QSizePolicy, QComboBox)
 from frontend.dialogs.base_dialog import ModernWizardPanel
-from frontend.widgets.controls_component import ModernButton
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
         self.i18n = i18n
+        title_steps = [
+            self.i18n.get("command.dialog.title"),
+            self.i18n.get("command.dialog.tab_advanced")
+        ]
+        subtitle_steps = [
+            self.i18n.get("command.dialog.subtitle"),
+            self.i18n.get("command.dialog.regex_help")
+        ]
         super().__init__(
-            title=self.i18n.get("command.dialog.title"), 
-            subtitle=self.i18n.get("command.dialog.subtitle"),
-            width=520, 
+            title_steps=title_steps,
+            subtitle_steps=subtitle_steps,
+            i18n=i18n,
+            width=520,
             parent=parent
         )
         
@@ -22,10 +30,10 @@ class CommandConfigWizard(ModernWizardPanel):
         self._setup_ui()
         if self.existing_config:
             self._load_existing()
+            
+        self.start_wizard()
 
     def _setup_ui(self):
-        self.tabs = QTabWidget()
-        
         self.tab_basic = QWidget()
         basic_layout = QVBoxLayout(self.tab_basic)
         basic_layout.setSpacing(12)
@@ -103,21 +111,18 @@ class CommandConfigWizard(ModernWizardPanel):
         
         adv_layout.addStretch()
 
-        self.tabs.addTab(self.tab_basic, self.i18n.get("command.dialog.tab_basic"))
-        self.tabs.addTab(self.tab_adv, self.i18n.get("command.dialog.tab_advanced"))
-
-        self.main_content.addWidget(self.tabs)
-
-        self.btn_save = ModernButton(self.i18n.get("command.dialog.btn_save"), role="action_accent")
-        self.btn_save.clicked.connect(self.accept)
-        btn_cancel = ModernButton(self.i18n.get("command.dialog.btn_cancel"), role="action_outlined")
-        btn_cancel.clicked.connect(self.reject)
-
-        self.set_bottom_actions(btn_cancel, self.btn_save)
+        self.add_page(self.tab_basic)
+        self.add_page(self.tab_adv)
 
     def _on_regex_toggled(self, checked):
         self.txt_regex.setEnabled(checked)
         self.txt_aliases.setEnabled(not checked)
+
+    def validate_step(self, step_index: int) -> bool:
+        if step_index == 0:
+            if not self.txt_trigger.text().strip():
+                return False
+        return True
 
     def _load_existing(self):
         self.txt_trigger.setText(self.existing_config.get("trigger", ""))

@@ -101,8 +101,7 @@ class SettingsView(QWidget):
             icon_name="cloud-download.svg", 
             title_text=self.i18n.get("settings.system.update_title"), 
             desc_text=self.i18n.get("settings.system.update_desc"), 
-            right_widget=self.btn_update,
-            icon_color=COLOR_ACCENT
+            right_widget=self.btn_update
         )
         
         sys_layout.addWidget(row_lang)
@@ -155,6 +154,7 @@ class SettingsView(QWidget):
             title_text=self.i18n.get("settings.account.title"), 
             desc_text=self.i18n.get("settings.account.desc"), 
             right_widget=self.btn_unlink,
+            title_color=COLOR_DANGER,
             icon_color=COLOR_DANGER
         )
 

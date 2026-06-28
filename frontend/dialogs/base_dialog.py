@@ -1,7 +1,8 @@
 # frontend\dialogs\base_dialogs.py
 
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect)
+                               QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
+                               QStackedWidget, QProgressBar, QWidget)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QColor, QMouseEvent
 
@@ -106,37 +107,103 @@ class ModernModal(ModernFramelessShell):
         self.content_layout.addLayout(btn_layout)
 
 class ModernWizardPanel(ModernFramelessShell):
-    def __init__(self, title: str, subtitle: str = "", width: int = 520, parent=None):
+    def __init__(self, title_steps: list[str], subtitle_steps: list[str], i18n, width: int = 520, parent=None):
         super().__init__(width=width, parent=parent)
+        self.title_steps = title_steps
+        self.subtitle_steps = subtitle_steps
+        self.i18n = i18n
+        self.current_step = 0
+        self.total_steps = len(title_steps)
         
         self.panel_layout = QVBoxLayout(self.container)
-        self.panel_layout.setContentsMargins(20, 20, 20, 20)
-        self.panel_layout.setSpacing(15)
+        self.panel_layout.setContentsMargins(24, 24, 24, 24)
+        self.panel_layout.setSpacing(14)
+        
+        self.lbl_step_num = QLabel()
+        self.lbl_step_num.setProperty("role", "wizard_step_num")
+        self.panel_layout.addWidget(self.lbl_step_num)
+        
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(4)
+        self.progress_bar.setRange(0, self.total_steps)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setProperty("role", "wizard_progress")
+        self.panel_layout.addWidget(self.progress_bar)
+        self.panel_layout.addSpacing(2)
+        
+        self.lbl_title = QLabel()
+        self.lbl_title.setProperty("role", "h2")
+        self.lbl_title.setWordWrap(True)
+        self.panel_layout.addWidget(self.lbl_title)
+        
+        self.lbl_subtitle = QLabel()
+        self.lbl_subtitle.setProperty("role", "wizard_subtitle")
+        self.lbl_subtitle.setWordWrap(True)
+        self.panel_layout.addWidget(self.lbl_subtitle)
+        
+        self.main_content = QStackedWidget()
+        self.panel_layout.addWidget(self.main_content)
+        
+        self.btn_layout = QHBoxLayout()
+        self.btn_layout.addStretch()
+        
+        self.btn_back = QPushButton()
+        self.btn_back.setProperty("role", "action_outlined")
+        self.btn_back.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_back.clicked.connect(self._go_back)
+        
+        self.btn_next = QPushButton()
+        self.btn_next.setProperty("role", "action_accent")
+        self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_next.clicked.connect(self._go_next)
+        
+        self.btn_layout.addWidget(self.btn_back)
+        self.btn_layout.addWidget(self.btn_next)
+        self.panel_layout.addLayout(self.btn_layout)
 
-        header_layout = QVBoxLayout()
-        header_layout.setSpacing(4)
+    def add_page(self, widget: QWidget):
+        self.main_content.addWidget(widget)
         
-        lbl_title = QLabel(title)
-        lbl_title.setProperty("role", "h2")
-        header_layout.addWidget(lbl_title)
+    def start_wizard(self):
+        self._update_step_ui()
         
-        if subtitle:
-            lbl_sub = QLabel(subtitle)
-            lbl_sub.setProperty("role", "caption")
-            header_layout.addWidget(lbl_sub)
+    def _update_step_ui(self):
+        step_tmpl = self.i18n.get("dialogs.wizard.step_indicator")
+        self.lbl_step_num.setText(step_tmpl.replace("{current}", str(self.current_step + 1)).replace("{total}", str(self.total_steps)))
+        self.progress_bar.setValue(self.current_step + 1)
+        self.lbl_title.setText(self.title_steps[self.current_step])
+        self.lbl_subtitle.setText(self.subtitle_steps[self.current_step])
+        self.main_content.setCurrentIndex(self.current_step)
+        
+        if self.current_step == 0:
+            self.btn_back.setText(self.i18n.get("dialogs.wizard.btn_cancel"))
+        else:
+            self.btn_back.setText(self.i18n.get("dialogs.wizard.btn_back"))
             
-        self.panel_layout.addLayout(header_layout)
-        self.main_content = QVBoxLayout()
-        self.panel_layout.addLayout(self.main_content)
+        if self.current_step == self.total_steps - 1:
+            self.btn_next.setText(self.i18n.get("dialogs.wizard.btn_save"))
+        else:
+            self.btn_next.setText(self.i18n.get("dialogs.wizard.btn_next"))
 
-    def set_bottom_actions(self, btn_back_or_cancel: QPushButton, btn_next_or_save: QPushButton):
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(btn_back_or_cancel)
-        btn_layout.addStretch()
-        btn_layout.addWidget(btn_next_or_save)
-        
-        self.panel_layout.addSpacing(10)
-        self.panel_layout.addLayout(btn_layout)
+    def _go_back(self):
+        if self.current_step == 0:
+            self.reject()
+        else:
+            self.current_step -= 1
+            self._update_step_ui()
+            
+    def _go_next(self):
+        if not self.validate_step(self.current_step):
+            return
+        if self.current_step == self.total_steps - 1:
+            self.accept()
+        else:
+            self.current_step += 1
+            self._update_step_ui()
+
+    def validate_step(self, step_index: int) -> bool:
+        return True
 
 class ModernConfirmDialog(ModernModal):
     def __init__(self, i18n, parent=None, title_text="", body_text=""):
