@@ -150,10 +150,8 @@ class MusicView(QWidget):
         if connected:
             translated_label = self.i18n.get(label_key)
             self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
-            self.lbl_auth_status.setStyleSheet(f"color: {COLOR_ACCENT}; font-weight: bold;")
         else:
             self.lbl_auth_status.setText(self.i18n.get("music.status.disconnected"))
-            self.lbl_auth_status.setStyleSheet("")
 
     def update_current_song(self, song_data: dict | None):
         if not song_data:

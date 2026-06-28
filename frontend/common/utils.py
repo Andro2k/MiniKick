@@ -39,13 +39,10 @@ def get_icon_colored(name: str, color_str: str, size: int = 24) -> QIcon:
     full_path = _resolve_icon_path(name)
     if not full_path:
         return QIcon()
-    pixmap = QPixmap(full_path)
-    if size:
-        pixmap = pixmap.scaled(
-            size, size, 
-            Qt.AspectRatioMode.KeepAspectRatio, 
-            Qt.TransformationMode.SmoothTransformation
-        )
+        
+    icon = QIcon(full_path)
+    pixmap = icon.pixmap(size, size) if size else icon.pixmap(24, 24)
+    
     colored_pixmap = QPixmap(pixmap.size())
     colored_pixmap.fill(Qt.GlobalColor.transparent) 
     painter = QPainter(colored_pixmap)
