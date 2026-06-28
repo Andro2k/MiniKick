@@ -13,7 +13,7 @@ from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_INFO, COLOR_WARNING, COLOR_DANGER
 from frontend.common.utils import get_assets_path, get_icon_colored
 
-LOG_ILLUSTRATION_FILE = "logs-idle.svg"
+LOG_ILLUSTRATION_FILE = "file-search.svg"
 
 _LEVEL_COLORS = {
     "DEBUG": COLOR_TEXT_SECONDARY,
@@ -143,9 +143,8 @@ class LogView(QWidget):
 
     def _build_empty_state(self) -> QWidget:
         container = QWidget()
-        container.setProperty("role", "log_empty_state")
         layout = QVBoxLayout(container)
-        layout.setContentsMargins(24, 32, 24, 32)
+        layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -162,7 +161,7 @@ class LogView(QWidget):
         lbl_desc.setProperty("role", "body")
         lbl_desc.setWordWrap(True)
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl_desc.setMaximumWidth(420)
+        lbl_desc.setMaximumWidth(450)
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
         self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_BLACK, 16))
@@ -183,7 +182,7 @@ class LogView(QWidget):
     def _refresh_illustration(self, width_size: int):
         if os.path.exists(self._illustration_path):
             icon = QIcon(self._illustration_path)
-            height_size = int(width_size * (548 / 600))
+            height_size = int(width_size * (460 / 750))
             self.lbl_illustration.setPixmap(icon.pixmap(width_size, height_size))
             self.lbl_illustration.setFixedSize(width_size, height_size)
             self.lbl_illustration.setVisible(True)

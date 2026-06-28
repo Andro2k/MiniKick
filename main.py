@@ -24,8 +24,8 @@ def _get_safe_i18n():
 
 def bootstrap():
     app = QApplication(sys.argv)
-    FONT_FILE_PREFIX = "Inter"
-    FONT_FAMILY_NAME = "Inter"
+    FONT_FILE_PREFIX = "Geist"
+    FONT_FAMILY_NAME = "Geist"
 
     fonts_dir = resource_path(os.path.join("assets", "fonts"))
     

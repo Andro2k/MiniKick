@@ -32,7 +32,7 @@ COLOR_TEXT_MUTED     = "#71717A"
 COLOR_BLACK          = "#000000"
 COLOR_WHITE          = "#FFFFFF"
 
-FONT_FAMILY = "'Inter', '-apple-system', 'Segoe UI', sans-serif"
+FONT_FAMILY = "'Geist', '-apple-system', 'Segoe UI', sans-serif"
 
 RADIUS_SM = 6
 RADIUS_MD = 8

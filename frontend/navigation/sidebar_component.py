@@ -23,6 +23,7 @@ class Sidebar(QFrame):
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
         self.button_group.buttonClicked.connect(self._on_tab_clicked)
+        self.button_group.buttonToggled.connect(self._update_icons)
         
         self.nav_buttons = []
         self._setup_ui()
@@ -175,8 +176,10 @@ class Sidebar(QFrame):
             except RuntimeError:
                 pass
 
-    def _on_tab_clicked(self, btn):
+    def _update_icons(self, btn=None, checked=None):
         for b in self.button_group.buttons():
             color = COLOR_ACCENT if b.isChecked() else COLOR_TEXT_SECONDARY
-            b.setIcon(get_icon_colored(b.property("icon_name"), color, 22))
+            b.setIcon(get_icon_colored(b.property("icon_name"), color, 28))
+
+    def _on_tab_clicked(self, btn):
         self.view_selected.emit(btn.property("view_name"))
