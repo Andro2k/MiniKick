@@ -2,7 +2,7 @@
 
 from frontend.common.utils import get_assets_path
 PATH_ICON_HELP = get_assets_path("icons/help.svg")
-PATH_ICON_UPDATE = get_assets_path("icons/cloud.svg")
+PATH_ICON_UPDATE = get_assets_path("icons/cloud-download.svg")
 PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
 
@@ -20,7 +20,7 @@ COLOR_DANGER        = "#EF4444"
 COLOR_WARNING       = "#F59E0B"
 COLOR_INFO          = "#3B82F6"
 
-COLOR_BG_TOAST      = "#09090B"
+COLOR_BG_TOAST      = "#070707"
 COLOR_ACCENT_GLOW   = "rgba(250, 250, 250, 0.1)"
 COLOR_DANGER_GLOW   = "rgba(239, 68, 68, 0.15)"
 COLOR_WARNING_GLOW  = "rgba(245, 158, 11, 0.15)"

@@ -92,7 +92,7 @@ class MusicView(QWidget):
         layout.setSpacing(12)
 
         icon_music = QLabel()
-        icon_music.setPixmap(get_icon_colored("brand-spotify.svg", COLOR_ACCENT, 28).pixmap(28, 28))
+        icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
         
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
@@ -129,7 +129,7 @@ class MusicView(QWidget):
 
         self.sw_skip = ModernSwitch()
         self.sw_skip.toggled.connect(lambda val: self.command_toggled.emit("!skip", val))
-        row_skip = SettingRow("chevron-right-pipe.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
+        row_skip = SettingRow("player-skip-forward.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
 
         self.sw_song = ModernSwitch()
         self.sw_song.toggled.connect(lambda val: self.command_toggled.emit("!song", val))

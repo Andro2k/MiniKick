@@ -98,7 +98,7 @@ class SettingsView(QWidget):
         self.btn_update.clicked.connect(self.update_clicked.emit)
 
         row_update = SettingRow(
-            icon_name="cloud.svg", 
+            icon_name="cloud-download.svg", 
             title_text=self.i18n.get("settings.system.update_title"), 
             desc_text=self.i18n.get("settings.system.update_desc"), 
             right_widget=self.btn_update,

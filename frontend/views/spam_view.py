@@ -56,7 +56,7 @@ class SpamFilterCard(QFrame):
         h_layout.addWidget(self.switch)
         
         self.btn_expand = QPushButton()
-        self.btn_expand.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_TEXT_SECONDARY, 20))
+        self.btn_expand.setIcon(get_icon_colored("chevron-down.svg", COLOR_TEXT_SECONDARY, 20))
         self.btn_expand.setFixedSize(30, 30)
         self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.clicked.connect(self.toggle_expand)
@@ -131,7 +131,7 @@ class SpamFilterCard(QFrame):
     def toggle_expand(self):
         is_visible = self.body_widget.isVisible()
         self.body_widget.setVisible(not is_visible)
-        icon_name = "chevron-up.svg" if not is_visible else "chevron-right-pipe.svg"
+        icon_name = "chevron-up.svg" if not is_visible else "chevron-down.svg"
         self.btn_expand.setIcon(get_icon_colored(icon_name, COLOR_TEXT_SECONDARY, 20))
 
     def _emit_update(self, *args):
