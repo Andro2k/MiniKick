@@ -34,7 +34,7 @@ class SpotifyAuthManager:
         auth_url = f"{SPOTIFY_AUTH_URL}?{urlencode(params)}"
         
         port = int(urlparse(self.redirect_uri).port or 8080)
-        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path)
+        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path, provider="spotify")
         if not auth_code:
             raise TimeoutError("Auth timeout")
         return self._exchange_code(auth_code)

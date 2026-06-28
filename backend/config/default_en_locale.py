@@ -15,7 +15,11 @@ DEFAULT_DICTIONARY = {
             "update_desc": "Check for and install new MiniKick versions.",
             "btn_update": "Check for updates",
             "font_title": "Global Font Size",
-            "font_desc": "Scale the interface text size across the entire application."
+            "font_desc": "Scale the interface text size across the entire application.",
+            "font_size_small": "Small (11px)",
+            "font_size_normal": "Normal (13px)",
+            "font_size_large": "Large (14px)",
+            "font_size_xlarge": "Extra Large (16px)"
         },
         "backup": {
             "title": "Configuration Backup",
@@ -397,6 +401,13 @@ DEFAULT_DICTIONARY = {
         "confirm": {
             "btn_continue": "Continue",
             "btn_cancel": "Cancel"
+        },
+        "wizard": {
+            "step_indicator": "Step {current}/{total}",
+            "btn_cancel": "Cancel",
+            "btn_back": "Back",
+            "btn_next": "Next",
+            "btn_save": "Save"
         }
     },
     "main": {

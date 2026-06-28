@@ -16,18 +16,42 @@ KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
 class _OAuthCallbackHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         query = parse_qs(urlparse(self.path).query)
-        if "code" in query:
-            self.server.auth_code = query["code"][0]
+        code = query.get("code", [None])[0]
+        error = query.get("error", [None])[0]
+        
+        if code or error:
+            if code:
+                self.server.auth_code = code
+            else:
+                self.server.auth_code = ""  # Sentinel value to exit server loop on cancel/error
+                
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
             
             html_path = getattr(self.server, "success_html_path", "")
+            provider = getattr(self.server, "provider", "kick")
+            
             try:
-                with open(html_path, "rb") as f:
-                    self.wfile.write(f.read())
+                with open(html_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
+                status = "success" if code else "error"
+                error_msg = ""
+                if error:
+                    error_msg = query.get("error_description", [error])[0]
+                
+                content = content.replace("{{PROVIDER}}", provider)
+                content = content.replace("{{STATUS}}", status)
+                content = content.replace("{{ERROR_MSG}}", error_msg)
+                
+                self.wfile.write(content.encode("utf-8"))
             except FileNotFoundError:
-                html_msg = "<h1>Authentication successful / Autenticación exitosa.</h1><p>You can safely close this tab / Puedes cerrar esta pestaña de forma segura.</p>"
+                status_text = "exitoso" if code else "fallido"
+                html_msg = f"<h1>Autenticación {status_text} / Authentication {status}.</h1>"
+                if error:
+                    error_desc = query.get("error_description", [error])[0]
+                    html_msg += f"<p>Error: {error_desc}</p>"
                 self.wfile.write(html_msg.encode("utf-8"))
             except (BrokenPipeError, ConnectionResetError):
                 pass
@@ -37,11 +61,12 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
 
 class OAuthCallbackServer:
     @staticmethod
-    def capture_auth_code(url: str, port: int, success_html_path: str, timeout_seconds: int = 120) -> str | None:
+    def capture_auth_code(url: str, port: int, success_html_path: str, timeout_seconds: int = 120, provider: str = "kick") -> str | None:
         httpd = HTTPServer(("", port), _OAuthCallbackHandler)
         httpd.timeout = 1 
         httpd.auth_code = None
         httpd.success_html_path = success_html_path
+        httpd.provider = provider
         
         webbrowser.open(url)
         start_time = time.time()
@@ -97,7 +122,7 @@ class AuthManager:
         auth_url = self._build_auth_url(challenge)
 
         port = int(urlparse(self.redirect_uri).port or 8080)
-        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path)
+        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path, provider="kick")
 
         if not auth_code:
             raise TimeoutError("Auth timeout or user canceled login.")

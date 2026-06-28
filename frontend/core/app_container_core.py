@@ -42,7 +42,7 @@ class AppContainer:
             self.commands_storage, self.spam_storage
         )
         self.i18n = self._init_i18n()
-        html_path = resource_path(os.path.join("assets", "web", "success.html"))
+        html_path = resource_path(os.path.join("assets", "web", "auth.html"))
         
         self.auth_manager = AuthManager(
             client_id=KICK_CLIENT_ID,
