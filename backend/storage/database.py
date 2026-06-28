@@ -35,7 +35,7 @@ class DatabaseManager:
                 )
             """)           
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS obs_alerts (
+                CREATE TABLE IF NOT EXISTS obs_rewards (
                     reward_name TEXT PRIMARY KEY,
                     filepath TEXT NOT NULL,
                     volume REAL DEFAULT 1.0,
@@ -66,10 +66,10 @@ class DatabaseManager:
                 )
             """)
 
-            cursor.execute("PRAGMA table_info(obs_alerts)")
+            cursor.execute("PRAGMA table_info(obs_rewards)")
             columns = [info[1] for info in cursor.fetchall()]
             if "is_random_pos" not in columns:
-                cursor.execute("ALTER TABLE obs_alerts ADD COLUMN is_random_pos INTEGER DEFAULT 0")
+                cursor.execute("ALTER TABLE obs_rewards ADD COLUMN is_random_pos INTEGER DEFAULT 0")
             cursor.execute("PRAGMA table_info(chat_commands)")
             columns = [info[1] for info in cursor.fetchall()]
             if "permission" not in columns:
@@ -151,22 +151,22 @@ class SQLiteSettingsStorage:
                 cursor.execute("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, str_val))
             conn.commit()
 
-class SQLiteAlertsStorage:
+class SQLiteRewardsStorage:
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
 
     def load_all(self) -> dict:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos FROM obs_alerts")
+            cursor.execute("SELECT reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos FROM obs_rewards")
             return {r[0]: {"filepath": r[1], "volume": r[2], "scale": r[3], "pos_x": r[4], "pos_y": r[5], "is_random_pos": bool(r[6])} for r in cursor.fetchall()}
 
     def save_all(self, mappings: dict) -> None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM obs_alerts")
+            cursor.execute("DELETE FROM obs_rewards")
             for reward, conf in mappings.items():
-                cursor.execute("INSERT INTO obs_alerts (reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                cursor.execute("INSERT INTO obs_rewards (reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                (reward, conf.get("filepath", ""), conf.get("volume", 1.0), conf.get("scale", 1.0), conf.get("pos_x", 0), conf.get("pos_y", 0), int(conf.get("is_random_pos", False))))
             conn.commit()
 

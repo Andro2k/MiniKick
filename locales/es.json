@@ -11,11 +11,17 @@
             "lang_desc": "Selecciona el idioma de la interfaz (requiere reiniciar).",
             "update_title": "Actualizaciones de Software",
             "update_desc": "Buscar e instalar nuevas versiones de MiniKick.",
-            "btn_update": "Buscar actualizaciones"
+            "btn_update": "Buscar actualizaciones",
+            "font_title": "Tamaño de Fuente Global",
+            "font_desc": "Escala el tamaño del texto en toda la interfaz de la aplicación.",
+            "font_size_small": "Pequeño (11px)",
+            "font_size_normal": "Normal (13px)",
+            "font_size_large": "Grande (14px)",
+            "font_size_xlarge": "Extra Grande (16px)"
         },
         "backup": {
             "title": "Respaldo de Configuración",
-            "desc": "Exporta o importa tus alertas, voces y ajustes generales.",
+            "desc": "Exporta o importa tus recompesas, voces y ajustes generales.",
             "btn_export": "Exportar",
             "btn_import": "Importar"
         },
@@ -83,6 +89,10 @@
             "symbol": {
                 "title": "Protección de Símbolos",
                 "desc": "Elimina mensajes con un uso excesivo de símbolos (Ej: @#!%)."
+            },
+            "repetition": {
+                "title": "Protección de Repetición",
+                "desc": "Penaliza mensajes duplicados y el uso excesivo de la misma palabra en un solo mensaje."
             }
         }
     },
@@ -139,9 +149,9 @@
             "toggled_msg": "Palabra: {trigger}"
         }
     },
-    "alerts": {
+    "rewards": {
         "header": {
-            "title": "Triggers & Alertas",
+            "title": "Triggers & Recompensas",
             "subtitle": "Vincula las recompensas de tu canal con elementos multimedia en pantalla."
         },
         "obs": {
@@ -151,46 +161,46 @@
         },
         "table": {
             "title": "Recompensas Vinculadas",
-            "btn_new": "Nueva Alerta",
+            "btn_new": "Nueva Recompensa",
             "col_reward": "Recompensa de Kick",
             "col_file": "Archivo",
             "col_actions": "Acciones",
             "unknown_file": "Desconocido",
             "tooltip_play": "Probar en OBS",
             "tooltip_edit": "Modificar ajustes",
-            "tooltip_delete": "Eliminar alerta"
+            "tooltip_delete": "Eliminar recompensa"
         },
         "dialogs": {
             "visual": {
                 "title": "Posicionador Visual (1920x1080)",
-                "desc": "Arrastra tu alerta. Al soltarla, se mostrará una vista previa en OBS.",
+                "desc": "Arrastra tu recompensa. Al soltarla, se mostrará una vista previa en OBS.",
                 "btn_save": "Guardar y Cerrar"
             },
             "wizard": {
-                "title_edit": "Editar Alerta",
-                "title_new": "Nueva Alerta",
+                "title_edit": "Editar Recompensa",
+                "title_new": "Nueva Recompensa",
                 "btn_cancel": "Cancelar",
                 "btn_next": "Siguiente",
                 "btn_back": "Atrás",
-                "btn_save": "Guardar Alerta",
+                "btn_save": "Guardar Recompensa",
                 "file_dialog_title": "Multimedia",
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
                 "step1": {
                     "title": "Recompensa y Archivo",
-                    "desc": "Configura qué punto de canal activará esta alerta.",
+                    "desc": "Configura qué punto de canal activará esta recompensa.",
                     "reward_selection": "Selección de Recompensa",
                     "loading": "Cargando recompensas...",
                     "tooltip_refresh": "Actualizar Recompensas de Kick",
                     "file_label": "Archivo Multimedia",
-                    "file_placeholder": "Ej. tu_alerta.mp4 o sonido.mp3",
+                    "file_placeholder": "Ej. tu_recompensa.mp4 o sonido.mp3",
                     "btn_browse": "Explorar",
                     "no_rewards": "No hay recompensas",
                     "no_available": "No hay recompensas disponibles"
                 },
                 "step2": {
                     "title": "Ajustes de Pantalla",
-                    "desc": "Define cómo y dónde se mostrará tu alerta en el lienzo.",
-                    "volume": "Volumen de la alerta",
+                    "desc": "Define cómo y dónde se mostrará tu recompensa en el lienzo.",
+                    "volume": "Volumen de la recompensa",
                     "random_pos": "Posición Aleatoria",
                     "btn_visual": "Posicionar en OBS",
                     "coord_x": "X:",
@@ -200,9 +210,9 @@
             }
         },
         "status": {
-            "created": "Alerta Creada",
-            "updated": "Alerta Actualizada",
-            "deleted": "Alerta Eliminada",
+            "created": "Recompensa Creada",
+            "updated": "Recompensa Actualizada",
+            "deleted": "Recompensa Eliminada",
             "created_msg": "Vinculada a recompensa: {reward}",
             "updated_msg": "Configuración guardada para: {reward}",
             "deleted_msg": "Se desvinculó el punto: {reward}"
@@ -221,7 +231,14 @@
             "btn_load": "Cargar Histórico",
             "btn_live": "Ver en Vivo",
             "btn_clear": "Limpiar",
-            "btn_report": "Reportar"
+            "btn_report": "Reportar",
+            "btn_show_logs": "Ver Logs",
+            "btn_hide_logs": "Ocultar Logs"
+        },
+        "empty": {
+            "title": "Consola en pausa",
+            "desc": "Los eventos siguen registrándose en segundo plano. Pulsa el botón para ver el diagnóstico en tiempo real.",
+            "btn_show": "Ver logs en vivo"
         },
         "table": {
             "col_level": "Nivel",
@@ -240,6 +257,8 @@
             "historical_msg": "Inspeccionando: {file}",
             "live_title": "Consola en Vivo",
             "live_msg": "Mostrando diagnóstico de eventos en tiempo real.",
+            "paused_title": "Modo en vivo",
+            "paused_msg": "Volviste a la consola en vivo. Usa 'Ver Logs' cuando quieras monitorear eventos.",
             "cleared_title": "Registros Borrados",
             "cleared_msg": "La vista de logs se ha limpiado correctamente."
         }
@@ -492,7 +511,7 @@
             "points_tag": "PUNTOS"
         },
         "logs": {
-            "reward_no_alert": "Recompensa '{reward_name}' no tiene una alerta configurada.",
+            "reward_no_rewards": "Recompensa '{reward_name}' no tiene una recompensa configurada.",
             "automod_sanction": "Mensaje sancionado por Auto-Mod: {user}: {msg}",
             "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
             "api_fetching": "Ya se están consultando las recompensas. Por favor espera.",

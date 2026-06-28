@@ -4,22 +4,27 @@ import os
 
 class LogService:
     def __init__(self):
-        app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
-        self.log_dir = os.path.join(app_data_dir, '.Minikick', 'logs')
+        self.log_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), ".Minikick", "logs")
         os.makedirs(self.log_dir, exist_ok=True)
+        self.max_logs = 1000
+        self._live_history: list[tuple[str, str, str]] = []
 
-    def get_log_files(self) -> list[str]:
-        if not os.path.exists(self.log_dir):
-            return []
-        files = [f for f in os.listdir(self.log_dir) if f.startswith('minikick.log')]
-        files.sort(reverse=True)
-        return files
+    def append_record(self, time_str: str, level: str, message: str) -> bool:
+        is_grouped = False
+        if self._live_history:
+            l_level, l_time, l_text = self._live_history[-1]
+            if l_level == level and l_time == time_str:
+                self._live_history[-1] = (l_level, l_time, f"{l_text}\n{message}")
+                is_grouped = True
 
-    def read_log_file(self, file_name: str) -> str:
-        file_path = os.path.join(self.log_dir, file_name)
-        with open(file_path, 'r', encoding='utf-8') as f:
-            return f.read()
+        if not is_grouped:
+            self._live_history.append((level, time_str, message))
+            if len(self._live_history) > self.max_logs:
+                self._live_history.pop(0)
+        return is_grouped
 
-    def delete_log_file(self, file_name: str):
-        file_path = os.path.join(self.log_dir, file_name)
-        os.remove(file_path)
+    def clear_history(self):
+        self._live_history.clear()
+
+    def get_history(self) -> list[tuple[str, str, str]]:
+        return self._live_history

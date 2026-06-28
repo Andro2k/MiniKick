@@ -1,5 +1,7 @@
 # frontend\views\chat_view.py
 
+import html
+
 from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget, 
                                QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSlider, 
                                QFrame, QSizePolicy, QScrollArea)
@@ -8,7 +10,7 @@ from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
 from frontend.widgets.blocks_component import ViewHeader, SettingRow, SettingSliderRow
 from frontend.navigation.bot_panel_component import BotMutePanel
-from frontend.common.theme import COLOR_ACCENT
+from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 
 class ChatView(QWidget):
     volume_changed = Signal(int)
@@ -18,6 +20,8 @@ class ChatView(QWidget):
     bot_add_requested = Signal(str)
     bot_remove_requested = Signal(str)
     language_filter_changed = Signal(str)
+
+    _MAX_CHAT_BLOCKS = 400
 
     def __init__(self, i18n):
         super().__init__()
@@ -200,8 +204,24 @@ class ChatView(QWidget):
         self.combo_voice.blockSignals(False)
 
     def append_message(self, user: str, message: str, color: str):
-        html_msg = f'<b style="color: {color};">{user}:</b> <span style="color: #f0f0f0;">{message}</span>'
+        safe_user = html.escape(user)
+        safe_message = html.escape(message)        
+        safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_TEXT_PRIMARY
+        html_msg = f'<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_TEXT_PRIMARY};">{safe_message}</span>'
         self.chat_display.append(html_msg)
+        self._trim_chat_history()
+
+    def _trim_chat_history(self):
+        doc = self.chat_display.document()
+        excess = doc.blockCount() - self._MAX_CHAT_BLOCKS
+        if excess <= 0:
+            return
+        cursor = self.chat_display.textCursor()
+        cursor.movePosition(cursor.MoveOperation.Start)
+        for _ in range(excess):
+            cursor.select(cursor.SelectionType.BlockUnderCursor)
+            cursor.removeSelectedText()
+            cursor.deleteChar()
 
     @Slot(int)
     def _on_slider_vol_changed(self, value: int):

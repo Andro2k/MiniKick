@@ -2,17 +2,18 @@
 
 import json
 import re
-import time
-from typing import Callable
 import websocket
-
+from typing import Callable
 from frontend.common.theme import COLOR_ACCENT
 
 class ChatFormatter:
-    @staticmethod
-    def clean(text: str) -> str:
-        text = re.sub(r"https?://\S+|www\.\S+", "", text)
-        text = re.sub(r"\[emote:[^\]]*\]", "", text)
+    _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
+    _EMOTE_REGEX = re.compile(r"\[emote:[^\]]*\]")
+
+    @classmethod
+    def clean(cls, text: str) -> str:
+        text = cls._URL_REGEX.sub("", text)
+        text = cls._EMOTE_REGEX.sub("", text)
         return text.strip()
 
 class ChatSocketManager:
@@ -20,60 +21,63 @@ class ChatSocketManager:
         self.cluster = cluster
         self.key = key
         self._running = False
-        self.ws = None
+        self.ws: websocket.WebSocketApp | None = None
+        self._room_id = 0
+        self._callback: Callable | None = None
 
-    def start_socket(self, room_id: int, on_message: Callable[[str, str, list, str], None]) -> None:
-        url = (
-            f"wss://ws-{self.cluster}.pusher.com/app/{self.key}"
-            f"?protocol=7&client=js&version=7.6.0"
-        )
+    def start_socket(self, room_id: int, on_message: Callable[[str, str, list, str, str, int], None]) -> None:
+        self._room_id = room_id
+        self._callback = on_message
         self._running = True
+        
+        url = f"wss://ws-{self.cluster}.pusher.com/app/{self.key}?protocol=7&client=js&version=7.6.0"
+        self.ws = websocket.WebSocketApp(url, on_message=self._on_raw_frame)
+        self.ws.run_forever(ping_interval=30, ping_timeout=10)
 
-        def _on_message(ws: websocket.WebSocketApp, raw: str) -> None:
-            data = json.loads(raw)
-            event = data.get("event")
+    def _on_raw_frame(self, ws: websocket.WebSocketApp, raw: str) -> None:
+        if not self._running:
+            return
 
-            if event == "pusher:connection_established":
-                ws.send(json.dumps({
-                    "event": "pusher:subscribe",
-                    "data": {"channel": f"chatrooms.{room_id}.v2"},
-                }))
+        try:
+            outer = json.loads(raw)
+            event = outer.get("event")
 
-            elif event == "App\\Events\\ChatMessageEvent":
-                payload = json.loads(data.get("data", "{}"))
-                sender = payload.get("sender", {})
-                msg_id = payload.get("id", "")
-                sender_id = sender.get("id", 0)
+            if event == "App\\Events\\ChatMessageEvent":
+                inner = json.loads(outer.get("data", "{}"))
+                sender = inner.get("sender", {})
                 
                 user = sender.get("username", "")
-                msg = payload.get("content", "")
-                
+                msg = inner.get("content", "")
+                if not user or not msg:
+                    return
+
                 identity = sender.get("identity", {})
-                badges_raw = identity.get("badges", [])
-                badges = [b.get("type") for b in badges_raw if isinstance(b, dict)]
-                color = identity.get("color", "") or COLOR_ACCENT
+                raw_badges = identity.get("badges", [])
+                badges = [b["type"] for b in raw_badges if isinstance(b, dict) and "type" in b]
                 
-                if user and msg:
-                    on_message(user, msg, badges, color, msg_id, sender_id)
+                color = identity.get("color", "") or COLOR_ACCENT
+                msg_id = inner.get("id", "")
+                sender_id = sender.get("id", 0)
+
+                if self._callback:
+                    self._callback(user, msg, badges, color, msg_id, sender_id)
+
+            elif event == "pusher:connection_established":
+                payload = json.dumps({
+                    "event": "pusher:subscribe",
+                    "data": {"channel": f"chatrooms.{self._room_id}.v2"}
+                })
+                ws.send(payload)
 
             elif event == "pusher:ping":
-                ws.send(json.dumps({"event": "pusher:pong"}))
+                ws.send('{"event":"pusher:pong"}')
 
-        while self._running:
-            try:
-                self.ws = websocket.WebSocketApp(url, on_message=_on_message)
-                self.ws.run_forever(ping_interval=30, ping_timeout=10)
-            except Exception as e:
-                print(f"[Chat] Socket interrupted: {e}")
-
-            if self._running:
-                print("[Chat] Reconnecting in 5 seconds...")
-                time.sleep(5) 
+        except (json.JSONDecodeError, KeyError, TypeError, AttributeError):
+            pass
 
     def stop_socket(self) -> None:
         self._running = False
-        if hasattr(self, 'ws') and self.ws:
+        if self.ws:
             self.ws.keep_running = False
-            if hasattr(self.ws, 'sock') and self.ws.sock:
-                self.ws.sock.close() 
-            self.ws.close()
+            if self.ws.sock and self.ws.sock.connected:
+                self.ws.sock.close()

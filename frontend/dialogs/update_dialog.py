@@ -1,14 +1,15 @@
 # frontend\dialogs\update_dialog.py
 
+from frontend.common.theme import COLOR_BG_BASE
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QPushButton, QWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
-from frontend.dialogs.base_dialogs import ModernModalAlert
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_INFO
+from frontend.dialogs.base_dialog import ModernModal
+from frontend.common.theme import COLOR_ACCENT, COLOR_DANGER, COLOR_INFO
 from frontend.common.utils import get_icon_colored, get_assets_path
 
-class UpdateDialog(ModernModalAlert):
+class UpdateDialog(ModernModal):
     download_requested = Signal() 
     restart_requested = Signal()
 
@@ -16,7 +17,7 @@ class UpdateDialog(ModernModalAlert):
         self.i18n = i18n
         super().__init__(
             title=self.i18n.get("main.dialogs.update.title_default"), 
-            icon_path=get_assets_path("icons/cloud.svg"), 
+            icon_path=get_assets_path("icons/cloud-download.svg"), 
             icon_bg_color=COLOR_INFO,
             width=400, 
             parent=parent
@@ -80,7 +81,7 @@ class UpdateDialog(ModernModalAlert):
     def show_update_available(self, version: str):
         self.version = version
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud.svg", COLOR_BLACK, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud-download.svg", COLOR_BG_BASE, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("main.dialogs.update.top_available").replace("{version}", version))
         self.lbl_subtitle.setText(self.i18n.get("main.dialogs.update.subtitle_restart_req"))
@@ -116,7 +117,7 @@ class UpdateDialog(ModernModalAlert):
     def show_complete(self):
         self.set_dialog_state("accent", QColor(83, 252, 24, 60))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("circle-check.svg", COLOR_ACCENT, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud-check.svg", COLOR_ACCENT, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("main.dialogs.update.title_completed"))
         self.lbl_subtitle.setText(self.i18n.get("main.dialogs.update.subtitle_installed").replace("{version}", self.version))
@@ -138,7 +139,7 @@ class UpdateDialog(ModernModalAlert):
     def show_no_update(self):
         self.set_dialog_state("neutral", QColor(0, 0, 0, 0))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("circle-check.svg", COLOR_BLACK, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud-check.svg", COLOR_BG_BASE, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("main.dialogs.update.title_up_to_date"))
         self.lbl_subtitle.setText(self.i18n.get("main.dialogs.update.subtitle_up_to_date"))

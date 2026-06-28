@@ -1,8 +1,8 @@
-# backend\services\stream\alerts_service.py
+# backend\services\stream\rewards_service.py
 
-class AlertsService:
-    def __init__(self, alerts_storage, overlay_server):
-        self.storage = alerts_storage
+class RewardsService:
+    def __init__(self, rewards_storage, overlay_server):
+        self.storage = rewards_storage
         self.overlay = overlay_server
 
     def get_mappings(self) -> dict:
@@ -12,4 +12,4 @@ class AlertsService:
         self.storage.save_all(mappings)
 
     def trigger_preview(self, reward_name: str, config: dict):
-        self.overlay.trigger_alert(reward_name, config)
+        self.overlay.trigger_rewards(reward_name, config)

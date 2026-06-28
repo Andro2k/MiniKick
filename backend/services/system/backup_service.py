@@ -5,18 +5,20 @@ import logging
 from backend.interfaces.settings_interfaces import SettingsStorage
 
 class BackupService:
-    def __init__(self, settings_storage: SettingsStorage, alerts_storage, commands_storage, spam_storage):
+    def __init__(self, settings_storage: SettingsStorage, rewards_storage, commands_storage, spam_storage):
         self.settings_storage = settings_storage
-        self.alerts_storage = alerts_storage
+        self.rewards_storage = rewards_storage
         self.commands_storage = commands_storage
         self.spam_storage = spam_storage
         self.logger = logging.getLogger(__name__)
 
     def export_to_json(self, filepath: str) -> bool:
+        if not filepath.lower().endswith('.json'):
+            filepath += '.json'
         try:
             data = {
                 "settings": self.settings_storage.get_all(),
-                "alerts": self.alerts_storage.load_all(),
+                "rewards": self.rewards_storage.load_all(),
                 "commands": self.commands_storage.load_all(),
                 "spam_filters": self.spam_storage.load_all()
             }
@@ -36,8 +38,8 @@ class BackupService:
             if "settings" in data and isinstance(data["settings"], dict):
                 self.settings_storage.save_all(data["settings"])
             
-            if "alerts" in data and isinstance(data["alerts"], dict):
-                self.alerts_storage.save_all(data["alerts"])
+            if "rewards" in data and isinstance(data["rewards"], dict):
+                self.rewards_storage.save_all(data["rewards"])
             
             if "commands" in data and isinstance(data["commands"], list):
                 for cmd in data["commands"]:

@@ -3,6 +3,7 @@
 from PySide6.QtCore import QObject, Signal, Slot
 
 class SettingsController(QObject):
+    style_reload_requested = Signal(int)
     unlink_account_requested = Signal()
     check_update_requested = Signal()
     backup_restored = Signal()
@@ -16,6 +17,7 @@ class SettingsController(QObject):
         self._load_initial_state()
 
     def _connect_signals(self):
+        self.view.font_size_changed.connect(self.handle_font_size)
         self.view.minimize_tray_toggled.connect(self.handle_minimize_tray)
         self.view.export_clicked.connect(self.handle_export)
         self.view.import_clicked.connect(self.handle_import)
@@ -28,6 +30,9 @@ class SettingsController(QObject):
         self.view.set_minimize_tray_enabled(enabled)
         lang = self.service.get_language()
         self.view.set_current_language(lang)
+        current_font = self.service.get_font_size()
+        self.view.set_current_font_size(current_font)
+        self.style_reload_requested.emit(current_font)
 
     @Slot(bool)
     def handle_minimize_tray(self, enabled: bool):
@@ -100,3 +105,11 @@ class SettingsController(QObject):
             self.view.i18n.get("main.controllers.settings.restart_title"), 
             self.view.i18n.get("main.controllers.settings.restart_desc")
         )
+
+    @Slot(int)
+    def handle_font_size(self, size: int):
+        self.service.set_font_size(size)
+        self.style_reload_requested.emit(size)
+        
+        if hasattr(self.view.window(), 'toast'):
+            self.view.window().toast.show_toast("Interfaz Escalada", f"Tamaño global aplicado: {size}px", "success")

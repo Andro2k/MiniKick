@@ -1,13 +1,13 @@
 # frontend\views\command_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
-                               QTableWidget, QTableWidgetItem, QHeaderView, QScrollArea, 
+                               QTableWidget, QHeaderView, QScrollArea, 
                                QLineEdit)
 from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 from frontend.widgets.blocks_component import ViewHeader
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, COLOR_WARNING
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
 from frontend.common.utils import get_icon_colored
 
 class CommandView(QWidget):
@@ -64,10 +64,10 @@ class CommandView(QWidget):
         self.txt_search.textChanged.connect(self.search_text_changed.emit)
         table_header_layout.addWidget(self.txt_search)
 
-        self.btn_new_alert = ModernButton(self.i18n.get("command.table.btn_new"), role="action_accent")
-        self.btn_new_alert.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
-        self.btn_new_alert.clicked.connect(self.add_requested.emit)
-        table_header_layout.addWidget(self.btn_new_alert)
+        self.btn_new_add = ModernButton(self.i18n.get("command.table.btn_new"), role="action_accent")
+        self.btn_new_add.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
+        self.btn_new_add.clicked.connect(self.add_requested.emit)
+        table_header_layout.addWidget(self.btn_new_add)
 
         table_layout.addLayout(table_header_layout)
 
@@ -102,6 +102,7 @@ class CommandView(QWidget):
         base_layout.addWidget(scroll_area)
 
     def populate_table(self, commands: list[dict]):
+        self.table.setUpdatesEnabled(False)
         self.table.setRowCount(0)
         
         for cmd in commands:
@@ -111,6 +112,8 @@ class CommandView(QWidget):
             self.table.setCellWidget(row, 1, self._create_permission_cell(cmd))
             self.table.setCellWidget(row, 2, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 3, self._create_actions_cell(cmd))
+
+        self.table.setUpdatesEnabled(True)
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()

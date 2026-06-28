@@ -7,6 +7,7 @@ class SpamService:
         self.api_client = api_client
         self.broadcaster_id = 0
         self.filters = {}
+        self.user_history = {}
         self.reload_filters()
 
     def reload_filters(self):
@@ -60,6 +61,26 @@ class SpamService:
             elif f_id == "link_protection":
                 if re.search(r"https?://\S+|www\.\S+", message):
                     is_violation = True
+
+            elif f_id == "repetition_protection":
+                words = message.lower().split()
+                word_counts = {}
+                for w in words:
+                    word_counts[w] = word_counts.get(w, 0) + 1
+                
+                if any(count > max_amount for count in word_counts.values()):
+                    is_violation = True
+                else:
+                    if user not in self.user_history:
+                        self.user_history[user] = {"message": message.lower(), "count": 1}
+                    else:
+                        if self.user_history[user]["message"] == message.lower():
+                            self.user_history[user]["count"] += 1
+                        else:
+                            self.user_history[user] = {"message": message.lower(), "count": 1}
+
+                    if self.user_history[user]["count"] > max_amount:
+                        is_violation = True
             if is_violation:
                 self._apply_penalty(user, sender_id, msg_id, config)
                 return True

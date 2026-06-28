@@ -1,4 +1,4 @@
-# frontend\dialogs\alerts_dialogs.py
+# frontend\dialogs\rewards_dialogs.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
                                QComboBox, QLineEdit, QSlider, QSpinBox, 
@@ -8,16 +8,16 @@ from PySide6.QtCore import Qt
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 from frontend.common.theme import COLOR_TEXT_PRIMARY
 from frontend.common.utils import get_icon_colored
-from frontend.dialogs.base_dialogs import ModernWizardPanel
+from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.blocks_component import SettingSliderRow
 from frontend.dialogs.visual_positioner_dialog import VisualPositionerDialog
 
-class AlertConfigWizard(ModernWizardPanel):
+class RewardsConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
         self.i18n = i18n
         self.is_edit_mode = existing_config is not None
         self.existing_reward = existing_reward
-        title = self.i18n.get("alerts.dialogs.wizard.title_edit") if self.is_edit_mode else self.i18n.get("alerts.dialogs.wizard.title_new")
+        title = self.i18n.get("rewards.dialogs.wizard.title_edit") if self.is_edit_mode else self.i18n.get("rewards.dialogs.wizard.title_new")
         
         super().__init__(title=title, subtitle="", width=520, parent=parent)
         
@@ -74,16 +74,16 @@ class AlertConfigWizard(ModernWizardPanel):
         layout.setSpacing(15)
 
         header_layout = QVBoxLayout()
-        header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.title"))
+        header_title = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.title"))
         header_title.setProperty("role", "h2")
-        header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.desc"))
+        header_desc = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
         header_layout.addWidget(header_desc)
         layout.addLayout(header_layout)
         layout.addSpacing(5)
         
-        lbl = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.reward_selection"))
+        lbl = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.reward_selection"))
         lbl.setProperty("role", "h3")
         layout.addWidget(lbl)
         
@@ -92,7 +92,7 @@ class AlertConfigWizard(ModernWizardPanel):
         if rewards_list:
             self.combo_rewards.addItems(rewards_list)
         else:
-            self.combo_rewards.addItem(self.i18n.get("alerts.dialogs.wizard.step1.loading"))
+            self.combo_rewards.addItem(self.i18n.get("rewards.dialogs.wizard.step1.loading"))
             
         if existing_reward:
             if rewards_list and existing_reward not in rewards_list:
@@ -103,23 +103,23 @@ class AlertConfigWizard(ModernWizardPanel):
         
         self.btn_refresh = ModernButton("", role="action_outlined")
         self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_TEXT_PRIMARY, 24))
-        self.btn_refresh.setToolTip(self.i18n.get("alerts.dialogs.wizard.step1.tooltip_refresh"))
+        self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
         self.btn_refresh.clicked.connect(self._request_refresh)
         row1.addWidget(self.btn_refresh)
         layout.addLayout(row1)
         
         layout.addSpacing(5)
         
-        lbl2 = QLabel(self.i18n.get("alerts.dialogs.wizard.step1.file_label"))
+        lbl2 = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.file_label"))
         lbl2.setProperty("role", "h3")
         layout.addWidget(lbl2)
         
         row2 = QHBoxLayout()
         self.txt_file_path = QLineEdit()
         self.txt_file_path.setReadOnly(True)
-        self.txt_file_path.setPlaceholderText(self.i18n.get("alerts.dialogs.wizard.step1.file_placeholder"))
+        self.txt_file_path.setPlaceholderText(self.i18n.get("rewards.dialogs.wizard.step1.file_placeholder"))
         
-        self.btn_browse = ModernButton(self.i18n.get("alerts.dialogs.wizard.step1.btn_browse"), role="action_outlined")
+        self.btn_browse = ModernButton(self.i18n.get("rewards.dialogs.wizard.step1.btn_browse"), role="action_outlined")
         self.btn_browse.clicked.connect(self._browse_file)
         row2.addWidget(self.txt_file_path, stretch=1)
         row2.addWidget(self.btn_browse)
@@ -128,10 +128,10 @@ class AlertConfigWizard(ModernWizardPanel):
         layout.addStretch()
         
         btn_layout = QHBoxLayout()
-        self.btn_cancel_step1 = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_cancel"), role="action_outlined")
+        self.btn_cancel_step1 = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_cancel"), role="action_outlined")
         self.btn_cancel_step1.clicked.connect(self.reject)
         
-        self.btn_next = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_next"), role="action_accent")
+        self.btn_next = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_next"), role="action_accent")
         self.btn_next.clicked.connect(self._go_next)
         
         btn_layout.addWidget(self.btn_cancel_step1)
@@ -145,9 +145,9 @@ class AlertConfigWizard(ModernWizardPanel):
         layout.setSpacing(15)
         
         header_layout = QVBoxLayout()
-        header_title = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.title"))
+        header_title = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.title"))
         header_title.setProperty("role", "h2")
-        header_desc = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.desc"))
+        header_desc = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.desc"))
         header_desc.setProperty("role", "body")
         header_layout.addWidget(header_title)
         header_layout.addWidget(header_desc)
@@ -164,7 +164,7 @@ class AlertConfigWizard(ModernWizardPanel):
         
         vol_row = SettingSliderRow(
             icon_name="volume.svg",
-            title_text=self.i18n.get("alerts.dialogs.wizard.step2.volume"),
+            title_text=self.i18n.get("rewards.dialogs.wizard.step2.volume"),
             desc_text="",
             slider_widget=self.slider_vol,
             value_label=self.lbl_vol_perc
@@ -177,7 +177,7 @@ class AlertConfigWizard(ModernWizardPanel):
         v_layout.setSpacing(15)
         
         row_rnd = QHBoxLayout()
-        lbl_rnd = QLabel(self.i18n.get("alerts.dialogs.wizard.step2.random_pos"))
+        lbl_rnd = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.random_pos"))
         lbl_rnd.setProperty("role", "h3")
         row_rnd.addWidget(lbl_rnd)
         
@@ -186,7 +186,7 @@ class AlertConfigWizard(ModernWizardPanel):
         row_rnd.addWidget(self.chk_random_pos)
         row_rnd.addStretch()
         
-        self.btn_visual = ModernButton(self.i18n.get("alerts.dialogs.wizard.step2.btn_visual"), role="action_outlined")
+        self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_outlined")
         self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         row_rnd.addWidget(self.btn_visual)
@@ -194,17 +194,17 @@ class AlertConfigWizard(ModernWizardPanel):
         v_layout.addLayout(row_rnd)
         
         row_coords = QHBoxLayout()
-        row_coords.addWidget(QLabel(self.i18n.get("alerts.dialogs.wizard.step2.coord_x")))
+        row_coords.addWidget(QLabel(self.i18n.get("rewards.dialogs.wizard.step2.coord_x")))
         self.spin_x = QSpinBox()
         self.spin_x.setRange(-5000, 5000)
         row_coords.addWidget(self.spin_x)
         
-        row_coords.addWidget(QLabel(self.i18n.get("alerts.dialogs.wizard.step2.coord_y")))
+        row_coords.addWidget(QLabel(self.i18n.get("rewards.dialogs.wizard.step2.coord_y")))
         self.spin_y = QSpinBox()
         self.spin_y.setRange(-5000, 5000)
         row_coords.addWidget(self.spin_y)
         
-        row_coords.addWidget(QLabel(self.i18n.get("alerts.dialogs.wizard.step2.scale")))
+        row_coords.addWidget(QLabel(self.i18n.get("rewards.dialogs.wizard.step2.scale")))
         self.spin_scale = QDoubleSpinBox()
         self.spin_scale.setRange(0.1, 5.0)
         self.spin_scale.setSingleStep(0.1)
@@ -216,10 +216,10 @@ class AlertConfigWizard(ModernWizardPanel):
         layout.addStretch()
 
         btn_layout = QHBoxLayout()
-        self.btn_back = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_back"), role="action_outlined")
+        self.btn_back = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_back"), role="action_outlined")
         self.btn_back.clicked.connect(self._go_back)
         
-        self.btn_save = ModernButton(self.i18n.get("alerts.dialogs.wizard.btn_save"), role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("rewards.dialogs.wizard.btn_save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
         
         btn_layout.addWidget(self.btn_back)
@@ -247,8 +247,8 @@ class AlertConfigWizard(ModernWizardPanel):
         self.btn_refresh.setEnabled(True)
 
     def _browse_file(self):
-        title = self.i18n.get("alerts.dialogs.wizard.file_dialog_title")
-        filter_str = self.i18n.get("alerts.dialogs.wizard.file_dialog_filter")
+        title = self.i18n.get("rewards.dialogs.wizard.file_dialog_title")
+        filter_str = self.i18n.get("rewards.dialogs.wizard.file_dialog_filter")
         file_path, _ = QFileDialog.getOpenFileName(self, title, "", filter_str)
         if file_path:
             self.txt_file_path.setText(file_path)

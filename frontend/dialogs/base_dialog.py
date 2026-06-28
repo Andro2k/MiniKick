@@ -55,7 +55,7 @@ class ModernFramelessShell(QDialog):
         self._old_drag_pos = None
         event.accept()
 
-class ModernModalAlert(ModernFramelessShell):
+class ModernModal(ModernFramelessShell):
     def __init__(self, title: str = "", icon_path: str = "", icon_bg_color: str = "", width: int = 420, parent=None):
         super().__init__(width=width, parent=parent)
         
@@ -138,7 +138,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.panel_layout.addSpacing(10)
         self.panel_layout.addLayout(btn_layout)
 
-class ModernConfirmDialog(ModernModalAlert):
+class ModernConfirmDialog(ModernModal):
     def __init__(self, i18n, parent=None, title_text="", body_text=""):
         super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_DANGER, width=420, parent=parent)
         self.set_dialog_state("danger", QColor(239, 68, 68, 60))

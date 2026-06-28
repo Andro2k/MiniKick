@@ -9,7 +9,7 @@ from frontend.common.theme import COLOR_BG_BASE, COLOR_TEXT_SECONDARY, COLOR_ACC
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self, i18n, app_version: str = "v1.0.0"):
+    def __init__(self, i18n, app_version: str = "v1.2.8"):
         super().__init__()
         self.i18n = i18n
         self.app_version = app_version
@@ -23,6 +23,7 @@ class Sidebar(QFrame):
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
         self.button_group.buttonClicked.connect(self._on_tab_clicked)
+        self.button_group.buttonToggled.connect(self._update_icons)
         
         self.nav_buttons = []
         self._setup_ui()
@@ -74,14 +75,14 @@ class Sidebar(QFrame):
 
         self.main_layout.addSpacing(4)
         
-        self.btn_update_alert = QPushButton(self.i18n.get("main.sidebar.new_version"))
-        self.btn_update_alert.setProperty("role", "action_accent")
-        self.btn_update_alert.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_update_alert.setIcon(get_icon_colored("cloud.svg", COLOR_BG_BASE, 14))
+        self.btn_update_rewards = QPushButton(self.i18n.get("main.sidebar.new_version"))
+        self.btn_update_rewards.setProperty("role", "action_accent")
+        self.btn_update_rewards.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_update_rewards.setIcon(get_icon_colored("cloud-download.svg", COLOR_BG_BASE, 14))
         
-        self.btn_update_alert.setVisible(False)
-        self.btn_update_alert.clicked.connect(self._on_update_alert_clicked)
-        self.main_layout.addWidget(self.btn_update_alert)
+        self.btn_update_rewards.setVisible(False)
+        self.btn_update_rewards.clicked.connect(self._on_update_rewards_clicked)
+        self.main_layout.addWidget(self.btn_update_rewards)
 
         version_text = self.i18n.get("main.sidebar.version").replace("{version}", self.app_version)
         self.lbl_version = QLabel(version_text)
@@ -92,9 +93,9 @@ class Sidebar(QFrame):
     def set_update_available(self, available: bool = True):
         self.has_update = available
         if self.is_expanded:
-            self.btn_update_alert.setVisible(available)
+            self.btn_update_rewards.setVisible(available)
 
-    def _on_update_alert_clicked(self):
+    def _on_update_rewards_clicked(self):
         for btn in self.nav_buttons:
             if btn.property("view_name") == "Settings":
                 btn.setChecked(True)
@@ -160,7 +161,7 @@ class Sidebar(QFrame):
             
         self.lbl_version.setVisible(show)
         if self.has_update:
-            self.btn_update_alert.setVisible(show)
+            self.btn_update_rewards.setVisible(show)
 
     def _on_expand_finished(self):
         if self.is_expanded:
@@ -175,8 +176,10 @@ class Sidebar(QFrame):
             except RuntimeError:
                 pass
 
-    def _on_tab_clicked(self, btn):
+    def _update_icons(self, btn=None, checked=None):
         for b in self.button_group.buttons():
             color = COLOR_ACCENT if b.isChecked() else COLOR_TEXT_SECONDARY
-            b.setIcon(get_icon_colored(b.property("icon_name"), color, 22))
+            b.setIcon(get_icon_colored(b.property("icon_name"), color, 28))
+
+    def _on_tab_clicked(self, btn):
         self.view_selected.emit(btn.property("view_name"))

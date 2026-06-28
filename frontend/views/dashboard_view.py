@@ -17,6 +17,7 @@ class DashboardView(QWidget):
     def __init__(self, i18n):
         super().__init__()
         self.i18n = i18n
+        self._stats_cols = -1
         self._setup_ui()
 
     def _setup_ui(self):
@@ -246,6 +247,8 @@ class DashboardView(QWidget):
                 cols = 2
             else:
                 cols = 3
-            cards = [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods]
-            for i, card in enumerate(cards):
-                self.stats_grid.addWidget(card, i // cols, i % cols)
+            if cols != self._stats_cols:
+                self._stats_cols = cols
+                cards = [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods]
+                for i, card in enumerate(cards):
+                    self.stats_grid.addWidget(card, i // cols, i % cols)

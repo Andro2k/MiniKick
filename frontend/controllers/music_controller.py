@@ -1,7 +1,7 @@
 # frontend\controllers\music_controller.py
 
 from PySide6.QtCore import QObject, Slot, QTimer
-from frontend.workers.music_auth_worker import SpotifyAuthWorker
+from frontend.workers.music_worker import SpotifyAuthWorker
 from backend.providers.spotify.spotify_client import SpotifyMusicProvider
 
 class MusicController(QObject):
@@ -74,7 +74,7 @@ class MusicController(QObject):
 
     @Slot()
     def _poll_now_playing(self):
-        if not self.music_provider:
+        if not self.music_provider or not self.view.isVisible():
             return
         song = self.music_provider.get_current_song()
         self.view.update_current_song(song)
@@ -107,3 +107,9 @@ class MusicController(QObject):
         status_msg = self.i18n.get("command.status.toggled_msg").replace("{trigger}", trigger)
         state_color = "success" if is_active else "warning"
         self.toast.show_toast(status_title, status_msg, state_color)
+
+    def shutdown(self):
+        self.polling_timer.stop()
+        if self.auth_worker and self.auth_worker.isRunning():
+            self.auth_worker.terminate()
+            self.auth_worker.wait()

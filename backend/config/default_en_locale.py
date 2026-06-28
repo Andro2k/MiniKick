@@ -1,4 +1,4 @@
-# backend\config\default_es_locale.py
+# backend\config\default_en_locale.py
 
 DEFAULT_DICTIONARY = {
     "settings": {
@@ -13,11 +13,13 @@ DEFAULT_DICTIONARY = {
             "lang_desc": "Select the interface language (requires restart).",
             "update_title": "Software Updates",
             "update_desc": "Check for and install new MiniKick versions.",
-            "btn_update": "Check for updates"
+            "btn_update": "Check for updates",
+            "font_title": "Global Font Size",
+            "font_desc": "Scale the interface text size across the entire application."
         },
         "backup": {
             "title": "Configuration Backup",
-            "desc": "Export or import your alerts, voices, and general settings.",
+            "desc": "Export or import your rewards, voices, and general settings.",
             "btn_export": "Export",
             "btn_import": "Import"
         },
@@ -85,6 +87,10 @@ DEFAULT_DICTIONARY = {
             "symbol": {
                 "title": "Symbol Protection",
                 "desc": "Removes messages with excessive use of symbols (Ex: @#!%)."
+            },
+            "repetition": {
+                "title": "Repetition Protection",
+                "desc": "Penalizes duplicate messages and excessive use of the same word."
             }
         }
     },
@@ -141,9 +147,9 @@ DEFAULT_DICTIONARY = {
             "toggled_msg": "Trigger word: {trigger}"
         }
     },
-    "alerts": {
+    "rewards": {
         "header": {
-            "title": "Triggers & Alerts",
+            "title": "Triggers & Rewards",
             "subtitle": "Link your channel rewards with on-screen multimedia elements."
         },
         "obs": {
@@ -153,46 +159,46 @@ DEFAULT_DICTIONARY = {
         },
         "table": {
             "title": "Linked Rewards",
-            "btn_new": "New Alert",
+            "btn_new": "New Rewards",
             "col_reward": "Kick Reward",
             "col_file": "File",
             "col_actions": "Actions",
             "unknown_file": "Unknown",
             "tooltip_play": "Test in OBS",
             "tooltip_edit": "Modify settings",
-            "tooltip_delete": "Delete alert"
+            "tooltip_delete": "Delete Rewards"
         },
         "dialogs": {
             "visual": {
                 "title": "Visual Positioner (1920x1080)",
-                "desc": "Drag your alert. When you release it, a preview will be shown in OBS.",
+                "desc": "Drag your rewards. When you release it, a preview will be shown in OBS.",
                 "btn_save": "Save and Close"
             },
             "wizard": {
-                "title_edit": "Edit Alert",
-                "title_new": "New Alert",
+                "title_edit": "Edit Rewards",
+                "title_new": "New Rewards",
                 "btn_cancel": "Cancel",
                 "btn_next": "Next",
                 "btn_back": "Back",
-                "btn_save": "Save Alert",
+                "btn_save": "Save Rewards",
                 "file_dialog_title": "Multimedia",
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
                 "step1": {
                     "title": "Reward and File",
-                    "desc": "Configure which channel point will trigger this alert.",
+                    "desc": "Configure which channel point will trigger this rewards.",
                     "reward_selection": "Reward Selection",
                     "loading": "Loading rewards...",
                     "tooltip_refresh": "Refresh Kick Rewards",
                     "file_label": "Multimedia File",
-                    "file_placeholder": "Ex. your_alert.mp4 or sound.mp3",
+                    "file_placeholder": "Ex. your_rewards.mp4 or sound.mp3",
                     "btn_browse": "Browse",
                     "no_rewards": "No rewards",
                     "no_available": "No available rewards"
                 },
                 "step2": {
                     "title": "Display Settings",
-                    "desc": "Define how and where your alert will be displayed on the canvas.",
-                    "volume": "Alert volume",
+                    "desc": "Define how and where your rewards will be displayed on the canvas.",
+                    "volume": "Rewards volume",
                     "random_pos": "Random Position",
                     "btn_visual": "Position in OBS",
                     "coord_x": "X:",
@@ -202,9 +208,9 @@ DEFAULT_DICTIONARY = {
             }
         },
         "status": {
-            "created": "Alert Created",
-            "updated": "Alert Updated",
-            "deleted": "Alert Deleted",
+            "created": "Rewards Created",
+            "updated": "Rewards Updated",
+            "deleted": "Rewards Deleted",
             "created_msg": "Linked to reward: {reward}",
             "updated_msg": "Configuration saved for: {reward}",
             "deleted_msg": "Unlinked reward: {reward}"
@@ -223,7 +229,14 @@ DEFAULT_DICTIONARY = {
             "btn_load": "Load History",
             "btn_live": "Live View",
             "btn_clear": "Clear",
-            "btn_report": "Report Bug"
+            "btn_report": "Report Bug",
+            "btn_show_logs": "View Logs",
+            "btn_hide_logs": "Hide Logs"
+        },
+        "empty": {
+            "title": "Console paused",
+            "desc": "Events are still being recorded in the background. Press the button to view real-time diagnostics.",
+            "btn_show": "View live logs"
         },
         "table": {
             "col_level": "Log Level",
@@ -242,6 +255,8 @@ DEFAULT_DICTIONARY = {
             "historical_msg": "Inspecting: {file}",
             "live_title": "Live Console",
             "live_msg": "Showing real-time event diagnostics.",
+            "paused_title": "Live mode",
+            "paused_msg": "You returned to live mode. Use 'View Logs' whenever you want to monitor events.",
             "cleared_title": "Logs Cleared",
             "cleared_msg": "The log view has been cleared successfully."
         }
@@ -479,7 +494,7 @@ DEFAULT_DICTIONARY = {
                 "error_room_id": "Could not get the room ID from the API."
             },
             "reward": {
-                "unknown_reward": "Unknown reward",
+                "unknown_reward": "Unknown Reward",
                 "someone": "Someone",
                 "batch_success": "Successfully marked {count} redemptions as completed on Kick.",
                 "batch_error": "Could not confirm the batch on Kick: {error}",
@@ -494,7 +509,7 @@ DEFAULT_DICTIONARY = {
             "points_tag": "POINTS"
         },
         "logs": {
-            "reward_no_alert": "Reward '{reward_name}' does not have an alert configured.",
+            "reward_no_rewards": "Reward '{reward_name}' does not have an rewards configured.",
             "automod_sanction": "Message sanctioned by Auto-Mod: {user}: {msg}",
             "api_offline": "Attempted to update rewards without being connected to Kick.",
             "api_fetching": "Rewards are already being fetched. Please wait.",

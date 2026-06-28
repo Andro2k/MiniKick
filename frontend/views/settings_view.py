@@ -1,14 +1,19 @@
 # frontend\views\settings_view.py
 
-from PySide6.QtWidgets import QComboBox, QHBoxLayout, QScrollArea, QWidget, QVBoxLayout, QFrame, QFileDialog
-from PySide6.QtCore import Qt, Signal
 from datetime import datetime
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtWidgets import (
+    QComboBox, QFileDialog, QFrame, QHBoxLayout,
+    QScrollArea, QVBoxLayout, QWidget
+)
 
-from frontend.widgets.controls_component import ModernSwitch, ModernButton
-from frontend.widgets.blocks_component import ViewHeader, SettingRow
 from frontend.common.theme import COLOR_ACCENT, COLOR_DANGER
+from frontend.widgets.blocks_component import SettingRow, ViewHeader
+from frontend.widgets.controls_component import ModernButton, ModernSwitch
+
 
 class SettingsView(QWidget):
+    font_size_changed = Signal(int)
     minimize_tray_toggled = Signal(bool)
     export_clicked = Signal()
     import_clicked = Signal()
@@ -49,6 +54,36 @@ class SettingsView(QWidget):
         sys_layout.setContentsMargins(8, 8, 8, 8)
         sys_layout.setSpacing(6)
 
+        self.combo_lang = QComboBox()
+        self.combo_lang.addItem("Español", "es")
+        self.combo_lang.addItem("English", "en")
+        self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
+
+        row_lang = SettingRow(
+            icon_name="globe.svg", 
+            title_text=self.i18n.get("settings.system.lang_title"), 
+            desc_text=self.i18n.get("settings.system.lang_desc"), 
+            right_widget=self.combo_lang
+        )
+
+        self.combo_font = QComboBox()
+        font_sizes = [
+            (self.i18n.get("settings.system.font_size_small"), 11),
+            (self.i18n.get("settings.system.font_size_normal"), 13),
+            (self.i18n.get("settings.system.font_size_large"), 14),
+            (self.i18n.get("settings.system.font_size_xlarge"), 16)
+        ]
+        for name, size in font_sizes:
+            self.combo_font.addItem(name, size)
+        self.combo_font.currentIndexChanged.connect(self._on_font_changed)
+
+        row_font = SettingRow(
+            icon_name="file-text.svg", 
+            title_text=self.i18n.get("settings.system.font_title"), 
+            desc_text=self.i18n.get("settings.system.font_desc"), 
+            right_widget=self.combo_font
+        )
+
         self.sw_start_bg = ModernSwitch()
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
         
@@ -61,28 +96,17 @@ class SettingsView(QWidget):
 
         self.btn_update = ModernButton(self.i18n.get("settings.system.btn_update"), role="action_accent")
         self.btn_update.clicked.connect(self.update_clicked.emit)
-        
-        self.combo_lang = QComboBox()
-        self.combo_lang.addItem("Español", "es")
-        self.combo_lang.addItem("English", "en")
-        self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
 
-        row_lang = SettingRow(
-            icon_name="globe.svg", 
-            title_text=self.i18n.get("settings.system.lang_title"), 
-            desc_text=self.i18n.get("settings.system.lang_desc"), 
-            right_widget=self.combo_lang
-        )
-        
-        sys_layout.addWidget(row_lang)
         row_update = SettingRow(
-            icon_name="cloud.svg", 
+            icon_name="cloud-download.svg", 
             title_text=self.i18n.get("settings.system.update_title"), 
             desc_text=self.i18n.get("settings.system.update_desc"), 
             right_widget=self.btn_update,
             icon_color=COLOR_ACCENT
         )
         
+        sys_layout.addWidget(row_lang)
+        sys_layout.addWidget(row_font)
         sys_layout.addWidget(row_tray)        
         sys_layout.addWidget(row_update)
         self.main_layout.addWidget(sys_card)
@@ -146,6 +170,13 @@ class SettingsView(QWidget):
         self.sw_start_bg.setChecked(enabled)
         self.sw_start_bg.blockSignals(False)
 
+    def set_current_font_size(self, size: int):
+        self.combo_font.blockSignals(True)
+        idx = self.combo_font.findData(size)
+        if idx >= 0:
+            self.combo_font.setCurrentIndex(idx)
+        self.combo_font.blockSignals(False)
+
     def ask_save_path(self) -> str:
         default_name = f"MiniKick_Backup_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
         dialog_title = self.i18n.get("settings.dialogs.export_title")
@@ -171,3 +202,7 @@ class SettingsView(QWidget):
     def _on_language_changed(self, index: int):
         lang_code = self.combo_lang.itemData(index)
         self.language_changed.emit(lang_code)
+
+    def _on_font_changed(self, index: int):
+        size = self.combo_font.itemData(index)
+        self.font_size_changed.emit(size)

@@ -3,9 +3,7 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-
-from frontend.common.theme import COLOR_TEXT_SECONDARY
-from frontend.common.utils import get_icon, get_icon_colored
+from frontend.common.utils import get_icon
 
 class AlreadyRunningDialog(QDialog):
     def __init__(self, i18n, parent=None):
@@ -40,13 +38,13 @@ class AlreadyRunningDialog(QDialog):
         card_layout.addWidget(lbl_icon, alignment=Qt.AlignmentFlag.AlignCenter)
 
         card_layout.addSpacing(4)
-        title_str = self.i18n.get("main.dialogs.already_running.title") or "MiniKick ya está en ejecución"
+        title_str = self.i18n.get("main.dialogs.already_running.title")
         lbl_title = QLabel(title_str)
         lbl_title.setProperty("role", "h1")
         lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         card_layout.addWidget(lbl_title)
 
-        desc_str = self.i18n.get("main.dialogs.already_running.desc") or "El controlador de streaming ya se encuentra operando en segundo plano..."
+        desc_str = self.i18n.get("main.dialogs.already_running.desc")
         lbl_desc = QLabel(desc_str)
         lbl_desc.setProperty("role", "body")
         lbl_desc.setWordWrap(True)
@@ -58,14 +56,14 @@ class AlreadyRunningDialog(QDialog):
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(12)
 
-        exit_str = self.i18n.get("main.dialogs.already_running.btn_exit") or "Salir"
+        exit_str = self.i18n.get("main.dialogs.already_running.btn_exit")
         btn_close = QPushButton(exit_str)
         btn_close.setProperty("role", "action_outlined")
         btn_close.setFixedHeight(36)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.reject)
 
-        ok_str = self.i18n.get("main.dialogs.already_running.btn_understood") or "Entendido"
+        ok_str = self.i18n.get("main.dialogs.already_running.btn_understood")
         btn_ok = QPushButton(ok_str)
         btn_ok.setProperty("role", "action_accent")
         btn_ok.setFixedHeight(36)

@@ -1,4 +1,4 @@
-# frontend\views\alerts_view.py
+# frontend\views\rewards_view.py
 
 import os
 from PySide6.QtWidgets import (QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
@@ -11,7 +11,7 @@ from frontend.widgets.blocks_component import ViewHeader, SettingRow
 from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
 from frontend.common.utils import get_icon_colored
 
-class AlertsView(QWidget):
+class RewardsView(QWidget):
     add_requested = Signal()
     edit_requested = Signal(str)
     delete_requested = Signal(str)
@@ -38,8 +38,8 @@ class AlertsView(QWidget):
         self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
-            title_text=self.i18n.get("alerts.header.title"),
-            subtitle_text=self.i18n.get("alerts.header.subtitle"),
+            title_text=self.i18n.get("rewards.header.title"),
+            subtitle_text=self.i18n.get("rewards.header.subtitle"),
             icon_name="layout-dashboard.svg", 
             icon_color=COLOR_ACCENT
         )
@@ -62,8 +62,8 @@ class AlertsView(QWidget):
         
         obs_row = SettingRow(
             icon_name="link.svg",
-            title_text=self.i18n.get("alerts.obs.title"),
-            desc_text=self.i18n.get("alerts.obs.desc"),
+            title_text=self.i18n.get("rewards.obs.title"),
+            desc_text=self.i18n.get("rewards.obs.desc"),
             right_widget=self.btn_copy_url
         )
         
@@ -79,56 +79,57 @@ class AlertsView(QWidget):
         table_layout.setSpacing(6)
 
         table_header_layout = QHBoxLayout()
-        lbl_table_title = QLabel(self.i18n.get("alerts.table.title"))
+        lbl_table_title = QLabel(self.i18n.get("rewards.table.title"))
         lbl_table_title.setProperty("role", "h3")
 
-        self.btn_new_alert = ModernButton(self.i18n.get("alerts.table.btn_new"), role="action_accent")
-        self.btn_new_alert.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
-        self.btn_new_alert.clicked.connect(self.add_requested.emit)
+        self.btn_new_rewards = ModernButton(self.i18n.get("rewards.table.btn_new"), role="action_accent")
+        self.btn_new_rewards.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
+        self.btn_new_rewards.clicked.connect(self.add_requested.emit)
 
         table_header_layout.addWidget(lbl_table_title)
         table_header_layout.addStretch()
-        table_header_layout.addWidget(self.btn_new_alert)
+        table_header_layout.addWidget(self.btn_new_rewards)
 
         table_layout.addLayout(table_header_layout)
 
-        self.table_alerts = QTableWidget(0, 3)
-        col_1 = self.i18n.get("alerts.table.col_reward")
-        col_2 = self.i18n.get("alerts.table.col_file")
-        col_3 = self.i18n.get("alerts.table.col_actions")
-        self.table_alerts.setHorizontalHeaderLabels([col_1, col_2, col_3])
+        self.table_rewards = QTableWidget(0, 3)
+        col_1 = self.i18n.get("rewards.table.col_reward")
+        col_2 = self.i18n.get("rewards.table.col_file")
+        col_3 = self.i18n.get("rewards.table.col_actions")
+        self.table_rewards.setHorizontalHeaderLabels([col_1, col_2, col_3])
         
-        self.table_alerts.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.table_alerts.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.table_alerts.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.table_alerts.setColumnWidth(2, 140) 
+        self.table_rewards.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.table_rewards.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.table_rewards.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.table_rewards.setColumnWidth(2, 140) 
         
-        self.table_alerts.verticalHeader().setVisible(False)
-        self.table_alerts.verticalHeader().setDefaultSectionSize(45)
-        self.table_alerts.setShowGrid(False)
-        self.table_alerts.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        self.table_alerts.setFocusPolicy(Qt.FocusPolicy.NoFocus) 
+        self.table_rewards.verticalHeader().setVisible(False)
+        self.table_rewards.verticalHeader().setDefaultSectionSize(45)
+        self.table_rewards.setShowGrid(False)
+        self.table_rewards.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
+        self.table_rewards.setFocusPolicy(Qt.FocusPolicy.NoFocus) 
         
-        table_layout.addWidget(self.table_alerts)
+        table_layout.addWidget(self.table_rewards)
         self.main_layout.addWidget(table_card, stretch=1) 
 
     def populate_table(self, mappings: dict):
-        self.table_alerts.setRowCount(0)
-        str_unknown = self.i18n.get("alerts.table.unknown_file")
+        self.table_rewards.setUpdatesEnabled(False)
+        self.table_rewards.setRowCount(0)
+        str_unknown = self.i18n.get("rewards.table.unknown_file")
         
         for reward, config in mappings.items():
-            row = self.table_alerts.rowCount()
-            self.table_alerts.insertRow(row)
+            row = self.table_rewards.rowCount()
+            self.table_rewards.insertRow(row)
             
             item_reward = QTableWidgetItem(reward)
             item_reward.setFlags(item_reward.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table_alerts.setItem(row, 0, item_reward)
+            self.table_rewards.setItem(row, 0, item_reward)
             
             filepath = config if isinstance(config, str) else config.get("filepath", str_unknown)
             item_file = QTableWidgetItem(os.path.basename(filepath))
             item_file.setToolTip(filepath)
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table_alerts.setItem(row, 1, item_file)
+            self.table_rewards.setItem(row, 1, item_file)
             
             actions_widget = QFrame()
             actions_widget.setObjectName("TableActions")
@@ -137,15 +138,17 @@ class AlertsView(QWidget):
             actions_layout.setSpacing(8)
             actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
-            btn_play = self._create_table_action_btn("play.svg", COLOR_ACCENT, "action_outlined", self.i18n.get("alerts.table.tooltip_play"), lambda checked=False, r=reward: self.preview_requested.emit(r))
-            btn_edit = self._create_table_action_btn("edit.svg", COLOR_BLACK, "action_accent", self.i18n.get("alerts.table.tooltip_edit"), lambda checked=False, r=reward: self.edit_requested.emit(r))
-            btn_del = self._create_table_action_btn("trash.svg", COLOR_DANGER, "action_danger", self.i18n.get("alerts.table.tooltip_delete"), lambda checked=False, r=reward: self.delete_requested.emit(r))
+            btn_play = self._create_table_action_btn("play.svg", COLOR_ACCENT, "action_outlined", self.i18n.get("rewards.table.tooltip_play"), lambda checked=False, r=reward: self.preview_requested.emit(r))
+            btn_edit = self._create_table_action_btn("edit.svg", COLOR_BLACK, "action_accent", self.i18n.get("rewards.table.tooltip_edit"), lambda checked=False, r=reward: self.edit_requested.emit(r))
+            btn_del = self._create_table_action_btn("trash.svg", COLOR_DANGER, "action_danger", self.i18n.get("rewards.table.tooltip_delete"), lambda checked=False, r=reward: self.delete_requested.emit(r))
             
             actions_layout.addWidget(btn_play)
             actions_layout.addWidget(btn_edit)
             actions_layout.addWidget(btn_del)
             
-            self.table_alerts.setCellWidget(row, 2, actions_widget)
+            self.table_rewards.setCellWidget(row, 2, actions_widget)
+
+        self.table_rewards.setUpdatesEnabled(True)
 
     def _create_table_action_btn(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role)
@@ -159,7 +162,7 @@ class AlertsView(QWidget):
     def _copy_obs_url(self):
         QApplication.clipboard().setText("http://localhost:8090/overlay")
         original_text = self.btn_copy_url.text()
-        self.btn_copy_url.setText(self.i18n.get("alerts.obs.copied"))
+        self.btn_copy_url.setText(self.i18n.get("rewards.obs.copied"))
         self.btn_copy_url.setEnabled(False)
         QTimer.singleShot(2000, lambda: self._reset_copy_btn(original_text))
 

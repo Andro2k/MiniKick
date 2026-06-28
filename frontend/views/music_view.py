@@ -69,11 +69,9 @@ class MusicView(QWidget):
         provider_info.addWidget(self.lbl_auth_status)
 
         self.btn_connect = ModernButton(self.i18n.get("music.btn.connect"), role="action_accent")
-        self.btn_connect.setFixedSize(150, 36)
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         self.btn_disconnect = ModernButton(self.i18n.get("music.btn.disconnect"), role="action_danger")
-        self.btn_disconnect.setFixedSize(120, 36)
         self.btn_disconnect.setVisible(False)
         self.btn_disconnect.clicked.connect(self.disconnect_requested.emit)
 
@@ -94,7 +92,7 @@ class MusicView(QWidget):
         layout.setSpacing(12)
 
         icon_music = QLabel()
-        icon_music.setPixmap(get_icon_colored("brand-spotify.svg", COLOR_ACCENT, 28).pixmap(28, 28))
+        icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
         
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
@@ -131,7 +129,7 @@ class MusicView(QWidget):
 
         self.sw_skip = ModernSwitch()
         self.sw_skip.toggled.connect(lambda val: self.command_toggled.emit("!skip", val))
-        row_skip = SettingRow("chevron-right-pipe.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
+        row_skip = SettingRow("player-skip-forward.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
 
         self.sw_song = ModernSwitch()
         self.sw_song.toggled.connect(lambda val: self.command_toggled.emit("!song", val))
@@ -152,10 +150,8 @@ class MusicView(QWidget):
         if connected:
             translated_label = self.i18n.get(label_key)
             self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
-            self.lbl_auth_status.setStyleSheet(f"color: {COLOR_ACCENT}; font-weight: bold;")
         else:
             self.lbl_auth_status.setText(self.i18n.get("music.status.disconnected"))
-            self.lbl_auth_status.setStyleSheet("")
 
     def update_current_song(self, song_data: dict | None):
         if not song_data:

@@ -3,7 +3,7 @@
 import json
 import os
 import sys
-from backend.config.default_es_locale import DEFAULT_DICTIONARY
+from backend.config.default_en_locale import DEFAULT_DICTIONARY
 
 class TranslationService:    
     def __init__(self, locales_dir: str = "locales", default_lang: str = "en"):
@@ -27,7 +27,7 @@ class TranslationService:
             return True
         except FileNotFoundError:
             print(f"[i18n] File {lang_code}.json not found. Auto-repairing...")    
-            fallback_data = DEFAULT_DICTIONARY if lang_code == "es" else {}          
+            fallback_data = DEFAULT_DICTIONARY if lang_code == "en" else {}          
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(fallback_data, f, indent=4, ensure_ascii=False)
             

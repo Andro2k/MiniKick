@@ -1,4 +1,4 @@
-# backend\providers\kick\kick_api_client.py
+# backend\providers\kick\kick_client.py
 
 import sys
 import time
@@ -154,3 +154,11 @@ class KickAPIClient:
         except Exception as e:
             print(f"[KickAPI] Error applying timeout: {e}")
             return False
+        
+    def get_users_by_ids(self, user_ids: list) -> dict:
+        if not user_ids:
+            return {"data": []}
+            
+        url = "https://api.kick.com/public/v1/users"
+        params = [("id", uid) for uid in user_ids]
+        return self._request("GET", url, params=params, timeout=10).json()

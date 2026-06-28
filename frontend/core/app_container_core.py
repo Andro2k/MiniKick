@@ -19,11 +19,11 @@ except ImportError:
 from backend.providers.spotify.spotify_client import SpotifyAuthManager, SpotifyMusicProvider
 from backend.storage.database import (DatabaseManager, SQLiteCommandsStorage, 
                                  SQLiteTokenStorage, SQLiteSettingsStorage, 
-                                 SQLiteAlertsStorage, SQLiteSpamStorage)
+                                 SQLiteRewardsStorage, SQLiteSpamStorage)
 from backend.services.system.backup_service import BackupService
 from backend.services.system.translation_service import TranslationService
-from backend.services.auth.oauth_server import AuthManager
-from backend.providers.tts.tts_manager import TTSManager
+from backend.services.auth.oauth_service import AuthManager
+from backend.providers.tts.tts_service import TTSManager
 from backend.services.stream.overlay_server import OverlayServerManager
 from backend.services.stream.media_trigger import MediaTriggerService
 from frontend.common.utils import resource_path
@@ -34,11 +34,11 @@ class AppContainer:
         self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
         self.spotify_token_storage = SQLiteTokenStorage(self.db_manager, provider="spotify")
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
-        self.alerts_storage = SQLiteAlertsStorage(self.db_manager)
+        self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
         self.backup_service = BackupService(
-            self.settings_storage, self.alerts_storage, 
+            self.settings_storage, self.rewards_storage, 
             self.commands_storage, self.spam_storage
         )
         self.i18n = self._init_i18n()

@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QTextEdit, QSpinBox, QCheckBox, QTabWidget, 
                                QWidget, QSizePolicy, QComboBox)
-from frontend.dialogs.base_dialogs import ModernWizardPanel
+from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.controls_component import ModernButton
 
 class CommandConfigWizard(ModernWizardPanel):
