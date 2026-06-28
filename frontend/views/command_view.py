@@ -146,22 +146,19 @@ class CommandView(QWidget):
         translated_text = self.i18n.get(i18n_key) or raw_perm.upper()
 
         tag = QFrame()
-        tag.setFixedHeight(24)
+        tag.setFixedHeight(22)
         tag.setProperty("role", "tag_pill")
         tag.setProperty("perm_level", raw_perm)
         
         tag_layout = QHBoxLayout(tag)
-        tag_layout.setContentsMargins(8, 0, 10, 0)
-        tag_layout.setSpacing(6)
-
-        lbl_dot = QLabel("●")
-        lbl_dot.setProperty("role", "pill_dot")
-        
+        tag_layout.setContentsMargins(10, 0, 10, 0)
+        tag_layout.setSpacing(0)
+ 
         lbl_txt = QLabel(translated_text)
         lbl_txt.setProperty("role", "pill_text")
-
-        tag_layout.addWidget(lbl_dot, alignment=Qt.AlignmentFlag.AlignVCenter)
-        tag_layout.addWidget(lbl_txt, alignment=Qt.AlignmentFlag.AlignVCenter)
+        lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+ 
+        tag_layout.addWidget(lbl_txt)
         
         layout.addWidget(tag)
         return container
