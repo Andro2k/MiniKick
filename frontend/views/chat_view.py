@@ -1,12 +1,10 @@
 # frontend\views\chat_view.py
 
 import html
-
 from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget, 
                                QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSlider, 
                                QFrame, QSizePolicy, QScrollArea)
 from PySide6.QtCore import Qt, Signal, Slot
-
 from frontend.widgets.controls_component import ModernSwitch
 from frontend.widgets.blocks_component import ViewHeader, SettingRow, SettingSliderRow
 from frontend.navigation.bot_panel_component import BotMutePanel
@@ -117,7 +115,7 @@ class ChatView(QWidget):
         
         self.chat_display = QTextEdit()
         self.chat_display.setReadOnly(True)
-        self.chat_display.setProperty("role", "console")
+        self.chat_display.setProperty("role", "ConsoleDisplay")
 
         chat_layout.addWidget(lbl_chat_title)
         chat_layout.addWidget(self.chat_display)
@@ -139,14 +137,11 @@ class ChatView(QWidget):
     def _connect_internal_signals(self):
         self.chk_provider.toggled.connect(self.provider_toggled.emit)
         self.slider_vol.valueChanged.connect(self._on_slider_vol_changed)
-        
         self.combo_lang.currentTextChanged.connect(self.language_filter_changed.emit)
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
-        
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
         self.bot_panel.bot_add_requested.connect(self.bot_add_requested.emit)
         self.bot_panel.bot_remove_requested.connect(self.bot_remove_requested.emit)
-
         controls = [self.chk_tts, self.chk_name, self.chk_command, self.txt_command]
         for control in controls:
             if isinstance(control, ModernSwitch):
@@ -162,8 +157,7 @@ class ChatView(QWidget):
         self.txt_command.setText(settings.get("command", "!tts"))
         self.chk_provider.setChecked(settings.get("provider") == "web")
         self.slider_vol.setValue(settings.get("volume", 100))
-        self.blockSignals(False)
-        
+        self.blockSignals(False)        
         self.clear_bots_list()
         ignored_users_str = settings.get("ignored_users", "")
         if ignored_users_str:
@@ -197,8 +191,7 @@ class ChatView(QWidget):
         for i, (v_id, v_name) in enumerate(voices):
             self.combo_voice.addItem(v_name, userData=v_id)
             if v_id == select_id:
-                index_to_select = i
-                
+                index_to_select = i                
         if self.combo_voice.count() > 0:
             self.combo_voice.setCurrentIndex(index_to_select)
         self.combo_voice.blockSignals(False)

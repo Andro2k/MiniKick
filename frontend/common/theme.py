@@ -75,7 +75,7 @@ QLabel[role="wizard_step_num"] {{ font-size: {caption}px; font-weight: 400; colo
 QLabel[role="wizard_subtitle"] {{ font-size: {base}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="text_accent"] {{ font-size: {btn_txt}px; font-weight: 700; color: {COLOR_ACCENT}; }}
 QLabel[role="text_danger"] {{ font-size: {btn_txt}px; font-weight: 700; color: {COLOR_DANGER}; }}
-QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY}; }}
+QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY};}}
 QLabel[role="status_dot"][state="active"] {{ color: {COLOR_ACCENT}; font-size: {base}px; margin-right: 2px; }}
 QLabel[role="status_dot"][state="inactive"] {{ color: {COLOR_DANGER}; font-size: {base}px; margin-right: 2px; }}
 QLabel[role="tag_permission"] {{ background-color: {COLOR_ACCENT}; color: {COLOR_BLACK}; font-size: {max(9, base - 3)}px; font-weight: 700; padding: 2px 4px; border-radius: 4px; }}
@@ -173,7 +173,7 @@ QProgressBar[role="update_progress"] {{ background-color: {COLOR_BG_SURFACE}; bo
 QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E); border-radius: 5px; }}
 QProgressBar[role="wizard_progress"] {{ background-color: #374151; border: none; border-radius: 2px; }}
 QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_ACCENT}; border-radius: 2px; }}
-QTextEdit#ConsoleDisplay, QTextEdit[role="console"] {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: {btn_txt}px; border-radius: {RADIUS_MD}px; padding: 10px; }}
+QTextEdit[role="ConsoleDisplay"] {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: {btn_txt}px; border-radius: {RADIUS_MD}px; padding: 10px; }}
 QListWidget[role="transparent_list"] {{ background: transparent; border: none; outline: none; }}
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
 

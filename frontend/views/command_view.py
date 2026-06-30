@@ -53,14 +53,13 @@ class CommandView(QWidget):
 
         table_header_layout = QHBoxLayout()
         lbl_table_title = QLabel(self.i18n.get("command.table.title"))
-        lbl_table_title.setProperty("role", "h3")
-        
+        lbl_table_title.setProperty("role", "h3")      
         table_header_layout.addWidget(lbl_table_title)
         table_header_layout.addStretch()
 
         self.txt_search = QLineEdit()
         self.txt_search.setPlaceholderText(self.i18n.get("command.table.search_placeholder"))
-        self.txt_search.setFixedWidth(250)
+        # self.txt_search.setFixedWidth(250)
         self.txt_search.textChanged.connect(self.search_text_changed.emit)
         table_header_layout.addWidget(self.txt_search)
 
@@ -103,8 +102,7 @@ class CommandView(QWidget):
 
     def populate_table(self, commands: list[dict]):
         self.table.setUpdatesEnabled(False)
-        self.table.setRowCount(0)
-        
+        self.table.setRowCount(0)       
         for cmd in commands:
             row = self.table.rowCount()
             self.table.insertRow(row)
@@ -112,18 +110,15 @@ class CommandView(QWidget):
             self.table.setCellWidget(row, 1, self._create_permission_cell(cmd))
             self.table.setCellWidget(row, 2, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 3, self._create_actions_cell(cmd))
-
         self.table.setUpdatesEnabled(True)
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(12, 0, 8, 0)
-        
+        layout.setContentsMargins(12, 0, 8, 0)       
         lbl_trigger = QLabel(cmd_data["trigger"])
         lbl_trigger.setProperty("role", "cmd_trigger")
-        layout.addWidget(lbl_trigger)
-        
+        layout.addWidget(lbl_trigger)        
         layout.addStretch()
         return container
 
@@ -132,7 +127,6 @@ class CommandView(QWidget):
         layout = QHBoxLayout(container)
         layout.setContentsMargins(8, 0, 8, 0)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-
         raw_perm = cmd_data.get("permission", "everyone")
         perm_keys = {
             "everyone": "command.dialog.perm_everyone",
@@ -141,25 +135,19 @@ class CommandView(QWidget):
             "moderator": "command.dialog.perm_moderator",
             "broadcaster": "command.dialog.perm_broadcaster"
         }
-        
         i18n_key = perm_keys.get(raw_perm, "command.dialog.perm_everyone")
         translated_text = self.i18n.get(i18n_key) or raw_perm.upper()
-
         tag = QFrame()
         tag.setFixedHeight(22)
         tag.setProperty("role", "tag_pill")
         tag.setProperty("perm_level", raw_perm)
-        
         tag_layout = QHBoxLayout(tag)
         tag_layout.setContentsMargins(10, 0, 10, 0)
         tag_layout.setSpacing(0)
- 
         lbl_txt = QLabel(translated_text)
         lbl_txt.setProperty("role", "pill_text")
         lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
- 
         tag_layout.addWidget(lbl_txt)
-        
         layout.addWidget(tag)
         return container
 
@@ -169,7 +157,6 @@ class CommandView(QWidget):
         layout.setContentsMargins(8, 0, 8, 0)
         layout.setSpacing(8)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-
         raw_aliases = cmd_data.get("aliases", "").strip()
         is_regex = cmd_data.get("is_regex", False)
 
@@ -181,20 +168,15 @@ class CommandView(QWidget):
 
         if is_regex:
             badge_text = (self.i18n.get("command.table.regex_prefix")).upper()
-            
             badge = QFrame()
             badge.setFixedHeight(20)
             badge.setProperty("role", "badge_regex")
-            
             b_layout = QHBoxLayout(badge)
-            b_layout.setContentsMargins(4, 2, 4, 2)
-            
+            b_layout.setContentsMargins(2, 2, 2, 2)
             lbl_b = QLabel(badge_text)
             lbl_b.setProperty("role", "badge_regex_text")
-            
             b_layout.addWidget(lbl_b)
             layout.addWidget(badge)
-
             lbl_text = QLabel(raw_aliases)
             lbl_text.setProperty("role", "monospace")
         else:

@@ -90,7 +90,7 @@ class DashboardView(QWidget):
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
         self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
-        self.btn_connect.setFixedSize(160, 36)
+        # self.btn_connect.setFixedSize(160, 36)
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         status_layout.addWidget(self.status_label)
@@ -190,7 +190,6 @@ class DashboardView(QWidget):
             self.profile_container.setVisible(False)
         else:
             self.status_label.setText(self.i18n.get("dashboard.connection.status_connected"))
-            self.status_label.setObjectName("State_Connected") 
             self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_active"))
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(True)
@@ -224,7 +223,6 @@ class DashboardView(QWidget):
         self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_connect"))
         self.profile_container.setVisible(False)
         self.lbl_avatar.setPixmap(QPixmap())
-        
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
 
@@ -234,7 +232,6 @@ class DashboardView(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
-
         if hasattr(self, 'top_row_layout'):
             if width < 600:
                 self.top_row_layout.setDirection(QBoxLayout.Direction.TopToBottom)
