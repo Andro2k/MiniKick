@@ -23,7 +23,7 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
             if code:
                 self.server.auth_code = code
             else:
-                self.server.auth_code = ""  # Sentinel value to exit server loop on cancel/error
+                self.server.auth_code = ""
                 
             self.send_response(200)
             self.send_header("Content-type", "text/html")
