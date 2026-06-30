@@ -152,6 +152,6 @@ class SpotifyMusicProvider(MusicPlayerProvider):
     def skip_current(self) -> bool:
         try:
             resp = self._request("POST", "/me/player/next")
-            return resp.status_code == 204
+            return 200 <= resp.status_code < 300
         except Exception:
             return False

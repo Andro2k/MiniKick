@@ -5,6 +5,7 @@ PATH_ICON_HELP = get_assets_path("icons/help.svg")
 PATH_ICON_UPDATE = get_assets_path("icons/cloud-download.svg")
 PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
+PATH_ICON_ADD = get_assets_path("icons/add.svg").replace('\\', '/')
 
 COLOR_BG_BASE       = "#09090B"
 COLOR_BG_SURFACE    = "#121214"
@@ -48,7 +49,6 @@ def get_global_qss(base: int = 13) -> str:
     h2 = base + 3
     h3 = base
     caption = max(9, base - 2)
-    stat = base + 5
     btn_txt = max(10, base - 1)
     badge_txt = max(8, base - 4)
     base_pt = max(9, int(base * 0.75))
@@ -142,13 +142,13 @@ QHeaderView::section {{ background-color: transparent; color: {COLOR_TEXT_SECOND
 QHeaderView {{ background-color: transparent; border: none; }}
 
 /* --- 6. SCROLLS Y TABS --- */
-QScrollBar:vertical {{ border: none; background: transparent; width: 14px; margin: 2px 4px 2px 0px; }}
+QScrollBar:vertical {{ border: none; background: transparent; width: 14px; margin: 2px 2px 2px 0px; }}
 QScrollBar::handle:vertical {{ background-color: {COLOR_TEXT_MUTED}; border-radius: 5px; min-height: 30px; }}
 QScrollBar::handle:vertical:hover {{ background-color: {COLOR_TEXT_PRIMARY}; }}
 QScrollBar::handle:vertical:pressed {{ background-color: {COLOR_ACCENT}; }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ height: 0px; background: none; }}
 
-QScrollBar:horizontal {{ border: none; background: transparent; height: 14px; margin: 0px 2px 4px 2px; }}
+QScrollBar:horizontal {{ border: none; background: transparent; height: 14px; margin: 0px 2px 2px 2px; }}
 QScrollBar::handle:horizontal {{ background-color: {COLOR_TEXT_MUTED}; border-radius: 5px; min-width: 30px; }}
 QScrollBar::handle:horizontal:hover {{ background-color: {COLOR_TEXT_PRIMARY}; }}
 QScrollBar::handle:horizontal:pressed {{ background-color: {COLOR_ACCENT}; }}
@@ -181,7 +181,7 @@ QToolTip {{
 QLabel[role="cmd_trigger"] {{ font-size: {base}px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; }}
 
 QFrame[role="tag_pill"] {{ border-radius: {RADIUS_MD}px; }}
-QLabel[role="pill_dot"] {{ font-size: {max(8, base - 3)}px; font-weight: bold; background: transparent; }}
+QLabel[role="pill_dot"] {{ font-size: {badge_txt}px; font-weight: bold; background: transparent; }}
 QLabel[role="pill_text"] {{ font-size: {caption}px; font-weight: 600; background: transparent; }}
 
 QFrame[role="tag_pill"][perm_level="everyone"] {{ background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: {RADIUS_MD}px; }}
@@ -206,6 +206,13 @@ QFrame[role="tag_pill"][perm_level="broadcaster"] QLabel[role="pill_dot"] {{ col
 
 QFrame[role="badge_regex"] {{ background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: {RADIUS_SM}px; padding: 0px 4px; }}
 QLabel[role="badge_regex_text"] {{ color: #FBBF24; font-size: {badge_txt}px; font-weight: bold; }}
+
+/* --- 11. ASISTENTE REGEX --- */
+QLabel[role="regex_helper_title"] {{ font-size: {h3}px; font-weight: bold; color: {COLOR_ACCENT}; margin-bottom: 2px; }}
+QLabel[role="regex_helper_category"] {{ font-weight: bold; color: {COLOR_ACCENT}; margin-top: 6px; font-size: {btn_txt}px; }}
+QLabel[role="regex_helper_code"] {{ font-size: {btn_txt}px; font-weight: bold; background-color: rgba(255,255,255,0.06); padding: 1px 3px; border-radius: 3px; }}
+QLabel[role="regex_helper_desc"] {{ font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY}; }}
+QLabel[role="regex_helper_pattern"] {{ font-size: {btn_txt}px; font-weight: bold; color: {COLOR_TEXT_PRIMARY}; }}
 """
 
 GLOBAL_QSS = get_global_qss(13)

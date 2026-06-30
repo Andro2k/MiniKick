@@ -135,7 +135,27 @@
             "tab_basic": "Basic",
             "tab_advanced": "Advanced",
             "btn_save": "Save Command",
-            "btn_cancel": "Cancel"
+            "btn_cancel": "Cancel",
+            "regex_helper_title": "RegEx Guide",
+            "regex_helper_cat_syntax": "Syntax & Classes",
+            "regex_helper_cat_quantifiers": "Quantifiers",
+            "regex_helper_cat_anchors": "Anchors & Groups",
+            "regex_helper_desc_any": "Any character",
+            "regex_helper_desc_word": "Word character",
+            "regex_helper_desc_digit": "Any digit",
+            "regex_helper_desc_space": "Whitespace character",
+            "regex_helper_desc_boundary": "Word boundary",
+            "regex_helper_desc_zero_more": "0 or more times",
+            "regex_helper_desc_one_more": "1 or more times",
+            "regex_helper_desc_optional": "Optional (0 or 1)",
+            "regex_helper_desc_exact": "Exactly 3 times",
+            "regex_helper_desc_more": "3 or more times",
+            "regex_helper_desc_range": "Between 3 and 5 times",
+            "regex_helper_desc_start": "Start of line",
+            "regex_helper_desc_end": "End of line",
+            "regex_helper_desc_alt": "Match a or b",
+            "regex_helper_desc_capture": "Capture group",
+            "regex_helper_desc_noncapture": "Non-capturing group"
         },
         "status": {
             "created": "Command Created",
@@ -157,7 +177,8 @@
         "obs": {
             "title": "OBS Browser Source",
             "desc": "Copy this link and paste it into your broadcasting software (Recommended resolution: 1920x1080).",
-            "copied": "Link Copied!"
+            "copied": "Link Copied!",
+            "btn_copy": "Copy Link"
         },
         "table": {
             "title": "Linked Rewards",

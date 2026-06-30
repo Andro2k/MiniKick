@@ -2,8 +2,11 @@
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QTextEdit, QSpinBox, QCheckBox,
-                               QWidget, QSizePolicy, QComboBox)
+                               QWidget, QSizePolicy, QComboBox, QScrollArea, QFrame, QPushButton)
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QIcon
 from frontend.dialogs.base_dialog import ModernWizardPanel
+from frontend.common.theme import PATH_ICON_ADD
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
@@ -20,7 +23,7 @@ class CommandConfigWizard(ModernWizardPanel):
             title_steps=title_steps,
             subtitle_steps=subtitle_steps,
             i18n=i18n,
-            width=520,
+            width=800,
             parent=parent
         )
         
@@ -79,7 +82,13 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.addWidget(self.chk_active)
 
         self.tab_adv = QWidget()
-        adv_layout = QVBoxLayout(self.tab_adv)
+        adv_main_layout = QHBoxLayout(self.tab_adv)
+        adv_main_layout.setContentsMargins(0, 0, 0, 0)
+        adv_main_layout.setSpacing(16)
+
+        left_col = QWidget()
+        adv_layout = QVBoxLayout(left_col)
+        adv_layout.setContentsMargins(0, 0, 0, 0)
         adv_layout.setSpacing(12)
 
         lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
@@ -97,8 +106,10 @@ class CommandConfigWizard(ModernWizardPanel):
 
         lbl_regex = QLabel(self.i18n.get("command.dialog.regex_label"))
         lbl_regex.setProperty("role", "h3")
-        self.txt_regex = QLineEdit()
+        self.txt_regex = QTextEdit()
         self.txt_regex.setPlaceholderText(self.i18n.get("command.dialog.regex_placeholder"))
+        self.txt_regex.setMinimumHeight(60)
+        self.txt_regex.setMaximumHeight(80)
         self.txt_regex.setEnabled(False)
         
         adv_layout.addWidget(lbl_regex)
@@ -110,6 +121,12 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addWidget(lbl_regex_help)
         
         adv_layout.addStretch()
+
+        adv_main_layout.addWidget(left_col, stretch=1)
+        
+        # Build and add right column (Cheat Sheet)
+        right_col = self._build_regex_helper()
+        adv_main_layout.addWidget(right_col)
 
         self.add_page(self.tab_basic)
         self.add_page(self.tab_adv)
@@ -145,7 +162,7 @@ class CommandConfigWizard(ModernWizardPanel):
 
     def get_command_data(self):
         is_regex = self.chk_regex.isChecked()
-        aliases_val = self.txt_regex.text().strip() if is_regex else self.txt_aliases.text().strip()
+        aliases_val = self.txt_regex.toPlainText().strip() if is_regex else self.txt_aliases.text().strip()
         
         return {
             "original_trigger": self.original_trigger,
@@ -157,3 +174,112 @@ class CommandConfigWizard(ModernWizardPanel):
             "is_active": self.chk_active.isChecked(),
             "permission": self.combo_perm.currentData()
         }
+
+    def _build_regex_helper(self) -> QWidget:
+        right_panel = QFrame()
+        right_panel.setProperty("role", "card")
+        right_panel.setFixedWidth(290)
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(10, 10, 0, 10)
+        right_layout.setSpacing(6)
+        
+        lbl_sheet_title = QLabel(self.i18n.get("command.dialog.regex_helper_title"))
+        lbl_sheet_title.setProperty("role", "regex_helper_title")
+        right_layout.addWidget(lbl_sheet_title)
+        
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(0, 0, 10, 0)
+        scroll_layout.setSpacing(0)
+        
+        def add_category(title):
+            lbl = QLabel(title.upper())
+            lbl.setProperty("role", "regex_helper_category")
+            scroll_layout.addWidget(lbl)
+            
+        add_category(self.i18n.get("command.dialog.regex_helper_cat_syntax"))
+        scroll_layout.addWidget(self._create_cheat_row(".", self.i18n.get("command.dialog.regex_helper_desc_any"), "."))
+        scroll_layout.addWidget(self._create_cheat_row("\\w", self.i18n.get("command.dialog.regex_helper_desc_word"), "\\w"))
+        scroll_layout.addWidget(self._create_cheat_row("\\d", self.i18n.get("command.dialog.regex_helper_desc_digit"), "\\d"))
+        scroll_layout.addWidget(self._create_cheat_row("\\s", self.i18n.get("command.dialog.regex_helper_desc_space"), "\\s"))
+        scroll_layout.addWidget(self._create_cheat_row("\\b", self.i18n.get("command.dialog.regex_helper_desc_boundary"), "\\b"))
+        
+        add_category(self.i18n.get("command.dialog.regex_helper_cat_quantifiers"))
+        scroll_layout.addWidget(self._create_cheat_row("*", self.i18n.get("command.dialog.regex_helper_desc_zero_more"), "*"))
+        scroll_layout.addWidget(self._create_cheat_row("+", self.i18n.get("command.dialog.regex_helper_desc_one_more"), "+"))
+        scroll_layout.addWidget(self._create_cheat_row("?", self.i18n.get("command.dialog.regex_helper_desc_optional"), "?"))
+        scroll_layout.addWidget(self._create_cheat_row("{3}", self.i18n.get("command.dialog.regex_helper_desc_exact"), "{3}"))
+        scroll_layout.addWidget(self._create_cheat_row("{3,}", self.i18n.get("command.dialog.regex_helper_desc_more"), "{3,}"))
+        scroll_layout.addWidget(self._create_cheat_row("{3,5}", self.i18n.get("command.dialog.regex_helper_desc_range"), "{3,5}"))
+        
+        add_category(self.i18n.get("command.dialog.regex_helper_cat_anchors"))
+        scroll_layout.addWidget(self._create_cheat_row("^", self.i18n.get("command.dialog.regex_helper_desc_start"), "^"))
+        scroll_layout.addWidget(self._create_cheat_row("$", self.i18n.get("command.dialog.regex_helper_desc_end"), "$"))
+        scroll_layout.addWidget(self._create_cheat_row("a|b", self.i18n.get("command.dialog.regex_helper_desc_alt"), "a|b"))
+        scroll_layout.addWidget(self._create_cheat_row("( )", self.i18n.get("command.dialog.regex_helper_desc_capture"), "(abc)"))
+        scroll_layout.addWidget(self._create_cheat_row("(?: )", self.i18n.get("command.dialog.regex_helper_desc_noncapture"), "(?:abc)"))
+
+        scroll_layout.addStretch()
+        scroll.setWidget(scroll_content)
+        right_layout.addWidget(scroll)
+        
+        return right_panel
+
+    def _create_cheat_row(self, label_text: str, desc_text: str, insert_val: str) -> QWidget:
+        row = QWidget()
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 1, 0, 1)
+        layout.setSpacing(6)
+        
+        lbl_code = QLabel(label_text)
+        # lbl_code.setFixedWidth(55)
+        lbl_code.setProperty("role", "regex_helper_code")
+        
+        lbl_desc = QLabel(desc_text)
+        lbl_desc.setProperty("role", "regex_helper_desc")
+        lbl_desc.setWordWrap(True)
+        
+        btn_insert = QPushButton()
+        btn_insert.setIcon(QIcon(PATH_ICON_ADD))
+        btn_insert.setIconSize(QSize(12, 12))
+        btn_insert.setFixedSize(20, 20)
+        btn_insert.setProperty("role", "action_accent")
+        btn_insert.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_insert.clicked.connect(lambda checked=False, val=insert_val: self._insert_regex(val))
+        
+        layout.addWidget(lbl_code)
+        layout.addWidget(lbl_desc, stretch=1)
+        layout.addWidget(btn_insert)
+        return row
+
+    def _create_pattern_row(self, name_text: str, insert_val: str) -> QWidget:
+        row = QWidget()
+        layout = QHBoxLayout(row)
+        layout.setContentsMargins(0, 1, 0, 1)
+        layout.setSpacing(6)
+        
+        lbl_name = QLabel(name_text)
+        lbl_name.setProperty("role", "regex_helper_pattern")
+        
+        btn_insert = QPushButton()
+        btn_insert.setIcon(QIcon(PATH_ICON_ADD))
+        btn_insert.setIconSize(QSize(12, 12))
+        btn_insert.setFixedSize(20, 20)
+        btn_insert.setProperty("role", "action_outlined")
+        btn_insert.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_insert.clicked.connect(lambda checked=False, val=insert_val: self._insert_regex(val))
+        
+        layout.addWidget(lbl_name, stretch=1)
+        layout.addWidget(btn_insert)
+        return row
+
+    def _insert_regex(self, text_to_insert: str):
+        if not self.chk_regex.isChecked():
+            self.chk_regex.setChecked(True)
+        self.txt_regex.insertPlainText(text_to_insert)
+        self.txt_regex.setFocus()

@@ -25,6 +25,8 @@ class ViewHeader(QFrame):
         
         subtitle = QLabel(subtitle_text)
         subtitle.setProperty("role", "body")
+        subtitle.setWordWrap(True)
+        subtitle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
         text_layout.addWidget(title)
         text_layout.addWidget(subtitle)
