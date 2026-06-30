@@ -1,63 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>MiniKick Overlay</title>
     <style>
-        body { 
-            margin: 0; padding: 0; 
-            overflow: hidden; 
-            background-color: transparent; 
-            height: 100vh; width: 100vw; 
-            position: relative; 
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: transparent;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
         }
-        .media-layer { 
-            position: absolute; 
+
+        .media-layer {
+            position: absolute;
         }
     </style>
 </head>
+
 <body>
     <div id="container"></div>
 
     <script>
-        const eventSource = new EventSource('/events');
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        const eventSource = new EventSource(`/events?token=${token}`);
         const container = document.getElementById('container');
 
-        // --- Estado de la Cola ---
         const alertQueue = [];
         let isPlaying = false;
 
-        // 1. Recepción de eventos
-        eventSource.onmessage = function(event) {
+        eventSource.onmessage = function (event) {
             const data = JSON.parse(event.data);
-            alertQueue.push(data); // Encolar la alerta
-            processQueue();        // Intentar procesar la cola
+            alertQueue.push(data);
+            processQueue();
         };
 
-        // 2. Procesamiento de la cola
         function processQueue() {
-            // Si ya hay algo reproduciéndose o la cola está vacía, no hacemos nada
             if (isPlaying || alertQueue.length === 0) {
                 return;
             }
 
             isPlaying = true;
-            const currentAlert = alertQueue.shift(); // Sacar el primero de la fila
+            const currentAlert = alertQueue.shift();
             playAlert(currentAlert);
         }
 
-        // 3. Reproducción
         function playAlert(data) {
             const mediaEl = document.createElement('video');
             mediaEl.src = data.file_url;
             mediaEl.className = 'media-layer';
             mediaEl.autoplay = true;
-            
+
             mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
 
             const scale = data.scale || 1.0;
             mediaEl.style.transform = `scale(${scale})`;
-            mediaEl.style.transformOrigin = "top left"; 
+            mediaEl.style.transformOrigin = "top left";
 
             if (data.is_random_pos) {
                 const randX = Math.floor(Math.random() * 75);
@@ -71,15 +73,14 @@
                 mediaEl.style.top = py + "px";
             }
 
-            // --- Control de Flujo: Avanzar la cola al terminar o fallar ---
             const onMediaFinished = () => {
                 mediaEl.remove();
                 isPlaying = false;
-                processQueue(); // Llamar al siguiente en la fila
+                processQueue();
             };
 
             mediaEl.onended = onMediaFinished;
-            
+
             mediaEl.onerror = (e) => {
                 console.error("Error reproduciendo media:", e);
                 onMediaFinished();
@@ -89,4 +90,5 @@
         }
     </script>
 </body>
+
 </html>

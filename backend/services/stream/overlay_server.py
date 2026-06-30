@@ -7,6 +7,7 @@ import sys
 import threading
 import mimetypes
 import urllib.parse
+import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -22,6 +23,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        query = parse_qs(parsed.query)
+        token = query.get("token", [None])[0]
+        
+        expected_token = getattr(self.server.manager, "session_token", None)
+        if expected_token and token != expected_token:
+            self.send_error(403, "Forbidden: Invalid session token")
+            return
 
         if path == "/overlay":
             html_path = get_resource_path(os.path.join("assets", "overlays", "rewards.html"))
@@ -108,6 +116,10 @@ class OverlayServerManager:
         self.server = None
         self.thread = None
         self.clients = [] 
+        self.session_token = secrets.token_hex(16)
+
+    def get_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/overlay?token={self.session_token}"
 
     def start(self):
         try:
@@ -116,7 +128,7 @@ class OverlayServerManager:
             
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
-            print(f"Overlay server active: http://localhost:{self.port}/overlay")
+            print(f"Overlay server active: {self.get_overlay_url()}")
         except OSError as e:
             print(f"CRITICAL ERROR: Could not start Overlay server on port {self.port}.")
             print(f"Details: {e}")
@@ -129,7 +141,7 @@ class OverlayServerManager:
         
         payload = {
             "reward": reward_name,
-            "file_url": f"http://localhost:{self.port}/media?path={safe_path}",
+            "file_url": f"http://localhost:{self.port}/media?path={safe_path}&token={self.session_token}",
             "volume": config.get("volume", 1.0),
             "scale": config.get("scale", 1.0),
             "pos_x": config.get("pos_x", 0),

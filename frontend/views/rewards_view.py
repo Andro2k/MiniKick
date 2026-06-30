@@ -18,9 +18,10 @@ class RewardsView(QWidget):
     preview_requested = Signal(str)
     refresh_rewards_requested = Signal()
 
-    def __init__(self, i18n):
+    def __init__(self, i18n, overlay_url="http://localhost:8090/overlay"):
         super().__init__()
         self.i18n = i18n
+        self.overlay_url = overlay_url
         self._setup_ui()
 
     def _setup_ui(self):
@@ -57,7 +58,7 @@ class RewardsView(QWidget):
         obs_layout = QVBoxLayout(obs_card)
         obs_layout.setContentsMargins(8, 8, 8, 8)
 
-        self.btn_copy_url = ModernButton("http://localhost:8090/overlay", role="action_outlined")
+        self.btn_copy_url = ModernButton(self.overlay_url, role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
@@ -160,7 +161,7 @@ class RewardsView(QWidget):
 
     @Slot()
     def _copy_obs_url(self):
-        QApplication.clipboard().setText("http://localhost:8090/overlay")
+        QApplication.clipboard().setText(self.overlay_url)
         original_text = self.btn_copy_url.text()
         self.btn_copy_url.setText(self.i18n.get("rewards.obs.copied"))
         self.btn_copy_url.setEnabled(False)

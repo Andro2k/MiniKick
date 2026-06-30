@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent
 
-from backend.services.chat.pipeline.chat_dto import ChatMessageDTO
+from backend.services.chat.pipeline import ChatMessageDTO
 from backend.services.stream.rewards_service import RewardsService
 from backend.services.chat.chat_service import ChatService
 from backend.services.chat.command_service import CommandService
@@ -123,7 +123,7 @@ class MainWindow(QMainWindow):
         self.view_dashboard = DashboardView(self.i18n)
         self.view_chat = ChatView(self.i18n)
         self.view_music = MusicView(self.i18n)
-        self.view_rewards = RewardsView(self.i18n)
+        self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url())
         self.view_commands = CommandView(self.i18n)
         self.view_spam = SpamView(self.i18n)
         self.view_settings = SettingsView(self.i18n)

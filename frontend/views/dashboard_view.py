@@ -90,7 +90,6 @@ class DashboardView(QWidget):
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
         self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
-        # self.btn_connect.setFixedSize(160, 36)
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         status_layout.addWidget(self.status_label)

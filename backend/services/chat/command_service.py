@@ -26,7 +26,13 @@ class CommandService:
                 continue
             
             if cmd.get("is_regex", False):
-                self._regex_commands.append(cmd)
+                pattern = cmd.get("aliases", "").strip()
+                if pattern:
+                    try:
+                        cmd["_compiled_regex"] = re.compile(pattern, re.IGNORECASE)
+                        self._regex_commands.append(cmd)
+                    except re.error as e:
+                        print(f"[CommandService] Error compiling regex pattern '{pattern}' for trigger '{cmd['trigger']}': {e}")
             else:
                 trigger = cmd["trigger"].strip().lower()
                 self._dispatch_table[trigger] = cmd
@@ -77,13 +83,11 @@ class CommandService:
             return self._try_execute(cmd, user, badges, raw_first_word)
 
         for regex_cmd in self._regex_commands:
-            pattern = regex_cmd.get("aliases", "")
-            try:
-                match = re.search(pattern, message, re.IGNORECASE)
+            compiled = regex_cmd.get("_compiled_regex")
+            if compiled:
+                match = compiled.search(message)
                 if match:
                     return self._try_execute(regex_cmd, user, badges, match.group(0))
-            except re.error:
-                continue
 
         return False, "", {}, ""
 

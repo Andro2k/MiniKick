@@ -7,4 +7,3 @@ PySide6
 pyinstaller
 edge-tts
 asyncio
-pygame-ce

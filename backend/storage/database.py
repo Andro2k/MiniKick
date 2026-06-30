@@ -12,7 +12,12 @@ class DatabaseManager:
         self._create_tables()
 
     def get_connection(self):
-        return sqlite3.connect(self.db_name)
+        conn = sqlite3.connect(self.db_name)
+        try:
+            conn.execute("PRAGMA journal_mode=WAL")
+        except sqlite3.Error:
+            pass
+        return conn
 
     def _create_tables(self):
         with self.get_connection() as conn:
@@ -28,6 +33,7 @@ class DatabaseManager:
                     token_type TEXT
                 )
             """)        
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY,

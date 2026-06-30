@@ -2,6 +2,8 @@
 import re
 
 class SpamService:
+    _LINK_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
+    _SYMBOL_REGEX = re.compile(r'[^a-zA-Z0-9\s]')
     def __init__(self, storage, api_client=None):
         self.storage = storage
         self.api_client = api_client
@@ -45,12 +47,12 @@ class SpamService:
                     is_violation = True
 
             elif f_id == "emote_protection":
-                emote_count = len(re.findall(r"\[emote:", message))
+                emote_count = message.count("[emote:")
                 if emote_count > max_amount:
                     is_violation = True
                     
             elif f_id == "symbol_protection":
-                symbol_count = len(re.findall(r'[^a-zA-Z0-9\s]', message))
+                symbol_count = len(self._SYMBOL_REGEX.findall(message))
                 if symbol_count > max_amount:
                     is_violation = True
 
@@ -59,7 +61,7 @@ class SpamService:
                     is_violation = True
 
             elif f_id == "link_protection":
-                if re.search(r"https?://\S+|www\.\S+", message):
+                if self._LINK_REGEX.search(message):
                     is_violation = True
 
             elif f_id == "repetition_protection":

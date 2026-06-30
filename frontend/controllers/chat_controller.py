@@ -3,8 +3,7 @@
 import re
 from PySide6.QtCore import QObject, Slot, Signal
 from frontend.workers.voice_worker import VoiceFetcherWorker
-from backend.services.chat.pipeline.message_pipeline import MessagePipeline
-from backend.services.chat.pipeline.chat_dto import ChatMessageDTO
+from backend.services.chat.pipeline import MessagePipeline, ChatMessageDTO
 
 class ChatController(QObject):
     tts_state_changed = Signal(bool)

@@ -4,19 +4,23 @@ import asyncio
 import os
 import tempfile
 import edge_tts
-import pygame
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PySide6.QtCore import QUrl, QEventLoop
 from backend.interfaces.tts_interfaces import ITTSProvider
 
 class WebTTSProvider(ITTSProvider):
     def __init__(self, voice: str = "es-ES-AlvaroNeural"):
         self.voice = voice
         self.volume_str = "+0%"
-        pygame.mixer.init()
+        self.volume = 1.0
+        self.player = None
+        self.audio_output = None
 
     def set_volume(self, volume: float) -> None:
-        volume = max(0.0, min(1.0, volume))
-        pygame.mixer.music.set_volume(volume)
-        percent = int((volume - 1.0) * 100)
+        self.volume = max(0.0, min(1.0, volume))
+        if self.audio_output:
+            self.audio_output.setVolume(self.volume)
+        percent = int((self.volume - 1.0) * 100)
         self.volume_str = f"{percent}%" if percent < 0 else f"+{percent}%"
 
     def speak(self, text: str) -> None:
@@ -29,23 +33,51 @@ class WebTTSProvider(ITTSProvider):
             
         try:
             await communicate.save(temp_path)
-            pygame.mixer.music.load(temp_path)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
+            
+            if not self.player:
+                self.player = QMediaPlayer()
+                self.audio_output = QAudioOutput()
+                self.player.setAudioOutput(self.audio_output)
+            
+            self.audio_output.setVolume(self.volume)
+            self.player.setSource(QUrl.fromLocalFile(os.path.abspath(temp_path)))
+            
+            loop = QEventLoop()
+            
+            def handle_state(state):
+                if state == QMediaPlayer.PlaybackState.StoppedState:
+                    loop.quit()
+            
+            def handle_status(status):
+                if status in (QMediaPlayer.MediaStatus.InvalidMedia, QMediaPlayer.MediaStatus.NoMedia):
+                    loop.quit()
+                    
+            connection_state = self.player.playbackStateChanged.connect(handle_state)
+            connection_status = self.player.mediaStatusChanged.connect(handle_status)
+            
+            self.player.play()
+            loop.exec()
+            
+            self.player.playbackStateChanged.disconnect(connection_state)
+            self.player.mediaStatusChanged.disconnect(connection_status)
+
         except Exception as e:
             print(f"[Web TTS] Error playing audio: {e}")
         finally:
-            pygame.mixer.music.unload() 
+            if self.player:
+                try:
+                    self.player.setSource(QUrl())
+                except Exception:
+                    pass
             try:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
-            except Exception as e:
+            except Exception:
                 pass
 
     def stop(self) -> None:
-        if pygame.mixer.music.get_busy():
-            pygame.mixer.music.stop()
+        if self.player:
+            self.player.stop()
 
     def get_available_voices(self) -> list[dict]:
         try:

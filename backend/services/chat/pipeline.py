@@ -1,7 +1,17 @@
-# backend\services\chat\pipeline\message_pipeline.py
+# backend\services\chat\pipeline.py
 
+from dataclasses import dataclass
 from typing import Callable
-from backend.services.chat.pipeline.chat_dto import ChatMessageDTO
+
+@dataclass
+class ChatMessageDTO:
+    user: str
+    content: str
+    badges: list
+    color: str
+    msg_id: str
+    sender_id: int
+    is_cancelled: bool = False
 
 class MessagePipeline:
     def __init__(self):

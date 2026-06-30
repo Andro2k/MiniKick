@@ -59,7 +59,6 @@ class CommandView(QWidget):
 
         self.txt_search = QLineEdit()
         self.txt_search.setPlaceholderText(self.i18n.get("command.table.search_placeholder"))
-        # self.txt_search.setFixedWidth(250)
         self.txt_search.textChanged.connect(self.search_text_changed.emit)
         table_header_layout.addWidget(self.txt_search)
 
