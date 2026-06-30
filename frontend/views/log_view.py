@@ -131,7 +131,6 @@ class LogView(QWidget):
         self.table.setShowGrid(False)
         self.table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.table.setAlternatingRowColors(True)
 
         table_page_layout.addWidget(self.table)
         self.content_stack.addWidget(table_page)

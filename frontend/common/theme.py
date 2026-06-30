@@ -73,13 +73,7 @@ QLabel[role="body"] {{ font-size: {base}px; font-weight: 400; color: {COLOR_TEXT
 QLabel[role="caption"] {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_MUTED}; }}
 QLabel[role="wizard_step_num"] {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="wizard_subtitle"] {{ font-size: {base}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}
-QLabel[role="text_accent"] {{ font-size: {btn_txt}px; font-weight: 700; color: {COLOR_ACCENT}; }}
-QLabel[role="text_danger"] {{ font-size: {btn_txt}px; font-weight: 700; color: {COLOR_DANGER}; }}
 QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY};}}
-QLabel[role="status_dot"][state="active"] {{ color: {COLOR_ACCENT}; font-size: {base}px; margin-right: 2px; }}
-QLabel[role="status_dot"][state="inactive"] {{ color: {COLOR_DANGER}; font-size: {base}px; margin-right: 2px; }}
-QLabel[role="tag_permission"] {{ background-color: {COLOR_ACCENT}; color: {COLOR_BLACK}; font-size: {max(9, base - 3)}px; font-weight: 700; padding: 2px 4px; border-radius: 4px; }}
-QLabel[role="stat_value"] {{ font-size: {stat}px; font-weight: 800; color: {COLOR_TEXT_PRIMARY}; }}
 
 /* --- 3. CONTENEDORES --- */
 QFrame[role="card"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: {RADIUS_LG}px; }}
@@ -91,8 +85,6 @@ QFrame[role="banner_danger"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; }}
 QFrame[dialog_role="danger_icon"] {{ background-color: {COLOR_DANGER}; border-radius: 26px; }}
 QFrame[dialog_role="accent_icon"] {{ background-color: {COLOR_ACCENT}; border-radius: 26px; }}
 QFrame#CanvasContainer {{ background-color: {COLOR_BG_BASE}; border: 2px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
-QFrame[role="step_indicator"] {{ background-color: {COLOR_BORDER_SVELTE}; border-radius: 2px; }}
-QFrame[role="step_indicator"][state="active"] {{ background-color: {COLOR_ACCENT}; }}
 QFrame[role="divider"] {{ background-color: rgba(255, 255, 255, 0.05); margin: 4px 0px; }}
 QFrame#Sidebar {{ background-color: {COLOR_BG_SURFACE}; border-right: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QFrame[role="bot_tag"] {{ background-color: {COLOR_BG_INPUT}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
@@ -106,7 +98,7 @@ QPushButton[role="action_outlined"] {{ background-color: {COLOR_BG_INPUT}; color
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton[role="action_danger"] {{ background-color: transparent; color: {COLOR_DANGER}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; padding: 7px 16px; }}
 QPushButton[role="action_danger"]:hover {{ background-color: {COLOR_DANGER_GLOW}; }}
-QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: 4px; padding: 2px; }}
+QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton#NavButton {{ background: transparent; border-radius: {RADIUS_MD}px; padding: 10px; text-align: left; color: {COLOR_TEXT_SECONDARY}; font-weight: 500; }}
 QPushButton#NavButton:hover {{ background-color: {COLOR_BG_HOVER}; color: {COLOR_TEXT_PRIMARY};}}
@@ -163,14 +155,9 @@ QScrollBar::handle:horizontal:pressed {{ background-color: {COLOR_ACCENT}; }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ width: 0px; background: none; }}
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 
-QTabWidget::pane {{ border: none; background-color: transparent; border-top: 1px solid {COLOR_BORDER_SVELTE}; }}
-QTabBar::tab {{ background-color: transparent; color: {COLOR_TEXT_SECONDARY}; padding: 10px 20px; font-size: {btn_txt}px; font-weight: 600; border-bottom: 2px solid transparent; }}
-QTabBar::tab:hover {{ color: {COLOR_TEXT_PRIMARY}; background-color: {COLOR_BG_HOVER}; }}
-QTabBar::tab:selected {{ color: {COLOR_ACCENT}; border-bottom: 2px solid {COLOR_ACCENT}; }}
-
 /* --- 7. MISCELÁNEA Y CONSOLA --- */
-QProgressBar[role="update_progress"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: 5px; }}
-QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E); border-radius: 5px; }}
+QProgressBar[role="update_progress"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: {RADIUS_SM}px; }}
+QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E); border-radius: {RADIUS_SM}px; }}
 QProgressBar[role="wizard_progress"] {{ background-color: #374151; border: none; border-radius: 2px; }}
 QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_ACCENT}; border-radius: 2px; }}
 QTextEdit[role="ConsoleDisplay"] {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: {btn_txt}px; border-radius: {RADIUS_MD}px; padding: 10px; }}
@@ -178,7 +165,7 @@ QListWidget[role="transparent_list"] {{ background: transparent; border: none; o
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
 
 /* --- 8. TOAST NOTIFICATIONS (HUD) --- */
-QFrame[role="toast"] {{ background-color: {COLOR_BG_TOAST}; border: 1px solid {COLOR_BORDER_SVELTE}; border-radius: 10px; }}
+QFrame[role="toast"] {{ background-color: {COLOR_BG_TOAST}; border: 1px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="toast"][state="success"] {{ border-color: {COLOR_ACCENT_GLOW}; }}
 QFrame[role="toast"][state="danger"] {{ border-color: {COLOR_DANGER_GLOW}; }}
 QFrame[role="toast"][state="warning"] {{ border-color: {COLOR_WARNING_GLOW}; }}
@@ -193,31 +180,31 @@ QToolTip {{
 /* --- 10. TAG PILLS Y BADGES (TABLA COMANDOS) --- */
 QLabel[role="cmd_trigger"] {{ font-size: {base}px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; }}
 
-QFrame[role="tag_pill"] {{ border-radius: 8px; }}
+QFrame[role="tag_pill"] {{ border-radius: {RADIUS_MD}px; }}
 QLabel[role="pill_dot"] {{ font-size: {max(8, base - 3)}px; font-weight: bold; background: transparent; }}
 QLabel[role="pill_text"] {{ font-size: {caption}px; font-weight: 600; background: transparent; }}
 
-QFrame[role="tag_pill"][perm_level="everyone"] {{ background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; }}
+QFrame[role="tag_pill"][perm_level="everyone"] {{ background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: {RADIUS_MD}px; }}
 QFrame[role="tag_pill"][perm_level="everyone"] QLabel[role="pill_text"] {{ color: #34D399; }}
 QFrame[role="tag_pill"][perm_level="everyone"] QLabel[role="pill_dot"] {{ color: #10B981; }}
 
-QFrame[role="tag_pill"][perm_level="subscriber"] {{ background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 10px; }}
+QFrame[role="tag_pill"][perm_level="subscriber"] {{ background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: {RADIUS_MD}px; }}
 QFrame[role="tag_pill"][perm_level="subscriber"] QLabel[role="pill_text"] {{ color: #60A5FA; }}
 QFrame[role="tag_pill"][perm_level="subscriber"] QLabel[role="pill_dot"] {{ color: #3B82F6; }}
 
-QFrame[role="tag_pill"][perm_level="vip"] {{ background-color: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 10px; }}
+QFrame[role="tag_pill"][perm_level="vip"] {{ background-color: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: {RADIUS_MD}px }}
 QFrame[role="tag_pill"][perm_level="vip"] QLabel[role="pill_text"] {{ color: #A78BFA; }}
 QFrame[role="tag_pill"][perm_level="vip"] QLabel[role="pill_dot"] {{ color: #8B5CF6; }}
 
-QFrame[role="tag_pill"][perm_level="moderator"] {{ background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 10px; }}
+QFrame[role="tag_pill"][perm_level="moderator"] {{ background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: {RADIUS_MD}px }}
 QFrame[role="tag_pill"][perm_level="moderator"] QLabel[role="pill_text"] {{ color: #FBBF24; }}
 QFrame[role="tag_pill"][perm_level="moderator"] QLabel[role="pill_dot"] {{ color: #F59E0B; }}
 
-QFrame[role="tag_pill"][perm_level="broadcaster"] {{ background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 10px; }}
+QFrame[role="tag_pill"][perm_level="broadcaster"] {{ background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: {RADIUS_MD}px }}
 QFrame[role="tag_pill"][perm_level="broadcaster"] QLabel[role="pill_text"] {{ color: #F87171; }}
 QFrame[role="tag_pill"][perm_level="broadcaster"] QLabel[role="pill_dot"] {{ color: {COLOR_DANGER}; }}
 
-QFrame[role="badge_regex"] {{ background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 4px; padding: 0px 4px; }}
+QFrame[role="badge_regex"] {{ background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: {RADIUS_SM}px; padding: 0px 4px; }}
 QLabel[role="badge_regex_text"] {{ color: #FBBF24; font-size: {badge_txt}px; font-weight: bold; }}
 """
 

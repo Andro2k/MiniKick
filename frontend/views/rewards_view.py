@@ -104,7 +104,7 @@ class RewardsView(QWidget):
         self.table_rewards.setColumnWidth(2, 140) 
         
         self.table_rewards.verticalHeader().setVisible(False)
-        self.table_rewards.verticalHeader().setDefaultSectionSize(45)
+        self.table_rewards.verticalHeader().setDefaultSectionSize(38)
         self.table_rewards.setShowGrid(False)
         self.table_rewards.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.table_rewards.setFocusPolicy(Qt.FocusPolicy.NoFocus) 

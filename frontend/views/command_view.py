@@ -88,11 +88,10 @@ class CommandView(QWidget):
         self.table.setColumnWidth(3, 130)
         
         self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(48)
+        self.table.verticalHeader().setDefaultSectionSize(38)
         self.table.setShowGrid(False)
         self.table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.table.setAlternatingRowColors(True)
         
         table_layout.addWidget(self.table)
         self.main_layout.addWidget(table_card, stretch=1) 
