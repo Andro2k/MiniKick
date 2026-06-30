@@ -9,7 +9,7 @@ from frontend.common.theme import COLOR_BG_BASE, COLOR_TEXT_SECONDARY, COLOR_ACC
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self, i18n, app_version: str = "v1.2.8"):
+    def __init__(self, i18n, app_version: str = "v1.3.0"):
         super().__init__()
         self.i18n = i18n
         self.app_version = app_version
@@ -30,7 +30,7 @@ class Sidebar(QFrame):
 
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(10, 10, 10, 20)
+        self.main_layout.setContentsMargins(8, 8, 8, 8)
         self.main_layout.setSpacing(8)
 
         self.header_container = QWidget()
@@ -64,15 +64,14 @@ class Sidebar(QFrame):
         self.main_layout.addSpacing(24)
         
         self.top_nav_layout = QVBoxLayout()
-        self.top_nav_layout.setSpacing(4)
+        self.top_nav_layout.setSpacing(8)
         self.main_layout.addLayout(self.top_nav_layout)
-        
         self.main_layout.addStretch()
 
         self.bottom_nav_layout = QVBoxLayout()
-        self.bottom_nav_layout.setSpacing(4)
-        self.main_layout.addLayout(self.bottom_nav_layout)
+        self.bottom_nav_layout.setSpacing(8)
 
+        self.main_layout.addLayout(self.bottom_nav_layout)
         self.main_layout.addSpacing(4)
         
         self.btn_update_rewards = QPushButton(self.i18n.get("main.sidebar.new_version"))
@@ -158,7 +157,6 @@ class Sidebar(QFrame):
             btn.setProperty("collapsed", not show)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
-            
         self.lbl_version.setVisible(show)
         if self.has_update:
             self.btn_update_rewards.setVisible(show)
@@ -170,7 +168,6 @@ class Sidebar(QFrame):
             self.title_label.show()
             self.expanded_spacer.show()
             self._update_texts_and_styles(show=True)
-            
             try:
                 self.anim_group.finished.disconnect(self._on_expand_finished)
             except RuntimeError:

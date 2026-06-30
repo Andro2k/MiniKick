@@ -94,7 +94,7 @@ QFrame#CanvasContainer {{ background-color: {COLOR_BG_BASE}; border: 2px solid {
 QFrame[role="step_indicator"] {{ background-color: {COLOR_BORDER_SVELTE}; border-radius: 2px; }}
 QFrame[role="step_indicator"][state="active"] {{ background-color: {COLOR_ACCENT}; }}
 QFrame[role="divider"] {{ background-color: rgba(255, 255, 255, 0.05); margin: 4px 0px; }}
-QFrame#Sidebar {{ background-color: {COLOR_BG_SURFACE}; border-right: 1px solid {COLOR_BORDER_SVELTE}; }}
+QFrame#Sidebar {{ background-color: {COLOR_BG_SURFACE}; border-right: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QFrame[role="bot_tag"] {{ background-color: {COLOR_BG_INPUT}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="bot_tag"]:hover {{ border-color: {COLOR_DANGER}; }}
 QFrame[role="bot_tag"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; padding-right: 4px; font-size: {btn_txt}px; }}
@@ -111,11 +111,11 @@ QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton#NavButton {{ background: transparent; border-radius: {RADIUS_MD}px; padding: 10px; text-align: left; color: {COLOR_TEXT_SECONDARY}; font-weight: 500; }}
 QPushButton#NavButton:hover {{ background-color: {COLOR_BG_HOVER}; color: {COLOR_TEXT_PRIMARY};}}
 QPushButton#NavButton:checked {{ background-color: {COLOR_ACCENT_GLOW}; color: {COLOR_ACCENT}; font-weight: 700;}}
-QPushButton#NavButton[collapsed="false"] {{ text-align: left; padding-left: 12px; }}
+QPushButton#NavButton[collapsed="false"] {{ text-align: left; padding-left: 10px; }}
 QPushButton#NavButton[collapsed="true"] {{ text-align: center; padding: 10px; }}
 
 /* --- 5. CONTROLES DE FORMULARIO Y TABLAS --- */
-QLineEdit, QTextEdit {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border: none; border-radius: {RADIUS_MD}px; padding: 6px 10px; }}
+QLineEdit, QTextEdit {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border: none; border-radius: {RADIUS_MD}px; padding: 6px 10px; border: 1.5px solid {COLOR_BORDER_SVELTE};}}
 QTextEdit {{ background-color: {COLOR_BG_SURFACE}; border: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QLineEdit:focus, QTextEdit:focus {{ border: 1.5px solid {COLOR_ACCENT}; background-color: {COLOR_BG_HOVER}; }}
 

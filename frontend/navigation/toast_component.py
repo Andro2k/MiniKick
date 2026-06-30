@@ -16,7 +16,7 @@ class ModernToast(QFrame):
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
 
         self.setFixedWidth(330)
-        self.setMinimumHeight(66)
+        self.setMinimumHeight(60)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
 
         self.setProperty("role", "toast")
@@ -24,7 +24,7 @@ class ModernToast(QFrame):
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
         icon_map = {
             "success": ("circle-check.svg", COLOR_ACCENT),
             "danger": ("alert-circle.svg", COLOR_DANGER),
@@ -74,7 +74,6 @@ class ModernToast(QFrame):
     def move_to_target(self, target_pos: QPoint):
         if self.pos() == QPoint(0, 0):
             self.move(QPoint(target_pos.x() + self.width() + 20, target_pos.y()))
-
         self.anim.stop()
         self.anim.setDuration(300)
         self.anim.setEasingCurve(QEasingCurve.Type.OutExpo)
@@ -106,11 +105,9 @@ class ToastManager(QObject):
         if len(self._stack) >= self.MAX_VISIBLE:
             oldest_toast = self._stack.pop(0)
             oldest_toast.dismiss()
-
         toast = ModernToast(title, message, state, duration, parent=self.main_window)
         self._stack.append(toast)
-        toast.expired.connect(self._on_toast_expired)  
-        
+        toast.expired.connect(self._on_toast_expired)
         toast.setStyleSheet(self.main_window.styleSheet())
         toast.show()
         toast.adjustSize()
@@ -129,10 +126,8 @@ class ToastManager(QObject):
         margin_x = 24
         margin_y = 24
         spacing = 12
-
         current_bottom = self.main_window.height() - margin_y
         target_x = self.main_window.width() - 330 - margin_x
-
         for toast in reversed(self._stack):
             target_y = current_bottom - toast.height()
             toast.move_to_target(QPoint(target_x, target_y))

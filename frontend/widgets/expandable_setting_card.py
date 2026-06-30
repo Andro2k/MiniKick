@@ -71,7 +71,7 @@ class ExpandableSettingCard(QFrame):
         self.body_widget.setObjectName("SettingCardBody")
         b_layout = QVBoxLayout(self.body_widget)
         b_layout.setContentsMargins(12, 12, 12, 12)
-        b_layout.setSpacing(12)
+        b_layout.setSpacing(8)
         
         lbl_gen = QLabel(self.i18n.get("spam.card.config_title") if self.i18n else "Configuration")
         lbl_gen.setProperty("role", "h3")

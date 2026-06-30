@@ -103,7 +103,7 @@ class LogView(QWidget):
 
         self.table_card = QFrame()
         self.table_card.setProperty("role", "card")
-        self.table_card.setMinimumHeight(400)
+        # self.table_card.setMinimumHeight(400)
         table_layout = QVBoxLayout(self.table_card)
         table_layout.setContentsMargins(0, 0, 0, 0)
         
@@ -113,7 +113,7 @@ class LogView(QWidget):
 
         table_page = QWidget()
         table_page_layout = QVBoxLayout(table_page)
-        table_page_layout.setContentsMargins(8, 8, 8, 8)
+        table_page_layout.setContentsMargins(4, 4, 4, 4)
 
         self.table = QTableWidget(0, 3)
         self.table.setHorizontalHeaderLabels([

@@ -37,8 +37,8 @@ class SettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_TEXT_PRIMARY, title_color: str = None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(6)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(3)
 
         icon_lbl = QLabel()
         icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=18).pixmap(18, 18))
