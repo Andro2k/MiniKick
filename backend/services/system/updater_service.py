@@ -51,17 +51,16 @@ class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
         except Exception:
             return False
 
-
 class WindowsInstaller(IUpdateInstaller):
     def install_and_restart(self, installer_path: str) -> None:
-        DETACHED_PROCESS = 0x00000008
-        
+        DETACHED_PROCESS = 0x00000008        
+        cmd = f'ping 127.0.0.1 -n 2 > nul && start "" "{installer_path}" /SILENT'
         subprocess.Popen(
-            [installer_path, "/SILENT"],
+            cmd,
+            shell=True,
             creationflags=DETACHED_PROCESS,
             close_fds=True 
         )
-
 
 class UpdateManager:
     def __init__(
@@ -84,8 +83,14 @@ class UpdateManager:
 
     def perform_update(self, download_url: str, progress_callback=None) -> bool:
         temp_path = os.path.join(os.getenv('TEMP'), "minikick_update.exe")
-        
-        if self.downloader.download_file(download_url, temp_path, progress_callback):
+        if os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except Exception:
+                pass
+        return self.downloader.download_file(download_url, temp_path, progress_callback)
+
+    def install_update(self) -> None:
+        temp_path = os.path.join(os.getenv('TEMP'), "minikick_update.exe")
+        if os.path.exists(temp_path):
             self.installer.install_and_restart(temp_path)
-            return True
-        return False

@@ -52,6 +52,7 @@ class UpdateController(QObject):
 
         def on_restart_requested():
             dialog.accept()
+            self.updater_manager.install_update()
             self.main_window._force_quit()
             
         dialog.download_requested.connect(on_download_requested)

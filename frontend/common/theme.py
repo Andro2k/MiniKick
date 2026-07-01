@@ -185,31 +185,18 @@ QToolTip {{
 }}
 
 /* --- 10. TAG PILLS Y BADGES (TABLA COMANDOS) --- */
-QLabel[role="cmd_trigger"] {{ font-size: {base}px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; }}
-
-QFrame[role="tag_pill"] {{ border-radius: {RADIUS_MD}px; }}
-QLabel[role="pill_dot"] {{ font-size: {badge_txt}px; font-weight: bold; background: transparent; }}
-QLabel[role="pill_text"] {{ font-size: {caption}px; font-weight: 600; background: transparent; }}
-
-QFrame[role="tag_pill"][perm_level="everyone"] {{ background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: {RADIUS_MD}px; }}
-QFrame[role="tag_pill"][perm_level="everyone"] QLabel[role="pill_text"] {{ color: #34D399; }}
-QFrame[role="tag_pill"][perm_level="everyone"] QLabel[role="pill_dot"] {{ color: #10B981; }}
-
-QFrame[role="tag_pill"][perm_level="subscriber"] {{ background-color: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: {RADIUS_MD}px; }}
+QFrame[role="tag_pill"] {{ background-color: {COLOR_BG_INPUT}; border: 1.2px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="tag_pill"] QLabel[role="pill_text"] {{ font-size: {caption}px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; background: transparent; }}
+QFrame[role="tag_pill"][perm_level="everyone"] {{ background-color: rgba(46, 205, 112, 0.08); border-color: rgba(46, 205, 112, 0.3); }}
+QFrame[role="tag_pill"][perm_level="everyone"] QLabel[role="pill_text"] {{ color: #2ECD70; }}
+QFrame[role="tag_pill"][perm_level="subscriber"] {{ background-color: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.3); }}
 QFrame[role="tag_pill"][perm_level="subscriber"] QLabel[role="pill_text"] {{ color: #60A5FA; }}
-QFrame[role="tag_pill"][perm_level="subscriber"] QLabel[role="pill_dot"] {{ color: #3B82F6; }}
-
-QFrame[role="tag_pill"][perm_level="vip"] {{ background-color: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.35); border-radius: {RADIUS_MD}px }}
+QFrame[role="tag_pill"][perm_level="vip"] {{ background-color: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.3); }}
 QFrame[role="tag_pill"][perm_level="vip"] QLabel[role="pill_text"] {{ color: #A78BFA; }}
-QFrame[role="tag_pill"][perm_level="vip"] QLabel[role="pill_dot"] {{ color: #8B5CF6; }}
-
-QFrame[role="tag_pill"][perm_level="moderator"] {{ background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: {RADIUS_MD}px }}
+QFrame[role="tag_pill"][perm_level="moderator"] {{ background-color: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3); }}
 QFrame[role="tag_pill"][perm_level="moderator"] QLabel[role="pill_text"] {{ color: #FBBF24; }}
-QFrame[role="tag_pill"][perm_level="moderator"] QLabel[role="pill_dot"] {{ color: #F59E0B; }}
-
-QFrame[role="tag_pill"][perm_level="broadcaster"] {{ background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: {RADIUS_MD}px }}
+QFrame[role="tag_pill"][perm_level="broadcaster"] {{ background-color: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); }}
 QFrame[role="tag_pill"][perm_level="broadcaster"] QLabel[role="pill_text"] {{ color: #F87171; }}
-QFrame[role="tag_pill"][perm_level="broadcaster"] QLabel[role="pill_dot"] {{ color: {COLOR_DANGER}; }}
 
 QFrame[role="badge_regex"] {{ background-color: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: {RADIUS_SM}px; padding: 0px 4px; }}
 QLabel[role="badge_regex_text"] {{ color: #FBBF24; font-size: {badge_txt}px; font-weight: bold; }}

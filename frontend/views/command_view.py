@@ -115,7 +115,7 @@ class CommandView(QWidget):
         layout = QHBoxLayout(container)
         layout.setContentsMargins(12, 0, 8, 0)       
         lbl_trigger = QLabel(cmd_data["trigger"])
-        lbl_trigger.setProperty("role", "cmd_trigger")
+        lbl_trigger.setProperty("role", "h3")
         layout.addWidget(lbl_trigger)        
         layout.addStretch()
         return container
