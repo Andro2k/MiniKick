@@ -28,8 +28,8 @@ COLOR_DANGER_GLOW   = "rgba(239, 68, 68, 0.15)"
 COLOR_WARNING_GLOW  = "rgba(245, 158, 11, 0.15)"
 COLOR_INFO_GLOW     = "rgba(59, 130, 246, 0.15)"
 
-COLOR_TEXT_PRIMARY   = "#FAFAFA"
-COLOR_TEXT_SECONDARY = "#A1A1AA"
+COLOR_TEXT_PRIMARY   = "#CCCCCC"
+COLOR_TEXT_SECONDARY = "#767676"
 COLOR_TEXT_MUTED     = "#71717A"
 COLOR_BLACK          = "#000000"
 COLOR_WHITE          = "#FFFFFF"
@@ -92,11 +92,11 @@ QFrame[role="bot_tag"]:hover {{ border-color: {COLOR_DANGER}; }}
 QFrame[role="bot_tag"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; }}
 
 /* --- 4. BOTONES --- */
-QPushButton[role="action_accent"] {{ background-color: {COLOR_ACCENT}; color: {COLOR_BG_BASE}; font-size: {btn_txt}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: 7px 16px; }}
+QPushButton[role="action_accent"] {{ background-color: {COLOR_ACCENT}; color: {COLOR_BG_BASE}; font-size: {btn_txt}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_ACCENT_HOVER}; }}
-QPushButton[role="action_outlined"] {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: 7px 16px; }}
+QPushButton[role="action_outlined"] {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
-QPushButton[role="action_danger"] {{ background-color: transparent; color: {COLOR_DANGER}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; padding: 7px 16px; }}
+QPushButton[role="action_danger"] {{ background-color: transparent; color: {COLOR_DANGER}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_danger"]:hover {{ background-color: {COLOR_DANGER_GLOW}; }}
 QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
@@ -107,13 +107,13 @@ QPushButton#NavButton[collapsed="false"] {{ text-align: left; padding-left: 10px
 QPushButton#NavButton[collapsed="true"] {{ text-align: center; padding: 10px; }}
 
 /* --- 5. CONTROLES DE FORMULARIO Y TABLAS --- */
-QLineEdit, QTextEdit {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border: none; border-radius: {RADIUS_MD}px; padding: 6px 10px; border: 1.5px solid {COLOR_BORDER_SVELTE};}}
+QLineEdit, QTextEdit {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_BORDER_SVELTE};}}
 QTextEdit {{ background-color: {COLOR_BG_SURFACE}; border: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QLineEdit:focus, QTextEdit:focus {{ border: 1.5px solid {COLOR_ACCENT}; background-color: {COLOR_BG_HOVER}; }}
 
-QComboBox {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 5px 10px 5px 10px; border: 1.5px solid transparent; combobox-popup: 0; }}
+QComboBox {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_BORDER_SVELTE}; combobox-popup: 0; }}
 QComboBox:focus, QComboBox:hover {{ border-color: transparent; background-color: {COLOR_BG_HOVER}; }}
-QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 23px; border-left: 1.5px solid {COLOR_BORDER_SVELTE}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
+QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 23px; border-left: 1.5px solid {COLOR_BORDER_HOVER}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
 QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_BORDER_HOVER}; }}
 QComboBox::drop-down:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
@@ -122,14 +122,16 @@ QComboBox QAbstractItemView, QMenu {{ font-size: {base_pt}pt; background-color: 
 QComboBox QAbstractItemView::item, QMenu::item {{ border-radius: {RADIUS_SM}px; padding: 2px; margin: 2px; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_BG_HOVER}; color: {COLOR_ACCENT}; }}
 
-QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 20px 3px 8px; border: 1.5px solid transparent; }}
+QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 20px 3px 8px; border: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QSpinBox:hover, QDoubleSpinBox:hover {{ border-color: transparent; background-color: {COLOR_BG_HOVER}; }}
-QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-origin: border; subcontrol-position: top right; width: 24px; background-color: transparent; border-left: 1.5px solid {COLOR_BORDER_SVELTE}; border-bottom: 1.5px solid {COLOR_BORDER_SVELTE}; border-top-right-radius: {RADIUS_MD}px; }}
+
+QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-origin: border; subcontrol-position: top right; width: 24px; border-left: 1.5px solid {COLOR_BORDER_HOVER}; border-bottom: 1.2px solid {COLOR_BORDER_HOVER}; border-top-right-radius: {RADIUS_MD}px; }}
 QSpinBox:focus::up-button, QDoubleSpinBox::focus::up-button, QSpinBox:hover::up-button, QDoubleSpinBox::hover::up-button {{ border-color: {COLOR_BORDER_HOVER};}}
 QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{ background-color: {COLOR_ACCENT_GLOW}; }}
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); width: 15px; height: 15px; }}
-QSpinBox::down-button, QDoubleSpinBox::down-button {{ subcontrol-origin: border; subcontrol-position: bottom right; width: 24px; background-color: transparent; border-left: 1.5px solid {COLOR_BORDER_SVELTE}; border-bottom-right-radius: {RADIUS_MD}px; }}
+
+QSpinBox::down-button, QDoubleSpinBox::down-button {{ subcontrol-origin: border; subcontrol-position: bottom right; width: 24px; border-left: 1.5px solid {COLOR_BORDER_HOVER}; border-top: 1.2px solid {COLOR_BORDER_HOVER}; border-bottom-right-radius: {RADIUS_MD}px; }}
 QSpinBox:focus::down-button, QDoubleSpinBox::focus::down-button, QSpinBox:hover::down-button, QDoubleSpinBox::hover::down-button {{ border-color: {COLOR_BORDER_HOVER};}}
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{ background-color: {COLOR_ACCENT_GLOW}; }}
@@ -138,7 +140,7 @@ QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{ image: url("{PATH_ICON_CHEVR
 QTableWidget {{ background-color: {COLOR_BG_SURFACE}; border: none; gridline-color: transparent; outline: none; }}
 QTableWidget::item {{ padding: 4px; border-bottom: 1px solid {COLOR_BORDER_SVELTE}; }}
 QTableWidget::item:selected {{ background-color: {COLOR_BG_HOVER}; color: {COLOR_ACCENT}; }}
-QHeaderView::section {{ background-color: transparent; color: {COLOR_TEXT_SECONDARY}; font-weight: 700; padding: 6px 8px; border: none; border-bottom: 2px solid {COLOR_BORDER_SVELTE}; text-align: left; }}
+QHeaderView::section {{ background-color: transparent; color: {COLOR_TEXT_SECONDARY}; font-weight: 700; padding: {PADDING_INPUT}; border: none; border-bottom: 2px solid {COLOR_BORDER_SVELTE}; text-align: left; }}
 QHeaderView {{ background-color: transparent; border: none; }}
 
 /* --- 6. SCROLLS Y TABS --- */
@@ -160,7 +162,7 @@ QProgressBar[role="update_progress"] {{ background-color: {COLOR_BG_SURFACE}; bo
 QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E); border-radius: {RADIUS_SM}px; }}
 QProgressBar[role="wizard_progress"] {{ background-color: #374151; border: none; border-radius: 2px; }}
 QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_ACCENT}; border-radius: 2px; }}
-QTextEdit[role="ConsoleDisplay"] {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: {btn_txt}px; border-radius: {RADIUS_MD}px; padding: 10px; }}
+QTextEdit[role="ConsoleDisplay"] {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: {btn_txt}px; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; }}
 QListWidget[role="transparent_list"] {{ background: transparent; border: none; outline: none; }}
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
 

@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt
 from frontend.common.utils import get_icon_colored
-from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_TEXT_PRIMARY
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, title_color: str = None, parent=None):
@@ -64,7 +64,7 @@ class SettingRow(QWidget):
         layout.addLayout(text_layout, stretch=1)
         layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
 
-class SettingSliderRow(QWidget):
+class SliderRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_TEXT_PRIMARY, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
@@ -108,7 +108,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(6)
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_ACCENT, size=16).pixmap(16, 16))
+        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, size=14).pixmap(14, 14))
 
         self.lbl_title = QLabel(title_text)
         self.lbl_title.setProperty("role", "h3")

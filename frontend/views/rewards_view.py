@@ -8,7 +8,7 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
 from frontend.widgets.controls_component import ModernButton
 from frontend.widgets.blocks_component import ViewHeader, SettingRow
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
+from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
 from frontend.common.utils import get_icon_colored
 
 class RewardsView(QWidget):
@@ -42,7 +42,7 @@ class RewardsView(QWidget):
             title_text=self.i18n.get("rewards.header.title"),
             subtitle_text=self.i18n.get("rewards.header.subtitle"),
             icon_name="layout-dashboard.svg", 
-            icon_color=COLOR_ACCENT
+            icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(self.header)
 

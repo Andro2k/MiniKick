@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 from frontend.widgets.blocks_component import ViewHeader
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
+from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
 from frontend.common.utils import get_icon_colored
 
 class CommandView(QWidget):
@@ -40,7 +40,7 @@ class CommandView(QWidget):
             title_text=self.i18n.get("command.header.title"),
             subtitle_text=self.i18n.get("command.header.subtitle"),
             icon_name="code.svg",
-            icon_color=COLOR_ACCENT
+            icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(self.header)
 

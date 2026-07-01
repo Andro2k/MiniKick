@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QScrollArea, QVBoxLayout, QWidget
 )
 
-from frontend.common.theme import COLOR_ACCENT, COLOR_DANGER
+from frontend.common.theme import COLOR_TEXT_PRIMARY, COLOR_DANGER
 from frontend.widgets.blocks_component import SettingRow, ViewHeader
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
@@ -44,7 +44,7 @@ class SettingsView(QWidget):
             title_text=self.i18n.get("settings.header.title"), 
             subtitle_text=self.i18n.get("settings.header.subtitle"), 
             icon_name="settings.svg", 
-            icon_color=COLOR_ACCENT
+            icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(self.header)
 

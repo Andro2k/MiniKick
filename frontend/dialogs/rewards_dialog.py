@@ -9,7 +9,7 @@ from frontend.widgets.controls_component import ModernButton, ModernSwitch
 from frontend.common.theme import COLOR_TEXT_PRIMARY
 from frontend.common.utils import get_icon_colored
 from frontend.dialogs.base_dialog import ModernWizardPanel
-from frontend.widgets.blocks_component import SettingSliderRow
+from frontend.widgets.blocks_component import SliderRow
 from frontend.dialogs.visual_positioner_dialog import VisualPositionerDialog
 
 class RewardsConfigWizard(ModernWizardPanel):
@@ -115,7 +115,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.lbl_vol_perc.setProperty("role", "monospace")
         self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
         
-        vol_row = SettingSliderRow(
+        vol_row = SliderRow(
             icon_name="volume.svg",
             title_text=self.i18n.get("rewards.dialogs.wizard.step2.volume"),
             desc_text="",

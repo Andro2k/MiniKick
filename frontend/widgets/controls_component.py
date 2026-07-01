@@ -20,19 +20,20 @@ class ModernSwitch(QAbstractButton):
         self.toggled.connect(self.update)
 
     def sizeHint(self) -> QSize:
-        return QSize(48, 24)
+        return QSize(44, 22)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         rect = QRectF(0, 0, self.width(), self.height())
+        radius = self.height() / 2.0
 
         bg_color = QColor(COLOR_ACCENT) if self.isChecked() else QColor(COLOR_BG_INPUT)
         border_color = QColor(COLOR_ACCENT) if self.isChecked() else QColor(COLOR_BORDER_SVELTE)
 
         path = QPainterPath()
-        path.addRoundedRect(rect, RADIUS_MD, RADIUS_MD)
+        path.addRoundedRect(rect, radius, radius)
         painter.fillPath(path, bg_color)
 
         painter.setPen(border_color)
@@ -43,9 +44,10 @@ class ModernSwitch(QAbstractButton):
         handle_x = self.width() - handle_size - padding if self.isChecked() else padding
         
         handle_rect = QRectF(handle_x, padding, handle_size, handle_size)
+        handle_radius = handle_size / 2.0
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(COLOR_BG_INPUT) if self.isChecked() else QColor(COLOR_WHITE))
-        painter.drawRoundedRect(handle_rect, RADIUS_SM, RADIUS_SM)
+        painter.setBrush(QColor(COLOR_WHITE))
+        painter.drawRoundedRect(handle_rect, handle_radius, handle_radius)
         
         painter.end()

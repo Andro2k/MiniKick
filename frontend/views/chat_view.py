@@ -6,9 +6,9 @@ from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget,
                                QFrame, QSizePolicy, QScrollArea)
 from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
-from frontend.widgets.blocks_component import ViewHeader, SettingRow, SettingSliderRow
+from frontend.widgets.blocks_component import ViewHeader, SettingRow, SliderRow
 from frontend.navigation.bot_panel_component import BotMutePanel
-from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_TEXT_PRIMARY
 
 class ChatView(QWidget):
     volume_changed = Signal(int)
@@ -45,7 +45,7 @@ class ChatView(QWidget):
             title_text=self.i18n.get("chat.header.title"),
             subtitle_text=self.i18n.get("chat.header.subtitle"),
             icon_name="message.svg",
-            icon_color=COLOR_ACCENT
+            icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(self.header)
 
@@ -74,7 +74,7 @@ class ChatView(QWidget):
         row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
         row_provider = SettingRow("globe.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.chk_provider)
         row_cmd = SettingRow("code.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
-        row_volume = SettingSliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
+        row_volume = SliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
         
         lang_voice_layout = QHBoxLayout()
         self.combo_lang = QComboBox()

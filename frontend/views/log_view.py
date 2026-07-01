@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 from frontend.widgets.log_controls_component import LogControlsPanel
 from frontend.widgets.blocks_component import ViewHeader
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_INFO, COLOR_WARNING, COLOR_DANGER
+from frontend.common.theme import COLOR_BLACK, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_INFO, COLOR_WARNING, COLOR_DANGER
 from frontend.common.utils import get_assets_path, get_icon_colored
 
 LOG_ILLUSTRATION_FILE = "file-search.svg"
@@ -39,20 +39,20 @@ def _get_level_icon(level: str) -> QIcon:
     return _LEVEL_ICONS[level]
 
 class LogView(QWidget):
-    read_file_requested = Signal(str)
-    report_bug_requested = Signal()
-    restore_live_requested = Signal()
+    search_changed = Signal(str)
+    filter_changed = Signal(str)
     open_folder_requested = Signal()
-    clear_history_requested = Signal()
+    load_requested = Signal()
+    live_requested = Signal()
+    clear_requested = Signal()
+    report_requested = Signal()
+    view_toggle_requested = Signal()
+    view_shown = Signal()
 
     def __init__(self, i18n):
         super().__init__()
         self.i18n = i18n
         self.str_all = self.i18n.get("log.controls.filter_all")
-        self._controller_ref = None
-        self._local_display_history = []
-        self._current_filter = self.str_all
-        self._search_term = ""
         self._pending_ui_ops: list[tuple] = []
         
         self._flush_timer = QTimer(self)
@@ -60,13 +60,7 @@ class LogView(QWidget):
         self._flush_timer.setInterval(120)
         self._flush_timer.timeout.connect(self._flush_pending_ui)
         
-        self._logs_streaming_visible = False
         self._setup_ui()
-        self._update_logs_display_mode()
-
-    def set_controller(self, controller):
-        self._controller_ref = controller
-        self._controller_ref.log_processed.connect(self.append_processed_log)
 
     def _setup_ui(self):
         base_layout = QVBoxLayout(self)
@@ -86,19 +80,19 @@ class LogView(QWidget):
             title_text=self.i18n.get("log.header.title"),
             subtitle_text=self.i18n.get("log.header.subtitle"),
             icon_name="brand-tabler.svg",
-            icon_color=COLOR_ACCENT,
+            icon_color=COLOR_TEXT_PRIMARY,
         )
         self.main_layout.addWidget(self.header)
 
         self.controls_panel = LogControlsPanel(self.i18n)
-        self.controls_panel.search_changed.connect(self._on_search_changed)
-        self.controls_panel.filter_changed.connect(self._on_filter_changed)
+        self.controls_panel.search_changed.connect(self.search_changed.emit)
+        self.controls_panel.filter_changed.connect(self.filter_changed.emit)
         self.controls_panel.folder_requested.connect(self.open_folder_requested.emit)
-        self.controls_panel.load_requested.connect(self._open_file_dialog)
-        self.controls_panel.live_requested.connect(self._handle_live_click)
-        self.controls_panel.clear_requested.connect(self._clear_logs)
-        self.controls_panel.report_requested.connect(self.report_bug_requested.emit)
-        self.controls_panel.view_toggle_requested.connect(self._toggle_logs_view)
+        self.controls_panel.load_requested.connect(self.load_requested.emit)
+        self.controls_panel.live_requested.connect(self.live_requested.emit)
+        self.controls_panel.clear_requested.connect(self.clear_requested.emit)
+        self.controls_panel.report_requested.connect(self.report_requested.emit)
+        self.controls_panel.view_toggle_requested.connect(self.view_toggle_requested.emit)
         self.main_layout.addWidget(self.controls_panel)
 
         self.table_card = QFrame()
@@ -165,7 +159,7 @@ class LogView(QWidget):
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
         self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_BLACK, 16))
         self.btn_show_logs.setFixedWidth(200)
-        self.btn_show_logs.clicked.connect(self._show_live_logs)
+        self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 
         layout.addStretch(1)
         layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
@@ -190,107 +184,60 @@ class LogView(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        self.table.resizeRowsToContents()
         if hasattr(self, "lbl_illustration") and self.content_stack.currentIndex() == 0:
             card_h = max(self.table_card.height(), 400)
             size = min(max(card_h - 220, 120), 320)
             self._refresh_illustration(size)
 
-    def _update_logs_display_mode(self):
-        is_historical = self.controls_panel.btn_live.isVisible()
-        show_table = self._logs_streaming_visible or is_historical
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.view_shown.emit()
+
+    def update_display_state(self, is_historical: bool, streaming_visible: bool):
+        show_table = streaming_visible or is_historical
         self.content_stack.setCurrentIndex(1 if show_table else 0)
-        self.controls_panel.set_view_toggle_state(self._logs_streaming_visible)
+        self.controls_panel.set_historical_mode(is_historical)
+        self.controls_panel.set_view_toggle_state(streaming_visible)
+        
+        if not show_table and hasattr(self, "lbl_illustration"):
+            card_h = max(self.table_card.height(), 400)
+            size = min(max(card_h - 220, 120), 320)
+            self._refresh_illustration(size)
 
-    @Slot()
-    def _toggle_logs_view(self):
-        if self._logs_streaming_visible:
-            self._hide_live_logs()
-        else:
-            self._show_live_logs()
+    def display_logs(self, logs: list[tuple[str, str, str]]):
+        self.table.setUpdatesEnabled(False)
+        self.table.blockSignals(True)
+        self.table.setRowCount(len(logs))
+        for idx, (lvl, t_str, txt) in enumerate(logs):
+            self._populate_row_at(idx, lvl, t_str, txt)
+        self.table.resizeRowsToContents()
+        self.table.blockSignals(False)
+        self.table.setUpdatesEnabled(True)
+        scrollbar = self.table.verticalScrollBar()
+        scrollbar.setValue(scrollbar.maximum())
 
-    @Slot()
-    def _show_live_logs(self):
-        self._logs_streaming_visible = True
-        self._update_logs_display_mode()
-        if self._controller_ref:
-            self._local_display_history = list(self._controller_ref.get_live_history())
-            self._render_logs()
-        if hasattr(self.window(), "toast"):
-            self.window().toast.show_toast(
-                title=self.i18n.get("log.status.live_title"),
-                message=self.i18n.get("log.status.live_msg"),
-                state="info",
-            )
+    @Slot(bool, str, str, str)
+    def append_log(self, is_grouped: bool, level: str, time_str: str, text_str: str):
+        self._pending_ui_ops.append((is_grouped, level, time_str, text_str))
+        if not self._flush_timer.isActive():
+            self._flush_timer.start()
 
-    @Slot()
-    def _hide_live_logs(self):
+    def clear_table(self):
+        self.table.setRowCount(0)
+
+    def clear_pending_ops(self):
         self._flush_timer.stop()
         self._pending_ui_ops.clear()
-        self._logs_streaming_visible = False
-        self.table.setRowCount(0)
-        self._update_logs_display_mode()
 
-    def _open_file_dialog(self):
-        app_data_dir = os.environ.get("LOCALAPPDATA", os.path.expanduser("~"))
-        log_dir = os.path.join(app_data_dir, ".Minikick", "logs")
+    def ask_open_log_file(self, default_dir: str) -> str:
         file_path, _ = QFileDialog.getOpenFileName(
             self, 
             self.i18n.get("log.dialogs.select_history"), 
-            log_dir, 
+            default_dir, 
             self.i18n.get("log.dialogs.file_filter")
         )
-        if file_path:
-            self.read_file_requested.emit(file_path)
-
-    @Slot(str)
-    def _on_search_changed(self, text: str):
-        self._search_term = text.strip()
-        self._render_logs()
-
-    @Slot(str)
-    def _on_filter_changed(self, filter_text: str):
-        self._current_filter = filter_text
-        self._render_logs()
-
-    @Slot(bool, str, str, str)
-    def append_processed_log(self, is_grouped: bool, level: str, time_str: str, text_str: str):
-        if not self.controls_panel.btn_live.isVisible() and self._logs_streaming_visible and self.isVisible():
-            if self._current_filter in (self.str_all, level) and self._matches_search(level, time_str, text_str):
-                self._pending_ui_ops.append((is_grouped, level, time_str, text_str))
-                if not self._flush_timer.isActive():
-                    self._flush_timer.start()
-
-    def _matches_search(self, level: str, time_str: str, text: str) -> bool:
-        search_lower = self._search_term.lower()
-        if not search_lower:
-            return True
-        return (search_lower in level.lower() or search_lower in time_str.lower() or search_lower in text.lower())
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        if self._logs_streaming_visible and self._controller_ref:
-            self._local_display_history = list(self._controller_ref.get_live_history())
-            self._render_logs()
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.table.resizeRowsToContents()
-
-    def render_historical_data(self, file_name: str, parsed_history: list[tuple[str, str, str]]):
-        self._flush_timer.stop()
-        self._pending_ui_ops.clear()
-        self._local_display_history = parsed_history
-        self._logs_streaming_visible = True
-        self._update_logs_display_mode()
-        self._render_logs()
-        self.controls_panel.set_historical_mode(True)
-
-        if hasattr(self.window(), "toast"):
-            self.window().toast.show_toast(
-                title=self.i18n.get("log.status.historical_title"),
-                message=self.i18n.get("log.status.historical_msg").replace("{file}", file_name),
-                state="warning",
-            )
+        return file_path
 
     def _flush_pending_ui(self):
         if not self._pending_ui_ops:
@@ -334,56 +281,6 @@ class LogView(QWidget):
         self.table.setItem(row, 0, item_level)
         self.table.setItem(row, 1, item_time)
         self.table.setItem(row, 2, item_msg)
-
-    def _render_logs(self):
-        filtered = [
-            (lvl, t_str, txt) for lvl, t_str, txt in self._local_display_history
-            if self._current_filter in (self.str_all, lvl) and self._matches_search(lvl, t_str, txt)
-        ]
-        self.table.setUpdatesEnabled(False)
-        self.table.blockSignals(True)
-        self.table.setRowCount(len(filtered))
-        for idx, (lvl, t_str, txt) in enumerate(filtered):
-            self._populate_row_at(idx, lvl, t_str, txt)
-        self.table.resizeRowsToContents()
-        self.table.blockSignals(False)
-        self.table.setUpdatesEnabled(True)
-        scrollbar = self.table.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
-
-    def restore_live_view_state(self):
-        self.controls_panel.set_historical_mode(False)
-        self._logs_streaming_visible = False
-        self._flush_timer.stop()
-        self._pending_ui_ops.clear()
-        self._local_display_history.clear()
-        self.table.setRowCount(0)
-        self._update_logs_display_mode()
-
-    @Slot()
-    def _handle_live_click(self):
-        self.restore_live_view_state()
-        self.restore_live_requested.emit()
-        if hasattr(self.window(), "toast"):
-            self.window().toast.show_toast(
-                title=self.i18n.get("log.status.paused_title"),
-                message=self.i18n.get("log.status.paused_msg"),
-                state="success",
-            )
-
-    @Slot()
-    def _clear_logs(self):
-        self._flush_timer.stop()
-        self._pending_ui_ops.clear()
-        self._local_display_history.clear()
-        self.table.setRowCount(0)
-        self.clear_history_requested.emit()
-        if hasattr(self.window(), "toast"):
-            self.window().toast.show_toast(
-                title=self.i18n.get("log.status.cleared_title"),
-                message=self.i18n.get("log.status.cleared_msg"),
-                state="info",
-            )
 
     def show_message(self, msg_type: str, title: str, text: str):
         msg_box = QMessageBox(self)

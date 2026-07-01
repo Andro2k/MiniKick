@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.blocks_component import ViewHeader
 from frontend.widgets.expandable_setting_card import ExpandableSettingCard
-from frontend.common.theme import COLOR_ACCENT
+from frontend.common.theme import COLOR_TEXT_PRIMARY
 
 class SpamView(QWidget):
     filter_updated = Signal(str, dict)
@@ -34,7 +34,7 @@ class SpamView(QWidget):
             title_text=self.i18n.get("spam.header.title"),
             subtitle_text=self.i18n.get("spam.header.subtitle"),
             icon_name="shield-half.svg",
-            icon_color=COLOR_ACCENT
+            icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(header)
         self.main_layout.addSpacing(10)

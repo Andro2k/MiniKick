@@ -1,6 +1,7 @@
 # backend\services\system\log_service.py
 
 import os
+import re
 
 class LogService:
     def __init__(self):
@@ -28,3 +29,18 @@ class LogService:
 
     def get_history(self) -> list[tuple[str, str, str]]:
         return self._live_history
+
+    def parse_log_file(self, file_path: str, fallback_level: str) -> list[tuple[str, str, str]]:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        parsed_history = []
+        for line in content.strip().split("\n"):
+            if not line.strip():
+                continue
+            match = re.match(r"\[(.*?)\] \[(.*?)\] (.*)", line, re.DOTALL)
+            if match:
+                parsed_history.append((match.group(2), match.group(1), match.group(3)))
+            else:
+                parsed_history.append((fallback_level, "-", line))
+        return parsed_history

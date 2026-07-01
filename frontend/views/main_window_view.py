@@ -178,7 +178,6 @@ class MainWindow(QMainWindow):
             view=self.view_logs, 
             service=self.log_service
         )
-        self.view_logs.set_controller(self.log_controller)
 
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)

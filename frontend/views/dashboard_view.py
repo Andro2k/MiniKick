@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QBoxLayout, QScrollArea, QWidget, QVBoxLayout, QH
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER
+from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
 from frontend.common.utils import create_circular_pixmap, get_icon_colored
 from frontend.widgets.blocks_component import StatCard, ViewHeader, SettingRow
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
@@ -38,7 +38,7 @@ class DashboardView(QWidget):
             title_text=self.i18n.get("dashboard.header.title"),
             subtitle_text=self.i18n.get("dashboard.header.subtitle"),
             icon_name="dashboard.svg",
-            icon_color=COLOR_ACCENT
+            icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(self.header)
 

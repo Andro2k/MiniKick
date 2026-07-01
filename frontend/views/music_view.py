@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
                                QLabel, QFrame, QScrollArea)
 from PySide6.QtCore import Qt, Signal
 
-from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_SECONDARY
+from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 from frontend.common.utils import get_icon_colored
 from frontend.widgets.blocks_component import ViewHeader, SettingRow
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
@@ -38,7 +38,7 @@ class MusicView(QWidget):
             title_text=self.i18n.get("music.header.title"),
             subtitle_text=self.i18n.get("music.header.subtitle"),
             icon_name="headphones.svg",
-            icon_color=COLOR_ACCENT
+            icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(self.header)
 
