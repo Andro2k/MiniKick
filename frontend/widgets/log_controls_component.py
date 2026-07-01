@@ -1,5 +1,6 @@
 # frontend\widgets\log_controls_component.py
 
+from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
     QFrame, QGridLayout, QLineEdit, QComboBox,
     QBoxLayout, QVBoxLayout, QSizePolicy,
@@ -84,13 +85,20 @@ class LogControlsPanel(QFrame):
 
         self._reflow_buttons()
 
+    def minimumSizeHint(self) -> QSize:
+        return QSize(100, 50)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._reflow_buttons()
+
     def _reflow_buttons(self):
         width = max(self.width(), 320)
         visible = [b for b in self._buttons if not b.isHidden()]
         cols = max(1, min(len(visible), width // 120))
 
-        for btn in self._buttons:
-            self._actions.removeWidget(btn)
+        while self._actions.count() > 0:
+            self._actions.takeAt(0)
 
         for c in range(cols):
             self._actions.setColumnStretch(c, 1)

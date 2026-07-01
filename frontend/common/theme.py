@@ -89,7 +89,7 @@ QFrame[role="divider"] {{ background-color: rgba(255, 255, 255, 0.05); margin: 4
 QFrame#Sidebar {{ background-color: {COLOR_BG_SURFACE}; border-right: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QFrame[role="bot_tag"] {{ background-color: {COLOR_BG_INPUT}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="bot_tag"]:hover {{ border-color: {COLOR_DANGER}; }}
-QFrame[role="bot_tag"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; padding-right: 4px; font-size: {btn_txt}px; }}
+QFrame[role="bot_tag"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; }}
 
 /* --- 4. BOTONES --- */
 QPushButton[role="action_accent"] {{ background-color: {COLOR_ACCENT}; color: {COLOR_BG_BASE}; font-size: {btn_txt}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: 7px 16px; }}
@@ -111,7 +111,7 @@ QLineEdit, QTextEdit {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_P
 QTextEdit {{ background-color: {COLOR_BG_SURFACE}; border: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QLineEdit:focus, QTextEdit:focus {{ border: 1.5px solid {COLOR_ACCENT}; background-color: {COLOR_BG_HOVER}; }}
 
-QComboBox {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 5px 28px 5px 10px; border: 1.5px solid transparent; combobox-popup: 0; }}
+QComboBox {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {base}px; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 5px 10px 5px 10px; border: 1.5px solid transparent; combobox-popup: 0; }}
 QComboBox:focus, QComboBox:hover {{ border-color: transparent; background-color: {COLOR_BG_HOVER}; }}
 QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 23px; border-left: 1.5px solid {COLOR_BORDER_SVELTE}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
 QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_BORDER_HOVER}; }}
@@ -210,7 +210,7 @@ QLabel[role="badge_regex_text"] {{ color: #FBBF24; font-size: {badge_txt}px; fon
 /* --- 11. ASISTENTE REGEX --- */
 QLabel[role="regex_helper_title"] {{ font-size: {h3}px; font-weight: bold; color: {COLOR_ACCENT}; margin-bottom: 2px; }}
 QLabel[role="regex_helper_category"] {{ font-weight: bold; color: {COLOR_ACCENT}; margin-top: 6px; font-size: {btn_txt}px; }}
-QLabel[role="regex_helper_code"] {{ font-size: {btn_txt}px; font-weight: bold; background-color: rgba(255,255,255,0.06); padding: 1px 3px; border-radius: 3px; }}
+QLabel[role="regex_helper_code"] {{ font-size: {btn_txt}px; font-weight: bold; background-color: rgba(255,255,255,0.06); padding: 1px 3px; border-radius: {RADIUS_SM}px; }}
 QLabel[role="regex_helper_desc"] {{ font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="regex_helper_pattern"] {{ font-size: {btn_txt}px; font-weight: bold; color: {COLOR_TEXT_PRIMARY}; }}
 """

@@ -115,6 +115,7 @@ class LogView(QWidget):
         table_page_layout.setContentsMargins(4, 4, 4, 4)
 
         self.table = QTableWidget(0, 3)
+        self.table.setWordWrap(True)
         self.table.setHorizontalHeaderLabels([
             self.i18n.get("log.table.col_level"),
             self.i18n.get("log.table.col_time"),
@@ -270,6 +271,10 @@ class LogView(QWidget):
         if self._logs_streaming_visible and self._controller_ref:
             self._local_display_history = list(self._controller_ref.get_live_history())
             self._render_logs()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.table.resizeRowsToContents()
 
     def render_historical_data(self, file_name: str, parsed_history: list[tuple[str, str, str]]):
         self._flush_timer.stop()

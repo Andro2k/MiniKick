@@ -4,9 +4,10 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                                QTextEdit, QSpinBox, QCheckBox,
                                QWidget, QSizePolicy, QComboBox, QScrollArea, QFrame, QPushButton)
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QIcon
 from frontend.dialogs.base_dialog import ModernWizardPanel
-from frontend.common.theme import PATH_ICON_ADD
+from frontend.widgets.controls_component import ModernButton
+from frontend.common.theme import COLOR_WHITE
+from frontend.common.utils import get_icon_colored
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
@@ -23,7 +24,7 @@ class CommandConfigWizard(ModernWizardPanel):
             title_steps=title_steps,
             subtitle_steps=subtitle_steps,
             i18n=i18n,
-            width=800,
+            width=700,
             parent=parent
         )
         
@@ -84,7 +85,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.tab_adv = QWidget()
         adv_main_layout = QHBoxLayout(self.tab_adv)
         adv_main_layout.setContentsMargins(0, 0, 0, 0)
-        adv_main_layout.setSpacing(16)
+        adv_main_layout.setSpacing(12)
 
         left_col = QWidget()
         adv_layout = QVBoxLayout(left_col)
@@ -109,7 +110,6 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_regex = QTextEdit()
         self.txt_regex.setPlaceholderText(self.i18n.get("command.dialog.regex_placeholder"))
         self.txt_regex.setMinimumHeight(60)
-        self.txt_regex.setMaximumHeight(80)
         self.txt_regex.setEnabled(False)
         
         adv_layout.addWidget(lbl_regex)
@@ -124,7 +124,6 @@ class CommandConfigWizard(ModernWizardPanel):
 
         adv_main_layout.addWidget(left_col, stretch=1)
         
-        # Build and add right column (Cheat Sheet)
         right_col = self._build_regex_helper()
         adv_main_layout.addWidget(right_col)
 
@@ -178,7 +177,6 @@ class CommandConfigWizard(ModernWizardPanel):
     def _build_regex_helper(self) -> QWidget:
         right_panel = QFrame()
         right_panel.setProperty("role", "card")
-        right_panel.setFixedWidth(290)
         right_layout = QVBoxLayout(right_panel)
         right_layout.setContentsMargins(10, 10, 0, 10)
         right_layout.setSpacing(6)
@@ -237,44 +235,20 @@ class CommandConfigWizard(ModernWizardPanel):
         layout.setSpacing(6)
         
         lbl_code = QLabel(label_text)
-        # lbl_code.setFixedWidth(55)
         lbl_code.setProperty("role", "regex_helper_code")
         
         lbl_desc = QLabel(desc_text)
         lbl_desc.setProperty("role", "regex_helper_desc")
         lbl_desc.setWordWrap(True)
         
-        btn_insert = QPushButton()
-        btn_insert.setIcon(QIcon(PATH_ICON_ADD))
+        btn_insert = ModernButton("", role="action_outlined")
+        btn_insert.setIcon(get_icon_colored("add.svg", COLOR_WHITE, size=12))
         btn_insert.setIconSize(QSize(12, 12))
         btn_insert.setFixedSize(20, 20)
-        btn_insert.setProperty("role", "action_accent")
-        btn_insert.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_insert.clicked.connect(lambda checked=False, val=insert_val: self._insert_regex(val))
         
         layout.addWidget(lbl_code)
         layout.addWidget(lbl_desc, stretch=1)
-        layout.addWidget(btn_insert)
-        return row
-
-    def _create_pattern_row(self, name_text: str, insert_val: str) -> QWidget:
-        row = QWidget()
-        layout = QHBoxLayout(row)
-        layout.setContentsMargins(0, 1, 0, 1)
-        layout.setSpacing(6)
-        
-        lbl_name = QLabel(name_text)
-        lbl_name.setProperty("role", "regex_helper_pattern")
-        
-        btn_insert = QPushButton()
-        btn_insert.setIcon(QIcon(PATH_ICON_ADD))
-        btn_insert.setIconSize(QSize(12, 12))
-        btn_insert.setFixedSize(20, 20)
-        btn_insert.setProperty("role", "action_outlined")
-        btn_insert.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_insert.clicked.connect(lambda checked=False, val=insert_val: self._insert_regex(val))
-        
-        layout.addWidget(lbl_name, stretch=1)
         layout.addWidget(btn_insert)
         return row
 

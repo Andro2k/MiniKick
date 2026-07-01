@@ -17,7 +17,7 @@ class ModernFramelessShell(QDialog):
         self._old_drag_pos = None
 
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(20, 20, 20, 20)
+        self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.container = QFrame()
@@ -116,7 +116,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.total_steps = len(title_steps)
         
         self.panel_layout = QVBoxLayout(self.container)
-        self.panel_layout.setContentsMargins(24, 24, 24, 24)
+        self.panel_layout.setContentsMargins(16, 16, 16, 16)
         self.panel_layout.setSpacing(14)
         
         self.lbl_step_num = QLabel()
