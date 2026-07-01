@@ -130,7 +130,6 @@ class DashboardView(QWidget):
 
         info_card = QFrame()
         info_card.setProperty("role", "card")
-        info_card.setMinimumHeight(160)
         info_layout = QVBoxLayout(info_card)
         info_layout.setContentsMargins(8, 8, 8, 8)
 
