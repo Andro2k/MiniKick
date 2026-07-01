@@ -15,8 +15,8 @@ COLOR_BG_HOVER      = "#27272A"
 COLOR_BORDER_SVELTE = "#27272A"
 COLOR_BORDER_HOVER  = "#3F3F46"
 
-COLOR_ACCENT        = "#64EB5F"
-COLOR_ACCENT_HOVER  = "#2FBF45"   
+COLOR_ACCENT        = "#2ECD70"
+COLOR_ACCENT_HOVER  = "#25AE60"   
 
 COLOR_DANGER        = "#EF4444"
 COLOR_WARNING       = "#F59E0B"
@@ -24,6 +24,7 @@ COLOR_INFO          = "#3B82F6"
 
 COLOR_BG_TOAST      = "#070707"
 COLOR_ACCENT_GLOW   = "rgba(250, 250, 250, 0.1)"
+COLOR_ACCENT_OUTLINE_GLOW = "rgba(46, 205, 112, 0.15)"
 COLOR_DANGER_GLOW   = "rgba(239, 68, 68, 0.15)"
 COLOR_WARNING_GLOW  = "rgba(245, 158, 11, 0.15)"
 COLOR_INFO_GLOW     = "rgba(59, 130, 246, 0.15)"
@@ -32,7 +33,7 @@ COLOR_TEXT_PRIMARY   = "#CCCCCC"
 COLOR_TEXT_SECONDARY = "#767676"
 COLOR_TEXT_MUTED     = "#71717A"
 COLOR_BLACK          = "#000000"
-COLOR_WHITE          = "#FFFFFF"
+COLOR_WHITE          = "#F7F7F7"
 
 FONT_FAMILY = "'Geist', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -96,8 +97,12 @@ QPushButton[role="action_accent"] {{ background-color: {COLOR_ACCENT}; color: {C
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_ACCENT_HOVER}; }}
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_BG_INPUT}; color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
-QPushButton[role="action_danger"] {{ background-color: transparent; color: {COLOR_DANGER}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
-QPushButton[role="action_danger"]:hover {{ background-color: {COLOR_DANGER_GLOW}; }}
+QPushButton[role="action_danger_border"] {{ background-color: transparent; color: {COLOR_DANGER}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_danger_border"]:hover {{ background-color: {COLOR_DANGER_GLOW}; }}
+QPushButton[role="action_accent_border"], QPushButton[role="action_accent_outline"] {{ background-color: transparent; color: {COLOR_ACCENT}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_ACCENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_accent_border"]:hover, QPushButton[role="action_accent_outline"]:hover {{ background-color: {COLOR_ACCENT_OUTLINE_GLOW}; }}
+QPushButton[role="action_neutral_border"], QPushButton[role="action_outlined_border"] {{ background-color: transparent; color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_BORDER_HOVER}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_neutral_border"]:hover, QPushButton[role="action_outlined_border"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton#NavButton {{ background: transparent; border-radius: {RADIUS_MD}px; padding: 10px; text-align: left; color: {COLOR_TEXT_SECONDARY}; font-weight: 500; }}
@@ -215,6 +220,12 @@ QLabel[role="regex_helper_category"] {{ font-weight: bold; color: {COLOR_ACCENT}
 QLabel[role="regex_helper_code"] {{ font-size: {btn_txt}px; font-weight: bold; background-color: rgba(255,255,255,0.06); padding: 1px 3px; border-radius: {RADIUS_SM}px; }}
 QLabel[role="regex_helper_desc"] {{ font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="regex_helper_pattern"] {{ font-size: {btn_txt}px; font-weight: bold; color: {COLOR_TEXT_PRIMARY}; }}
+
+/* --- 12. QSLIDER (SIMPLE Y MODERNO) --- */
+QSlider::groove:horizontal {{ border: none; height: 6px; background: {COLOR_BG_INPUT}; border-radius: 3px; }}
+QSlider::sub-page:horizontal {{ background: {COLOR_ACCENT}; border-radius: 3px; }}
+QSlider::handle:horizontal {{ background: {COLOR_ACCENT}; border: 1.5px solid {COLOR_ACCENT}; width: 14px; height: 14px; margin-top: -4px; margin-bottom: -4px; border-radius: 7px; }}
+QSlider::handle:horizontal:hover {{ background: {COLOR_WHITE}; border-color: {COLOR_ACCENT_HOVER}; }}
 """
 
 GLOBAL_QSS = get_global_qss(13)

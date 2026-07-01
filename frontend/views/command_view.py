@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 from frontend.widgets.blocks_component import ViewHeader
-from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_ACCENT
 from frontend.common.utils import get_icon_colored
 
 class CommandView(QWidget):
@@ -200,14 +200,14 @@ class CommandView(QWidget):
         layout.addWidget(sw_status)
         layout.addSpacing(4)
 
-        btn_edit = ModernButton("", role="action_accent")
+        btn_edit = ModernButton("", role="action_accent_border")
         btn_edit.setFixedSize(28, 28)
-        btn_edit.setIcon(get_icon_colored("edit.svg", COLOR_BLACK, 16))
+        btn_edit.setIcon(get_icon_colored("edit.svg", COLOR_ACCENT, 16))
         btn_edit.setToolTip(self.i18n.get("command.table.tooltip_edit"))
         btn_edit.clicked.connect(lambda checked=False, t=trigger_name: self.edit_requested.emit(t))
         layout.addWidget(btn_edit)
         
-        btn_del = ModernButton("", role="action_danger")
+        btn_del = ModernButton("", role="action_danger_border")
         btn_del.setFixedSize(28, 28)
         btn_del.setIcon(get_icon_colored("trash.svg", COLOR_DANGER, 16))
         btn_del.setToolTip(self.i18n.get("command.table.tooltip_delete"))

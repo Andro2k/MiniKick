@@ -58,7 +58,7 @@ class RewardsView(QWidget):
         obs_layout = QVBoxLayout(obs_card)
         obs_layout.setContentsMargins(8, 8, 8, 8)
 
-        self.btn_copy_url = ModernButton(self.i18n.get("rewards.obs.btn_copy"), role="action_outlined")
+        self.btn_copy_url = ModernButton(self.i18n.get("rewards.obs.btn_copy"), role="action_neutral_border")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
@@ -139,9 +139,9 @@ class RewardsView(QWidget):
             actions_layout.setSpacing(8)
             actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             
-            btn_play = self._create_table_action_btn("play.svg", COLOR_ACCENT, "action_outlined", self.i18n.get("rewards.table.tooltip_play"), lambda checked=False, r=reward: self.preview_requested.emit(r))
-            btn_edit = self._create_table_action_btn("edit.svg", COLOR_BLACK, "action_accent", self.i18n.get("rewards.table.tooltip_edit"), lambda checked=False, r=reward: self.edit_requested.emit(r))
-            btn_del = self._create_table_action_btn("trash.svg", COLOR_DANGER, "action_danger", self.i18n.get("rewards.table.tooltip_delete"), lambda checked=False, r=reward: self.delete_requested.emit(r))
+            btn_play = self._create_table_action_btn("play.svg", COLOR_TEXT_PRIMARY, "action_neutral_border", self.i18n.get("rewards.table.tooltip_play"), lambda checked=False, r=reward: self.preview_requested.emit(r))
+            btn_edit = self._create_table_action_btn("edit.svg", COLOR_ACCENT, "action_accent_border", self.i18n.get("rewards.table.tooltip_edit"), lambda checked=False, r=reward: self.edit_requested.emit(r))
+            btn_del = self._create_table_action_btn("trash.svg", COLOR_DANGER, "action_danger_border", self.i18n.get("rewards.table.tooltip_delete"), lambda checked=False, r=reward: self.delete_requested.emit(r))
             
             actions_layout.addWidget(btn_play)
             actions_layout.addWidget(btn_edit)

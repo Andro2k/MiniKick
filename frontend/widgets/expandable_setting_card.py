@@ -68,7 +68,6 @@ class ExpandableSettingCard(QFrame):
 
     def _build_body(self):
         self.body_widget = QWidget()
-        self.body_widget.setObjectName("SettingCardBody")
         b_layout = QVBoxLayout(self.body_widget)
         b_layout.setContentsMargins(12, 12, 12, 12)
         b_layout.setSpacing(8)
@@ -78,7 +77,7 @@ class ExpandableSettingCard(QFrame):
         b_layout.addWidget(lbl_gen)
         
         row1 = QHBoxLayout()
-        row1.setSpacing(20)
+        row1.setSpacing(10)
         
         col_pen = QVBoxLayout()
         lbl_pen = QLabel(self.i18n.get("spam.card.action") if self.i18n else "Action")
@@ -159,16 +158,11 @@ class ExpandableSettingCard(QFrame):
     def set_data(self, config: dict):
         self._is_loading = True
         self.switch.setChecked(config.get("is_active", False))
-        
         index_pen = self.combo_penalty.findData(config.get("penalty", "timeout"))
         if index_pen >= 0: self.combo_penalty.setCurrentIndex(index_pen)
-        
         self.spin_dur.setValue(config.get("duration", 300))
-        
         index_exc = self.combo_exclude.findData(config.get("exclude_group", "none"))
         if index_exc >= 0: self.combo_exclude.setCurrentIndex(index_exc)
-        
         if self.has_amount:
             self.spin_amt.setValue(config.get("max_amount", 10))
-            
         self._is_loading = False

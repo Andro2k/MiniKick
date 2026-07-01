@@ -219,7 +219,7 @@ class ModernConfirmDialog(ModernModal):
         self.content_layout.addWidget(body_label)
         
         btn_cancel = self._create_btn(i18n.get("dialogs.confirm.btn_cancel"), "action_outlined", self.reject)
-        btn_confirm = self._create_btn(i18n.get("dialogs.confirm.btn_continue"), "action_danger", self.accept)
+        btn_confirm = self._create_btn(i18n.get("dialogs.confirm.btn_continue"), "action_danger_border", self.accept)
 
         self.add_action_buttons(btn_cancel, btn_confirm, stretch_center=False)
 

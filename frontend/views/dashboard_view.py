@@ -50,7 +50,7 @@ class DashboardView(QWidget):
         lbl_warn_icon.setPixmap(get_icon_colored("help.svg", COLOR_DANGER, 24).pixmap(24, 24))
         lbl_warn_text = QLabel(self.i18n.get("dashboard.banner.text"))
         
-        self.btn_reauth = ModernButton(self.i18n.get("dashboard.banner.btn_update"), role="action_danger")
+        self.btn_reauth = ModernButton(self.i18n.get("dashboard.banner.btn_update"), role="action_danger_border")
         self.btn_reauth.clicked.connect(self.reauth_requested.emit)
         
         banner_layout.addWidget(lbl_warn_icon)

@@ -121,8 +121,8 @@ class SettingsView(QWidget):
         btn_layout.setContentsMargins(0, 0, 0, 0) 
         btn_layout.setSpacing(8)
         
-        self.btn_export = ModernButton(self.i18n.get("settings.backup.btn_export"), role="action_outlined")
-        self.btn_import = ModernButton(self.i18n.get("settings.backup.btn_import"), role="action_outlined")
+        self.btn_export = ModernButton(self.i18n.get("settings.backup.btn_export"), role="action_neutral_border")
+        self.btn_import = ModernButton(self.i18n.get("settings.backup.btn_import"), role="action_neutral_border")
         
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
@@ -146,7 +146,7 @@ class SettingsView(QWidget):
         account_layout.setContentsMargins(8, 8, 8, 8)
         account_layout.setSpacing(6)
 
-        self.btn_unlink = ModernButton(self.i18n.get("settings.account.btn_unlink"), role="action_danger")
+        self.btn_unlink = ModernButton(self.i18n.get("settings.account.btn_unlink"), role="action_danger_border")
         self.btn_unlink.clicked.connect(self.unlink_clicked.emit)
         
         row_unlink = SettingRow(

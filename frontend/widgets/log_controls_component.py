@@ -56,17 +56,17 @@ class LogControlsPanel(QFrame):
         root.addLayout(self._actions)
 
         specs = [
-            ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_outlined",
+            ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_neutral_border",
              "folder-open.svg", COLOR_TEXT_PRIMARY, self.folder_requested.emit, True),
-            ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_outlined",
+            ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_neutral_border",
              "file-text.svg", COLOR_TEXT_PRIMARY, self.load_requested.emit, True),
-            ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_outlined",
+            ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_neutral_border",
              "eye.svg", COLOR_TEXT_PRIMARY, self.view_toggle_requested.emit, True),
-            ("btn_live", self.i18n.get("log.controls.btn_live"), "action_outlined",
+            ("btn_live", self.i18n.get("log.controls.btn_live"), "action_neutral_border",
              "play.svg", COLOR_TEXT_PRIMARY, self.live_requested.emit, False),
-            ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_outlined",
+            ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_neutral_border",
              "trash.svg", COLOR_TEXT_PRIMARY, self.clear_requested.emit, True),
-            ("btn_report", self.i18n.get("log.controls.btn_report"), "action_outlined",
+            ("btn_report", self.i18n.get("log.controls.btn_report"), "action_neutral_border",
              "help.svg", COLOR_TEXT_PRIMARY, self.report_requested.emit, True),
         ]
 
