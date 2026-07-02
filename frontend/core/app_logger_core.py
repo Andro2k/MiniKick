@@ -41,5 +41,12 @@ def setup_application_logging():
 
     sys.stdout = StreamToLogger(logger, logging.INFO)
     sys.stderr = StreamToLogger(logger, logging.ERROR)
+
+    try:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, 2)
+        os.close(devnull)
+    except Exception:
+        pass
     
     return logger, q_log_handler

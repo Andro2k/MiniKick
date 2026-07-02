@@ -283,8 +283,12 @@ class ChatController(QObject):
             api.post_chat_message(msg)
             return
         if provider:
-            _, reply = provider.add_to_queue(query)
-            api.post_chat_message(reply)
+            def on_complete(success, reply_msg):
+                api.post_chat_message(reply_msg)
+                
+            success, immediate_reply = provider.add_to_queue(query, callback=on_complete)
+            if immediate_reply:
+                api.post_chat_message(immediate_reply)
         else:
             api.post_chat_message(self.i18n.get("music.chat.not_linked"))
 

@@ -120,7 +120,7 @@ class SpotifyMusicProvider(MusicPlayerProvider):
         except Exception:
             return None
 
-    def add_to_queue(self, query_or_uri: str) -> tuple[bool, str]:
+    def add_to_queue(self, query_or_uri: str, callback=None) -> tuple[bool, str]:
         try:
             track_uri = query_or_uri.strip()
             track_name = track_uri
@@ -138,16 +138,23 @@ class SpotifyMusicProvider(MusicPlayerProvider):
             resp = self._request("POST", f"/me/player/queue?uri={track_uri}")
             resp.raise_for_status()
             msg = self.i18n.get("music.queue.success").replace("{track}", track_name)
+            if callback:
+                callback(True, msg)
             return True, msg
 
         except requests.exceptions.HTTPError as e:
             if "NO_ACTIVE_DEVICE" in e.response.text:
-                return False, self.i18n.get("music.queue.no_device")
-            err_msg = self.i18n.get("music.queue.rejected").replace("{status}", str(e.response.status_code))
-            return False, err_msg
+                msg = self.i18n.get("music.queue.no_device")
+            else:
+                msg = self.i18n.get("music.queue.rejected").replace("{status}", str(e.response.status_code))
+            if callback:
+                callback(False, msg)
+            return False, msg
         except Exception as e:
-            err_msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
-            return False, err_msg
+            msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
+            if callback:
+                callback(False, msg)
+            return False, msg
 
     def skip_current(self) -> bool:
         try:
@@ -155,3 +162,6 @@ class SpotifyMusicProvider(MusicPlayerProvider):
             return 200 <= resp.status_code < 300
         except Exception:
             return False
+
+    def set_volume(self, volume: int) -> None:
+        pass

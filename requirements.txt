@@ -7,3 +7,4 @@ PySide6
 pyinstaller
 edge-tts
 asyncio
+yt-dlp

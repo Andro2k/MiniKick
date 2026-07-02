@@ -156,7 +156,8 @@ class MainWindow(QMainWindow):
             spotify_auth=self.container.spotify_auth,
             command_service=self.command_service,
             toast_manager=self.toast,
-            i18n=self.i18n
+            i18n=self.i18n,
+            settings_storage=self.container.settings_storage
         )
         self.rewards_controller = RewardsController(
             view=self.view_rewards, 

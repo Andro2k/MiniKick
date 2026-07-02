@@ -8,9 +8,13 @@ class MusicPlayerProvider(ABC):
         pass
 
     @abstractmethod
-    def add_to_queue(self, query_or_uri: str) -> tuple[bool, str]:
+    def add_to_queue(self, query_or_uri: str, callback=None) -> tuple[bool, str]:
         pass
 
     @abstractmethod
     def skip_current(self) -> bool:
+        pass
+
+    @abstractmethod
+    def set_volume(self, volume: int) -> None:
         pass

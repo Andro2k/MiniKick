@@ -1,12 +1,12 @@
 # frontend\views\music_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
-                               QLabel, QFrame, QScrollArea)
+                                QLabel, QFrame, QScrollArea, QComboBox, QSlider)
 from PySide6.QtCore import Qt, Signal
 
 from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
 from frontend.common.utils import get_icon_colored
-from frontend.widgets.blocks_component import ViewHeader, SettingRow
+from frontend.widgets.blocks_component import ViewHeader, SettingRow, SliderRow
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
 
@@ -14,6 +14,8 @@ class MusicView(QWidget):
     connect_requested = Signal()
     disconnect_requested = Signal()
     command_toggled = Signal(str, bool)
+    provider_changed = Signal(str)
+    volume_changed = Signal(int)
 
     def __init__(self, i18n):
         super().__init__()
@@ -42,6 +44,7 @@ class MusicView(QWidget):
         )
         self.main_layout.addWidget(self.header)
 
+        self._setup_provider_selection_card()
         self._setup_auth_card()
         self._setup_now_playing_card()
         self._setup_commands_card()
@@ -50,12 +53,36 @@ class MusicView(QWidget):
         scroll_area.setWidget(scroll_content)
         base_layout.addWidget(scroll_area)
 
+    def _setup_provider_selection_card(self):
+        card = QFrame()
+        card.setProperty("role", "card")
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(6)
+
+        self.combo_provider = QComboBox()
+        self.combo_provider.addItem("Spotify Premium", "spotify")
+        self.combo_provider.addItem("YouTube (Gratuito)", "youtube")
+        
+        self.combo_provider.currentIndexChanged.connect(
+            lambda: self.provider_changed.emit(self.combo_provider.currentData())
+        )
+
+        row_provider = SettingRow(
+            icon_name="headphones.svg",
+            title_text=self.i18n.get("music.provider.select_title"),
+            desc_text=self.i18n.get("music.provider.select_desc"),
+            right_widget=self.combo_provider
+        )
+        layout.addWidget(row_provider)
+        self.main_layout.addWidget(card)
+
     def _setup_auth_card(self):
         card = QFrame()
         card.setProperty("role", "card")
         layout = QVBoxLayout(card)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
+        layout.setSpacing(12)
 
         status_layout = QHBoxLayout()
         self.lbl_provider_name = QLabel(self.i18n.get("music.provider.name"))
@@ -80,7 +107,29 @@ class MusicView(QWidget):
         status_layout.addWidget(self.btn_disconnect)
 
         layout.addLayout(status_layout)
+
+        self.slider_vol = QSlider(Qt.Orientation.Horizontal)
+        self.slider_vol.setRange(0, 100)
+        self.slider_vol.setValue(100)
+        self.lbl_vol_perc = QLabel("100%")
+        self.lbl_vol_perc.setProperty("role", "body")
+        
+        self.row_vol = SliderRow(
+            icon_name="volume.svg",
+            title_text=self.i18n.get("music.player.volume_title") or "Volumen del Reproductor",
+            desc_text=self.i18n.get("music.player.volume_desc") or "Ajusta el volumen de reproducción de YouTube",
+            slider_widget=self.slider_vol,
+            value_label=self.lbl_vol_perc
+        )
+        self.row_vol.setVisible(False)
+        self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
+        layout.addWidget(self.row_vol)
+
         self.main_layout.addWidget(card)
+
+    def _on_volume_slider_changed(self, val):
+        self.lbl_vol_perc.setText(f"{val}%")
+        self.volume_changed.emit(val)
 
     def _setup_now_playing_card(self):
         self.card_player = QFrame()
@@ -91,8 +140,8 @@ class MusicView(QWidget):
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(12)
 
-        icon_music = QLabel()
-        icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
+        self.icon_music = QLabel()
+        self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
         
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
@@ -104,7 +153,7 @@ class MusicView(QWidget):
         info_layout.addWidget(self.lbl_song_title)
         info_layout.addWidget(self.lbl_song_artist)
 
-        layout.addWidget(icon_music, alignment=Qt.AlignmentFlag.AlignVCenter)
+        layout.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addLayout(info_layout, stretch=1)
         
         self.main_layout.addWidget(self.card_player)
@@ -141,16 +190,32 @@ class MusicView(QWidget):
         self.main_layout.addWidget(self.card_cmds)
 
     def set_auth_state(self, connected: bool, label_key: str = ""):
-        self.btn_connect.setVisible(not connected)
-        self.btn_disconnect.setVisible(connected)
-        self.card_cmds.setEnabled(connected)
-        self.card_player.setVisible(connected)
-
-        if connected:
-            translated_label = self.i18n.get(label_key)
+        provider = self.combo_provider.currentData()
+        
+        if provider == "youtube":
+            self.lbl_provider_name.setText("YouTube (Gratuito)")
+            self.icon_music.setPixmap(get_icon_colored("youtube.svg", COLOR_ACCENT, 32).pixmap(32, 32))
+            self.btn_connect.setVisible(False)
+            self.btn_disconnect.setVisible(False)
+            self.card_cmds.setEnabled(True)
+            self.card_player.setVisible(True)
+            self.row_vol.setVisible(True)
+            translated_label = self.i18n.get("music.status.youtube_active") or "YouTube Activo"
             self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
         else:
-            self.lbl_auth_status.setText(self.i18n.get("music.status.disconnected"))
+            self.lbl_provider_name.setText(self.i18n.get("music.provider.name") or "Spotify Premium")
+            self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
+            self.btn_connect.setVisible(not connected)
+            self.btn_disconnect.setVisible(connected)
+            self.card_cmds.setEnabled(connected)
+            self.card_player.setVisible(connected)
+            self.row_vol.setVisible(False)
+
+            if connected:
+                translated_label = self.i18n.get(label_key) or label_key
+                self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
+            else:
+                self.lbl_auth_status.setText(self.i18n.get("music.status.disconnected"))
 
     def update_current_song(self, song_data: dict | None):
         if not song_data:

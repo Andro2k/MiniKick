@@ -324,7 +324,9 @@
             "subtitle": "Permite que tus espectadores controlen la música del stream mediante comandos de chat."
         },
         "provider": {
-            "name": "Proveedor de Audio Spotify"
+            "name": "Proveedor de Audio Spotify",
+            "select_title": "Proveedor de Música",
+            "select_desc": "Selecciona el servicio para las canciones del chat."
         },
         "btn": {
             "connect": "Conectar Spotify",
@@ -335,13 +337,16 @@
             "connecting": "Autoriza en tu navegador...",
             "active": "Conectado como",
             "session_remembered": "Streamer (Sesión recordada)",
-            "connected_user": "Streamer (Conectado)"
+            "connected_user": "Streamer (Conectado)",
+            "youtube_active": "YouTube Activo"
         },
         "player": {
             "not_playing": "Ninguna canción en reproducción",
             "paused_title": "Reproductor en pausa...",
             "paused_desc": "Abre Spotify y dale a Play",
-            "unknown_song": "Desconocido"
+            "unknown_song": "Desconocido",
+            "volume_title": "Volumen del Reproductor",
+            "volume_desc": "Ajusta el volumen de reproducción de YouTube."
         },
         "cmds": {
             "title": "Comandos de Espectadores",
