@@ -17,19 +17,48 @@ class YouTubeResolveWorker(QThread):
     def run(self):
         try:
             import yt_dlp
-            ydl_opts = {
-                'format': 'bestaudio[ext=m4a]/bestaudio',
+            
+            app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
+            cache_dir = os.path.join(app_data_dir, '.Minikick', 'cache')
+            os.makedirs(cache_dir, exist_ok=True)
+            
+            outtmpl = os.path.join(cache_dir, 'yt_%(id)s.%(ext)s')
+            
+            ydl_opts_download = {
+                'format': 'bestaudio[ext=m4a]/bestaudio/best',
+                'outtmpl': outtmpl,
+                'quiet': True,
+                'no_warnings': True,
+            }
+            
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts_download) as ydl:
+                    info = ydl.extract_info(self.query_or_url, download=True)
+                    if 'entries' in info:
+                        info = info['entries'][0]
+                    local_path = ydl.prepare_filename(info)
+                    title = info.get('title', 'Unknown Title')
+                    
+                    if os.path.exists(local_path):
+                        self.resolved.emit(title, local_path)
+                        return
+            except Exception as download_err:
+                print(f"[YouTubeResolveWorker] El intento de descarga local falló: {download_err}. Usando fallback de streaming remoto.")
+            
+            ydl_opts_stream = {
+                'format': 'bestaudio[ext=m4a]/bestaudio/best',
                 'quiet': True,
                 'no_warnings': True,
                 'skip_download': True,
             }
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL(ydl_opts_stream) as ydl:
                 info = ydl.extract_info(self.query_or_url, download=False)
                 if 'entries' in info:
                     info = info['entries'][0]
                 stream_url = info['url']
                 title = info.get('title', 'Unknown Title')
                 self.resolved.emit(title, stream_url)
+            
         except Exception as e:
             self.error.emit(str(e))
 
@@ -111,6 +140,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         self.i18n = i18n
         self.queue: list[dict] = []
         self.current_song: dict | None = None
+        self.current_local_file: str | None = None
         self.resolve_worker = None
         self._search_workers = []
 
@@ -169,14 +199,33 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
     def set_volume(self, volume: int) -> None:
         self.audio_output.setVolume(volume / 100.0)
 
+    def shutdown(self):
+        self.player.stop()
+        self.player.setSource(QUrl())
+        if self.current_local_file and os.path.exists(self.current_local_file):
+            try:
+                os.remove(self.current_local_file)
+            except Exception:
+                pass
+        self.current_local_file = None
+
     def _play_next(self):
         if self.resolve_worker and self.resolve_worker.isRunning():
             self.resolve_worker.terminate()
             self.resolve_worker.wait()
 
+        self.player.stop()
+        self.player.setSource(QUrl())
+
+        if self.current_local_file and os.path.exists(self.current_local_file):
+            try:
+                os.remove(self.current_local_file)
+            except Exception as e:
+                print(f"[YouTubeMusicProvider] Error eliminando archivo temporal: {e}")
+        self.current_local_file = None
+
         if not self.queue:
             self.current_song = None
-            self.player.stop()
             return
 
         self.current_song = self.queue.pop(0)
@@ -187,14 +236,25 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         self.resolve_worker.start()
 
     @Slot(str, str)
-    def _on_song_resolved(self, title: str, stream_url: str):
+    def _on_song_resolved(self, title: str, path_or_url: str):
         if not self.current_song:
+            if path_or_url and not (path_or_url.startswith("http://") or path_or_url.startswith("https://")):
+                if os.path.exists(path_or_url):
+                    try:
+                        os.remove(path_or_url)
+                    except Exception:
+                        pass
             return
 
-        self.current_song["stream_url"] = stream_url
         self.current_song["resolved"] = True
-
-        self.player.setSource(QUrl(stream_url))
+        
+        if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
+            self.current_local_file = None
+            self.player.setSource(QUrl(path_or_url))
+        else:
+            self.current_local_file = path_or_url
+            self.player.setSource(QUrl.fromLocalFile(path_or_url))
+            
         self.player.play()
 
     @Slot(str)

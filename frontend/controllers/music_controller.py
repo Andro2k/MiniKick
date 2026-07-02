@@ -181,3 +181,5 @@ class MusicController(QObject):
         if self.auth_worker and self.auth_worker.isRunning():
             self.auth_worker.terminate()
             self.auth_worker.wait()
+        if self.music_provider and hasattr(self.music_provider, "shutdown"):
+            self.music_provider.shutdown()

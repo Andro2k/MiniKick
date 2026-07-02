@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout,
 from PySide6.QtCore import Qt, Signal
 
 from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, get_icon
 from frontend.widgets.blocks_component import ViewHeader, SettingRow, SliderRow
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
@@ -116,8 +116,8 @@ class MusicView(QWidget):
         
         self.row_vol = SliderRow(
             icon_name="volume.svg",
-            title_text=self.i18n.get("music.player.volume_title") or "Volumen del Reproductor",
-            desc_text=self.i18n.get("music.player.volume_desc") or "Ajusta el volumen de reproducción de YouTube",
+            title_text=self.i18n.get("music.player.volume_title"),
+            desc_text=self.i18n.get("music.player.volume_desc"),
             slider_widget=self.slider_vol,
             value_label=self.lbl_vol_perc
         )
@@ -146,9 +146,11 @@ class MusicView(QWidget):
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
         self.lbl_song_title.setProperty("role", "h2")
+        self.lbl_song_title.setWordWrap(True)
         
         self.lbl_song_artist = QLabel("-")
         self.lbl_song_artist.setProperty("role", "body")
+        self.lbl_song_artist.setWordWrap(True)
 
         info_layout.addWidget(self.lbl_song_title)
         info_layout.addWidget(self.lbl_song_artist)
@@ -193,17 +195,17 @@ class MusicView(QWidget):
         provider = self.combo_provider.currentData()
         
         if provider == "youtube":
-            self.lbl_provider_name.setText("YouTube (Gratuito)")
-            self.icon_music.setPixmap(get_icon_colored("youtube.svg", COLOR_ACCENT, 32).pixmap(32, 32))
+            self.lbl_provider_name.setText("YouTube")
+            self.icon_music.setPixmap(get_icon("youtube.svg").pixmap(32, 32))
             self.btn_connect.setVisible(False)
             self.btn_disconnect.setVisible(False)
             self.card_cmds.setEnabled(True)
             self.card_player.setVisible(True)
             self.row_vol.setVisible(True)
-            translated_label = self.i18n.get("music.status.youtube_active") or "YouTube Activo"
+            translated_label = self.i18n.get("music.status.youtube_active")
             self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
         else:
-            self.lbl_provider_name.setText(self.i18n.get("music.provider.name") or "Spotify Premium")
+            self.lbl_provider_name.setText(self.i18n.get("music.provider.name"))
             self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
             self.btn_connect.setVisible(not connected)
             self.btn_disconnect.setVisible(connected)
