@@ -68,8 +68,9 @@ class KickAPIClient:
         try:
             channel_data = self._fetch_channel_details(channel_slug)
             return self._map_channel_data(username, channel_data)
-        except Exception as e:
-            print(f"[KickAPIClient] Error fetching channel details via scraper: {e}. Using official public API fallback.")
+        except Exception:
+            # Silent fallback using data returned directly by the public api.kick.com users endpoint
+            # This avoids Cloudflare blocks and functions correctly even without channel:read scopes.
             broadcaster_id = user_info.get("id", 0)
             is_verified = user_info.get("verified", False)
             avatar_url = user_info.get("profile_picture", "")
@@ -77,16 +78,13 @@ class KickAPIClient:
             
             followers = 0
             try:
-                # Query the official channel details endpoint via api.kick.com to obtain live follower counts
                 resp = self._request("GET", "https://api.kick.com/public/v1/channels", params={"slug": username}, timeout=10)
                 ch_data = resp.json()
                 if "data" in ch_data:
                     ch_data = ch_data["data"]
-                
-                # Fetch followers_count from developer API fields
                 followers = ch_data.get("followers_count") or ch_data.get("followersCount") or 0
-            except Exception as api_err:
-                print(f"[KickAPIClient] Could not fetch detailed channel info from public API: {api_err}")
+            except Exception:
+                pass
                 
             return {
                 "broadcaster_id": broadcaster_id,
