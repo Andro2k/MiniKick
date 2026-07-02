@@ -376,7 +376,10 @@
             "success": "🎵 En cola: {track}",
             "no_device": "❌ Error: Abre Spotify en tu PC y dale 'Play' a cualquier cosa primero.",
             "rejected": "❌ Spotify rechazó la petición: {status}",
-            "error": "❌ Error interno de Spotify: {error}"
+            "error": "❌ Error interno de Spotify: {error}",
+            "no_link": "❌ No se pudo obtener el enlace del video.",
+            "searching": "🔍 Buscando '{query}' en YouTube...",
+            "processing_link": "🔍 Procesando enlace de YouTube..."
         },
         "errors": {
             "no_session": "No hay sesión de Spotify activa.",

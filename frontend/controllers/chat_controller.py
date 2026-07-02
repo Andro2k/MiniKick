@@ -40,10 +40,13 @@ class ChatController(QObject):
         self.view.volume_changed.connect(self.service.set_volume)
         self.view.provider_toggled.connect(self._handle_provider_change)
         self.view.voice_changed.connect(self._handle_voice_change)
-        self.view.settings_modified.connect(self._handle_settings_save)
+        self.view.settings_changed.connect(self._handle_settings_save)
         self.view.bot_add_requested.connect(self._add_bot)
         self.view.bot_remove_requested.connect(self._remove_bot)
         self.view.language_filter_changed.connect(self._filter_voices_by_language)
+
+    def load_initial_data(self):
+        self._load_initial_data()
 
     def _load_initial_data(self):
         settings = self.service.get_settings()
@@ -56,12 +59,21 @@ class ChatController(QObject):
             
         self._tts_enabled = settings.get("enabled", True)
         self._tts_settings_cache = dict(settings)
-        self.view.set_initial_states(settings)
+        
+        self.view.set_settings_ui(
+            enabled=settings.get("enabled", True),
+            read_name=settings.get("read_name", True),
+            use_command=settings.get("use_command", False),
+            command=settings.get("command", "!tts"),
+            is_web_provider=(provider == "web"),
+            volume=settings.get("volume", 100)
+        )
         self.service.set_volume(settings["volume"])     
         
         bots_str = settings.get("ignored_users", "")
         self.muted_bots = {b.strip().lower() for b in bots_str.split(",") if b.strip()}
         
+        self.view.clear_bots_list()
         for bot in self.muted_bots:
             self.view.add_bot_tag(bot)
 
@@ -197,13 +209,20 @@ class ChatController(QObject):
                 state=state_color
             )
 
-    @Slot(dict)
-    def _handle_settings_save(self, partial_settings: dict):
-        partial_settings["ignored_users"] = ",".join(self.muted_bots)
-        self.service.save_settings(partial_settings)
+    @Slot()
+    def _handle_settings_save(self):
+        settings = {
+            "enabled": self.view.tts_enabled,
+            "read_name": self.view.read_name_enabled,
+            "use_command": self.view.use_command_enabled,
+            "command": self.view.tts_command,
+            "provider": "web" if self.view.is_web_provider else "local",
+            "ignored_users": ",".join(self.muted_bots)
+        }
+        self.service.save_settings(settings)
         self._tts_settings_cache = self.service.get_settings()
-        self.tts_state_changed.emit(partial_settings["enabled"])
-        new_tts_state = partial_settings["enabled"]
+        self.tts_state_changed.emit(settings["enabled"])
+        new_tts_state = settings["enabled"]
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
             self._tts_enabled = new_tts_state
             

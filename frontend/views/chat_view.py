@@ -14,7 +14,7 @@ class ChatView(QWidget):
     volume_changed = Signal(int)
     voice_changed = Signal(str)
     provider_toggled = Signal(bool)
-    settings_modified = Signal(dict)
+    settings_changed = Signal()
     bot_add_requested = Signal(str)
     bot_remove_requested = Signal(str)
     language_filter_changed = Signal(str)
@@ -134,6 +134,30 @@ class ChatView(QWidget):
         else:
             self.body_layout.setDirection(QBoxLayout.Direction.LeftToRight)
 
+    @property
+    def tts_enabled(self) -> bool:
+        return self.chk_tts.isChecked()
+
+    @property
+    def read_name_enabled(self) -> bool:
+        return self.chk_name.isChecked()
+
+    @property
+    def use_command_enabled(self) -> bool:
+        return self.chk_command.isChecked()
+
+    @property
+    def tts_command(self) -> str:
+        return self.txt_command.text().strip().lower()
+
+    @property
+    def is_web_provider(self) -> bool:
+        return self.chk_provider.isChecked()
+
+    @property
+    def tts_volume(self) -> int:
+        return self.slider_vol.value()
+
     def _connect_internal_signals(self):
         self.chk_provider.toggled.connect(self.provider_toggled.emit)
         self.slider_vol.valueChanged.connect(self._on_slider_vol_changed)
@@ -142,28 +166,26 @@ class ChatView(QWidget):
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
         self.bot_panel.bot_add_requested.connect(self.bot_add_requested.emit)
         self.bot_panel.bot_remove_requested.connect(self.bot_remove_requested.emit)
+        
         controls = [self.chk_tts, self.chk_name, self.chk_command, self.txt_command]
         for control in controls:
             if isinstance(control, ModernSwitch):
-                control.toggled.connect(self._emit_current_settings)
+                control.toggled.connect(self._on_setting_changed)
             elif isinstance(control, QLineEdit):
-                control.textChanged.connect(self._emit_current_settings)
+                control.textChanged.connect(self._on_setting_changed)
 
-    def set_initial_states(self, settings: dict):
+    def _on_setting_changed(self, *args):
+        self.settings_changed.emit()
+
+    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int):
         self.blockSignals(True)
-        self.chk_tts.setChecked(settings.get("enabled", True))
-        self.chk_name.setChecked(settings.get("read_name", True))
-        self.chk_command.setChecked(settings.get("use_command", False))
-        self.txt_command.setText(settings.get("command", "!tts"))
-        self.chk_provider.setChecked(settings.get("provider") == "web")
-        self.slider_vol.setValue(settings.get("volume", 100))
-        self.blockSignals(False)        
-        self.clear_bots_list()
-        ignored_users_str = settings.get("ignored_users", "")
-        if ignored_users_str:
-            for bot in ignored_users_str.split(","):
-                if bot.strip():
-                    self.add_bot_tag(bot.strip())
+        self.chk_tts.setChecked(enabled)
+        self.chk_name.setChecked(read_name)
+        self.chk_command.setChecked(use_command)
+        self.txt_command.setText(command)
+        self.chk_provider.setChecked(is_web_provider)
+        self.slider_vol.setValue(volume)
+        self.blockSignals(False)
 
     def clear_bot_input(self):
         self.bot_panel.clear_input()
@@ -224,15 +246,6 @@ class ChatView(QWidget):
     def _enforce_prefix_mask(self, text):
         if not text.startswith("!"):
             self.txt_command.setText("!" + text.replace("!", ""))
-
-    def _emit_current_settings(self):
-        self.settings_modified.emit({
-            "enabled": self.chk_tts.isChecked(),
-            "read_name": self.chk_name.isChecked(),
-            "use_command": self.chk_command.isChecked(),
-            "command": self.txt_command.text().strip().lower(),
-            "provider": "web" if self.chk_provider.isChecked() else "local"
-        })
 
     def _on_voice_selected(self, index: int):
         if index >= 0:

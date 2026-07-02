@@ -177,6 +177,7 @@ class DashboardView(QWidget):
     def update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = ""):
         if is_connecting:
             self.status_label.setText(self.i18n.get("dashboard.connection.status_auth"))
+            self.status_label.setProperty("state", "normal")
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(False)
             self.lbl_avatar.setPixmap(QPixmap())
@@ -188,6 +189,7 @@ class DashboardView(QWidget):
             self.profile_container.setVisible(False)
         else:
             self.status_label.setText(self.i18n.get("dashboard.connection.status_connected"))
+            self.status_label.setProperty("state", "normal")
             self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_active"))
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(True)
@@ -216,7 +218,7 @@ class DashboardView(QWidget):
     
     def reset_to_disconnected(self):
         self.status_label.setText(self.i18n.get("dashboard.connection.status_waiting"))
-        self.status_label.setProperty("state", "idle")
+        self.status_label.setProperty("state", "normal")
         self.btn_connect.setEnabled(True)
         self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_connect"))
         self.profile_container.setVisible(False)

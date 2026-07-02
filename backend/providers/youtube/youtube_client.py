@@ -109,7 +109,8 @@ class YouTubeSearchWorker(QThread):
                     if video_id:
                         video_url = f"https://www.youtube.com/watch?v={video_id}"
                     else:
-                        self.finished.emit(False, "No se pudo obtener el enlace del video")
+                        msg = self.i18n.get("music.queue.no_link")
+                        self.finished.emit(False, msg)
                         return
 
                 author = item.get('uploader') or item.get('channel', '-')
@@ -132,7 +133,6 @@ class YouTubeSearchWorker(QThread):
 
 class YouTubeMusicProviderMeta(type(QObject), ABCMeta):
     pass
-
 
 class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicProviderMeta):
     def __init__(self, i18n):
@@ -167,10 +167,10 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         query = query_or_uri.strip()
         if not (query.startswith("http://") or query.startswith("https://") or query.startswith("www.")):
             search_query = f"ytsearch1:{query}"
-            immediate_msg = f"🔍 Buscando \"{query}\" en YouTube..."
+            immediate_msg = self.i18n.get("music.queue.searching").replace("{query}", query)
         else:
             search_query = query
-            immediate_msg = f"🔍 Procesando enlace de YouTube..."
+            immediate_msg = self.i18n.get("music.queue.processing_link")
 
         worker = YouTubeSearchWorker(search_query, query, self.i18n)
         

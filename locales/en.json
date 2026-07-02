@@ -376,7 +376,10 @@
             "success": "🎵 Added to queue: {track}",
             "no_device": "❌ Error: Please open Spotify on your PC and play any track first.",
             "rejected": "❌ Spotify rejected the request: {status}",
-            "error": "❌ Internal Spotify error: {error}"
+            "error": "❌ Internal Spotify error: {error}",
+            "no_link": "❌ Could not retrieve video link.",
+            "searching": "🔍 Searching for '{query}' on YouTube...",
+            "processing_link": "🔍 Processing YouTube link..."
         },
         "errors": {
             "no_session": "No active Spotify session.",

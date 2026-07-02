@@ -22,7 +22,6 @@ class ModernFramelessShell(QDialog):
 
         self.container = QFrame()
         self.container.setProperty("role", "dialog")
-        self.container.setProperty("state", "neutral")
         self.container.setFixedWidth(width)
         self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
         

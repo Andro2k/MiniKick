@@ -2,10 +2,8 @@
 
 from frontend.common.utils import get_assets_path
 PATH_ICON_HELP = get_assets_path("icons/help.svg")
-PATH_ICON_UPDATE = get_assets_path("icons/cloud-download.svg")
 PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
-PATH_ICON_ADD = get_assets_path("icons/add.svg").replace('\\', '/')
 
 COLOR_BG_BASE       = "#09090B"
 COLOR_BG_SURFACE    = "#121214"
@@ -75,6 +73,8 @@ QLabel[role="caption"] {{ font-size: {caption}px; font-weight: 400; color: {COLO
 QLabel[role="wizard_step_num"] {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="wizard_subtitle"] {{ font-size: {base}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}
 QLabel[role="monospace"] {{ font-family: {FONT_FAMILY}; font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY};}}
+QLabel[role="subtitle"] {{ font-size: {caption}px; font-weight: 600; color: {COLOR_TEXT_SECONDARY}; }}
+QLabel[state="error"] {{ color: {COLOR_DANGER}; }}
 
 /* --- 3. CONTENEDORES --- */
 QFrame[role="card"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: {RADIUS_LG}px; }}
@@ -99,10 +99,10 @@ QPushButton[role="action_outlined"] {{ background-color: {COLOR_BG_INPUT}; color
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton[role="action_danger_border"] {{ background-color: transparent; color: {COLOR_DANGER}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_danger_border"]:hover {{ background-color: {COLOR_DANGER_GLOW}; }}
-QPushButton[role="action_accent_border"], QPushButton[role="action_accent_outline"] {{ background-color: transparent; color: {COLOR_ACCENT}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_ACCENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
-QPushButton[role="action_accent_border"]:hover, QPushButton[role="action_accent_outline"]:hover {{ background-color: {COLOR_ACCENT_OUTLINE_GLOW}; }}
-QPushButton[role="action_neutral_border"], QPushButton[role="action_outlined_border"] {{ background-color: transparent; color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_BORDER_HOVER}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
-QPushButton[role="action_neutral_border"]:hover, QPushButton[role="action_outlined_border"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
+QPushButton[role="action_accent_border"] {{ background-color: transparent; color: {COLOR_ACCENT}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_ACCENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_accent_border"]:hover {{ background-color: {COLOR_ACCENT_OUTLINE_GLOW}; }}
+QPushButton[role="action_neutral_border"] {{ background-color: transparent; color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; font-weight: 700; border: 1.5px solid {COLOR_BORDER_HOVER}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_neutral_border"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_BG_HOVER}; }}
 QPushButton#NavButton {{ background: transparent; border-radius: {RADIUS_MD}px; padding: 10px; text-align: left; color: {COLOR_TEXT_SECONDARY}; font-weight: 500; }}
@@ -206,7 +206,6 @@ QLabel[role="regex_helper_title"] {{ font-size: {h3}px; font-weight: bold; color
 QLabel[role="regex_helper_category"] {{ font-weight: bold; color: {COLOR_ACCENT}; margin-top: 6px; font-size: {btn_txt}px; }}
 QLabel[role="regex_helper_code"] {{ font-size: {btn_txt}px; font-weight: bold; background-color: rgba(255,255,255,0.06); padding: 1px 3px; border-radius: {RADIUS_SM}px; }}
 QLabel[role="regex_helper_desc"] {{ font-size: {btn_txt}px; color: {COLOR_TEXT_SECONDARY}; }}
-QLabel[role="regex_helper_pattern"] {{ font-size: {btn_txt}px; font-weight: bold; color: {COLOR_TEXT_PRIMARY}; }}
 
 /* --- 12. QSLIDER (SIMPLE Y MODERNO) --- */
 QSlider::groove:horizontal {{ border: none; height: 6px; background: {COLOR_BG_INPUT}; border-radius: 3px; }}

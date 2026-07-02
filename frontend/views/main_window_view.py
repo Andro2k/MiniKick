@@ -239,8 +239,7 @@ class MainWindow(QMainWindow):
         self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_controller.load_initial_data()
         self.spam_controller.load_initial_data()
-        chat_settings = self.chat_service.get_settings()
-        self.view_chat.set_initial_states(chat_settings)
+        self.chat_controller.load_initial_data()
         self.chat_controller.sync_settings_cache()
         self._apply_dynamic_theme(self.settings_service.get_font_size())
         if autostart_enabled:
