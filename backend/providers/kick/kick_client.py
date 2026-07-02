@@ -14,16 +14,23 @@ KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redempti
 class ScraperFactory:
     @staticmethod
     def create() -> cloudscraper.CloudScraper:
-        scraper = cloudscraper.create_scraper()
-        
         if sys.platform.startswith("linux"):
-            ua = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            platform = 'linux'
         elif sys.platform == "darwin":
-            ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            platform = 'darwin'
         else:
-            ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            platform = 'windows'
+        try:
+            scraper = cloudscraper.create_scraper(
+                browser={
+                    'browser': 'chrome',
+                    'platform': platform,
+                    'desktop': True
+                }
+            )
+        except Exception:
+            scraper = cloudscraper.create_scraper()
             
-        scraper.headers.update({'User-Agent': ua})
         return scraper
 
 class KickAPIClient:
@@ -54,15 +61,40 @@ class KickAPIClient:
             raise e
 
     def fetch_user_data(self) -> dict:
-        username = self._fetch_authenticated_username()
+        user_info = self._fetch_authenticated_user()
+        username = user_info.get("name") or user_info.get("username") or ""
         channel_slug = self._generate_channel_slug(username)
-        channel_data = self._fetch_channel_details(channel_slug)
-        return self._map_channel_data(username, channel_data)
+        
+        try:
+            channel_data = self._fetch_channel_details(channel_slug)
+            return self._map_channel_data(username, channel_data)
+        except Exception as e:
+            print(f"[KickAPIClient] Error fetching channel details via scraper: {e}. Using official public API fallback.")
+            broadcaster_id = user_info.get("id", 0)
+            return {
+                "broadcaster_id": broadcaster_id,
+                "username": username,
+                "bio": "",
+                "room_id": str(broadcaster_id),
+                "followers": 0,
+                "is_verified": False,
+                "is_affiliate": False,
+                "vod_enabled": False,
+                "last_category": "",
+                "playback_url": f"https://kick.com/{username}",
+                "avatar_url": user_info.get("profile_picture", "")
+            }
+
+    def _fetch_authenticated_user(self) -> dict:
+        resp = self._request("GET", KICK_API_URL, timeout=10)
+        data = resp.json().get("data", [])
+        if not data and isinstance(resp.json(), dict):
+            return resp.json()
+        return data[0] if data else {}
 
     def _fetch_authenticated_username(self) -> str:
-        resp = self._request("GET", KICK_API_URL, timeout=10)
-        data = resp.json().get("data", [resp.json()])
-        return data[0].get("name")
+        user = self._fetch_authenticated_user()
+        return user.get("name") or user.get("username") or ""
 
     def _generate_channel_slug(self, username: str) -> str:
         return username.replace("_", "-").replace(" ", "")
