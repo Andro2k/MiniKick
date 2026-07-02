@@ -14,23 +14,16 @@ KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redempti
 class ScraperFactory:
     @staticmethod
     def create() -> cloudscraper.CloudScraper:
+        scraper = cloudscraper.create_scraper()
+        
         if sys.platform.startswith("linux"):
-            platform = 'linux'
+            ua = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         elif sys.platform == "darwin":
-            platform = 'darwin'
+            ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         else:
-            platform = 'windows'
-        try:
-            scraper = cloudscraper.create_scraper(
-                browser={
-                    'browser': 'chrome',
-                    'platform': platform,
-                    'desktop': True
-                }
-            )
-        except Exception:
-            scraper = cloudscraper.create_scraper()
+            ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             
+        scraper.headers.update({'User-Agent': ua})
         return scraper
 
 class KickAPIClient:
@@ -61,78 +54,32 @@ class KickAPIClient:
             raise e
 
     def fetch_user_data(self) -> dict:
-        user_info = self._fetch_authenticated_user()
-        username = user_info.get("name") or user_info.get("username") or ""
+        username = self._fetch_authenticated_username()
         channel_slug = self._generate_channel_slug(username)
-        
-        try:
-            channel_data = self._fetch_channel_details(channel_slug)
-            return self._map_channel_data(username, channel_data)
-        except Exception:
-            # Silent fallback using data returned directly by the public api.kick.com users endpoint
-            # This avoids Cloudflare blocks and functions correctly even without channel:read scopes.
-            broadcaster_id = user_info.get("id", 0)
-            is_verified = user_info.get("verified", False)
-            avatar_url = user_info.get("profile_picture", "")
-            bio = user_info.get("bio", "")
-            
-            followers = 0
-            try:
-                resp = self._request("GET", "https://api.kick.com/public/v1/channels", params={"slug": username}, timeout=10)
-                ch_data = resp.json()
-                if "data" in ch_data:
-                    ch_data = ch_data["data"]
-                followers = ch_data.get("followers_count") or ch_data.get("followersCount") or 0
-            except Exception:
-                pass
-                
-            return {
-                "broadcaster_id": broadcaster_id,
-                "username": username,
-                "bio": bio,
-                "room_id": str(broadcaster_id),
-                "followers": followers,
-                "is_verified": is_verified,
-                "is_affiliate": False,
-                "vod_enabled": False,
-                "last_category": "",
-                "playback_url": f"https://kick.com/{username}",
-                "avatar_url": avatar_url
-            }
-
-    def _fetch_authenticated_user(self) -> dict:
-        resp = self._request("GET", KICK_API_URL, timeout=10)
-        data = resp.json().get("data", [])
-        if not data and isinstance(resp.json(), dict):
-            return resp.json()
-        return data[0] if data else {}
+        channel_data = self._fetch_channel_details(channel_slug)
+        return self._map_channel_data(username, channel_data)
 
     def _fetch_authenticated_username(self) -> str:
-        user = self._fetch_authenticated_user()
-        return user.get("name") or user.get("username") or ""
+        resp = self._request("GET", KICK_API_URL, timeout=10)
+        data = resp.json().get("data", [resp.json()])
+        return data[0].get("name")
 
     def _generate_channel_slug(self, username: str) -> str:
         return username.replace("_", "-").replace(" ", "")
 
-    def _fetch_channel_details(self, slug: str, max_retries: int = 1) -> dict:
+    def _fetch_channel_details(self, slug: str, max_retries: int = 3) -> dict:
         url = KICK_CHANNEL_URL.format(slug=slug)
         last_status_code = None
         
         for attempt in range(max_retries):
-            try:
-                channel_resp = self.scraper.get(url, timeout=5)
-                last_status_code = channel_resp.status_code
-                
-                if last_status_code == 200:
-                    return channel_resp.json()
-                    
-                if last_status_code in (403, 404):
-                    break  # Fail fast on Cloudflare block (403) or not found (404)
-            except Exception:
-                pass
+            channel_resp = self.scraper.get(url)
+            last_status_code = channel_resp.status_code
+            
+            if last_status_code == 200:
+                return channel_resp.json()
                 
             if attempt < max_retries - 1:
-                time.sleep(1)
+                time.sleep(2 * (attempt + 1))
                 
         raise ValueError(f"Channel not found: '{slug}'. Retries exhausted ({max_retries}). HTTP Status: {last_status_code}")
 
