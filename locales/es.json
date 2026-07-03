@@ -30,6 +30,11 @@
             "desc": "Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez.",
             "btn_unlink": "Desvincular"
         },
+        "feedback": {
+            "title": "Soporte y Reporte de Bugs",
+            "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo.",
+            "btn_report": "Reportar Bug"
+        },
         "dialogs": {
             "export_title": "Exportar Configuración",
             "import_title": "Importar Configuración"
@@ -49,7 +54,9 @@
             "unlinked_msg": "Se ha cerrado tu sesión de Kick local.",
             "error_title": "Operación Fallida",
             "export_error": "No se pudo guardar el archivo de respaldo.",
-            "import_error": "El archivo de respaldo está corrupto o es incompatible."
+            "import_error": "El archivo de respaldo está corrupto o es incompatible.",
+            "font_size_changed": "Interfaz Escalada",
+            "font_size_changed_msg": "Tamaño global aplicado: {size}px"
         }
     },
     "spam": {
@@ -450,6 +457,23 @@
             "btn_back": "Atrás",
             "btn_next": "Siguiente",
             "btn_save": "Guardar"
+        },
+        "bug_report": {
+            "lbl_contact": "Contacto (Discord, Correo, etc. - Opcional):",
+            "lbl_description": "Descripción del problema (Requerido):",
+            "chk_include_logs": "Incluir log de depuración (minikick.log)",
+            "btn_cancel": "Cancelar",
+            "btn_send": "Enviar Reporte",
+            "btn_sending": "Enviando...",
+            "success_title": "Reporte Enviado",
+            "success_msg": "Gracias por reportar el problema.",
+            "placeholder_contact": "Tu nombre de usuario o contacto...",
+            "placeholder_desc": "Explica qué estabas haciendo y qué error ocurrió...",
+            "err_empty_desc": "La descripción no puede estar vacía.",
+            "err_no_webhook": "El webhook de Discord no está configurado por el desarrollador.",
+            "success_send": "Reporte enviado con éxito.",
+            "err_discord": "Error de Discord: Código {code}",
+            "err_send": "Error al enviar: {error}"
         }
     },
     "main": {

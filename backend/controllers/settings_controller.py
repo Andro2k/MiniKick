@@ -24,6 +24,7 @@ class SettingsController(QObject):
         self.view.unlink_clicked.connect(self.unlink_account_requested.emit)
         self.view.update_clicked.connect(self.check_update_requested.emit)
         self.view.language_changed.connect(self.handle_language_change)
+        self.view.feedback_clicked.connect(self.handle_feedback)
 
     def _load_initial_state(self):
         enabled = self.service.is_minimize_tray_enabled()
@@ -112,4 +113,12 @@ class SettingsController(QObject):
         self.style_reload_requested.emit(size)
         
         if hasattr(self.view.window(), 'toast'):
-            self.view.window().toast.show_toast("Interfaz Escalada", f"Tamaño global aplicado: {size}px", "success")
+            title = self.view.i18n.get("settings.status.font_size_changed")
+            msg = self.view.i18n.get("settings.status.font_size_changed_msg").replace("{size}", str(size))
+            self.view.window().toast.show_toast(title, msg, "success")
+
+    @Slot()
+    def handle_feedback(self):
+        from frontend.dialogs.bug_report_dialog import BugReportDialog
+        dialog = BugReportDialog(self.view.i18n, parent=self.view.window())
+        dialog.exec()

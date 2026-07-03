@@ -32,6 +32,11 @@ DEFAULT_DICTIONARY = {
             "desc": "Close the current session. You will need to re-authorize MiniKick next time.",
             "btn_unlink": "Unlink"
         },
+        "feedback": {
+            "title": "Support and Bug Reporting",
+            "desc": "Found a bug or want to share feedback? Send us a direct report.",
+            "btn_report": "Report Bug"
+        },
         "dialogs": {
             "export_title": "Export Configuration",
             "import_title": "Import Configuration"
@@ -51,7 +56,9 @@ DEFAULT_DICTIONARY = {
             "unlinked_msg": "Your local Kick session has been closed.",
             "error_title": "Operation Failed",
             "export_error": "Could not save the backup file.",
-            "import_error": "The backup file is corrupted or incompatible."
+            "import_error": "The backup file is corrupted or incompatible.",
+            "font_size_changed": "UI Scaled",
+            "font_size_changed_msg": "Global text size applied: {size}px"
         }
     },
     "spam": {
@@ -452,6 +459,23 @@ DEFAULT_DICTIONARY = {
             "btn_back": "Back",
             "btn_next": "Next",
             "btn_save": "Save"
+        },
+        "bug_report": {
+            "lbl_contact": "Contact (Discord, Email, etc. - Optional):",
+            "lbl_description": "Problem Description (Required):",
+            "chk_include_logs": "Include diagnostic logs (minikick.log)",
+            "btn_cancel": "Cancel",
+            "btn_send": "Send Report",
+            "btn_sending": "Sending...",
+            "success_title": "Report Sent",
+            "success_msg": "Thank you for reporting this issue.",
+            "placeholder_contact": "Your username or contact...",
+            "placeholder_desc": "Explain what you were doing and what error occurred...",
+            "err_empty_desc": "Description cannot be empty.",
+            "err_no_webhook": "Discord webhook is not configured by the developer.",
+            "success_send": "Report sent successfully.",
+            "err_discord": "Discord error: Code {code}",
+            "err_send": "Error sending: {error}"
         }
     },
     "main": {
@@ -585,6 +609,29 @@ DEFAULT_DICTIONARY = {
             "shutdown_init": "Initiating shutdown sequence...",
             "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
             "shutdown_complete": "Thread shutdown sequence completed."
+        },
+        "dialogs": {
+            "confirm": {
+                "btn_cancel": "Cancel",
+                "btn_continue": "Continue"
+            },
+            "wizard": {
+                "step_indicator": "Step {current} of {total}",
+                "btn_cancel": "Cancel",
+                "btn_back": "Back",
+                "btn_save": "Save",
+                "btn_next": "Next"
+            },
+            "bug_report": {
+                "lbl_contact": "Contact (Discord, Email, etc. - Optional):",
+                "lbl_description": "Problem Description (Required):",
+                "chk_include_logs": "Include diagnostic logs (minikick.log)",
+                "btn_cancel": "Cancel",
+                "btn_send": "Send Report",
+                "btn_sending": "Sending...",
+                "success_title": "Report Sent",
+                "success_msg": "Thank you for reporting this issue."
+            }
         },
         "toasts": {
             "reward_title": "Reward Redeemed",

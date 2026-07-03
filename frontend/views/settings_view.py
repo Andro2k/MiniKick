@@ -20,6 +20,7 @@ class SettingsView(QWidget):
     unlink_clicked = Signal()
     update_clicked = Signal()
     language_changed = Signal(str)
+    feedback_clicked = Signal()
 
     def __init__(self, i18n):
         super().__init__()
@@ -160,6 +161,25 @@ class SettingsView(QWidget):
 
         account_layout.addWidget(row_unlink)
         self.main_layout.addWidget(account_card)
+
+        feedback_card = QFrame()
+        feedback_card.setProperty("role", "card")
+        feedback_layout = QVBoxLayout(feedback_card)
+        feedback_layout.setContentsMargins(8, 8, 8, 8)
+        feedback_layout.setSpacing(6)
+
+        self.btn_feedback = ModernButton(self.i18n.get("settings.feedback.btn_report"), role="action_accent")
+        self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
+
+        row_feedback = SettingRow(
+            icon_name="bug.svg", 
+            title_text=self.i18n.get("settings.feedback.title"), 
+            desc_text=self.i18n.get("settings.feedback.desc"), 
+            right_widget=self.btn_feedback
+        )
+
+        feedback_layout.addWidget(row_feedback)
+        self.main_layout.addWidget(feedback_card)
         
         self.main_layout.addStretch()
         scroll_area.setWidget(scroll_content)
