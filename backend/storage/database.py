@@ -33,7 +33,6 @@ class DatabaseManager:
                     token_type TEXT
                 )
             """)        
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS settings (
                     key TEXT PRIMARY KEY,
@@ -84,6 +83,8 @@ class DatabaseManager:
             columns = [info[1] for info in cursor.fetchall()]
             if "provider" not in columns:
                 cursor.execute("ALTER TABLE tokens ADD COLUMN provider TEXT DEFAULT 'kick'")
+                
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
             conn.commit()
 
 class SQLiteTokenStorage:

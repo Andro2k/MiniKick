@@ -120,7 +120,7 @@ class SpotifyMusicProvider(MusicPlayerProvider):
         except Exception:
             return None
 
-    def add_to_queue(self, query_or_uri: str, callback=None) -> tuple[bool, str]:
+    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]:
         try:
             track_uri = query_or_uri.strip()
             track_name = track_uri

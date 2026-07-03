@@ -135,6 +135,8 @@ class YouTubeMusicProviderMeta(type(QObject), ABCMeta):
     pass
 
 class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicProviderMeta):
+    resolve_error_occurred = Signal(str, str, str)
+
     def __init__(self, i18n):
         super().__init__()
         self.i18n = i18n
@@ -163,7 +165,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
             "is_playing": is_playing
         }
 
-    def add_to_queue(self, query_or_uri: str, callback=None) -> tuple[bool, str]:
+    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]:
         query = query_or_uri.strip()
         if not (query.startswith("http://") or query.startswith("https://") or query.startswith("www.")):
             search_query = f"ytsearch1:{query}"
@@ -176,6 +178,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         
         def on_worker_finished(success, message):
             if success and worker.song_entry:
+                worker.song_entry["requester"] = requester
                 self.queue.append(worker.song_entry)
                 if not self.current_song:
                     self._play_next()
@@ -260,9 +263,17 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
     @Slot(str)
     def _on_resolve_error(self, error_msg: str):
         print(f"[YouTubeMusicProvider] Error resolviendo stream de audio: {error_msg}")
+        if self.current_song:
+            title = self.current_song.get("title", "Unknown Title")
+            requester = self.current_song.get("requester", "") or ""
+            self.resolve_error_occurred.emit(title, error_msg, requester)
         self._play_next()
 
     @Slot(QMediaPlayer.MediaStatus)
     def _handle_media_status(self, status: QMediaPlayer.MediaStatus):
         if status in (QMediaPlayer.MediaStatus.EndOfMedia, QMediaPlayer.MediaStatus.InvalidMedia):
+            if status == QMediaPlayer.MediaStatus.InvalidMedia and self.current_song:
+                title = self.current_song.get("title", "Unknown Title")
+                requester = self.current_song.get("requester", "") or ""
+                self.resolve_error_occurred.emit(title, "Formato o medio inválido", requester)
             self._play_next()

@@ -63,7 +63,7 @@ class AppContainer:
         
         self.tts_manager = TTSManager()
         self.media_trigger_service = MediaTriggerService(parent_widget)
-        self.overlay_server = OverlayServerManager(port=8090)
+        self.overlay_server = OverlayServerManager(port=8090, settings_storage=self.settings_storage)
         self.overlay_server.start()
 
     def _init_i18n(self) -> TranslationService:

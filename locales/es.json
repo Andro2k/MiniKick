@@ -366,10 +366,15 @@
         "chat": {
             "sr_usage": "@{user} escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
             "not_linked": "❌ El streamer no ha vinculado su cuenta de Spotify.",
+            "not_linked_spotify": "❌ El streamer no ha vinculado su cuenta de Spotify.",
+            "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
             "skip_success": "⏩ Canción saltada exitosamente.",
             "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o sin cola).",
             "song_now_playing": "🎵 Sonando: {title} - {artist}",
-            "song_paused": "🔇 Spotify está en pausa o cerrado."
+            "song_paused": "🔇 Spotify está en pausa o cerrado.",
+            "song_paused_spotify": "🔇 Spotify está en pausa.",
+            "song_paused_youtube": "🔇 YouTube está en pausa.",
+            "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música reproduciéndose."
         },
         "queue": {
             "not_found": "❌ No encontré ninguna canción llamada '{query}'.",
@@ -384,6 +389,12 @@
         "errors": {
             "no_session": "No hay sesión de Spotify activa.",
             "refresh_failed": "No se pudo refrescar el token de Spotify."
+        },
+        "youtube": {
+            "error_title": "Error de YouTube",
+            "age_restricted": "Este video requiere verificación de edad (Sign in to confirm your age)",
+            "inappropriate": "Este video es inapropiado para algunos usuarios",
+            "invalid_media": "Formato o medio inválido"
         }
     },
     "spotify": {

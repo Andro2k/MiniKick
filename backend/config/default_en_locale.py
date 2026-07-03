@@ -368,10 +368,15 @@ DEFAULT_DICTIONARY = {
         "chat": {
             "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",
             "not_linked": "❌ The broadcaster has not linked their Spotify account.",
+            "not_linked_spotify": "❌ The broadcaster has not linked their Spotify account.",
+            "not_linked_youtube": "❌ The streamer has not activated the YouTube player.",
             "skip_success": "⏩ Song skipped successfully.",
             "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
             "song_now_playing": "🎵 Now playing: {title} - {artist}",
-            "song_paused": "🔇 Spotify is paused or closed."
+            "song_paused": "🔇 Spotify is paused or closed.",
+            "song_paused_spotify": "🔇 Spotify is paused.",
+            "song_paused_youtube": "🔇 YouTube is paused.",
+            "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing."
         },
         "queue": {
             "not_found": "❌ Could not find any song named '{query}'.",
@@ -386,6 +391,12 @@ DEFAULT_DICTIONARY = {
         "errors": {
             "no_session": "No active Spotify session.",
             "refresh_failed": "Could not refresh Spotify token."
+        },
+        "youtube": {
+            "error_title": "YouTube Error",
+            "age_restricted": "This video requires age verification (Sign in to confirm your age)",
+            "inappropriate": "This video is inappropriate for some users",
+            "invalid_media": "Invalid media or format"
         }
     },
     "spotify": {

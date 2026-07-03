@@ -111,12 +111,21 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         pass
 
 class OverlayServerManager:
-    def __init__(self, port=8090):
+    def __init__(self, port=8090, settings_storage=None):
         self.port = port
         self.server = None
         self.thread = None
         self.clients = [] 
-        self.session_token = secrets.token_hex(16)
+        self.settings_storage = settings_storage
+        
+        self.session_token = ""
+        if self.settings_storage:
+            self.session_token = self.settings_storage.load_string("overlay_session_token", "")
+            
+        if not self.session_token:
+            self.session_token = secrets.token_hex(16)
+            if self.settings_storage:
+                self.settings_storage.save_string("overlay_session_token", self.session_token)
 
     def get_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/overlay?token={self.session_token}"

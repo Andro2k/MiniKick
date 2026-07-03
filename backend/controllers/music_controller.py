@@ -85,6 +85,7 @@ class MusicController(QObject):
 
     def _init_youtube_provider(self):
         self.music_provider = YouTubeMusicProvider(self.i18n)
+        self.music_provider.resolve_error_occurred.connect(self.handle_resolve_error)
         
         vol = 100
         if self.settings_storage:
@@ -183,3 +184,46 @@ class MusicController(QObject):
             self.auth_worker.wait()
         if self.music_provider and hasattr(self.music_provider, "shutdown"):
             self.music_provider.shutdown()
+
+    def handle_resolve_error(self, title: str, error_msg: str, requester: str = ""):
+        if self.toast:
+            clean_msg = error_msg
+            if "Sign in to confirm your age" in error_msg:
+                clean_msg = self.i18n.get("music.youtube.age_restricted")
+            elif "inappropriate for some users" in error_msg:
+                clean_msg = self.i18n.get("music.youtube.inappropriate")
+            elif "Formato o medio inválido" in error_msg or "Invalid media" in error_msg:
+                clean_msg = self.i18n.get("music.youtube.invalid_media")
+            else:
+                first_line = error_msg.split('\n')[0]
+                if len(first_line) > 100:
+                    clean_msg = first_line[:97] + "..."
+                else:
+                    clean_msg = first_line
+
+            title_toast = self.i18n.get("music.youtube.error_title")
+            if self.i18n.current_lang == "es":
+                msg_toast = f"No se pudo reproducir '{title}': {clean_msg}"
+            else:
+                msg_toast = f"Could not play '{title}': {clean_msg}"
+                
+            self.toast.show_toast(
+                title_toast,
+                msg_toast,
+                "danger"
+            )
+
+            api_client = getattr(self.command_service, 'api_client', None)
+            if api_client:
+                if requester:
+                    user_mention = f"@{requester}"
+                    if self.i18n.current_lang == "es":
+                        chat_text = f"❌ {user_mention}, no se pudo reproducir '{title}': {clean_msg}"
+                    else:
+                        chat_text = f"❌ {user_mention}, could not play '{title}': {clean_msg}"
+                else:
+                    if self.i18n.current_lang == "es":
+                        chat_text = f"❌ No se pudo reproducir '{title}': {clean_msg}"
+                    else:
+                        chat_text = f"❌ Could not play '{title}': {clean_msg}"
+                api_client.post_chat_message(content=chat_text, msg_type="bot")

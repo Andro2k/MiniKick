@@ -8,7 +8,7 @@ class MusicPlayerProvider(ABC):
         pass
 
     @abstractmethod
-    def add_to_queue(self, query_or_uri: str, callback=None) -> tuple[bool, str]:
+    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]:
         pass
 
     @abstractmethod
