@@ -472,7 +472,9 @@ DEFAULT_DICTIONARY = {
             "success_title": "Report Sent",
             "success_msg": "Thank you for reporting this issue.",
             "btn_send": "Send Report",
-            "btn_sending": "Sending..."
+            "btn_sending": "Sending...",
+            "lbl_image": "Attach Screenshot / Image (Optional):",
+            "placeholder_image": "No file selected..."
         },
         "unlink": {
             "title": "Unlink Account",

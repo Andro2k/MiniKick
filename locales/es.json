@@ -470,7 +470,9 @@
             "success_title": "Reporte Enviado",
             "success_msg": "Gracias por reportar el problema.",
             "btn_send": "Enviar Reporte",
-            "btn_sending": "Enviando..."
+            "btn_sending": "Enviando...",
+            "lbl_image": "Adjuntar Captura / Imagen (Opcional):",
+            "placeholder_image": "Ningún archivo seleccionado..."
         },
         "unlink": {
             "title": "Desvincular Cuenta",

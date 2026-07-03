@@ -68,8 +68,8 @@ class SliderRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_TEXT_PRIMARY, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(6)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(3)
 
         header_row = QHBoxLayout()
         header_row.setSpacing(6)

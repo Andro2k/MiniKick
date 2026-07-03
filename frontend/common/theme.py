@@ -217,6 +217,30 @@ QSlider::groove:horizontal {{ border: none; height: 6px; background: {COLOR_BG_I
 QSlider::sub-page:horizontal {{ background: {COLOR_ACCENT}; border-radius: 3px; }}
 QSlider::handle:horizontal {{ background: {COLOR_ACCENT}; border: 1.5px solid {COLOR_ACCENT}; width: 14px; height: 14px; margin-top: -4px; margin-bottom: -4px; border-radius: 7px; }}
 QSlider::handle:horizontal:hover {{ background: {COLOR_WHITE}; border-color: {COLOR_ACCENT_HOVER}; }}
+
+/* --- 13. ESTADOS DESHABILITADOS --- */
+QPushButton:disabled,
+QPushButton[role="action_accent"]:disabled,
+QPushButton[role="action_outlined"]:disabled,
+QPushButton[role="action_danger_border"]:disabled,
+QPushButton[role="action_accent_border"]:disabled,
+QPushButton[role="action_neutral_border"]:disabled,
+QPushButton[role="btn_ghost"]:disabled {{
+    background-color: rgba(255, 255, 255, 0.02);
+    color: {COLOR_TEXT_MUTED};
+    border: 1.5px solid #202022;
+}}
+
+QLineEdit:disabled,
+QTextEdit:disabled,
+QComboBox:disabled,
+QSpinBox:disabled,
+QDoubleSpinBox:disabled,
+QCheckBox:disabled {{
+    background-color: rgba(255, 255, 255, 0.01);
+    color: {COLOR_TEXT_MUTED};
+    border-color: #202022;
+}}
 """
 
 GLOBAL_QSS = get_global_qss(13)

@@ -3,12 +3,14 @@
 import os
 from PySide6.QtWidgets import (
     QLabel, QLineEdit, 
-    QTextEdit, QCheckBox, QPushButton
+    QTextEdit, QCheckBox, QPushButton,
+    QHBoxLayout, QFileDialog
 )
 from PySide6.QtCore import Qt, QThread, Signal
 
 from frontend.dialogs.base_dialog import ModernModal
-from frontend.common.utils import get_assets_path
+from frontend.common.utils import get_assets_path, get_icon_colored
+from frontend.common.theme import COLOR_DANGER
 from backend.config.api_keys import DISCORD_WEBHOOK_URL
 from backend.config.version import APP_VERSION
 import requests
@@ -16,11 +18,12 @@ import requests
 class BugReportWorker(QThread):
     finished = Signal(bool, str)
 
-    def __init__(self, username: str, description: str, include_logs: bool, i18n):
+    def __init__(self, username: str, description: str, include_logs: bool, image_path: str, i18n):
         super().__init__()
         self.username = username
         self.description = description
         self.include_logs = include_logs
+        self.image_path = image_path
         self.i18n = i18n
 
     def run(self):
@@ -48,11 +51,25 @@ class BugReportWorker(QThread):
                 if os.path.exists(log_file_path):
                     try:
                         with open(log_file_path, "rb") as f:
-                            files = {
-                                "file": ("minikick.log", f.read(), "text/plain")
-                            }
+                            files["file"] = ("minikick.log", f.read(), "text/plain")
                     except Exception as e:
                         print(f"[BugReportWorker] Error leyendo archivo de log: {e}")
+
+            if self.image_path and os.path.exists(self.image_path):
+                try:
+                    filename = os.path.basename(self.image_path)
+                    mime_type = "image/png"
+                    if filename.lower().endswith((".jpg", ".jpeg")):
+                        mime_type = "image/jpeg"
+                    elif filename.lower().endswith(".gif"):
+                        mime_type = "image/gif"
+                    elif filename.lower().endswith(".webp"):
+                        mime_type = "image/webp"
+
+                    with open(self.image_path, "rb") as f:
+                        files["image"] = (filename, f.read(), mime_type)
+                except Exception as e:
+                    print(f"[BugReportWorker] Error leyendo archivo de imagen: {e}")
 
             if files:
                 resp = requests.post(DISCORD_WEBHOOK_URL, data=data, files=files, timeout=15)
@@ -76,7 +93,7 @@ class BugReportDialog(ModernModal):
             title=title, 
             icon_path=icon_path, 
             icon_bg_color="", 
-            width=460, 
+            width=500, 
             parent=parent
         )
         self.i18n = i18n
@@ -97,9 +114,35 @@ class BugReportDialog(ModernModal):
         self.txt_desc.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_desc"))
         self.txt_desc.setFixedHeight(120)
 
+        lbl_image = QLabel(self.i18n.get("dialogs.bug_report.lbl_image"))
+        lbl_image.setProperty("role", "body")
+
+        image_layout = QHBoxLayout()
+        self.txt_image_path = QLineEdit()
+        self.txt_image_path.setReadOnly(True)
+        self.txt_image_path.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_image"))
+        self.txt_image_path.setFixedHeight(32)
+
+        self.btn_browse_image = QPushButton(self.i18n.get("common.buttons.browse"))
+        self.btn_browse_image.setProperty("role", "action_outlined")
+        self.btn_browse_image.setFixedHeight(32)
+        self.btn_browse_image.clicked.connect(self._browse_image)
+
+        self.btn_clear_image = QPushButton()
+        self.btn_clear_image.setIcon(get_icon_colored("x.svg", COLOR_DANGER, size=16))
+        self.btn_clear_image.setProperty("role", "action_danger_border")
+        self.btn_clear_image.setFixedHeight(32)
+        self.btn_clear_image.setFixedWidth(32)
+        self.btn_clear_image.clicked.connect(self._clear_image)
+
+        image_layout.addWidget(self.txt_image_path, stretch=1)
+        image_layout.addWidget(self.btn_browse_image)
+        image_layout.addWidget(self.btn_clear_image)
+
         self.chk_logs = QCheckBox(self.i18n.get("dialogs.bug_report.chk_include_logs"))
         self.chk_logs.setChecked(True)
         self.chk_logs.setProperty("role", "checkbox")
+        
         self.lbl_error = QLabel()
         self.lbl_error.setStyleSheet("color: #EF4444; font-size: 11px;")
         self.lbl_error.setWordWrap(True)
@@ -109,6 +152,8 @@ class BugReportDialog(ModernModal):
         self.content_layout.addWidget(self.txt_username)
         self.content_layout.addWidget(lbl_desc)
         self.content_layout.addWidget(self.txt_desc)
+        self.content_layout.addWidget(lbl_image)
+        self.content_layout.addLayout(image_layout)
         self.content_layout.addWidget(self.chk_logs)
         self.content_layout.addWidget(self.lbl_error)
 
@@ -126,6 +171,19 @@ class BugReportDialog(ModernModal):
 
         self.add_action_buttons(self.btn_cancel, self.btn_send)
 
+    def _browse_image(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            self.i18n.get("common.buttons.browse"),
+            "",
+            "Image files (*.png *.jpg *.jpeg *.webp *.gif *.bmp)"
+        )
+        if file_path:
+            self.txt_image_path.setText(file_path)
+
+    def _clear_image(self):
+        self.txt_image_path.clear()
+
     def _on_send_clicked(self):
         desc = self.txt_desc.toPlainText().strip()
         if not desc:
@@ -140,6 +198,7 @@ class BugReportDialog(ModernModal):
             username=self.txt_username.text(),
             description=desc,
             include_logs=self.chk_logs.isChecked(),
+            image_path=self.txt_image_path.text(),
             i18n=self.i18n
         )
         self.worker.finished.connect(self._on_worker_finished)
@@ -151,6 +210,8 @@ class BugReportDialog(ModernModal):
         self.txt_username.setEnabled(not loading)
         self.txt_desc.setEnabled(not loading)
         self.chk_logs.setEnabled(not loading)
+        self.btn_browse_image.setEnabled(not loading)
+        self.btn_clear_image.setEnabled(not loading)
         
         if loading:
             self.btn_send.setText(self.i18n.get("dialogs.bug_report.btn_sending"))

@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QTextEdit, QSpinBox, QCheckBox,
-                               QWidget, QSizePolicy, QComboBox, QScrollArea, QFrame, QPushButton)
+                               QWidget, QSizePolicy, QComboBox, QScrollArea, QFrame)
 from PySide6.QtCore import Qt, QSize
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.controls_component import ModernButton

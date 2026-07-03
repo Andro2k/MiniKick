@@ -74,7 +74,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             
         row1.addWidget(self.combo_rewards, stretch=1)
         
-        self.btn_refresh = ModernButton("", role="action_outlined")
+        self.btn_refresh = ModernButton("", role="action_neutral_border")
         self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_TEXT_PRIMARY, 24))
         self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
         self.btn_refresh.clicked.connect(self._request_refresh)
@@ -92,7 +92,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.txt_file_path.setReadOnly(True)
         self.txt_file_path.setPlaceholderText(self.i18n.get("rewards.dialogs.wizard.step1.file_placeholder"))
         
-        self.btn_browse = ModernButton(self.i18n.get("common.buttons.browse"), role="action_outlined")
+        self.btn_browse = ModernButton(self.i18n.get("common.buttons.browse"), role="action_neutral_border")
         self.btn_browse.clicked.connect(self._browse_file)
         row2.addWidget(self.txt_file_path, stretch=1)
         row2.addWidget(self.btn_browse)
@@ -139,7 +139,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row_rnd.addWidget(self.chk_random_pos)
         row_rnd.addStretch()
         
-        self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_outlined")
+        self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_neutral_border")
         self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_TEXT_PRIMARY, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         row_rnd.addWidget(self.btn_visual)

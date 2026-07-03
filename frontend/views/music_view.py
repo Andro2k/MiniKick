@@ -61,8 +61,8 @@ class MusicView(QWidget):
         layout.setSpacing(6)
 
         self.combo_provider = QComboBox()
-        self.combo_provider.addItem("Spotify Premium", "spotify")
-        self.combo_provider.addItem("YouTube (Gratuito)", "youtube")
+        self.combo_provider.addItem("Spotify", "spotify")
+        self.combo_provider.addItem("YouTube", "youtube")
         
         self.combo_provider.currentIndexChanged.connect(
             lambda: self.provider_changed.emit(self.combo_provider.currentData())
@@ -82,7 +82,7 @@ class MusicView(QWidget):
         card.setProperty("role", "card")
         layout = QVBoxLayout(card)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
 
         status_layout = QHBoxLayout()
         self.lbl_provider_name = QLabel(self.i18n.get("music.provider.name"))
@@ -208,6 +208,7 @@ class MusicView(QWidget):
             self.lbl_provider_name.setText(self.i18n.get("music.provider.name"))
             self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
             self.btn_connect.setVisible(not connected)
+            self.btn_connect.setEnabled(not connected)
             self.btn_disconnect.setVisible(connected)
             self.card_cmds.setEnabled(connected)
             self.card_player.setVisible(connected)
