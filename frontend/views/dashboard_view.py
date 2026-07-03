@@ -1,11 +1,12 @@
 # frontend\views\dashboard_view.py
 
+import os
 from PySide6.QtWidgets import (QBoxLayout, QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap
+from PySide6.QtGui import QPixmap, QIcon
 
 from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
-from frontend.common.utils import create_circular_pixmap, get_icon_colored
+from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
 from frontend.widgets.blocks_component import StatCard, ViewHeader, SettingRow
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
@@ -60,6 +61,14 @@ class DashboardView(QWidget):
         self.banner_scopes.setVisible(False)
         self.main_layout.addWidget(self.banner_scopes)
         self._setup_connection_card()
+        
+        self.lbl_illustration = QLabel()
+        self.lbl_illustration.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_illustration.setScaledContents(True)
+        self._illustration_path = get_assets_path(os.path.join("icons", "install_small.svg"))
+        self.main_layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
+        self._refresh_illustration(260)
+        
         self._setup_profile_section()
 
         self.main_layout.addStretch()
@@ -181,18 +190,21 @@ class DashboardView(QWidget):
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(False)
             self.lbl_avatar.setPixmap(QPixmap())
+            self.lbl_illustration.setVisible(True)
         elif has_error:
             self.status_label.setText(f"{self.i18n.get('dashboard.connection.status_error')}: {error_msg}")
             self.status_label.setProperty("state", "error")
             self.btn_connect.setEnabled(True)
             self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_retry"))
             self.profile_container.setVisible(False)
+            self.lbl_illustration.setVisible(True)
         else:
             self.status_label.setText(self.i18n.get("dashboard.connection.status_connected"))
             self.status_label.setProperty("state", "normal")
             self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_active"))
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(True)
+            self.lbl_illustration.setVisible(False)
             
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
@@ -223,6 +235,7 @@ class DashboardView(QWidget):
         self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_connect"))
         self.profile_container.setVisible(False)
         self.lbl_avatar.setPixmap(QPixmap())
+        self.lbl_illustration.setVisible(True)
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
 
@@ -249,3 +262,16 @@ class DashboardView(QWidget):
                 cards = [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods]
                 for i, card in enumerate(cards):
                     self.stats_grid.addWidget(card, i // cols, i % cols)
+                    
+        if hasattr(self, "lbl_illustration") and self.lbl_illustration.isVisible():
+            size = min(max(self.height() - 250, 120), 300)
+            self._refresh_illustration(size)
+
+    def _refresh_illustration(self, width_size: int):
+        if os.path.exists(self._illustration_path):
+            icon = QIcon(self._illustration_path)
+            self.lbl_illustration.setPixmap(icon.pixmap(width_size, width_size))
+            self.lbl_illustration.setFixedSize(width_size, width_size)
+            self.lbl_illustration.setVisible(True)
+        else:
+            self.lbl_illustration.setVisible(False)

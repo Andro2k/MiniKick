@@ -473,6 +473,15 @@
         "sidebar": {
             "new_version": "New Version",
             "version": "Version {version}",
+            "section": {
+                "navigate": "Navigate",
+                "more": "More"
+            },
+            "profile": {
+                "offline_name": "No Connection",
+                "offline_status": "Offline",
+                "online_status": "Online"
+            },
             "tabs": {
                 "dashboard": "Dashboard",
                 "chat": "Chat",

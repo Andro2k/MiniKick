@@ -72,7 +72,7 @@ class ExpandableSettingCard(QFrame):
         b_layout.setContentsMargins(12, 12, 12, 12)
         b_layout.setSpacing(8)
         
-        lbl_gen = QLabel(self.i18n.get("spam.card.config_title") if self.i18n else "Configuration")
+        lbl_gen = QLabel(self.i18n.get("spam.card.config_title"))
         lbl_gen.setProperty("role", "h3")
         b_layout.addWidget(lbl_gen)
         
@@ -80,21 +80,17 @@ class ExpandableSettingCard(QFrame):
         row1.setSpacing(10)
         
         col_pen = QVBoxLayout()
-        lbl_pen = QLabel(self.i18n.get("spam.card.action") if self.i18n else "Action")
+        lbl_pen = QLabel(self.i18n.get("spam.card.action"))
         lbl_pen.setProperty("role", "subtitle")
         self.combo_penalty = QComboBox()
-        if self.i18n:
-            self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
-            self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
-        else:
-            self.combo_penalty.addItem("Timeout", "timeout")
-            self.combo_penalty.addItem("Delete", "delete")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
         self.combo_penalty.currentIndexChanged.connect(self._emit_update)
         col_pen.addWidget(lbl_pen)
         col_pen.addWidget(self.combo_penalty)
         
         col_dur = QVBoxLayout()
-        lbl_dur = QLabel(self.i18n.get("spam.card.duration") if self.i18n else "Duration")
+        lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
         lbl_dur.setProperty("role", "subtitle")
         self.spin_dur = QSpinBox()
         self.spin_dur.setRange(10, 86400)
@@ -108,17 +104,12 @@ class ExpandableSettingCard(QFrame):
         b_layout.addLayout(row1)
         
         col_exc = QVBoxLayout()
-        lbl_exc = QLabel(self.i18n.get("spam.card.exclude") if self.i18n else "Exclude")
+        lbl_exc = QLabel(self.i18n.get("spam.card.exclude"))
         lbl_exc.setProperty("role", "subtitle")
         self.combo_exclude = QComboBox()
-        if self.i18n:
-            self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_none"), "none")
-            self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
-            self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_sub"), "subscriber")
-        else:
-            self.combo_exclude.addItem("None", "none")
-            self.combo_exclude.addItem("Moderators", "moderator")
-            self.combo_exclude.addItem("Subscribers", "subscriber")
+        self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_none"), "none")
+        self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
+        self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_sub"), "subscriber")
         self.combo_exclude.currentIndexChanged.connect(self._emit_update)
         col_exc.addWidget(lbl_exc)
         col_exc.addWidget(self.combo_exclude)
@@ -126,7 +117,7 @@ class ExpandableSettingCard(QFrame):
         
         if self.has_amount:
             col_amt = QVBoxLayout()
-            lbl_amt = QLabel(self.i18n.get("spam.card.max_amount") if self.i18n else "Max Amount")
+            lbl_amt = QLabel(self.i18n.get("spam.card.max_amount"))
             lbl_amt.setProperty("role", "subtitle")
             self.spin_amt = QSpinBox()
             self.spin_amt.setRange(1, 500)

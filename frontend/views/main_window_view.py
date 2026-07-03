@@ -12,19 +12,19 @@ from backend.services.system.dashboard_service import AvatarService
 from backend.services.system.log_service import LogService
 from backend.services.system.settings_service import SettingsService
 from backend.services.chat.spam_service import SpamService
-from frontend.controllers.rewards_controller import RewardsController
+from backend.controllers.rewards_controller import RewardsController
 from frontend.navigation.sidebar_component import Sidebar
 from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
 
-from frontend.controllers.chat_controller import ChatController
-from frontend.controllers.command_controller import CommandController
-from frontend.controllers.dashboard_controller import DashboardController
-from frontend.controllers.log_controller import LogController
-from frontend.controllers.music_controller import MusicController
-from frontend.controllers.settings_controller import SettingsController
-from frontend.controllers.spam_controller import SpamController
-from frontend.controllers.update_controller import UpdateController
+from backend.controllers.chat_controller import ChatController
+from backend.controllers.command_controller import CommandController
+from backend.controllers.dashboard_controller import DashboardController
+from backend.controllers.log_controller import LogController
+from backend.controllers.music_controller import MusicController
+from backend.controllers.settings_controller import SettingsController
+from backend.controllers.spam_controller import SpamController
+from backend.controllers.update_controller import UpdateController
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
 from frontend.common.theme import COLOR_ACCENT, get_global_qss
@@ -230,6 +230,7 @@ class MainWindow(QMainWindow):
         )
         self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
         self.q_log_handler.emitter.log_received.connect(self.log_controller.process_incoming_log)
+        self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)
 
     def _load_settings_into_ui(self):
         self.rewards_controller.load_initial_data()
@@ -289,6 +290,11 @@ class MainWindow(QMainWindow):
     def _on_web_socket_connected(self, user_data):
         self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
         self.dashboard_controller.handle_connection_success(user_data)
+        
+        username = user_data.get("username", "Kick")
+        online_str = self.i18n.get("main.sidebar.profile.online_status")
+        self.sidebar.update_profile_info(username, online_str)
+
         msg = self.i18n.get("dashboard.status.connected_toast_msg").replace("{username}", user_data.get('username', 'Kick'))
         self.toast.show_toast(
             title=self.i18n.get("dashboard.status.connected"),
@@ -393,6 +399,7 @@ class MainWindow(QMainWindow):
 
             self.auth_manager.logout()
             self.dashboard_controller.reset_to_disconnected()
+            self.sidebar.reset_profile_info()
             
             self.view_chat.chat_display.clear()
             self._handle_navigation("Dashboard")

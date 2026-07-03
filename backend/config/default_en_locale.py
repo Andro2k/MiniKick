@@ -326,7 +326,9 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Let your viewers control the music stream using chat commands."
         },
         "provider": {
-            "name": "Spotify Audio Provider"
+            "name": "Spotify Audio Provider",
+            "select_title": "Music Provider",
+            "select_desc": "Select the service for chat song requests."
         },
         "btn": {
             "connect": "Connect Spotify",
@@ -337,13 +339,16 @@ DEFAULT_DICTIONARY = {
             "connecting": "Authorize in your browser...",
             "active": "Connected as",
             "session_remembered": "Broadcaster (Session remembered)",
-            "connected_user": "Broadcaster (Connected)"
+            "connected_user": "Broadcaster (Connected)",
+            "youtube_active": "YouTube Active"
         },
         "player": {
             "not_playing": "No song currently playing",
             "paused_title": "Player paused...",
             "paused_desc": "Open Spotify and press Play",
-            "unknown_song": "Unknown"
+            "unknown_song": "Unknown",
+            "volume_title": "Player Volume",
+            "volume_desc": "Adjust YouTube playback volume."
         },
         "cmds": {
             "title": "Viewer Commands",
@@ -373,7 +378,10 @@ DEFAULT_DICTIONARY = {
             "success": "🎵 Added to queue: {track}",
             "no_device": "❌ Error: Please open Spotify on your PC and play any track first.",
             "rejected": "❌ Spotify rejected the request: {status}",
-            "error": "❌ Internal Spotify error: {error}"
+            "error": "❌ Internal Spotify error: {error}",
+            "no_link": "❌ Could not retrieve video link.",
+            "searching": "🔍 Searching for '{query}' on YouTube...",
+            "processing_link": "🔍 Processing YouTube link..."
         },
         "errors": {
             "no_session": "No active Spotify session.",
@@ -467,6 +475,15 @@ DEFAULT_DICTIONARY = {
         "sidebar": {
             "new_version": "New Version",
             "version": "Version {version}",
+            "section": {
+                "navigate": "Navigate",
+                "more": "More"
+            },
+            "profile": {
+                "offline_name": "No Connection",
+                "offline_status": "Offline",
+                "online_status": "Online"
+            },
             "tabs": {
                 "dashboard": "Dashboard",
                 "chat": "Chat",

@@ -12,6 +12,7 @@ from frontend.common.utils import resource_path
 from backend.services.system.instance_services import SocketInstanceProvider
 from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.core.app_container_core import AppContainer
+from backend.config.version import APP_VERSION
 
 
 def _get_safe_i18n():
@@ -49,7 +50,6 @@ def bootstrap():
 
     try:
         app.setQuitOnLastWindowClosed(False)
-        APP_VERSION = "v1.3.2"
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()    
         updater = UpdateManager(
