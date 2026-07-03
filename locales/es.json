@@ -415,13 +415,17 @@
         "stats": {
             "followers": "Seguidores",
             "room_id": "ChatID",
-            "category": "Última Categoría",
+                    "category": "Última Categoría",
             "affiliate": "Estado Afiliado",
             "vods": "VODs"
         },
         "status": {
             "connected": "Conectado",
             "connected_toast_msg": "Canal enlazado: {username}"
+        },
+        "empty": {
+            "title": "¡Comencemos!",
+            "desc": "Conecta tu cuenta de Kick para sincronizar el bot, ver tus estadísticas en tiempo real y gestionar el chat."
         }
     },
     "dialogs": {

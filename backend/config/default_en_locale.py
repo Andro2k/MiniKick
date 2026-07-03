@@ -424,6 +424,10 @@ DEFAULT_DICTIONARY = {
         "status": {
             "connected": "Connected",
             "connected_toast_msg": "Channel linked: {username}"
+        },
+        "empty": {
+            "title": "Let's get started!",
+            "desc": "Connect your Kick account to sync the bot, view real-time statistics, and manage your chat."
         }
     },
     "dialogs": {

@@ -62,11 +62,34 @@ class DashboardView(QWidget):
         self.main_layout.addWidget(self.banner_scopes)
         self._setup_connection_card()
         
+        self.disconnected_container = QWidget()
+        disconnected_layout = QVBoxLayout(self.disconnected_container)
+        disconnected_layout.setContentsMargins(24, 24, 24, 24)
+        disconnected_layout.setSpacing(12)
+        disconnected_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
         self.lbl_illustration = QLabel()
         self.lbl_illustration.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_illustration.setScaledContents(True)
         self._illustration_path = get_assets_path(os.path.join("icons", "install_small.svg"))
-        self.main_layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        self.lbl_disconnected_title = QLabel(self.i18n.get("dashboard.empty.title"))
+        self.lbl_disconnected_title.setProperty("role", "h2")
+        self.lbl_disconnected_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.lbl_disconnected_desc = QLabel(self.i18n.get("dashboard.empty.desc"))
+        self.lbl_disconnected_desc.setProperty("role", "body")
+        self.lbl_disconnected_desc.setWordWrap(True)
+        self.lbl_disconnected_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_disconnected_desc.setMaximumWidth(450)
+        
+        disconnected_layout.addStretch(1)
+        disconnected_layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
+        disconnected_layout.addWidget(self.lbl_disconnected_title)
+        disconnected_layout.addWidget(self.lbl_disconnected_desc)
+        disconnected_layout.addStretch(2)
+        
+        self.main_layout.addWidget(self.disconnected_container, stretch=1)
         self._refresh_illustration(260)
         
         self._setup_profile_section()
@@ -190,21 +213,21 @@ class DashboardView(QWidget):
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(False)
             self.lbl_avatar.setPixmap(QPixmap())
-            self.lbl_illustration.setVisible(True)
+            self.disconnected_container.setVisible(True)
         elif has_error:
             self.status_label.setText(f"{self.i18n.get('dashboard.connection.status_error')}: {error_msg}")
             self.status_label.setProperty("state", "error")
             self.btn_connect.setEnabled(True)
             self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_retry"))
             self.profile_container.setVisible(False)
-            self.lbl_illustration.setVisible(True)
+            self.disconnected_container.setVisible(True)
         else:
             self.status_label.setText(self.i18n.get("dashboard.connection.status_connected"))
             self.status_label.setProperty("state", "normal")
             self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_active"))
             self.btn_connect.setEnabled(False)
             self.profile_container.setVisible(True)
-            self.lbl_illustration.setVisible(False)
+            self.disconnected_container.setVisible(False)
             
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
@@ -235,7 +258,7 @@ class DashboardView(QWidget):
         self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_connect"))
         self.profile_container.setVisible(False)
         self.lbl_avatar.setPixmap(QPixmap())
-        self.lbl_illustration.setVisible(True)
+        self.disconnected_container.setVisible(True)
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
 
@@ -263,8 +286,8 @@ class DashboardView(QWidget):
                 for i, card in enumerate(cards):
                     self.stats_grid.addWidget(card, i // cols, i % cols)
                     
-        if hasattr(self, "lbl_illustration") and self.lbl_illustration.isVisible():
-            size = min(max(self.height() - 250, 120), 300)
+        if hasattr(self, "disconnected_container") and self.disconnected_container.isVisible():
+            size = min(max(self.height() - 320, 120), 300)
             self._refresh_illustration(size)
 
     def _refresh_illustration(self, width_size: int):
