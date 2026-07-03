@@ -58,7 +58,7 @@ class RewardsView(QWidget):
         obs_layout = QVBoxLayout(obs_card)
         obs_layout.setContentsMargins(8, 8, 8, 8)
 
-        self.btn_copy_url = ModernButton(self.i18n.get("rewards.obs.btn_copy"), role="action_neutral_border")
+        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(

@@ -43,7 +43,7 @@ class UpdateController(QObject):
                 if success:
                     dialog.show_complete()
                 else:
-                    error_msg = self.i18n.get("main.dialogs.update.msg_unexpected_error")
+                    error_msg = self.i18n.get("dialogs.update.msg_unexpected_error")
                     dialog.show_error(error_msg)
                     
             self.download_worker.finished.connect(on_download_finished)

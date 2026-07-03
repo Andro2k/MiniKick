@@ -41,7 +41,7 @@ class VisualPositionerDialog(ModernModal):
         
         self.content_layout.addWidget(self.canvas_container, alignment=Qt.AlignmentFlag.AlignCenter)
         
-        self.btn_save = ModernButton(self.i18n.get("rewards.dialogs.visual.btn_save"), role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("common.buttons.save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
 
         self.add_action_buttons(None, self.btn_save)

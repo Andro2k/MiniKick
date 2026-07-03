@@ -112,7 +112,7 @@ class BugReportDialog(ModernModal):
         self.content_layout.addWidget(self.chk_logs)
         self.content_layout.addWidget(self.lbl_error)
 
-        self.btn_cancel = QPushButton(self.i18n.get("dialogs.bug_report.btn_cancel"))
+        self.btn_cancel = QPushButton(self.i18n.get("common.buttons.cancel"))
         self.btn_cancel.setProperty("role", "action_outlined")
         self.btn_cancel.setFixedHeight(36)
         self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)

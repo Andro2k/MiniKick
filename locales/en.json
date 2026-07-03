@@ -1,4 +1,40 @@
 {
+    "common": {
+        "buttons": {
+            "cancel": "Cancel",
+            "save": "Save",
+            "back": "Back",
+            "next": "Next",
+            "continue": "Continue",
+            "close": "Close",
+            "exit": "Exit",
+            "understood": "Understood",
+            "export": "Export",
+            "import": "Import",
+            "unlink": "Unlink",
+            "update": "Check for updates",
+            "browse": "Browse",
+            "copy": "Copy Link",
+            "add": "Add",
+            "connect": "Connect Spotify",
+            "disconnect": "Disconnect",
+            "report_bug": "Report Bug"
+        },
+        "status": {
+            "online": "Online",
+            "offline": "Offline",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "active": "Active",
+            "inactive": "Inactive",
+            "yes": "Yes",
+            "no": "No",
+            "searching": "Searching...",
+            "loading": "Loading...",
+            "error": "Error",
+            "success": "Success"
+        }
+    },
     "settings": {
         "header": {
             "title": "General Settings",
@@ -11,7 +47,6 @@
             "lang_desc": "Select the interface language (requires restart).",
             "update_title": "Software Updates",
             "update_desc": "Check for and install new MiniKick versions.",
-            "btn_update": "Check for updates",
             "font_title": "Global Font Size",
             "font_desc": "Scale the interface text size across the entire application.",
             "font_size_small": "Small (11px)",
@@ -21,23 +56,15 @@
         },
         "backup": {
             "title": "Configuration Backup",
-            "desc": "Export or import your rewards, voices, and general settings.",
-            "btn_export": "Export",
-            "btn_import": "Import"
+            "desc": "Export or import your rewards, voices, and general settings."
         },
         "account": {
             "title": "Unlink Account",
-            "desc": "Close the current session. You will need to re-authorize MiniKick next time.",
-            "btn_unlink": "Unlink"
+            "desc": "Close the current session. You will need to re-authorize MiniKick next time."
         },
         "feedback": {
             "title": "Support and Bug Reporting",
-            "desc": "Found a bug or want to share feedback? Send us a direct report.",
-            "btn_report": "Report Bug"
-        },
-        "dialogs": {
-            "export_title": "Export Configuration",
-            "import_title": "Import Configuration"
+            "desc": "Found a bug or want to share feedback? Send us a direct report."
         },
         "status": {
             "tray_enabled": "Background Execution On",
@@ -52,9 +79,6 @@
             "lang_changed_msg": "Please restart the application to apply the new language.",
             "unlinked": "Account Unlinked",
             "unlinked_msg": "Your local Kick session has been closed.",
-            "error_title": "Operation Failed",
-            "export_error": "Could not save the backup file.",
-            "import_error": "The backup file is corrupted or incompatible.",
             "font_size_changed": "UI Scaled",
             "font_size_changed_msg": "Global text size applied: {size}px"
         }
@@ -141,8 +165,6 @@
             "regex_help": "If you enable RegEx, the bot will search for this pattern anywhere in the message.",
             "tab_basic": "Basic",
             "tab_advanced": "Advanced",
-            "btn_save": "Save Command",
-            "btn_cancel": "Cancel",
             "regex_helper_title": "RegEx Guide",
             "regex_helper_cat_syntax": "Syntax & Classes",
             "regex_helper_cat_quantifiers": "Quantifiers",
@@ -184,8 +206,7 @@
         "obs": {
             "title": "OBS Browser Source",
             "desc": "Copy this link and paste it into your broadcasting software (Recommended resolution: 1920x1080).",
-            "copied": "Link Copied!",
-            "btn_copy": "Copy Link"
+            "copied": "Link Copied!"
         },
         "table": {
             "title": "Linked Rewards",
@@ -201,16 +222,11 @@
         "dialogs": {
             "visual": {
                 "title": "Visual Positioner (1920x1080)",
-                "desc": "Drag your rewards. When you release it, a preview will be shown in OBS.",
-                "btn_save": "Save and Close"
+                "desc": "Drag your rewards. When you release it, a preview will be shown in OBS."
             },
             "wizard": {
                 "title_edit": "Edit Rewards",
                 "title_new": "New Rewards",
-                "btn_cancel": "Cancel",
-                "btn_next": "Next",
-                "btn_back": "Back",
-                "btn_save": "Save Rewards",
                 "file_dialog_title": "Multimedia",
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
                 "step1": {
@@ -221,7 +237,6 @@
                     "tooltip_refresh": "Refresh Kick Rewards",
                     "file_label": "Multimedia File",
                     "file_placeholder": "Ex. your_rewards.mp4 or sound.mp3",
-                    "btn_browse": "Browse",
                     "no_rewards": "No rewards",
                     "no_available": "No available rewards"
                 },
@@ -313,8 +328,7 @@
         },
         "bots": {
             "title": "Muted Users",
-            "input_placeholder": "ex. botrix",
-            "btn_add": "Add"
+            "input_placeholder": "ex. botrix"
         },
         "display": {
             "title": "Room History"
@@ -335,17 +349,11 @@
             "select_title": "Music Provider",
             "select_desc": "Select the service for chat song requests."
         },
-        "btn": {
-            "connect": "Connect Spotify",
-            "disconnect": "Disconnect"
-        },
         "status": {
-            "disconnected": "Disconnected",
-            "connecting": "Authorize in your browser...",
-            "active": "Connected as",
             "session_remembered": "Broadcaster (Session remembered)",
             "connected_user": "Broadcaster (Connected)",
-            "youtube_active": "YouTube Active"
+            "youtube_active": "YouTube Active",
+            "connecting": "Authorize in your browser..."
         },
         "player": {
             "not_playing": "No song currently playing",
@@ -425,7 +433,6 @@
             "status_waiting": "Status: Waiting for connection...",
             "status_auth": "Status: Authenticating...",
             "status_connected": "Status: Connected and Listening",
-            "status_error": "Error",
             "btn_connect": "Connect to Kick",
             "btn_active": "System Active",
             "btn_retry": "Retry"
@@ -438,7 +445,6 @@
             "vods": "VODs"
         },
         "status": {
-            "connected": "Connected",
             "connected_toast_msg": "Channel linked: {username}"
         },
         "empty": {
@@ -447,68 +453,59 @@
         }
     },
     "dialogs": {
-        "confirm": {
-            "btn_continue": "Continue",
-            "btn_cancel": "Cancel"
-        },
         "wizard": {
-            "step_indicator": "Step {current}/{total}",
-            "btn_cancel": "Cancel",
-            "btn_back": "Back",
-            "btn_next": "Next",
-            "btn_save": "Save"
+            "step_indicator": "Step {current}/{total}"
         },
         "bug_report": {
             "lbl_contact": "Contact (Discord, Email, etc. - Optional):",
             "lbl_description": "Problem Description (Required):",
             "chk_include_logs": "Include diagnostic logs (minikick.log)",
-            "btn_cancel": "Cancel",
-            "btn_send": "Send Report",
-            "btn_sending": "Sending...",
-            "success_title": "Report Sent",
-            "success_msg": "Thank you for reporting this issue.",
             "placeholder_contact": "Your username or contact...",
             "placeholder_desc": "Explain what you were doing and what error occurred...",
             "err_empty_desc": "Description cannot be empty.",
             "err_no_webhook": "Discord webhook is not configured by the developer.",
             "success_send": "Report sent successfully.",
             "err_discord": "Discord error: Code {code}",
-            "err_send": "Error sending: {error}"
+            "err_send": "Error sending: {error}",
+            "success_title": "Report Sent",
+            "success_msg": "Thank you for reporting this issue.",
+            "btn_send": "Send Report",
+            "btn_sending": "Sending..."
+        },
+        "unlink": {
+            "title": "Unlink Account",
+            "desc": "Are you sure you want to log out? You will need to re-authorize MiniKick next time."
+        },
+        "close": {
+            "title": "Close MiniKick",
+            "desc": "Are you sure you want to exit the application? The bot will stop listening to the chat."
+        },
+        "already_running": {
+            "title": "MiniKick is Already Running",
+            "desc": "The broadcasting controller is already operating in the background. Please check the Windows system tray (next to the clock) to access the dashboard."
+        },
+        "update": {
+            "top_searching": "Searching...",
+            "title_default": "System Update",
+            "subtitle_connecting": "Connecting to the server...",
+            "lbl_progress": "Progress",
+            "btn_restart": "Restart now",
+            "btn_close": "Close",
+            "top_available": "Version {version} available",
+            "subtitle_restart_req": "A restart is required to complete the installation.",
+            "btn_download": "Download now",
+            "subtitle_downloading": "Downloading the new version...",
+            "btn_downloading": "Downloading...",
+            "title_completed": "Update completed",
+            "subtitle_installed": "Version {version} installed.",
+            "title_up_to_date": "System Up to Date",
+            "subtitle_up_to_date": "Your system version is already the latest available.",
+            "top_error": "Update Error",
+            "title_error": "Download failed",
+            "msg_unexpected_error": "Unexpected failure downloading the file."
         }
     },
     "main": {
-        "dialogs": {
-            "unlink_title": "Unlink Account",
-            "unlink_desc": "Are you sure you want to log out? You will need to re-authorize MiniKick next time.",
-            "close_title": "Close MiniKick",
-            "close_desc": "Are you sure you want to exit the application? The bot will stop listening to the chat.",
-            "update": {
-                "top_searching": "Searching...",
-                "title_default": "System Update",
-                "subtitle_connecting": "Connecting to the server...",
-                "lbl_progress": "Progress",
-                "btn_restart": "Restart now",
-                "btn_close": "Close",
-                "top_available": "Version {version} available",
-                "subtitle_restart_req": "A restart is required to complete the installation.",
-                "btn_download": "Download now",
-                "subtitle_downloading": "Downloading the new version...",
-                "btn_downloading": "Downloading...",
-                "title_completed": "Update completed",
-                "subtitle_installed": "Version {version} installed.",
-                "title_up_to_date": "System Up to Date",
-                "subtitle_up_to_date": "Your system version is already the latest available.",
-                "top_error": "Update Error",
-                "title_error": "Download failed",
-                "msg_unexpected_error": "Unexpected failure downloading the file."
-            },
-            "already_running": {
-                "title": "MiniKick is Already Running",
-                "desc": "The broadcasting controller is already operating in the background. Please check the Windows system tray (next to the clock) to access the dashboard.",
-                "btn_exit": "Exit",
-                "btn_understood": "Understood"
-            }
-        },
         "sidebar": {
             "new_version": "New Version",
             "version": "Version {version}",
@@ -517,9 +514,7 @@
                 "more": "More"
             },
             "profile": {
-                "offline_name": "No Connection",
-                "offline_status": "Offline",
-                "online_status": "Online"
+                "offline_name": "No Connection"
             },
             "tabs": {
                 "dashboard": "Dashboard",
@@ -536,8 +531,6 @@
             "open_panel": "Open Panel",
             "read_chat": "Read chat aloud",
             "close_app": "Close MiniKick",
-            "tts_on": "Enabled",
-            "tts_off": "Muted",
             "tts_msg": "Chat reading: {estado}",
             "bg_title": "MiniKick in background",
             "bg_desc": "I will keep reading the chat for you. Double click to return."
@@ -548,25 +541,19 @@
                 "no_bio": "No description",
                 "none": "None",
                 "affiliate": "Affiliate",
-                "not_affiliate": "Not Affiliate",
-                "yes": "Yes",
-                "no": "No"
+                "not_affiliate": "Not Affiliate"
             },
             "log": {
-                "error_title": "Error",
                 "read_error": "Could not read the file: {error}",
                 "folder_error": "Could not open the folder: {error}"
             },
             "settings": {
                 "export_success_title": "Export successful",
                 "export_success_desc": "Your settings have been saved.",
-                "error_title": "Error",
                 "export_error_desc": "Failed to export the file.",
                 "import_success_title": "Import successful",
                 "import_success_desc": "Your settings have been restored.",
-                "import_error_desc": "The file is corrupt or invalid.",
-                "restart_title": "Restart Required",
-                "restart_desc": "Please close and reopen MiniKick to apply the new language."
+                "import_error_desc": "The file is corrupt or invalid."
             },
             "chat": {
                 "voice_updated": "Voice updated."

@@ -92,7 +92,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.txt_file_path.setReadOnly(True)
         self.txt_file_path.setPlaceholderText(self.i18n.get("rewards.dialogs.wizard.step1.file_placeholder"))
         
-        self.btn_browse = ModernButton(self.i18n.get("rewards.dialogs.wizard.step1.btn_browse"), role="action_outlined")
+        self.btn_browse = ModernButton(self.i18n.get("common.buttons.browse"), role="action_outlined")
         self.btn_browse.clicked.connect(self._browse_file)
         row2.addWidget(self.txt_file_path, stretch=1)
         row2.addWidget(self.btn_browse)

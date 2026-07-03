@@ -88,17 +88,17 @@ class MusicView(QWidget):
         self.lbl_provider_name = QLabel(self.i18n.get("music.provider.name"))
         self.lbl_provider_name.setProperty("role", "h2")
         
-        self.lbl_auth_status = QLabel(self.i18n.get("music.status.disconnected"))
+        self.lbl_auth_status = QLabel(self.i18n.get("common.status.disconnected"))
         self.lbl_auth_status.setProperty("role", "body")
         
         provider_info = QVBoxLayout()
         provider_info.addWidget(self.lbl_provider_name)
         provider_info.addWidget(self.lbl_auth_status)
 
-        self.btn_connect = ModernButton(self.i18n.get("music.btn.connect"), role="action_accent")
+        self.btn_connect = ModernButton(self.i18n.get("common.buttons.connect"), role="action_accent")
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
-        self.btn_disconnect = ModernButton(self.i18n.get("music.btn.disconnect"), role="action_danger_border")
+        self.btn_disconnect = ModernButton(self.i18n.get("common.buttons.disconnect"), role="action_danger_border")
         self.btn_disconnect.setVisible(False)
         self.btn_disconnect.clicked.connect(self.disconnect_requested.emit)
 
@@ -203,7 +203,7 @@ class MusicView(QWidget):
             self.card_player.setVisible(True)
             self.row_vol.setVisible(True)
             translated_label = self.i18n.get("music.status.youtube_active")
-            self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
+            self.lbl_auth_status.setText(f"{self.i18n.get('common.status.active')}: {translated_label}")
         else:
             self.lbl_provider_name.setText(self.i18n.get("music.provider.name"))
             self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
@@ -215,9 +215,9 @@ class MusicView(QWidget):
 
             if connected:
                 translated_label = self.i18n.get(label_key) or label_key
-                self.lbl_auth_status.setText(f"{self.i18n.get('music.status.active')}: {translated_label}")
+                self.lbl_auth_status.setText(f"{self.i18n.get('common.status.active')}: {translated_label}")
             else:
-                self.lbl_auth_status.setText(self.i18n.get("music.status.disconnected"))
+                self.lbl_auth_status.setText(self.i18n.get("common.status.disconnected"))
 
     def update_current_song(self, song_data: dict | None):
         if not song_data:

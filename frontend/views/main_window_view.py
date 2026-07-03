@@ -292,12 +292,12 @@ class MainWindow(QMainWindow):
         self.dashboard_controller.handle_connection_success(user_data)
         
         username = user_data.get("username", "Kick")
-        online_str = self.i18n.get("main.sidebar.profile.online_status")
+        online_str = self.i18n.get("common.status.online")
         self.sidebar.update_profile_info(username, online_str)
 
         msg = self.i18n.get("dashboard.status.connected_toast_msg").replace("{username}", user_data.get('username', 'Kick'))
         self.toast.show_toast(
-            title=self.i18n.get("dashboard.status.connected"),
+            title=self.i18n.get("common.status.connected"),
             message=msg,
             state="success"
         )
@@ -382,8 +382,8 @@ class MainWindow(QMainWindow):
         dialog = ModernConfirmDialog(
             self.i18n,
             self, 
-            title_text=self.i18n.get("main.dialogs.unlink_title"), 
-            body_text=self.i18n.get("main.dialogs.unlink_desc")
+            title_text=self.i18n.get("dialogs.unlink.title"), 
+            body_text=self.i18n.get("dialogs.unlink.desc")
         )
         
         if dialog.exec() == dialog.DialogCode.Accepted:
@@ -484,8 +484,8 @@ class MainWindow(QMainWindow):
             dialog = ModernConfirmDialog(
                 self.i18n,
                 parent=None, 
-                title_text=self.i18n.get("main.dialogs.close_title"), 
-                body_text=self.i18n.get("main.dialogs.close_desc")
+                title_text=self.i18n.get("dialogs.close.title"), 
+                body_text=self.i18n.get("dialogs.close.desc")
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
                 event.accept() 

@@ -37,7 +37,7 @@ class DashboardController(QObject):
         affiliate_text = self.view.i18n.get("main.controllers.dashboard.affiliate") if is_affiliate else self.view.i18n.get("main.controllers.dashboard.not_affiliate")
         
         vods_enabled = user_data.get("vod_enabled", False)
-        vods_text = self.view.i18n.get("main.controllers.dashboard.yes") if vods_enabled else self.view.i18n.get("main.controllers.dashboard.no")
+        vods_text = self.view.i18n.get("common.status.yes") if vods_enabled else self.view.i18n.get("common.status.no")
 
         self.view.update_stats(followers_str, room_str, category, affiliate_text, vods_text)
         avatar_url = user_data.get("avatar_url", "")

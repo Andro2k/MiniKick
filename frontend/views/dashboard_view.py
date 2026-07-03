@@ -215,7 +215,7 @@ class DashboardView(QWidget):
             self.lbl_avatar.setPixmap(QPixmap())
             self.disconnected_container.setVisible(True)
         elif has_error:
-            self.status_label.setText(f"{self.i18n.get('dashboard.connection.status_error')}: {error_msg}")
+            self.status_label.setText(f"{self.i18n.get('common.status.error')}: {error_msg}")
             self.status_label.setProperty("state", "error")
             self.btn_connect.setEnabled(True)
             self.btn_connect.setText(self.i18n.get("dashboard.connection.btn_retry"))

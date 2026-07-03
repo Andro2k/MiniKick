@@ -95,7 +95,7 @@ class SettingsView(QWidget):
             right_widget=self.sw_start_bg
         )
 
-        self.btn_update = ModernButton(self.i18n.get("settings.system.btn_update"), role="action_accent")
+        self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_accent")
         self.btn_update.clicked.connect(self.update_clicked.emit)
 
         row_update = SettingRow(
@@ -122,8 +122,8 @@ class SettingsView(QWidget):
         btn_layout.setContentsMargins(0, 0, 0, 0) 
         btn_layout.setSpacing(8)
         
-        self.btn_export = ModernButton(self.i18n.get("settings.backup.btn_export"), role="action_neutral_border")
-        self.btn_import = ModernButton(self.i18n.get("settings.backup.btn_import"), role="action_neutral_border")
+        self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_neutral_border")
+        self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_neutral_border")
         
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
@@ -147,7 +147,7 @@ class SettingsView(QWidget):
         account_layout.setContentsMargins(8, 8, 8, 8)
         account_layout.setSpacing(6)
 
-        self.btn_unlink = ModernButton(self.i18n.get("settings.account.btn_unlink"), role="action_danger_border")
+        self.btn_unlink = ModernButton(self.i18n.get("common.buttons.unlink"), role="action_danger_border")
         self.btn_unlink.clicked.connect(self.unlink_clicked.emit)
         
         row_unlink = SettingRow(
@@ -168,7 +168,7 @@ class SettingsView(QWidget):
         feedback_layout.setContentsMargins(8, 8, 8, 8)
         feedback_layout.setSpacing(6)
 
-        self.btn_feedback = ModernButton(self.i18n.get("settings.feedback.btn_report"), role="action_accent")
+        self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_accent")
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
 
         row_feedback = SettingRow(

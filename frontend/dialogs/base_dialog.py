@@ -176,14 +176,14 @@ class ModernWizardPanel(ModernFramelessShell):
         self.main_content.setCurrentIndex(self.current_step)
         
         if self.current_step == 0:
-            self.btn_back.setText(self.i18n.get("dialogs.wizard.btn_cancel"))
+            self.btn_back.setText(self.i18n.get("common.buttons.cancel"))
         else:
-            self.btn_back.setText(self.i18n.get("dialogs.wizard.btn_back"))
+            self.btn_back.setText(self.i18n.get("common.buttons.back"))
             
         if self.current_step == self.total_steps - 1:
-            self.btn_next.setText(self.i18n.get("dialogs.wizard.btn_save"))
+            self.btn_next.setText(self.i18n.get("common.buttons.save"))
         else:
-            self.btn_next.setText(self.i18n.get("dialogs.wizard.btn_next"))
+            self.btn_next.setText(self.i18n.get("common.buttons.next"))
 
     def _go_back(self):
         if self.current_step == 0:
@@ -217,8 +217,8 @@ class ModernConfirmDialog(ModernModal):
         
         self.content_layout.addWidget(body_label)
         
-        btn_cancel = self._create_btn(i18n.get("dialogs.confirm.btn_cancel"), "action_outlined", self.reject)
-        btn_confirm = self._create_btn(i18n.get("dialogs.confirm.btn_continue"), "action_danger_border", self.accept)
+        btn_cancel = self._create_btn(i18n.get("common.buttons.cancel"), "action_outlined", self.reject)
+        btn_confirm = self._create_btn(i18n.get("common.buttons.continue"), "action_danger_border", self.accept)
 
         self.add_action_buttons(btn_cancel, btn_confirm, stretch_center=False)
 

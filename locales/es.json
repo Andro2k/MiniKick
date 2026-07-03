@@ -1,4 +1,40 @@
 {
+    "common": {
+        "buttons": {
+            "cancel": "Cancelar",
+            "save": "Guardar",
+            "back": "Atrás",
+            "next": "Siguiente",
+            "continue": "Continuar",
+            "close": "Cerrar",
+            "exit": "Salir",
+            "understood": "Entendido",
+            "export": "Exportar",
+            "import": "Importar",
+            "unlink": "Desvincular",
+            "update": "Buscar actualizaciones",
+            "browse": "Examinar",
+            "copy": "Copiar Enlace",
+            "add": "Añadir",
+            "connect": "Conectar Spotify",
+            "disconnect": "Desconectar",
+            "report_bug": "Reportar Bug"
+        },
+        "status": {
+            "online": "En Línea",
+            "offline": "Desconectado",
+            "connected": "Conectado",
+            "disconnected": "Desconectado",
+            "active": "Activo",
+            "inactive": "Inactivo",
+            "yes": "Sí",
+            "no": "No",
+            "searching": "Buscando...",
+            "loading": "Cargando...",
+            "error": "Error",
+            "success": "Éxito"
+        }
+    },
     "settings": {
         "header": {
             "title": "Configuración General",
@@ -11,7 +47,6 @@
             "lang_desc": "Selecciona el idioma de la interfaz (requiere reiniciar).",
             "update_title": "Actualizaciones de Software",
             "update_desc": "Buscar e instalar nuevas versiones de MiniKick.",
-            "btn_update": "Buscar actualizaciones",
             "font_title": "Tamaño de Fuente Global",
             "font_desc": "Escala el tamaño del texto en toda la interfaz de la aplicación.",
             "font_size_small": "Pequeño (11px)",
@@ -21,23 +56,15 @@
         },
         "backup": {
             "title": "Respaldo de Configuración",
-            "desc": "Exporta o importa tus recompesas, voces y ajustes generales.",
-            "btn_export": "Exportar",
-            "btn_import": "Importar"
+            "desc": "Exporta o importa tus recompensas, voces y ajustes generales."
         },
         "account": {
             "title": "Desvincular Cuenta",
-            "desc": "Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez.",
-            "btn_unlink": "Desvincular"
+            "desc": "Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez."
         },
         "feedback": {
             "title": "Soporte y Reporte de Bugs",
-            "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo.",
-            "btn_report": "Reportar Bug"
-        },
-        "dialogs": {
-            "export_title": "Exportar Configuración",
-            "import_title": "Importar Configuración"
+            "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo."
         },
         "status": {
             "tray_enabled": "Segundo Plano Activo",
@@ -52,9 +79,6 @@
             "lang_changed_msg": "Reinicia la aplicación para aplicar el nuevo idioma.",
             "unlinked": "Cuenta Desvinculada",
             "unlinked_msg": "Se ha cerrado tu sesión de Kick local.",
-            "error_title": "Operación Fallida",
-            "export_error": "No se pudo guardar el archivo de respaldo.",
-            "import_error": "El archivo de respaldo está corrupto o es incompatible.",
             "font_size_changed": "Interfaz Escalada",
             "font_size_changed_msg": "Tamaño global aplicado: {size}px"
         }
@@ -65,14 +89,14 @@
             "subtitle": "Usa estos filtros para mantener tu chat amigable, divertido y libre de toxicidad."
         },
         "card": {
-            "config_title": "Configuración de Penalización",
+            "config_title": "Configuración de Sanción",
             "action": "Acción",
-            "action_timeout": "Timeout al usuario",
-            "action_delete": "Borrar mensaje (Delete)",
+            "action_timeout": "Silenciar usuario",
+            "action_delete": "Eliminar mensaje",
             "duration": "Duración (segundos)",
-            "exclude": "Excluir rango (Inmunes)",
+            "exclude": "Excluir rango (Inmune)",
             "exclude_none": "Ninguno",
-            "exclude_mod": "Moderadores y Broadcaster",
+            "exclude_mod": "Moderadores y Streamer",
             "exclude_sub": "Suscriptores y VIPs",
             "max_amount": "Cantidad máxima permitida"
         },
@@ -82,7 +106,7 @@
                 "desc": "Elimina mensajes con una cantidad excesiva de letras mayúsculas."
             },
             "link": {
-                "title": "Protección de Links",
+                "title": "Protección de Enlaces",
                 "desc": "Elimina mensajes que contengan enlaces no autorizados."
             },
             "emote": {
@@ -90,30 +114,30 @@
                 "desc": "Elimina mensajes que abusen de la cantidad de emotes."
             },
             "paragraph": {
-                "title": "Muros de Texto",
+                "title": "Bloques de Texto (Walls of Text)",
                 "desc": "Bloquea mensajes excesivamente largos (Muchos caracteres)."
             },
             "symbol": {
                 "title": "Protección de Símbolos",
-                "desc": "Elimina mensajes con un uso excesivo de símbolos (Ej: @#!%)."
+                "desc": "Elimina mensajes con uso excesivo de símbolos (Ej: @#!%)."
             },
             "repetition": {
                 "title": "Protección de Repetición",
-                "desc": "Penaliza mensajes duplicados y el uso excesivo de la misma palabra en un solo mensaje."
+                "desc": "Penaliza mensajes duplicados y el uso excesivo de la misma palabra."
             }
         }
     },
     "command": {
         "header": {
-            "title": "Triggers y Respuestas de Comandos",
-            "subtitle": "Vincula comandos de chat o expresiones regulares a respuestas automatizadas del bot."
+            "title": "Disparadores y Respuestas de Comandos",
+            "subtitle": "Vincula comandos de chat o expresiones regulares con respuestas automáticas del bot."
         },
         "table": {
             "title": "Comandos Vinculados",
             "search_placeholder": "Buscar comando vinculado...",
             "btn_new": "Nuevo Comando",
             "col_command": "Comando",
-            "col_aliases": "Aliases / Regex",
+            "col_aliases": "Alias / Regex",
             "col_permission": "Nivel de Acceso",
             "col_actions": "Acciones",
             "regex_prefix": "Regex",
@@ -123,34 +147,32 @@
         "dialog": {
             "title": "Configurar Comando",
             "subtitle": "Crea o edita comandos personalizados para tu chat.",
-            "trigger_label": "Nombre del Comando (Ej: !discord):",
+            "trigger_label": "Nombre del comando (Ej: !discord):",
             "response_label": "Respuesta del bot (puedes usar {user}):",
-            "cooldown_label": "Cooldown (seg):",
+            "cooldown_label": "Enfriamiento (seg):",
             "permission_label": "Permiso Mínimo:",
             "perm_everyone": "Todos",
             "perm_subscriber": "Suscriptor",
             "perm_vip": "VIP",
             "perm_moderator": "Moderador",
-            "perm_broadcaster": "Broadcaster",
+            "perm_broadcaster": "Streamer",
             "active_checkbox": "Comando Activo",
-            "aliases_label": "Aliases Estándar (separados por coma):",
-            "aliases_placeholder": "!dc, !discordia",
-            "regex_checkbox": "Usar RegEx (Ignora Prefijos y Aliases)",
+            "aliases_label": "Alias Estándar (separados por coma):",
+            "aliases_placeholder": "!dc, !servidor discord",
+            "regex_checkbox": "Usar RegEx (Ignora Prefijos y Alias)",
             "regex_label": "Sintaxis de Expresión Regular:",
             "regex_placeholder": "Ej: \\b(hola|buenas)\\b",
-            "regex_help": "Si activas RegEx, el bot buscará este patrón en todo el mensaje.",
+            "regex_help": "Si activas RegEx, el bot buscará este patrón en cualquier parte del mensaje.",
             "tab_basic": "Básico",
             "tab_advanced": "Avanzado",
-            "btn_save": "Guardar Comando",
-            "btn_cancel": "Cancelar",
             "regex_helper_title": "Guía de RegEx",
             "regex_helper_cat_syntax": "Sintaxis y Clases",
             "regex_helper_cat_quantifiers": "Cuantificadores",
             "regex_helper_cat_anchors": "Anclas y Grupos",
-            "regex_helper_desc_any": "Cualquier caracter",
-            "regex_helper_desc_word": "Letra o número",
+            "regex_helper_desc_any": "Cualquier carácter",
+            "regex_helper_desc_word": "Carácter de palabra",
             "regex_helper_desc_digit": "Cualquier dígito",
-            "regex_helper_desc_space": "Espacio en blanco",
+            "regex_helper_desc_space": "Carácter de espacio en blanco",
             "regex_helper_desc_boundary": "Límite de palabra",
             "regex_helper_desc_zero_more": "0 o más veces",
             "regex_helper_desc_one_more": "1 o más veces",
@@ -160,9 +182,9 @@
             "regex_helper_desc_range": "Entre 3 y 5 veces",
             "regex_helper_desc_start": "Inicio de línea",
             "regex_helper_desc_end": "Fin de línea",
-            "regex_helper_desc_alt": "Coincidir a o b",
+            "regex_helper_desc_alt": "Coincidir con a o b",
             "regex_helper_desc_capture": "Grupo de captura",
-            "regex_helper_desc_noncapture": "Grupo sin captura"
+            "regex_helper_desc_noncapture": "Grupo de no captura"
         },
         "status": {
             "created": "Comando Creado",
@@ -170,49 +192,43 @@
             "deleted": "Comando Eliminado",
             "enabled": "Comando Activado",
             "disabled": "Comando Desactivado",
-            "created_msg": "Disponible en chat: {trigger}",
-            "updated_msg": "Cambios guardados en: {trigger}",
-            "deleted_msg": "Se eliminó: {trigger}",
-            "toggled_msg": "Palabra: {trigger}"
+            "created_msg": "Disponible en el chat: {trigger}",
+            "updated_msg": "Cambios guardados para: {trigger}",
+            "deleted_msg": "Eliminado: {trigger}",
+            "toggled_msg": "Palabra clave: {trigger}"
         }
     },
     "rewards": {
         "header": {
-            "title": "Triggers & Recompensas",
+            "title": "Disparadores y Recompensas",
             "subtitle": "Vincula las recompensas de tu canal con elementos multimedia en pantalla."
         },
         "obs": {
             "title": "Fuente de Navegador OBS",
             "desc": "Copia este enlace y pégalo en tu software de transmisión (Resolución recomendada: 1920x1080).",
-            "copied": "¡Enlace Copiado!",
-            "btn_copy": "Copiar Enlace"
+            "copied": "¡Enlace Copiado!"
         },
         "table": {
             "title": "Recompensas Vinculadas",
-            "btn_new": "Nueva Recompensa",
-            "col_reward": "Recompensa de Kick",
+            "btn_new": "Nuevas Recompensas",
+            "col_reward": "Recompensa Kick",
             "col_file": "Archivo",
             "col_actions": "Acciones",
             "unknown_file": "Desconocido",
             "tooltip_play": "Probar en OBS",
             "tooltip_edit": "Modificar ajustes",
-            "tooltip_delete": "Eliminar recompensa"
+            "tooltip_delete": "Eliminar Recompensa"
         },
         "dialogs": {
             "visual": {
                 "title": "Posicionador Visual (1920x1080)",
-                "desc": "Arrastra tu recompensa. Al soltarla, se mostrará una vista previa en OBS.",
-                "btn_save": "Guardar y Cerrar"
+                "desc": "Arrastra tus recompensas. Al soltarlas, se mostrará una vista previa en OBS."
             },
             "wizard": {
-                "title_edit": "Editar Recompensa",
-                "title_new": "Nueva Recompensa",
-                "btn_cancel": "Cancelar",
-                "btn_next": "Siguiente",
-                "btn_back": "Atrás",
-                "btn_save": "Guardar Recompensa",
+                "title_edit": "Editar Recompensas",
+                "title_new": "Nuevas Recompensas",
                 "file_dialog_title": "Multimedia",
-                "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
+                "file_dialog_filter": "Multimedia (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
                 "step1": {
                     "title": "Recompensa y Archivo",
                     "desc": "Configura qué punto de canal activará esta recompensa.",
@@ -220,15 +236,14 @@
                     "loading": "Cargando recompensas...",
                     "tooltip_refresh": "Actualizar Recompensas de Kick",
                     "file_label": "Archivo Multimedia",
-                    "file_placeholder": "Ej. tu_recompensa.mp4 o sonido.mp3",
-                    "btn_browse": "Explorar",
-                    "no_rewards": "No hay recompensas",
-                    "no_available": "No hay recompensas disponibles"
+                    "file_placeholder": "Ej. mi_recompensa.mp4 o sonido.mp3",
+                    "no_rewards": "Sin recompensas",
+                    "no_available": "Sin recompensas disponibles"
                 },
                 "step2": {
                     "title": "Ajustes de Pantalla",
                     "desc": "Define cómo y dónde se mostrará tu recompensa en el lienzo.",
-                    "volume": "Volumen de la recompensa",
+                    "volume": "Volumen de recompensa",
                     "random_pos": "Posición Aleatoria",
                     "btn_visual": "Posicionar en OBS",
                     "coord_x": "X:",
@@ -241,204 +256,195 @@
             "created": "Recompensa Creada",
             "updated": "Recompensa Actualizada",
             "deleted": "Recompensa Eliminada",
-            "created_msg": "Vinculada a recompensa: {reward}",
+            "created_msg": "Vinculada a la recompensa: {reward}",
             "updated_msg": "Configuración guardada para: {reward}",
-            "deleted_msg": "Se desvinculó el punto: {reward}"
+            "deleted_msg": "Recompensa desvinculada: {reward}"
         }
     },
     "log": {
         "header": {
-            "title": "Registro de Desarrollador",
-            "subtitle": "Monitorea eventos del sistema, depura errores y carga historiales usando el explorador."
+            "title": "Registros del Desarrollador",
+            "subtitle": "Monitorea eventos del sistema, depura errores y carga registros históricos usando el explorador."
         },
         "controls": {
-            "search_placeholder": "Buscar en los registros...",
+            "search_placeholder": "Buscar logs...",
             "filter_all": "TODOS",
             "btn_folder": "Carpeta",
             "tooltip_folder": "Abrir ubicación en Windows",
-            "btn_load": "Cargar Histórico",
-            "btn_live": "Ver en Vivo",
+            "btn_load": "Cargar Historial",
+            "btn_live": "Vista en Vivo",
             "btn_clear": "Limpiar",
-            "btn_report": "Reportar",
+            "btn_report": "Reportar Bug",
             "btn_show_logs": "Ver Logs",
             "btn_hide_logs": "Ocultar Logs"
         },
         "empty": {
             "title": "Consola en pausa",
-            "desc": "Los eventos siguen registrándose en segundo plano. Pulsa el botón para ver el diagnóstico en tiempo real.",
+            "desc": "Los eventos se siguen registrando en segundo plano. Presiona el botón para ver diagnósticos en tiempo real.",
             "btn_show": "Ver logs en vivo"
         },
         "table": {
-            "col_level": "Nivel",
-            "col_time": "Hora",
-            "col_message": "Mensaje"
+            "col_level": "Nivel de Log",
+            "col_time": "Marca de Tiempo",
+            "col_message": "Mensaje de Log"
         },
         "dialogs": {
-            "select_history": "Seleccionar Histórico de Logs",
-            "file_filter": "Archivos Log (*.log*);;Todos los archivos (*.*)"
+            "select_history": "Seleccionar Historial de Logs",
+            "file_filter": "Archivos de Log (*.log*);;Todos los archivos (*.*)"
         },
         "misc": {
             "historical": "HISTÓRICO"
         },
         "status": {
-            "historical_title": "Archivo Log Cargado",
+            "historical_title": "Archivo de Log Cargado",
             "historical_msg": "Inspeccionando: {file}",
             "live_title": "Consola en Vivo",
-            "live_msg": "Mostrando diagnóstico de eventos en tiempo real.",
+            "live_msg": "Mostrando diagnósticos de eventos en tiempo real.",
             "paused_title": "Modo en vivo",
-            "paused_msg": "Volviste a la consola en vivo. Usa 'Ver Logs' cuando quieras monitorear eventos.",
-            "cleared_title": "Registros Borrados",
-            "cleared_msg": "La vista de logs se ha limpiado correctamente."
+            "paused_msg": "Regresaste al modo en vivo. Usa 'Ver Logs' cuando desees monitorear eventos.",
+            "cleared_title": "Consola Limpiada",
+            "cleared_msg": "La vista de registros se ha limpiado correctamente."
         }
     },
     "chat": {
         "header": {
             "title": "Chat en Vivo",
-            "subtitle": "Gestiona la moderación, lectura de voz interactiva (TTS) y eventos del canal en tiempo real."
+            "subtitle": "Gestiona la moderación, lectura de voz (TTS) interactiva y eventos del canal en tiempo real."
         },
         "settings": {
             "tts_title": "Servicio de Voz (TTS)",
-            "tts_desc": "Habilita la lectura automatizada de mensajes.",
+            "tts_desc": "Habilitar la lectura automatizada de mensajes.",
             "name_title": "Leer Nombres",
-            "name_desc": "Pronuncia el nombre del emisor antes del mensaje.",
+            "name_desc": "Pronunciar el nombre del remitente antes del mensaje.",
             "provider_title": "Motor de Voz Premium",
-            "provider_desc": "Alterna entre voces web de Edge o locales.",
+            "provider_desc": "Cambiar entre voces web Edge o voces locales del sistema.",
             "cmd_title": "Requerir Comando",
-            "cmd_desc": "Solo leer mensajes que inicien con un prefijo.",
+            "cmd_desc": "Solo leer mensajes que comiencen con un prefijo.",
             "vol_title": "Volumen General",
-            "vol_desc": "Ajusta la intensidad del sintetizador de voz.",
-            "prefix_title": "Prefijo del Comando",
+            "vol_desc": "Ajustar la intensidad del sintetizador de voz.",
+            "prefix_title": "Prefijo de Comando",
             "prefix_desc": "Define el texto exacto que activará la lectura del bot.",
             "prefix_placeholder": "Ej. !tts"
         },
         "bots": {
             "title": "Usuarios Silenciados",
-            "input_placeholder": "ej. botrix",
-            "btn_add": "Agregar"
+            "input_placeholder": "ej. botrix"
         },
         "display": {
             "title": "Historial de la Sala"
         },
         "status": {
-            "loading_voices": "Cargando voces de la nube...",
+            "loading_voices": "Obteniendo voces de la nube...",
             "provider_title": "Motor de Voz",
-            "tts_title": "Lectura de Chat"
+            "tts_title": "Lector de Voz de Chat"
         }
     },
     "music": {
         "header": {
             "title": "Reproductor de Música",
-            "subtitle": "Permite que tus espectadores controlen la música del stream mediante comandos de chat."
+            "subtitle": "Permite a tus espectadores controlar la música usando comandos del chat."
         },
         "provider": {
             "name": "Proveedor de Audio Spotify",
             "select_title": "Proveedor de Música",
-            "select_desc": "Selecciona el servicio para las canciones del chat."
-        },
-        "btn": {
-            "connect": "Conectar Spotify",
-            "disconnect": "Desconectar"
+            "select_desc": "Selecciona el servicio para las peticiones de canciones en el chat."
         },
         "status": {
-            "disconnected": "Desconectado",
-            "connecting": "Autoriza en tu navegador...",
-            "active": "Conectado como",
             "session_remembered": "Streamer (Sesión recordada)",
             "connected_user": "Streamer (Conectado)",
-            "youtube_active": "YouTube Activo"
+            "youtube_active": "YouTube Activo",
+            "connecting": "Autorizar en tu navegador..."
         },
         "player": {
-            "not_playing": "Ninguna canción en reproducción",
+            "not_playing": "No se está reproduciendo ninguna canción",
             "paused_title": "Reproductor en pausa...",
-            "paused_desc": "Abre Spotify y dale a Play",
+            "paused_desc": "Abre Spotify y presiona Play",
             "unknown_song": "Desconocido",
             "volume_title": "Volumen del Reproductor",
-            "volume_desc": "Ajusta el volumen de reproducción de YouTube."
+            "volume_desc": "Ajustar el volumen de reproducción de YouTube."
         },
         "cmds": {
             "title": "Comandos de Espectadores",
             "sr_label": "Pedir Canción (Por defecto: !sr)",
-            "sr_desc": "Permite a los usuarios añadir música a la cola. Puedes personalizar el prefijo '!sr' desde el apartado de Comandos.",
-            "skip_label": "Saltar Canción (Por defecto: !skip)",
-            "skip_desc": "Fuerza el paso a la siguiente pista. Puedes personalizar el prefijo '!skip' desde el apartado de Comandos.",
+            "sr_desc": "Permite a los espectadores añadir música a la cola. Puedes personalizar el disparador '!sr' en la vista de Comandos.",
+            "skip_label": "Saltar Pista (Por defecto: !skip)",
+            "skip_desc": "Fuerza la reproducción de la siguiente canción. Puedes personalizar el disparador '!skip' en la vista de Comandos.",
             "song_label": "Canción Actual (Por defecto: !song)",
-            "song_desc": "Informa en el chat qué está sonando. Puedes personalizar el prefijo '!song' desde el apartado de Comandos.",
+            "song_desc": "Muestra la canción reproduciéndose actualmente en el chat. Puedes personalizar el disparador '!song' en la vista de Comandos.",
             "default_tag_name": "Plugin de Música"
         },
         "toast": {
             "title_spotify": "Spotify",
-            "connected": "Enlace con Spotify establecido correctamente.",
-            "disconnected": "Cuenta de Spotify desconectada."
+            "connected": "Vínculo con Spotify establecido con éxito.",
+            "disconnected": "Cuenta de Spotify desvinculada."
         },
         "chat": {
-            "sr_usage": "@{user} escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
+            "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
             "not_linked": "❌ El streamer no ha vinculado su cuenta de Spotify.",
             "not_linked_spotify": "❌ El streamer no ha vinculado su cuenta de Spotify.",
             "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
-            "skip_success": "⏩ Canción saltada exitosamente.",
-            "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o sin cola).",
-            "song_now_playing": "🎵 Sonando: {title} - {artist}",
+            "skip_success": "⏩ Canción saltada con éxito.",
+            "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o cola vacía).",
+            "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",
             "song_paused": "🔇 Spotify está en pausa o cerrado.",
             "song_paused_spotify": "🔇 Spotify está en pausa.",
             "song_paused_youtube": "🔇 YouTube está en pausa.",
-            "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música reproduciéndose."
+            "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando."
         },
         "queue": {
-            "not_found": "❌ No encontré ninguna canción llamada '{query}'.",
-            "success": "🎵 En cola: {track}",
-            "no_device": "❌ Error: Abre Spotify en tu PC y dale 'Play' a cualquier cosa primero.",
-            "rejected": "❌ Spotify rechazó la petición: {status}",
+            "not_found": "❌ No se pudo encontrar ninguna canción llamada '{query}'.",
+            "success": "🎵 Añadida a la cola: {track}",
+            "no_device": "❌ Error: Por favor abre Spotify en tu PC y reproduce cualquier canción primero.",
+            "rejected": "❌ Spotify rechazó la solicitud: {status}",
             "error": "❌ Error interno de Spotify: {error}",
             "no_link": "❌ No se pudo obtener el enlace del video.",
             "searching": "🔍 Buscando '{query}' en YouTube...",
             "processing_link": "🔍 Procesando enlace de YouTube..."
         },
         "errors": {
-            "no_session": "No hay sesión de Spotify activa.",
-            "refresh_failed": "No se pudo refrescar el token de Spotify."
+            "no_session": "Sin sesión activa de Spotify.",
+            "refresh_failed": "No se pudo actualizar el token de Spotify."
         },
         "youtube": {
             "error_title": "Error de YouTube",
-            "age_restricted": "Este video requiere verificación de edad (Sign in to confirm your age)",
+            "age_restricted": "Este video requiere verificación de edad (Inicia sesión para confirmar tu edad)",
             "inappropriate": "Este video es inapropiado para algunos usuarios",
-            "invalid_media": "Formato o medio inválido"
+            "invalid_media": "Formato o medio no válido"
         }
     },
     "spotify": {
         "error": {
-            "timeout": "El tiempo de espera para el login caducó o el usuario canceló.",
+            "timeout": "El inicio de sesión expiró o fue cancelado por el usuario.",
             "generic": "Error de conexión con Spotify:"
         }
     },
     "dashboard": {
         "header": {
-            "title": "Dashboard",
+            "title": "Panel de Control",
             "subtitle": "Gestión de autenticación, conexión automática y estado general del sistema."
         },
         "banner": {
-            "text": "<b>Actualización requerida:</b> Tu cuenta no tiene permisos para las nuevas funciones Anti-Spam.",
+            "text": "<b>Actualización requerida:</b> Tu cuenta no tiene permisos para las nuevas características Anti-Spam.",
             "btn_update": "Actualizar Permisos"
         },
         "connection": {
             "autostart_title": "Conexión Automática",
-            "autostart_desc": "Inicia el bot automáticamente.",
+            "autostart_desc": "Iniciar el bot automáticamente.",
             "status_waiting": "Estado: Esperando conexión...",
             "status_auth": "Estado: Autenticando...",
             "status_connected": "Estado: Conectado y Escuchando",
-            "status_error": "Error",
             "btn_connect": "Conectar a Kick",
             "btn_active": "Sistema Activo",
             "btn_retry": "Reintentar"
         },
         "stats": {
             "followers": "Seguidores",
-            "room_id": "ChatID",
-                    "category": "Última Categoría",
-            "affiliate": "Estado Afiliado",
+            "room_id": "ID de ChatRoom",
+            "category": "Última Categoría",
+            "affiliate": "Estado de Afiliado",
             "vods": "VODs"
         },
         "status": {
-            "connected": "Conectado",
             "connected_toast_msg": "Canal enlazado: {username}"
         },
         "empty": {
@@ -447,87 +453,76 @@
         }
     },
     "dialogs": {
-        "confirm": {
-            "btn_continue": "Continuar",
-            "btn_cancel": "Cancelar"
-        },
         "wizard": {
-            "step_indicator": "Paso {current}/{total}",
-            "btn_cancel": "Cancelar",
-            "btn_back": "Atrás",
-            "btn_next": "Siguiente",
-            "btn_save": "Guardar"
+            "step_indicator": "Paso {current}/{total}"
         },
         "bug_report": {
             "lbl_contact": "Contacto (Discord, Correo, etc. - Opcional):",
             "lbl_description": "Descripción del problema (Requerido):",
             "chk_include_logs": "Incluir log de depuración (minikick.log)",
-            "btn_cancel": "Cancelar",
-            "btn_send": "Enviar Reporte",
-            "btn_sending": "Enviando...",
-            "success_title": "Reporte Enviado",
-            "success_msg": "Gracias por reportar el problema.",
             "placeholder_contact": "Tu nombre de usuario o contacto...",
             "placeholder_desc": "Explica qué estabas haciendo y qué error ocurrió...",
             "err_empty_desc": "La descripción no puede estar vacía.",
             "err_no_webhook": "El webhook de Discord no está configurado por el desarrollador.",
             "success_send": "Reporte enviado con éxito.",
             "err_discord": "Error de Discord: Código {code}",
-            "err_send": "Error al enviar: {error}"
+            "err_send": "Error al enviar: {error}",
+            "success_title": "Reporte Enviado",
+            "success_msg": "Gracias por reportar el problema.",
+            "btn_send": "Enviar Reporte",
+            "btn_sending": "Enviando..."
+        },
+        "unlink": {
+            "title": "Desvincular Cuenta",
+            "desc": "¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes."
+        },
+        "close": {
+            "title": "Cerrar MiniKick",
+            "desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat."
+        },
+        "already_running": {
+            "title": "MiniKick ya se está Ejecutando",
+            "desc": "El controlador de transmisión ya está operando en segundo plano. Por favor, revisa la bandeja de sistema de Windows (al lado del reloj) para acceder al panel de control."
+        },
+        "update": {
+            "top_searching": "Buscando...",
+            "title_default": "Actualización del Sistema",
+            "subtitle_connecting": "Conectando al servidor...",
+            "lbl_progress": "Progreso",
+            "btn_restart": "Reiniciar ahora",
+            "btn_close": "Cerrar",
+            "top_available": "Versión {version} disponible",
+            "subtitle_restart_req": "Se requiere reiniciar para completar la instalación.",
+            "btn_download": "Descargar ahora",
+            "subtitle_downloading": "Descargando la nueva versión...",
+            "btn_downloading": "Descargando...",
+            "title_completed": "Actualización completada",
+            "subtitle_installed": "Versión {version} instalada.",
+            "title_up_to_date": "Sistema Actualizado",
+            "subtitle_up_to_date": "La versión de tu sistema ya es la última disponible.",
+            "top_error": "Error de Actualización",
+            "title_error": "Fallo en la descarga",
+            "msg_unexpected_error": "Fallo inesperado al descargar el archivo."
         }
     },
     "main": {
-        "dialogs": {
-            "unlink_title": "Desvincular Cuenta",
-            "unlink_desc": "¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes.",
-            "close_title": "Cerrar MiniKick",
-            "close_desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat.",
-            "update": {
-                "top_searching": "Buscando...",
-                "title_default": "Actualización del Sistema",
-                "subtitle_connecting": "Conectando con el servidor...",
-                "lbl_progress": "Progreso",
-                "btn_restart": "Reiniciar ahora",
-                "btn_close": "Cerrar",
-                "top_available": "Versión {version} disponible",
-                "subtitle_restart_req": "Se requiere un reinicio para completar la instalación.",
-                "btn_download": "Descargar ahora",
-                "subtitle_downloading": "Descargando la nueva versión...",
-                "btn_downloading": "Descargando...",
-                "title_completed": "Actualización completada",
-                "subtitle_installed": "Versión {version} instalada.",
-                "title_up_to_date": "Sistema Actualizado",
-                "subtitle_up_to_date": "Tu versión del sistema ya es la última disponible.",
-                "top_error": "Error de Actualización",
-                "title_error": "Fallo en la descarga",
-                "msg_unexpected_error": "Fallo inesperado al descargar el archivo."
-            },
-            "already_running": {
-                "title": "MiniKick ya está en ejecución",
-                "desc": "El controlador de streaming ya se encuentra operando en segundo plano. Revisa el área de iconos ocultos de Windows (al lado del reloj) para abrir su panel.",
-                "btn_exit": "Salir",
-                "btn_understood": "Entendido"
-            }
-        },
         "sidebar": {
             "new_version": "Nueva Versión",
             "version": "Versión {version}",
             "section": {
-                "navigate": "Navegación",
+                "navigate": "Navegar",
                 "more": "Más"
             },
             "profile": {
-                "offline_name": "Sin Conexión",
-                "offline_status": "Desconectado",
-                "online_status": "En Línea"
+                "offline_name": "Sin Conexión"
             },
             "tabs": {
-                "dashboard": "Dashboard",
+                "dashboard": "Panel de Control",
                 "chat": "Chat",
-                "music": "Musica",
-                "triggers": "Triggers",
+                "music": "Música",
+                "triggers": "Disparadores",
                 "comandos": "Comandos",
-                "spam_filters": "Filtros Spam",
+                "spam_filters": "Filtros de Spam",
                 "settings": "Ajustes",
                 "developer": "Desarrollador"
             }
@@ -536,37 +531,29 @@
             "open_panel": "Abrir Panel",
             "read_chat": "Leer chat en voz alta",
             "close_app": "Cerrar MiniKick",
-            "tts_on": "Activado",
-            "tts_off": "Silenciado",
             "tts_msg": "Lectura de chat: {estado}",
             "bg_title": "MiniKick en segundo plano",
-            "bg_desc": "Seguiré leyendo el chat por ti. Haz doble clic para volver."
+            "bg_desc": "Seguiré leyendo el chat por ti. Doble clic para volver."
         },
         "controllers": {
             "dashboard": {
                 "unknown_user": "Desconocido",
                 "no_bio": "Sin descripción",
-                "none": "Ninguna",
+                "none": "Ninguno",
                 "affiliate": "Afiliado",
-                "not_affiliate": "No Afiliado",
-                "yes": "Sí",
-                "no": "No"
+                "not_affiliate": "No Afiliado"
             },
             "log": {
-                "error_title": "Error",
                 "read_error": "No se pudo leer el archivo: {error}",
                 "folder_error": "No se pudo abrir la carpeta: {error}"
             },
             "settings": {
                 "export_success_title": "Exportación exitosa",
-                "export_success_desc": "Tus configuraciones han sido guardadas.",
-                "error_title": "Error",
-                "export_error_desc": "Fallo al exportar el archivo.",
+                "export_success_desc": "Tus ajustes han sido guardados.",
+                "export_error_desc": "No se pudo exportar el archivo.",
                 "import_success_title": "Importación exitosa",
-                "import_success_desc": "Tus configuraciones han sido restauradas.",
-                "import_error_desc": "El archivo está corrupto o es inválido.",
-                "restart_title": "Reinicio Requerido",
-                "restart_desc": "Por favor, cierra y vuelve a abrir MiniKick para aplicar el nuevo idioma."
+                "import_success_desc": "Tus ajustes han sido restaurados.",
+                "import_error_desc": "El archivo está dañado o no es válido."
             },
             "chat": {
                 "voice_updated": "Voz actualizada."
@@ -577,14 +564,14 @@
                 "error_failed": "Autorización cancelada o fallida."
             },
             "chat": {
-                "error_room_id": "No se pudo obtener el ID de la sala desde la API."
+                "error_room_id": "No se pudo obtener el ID de la sala de chat desde la API."
             },
             "reward": {
-                "unknown_reward": "Recompensa desconocida",
+                "unknown_reward": "Recompensa Desconocida",
                 "someone": "Alguien",
                 "batch_success": "Se marcaron exitosamente {count} canjes como completados en Kick.",
                 "batch_error": "No se pudo confirmar el lote en Kick: {error}",
-                "poll_error": "Error consultando recompensas: {error}"
+                "poll_error": "Error al consultar recompensas: {error}"
             }
         },
         "window": {
@@ -595,12 +582,12 @@
             "points_tag": "PUNTOS"
         },
         "logs": {
-            "reward_no_rewards": "Recompensa '{reward_name}' no tiene una recompensa configurada.",
+            "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada.",
             "automod_sanction": "Mensaje sancionado por Auto-Mod: {user}: {msg}",
             "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
-            "api_fetching": "Ya se están consultando las recompensas. Por favor espera.",
+            "api_fetching": "Las recompensas ya están siendo obtenidas. Por favor espera.",
             "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
-            "api_error": "Fallo en la API de recompensas: {error}",
+            "api_error": "Fallo en la API de Recompensas de Kick: {error}",
             "worker_stopping": "Solicitando parada de {worker}...",
             "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación...",
             "worker_stopped": "{worker} cerrado limpiamente.",

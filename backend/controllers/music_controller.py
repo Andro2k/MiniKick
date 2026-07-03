@@ -138,8 +138,8 @@ class MusicController(QObject):
         self.view.set_auth_state(connected=False)
         self.view.update_current_song(None)
         
-        title_key = "music.toast.title_spotify" if self.provider_type == "spotify" else "YouTube"
-        self.toast.show_toast(title_key, self.i18n.get("music.toast.disconnected"), "info")
+        title_str = self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube"
+        self.toast.show_toast(title_str, self.i18n.get("music.toast.disconnected"), "info")
 
     @Slot()
     def _poll_now_playing(self):

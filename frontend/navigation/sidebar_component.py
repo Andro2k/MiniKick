@@ -181,7 +181,7 @@ class Sidebar(QFrame):
 
     def reset_profile_info(self):
         offline_name = self.i18n.get("main.sidebar.profile.offline_name")
-        offline_status = self.i18n.get("main.sidebar.profile.offline_status")
+        offline_status = self.i18n.get("common.status.offline")
         self.profile_name_lbl.setText(offline_name)
         self.profile_role_lbl.setText(offline_status)
         self.reset_profile_avatar()

@@ -32,7 +32,7 @@ class BotMutePanel(QWidget):
         self.txt_bot_input = QLineEdit()
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
         
-        self.btn_add_bot = ModernButton(self.i18n.get("chat.bots.btn_add"), role="action_accent")
+        self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
         self.btn_add_bot.setIcon(get_icon_colored("add.svg", COLOR_BLACK, size=16))
             
         input_row.addWidget(self.txt_bot_input)
