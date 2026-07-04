@@ -1,4 +1,6 @@
 # backend\services\chat\spam_service.py
+
+import logging
 import re
 
 class SpamService:
@@ -104,4 +106,4 @@ class SpamService:
                 self.api_client.timeout_user(self.broadcaster_id, sender_id, duration_secs)
                 
         except Exception as e:
-            print(f"[SpamService] Error attempting to penalize {user}: {e}")
+            logging.error("[SpamService] Error attempting to penalize %s: %s", user, e)

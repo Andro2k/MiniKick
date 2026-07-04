@@ -1,6 +1,7 @@
 # backend\providers\tts\tts_online.py
 
 import asyncio
+import logging
 import os
 import tempfile
 import edge_tts
@@ -62,7 +63,7 @@ class WebTTSProvider(ITTSProvider):
             self.player.mediaStatusChanged.disconnect(connection_status)
 
         except Exception as e:
-            print(f"[Web TTS] Error playing audio: {e}")
+            logging.error("[Web TTS] Error playing audio: %s", e)
         finally:
             if self.player:
                 try:
@@ -84,7 +85,7 @@ class WebTTSProvider(ITTSProvider):
             voices = asyncio.run(edge_tts.list_voices())
             return [{"id": v["ShortName"], "name": v["FriendlyName"]} for v in voices if "es-" in v["Locale"]]
         except Exception as e:
-            print(f"[Web TTS] Error connecting to Microsoft Edge: {e}")
+            logging.error("[Web TTS] Error connecting to Microsoft Edge: %s", e)
             return [
                 {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Spain) - Offline"},
                 {"id": "es-ES-ElviraNeural", "name": "Elvira (Spain) - Offline"},

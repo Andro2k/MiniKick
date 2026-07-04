@@ -1,5 +1,6 @@
 # backend\services\chat\command_service.py
 
+import logging
 import re
 import time
 
@@ -32,7 +33,7 @@ class CommandService:
                         cmd["_compiled_regex"] = re.compile(pattern, re.IGNORECASE)
                         self._regex_commands.append(cmd)
                     except re.error as e:
-                        print(f"[CommandService] Error compiling regex pattern '{pattern}' for trigger '{cmd['trigger']}': {e}")
+                        logging.error("[CommandService] Error compiling regex pattern '%s' for trigger '%s': %s", pattern, cmd['trigger'], e)
             else:
                 trigger = cmd["trigger"].strip().lower()
                 self._dispatch_table[trigger] = cmd
@@ -117,4 +118,4 @@ class CommandService:
         try:
             self.api_client.post_chat_message(content=response_text, msg_type="bot")
         except Exception as e:
-            print(f"[CommandService] Error sending command to chat: {e}")
+            logging.error("[CommandService] Error sending command to chat: %s", e)

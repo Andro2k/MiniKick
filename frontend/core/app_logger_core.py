@@ -10,6 +10,9 @@ def setup_application_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG) 
     
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        
     q_log_handler = QLogHandler()
     logger.addHandler(q_log_handler)
     

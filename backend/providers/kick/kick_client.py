@@ -1,5 +1,6 @@
 # backend\providers\kick\kick_client.py
 
+import logging
 import sys
 import time
 import cloudscraper
@@ -137,7 +138,7 @@ class KickAPIClient:
             resp = self._request("DELETE", url, timeout=10)
             return resp.status_code == 204
         except Exception as e:
-            print(f"[KickAPI] Error deleting message: {e}")
+            logging.error("[KickAPI] Error deleting message: %s", e)
             return False
 
     def timeout_user(self, broadcaster_id: int, user_id: int, duration_seconds: int) -> bool:
@@ -152,7 +153,7 @@ class KickAPIClient:
             resp = self._request("POST", url, json=payload, timeout=10)
             return resp.status_code == 200
         except Exception as e:
-            print(f"[KickAPI] Error applying timeout: {e}")
+            logging.error("[KickAPI] Error applying timeout: %s", e)
             return False
         
     def get_users_by_ids(self, user_ids: list) -> dict:

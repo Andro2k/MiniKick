@@ -1,5 +1,6 @@
 # backend\providers\tts\tts_local.py
 
+import logging
 import pyttsx3
 from backend.interfaces.tts_interfaces import ITTSProvider
 
@@ -27,7 +28,7 @@ class LocalTTSProvider(ITTSProvider):
             engine.runAndWait()
 
         except Exception as e:
-            print(f"[Local TTS] Speech error: {e}")
+            logging.error("[Local TTS] Speech error: %s", e)
         finally:
             try:
                 import pythoncom
@@ -47,7 +48,7 @@ class LocalTTSProvider(ITTSProvider):
             
             return voices
         except Exception as e:
-            print(f"[Local TTS] Error fetching local voices: {e}")
+            logging.error("[Local TTS] Error fetching local voices: %s", e)
             return [{"id": "default", "name": "System Voice (Default)"}]
         finally:
             try:

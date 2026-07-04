@@ -1,6 +1,7 @@
 # frontend\common\log_handler.py
 
 import logging
+import sys
 from PySide6.QtCore import QObject, Signal
 
 class LogEmitter(QObject):
@@ -24,11 +25,19 @@ class StreamToLogger:
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
+        self._in_write = False
 
     def write(self, buf):
-        for line in buf.rstrip().splitlines():
-            if line.strip():
-                self.logger.log(self.log_level, line.rstrip())
+        if self._in_write:
+            sys.__stderr__.write(buf)
+            return
+        self._in_write = True
+        try:
+            for line in buf.rstrip().splitlines():
+                if line.strip():
+                    self.logger.log(self.log_level, line.rstrip())
+        finally:
+            self._in_write = False
 
     def flush(self):
         pass

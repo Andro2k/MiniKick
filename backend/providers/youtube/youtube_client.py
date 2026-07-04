@@ -1,5 +1,6 @@
 # backend\providers\youtube\youtube_client.py
 
+import logging
 import os
 from PySide6.QtCore import QObject, QUrl, QThread, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
@@ -43,7 +44,7 @@ class YouTubeResolveWorker(QThread):
                         self.resolved.emit(title, local_path)
                         return
             except Exception as download_err:
-                print(f"[YouTubeResolveWorker] El intento de descarga local falló: {download_err}. Usando fallback de streaming remoto.")
+                logging.warning("[YouTubeResolveWorker] El intento de descarga local falló: %s. Usando fallback de streaming remoto.", download_err)
             
             ydl_opts_stream = {
                 'format': 'bestaudio[ext=m4a]/bestaudio/best',
@@ -224,7 +225,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
             try:
                 os.remove(self.current_local_file)
             except Exception as e:
-                print(f"[YouTubeMusicProvider] Error eliminando archivo temporal: {e}")
+                logging.error("[YouTubeMusicProvider] Error eliminando archivo temporal: %s", e)
         self.current_local_file = None
 
         if not self.queue:
@@ -262,7 +263,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
 
     @Slot(str)
     def _on_resolve_error(self, error_msg: str):
-        print(f"[YouTubeMusicProvider] Error resolviendo stream de audio: {error_msg}")
+        logging.error("[YouTubeMusicProvider] Error resolviendo stream de audio: %s", error_msg)
         if self.current_song:
             title = self.current_song.get("title", "Unknown Title")
             requester = self.current_song.get("requester", "") or ""

@@ -103,8 +103,8 @@ class SettingsController(QObject):
             )
             
         self.notification_requested.emit(
-            self.view.i18n.get("main.controllers.settings.restart_title"), 
-            self.view.i18n.get("main.controllers.settings.restart_desc")
+            self.view.i18n.get("settings.status.lang_changed"), 
+            self.view.i18n.get("settings.status.lang_changed_msg")
         )
 
     @Slot(int)

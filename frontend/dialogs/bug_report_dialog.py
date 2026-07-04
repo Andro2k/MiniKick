@@ -1,5 +1,6 @@
 # frontend\dialogs\bug_report_dialog.py
 
+import logging
 import os
 from PySide6.QtWidgets import (
     QLabel, QLineEdit, 
@@ -53,7 +54,7 @@ class BugReportWorker(QThread):
                         with open(log_file_path, "rb") as f:
                             files["file"] = ("minikick.log", f.read(), "text/plain")
                     except Exception as e:
-                        print(f"[BugReportWorker] Error leyendo archivo de log: {e}")
+                        logging.error("[BugReportWorker] Error leyendo archivo de log: %s", e)
 
             if self.image_path and os.path.exists(self.image_path):
                 try:
@@ -69,7 +70,7 @@ class BugReportWorker(QThread):
                     with open(self.image_path, "rb") as f:
                         files["image"] = (filename, f.read(), mime_type)
                 except Exception as e:
-                    print(f"[BugReportWorker] Error leyendo archivo de imagen: {e}")
+                    logging.error("[BugReportWorker] Error leyendo archivo de imagen: %s", e)
 
             if files:
                 resp = requests.post(DISCORD_WEBHOOK_URL, data=data, files=files, timeout=15)

@@ -1,5 +1,6 @@
 # backend\services\stream\overlay_server.py
 
+import logging
 import os
 import json
 import queue
@@ -137,10 +138,9 @@ class OverlayServerManager:
             
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
-            print(f"Overlay server active: {self.get_overlay_url()}")
+            logging.info("Overlay server active: %s", self.get_overlay_url())
         except OSError as e:
-            print(f"CRITICAL ERROR: Could not start Overlay server on port {self.port}.")
-            print(f"Details: {e}")
+            logging.error("[OverlayServer] Could not start Overlay server on port %s: %s", self.port, e)
 
     def trigger_rewards(self, reward_name: str, config: dict):
         if isinstance(config, str):
