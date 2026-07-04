@@ -85,8 +85,8 @@ QLabel[state="error"] {{ color: {COLOR_DANGER}; }}
 /* --- 3. CONTENEDORES --- */
 QFrame[role="card"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: {RADIUS_LG}px; }}
 QFrame[role="dialog"] {{ background-color: {COLOR_BG_BASE}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: 16px; }}
-QFrame[role="dialog"][state="accent"] {{ border-color: {COLOR_ACCENT_GLOW}; }}
-QFrame[role="dialog"][state="danger"] {{ border-color: {COLOR_DANGER_GLOW}; }}
+QFrame[role="dialog"][state="accent"] {{ border-color: {COLOR_ACCENT}; }}
+QFrame[role="dialog"][state="danger"] {{ border-color: {COLOR_DANGER}; }}
 QFrame[role="banner_danger"] {{ background-color: {COLOR_DANGER_GLOW}; border: 1px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_danger"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; }}
 QFrame[dialog_role="danger_icon"] {{ background-color: {COLOR_DANGER}; border-radius: 26px; }}
