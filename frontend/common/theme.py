@@ -12,6 +12,7 @@ COLOR_BG_HOVER       = "#27272A"
 
 COLOR_BORDER_SVELTE  = "#27272A"
 COLOR_BORDER_HOVER   = "#3F3F46"
+COLOR_BORDER_GLOW    = "rgba(255, 255, 255, 0.02)"
 
 COLOR_ACCENT         = "#2ECD70"
 COLOR_ACCENT_HOVER   = "#25AE60"   
@@ -88,7 +89,7 @@ QFrame[role="banner_danger"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; }}
 QFrame[dialog_role="danger_icon"] {{ background-color: {COLOR_DANGER}; border-radius: 26px; }}
 QFrame[dialog_role="accent_icon"] {{ background-color: {COLOR_ACCENT}; border-radius: 26px; }}
 QFrame#CanvasContainer {{ background-color: {COLOR_BG_BASE}; border: 2px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
-QFrame[role="divider"] {{ background-color: rgba(255, 255, 255, 0.05); margin: 4px 0px; }}
+QFrame[role="divider"] {{ background-color: {COLOR_BORDER_GLOW}; margin: 4px 0px; }}
 QFrame#Sidebar {{ background-color: {COLOR_BG_SURFACE}; border-right: 1.5px solid {COLOR_BORDER_SVELTE}; }}
 QLabel[role="section_header"] {{ font-size: {caption}px; font-weight: 700; color: {COLOR_TEXT_MUTED}; margin-top: 10px; margin-bottom: 2px; margin-left: 8px; }}
 QFrame#ProfileCard {{ background-color: transparent; border: 1.5px solid transparent; border-radius: {RADIUS_MD}px; }}
@@ -171,8 +172,8 @@ QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; b
 
 /* --- 7. MISCELÁNEA Y CONSOLA --- */
 QProgressBar[role="update_progress"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: {RADIUS_SM}px; }}
-QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 #22C55E); border-radius: {RADIUS_SM}px; }}
-QProgressBar[role="wizard_progress"] {{ background-color: #374151; border: none; border-radius: 2px; }}
+QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_ACCENT}, stop:1 {COLOR_ACCENT}); border-radius: {RADIUS_SM}px; }}
+QProgressBar[role="wizard_progress"] {{ background-color: {COLOR_BORDER_HOVER}; border: none; border-radius: 2px; }}
 QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_ACCENT}; border-radius: 2px; }}
 QTextEdit[role="ConsoleDisplay"] {{ background-color: {COLOR_BG_BASE}; color: {COLOR_TEXT_PRIMARY}; font-family: {FONT_FAMILY}; font-size: {btn_txt}px; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; }}
 QListWidget[role="transparent_list"] {{ background: transparent; border: none; outline: none; }}
@@ -228,9 +229,9 @@ QPushButton[role="action_danger_border"]:disabled,
 QPushButton[role="action_accent_border"]:disabled,
 QPushButton[role="action_neutral_border"]:disabled,
 QPushButton[role="btn_ghost"]:disabled {{
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: {COLOR_BORDER_GLOW};
     color: {COLOR_TEXT_MUTED};
-    border: 1.5px solid #202022;
+    border: 1.5px solid {COLOR_BG_HOVER};
 }}
 
 QLineEdit:disabled,
@@ -239,9 +240,9 @@ QComboBox:disabled,
 QSpinBox:disabled,
 QDoubleSpinBox:disabled,
 QCheckBox:disabled {{
-    background-color: rgba(255, 255, 255, 0.01);
+    background-color: {COLOR_BORDER_GLOW};
     color: {COLOR_TEXT_MUTED};
-    border-color: #202022;
+    border-color: {COLOR_BG_HOVER};
 }}
 """
 
