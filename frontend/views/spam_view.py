@@ -43,7 +43,7 @@ class SpamView(QWidget):
         self._add_card("link_protection", self.i18n.get("spam.filters.link.title"), self.i18n.get("spam.filters.link.desc"), "link.svg", has_amount=False)
         self._add_card("emote_protection", self.i18n.get("spam.filters.emote.title"), self.i18n.get("spam.filters.emote.desc"), "star.svg")
         self._add_card("paragraph_protection", self.i18n.get("spam.filters.paragraph.title"), self.i18n.get("spam.filters.paragraph.desc"), "file-text.svg")
-        self._add_card("symbol_protection", self.i18n.get("spam.filters.symbol.title"), self.i18n.get("spam.filters.symbol.desc"), "grid-pattern.svg")
+        self._add_card("symbol_protection", self.i18n.get("spam.filters.symbol.title"), self.i18n.get("spam.filters.symbol.desc"), "hash.svg")
         self._add_card("repetition_protection", self.i18n.get("spam.filters.repetition.title"), self.i18n.get("spam.filters.repetition.desc"), "repeat.svg")
         
         self.main_layout.addStretch()

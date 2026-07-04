@@ -88,7 +88,7 @@ class ChatView(QWidget):
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
 
-        row_prefix = SettingRow("grid-pattern.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
+        row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
 
         self.bot_panel = BotMutePanel(self.i18n)
 
