@@ -267,7 +267,7 @@ class MainWindow(QMainWindow):
 
     def _on_auth_success(self, tokens):
         api_client = KickAPIClient(auth_provider=self.auth_manager)
-        self.dashboard_controller.evaluate_scopes(self.auth_manager.has_missing_scopes())
+        self.dashboard_controller.evaluate_scopes(self.auth_manager.get_missing_scopes())
         
         self.command_service.api_client = api_client
         self.spam_service.api_client = api_client

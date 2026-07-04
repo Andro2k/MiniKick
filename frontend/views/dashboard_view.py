@@ -45,18 +45,21 @@ class DashboardView(QWidget):
 
         self.banner_scopes = QFrame()
         self.banner_scopes.setProperty("role", "banner_danger")
-        banner_layout = QHBoxLayout(self.banner_scopes)
+        self.banner_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.banner_scopes)
+        self.banner_layout.setSpacing(8)
         
         lbl_warn_icon = QLabel()
         lbl_warn_icon.setPixmap(get_icon_colored("help.svg", COLOR_DANGER, 24).pixmap(24, 24))
-        lbl_warn_text = QLabel(self.i18n.get("dashboard.banner.text"))
+        lbl_warn_icon.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.lbl_warn_text = QLabel()
+        self.lbl_warn_text.setWordWrap(True)
         
         self.btn_reauth = ModernButton(self.i18n.get("dashboard.banner.btn_update"), role="action_danger_border")
         self.btn_reauth.clicked.connect(self.reauth_requested.emit)
         
-        banner_layout.addWidget(lbl_warn_icon)
-        banner_layout.addWidget(lbl_warn_text, stretch=1)
-        banner_layout.addWidget(self.btn_reauth)
+        self.banner_layout.addWidget(lbl_warn_icon)
+        self.banner_layout.addWidget(self.lbl_warn_text, stretch=1)
+        self.banner_layout.addWidget(self.btn_reauth)
         
         self.banner_scopes.setVisible(False)
         self.main_layout.addWidget(self.banner_scopes)
@@ -262,12 +265,27 @@ class DashboardView(QWidget):
         self.status_label.style().unpolish(self.status_label)
         self.status_label.style().polish(self.status_label)
 
-    def show_scope_warning(self, show: bool):
-        self.banner_scopes.setVisible(show)
+    def show_scope_warning(self, missing_scope_keys: list):
+        if not missing_scope_keys:
+            self.banner_scopes.setVisible(False)
+            return
+        scope_names = ", ".join(
+            f"<b>{self.i18n.get(key)}</b>" for key in missing_scope_keys
+        )
+        prefix = self.i18n.get("dashboard.banner.text_prefix")
+        self.lbl_warn_text.setText(f"{prefix} {scope_names}.")
+        self.banner_scopes.setVisible(True)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
+        if hasattr(self, 'banner_layout'):
+            if width < 480:
+                self.banner_layout.setDirection(QBoxLayout.Direction.TopToBottom)
+                self.lbl_warn_text.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+            else:
+                self.banner_layout.setDirection(QBoxLayout.Direction.LeftToRight)
+                self.lbl_warn_text.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         if hasattr(self, 'top_row_layout'):
             if width < 600:
                 self.top_row_layout.setDirection(QBoxLayout.Direction.TopToBottom)

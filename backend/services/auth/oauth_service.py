@@ -167,11 +167,22 @@ class AuthManager:
     def logout(self) -> None:
         self.storage.clear()
 
-    def has_missing_scopes(self) -> bool:
+    def get_missing_scopes(self) -> list[str]:
         tokens = self.storage.load()
-        if not tokens: 
-            return False
-        
+        if not tokens:
+            return []
+
+        REQUIRED_SCOPES = {
+            "moderation:ban": "dashboard.banner.scope.moderation_ban",
+            "moderation:chat_message:manage": "dashboard.banner.scope.moderation_chat",
+        }
+
         current_scopes = tokens.get("scope", "")
-        required_scopes = ["moderation:ban", "moderation:chat_message:manage"]
-        return any(scope not in current_scopes for scope in required_scopes)
+        return [
+            i18n_key
+            for scope, i18n_key in REQUIRED_SCOPES.items()
+            if scope not in current_scopes
+        ]
+
+    def has_missing_scopes(self) -> bool:
+        return len(self.get_missing_scopes()) > 0

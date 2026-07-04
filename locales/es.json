@@ -424,8 +424,12 @@
             "subtitle": "Gestión de autenticación, conexión automática y estado general del sistema."
         },
         "banner": {
-            "text": "<b>Actualización requerida:</b> Tu cuenta no tiene permisos para las nuevas características Anti-Spam.",
-            "btn_update": "Actualizar Permisos"
+            "text_prefix": "<b>Actualización requerida:</b> Tu cuenta no tiene los permisos necesarios:",
+            "btn_update": "Actualizar Permisos",
+            "scope": {
+                "moderation_ban": "Banear usuarios",
+                "moderation_chat": "Gestionar mensajes de chat"
+            }
         },
         "connection": {
             "autostart_title": "Conexión Automática",

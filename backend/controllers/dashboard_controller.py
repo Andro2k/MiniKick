@@ -56,6 +56,6 @@ class DashboardController(QObject):
     def reset_to_disconnected(self):
         self.view.reset_to_disconnected()
 
-    @Slot(bool)
-    def evaluate_scopes(self, is_missing: bool):
-        self.view.show_scope_warning(is_missing)
+    @Slot(list)
+    def evaluate_scopes(self, missing_scope_keys: list):
+        self.view.show_scope_warning(missing_scope_keys)

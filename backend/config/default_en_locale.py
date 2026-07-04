@@ -426,8 +426,12 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Authentication management, automatic connection, and general system status."
         },
         "banner": {
-            "text": "<b>Update required:</b> Your account does not have permissions for the new Anti-Spam features.",
-            "btn_update": "Update Permissions"
+            "text_prefix": "<b>Update required:</b> Your account is missing the following permissions:",
+            "btn_update": "Update Permissions",
+            "scope": {
+                "moderation_ban": "Ban users",
+                "moderation_chat": "Manage chat messages"
+            }
         },
         "connection": {
             "autostart_title": "Automatic Connection",
