@@ -12,7 +12,7 @@ COLOR_BG_HOVER       = "#27272A"
 
 COLOR_BORDER_SVELTE  = "#27272A"
 COLOR_BORDER_HOVER   = "#3F3F46"
-COLOR_BORDER_GLOW    = "rgba(255, 255, 255, 0.02)"
+COLOR_BORDER_GLOW    = "rgba(255, 255, 255, 0.1)"
 
 COLOR_ACCENT         = "#2ECD70"
 COLOR_ACCENT_HOVER   = "#25AE60"   
@@ -26,6 +26,9 @@ COLOR_WARNING_GLOW   = "rgba(245, 158, 11, 0.1)"
 
 COLOR_INFO           = "#3B82F6"
 COLOR_INFO_GLOW      = "rgba(59, 130, 246, 0.1)"
+
+COLOR_VIP            = "#A78BFA"
+COLOR_VIP_GLOW       = "rgba(139, 92, 246, 0.1)"
 
 COLOR_BG_TOAST       = "#070707"
 COLOR_CHECK          = "#29292B"
@@ -82,8 +85,8 @@ QLabel[state="error"] {{ color: {COLOR_DANGER}; }}
 /* --- 3. CONTENEDORES --- */
 QFrame[role="card"] {{ background-color: {COLOR_BG_SURFACE}; border: none; border-radius: {RADIUS_LG}px; }}
 QFrame[role="dialog"] {{ background-color: {COLOR_BG_BASE}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: 16px; }}
-QFrame[role="dialog"][state="accent"] {{ border-color: rgba(83, 252, 24, 0.4); }}
-QFrame[role="dialog"][state="danger"] {{ border-color: rgba(239, 68, 68, 0.4); }}
+QFrame[role="dialog"][state="accent"] {{ border-color: {COLOR_ACCENT_GLOW}; }}
+QFrame[role="dialog"][state="danger"] {{ border-color: {COLOR_DANGER_GLOW}; }}
 QFrame[role="banner_danger"] {{ background-color: {COLOR_DANGER_GLOW}; border: 1px solid {COLOR_DANGER}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_danger"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; }}
 QFrame[dialog_role="danger_icon"] {{ background-color: {COLOR_DANGER}; border-radius: 26px; }}
@@ -199,8 +202,8 @@ QFrame[role="tag_pill"][perm_level="everyone"] {{ background-color: {COLOR_ACCEN
 QFrame[role="tag_pill"][perm_level="everyone"] QLabel[role="pill_text"] {{ color: {COLOR_ACCENT}; }}
 QFrame[role="tag_pill"][perm_level="subscriber"] {{ background-color: {COLOR_INFO_GLOW};}}
 QFrame[role="tag_pill"][perm_level="subscriber"] QLabel[role="pill_text"] {{ color: {COLOR_INFO}; }}
-QFrame[role="tag_pill"][perm_level="vip"] {{ background-color: rgba(139, 92, 246, 0.08);}}
-QFrame[role="tag_pill"][perm_level="vip"] QLabel[role="pill_text"] {{ color: #A78BFA; }}
+QFrame[role="tag_pill"][perm_level="vip"] {{ background-color: {COLOR_VIP_GLOW};}}
+QFrame[role="tag_pill"][perm_level="vip"] QLabel[role="pill_text"] {{ color: {COLOR_VIP}; }}
 QFrame[role="tag_pill"][perm_level="moderator"] {{ background-color: {COLOR_WARNING_GLOW}; }}
 QFrame[role="tag_pill"][perm_level="moderator"] QLabel[role="pill_text"] {{ color: {COLOR_WARNING}; }}
 QFrame[role="tag_pill"][perm_level="broadcaster"] {{ background-color: {COLOR_DANGER_GLOW}; }}
