@@ -20,6 +20,7 @@ from frontend.navigation.tray_menu_component import SystemTrayManager
 from backend.controllers.chat_controller import ChatController
 from backend.controllers.command_controller import CommandController
 from backend.controllers.dashboard_controller import DashboardController
+from backend.controllers.timer_controller import TimerController
 from backend.controllers.log_controller import LogController
 from backend.controllers.music_controller import MusicController
 from backend.controllers.settings_controller import SettingsController
@@ -32,6 +33,7 @@ from frontend.common.theme import COLOR_ACCENT, get_global_qss
 from frontend.views.rewards_view import RewardsView
 from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
+from frontend.views.timers_view import TimersView
 from frontend.views.chat_view import ChatView
 from frontend.views.log_view import LogView
 from frontend.views.music_view import MusicView
@@ -42,6 +44,8 @@ from frontend.dialogs import ModernConfirmDialog
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
 from frontend.workers.rewards_worker import FetchRewardsWorker, RewardWorker
+from backend.services.chat.timer_service import TimerService
+from frontend.workers.timers_worker import TimerWorker
 
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
@@ -65,6 +69,7 @@ class MainWindow(QMainWindow):
         self.rewards_storage = self.container.rewards_storage
         self.commands_storage = self.container.commands_storage
         self.spam_storage = self.container.spam_storage
+        self.timers_storage = self.container.timers_storage
         self.backup_service = self.container.backup_service
         self.i18n = self.container.i18n
         self.auth_manager = self.container.auth_manager
@@ -107,6 +112,7 @@ class MainWindow(QMainWindow):
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Comandos", "code.svg")
         self.sidebar.add_tab("Spam Filters", "shield-half.svg")
+        self.sidebar.add_tab("Timers", "clock.svg")
         self.sidebar.add_tab("Settings", "settings.svg", position="bottom")
         self.sidebar.add_tab("Developer", "brand-tabler.svg", position="bottom")
 
@@ -118,7 +124,9 @@ class MainWindow(QMainWindow):
         
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None)
+        self.timer_service = TimerService(self.timers_storage, api_client=None)
         self.log_service = LogService()
+        self.timers_worker = None
 
         self.view_dashboard = DashboardView(self.i18n)
         self.view_chat = ChatView(self.i18n)
@@ -126,6 +134,7 @@ class MainWindow(QMainWindow):
         self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url())
         self.view_commands = CommandView(self.i18n)
         self.view_spam = SpamView(self.i18n)
+        self.view_timers = TimersView(self.i18n)
         self.view_settings = SettingsView(self.i18n)
         self.view_logs = LogView(self.i18n)
 
@@ -136,6 +145,7 @@ class MainWindow(QMainWindow):
             "Triggers": self.view_rewards,
             "Comandos": self.view_commands,
             "Spam Filters": self.view_spam,
+            "Timers": self.view_timers,
             "Settings": self.view_settings,
             "Developer": self.view_logs,
         }
@@ -149,7 +159,8 @@ class MainWindow(QMainWindow):
             service=self.chat_service,
             command_service=self.command_service,
             spam_service=self.spam_service,
-            i18n=self.i18n
+            i18n=self.i18n,
+            timer_service=self.timer_service
         )
         self.music_controller = MusicController(
             view=self.view_music,
@@ -171,6 +182,10 @@ class MainWindow(QMainWindow):
             self.view_spam, 
             self.spam_service
         )
+        self.timer_controller = TimerController(
+            self.view_timers,
+            self.timer_service
+        )
         self.settings_controller = SettingsController(
             view=self.view_settings, 
             service=self.settings_service
@@ -186,6 +201,7 @@ class MainWindow(QMainWindow):
         self.content_stack.addWidget(self.view_rewards)
         self.content_stack.addWidget(self.view_commands)
         self.content_stack.addWidget(self.view_spam)
+        self.content_stack.addWidget(self.view_timers)
         self.content_stack.addWidget(self.view_settings)
         self.content_stack.addWidget(self.view_logs)
 
@@ -240,6 +256,7 @@ class MainWindow(QMainWindow):
         self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_controller.load_initial_data()
         self.spam_controller.load_initial_data()
+        self.timer_controller.load_initial_data()
         self.chat_controller.load_initial_data()
         self.chat_controller.sync_settings_cache()
         self._apply_dynamic_theme(self.settings_service.get_font_size())
@@ -256,6 +273,7 @@ class MainWindow(QMainWindow):
         self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
         self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
         self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
+        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
         self.dashboard_controller.handle_connecting_state()
 
         self.auth_worker = AuthWorker(self.i18n, self.auth_manager)
@@ -271,6 +289,7 @@ class MainWindow(QMainWindow):
         
         self.command_service.api_client = api_client
         self.spam_service.api_client = api_client
+        self.timer_service.api_client = api_client
         
         self.command_service.reload_cache()
         self.spam_service.reload_filters()
@@ -301,6 +320,9 @@ class MainWindow(QMainWindow):
             message=msg,
             state="success"
         )
+        
+        slug = username.replace("_", "-").replace(" ", "")
+        self._start_timers_worker(slug)
 
     @Slot()
     def _force_reauth(self):
@@ -394,8 +416,10 @@ class MainWindow(QMainWindow):
             )
             self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
             self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
+            self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
             self.chat_worker = None
             self.reward_worker = None
+            self.timers_worker = None
 
             self.auth_manager.logout()
             self.dashboard_controller.reset_to_disconnected()
@@ -468,6 +492,7 @@ class MainWindow(QMainWindow):
         self._stop_worker_safely("Worker_Reward_Polling", self.reward_worker)
         self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
         self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
+        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
 
         self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
 
@@ -492,6 +517,22 @@ class MainWindow(QMainWindow):
                 self._force_quit() 
             else:
                 event.ignore()
+
+    def _start_timers_worker(self, channel_slug: str):
+        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
+        
+        api_client = KickAPIClient(auth_provider=self.auth_manager)
+        self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug, parent=self)
+        self.timers_worker.post_message_requested.connect(self._send_timer_message)
+        self.timers_worker.start()
+
+    @Slot(str)
+    def _send_timer_message(self, message: str):
+        if self.timer_service.api_client:
+            try:
+                self.timer_service.api_client.post_chat_message(content=message, msg_type="bot")
+            except Exception as e:
+                self.logger.error(f"[Timer] Error posting message: {e}")
 
     @Slot(int)
     def _apply_dynamic_theme(self, base_size: int):

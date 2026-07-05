@@ -11,13 +11,14 @@ class ChatController(QObject):
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
 
-    def __init__(self, view, service, command_service, spam_service, i18n):
+    def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None):
         super().__init__()
         self.view = view
         self.service = service
         self.command_service = command_service
         self.spam_service = spam_service
         self.i18n = i18n        
+        self.timer_service = timer_service
         self.muted_bots: set[str] = set()
         self._all_voices: list[dict] = []
         self._voice_worker = None
@@ -86,6 +87,9 @@ class ChatController(QObject):
     @Slot(object)
     def process_message(self, dto: ChatMessageDTO):
         self.pipeline.execute(dto)
+        if not dto.is_cancelled:
+            if self.timer_service:
+                self.timer_service.increment_chat_lines()
 
     def _step_spam(self, dto: ChatMessageDTO):
         if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id):

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common.utils import get_icon, get_icon_colored, create_circular_pixmap
-from frontend.common.theme import COLOR_BG_BASE, COLOR_TEXT_SECONDARY, COLOR_ACCENT
+from frontend.common.theme import COLOR_BG_BASE, COLOR_TEXT_SECONDARY, COLOR_ACCENT, COLOR_BG_HOVER
 from backend.config.version import APP_VERSION
 
 class Sidebar(QFrame):
@@ -109,11 +109,10 @@ class Sidebar(QFrame):
     def _setup_profile_card(self):
         self.profile_card = QFrame()
         self.profile_card.setObjectName("ProfileCard")
-        self.profile_card.setFixedHeight(52)
         
         self.profile_layout = QHBoxLayout(self.profile_card)
         self.profile_layout.setContentsMargins(8, 8, 8, 8)
-        self.profile_layout.setSpacing(10)
+        self.profile_layout.setSpacing(6)
         self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         
         self.profile_avatar = QLabel()
@@ -170,7 +169,7 @@ class Sidebar(QFrame):
         painter = QPainter(circle_pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        painter.setBrush(QColor("#27272A"))
+        painter.setBrush(QColor(COLOR_BG_HOVER))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(0, 0, 36, 36)
         

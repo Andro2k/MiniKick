@@ -19,7 +19,8 @@ except ImportError:
 from backend.providers.spotify.spotify_client import SpotifyAuthManager, SpotifyMusicProvider
 from backend.storage.database import (DatabaseManager, SQLiteCommandsStorage, 
                                  SQLiteTokenStorage, SQLiteSettingsStorage, 
-                                 SQLiteRewardsStorage, SQLiteSpamStorage)
+                                 SQLiteRewardsStorage, SQLiteSpamStorage,
+                                 SQLiteTimersStorage)
 from backend.services.system.backup_service import BackupService
 from backend.services.system.translation_service import TranslationService
 from backend.services.auth.oauth_service import AuthManager
@@ -37,9 +38,11 @@ class AppContainer:
         self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
+        self.timers_storage = SQLiteTimersStorage(self.db_manager)
         self.backup_service = BackupService(
             self.settings_storage, self.rewards_storage, 
-            self.commands_storage, self.spam_storage
+            self.commands_storage, self.spam_storage,
+            self.timers_storage
         )
         self.i18n = self._init_i18n()
         html_path = resource_path(os.path.join("assets", "web", "auth.html"))

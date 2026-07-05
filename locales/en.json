@@ -533,6 +533,7 @@
                 "comandos": "Commands",
                 "spam_filters": "Spam Filters",
                 "settings": "Settings",
+                "timers": "Timers",
                 "developer": "Developer"
             }
         },
@@ -607,6 +608,59 @@
         "toasts": {
             "reward_title": "Reward Redeemed",
             "reward_msg": "{user} redeemed: {reward_name}"
+        }
+    },
+    "timer": {
+        "header": {
+            "title": "Bot Timers",
+            "subtitle": "Auto-post announcements, social links, your schedule or anything else."
+        },
+        "table": {
+            "search_placeholder": "Search timer...",
+            "btn_new": "ADD NEW TIMER",
+            "col_enabled": "Enabled",
+            "col_name": "Name",
+            "col_message": "Message",
+            "col_interval_online": "Interval Online",
+            "col_interval_offline": "Interval Offline",
+            "col_chat_lines": "Chat Lines",
+            "col_actions": "Actions",
+            "tooltip_edit": "Edit timer",
+            "tooltip_delete": "Delete timer permanently",
+            "unit_minutes": "Minutes",
+            "unit_lines": "Lines"
+        },
+        "dialog": {
+            "title": "Configure Timer",
+            "subtitle": "Define a new automatic timer to send messages to the chat.",
+            "name_label": "Timer Name:",
+            "name_placeholder": "e.g., Social Links",
+            "response_label": "Response messages (one will be chosen randomly):",
+            "response_placeholder": "Enter a message...",
+            "btn_add_message": "+ ADD MESSAGE",
+            "online_interval_label": "Online interval (minutes)",
+            "offline_interval_label": "Offline interval (minutes)",
+            "chat_lines_label": "Min Chat Lines",
+            "chat_lines_desc": "Minimum amount of chat messages required in the last 5 minutes to activate the timer.",
+            "keywords_label": "Stream title keywords (comma-separated):",
+            "keywords_placeholder": "e.g., giveaway, special",
+            "keywords_desc": "Enable the timer only when the stream title contains one or more keywords.",
+            "categories_label": "Stream categories (comma-separated):",
+            "categories_placeholder": "e.g., Just Chatting, IRL",
+            "categories_desc": "Enable the timer only when the stream category is one of the selected categories.",
+            "btn_cancel": "CANCEL",
+            "btn_save": "ACTIVATE TIMER"
+        },
+        "status": {
+            "created": "Timer Created",
+            "created_msg": "Timer '{name}' has been successfully created.",
+            "updated": "Timer Updated",
+            "updated_msg": "Timer '{name}' has been successfully updated.",
+            "deleted": "Timer Deleted",
+            "deleted_msg": "Timer '{name}' has been permanently deleted.",
+            "enabled": "Timer Enabled",
+            "disabled": "Timer Disabled",
+            "toggled_msg": "Timer '{name}' has been {status}."
         }
     }
 }

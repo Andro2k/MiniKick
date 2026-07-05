@@ -163,3 +163,33 @@ class KickAPIClient:
         url = "https://api.kick.com/public/v1/users"
         params = [("id", uid) for uid in user_ids]
         return self._request("GET", url, params=params, timeout=10).json()
+
+    def fetch_stream_status(self, slug: str) -> dict:
+        try:
+            data = self._fetch_channel_details(slug)
+            livestream = data.get("livestream")
+            is_live = livestream is not None
+            title = livestream.get("session_title", "") if is_live else ""
+            
+            category = ""
+            if is_live:
+                categories = livestream.get("categories", [])
+                if categories:
+                    category = categories[0].get("name", "")
+            else:
+                recent_categories = data.get("recent_categories", [])
+                if recent_categories:
+                    category = recent_categories[0].get("name", "")
+                    
+            return {
+                "is_live": is_live,
+                "title": title,
+                "category": category
+            }
+        except Exception as e:
+            logging.error("[KickAPIClient] Error fetching stream status for %s: %s", slug, e)
+            return {
+                "is_live": False,
+                "title": "",
+                "category": ""
+            }

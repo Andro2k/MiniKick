@@ -533,6 +533,7 @@
                 "comandos": "Comandos",
                 "spam_filters": "Filtros Anti-Spam",
                 "settings": "Ajustes",
+                "timers": "Temporizadores",
                 "developer": "Desarrollador"
             }
         },
@@ -607,6 +608,59 @@
         "toasts": {
             "reward_title": "Premio Canjeado",
             "reward_msg": "{user} canjeó: {reward_name}"
+        }
+    },
+    "timer": {
+        "header": {
+            "title": "Temporizadores del Bot",
+            "subtitle": "Publica anuncios automáticos, enlaces de redes sociales, tu horario o cualquier otra cosa."
+        },
+        "table": {
+            "search_placeholder": "Buscar temporizador...",
+            "btn_new": "NUEVO TEMPORIZADOR",
+            "col_enabled": "Activo",
+            "col_name": "Nombre",
+            "col_message": "Mensaje",
+            "col_interval_online": "Int. Online",
+            "col_interval_offline": "Int. Offline",
+            "col_chat_lines": "Mensajes",
+            "col_actions": "Acciones",
+            "tooltip_edit": "Editar temporizador",
+            "tooltip_delete": "Eliminar temporizador permanentemente",
+            "unit_minutes": "Minutos",
+            "unit_lines": "Líneas"
+        },
+        "dialog": {
+            "title": "Configurar Temporizador",
+            "subtitle": "Define un nuevo temporizador automático para enviar mensajes al chat.",
+            "name_label": "Nombre del Temporizador:",
+            "name_placeholder": "Ej: Redes Sociales",
+            "response_label": "Mensajes de respuesta (se elegirá uno aleatoriamente):",
+            "response_placeholder": "Escribe el mensaje de respuesta aquí...",
+            "btn_add_message": "+ AGREGAR MENSAJE",
+            "online_interval_label": "Intervalo Online (minutos)",
+            "offline_interval_label": "Intervalo Offline (minutos)",
+            "chat_lines_label": "Mensajes de Chat Mínimos",
+            "chat_lines_desc": "Cantidad mínima de mensajes de chat requeridos en los últimos 5 minutos para activar el temporizador.",
+            "keywords_label": "Palabras clave en el título de Stream (separadas por coma):",
+            "keywords_placeholder": "Ej: sorteo, especial",
+            "keywords_desc": "Activa el temporizador solo si el título del stream contiene alguna de estas palabras clave.",
+            "categories_label": "Categorías de Stream (separadas por coma):",
+            "categories_placeholder": "Ej: Just Chatting, IRL",
+            "categories_desc": "Activa el temporizador solo si la categoría del stream es una de las seleccionadas.",
+            "btn_cancel": "CANCELAR",
+            "btn_save": "ACTIVAR TEMPORIZADOR"
+        },
+        "status": {
+            "created": "Temporizador Creado",
+            "created_msg": "El temporizador '{name}' ha sido creado exitosamente.",
+            "updated": "Temporizador Actualizado",
+            "updated_msg": "El temporizador '{name}' ha sido actualizado exitosamente.",
+            "deleted": "Temporizador Eliminado",
+            "deleted_msg": "El temporizador '{name}' ha sido eliminado permanentemente.",
+            "enabled": "Temporizador Activado",
+            "disabled": "Temporizador Desactivado",
+            "toggled_msg": "El temporizador '{name}' ha sido {status}."
         }
     }
 }
