@@ -197,7 +197,7 @@ class TimerConfigWizard(ModernWizardPanel):
         right_filt_col = QFrame()
         right_filt_col.setProperty("role", "card")
         right_filt_layout = QVBoxLayout(right_filt_col)
-        right_filt_layout.setContentsMargins(14, 14, 14, 14)
+        right_filt_layout.setContentsMargins(12, 12, 12, 12)
         
         lbl_help_title = QLabel(self.i18n.get("timer.dialog.title"))
         lbl_help_title.setProperty("role", "h3")

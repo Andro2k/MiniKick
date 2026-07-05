@@ -46,7 +46,6 @@ class TimersView(QWidget):
 
         table_card = QFrame()
         table_card.setProperty("role", "card")
-        table_card.setMinimumHeight(400)
         table_layout = QVBoxLayout(table_card)
         table_layout.setContentsMargins(8, 8, 8, 8)
         table_layout.setSpacing(6)
@@ -118,7 +117,7 @@ class TimersView(QWidget):
     def _create_name_cell(self, timer_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(12, 0, 8, 0)       
+        layout.setContentsMargins(8, 0, 8, 0)       
         lbl_name = QLabel(timer_data["name"])
         lbl_name.setProperty("role", "h3")
         layout.addWidget(lbl_name)        

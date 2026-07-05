@@ -232,7 +232,7 @@ class ChatController(QObject):
             
             if hasattr(self.view.window(), 'toast'):
                 status_title = self.view.i18n.get("chat.status.tts_title")
-                status_msg = "Voz automática ACTIVADA" if new_tts_state else "Chat SILENCIADO"
+                status_msg = "Voz automática activada" if new_tts_state else "Chat silenciado"
                 state_color = "success" if new_tts_state else "warning"
                 
                 self.view.window().toast.show_toast(

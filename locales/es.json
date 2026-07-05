@@ -649,8 +649,8 @@
             "categories_placeholder": "Ej: Just Chatting, IRL",
             "categories_desc": "Activa el temporizador solo si la categoría del stream es una de las seleccionadas.",
             "help_desc": "Puedes usar filtros para restringir cuándo se envía el mensaje. Por ejemplo, puedes hacer que se envíe un temporizador de sorteos únicamente cuando tu stream contenga la palabra 'sorteo' en el título o pertenezca a la categoría 'IRL'.",
-            "btn_cancel": "CANCELAR",
-            "btn_save": "ACTIVAR TEMPORIZADOR"
+            "btn_cancel": "Cancelar",
+            "btn_save": "Activar Temporizador"
         },
         "status": {
             "created": "Temporizador Creado",
