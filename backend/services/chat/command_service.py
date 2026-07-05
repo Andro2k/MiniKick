@@ -48,6 +48,9 @@ class CommandService:
     def get_all_commands(self) -> list[dict]:
         return self.storage.load_all()
 
+    def search_commands(self, query: str) -> list[dict]:
+        return self.storage.search_commands(query)
+
     def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str):
         self.storage.save_command(trigger.strip(), response, is_active, cooldown, aliases, is_regex, permission)
         self.reload_cache()

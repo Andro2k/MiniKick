@@ -155,9 +155,10 @@ class YouTubeMusicProviderMeta(type(QObject), ABCMeta):
 class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicProviderMeta):
     resolve_error_occurred = Signal(str, str, str)
 
-    def __init__(self, i18n):
+    def __init__(self, i18n, db_manager=None):
         super().__init__()
         self.i18n = i18n
+        self.db_manager = db_manager
         self.queue: list[dict] = []
         self.current_song: dict | None = None
         self.current_local_file: str | None = None
@@ -170,6 +171,36 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         self.audio_output.setVolume(1.0)
 
         self.player.mediaStatusChanged.connect(self._handle_media_status)
+
+    def _get_cached_search(self, query: str) -> dict | None:
+        if not self.db_manager:
+            return None
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT title, artist, url FROM youtube_search_cache WHERE LOWER(query_raw) = ?", (query.lower().strip(),))
+                r = cursor.fetchone()
+                if r:
+                    return {"title": r[0], "artist": r[1], "url": r[2]}
+        except Exception as e:
+            logging.error("[YouTubeMusicProvider] Error reading from search cache: %s", e)
+        return None
+
+    def _save_search_to_cache(self, query: str, song_entry: dict):
+        if not self.db_manager:
+            return
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO youtube_search_cache (query_raw, title, artist, url) 
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(query_raw) DO UPDATE SET 
+                        title=excluded.title, artist=excluded.artist, url=excluded.url, cached_at=CURRENT_TIMESTAMP
+                """, (query.lower().strip(), song_entry["title"], song_entry["artist"], song_entry["url"]))
+                conn.commit()
+        except Exception as e:
+            logging.error("[YouTubeMusicProvider] Error saving to search cache: %s", e)
 
     def get_current_song(self) -> dict | None:
         if not self.current_song:
@@ -185,7 +216,30 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
 
     def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]:
         query = query_or_uri.strip()
-        if not (query.startswith("http://") or query.startswith("https://") or query.startswith("www.")):
+        is_search = not (query.startswith("http://") or query.startswith("https://") or query.startswith("www."))
+        
+        if is_search:
+            cached = self._get_cached_search(query)
+            if cached:
+                song_entry = {
+                    "title": cached["title"],
+                    "artist": cached["artist"],
+                    "url": cached["url"],
+                    "resolved": False,
+                    "stream_url": None,
+                    "requester": requester
+                }
+                self.queue.append(song_entry)
+                
+                from PySide6.QtCore import QTimer
+                if not self.current_song:
+                    QTimer.singleShot(0, self._play_next)
+                
+                success_msg = self.i18n.get("music.queue.success").replace("{track}", f"{cached['title']} - {cached['artist']}")
+                if callback:
+                    QTimer.singleShot(0, lambda: callback(True, success_msg))
+                return True, success_msg
+
             search_query = f"ytsearch1:{query}"
             immediate_msg = self.i18n.get("music.queue.searching").replace("{query}", query)
         else:
@@ -198,6 +252,8 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
             if success and worker.song_entry:
                 worker.song_entry["requester"] = requester
                 self.queue.append(worker.song_entry)
+                if is_search:
+                    self._save_search_to_cache(query, worker.song_entry)
                 if not self.current_song:
                     self._play_next()
             if callback:

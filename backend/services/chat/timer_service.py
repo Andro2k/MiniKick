@@ -11,6 +11,9 @@ class TimerService:
     def get_all_timers(self) -> list[dict]:
         return self.storage.load_all()
 
+    def search_timers(self, query: str) -> list[dict]:
+        return self.storage.search_timers(query)
+
     def get_active_timers(self) -> list[dict]:
         return [t for t in self.storage.load_all() if t.get("is_active", True)]
 

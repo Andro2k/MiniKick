@@ -163,6 +163,34 @@ class DatabaseManager:
                     (SELECT COUNT(*) FROM chat_timers WHERE is_active = 1) AS active_timers,
                     (SELECT COUNT(*) FROM command_execution_logs) AS total_command_usages
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS youtube_search_cache (
+                    query_raw TEXT PRIMARY KEY,
+                    title TEXT NOT NULL,
+                    artist TEXT NOT NULL,
+                    url TEXT NOT NULL,
+                    cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS avatar_cache (
+                    url TEXT PRIMARY KEY,
+                    image_bytes BLOB NOT NULL,
+                    cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_youtube_cache AFTER INSERT ON youtube_search_cache
+                BEGIN
+                    DELETE FROM youtube_search_cache WHERE cached_at < datetime('now', '-15 days');
+                END;
+            """)
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_avatar_cache AFTER INSERT ON avatar_cache
+                BEGIN
+                    DELETE FROM avatar_cache WHERE cached_at < datetime('now', '-15 days');
+                END;
+            """)
 
             cursor.execute("PRAGMA table_info(obs_rewards)")
             columns = [info[1] for info in cursor.fetchall()]
@@ -297,6 +325,17 @@ class SQLiteCommandsStorage:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM chat_commands WHERE trigger=?", (trigger,))
             conn.commit()
+
+    def search_commands(self, query: str) -> list[dict]:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            pattern = f"%{query.strip().lower()}%"
+            cursor.execute("""
+                SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission 
+                FROM chat_commands 
+                WHERE LOWER(trigger) LIKE ? OR LOWER(response) LIKE ? OR LOWER(aliases) LIKE ?
+            """, (pattern, pattern, pattern))
+            return [{"trigger": r[0], "response": r[1], "is_active": bool(r[2]), "cooldown": r[3], "aliases": r[4], "is_regex": bool(r[5]), "permission": r[6]} for r in cursor.fetchall()]
 
     def log_command_execution(self, trigger: str, username: str) -> None:
         with self.db_manager.get_connection() as conn:
@@ -434,3 +473,41 @@ class SQLiteTimersStorage:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM chat_timers WHERE id=?", (timer_id,))
             conn.commit()
+
+    def search_timers(self, query: str) -> list[dict]:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            pattern = f"%{query.strip().lower()}%"
+            cursor.execute("""
+                SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories 
+                FROM chat_timers 
+                WHERE LOWER(name) LIKE ? OR LOWER(messages) LIKE ?
+            """, (pattern, pattern))
+            import json
+            timers = []
+            for r in cursor.fetchall():
+                try:
+                    messages = json.loads(r[2])
+                except Exception:
+                    messages = [r[2]] if r[2] else []
+                try:
+                    keywords = json.loads(r[7])
+                except Exception:
+                    keywords = [k.strip() for k in r[7].split(",") if k.strip()] if r[7] else []
+                try:
+                    categories = json.loads(r[8])
+                except Exception:
+                    categories = [c.strip() for c in r[8].split(",") if c.strip()] if r[8] else []
+
+                timers.append({
+                    "id": r[0],
+                    "name": r[1],
+                    "messages": messages,
+                    "is_active": bool(r[3]),
+                    "interval_online": r[4],
+                    "interval_offline": r[5],
+                    "chat_lines": r[6],
+                    "keywords": keywords,
+                    "categories": categories
+                })
+            return timers

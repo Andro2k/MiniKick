@@ -85,7 +85,8 @@ class MusicController(QObject):
         self.view.btn_connect.setEnabled(True)
 
     def _init_youtube_provider(self):
-        self.music_provider = YouTubeMusicProvider(self.i18n)
+        db_mgr = self.settings_storage.db_manager if self.settings_storage else None
+        self.music_provider = YouTubeMusicProvider(self.i18n, db_manager=db_mgr)
         self.music_provider.resolve_error_occurred.connect(self.handle_resolve_error)
         
         vol = 100

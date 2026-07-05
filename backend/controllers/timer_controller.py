@@ -115,19 +115,9 @@ class TimerController(QObject):
 
     @Slot(str)
     def _handle_search(self, text: str):
-        timers = self.service.get_all_timers()
-
         if not text.strip():
-            self.view.populate_table(timers)
+            self.load_initial_data()
             return
             
-        search_term = text.lower()
-        filtered_timers = []
-
-        for timer in timers:
-            messages_combined = " ".join(timer.get("messages", [])).lower()
-            if (search_term in timer["name"].lower() or 
-                search_term in messages_combined):
-                filtered_timers.append(timer)
-                
+        filtered_timers = self.service.search_timers(text)
         self.view.populate_table(filtered_timers)

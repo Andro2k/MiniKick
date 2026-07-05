@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
         self.sidebar.add_tab("Developer", "brand-tabler.svg", position="bottom")
 
         self.content_stack = QStackedWidget()
-        self.avatar_service = AvatarService()
+        self.avatar_service = AvatarService(self.container.db_manager)
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.rewards_service = RewardsService(self.rewards_storage, self.overlay_server)

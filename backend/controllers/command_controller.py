@@ -102,19 +102,9 @@ class CommandController(QObject):
 
     @Slot(str)
     def _handle_search(self, text: str):
-        commands = self.service.get_all_commands()
-
         if not text.strip():
-            self.view.populate_table(commands)
+            self.load_initial_data()
             return
             
-        search_term = text.lower()
-        filtered_commands = []
-
-        for cmd in commands:
-            if (search_term in cmd["trigger"].lower() or 
-                search_term in cmd["response"].lower() or 
-                search_term in cmd.get("aliases", "").lower()):
-                filtered_commands.append(cmd)
-                
+        filtered_commands = self.service.search_commands(text)
         self.view.populate_table(filtered_commands)
