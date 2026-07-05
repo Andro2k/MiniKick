@@ -617,7 +617,7 @@
         },
         "table": {
             "search_placeholder": "Buscar temporizador...",
-            "btn_new": "NUEVO TEMPORIZADOR",
+            "btn_new": "Nuevo Temporizador",
             "col_enabled": "Activo",
             "col_name": "Nombre",
             "col_message": "Mensaje",
@@ -637,7 +637,7 @@
             "name_placeholder": "Ej: Redes Sociales",
             "response_label": "Mensajes de respuesta (se elegirá uno aleatoriamente):",
             "response_placeholder": "Escribe el mensaje de respuesta aquí...",
-            "btn_add_message": "+ AGREGAR MENSAJE",
+            "btn_add_message": "+ Agregar Mensaje",
             "online_interval_label": "Intervalo Online (minutos)",
             "offline_interval_label": "Intervalo Offline (minutos)",
             "chat_lines_label": "Mensajes de Chat Mínimos",
@@ -648,6 +648,7 @@
             "categories_label": "Categorías de Stream (separadas por coma):",
             "categories_placeholder": "Ej: Just Chatting, IRL",
             "categories_desc": "Activa el temporizador solo si la categoría del stream es una de las seleccionadas.",
+            "help_desc": "Puedes usar filtros para restringir cuándo se envía el mensaje. Por ejemplo, puedes hacer que se envíe un temporizador de sorteos únicamente cuando tu stream contenga la palabra 'sorteo' en el título o pertenezca a la categoría 'IRL'.",
             "btn_cancel": "CANCELAR",
             "btn_save": "ACTIVAR TEMPORIZADOR"
         },

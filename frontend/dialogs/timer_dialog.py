@@ -1,8 +1,7 @@
 # frontend/dialogs/timer_dialog.py
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QSpinBox, QCheckBox, QSlider, QWidget, 
-                               QScrollArea, QFrame)
+                               QSpinBox, QSlider, QWidget, QScrollArea, QFrame, QCheckBox)
 from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.controls_component import ModernButton
@@ -202,11 +201,7 @@ class TimerConfigWizard(ModernWizardPanel):
         
         lbl_help_title = QLabel(self.i18n.get("timer.dialog.title"))
         lbl_help_title.setProperty("role", "h3")
-        lbl_help_desc = QLabel(
-            "Puedes usar filtros para restringir cuándo se envía el mensaje. "
-            "Por ejemplo, puedes hacer que se envíe un temporizador de sorteos únicamente cuando "
-            "tu stream contenga la palabra 'sorteo' en el título o pertenezca a la categoría 'IRL'."
-        )
+        lbl_help_desc = QLabel(self.i18n.get("timer.dialog.help_desc"))
         lbl_help_desc.setWordWrap(True)
         lbl_help_desc.setProperty("role", "body")
         
@@ -278,6 +273,7 @@ class TimerConfigWizard(ModernWizardPanel):
         messages = self.existing_config.get("messages", [])
         for m in messages:
             self._add_message_field(m)
+            
         online_min = self.existing_config.get("interval_online")
         if online_min is not None and online_min > 0:
             self.chk_online.setChecked(True)
@@ -313,7 +309,6 @@ class TimerConfigWizard(ModernWizardPanel):
 
     def get_timer_data(self):
         messages = [txt.text().strip() for row, txt in self.message_rows if txt.text().strip()]
-        
         keywords = [kw.strip() for kw in self.txt_keywords.text().split(",") if kw.strip()]
         categories = [cat.strip() for cat in self.txt_categories.text().split(",") if cat.strip()]
         
