@@ -1,5 +1,6 @@
 # backend\providers\youtube\youtube_client.py
 
+from PySide6.QtCore import QTimer
 import logging
 import os
 from PySide6.QtCore import QObject, QUrl, QThread, Signal, Slot
@@ -230,14 +231,10 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
                     "requester": requester
                 }
                 self.queue.append(song_entry)
-                
-                from PySide6.QtCore import QTimer
                 if not self.current_song:
                     QTimer.singleShot(0, self._play_next)
                 
                 success_msg = self.i18n.get("music.queue.success").replace("{track}", f"{cached['title']} - {cached['artist']}")
-                if callback:
-                    QTimer.singleShot(0, lambda: callback(True, success_msg))
                 return True, success_msg
 
             search_query = f"ytsearch1:{query}"

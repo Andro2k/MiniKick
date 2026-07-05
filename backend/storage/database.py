@@ -191,6 +191,23 @@ class DatabaseManager:
                     DELETE FROM avatar_cache WHERE cached_at < datetime('now', '-15 days');
                 END;
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS system_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    level TEXT NOT NULL,
+                    timestamp TEXT NOT NULL,
+                    message TEXT NOT NULL
+                )
+            """)
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_system_logs AFTER INSERT ON system_logs
+                WHEN (SELECT COUNT(*) FROM system_logs) > 2000
+                BEGIN
+                    DELETE FROM system_logs WHERE id IN (
+                        SELECT id FROM system_logs ORDER BY id ASC LIMIT (SELECT COUNT(*) - 2000 FROM system_logs)
+                    );
+                END;
+            """)
 
             cursor.execute("PRAGMA table_info(obs_rewards)")
             columns = [info[1] for info in cursor.fetchall()]

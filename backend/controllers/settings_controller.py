@@ -1,5 +1,6 @@
 # frontend\controllers\settings_controller.py
 
+from frontend.dialogs.bug_report_dialog import BugReportDialog
 from PySide6.QtCore import QObject, Signal, Slot
 
 class SettingsController(QObject):
@@ -119,6 +120,5 @@ class SettingsController(QObject):
 
     @Slot()
     def handle_feedback(self):
-        from frontend.dialogs.bug_report_dialog import BugReportDialog
         dialog = BugReportDialog(self.view.i18n, parent=self.view.window())
         dialog.exec()

@@ -138,8 +138,6 @@ class SpotifyMusicProvider(MusicPlayerProvider):
             resp = self._request("POST", f"/me/player/queue?uri={track_uri}")
             resp.raise_for_status()
             msg = self.i18n.get("music.queue.success").replace("{track}", track_name)
-            if callback:
-                callback(True, msg)
             return True, msg
 
         except requests.exceptions.HTTPError as e:
@@ -147,13 +145,9 @@ class SpotifyMusicProvider(MusicPlayerProvider):
                 msg = self.i18n.get("music.queue.no_device")
             else:
                 msg = self.i18n.get("music.queue.rejected").replace("{status}", str(e.response.status_code))
-            if callback:
-                callback(False, msg)
             return False, msg
         except Exception as e:
             msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
-            if callback:
-                callback(False, msg)
             return False, msg
 
     def skip_current(self) -> bool:

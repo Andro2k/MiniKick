@@ -42,7 +42,7 @@ class LogControlsPanel(QFrame):
         self.combo_filter = QComboBox()
         self.combo_filter.addItems([
             self.i18n.get("log.controls.filter_all"),
-            "INFO", "DEBUG", "WARNING", "ERROR", "CRITICAL",
+            "INFO", "DEBUG", "WARNING", "ERROR",
         ])
         self.combo_filter.setMinimumWidth(110)
         self.combo_filter.currentTextChanged.connect(self.filter_changed.emit)

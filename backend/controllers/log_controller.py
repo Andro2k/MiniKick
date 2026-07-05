@@ -46,14 +46,15 @@ class LogController(QObject):
                 search_lower in text.lower())
 
     def _filter_and_get_logs(self) -> list[tuple[str, str, str]]:
-        source = self._historical_logs if self._is_historical else self.service.get_history()
-        
-        filtered = []
-        for lvl, t_str, txt in source:
-            is_all = (self._current_filter == self.view.str_all)
-            if (is_all or lvl == self._current_filter) and self._matches_search(lvl, t_str, txt):
-                filtered.append((lvl, t_str, txt))
-        return filtered
+        if self._is_historical:
+            filtered = []
+            for lvl, t_str, txt in self._historical_logs:
+                is_all = (self._current_filter == self.view.str_all)
+                if (is_all or lvl == self._current_filter) and self._matches_search(lvl, t_str, txt):
+                    filtered.append((lvl, t_str, txt))
+            return filtered
+        else:
+            return self.service.get_filtered_history(self._current_filter, self.view.str_all, self._search_term)
 
     def _refresh_view_logs(self):
         if self._logs_streaming_visible or self._is_historical:
@@ -181,7 +182,9 @@ class LogController(QObject):
 
     @Slot()
     def open_github_issues(self):
-        QDesktopServices.openUrl(QUrl("https://github.com/Andro2k/MiniKick/issues"))
+        from frontend.dialogs.bug_report_dialog import BugReportDialog
+        dialog = BugReportDialog(self.view.i18n, parent=self.view.window())
+        dialog.exec()
         
     @Slot()
     def open_log_folder(self):

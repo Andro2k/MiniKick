@@ -19,15 +19,13 @@ _LEVEL_COLORS = {
     "DEBUG": COLOR_TEXT_SECONDARY,
     "INFO": COLOR_INFO,
     "WARNING": COLOR_WARNING,
-    "ERROR": COLOR_DANGER,
-    "CRITICAL": COLOR_DANGER,
+    "ERROR": COLOR_DANGER
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code.svg",
     "INFO": "info-circle.svg",
     "WARNING": "alert-triangle.svg",
-    "ERROR": "bug.svg",
-    "CRITICAL": "shield-half.svg",
+    "ERROR": "bug.svg"
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}
 

@@ -1,7 +1,6 @@
 # frontend\workers\update_worker.py
 
 from PySide6.QtCore import QThread, Signal
-
 from backend.services.system.updater_service import UpdateManager
 
 class UpdateCheckWorker(QThread):

@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
-        self.log_service = LogService()
+        self.log_service = LogService(self.container.db_manager)
         self.timers_worker = None
 
         self.view_dashboard = DashboardView(self.i18n)
