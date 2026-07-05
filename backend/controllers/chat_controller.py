@@ -7,6 +7,8 @@ from backend.services.chat.pipeline import MessagePipeline, ChatMessageDTO
 
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
+    spam_blocked = Signal()
+    command_executed = Signal()
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
@@ -94,11 +96,13 @@ class ChatController(QObject):
     def _step_spam(self, dto: ChatMessageDTO):
         if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id):
             dto.is_cancelled = True
+            self.spam_blocked.emit()
 
     def _step_commands(self, dto: ChatMessageDTO):
         handled, plugin_tag, _, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges)
         if handled:
             dto.is_cancelled = True
+            self.command_executed.emit()
             if plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
                 self._execute_resolved_music_plugin(plugin_tag, dto.user, dto.content, prefix)
 

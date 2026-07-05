@@ -451,6 +451,13 @@
             "affiliate": "Estado de Afiliado",
             "vods": "VODs"
         },
+        "session": {
+            "title": "Estadísticas de la Sesión",
+            "messages": "Mensajes Procesados",
+            "commands": "Comandos Ejecutados",
+            "timers": "Timers Enviados",
+            "spam": "Spam Filtrado"
+        },
         "status": {
             "connected_toast_msg": "Canal enlazado: {username}"
         },

@@ -130,7 +130,11 @@ class KickAPIClient:
         if msg_type == "user" and broadcaster_id is not None:
             payload["broadcaster_user_id"] = broadcaster_id
             
-        return self._request("POST", url, json=payload, timeout=10).json()
+        try:
+            return self._request("POST", url, json=payload, timeout=10).json()
+        except Exception as e:
+            logging.error("[KickAPI] Error posting chat message: %s", e)
+            return {}
     
     def delete_chat_message(self, message_id: str) -> bool:
         url = f"https://api.kick.com/public/v1/chat/{message_id}"

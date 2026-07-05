@@ -453,6 +453,13 @@ DEFAULT_DICTIONARY = {
             "affiliate": "Affiliate Status",
             "vods": "VODs"
         },
+        "session": {
+            "title": "Session Statistics",
+            "messages": "Messages Processed",
+            "commands": "Commands Executed",
+            "timers": "Timers Sent",
+            "spam": "Spam Filtered"
+        },
         "status": {
             "connected_toast_msg": "Channel linked: {username}"
         },

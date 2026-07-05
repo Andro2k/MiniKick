@@ -202,6 +202,33 @@ class DashboardView(QWidget):
 
         profile_layout.addLayout(self.top_row_layout)
         profile_layout.addWidget(stats_container) 
+
+        divider = QFrame()
+        divider.setFrameShape(QFrame.Shape.HLine)
+        divider.setProperty("role", "divider")
+        profile_layout.addWidget(divider)
+
+        lbl_session_title = QLabel(self.i18n.get("dashboard.session.title"))
+        lbl_session_title.setProperty("role", "h2")
+        profile_layout.addWidget(lbl_session_title)
+
+        session_stats_container = QWidget()
+        self.session_grid = QGridLayout(session_stats_container)
+        self.session_grid.setContentsMargins(0, 0, 0, 0)
+        self.session_grid.setSpacing(12)
+
+        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "message.svg", "0")
+        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "code.svg", "0")
+        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock.svg", "0")
+        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-half.svg", "0")
+
+        self.session_grid.addWidget(self.card_msg_processed, 0, 0)
+        self.session_grid.addWidget(self.card_cmd_executed, 0, 1)
+        self.session_grid.addWidget(self.card_timers_sent, 0, 2)
+        self.session_grid.addWidget(self.card_spam_blocked, 0, 3)
+
+        profile_layout.addWidget(session_stats_container)
+
         self.main_layout.addWidget(self.profile_container)
 
     def set_autostart_state(self, enabled: bool):
@@ -245,6 +272,12 @@ class DashboardView(QWidget):
         self.card_category.set_value(category)
         self.card_affiliate.set_value(affiliate_text)
         self.card_vods.set_value(vods_text)
+
+    def update_session_metrics(self, msg_count: int, cmd_count: int, timer_count: int, spam_count: int):
+        self.card_msg_processed.set_value(str(msg_count))
+        self.card_cmd_executed.set_value(str(cmd_count))
+        self.card_timers_sent.set_value(str(timer_count))
+        self.card_spam_blocked.set_value(str(spam_count))
 
     def set_avatar_from_bytes(self, image_data: bytes):
         pixmap = create_circular_pixmap(image_data)
@@ -303,6 +336,18 @@ class DashboardView(QWidget):
                 cards = [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods]
                 for i, card in enumerate(cards):
                     self.stats_grid.addWidget(card, i // cols, i % cols)
+        if hasattr(self, 'session_grid'):
+            if width < 650:
+                cols = 1
+            elif width < 950:
+                cols = 2
+            else:
+                cols = 4
+            if cols != getattr(self, '_session_cols', -1):
+                self._session_cols = cols
+                cards = [self.card_msg_processed, self.card_cmd_executed, self.card_timers_sent, self.card_spam_blocked]
+                for i, card in enumerate(cards):
+                    self.session_grid.addWidget(card, i // cols, i % cols)
                     
         if hasattr(self, "disconnected_container") and self.disconnected_container.isVisible():
             size = min(max(self.height() - 320, 120), 300)
@@ -316,3 +361,4 @@ class DashboardView(QWidget):
             self.lbl_illustration.setVisible(True)
         else:
             self.lbl_illustration.setVisible(False)
+    

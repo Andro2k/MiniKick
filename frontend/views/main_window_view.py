@@ -194,6 +194,12 @@ class MainWindow(QMainWindow):
             view=self.view_logs, 
             service=self.log_service
         )
+        self.session_metrics = {
+            "messages_processed": 0,
+            "commands_executed": 0,
+            "timers_sent": 0,
+            "spam_blocked": 0
+        }
 
         self.content_stack.addWidget(self.view_dashboard)
         self.content_stack.addWidget(self.view_chat)
@@ -238,6 +244,8 @@ class MainWindow(QMainWindow):
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self.tray_manager.set_tts_state)
+        self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
+        self.chat_controller.command_executed.connect(lambda: self._increment_metric("commands_executed"))
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.update_controller.handle_update_check)
@@ -331,6 +339,7 @@ class MainWindow(QMainWindow):
 
     @Slot(str, str, list, str, str, int)
     def _route_incoming_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
+        self._increment_metric("messages_processed")
         dto = ChatMessageDTO(user, msg, badges, color, msg_id, sender_id)
         self.chat_controller.process_message(dto)
 
@@ -531,6 +540,7 @@ class MainWindow(QMainWindow):
         if self.timer_service.api_client:
             try:
                 self.timer_service.api_client.post_chat_message(content=message, msg_type="bot")
+                self._increment_metric("timers_sent")
             except Exception as e:
                 self.logger.error(f"[Timer] Error posting message: {e}")
 
@@ -538,3 +548,14 @@ class MainWindow(QMainWindow):
     def _apply_dynamic_theme(self, base_size: int):
         new_stylesheet = get_global_qss(base_size)
         QApplication.instance().setStyleSheet(new_stylesheet)
+
+    def _increment_metric(self, name: str):
+        if hasattr(self, 'session_metrics') and name in self.session_metrics:
+            self.session_metrics[name] += 1
+            self.view_dashboard.update_session_metrics(
+                self.session_metrics["messages_processed"],
+                self.session_metrics["commands_executed"],
+                self.session_metrics["timers_sent"],
+                self.session_metrics["spam_blocked"]
+            )
+    

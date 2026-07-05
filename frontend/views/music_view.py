@@ -116,7 +116,7 @@ class MusicView(QWidget):
         scroll_content = QWidget()
         self.main_layout = QVBoxLayout(scroll_content)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(16)
+        self.main_layout.setSpacing(12)
 
         self.header = ViewHeader(
             title_text=self.i18n.get("music.header.title"),
@@ -141,7 +141,7 @@ class MusicView(QWidget):
         card.setProperty("role", "card")
         layout = QVBoxLayout(card)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(6)
+        layout.setSpacing(8)
 
         self.combo_provider = QComboBox()
         self.combo_provider.addItem("Spotify", "spotify")
@@ -221,7 +221,7 @@ class MusicView(QWidget):
         
         layout = QHBoxLayout(self.card_player)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
 
         self.icon_music = QLabel()
         self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
@@ -250,7 +250,7 @@ class MusicView(QWidget):
         
         layout = QVBoxLayout(self.card_cmds)
         layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
 
         lbl_title = QLabel(self.i18n.get("music.cmds.title"))
         lbl_title.setProperty("role", "h2")
@@ -301,8 +301,8 @@ class MusicView(QWidget):
         self.queue_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.queue_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.queue_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.queue_scroll.setMinimumHeight(120)
-        self.queue_scroll.setMaximumHeight(260)
+        self.queue_scroll.setMinimumHeight(180)
+        self.queue_scroll.setMaximumHeight(360)
         
         self.queue_list_widget = QWidget()
         self.queue_list_layout = FlowLayout(self.queue_list_widget, margin=0, hspacing=8, vspacing=8)
@@ -358,17 +358,17 @@ class MusicView(QWidget):
             requester = song.get("requester")
             lbl_artist_text = artist_text
             if requester:
-                lbl_artist_text += f" • Pedida por @{requester}"
+                lbl_artist_text += f" • @{requester}"
             if len(lbl_artist_text) > 36:
                 lbl_artist_text = lbl_artist_text[:33] + "..."
             
             lbl_title = QLabel(title_text)
             lbl_title.setProperty("role", "h3")
-            lbl_title.setWordWrap(False)
+            lbl_title.setWordWrap(True)
                 
             lbl_artist = QLabel(lbl_artist_text)
             lbl_artist.setProperty("role", "caption")
-            lbl_artist.setWordWrap(False)
+            lbl_artist.setWordWrap(True)
             
             info_layout.addWidget(lbl_title)
             info_layout.addWidget(lbl_artist)
@@ -426,3 +426,5 @@ class MusicView(QWidget):
 
         self.lbl_song_title.setText(song_data.get("title", ""))
         self.lbl_song_artist.setText(song_data.get("artist", ""))
+
+    
