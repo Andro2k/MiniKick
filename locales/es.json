@@ -129,7 +129,7 @@
     },
     "command": {
         "header": {
-            "title": "Disparadores y Respuestas de Comandos",
+            "title": "Comandos Vinculados",
             "subtitle": "Vincula comandos de chat o expresiones regulares con respuestas automáticas del bot."
         },
         "table": {
@@ -200,7 +200,7 @@
     },
     "rewards": {
         "header": {
-            "title": "Disparadores y Recompensas",
+            "title": "Recompensas Vinculadas",
             "subtitle": "Vincula las recompensas de tu canal con elementos multimedia en pantalla."
         },
         "obs": {
@@ -399,7 +399,10 @@
             "error": "❌ Error interno de Spotify: {error}",
             "no_link": "❌ No se pudo obtener el enlace del video.",
             "searching": "🔍 Buscando '{query}' en YouTube...",
-            "processing_link": "🔍 Procesando enlace de YouTube..."
+            "processing_link": "🔍 Procesando enlace de YouTube...",
+            "empty": "La cola está vacía",
+            "title": "Cola de Reproducción",
+            "remove_tooltip": "Eliminar de la cola"
         },
         "errors": {
             "no_session": "Sin sesión activa de Spotify.",
@@ -526,9 +529,9 @@
                 "dashboard": "Panel de Control",
                 "chat": "Chat",
                 "music": "Música",
-                "triggers": "Disparadores",
+                "triggers": "Recompensas",
                 "comandos": "Comandos",
-                "spam_filters": "Filtros de Spam",
+                "spam_filters": "Filtros Anti-Spam",
                 "settings": "Ajustes",
                 "developer": "Desarrollador"
             }

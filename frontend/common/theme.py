@@ -4,6 +4,7 @@ from frontend.common.utils import get_assets_path
 PATH_ICON_HELP = get_assets_path("icons/help.svg")
 PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
+PATH_ICON_CHECK = get_assets_path("icons/check.svg").replace('\\', '/')
 
 COLOR_BG_BASE        = "#09090B"
 COLOR_BG_SURFACE     = "#121214"
@@ -37,7 +38,7 @@ COLOR_TEXT_PRIMARY   = "#CCCCCC"
 COLOR_TEXT_SECONDARY = "#767676"
 COLOR_TEXT_MUTED     = "#71717A"
 COLOR_BLACK          = "#000000"
-COLOR_WHITE          = "#F7F7F7"
+COLOR_WHITE          = "#FAFAFA"
 
 FONT_FAMILY = "'Geist', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -153,6 +154,15 @@ QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{ background-col
 QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{ background-color: {COLOR_CHECK}; }}
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 
+QCheckBox {{ spacing: 8px; color: {COLOR_TEXT_PRIMARY}; background-color: transparent; }}
+QCheckBox:hover {{ color: {COLOR_WHITE}; }}
+QCheckBox::indicator {{ width: 12px; height: 12px; border-radius: {RADIUS_SM}px; border: 1.5px solid {COLOR_BORDER_SVELTE}; background-color: {COLOR_BG_INPUT}; }}
+QCheckBox::indicator:unchecked:hover {{ border-color: {COLOR_BORDER_HOVER}; background-color: {COLOR_BG_HOVER}; }}
+QCheckBox::indicator:checked {{ border-color: {COLOR_ACCENT}; background-color: {COLOR_ACCENT}; image: url("{PATH_ICON_CHECK}"); }}
+QCheckBox::indicator:checked:hover {{ border-color: {COLOR_ACCENT_HOVER}; background-color: {COLOR_ACCENT_HOVER}; }}
+QCheckBox::indicator:disabled {{ border-color: {COLOR_BORDER_SVELTE}; background-color: {COLOR_BORDER_GLOW}; }}
+QCheckBox::indicator:checked:disabled {{ border-color: {COLOR_BORDER_SVELTE}; background-color: {COLOR_BORDER_GLOW}; image: url("{PATH_ICON_CHECK}"); }}
+
 QTableWidget {{ background-color: {COLOR_BG_SURFACE}; border: none; gridline-color: transparent; outline: none; }}
 QTableWidget::item {{ padding: 4px; border-bottom: 1px solid {COLOR_BORDER_SVELTE}; }}
 QTableWidget::item:selected {{ background-color: {COLOR_BG_HOVER}; color: {COLOR_ACCENT}; }}
@@ -231,22 +241,15 @@ QPushButton[role="action_outlined"]:disabled,
 QPushButton[role="action_danger_border"]:disabled,
 QPushButton[role="action_accent_border"]:disabled,
 QPushButton[role="action_neutral_border"]:disabled,
-QPushButton[role="btn_ghost"]:disabled {{
-    background-color: {COLOR_BORDER_GLOW};
-    color: {COLOR_TEXT_MUTED};
-    border: 1.5px solid {COLOR_BG_HOVER};
-}}
+QPushButton[role="btn_ghost"]:disabled {{ background-color: {COLOR_BORDER_GLOW}; color: {COLOR_TEXT_MUTED}; border: 1.5px solid {COLOR_BG_HOVER}; }}
 
 QLineEdit:disabled,
 QTextEdit:disabled,
 QComboBox:disabled,
 QSpinBox:disabled,
-QDoubleSpinBox:disabled,
-QCheckBox:disabled {{
-    background-color: {COLOR_BORDER_GLOW};
-    color: {COLOR_TEXT_MUTED};
-    border-color: {COLOR_BG_HOVER};
-}}
+QDoubleSpinBox:disabled {{ background-color: {COLOR_BORDER_GLOW}; color: {COLOR_TEXT_MUTED}; border-color: {COLOR_BG_HOVER}; }}
+
+QCheckBox:disabled {{ color: {COLOR_TEXT_MUTED}; }}
 """
 
 GLOBAL_QSS = get_global_qss(13)

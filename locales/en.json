@@ -399,7 +399,10 @@
             "error": "❌ Internal Spotify error: {error}",
             "no_link": "❌ Could not retrieve video link.",
             "searching": "🔍 Searching for '{query}' on YouTube...",
-            "processing_link": "🔍 Processing YouTube link..."
+            "processing_link": "🔍 Processing YouTube link...",
+            "empty": "The queue is empty",
+            "title": "Playback Queue",
+            "remove_tooltip": "Remove from queue"
         },
         "errors": {
             "no_session": "No active Spotify session.",

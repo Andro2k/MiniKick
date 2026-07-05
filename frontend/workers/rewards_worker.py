@@ -66,7 +66,7 @@ class RewardWorker(QThread):
                 for user_data in users_response.get("data", []):
                     user_names_map[user_data.get("user_id")] = user_data.get("name")
             except Exception as e:
-                logging.error("[RewardWorker] Error al hidratar usuarios de recompensas: %s", e)
+                logging.error("[RewardWorker] Error hydrating reward users: %s", e)
         for red in redemptions:
             red_id = red["red_id"]
             user_id = red["user_id"]
@@ -80,9 +80,9 @@ class RewardWorker(QThread):
                 batch = new_ids_to_accept[i:i+25]
                 try:
                     self.api_client.accept_redemptions(batch)
-                    logging.info(self.i18n.get("main.workers.reward.batch_success").replace("{count}", str(len(batch))))
+                    logging.info("[RewardWorker] Successfully accepted batch of %d redemptions", len(batch))
                 except Exception as api_err:
-                    logging.error(self.i18n.get("main.workers.reward.batch_error").replace("{error}", str(api_err)))
+                    logging.error("[RewardWorker] Error accepting redemptions batch: %s", api_err)
 
     def stop(self):
         self._running = False

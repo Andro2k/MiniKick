@@ -18,3 +18,9 @@ class MusicPlayerProvider(ABC):
     @abstractmethod
     def set_volume(self, volume: int) -> None:
         pass
+
+    def get_queue(self) -> list[dict]:
+        return []
+
+    def remove_from_queue(self, index: int) -> bool:
+        return False

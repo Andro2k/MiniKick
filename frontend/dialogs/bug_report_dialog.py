@@ -54,7 +54,7 @@ class BugReportWorker(QThread):
                         with open(log_file_path, "rb") as f:
                             files["file"] = ("minikick.log", f.read(), "text/plain")
                     except Exception as e:
-                        logging.error("[BugReportWorker] Error leyendo archivo de log: %s", e)
+                        logging.error("[BugReportWorker] Error reading log file: %s", e)
 
             if self.image_path and os.path.exists(self.image_path):
                 try:
@@ -70,7 +70,7 @@ class BugReportWorker(QThread):
                     with open(self.image_path, "rb") as f:
                         files["image"] = (filename, f.read(), mime_type)
                 except Exception as e:
-                    logging.error("[BugReportWorker] Error leyendo archivo de imagen: %s", e)
+                    logging.error("[BugReportWorker] Error reading image file: %s", e)
 
             if files:
                 resp = requests.post(DISCORD_WEBHOOK_URL, data=data, files=files, timeout=15)
@@ -145,7 +145,7 @@ class BugReportDialog(ModernModal):
         self.chk_logs.setProperty("role", "checkbox")
         
         self.lbl_error = QLabel()
-        self.lbl_error.setStyleSheet("color: #EF4444; font-size: 11px;")
+        self.lbl_error.setProperty("state", "error")
         self.lbl_error.setWordWrap(True)
         self.lbl_error.hide()
 

@@ -32,6 +32,7 @@ class MusicController(QObject):
         self.view.command_toggled.connect(self.handle_command_toggle)
         self.view.provider_changed.connect(self.set_provider_type)
         self.view.volume_changed.connect(self.set_volume)
+        self.view.remove_queue_item_requested.connect(self.handle_remove_queue_item)
 
     def _load_initial_state(self):
         saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.storage.load_all()}
@@ -147,6 +148,24 @@ class MusicController(QObject):
             return
         song = self.music_provider.get_current_song()
         self.view.update_current_song(song)
+        
+        if hasattr(self.music_provider, "get_queue"):
+            queue_items = self.music_provider.get_queue()
+            self.view.update_queue(queue_items)
+        else:
+            self.view.update_queue([])
+
+    @Slot(int)
+    def handle_remove_queue_item(self, index: int):
+        if self.music_provider and hasattr(self.music_provider, "remove_from_queue"):
+            success = self.music_provider.remove_from_queue(index)
+            if success:
+                self._poll_now_playing()
+                if self.i18n.current_lang == "es":
+                    msg = "Canción eliminada de la cola"
+                else:
+                    msg = "Song removed from queue"
+                self.toast.show_toast(self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube", msg, "success")
 
     @Slot(str, bool)
     def handle_command_toggle(self, trigger: str, is_active: bool):

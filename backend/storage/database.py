@@ -9,15 +9,58 @@ class DatabaseManager:
         self.db_dir = os.path.join(app_data_dir, '.Minikick')
         os.makedirs(self.db_dir, exist_ok=True)
         self.db_name = os.path.join(self.db_dir, db_name)
-        self._create_tables()
+        
+        try:
+            if os.path.exists(self.db_name):
+                conn = sqlite3.connect(self.db_name)
+                try:
+                    cursor = conn.cursor()
+                    cursor.execute("PRAGMA integrity_check")
+                    res = cursor.fetchone()
+                    if not res or res[0] != "ok":
+                        raise sqlite3.DatabaseError("Database integrity check failed")
+                finally:
+                    conn.close()
+            self._create_tables()
+        except sqlite3.DatabaseError as e:
+            import logging
+            logger = logging.getLogger("minikick.database")
+            logger.error("Database file is malformed at startup, recreating: %s", e)
+            self._handle_corrupt_database()
 
     def get_connection(self):
-        conn = sqlite3.connect(self.db_name)
+        conn = None
         try:
+            conn = sqlite3.connect(self.db_name)
             conn.execute("PRAGMA journal_mode=WAL")
-        except sqlite3.Error:
-            pass
-        return conn
+            return conn
+        except sqlite3.DatabaseError as e:
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+            if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
+                import logging
+                logger = logging.getLogger("minikick.database")
+                logger.error("Database error in get_connection, recreating database: %s", e)
+                self._handle_corrupt_database()
+                return sqlite3.connect(self.db_name)
+            else:
+                raise e
+
+    def _handle_corrupt_database(self):
+        import logging
+        logger = logging.getLogger("minikick.database")
+        for ext in ("", "-wal", "-shm"):
+            file_path = self.db_name + ext
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    logger.info("Deleted corrupt database file: %s", file_path)
+                except Exception as del_err:
+                    logger.warning("Could not delete database file %s: %s", file_path, del_err)
+        self._create_tables()
 
     def _create_tables(self):
         with self.get_connection() as conn:

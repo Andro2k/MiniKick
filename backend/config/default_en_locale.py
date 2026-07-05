@@ -131,7 +131,7 @@ DEFAULT_DICTIONARY = {
     },
     "command": {
         "header": {
-            "title": "Triggers and Command Responses",
+            "title": "Triggers & Commands",
             "subtitle": "Link chat commands or regular expressions to automated bot responses."
         },
         "table": {

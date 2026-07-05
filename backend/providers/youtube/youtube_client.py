@@ -18,6 +18,7 @@ class YouTubeResolveWorker(QThread):
     def run(self):
         try:
             import yt_dlp
+            import hashlib
             
             app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
             cache_dir = os.path.join(app_data_dir, '.Minikick', 'cache')
@@ -34,9 +35,15 @@ class YouTubeResolveWorker(QThread):
             
             try:
                 with yt_dlp.YoutubeDL(ydl_opts_download) as ydl:
-                    info = ydl.extract_info(self.query_or_url, download=True)
+                    info = ydl.extract_info(self.query_or_url, download=False)
                     if 'entries' in info:
-                        info = info['entries'][0]
+                        info = info['entries'][0]                    
+                    raw_id = info.get('id', '')
+                    if len(raw_id) > 64 or '?' in raw_id or '&' in raw_id or '=' in raw_id or '/' in raw_id or '\\' in raw_id:
+                        info['id'] = hashlib.md5(self.query_or_url.encode('utf-8')).hexdigest()
+                    
+                    ydl.process_info(info)
+                    
                     local_path = ydl.prepare_filename(info)
                     title = info.get('title', 'Unknown Title')
                     
@@ -44,7 +51,7 @@ class YouTubeResolveWorker(QThread):
                         self.resolved.emit(title, local_path)
                         return
             except Exception as download_err:
-                logging.warning("[YouTubeResolveWorker] El intento de descarga local falló: %s. Usando fallback de streaming remoto.", download_err)
+                logging.warning("[YouTubeResolveWorker] Local download attempt failed: %s. Using remote streaming fallback.", download_err)
             
             ydl_opts_stream = {
                 'format': 'bestaudio[ext=m4a]/bestaudio/best',
@@ -62,7 +69,6 @@ class YouTubeResolveWorker(QThread):
             
         except Exception as e:
             self.error.emit(str(e))
-
 
 class YouTubeSearchWorker(QThread):
     finished = Signal(bool, str)
@@ -101,12 +107,24 @@ class YouTubeSearchWorker(QThread):
                     item = info
 
                 title = item.get('title', 'Unknown Title')
-                video_url = item.get('url') or item.get('webpage_url')
+                video_id = item.get('id')
+                is_youtube = False
+                ie_key = item.get('ie_key')
+                if ie_key and ie_key.lower() == 'youtube':
+                    is_youtube = True
+                elif 'youtube' in item.get('extractor', '').lower() or 'youtube' in info.get('extractor', '').lower():
+                    is_youtube = True
+                elif video_id and len(video_id) == 11:
+                    is_youtube = True
+                
+                if is_youtube and video_id:
+                    video_url = f"https://www.youtube.com/watch?v={video_id}"
+                else:
+                    video_url = item.get('webpage_url') or item.get('url')
                 
                 if video_url and not video_url.startswith("http"):
                     video_url = f"https://www.youtube.com/watch?v={video_url}"
                 elif not video_url:
-                    video_id = item.get('id')
                     if video_id:
                         video_url = f"https://www.youtube.com/watch?v={video_id}"
                     else:
@@ -130,7 +148,6 @@ class YouTubeSearchWorker(QThread):
         except Exception as e:
             msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
             self.finished.emit(False, msg)
-
 
 class YouTubeMusicProviderMeta(type(QObject), ABCMeta):
     pass
@@ -203,6 +220,15 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
     def set_volume(self, volume: int) -> None:
         self.audio_output.setVolume(volume / 100.0)
 
+    def get_queue(self) -> list[dict]:
+        return list(self.queue)
+
+    def remove_from_queue(self, index: int) -> bool:
+        if 0 <= index < len(self.queue):
+            self.queue.pop(index)
+            return True
+        return False
+
     def shutdown(self):
         self.player.stop()
         self.player.setSource(QUrl())
@@ -225,7 +251,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
             try:
                 os.remove(self.current_local_file)
             except Exception as e:
-                logging.error("[YouTubeMusicProvider] Error eliminando archivo temporal: %s", e)
+                logging.error("[YouTubeMusicProvider] Error deleting temporary file: %s", e)
         self.current_local_file = None
 
         if not self.queue:
@@ -263,7 +289,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
 
     @Slot(str)
     def _on_resolve_error(self, error_msg: str):
-        logging.error("[YouTubeMusicProvider] Error resolviendo stream de audio: %s", error_msg)
+        logging.error("[YouTubeMusicProvider] Error resolving audio stream: %s", error_msg)
         if self.current_song:
             title = self.current_song.get("title", "Unknown Title")
             requester = self.current_song.get("requester", "") or ""
