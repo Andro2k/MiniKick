@@ -455,9 +455,9 @@ DEFAULT_DICTIONARY = {
         },
         "session": {
             "title": "Session Statistics",
-            "messages": "Messages Processed",
-            "commands": "Commands Executed",
-            "timers": "Timers Sent",
+            "messages": "Session Messages",
+            "commands": "Command Executions",
+            "timers": "Active Timers",
             "spam": "Spam Filtered"
         },
         "status": {

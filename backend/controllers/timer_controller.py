@@ -31,6 +31,8 @@ class TimerController(QObject):
             if data["name"] and data["messages"]:
                 self.service.save_timer(**data)
                 self.load_initial_data()
+                if hasattr(self.view.window(), '_update_dashboard_metrics'):
+                    self.view.window()._update_dashboard_metrics()
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
                         title=self.view.i18n.get("timer.status.created"),
@@ -51,6 +53,8 @@ class TimerController(QObject):
             if data["name"] and data["messages"]:
                 self.service.save_timer(**data)
                 self.load_initial_data()
+                if hasattr(self.view.window(), '_update_dashboard_metrics'):
+                    self.view.window()._update_dashboard_metrics()
                 if hasattr(self.view.window(), 'toast'):
                     self.view.window().toast.show_toast(
                         title=self.view.i18n.get("timer.status.updated"),
@@ -67,6 +71,8 @@ class TimerController(QObject):
         name = existing["name"]
         self.service.delete_timer(timer_id)
         self.load_initial_data()
+        if hasattr(self.view.window(), '_update_dashboard_metrics'):
+            self.view.window()._update_dashboard_metrics()
         if hasattr(self.view.window(), 'toast'):
             self.view.window().toast.show_toast(
                 title=self.view.i18n.get("timer.status.deleted"),
@@ -91,6 +97,8 @@ class TimerController(QObject):
                 categories=existing["categories"],
                 timer_id=timer_id
             )
+            if hasattr(self.view.window(), '_update_dashboard_metrics'):
+                self.view.window()._update_dashboard_metrics()
             if hasattr(self.view.window(), 'toast'):
                 title_key = "timer.status.enabled" if is_active else "timer.status.disabled"
                 fallback_title = "Temporizador Activado" if is_active else "Temporizador Desactivado"

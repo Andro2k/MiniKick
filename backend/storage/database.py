@@ -33,6 +33,7 @@ class DatabaseManager:
         try:
             conn = sqlite3.connect(self.db_name)
             conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA foreign_keys=ON")
             return conn
         except sqlite3.DatabaseError as e:
             if conn:
@@ -125,6 +126,42 @@ class DatabaseManager:
                     keywords TEXT DEFAULT '[]',
                     categories TEXT DEFAULT '[]'
                 )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS command_execution_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    command_trigger TEXT NOT NULL,
+                    username TEXT NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (command_trigger) REFERENCES chat_commands(trigger) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_command_logs AFTER INSERT ON command_execution_logs
+                BEGIN
+                    DELETE FROM command_execution_logs WHERE timestamp < datetime('now', '-30 days');
+                END;
+            """)
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS command_analytics AS
+                SELECT 
+                    c.trigger,
+                    c.response,
+                    c.is_active,
+                    COUNT(l.id) AS usage_count,
+                    MAX(l.timestamp) AS last_used
+                FROM chat_commands c
+                LEFT JOIN command_execution_logs l ON c.trigger = l.command_trigger
+                GROUP BY c.trigger
+            """)
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS active_features_summary AS
+                SELECT 
+                    (SELECT COUNT(*) FROM chat_commands) AS total_commands,
+                    (SELECT COUNT(*) FROM chat_commands WHERE is_active = 1) AS active_commands,
+                    (SELECT COUNT(*) FROM chat_timers) AS total_timers,
+                    (SELECT COUNT(*) FROM chat_timers WHERE is_active = 1) AS active_timers,
+                    (SELECT COUNT(*) FROM command_execution_logs) AS total_command_usages
             """)
 
             cursor.execute("PRAGMA table_info(obs_rewards)")
@@ -260,6 +297,39 @@ class SQLiteCommandsStorage:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM chat_commands WHERE trigger=?", (trigger,))
             conn.commit()
+
+    def log_command_execution(self, trigger: str, username: str) -> None:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO command_execution_logs (command_trigger, username) VALUES (?, ?)", (trigger, username))
+            conn.commit()
+
+    def get_command_analytics(self) -> list[dict]:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT trigger, response, is_active, usage_count, last_used FROM command_analytics ORDER BY usage_count DESC")
+            return [{"trigger": r[0], "response": r[1], "is_active": bool(r[2]), "usage_count": r[3], "last_used": r[4]} for r in cursor.fetchall()]
+
+    def get_active_features_summary(self) -> dict:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT total_commands, active_commands, total_timers, active_timers, total_command_usages FROM active_features_summary")
+            r = cursor.fetchone()
+            if r:
+                return {
+                    "total_commands": r[0],
+                    "active_commands": r[1],
+                    "total_timers": r[2],
+                    "active_timers": r[3],
+                    "total_command_usages": r[4]
+                }
+            return {
+                "total_commands": 0,
+                "active_commands": 0,
+                "total_timers": 0,
+                "active_timers": 0,
+                "total_command_usages": 0
+            }
 
 class SQLiteSpamStorage:
     def __init__(self, db_manager: DatabaseManager):

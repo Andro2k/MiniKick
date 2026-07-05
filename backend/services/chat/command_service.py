@@ -106,6 +106,11 @@ class CommandService:
         self.cooldown_timers[trigger] = now
         final_response = cmd["response"].replace("{user}", user)
 
+        try:
+            self.storage.log_command_execution(trigger, user)
+        except Exception as e:
+            logging.error("[CommandService] Error logging command execution: %s", e)
+
         if final_response.startswith("[PLUGIN_"):
             return True, final_response, cmd, matched_prefix
 

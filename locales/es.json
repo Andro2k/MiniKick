@@ -453,9 +453,9 @@
         },
         "session": {
             "title": "Estadísticas de la Sesión",
-            "messages": "Mensajes Procesados",
-            "commands": "Comandos Ejecutados",
-            "timers": "Timers Enviados",
+            "messages": "Mensajes Sesión",
+            "commands": "Ejecuciones Comandos",
+            "timers": "Timers Activos",
             "spam": "Spam Filtrado"
         },
         "status": {
