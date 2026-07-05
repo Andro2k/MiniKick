@@ -131,7 +131,7 @@ DEFAULT_DICTIONARY = {
     },
     "command": {
         "header": {
-            "title": "Triggers & Commands",
+            "title": "Triggers and Command Responses",
             "subtitle": "Link chat commands or regular expressions to automated bot responses."
         },
         "table": {
@@ -401,7 +401,10 @@ DEFAULT_DICTIONARY = {
             "error": "❌ Internal Spotify error: {error}",
             "no_link": "❌ Could not retrieve video link.",
             "searching": "🔍 Searching for '{query}' on YouTube...",
-            "processing_link": "🔍 Processing YouTube link..."
+            "processing_link": "🔍 Processing YouTube link...",
+            "empty": "The queue is empty",
+            "title": "Playback Queue",
+            "remove_tooltip": "Remove from queue"
         },
         "errors": {
             "no_session": "No active Spotify session.",
