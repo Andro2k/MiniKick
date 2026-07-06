@@ -259,13 +259,13 @@ class MusicView(QWidget):
         controls_layout = QHBoxLayout()
         controls_layout.setSpacing(6)
         
-        self.btn_play_pause = ModernButton("", role="action_accent_border")
+        self.btn_play_pause = ModernButton("", role="action_neutral_border")
         self.btn_play_pause.setFixedSize(36, 36)
         self.btn_play_pause.setIcon(get_icon_colored("play.svg", COLOR_TEXT_PRIMARY, 18))
         self.btn_play_pause.setIconSize(QSize(18, 18))
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
         
-        self.btn_skip = ModernButton("", role="action_accent_border")
+        self.btn_skip = ModernButton("", role="action_neutral_border")
         self.btn_skip.setFixedSize(36, 36)
         self.btn_skip.setIcon(get_icon_colored("player-skip-forward.svg", COLOR_TEXT_PRIMARY, 18))
         self.btn_skip.setIconSize(QSize(18, 18))

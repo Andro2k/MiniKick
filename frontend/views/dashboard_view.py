@@ -122,14 +122,14 @@ class DashboardView(QWidget):
         status_layout = QHBoxLayout()
         self.status_label = QLabel(self.i18n.get("dashboard.connection.status_waiting"))
         self.status_label.setProperty("role", "subtitle")
+        self.status_label.setWordWrap(True)
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
         self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
-        status_layout.addWidget(self.status_label)
-        status_layout.addStretch()
-        status_layout.addWidget(self.btn_connect)
+        status_layout.addWidget(self.status_label, stretch=1)
+        status_layout.addWidget(self.btn_connect, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         conn_layout.addWidget(row_autostart)
         
