@@ -1,10 +1,13 @@
 # frontend\views\music_view.py
 
-from frontend.common.theme import COLOR_DANGER
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
                                 QLabel, QFrame, QScrollArea, QComboBox, QSlider, QPushButton,
                                 QLayout)
 from PySide6.QtCore import Qt, Signal, QSize, QPoint, QRect
+from frontend.common.theme import COLOR_DANGER, COLOR_ACCENT, COLOR_TEXT_PRIMARY
+from frontend.common.utils import get_icon_colored, get_icon
+from frontend.widgets.blocks_component import ViewHeader, SettingRow, SliderRow
+from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
 class FlowLayout(QLayout):
     def __init__(self, parent=None, margin=0, hspacing=8, vspacing=8):
@@ -85,11 +88,6 @@ class FlowLayout(QLayout):
             line_height = max(line_height, item.sizeHint().height())
 
         return y + line_height - effective_rect.y() + top + bottom
-
-from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY
-from frontend.common.utils import get_icon_colored, get_icon
-from frontend.widgets.blocks_component import ViewHeader, SettingRow, SliderRow
-from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
 class MusicView(QWidget):
     connect_requested = Signal()
@@ -336,8 +334,8 @@ class MusicView(QWidget):
         self.queue_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.queue_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.queue_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.queue_scroll.setMinimumHeight(180)
-        self.queue_scroll.setMaximumHeight(360)
+        self.queue_scroll.setMinimumHeight(160)
+        self.queue_scroll.setMaximumHeight(320)
         
         self.queue_list_widget = QWidget()
         self.queue_list_layout = FlowLayout(self.queue_list_widget, margin=0, hspacing=8, vspacing=8)
@@ -353,6 +351,11 @@ class MusicView(QWidget):
         self.main_layout.addWidget(self.card_queue)
 
     def update_queue(self, queue_items: list[dict]):
+        new_urls = [song.get("url") for song in queue_items]
+        if hasattr(self, "_current_queue_urls") and self._current_queue_urls == new_urls:
+            return
+        self._current_queue_urls = new_urls
+
         while self.queue_list_layout.count() > 0:
             item = self.queue_list_layout.takeAt(0)
             widget = item.widget()
@@ -370,11 +373,11 @@ class MusicView(QWidget):
 
         for idx, song in enumerate(queue_items):
             item_frame = QFrame()
-            item_frame.setFixedSize(265, 48)
+            item_frame.setFixedSize(264, 64)
             item_frame.setProperty("role", "bot_tag")
             
             item_layout = QHBoxLayout(item_frame)
-            item_layout.setContentsMargins(10, 6, 10, 6)
+            item_layout.setContentsMargins(10, 4, 10, 4)
             item_layout.setSpacing(10)
             
             lbl_idx = QLabel(f"{idx + 1}")
@@ -383,30 +386,35 @@ class MusicView(QWidget):
             item_layout.addWidget(lbl_idx)
             
             info_layout = QVBoxLayout()
-            info_layout.setSpacing(2)
+            info_layout.setSpacing(1)
             
             title_text = song.get("title", "Unknown Title")
             if len(title_text) > 28:
                 title_text = title_text[:25] + "..."
                 
             artist_text = song.get("artist", "-")
+            if len(artist_text) > 30:
+                artist_text = artist_text[:27] + "..."
+                
             requester = song.get("requester")
-            lbl_artist_text = artist_text
-            if requester:
-                lbl_artist_text += f" • @{requester}"
-            if len(lbl_artist_text) > 36:
-                lbl_artist_text = lbl_artist_text[:33] + "..."
+            lbl_requester_text = f"@{requester}" if requester else ""
             
             lbl_title = QLabel(title_text)
             lbl_title.setProperty("role", "h3")
             lbl_title.setWordWrap(True)
                 
-            lbl_artist = QLabel(lbl_artist_text)
+            lbl_artist = QLabel(artist_text)
             lbl_artist.setProperty("role", "caption")
             lbl_artist.setWordWrap(True)
             
+            lbl_requester = QLabel(lbl_requester_text)
+            lbl_requester.setProperty("role", "caption")
+            lbl_requester.setStyleSheet(f"color: {COLOR_ACCENT}; font-size: 10px; font-weight: bold;")
+            lbl_requester.setWordWrap(True)
+            
             info_layout.addWidget(lbl_title)
             info_layout.addWidget(lbl_artist)
+            info_layout.addWidget(lbl_requester)
             item_layout.addLayout(info_layout, stretch=1)
             
             btn_delete = QPushButton()
@@ -456,15 +464,27 @@ class MusicView(QWidget):
                 self.lbl_auth_status.setText(self.i18n.get("common.status.disconnected"))
 
     def update_current_song(self, song_data: dict | None):
-        if not song_data:
-            self.lbl_song_title.setText(self.i18n.get("music.player.paused_title"))
-            self.lbl_song_artist.setText(self.i18n.get("music.player.paused_desc"))
-            self.btn_play_pause.setIcon(get_icon_colored("play.svg", COLOR_TEXT_PRIMARY, 18))
-            return
-
-        self.lbl_song_title.setText(song_data.get("title", ""))
-        self.lbl_song_artist.setText(song_data.get("artist", ""))
+        title = ""
+        artist = ""
+        is_playing = False
         
-        is_playing = song_data.get("is_playing", False)
+        if song_data:
+            title = song_data.get("title", "")
+            artist = song_data.get("artist", "")
+            is_playing = song_data.get("is_playing", False)
+        else:
+            title = self.i18n.get("music.player.paused_title")
+            artist = self.i18n.get("music.player.paused_desc")
+            is_playing = False
+
+        if (hasattr(self, "_cached_song_state") and 
+            self._cached_song_state == (title, artist, is_playing)):
+            return
+            
+        self._cached_song_state = (title, artist, is_playing)
+
+        self.lbl_song_title.setText(title)
+        self.lbl_song_artist.setText(artist)
+        
         icon_name = "player-pause.svg" if is_playing else "play.svg"
         self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, 18))

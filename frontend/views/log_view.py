@@ -244,19 +244,26 @@ class LogView(QWidget):
         self._pending_ui_ops = []
 
         self.table.setUpdatesEnabled(False)
+        self.table.blockSignals(True)
+        
+        affected_rows = set()
         for is_grouped, level, time_str, text_str in ops:
             if is_grouped and self.table.rowCount() > 0:
                 last_row = self.table.rowCount() - 1
                 item_msg = self.table.item(last_row, 2)
                 if item_msg:
                     item_msg.setText(f"{item_msg.text()}\n{text_str}")
+                    affected_rows.add(last_row)
             else:
                 row = self.table.rowCount()
                 self.table.insertRow(row)
                 self._populate_row_at(row, level, time_str, text_str)
+                affected_rows.add(row)
 
-        if self.table.rowCount() > 0:
-            self.table.resizeRowsToContents()
+        for row in affected_rows:
+            self.table.resizeRowToContents(row)
+
+        self.table.blockSignals(False)
         self.table.setUpdatesEnabled(True)
         scrollbar = self.table.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())

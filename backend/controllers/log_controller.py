@@ -52,6 +52,8 @@ class LogController(QObject):
                 is_all = (self._current_filter == self.view.str_all)
                 if (is_all or lvl == self._current_filter) and self._matches_search(lvl, t_str, txt):
                     filtered.append((lvl, t_str, txt))
+            if len(filtered) > 500:
+                filtered = filtered[-500:]
             return filtered
         else:
             return self.service.get_filtered_history(self._current_filter, self.view.str_all, self._search_term)

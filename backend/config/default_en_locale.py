@@ -411,6 +411,8 @@ DEFAULT_DICTIONARY = {
             "refresh_failed": "Could not refresh Spotify token."
         },
         "youtube": {
+            "auto_resume_title": "Auto-resume (YouTube)",
+            "auto_resume_desc": "Play automatically when queued, or wait for the streamer.",
             "error_title": "YouTube Error",
             "age_restricted": "This video requires age verification (Sign in to confirm your age)",
             "inappropriate": "This video is inappropriate for some users",

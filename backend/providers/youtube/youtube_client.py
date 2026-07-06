@@ -238,7 +238,8 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         if not self.current_song:
             return None
 
-        is_playing = (self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState)
+        is_resolving = (self.resolve_worker is not None and self.resolve_worker.isRunning())
+        is_playing = is_resolving or (self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState)
         return {
             "title": self.current_song["title"],
             "artist": self.current_song["artist"],

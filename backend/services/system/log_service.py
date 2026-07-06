@@ -83,9 +83,11 @@ class LogService:
                         query += " AND (LOWER(level) LIKE ? OR LOWER(timestamp) LIKE ? OR LOWER(message) LIKE ?)"
                         params.extend([term, term, term])
                         
-                    query += " ORDER BY id ASC"
+                    query += " ORDER BY id DESC LIMIT 300"
                     cursor.execute(query, params)
-                    return [(r[0], r[1], r[2]) for r in cursor.fetchall()]
+                    rows = cursor.fetchall()
+                    rows.reverse()
+                    return [(r[0], r[1], r[2]) for r in rows]
             except Exception as e:
                 print("Error fetching filtered logs from DB:", e)
         
