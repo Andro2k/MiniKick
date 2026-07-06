@@ -172,6 +172,24 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         self.audio_output.setVolume(1.0)
 
         self.player.mediaStatusChanged.connect(self._handle_media_status)
+        self.player.errorOccurred.connect(self._handle_player_error)
+
+        if self.db_manager:
+            pending = self.db_manager.load_pending_songs("youtube")
+            for song in pending:
+                self.queue.append({
+                    "db_id": song["db_id"],
+                    "title": song["title"],
+                    "artist": song["artist"],
+                    "url": song["url"],
+                    "resolved": False,
+                    "stream_url": None,
+                    "requester": song["requester"]
+                })
+            
+            if self.queue:
+                from PySide6.QtCore import QTimer
+                QTimer.singleShot(0, self._play_next)
 
     def _get_cached_search(self, query: str) -> dict | None:
         if not self.db_manager:
@@ -230,6 +248,15 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
                     "stream_url": None,
                     "requester": requester
                 }
+                if self.db_manager:
+                    db_id = self.db_manager.add_song_to_queue(
+                        title=song_entry["title"],
+                        artist=song_entry["artist"],
+                        url=song_entry["url"],
+                        requester=requester,
+                        provider="youtube"
+                    )
+                    song_entry["db_id"] = db_id
                 self.queue.append(song_entry)
                 if not self.current_song:
                     QTimer.singleShot(0, self._play_next)
@@ -248,6 +275,15 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         def on_worker_finished(success, message):
             if success and worker.song_entry:
                 worker.song_entry["requester"] = requester
+                if self.db_manager:
+                    db_id = self.db_manager.add_song_to_queue(
+                        title=worker.song_entry["title"],
+                        artist=worker.song_entry["artist"],
+                        url=worker.song_entry["url"],
+                        requester=requester,
+                        provider="youtube"
+                    )
+                    worker.song_entry["db_id"] = db_id
                 self.queue.append(worker.song_entry)
                 if is_search:
                     self._save_search_to_cache(query, worker.song_entry)
@@ -278,7 +314,10 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
 
     def remove_from_queue(self, index: int) -> bool:
         if 0 <= index < len(self.queue):
-            self.queue.pop(index)
+            song = self.queue.pop(index)
+            db_id = song.get("db_id")
+            if db_id is not None and self.db_manager:
+                self.db_manager.update_song_status(db_id, 2)
             return True
         return False
 
@@ -307,11 +346,20 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
                 logging.error("[YouTubeMusicProvider] Error deleting temporary file: %s", e)
         self.current_local_file = None
 
+        if self.current_song:
+            db_id = self.current_song.get("db_id")
+            if db_id is not None and self.db_manager:
+                self.db_manager.update_song_status(db_id, 2)
+
         if not self.queue:
             self.current_song = None
             return
 
         self.current_song = self.queue.pop(0)
+        
+        db_id = self.current_song.get("db_id")
+        if db_id is not None and self.db_manager:
+            self.db_manager.update_song_status(db_id, 1)
 
         self.resolve_worker = YouTubeResolveWorker(self.current_song["url"])
         self.resolve_worker.resolved.connect(self._on_song_resolved)
@@ -357,3 +405,12 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
                 requester = self.current_song.get("requester", "") or ""
                 self.resolve_error_occurred.emit(title, "Formato o medio inválido", requester)
             self._play_next()
+
+    @Slot(QMediaPlayer.Error, str)
+    def _handle_player_error(self, error, error_string):
+        logging.error("[YouTubeMusicProvider] Player error: %s - %s", error, error_string)
+        if self.current_song:
+            title = self.current_song.get("title", "Unknown Title")
+            requester = self.current_song.get("requester", "") or ""
+            self.resolve_error_occurred.emit(title, f"Error de reproducción: {error_string}", requester)
+        self._play_next()

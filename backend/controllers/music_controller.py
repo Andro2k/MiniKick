@@ -71,7 +71,8 @@ class MusicController(QObject):
             self._init_youtube_provider()
 
     def _init_session_success(self, label_key: str):
-        self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n)
+        db_mgr = self.settings_storage.db_manager if self.settings_storage else None
+        self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n, db_manager=db_mgr)
         self.view.set_auth_state(connected=True, label_key=label_key)
         self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.connected"), "success")
         

@@ -80,6 +80,9 @@ class TimerService:
             if msgs:
                 msg = msgs[state["message_index"] % len(msgs)]
                 messages_to_send.append(msg)
+                if hasattr(self.storage, "db_manager") and self.storage.db_manager:
+                    self.storage.db_manager.log_timer_execution(timer_id, msg)
+
                 state["message_index"] = (state["message_index"] + 1) % len(msgs)
                 state["last_posted_time"] = now
                 state["chat_lines"] = 0

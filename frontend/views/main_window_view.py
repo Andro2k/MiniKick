@@ -363,6 +363,7 @@ class MainWindow(QMainWindow):
         if reward_name in mappings:
             config = mappings[reward_name]
             self.rewards_service.trigger_preview(reward_name, config)
+            self.rewards_service.log_redemption(reward_name, user)
         else:
             no_rewards_template = self.i18n.get("main.logs.reward_no_rewards")
             self.logger.debug(no_rewards_template.replace("{reward_name}", reward_name))

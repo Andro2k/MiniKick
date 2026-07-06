@@ -86,17 +86,27 @@ class SpamService:
                     if self.user_history[user]["count"] > max_amount:
                         is_violation = True
             if is_violation:
-                self._apply_penalty(user, sender_id, msg_id, config)
+                self._apply_penalty(user, sender_id, msg_id, config, f_id, message)
                 return True
 
         return False
 
-    def _apply_penalty(self, user: str, sender_id: int, msg_id: str, config: dict):
-        if not self.api_client:
-            return
-
+    def _apply_penalty(self, user: str, sender_id: int, msg_id: str, config: dict, filter_id: str, message: str):
         penalty_type = config.get("penalty", "timeout")
         duration_secs = config.get("duration", 300)
+
+        if hasattr(self.storage, "db_manager") and self.storage.db_manager:
+            self.storage.db_manager.log_spam_violation(
+                username=user,
+                sender_id=sender_id,
+                filter_id=filter_id,
+                message_content=message,
+                penalty_type=penalty_type,
+                duration=duration_secs
+            )
+
+        if not self.api_client:
+            return
 
         try:
             if penalty_type == "delete":

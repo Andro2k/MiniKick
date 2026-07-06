@@ -210,6 +210,95 @@ class DatabaseManager:
                     );
                 END;
             """)
+            
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS spam_violations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL,
+                    sender_id INTEGER NOT NULL,
+                    filter_id TEXT NOT NULL,
+                    message_content TEXT,
+                    penalty_type TEXT NOT NULL,
+                    duration INTEGER,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_user ON spam_violations(username)")
+            
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS timer_execution_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timer_id INTEGER NOT NULL,
+                    message_sent TEXT NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(timer_id) REFERENCES chat_timers(id) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_timer ON timer_execution_logs(timer_id)")
+            
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS music_queue (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    artist TEXT NOT NULL,
+                    url TEXT NOT NULL,
+                    requester TEXT,
+                    provider TEXT NOT NULL,
+                    is_played INTEGER DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS reward_redemptions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    reward_name TEXT NOT NULL,
+                    username TEXT NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY(reward_name) REFERENCES obs_rewards(reward_name) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name ON reward_redemptions(reward_name)")
+            
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_spam_violations AFTER INSERT ON spam_violations
+                WHEN (SELECT COUNT(*) FROM spam_violations) > 1000
+                BEGIN
+                    DELETE FROM spam_violations WHERE id IN (
+                        SELECT id FROM spam_violations ORDER BY id ASC LIMIT (SELECT COUNT(*) - 1000 FROM spam_violations)
+                    );
+                END;
+            """)
+            
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_timer_logs AFTER INSERT ON timer_execution_logs
+                WHEN (SELECT COUNT(*) FROM timer_execution_logs) > 1000
+                BEGIN
+                    DELETE FROM timer_execution_logs WHERE id IN (
+                        SELECT id FROM timer_execution_logs ORDER BY id ASC LIMIT (SELECT COUNT(*) - 1000 FROM timer_execution_logs)
+                    );
+                END;
+            """)
+            
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_music_queue AFTER INSERT ON music_queue
+                WHEN (SELECT COUNT(*) FROM music_queue WHERE is_played = 2) > 100
+                BEGIN
+                    DELETE FROM music_queue WHERE id IN (
+                        SELECT id FROM music_queue WHERE is_played = 2 ORDER BY id ASC LIMIT (SELECT COUNT(*) - 100 FROM music_queue WHERE is_played = 2)
+                    );
+                END;
+            """)
+            
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_reward_redemptions AFTER INSERT ON reward_redemptions
+                WHEN (SELECT COUNT(*) FROM reward_redemptions) > 1000
+                BEGIN
+                    DELETE FROM reward_redemptions WHERE id IN (
+                        SELECT id FROM reward_redemptions ORDER BY id ASC LIMIT (SELECT COUNT(*) - 1000 FROM reward_redemptions)
+                    );
+                END;
+            """)
 
             cursor.execute("PRAGMA table_info(obs_rewards)")
             columns = [info[1] for info in cursor.fetchall()]
@@ -226,6 +315,104 @@ class DatabaseManager:
                 
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
             conn.commit()
+
+    def log_spam_violation(self, username: str, sender_id: int, filter_id: str, message_content: str, penalty_type: str, duration: int) -> None:
+        try:
+            from datetime import datetime
+            local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO spam_violations (username, sender_id, filter_id, message_content, penalty_type, duration, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (username, sender_id, filter_id, message_content, penalty_type, duration, local_now)
+                )
+                conn.commit()
+        except Exception as e:
+            import logging
+            logging.error("[DatabaseManager] Error logging spam violation: %s", e)
+
+    def log_timer_execution(self, timer_id: int, message_sent: str) -> None:
+        try:
+            from datetime import datetime
+            local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO timer_execution_logs (timer_id, message_sent, timestamp) VALUES (?, ?, ?)",
+                    (timer_id, message_sent, local_now)
+                )
+                conn.commit()
+        except Exception as e:
+            import logging
+            logging.error("[DatabaseManager] Error logging timer execution: %s", e)
+
+    def log_reward_redemption(self, reward_name: str, username: str) -> None:
+        try:
+            from datetime import datetime
+            local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO reward_redemptions (reward_name, username, timestamp) VALUES (?, ?, ?)",
+                    (reward_name, username, local_now)
+                )
+                conn.commit()
+        except Exception as e:
+            import logging
+            logging.error("[DatabaseManager] Error logging reward redemption: %s", e)
+
+    def add_song_to_queue(self, title: str, artist: str, url: str, requester: str, provider: str) -> int:
+        try:
+            from datetime import datetime
+            local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO music_queue (title, artist, url, requester, provider, is_played, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)",
+                    (title, artist, url, requester, provider, local_now)
+                )
+                conn.commit()
+                return cursor.lastrowid
+        except Exception as e:
+            import logging
+            logging.error("[DatabaseManager] Error adding song to queue: %s", e)
+        return -1
+
+    def update_song_status(self, db_id: int, status: int) -> None:
+        if db_id is None or db_id < 0:
+            return
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("UPDATE music_queue SET is_played = ? WHERE id = ?", (status, db_id))
+                conn.commit()
+        except Exception as e:
+            import logging
+            logging.error("[DatabaseManager] Error updating song status: %s", e)
+
+    def load_pending_songs(self, provider: str) -> list[dict]:
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT id, title, artist, url, requester, provider FROM music_queue WHERE provider = ? AND is_played = 0 ORDER BY id ASC",
+                    (provider,)
+                )
+                return [
+                    {
+                        "db_id": r[0],
+                        "title": r[1],
+                        "artist": r[2],
+                        "url": r[3],
+                        "requester": r[4],
+                        "provider": r[5]
+                    }
+                    for r in cursor.fetchall()
+                ]
+        except Exception as e:
+            import logging
+            logging.error("[DatabaseManager] Error loading pending songs: %s", e)
+        return []
 
 class SQLiteTokenStorage:
     def __init__(self, db_manager: DatabaseManager, provider: str = "kick"):
@@ -357,9 +544,11 @@ class SQLiteCommandsStorage:
             return [{"trigger": r[0], "response": r[1], "is_active": bool(r[2]), "cooldown": r[3], "aliases": r[4], "is_regex": bool(r[5]), "permission": r[6]} for r in cursor.fetchall()]
 
     def log_command_execution(self, trigger: str, username: str) -> None:
+        from datetime import datetime
+        local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO command_execution_logs (command_trigger, username) VALUES (?, ?)", (trigger, username))
+            cursor.execute("INSERT INTO command_execution_logs (command_trigger, username, timestamp) VALUES (?, ?, ?)", (trigger, username, local_now))
             conn.commit()
 
     def get_command_analytics(self) -> list[dict]:

@@ -81,9 +81,10 @@ class SpotifyAuthManager:
         self.storage.clear()
 
 class SpotifyMusicProvider(MusicPlayerProvider):    
-    def __init__(self, auth_manager: SpotifyAuthManager, i18n):
+    def __init__(self, auth_manager: SpotifyAuthManager, i18n, db_manager=None):
         self.auth = auth_manager
         self.i18n = i18n
+        self.db_manager = db_manager
 
     def _request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
         token = self.auth.get_access_token()
@@ -137,6 +138,21 @@ class SpotifyMusicProvider(MusicPlayerProvider):
 
             resp = self._request("POST", f"/me/player/queue?uri={track_uri}")
             resp.raise_for_status()
+            
+            title = track_name
+            artist = ""
+            if " - " in track_name:
+                title, artist = track_name.split(" - ", 1)
+            
+            if self.db_manager:
+                self.db_manager.add_song_to_queue(
+                    title=title,
+                    artist=artist,
+                    url=track_uri,
+                    requester=requester,
+                    provider="spotify"
+                )
+            
             msg = self.i18n.get("music.queue.success").replace("{track}", track_name)
             return True, msg
 
