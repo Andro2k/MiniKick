@@ -4,13 +4,17 @@ import logging
 import re
 import time
 
-class CommandService:
+from PySide6.QtCore import QObject, Signal
+
+class CommandService(QObject):
+    commands_changed = Signal()
     _PERMISSIONS = {
         "everyone": 0,"subscriber": 1,
         "vip": 2,"moderator": 3,"broadcaster": 4
     }
 
     def __init__(self, commands_storage, api_client=None):
+        super().__init__()
         self.storage = commands_storage
         self.api_client = api_client
         self.cooldown_timers: dict[str, float] = {}
@@ -44,6 +48,7 @@ class CommandService:
                         clean_alias = alias.strip().lower()
                         if clean_alias:
                             self._dispatch_table[clean_alias] = cmd
+        self.commands_changed.emit()
 
     def get_all_commands(self) -> list[dict]:
         return self.storage.load_all()

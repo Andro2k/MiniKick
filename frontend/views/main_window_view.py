@@ -263,7 +263,7 @@ class MainWindow(QMainWindow):
         self.tray_manager.set_tts_state(tts_enabled)
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
-        self.command_controller.load_initial_data()
+        self.command_service.reload_cache()
         self.spam_controller.load_initial_data()
         self.timer_controller.load_initial_data()
         self.chat_controller.load_initial_data()

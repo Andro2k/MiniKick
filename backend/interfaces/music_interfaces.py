@@ -24,3 +24,9 @@ class MusicPlayerProvider(ABC):
 
     def remove_from_queue(self, index: int) -> bool:
         return False
+
+    def pause_playback(self) -> bool:
+        return False
+
+    def resume_playback(self) -> bool:
+        return False

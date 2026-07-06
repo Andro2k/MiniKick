@@ -175,3 +175,17 @@ class SpotifyMusicProvider(MusicPlayerProvider):
 
     def set_volume(self, volume: int) -> None:
         pass
+
+    def pause_playback(self) -> bool:
+        try:
+            resp = self._request("PUT", "/me/player/pause")
+            return 200 <= resp.status_code < 300
+        except Exception:
+            return False
+
+    def resume_playback(self) -> bool:
+        try:
+            resp = self._request("PUT", "/me/player/play")
+            return 200 <= resp.status_code < 300
+        except Exception:
+            return False

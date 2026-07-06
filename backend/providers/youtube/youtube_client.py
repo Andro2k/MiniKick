@@ -174,6 +174,16 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         self.player.mediaStatusChanged.connect(self._handle_media_status)
         self.player.errorOccurred.connect(self._handle_player_error)
 
+        self.auto_resume = True
+        self._start_playing_current = True
+        if self.db_manager:
+            try:
+                from backend.storage.database import SQLiteSettingsStorage
+                settings = SQLiteSettingsStorage(self.db_manager)
+                self.auto_resume = settings.load_bool("youtube_auto_resume", True)
+            except Exception as e:
+                logging.error("[YouTubeMusicProvider] Error loading auto_resume setting: %s", e)
+
         if self.db_manager:
             pending = self.db_manager.load_pending_songs("youtube")
             for song in pending:
@@ -189,7 +199,10 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
             
             if self.queue:
                 from PySide6.QtCore import QTimer
-                QTimer.singleShot(0, self._play_next)
+                if self.auto_resume:
+                    QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
+                else:
+                    QTimer.singleShot(0, lambda: self._play_next(start_playing=False))
 
     def _get_cached_search(self, query: str) -> dict | None:
         if not self.db_manager:
@@ -259,7 +272,10 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
                     song_entry["db_id"] = db_id
                 self.queue.append(song_entry)
                 if not self.current_song:
-                    QTimer.singleShot(0, self._play_next)
+                    if self.auto_resume:
+                        QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
+                    else:
+                        QTimer.singleShot(0, lambda: self._play_next(start_playing=False))
                 
                 success_msg = self.i18n.get("music.queue.success").replace("{track}", f"{cached['title']} - {cached['artist']}")
                 return True, success_msg
@@ -288,7 +304,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
                 if is_search:
                     self._save_search_to_cache(query, worker.song_entry)
                 if not self.current_song:
-                    self._play_next()
+                    self._play_next(start_playing=self.auto_resume)
             if callback:
                 callback(success, message)
             
@@ -331,7 +347,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
                 pass
         self.current_local_file = None
 
-    def _play_next(self):
+    def _play_next(self, start_playing: bool = True):
         if self.resolve_worker and self.resolve_worker.isRunning():
             self.resolve_worker.terminate()
             self.resolve_worker.wait()
@@ -364,6 +380,7 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
         self.resolve_worker = YouTubeResolveWorker(self.current_song["url"])
         self.resolve_worker.resolved.connect(self._on_song_resolved)
         self.resolve_worker.error.connect(self._on_resolve_error)
+        self._start_playing_current = start_playing
         self.resolve_worker.start()
 
     @Slot(str, str)
@@ -386,7 +403,10 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
             self.current_local_file = path_or_url
             self.player.setSource(QUrl.fromLocalFile(path_or_url))
             
-        self.player.play()
+        if self._start_playing_current:
+            self.player.play()
+        else:
+            self.player.pause()
 
     @Slot(str)
     def _on_resolve_error(self, error_msg: str):
@@ -414,3 +434,11 @@ class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicP
             requester = self.current_song.get("requester", "") or ""
             self.resolve_error_occurred.emit(title, f"Error de reproducción: {error_string}", requester)
         self._play_next()
+
+    def pause_playback(self) -> bool:
+        self.player.pause()
+        return True
+
+    def resume_playback(self) -> bool:
+        self.player.play()
+        return True

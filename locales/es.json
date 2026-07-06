@@ -409,6 +409,8 @@
             "refresh_failed": "No se pudo actualizar el token de Spotify."
         },
         "youtube": {
+            "auto_resume_title": "Retomado automático (YouTube)",
+            "auto_resume_desc": "Reproducir automáticamente al encolar o esperar al streamer.",
             "error_title": "Error de YouTube",
             "age_restricted": "Este video requiere verificación de edad (Inicia sesión para confirmar tu edad)",
             "inappropriate": "Este video es inapropiado para algunos usuarios",

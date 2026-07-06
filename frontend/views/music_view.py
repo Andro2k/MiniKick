@@ -98,6 +98,9 @@ class MusicView(QWidget):
     provider_changed = Signal(str)
     volume_changed = Signal(int)
     remove_queue_item_requested = Signal(int)
+    play_pause_requested = Signal()
+    skip_requested = Signal()
+    youtube_auto_resume_toggled = Signal(bool)
 
     def __init__(self, i18n):
         super().__init__()
@@ -158,6 +161,18 @@ class MusicView(QWidget):
             right_widget=self.combo_provider
         )
         layout.addWidget(row_provider)
+
+        self.sw_auto_resume = ModernSwitch()
+        self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
+        self.row_auto_resume = SettingRow(
+            icon_name="refresh.svg",
+            title_text=self.i18n.get("music.youtube.auto_resume_title"),
+            desc_text=self.i18n.get("music.youtube.auto_resume_desc"),
+            right_widget=self.sw_auto_resume
+        )
+        self.row_auto_resume.setVisible(False)
+        layout.addWidget(self.row_auto_resume)
+
         self.main_layout.addWidget(card)
 
     def _setup_auth_card(self):
@@ -240,6 +255,26 @@ class MusicView(QWidget):
 
         layout.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignVCenter)
         layout.addLayout(info_layout, stretch=1)
+        
+        controls_layout = QHBoxLayout()
+        controls_layout.setSpacing(6)
+        
+        self.btn_play_pause = ModernButton("", role="action_accent_border")
+        self.btn_play_pause.setFixedSize(36, 36)
+        self.btn_play_pause.setIcon(get_icon_colored("play.svg", COLOR_TEXT_PRIMARY, 18))
+        self.btn_play_pause.setIconSize(QSize(18, 18))
+        self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
+        
+        self.btn_skip = ModernButton("", role="action_accent_border")
+        self.btn_skip.setFixedSize(36, 36)
+        self.btn_skip.setIcon(get_icon_colored("player-skip-forward.svg", COLOR_TEXT_PRIMARY, 18))
+        self.btn_skip.setIconSize(QSize(18, 18))
+        self.btn_skip.clicked.connect(self.skip_requested.emit)
+        
+        controls_layout.addWidget(self.btn_play_pause)
+        controls_layout.addWidget(self.btn_skip)
+        
+        layout.addLayout(controls_layout)
         
         self.main_layout.addWidget(self.card_player)
 
@@ -399,6 +434,7 @@ class MusicView(QWidget):
             self.card_player.setVisible(True)
             self.card_queue.setVisible(True)
             self.row_vol.setVisible(True)
+            self.row_auto_resume.setVisible(True)
             translated_label = self.i18n.get("music.status.youtube_active")
             self.lbl_auth_status.setText(f"{self.i18n.get('common.status.active')}: {translated_label}")
         else:
@@ -411,6 +447,7 @@ class MusicView(QWidget):
             self.card_player.setVisible(connected)
             self.card_queue.setVisible(False)
             self.row_vol.setVisible(False)
+            self.row_auto_resume.setVisible(False)
 
             if connected:
                 translated_label = self.i18n.get(label_key) or label_key
@@ -422,9 +459,12 @@ class MusicView(QWidget):
         if not song_data:
             self.lbl_song_title.setText(self.i18n.get("music.player.paused_title"))
             self.lbl_song_artist.setText(self.i18n.get("music.player.paused_desc"))
+            self.btn_play_pause.setIcon(get_icon_colored("play.svg", COLOR_TEXT_PRIMARY, 18))
             return
 
         self.lbl_song_title.setText(song_data.get("title", ""))
         self.lbl_song_artist.setText(song_data.get("artist", ""))
-
-    
+        
+        is_playing = song_data.get("is_playing", False)
+        icon_name = "player-pause.svg" if is_playing else "play.svg"
+        self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, 18))

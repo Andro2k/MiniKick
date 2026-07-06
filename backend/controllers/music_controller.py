@@ -33,17 +33,28 @@ class MusicController(QObject):
         self.view.provider_changed.connect(self.set_provider_type)
         self.view.volume_changed.connect(self.set_volume)
         self.view.remove_queue_item_requested.connect(self.handle_remove_queue_item)
+        self.command_service.commands_changed.connect(self._sync_switches_from_db)
+        self.view.play_pause_requested.connect(self.handle_play_pause)
+        self.view.skip_requested.connect(self.handle_skip)
+        self.view.youtube_auto_resume_toggled.connect(self.handle_youtube_auto_resume_toggle)
 
-    def _load_initial_state(self):
-        saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.storage.load_all()}
+    def _sync_switches_from_db(self):
+        saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.get_all_commands()}
         self.view.blockSignals(True)
         self.view.sw_sr.setChecked(saved_cmds.get("!sr", False))
         self.view.sw_skip.setChecked(saved_cmds.get("!skip", False))
         self.view.sw_song.setChecked(saved_cmds.get("!song", False))
         self.view.blockSignals(False)
 
+    def _load_initial_state(self):
+        self._sync_switches_from_db()
+
         if self.settings_storage:
             self.provider_type = self.settings_storage.load_string("music_provider_type", "spotify")
+            auto_resume = self.settings_storage.load_bool("youtube_auto_resume", True)
+            self.view.blockSignals(True)
+            self.view.sw_auto_resume.setChecked(auto_resume)
+            self.view.blockSignals(False)
 
         index = self.view.combo_provider.findData(self.provider_type)
         if index != -1:
@@ -183,7 +194,7 @@ class MusicController(QObject):
         is_regex = existing["is_regex"] if existing else False
         permission = existing["permission"] if existing else ("everyone" if trigger in ("!sr", "!song") else "moderator")
 
-        self.command_service.storage.save_command(
+        self.command_service.save_command(
             trigger=trigger,
             response=plugin_tags.get(trigger, "[PLUGIN_SPOTIFY_SR]"),
             is_active=is_active,
@@ -248,3 +259,29 @@ class MusicController(QObject):
                     else:
                         chat_text = f"❌ Could not play '{title}': {clean_msg}"
                 api_client.post_chat_message(content=chat_text, msg_type="bot")
+
+    @Slot()
+    def handle_play_pause(self):
+        if not self.music_provider:
+            return
+            
+        current = self.music_provider.get_current_song()
+        if current and current.get("is_playing", False):
+            self.music_provider.pause_playback()
+        else:
+            self.music_provider.resume_playback()
+        self._poll_now_playing()
+
+    @Slot()
+    def handle_skip(self):
+        if self.music_provider:
+            self.music_provider.skip_current()
+            self._poll_now_playing()
+
+    @Slot(bool)
+    def handle_youtube_auto_resume_toggle(self, enabled: bool):
+        if self.settings_storage:
+            self.settings_storage.save_bool("youtube_auto_resume", enabled)
+            
+        if self.provider_type == "youtube" and self.music_provider:
+            self.music_provider.auto_resume = enabled

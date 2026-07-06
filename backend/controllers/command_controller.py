@@ -16,6 +16,7 @@ class CommandController(QObject):
         self.view.delete_requested.connect(self._handle_delete)
         self.view.status_toggled.connect(self._handle_status_change)
         self.view.search_text_changed.connect(self._handle_search)
+        self.service.commands_changed.connect(self.load_initial_data)
 
     def load_initial_data(self):
         commands = self.service.get_all_commands()
