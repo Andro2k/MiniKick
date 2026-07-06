@@ -241,14 +241,13 @@ QPushButton[role="action_outlined"]:disabled,
 QPushButton[role="action_danger_border"]:disabled,
 QPushButton[role="action_accent_border"]:disabled,
 QPushButton[role="action_neutral_border"]:disabled,
-QPushButton[role="btn_ghost"]:disabled {{ background-color: {COLOR_BORDER_GLOW}; color: {COLOR_TEXT_MUTED}; border: 1.5px solid {COLOR_BG_HOVER}; }}
+QPushButton[role="btn_ghost"]:disabled {{ background-color: {COLOR_BORDER_GLOW}; color: {COLOR_TEXT_MUTED}; border: 1.5px solid {COLOR_BG_HOVER}; padding: {PADDING_BUTTON}; }}
 
 QLineEdit:disabled,
 QTextEdit:disabled,
 QComboBox:disabled,
 QSpinBox:disabled,
-QDoubleSpinBox:disabled {{ background-color: {COLOR_BORDER_GLOW}; color: {COLOR_TEXT_MUTED}; border-color: {COLOR_BG_HOVER}; }}
-
+QDoubleSpinBox:disabled {{ background-color: {COLOR_BORDER_GLOW}; color: {COLOR_TEXT_MUTED}; border-color: {COLOR_BG_HOVER}; padding: {PADDING_INPUT};}}
 QCheckBox:disabled {{ color: {COLOR_TEXT_MUTED}; }}
 """
 

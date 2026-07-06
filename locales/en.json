@@ -304,6 +304,9 @@
             "paused_msg": "You returned to live mode. Use 'View Logs' whenever you want to monitor events.",
             "cleared_title": "Logs Cleared",
             "cleared_msg": "The log view has been cleared successfully."
+        },
+        "pagination": {
+            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
         }
     },
     "chat": {

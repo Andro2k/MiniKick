@@ -4,7 +4,7 @@ import os
 from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import (
-    QFileDialog, QFrame, QHeaderView, QLabel, QMessageBox,
+    QFileDialog, QFrame, QHeaderView, QHBoxLayout, QLabel, QMessageBox,
     QScrollArea, QStackedWidget, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 )
 from frontend.widgets.log_controls_component import LogControlsPanel
@@ -52,6 +52,9 @@ class LogView(QWidget):
         self.i18n = i18n
         self.str_all = self.i18n.get("log.controls.filter_all")
         self._pending_ui_ops: list[tuple] = []
+        self.page_size = 50
+        self.current_page = 1
+        self.all_logs: list[tuple[str, str, str]] = []
         
         self._flush_timer = QTimer(self)
         self._flush_timer.setSingleShot(True)
@@ -125,6 +128,38 @@ class LogView(QWidget):
         self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         table_page_layout.addWidget(self.table)
+        
+        self.pagination_bar = QWidget()
+        self.pagination_layout = QHBoxLayout(self.pagination_bar)
+        self.pagination_layout.setContentsMargins(12, 8, 12, 8)
+        self.pagination_layout.setSpacing(6)
+        
+        self.lbl_page_info = QLabel()
+        self.lbl_page_info.setProperty("role", "body")
+        self.pagination_layout.addWidget(self.lbl_page_info)
+        
+        self.pagination_layout.addStretch(1)
+        
+        self.btn_prev = ModernButton("", role="action_outlined")
+        self.btn_prev.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_prev.setFixedWidth(32)
+        self.btn_prev.clicked.connect(self.prev_page)
+        self.pagination_layout.addWidget(self.btn_prev)
+        
+        self.page_buttons_container = QWidget()
+        self.page_buttons_layout = QHBoxLayout(self.page_buttons_container)
+        self.page_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.page_buttons_layout.setSpacing(4)
+        self.pagination_layout.addWidget(self.page_buttons_container)
+        
+        self.btn_next = ModernButton("", role="action_outlined")
+        self.btn_next.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_next.setFixedWidth(32)
+        self.btn_next.clicked.connect(self.next_page)
+        self.pagination_layout.addWidget(self.btn_next)
+        
+        table_page_layout.addWidget(self.pagination_bar)
+
         self.content_stack.addWidget(table_page)
         table_layout.addWidget(self.content_stack)
 
@@ -204,16 +239,9 @@ class LogView(QWidget):
             self._refresh_illustration(size)
 
     def display_logs(self, logs: list[tuple[str, str, str]]):
-        self.table.setUpdatesEnabled(False)
-        self.table.blockSignals(True)
-        self.table.setRowCount(len(logs))
-        for idx, (lvl, t_str, txt) in enumerate(logs):
-            self._populate_row_at(idx, lvl, t_str, txt)
-        self.table.resizeRowsToContents()
-        self.table.blockSignals(False)
-        self.table.setUpdatesEnabled(True)
-        scrollbar = self.table.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        self.all_logs = list(logs)
+        self.current_page = 1
+        self.update_page_display()
 
     @Slot(bool, str, str, str)
     def append_log(self, is_grouped: bool, level: str, time_str: str, text_str: str):
@@ -222,7 +250,9 @@ class LogView(QWidget):
             self._flush_timer.start()
 
     def clear_table(self):
-        self.table.setRowCount(0)
+        self.all_logs.clear()
+        self.current_page = 1
+        self.update_page_display()
 
     def clear_pending_ops(self):
         self._flush_timer.stop()
@@ -243,30 +273,105 @@ class LogView(QWidget):
         ops = self._pending_ui_ops
         self._pending_ui_ops = []
 
+        for is_grouped, level, time_str, text_str in ops:
+            if is_grouped and self.all_logs:
+                lvl, t_str, txt = self.all_logs[-1]
+                self.all_logs[-1] = (lvl, t_str, f"{txt}\n{text_str}")
+            else:
+                self.all_logs.append((level, time_str, text_str))
+
+        if len(self.all_logs) > 1000:
+            self.all_logs = self.all_logs[-1000:]
+
+        self.update_page_display()
+
+    def prev_page(self):
+        if self.current_page > 1:
+            self.current_page -= 1
+            self.update_page_display()
+
+    def next_page(self):
+        total_logs = len(self.all_logs)
+        total_pages = max(1, (total_logs + self.page_size - 1) // self.page_size)
+        if self.current_page < total_pages:
+            self.current_page += 1
+            self.update_page_display()
+
+    def go_to_page(self, page: int):
+        self.current_page = page
+        self.update_page_display()
+
+    def update_page_buttons(self, total_pages: int):
+        while self.page_buttons_layout.count():
+            item = self.page_buttons_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        if total_pages <= 7:
+            pages = list(range(1, total_pages + 1))
+        else:
+            if self.current_page <= 4:
+                pages = [1, 2, 3, 4, 5, None, total_pages]
+            elif self.current_page >= total_pages - 3:
+                pages = [1, None, total_pages - 4, total_pages - 3, total_pages - 2, total_pages - 1, total_pages]
+            else:
+                pages = [1, None, self.current_page - 1, self.current_page, self.current_page + 1, None, total_pages]
+
+        for p in pages:
+            if p is None:
+                lbl = QLabel("...")
+                lbl.setProperty("role", "body")
+                lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                lbl.setFixedWidth(24)
+                self.page_buttons_layout.addWidget(lbl)
+            else:
+                role = "action_accent" if p == self.current_page else "action_outlined"
+                btn = ModernButton(str(p), role=role)
+                btn.setFixedWidth(32)
+                btn.clicked.connect(lambda checked=False, val=p: self.go_to_page(val))
+                self.page_buttons_layout.addWidget(btn)
+
+    def update_page_display(self):
+        total_logs = len(self.all_logs)
+        total_pages = max(1, (total_logs + self.page_size - 1) // self.page_size)
+
+        if self.current_page > total_pages:
+            self.current_page = total_pages
+        elif self.current_page < 1:
+            self.current_page = 1
+
+        start_idx = (self.current_page - 1) * self.page_size
+        end_idx = min(start_idx + self.page_size, total_logs)
+
+        page_logs = self.all_logs[start_idx:end_idx]
+
         self.table.setUpdatesEnabled(False)
         self.table.blockSignals(True)
-        
-        affected_rows = set()
-        for is_grouped, level, time_str, text_str in ops:
-            if is_grouped and self.table.rowCount() > 0:
-                last_row = self.table.rowCount() - 1
-                item_msg = self.table.item(last_row, 2)
-                if item_msg:
-                    item_msg.setText(f"{item_msg.text()}\n{text_str}")
-                    affected_rows.add(last_row)
-            else:
-                row = self.table.rowCount()
-                self.table.insertRow(row)
-                self._populate_row_at(row, level, time_str, text_str)
-                affected_rows.add(row)
-
-        for row in affected_rows:
-            self.table.resizeRowToContents(row)
-
+        self.table.setRowCount(len(page_logs))
+        for idx, (lvl, t_str, txt) in enumerate(page_logs):
+            self._populate_row_at(idx, lvl, t_str, txt)
+        self.table.resizeRowsToContents()
         self.table.blockSignals(False)
         self.table.setUpdatesEnabled(True)
-        scrollbar = self.table.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+
+        showing_from = start_idx + 1 if total_logs > 0 else 0
+        showing_to = end_idx
+
+        info_text = self.i18n.get("log.pagination.info")
+        info_text = info_text.replace("{showing_from}", str(showing_from))
+        info_text = info_text.replace("{showing_to}", str(showing_to))
+        info_text = info_text.replace("{total}", str(total_logs))
+        self.lbl_page_info.setText(info_text)
+
+        self.btn_prev.setEnabled(self.current_page > 1)
+        self.btn_next.setEnabled(self.current_page < total_pages)
+
+        self.update_page_buttons(total_pages)
+
+        if self.current_page == total_pages:
+            scrollbar = self.table.verticalScrollBar()
+            scrollbar.setValue(scrollbar.maximum())
 
     def _populate_row_at(self, row: int, level: str, time_str: str, text: str):
         hex_color = _LEVEL_COLORS.get(level, COLOR_TEXT_PRIMARY)

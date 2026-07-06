@@ -11,7 +11,7 @@ class QLogHandler(logging.Handler):
     def __init__(self):
         super().__init__()
         self.emitter = LogEmitter()
-        formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', datefmt='%H:%M:%S')
+        formatter = logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         self.setFormatter(formatter)
 
     def emit(self, record: logging.LogRecord):

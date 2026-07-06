@@ -136,6 +136,8 @@ class DatabaseManager:
                     FOREIGN KEY (command_trigger) REFERENCES chat_commands(trigger) ON DELETE CASCADE
                 )
             """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_trigger ON command_execution_logs(command_trigger)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_timestamp ON command_execution_logs(timestamp)")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_command_logs AFTER INSERT ON command_execution_logs
                 BEGIN
@@ -222,6 +224,7 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_user ON spam_violations(username)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_filter ON spam_violations(filter_id)")
             
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS timer_execution_logs (
@@ -246,6 +249,7 @@ class DatabaseManager:
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status ON music_queue(provider, is_played)")
             
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS reward_redemptions (

@@ -304,6 +304,9 @@
             "paused_msg": "Regresaste al modo en vivo. Usa 'Ver Logs' cuando desees monitorear eventos.",
             "cleared_title": "Consola Limpiada",
             "cleared_msg": "La vista de registros se ha limpiado correctamente."
+        },
+        "pagination": {
+            "info": "{showing_from}-{showing_to} de {total} fila(s) mostradas."
         }
     },
     "chat": {
