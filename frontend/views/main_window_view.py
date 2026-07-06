@@ -12,11 +12,8 @@ from backend.services.system.dashboard_service import AvatarService
 from backend.services.system.log_service import LogService
 from backend.services.system.settings_service import SettingsService
 from backend.services.chat.spam_service import SpamService
+from backend.services.chat.timer_service import TimerService
 from backend.controllers.rewards_controller import RewardsController
-from frontend.navigation.sidebar_component import Sidebar
-from frontend.navigation.toast_component import ToastManager
-from frontend.navigation.tray_menu_component import SystemTrayManager
-
 from backend.controllers.chat_controller import ChatController
 from backend.controllers.command_controller import CommandController
 from backend.controllers.dashboard_controller import DashboardController
@@ -26,10 +23,14 @@ from backend.controllers.music_controller import MusicController
 from backend.controllers.settings_controller import SettingsController
 from backend.controllers.spam_controller import SpamController
 from backend.controllers.update_controller import UpdateController
+from backend.providers.kick.kick_client import KickAPIClient
+
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
 from frontend.common.theme import COLOR_ACCENT, get_global_qss
-
+from frontend.navigation.sidebar_component import Sidebar
+from frontend.navigation.toast_component import ToastManager
+from frontend.navigation.tray_menu_component import SystemTrayManager
 from frontend.views.rewards_view import RewardsView
 from frontend.views.command_view import CommandView
 from frontend.views.dashboard_view import DashboardView
@@ -39,12 +40,10 @@ from frontend.views.log_view import LogView
 from frontend.views.music_view import MusicView
 from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
-from backend.providers.kick.kick_client import KickAPIClient
 from frontend.dialogs import ModernConfirmDialog
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
 from frontend.workers.rewards_worker import FetchRewardsWorker, RewardWorker
-from backend.services.chat.timer_service import TimerService
 from frontend.workers.timers_worker import TimerWorker
 
 try:
@@ -108,11 +107,11 @@ class MainWindow(QMainWindow):
         self.sidebar = Sidebar(self.i18n, app_version=self.app_version)
         self.sidebar.add_tab("Dashboard", "dashboard.svg", is_active=True)
         self.sidebar.add_tab("Chat", "message.svg")
-        self.sidebar.add_tab("Music", "headphones.svg")
-        self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Comandos", "code.svg")
         self.sidebar.add_tab("Spam Filters", "shield-half.svg")
         self.sidebar.add_tab("Timers", "clock.svg")
+        self.sidebar.add_tab("Music", "music.svg")
+        self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
         self.sidebar.add_tab("Settings", "settings.svg", position="bottom")
         self.sidebar.add_tab("Developer", "brand-tabler.svg", position="bottom")
 
@@ -141,11 +140,11 @@ class MainWindow(QMainWindow):
         self._nav_mapping = {
             "Dashboard": self.view_dashboard,
             "Chat": self.view_chat,
-            "Music": self.view_music,
-            "Triggers": self.view_rewards,
             "Comandos": self.view_commands,
             "Spam Filters": self.view_spam,
             "Timers": self.view_timers,
+            "Music": self.view_music,
+            "Triggers": self.view_rewards,
             "Settings": self.view_settings,
             "Developer": self.view_logs,
         }

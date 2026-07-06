@@ -33,6 +33,8 @@ class DatabaseManager:
         try:
             conn = sqlite3.connect(self.db_name)
             conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute("PRAGMA cache_size=-20000")
             conn.execute("PRAGMA foreign_keys=ON")
             return conn
         except sqlite3.DatabaseError as e:

@@ -121,7 +121,7 @@ class MusicView(QWidget):
         self.header = ViewHeader(
             title_text=self.i18n.get("music.header.title"),
             subtitle_text=self.i18n.get("music.header.subtitle"),
-            icon_name="headphones.svg",
+            icon_name="music.svg",
             icon_color=COLOR_TEXT_PRIMARY
         )
         self.main_layout.addWidget(self.header)
