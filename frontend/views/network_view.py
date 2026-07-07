@@ -131,9 +131,11 @@ class NetworkView(QWidget):
         self.main_layout.addSpacing(6)
         
         self._add_card("internet", self.i18n.get("network.services.internet"), self.i18n.get("network.services.internet_desc"), "wifi.svg")
+        self._add_card("chat_websocket", self.i18n.get("network.services.chat_websocket"), self.i18n.get("network.services.chat_websocket_desc"), "message.svg")
+        self._add_card("overlay", self.i18n.get("network.services.overlay"), self.i18n.get("network.services.overlay_desc"), "plug.svg")
         self._add_card("kick", self.i18n.get("network.services.kick"), self.i18n.get("network.services.kick_desc"), "kick.svg")
         self._add_card("spotify", self.i18n.get("network.services.spotify"), self.i18n.get("network.services.spotify_desc"), "spotify.svg")
-        self._add_card("overlay", self.i18n.get("network.services.overlay"), self.i18n.get("network.services.overlay_desc"), "plug.svg")
+        self._add_card("youtube", self.i18n.get("network.services.youtube"), self.i18n.get("network.services.youtube_desc"), "brand-youtube.svg")
         
         self.main_layout.addStretch()
         scroll.setWidget(content)

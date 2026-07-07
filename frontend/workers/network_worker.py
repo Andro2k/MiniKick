@@ -53,4 +53,10 @@ class NetworkWorker(QThread):
         status_over, lat_over = self.check_service("overlay", "127.0.0.1", is_url=False, expected_port=self.overlay_port)
         results["overlay"] = {"status": status_over, "latency": lat_over}
         
+        status_yt, lat_yt = self.check_service("youtube", "https://www.youtube.com")
+        results["youtube"] = {"status": status_yt, "latency": lat_yt}
+        
+        status_ws, lat_ws = self.check_service("chat_websocket", "ws-us2.pusher.com", is_url=False, expected_port=443)
+        results["chat_websocket"] = {"status": status_ws, "latency": lat_ws}
+        
         self.result_ready.emit(results)

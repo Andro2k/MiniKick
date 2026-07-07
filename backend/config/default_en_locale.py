@@ -306,6 +306,9 @@ DEFAULT_DICTIONARY = {
             "paused_msg": "You returned to live mode. Use 'View Logs' whenever you want to monitor events.",
             "cleared_title": "Logs Cleared",
             "cleared_msg": "The log view has been cleared successfully."
+        },
+        "pagination": {
+            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
         }
     },
     "chat": {
@@ -545,7 +548,8 @@ DEFAULT_DICTIONARY = {
                 "spam_filters": "Spam Filters",
                 "settings": "Settings",
                 "timers": "Timers",
-                "developer": "Developer"
+                "developer": "Developer",
+                "network_status": "Network Status"
             }
         },
         "tray": {
@@ -674,5 +678,33 @@ DEFAULT_DICTIONARY = {
             "disabled": "Timer Disabled",
             "toggled_msg": "Timer '{name}' has been {status}."
         }
+    },
+    "network": {
+        "header": {
+            "title": "Network Status",
+            "subtitle": "Check your latency and connectivity with MiniKick services."
+        },
+        "services": {
+            "internet": "Internet Connection",
+            "internet_desc": "Verify general access to the web.",
+            "kick": "Kick Servers",
+            "kick_desc": "Check connectivity with Kick API.",
+            "spotify": "Spotify Service",
+            "spotify_desc": "Check connectivity with Spotify API.",
+            "overlay": "Local Overlay Server",
+            "overlay_desc": "Verify the status of the local overlay server.",
+            "youtube": "YouTube Service",
+            "youtube_desc": "Check connectivity with YouTube servers.",
+            "chat_websocket": "Chat WebSocket (Pusher)",
+            "chat_websocket_desc": "Verify connectivity with Kick's chat server."
+        },
+        "status": {
+            "checking": "Checking...",
+            "online": "Connected",
+            "warning": "High latency",
+            "offline": "Disconnected",
+            "ms": "{latency} ms"
+        },
+        "btn_check": "Check Network"
     }
 }

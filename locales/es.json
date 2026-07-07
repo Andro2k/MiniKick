@@ -690,7 +690,11 @@
             "spotify": "Servicio de Spotify",
             "spotify_desc": "Verifica la conexión con la API de Spotify.",
             "overlay": "Servidor de Overlay Local",
-            "overlay_desc": "Verifica el estado del servidor local de overlays."
+            "overlay_desc": "Verifica el estado del servidor local de overlays.",
+            "youtube": "Servicio de YouTube",
+            "youtube_desc": "Verifica la conexión con los servidores de YouTube.",
+            "chat_websocket": "Chat WebSocket (Pusher)",
+            "chat_websocket_desc": "Verifica la conexión con el servidor de chat de Kick."
         },
         "status": {
             "checking": "Comprobando...",
