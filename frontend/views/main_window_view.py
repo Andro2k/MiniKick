@@ -23,6 +23,7 @@ from backend.controllers.music_controller import MusicController
 from backend.controllers.settings_controller import SettingsController
 from backend.controllers.spam_controller import SpamController
 from backend.controllers.update_controller import UpdateController
+from backend.controllers.network_controller import NetworkController
 from backend.providers.kick.kick_client import KickAPIClient
 
 from frontend.core.app_container_core import AppContainer
@@ -40,6 +41,7 @@ from frontend.views.log_view import LogView
 from frontend.views.music_view import MusicView
 from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
+from frontend.views.network_view import NetworkView
 from frontend.dialogs import ModernConfirmDialog
 from frontend.workers.auth_worker import AuthWorker
 from frontend.workers.chat_worker import ChatWorker
@@ -112,6 +114,7 @@ class MainWindow(QMainWindow):
         self.sidebar.add_tab("Timers", "clock.svg")
         self.sidebar.add_tab("Music", "music.svg")
         self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
+        self.sidebar.add_tab("Network Status", "access-point.svg", position="bottom")
         self.sidebar.add_tab("Settings", "settings.svg", position="bottom")
         self.sidebar.add_tab("Developer", "brand-tabler.svg", position="bottom")
 
@@ -136,6 +139,7 @@ class MainWindow(QMainWindow):
         self.view_timers = TimersView(self.i18n)
         self.view_settings = SettingsView(self.i18n)
         self.view_logs = LogView(self.i18n)
+        self.view_network = NetworkView(self.i18n)
 
         self._nav_mapping = {
             "Dashboard": self.view_dashboard,
@@ -147,6 +151,7 @@ class MainWindow(QMainWindow):
             "Triggers": self.view_rewards,
             "Settings": self.view_settings,
             "Developer": self.view_logs,
+            "Network Status": self.view_network,
         }
 
         self.dashboard_controller = DashboardController(
@@ -193,6 +198,10 @@ class MainWindow(QMainWindow):
             view=self.view_logs, 
             service=self.log_service
         )
+        self.network_controller = NetworkController(
+            view=self.view_network, 
+            overlay_port=self.overlay_server.port
+        )
         self.session_metrics = {
             "messages_processed": 0,
             "commands_executed": 0,
@@ -209,6 +218,7 @@ class MainWindow(QMainWindow):
         self.content_stack.addWidget(self.view_timers)
         self.content_stack.addWidget(self.view_settings)
         self.content_stack.addWidget(self.view_logs)
+        self.content_stack.addWidget(self.view_network)
 
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)

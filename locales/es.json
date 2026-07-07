@@ -546,7 +546,8 @@
                 "spam_filters": "Filtros Anti-Spam",
                 "settings": "Ajustes",
                 "timers": "Temporizadores",
-                "developer": "Desarrollador"
+                "developer": "Desarrollador",
+                "network_status": "Estado de Red"
             }
         },
         "tray": {
@@ -675,5 +676,29 @@
             "disabled": "Temporizador Desactivado",
             "toggled_msg": "El temporizador '{name}' ha sido {status}."
         }
+    },
+    "network": {
+        "header": {
+            "title": "Estado de la Red",
+            "subtitle": "Verifica tu latencia y conexión con los servicios de MiniKick."
+        },
+        "services": {
+            "internet": "Conexión a Internet",
+            "internet_desc": "Verifica si tienes acceso general a la web.",
+            "kick": "Servidores de Kick",
+            "kick_desc": "Verifica la conexión con la API de Kick.",
+            "spotify": "Servicio de Spotify",
+            "spotify_desc": "Verifica la conexión con la API de Spotify.",
+            "overlay": "Servidor de Overlay Local",
+            "overlay_desc": "Verifica el estado del servidor local de overlays."
+        },
+        "status": {
+            "checking": "Comprobando...",
+            "online": "Conectado",
+            "warning": "Latencia alta",
+            "offline": "Desconectado",
+            "ms": "{latency} ms"
+        },
+        "btn_check": "Comprobar Red"
     }
 }

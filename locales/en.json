@@ -546,7 +546,8 @@
                 "spam_filters": "Spam Filters",
                 "settings": "Settings",
                 "timers": "Timers",
-                "developer": "Developer"
+                "developer": "Developer",
+                "network_status": "Network Status"
             }
         },
         "tray": {
@@ -675,5 +676,29 @@
             "disabled": "Timer Disabled",
             "toggled_msg": "Timer '{name}' has been {status}."
         }
+    },
+    "network": {
+        "header": {
+            "title": "Network Status",
+            "subtitle": "Check your latency and connectivity with MiniKick services."
+        },
+        "services": {
+            "internet": "Internet Connection",
+            "internet_desc": "Verify general access to the web.",
+            "kick": "Kick Servers",
+            "kick_desc": "Check connectivity with Kick API.",
+            "spotify": "Spotify Service",
+            "spotify_desc": "Check connectivity with Spotify API.",
+            "overlay": "Local Overlay Server",
+            "overlay_desc": "Verify the status of the local overlay server."
+        },
+        "status": {
+            "checking": "Checking...",
+            "online": "Connected",
+            "warning": "High latency",
+            "offline": "Disconnected",
+            "ms": "{latency} ms"
+        },
+        "btn_check": "Check Network"
     }
 }
