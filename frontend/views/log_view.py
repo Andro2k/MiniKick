@@ -323,12 +323,10 @@ class LogView(QWidget):
                 lbl = QLabel("...")
                 lbl.setProperty("role", "body")
                 lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                lbl.setFixedWidth(24)
                 self.page_buttons_layout.addWidget(lbl)
             else:
                 role = "action_accent" if p == self.current_page else "action_outlined"
                 btn = ModernButton(str(p), role=role)
-                btn.setFixedWidth(32)
                 btn.clicked.connect(lambda checked=False, val=p: self.go_to_page(val))
                 self.page_buttons_layout.addWidget(btn)
 
