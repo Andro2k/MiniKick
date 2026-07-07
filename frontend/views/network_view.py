@@ -1,8 +1,8 @@
 # frontend\views\network_view.py
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFrame, QScrollArea, QLabel
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets.blocks_component import ViewHeader
+from frontend.widgets.base_view import BaseView
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import (
     COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, 
@@ -87,37 +87,22 @@ class NetworkStatusCard(QFrame):
         self.lbl_status.setStyleSheet(f"color: {color}; font-weight: bold;")
 
 
-class NetworkView(QWidget):
+class NetworkView(BaseView):
     check_requested = Signal()
     view_shown = Signal()
 
     def __init__(self, i18n):
-        super().__init__()
-        self.i18n = i18n
+        super().__init__(
+            i18n=i18n,
+            title_key="network.header.title",
+            subtitle_key="network.header.subtitle",
+            icon_name="access-point.svg",
+            icon_color=COLOR_TEXT_PRIMARY
+        )
         self.cards = {}
         self._setup_ui()
 
     def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-        
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        
-        content = QWidget()
-        self.main_layout = QVBoxLayout(content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-        
-        header = ViewHeader(
-            title_text=self.i18n.get("network.header.title"),
-            subtitle_text=self.i18n.get("network.header.subtitle"),
-            icon_name="access-point.svg",
-            icon_color=COLOR_TEXT_PRIMARY
-        )
-        self.main_layout.addWidget(header)
         self.main_layout.addSpacing(10)
         
         btn_layout = QHBoxLayout()
@@ -138,8 +123,6 @@ class NetworkView(QWidget):
         self._add_card("youtube", self.i18n.get("network.services.youtube"), self.i18n.get("network.services.youtube_desc"), "brand-youtube.svg")
         
         self.main_layout.addStretch()
-        scroll.setWidget(content)
-        base_layout.addWidget(scroll)
 
     def _add_card(self, key: str, title: str, description: str, icon: str):
         card = NetworkStatusCard(key, title, description, icon, self)

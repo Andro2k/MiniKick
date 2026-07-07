@@ -1,42 +1,25 @@
 # frontend\views\spam_view.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QFrame, QScrollArea)
-from PySide6.QtCore import Qt, Signal
-
-from frontend.widgets.blocks_component import ViewHeader
+from PySide6.QtCore import Signal
+from frontend.widgets.base_view import BaseView
 from frontend.widgets.expandable_setting_card import ExpandableSettingCard
 from frontend.common.theme import COLOR_TEXT_PRIMARY
 
-class SpamView(QWidget):
+class SpamView(BaseView):
     filter_updated = Signal(str, dict)
 
     def __init__(self, i18n):
-        super().__init__()
-        self.i18n = i18n
+        super().__init__(
+            i18n=i18n,
+            title_key="spam.header.title",
+            subtitle_key="spam.header.subtitle",
+            icon_name="shield-half.svg",
+            icon_color=COLOR_TEXT_PRIMARY
+        )
         self.cards = {}
         self._setup_ui()
 
     def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        content = QWidget()
-        self.main_layout = QVBoxLayout(content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-
-        header = ViewHeader(
-            title_text=self.i18n.get("spam.header.title"),
-            subtitle_text=self.i18n.get("spam.header.subtitle"),
-            icon_name="shield-half.svg",
-            icon_color=COLOR_TEXT_PRIMARY
-        )
-        self.main_layout.addWidget(header)
         self.main_layout.addSpacing(10)
 
         self._add_card("caps_protection", self.i18n.get("spam.filters.caps.title"), self.i18n.get("spam.filters.caps.desc"), "adjustments.svg")
@@ -47,8 +30,6 @@ class SpamView(QWidget):
         self._add_card("repetition_protection", self.i18n.get("spam.filters.repetition.title"), self.i18n.get("spam.filters.repetition.desc"), "repeat.svg")
         
         self.main_layout.addStretch()
-        scroll.setWidget(content)
-        base_layout.addWidget(scroll)
 
     def _add_card(self, f_id, title, desc, icon, has_amount=True):
         card = ExpandableSettingCard(f_id, title, desc, icon, has_amount, self.i18n)

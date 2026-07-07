@@ -1,18 +1,15 @@
 # frontend\views\settings_view.py
 
 from datetime import datetime
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import (
-    QComboBox, QFileDialog, QFrame, QHBoxLayout,
-    QScrollArea, QVBoxLayout, QWidget
-)
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QComboBox, QFileDialog, QHBoxLayout, QWidget
 
 from frontend.common.theme import COLOR_TEXT_PRIMARY, COLOR_DANGER
-from frontend.widgets.blocks_component import SettingRow, ViewHeader
+from frontend.widgets.base_view import BaseView
+from frontend.widgets.blocks_component import SettingRow, ModernCard
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
-
-class SettingsView(QWidget):
+class SettingsView(BaseView):
     font_size_changed = Signal(int)
     minimize_tray_toggled = Signal(bool)
     export_clicked = Signal()
@@ -23,37 +20,17 @@ class SettingsView(QWidget):
     feedback_clicked = Signal()
 
     def __init__(self, i18n):
-        super().__init__()
-        self.i18n = i18n
+        super().__init__(
+            i18n=i18n,
+            title_key="settings.header.title",
+            subtitle_key="settings.header.subtitle",
+            icon_name="settings.svg",
+            icon_color=COLOR_TEXT_PRIMARY
+        )
         self._setup_ui()
 
     def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        scroll_content = QWidget()
-        self.main_layout = QVBoxLayout(scroll_content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-
-        self.header = ViewHeader(
-            title_text=self.i18n.get("settings.header.title"), 
-            subtitle_text=self.i18n.get("settings.header.subtitle"), 
-            icon_name="settings.svg", 
-            icon_color=COLOR_TEXT_PRIMARY
-        )
-        self.main_layout.addWidget(self.header)
-
-        sys_card = QFrame()
-        sys_card.setProperty("role", "card")
-        sys_layout = QVBoxLayout(sys_card)
-        sys_layout.setContentsMargins(8, 8, 8, 8)
-        sys_layout.setSpacing(6)
+        sys_card = ModernCard()
 
         self.combo_lang = QComboBox()
         self.combo_lang.addItem("Español", "es")
@@ -105,17 +82,13 @@ class SettingsView(QWidget):
             right_widget=self.btn_update
         )
         
-        sys_layout.addWidget(row_lang)
-        sys_layout.addWidget(row_font)
-        sys_layout.addWidget(row_tray)        
-        sys_layout.addWidget(row_update)
+        sys_card.addWidget(row_lang)
+        sys_card.addWidget(row_font)
+        sys_card.addWidget(row_tray)        
+        sys_card.addWidget(row_update)
         self.main_layout.addWidget(sys_card)
 
-        backup_card = QFrame()
-        backup_card.setProperty("role", "card")
-        backup_layout = QVBoxLayout(backup_card)
-        backup_layout.setContentsMargins(8, 8, 8, 8)
-        backup_layout.setSpacing(6)
+        backup_card = ModernCard()
 
         btn_container = QWidget()
         btn_layout = QHBoxLayout(btn_container)
@@ -138,14 +111,10 @@ class SettingsView(QWidget):
             right_widget=btn_container 
         )
 
-        backup_layout.addWidget(row_backup)
+        backup_card.addWidget(row_backup)
         self.main_layout.addWidget(backup_card)
 
-        account_card = QFrame()
-        account_card.setProperty("role", "card")
-        account_layout = QVBoxLayout(account_card)
-        account_layout.setContentsMargins(8, 8, 8, 8)
-        account_layout.setSpacing(6)
+        account_card = ModernCard()
 
         self.btn_unlink = ModernButton(self.i18n.get("common.buttons.unlink"), role="action_danger_border")
         self.btn_unlink.clicked.connect(self.unlink_clicked.emit)
@@ -159,14 +128,10 @@ class SettingsView(QWidget):
             icon_color=COLOR_DANGER
         )
 
-        account_layout.addWidget(row_unlink)
+        account_card.addWidget(row_unlink)
         self.main_layout.addWidget(account_card)
 
-        feedback_card = QFrame()
-        feedback_card.setProperty("role", "card")
-        feedback_layout = QVBoxLayout(feedback_card)
-        feedback_layout.setContentsMargins(8, 8, 8, 8)
-        feedback_layout.setSpacing(6)
+        feedback_card = ModernCard()
 
         self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_accent")
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
@@ -178,12 +143,10 @@ class SettingsView(QWidget):
             right_widget=self.btn_feedback
         )
 
-        feedback_layout.addWidget(row_feedback)
+        feedback_card.addWidget(row_feedback)
         self.main_layout.addWidget(feedback_card)
         
         self.main_layout.addStretch()
-        scroll_area.setWidget(scroll_content)
-        base_layout.addWidget(scroll_area)
 
     def set_minimize_tray_enabled(self, enabled: bool):
         self.sw_start_bg.blockSignals(True)

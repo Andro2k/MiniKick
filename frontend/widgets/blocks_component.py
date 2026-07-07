@@ -127,3 +127,28 @@ class StatCard(QFrame):
 
     def set_value(self, value: str):
         self.lbl_value.setText(str(value))
+
+class ModernCard(QFrame):
+    def __init__(self, parent=None, margin=8, spacing=6, orientation="vertical"):
+        super().__init__(parent)
+        self.setProperty("role", "card")
+        
+        if orientation == "horizontal":
+            self.card_layout = QHBoxLayout(self)
+        else:
+            self.card_layout = QVBoxLayout(self)
+            
+        self.card_layout.setContentsMargins(margin, margin, margin, margin)
+        self.card_layout.setSpacing(spacing)
+        
+    def addWidget(self, widget, *args, **kwargs):
+        self.card_layout.addWidget(widget, *args, **kwargs)
+        
+    def addLayout(self, layout, *args, **kwargs):
+        self.card_layout.addLayout(layout, *args, **kwargs)
+
+    def addSpacing(self, spacing: int):
+        self.card_layout.addSpacing(spacing)
+
+    def addStretch(self, stretch: int = 0):
+        self.card_layout.addStretch(stretch)

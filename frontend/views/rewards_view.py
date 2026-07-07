@@ -1,17 +1,17 @@
 # frontend\views\rewards_view.py
 
 import os
-from PySide6.QtWidgets import (QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QFrame, QTableWidget, QTableWidgetItem, 
-                               QHeaderView, QApplication)
+from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
+from frontend.widgets.base_view import BaseView
+from frontend.widgets.blocks_component import SettingRow, ModernCard
+from frontend.widgets.table_component import ModernTableCard, TableActionCell
 from frontend.widgets.controls_component import ModernButton
-from frontend.widgets.blocks_component import ViewHeader, SettingRow
-from frontend.common.theme import COLOR_ACCENT, COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, COLOR_DANGER
 from frontend.common.utils import get_icon_colored
 
-class RewardsView(QWidget):
+class RewardsView(BaseView):
     add_requested = Signal()
     edit_requested = Signal(str)
     delete_requested = Signal(str)
@@ -19,44 +19,22 @@ class RewardsView(QWidget):
     refresh_rewards_requested = Signal()
 
     def __init__(self, i18n, overlay_url="http://localhost:8090/overlay"):
-        super().__init__()
-        self.i18n = i18n
+        super().__init__(
+            i18n=i18n,
+            title_key="rewards.header.title",
+            subtitle_key="rewards.header.subtitle",
+            icon_name="layout-dashboard.svg", 
+            icon_color=COLOR_TEXT_PRIMARY
+        )
         self.overlay_url = overlay_url
         self._setup_ui()
 
     def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        scroll_content = QWidget()
-        self.main_layout = QVBoxLayout(scroll_content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-
-        self.header = ViewHeader(
-            title_text=self.i18n.get("rewards.header.title"),
-            subtitle_text=self.i18n.get("rewards.header.subtitle"),
-            icon_name="layout-dashboard.svg", 
-            icon_color=COLOR_TEXT_PRIMARY
-        )
-        self.main_layout.addWidget(self.header)
-
         self._build_obs_card()
         self._build_table_card()
 
-        scroll_area.setWidget(scroll_content)
-        base_layout.addWidget(scroll_area)
-
     def _build_obs_card(self):
-        obs_card = QFrame()
-        obs_card.setProperty("role", "card")
-        obs_layout = QVBoxLayout(obs_card)
-        obs_layout.setContentsMargins(8, 8, 8, 8)
+        obs_card = ModernCard()
 
         self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
@@ -68,50 +46,33 @@ class RewardsView(QWidget):
             right_widget=self.btn_copy_url
         )
         
-        obs_layout.addWidget(obs_row)
+        obs_card.addWidget(obs_row)
         self.main_layout.addWidget(obs_card)
 
     def _build_table_card(self):
-        table_card = QFrame()
-        table_card.setProperty("role", "card")
-        table_card.setMinimumHeight(300)
-        table_layout = QVBoxLayout(table_card)
-        table_layout.setContentsMargins(8, 8, 8, 8)
-        table_layout.setSpacing(6)
-
-        table_header_layout = QHBoxLayout()
-        lbl_table_title = QLabel(self.i18n.get("rewards.table.title"))
-        lbl_table_title.setProperty("role", "h3")
-
-        self.btn_new_rewards = ModernButton(self.i18n.get("rewards.table.btn_new"), role="action_accent")
-        self.btn_new_rewards.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
-        self.btn_new_rewards.clicked.connect(self.add_requested.emit)
-
-        table_header_layout.addWidget(lbl_table_title)
-        table_header_layout.addStretch()
-        table_header_layout.addWidget(self.btn_new_rewards)
-
-        table_layout.addLayout(table_header_layout)
-
-        self.table_rewards = QTableWidget(0, 3)
         col_1 = self.i18n.get("rewards.table.col_reward")
         col_2 = self.i18n.get("rewards.table.col_file")
         col_3 = self.i18n.get("rewards.table.col_actions")
-        self.table_rewards.setHorizontalHeaderLabels([col_1, col_2, col_3])
+
+        self.table_card = ModernTableCard(
+            title_text=self.i18n.get("rewards.table.title"),
+            headers=[col_1, col_2, col_3],
+            add_button_text=self.i18n.get("rewards.table.btn_new"),
+            add_button_icon="add.svg"
+        )
+        self.table_card.setMinimumHeight(300)
+        
+        self.table_rewards = self.table_card.table
+        self.btn_new_rewards = self.table_card.btn_add
+
+        self.btn_new_rewards.clicked.connect(self.add_requested.emit)
         
         self.table_rewards.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table_rewards.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table_rewards.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
         self.table_rewards.setColumnWidth(2, 140) 
         
-        self.table_rewards.verticalHeader().setVisible(False)
-        self.table_rewards.verticalHeader().setDefaultSectionSize(38)
-        self.table_rewards.setShowGrid(False)
-        self.table_rewards.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        self.table_rewards.setFocusPolicy(Qt.FocusPolicy.NoFocus) 
-        
-        table_layout.addWidget(self.table_rewards)
-        self.main_layout.addWidget(table_card, stretch=1) 
+        self.main_layout.addWidget(self.table_card, stretch=1) 
 
     def populate_table(self, mappings: dict):
         self.table_rewards.setUpdatesEnabled(False)
@@ -132,32 +93,32 @@ class RewardsView(QWidget):
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 1, item_file)
             
-            actions_widget = QFrame()
-            actions_widget.setObjectName("TableActions")
-            actions_layout = QHBoxLayout(actions_widget)
-            actions_layout.setContentsMargins(0, 0, 0, 0) 
-            actions_layout.setSpacing(8)
-            actions_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            cell = TableActionCell()
+            cell.add_button(
+                icon_name="play.svg", 
+                color=COLOR_TEXT_PRIMARY, 
+                role="action_neutral_border", 
+                tooltip=self.i18n.get("rewards.table.tooltip_play"), 
+                callback=lambda checked=False, r=reward: self.preview_requested.emit(r)
+            )
+            cell.add_button(
+                icon_name="edit.svg", 
+                color=COLOR_ACCENT, 
+                role="action_accent_border", 
+                tooltip=self.i18n.get("rewards.table.tooltip_edit"), 
+                callback=lambda checked=False, r=reward: self.edit_requested.emit(r)
+            )
+            cell.add_button(
+                icon_name="trash.svg", 
+                color=COLOR_DANGER, 
+                role="action_danger_border", 
+                tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
+                callback=lambda checked=False, r=reward: self.delete_requested.emit(r)
+            )
             
-            btn_play = self._create_table_action_btn("play.svg", COLOR_TEXT_PRIMARY, "action_neutral_border", self.i18n.get("rewards.table.tooltip_play"), lambda checked=False, r=reward: self.preview_requested.emit(r))
-            btn_edit = self._create_table_action_btn("edit.svg", COLOR_ACCENT, "action_accent_border", self.i18n.get("rewards.table.tooltip_edit"), lambda checked=False, r=reward: self.edit_requested.emit(r))
-            btn_del = self._create_table_action_btn("trash.svg", COLOR_DANGER, "action_danger_border", self.i18n.get("rewards.table.tooltip_delete"), lambda checked=False, r=reward: self.delete_requested.emit(r))
-            
-            actions_layout.addWidget(btn_play)
-            actions_layout.addWidget(btn_edit)
-            actions_layout.addWidget(btn_del)
-            
-            self.table_rewards.setCellWidget(row, 2, actions_widget)
+            self.table_rewards.setCellWidget(row, 2, cell)
 
         self.table_rewards.setUpdatesEnabled(True)
-
-    def _create_table_action_btn(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
-        btn = ModernButton("", role=role)
-        btn.setFixedSize(28, 28)
-        btn.setIcon(get_icon_colored(icon_name, color, size=16))
-        btn.setToolTip(tooltip)
-        btn.clicked.connect(callback)
-        return btn
 
     @Slot()
     def _copy_obs_url(self):

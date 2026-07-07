@@ -1,16 +1,17 @@
 # frontend\views\chat_view.py
 
 import html
-from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit, QWidget, 
-                               QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSlider, 
-                               QFrame, QSizePolicy, QScrollArea)
+from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit,
+                                QHBoxLayout, QTextEdit, QLabel, QSlider, 
+                                QSizePolicy)
 from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
-from frontend.widgets.blocks_component import ViewHeader, SettingRow, SliderRow
+from frontend.widgets.base_view import BaseView
+from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
 from frontend.navigation.bot_panel_component import BotMutePanel
 from frontend.common.theme import COLOR_TEXT_PRIMARY
 
-class ChatView(QWidget):
+class ChatView(BaseView):
     volume_changed = Signal(int)
     voice_changed = Signal(str)
     provider_toggled = Signal(bool)
@@ -22,42 +23,22 @@ class ChatView(QWidget):
     _MAX_CHAT_BLOCKS = 400
 
     def __init__(self, i18n):
-        super().__init__()
-        self.i18n = i18n
+        super().__init__(
+            i18n=i18n,
+            title_key="chat.header.title",
+            subtitle_key="chat.header.subtitle",
+            icon_name="message.svg",
+            icon_color=COLOR_TEXT_PRIMARY
+        )
         self._setup_ui()
         self._connect_internal_signals()
 
     def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        scroll_content = QWidget()
-        self.main_layout = QVBoxLayout(scroll_content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-
-        self.header = ViewHeader(
-            title_text=self.i18n.get("chat.header.title"),
-            subtitle_text=self.i18n.get("chat.header.subtitle"),
-            icon_name="message.svg",
-            icon_color=COLOR_TEXT_PRIMARY
-        )
-        self.main_layout.addWidget(self.header)
-
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.body_layout.setSpacing(16)
 
-        config_card = QFrame()
-        config_card.setProperty("role", "card")
+        config_card = ModernCard()
         config_card.setMinimumWidth(380) 
-        config_layout = QVBoxLayout(config_card)
-        config_layout.setContentsMargins(8, 8, 8, 8)
-        config_layout.setSpacing(6)
 
         self.chk_tts = ModernSwitch()
         self.chk_name = ModernSwitch() 
@@ -92,23 +73,18 @@ class ChatView(QWidget):
 
         self.bot_panel = BotMutePanel(self.i18n)
 
-        config_layout.addWidget(row_tts)
-        config_layout.addWidget(row_read_name)
-        config_layout.addWidget(row_provider)
-        config_layout.addLayout(lang_voice_layout)
-        config_layout.addWidget(row_volume)
-        config_layout.addWidget(row_cmd)
-        config_layout.addWidget(row_prefix)
-        config_layout.addSpacing(10)
-        config_layout.addWidget(self.bot_panel, stretch=1) 
+        config_card.addWidget(row_tts)
+        config_card.addWidget(row_read_name)
+        config_card.addWidget(row_provider)
+        config_card.addLayout(lang_voice_layout)
+        config_card.addWidget(row_volume)
+        config_card.addWidget(row_cmd)
+        config_card.addWidget(row_prefix)
+        config_card.addSpacing(10)
+        config_card.addWidget(self.bot_panel, stretch=1) 
         
-        chat_card = QFrame()
-        chat_card.setProperty("role", "card")
+        chat_card = ModernCard()
         chat_card.setMinimumHeight(400) 
-        
-        chat_layout = QVBoxLayout(chat_card)
-        chat_layout.setContentsMargins(8, 8, 8, 8)
-        chat_layout.setSpacing(6)
 
         lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
         lbl_chat_title.setProperty("role", "h3")
@@ -117,15 +93,13 @@ class ChatView(QWidget):
         self.chat_display.setReadOnly(True)
         self.chat_display.setProperty("role", "ConsoleDisplay")
 
-        chat_layout.addWidget(lbl_chat_title)
-        chat_layout.addWidget(self.chat_display)
+        chat_card.addWidget(lbl_chat_title)
+        chat_card.addWidget(self.chat_display)
 
         self.body_layout.addWidget(config_card)
         self.body_layout.addWidget(chat_card, stretch=1)
+        
         self.main_layout.addLayout(self.body_layout)
-
-        scroll_area.setWidget(scroll_content)
-        base_layout.addWidget(scroll_area)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

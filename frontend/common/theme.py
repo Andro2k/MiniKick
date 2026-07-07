@@ -100,7 +100,7 @@ QFrame#ProfileCard {{ background-color: transparent; border: 1.5px solid transpa
 QFrame#ProfileCard:hover {{ background-color: {COLOR_BG_HOVER}; border-color: {COLOR_BORDER_SVELTE}; }}
 QLabel#ProfileName {{ font-size: {btn_txt}px; font-weight: 600; color: {COLOR_TEXT_PRIMARY}; background-color: transparent; }}
 QLabel#ProfileSub {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_MUTED}; background-color: transparent; }}
-QFrame[role="bot_tag"] {{ background-color: {COLOR_BG_INPUT}; border: 1.5px solid {COLOR_BORDER_SVELTE}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="bot_tag"] {{ background-color: {COLOR_BG_HOVER}; border: 1.5px solid {COLOR_BORDER_HOVER}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="bot_tag"]:hover {{ border-color: {COLOR_DANGER}; }}
 QFrame[role="bot_tag"] QLabel {{ color: {COLOR_TEXT_PRIMARY}; font-size: {btn_txt}px; }}
 

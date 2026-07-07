@@ -1,12 +1,13 @@
 # frontend\views\music_view.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
-                                QLabel, QFrame, QScrollArea, QComboBox, QSlider, QPushButton,
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,
+                                QLabel, QScrollArea, QComboBox, QSlider, QPushButton,
                                 QLayout)
 from PySide6.QtCore import Qt, Signal, QSize, QPoint, QRect
 from frontend.common.theme import COLOR_DANGER, COLOR_ACCENT, COLOR_TEXT_PRIMARY
 from frontend.common.utils import get_icon_colored, get_icon
-from frontend.widgets.blocks_component import ViewHeader, SettingRow, SliderRow
+from frontend.widgets.base_view import BaseView
+from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
 class FlowLayout(QLayout):
@@ -89,7 +90,7 @@ class FlowLayout(QLayout):
 
         return y + line_height - effective_rect.y() + top + bottom
 
-class MusicView(QWidget):
+class MusicView(BaseView):
     connect_requested = Signal()
     disconnect_requested = Signal()
     command_toggled = Signal(str, bool)
@@ -101,31 +102,20 @@ class MusicView(QWidget):
     youtube_auto_resume_toggled = Signal(bool)
 
     def __init__(self, i18n):
-        super().__init__()
-        self.i18n = i18n
-        self._setup_ui()
-
-    def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        scroll_content = QWidget()
-        self.main_layout = QVBoxLayout(scroll_content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-
-        self.header = ViewHeader(
-            title_text=self.i18n.get("music.header.title"),
-            subtitle_text=self.i18n.get("music.header.subtitle"),
+        super().__init__(
+            i18n=i18n,
+            title_key="music.header.title",
+            subtitle_key="music.header.subtitle",
             icon_name="music.svg",
             icon_color=COLOR_TEXT_PRIMARY
         )
-        self.main_layout.addWidget(self.header)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self.body_container = QWidget()
+        self.body_layout = QVBoxLayout(self.body_container)
+        self.body_layout.setContentsMargins(0, 0, 0, 0)
+        self.body_layout.setSpacing(12)
 
         self._setup_provider_selection_card()
         self._setup_auth_card()
@@ -133,16 +123,11 @@ class MusicView(QWidget):
         self._setup_queue_card()
         self._setup_commands_card()
 
+        self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()
-        scroll_area.setWidget(scroll_content)
-        base_layout.addWidget(scroll_area)
 
     def _setup_provider_selection_card(self):
-        card = QFrame()
-        card.setProperty("role", "card")
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
+        card = ModernCard(margin=12, spacing=8)
 
         self.combo_provider = QComboBox()
         self.combo_provider.addItem("Spotify", "spotify")
@@ -158,7 +143,7 @@ class MusicView(QWidget):
             desc_text=self.i18n.get("music.provider.select_desc"),
             right_widget=self.combo_provider
         )
-        layout.addWidget(row_provider)
+        card.addWidget(row_provider)
 
         self.sw_auto_resume = ModernSwitch()
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
@@ -169,16 +154,12 @@ class MusicView(QWidget):
             right_widget=self.sw_auto_resume
         )
         self.row_auto_resume.setVisible(False)
-        layout.addWidget(self.row_auto_resume)
+        card.addWidget(self.row_auto_resume)
 
-        self.main_layout.addWidget(card)
+        self.body_layout.addWidget(card)
 
     def _setup_auth_card(self):
-        card = QFrame()
-        card.setProperty("role", "card")
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
+        card = ModernCard(margin=12, spacing=8)
 
         status_layout = QHBoxLayout()
         self.lbl_provider_name = QLabel(self.i18n.get("music.provider.name"))
@@ -202,7 +183,7 @@ class MusicView(QWidget):
         status_layout.addWidget(self.btn_connect)
         status_layout.addWidget(self.btn_disconnect)
 
-        layout.addLayout(status_layout)
+        card.addLayout(status_layout)
 
         self.slider_vol = QSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
@@ -219,22 +200,17 @@ class MusicView(QWidget):
         )
         self.row_vol.setVisible(False)
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
-        layout.addWidget(self.row_vol)
+        card.addWidget(self.row_vol)
 
-        self.main_layout.addWidget(card)
+        self.body_layout.addWidget(card)
 
     def _on_volume_slider_changed(self, val):
         self.lbl_vol_perc.setText(f"{val}%")
         self.volume_changed.emit(val)
 
     def _setup_now_playing_card(self):
-        self.card_player = QFrame()
-        self.card_player.setProperty("role", "card")
+        self.card_player = ModernCard(margin=12, spacing=8, orientation="horizontal")
         self.card_player.setVisible(False)
-        
-        layout = QHBoxLayout(self.card_player)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
 
         self.icon_music = QLabel()
         self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
@@ -251,8 +227,8 @@ class MusicView(QWidget):
         info_layout.addWidget(self.lbl_song_title)
         info_layout.addWidget(self.lbl_song_artist)
 
-        layout.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignVCenter)
-        layout.addLayout(info_layout, stretch=1)
+        self.card_player.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignVCenter)
+        self.card_player.addLayout(info_layout, stretch=1)
         
         controls_layout = QHBoxLayout()
         controls_layout.setSpacing(6)
@@ -272,22 +248,16 @@ class MusicView(QWidget):
         controls_layout.addWidget(self.btn_play_pause)
         controls_layout.addWidget(self.btn_skip)
         
-        layout.addLayout(controls_layout)
-        
-        self.main_layout.addWidget(self.card_player)
+        self.card_player.addLayout(controls_layout)
+        self.body_layout.addWidget(self.card_player)
 
     def _setup_commands_card(self):
-        self.card_cmds = QFrame()
-        self.card_cmds.setProperty("role", "card")
+        self.card_cmds = ModernCard(margin=12, spacing=8)
         self.card_cmds.setEnabled(False)
-        
-        layout = QVBoxLayout(self.card_cmds)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
 
         lbl_title = QLabel(self.i18n.get("music.cmds.title"))
         lbl_title.setProperty("role", "h2")
-        layout.addWidget(lbl_title)
+        self.card_cmds.addWidget(lbl_title)
 
         self.sw_sr = ModernSwitch()
         self.sw_sr.toggled.connect(lambda val: self.command_toggled.emit("!sr", val))
@@ -301,20 +271,15 @@ class MusicView(QWidget):
         self.sw_song.toggled.connect(lambda val: self.command_toggled.emit("!song", val))
         row_song = SettingRow("info-circle.svg", self.i18n.get("music.cmds.song_label"), self.i18n.get("music.cmds.song_desc"), self.sw_song)
 
-        layout.addWidget(row_sr)
-        layout.addWidget(row_skip)
-        layout.addWidget(row_song)
+        self.card_cmds.addWidget(row_sr)
+        self.card_cmds.addWidget(row_skip)
+        self.card_cmds.addWidget(row_song)
         
-        self.main_layout.addWidget(self.card_cmds)
+        self.body_layout.addWidget(self.card_cmds)
 
     def _setup_queue_card(self):
-        self.card_queue = QFrame()
-        self.card_queue.setProperty("role", "card")
+        self.card_queue = ModernCard(margin=12, spacing=8)
         self.card_queue.setVisible(False)
-        
-        layout = QVBoxLayout(self.card_queue)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
         
         header_layout = QHBoxLayout()
         lbl_title = QLabel(self.i18n.get("music.queue.title"))
@@ -327,7 +292,7 @@ class MusicView(QWidget):
         header_layout.addWidget(self.lbl_queue_count)
         header_layout.addStretch()
         
-        layout.addLayout(header_layout)
+        self.card_queue.addLayout(header_layout)
         
         self.queue_scroll = QScrollArea()
         self.queue_scroll.setWidgetResizable(True)
@@ -341,14 +306,14 @@ class MusicView(QWidget):
         self.queue_list_layout = FlowLayout(self.queue_list_widget, margin=0, hspacing=8, vspacing=8)
         
         self.queue_scroll.setWidget(self.queue_list_widget)
-        layout.addWidget(self.queue_scroll)
+        self.card_queue.addWidget(self.queue_scroll)
         
         self.lbl_empty_queue = QLabel(self.i18n.get("music.queue.empty"))
         self.lbl_empty_queue.setProperty("role", "body")
         self.lbl_empty_queue.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.queue_list_layout.addWidget(self.lbl_empty_queue)
         
-        self.main_layout.addWidget(self.card_queue)
+        self.body_layout.addWidget(self.card_queue)
 
     def update_queue(self, queue_items: list[dict]):
         new_urls = [song.get("url") for song in queue_items]
@@ -375,6 +340,8 @@ class MusicView(QWidget):
             item_frame = QFrame()
             item_frame.setFixedSize(264, 64)
             item_frame.setProperty("role", "bot_tag")
+            item_frame.style().unpolish(item_frame)
+            item_frame.style().polish(item_frame)
             
             item_layout = QHBoxLayout(item_frame)
             item_layout.setContentsMargins(10, 4, 10, 4)

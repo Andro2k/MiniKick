@@ -1,48 +1,34 @@
 # frontend\views\dashboard_view.py
 
 import os
-from PySide6.QtWidgets import (QBoxLayout, QScrollArea, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
+from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtGui import QPixmap
 
 from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
-from frontend.widgets.blocks_component import StatCard, ViewHeader, SettingRow
+from frontend.widgets.base_view import BaseView
+from frontend.widgets.blocks_component import StatCard, SettingRow, ModernCard
+from frontend.widgets.scalable_illustration import ScalableIllustration
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 
-class DashboardView(QWidget):
+class DashboardView(BaseView):
     connect_requested = Signal()
     autostart_toggled = Signal(bool)
     reauth_requested = Signal()
     
     def __init__(self, i18n):
-        super().__init__()
-        self.i18n = i18n
+        super().__init__(
+            i18n=i18n,
+            title_key="dashboard.header.title",
+            subtitle_key="dashboard.header.subtitle",
+            icon_name="dashboard.svg",
+            icon_color=COLOR_TEXT_PRIMARY
+        )
         self._stats_cols = -1
         self._setup_ui()
 
     def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        scroll_content = QWidget()
-        self.main_layout = QVBoxLayout(scroll_content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-
-        self.header = ViewHeader(
-            title_text=self.i18n.get("dashboard.header.title"),
-            subtitle_text=self.i18n.get("dashboard.header.subtitle"),
-            icon_name="dashboard.svg",
-            icon_color=COLOR_TEXT_PRIMARY
-        )
-        self.main_layout.addWidget(self.header)
-
         self.banner_scopes = QFrame()
         self.banner_scopes.setProperty("role", "banner_danger")
         self.banner_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.banner_scopes)
@@ -63,6 +49,7 @@ class DashboardView(QWidget):
         
         self.banner_scopes.setVisible(False)
         self.main_layout.addWidget(self.banner_scopes)
+        
         self._setup_connection_card()
         
         self.disconnected_container = QWidget()
@@ -71,10 +58,15 @@ class DashboardView(QWidget):
         disconnected_layout.setSpacing(12)
         disconnected_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        self.lbl_illustration = QLabel()
-        self.lbl_illustration.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_illustration.setScaledContents(True)
-        self._illustration_path = get_assets_path(os.path.join("icons", "install_small.svg"))
+        illustration_path = get_assets_path(os.path.join("icons", "install_small.svg"))
+        self.lbl_illustration = ScalableIllustration(
+            icon_path=illustration_path,
+            aspect_ratio=1.0,
+            min_size=120,
+            max_size=300,
+            size_offset=320,
+            parent=self
+        )
         
         self.lbl_disconnected_title = QLabel(self.i18n.get("dashboard.empty.title"))
         self.lbl_disconnected_title.setProperty("role", "h2")
@@ -93,21 +85,12 @@ class DashboardView(QWidget):
         disconnected_layout.addStretch(2)
         
         self.main_layout.addWidget(self.disconnected_container, stretch=1)
-        self._refresh_illustration(260)
         
         self._setup_profile_section()
-
         self.main_layout.addStretch()
 
-        scroll_area.setWidget(scroll_content)
-        base_layout.addWidget(scroll_area)
-
     def _setup_connection_card(self):
-        conn_card = QFrame()
-        conn_card.setProperty("role", "card")
-        conn_layout = QVBoxLayout(conn_card)
-        conn_layout.setContentsMargins(8, 8, 8, 8)
-        conn_layout.setSpacing(6)
+        conn_card = ModernCard()
 
         self.sw_autostart = ModernSwitch()
         self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
@@ -131,14 +114,14 @@ class DashboardView(QWidget):
         status_layout.addWidget(self.status_label, stretch=1)
         status_layout.addWidget(self.btn_connect, alignment=Qt.AlignmentFlag.AlignVCenter)
 
-        conn_layout.addWidget(row_autostart)
+        conn_card.addWidget(row_autostart)
         
         divider = QFrame()
         divider.setFrameShape(QFrame.Shape.HLine)
         divider.setProperty("role", "divider")
-        conn_layout.addWidget(divider)
+        conn_card.addWidget(divider)
         
-        conn_layout.addLayout(status_layout)
+        conn_card.addLayout(status_layout)
         self.main_layout.addWidget(conn_card)
 
     def _setup_profile_section(self):
@@ -151,22 +134,17 @@ class DashboardView(QWidget):
         self.top_row_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.top_row_layout.setSpacing(12) 
 
-        avatar_card = QFrame()
-        avatar_card.setProperty("role", "card")
-        avatar_layout = QVBoxLayout(avatar_card)
-        avatar_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        avatar_card = ModernCard()
+        avatar_card.card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_avatar = QLabel()
         self.lbl_avatar.setFixedSize(140, 140)
         self.lbl_avatar.setScaledContents(True) 
         self.lbl_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_avatar.setText("?")
-        avatar_layout.addWidget(self.lbl_avatar)
+        avatar_card.addWidget(self.lbl_avatar)
 
-        info_card = QFrame()
-        info_card.setProperty("role", "card")
-        info_layout = QVBoxLayout(info_card)
-        info_layout.setContentsMargins(8, 8, 8, 8)
+        info_card = ModernCard()
 
         self.lbl_username = QLabel("-")
         self.lbl_username.setProperty("role", "h1")
@@ -176,9 +154,9 @@ class DashboardView(QWidget):
         self.lbl_bio.setProperty("role", "body")
         self.lbl_bio.setWordWrap(True)
 
-        info_layout.addWidget(self.lbl_username)
-        info_layout.addWidget(self.lbl_bio)
-        info_layout.addStretch()
+        info_card.addWidget(self.lbl_username)
+        info_card.addWidget(self.lbl_bio)
+        info_card.card_layout.addStretch()
         
         self.top_row_layout.addWidget(avatar_card)
         self.top_row_layout.addWidget(info_card, stretch=1)
@@ -350,15 +328,4 @@ class DashboardView(QWidget):
                     self.session_grid.addWidget(card, i // cols, i % cols)
                     
         if hasattr(self, "disconnected_container") and self.disconnected_container.isVisible():
-            size = min(max(self.height() - 320, 120), 300)
-            self._refresh_illustration(size)
-
-    def _refresh_illustration(self, width_size: int):
-        if os.path.exists(self._illustration_path):
-            icon = QIcon(self._illustration_path)
-            self.lbl_illustration.setPixmap(icon.pixmap(width_size, width_size))
-            self.lbl_illustration.setFixedSize(width_size, width_size)
-            self.lbl_illustration.setVisible(True)
-        else:
-            self.lbl_illustration.setVisible(False)
-    
+            self.lbl_illustration.update_image(self.height())

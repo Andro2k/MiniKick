@@ -1,16 +1,13 @@
 # frontend/views/timers_view.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, 
-                               QTableWidget, QHeaderView, QScrollArea, 
-                               QLineEdit)
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
 
-from frontend.widgets.controls_component import ModernButton, ModernSwitch
-from frontend.widgets.blocks_component import ViewHeader
-from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_ACCENT
-from frontend.common.utils import get_icon_colored
+from frontend.widgets.base_view import BaseView
+from frontend.widgets.table_component import ModernTableCard, TableActionCell
+from frontend.common.theme import COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_ACCENT
 
-class TimersView(QWidget):
+class TimersView(BaseView):
     add_requested = Signal()
     edit_requested = Signal(int)
     delete_requested = Signal(int)
@@ -18,66 +15,38 @@ class TimersView(QWidget):
     search_text_changed = Signal(str)
 
     def __init__(self, i18n):
-        super().__init__()
-        self.i18n = i18n
-        self._setup_ui()
-
-    def _setup_ui(self):
-        base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
-
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-
-        scroll_content = QWidget()
-        self.main_layout = QVBoxLayout(scroll_content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
-
-        self.header = ViewHeader(
-            title_text=self.i18n.get("timer.header.title"),
-            subtitle_text=self.i18n.get("timer.header.subtitle"),
+        super().__init__(
+            i18n=i18n,
+            title_key="timer.header.title",
+            subtitle_key="timer.header.subtitle",
             icon_name="clock.svg",
             icon_color=COLOR_TEXT_PRIMARY
         )
-        self.main_layout.addWidget(self.header)
+        self._setup_ui()
 
-        table_card = QFrame()
-        table_card.setProperty("role", "card")
-        table_layout = QVBoxLayout(table_card)
-        table_layout.setContentsMargins(8, 8, 8, 8)
-        table_layout.setSpacing(6)
-
-        table_header_layout = QHBoxLayout()
-        lbl_table_title = QLabel(self.i18n.get("timer.header.title"))
-        lbl_table_title.setProperty("role", "h3")      
-        table_header_layout.addWidget(lbl_table_title)
-        table_header_layout.addStretch()
-
-        self.txt_search = QLineEdit()
-        self.txt_search.setPlaceholderText(self.i18n.get("timer.table.search_placeholder"))
-        self.txt_search.textChanged.connect(self.search_text_changed.emit)
-        table_header_layout.addWidget(self.txt_search)
-
-        self.btn_new_add = ModernButton(self.i18n.get("timer.table.btn_new"), role="action_accent")
-        self.btn_new_add.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
-        self.btn_new_add.clicked.connect(self.add_requested.emit)
-        table_header_layout.addWidget(self.btn_new_add)
-
-        table_layout.addLayout(table_header_layout)
-
-        self.table = QTableWidget(0, 6)
-
+    def _setup_ui(self):
         col_1 = self.i18n.get("timer.table.col_name")
         col_2 = self.i18n.get("timer.table.col_message")
         col_3 = self.i18n.get("timer.table.col_interval_online")
         col_4 = self.i18n.get("timer.table.col_interval_offline")
         col_5 = self.i18n.get("timer.table.col_chat_lines")
         col_6 = self.i18n.get("timer.table.col_actions")
-        self.table.setHorizontalHeaderLabels([col_1, col_2, col_3, col_4, col_5, col_6])
+
+        self.table_card = ModernTableCard(
+            title_text=self.i18n.get("timer.header.title"),
+            headers=[col_1, col_2, col_3, col_4, col_5, col_6],
+            search_placeholder=self.i18n.get("timer.table.search_placeholder"),
+            add_button_text=self.i18n.get("timer.table.btn_new"),
+            add_button_icon="add.svg"
+        )
         
+        self.table = self.table_card.table
+        self.txt_search = self.table_card.txt_search
+        self.btn_new_add = self.table_card.btn_add
+
+        self.txt_search.textChanged.connect(self.search_text_changed.emit)
+        self.btn_new_add.clicked.connect(self.add_requested.emit)
+
         h_header = self.table.horizontalHeader()
         h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
@@ -88,17 +57,7 @@ class TimersView(QWidget):
         
         self.table.setColumnWidth(5, 130)
         
-        self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(38)
-        self.table.setShowGrid(False)
-        self.table.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        self.table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
-        table_layout.addWidget(self.table)
-        self.main_layout.addWidget(table_card, stretch=1) 
-
-        scroll_area.setWidget(scroll_content)
-        base_layout.addWidget(scroll_area)
+        self.main_layout.addWidget(self.table_card, stretch=1) 
 
     def populate_table(self, timers: list[dict]):
         self.table.setUpdatesEnabled(False)
@@ -194,32 +153,28 @@ class TimersView(QWidget):
         return container
 
     def _create_actions_cell(self, timer_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(0, 0, 4, 0)
-        layout.setSpacing(6)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
         timer_id = timer_data["id"]
-
-        sw_status = ModernSwitch()
-        sw_status.setChecked(timer_data.get("is_active", True))
-        sw_status.toggled.connect(lambda checked, tid=timer_id: self.status_toggled.emit(tid, checked))
-        layout.addWidget(sw_status)
-        layout.addSpacing(4)
-
-        btn_edit = ModernButton("", role="action_accent_border")
-        btn_edit.setFixedSize(28, 28)
-        btn_edit.setIcon(get_icon_colored("edit.svg", COLOR_ACCENT, 16))
-        btn_edit.setToolTip(self.i18n.get("timer.table.tooltip_edit"))
-        btn_edit.clicked.connect(lambda checked=False, tid=timer_id: self.edit_requested.emit(tid))
-        layout.addWidget(btn_edit)
+        cell = TableActionCell()
         
-        btn_del = ModernButton("", role="action_danger_border")
-        btn_del.setFixedSize(28, 28)
-        btn_del.setIcon(get_icon_colored("trash.svg", COLOR_DANGER, 16))
-        btn_del.setToolTip(self.i18n.get("timer.table.tooltip_delete"))
-        btn_del.clicked.connect(lambda checked=False, tid=timer_id: self.delete_requested.emit(tid))
-        layout.addWidget(btn_del)
+        cell.add_switch(
+            checked=timer_data.get("is_active", True),
+            callback=lambda checked, tid=timer_id: self.status_toggled.emit(tid, checked)
+        )
         
-        return container
+        cell.add_button(
+            icon_name="edit.svg", 
+            color=COLOR_ACCENT, 
+            role="action_accent_border", 
+            tooltip=self.i18n.get("timer.table.tooltip_edit"),
+            callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
+        )
+        
+        cell.add_button(
+            icon_name="trash.svg", 
+            color=COLOR_DANGER, 
+            role="action_danger_border", 
+            tooltip=self.i18n.get("timer.table.tooltip_delete"),
+            callback=lambda checked=False, tid=timer_id: self.delete_requested.emit(tid)
+        )
+        
+        return cell
