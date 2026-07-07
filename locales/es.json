@@ -125,6 +125,14 @@
                 "title": "Protección de Repetición",
                 "desc": "Penaliza mensajes duplicados y el uso excesivo de la misma palabra."
             }
+        },
+        "status": {
+            "activated": "Filtro Activado",
+            "deactivated": "Filtro Desactivado",
+            "updated": "Filtro Actualizado",
+            "activated_msg": "El filtro '{filter_name}' ahora está activo.",
+            "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo.",
+            "updated_msg": "Se guardó la configuración del filtro '{filter_name}'."
         }
     },
     "command": {
@@ -379,7 +387,11 @@
         "toast": {
             "title_spotify": "Spotify",
             "connected": "Vínculo con Spotify establecido con éxito.",
-            "disconnected": "Cuenta de Spotify desvinculada."
+            "disconnected": "Cuenta de Spotify desvinculada.",
+            "removed_from_queue": "Canción eliminada de la cola",
+            "error_playing": "No se pudo reproducir '{title}': {error}",
+            "chat_error_playing": "❌ @{user}, no se pudo reproducir '{title}': {error}",
+            "chat_error_playing_no_user": "❌ No se pudo reproducir '{title}': {error}"
         },
         "chat": {
             "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",

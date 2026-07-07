@@ -209,6 +209,7 @@ class Sidebar(QFrame):
         btn.setProperty("icon_name", icon_name)        
         icon_color = COLOR_ACCENT if is_active else COLOR_TEXT_SECONDARY
         btn.setIcon(get_icon_colored(icon_name, icon_color, 28))
+        btn.setToolTip("" if self.is_expanded else display_name)
         
         if is_active:
             btn.setChecked(True)
@@ -250,6 +251,7 @@ class Sidebar(QFrame):
     def _update_texts_and_styles(self, show: bool):
         for btn in self.nav_buttons:
             btn.setText(btn.property("original_text") if show else "")
+            btn.setToolTip("" if show else btn.property("original_text"))
             btn.setProperty("collapsed", not show)
             btn.style().unpolish(btn)
             btn.style().polish(btn)

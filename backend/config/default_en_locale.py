@@ -127,6 +127,14 @@ DEFAULT_DICTIONARY = {
                 "title": "Repetition Protection",
                 "desc": "Penalizes duplicate messages and excessive use of the same word."
             }
+        },
+        "status": {
+            "activated": "Filter Activated",
+            "deactivated": "Filter Deactivated",
+            "updated": "Filter Updated",
+            "activated_msg": "The filter '{filter_name}' is now active.",
+            "deactivated_msg": "The filter '{filter_name}' is now inactive.",
+            "updated_msg": "Configuration for filter '{filter_name}' has been saved."
         }
     },
     "command": {
@@ -381,7 +389,11 @@ DEFAULT_DICTIONARY = {
         "toast": {
             "title_spotify": "Spotify",
             "connected": "Link with Spotify successfully established.",
-            "disconnected": "Spotify account disconnected."
+            "disconnected": "Spotify account disconnected.",
+            "removed_from_queue": "Song removed from queue",
+            "error_playing": "Could not play '{title}': {error}",
+            "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
+            "chat_error_playing_no_user": "❌ Could not play '{title}': {error}"
         },
         "chat": {
             "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",

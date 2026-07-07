@@ -201,8 +201,13 @@ QFrame[role="toast"][state="info"]    {{ border-color: {COLOR_INFO_GLOW}; }}
 
 /* --- 9. TOOLTIPS (Desacoplados del Desktop OS) --- */
 QToolTip {{
-    background-color: {COLOR_BLACK}; color: {COLOR_TEXT_PRIMARY}; border: 1px solid {COLOR_BORDER_SVELTE}; padding: 2px 4px;
-    font-family: {FONT_FAMILY}; font-size: {caption}px;
+    background-color: {COLOR_BG_HOVER};
+    color: {COLOR_TEXT_PRIMARY};
+    border: 1px solid {COLOR_BORDER_HOVER};
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: {FONT_FAMILY};
+    font-size: {caption}px;
 }}
 
 /* --- 10. TAG PILLS Y BADGES (TABLA COMANDOS) --- */

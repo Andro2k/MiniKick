@@ -174,10 +174,7 @@ class MusicController(QObject):
             success = self.music_provider.remove_from_queue(index)
             if success:
                 self._poll_now_playing()
-                if self.i18n.current_lang == "es":
-                    msg = "Canción eliminada de la cola"
-                else:
-                    msg = "Song removed from queue"
+                msg = self.i18n.get("music.toast.removed_from_queue")
                 self.toast.show_toast(self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube", msg, "success")
 
     @Slot(str, bool)
@@ -234,10 +231,7 @@ class MusicController(QObject):
                     clean_msg = first_line
 
             title_toast = self.i18n.get("music.youtube.error_title")
-            if self.i18n.current_lang == "es":
-                msg_toast = f"No se pudo reproducir '{title}': {clean_msg}"
-            else:
-                msg_toast = f"Could not play '{title}': {clean_msg}"
+            msg_toast = self.i18n.get("music.toast.error_playing").replace("{title}", title).replace("{error}", clean_msg)
                 
             self.toast.show_toast(
                 title_toast,
@@ -248,16 +242,9 @@ class MusicController(QObject):
             api_client = getattr(self.command_service, 'api_client', None)
             if api_client:
                 if requester:
-                    user_mention = f"@{requester}"
-                    if self.i18n.current_lang == "es":
-                        chat_text = f"❌ {user_mention}, no se pudo reproducir '{title}': {clean_msg}"
-                    else:
-                        chat_text = f"❌ {user_mention}, could not play '{title}': {clean_msg}"
+                    chat_text = self.i18n.get("music.toast.chat_error_playing").replace("{user}", requester).replace("{title}", title).replace("{error}", clean_msg)
                 else:
-                    if self.i18n.current_lang == "es":
-                        chat_text = f"❌ No se pudo reproducir '{title}': {clean_msg}"
-                    else:
-                        chat_text = f"❌ Could not play '{title}': {clean_msg}"
+                    chat_text = self.i18n.get("music.toast.chat_error_playing_no_user").replace("{title}", title).replace("{error}", clean_msg)
                 api_client.post_chat_message(content=chat_text, msg_type="bot")
 
     @Slot()

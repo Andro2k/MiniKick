@@ -317,7 +317,6 @@ class ChatController(QObject):
             if immediate_reply:
                 api.post_chat_message(immediate_reply)
         else:
-            is_es = self.i18n.current_lang == "es"
             music_ctrl = getattr(self.view.window(), 'music_controller', None)
             provider_type = getattr(music_ctrl, 'provider_type', 'spotify') if music_ctrl else 'spotify'
             if provider_type == 'youtube':
