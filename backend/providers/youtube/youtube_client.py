@@ -32,6 +32,8 @@ class YouTubeResolveWorker(QThread):
                 'outtmpl': outtmpl,
                 'quiet': True,
                 'no_warnings': True,
+                'nocheckcertificate': True,
+                'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
             }
             
             try:
@@ -59,6 +61,8 @@ class YouTubeResolveWorker(QThread):
                 'quiet': True,
                 'no_warnings': True,
                 'skip_download': True,
+                'nocheckcertificate': True,
+                'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
             }
             with yt_dlp.YoutubeDL(ydl_opts_stream) as ydl:
                 info = ydl.extract_info(self.query_or_url, download=False)
@@ -89,6 +93,8 @@ class YouTubeSearchWorker(QThread):
                 'quiet': True,
                 'no_warnings': True,
                 'skip_download': True,
+                'nocheckcertificate': True,
+                'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(self.search_query, download=False)

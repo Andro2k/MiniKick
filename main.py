@@ -5,6 +5,20 @@ import sys
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QFont, QFontDatabase, QIcon
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
+try:
+    clean_paths = []
+    for path_dir in os.environ.get("PATH", "").split(os.pathsep):
+        if not path_dir.strip():
+            continue
+        try:
+            if os.path.exists(path_dir) and os.path.isdir(path_dir):
+                os.stat(path_dir)
+                clean_paths.append(path_dir)
+        except Exception:
+            pass
+    os.environ["PATH"] = os.pathsep.join(clean_paths)
+except Exception:
+    pass
 from backend.services.system.updater_service import GithubUpdateProvider, UpdateManager, WindowsInstaller
 from frontend.views.main_window_view import MainWindow
 from frontend.common.theme import GLOBAL_QSS
