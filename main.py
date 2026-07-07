@@ -20,7 +20,7 @@ try:
 except Exception:
     pass
 from backend.services.system.updater_service import GithubUpdateProvider, UpdateManager, WindowsInstaller
-from frontend.views.main_window_view import MainWindow
+from frontend.views.main_window_core import MainWindow
 from frontend.common.theme import GLOBAL_QSS
 from frontend.common.utils import resource_path
 from backend.services.system.instance_services import SocketInstanceProvider
