@@ -93,7 +93,7 @@ class CommandView(BaseView):
             "broadcaster": "command.dialog.perm_broadcaster"
         }
         i18n_key = perm_keys.get(raw_perm, "command.dialog.perm_everyone")
-        translated_text = self.i18n.get(i18n_key) or raw_perm.upper()
+        translated_text = self.i18n.get(i18n_key) or raw_perm
         tag = QFrame()
         tag.setFixedHeight(22)
         tag.setProperty("role", "tag_pill")
@@ -124,7 +124,7 @@ class CommandView(BaseView):
             return container
 
         if is_regex:
-            badge_text = (self.i18n.get("command.table.regex_prefix")).upper()
+            badge_text = (self.i18n.get("command.table.regex_prefix"))
             badge = QFrame()
             badge.setFixedHeight(20)
             badge.setProperty("role", "badge_regex")

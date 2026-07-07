@@ -2,7 +2,7 @@
 
 import os
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QFont, QFontDatabase, QIcon
 os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
 try:
@@ -20,7 +20,7 @@ try:
 except Exception:
     pass
 from backend.services.system.updater_service import GithubUpdateProvider, UpdateManager, WindowsInstaller
-from frontend.views.main_window_core import MainWindow
+from frontend.core.main_window_core import MainWindowCore
 from frontend.common.theme import GLOBAL_QSS
 from frontend.common.utils import resource_path
 from backend.services.system.instance_services import SocketInstanceProvider
@@ -31,7 +31,13 @@ from backend.config.version import APP_VERSION
 
 def _get_safe_i18n():
     try:
-        return AppContainer(QMainWindow()).i18n
+        from backend.storage.manager import DatabaseManager
+        from backend.storage.database import SQLiteSettingsStorage
+        from backend.services.system.translation_service import TranslationService
+        db = DatabaseManager()
+        settings = SQLiteSettingsStorage(db)
+        saved_lang = settings.load_string("app_language", "es")
+        return TranslationService(default_lang=saved_lang)
     except Exception as e:
         print(f"[Bootstrap] Advertencia: Falló hidratación de i18n pre-boot ({e})")
         return None
@@ -75,7 +81,7 @@ def bootstrap():
         
         icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
         app.setWindowIcon(QIcon(icon_path))
-        window = MainWindow(updater_manager=updater, app_version=APP_VERSION)
+        window = MainWindowCore(updater_manager=updater, app_version=APP_VERSION)
         window.show()
         sys.exit(app.exec())
         

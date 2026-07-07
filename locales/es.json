@@ -140,7 +140,7 @@
             "col_aliases": "Alias / Regex",
             "col_permission": "Nivel de Acceso",
             "col_actions": "Acciones",
-            "regex_prefix": "Regex",
+            "regex_prefix": "RegEx",
             "tooltip_edit": "Modificar configuración del comando",
             "tooltip_delete": "Eliminar comando permanentemente"
         },

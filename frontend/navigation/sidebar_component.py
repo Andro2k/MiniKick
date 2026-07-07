@@ -66,7 +66,7 @@ class Sidebar(QFrame):
         self.main_layout.addSpacing(16)
         
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
-        self.lbl_navigate_header = QLabel(navigate_text.upper())
+        self.lbl_navigate_header = QLabel(navigate_text)
         self.lbl_navigate_header.setProperty("role", "section_header")
         self.main_layout.addWidget(self.lbl_navigate_header)
         
@@ -77,7 +77,7 @@ class Sidebar(QFrame):
         self.main_layout.addStretch()
 
         more_text = self.i18n.get("main.sidebar.section.more")
-        self.lbl_more_header = QLabel(more_text.upper())
+        self.lbl_more_header = QLabel(more_text)
         self.lbl_more_header.setProperty("role", "section_header")
         self.main_layout.addWidget(self.lbl_more_header)
 

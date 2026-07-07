@@ -196,7 +196,7 @@ class CommandConfigWizard(ModernWizardPanel):
         scroll_layout.setSpacing(0)
         
         def add_category(title):
-            lbl = QLabel(title.upper())
+            lbl = QLabel(title)
             lbl.setProperty("role", "regex_helper_category")
             scroll_layout.addWidget(lbl)
             

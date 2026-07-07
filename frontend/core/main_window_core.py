@@ -54,7 +54,7 @@ except ImportError:
     KICK_PUSHER_CLUSTER = "us2"
     KICK_PUSHER_KEY = "32cbd69e4b950bf97679"
 
-class MainWindow(QMainWindow):
+class MainWindowCore(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
 
@@ -87,6 +87,8 @@ class MainWindow(QMainWindow):
         self.auth_worker = None
         self.fetch_rewards_worker = None
         self._nav_mapping: dict[str, QWidget] = {}
+        self._cached_total_usages = None
+        self._cached_active_timers = None
 
         self.logger, self.q_log_handler = setup_application_logging()  
         self.toast = ToastManager(self)
@@ -256,7 +258,7 @@ class MainWindow(QMainWindow):
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self.tray_manager.set_tts_state)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
-        self.chat_controller.command_executed.connect(self._update_dashboard_metrics)
+        self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.update_controller.handle_update_check)
@@ -286,6 +288,8 @@ class MainWindow(QMainWindow):
         target_view = self._nav_mapping.get(view_name)
         if target_view:
             self.content_stack.setCurrentWidget(target_view)
+            if view_name == "Dashboard":
+                self._update_dashboard_metrics(force_db_query=True)
 
     @Slot()
     def _handle_auth_process(self):
@@ -514,6 +518,9 @@ class MainWindow(QMainWindow):
         self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
         self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
         self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
+        
+        if hasattr(self, 'network_controller') and self.network_controller and getattr(self.network_controller, 'worker', None):
+            self._stop_worker_safely("Worker_Network", self.network_controller.worker)
 
         self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
 
@@ -566,20 +573,21 @@ class MainWindow(QMainWindow):
         self._update_dashboard_metrics()
 
     @Slot()
-    def _update_dashboard_metrics(self):
-        try:
-            summary = self.container.commands_storage.get_active_features_summary()
-            total_usages = summary.get("total_command_usages", 0)
-            active_timers = summary.get("active_timers", 0)
-        except Exception as e:
-            self.logger.error(f"[Metrics] Error reading summary: {e}")
-            total_usages = 0
-            active_timers = 0
+    def _update_dashboard_metrics(self, force_db_query=False):
+        if self._cached_total_usages is None or self._cached_active_timers is None or force_db_query:
+            try:
+                summary = self.container.commands_storage.get_active_features_summary()
+                self._cached_total_usages = summary.get("total_command_usages", 0)
+                self._cached_active_timers = summary.get("active_timers", 0)
+            except Exception as e:
+                self.logger.error(f"[Metrics] Error reading summary: {e}")
+                self._cached_total_usages = self._cached_total_usages or 0
+                self._cached_active_timers = self._cached_active_timers or 0
 
         self.view_dashboard.update_session_metrics(
             msg_count=self.session_metrics["messages_processed"],
-            cmd_count=total_usages,
-            timer_count=active_timers,
+            cmd_count=self._cached_total_usages,
+            timer_count=self._cached_active_timers,
             spam_count=self.session_metrics["spam_blocked"]
         )
     

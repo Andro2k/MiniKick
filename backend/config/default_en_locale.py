@@ -142,7 +142,7 @@ DEFAULT_DICTIONARY = {
             "col_aliases": "Aliases / Regex",
             "col_permission": "Access Level",
             "col_actions": "Actions",
-            "regex_prefix": "Regex",
+            "regex_prefix": "RegEx",
             "tooltip_edit": "Modify command configuration",
             "tooltip_delete": "Delete command permanently"
         },
