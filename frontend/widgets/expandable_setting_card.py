@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.controls_component import ModernSwitch
-from frontend.common.theme import COLOR_TEXT_SECONDARY
+from frontend.common.theme import COLOR_NEUTRAL_400
 from frontend.common.utils import get_icon_colored
 
 class ExpandableSettingCard(QFrame):
@@ -37,7 +37,7 @@ class ExpandableSettingCard(QFrame):
         h_layout.setSpacing(6)
         
         lbl_icon = QLabel()
-        lbl_icon.setPixmap(get_icon_colored(icon_name, COLOR_TEXT_SECONDARY, 24).pixmap(24, 24))
+        lbl_icon.setPixmap(get_icon_colored(icon_name, COLOR_NEUTRAL_400, 24).pixmap(24, 24))
         h_layout.addWidget(lbl_icon)
         
         text_layout = QVBoxLayout()
@@ -58,7 +58,7 @@ class ExpandableSettingCard(QFrame):
         h_layout.addWidget(self.switch)
         
         self.btn_expand = QPushButton()
-        self.btn_expand.setIcon(get_icon_colored("chevron-down.svg", COLOR_TEXT_SECONDARY, 20))
+        self.btn_expand.setIcon(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 20))
         self.btn_expand.setFixedSize(30, 30)
         self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.clicked.connect(self.toggle_expand)
@@ -81,7 +81,7 @@ class ExpandableSettingCard(QFrame):
         
         col_pen = QVBoxLayout()
         lbl_pen = QLabel(self.i18n.get("spam.card.action"))
-        lbl_pen.setProperty("role", "subtitle")
+        lbl_pen.setProperty("role", "body")
         self.combo_penalty = QComboBox()
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
@@ -91,7 +91,7 @@ class ExpandableSettingCard(QFrame):
         
         col_dur = QVBoxLayout()
         lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
-        lbl_dur.setProperty("role", "subtitle")
+        lbl_dur.setProperty("role", "body")
         self.spin_dur = QSpinBox()
         self.spin_dur.setRange(10, 86400)
         self.spin_dur.setValue(300)
@@ -105,7 +105,7 @@ class ExpandableSettingCard(QFrame):
         
         col_exc = QVBoxLayout()
         lbl_exc = QLabel(self.i18n.get("spam.card.exclude"))
-        lbl_exc.setProperty("role", "subtitle")
+        lbl_exc.setProperty("role", "body")
         self.combo_exclude = QComboBox()
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_none"), "none")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
@@ -118,7 +118,7 @@ class ExpandableSettingCard(QFrame):
         if self.has_amount:
             col_amt = QVBoxLayout()
             lbl_amt = QLabel(self.i18n.get("spam.card.max_amount"))
-            lbl_amt.setProperty("role", "subtitle")
+            lbl_amt.setProperty("role", "body")
             self.spin_amt = QSpinBox()
             self.spin_amt.setRange(1, 500)
             self.spin_amt.setValue(10)
@@ -133,7 +133,7 @@ class ExpandableSettingCard(QFrame):
         is_visible = self.body_widget.isVisible()
         self.body_widget.setVisible(not is_visible)
         icon_name = "chevron-up.svg" if not is_visible else "chevron-down.svg"
-        self.btn_expand.setIcon(get_icon_colored(icon_name, COLOR_TEXT_SECONDARY, 20))
+        self.btn_expand.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_400, 20))
 
     def _emit_update(self, *args):
         if self._is_loading: return

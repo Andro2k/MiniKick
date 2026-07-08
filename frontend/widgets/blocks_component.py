@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Qt
 from frontend.common.utils import get_icon_colored
-from frontend.common.theme import COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, title_color: str = None, parent=None):
@@ -36,7 +36,7 @@ class ViewHeader(QFrame):
         layout.addStretch()
 
 class SettingRow(QWidget):
-    def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_TEXT_PRIMARY, title_color: str = None, parent=None):
+    def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_NEUTRAL_200, title_color: str = None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
@@ -65,7 +65,7 @@ class SettingRow(QWidget):
         layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
 
 class SliderRow(QWidget):
-    def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_TEXT_PRIMARY, parent=None):
+    def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_NEUTRAL_200, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
@@ -108,7 +108,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(6)
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, size=14).pixmap(14, 14))
+        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_NEUTRAL_200, size=14).pixmap(14, 14))
 
         self.lbl_title = QLabel(title_text)
         self.lbl_title.setProperty("role", "h3")
@@ -151,4 +151,4 @@ class ModernCard(QFrame):
         self.card_layout.addSpacing(spacing)
 
     def addStretch(self, stretch: int = 0):
-        self.card_layout.addStretch(stretch)
+        self.card_layout.addStretch(stretch)

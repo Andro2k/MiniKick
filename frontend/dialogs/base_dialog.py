@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QColor, QMouseEvent
 
-from frontend.common.theme import COLOR_DANGER, PATH_ICON_HELP
+from frontend.common.theme import COLOR_RED, PATH_ICON_HELP
 
 class ModernFramelessShell(QDialog):
     def __init__(self, width: int = 420, parent=None):
@@ -80,7 +80,7 @@ class ModernModal(ModernFramelessShell):
         
         icon_container = QFrame()
         icon_container.setFixedSize(52, 52)
-        role = "danger_icon" if bg_color == COLOR_DANGER else "accent_icon"
+        role = "danger_icon" if bg_color == COLOR_RED else "accent_icon"
         icon_container.setProperty("dialog_role", role)
         
         icon_inner_layout = QVBoxLayout(icon_container)
@@ -119,7 +119,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.panel_layout.setSpacing(14)
         
         self.lbl_step_num = QLabel()
-        self.lbl_step_num.setProperty("role", "wizard_step_num")
+        self.lbl_step_num.setProperty("role", "caption")
         self.panel_layout.addWidget(self.lbl_step_num)
         
         self.progress_bar = QProgressBar()
@@ -137,7 +137,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.panel_layout.addWidget(self.lbl_title)
         
         self.lbl_subtitle = QLabel()
-        self.lbl_subtitle.setProperty("role", "wizard_subtitle")
+        self.lbl_subtitle.setProperty("role", "body")
         self.lbl_subtitle.setWordWrap(True)
         self.panel_layout.addWidget(self.lbl_subtitle)
         
@@ -206,7 +206,7 @@ class ModernWizardPanel(ModernFramelessShell):
 
 class ModernConfirmDialog(ModernModal):
     def __init__(self, i18n, parent=None, title_text="", body_text=""):
-        super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_DANGER, width=420, parent=parent)
+        super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_RED, width=420, parent=parent)
         self.set_dialog_state("danger", QColor(239, 68, 68, 60))
         
         body_label = QLabel(body_text)

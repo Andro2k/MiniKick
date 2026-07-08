@@ -5,8 +5,8 @@ from PySide6.QtCore import Qt, Signal
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import (
-    COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, 
-    COLOR_ACCENT, COLOR_WARNING, COLOR_DANGER, COLOR_BLACK
+    COLOR_NEUTRAL_200, COLOR_NEUTRAL_500, 
+    COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_NEUTRAL_1000
 )
 from frontend.common.utils import get_icon_colored
 
@@ -56,7 +56,7 @@ class NetworkStatusCard(QFrame):
         self.layout.addLayout(self.status_layout)
         
         self.icon_name = icon_name
-        self.set_icon(COLOR_TEXT_PRIMARY)
+        self.set_icon(COLOR_NEUTRAL_200)
         
     def set_icon(self, color_hex: str):
         icon = get_icon_colored(self.icon_name, color_hex, size=24)
@@ -64,25 +64,25 @@ class NetworkStatusCard(QFrame):
         
     def set_status(self, status: str, latency: int, status_text: str):
         if status == "checking":
-            color = COLOR_TEXT_MUTED
+            color = COLOR_NEUTRAL_500
             self.lbl_status.setText(status_text)
             self.lbl_latency.setText("")
-            self.set_icon(COLOR_TEXT_MUTED)
+            self.set_icon(COLOR_NEUTRAL_500)
         elif status == "online":
-            color = COLOR_ACCENT
+            color = COLOR_GREEN
             self.lbl_status.setText(status_text)
             self.lbl_latency.setText(f"{latency} ms")
-            self.set_icon(COLOR_ACCENT)
+            self.set_icon(COLOR_GREEN)
         elif status == "warning":
-            color = COLOR_WARNING
+            color = COLOR_AMBER
             self.lbl_status.setText(status_text)
             self.lbl_latency.setText(f"{latency} ms")
-            self.set_icon(COLOR_WARNING)
+            self.set_icon(COLOR_AMBER)
         else:
-            color = COLOR_DANGER
+            color = COLOR_RED
             self.lbl_status.setText(status_text)
             self.lbl_latency.setText("-")
-            self.set_icon(COLOR_DANGER)
+            self.set_icon(COLOR_RED)
             
         self.lbl_status.setStyleSheet(f"color: {color}; font-weight: bold;")
 
@@ -97,7 +97,7 @@ class NetworkView(BaseView):
             title_key="network.header.title",
             subtitle_key="network.header.subtitle",
             icon_name="access-point.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self.cards = {}
         self._setup_ui()
@@ -107,7 +107,7 @@ class NetworkView(BaseView):
         
         btn_layout = QHBoxLayout()
         self.btn_check = ModernButton(self.i18n.get("network.btn_check"), role="action_accent")
-        self.btn_check.setIcon(get_icon_colored("refresh.svg", COLOR_BLACK, 16))
+        self.btn_check.setIcon(get_icon_colored("refresh.svg", COLOR_NEUTRAL_1000, 16))
         self.btn_check.setFixedWidth(200)
         self.btn_check.clicked.connect(self.check_requested.emit)
         btn_layout.addWidget(self.btn_check)

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout,
                                QLabel, QPushButton, QSizePolicy)
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
 
-from frontend.common.theme import COLOR_ACCENT, COLOR_DANGER, COLOR_INFO, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_WARNING
+from frontend.common.theme import COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_AMBER
 from frontend.common.utils import get_icon_colored
 
 class ModernToast(QFrame):
@@ -26,12 +26,12 @@ class ModernToast(QFrame):
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
         icon_map = {
-            "success": ("circle-check.svg", COLOR_ACCENT),
-            "danger": ("alert-circle.svg", COLOR_DANGER),
-            "warning": ("alert-triangle.svg", COLOR_WARNING),
-            "info": ("info-circle.svg", COLOR_INFO)
+            "success": ("circle-check.svg", COLOR_GREEN),
+            "danger": ("alert-circle.svg", COLOR_RED),
+            "warning": ("alert-triangle.svg", COLOR_AMBER),
+            "info": ("info-circle.svg", COLOR_BLUE)
         }
-        icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_TEXT_PRIMARY))
+        icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
 
         icon_lbl = QLabel()
         icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, 22).pixmap(22, 22))
@@ -56,7 +56,7 @@ class ModernToast(QFrame):
 
         btn_close = QPushButton()
         btn_close.setProperty("role", "btn_ghost")
-        btn_close.setIcon(get_icon_colored("x.svg", COLOR_TEXT_SECONDARY, 14))
+        btn_close.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
         btn_close.setFixedSize(20, 20)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.dismiss)

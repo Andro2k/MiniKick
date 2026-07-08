@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QL
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
-from frontend.common.theme import COLOR_BLACK, COLOR_DANGER, COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_NEUTRAL_1000, COLOR_RED, COLOR_NEUTRAL_200
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import StatCard, SettingRow, ModernCard
@@ -23,7 +23,7 @@ class DashboardView(BaseView):
             title_key="dashboard.header.title",
             subtitle_key="dashboard.header.subtitle",
             icon_name="dashboard.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self._stats_cols = -1
         self._setup_ui()
@@ -35,7 +35,7 @@ class DashboardView(BaseView):
         self.banner_layout.setSpacing(8)
         
         lbl_warn_icon = QLabel()
-        lbl_warn_icon.setPixmap(get_icon_colored("help.svg", COLOR_DANGER, 24).pixmap(24, 24))
+        lbl_warn_icon.setPixmap(get_icon_colored("help.svg", COLOR_RED, 24).pixmap(24, 24))
         lbl_warn_icon.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         self.lbl_warn_text = QLabel()
         self.lbl_warn_text.setWordWrap(True)
@@ -104,11 +104,11 @@ class DashboardView(BaseView):
 
         status_layout = QHBoxLayout()
         self.status_label = QLabel(self.i18n.get("dashboard.connection.status_waiting"))
-        self.status_label.setProperty("role", "subtitle")
+        self.status_label.setProperty("role", "body")
         self.status_label.setWordWrap(True)
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
-        self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
+        self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_NEUTRAL_1000, 16))
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         status_layout.addWidget(self.status_label, stretch=1)

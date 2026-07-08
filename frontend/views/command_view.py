@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.table_component import ModernTableCard, TableActionCell
-from frontend.common.theme import COLOR_DANGER, COLOR_TEXT_PRIMARY, COLOR_ACCENT
+from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_200, COLOR_GREEN
 
 class CommandView(BaseView):
     add_requested = Signal()
@@ -20,7 +20,7 @@ class CommandView(BaseView):
             title_key="command.header.title",
             subtitle_key="command.header.subtitle",
             icon_name="code.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self._setup_ui()
 
@@ -155,7 +155,7 @@ class CommandView(BaseView):
         
         cell.add_button(
             icon_name="edit.svg", 
-            color=COLOR_ACCENT, 
+            color=COLOR_GREEN, 
             role="action_accent_border", 
             tooltip=self.i18n.get("command.table.tooltip_edit"),
             callback=lambda checked=False, t=trigger_name: self.edit_requested.emit(t)
@@ -163,7 +163,7 @@ class CommandView(BaseView):
         
         cell.add_button(
             icon_name="trash.svg", 
-            color=COLOR_DANGER, 
+            color=COLOR_RED, 
             role="action_danger_border", 
             tooltip=self.i18n.get("command.table.tooltip_delete"),
             callback=lambda checked=False, t=trigger_name: self.delete_requested.emit(t)

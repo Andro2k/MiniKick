@@ -4,7 +4,7 @@ import json
 import re
 import websocket
 from typing import Callable
-from frontend.common.theme import COLOR_ACCENT
+from frontend.common.theme import COLOR_GREEN
 
 class ChatFormatter:
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
@@ -55,7 +55,7 @@ class ChatSocketManager:
                 raw_badges = identity.get("badges", [])
                 badges = [b["type"] for b in raw_badges if isinstance(b, dict) and "type" in b]
                 
-                color = identity.get("color", "") or COLOR_ACCENT
+                color = identity.get("color", "") or COLOR_GREEN
                 msg_id = inner.get("id", "")
                 sender_id = sender.get("id", 0)
 

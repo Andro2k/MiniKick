@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
 from PySide6.QtCore import Qt, QSize
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.theme import COLOR_WHITE
+from frontend.common.theme import COLOR_NEUTRAL_100
 from frontend.common.utils import get_icon_colored
 
 class CommandConfigWizard(ModernWizardPanel):
@@ -242,7 +242,7 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_desc.setWordWrap(True)
         
         btn_insert = ModernButton("", role="action_outlined")
-        btn_insert.setIcon(get_icon_colored("add.svg", COLOR_WHITE, size=12))
+        btn_insert.setIcon(get_icon_colored("add.svg", COLOR_NEUTRAL_100, size=12))
         btn_insert.setIconSize(QSize(12, 12))
         btn_insert.setFixedSize(20, 20)
         btn_insert.clicked.connect(lambda checked=False, val=insert_val: self._insert_regex(val))

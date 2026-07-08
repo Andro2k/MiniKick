@@ -8,7 +8,7 @@ from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import SettingRow, ModernCard
 from frontend.widgets.table_component import ModernTableCard, TableActionCell
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.theme import COLOR_ACCENT, COLOR_TEXT_PRIMARY, COLOR_DANGER
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_RED
 from frontend.common.utils import get_icon_colored
 
 class RewardsView(BaseView):
@@ -24,7 +24,7 @@ class RewardsView(BaseView):
             title_key="rewards.header.title",
             subtitle_key="rewards.header.subtitle",
             icon_name="layout-dashboard.svg", 
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self.overlay_url = overlay_url
         self._setup_ui()
@@ -96,21 +96,21 @@ class RewardsView(BaseView):
             cell = TableActionCell()
             cell.add_button(
                 icon_name="play.svg", 
-                color=COLOR_TEXT_PRIMARY, 
+                color=COLOR_NEUTRAL_200, 
                 role="action_neutral_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_play"), 
                 callback=lambda checked=False, r=reward: self.preview_requested.emit(r)
             )
             cell.add_button(
                 icon_name="edit.svg", 
-                color=COLOR_ACCENT, 
+                color=COLOR_GREEN, 
                 role="action_accent_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_edit"), 
                 callback=lambda checked=False, r=reward: self.edit_requested.emit(r)
             )
             cell.add_button(
                 icon_name="trash.svg", 
-                color=COLOR_DANGER, 
+                color=COLOR_RED, 
                 role="action_danger_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
                 callback=lambda checked=False, r=reward: self.delete_requested.emit(r)

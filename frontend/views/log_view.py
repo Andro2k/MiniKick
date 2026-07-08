@@ -12,16 +12,16 @@ from frontend.widgets.base_view import BaseView
 from frontend.widgets.table_component import ModernTable
 from frontend.widgets.scalable_illustration import ScalableIllustration
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.theme import COLOR_BLACK, COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_INFO, COLOR_WARNING, COLOR_DANGER
+from frontend.common.theme import COLOR_NEUTRAL_1000, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE, COLOR_AMBER, COLOR_RED
 from frontend.common.utils import get_assets_path, get_icon_colored
 
 LOG_ILLUSTRATION_FILE = "file-search.svg"
 
 _LEVEL_COLORS = {
-    "DEBUG": COLOR_TEXT_SECONDARY,
-    "INFO": COLOR_INFO,
-    "WARNING": COLOR_WARNING,
-    "ERROR": COLOR_DANGER
+    "DEBUG": COLOR_NEUTRAL_400,
+    "INFO": COLOR_BLUE,
+    "WARNING": COLOR_AMBER,
+    "ERROR": COLOR_RED
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code.svg",
@@ -33,7 +33,7 @@ _LEVEL_ICONS: dict[str, QIcon] = {}
 
 def _get_level_icon(level: str) -> QIcon:
     if level not in _LEVEL_ICONS:
-        hex_color = _LEVEL_COLORS.get(level, COLOR_TEXT_PRIMARY)
+        hex_color = _LEVEL_COLORS.get(level, COLOR_NEUTRAL_200)
         icon_name = _LEVEL_ICON_NAMES.get(level, "message.svg")
         _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color, 16)
     return _LEVEL_ICONS[level]
@@ -55,7 +55,7 @@ class LogView(BaseView):
             title_key="log.header.title",
             subtitle_key="log.header.subtitle",
             icon_name="brand-tabler.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self.str_all = self.i18n.get("log.controls.filter_all")
         self._pending_ui_ops: list[tuple] = []
@@ -121,7 +121,7 @@ class LogView(BaseView):
         self.pagination_layout.addStretch(1)
         
         self.btn_prev = ModernButton("", role="action_outlined")
-        self.btn_prev.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_prev.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_200, 16))
         self.btn_prev.setFixedWidth(32)
         self.btn_prev.clicked.connect(self.prev_page)
         self.pagination_layout.addWidget(self.btn_prev)
@@ -133,7 +133,7 @@ class LogView(BaseView):
         self.pagination_layout.addWidget(self.page_buttons_container)
         
         self.btn_next = ModernButton("", role="action_outlined")
-        self.btn_next.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_next.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_NEUTRAL_200, 16))
         self.btn_next.setFixedWidth(32)
         self.btn_next.clicked.connect(self.next_page)
         self.pagination_layout.addWidget(self.btn_next)
@@ -173,7 +173,7 @@ class LogView(BaseView):
         lbl_desc.setMaximumWidth(450)
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
-        self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_BLACK, 16))
+        self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_NEUTRAL_1000, 16))
         self.btn_show_logs.setFixedWidth(200)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 
@@ -342,14 +342,14 @@ class LogView(BaseView):
             scrollbar.setValue(scrollbar.maximum())
 
     def _populate_row_at(self, row: int, level: str, time_str: str, text: str):
-        hex_color = _LEVEL_COLORS.get(level, COLOR_TEXT_PRIMARY)
+        hex_color = _LEVEL_COLORS.get(level, COLOR_NEUTRAL_200)
         
         item_level = QTableWidgetItem(f"  {level.capitalize()}")
         item_level.setForeground(QColor(hex_color))
         item_level.setIcon(_get_level_icon(level))
 
         item_time = QTableWidgetItem(time_str)
-        item_time.setForeground(QColor(COLOR_TEXT_SECONDARY))
+        item_time.setForeground(QColor(COLOR_NEUTRAL_400))
 
         item_msg = QTableWidgetItem(text)
 

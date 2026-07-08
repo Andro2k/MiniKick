@@ -3,7 +3,7 @@
 from PySide6.QtCore import Signal
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.expandable_setting_card import ExpandableSettingCard
-from frontend.common.theme import COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_NEUTRAL_200
 
 class SpamView(BaseView):
     filter_updated = Signal(str, dict)
@@ -14,7 +14,7 @@ class SpamView(BaseView):
             title_key="spam.header.title",
             subtitle_key="spam.header.subtitle",
             icon_name="shield-half.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self.cards = {}
         self._setup_ui()

@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.theme import COLOR_ACCENT, PATH_ICON_HELP
+from frontend.common.theme import COLOR_GREEN, PATH_ICON_HELP
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets.draggable_component import DraggableBox
 
@@ -15,7 +15,7 @@ class VisualPositionerDialog(ModernModal):
         super().__init__(
             title=self.i18n.get("rewards.dialogs.visual.title"), 
             icon_path=PATH_ICON_HELP, 
-            icon_bg_color=COLOR_ACCENT, 
+            icon_bg_color=COLOR_GREEN, 
             width=700, 
             parent=parent
         )

@@ -9,7 +9,7 @@ from frontend.widgets.controls_component import ModernSwitch
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
 from frontend.navigation.bot_panel_component import BotMutePanel
-from frontend.common.theme import COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -28,7 +28,7 @@ class ChatView(BaseView):
             title_key="chat.header.title",
             subtitle_key="chat.header.subtitle",
             icon_name="message.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self._setup_ui()
         self._connect_internal_signals()
@@ -195,8 +195,8 @@ class ChatView(BaseView):
     def append_message(self, user: str, message: str, color: str):
         safe_user = html.escape(user)
         safe_message = html.escape(message)        
-        safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_TEXT_PRIMARY
-        html_msg = f'<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_TEXT_PRIMARY};">{safe_message}</span>'
+        safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_NEUTRAL_200
+        html_msg = f'<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
         self.chat_display.append(html_msg)
         self._trim_chat_history()
 

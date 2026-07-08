@@ -11,7 +11,7 @@ from PySide6.QtCore import Qt, QThread, Signal
 
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.common.utils import get_assets_path, get_icon_colored
-from frontend.common.theme import COLOR_DANGER
+from frontend.common.theme import COLOR_RED
 from backend.config.api_keys import DISCORD_WEBHOOK_URL
 from backend.config.version import APP_VERSION
 import requests
@@ -130,7 +130,7 @@ class BugReportDialog(ModernModal):
         self.btn_browse_image.clicked.connect(self._browse_image)
 
         self.btn_clear_image = QPushButton()
-        self.btn_clear_image.setIcon(get_icon_colored("x.svg", COLOR_DANGER, size=16))
+        self.btn_clear_image.setIcon(get_icon_colored("x.svg", COLOR_RED, size=16))
         self.btn_clear_image.setProperty("role", "action_danger_border")
         self.btn_clear_image.setFixedHeight(32)
         self.btn_clear_image.setFixedWidth(32)

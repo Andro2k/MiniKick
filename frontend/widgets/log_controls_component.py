@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Signal
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.utils import get_icon_colored
-from frontend.common.theme import COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_NEUTRAL_200
 
 class LogControlsPanel(QFrame):
     search_changed = Signal(str)
@@ -57,17 +57,17 @@ class LogControlsPanel(QFrame):
 
         specs = [
             ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_neutral_border",
-             "folder-open.svg", COLOR_TEXT_PRIMARY, self.folder_requested.emit, True),
+             "folder-open.svg", COLOR_NEUTRAL_200, self.folder_requested.emit, True),
             ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_neutral_border",
-             "file-text.svg", COLOR_TEXT_PRIMARY, self.load_requested.emit, True),
+             "file-text.svg", COLOR_NEUTRAL_200, self.load_requested.emit, True),
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_neutral_border",
-             "eye.svg", COLOR_TEXT_PRIMARY, self.view_toggle_requested.emit, True),
+             "eye.svg", COLOR_NEUTRAL_200, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_neutral_border",
-             "play.svg", COLOR_TEXT_PRIMARY, self.live_requested.emit, False),
+             "play.svg", COLOR_NEUTRAL_200, self.live_requested.emit, False),
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_neutral_border",
-             "trash.svg", COLOR_TEXT_PRIMARY, self.clear_requested.emit, True),
+             "trash.svg", COLOR_NEUTRAL_200, self.clear_requested.emit, True),
             ("btn_report", self.i18n.get("log.controls.btn_report"), "action_neutral_border",
-             "help.svg", COLOR_TEXT_PRIMARY, self.report_requested.emit, True),
+             "help.svg", COLOR_NEUTRAL_200, self.report_requested.emit, True),
         ]
 
         self._buttons: list[ModernButton] = []

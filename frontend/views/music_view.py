@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,
                                 QLabel, QScrollArea, QComboBox, QSlider, QPushButton,
                                 QLayout)
 from PySide6.QtCore import Qt, Signal, QSize, QPoint, QRect
-from frontend.common.theme import COLOR_DANGER, COLOR_ACCENT, COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, get_icon
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
@@ -107,7 +107,7 @@ class MusicView(BaseView):
             title_key="music.header.title",
             subtitle_key="music.header.subtitle",
             icon_name="music.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self._setup_ui()
 
@@ -213,7 +213,7 @@ class MusicView(BaseView):
         self.card_player.setVisible(False)
 
         self.icon_music = QLabel()
-        self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
+        self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_GREEN, 32).pixmap(32, 32))
         
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
@@ -235,13 +235,13 @@ class MusicView(BaseView):
         
         self.btn_play_pause = ModernButton("", role="action_neutral_border")
         self.btn_play_pause.setFixedSize(36, 36)
-        self.btn_play_pause.setIcon(get_icon_colored("play.svg", COLOR_TEXT_PRIMARY, 18))
+        self.btn_play_pause.setIcon(get_icon_colored("play.svg", COLOR_NEUTRAL_200, 18))
         self.btn_play_pause.setIconSize(QSize(18, 18))
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
         
         self.btn_skip = ModernButton("", role="action_neutral_border")
         self.btn_skip.setFixedSize(36, 36)
-        self.btn_skip.setIcon(get_icon_colored("player-skip-forward.svg", COLOR_TEXT_PRIMARY, 18))
+        self.btn_skip.setIcon(get_icon_colored("player-skip-forward.svg", COLOR_NEUTRAL_200, 18))
         self.btn_skip.setIconSize(QSize(18, 18))
         self.btn_skip.clicked.connect(self.skip_requested.emit)
         
@@ -376,7 +376,7 @@ class MusicView(BaseView):
             
             lbl_requester = QLabel(lbl_requester_text)
             lbl_requester.setProperty("role", "caption")
-            lbl_requester.setStyleSheet(f"color: {COLOR_ACCENT}; font-size: 10px; font-weight: bold;")
+            lbl_requester.setStyleSheet(f"color: {COLOR_GREEN}; font-size: 10px; font-weight: bold;")
             lbl_requester.setWordWrap(True)
             
             info_layout.addWidget(lbl_title)
@@ -386,7 +386,7 @@ class MusicView(BaseView):
             
             btn_delete = QPushButton()
             btn_delete.setProperty("role", "btn_ghost")
-            btn_delete.setIcon(get_icon_colored("trash.svg", COLOR_DANGER, 14))
+            btn_delete.setIcon(get_icon_colored("trash.svg", COLOR_RED, 14))
             btn_delete.setIconSize(QSize(14, 14))
             btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
@@ -414,7 +414,7 @@ class MusicView(BaseView):
             self.lbl_auth_status.setText(f"{self.i18n.get('common.status.active')}: {translated_label}")
         else:
             self.lbl_provider_name.setText(self.i18n.get("music.provider.name"))
-            self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_ACCENT, 32).pixmap(32, 32))
+            self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_GREEN, 32).pixmap(32, 32))
             self.btn_connect.setVisible(not connected)
             self.btn_connect.setEnabled(not connected)
             self.btn_disconnect.setVisible(connected)
@@ -454,4 +454,4 @@ class MusicView(BaseView):
         self.lbl_song_artist.setText(artist)
         
         icon_name = "player-pause.svg" if is_playing else "play.svg"
-        self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_TEXT_PRIMARY, 18))
+        self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_200, 18))

@@ -4,7 +4,7 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QComboBox, QFileDialog, QHBoxLayout, QWidget
 
-from frontend.common.theme import COLOR_TEXT_PRIMARY, COLOR_DANGER
+from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_RED
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import SettingRow, ModernCard
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
@@ -25,7 +25,7 @@ class SettingsView(BaseView):
             title_key="settings.header.title",
             subtitle_key="settings.header.subtitle",
             icon_name="settings.svg",
-            icon_color=COLOR_TEXT_PRIMARY
+            icon_color=COLOR_NEUTRAL_200
         )
         self._setup_ui()
 
@@ -124,8 +124,8 @@ class SettingsView(BaseView):
             title_text=self.i18n.get("settings.account.title"), 
             desc_text=self.i18n.get("settings.account.desc"), 
             right_widget=self.btn_unlink,
-            title_color=COLOR_DANGER,
-            icon_color=COLOR_DANGER
+            title_color=COLOR_RED,
+            icon_color=COLOR_RED
         )
 
         account_card.addWidget(row_unlink)

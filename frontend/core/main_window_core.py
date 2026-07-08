@@ -28,7 +28,7 @@ from backend.providers.kick.kick_client import KickAPIClient
 
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
-from frontend.common.theme import COLOR_ACCENT, get_global_qss
+from frontend.common.theme import COLOR_GREEN, get_global_qss
 from frontend.navigation.sidebar_component import Sidebar
 from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
@@ -371,7 +371,7 @@ class MainWindowCore(QMainWindow):
         texto_canje = canje_template.replace("{reward_name}", reward_name)
         msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
         tag = self.i18n.get("main.chat.points_tag")
-        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_ACCENT)
+        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN)
         
         mappings = self.rewards_service.get_mappings()
         if reward_name in mappings:

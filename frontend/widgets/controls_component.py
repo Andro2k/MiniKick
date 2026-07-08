@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import QColor, QPainter, QPainterPath
-from frontend.common.theme import COLOR_ACCENT, COLOR_BG_INPUT, COLOR_BORDER_SVELTE, COLOR_WHITE
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_NEUTRAL_100
 
 class ModernButton(QPushButton):
     def __init__(self, text: str, role: str = "action_accent", parent=None):
@@ -29,8 +29,8 @@ class ModernSwitch(QAbstractButton):
         rect = QRectF(0, 0, self.width(), self.height())
         radius = self.height() / 1.7
 
-        bg_color = QColor(COLOR_ACCENT) if self.isChecked() else QColor(COLOR_BG_INPUT)
-        border_color = QColor(COLOR_ACCENT) if self.isChecked() else QColor(COLOR_BORDER_SVELTE)
+        bg_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_850)
+        border_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_800)
 
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)
@@ -47,7 +47,7 @@ class ModernSwitch(QAbstractButton):
         handle_radius = handle_size / 2.0
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(COLOR_WHITE))
+        painter.setBrush(QColor(COLOR_NEUTRAL_100))
         painter.drawRoundedRect(handle_rect, handle_radius, handle_radius)
         
         painter.end()

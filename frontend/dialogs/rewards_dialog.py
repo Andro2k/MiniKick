@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt
 
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
-from frontend.common.theme import COLOR_TEXT_PRIMARY
+from frontend.common.theme import COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.blocks_component import SliderRow
@@ -75,7 +75,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row1.addWidget(self.combo_rewards, stretch=1)
         
         self.btn_refresh = ModernButton("", role="action_neutral_border")
-        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_TEXT_PRIMARY, 24))
+        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_NEUTRAL_200, 24))
         self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
         self.btn_refresh.clicked.connect(self._request_refresh)
         row1.addWidget(self.btn_refresh)
@@ -140,7 +140,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row_rnd.addStretch()
         
         self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_neutral_border")
-        self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_TEXT_PRIMARY, 16))
+        self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_NEUTRAL_200, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         row_rnd.addWidget(self.btn_visual)
         
