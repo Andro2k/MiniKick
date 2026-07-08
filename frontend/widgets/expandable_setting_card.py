@@ -1,12 +1,12 @@
 # frontend\widgets\expandable_setting_card.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QFrame, QComboBox, QSpinBox, QPushButton)
+                               QFrame, QSpinBox, QPushButton)
 from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.controls_component import ModernSwitch
 from frontend.common.theme import COLOR_NEUTRAL_400
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, NoWheelComboBox
 
 class ExpandableSettingCard(QFrame):
     updated = Signal(str, dict)
@@ -82,7 +82,7 @@ class ExpandableSettingCard(QFrame):
         col_pen = QVBoxLayout()
         lbl_pen = QLabel(self.i18n.get("spam.card.action"))
         lbl_pen.setProperty("role", "body")
-        self.combo_penalty = QComboBox()
+        self.combo_penalty = NoWheelComboBox()
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
         self.combo_penalty.currentIndexChanged.connect(self._emit_update)
@@ -106,7 +106,7 @@ class ExpandableSettingCard(QFrame):
         col_exc = QVBoxLayout()
         lbl_exc = QLabel(self.i18n.get("spam.card.exclude"))
         lbl_exc.setProperty("role", "body")
-        self.combo_exclude = QComboBox()
+        self.combo_exclude = NoWheelComboBox()
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_none"), "none")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_sub"), "subscriber")

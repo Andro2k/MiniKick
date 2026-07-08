@@ -2,12 +2,12 @@
 
 from PySide6.QtCore import QSize
 from PySide6.QtWidgets import (
-    QFrame, QGridLayout, QLineEdit, QComboBox,
+    QFrame, QGridLayout, QLineEdit,
     QBoxLayout, QVBoxLayout, QSizePolicy,
 )
 from PySide6.QtCore import Signal
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, NoWheelComboBox
 from frontend.common.theme import COLOR_NEUTRAL_200
 
 class LogControlsPanel(QFrame):
@@ -39,7 +39,7 @@ class LogControlsPanel(QFrame):
         self.txt_search.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.txt_search.textChanged.connect(self.search_changed.emit)
 
-        self.combo_filter = QComboBox()
+        self.combo_filter = NoWheelComboBox()
         self.combo_filter.addItems([
             self.i18n.get("log.controls.filter_all"),
             "INFO", "DEBUG", "WARNING", "ERROR",

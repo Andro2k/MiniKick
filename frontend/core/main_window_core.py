@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
-from PySide6.QtCore import Slot, QEvent
+from PySide6.QtCore import Slot, QEvent, QTimer
 
 from backend.services.chat.pipeline import ChatMessageDTO
 from backend.services.stream.rewards_service import RewardsService
@@ -564,8 +564,12 @@ class MainWindowCore(QMainWindow):
 
     @Slot(int)
     def _apply_dynamic_theme(self, base_size: int):
-        new_stylesheet = get_global_qss(base_size)
-        QApplication.instance().setStyleSheet(new_stylesheet)
+        if hasattr(self, "_theme_timer") and self._theme_timer.isActive():
+            self._theme_timer.stop()
+        self._theme_timer = QTimer(self)
+        self._theme_timer.setSingleShot(True)
+        self._theme_timer.timeout.connect(lambda: QApplication.instance().setStyleSheet(get_global_qss(base_size)))
+        self._theme_timer.start(250)
 
     def _increment_metric(self, name: str):
         if hasattr(self, 'session_metrics') and name in self.session_metrics:

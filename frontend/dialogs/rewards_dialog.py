@@ -1,13 +1,13 @@
 # frontend\dialogs\rewards_dialogs.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QComboBox, QLineEdit, QSlider, QSpinBox, 
+                               QLineEdit, QSpinBox, 
                                QDoubleSpinBox, QFileDialog)
 from PySide6.QtCore import Qt
 
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
 from frontend.common.theme import COLOR_NEUTRAL_200
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, NoWheelComboBox, NoWheelSlider
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.blocks_component import SliderRow
 from frontend.dialogs.visual_positioner_dialog import VisualPositionerDialog
@@ -61,7 +61,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.addWidget(lbl)
         
         row1 = QHBoxLayout()
-        self.combo_rewards = QComboBox()
+        self.combo_rewards = NoWheelComboBox()
         if rewards_list:
             self.combo_rewards.addItems(rewards_list)
         else:
@@ -107,7 +107,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(15)
         
-        self.slider_vol = QSlider(Qt.Orientation.Horizontal)
+        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         

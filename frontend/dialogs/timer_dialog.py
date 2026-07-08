@@ -1,12 +1,12 @@
 # frontend/dialogs/timer_dialog.py
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QSpinBox, QSlider, QWidget, QScrollArea, QFrame, QCheckBox)
+                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox)
 from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import COLOR_RED
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, NoWheelSlider
 
 class TimerConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
@@ -91,7 +91,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.chk_online.toggled.connect(self._on_online_toggled)
         
         online_controls = QHBoxLayout()
-        self.slider_online = QSlider(Qt.Orientation.Horizontal)
+        self.slider_online = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_online.setRange(1, 120)
         self.slider_online.setValue(5)
         self.spin_online = QSpinBox()
@@ -112,7 +112,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.chk_offline.toggled.connect(self._on_offline_toggled)
         
         offline_controls = QHBoxLayout()
-        self.slider_offline = QSlider(Qt.Orientation.Horizontal)
+        self.slider_offline = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_offline.setRange(1, 480)
         self.slider_offline.setValue(30)
         self.spin_offline = QSpinBox()
@@ -133,7 +133,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.chk_lines.toggled.connect(self._on_lines_toggled)
         
         lines_controls = QHBoxLayout()
-        self.slider_lines = QSlider(Qt.Orientation.Horizontal)
+        self.slider_lines = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_lines.setRange(0, 100)
         self.slider_lines.setValue(5)
         self.spin_lines = QSpinBox()

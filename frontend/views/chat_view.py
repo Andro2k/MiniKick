@@ -1,9 +1,10 @@
 # frontend\views\chat_view.py
 
 import html
-from PySide6.QtWidgets import (QBoxLayout, QComboBox, QLineEdit,
-                                QHBoxLayout, QTextEdit, QLabel, QSlider, 
+from PySide6.QtWidgets import (QBoxLayout, QLineEdit,
+                                QHBoxLayout, QTextEdit, QLabel, 
                                 QSizePolicy)
+from frontend.common.utils import NoWheelComboBox, NoWheelSlider
 from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
 from frontend.widgets.base_view import BaseView
@@ -45,7 +46,7 @@ class ChatView(BaseView):
         self.chk_provider = ModernSwitch()
         self.chk_command = ModernSwitch()
         
-        self.slider_vol = QSlider(Qt.Orientation.Horizontal)
+        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%")
@@ -58,9 +59,9 @@ class ChatView(BaseView):
         row_volume = SliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
         
         lang_voice_layout = QHBoxLayout()
-        self.combo_lang = QComboBox()
+        self.combo_lang = NoWheelComboBox()
         self.combo_lang.setFixedWidth(120)
-        self.combo_voice = QComboBox()
+        self.combo_voice = NoWheelComboBox()
         self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         lang_voice_layout.addWidget(self.combo_lang)
         lang_voice_layout.addWidget(self.combo_voice)

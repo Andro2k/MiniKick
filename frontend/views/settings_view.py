@@ -2,7 +2,8 @@
 
 from datetime import datetime
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QComboBox, QFileDialog, QHBoxLayout, QWidget
+from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
+from frontend.common.utils import NoWheelComboBox
 
 from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_RED
 from frontend.widgets.base_view import BaseView
@@ -32,7 +33,7 @@ class SettingsView(BaseView):
     def _setup_ui(self):
         sys_card = ModernCard()
 
-        self.combo_lang = QComboBox()
+        self.combo_lang = NoWheelComboBox()
         self.combo_lang.addItem("Español", "es")
         self.combo_lang.addItem("English", "en")
         self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
@@ -44,7 +45,7 @@ class SettingsView(BaseView):
             right_widget=self.combo_lang
         )
 
-        self.combo_font = QComboBox()
+        self.combo_font = NoWheelComboBox()
         font_sizes = [
             (self.i18n.get("settings.system.font_size_small"), 11),
             (self.i18n.get("settings.system.font_size_normal"), 13),

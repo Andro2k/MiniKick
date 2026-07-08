@@ -1,11 +1,11 @@
 # frontend\views\music_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,
-                                QLabel, QScrollArea, QComboBox, QSlider, QPushButton,
+                                QLabel, QScrollArea, QPushButton,
                                 QLayout)
 from PySide6.QtCore import Qt, Signal, QSize, QPoint, QRect
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
-from frontend.common.utils import get_icon_colored, get_icon
+from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
@@ -129,7 +129,7 @@ class MusicView(BaseView):
     def _setup_provider_selection_card(self):
         card = ModernCard(margin=12, spacing=8)
 
-        self.combo_provider = QComboBox()
+        self.combo_provider = NoWheelComboBox()
         self.combo_provider.addItem("Spotify", "spotify")
         self.combo_provider.addItem("YouTube", "youtube")
         
@@ -185,7 +185,7 @@ class MusicView(BaseView):
 
         card.addLayout(status_layout)
 
-        self.slider_vol = QSlider(Qt.Orientation.Horizontal)
+        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%")

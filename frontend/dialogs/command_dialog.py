@@ -2,12 +2,12 @@
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QTextEdit, QSpinBox, QCheckBox,
-                               QWidget, QSizePolicy, QComboBox, QScrollArea, QFrame)
+                               QWidget, QSizePolicy, QScrollArea, QFrame)
 from PySide6.QtCore import Qt, QSize
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import COLOR_WHITE
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, NoWheelComboBox
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
@@ -67,7 +67,7 @@ class CommandConfigWizard(ModernWizardPanel):
         
         col_perm = QVBoxLayout()
         col_perm.addWidget(QLabel(self.i18n.get("command.dialog.permission_label")))
-        self.combo_perm = QComboBox()
+        self.combo_perm = NoWheelComboBox()
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_everyone"), "everyone")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_subscriber"), "subscriber")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_vip"), "vip")
