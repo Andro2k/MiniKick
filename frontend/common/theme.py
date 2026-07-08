@@ -40,7 +40,7 @@ COLOR_TEXT_MUTED     = "#71717A"
 COLOR_BLACK          = "#000000"
 COLOR_WHITE          = "#FAFAFA"
 
-FONT_FAMILY = "'Geist', '-apple-system', 'Segoe UI', sans-serif"
+FONT_FAMILY = "'Google Sans', '-apple-system', 'Segoe UI', sans-serif"
 
 RADIUS_SM = 6
 RADIUS_MD = 8
@@ -51,9 +51,9 @@ PADDING_BUTTON  = "6px 12px"
 
 
 def get_global_qss(base: int = 13) -> str:
-    h1 = base + 9
-    h2 = base + 3
-    h3 = base
+    h1 = base + 15
+    h2 = base + 9
+    h3 = base + 5
     caption = max(9, base - 2)
     btn_txt = max(10, base - 1)
     badge_txt = max(8, base - 4)
@@ -71,10 +71,10 @@ def get_global_qss(base: int = 13) -> str:
 QMainWindow, QDialog {{ background-color: {COLOR_BG_BASE}; }}
 QLabel {{ background-color: transparent; }}
 
-/* --- 2. SISTEMA DE TIPOGRAFÍA --- */
-QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 800; color: {COLOR_TEXT_PRIMARY}; }}
-QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; }}
-QLabel[role="h3"] {{ font-size: {h3}px; font-weight: 700; color: {COLOR_TEXT_PRIMARY}; }}
+/* --- 2. SISTEMA DE TIPOGRAFÍA (ESTILO LIMPIO) --- */
+QLabel[role="h1"] {{ font-size: {h1}px; font-weight: 400; color: {COLOR_TEXT_PRIMARY}; }}
+QLabel[role="h2"] {{ font-size: {h2}px; font-weight: 400; color: {COLOR_TEXT_PRIMARY}; }}
+QLabel[role="h3"] {{ font-size: {h3}px; font-weight: 400; color: {COLOR_TEXT_PRIMARY}; }}
 QLabel[role="body"] {{ font-size: {base}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; line-height: 1.5; }}
 QLabel[role="caption"] {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_MUTED}; }}
 QLabel[role="wizard_step_num"] {{ font-size: {caption}px; font-weight: 400; color: {COLOR_TEXT_SECONDARY}; }}

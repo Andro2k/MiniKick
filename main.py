@@ -25,7 +25,6 @@ from frontend.common.theme import GLOBAL_QSS
 from frontend.common.utils import resource_path
 from backend.services.system.instance_services import SocketInstanceProvider
 from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
-from frontend.core.app_container_core import AppContainer
 from backend.config.version import APP_VERSION
 
 
@@ -45,8 +44,8 @@ def _get_safe_i18n():
 
 def bootstrap():
     app = QApplication(sys.argv)
-    FONT_FILE_PREFIX = "Geist"
-    FONT_FAMILY_NAME = "Geist"
+    FONT_FILE_PREFIX = "GoogleSans"
+    FONT_FAMILY_NAME = "Google Sans"
 
     fonts_dir = resource_path(os.path.join("assets", "fonts"))
     
