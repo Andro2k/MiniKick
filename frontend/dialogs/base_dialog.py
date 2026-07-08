@@ -81,7 +81,7 @@ class ModernModal(ModernFramelessShell):
         icon_container = QFrame()
         icon_container.setFixedSize(52, 52)
         role = "danger_icon" if bg_color == COLOR_RED else "accent_icon"
-        icon_container.setProperty("dialog_role", role)
+        icon_container.setProperty("role", role)
         
         icon_inner_layout = QVBoxLayout(icon_container)
         icon_inner_layout.setContentsMargins(0, 0, 0, 0)

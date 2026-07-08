@@ -16,7 +16,7 @@ class Sidebar(QFrame):
         self.i18n = i18n
         self.app_version = app_version
         self.has_update = False  
-        self.setObjectName("Sidebar")
+        self.setProperty("role", "sidebar")
         self.is_expanded = True
         self.expanded_width = 230
         self.collapsed_width = 60
@@ -108,7 +108,7 @@ class Sidebar(QFrame):
 
     def _setup_profile_card(self):
         self.profile_card = QFrame()
-        self.profile_card.setObjectName("ProfileCard")
+        self.profile_card.setProperty("role", "profile_card")
         
         self.profile_layout = QHBoxLayout(self.profile_card)
         self.profile_layout.setContentsMargins(8, 8, 8, 8)
@@ -201,7 +201,7 @@ class Sidebar(QFrame):
         key_name = name.lower().replace(" ", "_")
         display_name = self.i18n.get(f"main.sidebar.tabs.{key_name}")
         btn = QPushButton(display_name)
-        btn.setObjectName("NavButton")
+        btn.setProperty("role", "nav_button")
         btn.setCheckable(True)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)       
         btn.setProperty("original_text", display_name)

@@ -33,7 +33,7 @@ class VisualPositionerDialog(ModernModal):
         
         self.canvas_container = QFrame()
         self.canvas_container.setFixedSize(self.canvas_w, self.canvas_h)
-        self.canvas_container.setObjectName("CanvasContainer")
+        self.canvas_container.setProperty("role", "canvas_container")
         
         self.draggable_box = DraggableBox(self.canvas_container, self.canvas_w, self.canvas_h, self.scale_factor, filepath, scale_val)
         self.draggable_box.set_obs_coordinates(current_x, current_y)

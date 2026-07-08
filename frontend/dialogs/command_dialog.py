@@ -197,7 +197,7 @@ class CommandConfigWizard(ModernWizardPanel):
         
         def add_category(title):
             lbl = QLabel(title)
-            lbl.setProperty("role", "regex_helper_category")
+            lbl.setProperty("role", "category")
             scroll_layout.addWidget(lbl)
             
         add_category(self.i18n.get("command.dialog.regex_helper_cat_syntax"))
@@ -235,7 +235,7 @@ class CommandConfigWizard(ModernWizardPanel):
         layout.setSpacing(6)
         
         lbl_code = QLabel(label_text)
-        lbl_code.setProperty("role", "regex_helper_code")
+        lbl_code.setProperty("role", "code")
         
         lbl_desc = QLabel(desc_text)
         lbl_desc.setProperty("role", "monospace")
