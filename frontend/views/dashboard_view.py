@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QL
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
-from frontend.common.theme import COLOR_NEUTRAL_1000, COLOR_RED, COLOR_NEUTRAL_200
+from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_200
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import StatCard, SettingRow, ModernCard
@@ -108,7 +108,7 @@ class DashboardView(BaseView):
         self.status_label.setWordWrap(True)
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
-        self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_NEUTRAL_1000, 16))
+        self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         status_layout.addWidget(self.status_label, stretch=1)

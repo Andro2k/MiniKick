@@ -11,7 +11,7 @@ class AlreadyRunningDialog(QDialog):
         self.i18n = i18n
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(440, 350)
+        self.setFixedSize(480, 350)
 
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setBlurRadius(30)

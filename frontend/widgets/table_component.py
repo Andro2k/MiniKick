@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QTableWidget, QFrame, QVBoxLayout, QHBoxLayout,
                                QLabel, QLineEdit, QWidget)
 from PySide6.QtCore import Qt
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
-from frontend.common.theme import COLOR_NEUTRAL_1000
+from frontend.common.theme import COLOR_BLACK
 from frontend.common.utils import get_icon_colored
 
 class ModernTable(QTableWidget):
@@ -52,7 +52,7 @@ class ModernTableCard(QFrame):
             if add_button_text:
                 self.btn_add = ModernButton(add_button_text, role="action_accent")
                 if add_button_icon:
-                    self.btn_add.setIcon(get_icon_colored(add_button_icon, COLOR_NEUTRAL_1000, 16))
+                    self.btn_add.setIcon(get_icon_colored(add_button_icon, COLOR_BLACK, 16))
                 self.header_layout.addWidget(self.btn_add)
                 
             self.card_layout.addLayout(self.header_layout)

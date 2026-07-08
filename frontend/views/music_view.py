@@ -163,7 +163,7 @@ class MusicView(BaseView):
 
         status_layout = QHBoxLayout()
         self.lbl_provider_name = QLabel(self.i18n.get("music.provider.name"))
-        self.lbl_provider_name.setProperty("role", "h2")
+        self.lbl_provider_name.setProperty("role", "h3")
         
         self.lbl_auth_status = QLabel(self.i18n.get("common.status.disconnected"))
         self.lbl_auth_status.setProperty("role", "body")
@@ -256,7 +256,7 @@ class MusicView(BaseView):
         self.card_cmds.setEnabled(False)
 
         lbl_title = QLabel(self.i18n.get("music.cmds.title"))
-        lbl_title.setProperty("role", "h2")
+        lbl_title.setProperty("role", "h3")
         self.card_cmds.addWidget(lbl_title)
 
         self.sw_sr = ModernSwitch()

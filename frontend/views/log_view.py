@@ -12,7 +12,7 @@ from frontend.widgets.base_view import BaseView
 from frontend.widgets.table_component import ModernTable
 from frontend.widgets.scalable_illustration import ScalableIllustration
 from frontend.widgets.controls_component import ModernButton
-from frontend.common.theme import COLOR_NEUTRAL_1000, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE, COLOR_AMBER, COLOR_RED
+from frontend.common.theme import COLOR_BLACK, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE, COLOR_AMBER, COLOR_RED
 from frontend.common.utils import get_assets_path, get_icon_colored
 
 LOG_ILLUSTRATION_FILE = "file-search.svg"
@@ -173,7 +173,7 @@ class LogView(BaseView):
         lbl_desc.setMaximumWidth(450)
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
-        self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_NEUTRAL_1000, 16))
+        self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_BLACK, 16))
         self.btn_show_logs.setFixedWidth(200)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 

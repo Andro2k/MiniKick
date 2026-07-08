@@ -6,7 +6,7 @@ from frontend.widgets.base_view import BaseView
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import (
     COLOR_NEUTRAL_200, COLOR_NEUTRAL_500, 
-    COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_NEUTRAL_1000
+    COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK
 )
 from frontend.common.utils import get_icon_colored
 
@@ -44,7 +44,7 @@ class NetworkStatusCard(QFrame):
         self.status_layout.setSpacing(4)
         
         self.lbl_status = QLabel()
-        self.lbl_status.setProperty("role", "h3")
+        self.lbl_status.setProperty("role", "body")
         self.lbl_status.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.status_layout.addWidget(self.lbl_status)
         
@@ -86,7 +86,6 @@ class NetworkStatusCard(QFrame):
             
         self.lbl_status.setStyleSheet(f"color: {color}; font-weight: bold;")
 
-
 class NetworkView(BaseView):
     check_requested = Signal()
     view_shown = Signal()
@@ -107,7 +106,7 @@ class NetworkView(BaseView):
         
         btn_layout = QHBoxLayout()
         self.btn_check = ModernButton(self.i18n.get("network.btn_check"), role="action_accent")
-        self.btn_check.setIcon(get_icon_colored("refresh.svg", COLOR_NEUTRAL_1000, 16))
+        self.btn_check.setIcon(get_icon_colored("refresh.svg", COLOR_BLACK, 16))
         self.btn_check.setFixedWidth(200)
         self.btn_check.clicked.connect(self.check_requested.emit)
         btn_layout.addWidget(self.btn_check)
