@@ -49,7 +49,7 @@ class SettingRow(QWidget):
         text_layout.setSpacing(2)
         
         lbl_title = QLabel(title_text)
-        lbl_title.setProperty("role", "h3")
+        lbl_title.setProperty("role", "h4")
         if title_color:
             lbl_title.setStyleSheet(f"color: {title_color};")
         

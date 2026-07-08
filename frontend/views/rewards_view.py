@@ -9,7 +9,6 @@ from frontend.widgets.blocks_component import SettingRow, ModernCard
 from frontend.widgets.table_component import ModernTableCard, TableActionCell
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_RED
-from frontend.common.utils import get_icon_colored
 
 class RewardsView(BaseView):
     add_requested = Signal()
@@ -64,7 +63,6 @@ class RewardsView(BaseView):
         
         self.table_rewards = self.table_card.table
         self.btn_new_rewards = self.table_card.btn_add
-
         self.btn_new_rewards.clicked.connect(self.add_requested.emit)
         
         self.table_rewards.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)

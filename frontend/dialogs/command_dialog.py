@@ -182,7 +182,7 @@ class CommandConfigWizard(ModernWizardPanel):
         right_layout.setSpacing(6)
         
         lbl_sheet_title = QLabel(self.i18n.get("command.dialog.regex_helper_title"))
-        lbl_sheet_title.setProperty("role", "regex_helper_title")
+        lbl_sheet_title.setProperty("role", "h3")
         right_layout.addWidget(lbl_sheet_title)
         
         scroll = QScrollArea()
@@ -238,7 +238,7 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_code.setProperty("role", "regex_helper_code")
         
         lbl_desc = QLabel(desc_text)
-        lbl_desc.setProperty("role", "regex_helper_desc")
+        lbl_desc.setProperty("role", "monospace")
         lbl_desc.setWordWrap(True)
         
         btn_insert = ModernButton("", role="action_outlined")

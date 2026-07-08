@@ -47,7 +47,7 @@ class CommandView(BaseView):
         self.btn_new_add.clicked.connect(self.add_requested.emit)
 
         h_header = self.table.horizontalHeader()
-        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
@@ -74,7 +74,7 @@ class CommandView(BaseView):
         layout = QHBoxLayout(container)
         layout.setContentsMargins(12, 0, 8, 0)       
         lbl_trigger = QLabel(cmd_data["trigger"])
-        lbl_trigger.setProperty("role", "h3")
+        lbl_trigger.setProperty("role", "body")
         layout.addWidget(lbl_trigger)        
         layout.addStretch()
         return container

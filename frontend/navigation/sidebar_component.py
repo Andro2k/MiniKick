@@ -67,7 +67,7 @@ class Sidebar(QFrame):
         
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
         self.lbl_navigate_header = QLabel(navigate_text)
-        self.lbl_navigate_header.setProperty("role", "section_header")
+        self.lbl_navigate_header.setProperty("role", "body")
         self.main_layout.addWidget(self.lbl_navigate_header)
         
         self.top_nav_layout = QVBoxLayout()
@@ -78,7 +78,7 @@ class Sidebar(QFrame):
 
         more_text = self.i18n.get("main.sidebar.section.more")
         self.lbl_more_header = QLabel(more_text)
-        self.lbl_more_header.setProperty("role", "section_header")
+        self.lbl_more_header.setProperty("role", "body")
         self.main_layout.addWidget(self.lbl_more_header)
 
         self.bottom_nav_layout = QVBoxLayout()
@@ -126,10 +126,10 @@ class Sidebar(QFrame):
         self.profile_text_layout.setSpacing(2)
         
         self.profile_name_lbl = QLabel()
-        self.profile_name_lbl.setObjectName("ProfileName")
+        self.profile_name_lbl.setObjectName("body")
         
         self.profile_role_lbl = QLabel()
-        self.profile_role_lbl.setObjectName("ProfileSub")
+        self.profile_role_lbl.setObjectName("caption")
         
         self.profile_text_layout.addWidget(self.profile_name_lbl)
         self.profile_text_layout.addWidget(self.profile_role_lbl)

@@ -39,7 +39,7 @@ class ModernTableCard(QFrame):
             
             if title_text:
                 self.lbl_title = QLabel(title_text)
-                self.lbl_title.setProperty("role", "h3")
+                self.lbl_title.setProperty("role", "h4")
                 self.header_layout.addWidget(self.lbl_title)
                 
             self.header_layout.addStretch()

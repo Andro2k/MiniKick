@@ -78,7 +78,7 @@ class TimersView(BaseView):
         layout = QHBoxLayout(container)
         layout.setContentsMargins(8, 0, 8, 0)       
         lbl_name = QLabel(timer_data["name"])
-        lbl_name.setProperty("role", "h3")
+        lbl_name.setProperty("role", "body")
         layout.addWidget(lbl_name)        
         layout.addStretch()
         return container
