@@ -5,7 +5,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from frontend.common.utils import NoWheelComboBox
 
-from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_RED
+from frontend.common.theme import COLOR_RED
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import SettingRow, ModernCard
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
@@ -24,9 +24,7 @@ class SettingsView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="settings.header.title",
-            subtitle_key="settings.header.subtitle",
-            icon_name="settings.svg",
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="settings.header.subtitle"
         )
         self._setup_ui()
 

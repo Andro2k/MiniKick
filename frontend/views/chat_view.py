@@ -27,9 +27,7 @@ class ChatView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="chat.header.title",
-            subtitle_key="chat.header.subtitle",
-            icon_name="message.svg",
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="chat.header.subtitle"
         )
         self._setup_ui()
         self._connect_internal_signals()

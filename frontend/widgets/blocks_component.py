@@ -6,18 +6,12 @@ from frontend.common.utils import get_icon_colored
 from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ViewHeader(QFrame):
-    def __init__(self, title_text: str, subtitle_text: str, icon_name: str, icon_color: str, title_color: str = None, parent=None):
+    def __init__(self, title_text: str, subtitle_text: str, title_color: str = None, parent=None):
         super().__init__(parent)
-        layout = QHBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 10)
-        layout.setSpacing(6)
+        layout.setSpacing(4)
 
-        icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=28).pixmap(28, 28))
-        
-        text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
-        
         title = QLabel(title_text)
         title.setProperty("role", "h1")
         if title_color:
@@ -28,12 +22,8 @@ class ViewHeader(QFrame):
         subtitle.setWordWrap(True)
         subtitle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
-        text_layout.addWidget(title)
-        text_layout.addWidget(subtitle)
-        
-        layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
-        layout.addLayout(text_layout)
-        layout.addStretch()
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
 
 class SettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_NEUTRAL_200, title_color: str = None, parent=None):

@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt
 from frontend.widgets.blocks_component import ViewHeader
 
 class BaseView(QWidget):
-    def __init__(self, i18n, title_key: str, subtitle_key: str, icon_name: str, icon_color: str, parent=None):
+    def __init__(self, i18n, title_key: str, subtitle_key: str, parent=None):
         super().__init__(parent)
         self.i18n = i18n
 
@@ -26,9 +26,7 @@ class BaseView(QWidget):
 
         self.header = ViewHeader(
             title_text=title_text or "",
-            subtitle_text=subtitle_text or "",
-            icon_name=icon_name,
-            icon_color=icon_color
+            subtitle_text=subtitle_text or ""
         )
         self.main_layout.addWidget(self.header)
 

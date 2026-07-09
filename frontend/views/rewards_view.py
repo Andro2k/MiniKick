@@ -21,9 +21,7 @@ class RewardsView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="rewards.header.title",
-            subtitle_key="rewards.header.subtitle",
-            icon_name="layout-dashboard.svg", 
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="rewards.header.subtitle"
         )
         self.overlay_url = overlay_url
         self._setup_ui()

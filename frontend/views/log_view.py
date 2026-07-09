@@ -53,9 +53,7 @@ class LogView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="log.header.title",
-            subtitle_key="log.header.subtitle",
-            icon_name="brand-tabler.svg",
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="log.header.subtitle"
         )
         self.str_all = self.i18n.get("log.controls.filter_all")
         self._pending_ui_ops: list[tuple] = []

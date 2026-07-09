@@ -94,9 +94,7 @@ class NetworkView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="network.header.title",
-            subtitle_key="network.header.subtitle",
-            icon_name="access-point.svg",
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="network.header.subtitle"
         )
         self.cards = {}
         self._setup_ui()

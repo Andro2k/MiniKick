@@ -105,9 +105,7 @@ class MusicView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="music.header.title",
-            subtitle_key="music.header.subtitle",
-            icon_name="music.svg",
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="music.header.subtitle"
         )
         self._setup_ui()
 

@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.table_component import ModernTableCard, TableActionCell
-from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_200, COLOR_GREEN
+from frontend.common.theme import COLOR_RED, COLOR_GREEN
 
 class TimersView(BaseView):
     add_requested = Signal()
@@ -18,9 +18,7 @@ class TimersView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="timer.header.title",
-            subtitle_key="timer.header.subtitle",
-            icon_name="clock.svg",
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="timer.header.subtitle"
         )
         self._setup_ui()
 

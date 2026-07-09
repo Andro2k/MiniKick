@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QL
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 
-from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_200
+from frontend.common.theme import COLOR_BLACK, COLOR_RED
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import StatCard, SettingRow, ModernCard
@@ -21,9 +21,7 @@ class DashboardView(BaseView):
         super().__init__(
             i18n=i18n,
             title_key="dashboard.header.title",
-            subtitle_key="dashboard.header.subtitle",
-            icon_name="dashboard.svg",
-            icon_color=COLOR_NEUTRAL_200
+            subtitle_key="dashboard.header.subtitle"
         )
         self._stats_cols = -1
         self._setup_ui()
