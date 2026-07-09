@@ -6,7 +6,7 @@ from frontend.workers.network_worker import NetworkWorker
 
 class NetworkService(QObject):
     results_updated = Signal(dict)
-    history_updated = Signal(list, float, float, float)
+    history_updated = Signal(dict, dict, dict, dict) # histories, currents, averages, maxima
     checking_started = Signal()
 
     def __init__(self, overlay_port=8090, check_interval_ms=60000):
@@ -15,20 +15,35 @@ class NetworkService(QObject):
         self.check_interval_ms = check_interval_ms
         self.worker = None
 
-        self.latency_history = [35.0] * 50
-        self.current_latency = 35.0
-        self.avg_latency = 35.0
-        self.max_latency = 35.0
+        self.history_by_service = {
+            "internet": [35.0] * 50,
+            "kick": [45.0] * 50
+        }
+        self.current_latencies = {
+            "internet": 35.0,
+            "kick": 45.0
+        }
+        self.avg_latencies = {
+            "internet": 35.0,
+            "kick": 45.0
+        }
+        self.max_latencies = {
+            "internet": 35.0,
+            "kick": 45.0
+        }
         self.last_results = {}
 
+        # 1-second simulation / drift timer
         self.sim_timer = QTimer(self)
         self.sim_timer.timeout.connect(self._update_simulation)
         self.sim_timer.start(1000)
 
+        # Periodic background check timer
         self.check_timer = QTimer(self)
         self.check_timer.timeout.connect(self.run_network_check)
         self.check_timer.start(self.check_interval_ms)
 
+        # Run first check automatically on creation
         QTimer.singleShot(1000, self.run_network_check)
 
     @Slot()
@@ -55,45 +70,44 @@ class NetworkService(QObject):
         self.last_results = results
         self.results_updated.emit(results)
 
-        latencies = []
-        for key, info in results.items():
-            if key != "overlay" and info["status"] == "online" and info["latency"] > 0:
-                latencies.append(info["latency"])
+        for key in ["internet", "kick"]:
+            if key in results and results[key]["status"] in ["online", "warning"]:
+                latency = results[key]["latency"]
+                if latency > 0:
+                    self.current_latencies[key] = float(latency)
+                    self.history_by_service[key].pop(0)
+                    self.history_by_service[key].append(float(latency))
+                    
+                    active_points = [p for p in self.history_by_service[key] if p > 0]
+                    if active_points:
+                        self.avg_latencies[key] = sum(active_points) / len(active_points)
+                        self.max_latencies[key] = max(active_points)
 
-        if latencies:
-            avg_lat = sum(latencies) / len(latencies)
-            self.add_real_measurement(avg_lat)
-
-    def add_real_measurement(self, latency: float):
-        self.current_latency = latency
-        self.latency_history.pop(0)
-        self.latency_history.append(float(latency))
-        self._calculate_stats()
         self.history_updated.emit(
-            self.latency_history.copy(),
-            self.current_latency,
-            self.avg_latency,
-            self.max_latency
+            self.history_by_service.copy(),
+            self.current_latencies.copy(),
+            self.avg_latencies.copy(),
+            self.max_latencies.copy()
         )
 
     def _update_simulation(self):
-        last_val = self.latency_history[-1]
-        noise = random.uniform(-4.0, 4.0)
-        drift_correction = (self.current_latency - last_val) * 0.1
-        new_val = max(5.0, min(999.0, last_val + noise + drift_correction))
+        for key in ["internet", "kick"]:
+            last_val = self.history_by_service[key][-1]
+            noise = random.uniform(-4.0, 4.0)
+            drift_correction = (self.current_latencies[key] - last_val) * 0.1
+            new_val = max(5.0, min(999.0, last_val + noise + drift_correction))
 
-        self.latency_history.pop(0)
-        self.latency_history.append(new_val)
-        self._calculate_stats()
+            self.history_by_service[key].pop(0)
+            self.history_by_service[key].append(new_val)
+            
+            active_points = [p for p in self.history_by_service[key] if p > 0]
+            if active_points:
+                self.avg_latencies[key] = sum(active_points) / len(active_points)
+                self.max_latencies[key] = max(active_points)
+
         self.history_updated.emit(
-            self.latency_history.copy(),
-            self.current_latency,
-            self.avg_latency,
-            self.max_latency
+            self.history_by_service.copy(),
+            self.current_latencies.copy(),
+            self.avg_latencies.copy(),
+            self.max_latencies.copy()
         )
-
-    def _calculate_stats(self):
-        active_points = [p for p in self.latency_history if p > 0]
-        if active_points:
-            self.avg_latency = sum(active_points) / len(active_points)
-            self.max_latency = max(active_points)

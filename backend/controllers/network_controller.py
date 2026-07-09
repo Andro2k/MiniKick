@@ -22,8 +22,8 @@ class NetworkController(QObject):
         if self.service.last_results:
             self.view.update_status(self.service.last_results)
         self.view.graph.update_graph_data(
-            self.service.latency_history,
-            self.service.current_latency,
-            self.service.avg_latency,
-            self.service.max_latency
+            self.service.history_by_service,
+            self.service.current_latencies,
+            self.service.avg_latencies,
+            self.service.max_latencies
         )

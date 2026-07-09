@@ -109,18 +109,12 @@ class LogView(BaseView):
         
         self.pagination_bar = QWidget()
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
-        self.pagination_layout.setContentsMargins(12, 8, 12, 8)
+        self.pagination_layout.setContentsMargins(8, 8, 8, 8)
         self.pagination_layout.setSpacing(6)
-        
-        self.lbl_page_info = QLabel()
-        self.lbl_page_info.setProperty("role", "body")
-        self.pagination_layout.addWidget(self.lbl_page_info)
-        
-        self.pagination_layout.addStretch(1)
         
         self.btn_prev = ModernButton("", role="action_outlined")
         self.btn_prev.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_200, 16))
-        self.btn_prev.setFixedWidth(32)
+        self.btn_prev.setFixedWidth(28)
         self.btn_prev.clicked.connect(self.prev_page)
         self.pagination_layout.addWidget(self.btn_prev)
         
@@ -132,9 +126,15 @@ class LogView(BaseView):
         
         self.btn_next = ModernButton("", role="action_outlined")
         self.btn_next.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_NEUTRAL_200, 16))
-        self.btn_next.setFixedWidth(32)
+        self.btn_next.setFixedWidth(28)
         self.btn_next.clicked.connect(self.next_page)
         self.pagination_layout.addWidget(self.btn_next)
+        
+        self.pagination_layout.addStretch(1)
+        
+        self.lbl_page_info = QLabel()
+        self.lbl_page_info.setProperty("role", "body")
+        self.pagination_layout.addWidget(self.lbl_page_info)
         
         table_page_layout.addWidget(self.pagination_bar)
 
