@@ -1,94 +1,14 @@
 # frontend\views\music_view.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,
-                                QLabel, QScrollArea, QPushButton,
-                                QLayout)
-from PySide6.QtCore import Qt, Signal, QSize, QPoint, QRect
+                                QLabel, QScrollArea, QPushButton)
+from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
-
-class FlowLayout(QLayout):
-    def __init__(self, parent=None, margin=0, hspacing=8, vspacing=8):
-        super().__init__(parent)
-        self._item_list = []
-        self._hspacing = hspacing
-        self._vspacing = vspacing
-        self.setContentsMargins(margin, margin, margin, margin)
-
-    def __del__(self):
-        item = self.takeAt(0)
-        while item:
-            item = self.takeAt(0)
-
-    def addItem(self, item):
-        self._item_list.append(item)
-
-    def count(self):
-        return len(self._item_list)
-
-    def itemAt(self, index):
-        if 0 <= index < len(self._item_list):
-            return self._item_list[index]
-        return None
-
-    def takeAt(self, index):
-        if 0 <= index < len(self._item_list):
-            return self._item_list.pop(index)
-        return None
-
-    def expandingDirections(self):
-        return Qt.Orientation(0)
-
-    def hasHeightForWidth(self):
-        return True
-
-    def heightForWidth(self, width):
-        return self._do_layout(QRect(0, 0, width, 0), True)
-
-    def setGeometry(self, rect):
-        super().setGeometry(rect)
-        self._do_layout(rect, False)
-
-    def sizeHint(self):
-        return self.minimumSize()
-
-    def minimumSize(self):
-        size = QSize()
-        for item in self._item_list:
-            size = size.expandedTo(item.minimumSize())
-        left, top, right, bottom = self.getContentsMargins()
-        size += QSize(left + right, top + bottom)
-        return size
-
-    def _do_layout(self, rect, test_only):
-        left, top, right, bottom = self.getContentsMargins()
-        effective_rect = rect.adjusted(left, top, -right, -bottom)
-        x = effective_rect.x()
-        y = effective_rect.y()
-        line_height = 0
-
-        h_space = self._hspacing
-        v_space = self._vspacing
-
-        for item in self._item_list:
-            wid = item.widget()
-            next_x = x + item.sizeHint().width() + h_space
-            if next_x - h_space > effective_rect.right() and line_height > 0:
-                x = effective_rect.x()
-                y = y + line_height + v_space
-                next_x = x + item.sizeHint().width() + h_space
-                line_height = 0
-
-            if not test_only:
-                item.setGeometry(QRect(QPoint(x, y), item.sizeHint()))
-
-            x = next_x
-            line_height = max(line_height, item.sizeHint().height())
-
-        return y + line_height - effective_rect.y() + top + bottom
+from frontend.widgets.flow_layout import FlowLayout
 
 class MusicView(BaseView):
     connect_requested = Signal()

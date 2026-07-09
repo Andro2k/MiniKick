@@ -715,6 +715,15 @@
             "offline": "Desconectado",
             "ms": "{latency} ms"
         },
+        "graph": {
+            "title": "Latencia de Red en Vivo",
+            "live": "En Vivo",
+            "avg": "Promedio",
+            "max": "Máximo",
+            "time_45s": "-45s",
+            "time_20s": "-20s",
+            "time_now": "Ahora"
+        },
         "btn_check": "Comprobar Red"
     }
 }

@@ -717,6 +717,15 @@ DEFAULT_DICTIONARY = {
             "offline": "Disconnected",
             "ms": "{latency} ms"
         },
+        "graph": {
+            "title": "Live Network Latency",
+            "live": "Live",
+            "avg": "Avg",
+            "max": "Max",
+            "time_45s": "-45s",
+            "time_20s": "-20s",
+            "time_now": "Now"
+        },
         "btn_check": "Check Network"
     }
 }
