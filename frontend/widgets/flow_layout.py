@@ -33,7 +33,7 @@ class FlowLayout(QLayout):
         return None
 
     def expandingDirections(self):
-        return Qt.Orientation(0)
+        return Qt.Orientation.Horizontal | Qt.Orientation.Vertical
 
     def hasHeightForWidth(self):
         return True
@@ -83,6 +83,7 @@ class FlowLayout(QLayout):
         y = effective_rect.y()
         max_n = max(len(line) for line in lines) if lines else 1
         
+        is_single_line = (len(lines) == 1)
         for line in lines:
             n = len(line)
             w = (effective_rect.width() - (max_n - 1) * h_space) / max_n
@@ -94,6 +95,9 @@ class FlowLayout(QLayout):
                 if wid and wid.maximumHeight() < h:
                     h = wid.maximumHeight()
                 line_height = max(line_height, h)
+
+            if is_single_line:
+                line_height = max(line_height, effective_rect.height())
 
             x = effective_rect.x()
             for item in line:

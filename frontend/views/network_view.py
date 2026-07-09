@@ -1,10 +1,9 @@
 # frontend\views\network_view.py
 
 from frontend.common.theme import COLOR_BLUE
-from frontend.common.theme import COLOR_BLUE_GLOW
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget
 from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
-from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont
+from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
 from frontend.common.utils import get_icon_colored
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.controls_component import ModernButton
@@ -21,6 +20,31 @@ class GraphCanvas(QWidget):
         self.setMouseTracking(True)
         self.hovered_idx = None
         self.mouse_pos = None
+        self._dirty = True
+        self._cached_paths = []        
+        self._cached_grid_lines = []   
+        self._cached_labels = []       
+        self._max_scale = 80
+
+        blue_col = QColor(COLOR_BLUE)
+        blue_fill = QColor(blue_col)
+        blue_fill.setAlpha(30)
+        
+        green_col = QColor(COLOR_GREEN)
+        green_fill = QColor(green_col)
+        green_fill.setAlpha(30)
+
+        self._configs = [
+            ("internet", blue_col, blue_fill),
+            ("kick", green_col, green_fill)
+        ]
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._dirty = True
+
+    def mark_dirty(self):
+        self._dirty = True
         
     def mouseMoveEvent(self, event):
         left_margin = 45
@@ -43,10 +67,11 @@ class GraphCanvas(QWidget):
         self.mouse_pos = None
         self.update()
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+    def _rebuild_cache(self):
+        self._cached_paths.clear()
+        self._cached_grid_lines.clear()
+        self._cached_labels.clear()
+
         left_margin = 45
         right_margin = 10
         top_margin = 15
@@ -62,40 +87,19 @@ class GraphCanvas(QWidget):
         all_vals = histories["internet"] + histories["kick"]
         max_val = max(80.0, max(all_vals))
         max_scale = ((int(max_val) // 40) + 1) * 40  
-        grid_lines = 4
-        painter.setFont(QFont("Inter", 8))
+        self._max_scale = max_scale
         
-        # Grid lines
+        grid_lines = 4
         for i in range(grid_lines + 1):
             val = (max_scale / grid_lines) * i
             y = self.height() - bottom_margin - (val / max_scale) * H
+            is_dash = (i > 0 and i < grid_lines)
+            self._cached_grid_lines.append((y, f"{int(val)} ms", is_dash))
             
-            if i > 0 and i < grid_lines:
-                painter.setPen(QPen(QColor(255, 255, 255, 12), 1, Qt.PenStyle.DashLine))
-                painter.drawLine(left_margin, y, self.width() - right_margin, y)
-                
-            painter.setPen(QColor("#6B7280"))
-            painter.drawText(5, y + 4, f"{int(val)} ms")
-
-        painter.setPen(QColor("#6B7280"))
-        painter.drawText(left_margin, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_45s"))
-        painter.drawText(left_margin + W // 2 - 15, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_20s"))
-        painter.drawText(self.width() - right_margin - 30, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_now"))
-
-        green_col = QColor(COLOR_GREEN)
-        green_fill = QColor(green_col)
-        green_fill.setAlpha(30)
-        
-        purple_col = QColor(COLOR_PURPLE)
-        purple_fill = QColor(purple_col)
-        purple_fill.setAlpha(30)
-
-        configs = [
-            ("internet", green_col, green_fill),
-            ("kick", purple_col, purple_fill)
-        ]
-
-        for name, line_color, fill_color in configs:
+        self._cached_labels.append((left_margin, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_45s")))
+        self._cached_labels.append((left_margin + W // 2 - 15, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_20s")))
+        self._cached_labels.append((self.width() - right_margin - 30, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_now")))
+        for name, line_color, fill_color in self._configs:
             history = histories[name]
             points = []
             n_points = len(history)
@@ -120,60 +124,97 @@ class GraphCanvas(QWidget):
                 fill_path.lineTo(points[0].x(), self.height() - bottom_margin)
                 fill_path.closeSubpath()
                 
-                gradient = QLinearGradient(0, top_margin, 0, self.height() - bottom_margin)
-                gradient.setColorAt(0.0, fill_color)
-                gradient.setColorAt(1.0, QColor(0, 0, 0, 0))
-                painter.fillPath(fill_path, QBrush(gradient))
-                
-                pen = QPen(line_color, 2.0)
-                painter.setPen(pen)
-                painter.drawPath(path)
+                self._cached_paths.append((name, path, fill_path, line_color, fill_color))
 
-        # Hover guide & tooltips
+    def paintEvent(self, event):
+        if self._dirty:
+            self._rebuild_cache()
+            self._dirty = False
+
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        left_margin = 45
+        right_margin = 10
+        top_margin = 15
+        bottom_margin = 25
+        
+        W = self.width() - left_margin - right_margin
+        H = self.height() - top_margin - bottom_margin
+        
+        if W <= 0 or H <= 0:
+            return
+            
+        painter.setFont(QFont("Inter", 8))
+        for y, val_text, is_dash in self._cached_grid_lines:
+            if is_dash:
+                painter.setPen(QPen(QColor(255, 255, 255, 12), 1, Qt.PenStyle.DashLine))
+                painter.drawLine(left_margin, y, self.width() - right_margin, y)
+                
+            painter.setPen(QColor("#6B7280"))
+            painter.drawText(5, y + 4, val_text)
+
+        painter.setPen(QColor("#6B7280"))
+        for x, y, text in self._cached_labels:
+            painter.drawText(x, y, text)
+        for name, path, fill_path, line_color, fill_color in self._cached_paths:
+            gradient = QLinearGradient(0, top_margin, 0, self.height() - bottom_margin)
+            gradient.setColorAt(0.0, fill_color)
+            gradient.setColorAt(1.0, QColor(0, 0, 0, 0))
+            painter.fillPath(fill_path, QBrush(gradient))
+            
+            pen = QPen(line_color, 2.0)
+            painter.setPen(pen)
+            painter.drawPath(path)
+
         if self.hovered_idx is not None and self.hovered_idx < 50:
             hover_x = left_margin + self.hovered_idx * (W / 49)
             
-            # Vertical guide line
             painter.setPen(QPen(QColor(255, 255, 255, 60), 1, Qt.PenStyle.DashLine))
             painter.drawLine(hover_x, top_margin, hover_x, self.height() - bottom_margin)
             
             tooltip_data = []
-            for name, line_color, _ in configs:
+            histories = self.parent_graph.histories
+            max_scale = self._max_scale
+
+            for name, line_color, _ in self._configs:
                 val = histories[name][self.hovered_idx]
                 y = self.height() - bottom_margin - (val / max_scale) * H
                 
-                # Outer glow dot
                 painter.setBrush(QBrush(QColor(line_color.red(), line_color.green(), line_color.blue(), 60)))
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.drawEllipse(QPointF(hover_x, y), 6, 6)
                 
-                # Inner solid dot
                 painter.setBrush(QBrush(line_color))
                 painter.drawEllipse(QPointF(hover_x, y), 3, 3)
                 
                 label = self.parent_graph.i18n.get(f"network.services.{name}")
                 tooltip_data.append((label, int(val), line_color))
                 
-            # Draw Tooltip Card
-            tooltip_w = 150
+            font = QFont("Inter", 8)
+            fm = QFontMetrics(font)
+            max_text_w = fm.horizontalAdvance("Ping / Latency")
+            for label, val, _ in tooltip_data:
+                text_w = fm.horizontalAdvance(f"{label}: {val} ms")
+                if text_w > max_text_w:
+                    max_text_w = text_w
+
+            tooltip_w = max_text_w + 35
             tooltip_h = 70
             tooltip_x = hover_x + 15
             if tooltip_x + tooltip_w > self.width():
                 tooltip_x = hover_x - tooltip_w - 15
             tooltip_y = max(10, self.height() // 2 - tooltip_h // 2)
             
-            # Card background
             tooltip_rect = QRectF(tooltip_x, tooltip_y, tooltip_w, tooltip_h)
             painter.setPen(QPen(QColor(255, 255, 255, 30), 1))
             painter.setBrush(QBrush(QColor(15, 15, 15, 230)))
             painter.drawRoundedRect(tooltip_rect, 6, 6)
             
-            # Tooltip Title
             painter.setFont(QFont("Inter", 8, QFont.Weight.Bold))
             painter.setPen(QColor("#9CA3AF"))
             painter.drawText(tooltip_x + 10, tooltip_y + 16, "Ping / Latency")
             
-            # Tooltip Details
             painter.setFont(QFont("Inter", 8))
             for i, (label, val, col) in enumerate(tooltip_data):
                 y_offset = tooltip_y + 34 + i * 16
@@ -238,7 +279,6 @@ class LiveNetworkGraph(QFrame):
         self.canvas = GraphCanvas(self)
         self.main_layout.addWidget(self.canvas, stretch=1)
         
-        # Legend layout at the bottom
         self.legend_layout = QHBoxLayout()
         self.legend_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.legend_layout.setSpacing(20)
@@ -246,7 +286,7 @@ class LiveNetworkGraph(QFrame):
         self.legend_internet = QWidget()
         lbl_dot_int = QLabel("● ")
         lbl_dot_int.setProperty("role", "caption")
-        lbl_dot_int.setStyleSheet(f"color: {COLOR_BLUE_GLOW};")
+        lbl_dot_int.setStyleSheet(f"color: {COLOR_BLUE};")
         lbl_txt_int = QLabel(self.i18n.get("network.services.internet"))
         lbl_txt_int.setProperty("role", "caption")
         lay_int = QHBoxLayout(self.legend_internet)
@@ -286,8 +326,11 @@ class LiveNetworkGraph(QFrame):
         self.current_latencies = currents
         self.avg_latencies = averages
         self.max_latencies = maxima
-        self._update_labels()
-        self.canvas.update()
+
+        if self.isVisible():
+            self._update_labels()
+            self.canvas.mark_dirty()
+            self.canvas.update()
 
 class NetworkStatusCard(QFrame):
     def __init__(self, key: str, title: str, description: str, icon_name: str, parent=None):

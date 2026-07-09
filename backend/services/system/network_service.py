@@ -6,7 +6,7 @@ from frontend.workers.network_worker import NetworkWorker
 
 class NetworkService(QObject):
     results_updated = Signal(dict)
-    history_updated = Signal(dict, dict, dict, dict) # histories, currents, averages, maxima
+    history_updated = Signal(dict, dict, dict, dict)
     checking_started = Signal()
 
     def __init__(self, overlay_port=8090, check_interval_ms=60000):
@@ -33,17 +33,12 @@ class NetworkService(QObject):
         }
         self.last_results = {}
 
-        # 1-second simulation / drift timer
         self.sim_timer = QTimer(self)
         self.sim_timer.timeout.connect(self._update_simulation)
         self.sim_timer.start(1000)
-
-        # Periodic background check timer
         self.check_timer = QTimer(self)
         self.check_timer.timeout.connect(self.run_network_check)
         self.check_timer.start(self.check_interval_ms)
-
-        # Run first check automatically on creation
         QTimer.singleShot(1000, self.run_network_check)
 
     @Slot()

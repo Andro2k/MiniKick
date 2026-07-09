@@ -8,6 +8,7 @@ from frontend.common.theme import COLOR_NEUTRAL_200
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, title_color: str = None, parent=None):
         super().__init__(parent)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 10)
         layout.setSpacing(4)

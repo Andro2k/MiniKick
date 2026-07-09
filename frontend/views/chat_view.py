@@ -60,7 +60,7 @@ class ChatView(BaseView):
         self.combo_lang = NoWheelComboBox()
         self.combo_lang.setFixedWidth(120)
         self.combo_voice = NoWheelComboBox()
-        self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.combo_voice.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         lang_voice_layout.addWidget(self.combo_lang)
         lang_voice_layout.addWidget(self.combo_voice)
 
@@ -90,8 +90,9 @@ class ChatView(BaseView):
         left_layout.setSpacing(16)
         left_layout.addWidget(config_card)
         left_layout.addWidget(bot_card)
+        left_layout.addStretch()
         left_container.setMinimumWidth(380)
-        left_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        left_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         
         chat_card = ModernCard()
         chat_card.setMinimumWidth(380)

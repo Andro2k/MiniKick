@@ -46,8 +46,6 @@ class BotMutePanel(QWidget):
         self.list_bots.setProperty("role", "transparent_list")
         
         self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_bots.setViewportMargins(0, 0, 0, 0)
-        self.list_bots.setContentsMargins(0, 0, 0, 0)
         self.list_bots.setSpacing(2)
 
         layout.addWidget(self.list_bots)
