@@ -123,6 +123,12 @@ QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_GREEN}; 
 QListWidget[role="transparent_list"] {{ background: transparent; border: none; }}
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
 
+QTabWidget::pane {{ border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_LG}px; border-top-left-radius: 0px; background-color: {COLOR_NEUTRAL_900}; padding: 8px; }}
+QTabBar::tab {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-bottom-color: transparent; border-top-left-radius: 0px; border-top-right-radius: {RADIUS_MD}px; padding: 8px 16px; margin-right: 4px; font-weight: bold;}}
+QTabBar::tab:selected {{ color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_900}; border-color: {COLOR_NEUTRAL_800}; border-bottom-color: {COLOR_NEUTRAL_900}; }}
+QTabBar::tab:hover:!selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
+QTabWidget QFrame[role="card"] {{ background-color: transparent; border: none; }}
+
 QToolTip {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; padding: {PADDING_INPUT}; font-size: {size_textline_1}px; }}
 
 QSlider::groove:horizontal {{ border: none; height: 6px; background: {COLOR_NEUTRAL_850}; border-radius: 3px; }}

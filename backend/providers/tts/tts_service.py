@@ -14,8 +14,9 @@ class TTSManager:
         }
         self._active_provider_key = "local"
         self._voices_cache = {"web": [], "local": []}
+        self._main_voice_id = ""
         
-        self.queue: queue.Queue[str | None] = queue.Queue()
+        self.queue: queue.Queue[tuple[str, str | None] | None] = queue.Queue()
         self._thread = threading.Thread(target=self._worker, daemon=True)
         self._thread.start()
 
@@ -27,9 +28,9 @@ class TTSManager:
         if provider_type in self._providers:
             self._active_provider_key = provider_type
 
-    def say(self, text: str) -> None:
+    def say(self, text: str, voice_id: str = None) -> None:
         if text and text.strip():
-            self.queue.put(text.strip())
+            self.queue.put((text.strip(), voice_id))
 
     def stop(self) -> None:
         self.queue.put(None)
@@ -37,11 +38,19 @@ class TTSManager:
 
     def _worker(self) -> None:
         while True:
-            text = self.queue.get()
+            item = self.queue.get()
             try:
-                if text is None:
+                if item is None:
                     break 
+                text, voice_id = item
                 active_provider = self._provider
+                target_voice = voice_id if voice_id else self._main_voice_id
+                if target_voice:
+                    if hasattr(active_provider, 'voice_id'):
+                        active_provider.voice_id = target_voice
+                    elif hasattr(active_provider, 'voice'):
+                        active_provider.voice = target_voice
+                
                 active_provider.speak(text)
                 
             except Exception as e:
@@ -63,6 +72,7 @@ class TTSManager:
         self._provider.set_volume(volume)
 
     def set_voice(self, voice_id: str) -> None:
+        self._main_voice_id = voice_id
         if hasattr(self._provider, 'voice_id'):
             self._provider.voice_id = voice_id
         elif hasattr(self._provider, 'voice'):

@@ -63,13 +63,21 @@ class ChatController(QObject):
         self._tts_enabled = settings.get("enabled", True)
         self._tts_settings_cache = dict(settings)
         
+        role_voices = {
+            "broadcaster": settings.get("role_voice_broadcaster", ""),
+            "moderator": settings.get("role_voice_moderator", ""),
+            "vip": settings.get("role_voice_vip", ""),
+            "subscriber": settings.get("role_voice_subscriber", "")
+        }
+        
         self.view.set_settings_ui(
             enabled=settings.get("enabled", True),
             read_name=settings.get("read_name", True),
             use_command=settings.get("use_command", False),
             command=settings.get("command", "!tts"),
             is_web_provider=(provider == "web"),
-            volume=settings.get("volume", 100)
+            volume=settings.get("volume", 100),
+            role_voices=role_voices
         )
         self.service.set_volume(settings["volume"])     
         
@@ -107,7 +115,15 @@ class ChatController(QObject):
                 self._execute_resolved_music_plugin(plugin_tag, dto.user, dto.content, prefix)
 
     def _step_ui_render(self, dto: ChatMessageDTO):
-        self.view.append_message(dto.user, dto.content, dto.color)
+        self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp)
+
+    def _resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
+        for badge in ["broadcaster", "moderator", "vip", "subscriber"]:
+            if badge in badges:
+                voice_id = settings.get(f"role_voice_{badge}", "")
+                if voice_id:
+                    return voice_id
+        return None
 
     def _step_tts(self, dto: ChatMessageDTO):
         settings = self._tts_settings_cache
@@ -124,7 +140,8 @@ class ChatController(QObject):
         cleaned = self._clean_message_for_tts(msg)
         if cleaned:
             text = f"{dto.user} dice: {cleaned}" if settings["read_name"] else cleaned
-            self.service.speak(text)
+            voice_id = self._resolve_voice_for_badges(dto.badges, settings)
+            self.service.speak(text, voice_id=voice_id)
 
     def _load_voices(self, provider: str, is_initial: bool = False):
         loading_str = self.view.i18n.get("chat.status.loading_voices")
@@ -193,7 +210,14 @@ class ChatController(QObject):
             (v["id"], v["name"]) for v in self._all_voices
             if ("-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local") == lang_prefix
         ]
-        self.view.update_voices(filtered, select_id)
+        settings = self.service.get_settings()
+        role_voices = {
+            "broadcaster": settings.get("role_voice_broadcaster", ""),
+            "moderator": settings.get("role_voice_moderator", ""),
+            "vip": settings.get("role_voice_vip", ""),
+            "subscriber": settings.get("role_voice_subscriber", "")
+        }
+        self.view.update_voices(filtered, select_id, role_voices)
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):
@@ -227,6 +251,7 @@ class ChatController(QObject):
             "provider": "web" if self.view.is_web_provider else "local",
             "ignored_users": ",".join(self.muted_bots)
         }
+        settings.update(self.view.get_role_voices())
         self.service.save_settings(settings)
         self._tts_settings_cache = self.service.get_settings()
         self.tts_state_changed.emit(settings["enabled"])

@@ -41,6 +41,7 @@ class SettingRow(QWidget):
         
         lbl_title = QLabel(title_text)
         lbl_title.setProperty("role", "h3")
+        lbl_title.setWordWrap(True)
         if title_color:
             lbl_title.setStyleSheet(f"color: {title_color};")
         

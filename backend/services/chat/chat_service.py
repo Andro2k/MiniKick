@@ -6,14 +6,19 @@ class ChatService:
         self.storage = settings_storage
 
     def get_settings(self) -> dict:
+        provider = self.storage.load_string("tts_provider", "local")
         return {
             "enabled": self.storage.load_bool("tts_enabled", True),
             "read_name": self.storage.load_bool("tts_read_name", True),
             "use_command": self.storage.load_bool("tts_use_command", False),
             "command": self.storage.load_string("tts_command", "!tts"),
-            "provider": self.storage.load_string("tts_provider", "local"),
+            "provider": provider,
             "ignored_users": self.storage.load_string("tts_ignored_users", ""),
-            "volume": int(self.storage.load_string("tts_volume", "100"))
+            "volume": int(self.storage.load_string("tts_volume", "100")),
+            "role_voice_broadcaster": self.storage.load_string(f"tts_voice_{provider}_broadcaster", ""),
+            "role_voice_moderator": self.storage.load_string(f"tts_voice_{provider}_moderator", ""),
+            "role_voice_vip": self.storage.load_string(f"tts_voice_{provider}_vip", ""),
+            "role_voice_subscriber": self.storage.load_string(f"tts_voice_{provider}_subscriber", "")
         }
 
     def save_settings(self, settings: dict):
@@ -22,6 +27,16 @@ class ChatService:
         self.storage.save_bool("tts_use_command", settings.get("use_command", False))
         self.storage.save_string("tts_command", settings.get("command", "!tts"))
         self.storage.save_string("tts_ignored_users", settings.get("ignored_users", ""))
+        
+        provider = settings.get("provider", "local")
+        if "role_voice_broadcaster" in settings:
+            self.storage.save_string(f"tts_voice_{provider}_broadcaster", settings["role_voice_broadcaster"])
+        if "role_voice_moderator" in settings:
+            self.storage.save_string(f"tts_voice_{provider}_moderator", settings["role_voice_moderator"])
+        if "role_voice_vip" in settings:
+            self.storage.save_string(f"tts_voice_{provider}_vip", settings["role_voice_vip"])
+        if "role_voice_subscriber" in settings:
+            self.storage.save_string(f"tts_voice_{provider}_subscriber", settings["role_voice_subscriber"])
 
     def set_volume(self, volume: int):
         self.storage.save_string("tts_volume", str(volume))
@@ -41,8 +56,8 @@ class ChatService:
         self.storage.save_string(f"tts_voice_{provider}", voice_id)
         self.tts.set_voice(voice_id)
 
-    def speak(self, text: str):
-        self.tts.say(text)
+    def speak(self, text: str, voice_id: str = None):
+        self.tts.say(text, voice_id=voice_id)
 
     def stop_tts(self):
         self.tts.stop()

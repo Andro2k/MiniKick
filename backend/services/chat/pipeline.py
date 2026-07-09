@@ -11,6 +11,7 @@ class ChatMessageDTO:
     color: str
     msg_id: str
     sender_id: int
+    timestamp: str = ""
     is_cancelled: bool = False
 
 class MessagePipeline:

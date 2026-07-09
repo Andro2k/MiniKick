@@ -3,7 +3,7 @@
 import html
 from PySide6.QtWidgets import (QLineEdit, QWidget, QVBoxLayout,
                                 QHBoxLayout, QTextEdit, QLabel, 
-                                QSizePolicy)
+                                QSizePolicy, QTabWidget, QScrollArea, QFrame)
 from frontend.common.utils import NoWheelComboBox, NoWheelSlider
 from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
@@ -11,7 +11,7 @@ from frontend.widgets.base_view import BaseView
 from frontend.widgets.flow_layout import FlowLayout
 from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
 from frontend.navigation.bot_panel_component import BotMutePanel
-from frontend.common.theme import COLOR_NEUTRAL_200
+from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_500
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -37,7 +37,6 @@ class ChatView(BaseView):
         self.body_layout = FlowLayout(hspacing=16, vspacing=16)
 
         config_card = ModernCard()
-        config_card.setMinimumWidth(380) 
 
         self.chk_tts = ModernSwitch()
         self.chk_name = ModernSwitch() 
@@ -60,7 +59,8 @@ class ChatView(BaseView):
         self.combo_lang = NoWheelComboBox()
         self.combo_lang.setFixedWidth(120)
         self.combo_voice = NoWheelComboBox()
-        self.combo_voice.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.combo_voice.setMinimumWidth(80)
+        self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         lang_voice_layout.addWidget(self.combo_lang)
         lang_voice_layout.addWidget(self.combo_voice)
 
@@ -70,8 +70,6 @@ class ChatView(BaseView):
 
         row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
 
-        self.bot_panel = BotMutePanel(self.i18n)
-
         config_card.addWidget(row_tts)
         config_card.addWidget(row_read_name)
         config_card.addWidget(row_provider)
@@ -79,18 +77,60 @@ class ChatView(BaseView):
         config_card.addWidget(row_volume)
         config_card.addWidget(row_cmd)
         config_card.addWidget(row_prefix)
+
+        divider = QFrame()
+        divider.setProperty("role", "divider")
+        divider.setFixedHeight(1)
+        config_card.addWidget(divider)
+        category_lbl = QLabel(self.i18n.get("chat.roles.title"))
+        category_lbl.setProperty("role", "category")
+        config_card.addWidget(category_lbl)
+
+        self.combo_voice_broadcaster = NoWheelComboBox()
+        self.combo_voice_broadcaster.setFixedWidth(140)
         
+        self.combo_voice_moderator = NoWheelComboBox()
+        self.combo_voice_moderator.setFixedWidth(140)
+        
+        self.combo_voice_vip = NoWheelComboBox()
+        self.combo_voice_vip.setFixedWidth(140)
+        
+        self.combo_voice_subscriber = NoWheelComboBox()
+        self.combo_voice_subscriber.setFixedWidth(140)
+
+        row_role_broadcaster = SettingRow("user.svg", self.i18n.get("chat.roles.broadcaster_title"), self.i18n.get("chat.roles.broadcaster_desc"), self.combo_voice_broadcaster)
+        row_role_moderator = SettingRow("shield-half.svg", self.i18n.get("chat.roles.moderator_title"), self.i18n.get("chat.roles.moderator_desc"), self.combo_voice_moderator)
+        row_role_vip = SettingRow("star.svg", self.i18n.get("chat.roles.vip_title"), self.i18n.get("chat.roles.vip_desc"), self.combo_voice_vip)
+        row_role_subscriber = SettingRow("users.svg", self.i18n.get("chat.roles.subscriber_title"), self.i18n.get("chat.roles.subscriber_desc"), self.combo_voice_subscriber)
+
+        config_card.addWidget(row_role_broadcaster)
+        config_card.addWidget(row_role_moderator)
+        config_card.addWidget(row_role_vip)
+        config_card.addWidget(row_role_subscriber)
+        config_card.addStretch()
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setWidget(config_card)
+
+        self.bot_panel = BotMutePanel(self.i18n)
         bot_card = ModernCard()
-        bot_card.setMinimumWidth(380)
         bot_card.addWidget(self.bot_panel)
+        self.tabs = QTabWidget()
+        self.tabs.setMinimumWidth(380)
+        self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        self.tabs.addTab(scroll, self.i18n.get("chat.tabs.settings"))
+        self.tabs.addTab(bot_card, self.i18n.get("chat.tabs.muted"))
 
         left_container = QWidget()
         left_layout = QVBoxLayout(left_container)
         left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(16)
-        left_layout.addWidget(config_card)
-        left_layout.addWidget(bot_card)
-        left_layout.addStretch()
+        left_layout.setSpacing(0)
+        left_layout.addWidget(self.tabs)
         left_container.setMinimumWidth(380)
         left_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         
@@ -150,17 +190,21 @@ class ChatView(BaseView):
         self.bot_panel.bot_add_requested.connect(self.bot_add_requested.emit)
         self.bot_panel.bot_remove_requested.connect(self.bot_remove_requested.emit)
         
-        controls = [self.chk_tts, self.chk_name, self.chk_command, self.txt_command]
+        controls = [self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
+                    self.combo_voice_broadcaster, self.combo_voice_moderator,
+                    self.combo_voice_vip, self.combo_voice_subscriber]
         for control in controls:
             if isinstance(control, ModernSwitch):
                 control.toggled.connect(self._on_setting_changed)
             elif isinstance(control, QLineEdit):
                 control.textChanged.connect(self._on_setting_changed)
+            elif isinstance(control, NoWheelComboBox):
+                control.currentIndexChanged.connect(self._on_setting_changed)
 
     def _on_setting_changed(self, *args):
         self.settings_changed.emit()
 
-    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int):
+    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None):
         self.blockSignals(True)
         self.chk_tts.setChecked(enabled)
         self.chk_name.setChecked(read_name)
@@ -168,6 +212,7 @@ class ChatView(BaseView):
         self.txt_command.setText(command)
         self.chk_provider.setChecked(is_web_provider)
         self.slider_vol.setValue(volume)
+        self._pending_role_voices = role_voices or {}
         self.blockSignals(False)
 
     def clear_bot_input(self):
@@ -189,7 +234,7 @@ class ChatView(BaseView):
                 self.combo_lang.setCurrentIndex(idx)
         self.combo_lang.blockSignals(False)
 
-    def update_voices(self, voices: list[tuple[str, str]], select_id: str = None):
+    def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None):
         self.combo_voice.blockSignals(True)
         self.combo_voice.clear()
         index_to_select = 0
@@ -201,11 +246,49 @@ class ChatView(BaseView):
             self.combo_voice.setCurrentIndex(index_to_select)
         self.combo_voice.blockSignals(False)
 
-    def append_message(self, user: str, message: str, color: str):
+        if role_voices is None and hasattr(self, '_pending_role_voices'):
+            role_voices = self._pending_role_voices
+
+        role_combos = {
+            "broadcaster": self.combo_voice_broadcaster,
+            "moderator": self.combo_voice_moderator,
+            "vip": self.combo_voice_vip,
+            "subscriber": self.combo_voice_subscriber
+        }
+
+        for role, combo in role_combos.items():
+            combo.blockSignals(True)
+            combo.clear()
+
+            default_label = self.i18n.get("chat.roles.default_voice")
+            combo.addItem(default_label, userData="")
+
+            target_id = role_voices.get(role, "") if role_voices else ""
+            select_idx = 0
+
+            for i, (v_id, v_name) in enumerate(voices):
+                combo.addItem(v_name, userData=v_id)
+                if v_id == target_id:
+                    select_idx = i + 1
+
+            if combo.count() > 0:
+                combo.setCurrentIndex(select_idx)
+            combo.blockSignals(False)
+
+    def get_role_voices(self) -> dict:
+        return {
+            "role_voice_broadcaster": self.combo_voice_broadcaster.currentData() or "",
+            "role_voice_moderator": self.combo_voice_moderator.currentData() or "",
+            "role_voice_vip": self.combo_voice_vip.currentData() or "",
+            "role_voice_subscriber": self.combo_voice_subscriber.currentData() or "",
+        }
+
+    def append_message(self, user: str, message: str, color: str, timestamp: str = ""):
         safe_user = html.escape(user)
         safe_message = html.escape(message)        
         safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_NEUTRAL_200
-        html_msg = f'<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
+        ts_span = f'<span style="color: {COLOR_NEUTRAL_500}; font-size: 0.85em; margin-right: 6px;">[{timestamp}]</span>' if timestamp else ""
+        html_msg = f'{ts_span}<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
         self.chat_display.append(html_msg)
         self._trim_chat_history()
 

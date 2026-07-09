@@ -357,7 +357,9 @@ class MainWindowCore(QMainWindow):
     @Slot(str, str, list, str, str, int)
     def _route_incoming_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
         self._increment_metric("messages_processed")
-        dto = ChatMessageDTO(user, msg, badges, color, msg_id, sender_id)
+        from datetime import datetime
+        current_time = datetime.now().strftime("%H:%M:%S")
+        dto = ChatMessageDTO(user, msg, badges, color, msg_id, sender_id, timestamp=current_time)
         self.chat_controller.process_message(dto)
 
     @Slot(str, str, str)
@@ -369,11 +371,14 @@ class MainWindowCore(QMainWindow):
             state="success"
         )
         
+        from datetime import datetime
+        current_time = datetime.now().strftime("%H:%M:%S")
+        
         canje_template = self.i18n.get("main.chat.reward_redeemed")
         texto_canje = canje_template.replace("{reward_name}", reward_name)
         msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
         tag = self.i18n.get("main.chat.points_tag")
-        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN)
+        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time)
         
         mappings = self.rewards_service.get_mappings()
         if reward_name in mappings:
@@ -386,7 +391,7 @@ class MainWindowCore(QMainWindow):
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:
-            dto = ChatMessageDTO(user, message, [], "", "", 0)
+            dto = ChatMessageDTO(user, message, [], "", "", 0, timestamp=current_time)
             self.chat_controller.process_message(dto)
 
     @Slot()
