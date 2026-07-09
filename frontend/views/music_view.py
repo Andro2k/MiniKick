@@ -135,7 +135,7 @@ class MusicView(BaseView):
         
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
-        self.lbl_song_title.setProperty("role", "h2")
+        self.lbl_song_title.setProperty("role", "h3")
         self.lbl_song_title.setWordWrap(True)
         
         self.lbl_song_artist = QLabel("-")
@@ -201,7 +201,7 @@ class MusicView(BaseView):
         
         header_layout = QHBoxLayout()
         lbl_title = QLabel(self.i18n.get("music.queue.title"))
-        lbl_title.setProperty("role", "h2")
+        lbl_title.setProperty("role", "h3")
         
         self.lbl_queue_count = QLabel("(0)")
         self.lbl_queue_count.setProperty("role", "caption")

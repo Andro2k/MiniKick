@@ -1,8 +1,7 @@
 # frontend\views\network_view.py
 
-import random
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget
-from PySide6.QtCore import Qt, Signal, QTimer, QPointF, QSize
+from PySide6.QtCore import Qt, Signal, QPointF, QSize
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont
 from frontend.common.utils import get_icon_colored
 from frontend.widgets.base_view import BaseView
@@ -95,9 +94,9 @@ class LiveNetworkGraph(QFrame):
         self.setFixedHeight(280)
         
         self.latency_history = [35.0] * 50
-        self.current_latency = 35
-        self.avg_latency = 35
-        self.max_latency = 35
+        self.current_latency = 35.0
+        self.avg_latency = 35.0
+        self.max_latency = 35.0
         
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 12, 16, 12)
@@ -138,47 +137,20 @@ class LiveNetworkGraph(QFrame):
         
         self._update_labels()
         
-        self.sim_timer = QTimer(self)
-        self.sim_timer.timeout.connect(self._update_simulation)
-        self.sim_timer.start(1000)
-        
     def _update_labels(self):
         live_lbl = self.i18n.get("network.graph.live")
         avg_lbl = self.i18n.get("network.graph.avg")
         max_lbl = self.i18n.get("network.graph.max")
         
         self.lbl_live.setText(f"{live_lbl}: {int(self.latency_history[-1])} ms")
-        self.lbl_avg.setText(f"{avg_lbl}: {self.avg_latency} ms")
-        self.lbl_max.setText(f"{max_lbl}: {self.max_latency} ms")
+        self.lbl_avg.setText(f"{avg_lbl}: {int(self.avg_latency)} ms")
+        self.lbl_max.setText(f"{max_lbl}: {int(self.max_latency)} ms")
         
-    def _update_simulation(self):
-        import random
-        last_val = self.latency_history[-1]
-        noise = random.uniform(-4.0, 4.0)
-        drift_correction = (self.current_latency - last_val) * 0.1
-        new_val = max(5.0, min(999.0, last_val + noise + drift_correction))
-        
-        self.latency_history.pop(0)
-        self.latency_history.append(new_val)
-        
-        active_points = [p for p in self.latency_history if p > 0]
-        if active_points:
-            self.avg_latency = int(sum(active_points) / len(active_points))
-            self.max_latency = int(max(active_points))
-            
-        self._update_labels()
-        self.canvas.update()
-        
-    def add_real_measurement(self, latency: int):
-        self.current_latency = latency
-        self.latency_history.pop(0)
-        self.latency_history.append(float(latency))
-        
-        active_points = [p for p in self.latency_history if p > 0]
-        if active_points:
-            self.avg_latency = int(sum(active_points) / len(active_points))
-            self.max_latency = int(max(active_points))
-            
+    def update_graph_data(self, history: list, current: float, avg: float, max_val: float):
+        self.latency_history = history
+        self.current_latency = current
+        self.avg_latency = avg
+        self.max_latency = max_val
         self._update_labels()
         self.canvas.update()
 
@@ -318,7 +290,6 @@ class NetworkView(BaseView):
 
     def update_status(self, results: dict):
         self.btn_check.setEnabled(True)
-        latencies = []
         for key, info in results.items():
             if key in self.cards:
                 status = info["status"]
@@ -326,13 +297,6 @@ class NetworkView(BaseView):
                 
                 status_text = self.i18n.get(f"network.status.{status}")
                 self.cards[key].set_status(status, latency, status_text)
-                
-                if key != "overlay" and status == "online" and latency > 0:
-                    latencies.append(latency)
-                    
-        if latencies:
-            avg_lat = int(sum(latencies) / len(latencies))
-            self.graph.add_real_measurement(avg_lat)
 
     def showEvent(self, event):
         super().showEvent(event)

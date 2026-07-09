@@ -1,13 +1,14 @@
 # frontend\views\chat_view.py
 
 import html
-from PySide6.QtWidgets import (QBoxLayout, QLineEdit,
+from PySide6.QtWidgets import (QLineEdit, QWidget, QVBoxLayout,
                                 QHBoxLayout, QTextEdit, QLabel, 
                                 QSizePolicy)
 from frontend.common.utils import NoWheelComboBox, NoWheelSlider
 from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
 from frontend.widgets.base_view import BaseView
+from frontend.widgets.flow_layout import FlowLayout
 from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
 from frontend.navigation.bot_panel_component import BotMutePanel
 from frontend.common.theme import COLOR_NEUTRAL_200
@@ -33,8 +34,7 @@ class ChatView(BaseView):
         self._connect_internal_signals()
 
     def _setup_ui(self):
-        self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_layout.setSpacing(16)
+        self.body_layout = FlowLayout(hspacing=16, vspacing=16)
 
         config_card = ModernCard()
         config_card.setMinimumWidth(380) 
@@ -79,11 +79,24 @@ class ChatView(BaseView):
         config_card.addWidget(row_volume)
         config_card.addWidget(row_cmd)
         config_card.addWidget(row_prefix)
-        config_card.addSpacing(10)
-        config_card.addWidget(self.bot_panel, stretch=1) 
+        
+        bot_card = ModernCard()
+        bot_card.setMinimumWidth(380)
+        bot_card.addWidget(self.bot_panel)
+
+        left_container = QWidget()
+        left_layout = QVBoxLayout(left_container)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(16)
+        left_layout.addWidget(config_card)
+        left_layout.addWidget(bot_card)
+        left_container.setMinimumWidth(380)
+        left_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
         chat_card = ModernCard()
+        chat_card.setMinimumWidth(380)
         chat_card.setMinimumHeight(400) 
+        chat_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
         lbl_chat_title.setProperty("role", "h3")
@@ -95,17 +108,13 @@ class ChatView(BaseView):
         chat_card.addWidget(lbl_chat_title)
         chat_card.addWidget(self.chat_display)
 
-        self.body_layout.addWidget(config_card)
-        self.body_layout.addWidget(chat_card, stretch=1)
+        self.body_layout.addWidget(left_container)
+        self.body_layout.addWidget(chat_card)
         
         self.main_layout.addLayout(self.body_layout)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        if self.width() < 900:
-            self.body_layout.setDirection(QBoxLayout.Direction.TopToBottom)
-        else:
-            self.body_layout.setDirection(QBoxLayout.Direction.LeftToRight)
 
     @property
     def tts_enabled(self) -> bool:

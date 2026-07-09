@@ -27,7 +27,7 @@ class ModernSwitch(QAbstractButton):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         rect = QRectF(0, 0, self.width(), self.height())
-        radius = self.height() / 1.7
+        radius = self.height() / 1.8
 
         bg_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_850)
         border_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_800)

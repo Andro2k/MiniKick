@@ -97,7 +97,7 @@ class CommandView(BaseView):
         tag.setProperty("role", "badge")
         tag.setProperty("state", raw_perm)
         tag_layout = QHBoxLayout(tag)
-        tag_layout.setContentsMargins(10, 0, 10, 0)
+        tag_layout.setContentsMargins(5, 0, 5, 0)
         tag_layout.setSpacing(0)
         lbl_txt = QLabel(translated_text)
         lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)

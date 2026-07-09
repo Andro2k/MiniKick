@@ -11,6 +11,7 @@ from backend.services.chat.command_service import CommandService
 from backend.services.system.dashboard_service import AvatarService
 from backend.services.system.log_service import LogService
 from backend.services.system.settings_service import SettingsService
+from backend.services.system.network_service import NetworkService
 from backend.services.chat.spam_service import SpamService
 from backend.services.chat.timer_service import TimerService
 from backend.controllers.rewards_controller import RewardsController
@@ -130,6 +131,7 @@ class MainWindowCore(QMainWindow):
         self.spam_service = SpamService(self.spam_storage, api_client=None)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
         self.log_service = LogService(self.container.db_manager)
+        self.network_service = NetworkService(overlay_port=self.overlay_server.port)
         self.timers_worker = None
 
         self.view_dashboard = DashboardView(self.i18n)
@@ -202,7 +204,7 @@ class MainWindowCore(QMainWindow):
         )
         self.network_controller = NetworkController(
             view=self.view_network, 
-            overlay_port=self.overlay_server.port
+            service=self.network_service
         )
         self.session_metrics = {
             "messages_processed": 0,

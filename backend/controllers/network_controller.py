@@ -1,37 +1,29 @@
 # backend\controllers\network_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.workers.network_worker import NetworkWorker
 
 class NetworkController(QObject):
-    def __init__(self, view, overlay_port=8090):
+    def __init__(self, view, service):
         super().__init__()
         self.view = view
-        self.overlay_port = overlay_port
-        self.worker = None
+        self.service = service
         
-        self.view.check_requested.connect(self.run_network_check)
-        self.view.view_shown.connect(self.run_network_check)
+        self.view.check_requested.connect(self.service.run_network_check)
+        self.view.view_shown.connect(self.update_view_from_service)
+        
+        self.service.checking_started.connect(self.view.set_checking_state)
+        self.service.results_updated.connect(self.view.update_status)
+        self.service.history_updated.connect(self.view.graph.update_graph_data)
+        
+        self.update_view_from_service()
         
     @Slot()
-    def run_network_check(self):
-        try:
-            if self.worker and self.worker.isRunning():
-                return
-        except RuntimeError:
-            self.worker = None
-            
-        self.view.set_checking_state()
-        
-        self.worker = NetworkWorker(overlay_port=self.overlay_port)
-        self.worker.result_ready.connect(self.handle_results)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.worker.finished.connect(self._clear_worker)
-        self.worker.start()
-
-    def _clear_worker(self):
-        self.worker = None
-        
-    @Slot(dict)
-    def handle_results(self, results):
-        self.view.update_status(results)
+    def update_view_from_service(self):
+        if self.service.last_results:
+            self.view.update_status(self.service.last_results)
+        self.view.graph.update_graph_data(
+            self.service.latency_history,
+            self.service.current_latency,
+            self.service.avg_latency,
+            self.service.max_latency
+        )

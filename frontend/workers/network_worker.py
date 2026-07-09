@@ -39,24 +39,29 @@ class NetworkWorker(QThread):
             return "offline", -1
 
     def run(self):
+        from concurrent.futures import ThreadPoolExecutor
         results = {}
         
-        status_net, lat_net = self.check_service("internet", "https://www.google.com")
-        results["internet"] = {"status": status_net, "latency": lat_net}
+        services = [
+            ("internet", "https://www.google.com", True, 80),
+            ("kick", "https://kick.com", True, 80),
+            ("spotify", "https://api.spotify.com", True, 80),
+            ("overlay", "127.0.0.1", False, self.overlay_port),
+            ("youtube", "https://www.youtube.com", True, 80),
+            ("chat_websocket", "ws-us2.pusher.com", False, 443)
+        ]
         
-        status_kick, lat_kick = self.check_service("kick", "https://kick.com")
-        results["kick"] = {"status": status_kick, "latency": lat_kick}
-        
-        status_spot, lat_spot = self.check_service("spotify", "https://api.spotify.com")
-        results["spotify"] = {"status": status_spot, "latency": lat_spot}
-        
-        status_over, lat_over = self.check_service("overlay", "127.0.0.1", is_url=False, expected_port=self.overlay_port)
-        results["overlay"] = {"status": status_over, "latency": lat_over}
-        
-        status_yt, lat_yt = self.check_service("youtube", "https://www.youtube.com")
-        results["youtube"] = {"status": status_yt, "latency": lat_yt}
-        
-        status_ws, lat_ws = self.check_service("chat_websocket", "ws-us2.pusher.com", is_url=False, expected_port=443)
-        results["chat_websocket"] = {"status": status_ws, "latency": lat_ws}
-        
+        with ThreadPoolExecutor(max_workers=len(services)) as executor:
+            futures = {
+                executor.submit(self.check_service, name, host, is_url, port): name
+                for name, host, is_url, port in services
+            }
+            for future in futures:
+                name = futures[future]
+                try:
+                    status, latency = future.result()
+                    results[name] = {"status": status, "latency": latency}
+                except Exception:
+                    results[name] = {"status": "offline", "latency": -1}
+                    
         self.result_ready.emit(results)
