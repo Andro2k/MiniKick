@@ -64,9 +64,8 @@ class MainWindowCore(QMainWindow):
         self._is_shutting_down = False
         self.updater_manager = updater_manager
         self.app_version = app_version
+        
         self.container = AppContainer(self)
-        self.db_manager = self.container.db_manager
-        self.token_storage = self.container.kick_token_storage
         self.settings_storage = self.container.settings_storage 
         self.rewards_storage = self.container.rewards_storage
         self.commands_storage = self.container.commands_storage
@@ -236,22 +235,6 @@ class MainWindowCore(QMainWindow):
         self.tray_manager.tts_toggled.connect(self._handle_tray_tts_toggle)
         self.tray_manager.show()
 
-    @Slot()
-    def _restore_from_tray(self):
-        self.showNormal()
-        self.activateWindow()
-
-    @Slot(bool)
-    def _handle_tray_tts_toggle(self, enabled: bool):
-        settings = self.chat_service.get_settings()
-        settings["enabled"] = enabled
-        self.chat_service.save_settings(settings)
-        self.view_chat.set_initial_states(settings)
-        self.chat_controller.sync_settings_cache()
-        estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
-        msg_template = self.i18n.get("main.tray.tts_msg")       
-        self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
-
     def _connect_signals(self):
         self.settings_controller.style_reload_requested.connect(self._apply_dynamic_theme)
         self.sidebar.view_selected.connect(self._handle_navigation)
@@ -282,7 +265,7 @@ class MainWindowCore(QMainWindow):
         self.timer_controller.load_initial_data()
         self.chat_controller.load_initial_data()
         self.chat_controller.sync_settings_cache()
-        self._apply_dynamic_theme(self.settings_service.get_font_size())
+        self._apply_dynamic_theme(self.settings_service.get_font_size(), immediate=True)
         if autostart_enabled:
             self._handle_auth_process()
 
@@ -292,6 +275,77 @@ class MainWindowCore(QMainWindow):
             self.content_stack.setCurrentWidget(target_view)
             if view_name == "Dashboard":
                 self._update_dashboard_metrics(force_db_query=True)
+
+    @Slot()
+    def _restore_from_tray(self):
+        self.showNormal()
+        self.activateWindow()
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.WindowStateChange:
+            if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+                self.hide()
+                self._notify_background()
+        super().changeEvent(event)
+
+    def closeEvent(self, event):
+        if self._is_shutting_down:
+            event.accept()
+            return
+            
+        if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+            self.hide()
+            self._notify_background()
+            event.ignore() 
+        else:
+            dialog = ModernConfirmDialog(
+                self.i18n,
+                parent=None, 
+                title_text=self.i18n.get("dialogs.close.title"), 
+                body_text=self.i18n.get("dialogs.close.desc")
+            )
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                event.accept() 
+                self._force_quit() 
+            else:
+                event.ignore()
+
+    def _notify_background(self):
+        self.tray_manager.showMessage(
+            self.i18n.get("main.tray.bg_title"),
+            self.i18n.get("main.tray.bg_desc"),
+            QSystemTrayIcon.MessageIcon.Information,
+            3000
+        )
+
+    def _force_quit(self):
+        self._cleanup()
+        QApplication.quit()
+
+    def _cleanup(self):
+        if self._is_shutting_down:
+            return
+        self._is_shutting_down = True
+        
+        self.logger.info(self.i18n.get("main.logs.shutdown_init"))
+        
+        if hasattr(self, 'music_controller') and self.music_controller:
+            self.music_controller.shutdown()
+
+        self.logger.info(self.i18n.get("main.logs.shutdown_tts_overlay"))
+        self.tts_manager.stop()        
+        self.overlay_server.stop() 
+
+        self._stop_worker_safely("Worker_Chat_Socket", self.chat_worker)
+        self._stop_worker_safely("Worker_Reward_Polling", self.reward_worker)
+        self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
+        self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
+        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
+        
+        if hasattr(self, 'network_controller') and self.network_controller and getattr(self.network_controller, 'worker', None):
+            self._stop_worker_safely("Worker_Network", self.network_controller.worker)
+
+        self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
 
     @Slot()
     def _handle_auth_process(self):
@@ -352,6 +406,9 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _force_reauth(self):
         self.auth_manager.logout()
+        self._handle_reauth_process()
+
+    def _handle_reauth_process(self):
         self._handle_auth_process()
 
     @Slot(str, str, list, str, str, int)
@@ -426,10 +483,83 @@ class MainWindowCore(QMainWindow):
         err_template = self.i18n.get("main.logs.api_error")
         self.logger.error(err_template.replace("{error}", error_msg))
         self.rewards_controller.update_rewards_list([])
-            
+
+    @Slot(str)
+    def _send_timer_message(self, message: str):
+        if self.timer_service.api_client:
+            try:
+                self.timer_service.api_client.post_chat_message(content=message, msg_type="bot")
+            except Exception as e:
+                self.logger.error(f"[Timer] Error posting message: {e}")
+
+    def _start_timers_worker(self, channel_slug: str):
+        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
+        
+        api_client = KickAPIClient(auth_provider=self.auth_manager)
+        self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug, parent=self)
+        self.timers_worker.post_message_requested.connect(self._send_timer_message)
+        self.timers_worker.start()
+
+    def _stop_worker_safely(self, worker_name: str, worker_instance):
+        if not worker_instance:
+            return
+        try:
+            if worker_instance.isRunning():
+                stop_template = self.i18n.get("main.logs.worker_stopping")
+                self.logger.info(stop_template.replace("{worker}", worker_name))
+
+                if hasattr(worker_instance, 'stop'):
+                    worker_instance.stop()
+
+                if not worker_instance.wait(1500):
+                    stuck_template = self.i18n.get("main.logs.worker_stuck")
+                    self.logger.warning(stuck_template.replace("{worker}", worker_name))
+                    worker_instance.terminate()
+                    worker_instance.wait()
+                else:
+                    stopped_template = self.i18n.get("main.logs.worker_stopped")
+                    self.logger.info(stopped_template.replace("{worker}", worker_name))
+        except RuntimeError:
+            pass
+
+    def _increment_metric(self, name: str):
+        if hasattr(self, 'session_metrics') and name in self.session_metrics:
+            self.session_metrics[name] += 1
+        self._update_dashboard_metrics()
+
+    @Slot()
+    def _update_dashboard_metrics(self, force_db_query=False):
+        if self._cached_total_usages is None or self._cached_active_timers is None or force_db_query:
+            try:
+                summary = self.container.commands_storage.get_active_features_summary()
+                self._cached_total_usages = summary.get("total_command_usages", 0)
+                self._cached_active_timers = summary.get("active_timers", 0)
+            except Exception as e:
+                self.logger.error(f"[Metrics] Error reading summary: {e}")
+                self._cached_total_usages = self._cached_total_usages or 0
+                self._cached_active_timers = self._cached_active_timers or 0
+
+        self.view_dashboard.update_session_metrics(
+            msg_count=self.session_metrics["messages_processed"],
+            cmd_count=self._cached_total_usages,
+            timer_count=self._cached_active_timers,
+            spam_count=self.session_metrics["spam_blocked"]
+        )
+
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):
         self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
+
+    @Slot(bool)
+    def _handle_tray_tts_toggle(self, enabled: bool):
+        settings = self.chat_service.get_settings()
+        settings["enabled"] = enabled
+        self.chat_service.save_settings(settings)
+        self.view_chat.set_initial_states(settings)
+        self.chat_controller.sync_settings_cache()
+        estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
+        msg_template = self.i18n.get("main.tray.tts_msg")       
+        self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
 
     @Slot()
     def _handle_unlink_account(self):
@@ -464,141 +594,17 @@ class MainWindowCore(QMainWindow):
                 if btn.property("view_name") == "Dashboard":
                     btn.setChecked(True)
                     break
-        
-    def _notify_background(self):
-        self.tray_manager.showMessage(
-            self.i18n.get("main.tray.bg_title"),
-            self.i18n.get("main.tray.bg_desc"),
-            QSystemTrayIcon.MessageIcon.Information,
-            3000
-        )
-    
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.WindowStateChange:
-            if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
-                self.hide()
-                self._notify_background()
-        super().changeEvent(event)
-
-    def _force_quit(self):
-        self._cleanup()
-        QApplication.quit()
-
-    def _stop_worker_safely(self, worker_name: str, worker_instance):
-        if not worker_instance:
-            return
-        try:
-            if worker_instance.isRunning():
-                stop_template = self.i18n.get("main.logs.worker_stopping")
-                self.logger.info(stop_template.replace("{worker}", worker_name))
-
-                if hasattr(worker_instance, 'stop'):
-                    worker_instance.stop()
-
-                if not worker_instance.wait(1500):
-                    stuck_template = self.i18n.get("main.logs.worker_stuck")
-                    self.logger.warning(stuck_template.replace("{worker}", worker_name))
-                    worker_instance.terminate()
-                    worker_instance.wait()
-                else:
-                    stopped_template = self.i18n.get("main.logs.worker_stopped")
-                    self.logger.info(stopped_template.replace("{worker}", worker_name))
-        except RuntimeError:
-            pass
-
-    def _cleanup(self):
-        if self._is_shutting_down:
-            return
-        self._is_shutting_down = True
-        
-        self.logger.info(self.i18n.get("main.logs.shutdown_init"))
-        
-        if hasattr(self, 'music_controller') and self.music_controller:
-            self.music_controller.shutdown()
-
-        self.logger.info(self.i18n.get("main.logs.shutdown_tts_overlay"))
-        self.tts_manager.stop()        
-        self.overlay_server.stop() 
-
-        self._stop_worker_safely("Worker_Chat_Socket", self.chat_worker)
-        self._stop_worker_safely("Worker_Reward_Polling", self.reward_worker)
-        self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
-        self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
-        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
-        
-        if hasattr(self, 'network_controller') and self.network_controller and getattr(self.network_controller, 'worker', None):
-            self._stop_worker_safely("Worker_Network", self.network_controller.worker)
-
-        self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
-
-    def closeEvent(self, event):
-        if self._is_shutting_down:
-            event.accept()
-            return
-            
-        if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
-            self.hide()
-            self._notify_background()
-            event.ignore() 
-        else:
-            dialog = ModernConfirmDialog(
-                self.i18n,
-                parent=None, 
-                title_text=self.i18n.get("dialogs.close.title"), 
-                body_text=self.i18n.get("dialogs.close.desc")
-            )
-            if dialog.exec() == dialog.DialogCode.Accepted:
-                event.accept() 
-                self._force_quit() 
-            else:
-                event.ignore()
-
-    def _start_timers_worker(self, channel_slug: str):
-        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
-        
-        api_client = KickAPIClient(auth_provider=self.auth_manager)
-        self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug, parent=self)
-        self.timers_worker.post_message_requested.connect(self._send_timer_message)
-        self.timers_worker.start()
-
-    @Slot(str)
-    def _send_timer_message(self, message: str):
-        if self.timer_service.api_client:
-            try:
-                self.timer_service.api_client.post_chat_message(content=message, msg_type="bot")
-            except Exception as e:
-                self.logger.error(f"[Timer] Error posting message: {e}")
 
     @Slot(int)
-    def _apply_dynamic_theme(self, base_size: int):
+    def _apply_dynamic_theme(self, base_size: int, immediate: bool = False):
         if hasattr(self, "_theme_timer") and self._theme_timer.isActive():
             self._theme_timer.stop()
+        
+        if immediate:
+            QApplication.instance().setStyleSheet(get_global_qss(base_size))
+            return
+
         self._theme_timer = QTimer(self)
         self._theme_timer.setSingleShot(True)
         self._theme_timer.timeout.connect(lambda: QApplication.instance().setStyleSheet(get_global_qss(base_size)))
         self._theme_timer.start(250)
-
-    def _increment_metric(self, name: str):
-        if hasattr(self, 'session_metrics') and name in self.session_metrics:
-            self.session_metrics[name] += 1
-        self._update_dashboard_metrics()
-
-    @Slot()
-    def _update_dashboard_metrics(self, force_db_query=False):
-        if self._cached_total_usages is None or self._cached_active_timers is None or force_db_query:
-            try:
-                summary = self.container.commands_storage.get_active_features_summary()
-                self._cached_total_usages = summary.get("total_command_usages", 0)
-                self._cached_active_timers = summary.get("active_timers", 0)
-            except Exception as e:
-                self.logger.error(f"[Metrics] Error reading summary: {e}")
-                self._cached_total_usages = self._cached_total_usages or 0
-                self._cached_active_timers = self._cached_active_timers or 0
-
-        self.view_dashboard.update_session_metrics(
-            msg_count=self.session_metrics["messages_processed"],
-            cmd_count=self._cached_total_usages,
-            timer_count=self._cached_active_timers,
-            spam_count=self.session_metrics["spam_blocked"]
-        )
-    

@@ -2,8 +2,8 @@
 
 import os
 from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt, Signal, QRectF
+from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 
 from frontend.common.theme import COLOR_BLACK, COLOR_RED
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
@@ -11,6 +11,42 @@ from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import StatCard, SettingRow, ModernCard
 from frontend.widgets.scalable_illustration import ScalableIllustration
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
+
+class SegmentedDistributionBar(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(18)
+        self._segments = []
+
+    def set_data(self, data: list[tuple[float, str]]):
+        self._segments = data
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        rect = self.rect()
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(rect), 8, 8)
+        painter.setClipPath(path)
+        
+        total_p = sum(p for p, _ in self._segments)
+        if total_p <= 0:
+            painter.fillRect(rect, QColor("#27272A"))
+            return
+            
+        current_x = 0.0
+        width = float(rect.width())
+        height = float(rect.height())
+        
+        for percent, color_str in self._segments:
+            if percent <= 0:
+                continue
+            seg_width = percent * width
+            seg_rect = QRectF(current_x, 0, seg_width, height)
+            painter.fillRect(seg_rect, QColor(color_str))
+            current_x += seg_width
 
 class DashboardView(BaseView):
     connect_requested = Signal()
@@ -188,6 +224,11 @@ class DashboardView(BaseView):
         lbl_session_title.setProperty("role", "h2")
         profile_layout.addWidget(lbl_session_title)
 
+        bar_card = ModernCard(margin=8)
+        self.session_bar = SegmentedDistributionBar()
+        bar_card.addWidget(self.session_bar)
+        profile_layout.addWidget(bar_card)
+
         session_stats_container = QWidget()
         self.session_grid = QGridLayout(session_stats_container)
         self.session_grid.setContentsMargins(0, 0, 0, 0)
@@ -250,10 +291,38 @@ class DashboardView(BaseView):
         self.card_vods.set_value(vods_text)
 
     def update_session_metrics(self, msg_count: int, cmd_count: int, timer_count: int, spam_count: int):
-        self.card_msg_processed.set_value(str(msg_count))
-        self.card_cmd_executed.set_value(str(cmd_count))
-        self.card_timers_sent.set_value(str(timer_count))
-        self.card_spam_blocked.set_value(str(spam_count))
+        total = msg_count + cmd_count + timer_count + spam_count
+        
+        if total > 0:
+            p_msg = msg_count / total
+            p_cmd = cmd_count / total
+            p_timer = timer_count / total
+            p_spam = spam_count / total
+            
+            pct_msg = f"{p_msg * 100:.1f}%"
+            pct_cmd = f"{p_cmd * 100:.1f}%"
+            pct_timer = f"{p_timer * 100:.1f}%"
+            pct_spam = f"{p_spam * 100:.1f}%"
+            
+            self.card_msg_processed.set_value(f"{msg_count}   ·   {pct_msg}")
+            self.card_cmd_executed.set_value(f"{cmd_count}   ·   {pct_cmd}")
+            self.card_timers_sent.set_value(f"{timer_count}   ·   {pct_timer}")
+            self.card_spam_blocked.set_value(f"{spam_count}   ·   {pct_spam}")
+            
+            if hasattr(self, 'session_bar'):
+                self.session_bar.set_data([
+                    (p_msg, "#C084FC"),
+                    (p_cmd, "#818CF8"),
+                    (p_timer, "#34D399"),
+                    (p_spam, "#F87171")
+                ])
+        else:
+            self.card_msg_processed.set_value("0   ·   0.0%")
+            self.card_cmd_executed.set_value("0   ·   0.0%")
+            self.card_timers_sent.set_value("0   ·   0.0%")
+            self.card_spam_blocked.set_value("0   ·   0.0%")
+            if hasattr(self, 'session_bar'):
+                self.session_bar.set_data([])
 
     def set_avatar_from_bytes(self, image_data: bytes):
         pixmap = create_circular_pixmap(image_data)
