@@ -33,13 +33,38 @@ class MusicView(BaseView):
         self.body_container = QWidget()
         self.body_layout = QVBoxLayout(self.body_container)
         self.body_layout.setContentsMargins(0, 0, 0, 0)
-        self.body_layout.setSpacing(12)
+        self.body_layout.setSpacing(16)
 
         self._setup_provider_selection_card()
         self._setup_auth_card()
+        self._setup_settings_card()
+
+        columns_row = QWidget()
+        columns_row_layout = QHBoxLayout(columns_row)
+        columns_row_layout.setContentsMargins(0, 0, 0, 0)
+        columns_row_layout.setSpacing(16)
+        columns_row_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        col1 = QWidget()
+        self.col1_layout = QVBoxLayout(col1)
+        self.col1_layout.setContentsMargins(0, 0, 0, 0)
+        self.col1_layout.setSpacing(16)
+        self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        col2 = QWidget()
+        self.col2_layout = QVBoxLayout(col2)
+        self.col2_layout.setContentsMargins(0, 0, 0, 0)
+        self.col2_layout.setSpacing(16)
+        self.col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        columns_row_layout.addWidget(col1, stretch=1)
+        columns_row_layout.addWidget(col2, stretch=1)
+
+        self.body_layout.addWidget(columns_row)
+
+        self._setup_commands_card()
         self._setup_now_playing_card()
         self._setup_queue_card()
-        self._setup_commands_card()
 
         self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()
@@ -62,17 +87,6 @@ class MusicView(BaseView):
             right_widget=self.combo_provider
         )
         card.addWidget(row_provider)
-
-        self.sw_auto_resume = ModernSwitch()
-        self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
-        self.row_auto_resume = SettingRow(
-            icon_name="refresh.svg",
-            title_text=self.i18n.get("music.youtube.auto_resume_title"),
-            desc_text=self.i18n.get("music.youtube.auto_resume_desc"),
-            right_widget=self.sw_auto_resume
-        )
-        self.row_auto_resume.setVisible(False)
-        card.addWidget(self.row_auto_resume)
 
         self.body_layout.addWidget(card)
 
@@ -103,6 +117,12 @@ class MusicView(BaseView):
 
         card.addLayout(status_layout)
 
+        self.body_layout.addWidget(card)
+
+    def _setup_settings_card(self):
+        self.card_settings = ModernCard(margin=12, spacing=8)
+        self.card_settings.setVisible(False)
+
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
@@ -118,9 +138,20 @@ class MusicView(BaseView):
         )
         self.row_vol.setVisible(False)
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
-        card.addWidget(self.row_vol)
+        self.card_settings.addWidget(self.row_vol)
 
-        self.body_layout.addWidget(card)
+        self.sw_auto_resume = ModernSwitch()
+        self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
+        self.row_auto_resume = SettingRow(
+            icon_name="refresh.svg",
+            title_text=self.i18n.get("music.youtube.auto_resume_title"),
+            desc_text=self.i18n.get("music.youtube.auto_resume_desc"),
+            right_widget=self.sw_auto_resume
+        )
+        self.row_auto_resume.setVisible(False)
+        self.card_settings.addWidget(self.row_auto_resume)
+
+        self.body_layout.addWidget(self.card_settings)
 
     def _on_volume_slider_changed(self, val):
         self.lbl_vol_perc.setText(f"{val}%")
@@ -167,7 +198,7 @@ class MusicView(BaseView):
         controls_layout.addWidget(self.btn_skip)
         
         self.card_player.addLayout(controls_layout)
-        self.body_layout.addWidget(self.card_player)
+        self.col1_layout.addWidget(self.card_player)
 
     def _setup_commands_card(self):
         self.card_cmds = ModernCard(margin=12, spacing=8)
@@ -193,7 +224,7 @@ class MusicView(BaseView):
         self.card_cmds.addWidget(row_skip)
         self.card_cmds.addWidget(row_song)
         
-        self.body_layout.addWidget(self.card_cmds)
+        self.col1_layout.addWidget(self.card_cmds)
 
     def _setup_queue_card(self):
         self.card_queue = ModernCard(margin=12, spacing=8)
@@ -231,7 +262,7 @@ class MusicView(BaseView):
         self.lbl_empty_queue.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.queue_list_layout.addWidget(self.lbl_empty_queue)
         
-        self.body_layout.addWidget(self.card_queue)
+        self.col2_layout.addWidget(self.card_queue)
 
     def update_queue(self, queue_items: list[dict]):
         new_urls = [song.get("url") for song in queue_items]
@@ -326,6 +357,8 @@ class MusicView(BaseView):
             self.card_cmds.setEnabled(True)
             self.card_player.setVisible(True)
             self.card_queue.setVisible(True)
+            if hasattr(self, "card_settings"):
+                self.card_settings.setVisible(True)
             self.row_vol.setVisible(True)
             self.row_auto_resume.setVisible(True)
             translated_label = self.i18n.get("music.status.youtube_active")
@@ -339,6 +372,8 @@ class MusicView(BaseView):
             self.card_cmds.setEnabled(connected)
             self.card_player.setVisible(connected)
             self.card_queue.setVisible(False)
+            if hasattr(self, "card_settings"):
+                self.card_settings.setVisible(False)
             self.row_vol.setVisible(False)
             self.row_auto_resume.setVisible(False)
 
