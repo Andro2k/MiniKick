@@ -35,6 +35,13 @@ class CommandView(BaseView):
             add_button_text=self.i18n.get("command.table.btn_new"),
             add_button_icon="add.svg"
         )
+        self.table_card.setup_empty_state(
+            title=self.i18n.get("command.empty.title"),
+            desc=self.i18n.get("command.empty.desc"),
+            icon_name="illustration_add-files.svg",
+            button_text=self.i18n.get("command.empty.btn"),
+            on_button_clicked=self.add_requested.emit
+        )
         self.table_card.setMinimumHeight(400)
         
         self.table = self.table_card.table
@@ -66,6 +73,7 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 2, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 3, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
+        self.table_card.set_empty(len(commands) == 0)
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()

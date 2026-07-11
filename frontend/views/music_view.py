@@ -1,6 +1,6 @@
 # frontend\views\music_view.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QFrame,
+from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QFrame,
                                 QLabel, QScrollArea, QPushButton)
 from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
@@ -35,15 +35,9 @@ class MusicView(BaseView):
         self.body_layout.setContentsMargins(0, 0, 0, 0)
         self.body_layout.setSpacing(16)
 
-        self._setup_provider_selection_card()
-        self._setup_auth_card()
-        self._setup_settings_card()
-
-        columns_row = QWidget()
-        columns_row_layout = QHBoxLayout(columns_row)
-        columns_row_layout.setContentsMargins(0, 0, 0, 0)
-        columns_row_layout.setSpacing(16)
-        columns_row_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.columns_layout.setContentsMargins(0, 0, 0, 0)
+        self.columns_layout.setSpacing(16)
 
         col1 = QWidget()
         self.col1_layout = QVBoxLayout(col1)
@@ -55,19 +49,20 @@ class MusicView(BaseView):
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(0, 0, 0, 0)
         self.col2_layout.setSpacing(16)
-        self.col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        columns_row_layout.addWidget(col1, stretch=1)
-        columns_row_layout.addWidget(col2, stretch=1)
+        self.columns_layout.addWidget(col1, stretch=3)
+        self.columns_layout.addWidget(col2, stretch=4)
 
-        self.body_layout.addWidget(columns_row)
+        self.body_layout.addLayout(self.columns_layout)
 
+        self._setup_provider_selection_card()
+        self._setup_auth_card()
+        self._setup_settings_card()
         self._setup_commands_card()
         self._setup_now_playing_card()
         self._setup_queue_card()
 
         self.main_layout.addWidget(self.body_container)
-        self.main_layout.addStretch()
 
     def _setup_provider_selection_card(self):
         card = ModernCard(margin=12, spacing=8)
@@ -88,7 +83,7 @@ class MusicView(BaseView):
         )
         card.addWidget(row_provider)
 
-        self.body_layout.addWidget(card)
+        self.col1_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_auth_card(self):
         card = ModernCard(margin=12, spacing=8)
@@ -117,7 +112,7 @@ class MusicView(BaseView):
 
         card.addLayout(status_layout)
 
-        self.body_layout.addWidget(card)
+        self.col1_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_settings_card(self):
         self.card_settings = ModernCard(margin=12, spacing=8)
@@ -151,7 +146,7 @@ class MusicView(BaseView):
         self.row_auto_resume.setVisible(False)
         self.card_settings.addWidget(self.row_auto_resume)
 
-        self.body_layout.addWidget(self.card_settings)
+        self.col1_layout.addWidget(self.card_settings, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _on_volume_slider_changed(self, val):
         self.lbl_vol_perc.setText(f"{val}%")
@@ -198,7 +193,7 @@ class MusicView(BaseView):
         controls_layout.addWidget(self.btn_skip)
         
         self.card_player.addLayout(controls_layout)
-        self.col1_layout.addWidget(self.card_player)
+        self.col2_layout.addWidget(self.card_player)
 
     def _setup_commands_card(self):
         self.card_cmds = ModernCard(margin=12, spacing=8)
@@ -224,7 +219,7 @@ class MusicView(BaseView):
         self.card_cmds.addWidget(row_skip)
         self.card_cmds.addWidget(row_song)
         
-        self.col1_layout.addWidget(self.card_cmds)
+        self.col1_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_queue_card(self):
         self.card_queue = ModernCard(margin=12, spacing=8)
@@ -248,8 +243,6 @@ class MusicView(BaseView):
         self.queue_scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.queue_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.queue_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.queue_scroll.setMinimumHeight(160)
-        self.queue_scroll.setMaximumHeight(320)
         
         self.queue_list_widget = QWidget()
         self.queue_list_layout = FlowLayout(self.queue_list_widget, margin=0, hspacing=8, vspacing=8)
@@ -262,7 +255,7 @@ class MusicView(BaseView):
         self.lbl_empty_queue.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.queue_list_layout.addWidget(self.lbl_empty_queue)
         
-        self.col2_layout.addWidget(self.card_queue)
+        self.col2_layout.addWidget(self.card_queue, stretch=1)
 
     def update_queue(self, queue_items: list[dict]):
         new_urls = [song.get("url") for song in queue_items]
@@ -408,3 +401,12 @@ class MusicView(BaseView):
         
         icon_name = "player-pause.svg" if is_playing else "play.svg"
         self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_200, 18))
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        width = self.width()
+        if hasattr(self, 'columns_layout'):
+            if width < 900:
+                self.columns_layout.setDirection(QBoxLayout.Direction.TopToBottom)
+            else:
+                self.columns_layout.setDirection(QBoxLayout.Direction.LeftToRight)

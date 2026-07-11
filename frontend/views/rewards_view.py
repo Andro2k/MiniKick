@@ -57,6 +57,13 @@ class RewardsView(BaseView):
             add_button_text=self.i18n.get("rewards.table.btn_new"),
             add_button_icon="add.svg"
         )
+        self.table_card.setup_empty_state(
+            title=self.i18n.get("rewards.empty.title"),
+            desc=self.i18n.get("rewards.empty.desc"),
+            icon_name="illustration_image-files.svg",
+            button_text=self.i18n.get("rewards.empty.btn"),
+            on_button_clicked=self.add_requested.emit
+        )
         self.table_card.setMinimumHeight(300)
         
         self.table_rewards = self.table_card.table
@@ -115,6 +122,7 @@ class RewardsView(BaseView):
             self.table_rewards.setCellWidget(row, 2, cell)
 
         self.table_rewards.setUpdatesEnabled(True)
+        self.table_card.set_empty(len(mappings) == 0)
 
     @Slot()
     def _copy_obs_url(self):

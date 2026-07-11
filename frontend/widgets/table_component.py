@@ -1,11 +1,13 @@
 # frontend/widgets/table_component.py
 
+import os
 from PySide6.QtWidgets import (QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, 
-                               QLabel, QLineEdit, QWidget)
+                                QLabel, QLineEdit, QWidget, QStackedWidget)
 from PySide6.QtCore import Qt
 from frontend.widgets.controls_component import ModernButton, ModernSwitch
+from frontend.widgets.scalable_illustration import ScalableIllustration
 from frontend.common.theme import COLOR_BLACK
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, get_assets_path
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -57,8 +59,76 @@ class ModernTableCard(QFrame):
                 
             self.card_layout.addLayout(self.header_layout)
             
+        self.stack = QStackedWidget()
+        
         self.table = ModernTable(headers or [])
-        self.card_layout.addWidget(self.table)
+        self.stack.addWidget(self.table)
+        
+        self.empty_widget = None
+        self.lbl_illustration = None
+        
+        self.card_layout.addWidget(self.stack)
+
+    def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked):
+        self.empty_widget = QWidget()
+        layout = QVBoxLayout(self.empty_widget)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        illustration_path = get_assets_path(os.path.join("icons", icon_name))
+        self.lbl_illustration = ScalableIllustration(
+            icon_path=illustration_path,
+            aspect_ratio=1.0,
+            min_size=80,
+            max_size=160,
+            size_offset=200,
+            parent=self
+        )
+        
+        lbl_title = QLabel(title)
+        lbl_title.setProperty("role", "h2")
+        lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        lbl_desc = QLabel(desc)
+        lbl_desc.setProperty("role", "body")
+        lbl_desc.setWordWrap(True)
+        lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_desc.setMaximumWidth(450)
+        
+        self.btn_empty_action = ModernButton(button_text, role="action_accent")
+        self.btn_empty_action.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
+        self.btn_empty_action.setFixedWidth(200)
+        self.btn_empty_action.clicked.connect(on_button_clicked)
+        
+        layout.addStretch(1)
+        layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(lbl_title)
+        layout.addWidget(lbl_desc)
+        layout.addSpacing(8)
+        layout.addWidget(self.btn_empty_action, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addStretch(2)
+        
+        self.stack.addWidget(self.empty_widget)
+
+    def set_empty(self, is_empty: bool):
+        if is_empty and self.stack.count() > 1:
+            self.stack.setCurrentIndex(1)
+            if self.txt_search:
+                self.txt_search.setVisible(False)
+        else:
+            self.stack.setCurrentIndex(0)
+            if self.txt_search:
+                self.txt_search.setVisible(True)
+        if is_empty and hasattr(self, "lbl_illustration") and self.lbl_illustration:
+            card_h = max(self.height(), 300)
+            self.lbl_illustration.update_image(card_h)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "lbl_illustration") and self.lbl_illustration and self.stack.currentIndex() == 1:
+            card_h = max(self.height(), 300)
+            self.lbl_illustration.update_image(card_h)
 
 class TableActionCell(QWidget):
     def __init__(self, parent=None):

@@ -140,6 +140,11 @@
             "title": "Comandos Vinculados",
             "subtitle": "Vincula comandos de chat o expresiones regulares con respuestas automáticas del bot."
         },
+        "empty": {
+            "title": "Aún no hay comandos",
+            "desc": "Crea comandos personalizados para que el bot responda automáticamente en el chat.",
+            "btn": "Crear Comando"
+        },
         "table": {
             "title": "Comandos Vinculados",
             "search_placeholder": "Buscar comando vinculado...",
@@ -210,6 +215,11 @@
         "header": {
             "title": "Recompensas Vinculadas",
             "subtitle": "Vincula las recompensas de tu canal con elementos multimedia en pantalla."
+        },
+        "empty": {
+            "title": "Aún no hay recompensas vinculadas",
+            "desc": "Vincula las recompensas de tu canal de Kick con alertas en pantalla o efectos de sonido.",
+            "btn": "Vincular Recompensa"
         },
         "obs": {
             "title": "Fuente de Navegador OBS",
@@ -657,6 +667,11 @@
         "header": {
             "title": "Temporizadores del Bot",
             "subtitle": "Publica anuncios automáticos, enlaces de redes sociales, tu horario o cualquier otra cosa."
+        },
+        "empty": {
+            "title": "Aún no hay temporizadores",
+            "desc": "Programa mensajes automáticos para enviarse al chat cada cierto tiempo.",
+            "btn": "Crear Temporizador"
         },
         "table": {
             "search_placeholder": "Buscar temporizador...",

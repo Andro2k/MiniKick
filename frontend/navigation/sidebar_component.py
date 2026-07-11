@@ -32,8 +32,8 @@ class Sidebar(QFrame):
 
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(8, 8, 8, 8)
-        self.main_layout.setSpacing(8)
+        self.main_layout.setContentsMargins(6, 6, 6, 6)
+        self.main_layout.setSpacing(6)
 
         self.header_container = QWidget()
         self.header_layout = QHBoxLayout(self.header_container)
@@ -63,7 +63,7 @@ class Sidebar(QFrame):
         self.header_layout.addWidget(self.expanded_spacer) 
         self.header_layout.addWidget(self.btn_toggle)
         self.main_layout.addWidget(self.header_container)
-        self.main_layout.addSpacing(16)
+        self.main_layout.addSpacing(6)
         
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
         self.lbl_navigate_header = QLabel(navigate_text)
@@ -72,7 +72,7 @@ class Sidebar(QFrame):
         
         self.top_nav_layout = QVBoxLayout()
         self.top_nav_layout.setContentsMargins(0, 0, 0, 0)
-        self.top_nav_layout.setSpacing(4)
+        self.top_nav_layout.setSpacing(6)
         self.main_layout.addLayout(self.top_nav_layout)
         self.main_layout.addStretch()
 
@@ -83,13 +83,13 @@ class Sidebar(QFrame):
 
         self.bottom_nav_layout = QVBoxLayout()
         self.bottom_nav_layout.setContentsMargins(0, 0, 0, 0)
-        self.bottom_nav_layout.setSpacing(4)
+        self.bottom_nav_layout.setSpacing(6)
         self.main_layout.addLayout(self.bottom_nav_layout)
-        self.main_layout.addSpacing(8)
+        self.main_layout.addSpacing(6)
         
         self._setup_profile_card()
         self.main_layout.addWidget(self.profile_card)
-        self.main_layout.addSpacing(8)
+        self.main_layout.addSpacing(6)
         
         self.btn_update_rewards = QPushButton(self.i18n.get("main.sidebar.new_version"))
         self.btn_update_rewards.setProperty("role", "action_accent")
@@ -264,10 +264,10 @@ class Sidebar(QFrame):
             
         self.profile_text_widget.setVisible(show)
         if show:
-            self.profile_layout.setContentsMargins(8, 8, 8, 8)
+            self.profile_layout.setContentsMargins(6, 6, 6, 6)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         else:
-            self.profile_layout.setContentsMargins(0, 8, 0, 8)
+            self.profile_layout.setContentsMargins(0, 6, 0, 6)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def _on_expand_finished(self):

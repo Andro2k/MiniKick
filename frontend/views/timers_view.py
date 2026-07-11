@@ -37,6 +37,13 @@ class TimersView(BaseView):
             add_button_text=self.i18n.get("timer.table.btn_new"),
             add_button_icon="add.svg"
         )
+        self.table_card.setup_empty_state(
+            title=self.i18n.get("timer.empty.title"),
+            desc=self.i18n.get("timer.empty.desc"),
+            icon_name="illustration_clock.svg",
+            button_text=self.i18n.get("timer.empty.btn"),
+            on_button_clicked=self.add_requested.emit
+        )
         
         self.table = self.table_card.table
         self.txt_search = self.table_card.txt_search
@@ -70,6 +77,7 @@ class TimersView(BaseView):
             self.table.setCellWidget(row, 4, self._create_lines_cell(timer))
             self.table.setCellWidget(row, 5, self._create_actions_cell(timer))
         self.table.setUpdatesEnabled(True)
+        self.table_card.set_empty(len(timers) == 0)
 
     def _create_name_cell(self, timer_data: dict) -> QWidget:
         container = QWidget()
