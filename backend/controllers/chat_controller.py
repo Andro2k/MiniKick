@@ -46,6 +46,7 @@ class ChatController(QObject):
         self.view.bot_add_requested.connect(self._add_bot)
         self.view.bot_remove_requested.connect(self._remove_bot)
         self.view.language_filter_changed.connect(self._filter_voices_by_language)
+        self.command_service.commands_changed.connect(self._sync_tts_command_from_db)
 
     def load_initial_data(self):
         self._load_initial_data()
@@ -87,6 +88,23 @@ class ChatController(QObject):
         for bot in self.muted_bots:
             self.view.add_bot_tag(bot)
 
+        commands = self.command_service.get_all_commands()
+        existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
+        if not existing:
+            self.command_service.blockSignals(True)
+            try:
+                self.command_service.save_command(
+                    trigger=settings.get("command", "!tts") or "!tts",
+                    response="[PLUGIN_CHAT_TTS]",
+                    is_active=settings.get("use_command", False),
+                    cooldown=1,
+                    aliases="",
+                    is_regex=False,
+                    permission="everyone"
+                )
+            finally:
+                self.command_service.blockSignals(False)
+
         self._load_voices(provider, is_initial=True)
 
     def sync_settings_cache(self) -> None:
@@ -108,10 +126,19 @@ class ChatController(QObject):
     def _step_commands(self, dto: ChatMessageDTO):
         handled, plugin_tag, _, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges)
         if handled:
-            dto.is_cancelled = True
+            dto.is_command = True
             self.command_executed.emit()
             if plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
                 self._execute_resolved_music_plugin(plugin_tag, dto.user, dto.content, prefix)
+            elif plugin_tag == "[PLUGIN_CHAT_TTS]":
+                msg_content = dto.content[len(prefix):].strip()
+                if msg_content:
+                    cleaned = self._clean_message_for_tts(msg_content)
+                    if cleaned:
+                        settings = self._tts_settings_cache
+                        text = f"{dto.user} dice: {cleaned}" if settings["read_name"] else cleaned
+                        voice_id = self._resolve_voice_for_badges(dto.badges, settings)
+                        self.service.speak(text, voice_id=voice_id)
 
     def _step_ui_render(self, dto: ChatMessageDTO):
         self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp)
@@ -125,6 +152,8 @@ class ChatController(QObject):
         return None
 
     def _step_tts(self, dto: ChatMessageDTO):
+        if getattr(dto, "is_command", False):
+            return
         settings = self._tts_settings_cache
         if not settings.get("enabled", True) or dto.user.lower() in self.muted_bots:
             return
@@ -255,6 +284,38 @@ class ChatController(QObject):
         self.service.save_settings(settings)
         self._tts_settings_cache = self.service.get_settings()
         self.tts_state_changed.emit(settings["enabled"])
+        commands = self.command_service.get_all_commands()
+        existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
+        
+        self.command_service.blockSignals(True)
+        try:
+            target_trigger = settings["command"].strip() or "!tts"
+            if existing:
+                if existing["trigger"] != target_trigger:
+                    self.command_service.delete_command(existing["trigger"])
+                self.command_service.save_command(
+                    trigger=target_trigger,
+                    response="[PLUGIN_CHAT_TTS]",
+                    is_active=settings["use_command"],
+                    cooldown=existing.get("cooldown", 1),
+                    aliases=existing.get("aliases", ""),
+                    is_regex=existing.get("is_regex", False),
+                    permission=existing.get("permission", "everyone")
+                )
+            else:
+                self.command_service.save_command(
+                    trigger=target_trigger,
+                    response="[PLUGIN_CHAT_TTS]",
+                    is_active=settings["use_command"],
+                    cooldown=1,
+                    aliases="",
+                    is_regex=False,
+                    permission="everyone"
+                )
+        finally:
+            self.command_service.blockSignals(False)
+            self.command_service.commands_changed.emit()
+
         new_tts_state = settings["enabled"]
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
             self._tts_enabled = new_tts_state
@@ -269,6 +330,36 @@ class ChatController(QObject):
                     message=status_msg,
                     state=state_color
                 )
+
+    def _sync_tts_command_from_db(self):
+        commands = self.command_service.get_all_commands()
+        tts_cmd = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
+        
+        settings = self.service.get_settings()
+        
+        if tts_cmd:
+            use_command = tts_cmd["is_active"]
+            command_trigger = tts_cmd["trigger"]
+        else:
+            use_command = False
+            command_trigger = settings.get("command", "!tts")
+            
+        if settings.get("use_command", False) != use_command or settings.get("command", "") != command_trigger:
+            settings["use_command"] = use_command
+            settings["command"] = command_trigger
+            self.service.save_settings(settings)
+            self._tts_settings_cache = settings
+            
+            self.view.blockSignals(True)
+            self.view.chk_command.blockSignals(True)
+            self.view.txt_command.blockSignals(True)
+            
+            self.view.chk_command.setChecked(use_command)
+            self.view.txt_command.setText(command_trigger)
+            
+            self.view.chk_command.blockSignals(False)
+            self.view.txt_command.blockSignals(False)
+            self.view.blockSignals(False)
 
     @Slot(str)
     def _add_bot(self, bot_name: str):

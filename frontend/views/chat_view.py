@@ -283,9 +283,9 @@ class ChatView(BaseView):
             "role_voice_subscriber": self.combo_voice_subscriber.currentData() or "",
         }
 
-    def append_message(self, user: str, message: str, color: str, timestamp: str = ""):
+    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False):
         safe_user = html.escape(user)
-        safe_message = html.escape(message)        
+        safe_message = message if is_html else html.escape(message)        
         safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_NEUTRAL_200
         ts_span = f'<span style="color: {COLOR_NEUTRAL_500}; font-size: 0.85em; margin-right: 6px;">[{timestamp}]</span>' if timestamp else ""
         html_msg = f'{ts_span}<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
@@ -310,8 +310,10 @@ class ChatView(BaseView):
         self.volume_changed.emit(value)
 
     def _enforce_prefix_mask(self, text):
-        if not text.startswith("!"):
-            self.txt_command.setText("!" + text.replace("!", ""))
+        if not text.strip() or text.startswith("!"):
+            self.txt_command.setStyleSheet("")
+        else:
+            self.txt_command.setStyleSheet("border: 1px solid #ff4444;")
 
     def _on_voice_selected(self, index: int):
         if index >= 0:

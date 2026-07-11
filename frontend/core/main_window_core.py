@@ -431,11 +431,13 @@ class MainWindowCore(QMainWindow):
         from datetime import datetime
         current_time = datetime.now().strftime("%H:%M:%S")
         
+        import html
+        safe_reward_name = html.escape(reward_name)
         canje_template = self.i18n.get("main.chat.reward_redeemed")
-        texto_canje = canje_template.replace("{reward_name}", reward_name)
+        texto_canje = canje_template.replace("{reward_name}", safe_reward_name)
         msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
         tag = self.i18n.get("main.chat.points_tag")
-        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time)
+        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True)
         
         mappings = self.rewards_service.get_mappings()
         if reward_name in mappings:

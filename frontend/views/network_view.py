@@ -1,6 +1,5 @@
 # frontend\views\network_view.py
 
-from frontend.common.theme import COLOR_BLUE
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget
 from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
@@ -10,7 +9,7 @@ from frontend.widgets.controls_component import ModernButton
 from frontend.widgets.flow_layout import FlowLayout
 from frontend.common.theme import (
     COLOR_NEUTRAL_200, COLOR_NEUTRAL_500, 
-    COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK, COLOR_PURPLE
+    COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK, COLOR_BLUE, COLOR_WHITE
 )
 
 class GraphCanvas(QWidget):
@@ -151,10 +150,10 @@ class GraphCanvas(QWidget):
                 painter.setPen(QPen(QColor(255, 255, 255, 12), 1, Qt.PenStyle.DashLine))
                 painter.drawLine(left_margin, y, self.width() - right_margin, y)
                 
-            painter.setPen(QColor("#6B7280"))
+            painter.setPen(QColor(COLOR_NEUTRAL_200))
             painter.drawText(5, y + 4, val_text)
 
-        painter.setPen(QColor("#6B7280"))
+        painter.setPen(QColor(COLOR_NEUTRAL_200))
         for x, y, text in self._cached_labels:
             painter.drawText(x, y, text)
         for name, path, fill_path, line_color, fill_color in self._cached_paths:
@@ -212,7 +211,7 @@ class GraphCanvas(QWidget):
             painter.drawRoundedRect(tooltip_rect, 6, 6)
             
             painter.setFont(QFont("Inter", 8, QFont.Weight.Bold))
-            painter.setPen(QColor("#9CA3AF"))
+            painter.setPen(QColor(COLOR_NEUTRAL_200))
             painter.drawText(tooltip_x + 10, tooltip_y + 16, "Ping / Latency")
             
             painter.setFont(QFont("Inter", 8))
@@ -222,7 +221,7 @@ class GraphCanvas(QWidget):
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.drawEllipse(QPointF(tooltip_x + 15, y_offset - 3), 4, 4)
                 
-                painter.setPen(QColor("#FFFFFF"))
+                painter.setPen(QColor(COLOR_WHITE))
                 painter.drawText(tooltip_x + 25, y_offset, f"{label}: {val} ms")
 
 class LiveNetworkGraph(QFrame):

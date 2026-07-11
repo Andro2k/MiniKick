@@ -98,6 +98,9 @@ class RewardsConfigWizard(ModernWizardPanel):
         row2.addWidget(self.btn_browse)
         layout.addLayout(row2)
         
+        self.combo_rewards.currentTextChanged.connect(self._update_btn_next_state)
+        self.txt_file_path.textChanged.connect(self._update_btn_next_state)
+        
         layout.addStretch()
         
         layout.addStretch()
@@ -210,7 +213,9 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def validate_step(self, step_index: int) -> bool:
         if step_index == 0:
-            if not self.txt_file_path.text().strip():
+            reward_valid = self._is_reward_valid()
+            file_valid = bool(self.txt_file_path.text().strip())
+            if not reward_valid or not file_valid:
                 return False
         return True
 
@@ -250,3 +255,29 @@ class RewardsConfigWizard(ModernWizardPanel):
             "is_random_pos": self.chk_random_pos.isChecked() if self._is_video else False
         }
         return reward, config
+
+    def _is_reward_valid(self) -> bool:
+        reward = self.combo_rewards.currentText().strip()
+        if not reward:
+            return False
+            
+        loading_str = self.i18n.get("rewards.dialogs.wizard.step1.loading")
+        no_rewards_str = self.i18n.get("rewards.dialogs.wizard.step1.no_rewards")
+        no_avail_str = self.i18n.get("rewards.dialogs.wizard.step1.no_available")
+        
+        if reward in (loading_str, no_rewards_str, no_avail_str):
+            return False
+            
+        return True
+
+    def _update_step_ui(self):
+        super()._update_step_ui()
+        self._update_btn_next_state()
+
+    def _update_btn_next_state(self):
+        if self.current_step == 0:
+            reward_valid = self._is_reward_valid()
+            file_valid = bool(self.txt_file_path.text().strip())
+            self.btn_next.setEnabled(reward_valid and file_valid)
+        else:
+            self.btn_next.setEnabled(True)

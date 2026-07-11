@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QL
 from PySide6.QtCore import Qt, Signal, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 
-from frontend.common.theme import COLOR_BLACK, COLOR_RED
+from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.blocks_component import StatCard, SettingRow, ModernCard
@@ -33,7 +33,7 @@ class SegmentedDistributionBar(QWidget):
         
         total_p = sum(p for p, _ in self._segments)
         if total_p <= 0:
-            painter.fillRect(rect, QColor("#27272A"))
+            painter.fillRect(rect, QColor(COLOR_NEUTRAL_800))
             return
             
         current_x = 0.0
@@ -311,10 +311,10 @@ class DashboardView(BaseView):
             
             if hasattr(self, 'session_bar'):
                 self.session_bar.set_data([
-                    (p_msg, "#C084FC"),
-                    (p_cmd, "#818CF8"),
-                    (p_timer, "#34D399"),
-                    (p_spam, "#F87171")
+                    (p_msg, COLOR_PURPLE),
+                    (p_cmd, COLOR_BLUE),
+                    (p_timer, COLOR_GREEN),
+                    (p_spam, COLOR_RED)
                 ])
         else:
             self.card_msg_processed.set_value("0   ·   0.0%")

@@ -45,12 +45,15 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
         lbl_trigger.setProperty("role", "h3")
         self.txt_trigger = QLineEdit()
+        self.txt_trigger.textChanged.connect(self._validate_trigger_prefix)
+        self.txt_trigger.textChanged.connect(self._update_btn_next_state)
         basic_layout.addWidget(lbl_trigger)
         basic_layout.addWidget(self.txt_trigger)
 
         lbl_response = QLabel(self.i18n.get("command.dialog.response_label"))
         lbl_response.setProperty("role", "h3")
         self.txt_response = QTextEdit()
+        self.txt_response.textChanged.connect(self._update_btn_next_state)
         self.txt_response.setMinimumHeight(80) 
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         basic_layout.addWidget(lbl_response)
@@ -136,7 +139,9 @@ class CommandConfigWizard(ModernWizardPanel):
 
     def validate_step(self, step_index: int) -> bool:
         if step_index == 0:
-            if not self.txt_trigger.text().strip():
+            trigger_text = self.txt_trigger.text().strip()
+            response_text = self.txt_response.toPlainText().strip()
+            if not trigger_text.startswith("!") or not response_text:
                 return False
         return True
 
@@ -257,3 +262,22 @@ class CommandConfigWizard(ModernWizardPanel):
             self.chk_regex.setChecked(True)
         self.txt_regex.insertPlainText(text_to_insert)
         self.txt_regex.setFocus()
+
+    def _validate_trigger_prefix(self, text: str):
+        if not text.strip() or text.startswith("!"):
+            self.txt_trigger.setStyleSheet("")
+        else:
+            self.txt_trigger.setStyleSheet("border: 1px solid #ff4444;")
+
+    def _update_step_ui(self):
+        super()._update_step_ui()
+        self._update_btn_next_state()
+
+    def _update_btn_next_state(self):
+        if self.current_step == 0:
+            trigger_text = self.txt_trigger.text().strip()
+            response_text = self.txt_response.toPlainText().strip()
+            is_valid = bool(trigger_text.startswith("!") and response_text)
+            self.btn_next.setEnabled(is_valid)
+        else:
+            self.btn_next.setEnabled(True)

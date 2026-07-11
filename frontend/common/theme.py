@@ -22,7 +22,7 @@ COLOR_GREEN_DARK   = "#25AE60"
 COLOR_RED          = "#EF4444"
 COLOR_AMBER        = "#F59E0B"
 COLOR_BLUE         = "#3B82F6"
-COLOR_PURPLE       = "#A78BFA"
+COLOR_PURPLE       = "#C084FC"
 
 COLOR_WHITE_GLOW   = "rgba(255, 255, 255, 0.1)"
 COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.1)"
