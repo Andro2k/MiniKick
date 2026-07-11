@@ -2,6 +2,7 @@
 
 from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QRegion
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import COLOR_GREEN, PATH_ICON_HELP
 from frontend.dialogs.base_dialog import ModernModal
@@ -34,6 +35,7 @@ class VisualPositionerDialog(ModernModal):
         self.canvas_container = QFrame()
         self.canvas_container.setFixedSize(self.canvas_w, self.canvas_h)
         self.canvas_container.setProperty("role", "canvas_container")
+        self.canvas_container.setMask(QRegion(0, 0, self.canvas_w, self.canvas_h))
         
         self.draggable_box = DraggableBox(self.canvas_container, self.canvas_w, self.canvas_h, self.scale_factor, filepath, scale_val)
         self.draggable_box.set_obs_coordinates(current_x, current_y)

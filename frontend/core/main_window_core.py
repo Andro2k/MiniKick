@@ -233,6 +233,10 @@ class MainWindowCore(QMainWindow):
         self.tray_manager.restore_requested.connect(self._restore_from_tray)
         self.tray_manager.quit_requested.connect(self._force_quit)
         self.tray_manager.tts_toggled.connect(self._handle_tray_tts_toggle)
+        self.tray_manager.play_pause_requested.connect(self._handle_tray_play_pause)
+        self.tray_manager.skip_requested.connect(self._handle_tray_skip)
+        self.tray_manager.tts_use_command_toggled.connect(self._handle_tray_tts_use_command_toggle)
+        self.tray_manager.tts_voice_type_changed.connect(self._handle_tray_tts_voice_type_change)
         self.tray_manager.show()
 
     def _connect_signals(self):
@@ -241,7 +245,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
-        self.chat_controller.tts_state_changed.connect(self.tray_manager.set_tts_state)
+        self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
@@ -256,8 +260,10 @@ class MainWindowCore(QMainWindow):
 
     def _load_settings_into_ui(self):
         self.rewards_controller.load_initial_data()
-        tts_enabled = self.settings_storage.load_bool("tts_enabled", True)
-        self.tray_manager.set_tts_state(tts_enabled)
+        settings = self.chat_service.get_settings()
+        self.tray_manager.set_tts_state(settings.get("enabled", True))
+        self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
+        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "local") == "web")
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_service.reload_cache()
@@ -557,11 +563,41 @@ class MainWindowCore(QMainWindow):
         settings = self.chat_service.get_settings()
         settings["enabled"] = enabled
         self.chat_service.save_settings(settings)
-        self.view_chat.set_initial_states(settings)
-        self.chat_controller.sync_settings_cache()
+        self.chat_controller.load_initial_data()
         estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
         msg_template = self.i18n.get("main.tray.tts_msg")       
         self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
+
+    @Slot()
+    def _handle_tray_play_pause(self):
+        if hasattr(self, "music_controller"):
+            self.music_controller.handle_play_pause()
+
+    @Slot()
+    def _handle_tray_skip(self):
+        if hasattr(self, "music_controller"):
+            self.music_controller.handle_skip()
+
+    @Slot(bool)
+    def _handle_tray_tts_use_command_toggle(self, enabled: bool):
+        settings = self.chat_service.get_settings()
+        settings["use_command"] = enabled
+        self.chat_service.save_settings(settings)
+        self.chat_controller.load_initial_data()
+
+    @Slot(bool)
+    def _handle_tray_tts_voice_type_change(self, is_web: bool):
+        settings = self.chat_service.get_settings()
+        settings["provider"] = "web" if is_web else "local"
+        self.chat_service.save_settings(settings)
+        self.chat_controller.load_initial_data()
+
+    @Slot(bool)
+    def _handle_chat_tts_state_changed(self, enabled: bool):
+        settings = self.chat_service.get_settings()
+        self.tray_manager.set_tts_state(enabled)
+        self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
+        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "local") == "web")
 
     @Slot()
     def _handle_unlink_account(self):

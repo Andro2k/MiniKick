@@ -2,7 +2,7 @@
 
 import html
 from PySide6.QtWidgets import QLineEdit, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSizePolicy, QTabWidget, QScrollArea, QFrame
-from frontend.common.utils import NoWheelComboBox, NoWheelSlider
+from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix
 from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch
 from frontend.widgets.base_view import BaseView
@@ -308,10 +308,10 @@ class ChatView(BaseView):
         self.volume_changed.emit(value)
 
     def _enforce_prefix_mask(self, text):
-        if not text.strip() or text.startswith("!"):
+        if validate_trigger_prefix(text):
             self.txt_command.setStyleSheet("")
         else:
-            self.txt_command.setStyleSheet("border: 1px solid #ff4444;")
+            self.txt_command.setStyleSheet("border: 1.5px solid #ff4444;")
 
     def _on_voice_selected(self, index: int):
         if index >= 0:

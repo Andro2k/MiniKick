@@ -16,6 +16,7 @@ class DraggableBox(QFrame):
         self.canvas_h = canvas_h
         self.scale_factor = scale_factor_obs 
         self.base_scale_val = scale_val
+        self._target_local_pos = QPoint(0, 0)
         
         self.setFixedSize(100, 100)
         self.setCursor(Qt.CursorShape.OpenHandCursor)
@@ -54,6 +55,23 @@ class DraggableBox(QFrame):
                 self.media_layout.addWidget(self.img_lbl)
                 self._adjust_to_media_size(pixmap.size())
 
+    def _clamp_position(self, x: int, y: int) -> tuple[int, int]:
+        if self.width() <= self.canvas_w:
+            min_x = 0
+            max_x = self.canvas_w - self.width()
+        else:
+            min_x = self.canvas_w - self.width()
+            max_x = 0
+            
+        if self.height() <= self.canvas_h:
+            min_y = 0
+            max_y = self.canvas_h - self.height()
+        else:
+            min_y = self.canvas_h - self.height()
+            max_y = 0
+            
+        return max(min_x, min(x, max_x)), max(min_y, min(y, max_y))
+
     def _adjust_to_media_size(self, size=None):
         if size is None or type(size) == bool or not getattr(size, 'isValid', lambda: False)():
             if hasattr(self, 'video_widget') and self.video_widget.videoSink():
@@ -69,8 +87,11 @@ class DraggableBox(QFrame):
         local_h = int(obs_h / self.scale_factor)
 
         self.setFixedSize(local_w, local_h)
-        x = max(0, min(self.x(), self.canvas_w - self.width()))
-        y = max(0, min(self.y(), self.canvas_h - self.height()))
+        
+        target_x = self._target_local_pos.x() if hasattr(self, '_target_local_pos') else self.x()
+        target_y = self._target_local_pos.y() if hasattr(self, '_target_local_pos') else self.y()
+        
+        x, y = self._clamp_position(target_x, target_y)
         self.move(x, y)
 
     def mousePressEvent(self, event: QMouseEvent):
@@ -82,9 +103,9 @@ class DraggableBox(QFrame):
     def mouseMoveEvent(self, event: QMouseEvent):
         if self._drag_active:
             new_pos = self.mapToParent(event.pos()) - self._drag_offset
-            x = max(0, min(new_pos.x(), self.canvas_w - self.width()))
-            y = max(0, min(new_pos.y(), self.canvas_h - self.height()))
+            x, y = self._clamp_position(new_pos.x(), new_pos.y())
             self.move(x, y)
+            self._target_local_pos = QPoint(x, y)
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         self._drag_active = False
@@ -98,6 +119,6 @@ class DraggableBox(QFrame):
     def set_obs_coordinates(self, obs_x: int, obs_y: int):
         local_x = int(obs_x / self.scale_factor)
         local_y = int(obs_y / self.scale_factor)
-        local_x = max(0, min(local_x, self.canvas_w - self.width()))
-        local_y = max(0, min(local_y, self.canvas_h - self.height()))
+        self._target_local_pos = QPoint(local_x, local_y)
+        local_x, local_y = self._clamp_position(local_x, local_y)
         self.move(local_x, local_y)

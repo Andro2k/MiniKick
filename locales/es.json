@@ -593,6 +593,12 @@
         "tray": {
             "open_panel": "Abrir Panel",
             "read_chat": "Leer chat en voz alta",
+            "play_pause": "Reproducir / Pausar Música",
+            "skip": "Saltar Canción",
+            "tts_use_command": "Requerir comando para TTS",
+            "tts_voice_type": "Usar Voces Web (Premium)",
+            "tts_on": "Activado",
+            "tts_off": "Desactivado",
             "close_app": "Cerrar MiniKick",
             "tts_msg": "Lectura de chat: {estado}",
             "bg_title": "MiniKick en segundo plano",

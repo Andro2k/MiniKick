@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, QSize
 from frontend.dialogs.base_dialog import ModernWizardPanel
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.theme import COLOR_WHITE
-from frontend.common.utils import get_icon_colored, NoWheelComboBox
+from frontend.common.utils import get_icon_colored, NoWheelComboBox, validate_trigger_prefix
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
@@ -264,10 +264,10 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_regex.setFocus()
 
     def _validate_trigger_prefix(self, text: str):
-        if not text.strip() or text.startswith("!"):
+        if validate_trigger_prefix(text):
             self.txt_trigger.setStyleSheet("")
         else:
-            self.txt_trigger.setStyleSheet("border: 1px solid #ff4444;")
+            self.txt_trigger.setStyleSheet("border: 1.5px solid #ff4444;")
 
     def _update_step_ui(self):
         super()._update_step_ui()

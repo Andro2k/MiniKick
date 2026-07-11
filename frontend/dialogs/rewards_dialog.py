@@ -162,7 +162,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         row_coords.addWidget(QLabel(self.i18n.get("rewards.dialogs.wizard.step2.scale")))
         self.spin_scale = QDoubleSpinBox()
-        self.spin_scale.setRange(0.1, 5.0)
+        self.spin_scale.setRange(0.1, 2.0)
         self.spin_scale.setSingleStep(0.1)
         self.spin_scale.setValue(1.0)
         row_coords.addWidget(self.spin_scale)

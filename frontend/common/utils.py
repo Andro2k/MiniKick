@@ -85,3 +85,6 @@ class NoWheelSlider(QSlider):
             event.ignore()
         else:
             super().wheelEvent(event)
+
+def validate_trigger_prefix(text: str) -> bool:
+    return not text.strip() or text.startswith("!")
