@@ -1,8 +1,6 @@
 # frontend\controllers\update_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.dialogs.update_dialog import UpdateDialog
-from frontend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
 
 class UpdateController(QObject):
     def __init__(self, main_window, updater_manager, i18n):
@@ -12,7 +10,8 @@ class UpdateController(QObject):
         self.i18n = i18n
         self.bg_update_worker = None
 
-    def check_updates_silently(self, sidebar):
+    def check_updates_silently(self, sidebar):   
+        from backend.workers.update_worker import UpdateCheckWorker
         self.bg_update_worker = UpdateCheckWorker(self.updater_manager)
         self.bg_update_worker.update_found.connect(
             lambda info: sidebar.set_update_available(True)
@@ -21,6 +20,9 @@ class UpdateController(QObject):
 
     @Slot()
     def handle_update_check(self):
+        from frontend.dialogs.update_dialog import UpdateDialog
+        from backend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
+        
         dialog = UpdateDialog(self.i18n, parent=self.main_window)       
         update_info = {"url": ""}
         

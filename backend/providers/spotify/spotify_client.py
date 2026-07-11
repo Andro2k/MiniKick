@@ -4,7 +4,6 @@ import base64
 import requests
 from urllib.parse import urlparse, urlencode, quote
 from backend.services.auth.oauth_service import OAuthCallbackServer
-from backend.interfaces.music_interfaces import MusicPlayerProvider
 
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
@@ -80,7 +79,7 @@ class SpotifyAuthManager:
     def logout(self):
         self.storage.clear()
 
-class SpotifyMusicProvider(MusicPlayerProvider):    
+class SpotifyMusicProvider:    
     def __init__(self, auth_manager: SpotifyAuthManager, i18n, db_manager=None):
         self.auth = auth_manager
         self.i18n = i18n

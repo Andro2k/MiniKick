@@ -1,4 +1,4 @@
-# frontend\workers\auth_worker.py
+# backend\workers\auth_worker.py
 
 from PySide6.QtCore import QThread, Signal
 from backend.services.auth.oauth_service import AuthManager

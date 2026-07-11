@@ -44,10 +44,10 @@ from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
 from frontend.views.network_view import NetworkView
 from frontend.dialogs import ModernConfirmDialog
-from frontend.workers.auth_worker import AuthWorker
-from frontend.workers.chat_worker import ChatWorker
-from frontend.workers.rewards_worker import FetchRewardsWorker, RewardWorker
-from frontend.workers.timers_worker import TimerWorker
+from backend.workers.auth_worker import AuthWorker
+from backend.workers.chat_worker import ChatWorker
+from backend.workers.rewards_worker import FetchRewardsWorker, RewardWorker
+from backend.workers.timers_worker import TimerWorker
 
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY

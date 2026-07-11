@@ -2,9 +2,8 @@
 
 import logging
 import pyttsx3
-from backend.interfaces.tts_interfaces import ITTSProvider
 
-class LocalTTSProvider(ITTSProvider):
+class LocalTTSProvider:
     def __init__(self, rate: int = 150, initial_volume: float = 1.0):
         self.rate = rate
         self.volume = initial_volume

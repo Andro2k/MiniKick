@@ -142,6 +142,11 @@ DEFAULT_DICTIONARY = {
             "title": "Triggers and Command Responses",
             "subtitle": "Link chat commands or regular expressions to automated bot responses."
         },
+        "empty": {
+            "title": "No commands yet",
+            "desc": "Create custom commands to let the bot respond automatically to your chat.",
+            "btn": "Create Command"
+        },
         "table": {
             "title": "Linked Commands",
             "search_placeholder": "Search linked command...",
@@ -212,6 +217,11 @@ DEFAULT_DICTIONARY = {
         "header": {
             "title": "Triggers & Rewards",
             "subtitle": "Link your channel rewards with on-screen multimedia elements."
+        },
+        "empty": {
+            "title": "No linked rewards yet",
+            "desc": "Link your Kick channel points rewards with on-screen alerts or sound effects.",
+            "btn": "Link Reward"
         },
         "obs": {
             "title": "OBS Browser Source",
@@ -659,6 +669,11 @@ DEFAULT_DICTIONARY = {
         "header": {
             "title": "Bot Timers",
             "subtitle": "Auto-post announcements, social links, your schedule or anything else."
+        },
+        "empty": {
+            "title": "No timers yet",
+            "desc": "Schedule automatic announcements or links to post in the chat periodically.",
+            "btn": "Create Timer"
         },
         "table": {
             "search_placeholder": "Search timer...",

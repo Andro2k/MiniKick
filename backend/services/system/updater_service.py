@@ -9,7 +9,7 @@ from backend.interfaces.updater_interfaces import (
     IUpdateInstaller
 )
 
-class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
+class GithubUpdateProvider:
     def __init__(self, repo_owner: str, repo_name: str):
         self.api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
 
@@ -51,7 +51,7 @@ class GithubUpdateProvider(IUpdateChecker, IUpdateDownloader):
         except Exception:
             return False
 
-class WindowsInstaller(IUpdateInstaller):
+class WindowsInstaller:
     def install_and_restart(self, installer_path: str) -> None:
         DETACHED_PROCESS = 0x00000008        
         cmd = f'ping 127.0.0.1 -n 2 > nul && start "" "{installer_path}" /SILENT'

@@ -1,4 +1,4 @@
-# frontend\workers\rewards_worker.py
+# backend\workers\rewards_worker.py
 
 import logging
 import time

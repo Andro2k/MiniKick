@@ -1,7 +1,6 @@
 # frontend\controllers\rewards_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.dialogs.rewards_dialog import RewardsConfigWizard
 
 class RewardsController(QObject):
     def __init__(self, view, service):
@@ -37,6 +36,7 @@ class RewardsController(QObject):
     @Slot()
     def _handle_add(self):
         available_rewards = self._get_available_rewards()
+        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.view.i18n, 
             parent=self.view, 
@@ -71,6 +71,7 @@ class RewardsController(QObject):
             return
             
         available_rewards = self._get_available_rewards(ignore_reward=reward_name)
+        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.view.i18n, 
             parent=self.view, 

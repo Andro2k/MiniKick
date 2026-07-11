@@ -1,4 +1,4 @@
-# frontend\workers\network_worker.py
+# backend\workers\network_worker.py
 
 import socket
 import urllib.request

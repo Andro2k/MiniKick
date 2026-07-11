@@ -2,9 +2,8 @@
 
 import socket
 import logging
-from backend.interfaces.instance_interfaces import SingleInstanceProvider
 
-class SocketInstanceProvider(SingleInstanceProvider):
+class SocketInstanceProvider:
     def __init__(self, port: int = 45678):
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

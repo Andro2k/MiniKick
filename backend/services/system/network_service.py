@@ -2,7 +2,7 @@
 
 import random
 from PySide6.QtCore import QObject, Signal, QTimer, Slot
-from frontend.workers.network_worker import NetworkWorker
+from backend.workers.network_worker import NetworkWorker
 
 class NetworkService(QObject):
     results_updated = Signal(dict)

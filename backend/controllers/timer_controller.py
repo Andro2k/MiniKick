@@ -1,7 +1,6 @@
 # backend/controllers/timer_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.dialogs.timer_dialog import TimerConfigWizard
 
 class TimerController(QObject):
     def __init__(self, view, service):
@@ -23,6 +22,7 @@ class TimerController(QObject):
 
     @Slot()
     def _handle_add(self):
+        from frontend.dialogs.timer_dialog import TimerConfigWizard
         dialog = TimerConfigWizard(self.view.i18n, parent=self.view)
         
         if dialog.exec():
@@ -46,6 +46,7 @@ class TimerController(QObject):
         existing = next((t for t in timers if t["id"] == timer_id), None)
         if not existing:
             return
+        from frontend.dialogs.timer_dialog import TimerConfigWizard
         dialog = TimerConfigWizard(self.view.i18n, parent=self.view, existing_config=existing)
         
         if dialog.exec():

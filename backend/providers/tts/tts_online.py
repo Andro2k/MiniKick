@@ -7,9 +7,8 @@ import tempfile
 import edge_tts
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtCore import QUrl, QEventLoop
-from backend.interfaces.tts_interfaces import ITTSProvider
 
-class WebTTSProvider(ITTSProvider):
+class WebTTSProvider:
     def __init__(self, voice: str = "es-ES-AlvaroNeural"):
         self.voice = voice
         self.volume_str = "+0%"

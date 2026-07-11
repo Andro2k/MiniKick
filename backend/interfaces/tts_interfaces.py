@@ -1,20 +1,12 @@
 # backend\interfaces\tts_interfaces.py
 
-from abc import ABC, abstractmethod
+from typing import Protocol
 
-class ITTSProvider(ABC):
-    @abstractmethod
-    def speak(self, text: str) -> None:
-        pass
+class ITTSProvider(Protocol):
+    def speak(self, text: str) -> None: ...
         
-    @abstractmethod
-    def stop(self) -> None:
-        pass
+    def stop(self) -> None: ...
 
-    @abstractmethod
-    def set_volume(self, volume: float) -> None:
-        pass
+    def set_volume(self, volume: float) -> None: ...
 
-    @abstractmethod
-    def get_available_voices(self) -> list[dict]:
-        pass
+    def get_available_voices(self) -> list[dict]: ...

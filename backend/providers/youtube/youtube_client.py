@@ -5,8 +5,6 @@ import logging
 import os
 from PySide6.QtCore import QObject, QUrl, QThread, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from abc import ABCMeta
-from backend.interfaces.music_interfaces import MusicPlayerProvider
 
 class YouTubeResolveWorker(QThread):
     resolved = Signal(str, str)
@@ -156,10 +154,7 @@ class YouTubeSearchWorker(QThread):
             msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
             self.finished.emit(False, msg)
 
-class YouTubeMusicProviderMeta(type(QObject), ABCMeta):
-    pass
-
-class YouTubeMusicProvider(QObject, MusicPlayerProvider, metaclass=YouTubeMusicProviderMeta):
+class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
 
     def __init__(self, i18n, db_manager=None):

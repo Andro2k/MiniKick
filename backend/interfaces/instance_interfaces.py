@@ -1,11 +1,7 @@
 # backend\interfaces\instance_interfaces.py
 
-from abc import ABC, abstractmethod
+from typing import Protocol
 
-class SingleInstanceProvider(ABC):    
-    @abstractmethod
-    def is_already_running(self) -> bool:
-        pass
-    @abstractmethod
-    def cleanup(self) -> None:
-        pass
+class SingleInstanceProvider(Protocol):    
+    def is_already_running(self) -> bool: ...
+    def cleanup(self) -> None: ...

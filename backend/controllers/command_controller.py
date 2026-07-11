@@ -1,7 +1,6 @@
 # frontend\controllers\command_controller.py
 
 from PySide6.QtCore import QObject, Slot
-from frontend.dialogs import CommandConfigWizard
 
 class CommandController(QObject):
     def __init__(self, view, service):
@@ -24,6 +23,7 @@ class CommandController(QObject):
 
     @Slot()
     def _handle_add(self):
+        from frontend.dialogs import CommandConfigWizard
         dialog = CommandConfigWizard(self.view.i18n, parent=self.view)
         
         if dialog.exec():
@@ -45,6 +45,7 @@ class CommandController(QObject):
         existing = next((c for c in commands if c["trigger"] == trigger), None)
         if not existing:
             return
+        from frontend.dialogs import CommandConfigWizard
         dialog = CommandConfigWizard(self.view.i18n, parent=self.view, existing_config=existing)
         
         if dialog.exec():

@@ -1,23 +1,15 @@
 # backend\interfaces\music_interfaces.py
 
-from abc import ABC, abstractmethod
+from typing import Protocol
 
-class MusicPlayerProvider(ABC):
-    @abstractmethod
-    def get_current_song(self) -> dict | None:
-        pass
+class MusicPlayerProvider(Protocol):
+    def get_current_song(self) -> dict | None: ...
 
-    @abstractmethod
-    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]:
-        pass
+    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]: ...
 
-    @abstractmethod
-    def skip_current(self) -> bool:
-        pass
+    def skip_current(self) -> bool: ...
 
-    @abstractmethod
-    def set_volume(self, volume: int) -> None:
-        pass
+    def set_volume(self, volume: int) -> None: ...
 
     def get_queue(self) -> list[dict]:
         return []
