@@ -1,4 +1,4 @@
-# frontend\controllers\spam_controller.py
+# backend\controllers\spam_controller.py
 
 from PySide6.QtCore import QObject, Slot
 

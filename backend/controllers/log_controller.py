@@ -1,4 +1,4 @@
-# frontend\controllers\log_controller.py
+# backend\controllers\log_controller.py
 
 import os
 import re

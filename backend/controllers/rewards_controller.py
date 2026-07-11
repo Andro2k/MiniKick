@@ -1,4 +1,4 @@
-# frontend\controllers\rewards_controller.py
+# backend\controllers\rewards_controller.py
 
 from PySide6.QtCore import QObject, Slot
 

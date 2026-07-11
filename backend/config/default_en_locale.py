@@ -1,4 +1,4 @@
-# backend/config/default_en_locale.py
+# backend\config\default_en_locale.py
 
 DEFAULT_DICTIONARY = {
     "common": {

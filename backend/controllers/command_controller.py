@@ -1,4 +1,4 @@
-# frontend\controllers\command_controller.py
+# backend\controllers\command_controller.py
 
 from PySide6.QtCore import QObject, Slot
 

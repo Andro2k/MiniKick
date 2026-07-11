@@ -1,4 +1,4 @@
-# frontend\controllers\settings_controller.py
+# backend\controllers\settings_controller.py
 
 from frontend.dialogs.bug_report_dialog import BugReportDialog
 from PySide6.QtCore import QObject, Signal, Slot

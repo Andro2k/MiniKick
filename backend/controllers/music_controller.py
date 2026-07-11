@@ -1,4 +1,4 @@
-# frontend\controllers\music_controller.py
+# backend\controllers\music_controller.py
 
 from PySide6.QtCore import QObject, Slot, QTimer
 
@@ -84,8 +84,7 @@ class MusicController(QObject):
         from backend.providers.spotify.spotify_client import SpotifyMusicProvider
         self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n, db_manager=db_mgr)
         self.view.set_auth_state(connected=True, label_key=label_key)
-        self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.connected"), "success")
-        
+        self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.connected"), "success")   
         self.polling_timer.start()
         self._poll_now_playing()
 
@@ -113,7 +112,6 @@ class MusicController(QObject):
         self.view.slider_vol.setValue(vol)
         self.view.lbl_vol_perc.setText(f"{vol}%")
         self.view.blockSignals(False)
-
         self.view.set_auth_state(connected=True, label_key="music.status.youtube_active")
         self.polling_timer.start()
         self._poll_now_playing()
@@ -151,7 +149,6 @@ class MusicController(QObject):
         self.music_provider = None
         self.view.set_auth_state(connected=False)
         self.view.update_current_song(None)
-        
         title_str = self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube"
         self.toast.show_toast(title_str, self.i18n.get("music.toast.disconnected"), "info")
 

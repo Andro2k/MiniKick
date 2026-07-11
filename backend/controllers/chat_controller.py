@@ -1,4 +1,4 @@
-# frontend\controllers\chat_controller.py
+# backend\controllers\chat_controller.py
 
 import re
 from PySide6.QtCore import QObject, Slot, Signal

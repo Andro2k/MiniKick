@@ -1,4 +1,4 @@
-# frontend\controllers\dashboard_controller.py
+# backend\controllers\dashboard_controller.py
 
 from PySide6.QtCore import QObject, Signal, Slot
 

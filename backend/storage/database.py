@@ -1,3 +1,5 @@
+# backend\storage\database.py
+
 from backend.storage.manager import DatabaseManager
 from backend.storage.token_storage import SQLiteTokenStorage
 from backend.storage.settings_storage import SQLiteSettingsStorage

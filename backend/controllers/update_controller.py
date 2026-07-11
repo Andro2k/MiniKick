@@ -1,4 +1,4 @@
-# frontend\controllers\update_controller.py
+# backend\controllers\update_controller.py
 
 from PySide6.QtCore import QObject, Slot
 
