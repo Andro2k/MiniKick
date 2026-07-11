@@ -17,6 +17,9 @@ Diseñamos un lienzo modular que corre en un servidor local para proyectar el ch
 * **Soporte Completo de Emotes**: Añadimos un analizador asíncrono para decodificar tags de emotes personalizados de Kick y 7TV (como `[emote:ID:NOMBRE]`), escapando previamente las entradas para neutralizar inyecciones de código HTML (XSS).
 * **Parámetros del Enlace OBS**: El portapapeles codifica automáticamente las variables del tema, velocidad de atenuación (auto-fade), timestamps y supresión de bots en la URL del overlay.
 
+> [!NOTE]
+> Para probar los temas y configuraciones del overlay, puedes abrir directamente el enlace generado en cualquier navegador de tu ordenador, aunque está diseñado para integrarse como Fuente de Navegador (Browser Source) dentro de OBS.
+
 ---
 
 ## 2. Pestaña de Lienzo (Overlay) y Persistencia de Preferencias
@@ -31,6 +34,9 @@ Diseñamos un lienzo modular que corre en un servidor local para proyectar el ch
 ## 3. Captura Global de Excepciones y Diálogo de Crashes
 * **Interceptor a Nivel de VM**: Registramos un hook de sistema en `sys.excepthook` en el bootstrap de `main.py`. Si ocurre un fallo crítico imprevisto en cualquier hilo de la app, el error es capturado antes de que la aplicación se apague silenciosamente.
 * **Diálogo de Reporte (`CrashReportDialog`)**: Si ocurre un crash, se inicializa un entorno ligero en el idioma del usuario que muestra un modal de peligro (`danger`) con el traceback del error. El usuario puede ingresar detalles adicionales y, con un solo clic, enviar el informe junto con los registros locales de MiniKick a un webhook seguro en Discord.
+
+> [!IMPORTANT]
+> El webhook para el envío de reportes de fallos viene preconfigurado en el código de producción hacia el canal de soporte oficial. Asegúrate de tener una conexión de red activa al presionar el botón de enviar reporte.
 
 ---
 
@@ -66,3 +72,6 @@ Diseñamos un lienzo modular que corre en un servidor local para proyectar el ch
 * **Botón de Salida Rápida**: Añadimos un botón de cierre superior derecho (`btn_close_shell`) en la estructura base de los modales (`ModernFramelessShell`) para facilitar la salida del usuario.
 * **Filtro de Bots en Overlay**: Añadimos soporte para detectar automáticamente a bots conocidos en el canal (o usuarios con sufijo `bot`), inyectándoles la insignia de bot (`.badge-bot`) en el overlay y permitiendo filtrarlos en tiempo real si el usuario decide ocultar las cuentas automáticas.
 * **Decoupling de Chat y Música**: Eliminamos la dependencia directa de `ChatController` sobre la interfaz gráfica del reproductor de música, reemplazándola por el envío asíncrono de la señal `music_plugin_triggered`, la cual es atendida directamente por el controlador de música correspondiente.
+
+> [!TIP]
+> Recuerda que puedes configurar combinaciones de teclas globales en tu panel de control o utilizar atajos del sistema para interactuar de forma rápida con el reproductor asimétrico sin tener que cambiar de pantalla durante el directo.
