@@ -1,9 +1,7 @@
 # frontend\views\chat_view.py
 
 import html
-from PySide6.QtWidgets import (QLineEdit, QWidget, QVBoxLayout,
-                                QHBoxLayout, QTextEdit, QLabel, 
-                                QSizePolicy, QTabWidget, QScrollArea, QFrame)
+from PySide6.QtWidgets import QLineEdit, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSizePolicy, QTabWidget, QScrollArea, QFrame
 from frontend.common.utils import NoWheelComboBox, NoWheelSlider
 from PySide6.QtCore import Qt, Signal, Slot
 from frontend.widgets.controls_component import ModernSwitch

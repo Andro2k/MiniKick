@@ -1,7 +1,6 @@
 # frontend\widgets\expandable_setting_card.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QFrame, QSpinBox, QPushButton)
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSpinBox, QPushButton
 from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.controls_component import ModernSwitch

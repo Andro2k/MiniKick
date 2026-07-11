@@ -1,4 +1,4 @@
-# frontend/widgets/scalable_illustration.py
+# frontend\widgets\scalable_illustration.py
 
 import os
 from PySide6.QtWidgets import QLabel

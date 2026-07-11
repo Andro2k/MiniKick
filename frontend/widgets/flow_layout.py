@@ -1,4 +1,4 @@
-# frontend/widgets/flow_layout.py
+# frontend\widgets\flow_layout.py
 
 from PySide6.QtWidgets import QLayout
 from PySide6.QtCore import Qt, QSize, QRect

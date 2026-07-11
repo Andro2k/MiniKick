@@ -1,10 +1,7 @@
 # frontend\widgets\log_controls_component.py
 
 from PySide6.QtCore import QSize
-from PySide6.QtWidgets import (
-    QFrame, QGridLayout, QLineEdit,
-    QBoxLayout, QVBoxLayout, QSizePolicy,
-)
+from PySide6.QtWidgets import QFrame, QGridLayout, QLineEdit, QBoxLayout, QVBoxLayout, QSizePolicy
 from PySide6.QtCore import Signal
 from frontend.widgets.controls_component import ModernButton
 from frontend.common.utils import get_icon_colored, NoWheelComboBox

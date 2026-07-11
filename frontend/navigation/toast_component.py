@@ -1,7 +1,6 @@
 # frontend\navigation\toast_component.py
 
-from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, 
-                               QLabel, QPushButton, QSizePolicy)
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
 
 from frontend.common.theme import COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_AMBER

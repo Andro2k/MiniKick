@@ -1,7 +1,6 @@
 # frontend\views\music_view.py
 
-from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QFrame,
-                                QLabel, QScrollArea, QPushButton)
+from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QScrollArea, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider

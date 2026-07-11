@@ -1,4 +1,4 @@
-# frontend/widgets/base_view.py
+# frontend\widgets\base_view.py
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QFrame
 from PySide6.QtCore import Qt

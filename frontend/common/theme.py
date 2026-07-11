@@ -42,7 +42,7 @@ PADDING_BUTTON  = "6px 12px"
 
 
 def get_global_qss(base: int = 13) -> str:
-    size_headline_1 = base + 15
+    size_headline_1 = base + 12
     size_headline_2 = base + 9  
     size_headline_3 = base + 3  
     size_textline_1 = base       
