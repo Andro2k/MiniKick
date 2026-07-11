@@ -28,7 +28,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         token = query.get("token", [None])[0]
         
         expected_token = getattr(self.server.manager, "session_token", None)
-        if expected_token and token != expected_token:
+        if expected_token and not path.startswith("/css/") and token != expected_token:
             self.send_error(403, "Forbidden: Invalid session token")
             return
 
@@ -59,6 +59,18 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
             except FileNotFoundError:
                 self.send_error(404, f"Chat Overlay HTML not found at: {html_path}")
+
+        elif path.startswith("/css/"):
+            css_filename = os.path.basename(path)
+            css_path = get_resource_path(os.path.join("assets", "overlays", "css", css_filename))
+            try:
+                with open(css_path, "rb") as f:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/css; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except FileNotFoundError:
+                self.send_error(404, f"CSS file not found at: {css_path}")
 
         elif path == "/media":
             query = parse_qs(parsed.query)

@@ -369,7 +369,8 @@
         "tabs": {
             "settings": "Ajustes de Voz",
             "roles": "Voces por Rol",
-            "muted": "Silenciados"
+            "muted": "Silenciados",
+            "overlay": "Lienzo (Overlay)"
         },
         "display": {
             "title": "Historial de la Sala"
@@ -378,6 +379,22 @@
             "loading_voices": "Obteniendo voces de la nube...",
             "provider_title": "Motor de Voz",
             "tts_title": "Lector de Voz de Chat"
+        },
+        "overlay": {
+            "theme_title": "Diseño de Chat",
+            "theme_desc": "Elige el estilo visual del overlay del chat.",
+            "theme_glass": "Glassmorphism",
+            "theme_neon": "Brillo Neon (Neon)",
+            "theme_card": "Tarjeta Sólida (Card)",
+            "theme_minimal": "Minimalista",
+            "size_title": "Tamaño de Fuente",
+            "size_desc": "Modifica el tamaño de la letra del overlay.",
+            "fade_title": "Tiempo en Pantalla",
+            "fade_desc": "Segundos antes de ocultar los mensajes (0 = no ocultar).",
+            "show_bots_title": "Mostrar Bots",
+            "show_bots_desc": "Mostrar los bots en la pantalla del overlay.",
+            "show_time_title": "Mostrar Hora",
+            "show_time_desc": "Muestra la hora del mensaje al lado del nombre."
         }
     },
     "music": {
@@ -766,5 +783,18 @@
             "time_now": "Ahora"
         },
         "btn_check": "Comprobar Red"
+    },
+    "crash": {
+        "title": "MiniKick ha fallado",
+        "lbl_contact": "Contacto / Discord (Opcional)",
+        "placeholder_contact": "Ej. Andro2k",
+        "lbl_desc": "¿Qué estabas haciendo cuando falló? (Opcional)",
+        "placeholder_desc": "Describe brevemente los pasos...",
+        "lbl_traceback": "Detalles del Error (Traceback)",
+        "btn_send": "Enviar Reporte y Cerrar",
+        "btn_close": "Cerrar sin Enviar",
+        "err_send": "No se pudo enviar el reporte. Error: {error}",
+        "err_no_webhook": "URL del Webhook de Discord no configurada.",
+        "subtitle": "Se produjo un error no controlado en la aplicación. Ayúdanos a solucionar el problema enviando este reporte."
     }
 }

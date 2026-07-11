@@ -1,0 +1,12 @@
+/* assets/overlays/css/glass.css */
+.message-box {
+    background: rgba(18, 18, 20, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+}
+.message-content {
+    color: #F3F4F6;
+}

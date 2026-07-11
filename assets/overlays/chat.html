@@ -5,7 +5,12 @@
     <meta charset="UTF-8">
     <title>MiniKick Chat Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link id="theme-style" rel="stylesheet" href="">
     <style>
+        :root {
+            --font-size: 14px;
+        }
+
         body {
             margin: 0;
             padding: 16px;
@@ -41,7 +46,6 @@
             flex-direction: column;
             gap: 4px;
             padding: 12px 16px;
-            border-radius: 12px;
             box-sizing: border-box;
             width: 100%;
             position: relative;
@@ -119,56 +123,22 @@
         .username {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
-            font-size: 15px;
+            font-size: calc(var(--font-size) + 1px);
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .message-content {
-            font-size: 14px;
+            font-size: var(--font-size);
             line-height: 1.5;
             word-wrap: break-word;
             word-break: break-word;
         }
 
-        .theme-glass {
-            background: rgba(18, 18, 20, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-        }
-        .theme-glass .message-content {
-            color: #F3F4F6;
-        }
-
-        .theme-neon {
-            background: rgba(9, 9, 11, 0.9);
-            border-left: 4px solid #2ECD70;
-            box-shadow: 0 4px 15px rgba(46, 205, 112, 0.15);
-        }
-        .theme-neon .message-content {
-            color: #E4E4E7;
-        }
-
-        .theme-card {
-            background: #18181B;
-            border: 1.5px solid #27272A;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        .theme-card .message-content {
-            color: #FAFAFA;
-        }
-
-        .theme-minimal {
-            background: transparent;
-            padding: 4px 8px;
-            border-radius: 0;
-            border: none;
-            box-shadow: none;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), -1px -1px 2px rgba(0, 0, 0, 0.8);
-        }
-        .theme-minimal .message-content {
-            color: #FFFFFF;
+        .timestamp {
+            font-size: calc(var(--font-size) - 3px);
+            color: #71717A;
+            margin-right: 4px;
+            font-family: 'Inter', sans-serif;
             font-weight: 500;
         }
     </style>
@@ -181,11 +151,16 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || '';
         const theme = urlParams.get('theme') || 'glass';
-        const fadeTime = parseInt(urlParams.get('fade')) !== undefined ? parseInt(urlParams.get('fade')) : 15;
+        const fadeTime = urlParams.get('fade') !== null ? parseInt(urlParams.get('fade')) : 15;
         const fontSize = urlParams.get('size') || '14px';
         const maxMessages = parseInt(urlParams.get('max')) || 15;
+        const showBots = urlParams.get('show_bots') !== 'false';
+        const showTime = urlParams.get('show_time') === 'true';
 
-        document.body.style.fontSize = fontSize;
+        const themeStyle = document.getElementById('theme-style');
+        themeStyle.href = `/css/${theme}.css`;
+
+        document.documentElement.style.setProperty('--font-size', fontSize);
 
         const container = document.getElementById('chat-container');
         const eventSource = new EventSource(`/chat_events?token=${token}`);
@@ -200,13 +175,37 @@
         };
 
         function addMessage(data) {
+            if (!showBots && data.badges && data.badges.includes('bot')) {
+                return;
+            }
+
             const msgBox = document.createElement('div');
             msgBox.className = `message-box theme-${theme}`;
-            
             msgBox.style.fontSize = fontSize;
+
+            if (theme === 'neon') {
+                const glowColor = data.color || '#2ECD70';
+                msgBox.style.borderColor = glowColor;
+                msgBox.style.boxShadow = `0 0 10px ${glowColor}, inset 0 0 5px ${glowColor}`;
+            }
+
+            if (theme === 'minimal') {
+                const lineColor = data.color || '#C084FC';
+                msgBox.style.setProperty('--line-color', lineColor);
+            }
 
             const header = document.createElement('div');
             header.className = 'message-header';
+
+            if (showTime) {
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'timestamp';
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                timeSpan.innerText = `[${hours}:${minutes}]`;
+                header.appendChild(timeSpan);
+            }
 
             if (data.badges && Array.isArray(data.badges)) {
                 data.badges.forEach(badge => {

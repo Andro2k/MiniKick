@@ -371,7 +371,8 @@ DEFAULT_DICTIONARY = {
         "tabs": {
             "settings": "Voice Settings",
             "roles": "Role Voices",
-            "muted": "Muted Users"
+            "muted": "Muted Users",
+            "overlay": "Chat Overlay"
         },
         "display": {
             "title": "Room History"
@@ -380,6 +381,22 @@ DEFAULT_DICTIONARY = {
             "loading_voices": "Fetching cloud voices...",
             "provider_title": "Speech Engine",
             "tts_title": "Chat Text-to-Speech"
+        },
+        "overlay": {
+            "theme_title": "Chat Design",
+            "theme_desc": "Select the visual theme for the chat overlay.",
+            "theme_glass": "Glassmorphism",
+            "theme_neon": "Neon Glow (Neon)",
+            "theme_card": "Solid Card",
+            "theme_minimal": "Minimalist",
+            "size_title": "Font Size",
+            "size_desc": "Modify the overlay text font size in pixels.",
+            "fade_title": "On-Screen Time",
+            "fade_desc": "Seconds before messages fade out (0 = never hide).",
+            "show_bots_title": "Show Bots",
+            "show_bots_desc": "Display messages from muted bots in the overlay.",
+            "show_time_title": "Show Timestamp",
+            "show_time_desc": "Show the message timestamp next to the username."
         }
     },
     "music": {
@@ -768,5 +785,18 @@ DEFAULT_DICTIONARY = {
             "time_now": "Now"
         },
         "btn_check": "Check Network"
+    },
+    "crash": {
+        "title": "MiniKick has crashed",
+        "lbl_contact": "Contact / Discord (Optional)",
+        "placeholder_contact": "E.g., Andro2k",
+        "lbl_desc": "What were you doing when it crashed? (Optional)",
+        "placeholder_desc": "Briefly describe the steps...",
+        "lbl_traceback": "Error Details (Traceback)",
+        "btn_send": "Send Report and Close",
+        "btn_close": "Close Without Sending",
+        "err_send": "Could not send the report. Error: {error}",
+        "err_no_webhook": "Discord Webhook URL is not configured.",
+        "subtitle": "An unhandled error occurred in the application. Help us solve the problem by sending this report."
     }
 }

@@ -106,23 +106,6 @@ class ChatView(BaseView):
         config_card.addWidget(row_role_vip)
         config_card.addWidget(row_role_subscriber)
 
-        divider2 = QFrame()
-        divider2.setProperty("role", "divider")
-        divider2.setFixedHeight(1)
-        config_card.addWidget(divider2)
-
-        self.btn_copy_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
-        self.btn_copy_obs.clicked.connect(self._copy_obs_url)
-
-        self.chat_overlay_url = ""
-
-        obs_row = SettingRow(
-            icon_name="link.svg",
-            title_text=self.i18n.get("chat.settings.obs_title"),
-            desc_text=self.i18n.get("chat.settings.obs_desc"),
-            right_widget=self.btn_copy_obs
-        )
-        config_card.addWidget(obs_row)
         config_card.addStretch()
 
         scroll = QScrollArea()
@@ -135,12 +118,125 @@ class ChatView(BaseView):
         self.bot_panel = BotMutePanel(self.i18n)
         bot_card = ModernCard()
         bot_card.addWidget(self.bot_panel)
+
+        overlay_card = ModernCard()
+        
+        self.combo_overlay_theme = NoWheelComboBox()
+        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_glass"), "glass")
+        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_neon"), "neon")
+        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_card"), "card")
+        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_minimal"), "minimal")
+        self.combo_overlay_theme.setFixedWidth(140)
+        self.combo_overlay_theme.currentIndexChanged.connect(self._update_overlay_url)
+        
+        row_overlay_theme = SettingRow(
+            "palette.svg", 
+            self.i18n.get("chat.overlay.theme_title"), 
+            self.i18n.get("chat.overlay.theme_desc"), 
+            self.combo_overlay_theme
+        )
+        
+        font_size_widget = QWidget()
+        font_size_layout = QHBoxLayout(font_size_widget)
+        font_size_layout.setContentsMargins(0, 0, 0, 0)
+        self.slider_overlay_size = NoWheelSlider(Qt.Orientation.Horizontal)
+        self.slider_overlay_size.setRange(10, 32)
+        self.slider_overlay_size.setValue(14)
+        self.slider_overlay_size.setFixedWidth(100)
+        self.lbl_overlay_size = QLabel("14px")
+        self.lbl_overlay_size.setFixedWidth(40)
+        self.lbl_overlay_size.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.slider_overlay_size.valueChanged.connect(self._on_overlay_size_changed)
+        font_size_layout.addWidget(self.slider_overlay_size)
+        font_size_layout.addWidget(self.lbl_overlay_size)
+        
+        row_overlay_size = SettingRow(
+            "font.svg",
+            self.i18n.get("chat.overlay.size_title"),
+            self.i18n.get("chat.overlay.size_desc"),
+            font_size_widget
+        )
+        
+        fade_widget = QWidget()
+        fade_layout = QHBoxLayout(fade_widget)
+        fade_layout.setContentsMargins(0, 0, 0, 0)
+        self.slider_overlay_fade = NoWheelSlider(Qt.Orientation.Horizontal)
+        self.slider_overlay_fade.setRange(0, 120)
+        self.slider_overlay_fade.setValue(15)
+        self.slider_overlay_fade.setFixedWidth(100)
+        self.lbl_overlay_fade = QLabel("15s")
+        self.lbl_overlay_fade.setFixedWidth(40)
+        self.lbl_overlay_fade.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.slider_overlay_fade.valueChanged.connect(self._on_overlay_fade_changed)
+        fade_layout.addWidget(self.slider_overlay_fade)
+        fade_layout.addWidget(self.lbl_overlay_fade)
+        
+        row_overlay_fade = SettingRow(
+            "clock.svg",
+            self.i18n.get("chat.overlay.fade_title"),
+            self.i18n.get("chat.overlay.fade_desc"),
+            fade_widget
+        )
+        
+        self.sw_overlay_show_bots = ModernSwitch()
+        self.sw_overlay_show_bots.setChecked(False)
+        self.sw_overlay_show_bots.toggled.connect(self._update_overlay_url)
+        
+        row_overlay_show_bots = SettingRow(
+            "user.svg",
+            self.i18n.get("chat.overlay.show_bots_title"),
+            self.i18n.get("chat.overlay.show_bots_desc"),
+            self.sw_overlay_show_bots
+        )
+        
+        self.sw_overlay_show_time = ModernSwitch()
+        self.sw_overlay_show_time.setChecked(False)
+        self.sw_overlay_show_time.toggled.connect(self._update_overlay_url)
+        
+        row_overlay_show_time = SettingRow(
+            "clock.svg",
+            self.i18n.get("chat.overlay.show_time_title"),
+            self.i18n.get("chat.overlay.show_time_desc"),
+            self.sw_overlay_show_time
+        )
+        
+        self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
+        self.btn_copy_overlay_obs.clicked.connect(self._copy_overlay_obs_url)
+        
+        row_copy_obs = SettingRow(
+            "link.svg",
+            self.i18n.get("chat.settings.obs_title"),
+            self.i18n.get("chat.settings.obs_desc"),
+            self.btn_copy_overlay_obs
+        )
+        
+        overlay_card.addWidget(row_overlay_theme)
+        overlay_card.addWidget(row_overlay_size)
+        overlay_card.addWidget(row_overlay_fade)
+        overlay_card.addWidget(row_overlay_show_bots)
+        overlay_card.addWidget(row_overlay_show_time)
+        
+        divider3 = QFrame()
+        divider3.setProperty("role", "divider")
+        divider3.setFixedHeight(1)
+        overlay_card.addWidget(divider3)
+        overlay_card.addWidget(row_copy_obs)
+        overlay_card.addStretch()
+        
+        overlay_scroll = QScrollArea()
+        overlay_scroll.setWidgetResizable(True)
+        overlay_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        overlay_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        overlay_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        overlay_scroll.setWidget(overlay_card)
+
         self.tabs = QTabWidget()
         self.tabs.setMinimumWidth(380)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.tabs.addTab(scroll, self.i18n.get("chat.tabs.settings"))
         self.tabs.addTab(bot_card, self.i18n.get("chat.tabs.muted"))
+        self.tabs.addTab(overlay_scroll, self.i18n.get("chat.tabs.overlay"))
 
         left_container = QWidget()
         left_layout = QVBoxLayout(left_container)
@@ -336,16 +432,47 @@ class ChatView(BaseView):
             voice_id = self.combo_voice.itemData(index)
             self.voice_changed.emit(voice_id)
 
+    @property
+    def chat_overlay_url(self):
+        return getattr(self, "_chat_overlay_url", "")
+
+    @chat_overlay_url.setter
+    def chat_overlay_url(self, value):
+        self._chat_overlay_url = value
+        self._update_overlay_url()
+
+    def _update_overlay_url(self):
+        theme = self.combo_overlay_theme.currentData() or "glass"
+        size = self.slider_overlay_size.value()
+        fade = self.slider_overlay_fade.value()
+        show_bots = "true" if self.sw_overlay_show_bots.isChecked() else "false"
+        show_time = "true" if self.sw_overlay_show_time.isChecked() else "false"
+        
+        base_url = getattr(self, "_chat_overlay_url", "")
+        if "?" in base_url:
+            base_part, token_part = base_url.split("?", 1)
+            self.chat_overlay_full_url = f"{base_part}?{token_part}&theme={theme}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
+        else:
+            self.chat_overlay_full_url = f"{base_url}?theme={theme}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
+
+    def _on_overlay_size_changed(self, value):
+        self.lbl_overlay_size.setText(f"{value}px")
+        self._update_overlay_url()
+
+    def _on_overlay_fade_changed(self, value):
+        self.lbl_overlay_fade.setText("Nunca" if value == 0 else f"{value}s")
+        self._update_overlay_url()
+
     @Slot()
-    def _copy_obs_url(self):
+    def _copy_overlay_obs_url(self):
         from PySide6.QtWidgets import QApplication
         from PySide6.QtCore import QTimer
-        QApplication.clipboard().setText(self.chat_overlay_url)
-        original_text = self.btn_copy_obs.text()
-        self.btn_copy_obs.setText(self.i18n.get("rewards.obs.copied"))
-        self.btn_copy_obs.setEnabled(False)
-        QTimer.singleShot(2000, lambda: self._reset_copy_btn(original_text))
+        QApplication.clipboard().setText(getattr(self, "chat_overlay_full_url", ""))
+        original_text = self.btn_copy_overlay_obs.text()
+        self.btn_copy_overlay_obs.setText(self.i18n.get("rewards.obs.copied"))
+        self.btn_copy_overlay_obs.setEnabled(False)
+        QTimer.singleShot(2000, lambda: self._reset_overlay_copy_btn(original_text))
 
-    def _reset_copy_btn(self, original_text: str):
-        self.btn_copy_obs.setText(original_text)
-        self.btn_copy_obs.setEnabled(True)
+    def _reset_overlay_copy_btn(self, original_text: str):
+        self.btn_copy_overlay_obs.setText(original_text)
+        self.btn_copy_overlay_obs.setEnabled(True)

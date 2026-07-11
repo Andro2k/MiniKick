@@ -1,0 +1,65 @@
+/* assets/overlays/css/card.css */
+.message-box {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+.message-header {
+    background: #000000;
+    border: 3px solid #000000;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    padding: 4px 12px;
+    align-self: flex-start;
+    margin-left: 20px;
+    color: #FFFFFF;
+}
+
+.username {
+    color: #FFFFFF !important;
+    font-family: 'Outfit', sans-serif;
+    font-size: calc(var(--font-size) - 1px);
+    text-shadow: none !important;
+}
+
+.message-content {
+    background: #FFFFFF !important;
+    border: 3px solid #000000 !important;
+    border-radius: 0 12px 12px 12px !important;
+    color: #111111 !important;
+    padding: 10px 16px !important;
+    position: relative;
+    box-shadow: 4px 4px 0px #000000 !important;
+    font-weight: 600;
+}
+
+/* Speech bubble tail pointing left */
+.message-content::before {
+    content: "";
+    position: absolute;
+    left: -15px;
+    top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 15px 15px 0;
+    border-color: transparent #000000 transparent transparent;
+}
+
+.message-content::after {
+    content: "";
+    position: absolute;
+    left: -10px;
+    top: 0px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 15px 15px 0;
+    border-color: transparent #FFFFFF transparent transparent;
+}

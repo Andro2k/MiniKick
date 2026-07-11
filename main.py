@@ -42,6 +42,40 @@ def _get_safe_i18n():
         return None
 
 
+def global_crash_handler(exctype, value, tb):
+    import traceback
+    tb_text = "".join(traceback.format_exception(exctype, value, tb))
+    
+    try:
+        import logging
+        logging.critical("Unhandled exception captured by global exception hook:\n%s", tb_text)
+    except Exception:
+        pass
+
+    print(tb_text, file=sys.stderr)
+
+    try:
+        app = QApplication.instance()
+        if not app:
+            app = QApplication(sys.argv)
+            from frontend.common.theme import GLOBAL_QSS
+            app.setStyleSheet(GLOBAL_QSS)
+            
+            FONT_FAMILY_NAME = "Google Sans"
+            app_font = QFont(FONT_FAMILY_NAME)
+            app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+            app.setFont(app_font)
+
+        i18n = _get_safe_i18n()
+        from frontend.dialogs.crash_report_dialog import CrashReportDialog
+        dialog = CrashReportDialog(traceback_text=tb_text, i18n=i18n)
+        dialog.exec()
+    except Exception as dialog_err:
+        print(f"[Bootstrap] Falló la visualización del diálogo de crash: {dialog_err}", file=sys.stderr)
+
+    sys.exit(1)
+
+
 def bootstrap():
     app = QApplication(sys.argv)
     FONT_FILE_PREFIX = "GoogleSans"
@@ -88,4 +122,5 @@ def bootstrap():
         instance_provider.cleanup()
 
 if __name__ == "__main__":
+    sys.excepthook = global_crash_handler
     bootstrap()

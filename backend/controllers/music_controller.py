@@ -269,3 +269,81 @@ class MusicController(QObject):
             
         if self.provider_type == "youtube" and self.music_provider:
             self.music_provider.auto_resume = enabled
+
+    @Slot(str, str, str, str)
+    def handle_music_plugin_command(self, tag: str, user: str, message: str, prefix_used: str):
+        api = getattr(self.command_service, 'api_client', None)
+        if not api:
+            return
+        
+        provider = self.music_provider
+        dispatch_table = {
+            "[PLUGIN_SPOTIFY_SR]": self._handle_plugin_sr,
+            "[PLUGIN_SPOTIFY_SKIP]": self._handle_plugin_skip,
+            "[PLUGIN_SPOTIFY_SONG]": self._handle_plugin_song,
+        }
+        
+        executor = dispatch_table.get(tag)
+        if executor:
+            executor(api, provider, user, message, prefix_used)
+
+    def _handle_plugin_sr(self, api, provider, user, message, prefix_used):
+        query = message[len(prefix_used):].strip() if prefix_used else ""
+        if not query:
+            msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", prefix_used)
+            api.post_chat_message(msg)
+            return
+        if provider:
+            def on_complete(success, reply_msg):
+                api.post_chat_message(reply_msg)
+                
+            success, immediate_reply = provider.add_to_queue(query, callback=on_complete, requester=user)
+            if immediate_reply:
+                api.post_chat_message(immediate_reply)
+        else:
+            if self.provider_type == 'youtube':
+                msg = self.i18n.get("music.chat.not_linked_youtube")
+            else:
+                msg = self.i18n.get("music.chat.not_linked_spotify")
+            api.post_chat_message(msg)
+
+    def _handle_plugin_skip(self, api, provider, user, message, prefix_used):
+        if provider:
+            if provider.skip_current():
+                api.post_chat_message(self.i18n.get("music.chat.skip_success"))
+            else:
+                api.post_chat_message(self.i18n.get("music.chat.skip_failed"))
+        else:
+            if self.provider_type == 'youtube':
+                msg = self.i18n.get("music.chat.not_linked_youtube")
+            else:
+                msg = self.i18n.get("music.chat.not_linked_spotify")
+            api.post_chat_message(msg)
+
+    def _handle_plugin_song(self, api, provider, user, message, prefix_used):
+        if provider:
+            is_youtube = provider.__class__.__name__ == "YouTubeMusicProvider"
+            song = provider.get_current_song()
+            if song:
+                is_playing = song.get("is_playing", False)
+                if is_playing:
+                    msg = self.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
+                    api.post_chat_message(msg)
+                else:
+                    if is_youtube:
+                        msg = self.i18n.get("music.chat.song_paused_youtube")
+                    else:
+                        msg = self.i18n.get("music.chat.song_paused_spotify")
+                    api.post_chat_message(msg)
+            else:
+                if is_youtube:
+                    msg = self.i18n.get("music.chat.song_empty_youtube")
+                else:
+                    msg = self.i18n.get("music.chat.song_paused")
+                api.post_chat_message(msg)
+        else:
+            if self.provider_type == 'youtube':
+                msg = self.i18n.get("music.chat.not_linked_youtube")
+            else:
+                msg = self.i18n.get("music.chat.not_linked_spotify")
+            api.post_chat_message(msg)

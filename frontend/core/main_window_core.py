@@ -248,6 +248,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
+        self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
