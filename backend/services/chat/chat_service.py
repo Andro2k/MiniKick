@@ -37,6 +37,16 @@ class ChatService:
             self.storage.save_string(f"tts_voice_{provider}_vip", settings["role_voice_vip"])
         if "role_voice_subscriber" in settings:
             self.storage.save_string(f"tts_voice_{provider}_subscriber", settings["role_voice_subscriber"])
+        if "chat_overlay_theme" in settings:
+            self.storage.save_string("chat_overlay_theme", settings["chat_overlay_theme"])
+        if "chat_overlay_size" in settings:
+            self.storage.save_string("chat_overlay_size", settings["chat_overlay_size"])
+        if "chat_overlay_fade" in settings:
+            self.storage.save_string("chat_overlay_fade", settings["chat_overlay_fade"])
+        if "chat_overlay_show_bots" in settings:
+            self.storage.save_bool("chat_overlay_show_bots", settings["chat_overlay_show_bots"])
+        if "chat_overlay_show_time" in settings:
+            self.storage.save_bool("chat_overlay_show_time", settings["chat_overlay_show_time"])
 
     def set_volume(self, volume: int):
         self.storage.save_string("tts_volume", str(volume))

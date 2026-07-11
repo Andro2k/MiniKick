@@ -293,6 +293,26 @@ class ChatView(BaseView):
     def tts_volume(self) -> int:
         return self.slider_vol.value()
 
+    @property
+    def overlay_theme(self) -> str:
+        return self.combo_overlay_theme.currentData() or "glass"
+
+    @property
+    def overlay_size(self) -> int:
+        return self.slider_overlay_size.value()
+
+    @property
+    def overlay_fade(self) -> int:
+        return self.slider_overlay_fade.value()
+
+    @property
+    def overlay_show_bots(self) -> bool:
+        return self.sw_overlay_show_bots.isChecked()
+
+    @property
+    def overlay_show_time(self) -> bool:
+        return self.sw_overlay_show_time.isChecked()
+
     def _connect_internal_signals(self):
         self.chk_provider.toggled.connect(self.provider_toggled.emit)
         self.slider_vol.valueChanged.connect(self._on_slider_vol_changed)
@@ -304,7 +324,10 @@ class ChatView(BaseView):
         
         controls = [self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
                     self.combo_voice_broadcaster, self.combo_voice_moderator,
-                    self.combo_voice_vip, self.combo_voice_subscriber]
+                    self.combo_voice_vip, self.combo_voice_subscriber,
+                    self.combo_overlay_theme, self.slider_overlay_size,
+                    self.slider_overlay_fade, self.sw_overlay_show_bots,
+                    self.sw_overlay_show_time]
         for control in controls:
             if isinstance(control, ModernSwitch):
                 control.toggled.connect(self._on_setting_changed)
@@ -312,6 +335,8 @@ class ChatView(BaseView):
                 control.textChanged.connect(self._on_setting_changed)
             elif isinstance(control, NoWheelComboBox):
                 control.currentIndexChanged.connect(self._on_setting_changed)
+            elif isinstance(control, NoWheelSlider):
+                control.valueChanged.connect(self._on_setting_changed)
 
     def _on_setting_changed(self, *args):
         self.settings_changed.emit()
@@ -326,6 +351,33 @@ class ChatView(BaseView):
         self.slider_vol.setValue(volume)
         self._pending_role_voices = role_voices or {}
         self.blockSignals(False)
+
+    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool):
+        self.blockSignals(True)
+        self.combo_overlay_theme.blockSignals(True)
+        self.slider_overlay_size.blockSignals(True)
+        self.slider_overlay_fade.blockSignals(True)
+        self.sw_overlay_show_bots.blockSignals(True)
+        self.sw_overlay_show_time.blockSignals(True)
+
+        idx = self.combo_overlay_theme.findData(theme)
+        if idx != -1:
+            self.combo_overlay_theme.setCurrentIndex(idx)
+        self.slider_overlay_size.setValue(size)
+        self.lbl_overlay_size.setText(f"{size}px")
+        self.slider_overlay_fade.setValue(fade)
+        self.lbl_overlay_fade.setText("Nunca" if fade == 0 else f"{fade}s")
+        self.sw_overlay_show_bots.setChecked(show_bots)
+        self.sw_overlay_show_time.setChecked(show_time)
+
+        self.combo_overlay_theme.blockSignals(False)
+        self.slider_overlay_size.blockSignals(False)
+        self.slider_overlay_fade.blockSignals(False)
+        self.sw_overlay_show_bots.blockSignals(False)
+        self.sw_overlay_show_time.blockSignals(False)
+        self.blockSignals(False)
+        
+        self._update_overlay_url()
 
     def clear_bot_input(self):
         self.bot_panel.clear_input()

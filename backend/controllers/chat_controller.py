@@ -90,6 +90,26 @@ class ChatController(QObject):
         for bot in self.muted_bots:
             self.view.add_bot_tag(bot)
 
+        overlay_theme = self.service.storage.load_string("chat_overlay_theme", "glass")
+        try:
+            overlay_size = int(self.service.storage.load_string("chat_overlay_size", "14"))
+        except ValueError:
+            overlay_size = 14
+        try:
+            overlay_fade = int(self.service.storage.load_string("chat_overlay_fade", "15"))
+        except ValueError:
+            overlay_fade = 15
+        overlay_show_bots = self.service.storage.load_bool("chat_overlay_show_bots", False)
+        overlay_show_time = self.service.storage.load_bool("chat_overlay_show_time", False)
+
+        self.view.set_overlay_settings_ui(
+            theme=overlay_theme,
+            size=overlay_size,
+            fade=overlay_fade,
+            show_bots=overlay_show_bots,
+            show_time=overlay_show_time
+        )
+
         commands = self.command_service.get_all_commands()
         existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
         if not existing:
@@ -289,6 +309,13 @@ class ChatController(QObject):
             "ignored_users": ",".join(self.muted_bots)
         }
         settings.update(self.view.get_role_voices())
+        settings.update({
+            "chat_overlay_theme": self.view.overlay_theme,
+            "chat_overlay_size": str(self.view.overlay_size),
+            "chat_overlay_fade": str(self.view.overlay_fade),
+            "chat_overlay_show_bots": self.view.overlay_show_bots,
+            "chat_overlay_show_time": self.view.overlay_show_time
+        })
         self.service.save_settings(settings)
         self._tts_settings_cache = self.service.get_settings()
         self.tts_state_changed.emit(settings["enabled"])
