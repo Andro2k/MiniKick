@@ -8,6 +8,7 @@ class ChatController(QObject):
     tts_state_changed = Signal(bool)
     spam_blocked = Signal()
     command_executed = Signal()
+    message_received = Signal(str, str, str, list)
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
@@ -142,6 +143,12 @@ class ChatController(QObject):
 
     def _step_ui_render(self, dto: ChatMessageDTO):
         self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp)
+        badges = list(dto.badges) if dto.badges else []
+        username_lower = dto.user.lower()
+        if username_lower in ["botrix", "nightbot", "streamelements", "moobot", "minikickbot"] or username_lower.endswith("bot"):
+            if "bot" not in badges:
+                badges.append("bot")
+        self.message_received.emit(dto.user, dto.content, dto.color or "#FAFAFA", badges)
 
     def _resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
         for badge in ["broadcaster", "moderator", "vip", "subscriber"]:

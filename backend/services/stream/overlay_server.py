@@ -46,6 +46,20 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 self.send_error(404, f"Overlay HTML not found at: {html_path}")
 
+        elif path == "/chat":
+            html_path = get_resource_path(os.path.join("assets", "overlays", "chat.html"))
+            try:
+                with open(html_path, "rb") as f:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Expires", "0")
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except FileNotFoundError:
+                self.send_error(404, f"Chat Overlay HTML not found at: {html_path}")
+
         elif path == "/media":
             query = parse_qs(parsed.query)
             if "path" not in query:
@@ -105,6 +119,31 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             finally:
                 if client_queue in self.server.manager.clients:
                     self.server.manager.clients.remove(client_queue)
+
+        elif path == "/chat_events":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            
+            client_queue = queue.Queue()
+            self.server.manager.chat_clients.append(client_queue)
+            
+            try:
+                while True:
+                    msg = client_queue.get()
+                    if msg is None:
+                        break
+                    self.wfile.write(f"data: {json.dumps(msg)}\n\n".encode("utf-8"))
+                    self.wfile.flush()
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                pass
+            except Exception:
+                pass
+            finally:
+                if client_queue in self.server.manager.chat_clients:
+                    self.server.manager.chat_clients.remove(client_queue)
         else:
             self.send_error(404, "Invalid endpoint")
 
@@ -117,6 +156,7 @@ class OverlayServerManager:
         self.server = None
         self.thread = None
         self.clients = [] 
+        self.chat_clients = []
         self.settings_storage = settings_storage
         
         self.session_token = ""
@@ -130,6 +170,9 @@ class OverlayServerManager:
 
     def get_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/overlay?token={self.session_token}"
+
+    def get_chat_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/chat?token={self.session_token}"
 
     def start(self):
         try:
@@ -160,9 +203,21 @@ class OverlayServerManager:
         for client_queue in self.clients:
             client_queue.put(payload)
 
+    def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None):
+        payload = {
+            "user": user,
+            "message": message,
+            "color": color,
+            "badges": badges or []
+        }
+        for client_queue in self.chat_clients:
+            client_queue.put(payload)
+
     def stop(self):
         if self.server:
             for client_queue in self.clients:
+                client_queue.put(None)
+            for client_queue in self.chat_clients:
                 client_queue.put(None)
             self.server.shutdown()
             self.server.server_close()

@@ -345,7 +345,9 @@
             "vol_desc": "Adjust the intensity of the speech synthesizer.",
             "prefix_title": "Command Prefix",
             "prefix_desc": "Define the exact text that will trigger the bot's reading.",
-            "prefix_placeholder": "Ex. !tts"
+            "prefix_placeholder": "Ex. !tts",
+            "obs_title": "OBS Source (Overlay)",
+            "obs_desc": "Copy this link to add the chat browser source in your OBS."
         },
         "bots": {
             "title": "Muted Users",

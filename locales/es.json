@@ -345,7 +345,9 @@
             "vol_desc": "Ajustar la intensidad del sintetizador de voz.",
             "prefix_title": "Prefijo de Comando",
             "prefix_desc": "Define el texto exacto que activará la lectura del bot.",
-            "prefix_placeholder": "Ej. !tts"
+            "prefix_placeholder": "Ej. !tts",
+            "obs_title": "Lienzo de OBS (Overlay)",
+            "obs_desc": "Copia este enlace para añadir la fuente de navegador del chat en tu OBS."
         },
         "bots": {
             "title": "Usuarios Silenciados",

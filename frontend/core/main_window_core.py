@@ -135,6 +135,7 @@ class MainWindowCore(QMainWindow):
 
         self.view_dashboard = DashboardView(self.i18n)
         self.view_chat = ChatView(self.i18n)
+        self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
         self.view_music = MusicView(self.i18n)
         self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url())
         self.view_commands = CommandView(self.i18n)
@@ -246,6 +247,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
+        self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)

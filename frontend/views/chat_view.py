@@ -4,7 +4,7 @@ import html
 from PySide6.QtWidgets import QLineEdit, QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, QLabel, QSizePolicy, QTabWidget, QScrollArea, QFrame
 from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix
 from PySide6.QtCore import Qt, Signal, Slot
-from frontend.widgets.controls_component import ModernSwitch
+from frontend.widgets.controls_component import ModernSwitch, ModernButton
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.flow_layout import FlowLayout
 from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
@@ -105,6 +105,24 @@ class ChatView(BaseView):
         config_card.addWidget(row_role_moderator)
         config_card.addWidget(row_role_vip)
         config_card.addWidget(row_role_subscriber)
+
+        divider2 = QFrame()
+        divider2.setProperty("role", "divider")
+        divider2.setFixedHeight(1)
+        config_card.addWidget(divider2)
+
+        self.btn_copy_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
+        self.btn_copy_obs.clicked.connect(self._copy_obs_url)
+
+        self.chat_overlay_url = ""
+
+        obs_row = SettingRow(
+            icon_name="link.svg",
+            title_text=self.i18n.get("chat.settings.obs_title"),
+            desc_text=self.i18n.get("chat.settings.obs_desc"),
+            right_widget=self.btn_copy_obs
+        )
+        config_card.addWidget(obs_row)
         config_card.addStretch()
 
         scroll = QScrollArea()
@@ -317,3 +335,17 @@ class ChatView(BaseView):
         if index >= 0:
             voice_id = self.combo_voice.itemData(index)
             self.voice_changed.emit(voice_id)
+
+    @Slot()
+    def _copy_obs_url(self):
+        from PySide6.QtWidgets import QApplication
+        from PySide6.QtCore import QTimer
+        QApplication.clipboard().setText(self.chat_overlay_url)
+        original_text = self.btn_copy_obs.text()
+        self.btn_copy_obs.setText(self.i18n.get("rewards.obs.copied"))
+        self.btn_copy_obs.setEnabled(False)
+        QTimer.singleShot(2000, lambda: self._reset_copy_btn(original_text))
+
+    def _reset_copy_btn(self, original_text: str):
+        self.btn_copy_obs.setText(original_text)
+        self.btn_copy_obs.setEnabled(True)

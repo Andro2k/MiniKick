@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MiniKick Chat Overlay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 16px;
+            overflow: hidden;
+            background-color: transparent;
+            height: 100vh;
+            width: 100vw;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            justify-content: flex-end;
+        }
+
+        .chat-emote {
+            height: 28px;
+            vertical-align: middle;
+            margin: -2px 2px;
+            display: inline-block;
+        }
+
+        .message-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+            transform-origin: bottom left;
+            animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .message-box.fade-out {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .badge {
+            font-family: 'Outfit', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 6px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .badge-broadcaster {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .badge-moderator {
+            background-color: rgba(46, 205, 112, 0.2);
+            color: #2ECD70;
+            border: 1px solid rgba(46, 205, 112, 0.4);
+        }
+
+        .badge-vip {
+            background-color: rgba(192, 132, 252, 0.2);
+            color: #C084FC;
+            border: 1px solid rgba(192, 132, 252, 0.4);
+        }
+
+        .badge-subscriber {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        .badge-bot {
+            background-color: rgba(156, 163, 175, 0.2);
+            color: #9CA3AF;
+            border: 1px solid rgba(156, 163, 175, 0.4);
+        }
+
+        .username {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .message-content {
+            font-size: 14px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .theme-glass {
+            background: rgba(18, 18, 20, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+        }
+        .theme-glass .message-content {
+            color: #F3F4F6;
+        }
+
+        .theme-neon {
+            background: rgba(9, 9, 11, 0.9);
+            border-left: 4px solid #2ECD70;
+            box-shadow: 0 4px 15px rgba(46, 205, 112, 0.15);
+        }
+        .theme-neon .message-content {
+            color: #E4E4E7;
+        }
+
+        .theme-card {
+            background: #18181B;
+            border: 1.5px solid #27272A;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .theme-card .message-content {
+            color: #FAFAFA;
+        }
+
+        .theme-minimal {
+            background: transparent;
+            padding: 4px 8px;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8), -1px -1px 2px rgba(0, 0, 0, 0.8);
+        }
+        .theme-minimal .message-content {
+            color: #FFFFFF;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chat-container"></div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        const theme = urlParams.get('theme') || 'glass';
+        const fadeTime = parseInt(urlParams.get('fade')) !== undefined ? parseInt(urlParams.get('fade')) : 15;
+        const fontSize = urlParams.get('size') || '14px';
+        const maxMessages = parseInt(urlParams.get('max')) || 15;
+
+        document.body.style.fontSize = fontSize;
+
+        const container = document.getElementById('chat-container');
+        const eventSource = new EventSource(`/chat_events?token=${token}`);
+
+        eventSource.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            addMessage(data);
+        };
+
+        eventSource.onerror = function (err) {
+            console.error("Error en conexión SSE de Chat:", err);
+        };
+
+        function addMessage(data) {
+            const msgBox = document.createElement('div');
+            msgBox.className = `message-box theme-${theme}`;
+            
+            msgBox.style.fontSize = fontSize;
+
+            const header = document.createElement('div');
+            header.className = 'message-header';
+
+            if (data.badges && Array.isArray(data.badges)) {
+                data.badges.forEach(badge => {
+                    const badgeSpan = document.createElement('span');
+                    badgeSpan.className = `badge badge-${badge}`;
+                    badgeSpan.innerText = getBadgeLabel(badge);
+                    header.appendChild(badgeSpan);
+                });
+            }
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'username';
+            nameSpan.style.color = data.color || '#FAFAFA';
+            nameSpan.innerText = data.user;
+            header.appendChild(nameSpan);
+
+            msgBox.appendChild(header);
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            let safeMsg = escapeHtml(data.message);
+            const emoteRegex = /\[emote:(\d+):([^\]]+)\]/g;
+            safeMsg = safeMsg.replace(emoteRegex, (match, id, name) => {
+                return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" />`;
+            });
+            
+            content.innerHTML = safeMsg;
+            msgBox.appendChild(content);
+            container.appendChild(msgBox);
+
+            while (container.children.length > maxMessages) {
+                container.removeChild(container.firstChild);
+            }
+            if (fadeTime > 0) {
+                setTimeout(() => {
+                    msgBox.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (msgBox.parentNode === container) {
+                            container.removeChild(msgBox);
+                        }
+                    }, 500);
+                }, fadeTime * 1000);
+            }
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function getBadgeLabel(badge) {
+            const labels = {
+                'broadcaster': 'Streamer',
+                'moderator': 'Mod',
+                'vip': 'VIP',
+                'subscriber': 'Sub',
+                'bot': 'Bot'
+            };
+            return labels[badge] || badge;
+        }
+    </script>
+</body>
+
+</html>
