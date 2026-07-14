@@ -12,6 +12,9 @@ class LocalTTSProvider:
     def set_volume(self, volume: float) -> None:
         self.volume = max(0.0, min(1.0, volume))
 
+    def prepare(self, text: str, voice_id: str = None) -> None:
+        pass
+
     def speak(self, text: str) -> None:
         try:
             import pythoncom
