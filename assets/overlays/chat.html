@@ -6,6 +6,7 @@
     <title>MiniKick Chat Overlay</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link id="theme-style" rel="stylesheet" href="">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <style>
         :root {
             --font-size: 14px;
@@ -13,7 +14,7 @@
 
         body {
             margin: 0;
-            padding: 16px;
+            padding: 16px 24px;
             overflow: hidden;
             background-color: transparent;
             height: 100vh;
@@ -30,7 +31,7 @@
             gap: 12px;
             height: 100%;
             width: 100%;
-            overflow: hidden;
+            overflow: visible;
             justify-content: flex-end;
         }
 
@@ -79,15 +80,15 @@
 
         .badge {
             font-family: 'Outfit', sans-serif;
-            font-size: 10px;
+            font-size: calc(var(--font-size) * 0.72);
             font-weight: 700;
             text-transform: uppercase;
-            padding: 2px 6px;
+            padding: 0.2em 0.5em;
             border-radius: 4px;
             letter-spacing: 0.5px;
             display: inline-flex;
             align-items: center;
-            gap: 3px;
+            gap: 0.25em;
         }
 
         .badge-broadcaster {
@@ -194,46 +195,94 @@
                 msgBox.style.setProperty('--line-color', lineColor);
             }
 
+            if (theme === 'cyber') {
+                const cyberColor = data.color || '#00ff66';
+                msgBox.style.setProperty('--cyber-color', cyberColor);
+            }
+
             const header = document.createElement('div');
             header.className = 'message-header';
 
-            if (showTime) {
-                const timeSpan = document.createElement('span');
-                timeSpan.className = 'timestamp';
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                timeSpan.innerText = `[${hours}:${minutes}]`;
-                header.appendChild(timeSpan);
-            }
+            if (theme === 'cyber') {
+                const badgeBox = document.createElement('div');
+                badgeBox.className = 'cyber-badge-box';
+                badgeBox.innerText = data.user;
+                header.appendChild(badgeBox);
 
-            if (data.badges && Array.isArray(data.badges)) {
-                data.badges.forEach(badge => {
-                    const badgeSpan = document.createElement('span');
-                    badgeSpan.className = `badge badge-${badge}`;
-                    badgeSpan.innerText = getBadgeLabel(badge);
-                    header.appendChild(badgeSpan);
-                });
-            }
+                const connector = document.createElement('div');
+                connector.className = 'cyber-connector';
+                header.appendChild(connector);
 
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'username';
-            nameSpan.style.color = data.color || '#FAFAFA';
-            nameSpan.innerText = data.user;
-            header.appendChild(nameSpan);
+                const iconBox = document.createElement('div');
+                iconBox.className = 'cyber-icon-box';
+                
+                let iconHtml = '<i class="ti ti-message-dots"></i>';
+                if (data.badges && Array.isArray(data.badges)) {
+                    if (data.badges.includes('broadcaster')) {
+                        iconHtml = '<i class="ti ti-video"></i>';
+                    } else if (data.badges.includes('moderator')) {
+                        iconHtml = '<i class="ti ti-shield"></i>';
+                    } else if (data.badges.includes('vip')) {
+                        iconHtml = '<i class="ti ti-diamond"></i>';
+                    } else if (data.badges.includes('subscriber')) {
+                        iconHtml = '<i class="ti ti-star"></i>';
+                    } else if (data.badges.includes('bot')) {
+                        iconHtml = '<i class="ti ti-robot"></i>';
+                    }
+                }
+                iconBox.innerHTML = iconHtml;
+                header.appendChild(iconBox);
+            } else {
+                if (showTime) {
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'timestamp';
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    timeSpan.innerText = `[${hours}:${minutes}]`;
+                    header.appendChild(timeSpan);
+                }
+
+                if (data.badges && Array.isArray(data.badges)) {
+                    data.badges.forEach(badge => {
+                        const badgeSpan = document.createElement('span');
+                        badgeSpan.className = `badge badge-${badge}`;
+                        badgeSpan.innerText = getBadgeLabel(badge);
+                        header.appendChild(badgeSpan);
+                    });
+                }
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'username';
+                nameSpan.style.color = data.color || '#FAFAFA';
+                nameSpan.innerText = data.user;
+                header.appendChild(nameSpan);
+            }
 
             msgBox.appendChild(header);
 
             const content = document.createElement('div');
             content.className = 'message-content';
             
+            if (theme === 'cyber' && showTime) {
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'timestamp';
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                timeSpan.innerText = `[${hours}:${minutes}] `;
+                content.appendChild(timeSpan);
+            }
+
             let safeMsg = escapeHtml(data.message);
             const emoteRegex = /\[emote:(\d+):([^\]]+)\]/g;
             safeMsg = safeMsg.replace(emoteRegex, (match, id, name) => {
                 return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" />`;
             });
             
-            content.innerHTML = safeMsg;
+            const textSpan = document.createElement('span');
+            textSpan.innerHTML = safeMsg;
+            content.appendChild(textSpan);
             msgBox.appendChild(content);
             container.appendChild(msgBox);
 

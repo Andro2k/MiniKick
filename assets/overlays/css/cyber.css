@@ -1,0 +1,76 @@
+/* assets/overlays/css/cyber.css */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+.message-box.theme-cyber {
+    background: rgba(2, 9, 18, 0.95) !important;
+    border: 2px solid var(--cyber-color, #00ff66) !important;
+    border-radius: 8px !important;
+    padding: 20px 20px 14px 20px !important;
+    margin-top: 28px !important;
+    position: relative !important;
+    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
+    color: #e2f9e6 !important;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.15) !important;
+}
+
+.message-box.theme-cyber .message-content {
+    color: #e2f9e6 !important;
+    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
+    font-size: var(--font-size) !important;
+    line-height: 1.5 !important;
+}
+
+.message-box.theme-cyber .message-header {
+    position: absolute !important;
+    top: -16px !important;
+    left: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0px !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+/* Cyber badge box */
+.message-box.theme-cyber .cyber-badge-box {
+    background: #020912 !important;
+    border: 2px solid var(--cyber-color, #00ff66) !important;
+    border-radius: 4px !important;
+    color: var(--cyber-color, #00ff66) !important;
+    font-weight: 700 !important;
+    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
+    font-size: calc(var(--font-size) * 0.72) !important;
+    padding: 2px 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    letter-spacing: 0.5px !important;
+    text-shadow: none !important;
+}
+
+/* Connector line between badge and icon */
+.message-box.theme-cyber .cyber-connector {
+    width: 8px !important;
+    height: 2px !important;
+    background: var(--cyber-color, #00ff66) !important;
+}
+
+/* Cyber icon box */
+.message-box.theme-cyber .cyber-icon-box {
+    background: #020912 !important;
+    border: 2px solid var(--cyber-color, #00ff66) !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: calc(var(--font-size) * 0.75) !important;
+    line-height: 1 !important;
+}
+
+.message-box.theme-cyber .timestamp {
+    color: var(--cyber-color, #00ff66) !important;
+    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
+    opacity: 0.8 !important;
+    margin-right: 6px !important;
+    font-size: calc(var(--font-size) * 0.95) !important;
+}

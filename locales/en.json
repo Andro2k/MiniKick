@@ -386,6 +386,7 @@
             "theme_glass": "Glassmorphism",
             "theme_neon": "Neon Glow (Neon)",
             "theme_card": "Solid Card",
+            "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_minimal": "Minimalist",
             "size_title": "Font Size",
             "size_desc": "Modify the overlay text font size in pixels.",

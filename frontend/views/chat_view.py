@@ -85,16 +85,24 @@ class ChatView(BaseView):
         config_card.addWidget(category_lbl)
 
         self.combo_voice_broadcaster = NoWheelComboBox()
-        self.combo_voice_broadcaster.setFixedWidth(140)
+        self.combo_voice_broadcaster.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.combo_voice_broadcaster.setMinimumWidth(100)
+        self.combo_voice_broadcaster.setMaximumWidth(300)
         
         self.combo_voice_moderator = NoWheelComboBox()
-        self.combo_voice_moderator.setFixedWidth(140)
+        self.combo_voice_moderator.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.combo_voice_moderator.setMinimumWidth(100)
+        self.combo_voice_moderator.setMaximumWidth(300)
         
         self.combo_voice_vip = NoWheelComboBox()
-        self.combo_voice_vip.setFixedWidth(140)
+        self.combo_voice_vip.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.combo_voice_vip.setMinimumWidth(100)
+        self.combo_voice_vip.setMaximumWidth(300)
         
         self.combo_voice_subscriber = NoWheelComboBox()
-        self.combo_voice_subscriber.setFixedWidth(140)
+        self.combo_voice_subscriber.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.combo_voice_subscriber.setMinimumWidth(100)
+        self.combo_voice_subscriber.setMaximumWidth(300)
 
         row_role_broadcaster = SettingRow("user.svg", self.i18n.get("chat.roles.broadcaster_title"), self.i18n.get("chat.roles.broadcaster_desc"), self.combo_voice_broadcaster)
         row_role_moderator = SettingRow("shield-half.svg", self.i18n.get("chat.roles.moderator_title"), self.i18n.get("chat.roles.moderator_desc"), self.combo_voice_moderator)
@@ -125,6 +133,7 @@ class ChatView(BaseView):
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_glass"), "glass")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_neon"), "neon")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_card"), "card")
+        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_cyber"), "cyber")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_minimal"), "minimal")
         self.combo_overlay_theme.setFixedWidth(140)
         self.combo_overlay_theme.currentIndexChanged.connect(self._update_overlay_url)

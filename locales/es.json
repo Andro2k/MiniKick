@@ -386,6 +386,7 @@
             "theme_glass": "Glassmorphism",
             "theme_neon": "Brillo Neon (Neon)",
             "theme_card": "Tarjeta Sólida (Card)",
+            "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_minimal": "Minimalista",
             "size_title": "Tamaño de Fuente",
             "size_desc": "Modifica el tamaño de la letra del overlay.",
