@@ -188,3 +188,8 @@ class SettingsView(BaseView):
     def _on_font_changed(self, index: int):
         size = self.combo_font.itemData(index)
         self.font_size_changed.emit(size)
+
+    def show_bug_report_dialog(self) -> None:
+        from frontend.dialogs.bug_report_dialog import BugReportDialog
+        dialog = BugReportDialog(self.i18n, parent=self.window())
+        dialog.exec()

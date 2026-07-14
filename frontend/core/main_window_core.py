@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget
 from PySide6.QtCore import Slot, QEvent, QTimer
 
 from backend.services.chat.pipeline import ChatMessageDTO
-from backend.services.stream.rewards_service import RewardsService
+from backend.services.rewards.rewards_service import RewardsService
 from backend.services.chat.chat_service import ChatService
 from backend.services.chat.command_service import CommandService
 from backend.services.system.dashboard_service import AvatarService
@@ -168,7 +168,8 @@ class MainWindowCore(QMainWindow):
             command_service=self.command_service,
             spam_service=self.spam_service,
             i18n=self.i18n,
-            timer_service=self.timer_service
+            timer_service=self.timer_service,
+            toast_manager=self.toast
         )
         self.music_controller = MusicController(
             view=self.view_music,
@@ -180,27 +181,33 @@ class MainWindowCore(QMainWindow):
         )
         self.rewards_controller = RewardsController(
             view=self.view_rewards, 
-            service=self.rewards_service
+            service=self.rewards_service,
+            toast_manager=self.toast
         )
         self.command_controller = CommandController(
             self.view_commands, 
-            self.command_service
+            self.command_service,
+            toast_manager=self.toast
         )
         self.spam_controller = SpamController(
             self.view_spam, 
-            self.spam_service
+            self.spam_service,
+            toast_manager=self.toast
         )
         self.timer_controller = TimerController(
             self.view_timers,
-            self.timer_service
+            self.timer_service,
+            toast_manager=self.toast
         )
         self.settings_controller = SettingsController(
             view=self.view_settings, 
-            service=self.settings_service
+            service=self.settings_service,
+            toast_manager=self.toast
         )
         self.log_controller = LogController(
             view=self.view_logs, 
-            service=self.log_service
+            service=self.log_service,
+            toast_manager=self.toast
         )
         self.network_controller = NetworkController(
             view=self.view_network, 
@@ -251,6 +258,7 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
+        self.timer_controller.metrics_update_requested.connect(lambda: self._update_dashboard_metrics(force_db_query=True))
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.update_controller.handle_update_check)

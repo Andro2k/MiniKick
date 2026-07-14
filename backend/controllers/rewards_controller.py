@@ -3,12 +3,12 @@
 from PySide6.QtCore import QObject, Slot
 
 class RewardsController(QObject):
-    def __init__(self, view, service):
+    def __init__(self, view, service, toast_manager=None):
         super().__init__()
         self.view = view
         self.service = service
+        self.toast = toast_manager
         self.current_rewards_list = [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
-        self._active_dialog = None
         self._connect_signals()
 
     def _connect_signals(self):
@@ -24,8 +24,7 @@ class RewardsController(QObject):
     @Slot(list)
     def update_rewards_list(self, rewards: list):
         self.current_rewards_list = rewards if rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
-        if self._active_dialog:
-            self._active_dialog.update_rewards(self._get_available_rewards())
+        self.view.update_active_dialog_rewards(self._get_available_rewards())
 
     def _get_available_rewards(self, ignore_reward=None):
         mappings = self.service.get_mappings()
@@ -36,15 +35,9 @@ class RewardsController(QObject):
     @Slot()
     def _handle_add(self):
         available_rewards = self._get_available_rewards()
-        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
-        self._active_dialog = RewardsConfigWizard(
-            self.view.i18n, 
-            parent=self.view, 
-            rewards_list=available_rewards
-        )
-        
-        if self._active_dialog.exec():
-            reward, config = self._active_dialog.get_config_data()
+        res = self.view.show_add_dialog(available_rewards)
+        if res:
+            reward, config = res
             
             loading_str = self.view.i18n.get("rewards.dialogs.wizard.step1.loading")
             no_rewards_str = self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")
@@ -55,14 +48,12 @@ class RewardsController(QObject):
                 mappings[reward] = config
                 self.service.save_mappings(mappings)
                 self.view.populate_table(mappings)
-                if hasattr(self.view.window(), 'toast'):
-                    self.view.window().toast.show_toast(
+                if self.toast:
+                    self.toast.show_toast(
                         title=self.view.i18n.get("rewards.status.created"),
                         message=(self.view.i18n.get("rewards.status.created_msg")).replace("{reward}", reward),
                         state="success"
                     )
-                
-        self._active_dialog = None
 
     @Slot(str)
     def _handle_edit(self, reward_name: str):
@@ -71,17 +62,9 @@ class RewardsController(QObject):
             return
             
         available_rewards = self._get_available_rewards(ignore_reward=reward_name)
-        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
-        self._active_dialog = RewardsConfigWizard(
-            self.view.i18n, 
-            parent=self.view, 
-            rewards_list=available_rewards, 
-            existing_config=mappings[reward_name], 
-            existing_reward=reward_name
-        )
-        
-        if self._active_dialog.exec():
-            new_reward, updated_config = self._active_dialog.get_config_data()
+        res = self.view.show_edit_dialog(available_rewards, mappings[reward_name], reward_name)
+        if res:
+            new_reward, updated_config = res
             if updated_config["filepath"]:
                 if new_reward != reward_name:
                     del mappings[reward_name]
@@ -89,14 +72,12 @@ class RewardsController(QObject):
                 mappings[new_reward] = updated_config
                 self.service.save_mappings(mappings)
                 self.view.populate_table(mappings)
-                if hasattr(self.view.window(), 'toast'):
-                    self.view.window().toast.show_toast(
+                if self.toast:
+                    self.toast.show_toast(
                         title=self.view.i18n.get("rewards.status.updated"),
                         message=(self.view.i18n.get("rewards.status.updated_msg")).replace("{reward}", new_reward),
                         state="success"
                     )
-                
-        self._active_dialog = None
 
     @Slot(str)
     def _handle_delete(self, reward_name: str):
@@ -105,8 +86,8 @@ class RewardsController(QObject):
             del mappings[reward_name]
             self.service.save_mappings(mappings)
             self.view.populate_table(mappings)
-            if hasattr(self.view.window(), 'toast'):
-                self.view.window().toast.show_toast(
+            if self.toast:
+                self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.deleted"),
                     message=(self.view.i18n.get("rewards.status.deleted_msg")).replace("{reward}", reward_name),
                     state="warning"

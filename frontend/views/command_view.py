@@ -175,3 +175,17 @@ class CommandView(BaseView):
         )
         
         return cell
+
+    def show_add_dialog(self) -> dict | None:
+        from frontend.dialogs import CommandConfigWizard
+        dialog = CommandConfigWizard(self.i18n, parent=self)
+        if dialog.exec():
+            return dialog.get_command_data()
+        return None
+
+    def show_edit_dialog(self, existing_config: dict) -> dict | None:
+        from frontend.dialogs import CommandConfigWizard
+        dialog = CommandConfigWizard(self.i18n, parent=self, existing_config=existing_config)
+        if dialog.exec():
+            return dialog.get_command_data()
+        return None

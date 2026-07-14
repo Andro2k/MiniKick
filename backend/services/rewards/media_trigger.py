@@ -1,4 +1,4 @@
-# backend\services\stream\media_trigger.py
+# backend\services\rewards\media_trigger.py
 
 import logging
 import os

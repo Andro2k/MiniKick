@@ -1,4 +1,4 @@
-# backend\services\stream\rewards_service.py
+# backend\services\rewards\rewards_service.py
 
 class RewardsService:
     def __init__(self, rewards_storage, overlay_server):

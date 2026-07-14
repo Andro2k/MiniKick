@@ -1,12 +1,15 @@
 # backend/controllers/timer_controller.py
 
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Slot, Signal
 
 class TimerController(QObject):
-    def __init__(self, view, service):
+    metrics_update_requested = Signal()
+
+    def __init__(self, view, service, toast_manager=None):
         super().__init__()
         self.view = view
         self.service = service
+        self.toast = toast_manager
         self._connect_signals()
 
     def _connect_signals(self):
@@ -22,19 +25,15 @@ class TimerController(QObject):
 
     @Slot()
     def _handle_add(self):
-        from frontend.dialogs.timer_dialog import TimerConfigWizard
-        dialog = TimerConfigWizard(self.view.i18n, parent=self.view)
-        
-        if dialog.exec():
-            data = dialog.get_timer_data()
+        data = self.view.show_add_dialog()
+        if data:
             data.pop("timer_id")
             if data["name"] and data["messages"]:
                 self.service.save_timer(**data)
                 self.load_initial_data()
-                if hasattr(self.view.window(), '_update_dashboard_metrics'):
-                    self.view.window()._update_dashboard_metrics()
-                if hasattr(self.view.window(), 'toast'):
-                    self.view.window().toast.show_toast(
+                self.metrics_update_requested.emit()
+                if self.toast:
+                    self.toast.show_toast(
                         title=self.view.i18n.get("timer.status.created"),
                         message=(self.view.i18n.get("timer.status.created_msg")).replace("{name}", data['name']),
                         state="success"
@@ -46,18 +45,15 @@ class TimerController(QObject):
         existing = next((t for t in timers if t["id"] == timer_id), None)
         if not existing:
             return
-        from frontend.dialogs.timer_dialog import TimerConfigWizard
-        dialog = TimerConfigWizard(self.view.i18n, parent=self.view, existing_config=existing)
         
-        if dialog.exec():
-            data = dialog.get_timer_data()
+        data = self.view.show_edit_dialog(existing)
+        if data:
             if data["name"] and data["messages"]:
                 self.service.save_timer(**data)
                 self.load_initial_data()
-                if hasattr(self.view.window(), '_update_dashboard_metrics'):
-                    self.view.window()._update_dashboard_metrics()
-                if hasattr(self.view.window(), 'toast'):
-                    self.view.window().toast.show_toast(
+                self.metrics_update_requested.emit()
+                if self.toast:
+                    self.toast.show_toast(
                         title=self.view.i18n.get("timer.status.updated"),
                         message=(self.view.i18n.get("timer.status.updated_msg")).replace("{name}", data['name']),
                         state="success"
@@ -72,10 +68,9 @@ class TimerController(QObject):
         name = existing["name"]
         self.service.delete_timer(timer_id)
         self.load_initial_data()
-        if hasattr(self.view.window(), '_update_dashboard_metrics'):
-            self.view.window()._update_dashboard_metrics()
-        if hasattr(self.view.window(), 'toast'):
-            self.view.window().toast.show_toast(
+        self.metrics_update_requested.emit()
+        if self.toast:
+            self.toast.show_toast(
                 title=self.view.i18n.get("timer.status.deleted"),
                 message=(self.view.i18n.get("timer.status.deleted_msg")).replace("{name}", name),
                 state="warning"
@@ -98,9 +93,8 @@ class TimerController(QObject):
                 categories=existing["categories"],
                 timer_id=timer_id
             )
-            if hasattr(self.view.window(), '_update_dashboard_metrics'):
-                self.view.window()._update_dashboard_metrics()
-            if hasattr(self.view.window(), 'toast'):
+            self.metrics_update_requested.emit()
+            if self.toast:
                 title_key = "timer.status.enabled" if is_active else "timer.status.disabled"
                 fallback_title = "Temporizador Activado" if is_active else "Temporizador Desactivado"
                 state_color = "success" if is_active else "info"
@@ -108,7 +102,7 @@ class TimerController(QObject):
                 status_txt = self.view.i18n.get("common.status.active") if is_active else self.view.i18n.get("common.status.inactive")
                 message = (self.view.i18n.get("timer.status.toggled_msg")).replace("{name}", existing['name']).replace("{status}", status_txt.lower())
 
-                self.view.window().toast.show_toast(
+                self.toast.show_toast(
                     title=self.view.i18n.get(title_key) or fallback_title,
                     message=message,
                     state=state_color

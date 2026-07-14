@@ -1,4 +1,4 @@
-# backend\services\stream\overlay_server.py
+# backend\services\rewards\overlay_server.py
 
 import logging
 import os

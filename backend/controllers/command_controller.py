@@ -3,10 +3,11 @@
 from PySide6.QtCore import QObject, Slot
 
 class CommandController(QObject):
-    def __init__(self, view, service):
+    def __init__(self, view, service, toast_manager=None):
         super().__init__()
         self.view = view
         self.service = service
+        self.toast = toast_manager
         self._connect_signals()
 
     def _connect_signals(self):
@@ -23,17 +24,14 @@ class CommandController(QObject):
 
     @Slot()
     def _handle_add(self):
-        from frontend.dialogs import CommandConfigWizard
-        dialog = CommandConfigWizard(self.view.i18n, parent=self.view)
-        
-        if dialog.exec():
-            data = dialog.get_command_data()
+        data = self.view.show_add_dialog()
+        if data:
             data.pop("original_trigger")
             if data["trigger"] and data["response"]:
                 self.service.save_command(**data)
                 self.load_initial_data()
-                if hasattr(self.view.window(), 'toast'):
-                    self.view.window().toast.show_toast(
+                if self.toast:
+                    self.toast.show_toast(
                         title=self.view.i18n.get("command.status.created"),
                         message=(self.view.i18n.get("command.status.created_msg")).replace("{trigger}", data['trigger']),
                         state="success"
@@ -45,21 +43,18 @@ class CommandController(QObject):
         existing = next((c for c in commands if c["trigger"] == trigger), None)
         if not existing:
             return
-        from frontend.dialogs import CommandConfigWizard
-        dialog = CommandConfigWizard(self.view.i18n, parent=self.view, existing_config=existing)
         
-        if dialog.exec():
-            data = dialog.get_command_data()
+        data = self.view.show_edit_dialog(existing)
+        if data:
             original_trigger = data.pop("original_trigger")
-            
             if data["response"] and data["trigger"]:
                 if original_trigger and original_trigger != data["trigger"]:
                     self.service.delete_command(original_trigger)
                     
                 self.service.save_command(**data)
                 self.load_initial_data()
-                if hasattr(self.view.window(), 'toast'):
-                    self.view.window().toast.show_toast(
+                if self.toast:
+                    self.toast.show_toast(
                         title=self.view.i18n.get("command.status.updated"),
                         message=(self.view.i18n.get("command.status.updated_msg")).replace("{trigger}", data['trigger']),
                         state="success"
@@ -69,8 +64,8 @@ class CommandController(QObject):
     def _handle_delete(self, trigger: str):
         self.service.delete_command(trigger)
         self.load_initial_data()
-        if hasattr(self.view.window(), 'toast'):
-            self.view.window().toast.show_toast(
+        if self.toast:
+            self.toast.show_toast(
                 title=self.view.i18n.get("command.status.deleted"),
                 message=(self.view.i18n.get("command.status.deleted_msg")).replace("{trigger}", trigger),
                 state="warning"
@@ -91,12 +86,12 @@ class CommandController(QObject):
                 is_regex=existing["is_regex"],
                 permission=existing.get("permission", "everyone")
             )
-            if hasattr(self.view.window(), 'toast'):
+            if self.toast:
                 title_key = "command.status.enabled" if is_active else "command.status.disabled"
                 fallback_title = "Comando Activado" if is_active else "Comando Desactivado"
                 state_color = "success" if is_active else "info"
 
-                self.view.window().toast.show_toast(
+                self.toast.show_toast(
                     title=self.view.i18n.get(title_key) or fallback_title,
                     message=(self.view.i18n.get("command.status.toggled_msg")).replace("{trigger}", trigger),
                     state=state_color

@@ -8,10 +8,11 @@ from PySide6.QtGui import QDesktopServices
 class LogController(QObject):
     log_processed = Signal(bool, str, str, str)
 
-    def __init__(self, view, service):
+    def __init__(self, view, service, toast_manager=None):
         super().__init__()
         self.view = view
         self.service = service
+        self.toast = toast_manager
         
         self._search_term = ""
         self._current_filter = self.view.str_all
@@ -48,10 +49,14 @@ class LogController(QObject):
     def _filter_and_get_logs(self) -> list[tuple[str, str, str]]:
         if self._is_historical:
             filtered = []
+            search_term_lower = self._search_term.lower()
+            is_all = (self._current_filter == self.view.str_all)
             for lvl, t_str, txt in self._historical_logs:
-                is_all = (self._current_filter == self.view.str_all)
-                if (is_all or lvl == self._current_filter) and self._matches_search(lvl, t_str, txt):
-                    filtered.append((lvl, t_str, txt))
+                if is_all or lvl == self._current_filter:
+                    if not search_term_lower or (search_term_lower in lvl.lower() or 
+                                                 search_term_lower in t_str.lower() or 
+                                                 search_term_lower in txt.lower()):
+                        filtered.append((lvl, t_str, txt))
             if len(filtered) > 500:
                 filtered = filtered[-500:]
             return filtered
@@ -85,8 +90,8 @@ class LogController(QObject):
         
         if self._logs_streaming_visible:
             self._refresh_view_logs()
-            if hasattr(self.view.window(), "toast"):
-                self.view.window().toast.show_toast(
+            if self.toast:
+                self.toast.show_toast(
                     title=self.view.i18n.get("log.status.live_title"),
                     message=self.view.i18n.get("log.status.live_msg"),
                     state="info",
@@ -112,8 +117,8 @@ class LogController(QObject):
             streaming_visible=self._logs_streaming_visible
         )
         
-        if hasattr(self.view.window(), "toast"):
-            self.view.window().toast.show_toast(
+        if self.toast:
+            self.toast.show_toast(
                 title=self.view.i18n.get("log.status.paused_title"),
                 message=self.view.i18n.get("log.status.paused_msg"),
                 state="success",
@@ -125,8 +130,8 @@ class LogController(QObject):
         self.view.clear_table()
         self.view.clear_pending_ops()
         
-        if hasattr(self.view.window(), "toast"):
-            self.view.window().toast.show_toast(
+        if self.toast:
+            self.toast.show_toast(
                 title=self.view.i18n.get("log.status.cleared_title"),
                 message=self.view.i18n.get("log.status.cleared_msg"),
                 state="info",
@@ -155,8 +160,8 @@ class LogController(QObject):
             )
             self._refresh_view_logs()
             
-            if hasattr(self.view.window(), "toast"):
-                self.view.window().toast.show_toast(
+            if self.toast:
+                self.toast.show_toast(
                     title=self.view.i18n.get("log.status.historical_title"),
                     message=self.view.i18n.get("log.status.historical_msg").replace("{file}", file_name),
                     state="warning",

@@ -3,10 +3,11 @@
 from PySide6.QtCore import QObject, Slot
 
 class SpamController(QObject):
-    def __init__(self, view, service):
+    def __init__(self, view, service, toast_manager=None):
         super().__init__()
         self.view = view
         self.service = service
+        self.toast = toast_manager
         self._connect_signals()
 
     def _connect_signals(self):
@@ -45,8 +46,8 @@ class SpamController(QObject):
             message = self.view.i18n.get("spam.status.updated_msg").replace("{filter_name}", filter_name)
             state = "success"
 
-        if hasattr(self.view.window(), 'toast'):
-            self.view.window().toast.show_toast(
+        if self.toast:
+            self.toast.show_toast(
                 title=title,
                 message=message,
                 state=state

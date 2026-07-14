@@ -14,7 +14,7 @@ class ChatController(QObject):
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
 
-    def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None):
+    def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None):
         super().__init__()
         self.view = view
         self.service = service
@@ -22,6 +22,7 @@ class ChatController(QObject):
         self.spam_service = spam_service
         self.i18n = i18n        
         self.timer_service = timer_service
+        self.toast = toast_manager
         self.muted_bots: set[str] = set()
         self._all_voices: list[dict] = []
         self._voice_worker = None
@@ -254,8 +255,8 @@ class ChatController(QObject):
         ]
         self._on_voices_fetched(fallback, provider, is_initial=True)
         
-        if hasattr(self.view.window(), 'toast'):
-            self.view.window().toast.show_toast(
+        if self.toast:
+            self.toast.show_toast(
                 title="Red TTS Inestable",
                 message=f"Cargado modo offline: {error_msg}",
                 state="warning"
@@ -288,11 +289,11 @@ class ChatController(QObject):
         self.service.set_provider(provider)
         self._load_voices(provider)
         
-        if hasattr(self.view.window(), 'toast'):
+        if self.toast:
             mode_name = "Neural IA (Nube Edge)" if is_web else "SAPI5 / OS (Local)"
             state_color = "info" if is_web else "success"
 
-            self.view.window().toast.show_toast(
+            self.toast.show_toast(
                 title=self.view.i18n.get("chat.status.provider_title"),
                 message=f"Modo activo: {mode_name}",
                 state=state_color
@@ -355,12 +356,12 @@ class ChatController(QObject):
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
             self._tts_enabled = new_tts_state
             
-            if hasattr(self.view.window(), 'toast'):
+            if self.toast:
                 status_title = self.view.i18n.get("chat.status.tts_title")
                 status_msg = "Voz automática activada" if new_tts_state else "Chat silenciado"
                 state_color = "success" if new_tts_state else "warning"
                 
-                self.view.window().toast.show_toast(
+                self.toast.show_toast(
                     title=status_title,
                     message=status_msg,
                     state=state_color

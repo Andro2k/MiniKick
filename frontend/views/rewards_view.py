@@ -135,3 +135,37 @@ class RewardsView(BaseView):
     def _reset_copy_btn(self, original_text: str):
         self.btn_copy_url.setText(original_text)
         self.btn_copy_url.setEnabled(True)
+
+    def show_add_dialog(self, available_rewards: list) -> tuple[str, dict] | None:
+        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
+        self._active_dialog = RewardsConfigWizard(
+            self.i18n, 
+            parent=self, 
+            rewards_list=available_rewards
+        )
+        try:
+            if self._active_dialog.exec():
+                return self._active_dialog.get_config_data()
+        finally:
+            self._active_dialog = None
+        return None
+
+    def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str) -> tuple[str, dict] | None:
+        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
+        self._active_dialog = RewardsConfigWizard(
+            self.i18n, 
+            parent=self, 
+            rewards_list=available_rewards, 
+            existing_config=existing_config, 
+            existing_reward=existing_reward
+        )
+        try:
+            if self._active_dialog.exec():
+                return self._active_dialog.get_config_data()
+        finally:
+            self._active_dialog = None
+        return None
+
+    def update_active_dialog_rewards(self, available_rewards: list):
+        if hasattr(self, '_active_dialog') and self._active_dialog:
+            self._active_dialog.update_rewards(available_rewards)
