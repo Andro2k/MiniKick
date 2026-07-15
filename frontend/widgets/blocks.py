@@ -1,6 +1,6 @@
-# frontend/widgets/blocks.py
+# frontend\widgets\blocks.py
 
-from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea, QSpinBox, QPushButton
+from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea, QSpinBox, QPushButton, QLineEdit
 from PySide6.QtCore import Qt, Signal
 from frontend.common.utils import get_icon_colored, NoWheelComboBox
 from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400
@@ -239,6 +239,8 @@ class ExpandableSettingCard(QFrame):
         self.combo_penalty = NoWheelComboBox()
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban") or "Expulsar (Ban)", "ban")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_warn_delete") or "Advertir y borrar", "warn_delete")
         self.combo_penalty.currentIndexChanged.connect(self._emit_update)
         col_left.addWidget(lbl_pen)
         col_left.addWidget(self.combo_penalty)
@@ -258,13 +260,22 @@ class ExpandableSettingCard(QFrame):
         lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
         lbl_dur.setProperty("role", "body")
         self.spin_dur = QSpinBox()
-        self.spin_dur.setRange(10, 86400)
-        self.spin_dur.setValue(300)
+        self.spin_dur.setRange(1, 10080)
+        self.spin_dur.setValue(5)
         self.spin_dur.valueChanged.connect(self._emit_update)
         col_right.addWidget(lbl_dur)
         col_right.addWidget(self.spin_dur)
         
-        if self.has_amount:
+        if self.card_id == "link_protection":
+            col_right.addSpacing(4)
+            lbl_allow = QLabel(self.i18n.get("spam.card.allowlist") or "Enlaces permitidos (Allowlist)")
+            lbl_allow.setProperty("role", "body")
+            self.txt_allowlist = QLineEdit()
+            self.txt_allowlist.setPlaceholderText("ej: clips.kick.com, youtube.com")
+            self.txt_allowlist.textChanged.connect(self._emit_update)
+            col_right.addWidget(lbl_allow)
+            col_right.addWidget(self.txt_allowlist)
+        elif self.has_amount:
             col_right.addSpacing(4)
             
             lbl_amt = QLabel(self.i18n.get("spam.card.max_amount"))
@@ -295,7 +306,8 @@ class ExpandableSettingCard(QFrame):
             "penalty": self.combo_penalty.currentData(),
             "duration": self.spin_dur.value(),
             "exclude_group": self.combo_exclude.currentData(),
-            "max_amount": self.spin_amt.value() if self.has_amount else 0
+            "max_amount": self.spin_amt.value() if (self.has_amount and self.card_id != "link_protection") else 0,
+            "allowlist": self.txt_allowlist.text() if self.card_id == "link_protection" else ""
         }
         self.updated.emit(self.card_id, config)
 
@@ -307,7 +319,8 @@ class ExpandableSettingCard(QFrame):
         self.spin_dur.setValue(config.get("duration", 300))
         index_exc = self.combo_exclude.findData(config.get("exclude_group", "none"))
         if index_exc >= 0: self.combo_exclude.setCurrentIndex(index_exc)
-        if self.has_amount:
+        if self.card_id == "link_protection":
+            self.txt_allowlist.setText(config.get("allowlist", ""))
+        elif self.has_amount:
             self.spin_amt.setValue(config.get("max_amount", 10))
         self._is_loading = False
-

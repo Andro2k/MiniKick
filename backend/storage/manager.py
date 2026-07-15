@@ -111,7 +111,7 @@ class DatabaseManager:
                     filter_id TEXT PRIMARY KEY,
                     is_active INTEGER DEFAULT 0,
                     penalty TEXT DEFAULT 'timeout',
-                    duration INTEGER DEFAULT 300,
+                    duration INTEGER DEFAULT 5,
                     exclude_group TEXT DEFAULT 'none',
                     max_amount INTEGER DEFAULT 0
                 )
@@ -316,6 +316,13 @@ class DatabaseManager:
             columns = [info[1] for info in cursor.fetchall()]
             if "provider" not in columns:
                 cursor.execute("ALTER TABLE tokens ADD COLUMN provider TEXT DEFAULT 'kick'")
+                
+            cursor.execute("PRAGMA table_info(spam_filters)")
+            columns = [info[1] for info in cursor.fetchall()]
+            if "allowlist" not in columns:
+                cursor.execute("ALTER TABLE spam_filters ADD COLUMN allowlist TEXT DEFAULT ''")
+                
+            cursor.execute("UPDATE spam_filters SET duration = duration / 60 WHERE duration >= 60")
                 
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
             conn.commit()

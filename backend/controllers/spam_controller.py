@@ -41,14 +41,10 @@ class SpamController(QObject):
             title = self.view.i18n.get(title_key)
             message = self.view.i18n.get(msg_key).replace("{filter_name}", filter_name)
             state = "success" if is_active else "info"
-        else:
-            title = self.view.i18n.get("spam.status.updated")
-            message = self.view.i18n.get("spam.status.updated_msg").replace("{filter_name}", filter_name)
-            state = "success"
 
-        if self.toast:
-            self.toast.show_toast(
-                title=title,
-                message=message,
-                state=state
-            )
+            if self.toast:
+                self.toast.show_toast(
+                    title=title,
+                    message=message,
+                    state=state
+                )

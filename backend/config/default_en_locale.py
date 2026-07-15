@@ -95,7 +95,10 @@ DEFAULT_DICTIONARY = {
             "action": "Action",
             "action_timeout": "Timeout user",
             "action_delete": "Delete message",
-            "duration": "Duration (seconds)",
+            "action_ban": "Ban user",
+            "action_warn_delete": "Warn and delete message",
+            "allowlist": "Allowed links (Allowlist)",
+            "duration": "Duration (minutes)",
             "exclude": "Exclude rank (Immune)",
             "exclude_none": "None",
             "exclude_mod": "Moderators & Broadcaster",
@@ -131,10 +134,8 @@ DEFAULT_DICTIONARY = {
         "status": {
             "activated": "Filter Activated",
             "deactivated": "Filter Deactivated",
-            "updated": "Filter Updated",
             "activated_msg": "The filter '{filter_name}' is now active.",
-            "deactivated_msg": "The filter '{filter_name}' is now inactive.",
-            "updated_msg": "Configuration for filter '{filter_name}' has been saved."
+            "deactivated_msg": "The filter '{filter_name}' is now inactive."
         }
     },
     "command": {
@@ -296,7 +297,8 @@ DEFAULT_DICTIONARY = {
             "btn_clear": "Clear",
             "btn_report": "Report Bug",
             "btn_show_logs": "View Logs",
-            "btn_hide_logs": "Hide Logs"
+            "btn_hide_logs": "Hide Logs",
+            "filter_by_date": "Filter by date"
         },
         "empty": {
             "title": "Console paused",

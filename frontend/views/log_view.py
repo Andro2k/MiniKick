@@ -1,12 +1,12 @@
 # frontend\views\log_view.py
 
 import os
-from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
+from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize, QDate
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import (
     QFileDialog, QFrame, QHeaderView, QHBoxLayout, QLabel, QMessageBox,
     QStackedWidget, QTableWidgetItem, QVBoxLayout, QWidget,
-    QGridLayout, QLineEdit, QBoxLayout, QSizePolicy
+    QGridLayout, QLineEdit, QBoxLayout, QSizePolicy, QCheckBox, QDateEdit
 )
 from frontend.widgets.base_view import BaseView
 from frontend.widgets.table import ModernTable
@@ -18,6 +18,7 @@ from frontend.common.utils import get_assets_path, get_icon_colored, NoWheelComb
 class LogControlsPanel(QFrame):
     search_changed = Signal(str)
     filter_changed = Signal(str)
+    date_changed = Signal(str)
     folder_requested = Signal()
     load_requested = Signal()
     live_requested = Signal()
@@ -52,8 +53,19 @@ class LogControlsPanel(QFrame):
         self.combo_filter.setMinimumWidth(110)
         self.combo_filter.currentTextChanged.connect(self.filter_changed.emit)
 
+        self.chk_date = QCheckBox(self.i18n.get("log.controls.filter_by_date"))
+        self.chk_date.toggled.connect(self._on_date_filter_toggled)
+
+        self.date_edit = QDateEdit()
+        self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDate(QDate.currentDate())
+        self.date_edit.setEnabled(False)
+        self.date_edit.dateChanged.connect(self._on_date_changed)
+
         self._search.addWidget(self.txt_search, 1)
         self._search.addWidget(self.combo_filter)
+        self._search.addWidget(self.chk_date)
+        self._search.addWidget(self.date_edit)
         root.addLayout(self._search)
 
         self._actions = QGridLayout()
@@ -132,6 +144,14 @@ class LogControlsPanel(QFrame):
         self.btn_toggle_view.setText(self.i18n.get(key))
         self.set_streaming_controls_enabled(logs_visible)
 
+    def _on_date_filter_toggled(self, checked: bool):
+        self.date_edit.setEnabled(checked)
+        self.date_changed.emit(self.date_edit.date().toString("yyyy-MM-dd") if checked else "")
+
+    def _on_date_changed(self, qdate: QDate):
+        if self.chk_date.isChecked():
+            self.date_changed.emit(qdate.toString("yyyy-MM-dd"))
+
 LOG_ILLUSTRATION_FILE = "file-search.svg"
 _LEVEL_COLORS = {
     "DEBUG": COLOR_NEUTRAL_400,
@@ -157,6 +177,7 @@ def _get_level_icon(level: str) -> QIcon:
 class LogView(BaseView):
     search_changed = Signal(str)
     filter_changed = Signal(str)
+    date_changed = Signal(str)
     open_folder_requested = Signal()
     load_requested = Signal()
     live_requested = Signal()
@@ -188,6 +209,7 @@ class LogView(BaseView):
         self.controls_panel = LogControlsPanel(self.i18n)
         self.controls_panel.search_changed.connect(self.search_changed.emit)
         self.controls_panel.filter_changed.connect(self.filter_changed.emit)
+        self.controls_panel.date_changed.connect(self.date_changed.emit)
         self.controls_panel.folder_requested.connect(self.open_folder_requested.emit)
         self.controls_panel.load_requested.connect(self.load_requested.emit)
         self.controls_panel.live_requested.connect(self.live_requested.emit)

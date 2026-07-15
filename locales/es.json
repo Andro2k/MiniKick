@@ -93,7 +93,10 @@
             "action": "Acción",
             "action_timeout": "Silenciar usuario",
             "action_delete": "Eliminar mensaje",
-            "duration": "Duración (segundos)",
+            "action_ban": "Expulsar usuario (Ban)",
+            "action_warn_delete": "Advertir y borrar mensaje",
+            "allowlist": "Enlaces permitidos (Allowlist)",
+            "duration": "Duración (minutos)",
             "exclude": "Excluir rango (Inmune)",
             "exclude_none": "Ninguno",
             "exclude_mod": "Moderadores y Streamer",
@@ -129,10 +132,8 @@
         "status": {
             "activated": "Filtro Activado",
             "deactivated": "Filtro Desactivado",
-            "updated": "Filtro Actualizado",
             "activated_msg": "El filtro '{filter_name}' ahora está activo.",
-            "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo.",
-            "updated_msg": "Se guardó la configuración del filtro '{filter_name}'."
+            "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo."
         }
     },
     "command": {
@@ -294,7 +295,8 @@
             "btn_clear": "Limpiar",
             "btn_report": "Reportar Bug",
             "btn_show_logs": "Ver Logs",
-            "btn_hide_logs": "Ocultar Logs"
+            "btn_hide_logs": "Ocultar Logs",
+            "filter_by_date": "Filtrar por fecha"
         },
         "empty": {
             "title": "Consola en pausa",

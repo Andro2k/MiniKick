@@ -1,4 +1,4 @@
-# backend\storage\spam_storage.py
+# backend/storage/spam_storage.py
 
 from backend.storage.manager import DatabaseManager
 
@@ -9,7 +9,7 @@ class SQLiteSpamStorage:
     def load_all(self) -> dict:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT filter_id, is_active, penalty, duration, exclude_group, max_amount FROM spam_filters")
+            cursor.execute("SELECT filter_id, is_active, penalty, duration, exclude_group, max_amount, allowlist FROM spam_filters")
             filters = {}
             for row in cursor.fetchall():
                 filters[row[0]] = {
@@ -17,7 +17,8 @@ class SQLiteSpamStorage:
                     "penalty": row[2],
                     "duration": row[3],
                     "exclude_group": row[4],
-                    "max_amount": row[5]
+                    "max_amount": row[5],
+                    "allowlist": row[6] if len(row) > 6 and row[6] is not None else ""
                 }
             return filters
 
@@ -25,13 +26,14 @@ class SQLiteSpamStorage:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO spam_filters (filter_id, is_active, penalty, duration, exclude_group, max_amount)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO spam_filters (filter_id, is_active, penalty, duration, exclude_group, max_amount, allowlist)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(filter_id) DO UPDATE SET
                     is_active=excluded.is_active, penalty=excluded.penalty, duration=excluded.duration,
-                    exclude_group=excluded.exclude_group, max_amount=excluded.max_amount
+                    exclude_group=excluded.exclude_group, max_amount=excluded.max_amount, allowlist=excluded.allowlist
             """, (
                 filter_id, int(config.get("is_active", False)), config.get("penalty", "timeout"),
-                config.get("duration", 300), config.get("exclude_group", "none"), config.get("max_amount", 0)
+                config.get("duration", 300), config.get("exclude_group", "none"), config.get("max_amount", 0),
+                config.get("allowlist", "")
             ))
             conn.commit()

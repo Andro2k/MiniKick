@@ -145,19 +145,31 @@ class KickAPIClient:
             logging.error("[KickAPI] Error deleting message: %s", e)
             return False
 
-    def timeout_user(self, broadcaster_id: int, user_id: int, duration_seconds: int) -> bool:
-        duration_minutes = max(1, duration_seconds // 60) 
+    def timeout_user(self, broadcaster_id: int, user_id: int, duration_minutes: int) -> bool:
         url = "https://api.kick.com/public/v1/moderation/bans"
         payload = {
             "broadcaster_user_id": broadcaster_id,
             "user_id": user_id,
-            "duration": duration_minutes
+            "duration": max(1, min(duration_minutes, 10080))
         }
         try:
             resp = self._request("POST", url, json=payload, timeout=10)
             return resp.status_code == 200
         except Exception as e:
             logging.error("[KickAPI] Error applying timeout: %s", e)
+            return False
+
+    def ban_user(self, broadcaster_id: int, user_id: int) -> bool:
+        url = "https://api.kick.com/public/v1/moderation/bans"
+        payload = {
+            "broadcaster_user_id": broadcaster_id,
+            "user_id": user_id
+        }
+        try:
+            resp = self._request("POST", url, json=payload, timeout=10)
+            return resp.status_code == 200
+        except Exception as e:
+            logging.error("[KickAPI] Error applying ban: %s", e)
             return False
         
     def get_users_by_ids(self, user_ids: list) -> dict:

@@ -63,8 +63,17 @@ class SpamService:
                     is_violation = True
 
             elif f_id == "link_protection":
-                if self._LINK_REGEX.search(message):
-                    is_violation = True
+                found_links = self._LINK_REGEX.findall(message)
+                if found_links:
+                    allowlist_str = config.get("allowlist", "")
+                    allowed_domains = [d.strip().lower() for d in allowlist_str.split(",") if d.strip()]
+                    
+                    is_violation = False
+                    for link in found_links:
+                        link_lower = link.lower()
+                        if not any(domain in link_lower for domain in allowed_domains):
+                            is_violation = True
+                            break
 
             elif f_id == "repetition_protection":
                 words = message.lower().split()
@@ -93,7 +102,7 @@ class SpamService:
 
     def _apply_penalty(self, user: str, sender_id: int, msg_id: str, config: dict, filter_id: str, message: str):
         penalty_type = config.get("penalty", "timeout")
-        duration_secs = config.get("duration", 300)
+        duration_mins = config.get("duration", 5)
 
         if hasattr(self.storage, "db_manager") and self.storage.db_manager:
             self.storage.db_manager.log_spam_violation(
@@ -102,7 +111,7 @@ class SpamService:
                 filter_id=filter_id,
                 message_content=message,
                 penalty_type=penalty_type,
-                duration=duration_secs
+                duration=duration_mins
             )
 
         if not self.api_client:
@@ -113,7 +122,15 @@ class SpamService:
                 self.api_client.delete_chat_message(msg_id)
                 
             elif penalty_type == "timeout" and self.broadcaster_id:
-                self.api_client.timeout_user(self.broadcaster_id, sender_id, duration_secs)
+                self.api_client.timeout_user(self.broadcaster_id, sender_id, duration_mins)
+                
+            elif penalty_type == "ban" and self.broadcaster_id:
+                self.api_client.ban_user(self.broadcaster_id, sender_id)
+                
+            elif penalty_type == "warn_delete":
+                self.api_client.delete_chat_message(msg_id)
+                warn_msg = f"@{user} por favor evita el spam en el chat."
+                self.api_client.post_chat_message(warn_msg, msg_type="bot")
                 
         except Exception as e:
             logging.error("[SpamService] Error attempting to penalize %s: %s", user, e)

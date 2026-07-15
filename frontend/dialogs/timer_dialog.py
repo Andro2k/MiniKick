@@ -54,6 +54,7 @@ class TimerConfigWizard(ModernWizardPanel):
         lbl_name.setProperty("role", "h3")
         self.txt_name = QLineEdit()
         self.txt_name.setPlaceholderText(self.i18n.get("timer.dialog.name_placeholder"))
+        self.txt_name.textChanged.connect(self._update_btn_next_state)
         left_layout.addWidget(lbl_name)
         left_layout.addWidget(self.txt_name)
 
@@ -89,6 +90,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval_label"))
         self.chk_online.setChecked(True)
         self.chk_online.toggled.connect(self._on_online_toggled)
+        self.chk_online.toggled.connect(self._update_btn_next_state)
         
         online_controls = QHBoxLayout()
         self.slider_online = NoWheelSlider(Qt.Orientation.Horizontal)
@@ -110,6 +112,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.chk_offline = QCheckBox(self.i18n.get("timer.dialog.offline_interval_label"))
         self.chk_offline.setChecked(True)
         self.chk_offline.toggled.connect(self._on_offline_toggled)
+        self.chk_offline.toggled.connect(self._update_btn_next_state)
         
         offline_controls = QHBoxLayout()
         self.slider_offline = NoWheelSlider(Qt.Orientation.Horizontal)
@@ -223,6 +226,7 @@ class TimerConfigWizard(ModernWizardPanel):
         txt = QLineEdit()
         txt.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))
         txt.setText(text)
+        txt.textChanged.connect(self._update_btn_next_state)
         row_layout.addWidget(txt)
         
         btn_del = ModernButton("", role="action_danger_border")
@@ -243,6 +247,7 @@ class TimerConfigWizard(ModernWizardPanel):
                 self.messages_layout.removeWidget(row_widget)
                 row_widget.deleteLater()
                 break
+        self._update_btn_next_state()
 
     def _on_online_toggled(self, checked):
         self.slider_online.setEnabled(checked)
@@ -329,3 +334,10 @@ class TimerConfigWizard(ModernWizardPanel):
             "keywords": keywords,
             "categories": categories
         }
+
+    def _update_step_ui(self):
+        super()._update_step_ui()
+        self._update_btn_next_state()
+
+    def _update_btn_next_state(self):
+        self.btn_next.setEnabled(self.validate_step(self.current_step))

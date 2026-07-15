@@ -66,7 +66,7 @@ class LogService:
                 print("Error fetching logs from DB:", e)
         return self._live_history
 
-    def get_filtered_history(self, filter_level: str, all_label: str, search_term: str) -> list[tuple[str, str, str]]:
+    def get_filtered_history(self, filter_level: str, all_label: str, search_term: str, date_filter: str = "") -> list[tuple[str, str, str]]:
         if self.db_manager:
             try:
                 with self.db_manager.get_connection() as conn:
@@ -77,6 +77,10 @@ class LogService:
                     if filter_level != all_label:
                         query += " AND level = ?"
                         params.append(filter_level)
+                        
+                    if date_filter:
+                        query += " AND timestamp LIKE ?"
+                        params.append(f"{date_filter}%")
                         
                     if search_term.strip():
                         term = f"%{search_term.strip().lower()}%"
@@ -95,9 +99,10 @@ class LogService:
         for lvl, t_str, txt in self._live_history:
             is_all = (filter_level == all_label)
             if (is_all or lvl == filter_level):
-                search_lower = search_term.strip().lower()
-                if not search_lower or (search_lower in lvl.lower() or search_lower in t_str.lower() or search_lower in txt.lower()):
-                    filtered.append((lvl, t_str, txt))
+                if not date_filter or t_str.startswith(date_filter):
+                    search_lower = search_term.strip().lower()
+                    if not search_lower or (search_lower in lvl.lower() or search_lower in t_str.lower() or search_lower in txt.lower()):
+                        filtered.append((lvl, t_str, txt))
         return filtered
 
     def parse_log_file(self, file_path: str, fallback_level: str) -> list[tuple[str, str, str]]:

@@ -16,6 +16,7 @@ class LogController(QObject):
         
         self._search_term = ""
         self._current_filter = self.view.str_all
+        self._date_filter = ""
         self._is_historical = False
         self._logs_streaming_visible = False
         self._historical_logs = []
@@ -30,6 +31,7 @@ class LogController(QObject):
     def _connect_signals(self):
         self.view.search_changed.connect(self.handle_search_changed)
         self.view.filter_changed.connect(self.handle_filter_changed)
+        self.view.date_changed.connect(self.handle_date_changed)
         self.view.open_folder_requested.connect(self.open_log_folder)
         self.view.load_requested.connect(self.handle_load_requested)
         self.view.live_requested.connect(self.handle_live_requested)
@@ -53,15 +55,16 @@ class LogController(QObject):
             is_all = (self._current_filter == self.view.str_all)
             for lvl, t_str, txt in self._historical_logs:
                 if is_all or lvl == self._current_filter:
-                    if not search_term_lower or (search_term_lower in lvl.lower() or 
-                                                 search_term_lower in t_str.lower() or 
-                                                 search_term_lower in txt.lower()):
-                        filtered.append((lvl, t_str, txt))
+                    if not self._date_filter or t_str.startswith(self._date_filter):
+                        if not search_term_lower or (search_term_lower in lvl.lower() or 
+                                                     search_term_lower in t_str.lower() or 
+                                                     search_term_lower in txt.lower()):
+                            filtered.append((lvl, t_str, txt))
             if len(filtered) > 500:
                 filtered = filtered[-500:]
             return filtered
         else:
-            return self.service.get_filtered_history(self._current_filter, self.view.str_all, self._search_term)
+            return self.service.get_filtered_history(self._current_filter, self.view.str_all, self._search_term, self._date_filter)
 
     def _refresh_view_logs(self):
         if self._logs_streaming_visible or self._is_historical:
@@ -78,6 +81,11 @@ class LogController(QObject):
     @Slot(str)
     def handle_filter_changed(self, filter_text: str):
         self._current_filter = filter_text
+        self._refresh_view_logs()
+
+    @Slot(str)
+    def handle_date_changed(self, date_str: str):
+        self._date_filter = date_str
         self._refresh_view_logs()
 
     @Slot()
@@ -185,7 +193,8 @@ class LogController(QObject):
         if not self._is_historical and self._logs_streaming_visible:
             is_all = (self._current_filter == self.view.str_all)
             if (is_all or real_level == self._current_filter) and self._matches_search(real_level, time_str, text_str):
-                self.view.append_log(is_grouped, real_level, time_str, text_str)
+                if not self._date_filter or time_str.startswith(self._date_filter):
+                    self.view.append_log(is_grouped, real_level, time_str, text_str)
 
     @Slot()
     def open_github_issues(self):

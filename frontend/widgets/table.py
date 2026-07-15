@@ -113,7 +113,7 @@ class ModernTableCard(QFrame):
     def set_empty(self, is_empty: bool):
         if is_empty and self.stack.count() > 1:
             self.stack.setCurrentIndex(1)
-            if self.txt_search:
+            if self.txt_search and not self.txt_search.text().strip():
                 self.txt_search.setVisible(False)
         else:
             self.stack.setCurrentIndex(0)
