@@ -1,10 +1,10 @@
-# frontend\navigation\bot_panel_component.py
+# frontend/components/chat/bot_mute.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QListWidget, QListView, 
                                QFrame, QPushButton, QListWidgetItem)
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
-from frontend.widgets.controls_component import ModernButton
+from frontend.widgets.controls import ModernButton
 from frontend.common.theme import COLOR_BLACK, COLOR_RED
 from frontend.common.utils import get_icon_colored
 

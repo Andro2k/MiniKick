@@ -7,8 +7,8 @@ from frontend.common.utils import NoWheelComboBox
 
 from frontend.common.theme import COLOR_RED
 from frontend.widgets.base_view import BaseView
-from frontend.widgets.blocks_component import SettingRow, ModernCard
-from frontend.widgets.controls_component import ModernButton, ModernSwitch
+from frontend.widgets.blocks import SettingRow, ModernCard
+from frontend.widgets.controls import ModernButton, ModernSwitch
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)

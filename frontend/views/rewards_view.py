@@ -5,9 +5,9 @@ from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot
 
 from frontend.widgets.base_view import BaseView
-from frontend.widgets.blocks_component import SettingRow, ModernCard
-from frontend.widgets.table_component import ModernTableCard, TableActionCell
-from frontend.widgets.controls_component import ModernButton
+from frontend.widgets.blocks import SettingRow, ModernCard
+from frontend.widgets.table import ModernTableCard, TableActionCell
+from frontend.widgets.controls import ModernButton
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_RED
 
 class RewardsView(BaseView):

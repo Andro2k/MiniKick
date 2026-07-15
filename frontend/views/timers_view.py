@@ -1,10 +1,10 @@
-# frontend/views/timers_view.py
+# frontend\views\timers_view.py
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
 
 from frontend.widgets.base_view import BaseView
-from frontend.widgets.table_component import ModernTableCard, TableActionCell
+from frontend.widgets.table import ModernTableCard, TableActionCell
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
 
 class TimersView(BaseView):

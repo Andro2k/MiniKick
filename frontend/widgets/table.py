@@ -1,9 +1,9 @@
-# frontend/widgets/table_component.py
+# frontend/widgets/table.py
 
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QWidget, QStackedWidget
 from PySide6.QtCore import Qt
-from frontend.widgets.controls_component import ModernButton, ModernSwitch
+from frontend.widgets.controls import ModernButton, ModernSwitch
 from frontend.widgets.scalable_illustration import ScalableIllustration
 from frontend.common.theme import COLOR_BLACK
 from frontend.common.utils import get_icon_colored, get_assets_path

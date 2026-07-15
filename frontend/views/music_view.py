@@ -1,12 +1,12 @@
 # frontend\views\music_view.py
 
-from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QScrollArea, QPushButton
+from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider
 from frontend.widgets.base_view import BaseView
-from frontend.widgets.blocks_component import SettingRow, SliderRow, ModernCard
-from frontend.widgets.controls_component import ModernButton, ModernSwitch
+from frontend.widgets.blocks import SettingRow, SliderRow, ModernCard, ModernScrollArea
+from frontend.widgets.controls import ModernButton, ModernSwitch
 from frontend.widgets.flow_layout import FlowLayout
 
 class MusicView(BaseView):
@@ -237,16 +237,10 @@ class MusicView(BaseView):
         
         self.card_queue.addLayout(header_layout)
         
-        self.queue_scroll = QScrollArea()
-        self.queue_scroll.setWidgetResizable(True)
-        self.queue_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self.queue_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.queue_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        
         self.queue_list_widget = QWidget()
         self.queue_list_layout = FlowLayout(self.queue_list_widget, margin=0, hspacing=8, vspacing=8)
         
-        self.queue_scroll.setWidget(self.queue_list_widget)
+        self.queue_scroll = ModernScrollArea(self.queue_list_widget)
         self.card_queue.addWidget(self.queue_scroll)
         
         self.lbl_empty_queue = QLabel(self.i18n.get("music.queue.empty"))
