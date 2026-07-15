@@ -353,6 +353,10 @@
             "title": "Muted Users",
             "input_placeholder": "ex. botrix"
         },
+        "banned_words": {
+            "title": "Banned Words",
+            "input_placeholder": "ex. insult"
+        },
         "roles": {
             "title": "Voices by Role",
             "subtitle": "Define custom voices for different chat roles.",

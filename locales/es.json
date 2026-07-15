@@ -353,6 +353,10 @@
             "title": "Usuarios Silenciados",
             "input_placeholder": "ej. botrix"
         },
+        "banned_words": {
+            "title": "Palabras Prohibidas",
+            "input_placeholder": "ej. insulto"
+        },
         "roles": {
             "title": "Voces por Rol",
             "subtitle": "Define voces personalizadas para los distintos roles del chat.",

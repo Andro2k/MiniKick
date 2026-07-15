@@ -33,9 +33,16 @@ class ChatTtsSettingsPanel(ModernCard):
 
         row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
         row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
-        row_provider = SettingRow("world.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.chk_provider)
         row_cmd = SettingRow("code.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
-        row_volume = SliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
+        
+        self.txt_command = QLineEdit()
+        self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
+        self.txt_command.setFixedWidth(80)
+        row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
+
+        voice_volume_card = ModernCard(margin=8, spacing=6, orientation="vertical")
+        
+        row_provider = SettingRow("world.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.chk_provider)
         
         lang_voice_layout = QHBoxLayout()
         self.combo_lang = NoWheelComboBox()
@@ -43,20 +50,18 @@ class ChatTtsSettingsPanel(ModernCard):
         self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         lang_voice_layout.addWidget(self.combo_lang)
         lang_voice_layout.addWidget(self.combo_voice)
-
-        self.txt_command = QLineEdit()
-        self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
-        self.txt_command.setFixedWidth(80)
-
-        row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
+        
+        row_volume = SliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
+        
+        voice_volume_card.addWidget(row_provider)
+        voice_volume_card.addLayout(lang_voice_layout)
+        voice_volume_card.addWidget(row_volume)
 
         self.addWidget(row_tts)
         self.addWidget(row_read_name)
-        self.addWidget(row_provider)
-        self.addLayout(lang_voice_layout)
-        self.addWidget(row_volume)
         self.addWidget(row_cmd)
         self.addWidget(row_prefix)
+        self.addWidget(voice_volume_card)
 
         divider = QFrame()
         divider.setProperty("role", "divider")
@@ -161,7 +166,7 @@ class ChatTtsSettingsPanel(ModernCard):
                 self.combo_lang.setCurrentIndex(idx)
         self.combo_lang.blockSignals(False)
 
-    def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None):
+    def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):
         self.combo_voice.blockSignals(True)
         self.combo_voice.clear()
         index_to_select = 0
@@ -183,6 +188,8 @@ class ChatTtsSettingsPanel(ModernCard):
             "subscriber": self.combo_voice_subscriber
         }
 
+        role_voices_pool = all_voices if all_voices is not None else voices
+
         for role, combo in role_combos.items():
             combo.blockSignals(True)
             combo.clear()
@@ -193,7 +200,7 @@ class ChatTtsSettingsPanel(ModernCard):
             target_id = role_voices.get(role, "") if role_voices else ""
             select_idx = 0
 
-            for i, (v_id, v_name) in enumerate(voices):
+            for i, (v_id, v_name) in enumerate(role_voices_pool):
                 combo.addItem(v_name, userData=v_id)
                 if v_id == target_id:
                     select_idx = i + 1

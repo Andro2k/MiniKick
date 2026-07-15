@@ -355,6 +355,10 @@ DEFAULT_DICTIONARY = {
             "title": "Muted Users",
             "input_placeholder": "ex. botrix"
         },
+        "banned_words": {
+            "title": "Banned Words",
+            "input_placeholder": "ex. insult"
+        },
         "roles": {
             "title": "Voices by Role",
             "subtitle": "Define custom voices for different chat roles.",
@@ -388,6 +392,7 @@ DEFAULT_DICTIONARY = {
             "theme_glass": "Glassmorphism",
             "theme_neon": "Neon Glow (Neon)",
             "theme_card": "Solid Card",
+            "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_minimal": "Minimalist",
             "size_title": "Font Size",
             "size_desc": "Modify the overlay text font size in pixels.",

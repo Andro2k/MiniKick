@@ -18,6 +18,8 @@ class ChatView(BaseView):
     settings_changed = Signal()
     bot_add_requested = Signal(str)
     bot_remove_requested = Signal(str)
+    word_add_requested = Signal(str)
+    word_remove_requested = Signal(str)
     language_filter_changed = Signal(str)
 
     def __init__(self, i18n):
@@ -74,6 +76,8 @@ class ChatView(BaseView):
 
         self.bot_panel.bot_add_requested.connect(self.bot_add_requested.emit)
         self.bot_panel.bot_remove_requested.connect(self.bot_remove_requested.emit)
+        self.bot_panel.word_add_requested.connect(self.word_add_requested.emit)
+        self.bot_panel.word_remove_requested.connect(self.word_remove_requested.emit)
 
         self.overlay_settings_panel.settings_changed.connect(self.settings_changed.emit)
 
@@ -144,11 +148,20 @@ class ChatView(BaseView):
     def clear_bots_list(self):
         self.bot_panel.clear_list()
 
+    def clear_word_input(self):
+        self.bot_panel.clear_word_input()
+
+    def add_word_tag(self, word: str):
+        self.bot_panel.add_word_tag(word)
+
+    def clear_words_list(self):
+        self.bot_panel.clear_words_list()
+
     def update_languages(self, langs: list[str], select_prefix: str = None):
         self.tts_settings_panel.update_languages(langs, select_prefix)
 
-    def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None):
-        self.tts_settings_panel.update_voices(voices, select_id, role_voices)
+    def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):
+        self.tts_settings_panel.update_voices(voices, select_id, role_voices, all_voices)
 
     def get_role_voices(self) -> dict:
         return self.tts_settings_panel.get_role_voices()

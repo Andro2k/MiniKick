@@ -15,6 +15,7 @@ class ChatService:
             "provider": provider,
             "ignored_users": self.storage.load_string("tts_ignored_users", ""),
             "volume": int(self.storage.load_string("tts_volume", "100")),
+            "banned_words": self.storage.load_string("tts_banned_words", ""),
             "role_voice_broadcaster": self.storage.load_string(f"tts_voice_{provider}_broadcaster", ""),
             "role_voice_moderator": self.storage.load_string(f"tts_voice_{provider}_moderator", ""),
             "role_voice_vip": self.storage.load_string(f"tts_voice_{provider}_vip", ""),
@@ -27,6 +28,7 @@ class ChatService:
         self.storage.save_bool("tts_use_command", settings.get("use_command", False))
         self.storage.save_string("tts_command", settings.get("command", "!tts"))
         self.storage.save_string("tts_ignored_users", settings.get("ignored_users", ""))
+        self.storage.save_string("tts_banned_words", settings.get("banned_words", ""))
         
         provider = settings.get("provider", "local")
         if "role_voice_broadcaster" in settings:

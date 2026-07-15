@@ -1,4 +1,4 @@
-# frontend/components/chat/chat_display.py
+# frontend\components\chat\chat_display.py
 
 import html
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy

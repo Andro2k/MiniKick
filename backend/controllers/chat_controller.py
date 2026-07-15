@@ -13,6 +13,8 @@ class ChatController(QObject):
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
+    _ROLE_PRIORITIES = ("broadcaster", "moderator", "vip", "subscriber")
+    _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "minikickbot"})
 
     def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None):
         super().__init__()
@@ -24,6 +26,7 @@ class ChatController(QObject):
         self.timer_service = timer_service
         self.toast = toast_manager
         self.muted_bots: set[str] = set()
+        self.banned_words: set[str] = set()
         self._all_voices: list[dict] = []
         self._voice_worker = None
         self._tts_enabled = True
@@ -48,6 +51,8 @@ class ChatController(QObject):
         self.view.settings_changed.connect(self._handle_settings_save)
         self.view.bot_add_requested.connect(self._add_bot)
         self.view.bot_remove_requested.connect(self._remove_bot)
+        self.view.word_add_requested.connect(self._add_word)
+        self.view.word_remove_requested.connect(self._remove_word)
         self.view.language_filter_changed.connect(self._filter_voices_by_language)
         self.command_service.commands_changed.connect(self._sync_tts_command_from_db)
 
@@ -90,6 +95,13 @@ class ChatController(QObject):
         self.view.clear_bots_list()
         for bot in self.muted_bots:
             self.view.add_bot_tag(bot)
+
+        words_str = settings.get("banned_words", "")
+        self.banned_words = {w.strip().lower() for w in words_str.split(",") if w.strip()}
+        
+        self.view.clear_words_list()
+        for word in self.banned_words:
+            self.view.add_word_tag(word)
 
         overlay_theme = self.service.storage.load_string("chat_overlay_theme", "glass")
         try:
@@ -156,6 +168,8 @@ class ChatController(QObject):
             elif plugin_tag == "[PLUGIN_CHAT_TTS]":
                 msg_content = dto.content[len(prefix):].strip()
                 if msg_content:
+                    if self._is_message_banned(msg_content):
+                        return
                     cleaned = self._clean_message_for_tts(msg_content)
                     if cleaned:
                         settings = self._tts_settings_cache
@@ -167,18 +181,23 @@ class ChatController(QObject):
         self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp)
         badges = list(dto.badges) if dto.badges else []
         username_lower = dto.user.lower()
-        if username_lower in ["botrix", "nightbot", "streamelements", "moobot", "minikickbot"] or username_lower.endswith("bot"):
+        if username_lower in self._DEFAULT_BOTS or username_lower.endswith("bot"):
             if "bot" not in badges:
                 badges.append("bot")
         self.message_received.emit(dto.user, dto.content, dto.color or "#FAFAFA", badges)
 
     def _resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
-        for badge in ["broadcaster", "moderator", "vip", "subscriber"]:
+        available_ids = {v["id"] for v in self._all_voices}
+        for badge in self._ROLE_PRIORITIES:
             if badge in badges:
                 voice_id = settings.get(f"role_voice_{badge}", "")
-                if voice_id:
+                if voice_id in available_ids:
                     return voice_id
         return None
+
+    def _is_message_banned(self, msg: str) -> bool:
+        msg_lower = msg.lower()
+        return any(re.search(r'\b' + re.escape(w) + r'\b', msg_lower) for w in self.banned_words)
 
     def _step_tts(self, dto: ChatMessageDTO):
         if getattr(dto, "is_command", False):
@@ -193,6 +212,9 @@ class ChatController(QObject):
             if not msg.lower().startswith(cmd):
                 return
             msg = msg[len(cmd):].strip()
+
+        if self._is_message_banned(msg):
+            return
 
         cleaned = self._clean_message_for_tts(msg)
         if cleaned:
@@ -261,7 +283,6 @@ class ChatController(QObject):
                 message=f"Cargado modo offline: {error_msg}",
                 state="warning"
             )
-
     @Slot(str)
     def _filter_voices_by_language(self, lang_prefix: str, select_id: str = None, play_test: bool = False):
         filtered = [
@@ -275,18 +296,32 @@ class ChatController(QObject):
             "vip": settings.get("role_voice_vip", ""),
             "subscriber": settings.get("role_voice_subscriber", "")
         }
-        self.view.update_voices(filtered, select_id, role_voices)
+
+        all_voices_list = []
+        for v in self._all_voices:
+            v_id = v["id"]
+            v_name = v["name"]
+            if "-" in v_id:
+                region = "-".join(v_id.split("-")[:2])
+                display_name = f"[{region}] {v_name}"
+            else:
+                display_name = f"[Local] {v_name}"
+            all_voices_list.append((v_id, display_name))
+            
+        self.view.update_voices(filtered, select_id, role_voices, all_voices_list)
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):
         provider = "web" if ("-" in voice_id) else "local"
         self.service.set_voice(provider, voice_id)
+        self.sync_settings_cache()
         self.service.speak(self.view.i18n.get("main.controllers.chat.voice_updated"))
 
     @Slot(bool)
     def _handle_provider_change(self, is_web: bool):
         provider = "web" if is_web else "local"
         self.service.set_provider(provider)
+        self.sync_settings_cache()
         self._load_voices(provider)
         
         if self.toast:
@@ -307,7 +342,8 @@ class ChatController(QObject):
             "use_command": self.view.use_command_enabled,
             "command": self.view.tts_command,
             "provider": "web" if self.view.is_web_provider else "local",
-            "ignored_users": ",".join(self.muted_bots)
+            "ignored_users": ",".join(self.muted_bots),
+            "banned_words": ",".join(self.banned_words)
         }
         settings.update(self.view.get_role_voices())
         settings.update({
@@ -418,23 +454,28 @@ class ChatController(QObject):
         settings["ignored_users"] = ",".join(self.muted_bots)
         self.service.save_settings(settings)
 
+    @Slot(str)
+    def _add_word(self, word: str):
+        clean_word = word.strip().lower()
+        if clean_word and clean_word not in self.banned_words:
+            self.banned_words.add(clean_word)
+            self.view.add_word_tag(clean_word)
+            self._save_word_list()
+        self.view.clear_word_input()
+
+    @Slot(str)
+    def _remove_word(self, word: str):
+        clean_word = word.lower()
+        if clean_word in self.banned_words:
+            self.banned_words.remove(clean_word)
+            self._save_word_list()
+
+    def _save_word_list(self):
+        settings = self.service.get_settings()
+        settings["banned_words"] = ",".join(self.banned_words)
+        self.service.save_settings(settings)
+
     def _clean_message_for_tts(self, text: str) -> str:
-        def replacer(match):
-            url = match.group(0).lower()
-            keywords = {
-                "youtube.com": "un enlace de YouTube", "youtu.be": "un enlace de YouTube",
-                "kick.com": "un enlace de Kick",
-                "twitter.com": "un enlace de Twitter", "x.com": "un enlace de Twitter",
-                "instagram.com": "un enlace de Instagram",
-                "tiktok.com": "un enlace de TikTok",
-                "discord.com": "un enlace de Discord", "discord.gg": "un enlace de Discord",
-                "spotify.com": "un enlace de Spotify"
-            }
-            for kw, replacement in keywords.items():
-                if kw in url:
-                    return replacement
-            return "un enlace web"
-        
-        cleaned = self._URL_REGEX.sub(replacer, text)
+        cleaned = self._URL_REGEX.sub("un enlace web", text)
         cleaned = self._EMOTE_REGEX.sub("", cleaned)
         return self._SPACES_REGEX.sub(" ", cleaned).strip()

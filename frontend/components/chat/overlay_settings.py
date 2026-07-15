@@ -1,4 +1,4 @@
-# frontend/components/chat/overlay_settings.py
+# frontend\components\chat\overlay_settings.py
 
 from PySide6.QtCore import Signal, Slot, QTimer
 from PySide6.QtWidgets import QFrame, QApplication
