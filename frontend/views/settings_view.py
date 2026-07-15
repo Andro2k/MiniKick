@@ -37,7 +37,7 @@ class SettingsView(BaseView):
         self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
 
         row_lang = SettingRow(
-            icon_name="globe.svg", 
+            icon_name="world.svg", 
             title_text=self.i18n.get("settings.system.lang_title"), 
             desc_text=self.i18n.get("settings.system.lang_desc"), 
             right_widget=self.combo_lang

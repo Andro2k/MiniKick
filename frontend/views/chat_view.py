@@ -34,6 +34,30 @@ class ChatView(BaseView):
     def _setup_ui(self):
         self.body_layout = FlowLayout(hspacing=16, vspacing=16)
 
+        self.tabs = QTabWidget()
+        self.tabs.setMinimumWidth(380)
+        self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        self.tabs.addTab(self._setup_tts_settings_tab(), self.i18n.get("chat.tabs.settings"))
+        self.tabs.addTab(self._setup_muted_tab(), self.i18n.get("chat.tabs.muted"))
+        self.tabs.addTab(self._setup_overlay_settings_tab(), self.i18n.get("chat.tabs.overlay"))
+
+        left_container = QWidget()
+        left_layout = QVBoxLayout(left_container)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setSpacing(0)
+        left_layout.addWidget(self.tabs)
+        left_container.setMinimumWidth(380)
+        left_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        chat_card = self._setup_chat_panel()
+
+        self.body_layout.addWidget(left_container)
+        self.body_layout.addWidget(chat_card)
+        
+        self.main_layout.addLayout(self.body_layout)
+
+    def _setup_tts_settings_tab(self) -> QScrollArea:
         config_card = ModernCard()
 
         self.chk_tts = ModernSwitch()
@@ -49,15 +73,13 @@ class ChatView(BaseView):
 
         row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
         row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
-        row_provider = SettingRow("globe.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.chk_provider)
+        row_provider = SettingRow("world.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.chk_provider)
         row_cmd = SettingRow("code.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
         row_volume = SliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
         
         lang_voice_layout = QHBoxLayout()
         self.combo_lang = NoWheelComboBox()
-        self.combo_lang.setFixedWidth(120)
         self.combo_voice = NoWheelComboBox()
-        self.combo_voice.setMinimumWidth(80)
         self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         lang_voice_layout.addWidget(self.combo_lang)
         lang_voice_layout.addWidget(self.combo_voice)
@@ -122,11 +144,15 @@ class ChatView(BaseView):
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scroll.setWidget(config_card)
+        return scroll
 
+    def _setup_muted_tab(self) -> ModernCard:
         self.bot_panel = BotMutePanel(self.i18n)
         bot_card = ModernCard()
         bot_card.addWidget(self.bot_panel)
+        return bot_card
 
+    def _setup_overlay_settings_tab(self) -> QScrollArea:
         overlay_card = ModernCard()
         
         self.combo_overlay_theme = NoWheelComboBox()
@@ -135,7 +161,6 @@ class ChatView(BaseView):
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_card"), "card")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_cyber"), "cyber")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_minimal"), "minimal")
-        self.combo_overlay_theme.setFixedWidth(140)
         self.combo_overlay_theme.currentIndexChanged.connect(self._update_overlay_url)
         
         row_overlay_theme = SettingRow(
@@ -151,7 +176,7 @@ class ChatView(BaseView):
         self.slider_overlay_size = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_overlay_size.setRange(10, 32)
         self.slider_overlay_size.setValue(14)
-        self.slider_overlay_size.setFixedWidth(100)
+        self.slider_overlay_size.setFixedWidth(140)
         self.lbl_overlay_size = QLabel("14px")
         self.lbl_overlay_size.setFixedWidth(40)
         self.lbl_overlay_size.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -160,7 +185,7 @@ class ChatView(BaseView):
         font_size_layout.addWidget(self.lbl_overlay_size)
         
         row_overlay_size = SettingRow(
-            "font.svg",
+            "text-size.svg",
             self.i18n.get("chat.overlay.size_title"),
             self.i18n.get("chat.overlay.size_desc"),
             font_size_widget
@@ -172,7 +197,7 @@ class ChatView(BaseView):
         self.slider_overlay_fade = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_overlay_fade.setRange(0, 120)
         self.slider_overlay_fade.setValue(15)
-        self.slider_overlay_fade.setFixedWidth(100)
+        self.slider_overlay_fade.setFixedWidth(140)
         self.lbl_overlay_fade = QLabel("15s")
         self.lbl_overlay_fade.setFixedWidth(40)
         self.lbl_overlay_fade.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -181,7 +206,7 @@ class ChatView(BaseView):
         fade_layout.addWidget(self.lbl_overlay_fade)
         
         row_overlay_fade = SettingRow(
-            "clock.svg",
+            "stopwatch.svg",
             self.i18n.get("chat.overlay.fade_title"),
             self.i18n.get("chat.overlay.fade_desc"),
             fade_widget
@@ -238,23 +263,9 @@ class ChatView(BaseView):
         overlay_scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         overlay_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         overlay_scroll.setWidget(overlay_card)
+        return overlay_scroll
 
-        self.tabs = QTabWidget()
-        self.tabs.setMinimumWidth(380)
-        self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-        self.tabs.addTab(scroll, self.i18n.get("chat.tabs.settings"))
-        self.tabs.addTab(bot_card, self.i18n.get("chat.tabs.muted"))
-        self.tabs.addTab(overlay_scroll, self.i18n.get("chat.tabs.overlay"))
-
-        left_container = QWidget()
-        left_layout = QVBoxLayout(left_container)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(0)
-        left_layout.addWidget(self.tabs)
-        left_container.setMinimumWidth(380)
-        left_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        
+    def _setup_chat_panel(self) -> ModernCard:
         chat_card = ModernCard()
         chat_card.setMinimumWidth(380)
         chat_card.setMinimumHeight(400) 
@@ -269,11 +280,7 @@ class ChatView(BaseView):
 
         chat_card.addWidget(lbl_chat_title)
         chat_card.addWidget(self.chat_display)
-
-        self.body_layout.addWidget(left_container)
-        self.body_layout.addWidget(chat_card)
-        
-        self.main_layout.addLayout(self.body_layout)
+        return chat_card
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
