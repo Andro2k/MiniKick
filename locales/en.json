@@ -96,6 +96,7 @@
             "action_ban": "Ban user",
             "action_warn_delete": "Warn and delete message",
             "allowlist": "Allowed links (Allowlist)",
+            "allowlist_placeholder": "e.g., clips.kick.com, youtube.com",
             "duration": "Duration (minutes)",
             "exclude": "Exclude rank (Immune)",
             "exclude_none": "None",
@@ -384,7 +385,11 @@
         "status": {
             "loading_voices": "Fetching cloud voices...",
             "provider_title": "Speech Engine",
-            "tts_title": "Chat Text-to-Speech"
+            "tts_title": "Chat Text-to-Speech",
+            "tts_active": "Automatic voice enabled",
+            "tts_muted": "Chat muted",
+            "web_link": "a web link",
+            "user_says": "{user} says: {message}"
         },
         "overlay": {
             "theme_title": "Chat Design",
@@ -802,6 +807,9 @@
         "btn_close": "Close Without Sending",
         "err_send": "Could not send the report. Error: {error}",
         "err_no_webhook": "Discord Webhook URL is not configured.",
-        "subtitle": "An unhandled error occurred in the application. Help us solve the problem by sending this report."
+        "subtitle": "An unhandled error occurred in the application. Help us solve the problem by sending this report.",
+        "anonymous": "Anonymous",
+        "no_comments": "No user comments.",
+        "truncated_tb": "\n[Traceback truncated due to length]"
     }
 }

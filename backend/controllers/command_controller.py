@@ -87,12 +87,10 @@ class CommandController(QObject):
                 permission=existing.get("permission", "everyone")
             )
             if self.toast:
-                ## Cambiar el texto por i18n, nada de texto directo en el codigo.
                 title_key = "command.status.enabled" if is_active else "command.status.disabled"
-                fallback_title = "Comando Activado" if is_active else "Comando Desactivado"
                 state_color = "success" if is_active else "info"
                 self.toast.show_toast(
-                    title=self.view.i18n.get(title_key) or fallback_title,
+                    title=self.view.i18n.get(title_key),
                     message=(self.view.i18n.get("command.status.toggled_msg")).replace("{trigger}", trigger),
                     state=state_color
                 )

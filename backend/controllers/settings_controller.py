@@ -39,17 +39,14 @@ class SettingsController(QObject):
     @Slot(bool)
     def handle_minimize_tray(self, enabled: bool):
         self.service.set_minimize_tray_enabled(enabled)
-        ## Cambiar el texto por i18n, nada de texto en el codigo.
         if self.toast:
             title_key = "settings.status.tray_enabled" if enabled else "settings.status.tray_disabled"
-            fallback_title = "Segundo Plano Activo" if enabled else "Segundo Plano Inactivo"
             msg_key = "settings.status.tray_enabled_msg" if enabled else "settings.status.tray_disabled_msg"
-            fallback_msg = "La app se minimizará a la bandeja" if enabled else "La app se cerrará por completo"
             state_color = "success" if enabled else "info"
 
             self.toast.show_toast(
-                title=self.view.i18n.get(title_key) or fallback_title,
-                message=self.view.i18n.get(msg_key) or fallback_msg,
+                title=self.view.i18n.get(title_key),
+                message=self.view.i18n.get(msg_key),
                 state=state_color
             )
 

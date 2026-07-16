@@ -237,11 +237,10 @@ class ExpandableSettingCard(QFrame):
         lbl_pen = QLabel(self.i18n.get("spam.card.action"))
         lbl_pen.setProperty("role", "body")
         self.combo_penalty = NoWheelComboBox()
-        ## Solo usar i18n, nada de texto en el codigo.
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
-        self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban") or "Expulsar (Ban)", "ban")
-        self.combo_penalty.addItem(self.i18n.get("spam.card.action_warn_delete") or "Advertir y borrar", "warn_delete")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban"), "ban")
+        self.combo_penalty.addItem(self.i18n.get("spam.card.action_warn_delete"), "warn_delete")
         self.combo_penalty.currentIndexChanged.connect(self._emit_update)
         col_left.addWidget(lbl_pen)
         col_left.addWidget(self.combo_penalty)
@@ -269,11 +268,10 @@ class ExpandableSettingCard(QFrame):
         
         if self.card_id == "link_protection":
             col_right.addSpacing(4)
-            ## Solo usar i18n, nada de texto en el codigo.
-            lbl_allow = QLabel(self.i18n.get("spam.card.allowlist") or "Enlaces permitidos (Allowlist)")
+            lbl_allow = QLabel(self.i18n.get("spam.card.allowlist"))
             lbl_allow.setProperty("role", "body")
             self.txt_allowlist = QLineEdit()
-            self.txt_allowlist.setPlaceholderText("ej: clips.kick.com, youtube.com")
+            self.txt_allowlist.setPlaceholderText(self.i18n.get("spam.card.allowlist_placeholder"))
             self.txt_allowlist.textChanged.connect(self._emit_update)
             col_right.addWidget(lbl_allow)
             col_right.addWidget(self.txt_allowlist)

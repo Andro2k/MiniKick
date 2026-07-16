@@ -2,7 +2,7 @@
 
 import queue
 import threading
-from backend.interfaces.tts_interfaces import ITTSProvider
+from backend.interfaces import ITTSProvider
 from backend.providers.tts.tts_local import LocalTTSProvider
 from backend.providers.tts.tts_online import WebTTSProvider
 

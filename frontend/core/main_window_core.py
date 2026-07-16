@@ -14,17 +14,11 @@ from backend.services.system.settings_service import SettingsService
 from backend.services.system.network_service import NetworkService
 from backend.services.chat.spam_service import SpamService
 from backend.services.chat.timer_service import TimerService
-from backend.controllers.rewards_controller import RewardsController
-from backend.controllers.chat_controller import ChatController
-from backend.controllers.command_controller import CommandController
-from backend.controllers.dashboard_controller import DashboardController
-from backend.controllers.timer_controller import TimerController
-from backend.controllers.log_controller import LogController
-from backend.controllers.music_controller import MusicController
-from backend.controllers.settings_controller import SettingsController
-from backend.controllers.spam_controller import SpamController
-from backend.controllers.update_controller import UpdateController
-from backend.controllers.network_controller import NetworkController
+from backend.controllers import (
+    RewardsController, ChatController, CommandController, DashboardController,
+    TimerController, LogController, MusicController, SettingsController,
+    SpamController, UpdateController, NetworkController
+)
 from backend.providers.kick.kick_client import KickAPIClient
 
 from frontend.core.app_container_core import AppContainer

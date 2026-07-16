@@ -18,7 +18,6 @@ class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n=None, parent=None):
         self.traceback_text = traceback_text
         self.i18n = i18n
-        ## Solo texto con i18n, nada de texto en el codigo.
         self.title_text = self._get_text("crash.title", "MiniKick ha fallado")
         self.lbl_contact_text = self._get_text("crash.lbl_contact", "Contacto / Discord (Opcional)")
         self.placeholder_contact_text = self._get_text("crash.placeholder_contact", "Ej. Andro2k")
@@ -117,12 +116,12 @@ class CrashReportDialog(ModernModal):
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         
         try:
-            contact = self.txt_contact.text().strip() or "Anónimo"
-            desc = self.txt_desc.toPlainText().strip() or "Sin comentarios del usuario."
+            contact = self.txt_contact.text().strip() or self._get_text("crash.anonymous", "Anónimo")
+            desc = self.txt_desc.toPlainText().strip() or self._get_text("crash.no_comments", "Sin comentarios del usuario.")
             
             truncated_tb = self.traceback_text
             if len(truncated_tb) > 1500:
-                truncated_tb = truncated_tb[-1500:] + "\n[Traceback truncado por longitud]"
+                truncated_tb = truncated_tb[-1500:] + self._get_text("crash.truncated_tb", "\n[Traceback truncado por longitud]")
 
             content = (
                 f"🚨 **CRASH REPORT / REPORTE DE FALLO CRÍTICO** 🚨\n"

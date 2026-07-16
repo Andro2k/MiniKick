@@ -18,7 +18,6 @@ class ChatOverlaySettingsPanel(ModernCard):
         self._connect_signals()
 
     def _setup_ui(self):
-        ## Solo texto con i18n, nada de texto en el codigo.
         self.combo_overlay_theme = NoWheelComboBox()
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_glass"), "glass")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_neon"), "neon")

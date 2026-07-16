@@ -95,16 +95,14 @@ class TimerController(QObject):
             )
             self.metrics_update_requested.emit()
             if self.toast:
-                ## Cambiar el texto por i18n, nada de texto en el codigo.
                 title_key = "timer.status.enabled" if is_active else "timer.status.disabled"
-                fallback_title = "Temporizador Activado" if is_active else "Temporizador Desactivado"
                 state_color = "success" if is_active else "info"
                 
                 status_txt = self.view.i18n.get("common.status.active") if is_active else self.view.i18n.get("common.status.inactive")
                 message = (self.view.i18n.get("timer.status.toggled_msg")).replace("{name}", existing['name']).replace("{status}", status_txt.lower())
 
                 self.toast.show_toast(
-                    title=self.view.i18n.get(title_key) or fallback_title,
+                    title=self.view.i18n.get(title_key),
                     message=message,
                     state=state_color
                 )

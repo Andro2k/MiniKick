@@ -171,8 +171,7 @@ class ChatController(QObject):
                     cleaned = self._clean_message_for_tts(msg_content)
                     if cleaned:
                         settings = self._tts_settings_cache
-                        ## Cambiar el texto por i18n
-                        text = f"{dto.user} dice: {cleaned}" if settings["read_name"] else cleaned
+                        text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings["read_name"] else cleaned
                         voice_id = self._resolve_voice_for_badges(dto.badges, settings)
                         self.service.speak(text, voice_id=voice_id)
 
@@ -216,9 +215,8 @@ class ChatController(QObject):
             return
 
         cleaned = self._clean_message_for_tts(msg)
-        ## Cambiar el texto por i18n
         if cleaned:
-            text = f"{dto.user} dice: {cleaned}" if settings["read_name"] else cleaned
+            text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings["read_name"] else cleaned
             voice_id = self._resolve_voice_for_badges(dto.badges, settings)
             self.service.speak(text, voice_id=voice_id)
 
@@ -392,10 +390,9 @@ class ChatController(QObject):
         new_tts_state = settings["enabled"]
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
             self._tts_enabled = new_tts_state
-            ##  Cambiar los  textos por i18n
             if self.toast:
                 status_title = self.view.i18n.get("chat.status.tts_title")
-                status_msg = "Voz automática activada" if new_tts_state else "Chat silenciado"
+                status_msg = self.view.i18n.get("chat.status.tts_active") if new_tts_state else self.view.i18n.get("chat.status.tts_muted")
                 state_color = "success" if new_tts_state else "warning"
                 
                 self.toast.show_toast(
@@ -474,7 +471,6 @@ class ChatController(QObject):
         self.service.save_settings(settings)
 
     def _clean_message_for_tts(self, text: str) -> str:
-        ## Cambiar el texto por i18n
-        cleaned = self._URL_REGEX.sub("un enlace web", text)
+        cleaned = self._URL_REGEX.sub(self.i18n.get("chat.status.web_link"), text)
         cleaned = self._EMOTE_REGEX.sub("", cleaned)
         return self._SPACES_REGEX.sub(" ", cleaned).strip()

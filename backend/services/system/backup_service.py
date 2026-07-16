@@ -2,7 +2,7 @@
 
 import json
 import logging
-from backend.interfaces.settings_interfaces import SettingsStorage
+from backend.interfaces import SettingsStorage
 
 class BackupService:
     def __init__(self, settings_storage: SettingsStorage, rewards_storage, commands_storage, spam_storage, timers_storage=None):

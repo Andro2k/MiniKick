@@ -1,14 +1,9 @@
 # frontend\views\chat_view.py
 
-from frontend.components.chat.chat_display import ChatDisplayPanel
-from frontend.components.chat.overlay_settings import ChatOverlaySettingsPanel
-from frontend.components.chat.bot_mute import BotMutePanel
-from frontend.components.chat.tts_settings import ChatTtsSettingsPanel
+from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget
 from PySide6.QtCore import Signal
-from frontend.widgets.base_view import BaseView
-from frontend.widgets.flow_layout import FlowLayout
-from frontend.widgets.blocks import ModernCard, ModernScrollArea
+from frontend.widgets import BaseView, FlowLayout, ModernCard, ModernScrollArea
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
