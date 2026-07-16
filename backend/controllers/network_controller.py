@@ -7,14 +7,11 @@ class NetworkController(QObject):
         super().__init__()
         self.view = view
         self.service = service
-        
         self.view.check_requested.connect(self.service.run_network_check)
         self.view.view_shown.connect(self.update_view_from_service)
-        
         self.service.checking_started.connect(self.view.set_checking_state)
         self.service.results_updated.connect(self.view.update_status)
         self.service.history_updated.connect(self.view.graph.update_graph_data)
-        
         self.update_view_from_service()
         
     @Slot()

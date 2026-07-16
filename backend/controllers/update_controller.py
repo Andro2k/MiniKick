@@ -22,7 +22,7 @@ class UpdateController(QObject):
     def handle_update_check(self):
         from frontend.dialogs.update_dialog import UpdateDialog
         from backend.workers.update_worker import UpdateCheckWorker, UpdateDownloadWorker
-        
+
         dialog = UpdateDialog(self.i18n, parent=self.main_window)       
         update_info = {"url": ""}
         

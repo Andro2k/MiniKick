@@ -11,15 +11,12 @@ class MusicController(QObject):
         self.toast = toast_manager
         self.i18n = i18n
         self.settings_storage = settings_storage
-
         self.music_provider = None
         self.auth_worker = None
         self.provider_type = "spotify"
-
         self.polling_timer = QTimer(self)
         self.polling_timer.setInterval(5000)
         self.polling_timer.timeout.connect(self._poll_now_playing)
-
         self._connect_signals()
         self._load_initial_state()
 

@@ -226,6 +226,7 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_user ON spam_violations(username)")
+
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_filter ON spam_violations(filter_id)")
             
             cursor.execute("""
@@ -308,10 +309,12 @@ class DatabaseManager:
             columns = [info[1] for info in cursor.fetchall()]
             if "is_random_pos" not in columns:
                 cursor.execute("ALTER TABLE obs_rewards ADD COLUMN is_random_pos INTEGER DEFAULT 0")
+            
             cursor.execute("PRAGMA table_info(chat_commands)")
             columns = [info[1] for info in cursor.fetchall()]
             if "permission" not in columns:
                 cursor.execute("ALTER TABLE chat_commands ADD COLUMN permission TEXT DEFAULT 'everyone'")
+            
             cursor.execute("PRAGMA table_info(tokens)")
             columns = [info[1] for info in cursor.fetchall()]
             if "provider" not in columns:
@@ -325,6 +328,7 @@ class DatabaseManager:
             cursor.execute("UPDATE spam_filters SET duration = duration / 60 WHERE duration >= 60")
                 
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
+            
             conn.commit()
 
     def log_spam_violation(self, username: str, sender_id: int, filter_id: str, message_content: str, penalty_type: str, duration: int) -> None:

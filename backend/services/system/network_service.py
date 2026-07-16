@@ -1,4 +1,4 @@
-# backend/services/system/network_service.py
+# backend\services\system\network_service.py
 
 import random
 from PySide6.QtCore import QObject, Signal, QTimer, Slot
@@ -50,7 +50,6 @@ class NetworkService(QObject):
             self.worker = None
 
         self.checking_started.emit()
-
         self.worker = NetworkWorker(overlay_port=self.overlay_port)
         self.worker.result_ready.connect(self.handle_results)
         self.worker.finished.connect(self.worker.deleteLater)

@@ -1,6 +1,5 @@
 # backend\workers\music_worker.py
 
-import logging
 import os
 import hashlib
 from PySide6.QtCore import QThread, Signal

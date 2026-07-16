@@ -14,14 +14,11 @@ class TTSManager:
         }
         self._active_provider_key = "local"
         self._voices_cache = {"web": [], "local": []}
-        self._main_voice_id = ""
-        
+        self._main_voice_id = ""       
         self.text_queue: queue.Queue[tuple[str, str | None] | None] = queue.Queue()
-        self.play_queue: queue.Queue[tuple[str, str | None, str] | None] = queue.Queue()
-        
+        self.play_queue: queue.Queue[tuple[str, str | None, str] | None] = queue.Queue()       
         self._downloader_thread = threading.Thread(target=self._downloader_worker, daemon=True)
         self._downloader_thread.start()
-        
         self._thread = threading.Thread(target=self._worker, daemon=True)
         self._thread.start()
 

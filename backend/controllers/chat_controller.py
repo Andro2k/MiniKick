@@ -14,7 +14,7 @@ class ChatController(QObject):
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
     _ROLE_PRIORITIES = ("broadcaster", "moderator", "vip", "subscriber")
-    _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "minikickbot"})
+    _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
 
     def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None):
         super().__init__()
@@ -31,10 +31,8 @@ class ChatController(QObject):
         self._voice_worker = None
         self._tts_enabled = True
         self._tts_settings_cache: dict = {}
-        
         self.pipeline = MessagePipeline()
         self._build_pipeline()
-        
         self._connect_signals()
         self._load_initial_data()
 
@@ -173,6 +171,7 @@ class ChatController(QObject):
                     cleaned = self._clean_message_for_tts(msg_content)
                     if cleaned:
                         settings = self._tts_settings_cache
+                        # Cambiar el texto por i18n
                         text = f"{dto.user} dice: {cleaned}" if settings["read_name"] else cleaned
                         voice_id = self._resolve_voice_for_badges(dto.badges, settings)
                         self.service.speak(text, voice_id=voice_id)
@@ -217,6 +216,7 @@ class ChatController(QObject):
             return
 
         cleaned = self._clean_message_for_tts(msg)
+        # Cambiar el texto por i18n
         if cleaned:
             text = f"{dto.user} dice: {cleaned}" if settings["read_name"] else cleaned
             voice_id = self._resolve_voice_for_badges(dto.badges, settings)
@@ -283,6 +283,7 @@ class ChatController(QObject):
                 message=f"Cargado modo offline: {error_msg}",
                 state="warning"
             )
+
     @Slot(str)
     def _filter_voices_by_language(self, lang_prefix: str, select_id: str = None, play_test: bool = False):
         filtered = [
@@ -391,7 +392,7 @@ class ChatController(QObject):
         new_tts_state = settings["enabled"]
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
             self._tts_enabled = new_tts_state
-            
+            #  Cambiar los  textos por i18n
             if self.toast:
                 status_title = self.view.i18n.get("chat.status.tts_title")
                 status_msg = "Voz automática activada" if new_tts_state else "Chat silenciado"
@@ -420,15 +421,12 @@ class ChatController(QObject):
             settings["use_command"] = use_command
             settings["command"] = command_trigger
             self.service.save_settings(settings)
-            self._tts_settings_cache = settings
-            
+            self._tts_settings_cache = settings           
             self.view.blockSignals(True)
             self.view.chk_command.blockSignals(True)
-            self.view.txt_command.blockSignals(True)
-            
+            self.view.txt_command.blockSignals(True)           
             self.view.chk_command.setChecked(use_command)
-            self.view.txt_command.setText(command_trigger)
-            
+            self.view.txt_command.setText(command_trigger)            
             self.view.chk_command.blockSignals(False)
             self.view.txt_command.blockSignals(False)
             self.view.blockSignals(False)
@@ -476,6 +474,7 @@ class ChatController(QObject):
         self.service.save_settings(settings)
 
     def _clean_message_for_tts(self, text: str) -> str:
+        # Cambiar el texto por i18n
         cleaned = self._URL_REGEX.sub("un enlace web", text)
         cleaned = self._EMOTE_REGEX.sub("", cleaned)
         return self._SPACES_REGEX.sub(" ", cleaned).strip()
