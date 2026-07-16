@@ -1,20 +1,9 @@
 # backend\providers\chat\kick_websocket.py
 
 import json
-import re
 import websocket
 from typing import Callable
 from frontend.common.theme import COLOR_GREEN
-
-# class ChatFormatter:
-#     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
-#     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]*\]")
-
-#     @classmethod
-#     def clean(cls, text: str) -> str:
-#         text = cls._URL_REGEX.sub("", text)
-#         text = cls._EMOTE_REGEX.sub("", text)
-#         return text.strip()
 
 class ChatSocketManager:
     def __init__(self, cluster: str, key: str) -> None:

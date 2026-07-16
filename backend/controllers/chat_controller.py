@@ -277,8 +277,8 @@ class ChatController(QObject):
         
         if self.toast:
             self.toast.show_toast(
-                title="Red TTS Inestable",
-                message=f"Cargado modo offline: {error_msg}",
+                title=self.i18n.get("chat.status.tts_error_title"),
+                message=self.i18n.get("chat.status.tts_error_offline").replace("{error}", error_msg),
                 state="warning"
             )
 
@@ -324,12 +324,12 @@ class ChatController(QObject):
         self._load_voices(provider)
         
         if self.toast:
-            mode_name = "Neural IA (Nube Edge)" if is_web else "SAPI5 / OS (Local)"
+            mode_name = self.i18n.get("chat.status.provider_cloud") if is_web else self.i18n.get("chat.status.provider_local")
             state_color = "info" if is_web else "success"
 
             self.toast.show_toast(
                 title=self.view.i18n.get("chat.status.provider_title"),
-                message=f"Modo activo: {mode_name}",
+                message=self.i18n.get("chat.status.provider_active").replace("{mode}", mode_name),
                 state=state_color
             )
 

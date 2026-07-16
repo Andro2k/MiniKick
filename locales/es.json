@@ -389,7 +389,12 @@
             "tts_active": "Voz automática activada",
             "tts_muted": "Chat silenciado",
             "web_link": "un enlace web",
-            "user_says": "{user} dice: {message}"
+            "user_says": "{user} dice: {message}",
+            "provider_cloud": "Neural IA (Nube Edge)",
+            "provider_local": "SAPI5 / OS (Local)",
+            "provider_active": "Modo activo: {mode}",
+            "tts_error_title": "Red TTS Inestable",
+            "tts_error_offline": "Cargado modo offline: {error}"
         },
         "overlay": {
             "theme_title": "Diseño de Chat",

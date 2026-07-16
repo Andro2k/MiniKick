@@ -21,16 +21,10 @@ from frontend.common.theme import COLOR_GREEN, get_global_qss
 from frontend.navigation.sidebar_component import Sidebar
 from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
-from frontend.views.rewards_view import RewardsView
-from frontend.views.command_view import CommandView
-from frontend.views.dashboard_view import DashboardView
-from frontend.views.timers_view import TimersView
-from frontend.views.chat_view import ChatView
-from frontend.views.log_view import LogView
-from frontend.views.music_view import MusicView
-from frontend.views.settings_view import SettingsView
-from frontend.views.spam_view import SpamView
-from frontend.views.network_view import NetworkView
+from frontend.views import (
+    RewardsView, CommandView, DashboardView, TimersView, ChatView,
+    LogView, MusicView, SettingsView, SpamView, NetworkView
+)
 from frontend.dialogs import ModernConfirmDialog
 from backend.workers import AuthWorker, ChatWorker, FetchRewardsWorker, RewardWorker, TimerWorker
 

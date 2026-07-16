@@ -2,8 +2,7 @@
 
 from PySide6.QtCore import Signal, Slot, QTimer
 from PySide6.QtWidgets import QFrame, QApplication
-from frontend.widgets.blocks import ModernCard, SettingRow
-from frontend.widgets.controls import ModernSwitch, ModernButton, CompactSlider
+from frontend.widgets import ModernCard, SettingRow, ModernSwitch, ModernButton, CompactSlider
 from frontend.common.utils import NoWheelComboBox
 
 class ChatOverlaySettingsPanel(ModernCard):

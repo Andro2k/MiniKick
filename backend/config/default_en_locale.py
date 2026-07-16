@@ -391,7 +391,12 @@ DEFAULT_DICTIONARY = {
             "tts_active": "Automatic voice enabled",
             "tts_muted": "Chat muted",
             "web_link": "a web link",
-            "user_says": "{user} says: {message}"
+            "user_says": "{user} says: {message}",
+            "provider_cloud": "Neural AI (Edge Cloud)",
+            "provider_local": "SAPI5 / OS (Local)",
+            "provider_active": "Active mode: {mode}",
+            "tts_error_title": "Unstable TTS Network",
+            "tts_error_offline": "Loaded offline mode: {error}"
         },
         "overlay": {
             "theme_title": "Chat Design",

@@ -2,8 +2,7 @@
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QSizePolicy, QFrame
-from frontend.widgets.blocks import ModernCard, SettingRow, SliderRow
-from frontend.widgets.controls import ModernSwitch
+from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch
 from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix
 
 class ChatTtsSettingsPanel(ModernCard):

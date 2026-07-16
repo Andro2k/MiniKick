@@ -2,7 +2,7 @@
 
 import html
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy
-from frontend.widgets.blocks import ModernCard
+from frontend.widgets import ModernCard
 from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_500
 
 class ChatDisplayPanel(ModernCard):
