@@ -2,7 +2,7 @@
 
 import re
 from PySide6.QtCore import QObject, Slot, Signal
-from backend.services.chat.pipeline import MessagePipeline, ChatMessageDTO
+from backend.services import MessagePipeline, ChatMessageDTO
 
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
@@ -241,7 +241,7 @@ class ChatController(QObject):
             self._voice_worker.deleteLater()
             self._voice_worker = None
 
-        from backend.workers.voice_worker import VoiceFetcherWorker
+        from backend.workers import VoiceFetcherWorker
         self._voice_worker = VoiceFetcherWorker(self.service.tts, provider, parent=self)
         self._voice_worker.voices_fetched.connect(
             lambda voices, prov: self._on_voices_fetched(voices, prov, is_initial)

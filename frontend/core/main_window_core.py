@@ -4,22 +4,16 @@ from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent, QTimer
 
-from backend.services.chat.pipeline import ChatMessageDTO
-from backend.services.rewards.rewards_service import RewardsService
-from backend.services.chat.chat_service import ChatService
-from backend.services.chat.command_service import CommandService
-from backend.services.system.dashboard_service import AvatarService
-from backend.services.system.log_service import LogService
-from backend.services.system.settings_service import SettingsService
-from backend.services.system.network_service import NetworkService
-from backend.services.chat.spam_service import SpamService
-from backend.services.chat.timer_service import TimerService
+from backend.services import (
+    ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
+    LogService, SettingsService, NetworkService, SpamService, TimerService
+)
 from backend.controllers import (
     RewardsController, ChatController, CommandController, DashboardController,
     TimerController, LogController, MusicController, SettingsController,
     SpamController, UpdateController, NetworkController
 )
-from backend.providers.chat.kick_client import KickAPIClient
+from backend.providers import KickAPIClient
 
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
@@ -38,10 +32,7 @@ from frontend.views.settings_view import SettingsView
 from frontend.views.spam_view import SpamView
 from frontend.views.network_view import NetworkView
 from frontend.dialogs import ModernConfirmDialog
-from backend.workers.auth_worker import AuthWorker
-from backend.workers.chat_worker import ChatWorker
-from backend.workers.rewards_worker import FetchRewardsWorker, RewardWorker
-from backend.workers.timers_worker import TimerWorker
+from backend.workers import AuthWorker, ChatWorker, FetchRewardsWorker, RewardWorker, TimerWorker
 
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY

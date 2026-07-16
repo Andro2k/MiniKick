@@ -21,11 +21,11 @@ try:
     os.environ["PATH"] = os.pathsep.join(clean_paths)
 except Exception:
     pass
-from backend.services.system.updater_service import GithubUpdateProvider, UpdateManager, WindowsInstaller
+from backend.services import GithubUpdateProvider, UpdateManager, WindowsInstaller
 from frontend.core.main_window_core import MainWindowCore
 from frontend.common.theme import GLOBAL_QSS
 from frontend.common.utils import resource_path
-from backend.services.system.instance_services import SocketInstanceProvider
+from backend.services import SocketInstanceProvider
 from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from backend.config.version import APP_VERSION
 
@@ -34,7 +34,7 @@ def _get_safe_i18n():
     try:
         from backend.database.manager import DatabaseManager
         from backend.database import SQLiteSettingsStorage
-        from backend.services.system.translation_service import TranslationService
+        from backend.services import TranslationService
         db = DatabaseManager()
         settings = SQLiteSettingsStorage(db)
         saved_lang = settings.load_string("app_language", "es")

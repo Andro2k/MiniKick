@@ -3,7 +3,7 @@
 import os
 import hashlib
 from PySide6.QtCore import QThread, Signal
-from backend.providers.music.spotify_client import SpotifyAuthManager
+from backend.providers import SpotifyAuthManager
 
 class SpotifyAuthWorker(QThread):
     auth_success = Signal(dict)

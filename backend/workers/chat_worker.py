@@ -1,8 +1,7 @@
 # backend\workers\chat_worker.py
 
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.kick_client import KickAPIClient
-from backend.providers.chat.kick_websocket import ChatSocketManager
+from backend.providers import KickAPIClient, ChatSocketManager
 
 class ChatWorker(QThread):
     message_received = Signal(str, str, list, str, str, int) 
