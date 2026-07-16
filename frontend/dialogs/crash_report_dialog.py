@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QColor
 
-from frontend.dialogs.base_dialog import ModernModal
+from .base_dialog import ModernModal
 from frontend.common.utils import get_assets_path
 from frontend.common.theme import COLOR_RED
 from backend.config.api_keys import DISCORD_WEBHOOK_URL

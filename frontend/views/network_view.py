@@ -4,9 +4,7 @@ from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget
 from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
 from frontend.common.utils import get_icon_colored
-from frontend.widgets.base_view import BaseView
-from frontend.widgets.controls import ModernButton
-from frontend.widgets.flow_layout import FlowLayout
+from frontend.widgets import BaseView, ModernButton, FlowLayout
 from frontend.common.theme import (
     COLOR_NEUTRAL_200, COLOR_NEUTRAL_500, 
     COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK, COLOR_BLUE, COLOR_WHITE

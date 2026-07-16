@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QFrame
 from PySide6.QtCore import Qt
-from frontend.widgets.blocks import ViewHeader
+from .blocks import ViewHeader
 
 class BaseView(QWidget):
     def __init__(self, i18n, title_key: str, subtitle_key: str, parent=None):

@@ -8,7 +8,7 @@ from .blocks import (
 from .controls import ModernButton, ModernSwitch, CompactSlider
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
-from .table import ModernTable, ModernTableCard
+from .table import ModernTable, ModernTableCard, TableActionCell
 
 __all__ = [
     "BaseView",
@@ -25,5 +25,6 @@ __all__ = [
     "FlowLayout",
     "ScalableIllustration",
     "ModernTable",
-    "ModernTableCard"
+    "ModernTableCard",
+    "TableActionCell"
 ]

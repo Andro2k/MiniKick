@@ -5,7 +5,6 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                                QStackedWidget, QProgressBar, QWidget)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QColor, QMouseEvent
-
 from frontend.common.theme import COLOR_RED, PATH_ICON_HELP
 
 class ModernFramelessShell(QDialog):

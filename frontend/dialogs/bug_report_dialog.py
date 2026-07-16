@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
-from frontend.dialogs.base_dialog import ModernModal
+from .base_dialog import ModernModal
 from frontend.common.utils import get_assets_path, get_icon_colored
 from frontend.common.theme import COLOR_RED
 from backend.workers import BugReportWorker

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QL
 from PySide6.QtCore import Qt, Signal
 from frontend.common.utils import get_icon_colored, NoWheelComboBox
 from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400
-from frontend.widgets.controls import ModernSwitch
+from .controls import ModernSwitch
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, title_color: str = None, parent=None):

@@ -8,10 +8,7 @@ from PySide6.QtWidgets import (
     QStackedWidget, QTableWidgetItem, QVBoxLayout, QWidget,
     QGridLayout, QLineEdit, QBoxLayout, QSizePolicy, QCheckBox, QDateEdit
 )
-from frontend.widgets.base_view import BaseView
-from frontend.widgets.table import ModernTable
-from frontend.widgets.scalable_illustration import ScalableIllustration
-from frontend.widgets.controls import ModernButton
+from frontend.widgets import BaseView, ModernTable, ScalableIllustration, ModernButton
 from frontend.common.theme import COLOR_BLACK, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE, COLOR_AMBER, COLOR_RED
 from frontend.common.utils import get_assets_path, get_icon_colored, NoWheelComboBox
 

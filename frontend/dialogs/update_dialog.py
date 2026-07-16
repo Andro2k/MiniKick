@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QP
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
-from frontend.dialogs.base_dialog import ModernModal
+from .base_dialog import ModernModal
 from frontend.common.theme import COLOR_GREEN, COLOR_RED, COLOR_BLUE
 from frontend.common.utils import get_icon_colored, get_assets_path
 

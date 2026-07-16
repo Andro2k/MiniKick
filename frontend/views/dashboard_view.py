@@ -6,10 +6,7 @@ from PySide6.QtCore import Qt, Signal, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
-from frontend.widgets.base_view import BaseView
-from frontend.widgets.blocks import StatCard, SettingRow, ModernCard
-from frontend.widgets.scalable_illustration import ScalableIllustration
-from frontend.widgets.controls import ModernButton, ModernSwitch
+from frontend.widgets import BaseView, StatCard, SettingRow, ModernCard, ScalableIllustration, ModernButton, ModernSwitch
 
 class SegmentedDistributionBar(QWidget):
     def __init__(self, parent=None):

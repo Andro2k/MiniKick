@@ -6,9 +6,9 @@ from PySide6.QtCore import Qt, Signal, QPoint, QUrl
 from PySide6.QtGui import QRegion, QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
-from frontend.widgets.controls import ModernButton
+from frontend.widgets import ModernButton
 from frontend.common.theme import COLOR_GREEN, PATH_ICON_HELP
-from frontend.dialogs.base_dialog import ModernModal
+from .base_dialog import ModernModal
 
 class DraggableBox(QFrame):
     position_updated = Signal(int, int)

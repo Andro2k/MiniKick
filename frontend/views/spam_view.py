@@ -2,8 +2,7 @@
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout
-from frontend.widgets.base_view import BaseView
-from frontend.widgets.blocks import ExpandableSettingCard
+from frontend.widgets import BaseView, ExpandableSettingCard
 
 class SpamView(BaseView):
     filter_updated = Signal(str, dict)

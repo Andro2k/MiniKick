@@ -5,12 +5,11 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QDoubleSpinBox, QFileDialog)
 from PySide6.QtCore import Qt
 
-from frontend.widgets.controls import ModernButton, ModernSwitch
+from frontend.widgets import ModernButton, ModernSwitch, SliderRow
 from frontend.common.theme import COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, NoWheelComboBox, NoWheelSlider
-from frontend.dialogs.base_dialog import ModernWizardPanel
-from frontend.widgets.blocks import SliderRow
-from frontend.dialogs.visual_positioner_dialog import VisualPositionerDialog
+from .base_dialog import ModernWizardPanel
+from .visual_positioner_dialog import VisualPositionerDialog
 
 class RewardsConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):

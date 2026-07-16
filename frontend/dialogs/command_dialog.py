@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                                QTextEdit, QSpinBox, QCheckBox,
                                QWidget, QSizePolicy, QScrollArea, QFrame)
 from PySide6.QtCore import Qt, QSize
-from frontend.dialogs.base_dialog import ModernWizardPanel
-from frontend.widgets.controls import ModernButton
+from .base_dialog import ModernWizardPanel
+from frontend.widgets import ModernButton
 from frontend.common.theme import COLOR_WHITE
 from frontend.common.utils import get_icon_colored, NoWheelComboBox, validate_trigger_prefix
 

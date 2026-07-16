@@ -5,9 +5,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from frontend.common.utils import NoWheelComboBox
 from frontend.common.theme import COLOR_RED
-from frontend.widgets.base_view import BaseView
-from frontend.widgets.blocks import SettingRow, ModernCard
-from frontend.widgets.controls import ModernButton, ModernSwitch
+from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
