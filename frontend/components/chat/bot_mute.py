@@ -1,4 +1,4 @@
-# frontend/components/chat/bot_mute.py
+# frontend\components\chat\bot_mute.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QListWidget, QListView, 

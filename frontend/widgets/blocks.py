@@ -237,6 +237,7 @@ class ExpandableSettingCard(QFrame):
         lbl_pen = QLabel(self.i18n.get("spam.card.action"))
         lbl_pen.setProperty("role", "body")
         self.combo_penalty = NoWheelComboBox()
+        ## Solo usar i18n, nada de texto en el codigo.
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban") or "Expulsar (Ban)", "ban")
@@ -268,6 +269,7 @@ class ExpandableSettingCard(QFrame):
         
         if self.card_id == "link_protection":
             col_right.addSpacing(4)
+            ## Solo usar i18n, nada de texto en el codigo.
             lbl_allow = QLabel(self.i18n.get("spam.card.allowlist") or "Enlaces permitidos (Allowlist)")
             lbl_allow.setProperty("role", "body")
             self.txt_allowlist = QLineEdit()

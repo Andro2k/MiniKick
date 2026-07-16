@@ -10,7 +10,6 @@ from frontend.widgets.base_view import BaseView
 from frontend.widgets.flow_layout import FlowLayout
 from frontend.widgets.blocks import ModernCard, ModernScrollArea
 
-
 class ChatView(BaseView):
     volume_changed = Signal(int)
     voice_changed = Signal(str)

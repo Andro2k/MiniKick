@@ -1,4 +1,4 @@
-# frontend/widgets/controls.py
+# frontend\widgets\controls.py
 
 from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QWidget, QHBoxLayout, QLabel
 from PySide6.QtCore import QRectF, Qt, QSize

@@ -11,8 +11,7 @@ from frontend.common.utils import get_icon_colored, get_assets_path
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
         super().__init__(0, len(headers), parent)
-        self.setHorizontalHeaderLabels(headers)
-        
+        self.setHorizontalHeaderLabels(headers)     
         self.verticalHeader().setVisible(False)
         self.verticalHeader().setDefaultSectionSize(38)
         self.setShowGrid(False)

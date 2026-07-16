@@ -1,4 +1,4 @@
-# frontend/components/chat/tts_settings.py
+# frontend\components\chat\tts_settings.py
 
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QSizePolicy, QFrame

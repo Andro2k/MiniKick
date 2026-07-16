@@ -48,7 +48,7 @@ class GithubUpdateProvider:
             return False
 
 class WindowsInstaller:
-    # No mostrar el CMD cuando se ejecute la actualizacion
+    ## No mostrar el CMD cuando se ejecute la actualizacion
     def install_and_restart(self, installer_path: str) -> None:
         DETACHED_PROCESS = 0x00000008        
         cmd = f'ping 127.0.0.1 -n 2 > nul && start "" "{installer_path}" /SILENT'

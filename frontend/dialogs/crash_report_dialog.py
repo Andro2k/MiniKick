@@ -18,7 +18,7 @@ class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n=None, parent=None):
         self.traceback_text = traceback_text
         self.i18n = i18n
-
+        ## Solo texto con i18n, nada de texto en el codigo.
         self.title_text = self._get_text("crash.title", "MiniKick ha fallado")
         self.lbl_contact_text = self._get_text("crash.lbl_contact", "Contacto / Discord (Opcional)")
         self.placeholder_contact_text = self._get_text("crash.placeholder_contact", "Ej. Andro2k")

@@ -71,6 +71,7 @@ class CommandConfigWizard(ModernWizardPanel):
         col_perm = QVBoxLayout()
         col_perm.addWidget(QLabel(self.i18n.get("command.dialog.permission_label")))
         self.combo_perm = NoWheelComboBox()
+        ## Solo texto con i18n, nada de texto en el codigo.
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_everyone"), "everyone")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_subscriber"), "subscriber")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_vip"), "vip")

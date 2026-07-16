@@ -4,7 +4,6 @@ import os
 from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
 from PySide6.QtCore import Qt, Signal, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
-
 from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
 from frontend.widgets.base_view import BaseView
@@ -94,12 +93,8 @@ class DashboardView(BaseView):
         
         illustration_path = get_assets_path(os.path.join("icons", "install_small.svg"))
         self.lbl_illustration = ScalableIllustration(
-            icon_path=illustration_path,
-            aspect_ratio=1.0,
-            min_size=120,
-            max_size=300,
-            size_offset=320,
-            parent=self
+            icon_path=illustration_path, aspect_ratio=1.0, min_size=120, 
+            max_size=300, size_offset=320, parent=self
         )
         
         self.lbl_disconnected_title = QLabel(self.i18n.get("dashboard.empty.title"))
