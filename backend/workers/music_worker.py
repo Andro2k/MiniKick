@@ -117,7 +117,7 @@ class YouTubeSearchWorker(QThread):
                 else:
                     item = info
 
-                title = item.get('title', 'Unknown Title')
+                title = item.get('title', self.i18n.get("music.player.unknown_song"))
                 video_id = item.get('id')
                 is_youtube = False
                 ie_key = item.get('ie_key')

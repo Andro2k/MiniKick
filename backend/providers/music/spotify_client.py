@@ -85,6 +85,10 @@ class SpotifyMusicProvider:
         self.i18n = i18n
         self.db_manager = db_manager
 
+    @property
+    def provider_id(self) -> str:
+        return "spotify"
+
     def _request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
         token = self.auth.get_access_token()
         if not token:

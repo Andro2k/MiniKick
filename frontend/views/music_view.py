@@ -4,10 +4,10 @@ from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QFr
 from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider
-from frontend.widgets.base_view import BaseView
-from frontend.widgets.blocks import SettingRow, SliderRow, ModernCard, ModernScrollArea
-from frontend.widgets.controls import ModernButton, ModernSwitch
-from frontend.widgets.flow_layout import FlowLayout
+from frontend.widgets import (
+    BaseView, SettingRow, SliderRow, ModernCard, ModernScrollArea,
+    ModernButton, ModernSwitch, FlowLayout
+)
 
 class MusicView(BaseView):
     connect_requested = Signal()
@@ -290,7 +290,7 @@ class MusicView(BaseView):
             info_layout = QVBoxLayout()
             info_layout.setSpacing(1)
             
-            title_text = song.get("title", "Unknown Title")
+            title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
             if len(title_text) > 28:
                 title_text = title_text[:25] + "..."
                 

@@ -215,10 +215,11 @@ class MusicController(QObject):
                 clean_msg = self.i18n.get("music.youtube.age_restricted")
             elif "inappropriate for some users" in error_msg:
                 clean_msg = self.i18n.get("music.youtube.inappropriate")
-            elif "Formato o medio inválido" in error_msg or "Invalid media" in error_msg:
+            elif "INVALID_MEDIA" in error_msg or "Formato o medio inválido" in error_msg or "Invalid media" in error_msg:
                 clean_msg = self.i18n.get("music.youtube.invalid_media")
             else:
-                first_line = error_msg.split('\n')[0]
+                display_err = error_msg.replace("PLAYER_ERROR: ", "")
+                first_line = display_err.split('\n')[0]
                 if len(first_line) > 100:
                     clean_msg = first_line[:97] + "..."
                 else:
@@ -319,7 +320,7 @@ class MusicController(QObject):
 
     def _handle_plugin_song(self, api, provider, user, message, prefix_used):
         if provider:
-            is_youtube = provider.__class__.__name__ == "YouTubeMusicProvider"
+            is_youtube = getattr(provider, "provider_id", "") == "youtube"
             song = provider.get_current_song()
             if song:
                 is_playing = song.get("is_playing", False)

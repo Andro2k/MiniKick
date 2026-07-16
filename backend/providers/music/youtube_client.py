@@ -6,6 +6,9 @@ from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from backend.workers.music_worker import YouTubeResolveWorker, YouTubeSearchWorker
 
+_ERR_INVALID_MEDIA = "INVALID_MEDIA"
+_ERR_PLAYER_ERROR = "PLAYER_ERROR"
+
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
 
@@ -99,6 +102,10 @@ class YouTubeMusicProvider(QObject):
             "url": self.current_song["url"],
             "is_playing": is_playing
         }
+
+    @property
+    def provider_id(self) -> str:
+        return "youtube"
 
     def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]:
         query = query_or_uri.strip()
@@ -266,7 +273,7 @@ class YouTubeMusicProvider(QObject):
     def _on_resolve_error(self, error_msg: str):
         logging.error("[YouTubeMusicProvider] Error resolving audio stream: %s", error_msg)
         if self.current_song:
-            title = self.current_song.get("title", "Unknown Title")
+            title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
             requester = self.current_song.get("requester", "") or ""
             self.resolve_error_occurred.emit(title, error_msg, requester)
         self._play_next()
@@ -275,18 +282,18 @@ class YouTubeMusicProvider(QObject):
     def _handle_media_status(self, status: QMediaPlayer.MediaStatus):
         if status in (QMediaPlayer.MediaStatus.EndOfMedia, QMediaPlayer.MediaStatus.InvalidMedia):
             if status == QMediaPlayer.MediaStatus.InvalidMedia and self.current_song:
-                title = self.current_song.get("title", "Unknown Title")
+                title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
                 requester = self.current_song.get("requester", "") or ""
-                self.resolve_error_occurred.emit(title, "Formato o medio inválido", requester)
+                self.resolve_error_occurred.emit(title, _ERR_INVALID_MEDIA, requester)
             self._play_next()
 
     @Slot(QMediaPlayer.Error, str)
     def _handle_player_error(self, error, error_string):
         logging.error("[YouTubeMusicProvider] Player error: %s - %s", error, error_string)
         if self.current_song:
-            title = self.current_song.get("title", "Unknown Title")
+            title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
             requester = self.current_song.get("requester", "") or ""
-            self.resolve_error_occurred.emit(title, f"Error de reproducción: {error_string}", requester)
+            self.resolve_error_occurred.emit(title, f"{_ERR_PLAYER_ERROR}: {error_string}", requester)
         self._play_next()
 
     def pause_playback(self) -> bool:
