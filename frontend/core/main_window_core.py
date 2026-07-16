@@ -341,6 +341,9 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, 'network_controller') and self.network_controller and getattr(self.network_controller, 'worker', None):
             self._stop_worker_safely("Worker_Network", self.network_controller.worker)
 
+        if hasattr(self.container, 'db_manager') and self.container.db_manager:
+            self.container.db_manager.cleanup()
+
         self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
 
     @Slot()

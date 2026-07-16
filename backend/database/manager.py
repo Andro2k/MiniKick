@@ -428,3 +428,14 @@ class DatabaseManager:
             import logging
             logging.error("[DatabaseManager] Error loading pending songs: %s", e)
         return []
+
+    def cleanup(self) -> None:
+        try:
+            with self.get_connection() as conn:
+                conn.execute("PRAGMA optimize")
+                conn.commit()
+            import logging
+            logging.getLogger("minikick.database").info("Database PRAGMA optimize executed successfully on shutdown.")
+        except Exception as e:
+            import logging
+            logging.getLogger("minikick.database").error("Error optimizing database on shutdown: %s", e)
