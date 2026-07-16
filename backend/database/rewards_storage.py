@@ -1,6 +1,6 @@
 # backend\storage\rewards_storage.py
 
-from backend.storage.manager import DatabaseManager
+from backend.database.manager import DatabaseManager
 
 class SQLiteRewardsStorage:
     def __init__(self, db_manager: DatabaseManager):

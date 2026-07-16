@@ -16,15 +16,15 @@ except ImportError:
     SPOTIFY_CLIENT_SECRET = ""
     SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8080/auth/callback"
 
-from backend.providers.spotify.spotify_client import SpotifyAuthManager, SpotifyMusicProvider
-from backend.storage.database import (DatabaseManager, SQLiteCommandsStorage, 
+from backend.providers.music.spotify_client import SpotifyAuthManager, SpotifyMusicProvider
+from backend.database import (DatabaseManager, SQLiteCommandsStorage, 
                                  SQLiteTokenStorage, SQLiteSettingsStorage, 
                                  SQLiteRewardsStorage, SQLiteSpamStorage,
                                  SQLiteTimersStorage)
 from backend.services.system.backup_service import BackupService
 from backend.services.system.translation_service import TranslationService
 from backend.services.auth.oauth_service import AuthManager
-from backend.providers.tts.tts_service import TTSManager
+from backend.providers.voices.tts_service import TTSManager
 from backend.services.rewards.overlay_server import OverlayServerManager
 from backend.services.rewards.media_trigger import MediaTriggerService
 from frontend.common.utils import resource_path

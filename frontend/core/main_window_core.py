@@ -19,7 +19,7 @@ from backend.controllers import (
     TimerController, LogController, MusicController, SettingsController,
     SpamController, UpdateController, NetworkController
 )
-from backend.providers.kick.kick_client import KickAPIClient
+from backend.providers.chat.kick_client import KickAPIClient
 
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging

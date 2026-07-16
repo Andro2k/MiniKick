@@ -1,10 +1,10 @@
-# backend\providers\tts\tts_service.py
+# backend\providers\voices\tts_service.py
 
 import queue
 import threading
 from backend.interfaces import ITTSProvider
-from backend.providers.tts.tts_local import LocalTTSProvider
-from backend.providers.tts.tts_online import WebTTSProvider
+from backend.providers.voices.tts_local import LocalTTSProvider
+from backend.providers.voices.tts_online import WebTTSProvider
 
 class TTSManager:
     def __init__(self):

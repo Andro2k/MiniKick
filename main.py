@@ -1,5 +1,7 @@
 # main.py
 
+
+from backend.database import SQLiteSettingsStorage
 import os
 import sys
 from PySide6.QtWidgets import QApplication
@@ -30,8 +32,8 @@ from backend.config.version import APP_VERSION
 
 def _get_safe_i18n():
     try:
-        from backend.storage.manager import DatabaseManager
-        from backend.storage.database import SQLiteSettingsStorage
+        from backend.database.manager import DatabaseManager
+        from backend.database import SQLiteSettingsStorage
         from backend.services.system.translation_service import TranslationService
         db = DatabaseManager()
         settings = SQLiteSettingsStorage(db)

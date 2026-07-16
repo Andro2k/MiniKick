@@ -3,7 +3,7 @@
 import logging
 import time
 from PySide6.QtCore import QThread, Signal
-from backend.providers.kick.kick_client import KickAPIClient
+from backend.providers.chat.kick_client import KickAPIClient
 
 class TimerWorker(QThread):
     post_message_requested = Signal(str)

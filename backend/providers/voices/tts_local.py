@@ -1,4 +1,4 @@
-# backend\providers\tts\tts_local.py
+# backend\providers\voices\tts_local.py
 
 import logging
 import pyttsx3

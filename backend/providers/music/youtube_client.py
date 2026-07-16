@@ -1,4 +1,4 @@
-# backend\providers\youtube\youtube_client.py
+# backend\providers\music\youtube_client.py
 
 import logging
 import os
@@ -31,7 +31,7 @@ class YouTubeMusicProvider(QObject):
         self._start_playing_current = True
         if self.db_manager:
             try:
-                from backend.storage.database import SQLiteSettingsStorage
+                from backend.database import SQLiteSettingsStorage
                 settings = SQLiteSettingsStorage(self.db_manager)
                 self.auto_resume = settings.load_bool("youtube_auto_resume", True)
             except Exception as e:

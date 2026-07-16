@@ -1,4 +1,4 @@
-# backend\providers\spotify\spotify_client.py
+# backend\providers\music\spotify_client.py
 
 import base64
 import requests

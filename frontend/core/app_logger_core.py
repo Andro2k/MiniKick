@@ -1,9 +1,9 @@
 # frontend\core\app_logger_core.py
 
 import logging
-from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
+from logging.handlers import TimedRotatingFileHandler
 from frontend.common.log_handler import QLogHandler, StreamToLogger
 
 def setup_application_logging():

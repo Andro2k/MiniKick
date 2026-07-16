@@ -1,7 +1,7 @@
 # backend\storage\timers_storage.py
 
 import json
-from backend.storage.manager import DatabaseManager
+from backend.database.manager import DatabaseManager
 
 class SQLiteTimersStorage:
     def __init__(self, db_manager: DatabaseManager):

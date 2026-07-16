@@ -1,6 +1,6 @@
 # backend\storage\token_storage.py
 
-from backend.storage.manager import DatabaseManager
+from backend.database.manager import DatabaseManager
 
 class SQLiteTokenStorage:
     def __init__(self, db_manager: DatabaseManager, provider: str = "kick"):

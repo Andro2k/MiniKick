@@ -1,4 +1,4 @@
-# backend\providers\kick\kick_client.py
+# backend\providers\chat\kick_client.py
 
 import logging
 import sys

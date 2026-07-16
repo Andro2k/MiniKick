@@ -1,6 +1,6 @@
 # backend\storage\settings_storage.py
 
-from backend.storage.manager import DatabaseManager
+from backend.database.manager import DatabaseManager
 
 class SQLiteSettingsStorage:
     def __init__(self, db_manager: DatabaseManager):

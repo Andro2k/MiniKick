@@ -1,7 +1,7 @@
 # backend\storage\commands_storage.py
 
 from datetime import datetime
-from backend.storage.manager import DatabaseManager
+from backend.database.manager import DatabaseManager
 
 class SQLiteCommandsStorage:
     def __init__(self, db_manager: DatabaseManager):

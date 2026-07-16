@@ -78,7 +78,7 @@ class MusicController(QObject):
 
     def _init_session_success(self, label_key: str):
         db_mgr = self.settings_storage.db_manager if self.settings_storage else None
-        from backend.providers.spotify.spotify_client import SpotifyMusicProvider
+        from backend.providers.music.spotify_client import SpotifyMusicProvider
         self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n, db_manager=db_mgr)
         self.view.set_auth_state(connected=True, label_key=label_key)
         self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.connected"), "success")   
@@ -93,7 +93,7 @@ class MusicController(QObject):
 
     def _init_youtube_provider(self):
         db_mgr = self.settings_storage.db_manager if self.settings_storage else None
-        from backend.providers.youtube.youtube_client import YouTubeMusicProvider
+        from backend.providers.music.youtube_client import YouTubeMusicProvider
         self.music_provider = YouTubeMusicProvider(self.i18n, db_manager=db_mgr)
         self.music_provider.resolve_error_occurred.connect(self.handle_resolve_error)
         

@@ -1,6 +1,6 @@
 # backend\storage\spam_storage.py
 
-from backend.storage.manager import DatabaseManager
+from backend.database.manager import DatabaseManager
 
 class SQLiteSpamStorage:
     def __init__(self, db_manager: DatabaseManager):
