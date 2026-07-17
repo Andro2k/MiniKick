@@ -481,7 +481,14 @@
             "processing_link": "🔍 Processing YouTube link...",
             "empty": "The queue is empty",
             "title": "Playback Queue",
-            "remove_tooltip": "Remove from queue"
+            "remove_tooltip": "Remove from queue",
+            "empty_desc": "Use !sr in chat to request music and it will appear here.",
+            "col_num": "#",
+            "col_title": "Title",
+            "col_artist": "Artist",
+            "col_requester": "Requested by",
+            "col_duration": "Duration",
+            "col_actions": "Actions"
         },
         "errors": {
             "no_session": "No active Spotify session.",

@@ -21,6 +21,8 @@ class YouTubeMusicProvider(QObject):
         self.current_local_file: str | None = None
         self.resolve_worker = None
         self._search_workers = []
+        self.preload_worker = None
+        self.preload_song_url: str | None = None
 
         self.player = QMediaPlayer(self)
         self.audio_output = QAudioOutput(self)
@@ -50,7 +52,8 @@ class YouTubeMusicProvider(QObject):
                     "url": song["url"],
                     "resolved": False,
                     "stream_url": None,
-                    "requester": song["requester"]
+                    "requester": song["requester"],
+                    "duration": "-"
                 })
             
             if self.queue:
@@ -120,7 +123,8 @@ class YouTubeMusicProvider(QObject):
                     "url": cached["url"],
                     "resolved": False,
                     "stream_url": None,
-                    "requester": requester
+                    "requester": requester,
+                    "duration": "-"
                 }
                 if self.db_manager:
                     db_id = self.db_manager.add_song_to_queue(
@@ -137,6 +141,8 @@ class YouTubeMusicProvider(QObject):
                         QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
                     else:
                         QTimer.singleShot(0, lambda: self._play_next(start_playing=False))
+                else:
+                    self._preload_next_song()
                 
                 success_msg = self.i18n.get("music.queue.success").replace("{track}", f"{cached['title']} - {cached['artist']}")
                 return True, success_msg
@@ -166,6 +172,8 @@ class YouTubeMusicProvider(QObject):
                     self._save_search_to_cache(query, worker.song_entry)
                 if not self.current_song:
                     self._play_next(start_playing=self.auto_resume)
+                else:
+                    self._preload_next_song()
             if callback:
                 callback(success, message)
             
@@ -195,6 +203,8 @@ class YouTubeMusicProvider(QObject):
             db_id = song.get("db_id")
             if db_id is not None and self.db_manager:
                 self.db_manager.update_song_status(db_id, 2)
+            if index == 0:
+                self._preload_next_song()
             return True
         return False
 
@@ -207,6 +217,50 @@ class YouTubeMusicProvider(QObject):
             except Exception:
                 pass
         self.current_local_file = None
+        if self.preload_worker and self.preload_worker.isRunning():
+            self.preload_worker.terminate()
+            self.preload_worker.wait()
+        self.preload_worker = None
+        self.preload_song_url = None
+
+    def _preload_next_song(self):
+        if not self.queue:
+            return
+
+        next_song = self.queue[0]
+        if next_song.get("resolved"):
+            return
+
+        if self.preload_worker and self.preload_worker.isRunning():
+            if self.preload_song_url == next_song["url"]:
+                return
+            self.preload_worker.terminate()
+            self.preload_worker.wait()
+            self.preload_worker = None
+            self.preload_song_url = None
+
+        self.preload_song_url = next_song["url"]
+        self.preload_worker = YouTubeResolveWorker(next_song["url"])
+        
+        def on_preload_resolved(title, path_or_url):
+            if self.queue and self.queue[0]["url"] == self.preload_song_url:
+                self.queue[0]["resolved"] = True
+                self.queue[0]["stream_url"] = path_or_url
+            if self.preload_worker:
+                self.preload_worker.deleteLater()
+                self.preload_worker = None
+            self.preload_song_url = None
+
+        def on_preload_error(error_msg):
+            logging.error("[YouTubeMusicProvider] Preload error: %s", error_msg)
+            if self.preload_worker:
+                self.preload_worker.deleteLater()
+                self.preload_worker = None
+            self.preload_song_url = None
+
+        self.preload_worker.resolved.connect(on_preload_resolved)
+        self.preload_worker.error.connect(on_preload_error)
+        self.preload_worker.start()
 
     def _play_next(self, start_playing: bool = True):
         if self.resolve_worker and self.resolve_worker.isRunning():
@@ -230,6 +284,11 @@ class YouTubeMusicProvider(QObject):
 
         if not self.queue:
             self.current_song = None
+            if self.preload_worker and self.preload_worker.isRunning():
+                self.preload_worker.terminate()
+                self.preload_worker.wait()
+            self.preload_worker = None
+            self.preload_song_url = None
             return
 
         self.current_song = self.queue.pop(0)
@@ -238,11 +297,35 @@ class YouTubeMusicProvider(QObject):
         if db_id is not None and self.db_manager:
             self.db_manager.update_song_status(db_id, 1)
 
-        self.resolve_worker = YouTubeResolveWorker(self.current_song["url"])
-        self.resolve_worker.resolved.connect(self._on_song_resolved)
-        self.resolve_worker.error.connect(self._on_resolve_error)
-        self._start_playing_current = start_playing
-        self.resolve_worker.start()
+        if self.current_song.get("resolved") and self.current_song.get("stream_url"):
+            self._start_playing_current = start_playing
+            self._on_song_resolved(self.current_song["title"], self.current_song["stream_url"])
+        elif self.preload_worker and self.preload_worker.isRunning() and self.preload_song_url == self.current_song["url"]:
+            self.resolve_worker = self.preload_worker
+            self.preload_worker = None
+            self.preload_song_url = None
+            try:
+                self.resolve_worker.resolved.disconnect()
+                self.resolve_worker.error.disconnect()
+            except Exception:
+                pass
+            self.resolve_worker.resolved.connect(self._on_song_resolved)
+            self.resolve_worker.error.connect(self._on_resolve_error)
+            self._start_playing_current = start_playing
+        else:
+            if self.preload_worker and self.preload_worker.isRunning():
+                self.preload_worker.terminate()
+                self.preload_worker.wait()
+            self.preload_worker = None
+            self.preload_song_url = None
+
+            self.resolve_worker = YouTubeResolveWorker(self.current_song["url"])
+            self.resolve_worker.resolved.connect(self._on_song_resolved)
+            self.resolve_worker.error.connect(self._on_resolve_error)
+            self._start_playing_current = start_playing
+            self.resolve_worker.start()
+
+        self._preload_next_song()
 
     @Slot(str, str)
     def _on_song_resolved(self, title: str, path_or_url: str):
@@ -268,6 +351,7 @@ class YouTubeMusicProvider(QObject):
             self.player.play()
         else:
             self.player.pause()
+        self._preload_next_song()
 
     @Slot(str)
     def _on_resolve_error(self, error_msg: str):

@@ -481,7 +481,14 @@
             "processing_link": "🔍 Procesando enlace de YouTube...",
             "empty": "La cola está vacía",
             "title": "Cola de Reproducción",
-            "remove_tooltip": "Eliminar de la cola"
+            "remove_tooltip": "Eliminar de la cola",
+            "empty_desc": "Usa !sr en el chat para pedir música y aparecerá aquí.",
+            "col_num": "#",
+            "col_title": "Título",
+            "col_artist": "Autor",
+            "col_requester": "Pedido por",
+            "col_duration": "Duración",
+            "col_actions": "Acciones"
         },
         "errors": {
             "no_session": "Sin sesión activa de Spotify.",

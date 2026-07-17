@@ -127,7 +127,7 @@ class ChatController(QObject):
             self.command_service.blockSignals(True)
             try:
                 self.command_service.save_command(
-                    trigger=settings.get("command", "!tts") or "!tts",
+                    trigger=settings.get("command", "!tts"),
                     response="[PLUGIN_CHAT_TTS]",
                     is_active=settings.get("use_command", False),
                     cooldown=1,
@@ -182,7 +182,7 @@ class ChatController(QObject):
         if username_lower in self._DEFAULT_BOTS or username_lower.endswith("bot"):
             if "bot" not in badges:
                 badges.append("bot")
-        self.message_received.emit(dto.user, dto.content, dto.color or "#FAFAFA", badges)
+        self.message_received.emit(dto.user, dto.content, dto.color, badges)
 
     def _resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
         available_ids = {v["id"] for v in self._all_voices}
@@ -360,7 +360,7 @@ class ChatController(QObject):
         
         self.command_service.blockSignals(True)
         try:
-            target_trigger = settings["command"].strip() or "!tts"
+            target_trigger = settings["command"].strip()
             if existing:
                 if existing["trigger"] != target_trigger:
                     self.command_service.delete_command(existing["trigger"])

@@ -145,12 +145,24 @@ class YouTubeSearchWorker(QThread):
 
                 author = item.get('uploader') or item.get('channel', '-')
 
+                duration_sec = item.get('duration')
+                duration_str = "-"
+                if duration_sec:
+                    try:
+                        m, s = divmod(int(duration_sec), 60)
+                        duration_str = f"{m:02d}:{s:02d}"
+                    except Exception:
+                        pass
+                elif item.get('duration_string'):
+                    duration_str = item.get('duration_string')
+
                 self.song_entry = {
                     "title": title,
                     "artist": author,
                     "url": video_url,
                     "resolved": False,
-                    "stream_url": None
+                    "stream_url": None,
+                    "duration": duration_str
                 }
 
                 msg = self.i18n.get("music.queue.success").replace("{track}", f"{title} - {author}")

@@ -88,7 +88,7 @@ class DashboardView(BaseView):
         disconnected_layout.setSpacing(12)
         disconnected_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        illustration_path = get_assets_path(os.path.join("icons", "install_small.svg"))
+        illustration_path = get_assets_path(os.path.join("icons", "illustration_welcome.svg"))
         self.lbl_illustration = ScalableIllustration(
             icon_path=illustration_path, aspect_ratio=1.0, min_size=120, 
             max_size=300, size_offset=320, parent=self

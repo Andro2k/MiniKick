@@ -1,13 +1,10 @@
 # frontend\views\music_view.py
 
-from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QFrame, QLabel, QPushButton
+from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout,QLabel, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider
-from frontend.widgets import (
-    BaseView, SettingRow, SliderRow, ModernCard, ModernScrollArea,
-    ModernButton, ModernSwitch, FlowLayout
-)
+from frontend.widgets import BaseView, SettingRow, SliderRow, ModernCard, ModernButton, ModernSwitch, ModernTableCard
 
 class MusicView(BaseView):
     connect_requested = Signal()
@@ -56,9 +53,9 @@ class MusicView(BaseView):
 
         self._setup_provider_selection_card()
         self._setup_auth_card()
+        self._setup_now_playing_card()
         self._setup_settings_card()
         self._setup_commands_card()
-        self._setup_now_playing_card()
         self._setup_queue_card()
 
         self.main_layout.addWidget(self.body_container)
@@ -192,7 +189,7 @@ class MusicView(BaseView):
         controls_layout.addWidget(self.btn_skip)
         
         self.card_player.addLayout(controls_layout)
-        self.col2_layout.addWidget(self.card_player)
+        self.col1_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_commands_card(self):
         self.card_cmds = ModernCard(margin=12, spacing=8)
@@ -221,103 +218,93 @@ class MusicView(BaseView):
         self.col1_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_queue_card(self):
-        self.card_queue = ModernCard(margin=12, spacing=8)
+        from PySide6.QtWidgets import QHeaderView, QAbstractItemView
+        self.card_queue = ModernTableCard(
+            title_text=self.i18n.get("music.queue.title"),
+            headers=[
+                self.i18n.get("music.queue.col_num"),
+                self.i18n.get("music.queue.col_title"),
+                self.i18n.get("music.queue.col_artist"),
+                self.i18n.get("music.queue.col_requester"),
+                self.i18n.get("music.queue.col_duration"),
+                self.i18n.get("music.queue.col_actions")
+            ]
+        )
         self.card_queue.setVisible(False)
         
-        header_layout = QHBoxLayout()
-        lbl_title = QLabel(self.i18n.get("music.queue.title"))
-        lbl_title.setProperty("role", "h3")
+        self.queue_table = self.card_queue.table
+        self.queue_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.queue_table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.queue_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.queue_table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.queue_table.setShowGrid(False)
+        self.queue_table.verticalHeader().setVisible(False)
+        self.queue_table.horizontalHeader().setHighlightSections(False)
+        self.queue_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.queue_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.queue_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.queue_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.queue_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.queue_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         
-        self.lbl_queue_count = QLabel("(0)")
-        self.lbl_queue_count.setProperty("role", "caption")
+        self.queue_table.setMinimumHeight(200)
         
-        header_layout.addWidget(lbl_title)
-        header_layout.addWidget(self.lbl_queue_count)
-        header_layout.addStretch()
-        
-        self.card_queue.addLayout(header_layout)
-        
-        self.queue_list_widget = QWidget()
-        self.queue_list_layout = FlowLayout(self.queue_list_widget, margin=0, hspacing=8, vspacing=8)
-        
-        self.queue_scroll = ModernScrollArea(self.queue_list_widget)
-        self.card_queue.addWidget(self.queue_scroll)
-        
-        self.lbl_empty_queue = QLabel(self.i18n.get("music.queue.empty"))
-        self.lbl_empty_queue.setProperty("role", "body")
-        self.lbl_empty_queue.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.queue_list_layout.addWidget(self.lbl_empty_queue)
-        
+        self.card_queue.setup_empty_state(
+            title=self.i18n.get("music.queue.empty"),
+            desc=self.i18n.get("music.queue.empty_desc"),
+            icon_name="illustration_music.svg",
+            button_text="",
+            on_button_clicked=lambda: None
+        )
+        if hasattr(self.card_queue, "btn_empty_action") and self.card_queue.btn_empty_action:
+            self.card_queue.btn_empty_action.setVisible(False)
+            
         self.col2_layout.addWidget(self.card_queue, stretch=1)
 
     def update_queue(self, queue_items: list[dict]):
+        from PySide6.QtWidgets import QTableWidgetItem, QPushButton
         new_urls = [song.get("url") for song in queue_items]
         if hasattr(self, "_current_queue_urls") and self._current_queue_urls == new_urls:
             return
         self._current_queue_urls = new_urls
-
-        while self.queue_list_layout.count() > 0:
-            item = self.queue_list_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-                
-        self.lbl_queue_count.setText(f"({len(queue_items)})")
+        
+        if hasattr(self.card_queue, "lbl_title") and self.card_queue.lbl_title:
+            title_base = self.i18n.get("music.queue.title")
+            self.card_queue.lbl_title.setText(f"{title_base} ({len(queue_items)})")
+        
+        self.card_queue.set_empty(len(queue_items) == 0)
         
         if not queue_items:
-            self.lbl_empty_queue = QLabel(self.i18n.get("music.queue.empty"))
-            self.lbl_empty_queue.setProperty("role", "body")
-            self.lbl_empty_queue.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.queue_list_layout.addWidget(self.lbl_empty_queue)
+            self.queue_table.setRowCount(0)
             return
-
+            
+        self.queue_table.setRowCount(len(queue_items))
+        
         for idx, song in enumerate(queue_items):
-            item_frame = QFrame()
-            item_frame.setFixedSize(264, 64)
-            item_frame.setProperty("role", "bot_tag")
-            item_frame.style().unpolish(item_frame)
-            item_frame.style().polish(item_frame)
-            
-            item_layout = QHBoxLayout(item_frame)
-            item_layout.setContentsMargins(10, 4, 10, 4)
-            item_layout.setSpacing(10)
-            
-            lbl_idx = QLabel(f"{idx + 1}")
-            lbl_idx.setProperty("role", "caption")
-            lbl_idx.setFixedWidth(16)
-            item_layout.addWidget(lbl_idx)
-            
-            info_layout = QVBoxLayout()
-            info_layout.setSpacing(1)
+            item_idx = QTableWidgetItem(f"{idx + 1}")
+            item_idx.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            item_idx.setForeground(Qt.GlobalColor.gray)
+            self.queue_table.setItem(idx, 0, item_idx)
             
             title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
-            if len(title_text) > 28:
-                title_text = title_text[:25] + "..."
-                
+            item_title = QTableWidgetItem(title_text)
+            self.queue_table.setItem(idx, 1, item_title)
+            
             artist_text = song.get("artist", "-")
-            if len(artist_text) > 30:
-                artist_text = artist_text[:27] + "..."
-                
-            requester = song.get("requester")
-            lbl_requester_text = f"@{requester}" if requester else ""
+            item_artist = QTableWidgetItem(artist_text)
+            self.queue_table.setItem(idx, 2, item_artist)
             
-            lbl_title = QLabel(title_text)
-            lbl_title.setProperty("role", "h3")
-            lbl_title.setWordWrap(True)
-                
-            lbl_artist = QLabel(artist_text)
-            lbl_artist.setProperty("role", "caption")
-            lbl_artist.setWordWrap(True)
+            requester = song.get("requester", "")
+            requester_text = f"@{requester}" if requester else "-"
+            item_requester = QTableWidgetItem(requester_text)
+            if requester:
+                item_requester.setForeground(Qt.GlobalColor.green)
+            self.queue_table.setItem(idx, 3, item_requester)
             
-            lbl_requester = QLabel(lbl_requester_text)
-            lbl_requester.setProperty("role", "caption")
-            lbl_requester.setStyleSheet(f"color: {COLOR_GREEN}; font-size: 10px; font-weight: bold;")
-            lbl_requester.setWordWrap(True)
-            
-            info_layout.addWidget(lbl_title)
-            info_layout.addWidget(lbl_artist)
-            info_layout.addWidget(lbl_requester)
-            item_layout.addLayout(info_layout, stretch=1)
+            duration = song.get("duration", "-")
+            item_duration = QTableWidgetItem(duration)
+            item_duration.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.queue_table.setItem(idx, 4, item_duration)
             
             btn_delete = QPushButton()
             btn_delete.setProperty("role", "btn_ghost")
@@ -326,18 +313,21 @@ class MusicView(BaseView):
             btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
             btn_delete.setFixedSize(QSize(26, 26))
-            
             btn_delete.clicked.connect(lambda *args, index=idx: self.remove_queue_item_requested.emit(index))
-            item_layout.addWidget(btn_delete)
             
-            self.queue_list_layout.addWidget(item_frame)
+            cell_widget = QWidget()
+            cell_layout = QHBoxLayout(cell_widget)
+            cell_layout.addWidget(btn_delete)
+            cell_layout.setContentsMargins(0, 0, 0, 0)
+            cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.queue_table.setCellWidget(idx, 5, cell_widget)
 
     def set_auth_state(self, connected: bool, label_key: str = ""):
         provider = self.combo_provider.currentData()
         
         if provider == "youtube":
             self.lbl_provider_name.setText("YouTube")
-            self.icon_music.setPixmap(get_icon("youtube.svg").pixmap(32, 32))
+            self.icon_music.setPixmap(get_icon("youtube.svg").pixmap(48, 48))
             self.btn_connect.setVisible(False)
             self.btn_disconnect.setVisible(False)
             self.card_cmds.setEnabled(True)
@@ -351,7 +341,7 @@ class MusicView(BaseView):
             self.lbl_auth_status.setText(f"{self.i18n.get('common.status.active')}: {translated_label}")
         else:
             self.lbl_provider_name.setText(self.i18n.get("music.provider.name"))
-            self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_GREEN, 32).pixmap(32, 32))
+            self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_GREEN, 48).pixmap(48, 48))
             self.btn_connect.setVisible(not connected)
             self.btn_connect.setEnabled(not connected)
             self.btn_disconnect.setVisible(connected)
