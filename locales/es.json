@@ -433,7 +433,7 @@
         "player": {
             "not_playing": "No se está reproduciendo ninguna canción",
             "paused_title": "Reproductor en pausa...",
-            "paused_desc": "Abre Spotify y presiona Play",
+            "paused_desc": "Usa el comando para poner musicas",
             "unknown_song": "Desconocido",
             "volume_title": "Volumen del Reproductor",
             "volume_desc": "Ajustar el volumen de reproducción de YouTube."

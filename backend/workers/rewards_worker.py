@@ -9,7 +9,7 @@ class RewardWorker(QThread):
     reward_redeemed = Signal(str, str, str)
     error_occurred = Signal(str)
 
-    def __init__(self, i18n, api_client: KickAPIClient, poll_interval_seconds: int = 15, parent=None):
+    def __init__(self, i18n, api_client: KickAPIClient, poll_interval_seconds: int = 10, parent=None):
         super().__init__(parent) 
         self.i18n = i18n
         self.setObjectName("Worker_Reward_Polling") 

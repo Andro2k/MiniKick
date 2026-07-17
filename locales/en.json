@@ -433,7 +433,7 @@
         "player": {
             "not_playing": "No song currently playing",
             "paused_title": "Player paused...",
-            "paused_desc": "Open Spotify and press Play",
+            "paused_desc": "Use the command to play songs",
             "unknown_song": "Unknown",
             "volume_title": "Player Volume",
             "volume_desc": "Adjust YouTube playback volume."

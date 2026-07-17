@@ -1,6 +1,5 @@
 # main.py
 
-
 from backend.database import SQLiteSettingsStorage
 import os
 import sys
