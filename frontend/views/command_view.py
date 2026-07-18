@@ -12,12 +12,16 @@ class CommandView(BaseView):
     status_toggled = Signal(str, bool)
     search_text_changed = Signal(str)
 
+    _PERM_KEYS: dict[str, str] = {
+        "everyone":    "command.dialog.perm_everyone",
+        "subscriber":  "command.dialog.perm_subscriber",
+        "vip":         "command.dialog.perm_vip",
+        "moderator":   "command.dialog.perm_moderator",
+        "broadcaster": "command.dialog.perm_broadcaster",
+    }
+
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="command.header.title",
-            subtitle_key="command.header.subtitle"
-        )
+        super().__init__(i18n=i18n,title_key="command.header.title",subtitle_key="command.header.subtitle")
         self._setup_ui()
 
     def _setup_ui(self):
@@ -62,10 +66,8 @@ class CommandView(BaseView):
 
     def populate_table(self, commands: list[dict]):
         self.table.setUpdatesEnabled(False)
-        self.table.setRowCount(0)       
-        for cmd in commands:
-            row = self.table.rowCount()
-            self.table.insertRow(row)
+        self.table.setRowCount(len(commands))
+        for row, cmd in enumerate(commands):
             self.table.setCellWidget(row, 0, self._create_command_cell(cmd))
             self.table.setCellWidget(row, 1, self._create_permission_cell(cmd))
             self.table.setCellWidget(row, 2, self._create_aliases_cell(cmd))
@@ -89,14 +91,7 @@ class CommandView(BaseView):
         layout.setContentsMargins(8, 0, 8, 0)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         raw_perm = cmd_data.get("permission", "everyone")
-        perm_keys = {
-            "everyone": "command.dialog.perm_everyone",
-            "subscriber": "command.dialog.perm_subscriber",
-            "vip": "command.dialog.perm_vip",
-            "moderator": "command.dialog.perm_moderator",
-            "broadcaster": "command.dialog.perm_broadcaster"
-        }
-        i18n_key = perm_keys.get(raw_perm, "command.dialog.perm_everyone")
+        i18n_key = self._PERM_KEYS.get(raw_perm, "command.dialog.perm_everyone")
         translated_text = self.i18n.get(i18n_key) or raw_perm
         tag = QFrame()
         tag.setFixedHeight(22)

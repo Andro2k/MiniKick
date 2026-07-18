@@ -54,7 +54,6 @@ class CrashReportDialog(ModernModal):
         lbl_subtitle = QLabel(self.subtitle_text)
         lbl_subtitle.setProperty("role", "body")
         lbl_subtitle.setWordWrap(True)
-        lbl_subtitle.setStyleSheet("color: #9CA3AF; margin-bottom: 8px;")
 
         lbl_contact = QLabel(self.lbl_contact_text)
         lbl_contact.setProperty("role", "body")
@@ -74,7 +73,6 @@ class CrashReportDialog(ModernModal):
         self.txt_traceback.setReadOnly(True)
         self.txt_traceback.setPlainText(self.traceback_text)
         self.txt_traceback.setFixedHeight(120)
-        self.txt_traceback.setStyleSheet("font-family: Consolas, monospace; font-size: 11px; background: #09090b; border: 1px solid #27272a;")
 
         self.lbl_error = QLabel()
         self.lbl_error.setProperty("state", "error")

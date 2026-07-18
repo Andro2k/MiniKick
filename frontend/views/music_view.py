@@ -18,11 +18,7 @@ class MusicView(BaseView):
     youtube_auto_resume_toggled = Signal(bool)
 
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="music.header.title",
-            subtitle_key="music.header.subtitle"
-        )
+        super().__init__(i18n=i18n,title_key="music.header.title",subtitle_key="music.header.subtitle")
         self._setup_ui()
 
     def _setup_ui(self):

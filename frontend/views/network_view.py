@@ -210,7 +210,7 @@ class GraphCanvas(QWidget):
             
             painter.setFont(QFont("Inter", 8, QFont.Weight.Bold))
             painter.setPen(QColor(COLOR_NEUTRAL_200))
-            painter.drawText(tooltip_x + 10, tooltip_y + 16, "Ping / Latency")
+            painter.drawText(tooltip_x + 10, tooltip_y + 16, self.parent_graph.i18n.get("network.graph.tooltip_title"))
             
             painter.setFont(QFont("Inter", 8))
             for i, (label, val, col) in enumerate(tooltip_data):
@@ -330,6 +330,12 @@ class LiveNetworkGraph(QFrame):
             self.canvas.update()
 
 class NetworkStatusCard(QFrame):
+    _STATUS_CONFIG: dict[str, tuple[str, bool]] = {
+        "checking": ("#neutral_500", False),
+        "online":   ("#green",       True),
+        "warning":  ("#amber",       True),
+    }
+
     def __init__(self, key: str, title: str, description: str, icon_name: str, parent=None):
         super().__init__(parent)
         self.key = key
@@ -384,27 +390,15 @@ class NetworkStatusCard(QFrame):
         self.lbl_icon.setPixmap(icon.pixmap(20, 20))
         
     def set_status(self, status: str, latency: int, status_text: str):
-        if status == "checking":
-            color = COLOR_NEUTRAL_500
-            self.lbl_status.setText(status_text)
-            self.lbl_latency.setText("")
-            self.set_icon(COLOR_NEUTRAL_500)
-        elif status == "online":
-            color = COLOR_GREEN
-            self.lbl_status.setText(status_text)
-            self.lbl_latency.setText(f"{latency} ms")
-            self.set_icon(COLOR_GREEN)
-        elif status == "warning":
-            color = COLOR_AMBER
-            self.lbl_status.setText(status_text)
-            self.lbl_latency.setText(f"{latency} ms")
-            self.set_icon(COLOR_AMBER)
-        else:
-            color = COLOR_RED
-            self.lbl_status.setText(status_text)
-            self.lbl_latency.setText("-")
-            self.set_icon(COLOR_RED)
-            
+        _colors = {
+            "checking": (COLOR_NEUTRAL_500, ""),
+            "online":   (COLOR_GREEN,       f"{latency} ms"),
+            "warning":  (COLOR_AMBER,       f"{latency} ms"),
+        }
+        color, latency_text = _colors.get(status, (COLOR_RED, "-"))
+        self.lbl_status.setText(status_text)
+        self.lbl_latency.setText(latency_text)
+        self.set_icon(color)
         self.lbl_status.setStyleSheet(f"color: {color}; font-weight: bold;")
 
     def sizeHint(self):
@@ -415,11 +409,7 @@ class NetworkView(BaseView):
     view_shown = Signal()
 
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="network.header.title",
-            subtitle_key="network.header.subtitle"
-        )
+        super().__init__(i18n=i18n,title_key="network.header.title",subtitle_key="network.header.subtitle")
         self.cards = {}
         self._setup_ui()
 

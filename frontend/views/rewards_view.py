@@ -3,7 +3,6 @@
 import os
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot
-
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_RED
 
@@ -15,11 +14,7 @@ class RewardsView(BaseView):
     refresh_rewards_requested = Signal()
 
     def __init__(self, i18n, overlay_url="http://localhost:8090/overlay"):
-        super().__init__(
-            i18n=i18n,
-            title_key="rewards.header.title",
-            subtitle_key="rewards.header.subtitle"
-        )
+        super().__init__(i18n=i18n,title_key="rewards.header.title",subtitle_key="rewards.header.subtitle")
         self.overlay_url = overlay_url
         self._setup_ui()
 

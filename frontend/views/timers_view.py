@@ -13,11 +13,7 @@ class TimersView(BaseView):
     search_text_changed = Signal(str)
 
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="timer.header.title",
-            subtitle_key="timer.header.subtitle"
-        )
+        super().__init__(i18n=i18n, title_key="timer.header.title", subtitle_key="timer.header.subtitle")
         self._setup_ui()
 
     def _setup_ui(self):
@@ -64,10 +60,8 @@ class TimersView(BaseView):
 
     def populate_table(self, timers: list[dict]):
         self.table.setUpdatesEnabled(False)
-        self.table.setRowCount(0)       
-        for timer in timers:
-            row = self.table.rowCount()
-            self.table.insertRow(row)
+        self.table.setRowCount(len(timers))
+        for row, timer in enumerate(timers):
             self.table.setCellWidget(row, 0, self._create_name_cell(timer))
             self.table.setCellWidget(row, 1, self._create_message_cell(timer))
             self.table.setCellWidget(row, 2, self._create_online_cell(timer))
@@ -111,50 +105,31 @@ class TimersView(BaseView):
         layout.addStretch()
         return container
 
-    def _create_online_cell(self, timer_data: dict) -> QWidget:
+    @staticmethod
+    def _create_centered_label_cell(text: str) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
         layout.setContentsMargins(8, 0, 8, 0)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+        lbl = QLabel(text)
+        lbl.setProperty("role", "body")
+        layout.addWidget(lbl)
+        return container
+
+    def _create_online_cell(self, timer_data: dict) -> QWidget:
         online = timer_data.get("interval_online")
         unit_min = self.i18n.get("timer.table.unit_minutes")
-        txt = f"{online} {unit_min}" if online else "-"
-        
-        lbl = QLabel(txt)
-        lbl.setProperty("role", "body")
-        layout.addWidget(lbl)
-        return container
+        return self._create_centered_label_cell(f"{online} {unit_min}" if online else "-")
 
     def _create_offline_cell(self, timer_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
         offline = timer_data.get("interval_offline")
         unit_min = self.i18n.get("timer.table.unit_minutes")
-        txt = f"{offline} {unit_min}" if offline else "-"
-        
-        lbl = QLabel(txt)
-        lbl.setProperty("role", "body")
-        layout.addWidget(lbl)
-        return container
+        return self._create_centered_label_cell(f"{offline} {unit_min}" if offline else "-")
 
     def _create_lines_cell(self, timer_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
         lines = timer_data.get("chat_lines", 0)
         unit_lines = self.i18n.get("timer.table.unit_lines")
-        txt = f"{lines} {unit_lines}" if lines else "-"
-        
-        lbl = QLabel(txt)
-        lbl.setProperty("role", "body")
-        layout.addWidget(lbl)
-        return container
+        return self._create_centered_label_cell(f"{lines} {unit_lines}" if lines else "-")
 
     def _create_actions_cell(self, timer_data: dict) -> QWidget:
         timer_id = timer_data["id"]

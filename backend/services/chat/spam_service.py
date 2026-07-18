@@ -128,7 +128,6 @@ class SpamService:
                 self.api_client.ban_user(self.broadcaster_id, sender_id)
                 
             elif penalty_type == "warn_delete":
-                #Cambiar el mensaje por i18n, nada de texto directo en el codigo.
                 self.api_client.delete_chat_message(msg_id)
                 warn_msg = f"@{user} por favor evita el spam en el chat."
                 self.api_client.post_chat_message(warn_msg, msg_type="bot")

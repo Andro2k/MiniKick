@@ -649,7 +649,7 @@
         },
         "controllers": {
             "dashboard": {
-                "unknown_user": "Unknown",
+                "unknown_user": "Unknown user",
                 "no_bio": "No description",
                 "none": "None",
                 "affiliate": "Affiliate",
@@ -804,7 +804,8 @@
             "max": "Max",
             "time_45s": "-45s",
             "time_20s": "-20s",
-            "time_now": "Now"
+            "time_now": "Now",
+            "tooltip_title": "Ping / Latency"
         },
         "btn_check": "Check Network"
     },

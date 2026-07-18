@@ -483,7 +483,14 @@ DEFAULT_DICTIONARY = {
             "processing_link": "🔍 Processing YouTube link...",
             "empty": "The queue is empty",
             "title": "Playback Queue",
-            "remove_tooltip": "Remove from queue"
+            "remove_tooltip": "Remove from queue",
+            "empty_desc": "Use !sr in chat to request music and it will appear here.",
+            "col_num": "#",
+            "col_title": "Title",
+            "col_artist": "Artist",
+            "col_requester": "Requested by",
+            "col_duration": "Duration",
+            "col_actions": "Actions"
         },
         "errors": {
             "no_session": "No active Spotify session.",
@@ -644,7 +651,7 @@ DEFAULT_DICTIONARY = {
         },
         "controllers": {
             "dashboard": {
-                "unknown_user": "Unknown",
+                "unknown_user": "Unknown user",
                 "no_bio": "No description",
                 "none": "None",
                 "affiliate": "Affiliate",
@@ -799,7 +806,8 @@ DEFAULT_DICTIONARY = {
             "max": "Max",
             "time_45s": "-45s",
             "time_20s": "-20s",
-            "time_now": "Now"
+            "time_now": "Now",
+            "tooltip_title": "Ping / Latency"
         },
         "btn_check": "Check Network"
     },

@@ -18,11 +18,7 @@ class SettingsView(BaseView):
     feedback_clicked = Signal()
 
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="settings.header.title",
-            subtitle_key="settings.header.subtitle"
-        )
+        super().__init__(i18n=i18n,title_key="settings.header.title",subtitle_key="settings.header.subtitle")
         self._setup_ui()
 
     def _setup_ui(self):

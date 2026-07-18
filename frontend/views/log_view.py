@@ -4,9 +4,8 @@ import os
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize, QDate
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import (
-    QFileDialog, QFrame, QHeaderView, QHBoxLayout, QLabel, QMessageBox,
-    QStackedWidget, QTableWidgetItem, QVBoxLayout, QWidget,
-    QGridLayout, QLineEdit, QBoxLayout, QSizePolicy, QCheckBox, QDateEdit
+    QFileDialog, QFrame, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QStackedWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget, QGridLayout, QLineEdit, QBoxLayout, QSizePolicy, QCheckBox, QDateEdit
 )
 from frontend.widgets import BaseView, ModernTable, ScalableIllustration, ModernButton
 from frontend.common.theme import COLOR_BLACK, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE, COLOR_AMBER, COLOR_RED
@@ -184,11 +183,7 @@ class LogView(BaseView):
     view_shown = Signal()
 
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="log.header.title",
-            subtitle_key="log.header.subtitle"
-        )
+        super().__init__(i18n=i18n,title_key="log.header.title",subtitle_key="log.header.subtitle")
         self.str_all = self.i18n.get("log.controls.filter_all")
         self._pending_ui_ops: list[tuple] = []
         self.page_size = 50
@@ -199,6 +194,7 @@ class LogView(BaseView):
         self._flush_timer.setSingleShot(True)
         self._flush_timer.setInterval(120)
         self._flush_timer.timeout.connect(self._flush_pending_ui)
+        self._page_btn_pool: list[ModernButton] = []
         
         self._setup_ui()
 
@@ -405,12 +401,6 @@ class LogView(BaseView):
         self.update_page_display()
 
     def update_page_buttons(self, total_pages: int):
-        while self.page_buttons_layout.count():
-            item = self.page_buttons_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-
         if total_pages <= 7:
             pages = list(range(1, total_pages + 1))
         else:
@@ -421,6 +411,10 @@ class LogView(BaseView):
             else:
                 pages = [1, None, self.current_page - 1, self.current_page, self.current_page + 1, None, total_pages]
 
+        while self.page_buttons_layout.count():
+            self.page_buttons_layout.takeAt(0)
+
+        pool_idx = 0
         for p in pages:
             if p is None:
                 lbl = QLabel("...")
@@ -429,9 +423,26 @@ class LogView(BaseView):
                 self.page_buttons_layout.addWidget(lbl)
             else:
                 role = "action_accent" if p == self.current_page else "action_outlined"
-                btn = ModernButton(str(p), role=role)
+                if pool_idx < len(self._page_btn_pool):
+                    btn = self._page_btn_pool[pool_idx]
+                    btn.setText(str(p))
+                    btn.setProperty("role", role)
+                    btn.style().unpolish(btn)
+                    btn.style().polish(btn)
+                    try:
+                        btn.clicked.disconnect()
+                    except RuntimeError:
+                        pass
+                else:
+                    btn = ModernButton(str(p), role=role)
+                    self._page_btn_pool.append(btn)
                 btn.clicked.connect(lambda checked=False, val=p: self.go_to_page(val))
+                btn.setVisible(True)
                 self.page_buttons_layout.addWidget(btn)
+                pool_idx += 1
+
+        for i in range(pool_idx, len(self._page_btn_pool)):
+            self._page_btn_pool[i].setVisible(False)
 
     def update_page_display(self):
         total_logs = len(self.all_logs)

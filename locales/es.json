@@ -433,7 +433,7 @@
         "player": {
             "not_playing": "No se está reproduciendo ninguna canción",
             "paused_title": "Reproductor en pausa...",
-            "paused_desc": "Usa el comando para poner musicas",
+            "paused_desc": "Usa el comando para reproducir canciones",
             "unknown_song": "Desconocido",
             "volume_title": "Volumen del Reproductor",
             "volume_desc": "Ajustar el volumen de reproducción de YouTube."
@@ -804,7 +804,8 @@
             "max": "Máximo",
             "time_45s": "-45s",
             "time_20s": "-20s",
-            "time_now": "Ahora"
+            "time_now": "Ahora",
+            "tooltip_title": "Ping / Latencia"
         },
         "btn_check": "Comprobar Red"
     },

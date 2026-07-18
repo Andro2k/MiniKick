@@ -49,13 +49,13 @@ class DashboardView(BaseView):
     autostart_toggled = Signal(bool)
     reauth_requested = Signal()
     
+    _STATS_CARDS_ATTR = "_stats_cols"
+    _SESSION_CARDS_ATTR = "_session_cols"
+    
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="dashboard.header.title",
-            subtitle_key="dashboard.header.subtitle"
-        )
+        super().__init__(i18n=i18n,title_key="dashboard.header.title",subtitle_key="dashboard.header.subtitle")
         self._stats_cols = -1
+        self._session_cols = -1
         self._setup_ui()
 
     def _setup_ui(self):
@@ -245,6 +245,17 @@ class DashboardView(BaseView):
         self.sw_autostart.setChecked(enabled)
         self.sw_autostart.blockSignals(False)
 
+    @staticmethod
+    def _fmt_metric(count: int, total: int) -> str:
+        pct = (count / total * 100) if total > 0 else 0.0
+        return f"{count}   ·   {pct:.1f}%"
+
+    def _relayout_grid(self, grid, cards: list, cols: int, attr: str):
+        if cols != getattr(self, attr, -1):
+            setattr(self, attr, cols)
+            for i, card in enumerate(cards):
+                grid.addWidget(card, i // cols, i % cols)
+
     def update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = ""):
         if is_connecting:
             self.status_label.setText(self.i18n.get("dashboard.connection.status_auth"))
@@ -284,37 +295,17 @@ class DashboardView(BaseView):
 
     def update_session_metrics(self, msg_count: int, cmd_count: int, timer_count: int, spam_count: int):
         total = msg_count + cmd_count + timer_count + spam_count
-        
-        if total > 0:
-            p_msg = msg_count / total
-            p_cmd = cmd_count / total
-            p_timer = timer_count / total
-            p_spam = spam_count / total
-            
-            pct_msg = f"{p_msg * 100:.1f}%"
-            pct_cmd = f"{p_cmd * 100:.1f}%"
-            pct_timer = f"{p_timer * 100:.1f}%"
-            pct_spam = f"{p_spam * 100:.1f}%"
-            
-            self.card_msg_processed.set_value(f"{msg_count}   ·   {pct_msg}")
-            self.card_cmd_executed.set_value(f"{cmd_count}   ·   {pct_cmd}")
-            self.card_timers_sent.set_value(f"{timer_count}   ·   {pct_timer}")
-            self.card_spam_blocked.set_value(f"{spam_count}   ·   {pct_spam}")
-            
-            if hasattr(self, 'session_bar'):
-                self.session_bar.set_data([
-                    (p_msg, COLOR_PURPLE),
-                    (p_cmd, COLOR_BLUE),
-                    (p_timer, COLOR_GREEN),
-                    (p_spam, COLOR_RED)
-                ])
-        else:
-            self.card_msg_processed.set_value("0   ·   0.0%")
-            self.card_cmd_executed.set_value("0   ·   0.0%")
-            self.card_timers_sent.set_value("0   ·   0.0%")
-            self.card_spam_blocked.set_value("0   ·   0.0%")
-            if hasattr(self, 'session_bar'):
-                self.session_bar.set_data([])
+        metrics = [
+            (self.card_msg_processed, msg_count, COLOR_PURPLE),
+            (self.card_cmd_executed, cmd_count, COLOR_BLUE),
+            (self.card_timers_sent, timer_count, COLOR_GREEN),
+            (self.card_spam_blocked, spam_count, COLOR_RED),
+        ]
+        for card, count, _ in metrics:
+            card.set_value(self._fmt_metric(count, total))
+        self.session_bar.set_data(
+            [(c / total, color) for _, c, color in metrics] if total > 0 else []
+        )
 
     def set_avatar_from_bytes(self, image_data: bytes):
         pixmap = create_circular_pixmap(image_data)
@@ -346,9 +337,15 @@ class DashboardView(BaseView):
         self.lbl_warn_text.setText(f"{prefix} {scope_names}.")
         self.banner_scopes.setVisible(True)
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        if hasattr(self, "lbl_illustration") and self.disconnected_container.isVisible():
+            self.lbl_illustration.update_image(self.height())
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
+        
         if hasattr(self, 'banner_layout'):
             if width < 480:
                 self.banner_layout.setDirection(QBoxLayout.Direction.TopToBottom)
@@ -356,35 +353,26 @@ class DashboardView(BaseView):
             else:
                 self.banner_layout.setDirection(QBoxLayout.Direction.LeftToRight)
                 self.lbl_warn_text.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        
         if hasattr(self, 'top_row_layout'):
-            if width < 600:
-                self.top_row_layout.setDirection(QBoxLayout.Direction.TopToBottom)
-            else:
-                self.top_row_layout.setDirection(QBoxLayout.Direction.LeftToRight)
+            direction = QBoxLayout.Direction.TopToBottom if width < 600 else QBoxLayout.Direction.LeftToRight
+            self.top_row_layout.setDirection(direction)
+        
         if hasattr(self, 'stats_grid'):
-            if width < 650:
-                cols = 1
-            elif width < 950:
-                cols = 2
-            else:
-                cols = 3
-            if cols != self._stats_cols:
-                self._stats_cols = cols
-                cards = [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods]
-                for i, card in enumerate(cards):
-                    self.stats_grid.addWidget(card, i // cols, i % cols)
+            stats_cols = 1 if width < 650 else (2 if width < 950 else 3)
+            self._relayout_grid(
+                self.stats_grid,
+                [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods],
+                stats_cols, self._STATS_CARDS_ATTR
+            )
+        
         if hasattr(self, 'session_grid'):
-            if width < 650:
-                cols = 1
-            elif width < 950:
-                cols = 2
-            else:
-                cols = 4
-            if cols != getattr(self, '_session_cols', -1):
-                self._session_cols = cols
-                cards = [self.card_msg_processed, self.card_cmd_executed, self.card_timers_sent, self.card_spam_blocked]
-                for i, card in enumerate(cards):
-                    self.session_grid.addWidget(card, i // cols, i % cols)
-                    
-        if hasattr(self, "disconnected_container") and self.disconnected_container.isVisible():
+            session_cols = 1 if width < 650 else (2 if width < 950 else 4)
+            self._relayout_grid(
+                self.session_grid,
+                [self.card_msg_processed, self.card_cmd_executed, self.card_timers_sent, self.card_spam_blocked],
+                session_cols, self._SESSION_CARDS_ATTR
+            )
+        
+        if hasattr(self, "lbl_illustration") and self.disconnected_container.isVisible():
             self.lbl_illustration.update_image(self.height())

@@ -8,11 +8,7 @@ class SpamView(BaseView):
     filter_updated = Signal(str, dict)
 
     def __init__(self, i18n):
-        super().__init__(
-            i18n=i18n,
-            title_key="spam.header.title",
-            subtitle_key="spam.header.subtitle"
-        )
+        super().__init__(i18n=i18n, title_key="spam.header.title", subtitle_key="spam.header.subtitle")
         self.cards = {}
         self._setup_ui()
 
