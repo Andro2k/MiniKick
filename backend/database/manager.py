@@ -1,7 +1,11 @@
-# backend\storage\manager.py
+# backend\database\manager.py
 
 import os
 import sqlite3
+import logging
+from datetime import datetime
+
+logger = logging.getLogger("minikick.database")
 
 class DatabaseManager:
     def __init__(self, db_name="minikick.db"):
@@ -10,25 +14,23 @@ class DatabaseManager:
         os.makedirs(self.db_dir, exist_ok=True)
         self.db_name = os.path.join(self.db_dir, db_name)
         
+        self._initialize_database()
+
+    def _initialize_database(self) -> None:
         try:
             if os.path.exists(self.db_name):
-                conn = sqlite3.connect(self.db_name)
-                try:
+                with sqlite3.connect(self.db_name) as conn:
                     cursor = conn.cursor()
                     cursor.execute("PRAGMA integrity_check")
                     res = cursor.fetchone()
                     if not res or res[0] != "ok":
                         raise sqlite3.DatabaseError("Database integrity check failed")
-                finally:
-                    conn.close()
             self._create_tables()
         except sqlite3.DatabaseError as e:
-            import logging
-            logger = logging.getLogger("minikick.database")
             logger.error("Database file is malformed at startup, recreating: %s", e)
             self._handle_corrupt_database()
 
-    def get_connection(self):
+    def get_connection(self) -> sqlite3.Connection:
         conn = None
         try:
             conn = sqlite3.connect(self.db_name)
@@ -44,17 +46,12 @@ class DatabaseManager:
                 except Exception:
                     pass
             if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
-                import logging
-                logger = logging.getLogger("minikick.database")
                 logger.error("Database error in get_connection, recreating database: %s", e)
                 self._handle_corrupt_database()
                 return sqlite3.connect(self.db_name)
-            else:
-                raise e
+            raise e
 
-    def _handle_corrupt_database(self):
-        import logging
-        logger = logging.getLogger("minikick.database")
+    def _handle_corrupt_database(self) -> None:
         for ext in ("", "-wal", "-shm"):
             file_path = self.db_name + ext
             if os.path.exists(file_path):
@@ -65,7 +62,7 @@ class DatabaseManager:
                     logger.warning("Could not delete database file %s: %s", file_path, del_err)
         self._create_tables()
 
-    def _create_tables(self):
+    def _create_tables(self) -> None:
         with self.get_connection() as conn:
             cursor = conn.cursor()            
             cursor.execute("""
@@ -92,7 +89,8 @@ class DatabaseManager:
                     volume REAL DEFAULT 1.0,
                     scale REAL DEFAULT 1.0,
                     pos_x INTEGER DEFAULT 0,
-                    pos_y INTEGER DEFAULT 0
+                    pos_y INTEGER DEFAULT 0,
+                    is_random_pos INTEGER DEFAULT 0
                 )
             """)
             cursor.execute("""
@@ -113,7 +111,8 @@ class DatabaseManager:
                     penalty TEXT DEFAULT 'timeout',
                     duration INTEGER DEFAULT 5,
                     exclude_group TEXT DEFAULT 'none',
-                    max_amount INTEGER DEFAULT 0
+                    max_amount INTEGER DEFAULT 0,
+                    allowlist TEXT DEFAULT ''
                 )
             """)
             cursor.execute("""
@@ -140,33 +139,7 @@ class DatabaseManager:
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_trigger ON command_execution_logs(command_trigger)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_timestamp ON command_execution_logs(timestamp)")
-            cursor.execute("""
-                CREATE TRIGGER IF NOT EXISTS prune_command_logs AFTER INSERT ON command_execution_logs
-                BEGIN
-                    DELETE FROM command_execution_logs WHERE timestamp < datetime('now', '-30 days');
-                END;
-            """)
-            cursor.execute("""
-                CREATE VIEW IF NOT EXISTS command_analytics AS
-                SELECT 
-                    c.trigger,
-                    c.response,
-                    c.is_active,
-                    COUNT(l.id) AS usage_count,
-                    MAX(l.timestamp) AS last_used
-                FROM chat_commands c
-                LEFT JOIN command_execution_logs l ON c.trigger = l.command_trigger
-                GROUP BY c.trigger
-            """)
-            cursor.execute("""
-                CREATE VIEW IF NOT EXISTS active_features_summary AS
-                SELECT 
-                    (SELECT COUNT(*) FROM chat_commands) AS total_commands,
-                    (SELECT COUNT(*) FROM chat_commands WHERE is_active = 1) AS active_commands,
-                    (SELECT COUNT(*) FROM chat_timers) AS total_timers,
-                    (SELECT COUNT(*) FROM chat_timers WHERE is_active = 1) AS active_timers,
-                    (SELECT COUNT(*) FROM command_execution_logs) AS total_command_usages
-            """)
+            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS youtube_search_cache (
                     query_raw TEXT PRIMARY KEY,
@@ -184,18 +157,6 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
-                CREATE TRIGGER IF NOT EXISTS prune_youtube_cache AFTER INSERT ON youtube_search_cache
-                BEGIN
-                    DELETE FROM youtube_search_cache WHERE cached_at < datetime('now', '-15 days');
-                END;
-            """)
-            cursor.execute("""
-                CREATE TRIGGER IF NOT EXISTS prune_avatar_cache AFTER INSERT ON avatar_cache
-                BEGIN
-                    DELETE FROM avatar_cache WHERE cached_at < datetime('now', '-15 days');
-                END;
-            """)
-            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS system_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     level TEXT NOT NULL,
@@ -203,16 +164,6 @@ class DatabaseManager:
                     message TEXT NOT NULL
                 )
             """)
-            cursor.execute("""
-                CREATE TRIGGER IF NOT EXISTS prune_system_logs AFTER INSERT ON system_logs
-                WHEN (SELECT COUNT(*) FROM system_logs) > 2000
-                BEGIN
-                    DELETE FROM system_logs WHERE id IN (
-                        SELECT id FROM system_logs ORDER BY id ASC LIMIT (SELECT COUNT(*) - 2000 FROM system_logs)
-                    );
-                END;
-            """)
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -226,7 +177,6 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_user ON spam_violations(username)")
-
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_filter ON spam_violations(filter_id)")
             
             cursor.execute("""
@@ -266,6 +216,55 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name ON reward_redemptions(reward_name)")
             
             cursor.execute("""
+                CREATE VIEW IF NOT EXISTS command_analytics AS
+                SELECT 
+                    c.trigger,
+                    c.response,
+                    c.is_active,
+                    COUNT(l.id) AS usage_count,
+                    MAX(l.timestamp) AS last_used
+                FROM chat_commands c
+                LEFT JOIN command_execution_logs l ON c.trigger = l.command_trigger
+                GROUP BY c.trigger
+            """)
+            cursor.execute("""
+                CREATE VIEW IF NOT EXISTS active_features_summary AS
+                SELECT 
+                    (SELECT COUNT(*) FROM chat_commands) AS total_commands,
+                    (SELECT COUNT(*) FROM chat_commands WHERE is_active = 1) AS active_commands,
+                    (SELECT COUNT(*) FROM chat_timers) AS total_timers,
+                    (SELECT COUNT(*) FROM chat_timers WHERE is_active = 1) AS active_timers,
+                    (SELECT COUNT(*) FROM command_execution_logs) AS total_command_usages
+            """)
+
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_command_logs AFTER INSERT ON command_execution_logs
+                BEGIN
+                    DELETE FROM command_execution_logs WHERE timestamp < datetime('now', '-30 days');
+                END;
+            """)
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_youtube_cache AFTER INSERT ON youtube_search_cache
+                BEGIN
+                    DELETE FROM youtube_search_cache WHERE cached_at < datetime('now', '-15 days');
+                END;
+            """)
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_avatar_cache AFTER INSERT ON avatar_cache
+                BEGIN
+                    DELETE FROM avatar_cache WHERE cached_at < datetime('now', '-15 days');
+                END;
+            """)
+            cursor.execute("""
+                CREATE TRIGGER IF NOT EXISTS prune_system_logs AFTER INSERT ON system_logs
+                WHEN (SELECT COUNT(*) FROM system_logs) > 2000
+                BEGIN
+                    DELETE FROM system_logs WHERE id IN (
+                        SELECT id FROM system_logs ORDER BY id ASC LIMIT (SELECT COUNT(*) - 2000 FROM system_logs)
+                    );
+                END;
+            """)
+            cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_spam_violations AFTER INSERT ON spam_violations
                 WHEN (SELECT COUNT(*) FROM spam_violations) > 1000
                 BEGIN
@@ -274,7 +273,6 @@ class DatabaseManager:
                     );
                 END;
             """)
-            
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_timer_logs AFTER INSERT ON timer_execution_logs
                 WHEN (SELECT COUNT(*) FROM timer_execution_logs) > 1000
@@ -284,7 +282,6 @@ class DatabaseManager:
                     );
                 END;
             """)
-            
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_music_queue AFTER INSERT ON music_queue
                 WHEN (SELECT COUNT(*) FROM music_queue WHERE is_played = 2) > 100
@@ -294,7 +291,6 @@ class DatabaseManager:
                     );
                 END;
             """)
-            
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_reward_redemptions AFTER INSERT ON reward_redemptions
                 WHEN (SELECT COUNT(*) FROM reward_redemptions) > 1000
@@ -305,35 +301,12 @@ class DatabaseManager:
                 END;
             """)
 
-            cursor.execute("PRAGMA table_info(obs_rewards)")
-            columns = [info[1] for info in cursor.fetchall()]
-            if "is_random_pos" not in columns:
-                cursor.execute("ALTER TABLE obs_rewards ADD COLUMN is_random_pos INTEGER DEFAULT 0")
-            
-            cursor.execute("PRAGMA table_info(chat_commands)")
-            columns = [info[1] for info in cursor.fetchall()]
-            if "permission" not in columns:
-                cursor.execute("ALTER TABLE chat_commands ADD COLUMN permission TEXT DEFAULT 'everyone'")
-            
-            cursor.execute("PRAGMA table_info(tokens)")
-            columns = [info[1] for info in cursor.fetchall()]
-            if "provider" not in columns:
-                cursor.execute("ALTER TABLE tokens ADD COLUMN provider TEXT DEFAULT 'kick'")
-                
-            cursor.execute("PRAGMA table_info(spam_filters)")
-            columns = [info[1] for info in cursor.fetchall()]
-            if "allowlist" not in columns:
-                cursor.execute("ALTER TABLE spam_filters ADD COLUMN allowlist TEXT DEFAULT ''")
-                
-            cursor.execute("UPDATE spam_filters SET duration = duration / 60 WHERE duration >= 60")
-                
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
             
             conn.commit()
 
     def log_spam_violation(self, username: str, sender_id: int, filter_id: str, message_content: str, penalty_type: str, duration: int) -> None:
         try:
-            from datetime import datetime
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
@@ -343,12 +316,10 @@ class DatabaseManager:
                 )
                 conn.commit()
         except Exception as e:
-            import logging
-            logging.error("[DatabaseManager] Error logging spam violation: %s", e)
+            logger.error("[DatabaseManager] Error logging spam violation: %s", e)
 
     def log_timer_execution(self, timer_id: int, message_sent: str) -> None:
         try:
-            from datetime import datetime
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
@@ -358,12 +329,10 @@ class DatabaseManager:
                 )
                 conn.commit()
         except Exception as e:
-            import logging
-            logging.error("[DatabaseManager] Error logging timer execution: %s", e)
+            logger.error("[DatabaseManager] Error logging timer execution: %s", e)
 
     def log_reward_redemption(self, reward_name: str, username: str) -> None:
         try:
-            from datetime import datetime
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
@@ -373,12 +342,10 @@ class DatabaseManager:
                 )
                 conn.commit()
         except Exception as e:
-            import logging
-            logging.error("[DatabaseManager] Error logging reward redemption: %s", e)
+            logger.error("[DatabaseManager] Error logging reward redemption: %s", e)
 
     def add_song_to_queue(self, title: str, artist: str, url: str, requester: str, provider: str) -> int:
         try:
-            from datetime import datetime
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
@@ -389,8 +356,7 @@ class DatabaseManager:
                 conn.commit()
                 return cursor.lastrowid
         except Exception as e:
-            import logging
-            logging.error("[DatabaseManager] Error adding song to queue: %s", e)
+            logger.error("[DatabaseManager] Error adding song to queue: %s", e)
         return -1
 
     def update_song_status(self, db_id: int, status: int) -> None:
@@ -402,8 +368,7 @@ class DatabaseManager:
                 cursor.execute("UPDATE music_queue SET is_played = ? WHERE id = ?", (status, db_id))
                 conn.commit()
         except Exception as e:
-            import logging
-            logging.error("[DatabaseManager] Error updating song status: %s", e)
+            logger.error("[DatabaseManager] Error updating song status: %s", e)
 
     def load_pending_songs(self, provider: str) -> list[dict]:
         try:
@@ -425,8 +390,7 @@ class DatabaseManager:
                     for r in cursor.fetchall()
                 ]
         except Exception as e:
-            import logging
-            logging.error("[DatabaseManager] Error loading pending songs: %s", e)
+            logger.error("[DatabaseManager] Error loading pending songs: %s", e)
         return []
 
     def cleanup(self) -> None:
@@ -434,8 +398,6 @@ class DatabaseManager:
             with self.get_connection() as conn:
                 conn.execute("PRAGMA optimize")
                 conn.commit()
-            import logging
-            logging.getLogger("minikick.database").info("Database PRAGMA optimize executed successfully on shutdown.")
+            logger.info("Database PRAGMA optimize executed successfully on shutdown.")
         except Exception as e:
-            import logging
-            logging.getLogger("minikick.database").error("Error optimizing database on shutdown: %s", e)
+            logger.error("Error optimizing database on shutdown: %s", e)
