@@ -1,7 +1,7 @@
 # frontend\views\music_view.py
 
-from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout,QLabel, QPushButton
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QApplication
+from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider
 from frontend.widgets import BaseView, SettingRow, SliderRow, ModernCard, ModernButton, ModernSwitch, ModernTableCard
@@ -17,8 +17,9 @@ class MusicView(BaseView):
     skip_requested = Signal()
     youtube_auto_resume_toggled = Signal(bool)
 
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n,title_key="music.header.title",subtitle_key="music.header.subtitle")
+    def __init__(self, i18n, music_overlay_url: str = ""):
+        super().__init__(i18n=i18n, title_key="music.header.title", subtitle_key="music.header.subtitle")
+        self._music_overlay_url = music_overlay_url
         self._setup_ui()
 
     def _setup_ui(self):
@@ -52,6 +53,7 @@ class MusicView(BaseView):
         self._setup_now_playing_card()
         self._setup_settings_card()
         self._setup_commands_card()
+        self._setup_overlay_url_card()
         self._setup_queue_card()
 
         self.main_layout.addWidget(self.body_container)
@@ -213,6 +215,29 @@ class MusicView(BaseView):
         
         self.col1_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)
 
+    def _setup_overlay_url_card(self):
+        self.card_overlay_url = ModernCard(margin=12, spacing=8)
+        self.card_overlay_url.setVisible(False)
+
+        url_info = QVBoxLayout()
+        lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
+        lbl_title.setProperty("role", "h3")
+        lbl_desc = QLabel(self.i18n.get("music.overlay.url_desc"))
+        lbl_desc.setProperty("role", "body")
+        lbl_desc.setWordWrap(True)
+        url_info.addWidget(lbl_title)
+        url_info.addWidget(lbl_desc)
+
+        self.btn_copy_music_url = ModernButton(
+            self.i18n.get("common.buttons.copy"),
+            role="action_neutral_border"
+        )
+        self.btn_copy_music_url.clicked.connect(self._copy_music_overlay_url)
+
+        self.card_overlay_url.addLayout(url_info)
+        self.card_overlay_url.addWidget(self.btn_copy_music_url)
+        self.col1_layout.addWidget(self.card_overlay_url, alignment=Qt.AlignmentFlag.AlignTop)
+
     def _setup_queue_card(self):
         from PySide6.QtWidgets import QHeaderView, QAbstractItemView
         self.card_queue = ModernTableCard(
@@ -335,6 +360,7 @@ class MusicView(BaseView):
             self.row_auto_resume.setVisible(True)
             translated_label = self.i18n.get("music.status.youtube_active")
             self.lbl_auth_status.setText(f"{self.i18n.get('common.status.active')}: {translated_label}")
+            self.card_overlay_url.setVisible(True)
         else:
             self.lbl_provider_name.setText(self.i18n.get("music.provider.name"))
             self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_GREEN, 48).pixmap(48, 48))
@@ -348,12 +374,24 @@ class MusicView(BaseView):
                 self.card_settings.setVisible(False)
             self.row_vol.setVisible(False)
             self.row_auto_resume.setVisible(False)
+            self.card_overlay_url.setVisible(connected)
 
             if connected:
                 translated_label = self.i18n.get(label_key) or label_key
                 self.lbl_auth_status.setText(f"{self.i18n.get('common.status.active')}: {translated_label}")
             else:
                 self.lbl_auth_status.setText(self.i18n.get("common.status.disconnected"))
+
+    def _copy_music_overlay_url(self):
+        QApplication.clipboard().setText(self._music_overlay_url)
+        original = self.btn_copy_music_url.text()
+        self.btn_copy_music_url.setText(self.i18n.get("rewards.obs.copied"))
+        self.btn_copy_music_url.setEnabled(False)
+        QTimer.singleShot(2000, lambda: self._reset_copy_btn(original))
+
+    def _reset_copy_btn(self, original_text: str):
+        self.btn_copy_music_url.setText(original_text)
+        self.btn_copy_music_url.setEnabled(True)
 
     def update_current_song(self, song_data: dict | None):
         title = ""

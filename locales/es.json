@@ -501,6 +501,10 @@
             "age_restricted": "Este video requiere verificación de edad (Inicia sesión para confirmar tu edad)",
             "inappropriate": "Este video es inapropiado para algunos usuarios",
             "invalid_media": "Formato o medio no válido"
+        },
+        "overlay": {
+            "url_title": "Overlay de Música (OBS)",
+            "url_desc": "Agrega esta URL como fuente de navegador en OBS para mostrar la canción en pantalla."
         }
     },
     "spotify": {

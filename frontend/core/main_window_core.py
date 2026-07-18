@@ -3,7 +3,6 @@
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent, QTimer
-
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
     LogService, SettingsService, NetworkService, SpamService, TimerService
@@ -14,7 +13,6 @@ from backend.controllers import (
     SpamController, UpdateController, NetworkController
 )
 from backend.providers import KickAPIClient
-
 from frontend.core.app_container_core import AppContainer
 from frontend.core.app_logger_core import setup_application_logging
 from frontend.common.theme import COLOR_GREEN, get_global_qss
@@ -27,7 +25,6 @@ from frontend.views import (
 )
 from frontend.dialogs import ModernConfirmDialog
 from backend.workers import AuthWorker, ChatWorker, FetchRewardsWorker, RewardWorker, TimerWorker
-
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
 except ImportError:
@@ -115,7 +112,7 @@ class MainWindowCore(QMainWindow):
         self.view_dashboard = DashboardView(self.i18n)
         self.view_chat = ChatView(self.i18n)
         self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
-        self.view_music = MusicView(self.i18n)
+        self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url())
         self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url())
         self.view_commands = CommandView(self.i18n)
         self.view_spam = SpamView(self.i18n)
@@ -234,6 +231,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
+        self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))

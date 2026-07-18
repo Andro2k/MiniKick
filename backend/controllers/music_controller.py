@@ -1,8 +1,9 @@
 # backend\controllers\music_controller.py
 
-from PySide6.QtCore import QObject, Slot, QTimer
+from PySide6.QtCore import QObject, Slot, QTimer, Signal
 
 class MusicController(QObject):
+    song_changed = Signal(dict)
     def __init__(self, view, spotify_auth, command_service, toast_manager, i18n, settings_storage=None):
         super().__init__()
         self.view = view
@@ -14,6 +15,7 @@ class MusicController(QObject):
         self.music_provider = None
         self.auth_worker = None
         self.provider_type = "spotify"
+        self._last_song: dict | None = None
         self.polling_timer = QTimer(self)
         self.polling_timer.setInterval(5000)
         self.polling_timer.timeout.connect(self._poll_now_playing)
@@ -151,16 +153,31 @@ class MusicController(QObject):
 
     @Slot()
     def _poll_now_playing(self):
-        if not self.music_provider or not self.view.isVisible():
+        if not self.music_provider:
             return
         song = self.music_provider.get_current_song()
-        self.view.update_current_song(song)
-        
-        if hasattr(self.music_provider, "get_queue"):
-            queue_items = self.music_provider.get_queue()
-            self.view.update_queue(queue_items)
-        else:
-            self.view.update_queue([])
+        if self.view.isVisible():
+            self.view.update_current_song(song)
+            if hasattr(self.music_provider, "get_queue"):
+                queue_items = self.music_provider.get_queue()
+                self.view.update_queue(queue_items)
+            else:
+                self.view.update_queue([])
+
+        self._maybe_emit_song_change(song)
+
+    def _maybe_emit_song_change(self, song: dict | None):
+        current_key = (
+            (song.get("title"), song.get("artist"), song.get("is_playing"))
+            if song else None
+        )
+        last_key = (
+            (self._last_song.get("title"), self._last_song.get("artist"), self._last_song.get("is_playing"))
+            if self._last_song else None
+        )
+        if current_key != last_key:
+            self._last_song = song
+            self.song_changed.emit(song or {})
 
     @Slot(int)
     def handle_remove_queue_item(self, index: int):

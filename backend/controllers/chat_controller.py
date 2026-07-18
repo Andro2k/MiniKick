@@ -254,12 +254,16 @@ class ChatController(QObject):
         self._all_voices = voices
         saved_voice_id = self.service.get_saved_voice_id(provider)
 
-        langs = list(dict.fromkeys(
-            "-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local"
-            for v in self._all_voices
-        ))
+        if provider == "local":
+            langs = ["Local"]
+            sel_prefix = "Local"
+        else:
+            langs = list(dict.fromkeys(
+                "-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Web Voice"
+                for v in self._all_voices
+            ))
+            sel_prefix = "-".join(saved_voice_id.split("-")[:2]) if ("-" in saved_voice_id and saved_voice_id) else (langs[0] if langs else "")
 
-        sel_prefix = "-".join(saved_voice_id.split("-")[:2]) if ("-" in saved_voice_id and saved_voice_id) else "Local"
         self.view.update_languages(langs, sel_prefix)
         self._filter_voices_by_language(sel_prefix, select_id=saved_voice_id, play_test=(not is_initial))
 
@@ -284,10 +288,14 @@ class ChatController(QObject):
 
     @Slot(str)
     def _filter_voices_by_language(self, lang_prefix: str, select_id: str = None, play_test: bool = False):
-        filtered = [
-            (v["id"], v["name"]) for v in self._all_voices
-            if ("-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local") == lang_prefix
-        ]
+        provider = "web" if self.view.is_web_provider else "local"
+        if provider == "local":
+            filtered = [(v["id"], v["name"]) for v in self._all_voices]
+        else:
+            filtered = [
+                (v["id"], v["name"]) for v in self._all_voices
+                if ("-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local") == lang_prefix
+            ]
         settings = self.service.get_settings()
         role_voices = {
             "broadcaster": settings.get("role_voice_broadcaster", ""),
@@ -300,7 +308,7 @@ class ChatController(QObject):
         for v in self._all_voices:
             v_id = v["id"]
             v_name = v["name"]
-            if "-" in v_id:
+            if "-" in v_id and provider == "web":
                 region = "-".join(v_id.split("-")[:2])
                 display_name = f"[{region}] {v_name}"
             else:
@@ -311,7 +319,7 @@ class ChatController(QObject):
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):
-        provider = "web" if ("-" in voice_id) else "local"
+        provider = "web" if self.view.is_web_provider else "local"
         self.service.set_voice(provider, voice_id)
         self.sync_settings_cache()
         self.service.speak(self.view.i18n.get("main.controllers.chat.voice_updated"))

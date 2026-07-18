@@ -503,6 +503,10 @@ DEFAULT_DICTIONARY = {
             "age_restricted": "This video requires age verification (Sign in to confirm your age)",
             "inappropriate": "This video is inappropriate for some users",
             "invalid_media": "Invalid media or format"
+        },
+        "overlay": {
+            "url_title": "Music Overlay (OBS)",
+            "url_desc": "Add this URL as a browser source in OBS to display the current song on screen."
         }
     },
     "spotify": {
