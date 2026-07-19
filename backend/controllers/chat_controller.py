@@ -296,6 +296,19 @@ class ChatController(QObject):
                 (v["id"], v["name"]) for v in self._all_voices
                 if ("-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local") == lang_prefix
             ]
+            
+        final_select_id = select_id
+        if filtered:
+            available_ids = [v[0] for v in filtered]
+            if not final_select_id or final_select_id not in available_ids:
+                final_select_id = filtered[0][0]
+                
+        if final_select_id and final_select_id != self.service.get_saved_voice_id(provider):
+            self.service.set_voice(provider, final_select_id)
+            self.sync_settings_cache()
+            if play_test:
+                self.service.speak(self.view.i18n.get("main.controllers.chat.voice_updated"))
+
         settings = self.service.get_settings()
         role_voices = {
             "broadcaster": settings.get("role_voice_broadcaster", ""),
@@ -315,7 +328,7 @@ class ChatController(QObject):
                 display_name = f"[Local] {v_name}"
             all_voices_list.append((v_id, display_name))
             
-        self.view.update_voices(filtered, select_id, role_voices, all_voices_list)
+        self.view.update_voices(filtered, final_select_id, role_voices, all_voices_list)
 
     @Slot(str)
     def _handle_voice_change(self, voice_id: str):

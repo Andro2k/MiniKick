@@ -9,8 +9,6 @@ __pycache__/
 backend/config/api_keys.py
 .env
 MiniKick_Backup_*.json
-# Bases de datos locales
-*.db
 # Archivos del sistema operativo
 *.exe
 *.log
