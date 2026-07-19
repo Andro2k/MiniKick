@@ -195,9 +195,7 @@ class LogController(QObject):
 
     @Slot()
     def open_github_issues(self):
-        from frontend.dialogs.bug_report_dialog import BugReportDialog
-        dialog = BugReportDialog(self.view.i18n, parent=self.view.window())
-        dialog.exec()
+        self.view.show_bug_report_dialog()
         
     @Slot()
     def open_log_folder(self):

@@ -158,3 +158,14 @@ class ChatView(BaseView):
 
     def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False):
         self.chat_display_panel.append_message(user, message, color, timestamp, is_html)
+
+    def set_tts_command_configuration(self, use_command: bool, command_trigger: str):
+        self.blockSignals(True)
+        self.chk_command.blockSignals(True)
+        self.txt_command.blockSignals(True)           
+        self.chk_command.setChecked(use_command)
+        self.txt_command.setText(command_trigger)            
+        self.txt_command.setEnabled(use_command)
+        self.chk_command.blockSignals(False)
+        self.txt_command.blockSignals(False)
+        self.blockSignals(False)

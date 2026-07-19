@@ -11,6 +11,9 @@ class TimerService:
     def get_all_timers(self) -> list[dict]:
         return self.storage.load_all()
 
+    def get_timer_by_id(self, timer_id: int) -> dict | None:
+        return self.storage.get_timer_by_id(timer_id)
+
     def search_timers(self, query: str) -> list[dict]:
         return self.storage.search_timers(query)
 

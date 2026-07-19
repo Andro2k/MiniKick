@@ -39,6 +39,41 @@ class SQLiteTimersStorage:
                 })
             return timers
 
+    def get_timer_by_id(self, timer_id: int) -> dict | None:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories 
+                FROM chat_timers WHERE id = ?
+            """, (timer_id,))
+            r = cursor.fetchone()
+            if not r:
+                return None
+            try:
+                messages = json.loads(r[2])
+            except Exception:
+                messages = [r[2]] if r[2] else []
+            try:
+                keywords = json.loads(r[7])
+            except Exception:
+                keywords = [k.strip() for k in r[7].split(",") if k.strip()] if r[7] else []
+            try:
+                categories = json.loads(r[8])
+            except Exception:
+                categories = [c.strip() for c in r[8].split(",") if c.strip()] if r[8] else []
+
+            return {
+                "id": r[0],
+                "name": r[1],
+                "messages": messages,
+                "is_active": bool(r[3]),
+                "interval_online": r[4],
+                "interval_offline": r[5],
+                "chat_lines": r[6],
+                "keywords": keywords,
+                "categories": categories
+            }
+
     def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], timer_id: int = None) -> None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()

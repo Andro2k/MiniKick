@@ -514,3 +514,8 @@ class LogView(BaseView):
         msg_box.setText(text)
         msg_box.setIcon(QMessageBox.Icon.Critical if msg_type == "error" else QMessageBox.Icon.Information)
         msg_box.exec()
+
+    def show_bug_report_dialog(self):
+        from frontend.dialogs.bug_report_dialog import BugReportDialog
+        dialog = BugReportDialog(self.i18n, parent=self.window())
+        dialog.exec()

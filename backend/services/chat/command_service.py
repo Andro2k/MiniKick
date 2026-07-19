@@ -53,6 +53,9 @@ class CommandService(QObject):
     def get_all_commands(self) -> list[dict]:
         return self.storage.load_all()
 
+    def get_command_by_trigger(self, trigger: str) -> dict | None:
+        return self.storage.get_command_by_trigger(trigger)
+
     def search_commands(self, query: str) -> list[dict]:
         return self.storage.search_commands(query)
 

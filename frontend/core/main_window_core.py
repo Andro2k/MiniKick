@@ -71,8 +71,11 @@ class MainWindowCore(QMainWindow):
         self._setup_ui()
         self._setup_tray() 
         
-        self.update_controller = UpdateController(self, self.updater_manager, self.i18n)
-        self.update_controller.check_updates_silently(self.sidebar)
+        self.update_controller = UpdateController(self.updater_manager)
+        self.update_controller.update_found_silent.connect(
+            lambda: self.sidebar.set_update_available(True)
+        )
+        self.update_controller.check_updates_silently()
         
         self._connect_signals()     
         self._load_settings_into_ui()
@@ -238,7 +241,7 @@ class MainWindowCore(QMainWindow):
         self.timer_controller.metrics_update_requested.connect(lambda: self._update_dashboard_metrics(force_db_query=True))
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
-        self.settings_controller.check_update_requested.connect(self.update_controller.handle_update_check)
+        self.settings_controller.check_update_requested.connect(self.handle_update_check)
         self.settings_controller.notification_requested.connect(
             lambda title, msg: self.tray_manager.showMessage(title, msg)
         )
@@ -637,3 +640,51 @@ class MainWindowCore(QMainWindow):
         self._theme_timer.setSingleShot(True)
         self._theme_timer.timeout.connect(lambda: QApplication.instance().setStyleSheet(get_global_qss(base_size)))
         self._theme_timer.start(250)
+
+    @Slot()
+    def handle_update_check(self):
+        from frontend.dialogs import UpdateDialog
+        
+        dialog = UpdateDialog(self.i18n, parent=self)
+        update_info = {"url": ""}
+
+        def on_update_found(info):
+            update_info["url"] = info['download_url']
+            dialog.show_update_available(info['version'])
+
+        def on_download_finished(success):
+            if success:
+                dialog.show_complete()
+            else:
+                error_msg = self.i18n.get("dialogs.update.msg_unexpected_error")
+                dialog.show_error(error_msg)
+
+        self.update_controller.update_found.connect(on_update_found)
+        self.update_controller.no_update.connect(dialog.show_no_update)
+        self.update_controller.error.connect(dialog.show_error)
+        self.update_controller.download_progress.connect(dialog.update_progress)
+        self.update_controller.download_finished.connect(on_download_finished)
+
+        def on_download_requested():
+            dialog.show_downloading()
+            self.update_controller.start_download(update_info["url"])
+
+        def on_restart_requested():
+            dialog.accept()
+            self.update_controller.install_update()
+            self._force_quit()
+
+        dialog.download_requested.connect(on_download_requested)
+        dialog.restart_requested.connect(on_restart_requested)
+
+        self.update_controller.start_update_check()
+        dialog.exec()
+
+        try:
+            self.update_controller.update_found.disconnect(on_update_found)
+            self.update_controller.no_update.disconnect(dialog.show_no_update)
+            self.update_controller.error.disconnect(dialog.show_error)
+            self.update_controller.download_progress.disconnect(dialog.update_progress)
+            self.update_controller.download_finished.disconnect(on_download_finished)
+        except Exception:
+            pass

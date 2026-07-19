@@ -1,7 +1,6 @@
 # backend\workers\rewards_worker.py
 
 import logging
-import time
 from PySide6.QtCore import QThread, Signal
 from backend.providers import KickAPIClient
 
@@ -17,6 +16,7 @@ class RewardWorker(QThread):
         self.poll_interval = poll_interval_seconds
         self._running = False
         self._processed_ids = set() 
+        self._processed_order = [] 
 
     def run(self):
         self._running = True
@@ -55,7 +55,7 @@ class RewardWorker(QThread):
             for _ in range(self.poll_interval * 2):
                 if not self._running:
                     break
-                time.sleep(0.5)
+                self.msleep(500)
 
     def _process_and_emit_redemptions(self, redemptions: list, user_ids: list):
         user_names_map = {}
@@ -72,7 +72,13 @@ class RewardWorker(QThread):
             user_id = red["user_id"]
             fallback_name = self.i18n.get("main.workers.reward.someone")
             username = user_names_map.get(user_id, str(user_id) if user_id else fallback_name)
+            
+            if len(self._processed_ids) >= 2000:
+                oldest_id = self._processed_order.pop(0)
+                self._processed_ids.discard(oldest_id)
+                
             self._processed_ids.add(red_id)
+            self._processed_order.append(red_id)
             new_ids_to_accept.append(red_id)
             self.reward_redeemed.emit(username, red["reward_title"], red["user_input"])
         if new_ids_to_accept:

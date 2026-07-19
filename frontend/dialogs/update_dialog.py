@@ -113,7 +113,7 @@ class UpdateDialog(ModernModal):
     def show_complete(self):
         self.set_dialog_state("accent", QColor(83, 252, 24, 60))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-check.svg", COLOR_GREEN, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud-check.svg", COLOR_NEUTRAL_950, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_completed"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_installed").replace("{version}", self.version))

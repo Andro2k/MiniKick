@@ -4,7 +4,7 @@ from PySide6.QtCore import QObject, Slot, QTimer, Signal
 
 class MusicController(QObject):
     song_changed = Signal(dict)
-    def __init__(self, view, spotify_auth, command_service, toast_manager, i18n, settings_storage=None):
+    def __init__(self, view, spotify_auth, command_service, toast_manager, i18n, settings_storage=None, provider_factory=None):
         super().__init__()
         self.view = view
         self.spotify_auth = spotify_auth
@@ -12,6 +12,13 @@ class MusicController(QObject):
         self.toast = toast_manager
         self.i18n = i18n
         self.settings_storage = settings_storage
+        self.provider_factory = provider_factory
+        if not self.provider_factory:
+            from backend.providers import SpotifyMusicProvider, YouTubeMusicProvider
+            self.provider_factory = {
+                "spotify": lambda auth, db: SpotifyMusicProvider(auth, self.i18n, db_manager=db),
+                "youtube": lambda db: YouTubeMusicProvider(self.i18n, db_manager=db)
+            }
         self.music_provider = None
         self.auth_worker = None
         self.provider_type = "spotify"
@@ -80,8 +87,7 @@ class MusicController(QObject):
 
     def _init_session_success(self, label_key: str):
         db_mgr = self.settings_storage.db_manager if self.settings_storage else None
-        from backend.providers import SpotifyMusicProvider
-        self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n, db_manager=db_mgr)
+        self.music_provider = self.provider_factory["spotify"](self.spotify_auth, db_mgr)
         self.view.set_auth_state(connected=True, label_key=label_key)
         self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.connected"), "success")   
         self.polling_timer.start()
@@ -95,8 +101,7 @@ class MusicController(QObject):
 
     def _init_youtube_provider(self):
         db_mgr = self.settings_storage.db_manager if self.settings_storage else None
-        from backend.providers import YouTubeMusicProvider
-        self.music_provider = YouTubeMusicProvider(self.i18n, db_manager=db_mgr)
+        self.music_provider = self.provider_factory["youtube"](db_mgr)
         self.music_provider.resolve_error_occurred.connect(self.handle_resolve_error)
         
         vol = 100

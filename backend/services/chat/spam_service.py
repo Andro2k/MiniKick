@@ -6,12 +6,14 @@ import re
 class SpamService:
     _LINK_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
     _SYMBOL_REGEX = re.compile(r'[^a-zA-Z0-9\s]')
-    def __init__(self, storage, api_client=None):
+    def __init__(self, storage, api_client=None, max_history_size: int = 1000):
         self.storage = storage
         self.api_client = api_client
         self.broadcaster_id = 0
         self.filters = {}
         self.user_history = {}
+        self.user_insertion_order = []
+        self.max_history_size = max_history_size
         self.reload_filters()
 
     def reload_filters(self):
@@ -84,14 +86,7 @@ class SpamService:
                 if any(count > max_amount for count in word_counts.values()):
                     is_violation = True
                 else:
-                    if user not in self.user_history:
-                        self.user_history[user] = {"message": message.lower(), "count": 1}
-                    else:
-                        if self.user_history[user]["message"] == message.lower():
-                            self.user_history[user]["count"] += 1
-                        else:
-                            self.user_history[user] = {"message": message.lower(), "count": 1}
-
+                    self._track_user_message(user, message.lower())
                     if self.user_history[user]["count"] > max_amount:
                         is_violation = True
             if is_violation:
@@ -99,6 +94,20 @@ class SpamService:
                 return True
 
         return False
+
+    def _track_user_message(self, user: str, msg_lower: str):
+        if user not in self.user_history:
+            if len(self.user_history) >= self.max_history_size:
+                oldest_user = self.user_insertion_order.pop(0)
+                self.user_history.pop(oldest_user, None)
+                
+            self.user_history[user] = {"message": msg_lower, "count": 1}
+            self.user_insertion_order.append(user)
+        else:
+            if self.user_history[user]["message"] == msg_lower:
+                self.user_history[user]["count"] += 1
+            else:
+                self.user_history[user] = {"message": msg_lower, "count": 1}
 
     def _apply_penalty(self, user: str, sender_id: int, msg_id: str, config: dict, filter_id: str, message: str):
         penalty_type = config.get("penalty", "timeout")

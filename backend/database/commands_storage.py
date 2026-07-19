@@ -13,6 +13,23 @@ class SQLiteCommandsStorage:
             cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission FROM chat_commands")
             return [{"trigger": r[0], "response": r[1], "is_active": bool(r[2]), "cooldown": r[3], "aliases": r[4], "is_regex": bool(r[5]), "permission": r[6]} for r in cursor.fetchall()]
 
+    def get_command_by_trigger(self, trigger: str) -> dict | None:
+        with self.db_manager.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission FROM chat_commands WHERE trigger=?", (trigger,))
+            r = cursor.fetchone()
+            if not r:
+                return None
+            return {
+                "trigger": r[0],
+                "response": r[1],
+                "is_active": bool(r[2]),
+                "cooldown": r[3],
+                "aliases": r[4],
+                "is_regex": bool(r[5]),
+                "permission": r[6]
+            }
+
     def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str = "everyone") -> None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
