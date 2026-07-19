@@ -1,9 +1,10 @@
 # frontend\views\timers_view.py
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell
-from frontend.common.theme import COLOR_RED, COLOR_GREEN
+from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_400
 
 class TimersView(BaseView):
     add_requested = Signal()
@@ -62,31 +63,26 @@ class TimersView(BaseView):
         self.table.setUpdatesEnabled(False)
         self.table.setRowCount(len(timers))
         for row, timer in enumerate(timers):
-            self.table.setCellWidget(row, 0, self._create_name_cell(timer))
-            self.table.setCellWidget(row, 1, self._create_message_cell(timer))
-            self.table.setCellWidget(row, 2, self._create_online_cell(timer))
-            self.table.setCellWidget(row, 3, self._create_offline_cell(timer))
-            self.table.setCellWidget(row, 4, self._create_lines_cell(timer))
+            self.table.setItem(row, 0, self._create_name_item(timer))
+            self.table.setItem(row, 1, self._create_message_item(timer))
+            self.table.setItem(row, 2, self._create_online_item(timer))
+            self.table.setItem(row, 3, self._create_offline_item(timer))
+            self.table.setItem(row, 4, self._create_lines_item(timer))
             self.table.setCellWidget(row, 5, self._create_actions_cell(timer))
         self.table.setUpdatesEnabled(True)
         self.table_card.set_empty(len(timers) == 0)
 
-    def _create_name_cell(self, timer_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)       
-        lbl_name = QLabel(timer_data["name"])
-        lbl_name.setProperty("role", "body")
-        layout.addWidget(lbl_name)        
-        layout.addStretch()
-        return container
+    def _create_table_item(self, text: str, align: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter) -> QTableWidgetItem:
+        item = QTableWidgetItem(text)
+        item.setTextAlignment(align)
+        item.setForeground(QColor(COLOR_NEUTRAL_400))
+        item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        return item
 
-    def _create_message_cell(self, timer_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        
+    def _create_name_item(self, timer_data: dict) -> QTableWidgetItem:
+        return self._create_table_item(timer_data["name"])
+
+    def _create_message_item(self, timer_data: dict) -> QTableWidgetItem:
         messages = timer_data.get("messages", [])
         if not messages:
             preview_text = "-"
@@ -98,38 +94,22 @@ class TimersView(BaseView):
                 preview_text = f"{first_msg} (+{len(messages)-1})"
             else:
                 preview_text = first_msg
-                
-        lbl_msg = QLabel(preview_text)
-        lbl_msg.setProperty("role", "body")
-        layout.addWidget(lbl_msg)
-        layout.addStretch()
-        return container
+        return self._create_table_item(preview_text)
 
-    @staticmethod
-    def _create_centered_label_cell(text: str) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl = QLabel(text)
-        lbl.setProperty("role", "body")
-        layout.addWidget(lbl)
-        return container
-
-    def _create_online_cell(self, timer_data: dict) -> QWidget:
+    def _create_online_item(self, timer_data: dict) -> QTableWidgetItem:
         online = timer_data.get("interval_online")
         unit_min = self.i18n.get("timer.table.unit_minutes")
-        return self._create_centered_label_cell(f"{online} {unit_min}" if online else "-")
+        return self._create_table_item(f"{online} {unit_min}" if online else "-", Qt.AlignmentFlag.AlignCenter)
 
-    def _create_offline_cell(self, timer_data: dict) -> QWidget:
+    def _create_offline_item(self, timer_data: dict) -> QTableWidgetItem:
         offline = timer_data.get("interval_offline")
         unit_min = self.i18n.get("timer.table.unit_minutes")
-        return self._create_centered_label_cell(f"{offline} {unit_min}" if offline else "-")
+        return self._create_table_item(f"{offline} {unit_min}" if offline else "-", Qt.AlignmentFlag.AlignCenter)
 
-    def _create_lines_cell(self, timer_data: dict) -> QWidget:
+    def _create_lines_item(self, timer_data: dict) -> QTableWidgetItem:
         lines = timer_data.get("chat_lines", 0)
         unit_lines = self.i18n.get("timer.table.unit_lines")
-        return self._create_centered_label_cell(f"{lines} {unit_lines}" if lines else "-")
+        return self._create_table_item(f"{lines} {unit_lines}" if lines else "-", Qt.AlignmentFlag.AlignCenter)
 
     def _create_actions_cell(self, timer_data: dict) -> QWidget:
         timer_id = timer_data["id"]

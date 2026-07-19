@@ -16,15 +16,11 @@ class UpdateDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         super().__init__(
-            title=self.i18n.get("dialogs.update.title_default"), 
-            icon_path=get_assets_path("icons/cloud-download.svg"), 
-            icon_bg_color=COLOR_BLUE,
-            width=400, 
-            parent=parent
+            title=self.i18n.get("dialogs.update.title_default"), icon_path=get_assets_path("icons/cloud-download.svg"), 
+            icon_bg_color=COLOR_BLUE, width=400, parent=parent
         )
         self.version = ""
         self.set_dialog_state("accent", QColor(59, 130, 246, 60))
-
         self.header_icon = None
         for lbl in self.container.findChildren(QLabel):
             if lbl.pixmap():

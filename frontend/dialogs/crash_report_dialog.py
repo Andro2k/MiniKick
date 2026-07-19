@@ -32,16 +32,8 @@ class CrashReportDialog(ModernModal):
             "crash.subtitle", 
             "Se produjo un error no controlado en la aplicación. Ayúdanos a solucionar el problema enviando este reporte."
         )
-
         icon_path = get_assets_path("icons/bug.svg")
-        super().__init__(
-            title=self.title_text,
-            icon_path=icon_path,
-            icon_bg_color=COLOR_RED,
-            width=520,
-            parent=parent
-        )
-        
+        super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=COLOR_RED, width=520, parent=parent)        
         self.set_dialog_state("danger", QColor(239, 68, 68, 80))
         self._setup_crash_form()
 

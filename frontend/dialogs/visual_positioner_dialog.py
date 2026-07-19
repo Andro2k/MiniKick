@@ -132,13 +132,7 @@ class VisualPositionerDialog(ModernModal):
 
     def __init__(self, i18n, current_x: int, current_y: int, filepath: str, scale_val: float, parent=None):
         self.i18n = i18n
-        super().__init__(
-            title=self.i18n.get("rewards.dialogs.visual.title"), 
-            icon_path=PATH_ICON_HELP, 
-            icon_bg_color=COLOR_GREEN, 
-            width=700, 
-            parent=parent
-        )
+        super().__init__(title=self.i18n.get("rewards.dialogs.visual.title"), icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_GREEN, width=700, parent=parent)
         self.set_dialog_state("accent")
         
         desc_lbl = QLabel(self.i18n.get("rewards.dialogs.visual.desc"))

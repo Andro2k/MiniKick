@@ -1,43 +1,48 @@
 # frontend\dialogs\timer_dialog.py
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox)
+                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QTextEdit)
 from PySide6.QtCore import Qt, QSize
-from .base_dialog import ModernWizardPanel
+from PySide6.QtGui import QColor
+from .base_dialog import ModernWizardPanel, ModernModal
 from frontend.widgets import ModernButton
-from frontend.common.theme import COLOR_RED
-from frontend.common.utils import get_icon_colored, NoWheelSlider
+from frontend.common.theme import COLOR_RED, COLOR_GREEN
+from frontend.common.utils import get_icon_colored, NoWheelSlider, get_assets_path
 
 class TimerConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
         self.i18n = i18n
-        title_steps = [
-            self.i18n.get("timer.dialog.title"),
-            self.i18n.get("timer.dialog.title")
-        ]
-        subtitle_steps = [
-            self.i18n.get("timer.dialog.subtitle"),
-            self.i18n.get("timer.dialog.categories_desc")
-        ]
-        super().__init__(
-            title_steps=title_steps,
-            subtitle_steps=subtitle_steps,
-            i18n=i18n,
-            width=750,
-            parent=parent
-        )
-        
+        title_steps = [self.i18n.get("timer.dialog.title"), self.i18n.get("timer.dialog.title")]
+        subtitle_steps = [self.i18n.get("timer.dialog.subtitle"), self.i18n.get("timer.dialog.categories_desc")]
+        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=750, parent=parent)        
         self.existing_config = existing_config
         self.timer_id = existing_config.get("id") if existing_config else None
-        self.message_rows = []
-        
+        self.message_rows = []       
         self._setup_ui()
         if self.existing_config:
             self._load_existing()
         else:
-            self._add_message_field()
-            
+            self._add_message_field()            
         self.start_wizard()
+
+    def _create_interval_controls(self, layout, min_val: int, max_val: int, default_val: int):
+        controls_layout = QHBoxLayout()
+        slider = NoWheelSlider(Qt.Orientation.Horizontal)
+        slider.setRange(min_val, max_val)
+        slider.setValue(default_val)
+        
+        spin = QSpinBox()
+        spin.setRange(min_val, max_val)
+        spin.setValue(default_val)
+        spin.setFixedWidth(100)
+        
+        slider.valueChanged.connect(spin.setValue)
+        spin.spin.valueChanged.connect(slider.setValue) if hasattr(spin, "spin") else spin.valueChanged.connect(slider.setValue)
+        
+        controls_layout.addWidget(slider, stretch=1)
+        controls_layout.addWidget(spin)
+        layout.addLayout(controls_layout)
+        return slider, spin
 
     def _setup_ui(self):
         self.tab_basic = QWidget()
@@ -89,68 +94,26 @@ class TimerConfigWizard(ModernWizardPanel):
 
         self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval_label"))
         self.chk_online.setChecked(True)
-        self.chk_online.toggled.connect(self._on_online_toggled)
-        self.chk_online.toggled.connect(self._update_btn_next_state)
-        
-        online_controls = QHBoxLayout()
-        self.slider_online = NoWheelSlider(Qt.Orientation.Horizontal)
-        self.slider_online.setRange(1, 120)
-        self.slider_online.setValue(5)
-        self.spin_online = QSpinBox()
-        self.spin_online.setRange(1, 120)
-        self.spin_online.setValue(5)
-        
-        self.slider_online.valueChanged.connect(self.spin_online.setValue)
-        self.spin_online.valueChanged.connect(self.slider_online.setValue)
-        
-        online_controls.addWidget(self.slider_online, stretch=1)
-        online_controls.addWidget(self.spin_online)
-
         right_layout.addWidget(self.chk_online)
-        right_layout.addLayout(online_controls)
+        self.slider_online, self.spin_online = self._create_interval_controls(right_layout, 1, 120, 5)
+        self.chk_online.toggled.connect(self.slider_online.setEnabled)
+        self.chk_online.toggled.connect(self.spin_online.setEnabled)
+        self.chk_online.toggled.connect(self._update_btn_next_state)
 
         self.chk_offline = QCheckBox(self.i18n.get("timer.dialog.offline_interval_label"))
         self.chk_offline.setChecked(True)
-        self.chk_offline.toggled.connect(self._on_offline_toggled)
-        self.chk_offline.toggled.connect(self._update_btn_next_state)
-        
-        offline_controls = QHBoxLayout()
-        self.slider_offline = NoWheelSlider(Qt.Orientation.Horizontal)
-        self.slider_offline.setRange(1, 480)
-        self.slider_offline.setValue(30)
-        self.spin_offline = QSpinBox()
-        self.spin_offline.setRange(1, 480)
-        self.spin_offline.setValue(30)
-        
-        self.slider_offline.valueChanged.connect(self.spin_offline.setValue)
-        self.spin_offline.valueChanged.connect(self.slider_offline.setValue)
-        
-        offline_controls.addWidget(self.slider_offline, stretch=1)
-        offline_controls.addWidget(self.spin_offline)
-
         right_layout.addWidget(self.chk_offline)
-        right_layout.addLayout(offline_controls)
+        self.slider_offline, self.spin_offline = self._create_interval_controls(right_layout, 1, 480, 30)
+        self.chk_offline.toggled.connect(self.slider_offline.setEnabled)
+        self.chk_offline.toggled.connect(self.spin_offline.setEnabled)
+        self.chk_offline.toggled.connect(self._update_btn_next_state)
 
         self.chk_lines = QCheckBox(self.i18n.get("timer.dialog.chat_lines_label"))
         self.chk_lines.setChecked(True)
-        self.chk_lines.toggled.connect(self._on_lines_toggled)
-        
-        lines_controls = QHBoxLayout()
-        self.slider_lines = NoWheelSlider(Qt.Orientation.Horizontal)
-        self.slider_lines.setRange(0, 100)
-        self.slider_lines.setValue(5)
-        self.spin_lines = QSpinBox()
-        self.spin_lines.setRange(0, 100)
-        self.spin_lines.setValue(5)
-        
-        self.slider_lines.valueChanged.connect(self.spin_lines.setValue)
-        self.spin_lines.valueChanged.connect(self.slider_lines.setValue)
-        
-        lines_controls.addWidget(self.slider_lines, stretch=1)
-        lines_controls.addWidget(self.spin_lines)
-
         right_layout.addWidget(self.chk_lines)
-        right_layout.addLayout(lines_controls)
+        self.slider_lines, self.spin_lines = self._create_interval_controls(right_layout, 0, 100, 5)
+        self.chk_lines.toggled.connect(self.slider_lines.setEnabled)
+        self.chk_lines.toggled.connect(self.spin_lines.setEnabled)
         
         lbl_lines_desc = QLabel(self.i18n.get("timer.dialog.chat_lines_desc"))
         lbl_lines_desc.setProperty("role", "caption")
@@ -229,6 +192,13 @@ class TimerConfigWizard(ModernWizardPanel):
         txt.textChanged.connect(self._update_btn_next_state)
         row_layout.addWidget(txt)
         
+        btn_edit = ModernButton("", role="action_accent_border")
+        btn_edit.setFixedSize(26, 26)
+        btn_edit.setIcon(get_icon_colored("edit.svg", COLOR_GREEN, 14))
+        btn_edit.setIconSize(QSize(14, 14))
+        btn_edit.clicked.connect(lambda checked=False, line_edit=txt: self._open_message_editor(line_edit))
+        row_layout.addWidget(btn_edit)
+        
         btn_del = ModernButton("", role="action_danger_border")
         btn_del.setFixedSize(26, 26)
         btn_del.setIcon(get_icon_colored("trash.svg", COLOR_RED, 14))
@@ -250,17 +220,10 @@ class TimerConfigWizard(ModernWizardPanel):
                 break
         self._update_btn_next_state()
 
-    def _on_online_toggled(self, checked):
-        self.slider_online.setEnabled(checked)
-        self.spin_online.setEnabled(checked)
-
-    def _on_offline_toggled(self, checked):
-        self.slider_offline.setEnabled(checked)
-        self.spin_offline.setEnabled(checked)
-
-    def _on_lines_toggled(self, checked):
-        self.slider_lines.setEnabled(checked)
-        self.spin_lines.setEnabled(checked)
+    def _open_message_editor(self, line_edit: QLineEdit):
+        dialog = MessageEditorDialog(line_edit.text(), self.i18n, parent=self)
+        if dialog.exec():
+            line_edit.setText(dialog.get_text())
 
     def validate_step(self, step_index: int) -> bool:
         if step_index == 0:
@@ -268,6 +231,8 @@ class TimerConfigWizard(ModernWizardPanel):
                 return False
             messages = [txt.text().strip() for row, txt in self.message_rows if txt.text().strip()]
             if not messages:
+                return False
+            if any(len(m) > 492 for m in messages):
                 return False
             if not self.chk_online.isChecked() and not self.chk_offline.isChecked():
                 return False
@@ -277,35 +242,41 @@ class TimerConfigWizard(ModernWizardPanel):
         self.txt_name.setText(self.existing_config.get("name", ""))
         
         messages = self.existing_config.get("messages", [])
-        for m in messages:
-            self._add_message_field(m)
+        if not messages:
+            self._add_message_field()
+        else:
+            for m in messages:
+                self._add_message_field(m)
             
         online_min = self.existing_config.get("interval_online")
-        if online_min is not None and online_min > 0:
-            self.chk_online.setChecked(True)
+        has_online = online_min is not None and online_min > 0
+        self.chk_online.setChecked(has_online)
+        if has_online:
             self.slider_online.setValue(online_min)
             self.spin_online.setValue(online_min)
         else:
-            self.chk_online.setChecked(False)
-            self._on_online_toggled(False)
+            self.slider_online.setEnabled(False)
+            self.spin_online.setEnabled(False)
 
         offline_min = self.existing_config.get("interval_offline")
-        if offline_min is not None and offline_min > 0:
-            self.chk_offline.setChecked(True)
+        has_offline = offline_min is not None and offline_min > 0
+        self.chk_offline.setChecked(has_offline)
+        if has_offline:
             self.slider_offline.setValue(offline_min)
             self.spin_offline.setValue(offline_min)
         else:
-            self.chk_offline.setChecked(False)
-            self._on_offline_toggled(False)
+            self.slider_offline.setEnabled(False)
+            self.spin_offline.setEnabled(False)
 
         lines = self.existing_config.get("chat_lines", 0)
-        if lines is not None and lines > 0:
-            self.chk_lines.setChecked(True)
+        has_lines = lines is not None and lines > 0
+        self.chk_lines.setChecked(has_lines)
+        if has_lines:
             self.slider_lines.setValue(lines)
             self.spin_lines.setValue(lines)
         else:
-            self.chk_lines.setChecked(False)
-            self._on_lines_toggled(False)
+            self.slider_lines.setEnabled(False)
+            self.spin_lines.setEnabled(False)
 
         keywords = self.existing_config.get("keywords", [])
         self.txt_keywords.setText(", ".join(keywords))
@@ -342,3 +313,52 @@ class TimerConfigWizard(ModernWizardPanel):
 
     def _update_btn_next_state(self):
         self.btn_next.setEnabled(self.validate_step(self.current_step))
+        if self.current_step == 0:
+            for row, txt in self.message_rows:
+                if len(txt.text().strip()) > 492:
+                    txt.setStyleSheet("border: 1.5px solid #EF4444;")
+                else:
+                    txt.setStyleSheet("")
+
+
+class MessageEditorDialog(ModernModal):
+    def __init__(self, current_text: str, i18n, parent=None):
+        super().__init__(
+            title=i18n.get("timer.dialog.editor_title"),
+            icon_path=get_assets_path("icons/clock.svg"),
+            icon_bg_color=COLOR_GREEN,
+            width=500,
+            parent=parent
+        )
+        self.i18n = i18n
+        self.set_dialog_state("accent", QColor(46, 205, 112, 60))
+        
+        self.text_edit = QTextEdit()
+        self.text_edit.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder") or "Escribe tu mensaje aquí...")
+        self.text_edit.setPlainText(current_text)
+        self.text_edit.setMinimumHeight(150)
+        self.text_edit.setAcceptRichText(False)
+        self.content_layout.addWidget(self.text_edit)
+        
+        btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel") or "Cancelar", role="action_outlined")
+        btn_cancel.clicked.connect(self.reject)
+        
+        self.btn_save = ModernButton(self.i18n.get("common.buttons.save") or "Guardar", role="action_accent")
+        self.btn_save.clicked.connect(self.accept)
+        
+        self.add_action_buttons(btn_cancel, self.btn_save)
+        
+        self.text_edit.textChanged.connect(self._validate_text_length)
+        self._validate_text_length()
+        
+    def _validate_text_length(self):
+        text = self.text_edit.toPlainText()
+        if len(text) > 492:
+            self.text_edit.setStyleSheet("border: 1.5px solid #EF4444;")
+            self.btn_save.setEnabled(False)
+        else:
+            self.text_edit.setStyleSheet("")
+            self.btn_save.setEnabled(True)
+        
+    def get_text(self) -> str:
+        return self.text_edit.toPlainText().replace("\n", " ").strip()

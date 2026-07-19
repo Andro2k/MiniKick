@@ -75,7 +75,7 @@ QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; col
 QComboBox QAbstractItemView::item, QMenu::item {{ border-radius: {RADIUS_SM}px; padding: 2px; margin: 2px; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
 
-QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 38px 3px 8px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
+QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 30px 3px 3px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QSpinBox:hover, QDoubleSpinBox:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
 
 QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 28px; border: none; background-color: transparent; }}

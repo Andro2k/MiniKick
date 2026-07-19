@@ -1,7 +1,3 @@
-python -m venv env
-uv venv   
-
-.venv\Scripts\activate 
-
-pip install -r requirements.txt
+uv venv
+.venv\Scripts\activate
 uv pip install -r requirements.txt

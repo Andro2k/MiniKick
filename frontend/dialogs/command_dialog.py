@@ -12,29 +12,14 @@ from frontend.common.utils import get_icon_colored, NoWheelComboBox, validate_tr
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
         self.i18n = i18n
-        title_steps = [
-            self.i18n.get("command.dialog.title"),
-            self.i18n.get("command.dialog.tab_advanced")
-        ]
-        subtitle_steps = [
-            self.i18n.get("command.dialog.subtitle"),
-            self.i18n.get("command.dialog.regex_help")
-        ]
-        super().__init__(
-            title_steps=title_steps,
-            subtitle_steps=subtitle_steps,
-            i18n=i18n,
-            width=700,
-            parent=parent
-        )
-        
+        title_steps = [self.i18n.get("command.dialog.title"), self.i18n.get("command.dialog.tab_advanced")]
+        subtitle_steps = [self.i18n.get("command.dialog.subtitle"), self.i18n.get("command.dialog.regex_help")]       
+        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=700, parent=parent)       
         self.existing_config = existing_config
-        self.original_trigger = existing_config.get("trigger", "") if existing_config else None
-        
+        self.original_trigger = existing_config.get("trigger", "") if existing_config else None       
         self._setup_ui()
         if self.existing_config:
-            self._load_existing()
-            
+            self._load_existing()           
         self.start_wizard()
 
     def _setup_ui(self):
@@ -277,7 +262,12 @@ class CommandConfigWizard(ModernWizardPanel):
         if self.current_step == 0:
             trigger_text = self.txt_trigger.text().strip()
             response_text = self.txt_response.toPlainText().strip()
-            is_valid = bool(trigger_text.startswith("!") and response_text)
+            if len(response_text) > 492:
+                self.txt_response.setStyleSheet("border: 1.5px solid #EF4444;")
+                is_valid = False
+            else:
+                self.txt_response.setStyleSheet("")
+                is_valid = bool(trigger_text.startswith("!") and response_text)
             self.btn_next.setEnabled(is_valid)
         else:
             self.btn_next.setEnabled(True)

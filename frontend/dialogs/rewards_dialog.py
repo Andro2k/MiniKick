@@ -13,39 +13,19 @@ class RewardsConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, rewards_list=None, existing_config=None, existing_reward=None):
         self.i18n = i18n
         self.is_edit_mode = existing_config is not None
-        self.existing_reward = existing_reward
-        
-        title_steps = [
-            self.i18n.get("rewards.dialogs.wizard.step1.title"),
-            self.i18n.get("rewards.dialogs.wizard.step2.title")
-        ]
-        subtitle_steps = [
-            self.i18n.get("rewards.dialogs.wizard.step1.desc"),
-            self.i18n.get("rewards.dialogs.wizard.step2.desc")
-        ]
-        
-        super().__init__(
-            title_steps=title_steps,
-            subtitle_steps=subtitle_steps,
-            i18n=i18n,
-            width=520,
-            parent=parent
-        )
-        
+        self.existing_reward = existing_reward       
+        title_steps = [self.i18n.get("rewards.dialogs.wizard.step1.title"), self.i18n.get("rewards.dialogs.wizard.step2.title")]
+        subtitle_steps = [self.i18n.get("rewards.dialogs.wizard.step1.desc"), self.i18n.get("rewards.dialogs.wizard.step2.desc")]
+        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=520, parent=parent)
         self._is_video = False
-        
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
-        
         self._build_step1(rewards_list, existing_reward)
         self._build_step2()
-        
         self.add_page(self.step1_widget)
-        self.add_page(self.step2_widget)
-        
+        self.add_page(self.step2_widget)        
         if self.is_edit_mode:
-            self._load_existing_data(existing_config)
-            
+            self._load_existing_data(existing_config)            
         self.start_wizard()
 
     def _build_step1(self, rewards_list, existing_reward):

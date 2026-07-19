@@ -764,7 +764,8 @@ DEFAULT_DICTIONARY = {
             "categories_desc": "Enable the timer only when the stream category is one of the selected categories.",
             "help_desc": "You can use filters to restrict when the message is sent. For example, you can make a giveaway timer send only when your stream contains the word 'giveaway' in the title or belongs to the 'IRL' category.",
             "btn_cancel": "Cancel",
-            "btn_save": "Activate Timer"
+            "btn_save": "Activate Timer",
+            "editor_title": "Edit Message"
         },
         "status": {
             "created": "Timer Created",

@@ -1,4 +1,4 @@
-# frontend/widgets/table.py
+# frontend\widgets\table.py
 
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QWidget, QStackedWidget

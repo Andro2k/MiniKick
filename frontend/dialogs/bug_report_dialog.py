@@ -10,18 +10,10 @@ from backend.workers import BugReportWorker
 class BugReportDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         title = i18n.get("settings.feedback.title")
-        icon_path = get_assets_path("icons/bug.svg")
-        
-        super().__init__(
-            title=title, 
-            icon_path=icon_path, 
-            icon_bg_color="", 
-            width=500, 
-            parent=parent
-        )
+        icon_path = get_assets_path("icons/bug.svg")        
+        super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=500, parent=parent)
         self.i18n = i18n
         self.worker = None
-
         self._setup_form()
 
     def _setup_form(self):
