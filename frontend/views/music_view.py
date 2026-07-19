@@ -228,6 +228,19 @@ class MusicView(BaseView):
         url_info.addWidget(lbl_title)
         url_info.addWidget(lbl_desc)
 
+        theme_layout = QHBoxLayout()
+        lbl_theme = QLabel(self.i18n.get("music.overlay.theme_label"))
+        lbl_theme.setProperty("role", "body")
+        self.combo_music_theme = NoWheelComboBox()
+        self.combo_music_theme.addItem("Glassmorphism", "glass")
+        self.combo_music_theme.addItem("Minimalist", "minimal")
+        self.combo_music_theme.addItem("Neon Glow", "neon")
+        self.combo_music_theme.addItem("Cyberpunk", "cyber")
+        self.combo_music_theme.addItem("Premium Card", "card")
+        
+        theme_layout.addWidget(lbl_theme)
+        theme_layout.addWidget(self.combo_music_theme)
+
         self.btn_copy_music_url = ModernButton(
             self.i18n.get("common.buttons.copy"),
             role="action_neutral_border"
@@ -235,6 +248,7 @@ class MusicView(BaseView):
         self.btn_copy_music_url.clicked.connect(self._copy_music_overlay_url)
 
         self.card_overlay_url.addLayout(url_info)
+        self.card_overlay_url.addLayout(theme_layout)
         self.card_overlay_url.addWidget(self.btn_copy_music_url)
         self.col1_layout.addWidget(self.card_overlay_url, alignment=Qt.AlignmentFlag.AlignTop)
 
@@ -383,7 +397,13 @@ class MusicView(BaseView):
                 self.lbl_auth_status.setText(self.i18n.get("common.status.disconnected"))
 
     def _copy_music_overlay_url(self):
-        QApplication.clipboard().setText(self._music_overlay_url)
+        theme = self.combo_music_theme.currentData() or "glass"
+        url = self._music_overlay_url
+        if "?" in url:
+            url += f"&theme={theme}"
+        else:
+            url += f"?theme={theme}"
+        QApplication.clipboard().setText(url)
         original = self.btn_copy_music_url.text()
         self.btn_copy_music_url.setText(self.i18n.get("rewards.obs.copied"))
         self.btn_copy_music_url.setEnabled(False)

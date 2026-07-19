@@ -162,7 +162,8 @@ class YouTubeSearchWorker(QThread):
                     "url": video_url,
                     "resolved": False,
                     "stream_url": None,
-                    "duration": duration_str
+                    "duration": duration_str,
+                    "thumbnail": item.get('thumbnail') or info.get('thumbnail') or ""
                 }
 
                 msg = self.i18n.get("music.queue.success").replace("{track}", f"{title} - {author}")

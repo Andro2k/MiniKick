@@ -1,0 +1,82 @@
+#player {
+    background-color: #0c0915;
+    background-image: 
+        linear-gradient(rgba(163, 0, 163, 0.15) 1px, transparent 1px), 
+        linear-gradient(90deg, rgba(163, 0, 163, 0.15) 1px, transparent 1px);
+    background-size: 40px 40px;
+    border: 2px solid #a300a3;
+    box-shadow: 
+        0 0 20px rgba(163, 0, 163, 0.65), 
+        inset 0 0 10px rgba(163, 0, 163, 0.35);
+    border-radius: 12px;
+    padding: 18px 24px;
+}
+
+.cover-art-wrap {
+    width: 105px;
+    height: 105px;
+    border-radius: 8px;
+    border: 2px solid #a300a3;
+    box-shadow: 0 0 12px rgba(163, 0, 163, 0.7);
+}
+
+.fallback-icon {
+    background: linear-gradient(135deg, #00f0ff 0%, #ff00ff 100%);
+}
+
+.label-now-badge {
+    background: transparent;
+    border: 1px solid #ff00ff;
+    color: #ff00ff;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 9px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+    text-shadow: 0 0 3px #ff00ff;
+}
+
+.artist {
+    font-family: 'Orbitron', sans-serif;
+    color: #00f0ff;
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.8);
+    font-weight: 900;
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.title {
+    font-family: 'Orbitron', sans-serif;
+    color: #ff00ff;
+    text-shadow: 0 0 6px rgba(255, 0, 255, 0.8);
+    font-weight: 900;
+    font-size: 21px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-bar-wrap {
+    height: 6px;
+    background: #18122b;
+    border-radius: 3px;
+}
+
+.progress-bar-fill {
+    background: linear-gradient(90deg, #00f0ff 0%, #ff00ff 100%);
+    box-shadow: 0 0 8px #ff00ff;
+    border-radius: 3px;
+}
+
+.progress-time {
+    font-family: 'Orbitron', monospace;
+    color: #ffffff;
+    font-size: 11px;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+}
+
+.eq span {
+    background: #ff00ff;
+    box-shadow: 0 0 5px #ff00ff;
+}

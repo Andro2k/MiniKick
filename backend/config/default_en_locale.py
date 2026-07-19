@@ -506,7 +506,8 @@ DEFAULT_DICTIONARY = {
         },
         "overlay": {
             "url_title": "Music Overlay (OBS)",
-            "url_desc": "Add this URL as a browser source in OBS to display the current song on screen."
+            "url_desc": "Add this URL as a browser source in OBS to display the current song on screen.",
+            "theme_label": "Overlay Theme:"
         }
     },
     "spotify": {

@@ -445,6 +445,7 @@ class ChatController(QObject):
             self.view.txt_command.blockSignals(True)           
             self.view.chk_command.setChecked(use_command)
             self.view.txt_command.setText(command_trigger)            
+            self.view.txt_command.setEnabled(use_command)
             self.view.chk_command.blockSignals(False)
             self.view.txt_command.blockSignals(False)
             self.view.blockSignals(False)

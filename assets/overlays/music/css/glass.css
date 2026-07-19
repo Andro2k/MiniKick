@@ -1,0 +1,45 @@
+#player {
+    background: rgba(12, 12, 18, 0.72);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border: 1.5px solid rgba(255, 255, 255, 0.10);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.cover-art-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fallback-icon {
+    background: linear-gradient(135deg, #53d68a 0%, #1db954 100%);
+}
+
+.label-now-badge {
+    background: rgba(83, 214, 138, 0.15);
+    border: 1px solid rgba(83, 214, 138, 0.3);
+    color: #53d68a;
+}
+
+.title {
+    color: #f0f0f0;
+}
+
+.artist {
+    color: rgba(255, 255, 255, 0.60);
+}
+
+.progress-bar-fill {
+    background: #53d68a;
+    box-shadow: 0 0 4px rgba(83, 214, 138, 0.5);
+}
+
+.progress-time {
+    color: rgba(255, 255, 255, 0.40);
+}
+
+.eq span {
+    background: #53d68a;
+}

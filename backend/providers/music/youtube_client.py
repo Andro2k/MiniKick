@@ -99,11 +99,27 @@ class YouTubeMusicProvider(QObject):
 
         is_resolving = (self.resolve_worker is not None and self.resolve_worker.isRunning())
         is_playing = is_resolving or (self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState)
+        duration = self.player.duration()
+        if duration <= 0:
+            duration_str = self.current_song.get("duration", "")
+            if duration_str and duration_str != "-":
+                try:
+                    parts = duration_str.split(":")
+                    if len(parts) == 2:
+                        duration = (int(parts[0]) * 60 + int(parts[1])) * 1000
+                    elif len(parts) == 3:
+                        duration = (int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])) * 1000
+                except Exception:
+                    pass
+
         return {
             "title": self.current_song["title"],
             "artist": self.current_song["artist"],
             "url": self.current_song["url"],
-            "is_playing": is_playing
+            "is_playing": is_playing,
+            "duration": duration,
+            "progress": self.player.position(),
+            "thumbnail": self.current_song.get("thumbnail", "")
         }
 
     @property

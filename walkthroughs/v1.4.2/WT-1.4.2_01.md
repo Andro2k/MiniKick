@@ -1,6 +1,6 @@
-# WT-1.4.2_01 - Solución de Escala y Alineación de Iconos (High DPI), Sincronización TTS y Migración de Base de Datos
+# WT-1.4.2_01 - Solución de Escala y Alineación de Iconos (High DPI), Sincronización TTS, Migración de Base de Datos, Estilo de Switch, Campo de Comando y Variantes de Música (Premium & Cyberpunk)
 
-Hemos realizado e implementado todos los cambios necesarios para corregir la borrosidad, desalineación y mala escala de los iconos en sistemas con escalado DPI de Windows diferente de 100%, la desincronización de la selección de voces en el sistema de chat TTS, y el error de base de datos en Linux por falta de columnas en la base de datos heredada.
+Hemos realizado e implementado todos los cambios necesarios para corregir la borrosidad, desalineación y mala escala de los iconos en sistemas con escalado DPI de Windows diferente de 100%, la desincronización de la selección de voces en el sistema de chat TTS, el error de base de datos en Linux, el grosor del borde del switch cuando está desactivado, el comportamiento de habilitación del cuadro de texto del comando, la reorganización de carpetas de overlays con soporte de temas dinámicos, y el rediseño premium completo de los temas de música Cyberpunk y Premium Card con soporte de barra de progreso y carátula del álbum.
 
 ---
 
@@ -53,6 +53,66 @@ Esto se debe a que la sentencia `CREATE TABLE IF NOT EXISTS spam_filters` no alt
   - Implementamos una función de migración inteligente de esquema llamada `_upgrade_schema()`.
   - Esta función se ejecuta automáticamente durante la inicialización de la base de datos, revisa la estructura existente de cada tabla (`PRAGMA table_info`) y añade dinámicamente cualquier columna faltante (como `allowlist` en `spam_filters`, campos agregados a `obs_rewards`, `chat_timers`, etc.) mediante comandos `ALTER TABLE ... ADD COLUMN ...`.
   - Esto previene cualquier error de inconsistencia de base de datos sin obligar al usuario a borrar sus datos locales.
+
+---
+
+## Parte 4: Estilo del Conmutador (ModernSwitch)
+
+### Cambios Realizados
+- **`frontend/widgets/controls.py`**:
+  - Importamos `QPen` y configuramos el grosor del borde en `1.5` píxeles cuando el conmutador se encuentra desactivado (`not self.isChecked()`), y `1.0` cuando está activado.
+  - Ajustamos dinámicamente las coordenadas del rectángulo de dibujo (`QRectF`) reduciendo sus márgenes por la mitad del grosor del bolígrafo (`pen_width / 2`). Esto evita que el borde del switch se recorte por los límites físicos del widget, resultando en un renderizado perfectamente suave y sin artefactos en los bordes.
+
+---
+
+## Parte 5: Habilitación Dinámica del Campo de Comando TTS
+
+### Cambios Realizados
+- **`frontend/components/chat/tts_settings.py`**:
+  - Conectamos la señal `toggled` de `chk_command` (el switch de usar comando) directamente al slot `setEnabled` de `txt_command` (el cuadro de texto).
+  - Inicializamos el estado habilitado del cuadro de texto usando el valor de `chk_command.isChecked()` en la creación del widget y lo actualizamos durante la carga de configuraciones en `set_settings_ui()`.
+- **`backend/controllers/chat_controller.py`**:
+  - Actualizamos `_sync_tts_command_from_db` para asegurar la sincronización del estado habilitado/deshabilitado del cuadro de texto al recargar la configuración desde la base de datos.
+
+---
+
+## Parte 6: Reorganización de Overlays y Variantes de Música (Premium & Cyberpunk)
+
+### Cambios Realizados
+- **Restructuración de Directorios**:
+  - Movimos `chat.html` y la carpeta `css` a `assets/overlays/chat/` y `assets/overlays/chat/css/`.
+  - Movimos `rewards.html` a `assets/overlays/rewards/rewards.html`.
+  - Creamos el subdirectorio `assets/overlays/music/` y movimos allí `music.html`.
+- **Soporte de Hojas de Estilo Dinámicas en Música**:
+  - Separamos el CSS de `music.html` e implementamos 5 temas de estilo independientes bajo `assets/overlays/music/css/`: `glass.css`, `minimal.css`, `neon.css`, `cyber.css` y `card.css`.
+  - Actualizamos `music.html` para enlazar la hoja de estilo correspondiente según el parámetro de URL `theme` recibido (ej. `/music/css/neon.css`).
+- **Servidor de Overlays (Backend)**:
+  - Modificamos `overlay_server.py` para que resuelva las nuevas ubicaciones de los archivos `.html` y añadimos un servidor de archivos estáticos genérico al final del método `do_GET` para permitir la carga correcta de recursos como `/chat/css/...` y `/music/css/...`.
+  - **Autorización de CSS (Fondo transparente corregido)**: Ajustamos el middleware de validación del token de sesión para que permita que las solicitudes de archivos de hoja de estilo `.css` (que contienen `/css/` o terminan en `.css`) pasen sin token. Esto soluciona la desconfiguración visual (los widgets se veían sin fondo) provocada por el bloqueo HTTP 403 que sufrían las hojas de estilo anidadas.
+- **Panel de Configuración de Música (Frontend)**:
+  - Actualizamos `music_view.py` para añadir un dropdown (`combo_music_theme`) que permite elegir el tema del reproductor.
+  - Modificamos la acción del botón de copiado de URL para que adjunte de forma automática el parámetro `&theme=valor` al portapapeles.
+
+---
+
+## Parte 7: Recuperación de Carátulas, Tiempos y Barra de Progreso
+
+### Diagnóstico del Problema
+Anteriormente, el payload enviado por el backend al overlay de música solo contenía `title`, `artist`, `url` y el estado `is_playing`. Esto impedía a los desarrolladores de temas mostrar la barra de progreso, la carátula del álbum o la duración de la canción, elementos clave para lograr los acabados de alta fidelidad solicitados por el usuario.
+
+### Cambios Realizados
+1. **Extracción en YouTube y Spotify (`spotify_client.py`, `music_worker.py`)**:
+   - En el resolvedor de YouTube, guardamos la URL de la miniatura de la canción (`thumbnail`) obtenida directamente de `yt-dlp`.
+   - En Spotify, extraemos `album.images[0].url` del endpoint `/me/player/currently-playing` para la carátula del álbum, así como el tiempo de progreso (`progress_ms`) y duración total (`duration_ms`).
+2. **Cálculo de Tiempos en YouTube (`youtube_client.py`)**:
+   - Para el reproductor de YouTube, leemos el progreso en tiempo real consultando `self.player.position()`.
+   - Para la duración, implementamos un intérprete de cadenas de respaldo (`parse_duration_str_to_ms`) que convierte formatos de texto de duración como `"04:25"` a milisegundos cuando el reproductor local de Qt aún no ha terminado de cargar el flujo de audio.
+3. **Predicción Suave del Lado del Cliente (`music.html`)**:
+   - Estructuramos el overlay HTML para incorporar contenedores de barra de progreso y carátula del álbum.
+   - En Javascript, añadimos una función matemática de formateo de tiempo (`formatTime`) y una rutina de ticker inteligente (`startProgressTicker`). Cada vez que se recibe un evento SSE con el estado del reproductor, el cliente sincroniza su progreso y, si la pista está reproduciéndose, incrementa la barra de forma predictiva y ultra-suave cada segundo, reduciendo la carga del CPU en el backend.
+4. **Rediseño Estilo Cyberpunk y Premium Card (`cyber.css` y `card.css`)**:
+   - **`cyber.css`**: Configura un fondo con cuadrícula de neón púrpura (`linear-gradient`), borde luminoso, tipografía de terminal de ciencia ficción (`Orbitron`), nombre del artista en cian fosforescente, título en magenta, barra de progreso con gradiente cian-a-magenta brillante, y badge "NOW PLAYING" en una caja de neón delineada.
+   - **`card.css`**: Configura una tarjeta con degradado oscuro de tono bronce y dorado premium, bordes redondeados pronunciados, badge estilizado con un punto verde de reproducción en vivo (`• NOW PLAYING`), títulos blancos, artistas en tono oro cepillado y barra de progreso y ecualizadores de color bronce.
 
 ---
 

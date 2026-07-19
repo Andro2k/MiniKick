@@ -37,6 +37,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.txt_command = QLineEdit()
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
+        self.txt_command.setEnabled(self.chk_command.isChecked())
         row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
 
         voice_volume_card = ModernCard(margin=8, spacing=6, orientation="vertical")
@@ -109,6 +110,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.combo_lang.currentTextChanged.connect(self.language_filter_changed.emit)
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
+        self.chk_command.toggled.connect(self.txt_command.setEnabled)
 
         controls = [
             self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
@@ -150,6 +152,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.chk_name.setChecked(read_name)
         self.chk_command.setChecked(use_command)
         self.txt_command.setText(command)
+        self.txt_command.setEnabled(use_command)
         self.chk_provider.setChecked(is_web_provider)
         self.slider_vol.setValue(volume)
         self._pending_role_voices = role_voices or {}

@@ -504,7 +504,8 @@
         },
         "overlay": {
             "url_title": "Overlay de Música (OBS)",
-            "url_desc": "Agrega esta URL como fuente de navegador en OBS para mostrar la canción en pantalla."
+            "url_desc": "Agrega esta URL como fuente de navegador en OBS para mostrar la canción en pantalla.",
+            "theme_label": "Tema del Overlay:"
         }
     },
     "spotify": {

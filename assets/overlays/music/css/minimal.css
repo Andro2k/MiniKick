@@ -1,0 +1,48 @@
+#player {
+    background: rgba(10, 10, 12, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none;
+    border-left: 4px solid #53d68a;
+    box-shadow: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    gap: 12px;
+}
+
+.cover-art-wrap {
+    display: none; /* Hide cover art for true minimalist style */
+}
+
+.label-now-badge {
+    color: rgba(255, 255, 255, 0.40);
+    font-weight: 600;
+    font-size: 9px;
+    padding: 0;
+    background: transparent;
+}
+
+.title {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.artist {
+    color: rgba(255, 255, 255, 0.60);
+}
+
+.progress-bar-wrap {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.progress-bar-fill {
+    background: #ffffff;
+}
+
+.progress-time {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.eq span {
+    background: #ffffff;
+}

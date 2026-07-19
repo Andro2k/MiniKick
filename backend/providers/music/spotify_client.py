@@ -115,11 +115,18 @@ class SpotifyMusicProvider:
             if not item:
                 return None
             artists = ", ".join(a.get("name") for a in item.get("artists", []))
+            
+            images = item.get("album", {}).get("images", [])
+            thumbnail = images[0].get("url") if images else ""
+
             return {
                 "title": item.get("name", self.i18n.get("music.player.unknown_song")),
                 "artist": artists,
                 "url": item.get("external_urls", {}).get("spotify", ""),
-                "is_playing": data.get("is_playing", False)
+                "is_playing": data.get("is_playing", False),
+                "duration": item.get("duration_ms", 0),
+                "progress": data.get("progress_ms", 0),
+                "thumbnail": thumbnail
             }
         except Exception:
             return None

@@ -1,0 +1,51 @@
+#player {
+    background: rgba(10, 10, 15, 0.96);
+    border: 1.8px solid #2ecd70;
+    box-shadow: 
+        0 0 20px rgba(46, 205, 112, 0.45), 
+        inset 0 0 8px rgba(46, 205, 112, 0.25);
+    border-radius: 12px;
+}
+
+.cover-art-wrap {
+    border: 1.5px solid #2ecd70;
+    box-shadow: 0 0 10px rgba(46, 205, 112, 0.35);
+}
+
+.fallback-icon {
+    background: #2ecd70;
+}
+
+.label-now-badge {
+    color: #2ecd70;
+    text-shadow: 0 0 5px rgba(46, 205, 112, 0.5);
+    background: rgba(46, 205, 112, 0.1);
+    border: 1px solid rgba(46, 205, 112, 0.3);
+}
+
+.title {
+    color: #ffffff;
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+}
+
+.artist {
+    color: rgba(255, 255, 255, 0.70);
+}
+
+.progress-bar-wrap {
+    background: rgba(46, 205, 112, 0.08);
+}
+
+.progress-bar-fill {
+    background: #2ecd70;
+    box-shadow: 0 0 8px rgba(46, 205, 112, 0.8);
+}
+
+.progress-time {
+    color: rgba(46, 205, 112, 0.6);
+}
+
+.eq span {
+    background: #2ecd70;
+    box-shadow: 0 0 8px rgba(46, 205, 112, 0.8);
+}

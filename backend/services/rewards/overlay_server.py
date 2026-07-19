@@ -28,12 +28,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         token = query.get("token", [None])[0]
         
         expected_token = getattr(self.server.manager, "session_token", None)
-        if expected_token and not path.startswith("/css/") and token != expected_token:
+        is_css_request = path.endswith(".css") or "/css/" in path
+        if expected_token and not is_css_request and token != expected_token:
             self.send_error(403, "Forbidden: Invalid session token")
             return
 
         if path == "/overlay":
-            html_path = get_resource_path(os.path.join("assets", "overlays", "rewards.html"))
+            html_path = get_resource_path(os.path.join("assets", "overlays", "rewards", "rewards.html"))
             try:
                 with open(html_path, "rb") as f:
                     self.send_response(200)
@@ -47,7 +48,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 self.send_error(404, f"Overlay HTML not found at: {html_path}")
 
         elif path == "/chat":
-            html_path = get_resource_path(os.path.join("assets", "overlays", "chat.html"))
+            html_path = get_resource_path(os.path.join("assets", "overlays", "chat", "chat.html"))
             try:
                 with open(html_path, "rb") as f:
                     self.send_response(200)
@@ -61,7 +62,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 self.send_error(404, f"Chat Overlay HTML not found at: {html_path}")
 
         elif path == "/music":
-            html_path = get_resource_path(os.path.join("assets", "overlays", "music.html"))
+            html_path = get_resource_path(os.path.join("assets", "overlays", "music", "music.html"))
             try:
                 with open(html_path, "rb") as f:
                     self.send_response(200)
@@ -76,7 +77,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
 
         elif path.startswith("/css/"):
             css_filename = os.path.basename(path)
-            css_path = get_resource_path(os.path.join("assets", "overlays", "css", css_filename))
+            css_path = get_resource_path(os.path.join("assets", "overlays", "chat", "css", css_filename))
             try:
                 with open(css_path, "rb") as f:
                     self.send_response(200)
@@ -201,6 +202,25 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.server.manager.music_clients.remove(client_queue)
 
         else:
+            relative_path = path.lstrip("/")
+            file_path = get_resource_path(os.path.join("assets", "overlays", relative_path))
+            
+            if os.path.isfile(file_path):
+                abs_base = os.path.abspath(get_resource_path(os.path.join("assets", "overlays")))
+                abs_target = os.path.abspath(file_path)
+                if abs_target.startswith(abs_base):
+                    mime_type, _ = mimetypes.guess_type(file_path)
+                    try:
+                        self.send_response(200)
+                        self.send_header("Content-Type", mime_type or "application/octet-stream")
+                        self.end_headers()
+                        with open(file_path, "rb") as f:
+                            self.wfile.write(f.read())
+                        return
+                    except Exception as e:
+                        self.send_error(500, f"Error reading file: {e}")
+                        return
+            
             self.send_error(404, "Invalid endpoint")
 
     def log_message(self, format, *args):
@@ -283,7 +303,10 @@ class OverlayServerManager:
                 "title": song.get("title", ""),
                 "artist": song.get("artist", ""),
                 "url": song.get("url", ""),
-                "is_playing": song.get("is_playing", False)
+                "is_playing": song.get("is_playing", False),
+                "duration": song.get("duration", 0),
+                "progress": song.get("progress", 0),
+                "thumbnail": song.get("thumbnail", "")
             }
         self._last_song = payload
         for client_queue in self.music_clients:

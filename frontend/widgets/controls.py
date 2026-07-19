@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QWidget, QHBoxLayout, QLabel
 from PySide6.QtCore import QRectF, Qt, QSize
-from PySide6.QtGui import QColor, QPainter, QPainterPath
+from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_WHITE
 from frontend.common.utils import NoWheelSlider
 
@@ -27,8 +27,9 @@ class ModernSwitch(QAbstractButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        rect = QRectF(0, 0, self.width(), self.height())
-        radius = self.height() / 1.8
+        pen_width = 1.5 if not self.isChecked() else 1.0
+        rect = QRectF(pen_width / 2, pen_width / 2, self.width() - pen_width, self.height() - pen_width)
+        radius = rect.height() / 1.8
 
         bg_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_850)
         border_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_800)
@@ -37,7 +38,8 @@ class ModernSwitch(QAbstractButton):
         path.addRoundedRect(rect, radius, radius)
         painter.fillPath(path, bg_color)
 
-        painter.setPen(border_color)
+        pen = QPen(border_color, pen_width)
+        painter.setPen(pen)
         painter.drawPath(path)
 
         padding = 3
