@@ -1,7 +1,6 @@
 # frontend\components\chat\bot_mute.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QLineEdit, QListWidget, QListView, 
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, 
                                QFrame, QPushButton, QListWidgetItem)
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
 from frontend.widgets import ModernButton
@@ -37,6 +36,7 @@ class BotMutePanel(QWidget):
         
         self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
         self.btn_add_bot.setIcon(get_icon_colored("add.svg", COLOR_BLACK, size=16))
+        self.btn_add_bot.setIconSize(QSize(16, 16))
             
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
@@ -71,6 +71,7 @@ class BotMutePanel(QWidget):
         
         self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
         self.btn_add_word.setIcon(get_icon_colored("add.svg", COLOR_BLACK, size=16))
+        self.btn_add_word.setIconSize(QSize(16, 16))
             
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
@@ -112,6 +113,7 @@ class BotMutePanel(QWidget):
                         btn_size = max(22, font_height + 4)
                         
                         btn_delete.setIcon(get_icon_colored("trash.svg", COLOR_RED, size=icon_size))
+                        btn_delete.setIconSize(QSize(icon_size, icon_size))
                         btn_delete.setFixedSize(btn_size, btn_size)
                         
                         text_width = fm.horizontalAdvance(lbl_name.text())

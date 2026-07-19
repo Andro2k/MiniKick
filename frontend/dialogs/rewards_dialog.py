@@ -1,9 +1,7 @@
 # frontend\dialogs\rewards_dialogs.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QLineEdit, QSpinBox, 
-                               QDoubleSpinBox, QFileDialog)
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox, QFileDialog
+from PySide6.QtCore import Qt, QSize
 
 from frontend.widgets import ModernButton, ModernSwitch, SliderRow
 from frontend.common.theme import COLOR_NEUTRAL_200
@@ -75,6 +73,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         self.btn_refresh = ModernButton("", role="action_neutral_border")
         self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_NEUTRAL_200, 24))
+        self.btn_refresh.setIconSize(QSize(24, 24))
         self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
         self.btn_refresh.clicked.connect(self._request_refresh)
         row1.addWidget(self.btn_refresh)
@@ -143,6 +142,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_neutral_border")
         self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_NEUTRAL_200, 16))
+        self.btn_visual.setIconSize(QSize(16, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         row_rnd.addWidget(self.btn_visual)
         

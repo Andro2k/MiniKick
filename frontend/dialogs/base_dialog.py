@@ -1,9 +1,8 @@
 # frontend\dialogs\base_dialogs.py
 
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
                                QStackedWidget, QProgressBar, QWidget)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QColor, QMouseEvent
 from frontend.common.theme import COLOR_RED, PATH_ICON_HELP
 
@@ -40,6 +39,7 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_close_shell.setFixedSize(26, 26)
         self.btn_close_shell.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
+        self.btn_close_shell.setIconSize(QSize(14, 14))
         self.btn_close_shell.clicked.connect(self.reject)
         self.btn_close_shell.move(width - 34, 8)
 
@@ -103,7 +103,8 @@ class ModernModal(ModernFramelessShell):
         icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(QIcon(icon_path).pixmap(48, 48))
+        dpr = self.devicePixelRatio()
+        icon_lbl.setPixmap(QIcon(icon_path).pixmap(QSize(48, 48), dpr))
         icon_inner_layout.addWidget(icon_lbl)
 
         icon_wrapper.addWidget(icon_container)

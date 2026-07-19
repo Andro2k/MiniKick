@@ -2,7 +2,7 @@
 
 import os
 from PySide6.QtWidgets import QLabel
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 
 class ScalableIllustration(QLabel):
@@ -22,7 +22,8 @@ class ScalableIllustration(QLabel):
             self.setHidden(True)
         else:
             icon = QIcon(self.icon_path)
-            self.setPixmap(icon.pixmap(self.min_size, int(self.min_size * self.aspect_ratio)))
+            dpr = self.devicePixelRatio()
+            self.setPixmap(icon.pixmap(QSize(self.min_size, int(self.min_size * self.aspect_ratio)), dpr))
             self.setFixedSize(self.min_size, int(self.min_size * self.aspect_ratio))
 
     def _detect_aspect_ratio(self, fallback: float) -> float:
@@ -63,6 +64,7 @@ class ScalableIllustration(QLabel):
         height_size = int(width_size * self.aspect_ratio)
         
         icon = QIcon(self.icon_path)
-        self.setPixmap(icon.pixmap(width_size, height_size))
+        dpr = self.devicePixelRatio()
+        self.setPixmap(icon.pixmap(QSize(width_size, height_size), dpr))
         self.setFixedSize(width_size, height_size)
         self.setHidden(False)

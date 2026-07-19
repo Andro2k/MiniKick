@@ -1,10 +1,7 @@
 # frontend\dialogs\bug_report_dialog.py
 
-from PySide6.QtWidgets import (
-    QLabel, QLineEdit, QTextEdit, QCheckBox, QPushButton, QHBoxLayout, QFileDialog
-)
-from PySide6.QtCore import Qt
-
+from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QCheckBox, QPushButton, QHBoxLayout, QFileDialog
+from PySide6.QtCore import Qt, QSize
 from .base_dialog import ModernModal
 from frontend.common.utils import get_assets_path, get_icon_colored
 from frontend.common.theme import COLOR_RED
@@ -56,6 +53,7 @@ class BugReportDialog(ModernModal):
 
         self.btn_clear_image = QPushButton()
         self.btn_clear_image.setIcon(get_icon_colored("x.svg", COLOR_RED, size=16))
+        self.btn_clear_image.setIconSize(QSize(16, 16))
         self.btn_clear_image.setProperty("role", "action_danger_border")
         self.btn_clear_image.setFixedHeight(32)
         self.btn_clear_image.setFixedWidth(32)

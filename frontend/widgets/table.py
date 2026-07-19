@@ -2,7 +2,7 @@
 
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QWidget, QStackedWidget
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from .controls import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from frontend.common.theme import COLOR_BLACK
@@ -53,6 +53,7 @@ class ModernTableCard(QFrame):
                 self.btn_add = ModernButton(add_button_text, role="action_accent")
                 if add_button_icon:
                     self.btn_add.setIcon(get_icon_colored(add_button_icon, COLOR_BLACK, 16))
+                    self.btn_add.setIconSize(QSize(16, 16))
                 self.header_layout.addWidget(self.btn_add)
                 
             self.card_layout.addLayout(self.header_layout)
@@ -96,6 +97,7 @@ class ModernTableCard(QFrame):
         
         self.btn_empty_action = ModernButton(button_text, role="action_accent")
         self.btn_empty_action.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
+        self.btn_empty_action.setIconSize(QSize(16, 16))
         self.btn_empty_action.setFixedWidth(200)
         self.btn_empty_action.clicked.connect(on_button_clicked)
         
@@ -148,6 +150,7 @@ class TableActionCell(QWidget):
         btn = ModernButton("", role=role)
         btn.setFixedSize(28, 28)
         btn.setIcon(get_icon_colored(icon_name, color, size=16))
+        btn.setIconSize(QSize(16, 16))
         btn.setToolTip(tooltip)
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)

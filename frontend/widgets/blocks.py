@@ -1,8 +1,8 @@
 # frontend\widgets\blocks.py
 
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea, QSpinBox, QPushButton, QLineEdit
-from PySide6.QtCore import Qt, Signal
-from frontend.common.utils import get_icon_colored, NoWheelComboBox
+from PySide6.QtCore import Qt, Signal, QSize
+from frontend.common.utils import get_icon_colored, get_pixmap_colored, NoWheelComboBox
 from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400
 from .controls import ModernSwitch
 
@@ -35,7 +35,7 @@ class SettingRow(QWidget):
         layout.setSpacing(3)
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=18).pixmap(18, 18))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
@@ -68,7 +68,7 @@ class SliderRow(QWidget):
         header_row.setSpacing(6)
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, size=18).pixmap(18, 18))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
 
         lbl_title = QLabel(title_text)
         lbl_title.setProperty("role", "h3")
@@ -101,7 +101,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(6)
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, COLOR_NEUTRAL_200, size=14).pixmap(14, 14))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_200, size=14))
 
         self.lbl_title = QLabel(title_text)
         self.lbl_title.setProperty("role", "h3")
@@ -184,7 +184,7 @@ class ExpandableSettingCard(QFrame):
         h_layout.setSpacing(6)
         
         lbl_icon = QLabel()
-        lbl_icon.setPixmap(get_icon_colored(icon_name, COLOR_NEUTRAL_400, 24).pixmap(24, 24))
+        lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, 24))
         h_layout.addWidget(lbl_icon)
         
         text_layout = QVBoxLayout()
@@ -206,6 +206,7 @@ class ExpandableSettingCard(QFrame):
         
         self.btn_expand = QPushButton()
         self.btn_expand.setIcon(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 20))
+        self.btn_expand.setIconSize(QSize(20, 20))
         self.btn_expand.setFixedSize(30, 30)
         self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.clicked.connect(self.toggle_expand)
@@ -298,6 +299,7 @@ class ExpandableSettingCard(QFrame):
         self.body_widget.setVisible(not is_visible)
         icon_name = "chevron-up.svg" if not is_visible else "chevron-down.svg"
         self.btn_expand.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_400, 20))
+        self.btn_expand.setIconSize(QSize(20, 20))
 
     def _emit_update(self, *args):
         if self._is_loading: return

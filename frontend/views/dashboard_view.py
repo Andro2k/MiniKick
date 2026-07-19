@@ -2,10 +2,10 @@
 
 import os
 from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
-from PySide6.QtCore import Qt, Signal, QRectF
+from PySide6.QtCore import Qt, Signal, QRectF, QSize
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
-from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path
+from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path, get_pixmap_colored
 from frontend.widgets import BaseView, StatCard, SettingRow, ModernCard, ScalableIllustration, ModernButton, ModernSwitch
 
 class SegmentedDistributionBar(QWidget):
@@ -65,7 +65,7 @@ class DashboardView(BaseView):
         self.banner_layout.setSpacing(8)
         
         lbl_warn_icon = QLabel()
-        lbl_warn_icon.setPixmap(get_icon_colored("help.svg", COLOR_RED, 24).pixmap(24, 24))
+        lbl_warn_icon.setPixmap(get_pixmap_colored("help.svg", COLOR_RED, 24))
         lbl_warn_icon.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         self.lbl_warn_text = QLabel()
         self.lbl_warn_text.setWordWrap(True)
@@ -135,6 +135,7 @@ class DashboardView(BaseView):
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
         self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
+        self.btn_connect.setIconSize(QSize(16, 16))
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         status_layout.addWidget(self.status_label, stretch=1)

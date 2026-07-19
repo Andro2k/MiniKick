@@ -88,6 +88,7 @@ class LogControlsPanel(QFrame):
             btn = ModernButton(text, role=role)
             btn.setParent(self)
             btn.setIcon(get_icon_colored(icon, color, 16))
+            btn.setIconSize(QSize(16, 16))
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             btn.clicked.connect(slot)
             btn.setVisible(visible)
@@ -245,6 +246,7 @@ class LogView(BaseView):
         
         self.btn_prev = ModernButton("", role="action_outlined")
         self.btn_prev.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_200, 16))
+        self.btn_prev.setIconSize(QSize(16, 16))
         self.btn_prev.setFixedWidth(28)
         self.btn_prev.clicked.connect(self.prev_page)
         self.pagination_layout.addWidget(self.btn_prev)
@@ -257,6 +259,7 @@ class LogView(BaseView):
         
         self.btn_next = ModernButton("", role="action_outlined")
         self.btn_next.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_NEUTRAL_200, 16))
+        self.btn_next.setIconSize(QSize(16, 16))
         self.btn_next.setFixedWidth(28)
         self.btn_next.clicked.connect(self.next_page)
         self.pagination_layout.addWidget(self.btn_next)
@@ -303,6 +306,7 @@ class LogView(BaseView):
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
         self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_BLACK, 16))
+        self.btn_show_logs.setIconSize(QSize(16, 16))
         self.btn_show_logs.setFixedWidth(200)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 

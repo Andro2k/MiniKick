@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
                                QLabel, QSizePolicy, QWidget, QButtonGroup)
 from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
 from PySide6.QtGui import QPainter, QPixmap, QColor
-from frontend.common.utils import get_icon, get_icon_colored, create_circular_pixmap
+from frontend.common.utils import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored
 from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800
 from backend.config.version import APP_VERSION
 
@@ -53,7 +53,8 @@ class Sidebar(QFrame):
         
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_400)) 
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_400, 20)) 
+        self.btn_toggle.setIconSize(QSize(20, 20))
         self.btn_toggle.setFixedSize(36, 36)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
@@ -95,6 +96,7 @@ class Sidebar(QFrame):
         self.btn_update_rewards.setProperty("role", "action_accent")
         self.btn_update_rewards.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_rewards.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 14))
+        self.btn_update_rewards.setIconSize(QSize(14, 14))
         
         self.btn_update_rewards.setVisible(False)
         self.btn_update_rewards.clicked.connect(self._on_update_rewards_clicked)
@@ -157,23 +159,37 @@ class Sidebar(QFrame):
     def update_profile_avatar(self, image_data: bytes):
         pixmap = create_circular_pixmap(image_data)
         if not pixmap.isNull():
-            self.profile_avatar.setPixmap(pixmap.scaled(36, 36, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            dpr = self.devicePixelRatio()
+            target_physical = int(36 * dpr)
+            scaled_pixmap = pixmap.scaled(
+                target_physical, target_physical, 
+                Qt.AspectRatioMode.KeepAspectRatio, 
+                Qt.TransformationMode.SmoothTransformation
+            )
+            scaled_pixmap.setDevicePixelRatio(dpr)
+            self.profile_avatar.setPixmap(scaled_pixmap)
         else:
             self.reset_profile_avatar()
 
     def reset_profile_avatar(self):
-        icon_pixmap = get_icon_colored("user.svg", COLOR_NEUTRAL_400, 36).pixmap(36, 36)
+        dpr = self.devicePixelRatio()
+        logical_size = 36
+        physical_size = int(logical_size * dpr)
         
-        circle_pixmap = QPixmap(36, 36)
+        icon_pixmap = get_pixmap_colored("user.svg", COLOR_NEUTRAL_400, 24, dpr)
+        
+        circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)
+        circle_pixmap.setDevicePixelRatio(dpr)
+        
         painter = QPainter(circle_pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         painter.setBrush(QColor(COLOR_NEUTRAL_800))
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(0, 0, 36, 36)
+        painter.drawEllipse(0, 0, logical_size, logical_size)
         
-        painter.drawPixmap(6, 6, 24, 24, icon_pixmap.scaled(24, 24, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        painter.drawPixmap(6, 6, icon_pixmap)
         painter.end()
         
         self.profile_avatar.setPixmap(circle_pixmap)
@@ -208,7 +224,8 @@ class Sidebar(QFrame):
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)        
         icon_color = COLOR_GREEN if is_active else COLOR_NEUTRAL_400
-        btn.setIcon(get_icon_colored(icon_name, icon_color, 28))
+        btn.setIcon(get_icon_colored(icon_name, icon_color, 21))
+        btn.setIconSize(QSize(21, 21))
         btn.setToolTip("" if self.is_expanded else display_name)
         
         if is_active:
@@ -226,7 +243,8 @@ class Sidebar(QFrame):
         self.is_expanded = not self.is_expanded
         target_width = self.expanded_width if self.is_expanded else self.collapsed_width
         
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg" if self.is_expanded else "chevron-right-pipe.svg", COLOR_NEUTRAL_400))
+        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg" if self.is_expanded else "chevron-right-pipe.svg", COLOR_NEUTRAL_400, 20))
+        self.btn_toggle.setIconSize(QSize(20, 20))
         
         self.anim_group = QParallelAnimationGroup()
         for prop in [b"minimumWidth", b"maximumWidth"]:
@@ -285,7 +303,8 @@ class Sidebar(QFrame):
     def _update_icons(self, btn=None, checked=None):
         for b in self.button_group.buttons():
             color = COLOR_GREEN if b.isChecked() else COLOR_NEUTRAL_400
-            b.setIcon(get_icon_colored(b.property("icon_name"), color, 28))
+            b.setIcon(get_icon_colored(b.property("icon_name"), color, 21))
+            b.setIconSize(QSize(21, 21))
 
     def _on_tab_clicked(self, btn):
         self.view_selected.emit(btn.property("view_name"))

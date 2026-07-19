@@ -1,9 +1,9 @@
 # frontend\navigation\toast_component.py
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QSizePolicy
-from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent
+from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
 from frontend.common.theme import COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_AMBER
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, get_pixmap_colored
 
 class ModernToast(QFrame):
     expired = Signal(object)
@@ -32,7 +32,7 @@ class ModernToast(QFrame):
         icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_icon_colored(icon_name, icon_color, 22).pixmap(22, 22))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, 22))
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(icon_lbl)
 
@@ -55,6 +55,7 @@ class ModernToast(QFrame):
         btn_close = QPushButton()
         btn_close.setProperty("role", "btn_ghost")
         btn_close.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
+        btn_close.setIconSize(QSize(14, 14))
         btn_close.setFixedSize(20, 20)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.dismiss)

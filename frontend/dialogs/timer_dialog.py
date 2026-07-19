@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox)
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
 from .base_dialog import ModernWizardPanel
 from frontend.widgets import ModernButton
 from frontend.common.theme import COLOR_RED
@@ -232,6 +232,7 @@ class TimerConfigWizard(ModernWizardPanel):
         btn_del = ModernButton("", role="action_danger_border")
         btn_del.setFixedSize(26, 26)
         btn_del.setIcon(get_icon_colored("trash.svg", COLOR_RED, 14))
+        btn_del.setIconSize(QSize(14, 14))
         btn_del.clicked.connect(lambda: self._remove_message_row(row))
         row_layout.addWidget(btn_del)
         

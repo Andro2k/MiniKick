@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget
 from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
-from frontend.common.utils import get_icon_colored
+from frontend.common.utils import get_icon_colored, get_pixmap_colored
 from frontend.widgets import BaseView, ModernButton, FlowLayout
 from frontend.common.theme import (
     COLOR_NEUTRAL_200, COLOR_NEUTRAL_500, 
@@ -386,8 +386,7 @@ class NetworkStatusCard(QFrame):
         self.set_icon(COLOR_NEUTRAL_200)
         
     def set_icon(self, color_hex: str):
-        icon = get_icon_colored(self.icon_name, color_hex, size=20)
-        self.lbl_icon.setPixmap(icon.pixmap(20, 20))
+        self.lbl_icon.setPixmap(get_pixmap_colored(self.icon_name, color_hex, size=20))
         
     def set_status(self, status: str, latency: int, status_text: str):
         _colors = {
@@ -419,6 +418,7 @@ class NetworkView(BaseView):
         btn_layout = QHBoxLayout()
         self.btn_check = ModernButton(self.i18n.get("network.btn_check"), role="action_accent")
         self.btn_check.setIcon(get_icon_colored("refresh.svg", COLOR_BLACK, 16))
+        self.btn_check.setIconSize(QSize(16, 16))
         self.btn_check.setFixedWidth(200)
         self.btn_check.clicked.connect(self.check_requested.emit)
         btn_layout.addWidget(self.btn_check)

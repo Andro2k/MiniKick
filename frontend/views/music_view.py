@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QApplication
 from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_200
-from frontend.common.utils import get_icon_colored, get_icon, NoWheelComboBox, NoWheelSlider
+from frontend.common.utils import get_icon_colored, NoWheelComboBox, NoWheelSlider, get_pixmap, get_pixmap_colored
 from frontend.widgets import BaseView, SettingRow, SliderRow, ModernCard, ModernButton, ModernSwitch, ModernTableCard
 
 class MusicView(BaseView):
@@ -151,7 +151,7 @@ class MusicView(BaseView):
         self.card_player.setVisible(False)
 
         self.icon_music = QLabel()
-        self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_GREEN, 32).pixmap(32, 32))
+        self.icon_music.setPixmap(get_pixmap_colored("spotify.svg", COLOR_GREEN, 32))
         
         info_layout = QVBoxLayout()
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
@@ -348,7 +348,7 @@ class MusicView(BaseView):
         
         if provider == "youtube":
             self.lbl_provider_name.setText("YouTube")
-            self.icon_music.setPixmap(get_icon("youtube.svg").pixmap(48, 48))
+            self.icon_music.setPixmap(get_pixmap("youtube.svg", 48))
             self.btn_connect.setVisible(False)
             self.btn_disconnect.setVisible(False)
             self.card_cmds.setEnabled(True)
@@ -363,7 +363,7 @@ class MusicView(BaseView):
             self.card_overlay_url.setVisible(True)
         else:
             self.lbl_provider_name.setText(self.i18n.get("music.provider.name"))
-            self.icon_music.setPixmap(get_icon_colored("spotify.svg", COLOR_GREEN, 48).pixmap(48, 48))
+            self.icon_music.setPixmap(get_pixmap_colored("spotify.svg", COLOR_GREEN, 48))
             self.btn_connect.setVisible(not connected)
             self.btn_connect.setEnabled(not connected)
             self.btn_disconnect.setVisible(connected)
