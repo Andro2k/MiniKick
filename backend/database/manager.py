@@ -26,6 +26,7 @@ class DatabaseManager:
                     if not res or res[0] != "ok":
                         raise sqlite3.DatabaseError("Database integrity check failed")
             self._create_tables()
+            self._upgrade_schema()
         except sqlite3.DatabaseError as e:
             logger.error("Database file is malformed at startup, recreating: %s", e)
             self._handle_corrupt_database()
@@ -304,6 +305,59 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
             
             conn.commit()
+
+    def _upgrade_schema(self) -> None:
+        expected_columns = {
+            "spam_filters": [
+                ("allowlist", "TEXT DEFAULT ''"),
+                ("max_amount", "INTEGER DEFAULT 0"),
+                ("exclude_group", "TEXT DEFAULT 'none'"),
+                ("duration", "INTEGER DEFAULT 5"),
+                ("penalty", "TEXT DEFAULT 'timeout'"),
+                ("is_active", "INTEGER DEFAULT 0")
+            ],
+            "chat_commands": [
+                ("is_active", "INTEGER DEFAULT 1"),
+                ("cooldown", "INTEGER DEFAULT 5"),
+                ("aliases", "TEXT DEFAULT ''"),
+                ("is_regex", "INTEGER DEFAULT 0"),
+                ("permission", "TEXT DEFAULT 'everyone'")
+            ],
+            "obs_rewards": [
+                ("volume", "REAL DEFAULT 1.0"),
+                ("scale", "REAL DEFAULT 1.0"),
+                ("pos_x", "INTEGER DEFAULT 0"),
+                ("pos_y", "INTEGER DEFAULT 0"),
+                ("is_random_pos", "INTEGER DEFAULT 0")
+            ],
+            "chat_timers": [
+                ("is_active", "INTEGER DEFAULT 1"),
+                ("interval_online", "INTEGER"),
+                ("interval_offline", "INTEGER"),
+                ("chat_lines", "INTEGER DEFAULT 0"),
+                ("keywords", "TEXT DEFAULT '[]'"),
+                ("categories", "TEXT DEFAULT '[]'")
+            ]
+        }
+        
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                for table, cols in expected_columns.items():
+                    cursor.execute(f"PRAGMA table_info({table})")
+                    current_cols = {row[1].lower() for row in cursor.fetchall()}
+                    if not current_cols:
+                        continue
+                    for col_name, col_type in cols:
+                        if col_name.lower() not in current_cols:
+                            logger.info("Upgrading table %s: adding column %s", table, col_name)
+                            try:
+                                cursor.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
+                            except sqlite3.OperationalError as alter_err:
+                                logger.error("Error adding column %s to table %s: %s", col_name, table, alter_err)
+                conn.commit()
+        except Exception as e:
+            logger.error("Error executing database schema upgrade: %s", e)
 
     def log_spam_violation(self, username: str, sender_id: int, filter_id: str, message_content: str, penalty_type: str, duration: int) -> None:
         try:

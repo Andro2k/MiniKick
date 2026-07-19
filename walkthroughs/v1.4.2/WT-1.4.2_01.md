@@ -1,6 +1,6 @@
-# WT-1.4.2_01 - Solución de Escala y Alineación de Iconos (High DPI) y Sincronización TTS
+# WT-1.4.2_01 - Solución de Escala y Alineación de Iconos (High DPI), Sincronización TTS y Migración de Base de Datos
 
-Hemos realizado e implementado todos los cambios necesarios para corregir la borrosidad, desalineación y mala escala de los iconos en sistemas con escalado DPI de Windows diferente de 100%, así como la desincronización de la selección de voces en el sistema de chat TTS.
+Hemos realizado e implementado todos los cambios necesarios para corregir la borrosidad, desalineación y mala escala de los iconos en sistemas con escalado DPI de Windows diferente de 100%, la desincronización de la selección de voces en el sistema de chat TTS, y el error de base de datos en Linux por falta de columnas en la base de datos heredada.
 
 ---
 
@@ -38,6 +38,21 @@ Cuando el usuario cambiaba el idioma en el ComboBox de la interfaz gráfica (`co
   - Actualizamos el método de filtrado de idiomas `_filter_voices_by_language` para que el controlador sea el encargado de resolver la voz final que debe seleccionarse (`final_select_id`).
   - Si la voz actual no se encuentra en el nuevo idioma filtrado (o si el usuario cambia manualmente el filtro de idioma), el controlador asigna de forma proactiva y silenciosa la primera voz de la lista filtrada al motor del backend llamando a `self.service.set_voice(provider, final_select_id)` y actualizando la memoria caché de configuración.
   - Finalmente, actualiza la UI (`update_voices`) enviándole explícitamente el `final_select_id` calculado. Esto mantiene tanto la UI como el motor TTS en perfecta sincronía lógica.
+
+---
+
+## Parte 3: Migración Automática de Base de Datos (Error: `no such column`)
+
+### Diagnóstico del Problema
+Al ejecutar la aplicación en Linux (Ubuntu), si el usuario ya tenía una base de datos antigua (`minikick.db`), la aplicación fallaba críticamente con:
+`sqlite3.OperationalError: no such column: allowlist`
+Esto se debe a que la sentencia `CREATE TABLE IF NOT EXISTS spam_filters` no altera tablas que ya existen. Como la columna `allowlist` fue agregada en actualizaciones de código posteriores a la creación original de la tabla en Linux, la base de datos local quedó desactualizada.
+
+### Cambios Realizados
+- **`backend/database/manager.py`**:
+  - Implementamos una función de migración inteligente de esquema llamada `_upgrade_schema()`.
+  - Esta función se ejecuta automáticamente durante la inicialización de la base de datos, revisa la estructura existente de cada tabla (`PRAGMA table_info`) y añade dinámicamente cualquier columna faltante (como `allowlist` en `spam_filters`, campos agregados a `obs_rewards`, `chat_timers`, etc.) mediante comandos `ALTER TABLE ... ADD COLUMN ...`.
+  - Esto previene cualquier error de inconsistencia de base de datos sin obligar al usuario a borrar sus datos locales.
 
 ---
 
