@@ -1,11 +1,11 @@
 # frontend\dialogs\timer_dialog.py
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QTextEdit)
+                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox)
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QColor
 from .base_dialog import ModernWizardPanel, ModernModal
-from frontend.widgets import ModernButton
+from frontend.widgets import ModernButton, VariableTextEdit
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
 from frontend.common.utils import get_icon_colored, NoWheelSlider, get_assets_path
 
@@ -333,7 +333,7 @@ class MessageEditorDialog(ModernModal):
         self.i18n = i18n
         self.set_dialog_state("accent", QColor(46, 205, 112, 60))
         
-        self.text_edit = QTextEdit()
+        self.text_edit = VariableTextEdit()
         self.text_edit.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder") or "Escribe tu mensaje aquí...")
         self.text_edit.setPlainText(current_text)
         self.text_edit.setMinimumHeight(150)

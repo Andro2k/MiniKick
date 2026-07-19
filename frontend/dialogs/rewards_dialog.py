@@ -52,8 +52,8 @@ class RewardsConfigWizard(ModernWizardPanel):
         row1.addWidget(self.combo_rewards, stretch=1)
         
         self.btn_refresh = ModernButton("", role="action_neutral_border")
-        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_NEUTRAL_200, 24))
-        self.btn_refresh.setIconSize(QSize(24, 24))
+        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_NEUTRAL_200, 16))
+        self.btn_refresh.setIconSize(QSize(16, 16))
         self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
         self.btn_refresh.clicked.connect(self._request_refresh)
         row1.addWidget(self.btn_refresh)

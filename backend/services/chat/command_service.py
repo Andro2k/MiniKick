@@ -87,20 +87,29 @@ class CommandService(QObject):
         first_word = parts[0].lower()
         raw_first_word = parts[0]
 
+        args = parts[1] if len(parts) > 1 else ""
+        touser = args.strip().split()[0] if args.strip() else user
+        if touser.startswith("@"):
+            touser = touser[1:]
+
         cmd = self._dispatch_table.get(first_word)
         if cmd:
-            return self._try_execute(cmd, user, badges, raw_first_word)
+            return self._try_execute(cmd, user, touser, badges, raw_first_word)
 
         for regex_cmd in self._regex_commands:
             compiled = regex_cmd.get("_compiled_regex")
             if compiled:
                 match = compiled.search(message)
                 if match:
-                    return self._try_execute(regex_cmd, user, badges, match.group(0))
+                    remaining = message[match.end():].strip()
+                    reg_touser = remaining.split()[0] if remaining else user
+                    if reg_touser.startswith("@"):
+                        reg_touser = reg_touser[1:]
+                    return self._try_execute(regex_cmd, user, reg_touser, badges, match.group(0))
 
         return False, "", {}, ""
 
-    def _try_execute(self, cmd: dict, user: str, badges: list, matched_prefix: str) -> tuple[bool, str, dict, str]:
+    def _try_execute(self, cmd: dict, user: str, touser: str, badges: list, matched_prefix: str) -> tuple[bool, str, dict, str]:
         if not self._has_permission(cmd.get("permission", "everyone"), badges):
             return False, "", {}, ""
 
@@ -112,7 +121,9 @@ class CommandService(QObject):
             return False, "", {}, ""
 
         self.cooldown_timers[trigger] = now
-        final_response = cmd["response"].replace("{user}", user)
+        
+        import random
+        final_response = cmd["response"].replace("{user}", user).replace("{touser}", touser).replace("{random}", str(random.randint(1, 100)))
 
         try:
             self.storage.log_command_execution(trigger, user)

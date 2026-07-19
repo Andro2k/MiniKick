@@ -1,20 +1,16 @@
 # frontend\dialogs\command_dialogs.py
 
-from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QTextEdit, QSpinBox, QCheckBox,
-                               QWidget, QSizePolicy, QScrollArea, QFrame)
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
-from frontend.widgets import ModernButton
-from frontend.common.theme import COLOR_WHITE
-from frontend.common.utils import get_icon_colored, NoWheelComboBox, validate_trigger_prefix
+from frontend.widgets import VariableTextEdit
+from frontend.common.utils import NoWheelComboBox, validate_trigger_prefix
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
         self.i18n = i18n
         title_steps = [self.i18n.get("command.dialog.title"), self.i18n.get("command.dialog.tab_advanced")]
         subtitle_steps = [self.i18n.get("command.dialog.subtitle"), self.i18n.get("command.dialog.regex_help")]       
-        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=700, parent=parent)       
+        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=520, parent=parent)       
         self.existing_config = existing_config
         self.original_trigger = existing_config.get("trigger", "") if existing_config else None       
         self._setup_ui()
@@ -37,7 +33,7 @@ class CommandConfigWizard(ModernWizardPanel):
 
         lbl_response = QLabel(self.i18n.get("command.dialog.response_label"))
         lbl_response.setProperty("role", "h3")
-        self.txt_response = QTextEdit()
+        self.txt_response = VariableTextEdit()
         self.txt_response.textChanged.connect(self._update_btn_next_state)
         self.txt_response.setMinimumHeight(80) 
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -95,7 +91,17 @@ class CommandConfigWizard(ModernWizardPanel):
 
         lbl_regex = QLabel(self.i18n.get("command.dialog.regex_label"))
         lbl_regex.setProperty("role", "h3")
-        self.txt_regex = QTextEdit()
+        self.txt_regex = VariableTextEdit(
+            autocomplete_data={"\\": [
+                "\\w (Letras/Dígitos)", "\\d (Dígitos)", "\\s (Espacios)", "\\b (Límite de palabra)", 
+                ".* (Cualquier texto)", ".+ (Texto no vacío)", "^ (Inicio de texto)", "$ (Fin de texto)",
+                "[a-z] (Letras minúsculas)", "[0-9] (Dígitos)", "a|b (Opción A o B)",
+                "(?:...) (Grupo sin captura)", "(?=...) (Lookahead positivo)", "(?!...) (Lookahead negativo)"
+            ]},
+            highlight_pattern=r"\\.|\[\^?[^\]]+\]|\(\?[^)]+\)|[*+?^$|]|\(|\)",
+            highlight_color="#F59E0B",
+            highlight_bg=None
+        )
         self.txt_regex.setPlaceholderText(self.i18n.get("command.dialog.regex_placeholder"))
         self.txt_regex.setMinimumHeight(60)
         self.txt_regex.setEnabled(False)
@@ -111,9 +117,6 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addStretch()
 
         adv_main_layout.addWidget(left_col, stretch=1)
-        
-        right_col = self._build_regex_helper()
-        adv_main_layout.addWidget(right_col)
 
         self.add_page(self.tab_basic)
         self.add_page(self.tab_adv)
@@ -164,89 +167,7 @@ class CommandConfigWizard(ModernWizardPanel):
             "permission": self.combo_perm.currentData()
         }
 
-    def _build_regex_helper(self) -> QWidget:
-        right_panel = QFrame()
-        right_panel.setProperty("role", "card")
-        right_layout = QVBoxLayout(right_panel)
-        right_layout.setContentsMargins(10, 10, 0, 10)
-        right_layout.setSpacing(6)
-        
-        lbl_sheet_title = QLabel(self.i18n.get("command.dialog.regex_helper_title"))
-        lbl_sheet_title.setProperty("role", "h3")
-        right_layout.addWidget(lbl_sheet_title)
-        
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFrameShape(QFrame.Shape.NoFrame)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        
-        scroll_content = QWidget()
-        scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 0, 10, 0)
-        scroll_layout.setSpacing(0)
-        
-        def add_category(title):
-            lbl = QLabel(title)
-            lbl.setProperty("role", "category")
-            scroll_layout.addWidget(lbl)
-            
-        add_category(self.i18n.get("command.dialog.regex_helper_cat_syntax"))
-        scroll_layout.addWidget(self._create_cheat_row(".", self.i18n.get("command.dialog.regex_helper_desc_any"), "."))
-        scroll_layout.addWidget(self._create_cheat_row("\\w", self.i18n.get("command.dialog.regex_helper_desc_word"), "\\w"))
-        scroll_layout.addWidget(self._create_cheat_row("\\d", self.i18n.get("command.dialog.regex_helper_desc_digit"), "\\d"))
-        scroll_layout.addWidget(self._create_cheat_row("\\s", self.i18n.get("command.dialog.regex_helper_desc_space"), "\\s"))
-        scroll_layout.addWidget(self._create_cheat_row("\\b", self.i18n.get("command.dialog.regex_helper_desc_boundary"), "\\b"))
-        
-        add_category(self.i18n.get("command.dialog.regex_helper_cat_quantifiers"))
-        scroll_layout.addWidget(self._create_cheat_row("*", self.i18n.get("command.dialog.regex_helper_desc_zero_more"), "*"))
-        scroll_layout.addWidget(self._create_cheat_row("+", self.i18n.get("command.dialog.regex_helper_desc_one_more"), "+"))
-        scroll_layout.addWidget(self._create_cheat_row("?", self.i18n.get("command.dialog.regex_helper_desc_optional"), "?"))
-        scroll_layout.addWidget(self._create_cheat_row("{3}", self.i18n.get("command.dialog.regex_helper_desc_exact"), "{3}"))
-        scroll_layout.addWidget(self._create_cheat_row("{3,}", self.i18n.get("command.dialog.regex_helper_desc_more"), "{3,}"))
-        scroll_layout.addWidget(self._create_cheat_row("{3,5}", self.i18n.get("command.dialog.regex_helper_desc_range"), "{3,5}"))
-        
-        add_category(self.i18n.get("command.dialog.regex_helper_cat_anchors"))
-        scroll_layout.addWidget(self._create_cheat_row("^", self.i18n.get("command.dialog.regex_helper_desc_start"), "^"))
-        scroll_layout.addWidget(self._create_cheat_row("$", self.i18n.get("command.dialog.regex_helper_desc_end"), "$"))
-        scroll_layout.addWidget(self._create_cheat_row("a|b", self.i18n.get("command.dialog.regex_helper_desc_alt"), "a|b"))
-        scroll_layout.addWidget(self._create_cheat_row("( )", self.i18n.get("command.dialog.regex_helper_desc_capture"), "(abc)"))
-        scroll_layout.addWidget(self._create_cheat_row("(?: )", self.i18n.get("command.dialog.regex_helper_desc_noncapture"), "(?:abc)"))
 
-        scroll_layout.addStretch()
-        scroll.setWidget(scroll_content)
-        right_layout.addWidget(scroll)
-        
-        return right_panel
-
-    def _create_cheat_row(self, label_text: str, desc_text: str, insert_val: str) -> QWidget:
-        row = QWidget()
-        layout = QHBoxLayout(row)
-        layout.setContentsMargins(0, 1, 0, 1)
-        layout.setSpacing(6)
-        
-        lbl_code = QLabel(label_text)
-        lbl_code.setProperty("role", "code")
-        
-        lbl_desc = QLabel(desc_text)
-        lbl_desc.setProperty("role", "monospace")
-        lbl_desc.setWordWrap(True)
-        
-        btn_insert = ModernButton("", role="action_outlined")
-        btn_insert.setIcon(get_icon_colored("add.svg", COLOR_WHITE, size=12))
-        btn_insert.setIconSize(QSize(12, 12))
-        btn_insert.setFixedSize(20, 20)
-        btn_insert.clicked.connect(lambda checked=False, val=insert_val: self._insert_regex(val))
-        
-        layout.addWidget(lbl_code)
-        layout.addWidget(lbl_desc, stretch=1)
-        layout.addWidget(btn_insert)
-        return row
-
-    def _insert_regex(self, text_to_insert: str):
-        if not self.chk_regex.isChecked():
-            self.chk_regex.setChecked(True)
-        self.txt_regex.insertPlainText(text_to_insert)
-        self.txt_regex.setFocus()
 
     def _validate_trigger_prefix(self, text: str):
         if validate_trigger_prefix(text):

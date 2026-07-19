@@ -1,8 +1,10 @@
 # frontend\widgets\controls.py
 
-from PySide6.QtWidgets import QPushButton, QAbstractButton, QSizePolicy, QWidget, QHBoxLayout, QLabel
+from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, QWidget, 
+                               QHBoxLayout, QLabel, QTextEdit, QListWidget)
 from PySide6.QtCore import QRectF, Qt, QSize
-from PySide6.QtGui import QColor, QPainter, QPainterPath, QPen
+from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QSyntaxHighlighter, 
+                           QTextCharFormat, QFont, QKeyEvent)
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_WHITE
 from frontend.common.utils import NoWheelSlider
 
@@ -91,3 +93,133 @@ class CompactSlider(QWidget):
     def setValue(self, val: int):
         self.slider.setValue(val)
         self.label.setText(self._format_value(val))
+
+
+class VariableHighlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None, pattern=r"\{[a-zA-Z_]+\}", color=QColor("#C084FC"), bg_color=None):
+        super().__init__(parent)
+        self.pattern = pattern
+        self.color = color
+        self.bg_color = bg_color
+        
+    def highlightBlock(self, text):
+        import re
+        fmt = QTextCharFormat()
+        fmt.setForeground(self.color)
+        fmt.setFontWeight(QFont.Weight.Bold)
+        if self.bg_color:
+            fmt.setBackground(self.bg_color)
+            
+        for match in re.finditer(self.pattern, text):
+            start, end = match.span()
+            self.setFormat(start, end - start, fmt)
+
+
+class VariableTextEdit(QTextEdit):
+    def __init__(self, autocomplete_data=None, highlight_pattern=r"\{[a-zA-Z_]+\}", highlight_color="#C084FC", highlight_bg=None, parent=None):
+        super().__init__(parent)
+        
+        if autocomplete_data is None:
+            self.autocomplete_data = {
+                "{": ["{user}", "{touser}", "{random}"]
+            }
+        else:
+            self.autocomplete_data = autocomplete_data
+            
+        self.trigger_chars = list(self.autocomplete_data.keys())
+        self.current_trigger = None
+        
+        bg_qcolor = QColor(highlight_bg) if highlight_bg else None
+        self.highlighter = VariableHighlighter(self.document(), highlight_pattern, QColor(highlight_color), bg_qcolor)
+        
+        self.popup = QListWidget()
+        self.popup.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.popup.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.popup.itemActivated.connect(self._insert_selected)
+        self.popup.itemClicked.connect(self._insert_selected)
+        
+    def keyPressEvent(self, event: QKeyEvent):
+        if self.popup.isVisible():
+            if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
+                self._insert_selected()
+                return
+            elif event.key() == Qt.Key.Key_Escape:
+                self.popup.hide()
+                return
+            elif event.key() == Qt.Key.Key_Up:
+                row = (self.popup.currentRow() - 1) % self.popup.count()
+                self.popup.setCurrentRow(row)
+                return
+            elif event.key() == Qt.Key.Key_Down:
+                row = (self.popup.currentRow() + 1) % self.popup.count()
+                self.popup.setCurrentRow(row)
+                return
+                
+        if event.key() == Qt.Key.Key_Backspace:
+            if self._handle_backspace():
+                return
+        elif event.key() == Qt.Key.Key_Delete:
+            if self._handle_delete():
+                return
+                
+        super().keyPressEvent(event)
+        
+        if event.text() in self.trigger_chars:
+            self._show_popup(event.text())
+            
+    def _show_popup(self, trigger: str):
+        self.current_trigger = trigger
+        items = self.autocomplete_data.get(trigger, [])
+        if not items:
+            return
+            
+        self.popup.clear()
+        self.popup.addItems(items)
+        self.popup.setCurrentRow(0)
+        
+        cursor_rect = self.cursorRect()
+        global_pos = self.mapToGlobal(cursor_rect.bottomLeft())
+        max_len = max(len(item) for item in items)
+        popup_width = max(120, max_len * 7 + 24)
+        
+        self.popup.setGeometry(global_pos.x(), global_pos.y() + 4, popup_width, min(150, len(items) * 28 + 10))
+        self.popup.show()
+        
+    def _insert_selected(self):
+        selected_item = self.popup.currentItem()
+        if selected_item:
+            var_text = selected_item.text().split()[0]
+            cursor = self.textCursor()
+            cursor.deletePreviousChar()
+            cursor.insertText(var_text)
+            self.setTextCursor(cursor)
+        self.popup.hide()
+
+    def _handle_backspace(self) -> bool:
+        cursor = self.textCursor()
+        pos = cursor.position()
+        text_before = self.toPlainText()[:pos]
+        import re
+        match = re.search(r"\{[a-zA-Z_]+\}$", text_before)
+        if match:
+            tag_len = match.end() - match.start()
+            cursor.movePosition(cursor.MoveOperation.Left, cursor.MoveMode.KeepAnchor, tag_len)
+            cursor.removeSelectedText()
+            return True
+        return False
+
+    def _handle_delete(self) -> bool:
+        cursor = self.textCursor()
+        pos = cursor.position()
+        text_after = self.toPlainText()[pos:]
+        import re
+        match = re.match(r"^\{[a-zA-Z_]+\}", text_after)
+        if match:
+            tag_len = match.end() - match.start()
+            cursor.movePosition(cursor.MoveOperation.Right, cursor.MoveMode.KeepAnchor, tag_len)
+            cursor.removeSelectedText()
+            return True
+        return False
+
+    def insertFromMimeData(self, source):
+        self.insertPlainText(source.text())
