@@ -1,59 +1,63 @@
-# Historial de Cambios y Mejoras - Versión v1.4.2
+# Release Notes | MiniKick v1.4.2
+*Autocompletado de Variables, Ayuda Interactiva Regex, Temas Premium de Música con Barra de Progreso, Iconos de Alta Resolución (High DPI) y Mejoras de Rendimiento*
 
-Este documento detalla todas las refactorizaciones, optimizaciones de rendimiento y correcciones de errores aplicadas al sistema para mejorar su modularidad, disminuir la complejidad temporal y evitar fugas de memoria.
-
----
-
-## 1. Refactorización y Desacoplamiento de Controladores ( backend/controllers )
-
-Se aplicaron principios de **Inversión de Dependencias (Pillar 1)** y **Separación de Responsabilidades (Pillar 2)** en la capa de controladores para aislar la lógica del backend de la interfaz gráfica (PySide6).
-
-* **LogController (`log_controller.py`):**
-  * Se eliminó la importación y creación directa de `BugReportDialog` en el controlador.
-  * Se delegó la acción a un nuevo método unificado en la vista (`self.view.show_bug_report_dialog()`).
-* **UpdateController (`update_controller.py`):**
-  * Se rediseñó por completo para ser un controlador **100% no-visual**.
-  * Se removieron las dependencias de `MainWindow` y las clases de diálogo del frontend.
-  * Ahora expone señales asíncronas para reportar estados (`update_found`, `download_progress`, etc.).
-* **MainWindowCore (`main_window_core.py`):**
-  * Se implementó el método `handle_update_check()` en la ventana principal (capa de presentación) para gestionar interactivamente el ciclo de vida y eventos del `UpdateDialog`.
-* **ChatController (`chat_controller.py`):**
-  * Se eliminó el acceso directo a los widgets internos (`self.view.chk_command`, `self.view.txt_command`) y a la manipulación directa de señales de la vista en `_sync_tts_command_from_db`.
-  * Se encapsuló esta funcionalidad mediante la introducción del método `set_tts_command_configuration` en `ChatView`.
-* **MusicController (`music_controller.py`):**
-  * Se introdujo inyección de dependencias a través de un diccionario `provider_factory` en el constructor, desacoplando la clase de la instanciación e importación directa de `SpotifyMusicProvider` y `YouTubeMusicProvider`.
+En esta versión (v1.4.2), MiniKick da un gran salto en usabilidad y rendimiento. Hemos introducido un novedoso sistema de autocompletado y borrado rápido de variables de chat, así como un asistente interactivo para la creación de expresiones regulares (Regex) con resaltado de sintaxis, ideal para moderadores avanzados. La sección de música se renueva completamente con la inclusión de barra de progreso predictiva, carátulas de álbumes y 5 impresionantes variantes visuales (destacando los temas Cyberpunk y Premium Card). Finalmente, corregimos los iconos borrosos en pantallas con escalado de Windows, eliminamos fugas de memoria y optimizamos la base de datos para una velocidad de carga instantánea.
 
 ---
 
-## 2. Optimización de Rendimiento en Capa de Datos ( backend/database y backend/services )
+## 1. Asistente de Variables y Autocompletado Inteligente
+Simplificamos la configuración de respuestas automáticas en el chat para evitar errores de escritura al ingresar variables:
+* **Sugerencia de Variables con `{`**: Al escribir una llave `{` en los campos de respuesta de comandos o temporizadores, aparecerá un menú flotante para autocompletar variables como `{user}`, `{touser}` y `{random}` de forma interactiva usando las flechas de tu teclado.
+* **Eliminación Inteligente en Bloque**: Si borras con `Backspace` o `Delete` al final o al inicio de una variable (como `{user}`), el sistema eliminará el tag completo de un solo golpe, evitando tener que borrar letra por letra.
 
-Se reemplazaron las búsquedas secuenciales $O(N)$ en memoria por consultas indexadas en base de datos $O(1)$ para optimizar el rendimiento y disminuir la carga de procesamiento y uso de disco.
-
-* **timers_storage.py & timer_service.py:**
-  * Se creó y expuso la consulta individual `get_timer_by_id(timer_id)`.
-  * Se actualizó `TimerController` para utilizar esta llamada rápida en edición, eliminación y cambio de estado, evitando cargar toda la colección de base de datos a memoria principal de Python.
-* **commands_storage.py & command_service.py:**
-  * Se creó y expuso la consulta directa `get_command_by_trigger(trigger)`.
-  * Se actualizó `CommandController` para usar este método directo para verificar la existencia de un comando en $O(1)$.
-* **Toast DRY Helper:**
-  * Se centralizó el código redundante de creación y formateo de alertas emergentes en un único método `_show_toast(...)` reutilizable.
+> [!IMPORTANT]
+> La eliminación en bloque y el menú de sugerencias dinámicas reducen a cero las equivocaciones tipográficas al configurar el bot y agilizan significativamente la personalización del chat.
 
 ---
 
-## 3. Corrección de Fugas de Memoria y Optimización de Hilos ( backend/services y backend/workers )
-
-Se resolvieron problemas críticos de acumulación infinita de datos en memoria (RAM) y bloqueos innecesarios en subprocesos asíncronos.
-
-* **SpamService (`spam_service.py`):**
-  * Se implementó la inserción y descarte ordenado por orden de llegada (FIFO) usando un límite preestablecido de `max_history_size` (1000 usuarios).
-  * Esto previene que la variable `self.user_history` crezca linealmente $O(U)$ indefinidamente durante transmisiones prolongadas con miles de espectadores activos.
-* **RewardWorker (`rewards_worker.py`):**
-  * Se reemplazó la llamada bloqueante de sistema operativo `time.sleep(0.5)` por el método de subprocesamiento de Qt `self.msleep(500)`. Esto permite suspender de forma segura el hilo asíncrono y responder de inmediato al método `stop()`.
-  * Se implementó un buffer ordenado FIFO (`self._processed_order`) limitando el tamaño del conjunto `self._processed_ids` a un máximo de 2000 registros, liberando de forma constante los IDs de canjes más antiguos y protegiendo el consumo de memoria en ejecuciones a largo plazo.
+## 2. Asistente Interactivo y Resaltado Regex
+Agregamos facilidades visuales para crear reglas de moderación avanzadas mediante expresiones regulares (Regex):
+* **Autocompletado de Expresiones comunes**: Al escribir una barra inclinada `\` en la configuración avanzada de comandos, se desplegará una lista interactiva con descripciones breves de expresiones comunes (como dígitos, letras o caracteres especiales) para guiarte en su construcción.
+* **Coloreado Inteligente**: Los tokens Regex se pintan de color **ámbar en negrita** para destacar de manera óptima sobre el tema oscuro del programa y facilitar la revisión del patrón.
+* **Interfaz de Comandos más Compacta**: Al integrar la ayuda interactiva directamente en el editor, eliminamos el panel estático lateral derecho de instrucciones, logrando reducir el ancho del formulario de comandos a un tamaño compacto de `520px`.
 
 ---
 
-## 4. Corrección de Errores Visuales ( frontend/dialogs )
+## 3. Reproductor de Música Premium, Barra de Progreso y Overlays
+Renovamos los widgets para overlays de OBS con diseños modernos y soporte para visualización completa de pistas:
+* **Información Enriquecida de Canción**: Los reproductores de música para Spotify y YouTube ahora extraen y muestran de forma interactiva la carátula del álbum de la canción, el tiempo actual, la duración total y la barra de progreso en vivo.
+* **Barra de Progreso Predictiva**: La barra de progreso de los widgets en pantalla se desplaza de manera predictiva y fluida segundo a segundo, disminuyendo la carga de llamadas continuas al procesador de tu computadora.
+* **Temas Premium y Cyberpunk**: Añadimos 5 variantes visuales seleccionables desde los ajustes de música (Glass, Minimal, Neon, Cyberpunk y Premium Card) para personalizar la apariencia de la música en tus transmisiones.
+* **Servidor Local sin Conflictos**: Corregimos un error en el servidor interno de overlays que bloqueaba la carga de hojas de estilo (.css) en el navegador de OBS (retornando errores 403), garantizando fondos transparentes perfectos.
 
-* **UpdateDialog (`update_dialog.py`):**
-  * Se corrigió la invisibilidad del ícono de checkmark de descarga completada en `show_complete()`. El ícono se pintaba usando `COLOR_GREEN` (`#2ECD70`) sobre el círculo de fondo del mismo tono `COLOR_GREEN`, haciéndolo imperceptible. Se cambió la coloración del ícono a `COLOR_NEUTRAL_950` para proveer un contraste óptimo.
+> [!TIP]
+> Al copiar el enlace de tu widget de música desde el panel, el sistema adjuntará de forma automática el parámetro del tema seleccionado (ej: `theme=cyber`) listo para pegar como fuente de navegador en tu OBS.
+
+---
+
+## 4. Mejoras de Rendimiento en Capa de Datos
+Optimizamos los tiempos de respuesta y redujimos el consumo de disco de los procesos en segundo plano:
+* **Acceso Directo a Base de Datos**: Al editar o eliminar un comando o temporizador, la aplicación ahora accede de manera directa a ese elemento en base de datos en $O(1)$ sin necesidad de recargar la colección completa a la memoria RAM de tu computadora.
+* **Carga Veloz en Registros de Logs**: Mejoramos el sistema de guardado de registros. Al agrupar varias líneas en tiempo real, el bot usa punteros de clave primaria, acelerando el guardado a disco y evitando las subconsultas lentas de base de datos.
+* **Desacoplamiento Interno**: Aislamos la lógica de actualización en segundo plano del diseño gráfico de la ventana, garantizando que los diálogos e interfaces no sufran pequeños congelamientos de pantalla.
+
+---
+
+## 5. Soporte High DPI e Iconos Nítidos
+* **Iconos Vectoriales en Alta Resolución**: Corregimos el problema de iconos borrosos en sistemas con pantallas escaladas en Windows (ej. 125%, 150%). Los iconos ahora se dibujan vectorialmente desde sus archivos SVG originales en lugar de estirar imágenes pre-rasterizadas, asegurando que se vean nítidos en todo tipo de pantallas.
+
+---
+
+## 6. Filtrado Inteligente de Logs por Rango
+* **Filtros por Rango Relativos**: Simplificamos el selector de filtros de fecha en los logs del desarrollador. En lugar de un selector manual de calendario, ahora puedes filtrar los registros fácilmente desde un dropdown: "Todo el tiempo", "Últimas 24 horas", "Últimos 3 días" y "Últimos 7 días".
+
+---
+
+## 7. Corrección de Fugas de Memoria y Estabilidad (Robustez)
+* **Protección de Memoria RAM (Auto-mod)**: Limitamos el historial del filtro anti-spam a un máximo de 1,000 usuarios activos en memoria en cola FIFO, asegurando que la aplicación no consuma memoria excesiva en directos de larga duración.
+* **Cierre Limpio del Programa**: Reemplazamos las esperas asíncronas de base de datos en los trabajadores de recompensas para suspenderse de manera segura, logrando que el programa se cierre al instante de forma limpia sin dejar subprocesos colgados en segundo plano.
+* **Liberación de Memoria en Logs**: Corregimos una fuga de memoria en la visualización de logs de modo que los elementos de texto descartados se eliminen formalmente de la memoria al cambiar de página o limpiar registros.
+* **Migración Automática Silenciosa**: Implementamos una migración interna de base de datos que adapta la estructura anterior a la nueva al iniciar la aplicación sin pérdida de datos locales.
+
+> [!CAUTION]
+> No requieres reinstalar el programa ni borrar tu base de datos antigua; MiniKick se encarga de actualizar y migrar todas tus tablas de forma automática sin interrumpir tus comandos y temporizadores.
