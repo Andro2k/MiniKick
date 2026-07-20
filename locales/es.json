@@ -526,7 +526,8 @@
             "room_id": "ID de ChatRoom",
             "category": "Última Categoría",
             "affiliate": "Estado de Afiliado",
-            "vods": "VODs"
+            "vods": "VODs",
+            "created_at": "Fecha de Creación"
         },
         "session": {
             "title": "Estadísticas de la Sesión",

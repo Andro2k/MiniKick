@@ -528,7 +528,8 @@ DEFAULT_DICTIONARY = {
             "room_id": "ChatRoom ID",
             "category": "Last Category",
             "affiliate": "Affiliate Status",
-            "vods": "VODs"
+            "vods": "VODs",
+            "created_at": "Creation Date"
         },
         "session": {
             "title": "Session Statistics",

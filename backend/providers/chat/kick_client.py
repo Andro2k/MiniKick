@@ -92,6 +92,9 @@ class KickAPIClient:
         is_verified = channel_data.get("verified") is not None
         raw_bio = user_data.get("bio", "")
         clean_bio = " ".join(str(raw_bio).splitlines()) if raw_bio else ""
+        
+        created_at_raw = chatroom_data.get("created_at", "")
+        created_at = created_at_raw[:10] if created_at_raw and len(created_at_raw) >= 10 else "-"
 
         return {
             "broadcaster_id": user_data.get("id", 0),
@@ -104,7 +107,8 @@ class KickAPIClient:
             "vod_enabled": channel_data.get("vod_enabled", False),
             "last_category": last_category,
             "playback_url": channel_data.get("playback_url", ""),
-            "avatar_url": user_data.get("profile_pic", "")
+            "avatar_url": user_data.get("profile_pic", ""),
+            "created_at": created_at
         }
 
     def fetch_pending_redemptions(self, cursor: str = "") -> dict:

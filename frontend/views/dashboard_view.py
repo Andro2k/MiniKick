@@ -198,12 +198,14 @@ class DashboardView(BaseView):
         self.card_category = StatCard(self.i18n.get("dashboard.stats.category"), "category.svg") 
         self.card_affiliate = StatCard(self.i18n.get("dashboard.stats.affiliate"), "star.svg")
         self.card_vods = StatCard(self.i18n.get("dashboard.stats.vods"), "video.svg")
+        self.card_created = StatCard(self.i18n.get("dashboard.stats.created_at"), "clock.svg")
 
         self.stats_grid.addWidget(self.card_followers, 0, 0)
         self.stats_grid.addWidget(self.card_room, 0, 1)
         self.stats_grid.addWidget(self.card_category, 0, 2)
         self.stats_grid.addWidget(self.card_affiliate, 1, 0)
         self.stats_grid.addWidget(self.card_vods, 1, 1)
+        self.stats_grid.addWidget(self.card_created, 1, 2)
 
         profile_layout.addLayout(self.top_row_layout)
         profile_layout.addWidget(stats_container) 
@@ -287,12 +289,13 @@ class DashboardView(BaseView):
         self.lbl_username.setText(username)
         self.lbl_bio.setText(bio)
 
-    def update_stats(self, followers: str, room_id: str, category: str, affiliate_text: str, vods_text: str):
+    def update_stats(self, followers: str, room_id: str, category: str, affiliate_text: str, vods_text: str, created_at: str = "-"):
         self.card_followers.set_value(followers)
         self.card_room.set_value(room_id)
         self.card_category.set_value(category)
         self.card_affiliate.set_value(affiliate_text)
         self.card_vods.set_value(vods_text)
+        self.card_created.set_value(created_at)
 
     def update_session_metrics(self, msg_count: int, cmd_count: int, timer_count: int, spam_count: int):
         total = msg_count + cmd_count + timer_count + spam_count
@@ -363,7 +366,7 @@ class DashboardView(BaseView):
             stats_cols = 1 if width < 650 else (2 if width < 950 else 3)
             self._relayout_grid(
                 self.stats_grid,
-                [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods],
+                [self.card_followers, self.card_room, self.card_category, self.card_affiliate, self.card_vods, self.card_created],
                 stats_cols, self._STATS_CARDS_ATTR
             )
         

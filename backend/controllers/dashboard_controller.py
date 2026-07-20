@@ -39,7 +39,15 @@ class DashboardController(QObject):
         vods_enabled = user_data.get("vod_enabled", False)
         vods_text = self.view.i18n.get("common.status.yes") if vods_enabled else self.view.i18n.get("common.status.no")
 
-        self.view.update_stats(followers_str, room_str, category, affiliate_text, vods_text)
+        created_at_raw = user_data.get("created_at", "-")
+        # Format YYYY-MM-DD to DD/MM/YYYY for user display
+        created_at = created_at_raw
+        if created_at_raw and "-" in created_at_raw:
+            parts = created_at_raw.split("-")
+            if len(parts) == 3:
+                created_at = f"{parts[2]}/{parts[1]}/{parts[0]}"
+
+        self.view.update_stats(followers_str, room_str, category, affiliate_text, vods_text, created_at)
         avatar_url = user_data.get("avatar_url", "")
         if avatar_url:
             self.avatar_service.fetch_avatar(avatar_url)
