@@ -277,7 +277,11 @@
             "btn_report": "Reportar Bug",
             "btn_show_logs": "Ver Logs",
             "btn_hide_logs": "Ocultar Logs",
-            "filter_by_date": "Filtrar por fecha"
+            "filter_by_date": "Filtrar por fecha",
+            "date_all": "Todo el tiempo",
+            "date_1d": "Últimas 24 horas",
+            "date_3d": "Últimos 3 días",
+            "date_7d": "Últimos 7 días"
         },
         "empty": {
             "title": "Consola en pausa",

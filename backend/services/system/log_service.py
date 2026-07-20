@@ -10,6 +10,18 @@ class LogService:
         os.makedirs(self.log_dir, exist_ok=True)
         self.max_logs = 1000
         self._live_history: list[tuple[str, str, str]] = []
+        self._last_log_id = None
+
+    def _get_date_threshold(self, date_filter: str) -> str:
+        if not date_filter:
+            return ""
+        try:
+            days = int(date_filter[:-1])
+        except ValueError:
+            return ""
+        from datetime import datetime, timedelta
+        dt = datetime.now() - timedelta(days=days)
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
 
     def append_record(self, time_str: str, level: str, message: str) -> bool:
         is_grouped = False
@@ -23,7 +35,10 @@ class LogService:
                     try:
                         with self.db_manager.get_connection() as conn:
                             cursor = conn.cursor()
-                            cursor.execute("UPDATE system_logs SET message = message || '\n' || ? WHERE id = (SELECT max(id) FROM system_logs)", (message,))
+                            if self._last_log_id is not None:
+                                cursor.execute("UPDATE system_logs SET message = message || '\n' || ? WHERE id = ?", (message, self._last_log_id))
+                            else:
+                                cursor.execute("UPDATE system_logs SET message = message || '\n' || ? WHERE id = (SELECT max(id) FROM system_logs)", (message,))
                             conn.commit()
                     except Exception as e:
                         print("Error updating log in DB:", e)
@@ -38,6 +53,7 @@ class LogService:
                     with self.db_manager.get_connection() as conn:
                         cursor = conn.cursor()
                         cursor.execute("INSERT INTO system_logs (level, timestamp, message) VALUES (?, ?, ?)", (level, time_str, message))
+                        self._last_log_id = cursor.lastrowid
                         conn.commit()
                 except Exception as e:
                     print("Error inserting log into DB:", e)
@@ -46,6 +62,7 @@ class LogService:
 
     def clear_history(self):
         self._live_history.clear()
+        self._last_log_id = None
         if self.db_manager:
             try:
                 with self.db_manager.get_connection() as conn:
@@ -79,8 +96,10 @@ class LogService:
                         params.append(filter_level)
                         
                     if date_filter:
-                        query += " AND timestamp LIKE ?"
-                        params.append(f"{date_filter}%")
+                        threshold = self._get_date_threshold(date_filter)
+                        if threshold:
+                            query += " AND timestamp >= ?"
+                            params.append(threshold)
                         
                     if search_term.strip():
                         term = f"%{search_term.strip().lower()}%"
@@ -96,11 +115,12 @@ class LogService:
                 print("Error fetching filtered logs from DB:", e)
         
         filtered = []
+        threshold = self._get_date_threshold(date_filter) if date_filter else ""
+        search_lower = search_term.strip().lower()
         for lvl, t_str, txt in self._live_history:
             is_all = (filter_level == all_label)
             if (is_all or lvl == filter_level):
-                if not date_filter or t_str.startswith(date_filter):
-                    search_lower = search_term.strip().lower()
+                if not threshold or t_str >= threshold:
                     if not search_lower or (search_lower in lvl.lower() or search_lower in t_str.lower() or search_lower in txt.lower()):
                         filtered.append((lvl, t_str, txt))
         return filtered

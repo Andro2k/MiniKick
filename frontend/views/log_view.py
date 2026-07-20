@@ -49,19 +49,17 @@ class LogControlsPanel(QFrame):
         self.combo_filter.setMinimumWidth(110)
         self.combo_filter.currentTextChanged.connect(self.filter_changed.emit)
 
-        self.chk_date = QCheckBox(self.i18n.get("log.controls.filter_by_date"))
-        self.chk_date.toggled.connect(self._on_date_filter_toggled)
-
-        self.date_edit = QDateEdit()
-        self.date_edit.setCalendarPopup(True)
-        self.date_edit.setDate(QDate.currentDate())
-        self.date_edit.setEnabled(False)
-        self.date_edit.dateChanged.connect(self._on_date_changed)
+        self.combo_date = NoWheelComboBox()
+        self.combo_date.addItem(self.i18n.get("log.controls.date_all"), "")
+        self.combo_date.addItem(self.i18n.get("log.controls.date_1d"), "1d")
+        self.combo_date.addItem(self.i18n.get("log.controls.date_3d"), "3d")
+        self.combo_date.addItem(self.i18n.get("log.controls.date_7d"), "7d")
+        self.combo_date.setMinimumWidth(125)
+        self.combo_date.currentIndexChanged.connect(self._on_date_changed)
 
         self._search.addWidget(self.txt_search, 1)
         self._search.addWidget(self.combo_filter)
-        self._search.addWidget(self.chk_date)
-        self._search.addWidget(self.date_edit)
+        self._search.addWidget(self.combo_date)
         root.addLayout(self._search)
 
         self._actions = QGridLayout()
@@ -133,6 +131,7 @@ class LogControlsPanel(QFrame):
     def set_streaming_controls_enabled(self, enabled: bool):
         self.txt_search.setEnabled(enabled)
         self.combo_filter.setEnabled(enabled)
+        self.combo_date.setEnabled(enabled)
         if not self.btn_live.isVisible():
             self.btn_clear.setEnabled(enabled)
 
@@ -141,13 +140,9 @@ class LogControlsPanel(QFrame):
         self.btn_toggle_view.setText(self.i18n.get(key))
         self.set_streaming_controls_enabled(logs_visible)
 
-    def _on_date_filter_toggled(self, checked: bool):
-        self.date_edit.setEnabled(checked)
-        self.date_changed.emit(self.date_edit.date().toString("yyyy-MM-dd") if checked else "")
-
-    def _on_date_changed(self, qdate: QDate):
-        if self.chk_date.isChecked():
-            self.date_changed.emit(qdate.toString("yyyy-MM-dd"))
+    def _on_date_changed(self, index: int):
+        val = self.combo_date.itemData(index)
+        self.date_changed.emit(val if val is not None else "")
 
 LOG_ILLUSTRATION_FILE = "file-search.svg"
 _LEVEL_COLORS = {
@@ -415,8 +410,12 @@ class LogView(BaseView):
             else:
                 pages = [1, None, self.current_page - 1, self.current_page, self.current_page + 1, None, total_pages]
 
-        while self.page_buttons_layout.count():
-            self.page_buttons_layout.takeAt(0)
+        while self.page_buttons_layout.count() > 0:
+            item = self.page_buttons_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                if widget not in self._page_btn_pool:
+                    widget.deleteLater()
 
         pool_idx = 0
         for p in pages:

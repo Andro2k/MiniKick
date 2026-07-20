@@ -14,6 +14,7 @@ class LogController(QObject):
         self.service = service
         self.toast = toast_manager
         self._search_term = ""
+        self._search_term_lower = ""
         self._current_filter = self.view.str_all
         self._date_filter = ""
         self._is_historical = False
@@ -37,25 +38,35 @@ class LogController(QObject):
         self.view.view_toggle_requested.connect(self.handle_view_toggle_requested)
         self.view.view_shown.connect(self.handle_view_shown)
 
+    def _get_date_threshold(self, date_filter: str) -> str:
+        if not date_filter:
+            return ""
+        try:
+            days = int(date_filter[:-1])
+        except ValueError:
+            return ""
+        from datetime import datetime, timedelta
+        dt = datetime.now() - timedelta(days=days)
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+
     def _matches_search(self, level: str, time_str: str, text: str) -> bool:
-        search_lower = self._search_term.lower()
-        if not search_lower:
+        if not self._search_term_lower:
             return True
-        return (search_lower in level.lower() or 
-                search_lower in time_str.lower() or 
-                search_lower in text.lower())
+        return (self._search_term_lower in level.lower() or 
+                self._search_term_lower in time_str.lower() or 
+                self._search_term_lower in text.lower())
 
     def _filter_and_get_logs(self) -> list[tuple[str, str, str]]:
         if self._is_historical:
             filtered = []
-            search_term_lower = self._search_term.lower()
             is_all = (self._current_filter == self.view.str_all)
+            threshold = self._get_date_threshold(self._date_filter) if self._date_filter else ""
             for lvl, t_str, txt in self._historical_logs:
                 if is_all or lvl == self._current_filter:
-                    if not self._date_filter or t_str.startswith(self._date_filter):
-                        if not search_term_lower or (search_term_lower in lvl.lower() or 
-                                                     search_term_lower in t_str.lower() or 
-                                                     search_term_lower in txt.lower()):
+                    if not threshold or t_str >= threshold:
+                        if not self._search_term_lower or (self._search_term_lower in lvl.lower() or 
+                                                           self._search_term_lower in t_str.lower() or 
+                                                           self._search_term_lower in txt.lower()):
                             filtered.append((lvl, t_str, txt))
             if len(filtered) > 500:
                 filtered = filtered[-500:]
@@ -73,6 +84,7 @@ class LogController(QObject):
     @Slot(str)
     def handle_search_changed(self, text: str):
         self._search_term = text.strip()
+        self._search_term_lower = self._search_term.lower()
         self._refresh_view_logs()
 
     @Slot(str)
@@ -190,7 +202,8 @@ class LogController(QObject):
         if not self._is_historical and self._logs_streaming_visible:
             is_all = (self._current_filter == self.view.str_all)
             if (is_all or real_level == self._current_filter) and self._matches_search(real_level, time_str, text_str):
-                if not self._date_filter or time_str.startswith(self._date_filter):
+                threshold = self._get_date_threshold(self._date_filter) if self._date_filter else ""
+                if not threshold or time_str >= threshold:
                     self.view.append_log(is_grouped, real_level, time_str, text_str)
 
     @Slot()

@@ -277,7 +277,11 @@
             "btn_report": "Report Bug",
             "btn_show_logs": "View Logs",
             "btn_hide_logs": "Hide Logs",
-            "filter_by_date": "Filter by date"
+            "filter_by_date": "Filter by date",
+            "date_all": "All Time",
+            "date_1d": "Last 24 Hours",
+            "date_3d": "Last 3 Days",
+            "date_7d": "Last 7 Days"
         },
         "empty": {
             "title": "Console paused",
