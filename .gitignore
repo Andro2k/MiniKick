@@ -6,7 +6,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 # Archivos de configuración locales y secretos
-backend/config/api_keys.py
+api_keys.py
 .env
 MiniKick_Backup_*.json
 # Archivos del sistema operativo

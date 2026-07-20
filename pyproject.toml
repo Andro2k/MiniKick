@@ -1,7 +1,18 @@
 [project]
 name = "MiniKick"
-version = "1.2.7"
-description = "Add your description here"
+version = "1.4.2"
+description = "El centro de control definitivo, modular y ligero para streamers en Kick.com"
 readme = "README.md"
-requires-python = ">=3.14"
-dependencies = []
+requires-python = ">=3.10"
+dependencies = [
+    "requests",
+    "websocket-client",
+    "python-dotenv",
+    "cloudscraper",
+    "pyttsx3",
+    "PySide6",
+    "pyinstaller",
+    "edge-tts",
+    "asyncio",
+    "yt-dlp"
+]

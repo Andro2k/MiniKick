@@ -1,21 +1,23 @@
-# Security Policy
+# Políticas de Seguridad (Security Policy)
 
-## Supported Versions
+## Versiones Soportadas / Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Aquí se detallan las versiones de MiniKick que reciben soporte de seguridad actualmente.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| Versión / Version | Soportado / Supported |
+| ----------------- | --------------------- |
+| >= 1.4.x          | :white_check_mark:    |
+| < 1.4.0           | :x:                   |
 
-## Reporting a Vulnerability
+## Reportar una Vulnerabilidad / Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+Si encuentras una vulnerabilidad de seguridad o un problema crítico en MiniKick, por favor sigue estos pasos:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+1. **No abras una issue pública:** Para proteger a otros streamers y usuarios, no publiques los detalles de la vulnerabilidad en la sección de Issues de GitHub.
+2. **Contacto directo:** Envía un reporte privado al desarrollador principal (TheAndro2K) a través de los canales de contacto (Discord o mediante el formulario interno de reporte de errores en la app).
+3. **Detalles del reporte:** Por favor incluye:
+   - Una descripción clara del problema.
+   - Pasos detallados para reproducir la vulnerabilidad.
+   - Impacto potencial estimado.
+
+Agradecemos tu colaboración para mantener MiniKick seguro para toda la comunidad de streamers.
