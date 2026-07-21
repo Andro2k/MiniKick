@@ -43,8 +43,10 @@ class ChatDisplayPanel(ModernCard):
         if excess <= 0:
             return
         cursor = self.chat_display.textCursor()
+        cursor.beginEditBlock()
         cursor.movePosition(cursor.MoveOperation.Start)
         for _ in range(excess):
             cursor.select(cursor.SelectionType.BlockUnderCursor)
             cursor.removeSelectedText()
             cursor.deleteChar()
+        cursor.endEditBlock()

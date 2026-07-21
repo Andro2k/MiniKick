@@ -1,5 +1,6 @@
 # frontend\widgets\controls.py
 
+import re
 from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, QWidget, 
                                QHBoxLayout, QLabel, QTextEdit, QListWidget)
 from PySide6.QtCore import QRectF, Qt, QSize
@@ -21,6 +22,12 @@ class ModernSwitch(QAbstractButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.toggled.connect(self.update)
+        
+        self._bg_color_checked = QColor(COLOR_GREEN)
+        self._bg_color_unchecked = QColor(COLOR_NEUTRAL_850)
+        self._border_color_checked = QColor(COLOR_GREEN)
+        self._border_color_unchecked = QColor(COLOR_NEUTRAL_800)
+        self._handle_color = QColor(COLOR_WHITE)
 
     def sizeHint(self) -> QSize:
         return QSize(44, 22)
@@ -33,8 +40,8 @@ class ModernSwitch(QAbstractButton):
         rect = QRectF(pen_width / 2, pen_width / 2, self.width() - pen_width, self.height() - pen_width)
         radius = rect.height() / 1.8
 
-        bg_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_850)
-        border_color = QColor(COLOR_GREEN) if self.isChecked() else QColor(COLOR_NEUTRAL_800)
+        bg_color = self._bg_color_checked if self.isChecked() else self._bg_color_unchecked
+        border_color = self._border_color_checked if self.isChecked() else self._border_color_unchecked
 
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)
@@ -52,7 +59,7 @@ class ModernSwitch(QAbstractButton):
         handle_radius = handle_size / 2.0
 
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QColor(COLOR_WHITE))
+        painter.setBrush(self._handle_color)
         painter.drawRoundedRect(handle_rect, handle_radius, handle_radius)
         
         painter.end()
@@ -103,7 +110,6 @@ class VariableHighlighter(QSyntaxHighlighter):
         self.bg_color = bg_color
         
     def highlightBlock(self, text):
-        import re
         fmt = QTextCharFormat()
         fmt.setForeground(self.color)
         fmt.setFontWeight(QFont.Weight.Bold)
@@ -199,7 +205,6 @@ class VariableTextEdit(QTextEdit):
         cursor = self.textCursor()
         pos = cursor.position()
         text_before = self.toPlainText()[:pos]
-        import re
         match = re.search(r"\{[a-zA-Z_]+\}$", text_before)
         if match:
             tag_len = match.end() - match.start()
@@ -212,7 +217,6 @@ class VariableTextEdit(QTextEdit):
         cursor = self.textCursor()
         pos = cursor.position()
         text_after = self.toPlainText()[pos:]
-        import re
         match = re.match(r"^\{[a-zA-Z_]+\}", text_after)
         if match:
             tag_len = match.end() - match.start()

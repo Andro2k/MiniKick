@@ -1,4 +1,4 @@
-# Walkthrough: MiniKick v1.4.3_01 - Estabilización de YouTube, Comandos y Optimización de Música, Red y Dashboard
+# Walkthrough: MiniKick v1.4.3_01 - Estabilización de YouTube, Comandos y Optimización de Música, Red, Dashboard, Widgets, Navegación, Chat y Diálogos
 
 Este documento describe detalladamente los cambios y las mejoras realizadas en la versión 1.4.3.
 
@@ -45,15 +45,59 @@ Este documento describe detalladamente los cambios y las mejoras realizadas en l
 *   **Optimización de Trazado de Gráfico de Sesión:**
     *   **Caché del Clipping de Pintor (`SegmentedDistributionBar`):** Evitamos instanciar un objeto `QPainterPath` para el clip redondeado en cada llamada a `paintEvent`. Ahora la máscara de clipping se almacena en memoria y solo se reconstruye si el tamaño físico de la barra de distribución cambia.
 
+### G. Optimización de Widgets Comunes Reutilizables (`frontend/widgets/`)
+*   **Eliminación de Lecturas de Disco en Caliente (`blocks.py`):**
+    *   En [blocks.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/blocks.py), modificamos la tarjeta de opciones expandible `ExpandableSettingCard`. Anteriormente, al hacer clic para expandir o contraer la tarjeta (`toggle_expand`), se invocaba `get_icon_colored` para `chevron-up.svg` y `chevron-down.svg`, forzando la lectura física y parseo del SVG desde el disco en el hilo principal de renderizado de la UI. Ahora, ambos iconos se pre-cargan en el constructor (`self._icon_up` y `self._icon_down`) y simplemente se alternan en memoria.
+*   **Optimización de Asignación en Dibujo (`controls.py`):**
+    *   En [controls.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/controls.py), optimizamos la clase `ModernSwitch`. Los objetos `QColor` (como el color verde de fondo y los colores de bordes e interruptores) ahora se inicializan una única vez en el constructor `__init__`, evitando instanciaciones de color redundantes dentro del método de pintado continuo `paintEvent`.
+*   **Corrección de Importaciones en Caliente (`controls.py` y `scalable_illustration.py`):**
+    *   Movimos todas las sentencias `import re` del cuerpo de métodos iterativos (`highlightBlock` en el resaltador de variables, manejadores de eventos de borrado y lectura de aspect ratio SVG en `scalable_illustration.py`) al nivel superior del módulo. Esto evita sobrecargar el cargador de módulos de Python en acciones ejecutadas a ritmo de pulsación de teclado del usuario.
+
+### H. Optimización de Componentes de Navegación (`frontend/navigation/`)
+*   **Caché de Iconos de Pestañas del Sidebar (`sidebar_component.py`):**
+    *   En [sidebar_component.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/sidebar_component.py), modificamos `add_tab` para pre-cargar y almacenar las dos instancias de `QIcon` (el verde para estado activo y el gris para estado inactivo) como propiedades asociadas del botón (`icon_active` e `icon_inactive`). Anteriormente, al hacer clic en cualquier pestaña, el método de actualización recorría todos los botones y releía y coloreaba los archivos SVG del disco en el hilo principal. Ahora, el cambio de pestaña es inmediato ya que sólo intercambia las referencias en memoria.
+    *   **Chevron Toggles:** Pre-cargamos los iconos `chevron-left-pipe.svg` y `chevron-right-pipe.svg` en `__init__` para evitar lecturas de disco al colapsar o expandir el menú lateral.
+*   **Caché de Notificaciones de Alertas (`toast_component.py`):**
+    *   En [toast_component.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/toast_component.py), agregamos una caché estática a nivel de clase (`_pixmap_cache`) dentro de `ModernToast`. Cuando se muestra una alerta (`success`, `danger`, `warning`, `info`), se renderiza e introduce su icono de estado y el icono de cierre (`x.svg`) en la caché. Siguientes alertas con el mismo estado se muestran instantáneamente reutilizando la textura gráfica en memoria sin realizar lecturas físicas a disco.
+
+### I. Optimización de Componentes de Chat (`frontend/components/chat/`)
+*   **Mejora de la Complejidad al Añadir Tags (`bot_mute.py`):**
+    *   En [bot_mute.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/bot_mute.py), extrajimos la lógica de tamaño e iconos de un elemento de etiqueta individual a un método privado `_configure_tag_item`. Anteriormente, al añadir una palabra baneada o un bot, la aplicación ejecutaba `recalculate_item_sizes()` sobre todos los elementos existentes en la lista, lo que causaba un coste cuadrático $O(N^2)$ al poblar listas de configuración inicial. Ahora, al añadir una nueva etiqueta, sólo se inicializa ese elemento específico en $O(1)$.
+    *   **Caché de Iconos de Borrado:** Implementamos una caché en memoria para los iconos de borrado (`trash.svg`) organizados por tamaño del texto (`icon_size`), reduciendo el acceso a disco en la actualización visual de las listas.
+*   **Recorte Eficiente del Visor de Chat (`chat_display.py`):**
+    *   En [chat_display.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/chat_display.py), implementamos transacciones de edición alrededor del bucle de recorte de mensajes excedentes en el visor de chat (`_trim_chat_history`) utilizando `beginEditBlock()` y `endEditBlock()`. Esto reduce los costosos recálculos de repintado del documento de texto formateado en Qt a un solo ciclo, previniendo latencias o microcongelaciones al recibir chats a alta velocidad.
+
+### J. Optimización y Desbloqueo de Diálogos (`frontend/dialogs/`)
+*   **Reportes de Fallo en Segundo Plano (Asíncronos):**
+    *   **Worker Dedicado (`CrashReportWorker`):** Creamos [crash_report_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/crash_report_worker.py) heredando de `QThread`. Este worker procesa la lectura de logs locales y realiza la petición HTTP `requests.post` a Discord en segundo plano.
+    *   **Interfaz Responsiva:** Modificamos [crash_report_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/crash_report_dialog.py) para usar este worker. Al enviar el reporte de error, los botones se bloquean y se muestra el estado "Enviando...", pero el diálogo no congela la aplicación (el usuario puede mover la ventana libremente y el proceso no entra en estado "No Responde").
+*   **Caché de Iconos de Diálogos:**
+    *   **Caché Estática de Cierre (`base_dialog.py`):** Añadimos un campo de clase estático `_icon_close` en `ModernFramelessShell`. Todos los diálogos que heredan de este componente (los 10 diálogos personalizados) ahora comparten en memoria el icono `x.svg`, eliminando la lectura del SVG de disco en cada apertura de ventana.
+    *   **Caché en Carga de Recompensas (`rewards_dialog.py`):** Pre-cargamos los iconos de actualización (`refresh.svg`) y mapa/pin (`map-pin.svg`) en el constructor de `RewardsConfigWizard`.
+    *   **Caché en Edición de Mensajes de Temporizadores (`timer_dialog.py`):** Pre-cargamos los iconos de edición (`edit.svg`) y borrado (`trash.svg`) en `TimerConfigWizard.__init__`. Al cargar o configurar múltiples respuestas de temporizadores seguidas, la interfaz reutiliza las referencias en memoria en lugar de leer el disco por cada fila creada.
+
 ---
 
 ## 2. Archivos Modificados
 
+*   `[NEW]` [crash_report_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/crash_report_worker.py)
+*   `[MODIFY]` [__init__.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/__init__.py)
+*   `[MODIFY]` [crash_report_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/crash_report_dialog.py)
+*   `[MODIFY]` [base_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/base_dialog.py)
+*   `[MODIFY]` [rewards_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/rewards_dialog.py)
+*   `[MODIFY]` [timer_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/timer_dialog.py)
 *   `[MODIFY]` [music_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/music_worker.py)
 *   `[MODIFY]` [music_controller.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/music_controller.py)
 *   `[MODIFY]` [music_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/music_view.py)
 *   `[MODIFY]` [network_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/network_view.py)
 *   `[MODIFY]` [dashboard_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/dashboard_view.py)
+*   `[MODIFY]` [controls.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/controls.py)
+*   `[MODIFY]` [blocks.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/blocks.py)
+*   `[MODIFY]` [scalable_illustration.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/scalable_illustration.py)
+*   `[MODIFY]` [sidebar_component.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/sidebar_component.py)
+*   `[MODIFY]` [toast_component.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/toast_component.py)
+*   `[MODIFY]` [bot_mute.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/bot_mute.py)
+*   `[MODIFY]` [chat_display.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/chat_display.py)
 *   `[MODIFY]` [es.json](file:///c:/Users/TheAn/Desktop/python/Kick/locales/es.json)
 *   `[MODIFY]` [en.json](file:///c:/Users/TheAn/Desktop/python/Kick/locales/en.json)
 
@@ -80,4 +124,16 @@ Para validar esta versión, sigue los siguientes pasos:
 5.  **Verificar la pestaña de Panel (Dashboard):**
     *   Entra a la pestaña de **Panel**.
     *   Verifica que la transición entre el estado desconectado y conectado sea fluida.
-    *   Comprueba que los gráficos de distribución de la barra de sesión se actualicen de manera limpia cuando se procesen mensajes y comandos de chat simulados.
+    *   Comprueba que los gráficos de distribución de la barra de sesión se updateen de manera limpia cuando se procesen mensajes y comandos de chat simulados.
+6.  **Verificar Fluidez en Expandir Tarjetas y Escribir Mensajes:**
+    *   Prueba hacer clic en las tarjetas de moderación de chat para expandirlas; deben abrirse y cerrarse con total respuesta y sin retrasos de carga de disco.
+    *   Escribe en los campos de edición con autocompletado y confirma que el resaltado de variables funcione sin latencias al teclear rápido.
+7.  **Verificar Rapidez al Cambiar de Pestañas y Ver Notificaciones:**
+    *   Haz clic consecutivamente en varias pestañas del menú lateral; el cambio debe ser completamente inmediato e instantáneo.
+    *   Desencadena alertas o tocas botones de guardado para disparar notificaciones de toast; confirma que los iconos se dibujen de manera inmediata.
+8.  **Verificar Adición de Tags e Historial de Chat:**
+    *   Añade varios bots y palabras prohibidas de forma consecutiva y comprueba que se agreguen instantáneamente sin congelaciones.
+    *   Al recibir mensajes continuos de chat, verifica que el visor maneje el límite de mensajes sin latencias.
+9.  **Verificar Asincronía en Reporte de Fallos:**
+    *   Dispara el diálogo de reporte de fallo (por ejemplo, forzando un error en el flujo de desarrollo) y presiona **Enviar Reporte**.
+    *   Comprueba que el diálogo muestre "Enviando..." y los botones se inhabiliten, pero la ventana se pueda mover libremente y no bloquee el hilo visual de PySide.

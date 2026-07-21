@@ -170,6 +170,9 @@ class ExpandableSettingCard(QFrame):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
         
+        self._icon_up = get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 20)
+        self._icon_down = get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 20)
+        
         self._build_header(title, desc, icon_name)
         self._build_body()
         
@@ -297,8 +300,8 @@ class ExpandableSettingCard(QFrame):
     def toggle_expand(self):
         is_visible = self.body_widget.isVisible()
         self.body_widget.setVisible(not is_visible)
-        icon_name = "chevron-up.svg" if not is_visible else "chevron-down.svg"
-        self.btn_expand.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_400, 20))
+        icon = self._icon_up if not is_visible else self._icon_down
+        self.btn_expand.setIcon(icon)
         self.btn_expand.setIconSize(QSize(20, 20))
 
     def _emit_update(self, *args):

@@ -1,7 +1,5 @@
 # frontend\dialogs\crash_report_dialog.py
 
-import os
-import requests
 from PySide6.QtWidgets import (
     QLabel, QLineEdit, QTextEdit, QPushButton, QApplication
 )
@@ -12,12 +10,13 @@ from .base_dialog import ModernModal
 from frontend.common.utils import get_assets_path
 from frontend.common.theme import COLOR_RED
 from backend.config.api_keys import DISCORD_WEBHOOK_URL
-from backend.config.version import APP_VERSION
+from backend.workers import CrashReportWorker
 
 class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n=None, parent=None):
         self.traceback_text = traceback_text
         self.i18n = i18n
+        self.worker = None
         self.title_text = self._get_text("crash.title", "MiniKick ha fallado")
         self.lbl_contact_text = self._get_text("crash.lbl_contact", "Contacto / Discord (Opcional)")
         self.placeholder_contact_text = self._get_text("crash.placeholder_contact", "Ej. Andro2k")
@@ -103,56 +102,26 @@ class CrashReportDialog(ModernModal):
 
         self.btn_send.setEnabled(False)
         self.btn_cancel.setEnabled(False)
+        self.btn_send.setText(self._get_text("crash.btn_sending", "Enviando..."))
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         
-        try:
-            contact = self.txt_contact.text().strip() or self._get_text("crash.anonymous", "Anónimo")
-            desc = self.txt_desc.toPlainText().strip() or self._get_text("crash.no_comments", "Sin comentarios del usuario.")
-            
-            truncated_tb = self.traceback_text
-            if len(truncated_tb) > 1500:
-                truncated_tb = truncated_tb[-1500:] + self._get_text("crash.truncated_tb", "\n[Traceback truncado por longitud]")
+        self.worker = CrashReportWorker(
+            traceback_text=self.traceback_text,
+            contact=self.txt_contact.text(),
+            description=self.txt_desc.toPlainText(),
+            i18n=self.i18n
+        )
+        self.worker.finished.connect(self._on_worker_finished)
+        self.worker.start()
 
-            content = (
-                f"🚨 **CRASH REPORT / REPORTE DE FALLO CRÍTICO** 🚨\n"
-                f"**Usuario/Discord:** {contact}\n"
-                f"**Versión de MiniKick:** {APP_VERSION}\n"
-                f"**¿Qué hacía el usuario?:** {desc}\n"
-                f"----------------------------------------\n"
-                f"**Traceback:**\n```python\n{truncated_tb}\n```\n"
-                f"----------------------------------------"
-            )
-            
-            payload = {
-                "content": content
-            }
-            
-            files = {}
-            app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
-            log_file_path = os.path.join(app_data_dir, '.Minikick', 'logs', 'minikick.log')
-            if os.path.exists(log_file_path):
-                try:
-                    with open(log_file_path, "rb") as f:
-                        files["file"] = ("minikick.log", f.read(), "text/plain")
-                except Exception:
-                    pass
-
-            if files:
-                resp = requests.post(DISCORD_WEBHOOK_URL, data=payload, files=files, timeout=15)
-            else:
-                resp = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=15)
-
-            if resp.status_code in (200, 204):
-                self.accept()
-            else:
-                raise Exception(f"Discord responded with status code {resp.status_code}")
-                
-        except Exception as e:
-            QApplication.restoreOverrideCursor()
-            self.lbl_error.setText(self.err_send_text.replace("{error}", str(e)))
-            self.lbl_error.show()
-            self.btn_send.setEnabled(True)
-            self.btn_cancel.setEnabled(True)
-            return
-
+    def _on_worker_finished(self, success: bool, message: str):
         QApplication.restoreOverrideCursor()
+        self.btn_send.setEnabled(True)
+        self.btn_cancel.setEnabled(True)
+        self.btn_send.setText(self.btn_send_text)
+        
+        if success:
+            self.accept()
+        else:
+            self.lbl_error.setText(message)
+            self.lbl_error.show()

@@ -7,6 +7,8 @@ from PySide6.QtGui import QIcon, QColor, QMouseEvent
 from frontend.common.theme import COLOR_RED, PATH_ICON_HELP
 
 class ModernFramelessShell(QDialog):
+    _icon_close = None
+
     def __init__(self, width: int = 420, parent=None):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
@@ -38,7 +40,9 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.setProperty("role", "btn_ghost")
         self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_close_shell.setFixedSize(26, 26)
-        self.btn_close_shell.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
+        if ModernFramelessShell._icon_close is None:
+            ModernFramelessShell._icon_close = get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14)
+        self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
         self.btn_close_shell.setIconSize(QSize(14, 14))
         self.btn_close_shell.clicked.connect(self.reject)
         self.btn_close_shell.move(width - 34, 8)

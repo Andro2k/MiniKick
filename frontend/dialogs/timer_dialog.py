@@ -18,6 +18,10 @@ class TimerConfigWizard(ModernWizardPanel):
         self.existing_config = existing_config
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []       
+        
+        self._icon_edit = get_icon_colored("edit.svg", COLOR_GREEN, 14)
+        self._icon_trash = get_icon_colored("trash.svg", COLOR_RED, 14)
+        
         self._setup_ui()
         if self.existing_config:
             self._load_existing()
@@ -194,14 +198,14 @@ class TimerConfigWizard(ModernWizardPanel):
         
         btn_edit = ModernButton("", role="action_accent_border")
         btn_edit.setFixedSize(26, 26)
-        btn_edit.setIcon(get_icon_colored("edit.svg", COLOR_GREEN, 14))
+        btn_edit.setIcon(self._icon_edit)
         btn_edit.setIconSize(QSize(14, 14))
         btn_edit.clicked.connect(lambda checked=False, line_edit=txt: self._open_message_editor(line_edit))
         row_layout.addWidget(btn_edit)
         
         btn_del = ModernButton("", role="action_danger_border")
         btn_del.setFixedSize(26, 26)
-        btn_del.setIcon(get_icon_colored("trash.svg", COLOR_RED, 14))
+        btn_del.setIcon(self._icon_trash)
         btn_del.setIconSize(QSize(14, 14))
         btn_del.clicked.connect(lambda: self._remove_message_row(row))
         row_layout.addWidget(btn_del)

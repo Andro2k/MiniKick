@@ -18,6 +18,10 @@ class RewardsConfigWizard(ModernWizardPanel):
         subtitle_steps = [self.i18n.get("rewards.dialogs.wizard.step1.desc"), self.i18n.get("rewards.dialogs.wizard.step2.desc")]
         super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=520, parent=parent)
         self._is_video = False
+        
+        self._icon_refresh = get_icon_colored("refresh.svg", COLOR_NEUTRAL_200, 16)
+        self._icon_map_pin = get_icon_colored("map-pin.svg", COLOR_NEUTRAL_200, 16)
+        
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
         self._build_step1(rewards_list, existing_reward)
@@ -52,7 +56,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row1.addWidget(self.combo_rewards, stretch=1)
         
         self.btn_refresh = ModernButton("", role="action_neutral_border")
-        self.btn_refresh.setIcon(get_icon_colored("refresh.svg", COLOR_NEUTRAL_200, 16))
+        self.btn_refresh.setIcon(self._icon_refresh)
         self.btn_refresh.setIconSize(QSize(16, 16))
         self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
         self.btn_refresh.clicked.connect(self._request_refresh)
@@ -121,7 +125,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row_rnd.addStretch()
         
         self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_neutral_border")
-        self.btn_visual.setIcon(get_icon_colored("map-pin.svg", COLOR_NEUTRAL_200, 16))
+        self.btn_visual.setIcon(self._icon_map_pin)
         self.btn_visual.setIconSize(QSize(16, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)
         row_rnd.addWidget(self.btn_visual)

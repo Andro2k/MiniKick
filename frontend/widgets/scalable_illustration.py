@@ -1,6 +1,7 @@
 # frontend\widgets\scalable_illustration.py
 
 import os
+import re
 from PySide6.QtWidgets import QLabel
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
@@ -30,7 +31,6 @@ class ScalableIllustration(QLabel):
         if not os.path.exists(self.icon_path):
             return fallback
         try:
-            import re
             with open(self.icon_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read(2048)
             

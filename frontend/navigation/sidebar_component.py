@@ -22,6 +22,9 @@ class Sidebar(QFrame):
         self.collapsed_width = 60
         self.setFixedWidth(self.expanded_width)
         
+        self._icon_collapse = get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_400, 20)
+        self._icon_expand = get_icon_colored("chevron-right-pipe.svg", COLOR_NEUTRAL_400, 20)
+        
         self.button_group = QButtonGroup(self)
         self.button_group.setExclusive(True)
         self.button_group.buttonClicked.connect(self._on_tab_clicked)
@@ -223,8 +226,13 @@ class Sidebar(QFrame):
         btn.setProperty("original_text", display_name)
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)        
-        icon_color = COLOR_GREEN if is_active else COLOR_NEUTRAL_400
-        btn.setIcon(get_icon_colored(icon_name, icon_color, 21))
+        
+        icon_active = get_icon_colored(icon_name, COLOR_GREEN, 21)
+        icon_inactive = get_icon_colored(icon_name, COLOR_NEUTRAL_400, 21)
+        btn.setProperty("icon_active", icon_active)
+        btn.setProperty("icon_inactive", icon_inactive)
+        
+        btn.setIcon(icon_active if is_active else icon_inactive)
         btn.setIconSize(QSize(21, 21))
         btn.setToolTip("" if self.is_expanded else display_name)
         
@@ -243,7 +251,8 @@ class Sidebar(QFrame):
         self.is_expanded = not self.is_expanded
         target_width = self.expanded_width if self.is_expanded else self.collapsed_width
         
-        self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg" if self.is_expanded else "chevron-right-pipe.svg", COLOR_NEUTRAL_400, 20))
+        icon = self._icon_collapse if self.is_expanded else self._icon_expand
+        self.btn_toggle.setIcon(icon)
         self.btn_toggle.setIconSize(QSize(20, 20))
         
         self.anim_group = QParallelAnimationGroup()
@@ -302,9 +311,9 @@ class Sidebar(QFrame):
 
     def _update_icons(self, btn=None, checked=None):
         for b in self.button_group.buttons():
-            color = COLOR_GREEN if b.isChecked() else COLOR_NEUTRAL_400
-            b.setIcon(get_icon_colored(b.property("icon_name"), color, 21))
-            b.setIconSize(QSize(21, 21))
+            icon = b.property("icon_active") if b.isChecked() else b.property("icon_inactive")
+            if icon:
+                b.setIcon(icon)
 
     def _on_tab_clicked(self, btn):
         self.view_selected.emit(btn.property("view_name"))

@@ -7,6 +7,7 @@ from frontend.common.utils import get_icon_colored, get_pixmap_colored
 
 class ModernToast(QFrame):
     expired = Signal(object)
+    _pixmap_cache = {}
 
     def __init__(self, title: str, message: str, state: str = "success", duration_ms: int = 4000, parent=None):
         super().__init__(parent)
@@ -23,16 +24,19 @@ class ModernToast(QFrame):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
-        icon_map = {
-            "success": ("circle-check.svg", COLOR_GREEN),
-            "danger": ("alert-circle.svg", COLOR_RED),
-            "warning": ("alert-triangle.svg", COLOR_AMBER),
-            "info": ("info-circle.svg", COLOR_BLUE)
-        }
-        icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
+        
+        if state not in ModernToast._pixmap_cache:
+            icon_map = {
+                "success": ("circle-check.svg", COLOR_GREEN),
+                "danger": ("alert-circle.svg", COLOR_RED),
+                "warning": ("alert-triangle.svg", COLOR_AMBER),
+                "info": ("info-circle.svg", COLOR_BLUE)
+            }
+            icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
+            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 22)
 
         icon_lbl = QLabel()
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, 22))
+        icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(icon_lbl)
 
@@ -52,9 +56,12 @@ class ModernToast(QFrame):
 
         layout.addLayout(text_layout, stretch=1)
 
+        if "close" not in ModernToast._pixmap_cache:
+            ModernToast._pixmap_cache["close"] = get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14)
+
         btn_close = QPushButton()
         btn_close.setProperty("role", "btn_ghost")
-        btn_close.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
+        btn_close.setIcon(ModernToast._pixmap_cache["close"])
         btn_close.setIconSize(QSize(14, 14))
         btn_close.setFixedSize(20, 20)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
