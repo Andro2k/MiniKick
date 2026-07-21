@@ -430,6 +430,10 @@
             "skip_desc": "Forces playback to the next song. You can customize the '!skip' trigger in the Commands view.",
             "song_label": "Current Song (Default: !song)",
             "song_desc": "Displays the currently playing track in chat. You can customize the '!song' trigger in the Commands view.",
+            "pause_label": "Pause Music (Default: !pause)",
+            "pause_desc": "Allows moderators to pause music from chat. You can customize the '!pause' trigger in the Commands view.",
+            "resume_label": "Resume Music (Default: !resume)",
+            "resume_desc": "Allows moderators to resume music from chat. You can customize the '!resume' trigger in the Commands view.",
             "default_tag_name": "Music Plugin"
         },
         "toast": {
@@ -446,6 +450,10 @@
             "not_linked": "❌ The broadcaster has not linked their Spotify account.",
             "not_linked_spotify": "❌ The broadcaster has not linked their Spotify account.",
             "not_linked_youtube": "❌ The streamer has not activated the YouTube player.",
+            "pause_success": "⏸️ Music paused successfully.",
+            "pause_failed": "❌ Failed to pause music.",
+            "resume_success": "▶️ Music resumed successfully.",
+            "resume_failed": "❌ Failed to resume music.",
             "skip_success": "⏩ Song skipped successfully.",
             "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
             "song_now_playing": "🎵 Now playing: {title} - {artist}",

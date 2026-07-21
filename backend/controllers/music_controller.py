@@ -47,9 +47,33 @@ class MusicController(QObject):
         self.view.sw_sr.setChecked(saved_cmds.get("!sr", False))
         self.view.sw_skip.setChecked(saved_cmds.get("!skip", False))
         self.view.sw_song.setChecked(saved_cmds.get("!song", False))
+        self.view.sw_pause.setChecked(saved_cmds.get("!pause", False))
+        self.view.sw_resume.setChecked(saved_cmds.get("!resume", False))
         self.view.blockSignals(False)
 
     def _load_initial_state(self):
+        commands = self.command_service.get_all_commands()
+        if not any(c for c in commands if c["response"] == "[PLUGIN_SPOTIFY_PAUSE]"):
+            self.command_service.save_command(
+                trigger="!pause",
+                response="[PLUGIN_SPOTIFY_PAUSE]",
+                is_active=True,
+                cooldown=3,
+                aliases="",
+                is_regex=False,
+                permission="moderator"
+            )
+        if not any(c for c in commands if c["response"] == "[PLUGIN_SPOTIFY_RESUME]"):
+            self.command_service.save_command(
+                trigger="!resume",
+                response="[PLUGIN_SPOTIFY_RESUME]",
+                is_active=True,
+                cooldown=3,
+                aliases="!play",
+                is_regex=False,
+                permission="moderator"
+            )
+
         self._sync_switches_from_db()
 
         if self.settings_storage:
@@ -198,7 +222,9 @@ class MusicController(QObject):
         plugin_tags = {
             "!sr": "[PLUGIN_SPOTIFY_SR]",
             "!skip": "[PLUGIN_SPOTIFY_SKIP]",
-            "!song": "[PLUGIN_SPOTIFY_SONG]"
+            "!song": "[PLUGIN_SPOTIFY_SONG]",
+            "!pause": "[PLUGIN_SPOTIFY_PAUSE]",
+            "!resume": "[PLUGIN_SPOTIFY_RESUME]"
         }
         existing = next((c for c in self.command_service.storage.load_all() if c["trigger"] == trigger), None)
 
@@ -301,6 +327,8 @@ class MusicController(QObject):
             "[PLUGIN_SPOTIFY_SR]": self._handle_plugin_sr,
             "[PLUGIN_SPOTIFY_SKIP]": self._handle_plugin_skip,
             "[PLUGIN_SPOTIFY_SONG]": self._handle_plugin_song,
+            "[PLUGIN_SPOTIFY_PAUSE]": self._handle_plugin_pause,
+            "[PLUGIN_SPOTIFY_RESUME]": self._handle_plugin_resume,
         }
         
         executor = dispatch_table.get(tag)
@@ -361,6 +389,34 @@ class MusicController(QObject):
                 else:
                     msg = self.i18n.get("music.chat.song_paused")
                 api.post_chat_message(msg)
+        else:
+            if self.provider_type == 'youtube':
+                msg = self.i18n.get("music.chat.not_linked_youtube")
+            else:
+                msg = self.i18n.get("music.chat.not_linked_spotify")
+            api.post_chat_message(msg)
+
+    def _handle_plugin_pause(self, api, provider, user, message, prefix_used):
+        if provider:
+            if hasattr(provider, "pause_playback") and provider.pause_playback():
+                api.post_chat_message(self.i18n.get("music.chat.pause_success"))
+                self._poll_now_playing()
+            else:
+                api.post_chat_message(self.i18n.get("music.chat.pause_failed"))
+        else:
+            if self.provider_type == 'youtube':
+                msg = self.i18n.get("music.chat.not_linked_youtube")
+            else:
+                msg = self.i18n.get("music.chat.not_linked_spotify")
+            api.post_chat_message(msg)
+
+    def _handle_plugin_resume(self, api, provider, user, message, prefix_used):
+        if provider:
+            if hasattr(provider, "resume_playback") and provider.resume_playback():
+                api.post_chat_message(self.i18n.get("music.chat.resume_success"))
+                self._poll_now_playing()
+            else:
+                api.post_chat_message(self.i18n.get("music.chat.resume_failed"))
         else:
             if self.provider_type == 'youtube':
                 msg = self.i18n.get("music.chat.not_linked_youtube")

@@ -430,6 +430,10 @@
             "skip_desc": "Fuerza la reproducción de la siguiente canción. Puedes personalizar el disparador '!skip' en la vista de Comandos.",
             "song_label": "Canción Actual (Por defecto: !song)",
             "song_desc": "Muestra la canción reproduciéndose actualmente en el chat. Puedes personalizar el disparador '!song' en la vista de Comandos.",
+            "pause_label": "Pausar Música (Por defecto: !pause)",
+            "pause_desc": "Permite a los moderadores pausar la música desde el chat. Puedes personalizar el disparador '!pause' en la vista de Comandos.",
+            "resume_label": "Reanudar Música (Por defecto: !resume)",
+            "resume_desc": "Permite a los moderadores reanudar la música desde el chat. Puedes personalizar el disparador '!resume' en la vista de Comandos.",
             "default_tag_name": "Plugin de Música"
         },
         "toast": {
@@ -446,6 +450,10 @@
             "not_linked": "❌ El streamer no ha vinculado su cuenta de Spotify.",
             "not_linked_spotify": "❌ El streamer no ha vinculado su cuenta de Spotify.",
             "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
+            "pause_success": "⏸️ Música pausada con éxito.",
+            "pause_failed": "❌ No se pudo pausar la música.",
+            "resume_success": "▶️ Música reanudada con éxito.",
+            "resume_failed": "❌ No se pudo reanudar la música.",
             "skip_success": "⏩ Canción saltada con éxito.",
             "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o cola vacía).",
             "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",

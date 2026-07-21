@@ -40,7 +40,6 @@ class DashboardController(QObject):
         vods_text = self.view.i18n.get("common.status.yes") if vods_enabled else self.view.i18n.get("common.status.no")
 
         created_at_raw = user_data.get("created_at", "-")
-        # Format YYYY-MM-DD to DD/MM/YYYY for user display
         created_at = created_at_raw
         if created_at_raw and "-" in created_at_raw:
             parts = created_at_raw.split("-")

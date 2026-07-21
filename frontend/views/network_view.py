@@ -1,6 +1,10 @@
 # frontend\views\network_view.py
 
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget
+import os
+import sqlite3
+import logging
+from datetime import datetime
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget, QBoxLayout
 from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
 from frontend.common.utils import get_icon_colored, get_pixmap_colored
@@ -22,19 +26,24 @@ class GraphCanvas(QWidget):
         self._cached_grid_lines = []   
         self._cached_labels = []       
         self._max_scale = 80
-
-        blue_col = QColor(COLOR_BLUE)
-        blue_fill = QColor(blue_col)
-        blue_fill.setAlpha(30)
         
-        green_col = QColor(COLOR_GREEN)
-        green_fill = QColor(green_col)
-        green_fill.setAlpha(30)
+        self._blue_col = QColor(COLOR_BLUE)
+        self._blue_fill = QColor(self._blue_col)
+        self._blue_fill.setAlpha(30)
+        
+        self._green_col = QColor(COLOR_GREEN)
+        self._green_fill = QColor(self._green_col)
+        self._green_fill.setAlpha(30)
 
         self._configs = [
-            ("internet", blue_col, blue_fill),
-            ("kick", green_col, green_fill)
+            ("internet", self._blue_col, self._blue_fill),
+            ("kick", self._green_col, self._green_fill)
         ]
+        
+        self._font_small = QFont("Inter", 8)
+        self._font_bold = QFont("Inter", 8, QFont.Weight.Bold)
+        self._metrics_small = QFontMetrics(self._font_small)
+        self._base_tooltip_width = self._metrics_small.horizontalAdvance("Ping / Latency")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -51,18 +60,21 @@ class GraphCanvas(QWidget):
             x = event.position().x()
             idx = int((x - left_margin) / (W / 49) + 0.5)
             if 0 <= idx < 50:
-                self.hovered_idx = idx
-                self.mouse_pos = event.position()
-                self.update()
+                if self.hovered_idx != idx:
+                    self.hovered_idx = idx
+                    self.mouse_pos = event.position()
+                    self.update()
                 return
-        self.hovered_idx = None
-        self.mouse_pos = None
-        self.update()
+        if self.hovered_idx is not None:
+            self.hovered_idx = None
+            self.mouse_pos = None
+            self.update()
 
     def leaveEvent(self, event):
-        self.hovered_idx = None
-        self.mouse_pos = None
-        self.update()
+        if self.hovered_idx is not None:
+            self.hovered_idx = None
+            self.mouse_pos = None
+            self.update()
 
     def _rebuild_cache(self):
         self._cached_paths.clear()
@@ -96,6 +108,7 @@ class GraphCanvas(QWidget):
         self._cached_labels.append((left_margin, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_45s")))
         self._cached_labels.append((left_margin + W // 2 - 15, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_20s")))
         self._cached_labels.append((self.width() - right_margin - 30, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_now")))
+
         for name, line_color, fill_color in self._configs:
             history = histories[name]
             points = []
@@ -142,7 +155,8 @@ class GraphCanvas(QWidget):
         if W <= 0 or H <= 0:
             return
             
-        painter.setFont(QFont("Inter", 8))
+        painter.setFont(self._font_small)
+        
         for y, val_text, is_dash in self._cached_grid_lines:
             if is_dash:
                 painter.setPen(QPen(QColor(255, 255, 255, 12), 1, Qt.PenStyle.DashLine))
@@ -188,11 +202,9 @@ class GraphCanvas(QWidget):
                 label = self.parent_graph.i18n.get(f"network.services.{name}")
                 tooltip_data.append((label, int(val), line_color))
                 
-            font = QFont("Inter", 8)
-            fm = QFontMetrics(font)
-            max_text_w = fm.horizontalAdvance("Ping / Latency")
+            max_text_w = self._base_tooltip_width
             for label, val, _ in tooltip_data:
-                text_w = fm.horizontalAdvance(f"{label}: {val} ms")
+                text_w = self._metrics_small.horizontalAdvance(f"{label}: {val} ms")
                 if text_w > max_text_w:
                     max_text_w = text_w
 
@@ -208,11 +220,11 @@ class GraphCanvas(QWidget):
             painter.setBrush(QBrush(QColor(15, 15, 15, 230)))
             painter.drawRoundedRect(tooltip_rect, 6, 6)
             
-            painter.setFont(QFont("Inter", 8, QFont.Weight.Bold))
+            painter.setFont(self._font_bold)
             painter.setPen(QColor(COLOR_NEUTRAL_200))
             painter.drawText(tooltip_x + 10, tooltip_y + 16, self.parent_graph.i18n.get("network.graph.tooltip_title"))
             
-            painter.setFont(QFont("Inter", 8))
+            painter.setFont(self._font_small)
             for i, (label, val, col) in enumerate(tooltip_data):
                 y_offset = tooltip_y + 34 + i * 16
                 painter.setBrush(QBrush(col))
@@ -308,13 +320,11 @@ class LiveNetworkGraph(QFrame):
         self.legend_layout.addWidget(self.legend_kick)
         
         self.main_layout.addLayout(self.legend_layout)
-        
         self._update_labels()
         
     def _update_labels(self):
         int_lbl = self.i18n.get("network.services.internet")
         kick_lbl = self.i18n.get("network.services.kick")
-        
         self.lbl_live.setText(f"{int_lbl}: {int(self.histories['internet'][-1])} ms")
         self.lbl_avg.setText(f"{kick_lbl}: {int(self.histories['kick'][-1])} ms")
         
@@ -330,10 +340,10 @@ class LiveNetworkGraph(QFrame):
             self.canvas.update()
 
 class NetworkStatusCard(QFrame):
-    _STATUS_CONFIG: dict[str, tuple[str, bool]] = {
-        "checking": ("#neutral_500", False),
-        "online":   ("#green",       True),
-        "warning":  ("#amber",       True),
+    _STATUS_CONFIG = {
+        "checking": (COLOR_NEUTRAL_500, "checking"),
+        "online":   (COLOR_GREEN,       "online"),
+        "warning":  (COLOR_AMBER,       "warning"),
     }
 
     def __init__(self, key: str, title: str, description: str, icon_name: str, parent=None):
@@ -367,6 +377,7 @@ class NetworkStatusCard(QFrame):
         self.layout.addLayout(self.info_layout, stretch=1)
         
         self.status_layout = QVBoxLayout()
+        self.status_layout.setProperty("role", "status_info")
         self.status_layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self.status_layout.setSpacing(2)
         
@@ -381,7 +392,6 @@ class NetworkStatusCard(QFrame):
         self.status_layout.addWidget(self.lbl_latency)
         
         self.layout.addLayout(self.status_layout)
-        
         self.icon_name = icon_name
         self.set_icon(COLOR_NEUTRAL_200)
         
@@ -389,12 +399,9 @@ class NetworkStatusCard(QFrame):
         self.lbl_icon.setPixmap(get_pixmap_colored(self.icon_name, color_hex, size=20))
         
     def set_status(self, status: str, latency: int, status_text: str):
-        _colors = {
-            "checking": (COLOR_NEUTRAL_500, ""),
-            "online":   (COLOR_GREEN,       f"{latency} ms"),
-            "warning":  (COLOR_AMBER,       f"{latency} ms"),
-        }
-        color, latency_text = _colors.get(status, (COLOR_RED, "-"))
+        color, status_key = self._STATUS_CONFIG.get(status, (COLOR_RED, "offline"))
+        latency_text = f"{latency} ms" if status_key != "checking" and latency >= 0 else ("-" if status_key == "offline" else "")
+        
         self.lbl_status.setText(status_text)
         self.lbl_latency.setText(latency_text)
         self.set_icon(color)
@@ -408,7 +415,7 @@ class NetworkView(BaseView):
     view_shown = Signal()
 
     def __init__(self, i18n):
-        super().__init__(i18n=i18n,title_key="network.header.title",subtitle_key="network.header.subtitle")
+        super().__init__(i18n=i18n, title_key="network.header.title", subtitle_key="network.header.subtitle")
         self.cards = {}
         self._setup_ui()
 
@@ -433,12 +440,17 @@ class NetworkView(BaseView):
         cards_container = QWidget()
         self.cards_layout = FlowLayout(cards_container, margin=0, hspacing=12, vspacing=12)
         
-        self._add_card("internet", self.i18n.get("network.services.internet"), self.i18n.get("network.services.internet_desc"), "wifi.svg")
-        self._add_card("chat_websocket", self.i18n.get("network.services.chat_websocket"), self.i18n.get("network.services.chat_websocket_desc"), "message.svg")
-        self._add_card("overlay", self.i18n.get("network.services.overlay"), self.i18n.get("network.services.overlay_desc"), "plug.svg")
-        self._add_card("kick", self.i18n.get("network.services.kick"), self.i18n.get("network.services.kick_desc"), "kick.svg")
-        self._add_card("spotify", self.i18n.get("network.services.spotify"), self.i18n.get("network.services.spotify_desc"), "spotify.svg")
-        self._add_card("youtube", self.i18n.get("network.services.youtube"), self.i18n.get("network.services.youtube_desc"), "brand-youtube.svg")
+        card_configs = [
+            ("internet", "network.services.internet", "network.services.internet_desc", "wifi.svg"),
+            ("chat_websocket", "network.services.chat_websocket", "network.services.chat_websocket_desc", "message.svg"),
+            ("overlay", "network.services.overlay", "network.services.overlay_desc", "plug.svg"),
+            ("kick", "network.services.kick", "network.services.kick_desc", "kick.svg"),
+            ("spotify", "network.services.spotify", "network.services.spotify_desc", "spotify.svg"),
+            ("youtube", "network.services.youtube", "network.services.youtube_desc", "brand-youtube.svg")
+        ]
+        
+        for key, title_key, desc_key, icon in card_configs:
+            self._add_card(key, self.i18n.get(title_key), self.i18n.get(desc_key), icon)
         
         self.main_layout.addWidget(cards_container)
         self.main_layout.addStretch()
@@ -450,18 +462,19 @@ class NetworkView(BaseView):
 
     def set_checking_state(self):
         self.btn_check.setEnabled(False)
+        checking_str = self.i18n.get("network.status.checking")
         for card in self.cards.values():
-            card.set_status("checking", -1, self.i18n.get("network.status.checking"))
+            card.set_status("checking", -1, checking_str)
 
     def update_status(self, results: dict):
         self.btn_check.setEnabled(True)
         for key, info in results.items():
-            if key in self.cards:
+            card = self.cards.get(key)
+            if card:
                 status = info["status"]
                 latency = info["latency"]
-                
                 status_text = self.i18n.get(f"network.status.{status}")
-                self.cards[key].set_status(status, latency, status_text)
+                card.set_status(status, latency, status_text)
 
     def showEvent(self, event):
         super().showEvent(event)

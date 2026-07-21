@@ -90,7 +90,7 @@ class RewardsView(BaseView):
             
             cell = TableActionCell()
             cell.add_button(
-                icon_name="play.svg", 
+                icon_name="player-play.svg", 
                 color=COLOR_NEUTRAL_200, 
                 role="action_neutral_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_play"), 

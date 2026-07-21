@@ -13,6 +13,8 @@ class SegmentedDistributionBar(QWidget):
         super().__init__(parent)
         self.setFixedHeight(18)
         self._segments = []
+        self._cached_clip_path = None
+        self._cached_rect = None
 
     def set_data(self, data: list[tuple[float, str]]):
         self._segments = data
@@ -23,9 +25,12 @@ class SegmentedDistributionBar(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         rect = self.rect()
-        path = QPainterPath()
-        path.addRoundedRect(QRectF(rect), 8, 8)
-        painter.setClipPath(path)
+        if self._cached_rect != rect:
+            self._cached_rect = rect
+            self._cached_clip_path = QPainterPath()
+            self._cached_clip_path.addRoundedRect(QRectF(rect), 8, 8)
+            
+        painter.setClipPath(self._cached_clip_path)
         
         total_p = sum(p for p, _ in self._segments)
         if total_p <= 0:
@@ -53,9 +58,11 @@ class DashboardView(BaseView):
     _SESSION_CARDS_ATTR = "_session_cols"
     
     def __init__(self, i18n):
-        super().__init__(i18n=i18n,title_key="dashboard.header.title",subtitle_key="dashboard.header.subtitle")
+        super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle")
         self._stats_cols = -1
         self._session_cols = -1
+        self._last_banner_dir = None
+        self._last_top_row_dir = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -240,7 +247,6 @@ class DashboardView(BaseView):
         self.session_grid.addWidget(self.card_spam_blocked, 0, 3)
 
         profile_layout.addWidget(session_stats_container)
-
         self.main_layout.addWidget(self.profile_container)
 
     def set_autostart_state(self, enabled: bool):
@@ -351,16 +357,18 @@ class DashboardView(BaseView):
         width = self.width()
         
         if hasattr(self, 'banner_layout'):
-            if width < 480:
-                self.banner_layout.setDirection(QBoxLayout.Direction.TopToBottom)
-                self.lbl_warn_text.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-            else:
-                self.banner_layout.setDirection(QBoxLayout.Direction.LeftToRight)
-                self.lbl_warn_text.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+            banner_dir = QBoxLayout.Direction.TopToBottom if width < 480 else QBoxLayout.Direction.LeftToRight
+            if self._last_banner_dir != banner_dir:
+                self._last_banner_dir = banner_dir
+                self.banner_layout.setDirection(banner_dir)
+                align = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop if width < 480 else Qt.AlignmentFlag.AlignVCenter
+                self.lbl_warn_text.setAlignment(align)
         
         if hasattr(self, 'top_row_layout'):
-            direction = QBoxLayout.Direction.TopToBottom if width < 600 else QBoxLayout.Direction.LeftToRight
-            self.top_row_layout.setDirection(direction)
+            top_row_dir = QBoxLayout.Direction.TopToBottom if width < 600 else QBoxLayout.Direction.LeftToRight
+            if self._last_top_row_dir != top_row_dir:
+                self._last_top_row_dir = top_row_dir
+                self.top_row_layout.setDirection(top_row_dir)
         
         if hasattr(self, 'stats_grid'):
             stats_cols = 1 if width < 650 else (2 if width < 950 else 3)

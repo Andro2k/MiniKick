@@ -52,7 +52,10 @@ class YouTubeResolveWorker(QThread):
                 'quiet': True,
                 'no_warnings': True,
                 'nocheckcertificate': True,
-                'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
+                'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+                'socket_timeout': 15,
+                'retries': 5,
+                'fragment_retries': 5,
             }
             
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -98,7 +101,9 @@ class YouTubeSearchWorker(QThread):
                 'no_warnings': True,
                 'skip_download': True,
                 'nocheckcertificate': True,
-                'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
+                'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+                'socket_timeout': 15,
+                'retries': 5,
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(self.search_query, download=False)
