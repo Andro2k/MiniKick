@@ -1,4 +1,4 @@
-# Walkthrough: MiniKick v1.4.3_01 - Estabilización de YouTube, Comandos y Optimización de Música, Red, Dashboard, Widgets, Navegación, Chat y Diálogos
+# Walkthrough: MiniKick v1.4.3_01 - Estabilización de YouTube, Comandos y Optimización de Música, Red, Dashboard, Widgets, Navegación, Chat, Diálogos y Solución de Errores de Caché de Música
 
 Este documento describe detalladamente los cambios y las mejoras realizadas en la versión 1.4.3.
 
@@ -70,24 +70,33 @@ Este documento describe detalladamente los cambios y las mejoras realizadas en l
 ### J. Optimización y Desbloqueo de Diálogos (`frontend/dialogs/`)
 *   **Reportes de Fallo en Segundo Plano (Asíncronos):**
     *   **Worker Dedicado (`CrashReportWorker`):** Creamos [crash_report_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/crash_report_worker.py) heredando de `QThread`. Este worker procesa la lectura de logs locales y realiza la petición HTTP `requests.post` a Discord en segundo plano.
-    *   **Interfaz Responsiva:** Modificamos [crash_report_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/crash_report_dialog.py) para usar este worker. Al enviar el reporte de error, los botones se bloquean y se muestra el estado "Enviando...", pero el diálogo no congela la aplicación (el usuario puede mover la ventana libremente y el proceso no entra en estado "No Responde").
+    *   **Interfaz Responsiva:** Modificamos [crash_report_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/crash_report_dialog.py) para usar este worker. Al enviar el reporte de error, los botones se bloquean y se muestra el estado visual "Enviando...", pero el diálogo no congela la aplicación (el usuario puede mover la ventana libremente y el proceso no entra en estado "No Responde").
 *   **Caché de Iconos de Diálogos:**
     *   **Caché Estática de Cierre (`base_dialog.py`):** Añadimos un campo de clase estático `_icon_close` en `ModernFramelessShell`. Todos los diálogos que heredan de este componente (los 10 diálogos personalizados) ahora comparten en memoria el icono `x.svg`, eliminando la lectura del SVG de disco en cada apertura de ventana.
     *   **Caché en Carga de Recompensas (`rewards_dialog.py`):** Pre-cargamos los iconos de actualización (`refresh.svg`) y mapa/pin (`map-pin.svg`) en el constructor de `RewardsConfigWizard`.
     *   **Caché en Edición de Mensajes de Temporizadores (`timer_dialog.py`):** Pre-cargamos los iconos de edición (`edit.svg`) y borrado (`trash.svg`) en `TimerConfigWizard.__init__`. Al cargar o configurar múltiples respuestas de temporizadores seguidas, la interfaz reutiliza las referencias en memoria en lugar de leer el disco por cada fila creada.
 
+### K. Solución de Errores de Descarga y Duración de Música (YouTube Music)
+*   **Error HTTP 416 (Requested range not satisfiable):**
+    *   **Causa:** Al intentar reproducir una música que ya se había intentado descargar o reproducir anteriormente, `yt-dlp` detectaba archivos temporales `.part` o archivos completos huérfanos e intentaba reanudar la descarga. Debido a que las URLs directas de YouTube caducan y cambian sus firmas de rango, el servidor de Google Video respondía con el error HTTP 416, provocando que la canción fallara.
+    *   **Solución:** Modificamos `YouTubeResolveWorker` en [music_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/music_worker.py) para deshabilitar las reanudaciones de descarga (`'continuedl': False`). Si la descarga falla (por ejemplo, por una firma inválida o error HTTP 416), la aplicación ahora captura la excepción, elimina el archivo temporal `.part` corrupto de forma automática, y hace un **fallback transparente** a la URL directa de streaming para que la canción suene sin reportar errores al usuario.
+*   **Pérdida de Duración en Búsquedas Cacheada:**
+    *   **Problema:** Al reproducir canciones almacenadas en el historial de búsquedas del usuario (`youtube_search_cache`), la columna de duración se mostraba vacía o con un guion (`-`) porque la base de datos no almacenaba el tiempo de reproducción.
+    *   **Solución:** Modificamos el esquema en [manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/manager.py) para añadir la columna `duration` a la tabla `youtube_search_cache` (ejecutando una migración automática en bases de datos existentes). Actualizamos `_get_cached_search` y `_save_search_to_cache` en [youtube_client.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/music/youtube_client.py) para guardar y leer la duración de la canción, permitiendo que la interfaz en [music_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/music_view.py) muestre el tiempo de la pista en el historial/cola.
+
 ---
 
 ## 2. Archivos Modificados
 
+*   `[MODIFY]` [music_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/music_worker.py)
+*   `[MODIFY]` [manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/manager.py)
+*   `[MODIFY]` [youtube_client.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/music/youtube_client.py)
 *   `[NEW]` [crash_report_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/crash_report_worker.py)
 *   `[MODIFY]` [__init__.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/__init__.py)
 *   `[MODIFY]` [crash_report_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/crash_report_dialog.py)
 *   `[MODIFY]` [base_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/base_dialog.py)
 *   `[MODIFY]` [rewards_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/rewards_dialog.py)
 *   `[MODIFY]` [timer_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/timer_dialog.py)
-*   `[MODIFY]` [music_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/music_worker.py)
-*   `[MODIFY]` [music_controller.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/music_controller.py)
 *   `[MODIFY]` [music_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/music_view.py)
 *   `[MODIFY]` [network_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/network_view.py)
 *   `[MODIFY]` [dashboard_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/dashboard_view.py)
@@ -137,3 +146,6 @@ Para validar esta versión, sigue los siguientes pasos:
 9.  **Verificar Asincronía en Reporte de Fallos:**
     *   Dispara el diálogo de reporte de fallo (por ejemplo, forzando un error en el flujo de desarrollo) y presiona **Enviar Reporte**.
     *   Comprueba que el diálogo muestre "Enviando..." y los botones se inhabiliten, pero la ventana se pueda mover libremente y no bloquee el hilo visual de PySide.
+10. **Verificar Corrección del Error HTTP 416 y Caché de Duraciones:**
+    *   Agrega canciones del historial. Verifica que la **duración (tiempo)** se muestre correctamente en lugar del guion (`-`).
+    *   Vuelve a reproducir pistas reproducidas previamente. Confirma que inicien sin problemas de descarga (HTTP 416) y que el reproductor haga fallback transparente a streaming web si existe algún conflicto de archivos parciales.

@@ -69,10 +69,10 @@ class YouTubeMusicProvider(QObject):
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT title, artist, url FROM youtube_search_cache WHERE LOWER(query_raw) = ?", (query.lower().strip(),))
+                cursor.execute("SELECT title, artist, url, duration FROM youtube_search_cache WHERE LOWER(query_raw) = ?", (query.lower().strip(),))
                 r = cursor.fetchone()
                 if r:
-                    return {"title": r[0], "artist": r[1], "url": r[2]}
+                    return {"title": r[0], "artist": r[1], "url": r[2], "duration": r[3] or "-"}
         except Exception as e:
             logging.error("[YouTubeMusicProvider] Error reading from search cache: %s", e)
         return None
@@ -84,11 +84,11 @@ class YouTubeMusicProvider(QObject):
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO youtube_search_cache (query_raw, title, artist, url) 
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO youtube_search_cache (query_raw, title, artist, url, duration) 
+                    VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(query_raw) DO UPDATE SET 
-                        title=excluded.title, artist=excluded.artist, url=excluded.url, cached_at=CURRENT_TIMESTAMP
-                """, (query.lower().strip(), song_entry["title"], song_entry["artist"], song_entry["url"]))
+                        title=excluded.title, artist=excluded.artist, url=excluded.url, duration=excluded.duration, cached_at=CURRENT_TIMESTAMP
+                """, (query.lower().strip(), song_entry["title"], song_entry["artist"], song_entry["url"], song_entry.get("duration", "-")))
                 conn.commit()
         except Exception as e:
             logging.error("[YouTubeMusicProvider] Error saving to search cache: %s", e)
@@ -140,7 +140,7 @@ class YouTubeMusicProvider(QObject):
                     "resolved": False,
                     "stream_url": None,
                     "requester": requester,
-                    "duration": "-"
+                    "duration": cached.get("duration", "-")
                 }
                 if self.db_manager:
                     db_id = self.db_manager.add_song_to_queue(

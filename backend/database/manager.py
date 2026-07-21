@@ -147,9 +147,14 @@ class DatabaseManager:
                     title TEXT NOT NULL,
                     artist TEXT NOT NULL,
                     url TEXT NOT NULL,
+                    duration TEXT DEFAULT '-',
                     cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            try:
+                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN duration TEXT DEFAULT '-'")
+            except sqlite3.OperationalError:
+                pass
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS avatar_cache (
                     url TEXT PRIMARY KEY,

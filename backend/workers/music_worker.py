@@ -56,6 +56,7 @@ class YouTubeResolveWorker(QThread):
                 'socket_timeout': 15,
                 'retries': 5,
                 'fragment_retries': 5,
+                'continuedl': False,
             }
             
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -66,10 +67,32 @@ class YouTubeResolveWorker(QThread):
                 if len(raw_id) > 64 or '?' in raw_id or '&' in raw_id or '=' in raw_id or '/' in raw_id or '\\' in raw_id:
                     info['id'] = hashlib.md5(self.query_or_url.encode('utf-8')).hexdigest()
                 
-                ydl.process_info(info)
-                local_path = ydl.prepare_filename(info)
-                title = info.get('title', 'Unknown Title')
+                try:
+                    ydl.process_info(info)
+                    local_path = ydl.prepare_filename(info)
+                except Exception as download_err:
+                    local_path = ydl.prepare_filename(info)
+                    part_file = local_path + ".part"
+                    if os.path.exists(part_file):
+                        try:
+                            os.remove(part_file)
+                        except Exception:
+                            pass
+                    if os.path.exists(local_path):
+                        try:
+                            os.remove(local_path)
+                        except Exception:
+                            pass
+                    
+                    stream_url = info.get('url')
+                    if stream_url:
+                        title = info.get('title', 'Unknown Title')
+                        self.resolved.emit(title, stream_url)
+                        return
+                    else:
+                        raise download_err
                 
+                title = info.get('title', 'Unknown Title')
                 if os.path.exists(local_path):
                     self.resolved.emit(title, local_path)
                 else:
