@@ -7,6 +7,13 @@ from datetime import datetime
 
 logger = logging.getLogger("minikick.database")
 
+class AutoCloseConnection(sqlite3.Connection):
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            super().__exit__(exc_type, exc_val, exc_tb)
+        finally:
+            self.close()
+
 class DatabaseManager:
     def __init__(self, db_name="minikick.db"):
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
@@ -19,7 +26,7 @@ class DatabaseManager:
     def _initialize_database(self) -> None:
         try:
             if os.path.exists(self.db_name):
-                with sqlite3.connect(self.db_name) as conn:
+                with sqlite3.connect(self.db_name, factory=AutoCloseConnection) as conn:
                     cursor = conn.cursor()
                     cursor.execute("PRAGMA integrity_check")
                     res = cursor.fetchone()
@@ -34,7 +41,7 @@ class DatabaseManager:
     def get_connection(self) -> sqlite3.Connection:
         conn = None
         try:
-            conn = sqlite3.connect(self.db_name)
+            conn = sqlite3.connect(self.db_name, factory=AutoCloseConnection)
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-20000")
@@ -49,7 +56,7 @@ class DatabaseManager:
             if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
                 logger.error("Database error in get_connection, recreating database: %s", e)
                 self._handle_corrupt_database()
-                return sqlite3.connect(self.db_name)
+                return sqlite3.connect(self.db_name, factory=AutoCloseConnection)
             raise e
 
     def _handle_corrupt_database(self) -> None:

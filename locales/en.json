@@ -806,6 +806,13 @@
             "time_now": "Now",
             "tooltip_title": "Ping / Latency"
         },
+        "table": {
+            "title": "Service Status",
+            "col_service": "Service",
+            "col_desc": "Description",
+            "col_status": "Status",
+            "col_latency": "Latency"
+        },
         "btn_check": "Check Network"
     },
     "crash": {

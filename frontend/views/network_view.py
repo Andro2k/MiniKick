@@ -1,14 +1,10 @@
 # frontend\views\network_view.py
 
-import os
-import sqlite3
-import logging
-from datetime import datetime
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget, QBoxLayout
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget, QHeaderView
 from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
 from frontend.common.utils import get_icon_colored, get_pixmap_colored
-from frontend.widgets import BaseView, ModernButton, FlowLayout
+from frontend.widgets import BaseView, ModernButton, ModernTableCard
 from frontend.common.theme import (
     COLOR_NEUTRAL_200, COLOR_NEUTRAL_500, 
     COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK, COLOR_BLUE, COLOR_WHITE
@@ -292,35 +288,31 @@ class LiveNetworkGraph(QFrame):
         self.legend_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.legend_layout.setSpacing(20)
         
-        self.legend_internet = QWidget()
-        lbl_dot_int = QLabel("● ")
-        lbl_dot_int.setProperty("role", "caption")
-        lbl_dot_int.setStyleSheet(f"color: {COLOR_BLUE};")
-        lbl_txt_int = QLabel(self.i18n.get("network.services.internet"))
-        lbl_txt_int.setProperty("role", "caption")
-        lay_int = QHBoxLayout(self.legend_internet)
-        lay_int.setContentsMargins(0, 0, 0, 0)
-        lay_int.setSpacing(2)
-        lay_int.addWidget(lbl_dot_int)
-        lay_int.addWidget(lbl_txt_int)
-        
-        self.legend_kick = QWidget()
-        lbl_dot_kck = QLabel("● ")
-        lbl_dot_kck.setProperty("role", "caption")
-        lbl_dot_kck.setStyleSheet(f"color: {COLOR_GREEN};")
-        lbl_txt_kck = QLabel(self.i18n.get("network.services.kick"))
-        lbl_txt_kck.setProperty("role", "caption")
-        lay_kck = QHBoxLayout(self.legend_kick)
-        lay_kck.setContentsMargins(0, 0, 0, 0)
-        lay_kck.setSpacing(2)
-        lay_kck.addWidget(lbl_dot_kck)
-        lay_kck.addWidget(lbl_txt_kck)
+        self.legend_internet = self._create_legend_item(COLOR_BLUE, self.i18n.get("network.services.internet"))
+        self.legend_kick = self._create_legend_item(COLOR_GREEN, self.i18n.get("network.services.kick"))
         
         self.legend_layout.addWidget(self.legend_internet)
         self.legend_layout.addWidget(self.legend_kick)
         
         self.main_layout.addLayout(self.legend_layout)
         self._update_labels()
+
+    def _create_legend_item(self, color: str, text: str) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(2)
+        
+        lbl_dot = QLabel("● ")
+        lbl_dot.setProperty("role", "caption")
+        lbl_dot.setStyleSheet(f"color: {color};")
+        
+        lbl_text = QLabel(text)
+        lbl_text.setProperty("role", "caption")
+        
+        layout.addWidget(lbl_dot)
+        layout.addWidget(lbl_text)
+        return container
         
     def _update_labels(self):
         int_lbl = self.i18n.get("network.services.internet")
@@ -339,84 +331,19 @@ class LiveNetworkGraph(QFrame):
             self.canvas.mark_dirty()
             self.canvas.update()
 
-class NetworkStatusCard(QFrame):
+class NetworkView(BaseView):
+    check_requested = Signal()
+    view_shown = Signal()
+
     _STATUS_CONFIG = {
         "checking": (COLOR_NEUTRAL_500, "checking"),
         "online":   (COLOR_GREEN,       "online"),
         "warning":  (COLOR_AMBER,       "warning"),
     }
 
-    def __init__(self, key: str, title: str, description: str, icon_name: str, parent=None):
-        super().__init__(parent)
-        self.key = key
-        self.setProperty("role", "card")
-        self.setMinimumWidth(285)
-        self.setFixedHeight(80)
-        
-        self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(12, 10, 12, 10)
-        self.layout.setSpacing(10)
-        
-        self.lbl_icon = QLabel()
-        self.lbl_icon.setFixedSize(32, 32)
-        self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.lbl_icon)
-        
-        self.info_layout = QVBoxLayout()
-        self.info_layout.setSpacing(2)
-        
-        self.lbl_title = QLabel(title)
-        self.lbl_title.setProperty("role", "h3")
-        self.info_layout.addWidget(self.lbl_title)
-        
-        self.lbl_desc = QLabel(description)
-        self.lbl_desc.setProperty("role", "body")
-        self.lbl_desc.setWordWrap(True)
-        self.info_layout.addWidget(self.lbl_desc)
-        
-        self.layout.addLayout(self.info_layout, stretch=1)
-        
-        self.status_layout = QVBoxLayout()
-        self.status_layout.setProperty("role", "status_info")
-        self.status_layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self.status_layout.setSpacing(2)
-        
-        self.lbl_status = QLabel()
-        self.lbl_status.setProperty("role", "body")
-        self.lbl_status.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.status_layout.addWidget(self.lbl_status)
-        
-        self.lbl_latency = QLabel()
-        self.lbl_latency.setProperty("role", "caption")
-        self.lbl_latency.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.status_layout.addWidget(self.lbl_latency)
-        
-        self.layout.addLayout(self.status_layout)
-        self.icon_name = icon_name
-        self.set_icon(COLOR_NEUTRAL_200)
-        
-    def set_icon(self, color_hex: str):
-        self.lbl_icon.setPixmap(get_pixmap_colored(self.icon_name, color_hex, size=20))
-        
-    def set_status(self, status: str, latency: int, status_text: str):
-        color, status_key = self._STATUS_CONFIG.get(status, (COLOR_RED, "offline"))
-        latency_text = f"{latency} ms" if status_key != "checking" and latency >= 0 else ("-" if status_key == "offline" else "")
-        
-        self.lbl_status.setText(status_text)
-        self.lbl_latency.setText(latency_text)
-        self.set_icon(color)
-        self.lbl_status.setStyleSheet(f"color: {color}; font-weight: bold;")
-
-    def sizeHint(self):
-        return QSize(285, 80)
-
-class NetworkView(BaseView):
-    check_requested = Signal()
-    view_shown = Signal()
-
     def __init__(self, i18n):
         super().__init__(i18n=i18n, title_key="network.header.title", subtitle_key="network.header.subtitle")
-        self.cards = {}
+        self.status_widgets = {}
         self._setup_ui()
 
     def _setup_ui(self):
@@ -437,44 +364,149 @@ class NetworkView(BaseView):
         self.main_layout.addWidget(self.graph)
         self.main_layout.addSpacing(10)
         
-        cards_container = QWidget()
-        self.cards_layout = FlowLayout(cards_container, margin=0, hspacing=12, vspacing=12)
-        
-        card_configs = [
+        self.service_configs = [
             ("internet", "network.services.internet", "network.services.internet_desc", "wifi.svg"),
             ("chat_websocket", "network.services.chat_websocket", "network.services.chat_websocket_desc", "message.svg"),
             ("overlay", "network.services.overlay", "network.services.overlay_desc", "plug.svg"),
             ("kick", "network.services.kick", "network.services.kick_desc", "kick.svg"),
-            ("spotify", "network.services.spotify", "network.services.spotify_desc", "spotify.svg"),
+            ("spotify", "network.services.spotify", "network.services.spotify_desc", "brand-spotify.svg"),
             ("youtube", "network.services.youtube", "network.services.youtube_desc", "brand-youtube.svg")
         ]
+
+        col_service = self.i18n.get("network.table.col_service")
+        col_desc = self.i18n.get("network.table.col_desc")
+        col_status = self.i18n.get("network.table.col_status")
+        col_latency = self.i18n.get("network.table.col_latency")
+
+        self.table_card = ModernTableCard(
+            title_text=self.i18n.get("network.table.title"),
+            headers=[col_service, col_desc, col_status, col_latency],
+            parent=self
+        )
+        self.table_card.setMinimumHeight(380)
         
-        for key, title_key, desc_key, icon in card_configs:
-            self._add_card(key, self.i18n.get(title_key), self.i18n.get(desc_key), icon)
+        self.table = self.table_card.table
+        self.table.setRowCount(len(self.service_configs))
+        self.table.verticalHeader().setDefaultSectionSize(48)
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         
-        self.main_layout.addWidget(cards_container)
+        h_header = self.table.horizontalHeader()
+        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        
+        self.table.setColumnWidth(2, 140)
+        self.table.setColumnWidth(3, 110)
+        
+        for row, config in enumerate(self.service_configs):
+            key, title_key, desc_key, icon_name = config
+            
+            service_widget, lbl_icon = self._create_service_cell(self.i18n.get(title_key), icon_name)
+            self.table.setCellWidget(row, 0, service_widget)
+            
+            desc_widget = self._create_desc_cell(self.i18n.get(desc_key))
+            self.table.setCellWidget(row, 1, desc_widget)
+            
+            status_widget, lbl_status = self._create_status_cell()
+            self.table.setCellWidget(row, 2, status_widget)
+            
+            latency_widget, lbl_latency = self._create_latency_cell()
+            self.table.setCellWidget(row, 3, latency_widget)
+            
+            self.status_widgets[key] = {
+                "icon_label": lbl_icon,
+                "icon_name": icon_name,
+                "status_label": lbl_status,
+                "latency_label": lbl_latency
+            }
+            
+        self.main_layout.addWidget(self.table_card)
         self.main_layout.addStretch()
 
-    def _add_card(self, key: str, title: str, description: str, icon: str):
-        card = NetworkStatusCard(key, title, description, icon, self)
-        self.cards[key] = card
-        self.cards_layout.addWidget(card)
+    def _create_service_cell(self, title: str, icon_name: str) -> tuple[QWidget, QLabel]:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(12, 4, 8, 4)
+        layout.setSpacing(10)
+        
+        lbl_icon = QLabel()
+        lbl_icon.setFixedSize(20, 20)
+        lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_200, size=16))
+        
+        lbl_title = QLabel(title)
+        lbl_title.setStyleSheet("font-weight: bold;")
+        
+        layout.addWidget(lbl_icon)
+        layout.addWidget(lbl_title)
+        layout.addStretch()
+        return container, lbl_icon
+
+    def _create_desc_cell(self, description: str) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 4, 8, 4)
+        
+        lbl_desc = QLabel(description)
+        lbl_desc.setProperty("role", "body")
+        lbl_desc.setWordWrap(True)
+        
+        layout.addWidget(lbl_desc)
+        layout.addStretch()
+        return container
+
+    def _create_status_cell(self) -> tuple[QWidget, QLabel]:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        lbl_status = QLabel("-")
+        lbl_status.setProperty("role", "body")
+        lbl_status.setStyleSheet("font-weight: bold;")
+        
+        layout.addWidget(lbl_status)
+        return container, lbl_status
+
+    def _create_latency_cell(self) -> tuple[QWidget, QLabel]:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 4, 12, 4)
+        layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        
+        lbl_latency = QLabel("-")
+        lbl_latency.setProperty("role", "caption")
+        
+        layout.addWidget(lbl_latency)
+        return container, lbl_latency
+
+    def _set_cell_status(self, key: str, status: str, latency: int, status_text: str):
+        widgets = self.status_widgets.get(key)
+        if not widgets:
+            return
+            
+        color, status_key = self._STATUS_CONFIG.get(status, (COLOR_RED, "offline"))
+        latency_text = f"{latency} ms" if status_key != "checking" and latency >= 0 else ("-" if status_key == "offline" else "")
+        
+        widgets["status_label"].setText(status_text)
+        widgets["status_label"].setStyleSheet(f"color: {color}; font-weight: bold;")
+        widgets["latency_label"].setText(latency_text)
+        widgets["icon_label"].setPixmap(get_pixmap_colored(widgets["icon_name"], color, size=16))
 
     def set_checking_state(self):
         self.btn_check.setEnabled(False)
         checking_str = self.i18n.get("network.status.checking")
-        for card in self.cards.values():
-            card.set_status("checking", -1, checking_str)
+        for key in self.status_widgets.keys():
+            self._set_cell_status(key, "checking", -1, checking_str)
 
     def update_status(self, results: dict):
         self.btn_check.setEnabled(True)
         for key, info in results.items():
-            card = self.cards.get(key)
-            if card:
-                status = info["status"]
-                latency = info["latency"]
-                status_text = self.i18n.get(f"network.status.{status}")
-                card.set_status(status, latency, status_text)
+            status = info["status"]
+            latency = info["latency"]
+            status_text = self.i18n.get(f"network.status.{status}")
+            self._set_cell_status(key, status, latency, status_text)
 
     def showEvent(self, event):
         super().showEvent(event)

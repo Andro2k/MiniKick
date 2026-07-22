@@ -806,6 +806,13 @@
             "time_now": "Ahora",
             "tooltip_title": "Ping / Latencia"
         },
+        "table": {
+            "title": "Estado de los Servicios",
+            "col_service": "Servicio",
+            "col_desc": "Descripción",
+            "col_status": "Estado",
+            "col_latency": "Latencia"
+        },
         "btn_check": "Comprobar Red"
     },
     "crash": {
