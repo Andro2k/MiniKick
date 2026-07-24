@@ -53,7 +53,7 @@ class YouTubeMusicProvider(QObject):
                     "resolved": False,
                     "stream_url": None,
                     "requester": song["requester"],
-                    "duration": "-"
+                    "duration": song.get("duration", "-")
                 })
             
             if self.queue:
@@ -148,7 +148,8 @@ class YouTubeMusicProvider(QObject):
                         artist=song_entry["artist"],
                         url=song_entry["url"],
                         requester=requester,
-                        provider="youtube"
+                        provider="youtube",
+                        duration=song_entry.get("duration", "-")
                     )
                     song_entry["db_id"] = db_id
                 self.queue.append(song_entry)
@@ -180,7 +181,8 @@ class YouTubeMusicProvider(QObject):
                         artist=worker.song_entry["artist"],
                         url=worker.song_entry["url"],
                         requester=requester,
-                        provider="youtube"
+                        provider="youtube",
+                        duration=worker.song_entry.get("duration", "-")
                     )
                     worker.song_entry["db_id"] = db_id
                 self.queue.append(worker.song_entry)

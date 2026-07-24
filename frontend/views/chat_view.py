@@ -89,7 +89,7 @@ class ChatView(BaseView):
 
     @property
     def is_web_provider(self) -> bool:
-        return self.tts_settings_panel.chk_provider.isChecked()
+        return self.tts_settings_panel.combo_provider.currentData() == "web"
 
     @property
     def tts_volume(self) -> int:

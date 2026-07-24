@@ -130,22 +130,28 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             
             client_queue = queue.Queue()
-            self.server.manager.clients.append(client_queue)
+            with self.server.manager.lock:
+                self.server.manager.clients.append(client_queue)
             
             try:
                 while True:
-                    rewards = client_queue.get()
-                    if rewards is None:
-                        break
-                    self.wfile.write(f"data: {json.dumps(rewards)}\n\n".encode("utf-8"))
-                    self.wfile.flush()
+                    try:
+                        rewards = client_queue.get(timeout=2.0)
+                        if rewards is None:
+                            break
+                        self.wfile.write(f"data: {json.dumps(rewards)}\n\n".encode("utf-8"))
+                        self.wfile.flush()
+                    except queue.Empty:
+                        self.wfile.write(b": keep-alive\n\n")
+                        self.wfile.flush()
             except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
                 pass
             except Exception:
                 pass
             finally:
-                if client_queue in self.server.manager.clients:
-                    self.server.manager.clients.remove(client_queue)
+                with self.server.manager.lock:
+                    if client_queue in self.server.manager.clients:
+                        self.server.manager.clients.remove(client_queue)
 
         elif path == "/chat_events":
             self.send_response(200)
@@ -155,22 +161,28 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             
             client_queue = queue.Queue()
-            self.server.manager.chat_clients.append(client_queue)
+            with self.server.manager.lock:
+                self.server.manager.chat_clients.append(client_queue)
             
             try:
                 while True:
-                    msg = client_queue.get()
-                    if msg is None:
-                        break
-                    self.wfile.write(f"data: {json.dumps(msg)}\n\n".encode("utf-8"))
-                    self.wfile.flush()
+                    try:
+                        msg = client_queue.get(timeout=2.0)
+                        if msg is None:
+                            break
+                        self.wfile.write(f"data: {json.dumps(msg)}\n\n".encode("utf-8"))
+                        self.wfile.flush()
+                    except queue.Empty:
+                        self.wfile.write(b": keep-alive\n\n")
+                        self.wfile.flush()
             except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
                 pass
             except Exception:
                 pass
             finally:
-                if client_queue in self.server.manager.chat_clients:
-                    self.server.manager.chat_clients.remove(client_queue)
+                with self.server.manager.lock:
+                    if client_queue in self.server.manager.chat_clients:
+                        self.server.manager.chat_clients.remove(client_queue)
 
         elif path == "/music_events":
             self.send_response(200)
@@ -180,7 +192,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
             client_queue = queue.Queue()
-            self.server.manager.music_clients.append(client_queue)
+            with self.server.manager.lock:
+                self.server.manager.music_clients.append(client_queue)
 
             last = self.server.manager._last_song
             if last is not None:
@@ -188,18 +201,23 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
 
             try:
                 while True:
-                    msg = client_queue.get()
-                    if msg is None:
-                        break
-                    self.wfile.write(f"data: {json.dumps(msg)}\n\n".encode("utf-8"))
-                    self.wfile.flush()
+                    try:
+                        msg = client_queue.get(timeout=2.0)
+                        if msg is None:
+                            break
+                        self.wfile.write(f"data: {json.dumps(msg)}\n\n".encode("utf-8"))
+                        self.wfile.flush()
+                    except queue.Empty:
+                        self.wfile.write(b": keep-alive\n\n")
+                        self.wfile.flush()
             except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
                 pass
             except Exception:
                 pass
             finally:
-                if client_queue in self.server.manager.music_clients:
-                    self.server.manager.music_clients.remove(client_queue)
+                with self.server.manager.lock:
+                    if client_queue in self.server.manager.music_clients:
+                        self.server.manager.music_clients.remove(client_queue)
 
         else:
             relative_path = path.lstrip("/")
@@ -236,6 +254,7 @@ class OverlayServerManager:
         self.music_clients = []
         self._last_song: dict | None = None
         self.settings_storage = settings_storage
+        self.lock = threading.Lock()
         
         self.session_token = ""
         if self.settings_storage:
@@ -281,7 +300,9 @@ class OverlayServerManager:
             "pos_y": config.get("pos_y", 0),
             "is_random_pos": config.get("is_random_pos", False)
         }
-        for client_queue in self.clients:
+        with self.lock:
+            clients_copy = list(self.clients)
+        for client_queue in clients_copy:
             client_queue.put(payload)
 
     def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None):
@@ -291,7 +312,9 @@ class OverlayServerManager:
             "color": color,
             "badges": badges or []
         }
-        for client_queue in self.chat_clients:
+        with self.lock:
+            clients_copy = list(self.chat_clients)
+        for client_queue in clients_copy:
             client_queue.put(payload)
 
     def trigger_music_change(self, song: dict):
@@ -309,16 +332,22 @@ class OverlayServerManager:
                 "thumbnail": song.get("thumbnail", "")
             }
         self._last_song = payload
-        for client_queue in self.music_clients:
+        with self.lock:
+            clients_copy = list(self.music_clients)
+        for client_queue in clients_copy:
             client_queue.put(payload)
 
     def stop(self):
         if self.server:
-            for client_queue in self.clients:
+            with self.lock:
+                clients_copy = list(self.clients)
+                chat_copy = list(self.chat_clients)
+                music_copy = list(self.music_clients)
+            for client_queue in clients_copy:
                 client_queue.put(None)
-            for client_queue in self.chat_clients:
+            for client_queue in chat_copy:
                 client_queue.put(None)
-            for client_queue in self.music_clients:
+            for client_queue in music_copy:
                 client_queue.put(None)
             self.server.shutdown()
             self.server.server_close()

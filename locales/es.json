@@ -324,7 +324,7 @@
             "tts_desc": "Habilitar la lectura automatizada de mensajes.",
             "name_title": "Leer Nombres",
             "name_desc": "Pronunciar el nombre del remitente antes del mensaje.",
-            "provider_title": "Motor de Voz Premium",
+            "provider_title": "Motor de Voz TTS",
             "provider_desc": "Cambiar entre voces web Edge o voces locales del sistema.",
             "cmd_title": "Requerir Comando",
             "cmd_desc": "Solo leer mensajes que comiencen con un prefijo.",
@@ -334,7 +334,9 @@
             "prefix_desc": "Define el texto exacto que activará la lectura del bot.",
             "prefix_placeholder": "Ej. !tts",
             "obs_title": "Lienzo de OBS (Overlay)",
-            "obs_desc": "Copia este enlace para añadir la fuente de navegador del chat en tu OBS."
+            "obs_desc": "Copia este enlace para añadir la fuente de navegador del chat en tu OBS.",
+            "voice_general_title": "Voz de Seguidores",
+            "voice_general_desc": "Configura la voz para espectadores y seguidores en general."
         },
         "bots": {
             "title": "Usuarios Silenciados",

@@ -212,10 +212,15 @@ class DatabaseManager:
                     requester TEXT,
                     provider TEXT NOT NULL,
                     is_played INTEGER DEFAULT 0,
+                    duration TEXT DEFAULT '-',
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status ON music_queue(provider, is_played)")
+            try:
+                cursor.execute("ALTER TABLE music_queue ADD COLUMN duration TEXT DEFAULT '-'")
+            except sqlite3.OperationalError:
+                pass
             
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS reward_redemptions (
@@ -410,14 +415,14 @@ class DatabaseManager:
         except Exception as e:
             logger.error("[DatabaseManager] Error logging reward redemption: %s", e)
 
-    def add_song_to_queue(self, title: str, artist: str, url: str, requester: str, provider: str) -> int:
+    def add_song_to_queue(self, title: str, artist: str, url: str, requester: str, provider: str, duration: str = "-") -> int:
         try:
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO music_queue (title, artist, url, requester, provider, is_played, created_at) VALUES (?, ?, ?, ?, ?, 0, ?)",
-                    (title, artist, url, requester, provider, local_now)
+                    "INSERT INTO music_queue (title, artist, url, requester, provider, is_played, duration, created_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)",
+                    (title, artist, url, requester, provider, duration, local_now)
                 )
                 conn.commit()
                 return cursor.lastrowid
@@ -441,7 +446,7 @@ class DatabaseManager:
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "SELECT id, title, artist, url, requester, provider FROM music_queue WHERE provider = ? AND is_played = 0 ORDER BY id ASC",
+                    "SELECT id, title, artist, url, requester, provider, duration FROM music_queue WHERE provider = ? AND is_played = 0 ORDER BY id ASC",
                     (provider,)
                 )
                 return [
@@ -451,7 +456,8 @@ class DatabaseManager:
                         "artist": r[2],
                         "url": r[3],
                         "requester": r[4],
-                        "provider": r[5]
+                        "provider": r[5],
+                        "duration": r[6]
                     }
                     for r in cursor.fetchall()
                 ]

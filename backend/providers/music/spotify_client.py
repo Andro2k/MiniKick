@@ -135,6 +135,7 @@ class SpotifyMusicProvider:
         try:
             track_uri = query_or_uri.strip()
             track_name = track_uri
+            duration_ms = 0
             if not track_uri.startswith("spotify:track:"):
                 search_resp = self._request("GET", f"/search?q={quote(track_uri)}&type=track&limit=1")
                 tracks = search_resp.json().get("tracks", {}).get("items", [])
@@ -145,6 +146,18 @@ class SpotifyMusicProvider:
                 track_uri = target.get("uri")
                 artists = ", ".join(a.get("name") for a in target.get("artists", []))
                 track_name = f"{target.get('name')} - {artists}"
+                duration_ms = target.get("duration_ms", 0)
+            else:
+                try:
+                    track_id = track_uri.split(":")[-1]
+                    track_resp = self._request("GET", f"/tracks/{track_id}")
+                    if track_resp.status_code == 200:
+                        track_data = track_resp.json()
+                        duration_ms = track_data.get("duration_ms", 0)
+                        artists = ", ".join(a.get("name") for a in track_data.get("artists", []))
+                        track_name = f"{track_data.get('name')} - {artists}"
+                except Exception:
+                    pass
 
             resp = self._request("POST", f"/me/player/queue?uri={track_uri}")
             resp.raise_for_status()
@@ -154,13 +167,21 @@ class SpotifyMusicProvider:
             if " - " in track_name:
                 title, artist = track_name.split(" - ", 1)
             
+            duration_str = "-"
+            if duration_ms:
+                total_secs = duration_ms // 1000
+                mins = total_secs // 60
+                secs = total_secs % 60
+                duration_str = f"{mins}:{secs:02d}"
+
             if self.db_manager:
                 self.db_manager.add_song_to_queue(
                     title=title,
                     artist=artist,
                     url=track_uri,
                     requester=requester,
-                    provider="spotify"
+                    provider="spotify",
+                    duration=duration_str
                 )
             
             msg = self.i18n.get("music.queue.success").replace("{track}", track_name)

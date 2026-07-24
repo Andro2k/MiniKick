@@ -324,7 +324,7 @@
             "tts_desc": "Enable automated message reading.",
             "name_title": "Read Names",
             "name_desc": "Pronounce the sender's name before the message.",
-            "provider_title": "Premium Voice Engine",
+            "provider_title": "TTS Voice Engine",
             "provider_desc": "Toggle between Edge web voices or local voices.",
             "cmd_title": "Require Command",
             "cmd_desc": "Only read messages starting with a prefix.",
@@ -334,7 +334,9 @@
             "prefix_desc": "Define the exact text that will trigger the bot's reading.",
             "prefix_placeholder": "Ex. !tts",
             "obs_title": "OBS Source (Overlay)",
-            "obs_desc": "Copy this link to add the chat browser source in your OBS."
+            "obs_desc": "Copy this link to add the chat browser source in your OBS.",
+            "voice_general_title": "Followers Voice",
+            "voice_general_desc": "Set the voice for general messages and followers."
         },
         "bots": {
             "title": "Muted Users",
@@ -637,7 +639,7 @@
             "play_pause": "Play / Pause Music",
             "skip": "Skip Song",
             "tts_use_command": "Require command for TTS",
-            "tts_voice_type": "Use Web Voices (Premium)",
+            "tts_voice_type": "Use Web Voices",
             "tts_on": "Enabled",
             "tts_off": "Disabled",
             "close_app": "Close MiniKick",
