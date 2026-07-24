@@ -326,7 +326,7 @@ DEFAULT_DICTIONARY = {
             "tts_desc": "Enable automated message reading.",
             "name_title": "Read Names",
             "name_desc": "Pronounce the sender's name before the message.",
-            "provider_title": "Premium Voice Engine",
+            "provider_title": "TTS Voice Engine",
             "provider_desc": "Toggle between Edge web voices or local voices.",
             "cmd_title": "Require Command",
             "cmd_desc": "Only read messages starting with a prefix.",
@@ -336,7 +336,9 @@ DEFAULT_DICTIONARY = {
             "prefix_desc": "Define the exact text that will trigger the bot's reading.",
             "prefix_placeholder": "Ex. !tts",
             "obs_title": "OBS Source (Overlay)",
-            "obs_desc": "Copy this link to add the chat browser source in your OBS."
+            "obs_desc": "Copy this link to add the chat browser source in your OBS.",
+            "voice_general_title": "Followers Voice",
+            "voice_general_desc": "Set the voice for general messages and followers."
         },
         "bots": {
             "title": "Muted Users",
@@ -432,6 +434,10 @@ DEFAULT_DICTIONARY = {
             "skip_desc": "Forces playback to the next song. You can customize the '!skip' trigger in the Commands view.",
             "song_label": "Current Song (Default: !song)",
             "song_desc": "Displays the currently playing track in chat. You can customize the '!song' trigger in the Commands view.",
+            "pause_label": "Pause Music (Default: !pause)",
+            "pause_desc": "Allows moderators to pause music from chat. You can customize the '!pause' trigger in the Commands view.",
+            "resume_label": "Resume Music (Default: !resume)",
+            "resume_desc": "Allows moderators to resume music from chat. You can customize the '!resume' trigger in the Commands view.",
             "default_tag_name": "Music Plugin"
         },
         "toast": {
@@ -448,6 +454,10 @@ DEFAULT_DICTIONARY = {
             "not_linked": "❌ The broadcaster has not linked their Spotify account.",
             "not_linked_spotify": "❌ The broadcaster has not linked their Spotify account.",
             "not_linked_youtube": "❌ The streamer has not activated the YouTube player.",
+            "pause_success": "⏸️ Music paused successfully.",
+            "pause_failed": "❌ Failed to pause music.",
+            "resume_success": "▶️ Music resumed successfully.",
+            "resume_failed": "❌ Failed to resume music.",
             "skip_success": "⏩ Song skipped successfully.",
             "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
             "song_now_playing": "🎵 Now playing: {title} - {artist}",
@@ -631,7 +641,7 @@ DEFAULT_DICTIONARY = {
             "play_pause": "Play / Pause Music",
             "skip": "Skip Song",
             "tts_use_command": "Require command for TTS",
-            "tts_voice_type": "Use Web Voices (Premium)",
+            "tts_voice_type": "Use Web Voices",
             "tts_on": "Enabled",
             "tts_off": "Disabled",
             "close_app": "Close MiniKick",
@@ -799,6 +809,13 @@ DEFAULT_DICTIONARY = {
             "time_20s": "-20s",
             "time_now": "Now",
             "tooltip_title": "Ping / Latency"
+        },
+        "table": {
+            "title": "Service Status",
+            "col_service": "Service",
+            "col_desc": "Description",
+            "col_status": "Status",
+            "col_latency": "Latency"
         },
         "btn_check": "Check Network"
     },
