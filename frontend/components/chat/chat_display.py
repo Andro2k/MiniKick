@@ -2,6 +2,7 @@
 
 import html
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy
+from PySide6.QtGui import QTextCursor
 from frontend.widgets import ModernCard
 from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_500
 
@@ -42,11 +43,10 @@ class ChatDisplayPanel(ModernCard):
         excess = doc.blockCount() - self._MAX_CHAT_BLOCKS
         if excess <= 0:
             return
-        cursor = self.chat_display.textCursor()
+        cursor = QTextCursor(doc)
         cursor.beginEditBlock()
-        cursor.movePosition(cursor.MoveOperation.Start)
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
         for _ in range(excess):
-            cursor.select(cursor.SelectionType.BlockUnderCursor)
-            cursor.removeSelectedText()
-            cursor.deleteChar()
+            cursor.movePosition(QTextCursor.MoveOperation.NextBlock, QTextCursor.MoveMode.KeepAnchor)
+        cursor.removeSelectedText()
         cursor.endEditBlock()

@@ -13,6 +13,12 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.i18n = i18n
         self._chat_overlay_url = ""
         self.chat_overlay_full_url = ""
+       
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.setInterval(300)
+        self._save_timer.timeout.connect(self._emit_settings_changed)
+
         self._setup_ui()
         self._connect_signals()
 
@@ -88,8 +94,8 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     def _connect_signals(self):
         self.combo_overlay_theme.currentIndexChanged.connect(self._update_overlay_url)
-        self.slider_overlay_size.slider.valueChanged.connect(self._on_overlay_size_changed)
-        self.slider_overlay_fade.slider.valueChanged.connect(self._on_overlay_fade_changed)
+        self.slider_overlay_size.slider.valueChanged.connect(self._update_overlay_url)
+        self.slider_overlay_fade.slider.valueChanged.connect(self._update_overlay_url)
         self.sw_overlay_show_bots.toggled.connect(self._update_overlay_url)
         self.sw_overlay_show_time.toggled.connect(self._update_overlay_url)
         self.btn_copy_overlay_obs.clicked.connect(self._copy_overlay_obs_url)
@@ -107,6 +113,9 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.slider_overlay_fade.slider.valueChanged.connect(self._on_setting_changed)
 
     def _on_setting_changed(self, *args):
+        self._save_timer.start()
+
+    def _emit_settings_changed(self):
         self.settings_changed.emit()
 
     @property
@@ -131,12 +140,6 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.chat_overlay_full_url = f"{base_part}?{token_part}&theme={theme}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
         else:
             self.chat_overlay_full_url = f"{base_url}?theme={theme}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
-
-    def _on_overlay_size_changed(self, value):
-        self._update_overlay_url()
-
-    def _on_overlay_fade_changed(self, value):
-        self._update_overlay_url()
 
     @Slot()
     def _copy_overlay_obs_url(self):

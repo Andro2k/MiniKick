@@ -96,9 +96,12 @@ class BotMutePanel(QWidget):
     def clear_word_input(self):
         self.txt_word_input.clear()
 
-    def _configure_tag_item(self, item: QListWidgetItem, tag_widget: QFrame):
-        lbl_name = tag_widget.findChild(QLabel)
-        btn_delete = tag_widget.findChild(QPushButton)
+    def _configure_tag_item(self, item: QListWidgetItem, tag_widget: QFrame, lbl_name: QLabel = None, btn_delete: QPushButton = None):
+        if lbl_name is None:
+            lbl_name = tag_widget.findChild(QLabel)
+        if btn_delete is None:
+            btn_delete = tag_widget.findChild(QPushButton)
+
         if lbl_name and btn_delete:
             lbl_name.ensurePolished()
             btn_delete.ensurePolished()
@@ -123,11 +126,13 @@ class BotMutePanel(QWidget):
 
     def recalculate_item_sizes(self):
         for list_widget in [self.list_bots, self.list_words]:
+            list_widget.setUpdatesEnabled(False)
             for i in range(list_widget.count()):
                 item = list_widget.item(i)
                 tag_widget = list_widget.itemWidget(item)
                 if tag_widget:
                     self._configure_tag_item(item, tag_widget)
+            list_widget.setUpdatesEnabled(True)
 
     def changeEvent(self, event):
         super().changeEvent(event)
@@ -156,7 +161,7 @@ class BotMutePanel(QWidget):
         layout.addWidget(lbl_name)
         
         self.list_bots.setItemWidget(item, tag_widget)
-        self._configure_tag_item(item, tag_widget)
+        self._configure_tag_item(item, tag_widget, lbl_name, btn_delete)
 
     def add_word_tag(self, word: str):
         item = QListWidgetItem(word)
@@ -180,7 +185,7 @@ class BotMutePanel(QWidget):
         layout.addWidget(lbl_name)
         
         self.list_words.setItemWidget(item, tag_widget)
-        self._configure_tag_item(item, tag_widget)
+        self._configure_tag_item(item, tag_widget, lbl_name, btn_delete)
 
     def clear_list(self):
         self.list_bots.clear()
