@@ -1,6 +1,6 @@
 # frontend\components\chat\tts_settings.py
 
-from PySide6.QtCore import Qt, Signal, Slot, QTimer
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QFrame
 from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch
 from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix
@@ -15,12 +15,6 @@ class ChatTtsSettingsPanel(ModernCard):
     def __init__(self, i18n, parent=None):
         super().__init__(parent, margin=12, spacing=8, orientation="vertical")
         self.i18n = i18n
-
-        self._save_timer = QTimer(self)
-        self._save_timer.setSingleShot(True)
-        self._save_timer.setInterval(300)
-        self._save_timer.timeout.connect(self._emit_settings_changed)
-
         self._setup_ui()
         self._connect_signals()
 
@@ -147,9 +141,6 @@ class ChatTtsSettingsPanel(ModernCard):
         self.provider_toggled.emit(is_web)
 
     def _on_setting_changed(self, *args):
-        self._save_timer.start()
-
-    def _emit_settings_changed(self):
         self.settings_changed.emit()
 
     @Slot(int)
