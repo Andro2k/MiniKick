@@ -439,6 +439,23 @@
             "volume_title": "Volumen del Reproductor",
             "volume_desc": "Ajustar el volumen de reproducción de YouTube."
         },
+        "stats": {
+            "queue_title": "Cola",
+            "queue_desc": "Canciones después del título actual",
+            "duration_title": "Duración total",
+            "duration_desc": "Duración de todas las canciones de la lista",
+            "cmd_title": "Comando del chat",
+            "cmd_desc": "Si los espectadores pueden añadir canciones con !sr",
+            "service_active": "Servicio Activado",
+            "service_disabled": "Servicio Desactivado",
+            "badge_active": "O ACTIVADO",
+            "badge_disabled": "O DESACTIVADO",
+            "service_disabled_chat": "❌ @{user}, el servicio de música está desactivado en este momento."
+        },
+        "tabs": {
+            "player": "Reproductor",
+            "commands": "Comandos"
+        },
         "cmds": {
             "title": "Comandos de Espectadores",
             "sr_label": "Pedir Canción (Por defecto: !sr)",
@@ -451,6 +468,8 @@
             "pause_desc": "Permite a los moderadores pausar la música desde el chat. Puedes personalizar el disparador '!pause' en la vista de Comandos.",
             "resume_label": "Reanudar Música (Por defecto: !resume)",
             "resume_desc": "Permite a los moderadores reanudar la música desde el chat. Puedes personalizar el disparador '!resume' en la vista de Comandos.",
+            "playlist_label": "Ver Mis Canciones (Por defecto: !playlist)",
+            "playlist_desc": "Muestra a los espectadores la posición de las canciones que han pedido. Alias: !queue, !pl.",
             "default_tag_name": "Plugin de Música"
         },
         "toast": {
@@ -458,6 +477,7 @@
             "connected": "Vínculo con Spotify establecido con éxito.",
             "disconnected": "Cuenta de Spotify desvinculada.",
             "removed_from_queue": "Canción eliminada de la cola",
+            "moved_in_queue": "Posición de canción actualizada en la cola",
             "error_playing": "No se pudo reproducir '{title}': {error}",
             "chat_error_playing": "❌ @{user}, no se pudo reproducir '{title}': {error}",
             "chat_error_playing_no_user": "❌ No se pudo reproducir '{title}': {error}"
@@ -475,6 +495,9 @@
             "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o cola vacía).",
             "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",
             "song_paused": "🔇 Spotify está en pausa o cerrado.",
+            "playlist_empty_for_user": "❌ @{user}, no tienes canciones en la cola actualmente.",
+            "playlist_user_songs": "🎵 @{user}, tienes {count} canción(es) en la cola: {songs}",
+            "no_queue_available": "❌ @{user}, la cola de reproducción no está disponible en este momento.",
             "song_paused_spotify": "🔇 Spotify está en pausa.",
             "song_paused_youtube": "🔇 YouTube está en pausa.",
             "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando."

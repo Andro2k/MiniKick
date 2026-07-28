@@ -20,6 +20,9 @@ class MusicPlayerProvider(Protocol):
     def remove_from_queue(self, index: int) -> bool:
         return False
 
+    def move_in_queue(self, from_index: int, to_index: int) -> bool:
+        return False
+
     def pause_playback(self) -> bool:
         return False
 

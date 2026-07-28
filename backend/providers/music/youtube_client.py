@@ -226,6 +226,17 @@ class YouTubeMusicProvider(QObject):
             return True
         return False
 
+    def move_in_queue(self, from_index: int, to_index: int) -> bool:
+        if 0 <= from_index < len(self.queue) and 0 <= to_index < len(self.queue):
+            if from_index == to_index:
+                return True
+            item = self.queue.pop(from_index)
+            self.queue.insert(to_index, item)
+            if from_index == 0 or to_index == 0:
+                self._preload_next_song()
+            return True
+        return False
+
     def shutdown(self):
         self.player.stop()
         self.player.setSource(QUrl())

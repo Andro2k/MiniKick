@@ -1,0 +1,83 @@
+# Walkthrough v1.4.4 - Mejoras del Chat, Modularización del Reproductor de Música, Layout Flex para Estadísticas, Reordenamiento de Cola y Comando !playlist
+
+**Fecha:** 28 de Julio, 2026  
+**Versión Target:** v1.4.4  
+**Ubicación del Documento:** `c:\Users\TheAn\Desktop\python\Kick\walkthroughs\v1.4.4\WT-1.4.4_01.md`
+
+---
+
+## 1. Resumen de Cambios
+
+En esta entrega se han implementado mejoras clave en los módulos de chat y reproductor de música:
+- **Módulo de Chat**:
+  - Optimización de la experiencia de configuración de voz (TTS) con botones de vista previa y cooldown.
+  - Formato de mensajes con roles (`[tiempo] [Rol] Usuario: Mensaje`).
+  - Corrección de la detección de bots y notificaciones toast.
+- **Módulo de Música (Nueva Arquitectura Modular)**:
+  - Creación del paquete `frontend/components/music/` con 4 paneles desacoplados (`MusicStatsPanel`, `MusicPlayerSettingsPanel`, `MusicCommandsPanel` y `MusicQueuePanel`).
+  - **Tarjetas de Estadísticas Dinámicas (`QGridLayout`)**: Se implementó en `MusicStatsPanel` el mismo patrón dinámico que en `DashboardView` (`relayout`), reorganizando dinámicamente las tarjetas según el ancho de la ventana (1 fila en pantallas anchas, 2 filas responsivas en medianas y 1 columna en estrechas).
+  - **Organización en Pestañas (`QTabWidget`)**:
+    - **Pestaña 1 (Reproductor):** `MusicPlayerSettingsPanel` (Selección de Proveedor, Autenticación, Reproductor Actual, Volumen/Retomado y Overlay OBS).
+    - **Pestaña 2 (Comandos):** `MusicCommandsPanel` (Interruptores de comandos `!sr`, `!skip`, `!song`, `!pause`, `!resume`, `!playlist`).
+    - **Columna Derecha (Cola):** `MusicQueuePanel` (Tabla de cola de reproducción).
+  - **Corrección de Bugs**:
+    - **Visibilidad de la Cola en Spotify:** Habilitada la visualización de la cola para Spotify al estar conectado.
+    - **Persistencia del Proveedor al Iniciar:** Corregido `MusicController._load_initial_state()` para recordar e iniciar en el proveedor seleccionado por el usuario (ej. YouTube) al abrir la app.
+  - Refactorización de estilos UI sin `setStyleSheet` inline, integrando propiedades nativas del sistema de temas (`frontend/common/theme.py`).
+  - Reordenamiento de canciones en la cola mediante botones de subir (`chevron-up.svg`) y bajar (`chevron-down.svg`).
+  - Nuevo comando de chat `!playlist` (con alias `!queue`, `!pl`).
+
+---
+
+## 2. Detalles de las Características Implementadas
+
+### A. Botones de Prueba de Voz con Cooldown (Audio Preview)
+- **Ubicación:** `frontend/components/chat/tts_settings.py`
+- **Funcionalidad:** Botones de prueba (`btn_test`) con temporizador de enfriamiento (**cooldown de 3 segundos**) mediante `QTimer.singleShot(3000, ...)`.
+
+### B. Formato de Chat Display con Rol de Usuario (`[tiempo] [Rol] Usuario: Mensaje`)
+- **Ubicación:** `frontend/components/chat/chat_display.py` y `frontend/views/chat_view.py`
+- **Estructura HTML:** `[HH:MM:SS] [Rol] Usuario: Mensaje` con estilos CSS por rol.
+
+### C. Modularización del Reproductor de Música (`frontend/components/music/`)
+- **Archivos creados:**
+  - `stats_panel.py` (`MusicStatsPanel`): Tarjetas superiores de estadísticas (Cola, Duración y Estado del Servicio) configuradas con `FlowLayout` responsive (comportamiento flexbox en filas).
+  - `player_settings.py` (`MusicPlayerSettingsPanel`): Paneles de proveedor, login, ahora suena, volumen y overlay.
+  - `commands_panel.py` (`MusicCommandsPanel`): Switches para la activación/desactivación de comandos.
+  - `queue_panel.py` (`MusicQueuePanel`): Tabla de cola con reordenamiento (subir/bajar/eliminar) y cálculo de tiempos.
+  - `__init__.py`: Exportación unificada de todos los paneles.
+
+### D. Corrección de Bugs de Música
+1. **Visibilidad de la Cola en Spotify:** Se ajustó la condición a `show_queue = (is_youtube or connected)` en `set_auth_state`, permitiendo que los usuarios de Spotify vean la cola al conectarse.
+2. **Persistencia del Proveedor Seleccionado:** Se reubicó la lógica de selección inicial (`combo_provider.setCurrentIndex`) al final de `_load_initial_state()` en `MusicController`, evitando el reseteo automático a Spotify al abrir la aplicación.
+
+### E. Refactorización de Estilos UI con el Sistema de Temas (`theme.py`)
+- **Ubicación:** `frontend/components/music/stats_panel.py`
+- **Eliminación de `setStyleSheet`:** Las insignias y contadores emplean componentes `QFrame[role="badge"]` con estados dinámicos `state="everyone"` (verde) / `state="broadcaster"` (rojo) y etiquetas tipográficas `role="h1"` / `role="h3"`.
+
+### F. Reordenamiento de Canciones en Cola y Comando `!playlist`
+- **Reordenamiento:** Cada fila de la tabla de cola cuenta con acciones de Subir (`chevron-up.svg`), Bajar (`chevron-down.svg`) y Eliminar (`trash.svg`).
+- **Comando `!playlist` (Alias: `!queue`, `!pl`):** Informa al espectador sobre la posición exacta de las canciones que ha solicitado en el chat.
+
+---
+
+## 3. Archivos Modificados y Creados
+
+| Archivo | Descripción del Cambio |
+| :--- | :--- |
+| `frontend/components/music/stats_panel.py` | [NUEVO] Componente de estadísticas superiores con `FlowLayout` tipo flex en filas. |
+| `frontend/components/music/player_settings.py` | [NUEVO] Componente de ajustes del reproductor, auth, canción actual y overlay. |
+| `frontend/components/music/commands_panel.py` | [NUEVO] Componente con switches de comandos de espectadores. |
+| `frontend/components/music/queue_panel.py` | [NUEVO] Componente con tabla de cola de reproducción y acciones de reordenamiento. |
+| `frontend/components/music/__init__.py` | [NUEVO] Exportación pública de componentes de música. |
+| `frontend/views/music_view.py` | Vista principal refactorizada para orquestar los paneles de `frontend/components/music`. |
+| `backend/controllers/music_controller.py` | Corrección de persitencia del proveedor guardado al inicio en `_load_initial_state`. |
+| `backend/interfaces/music_interfaces.py` | Adición del método `move_in_queue(from_index, to_index)`. |
+| `backend/providers/music/youtube_client.py` | Implementación de `move_in_queue` en `YouTubeMusicProvider`. |
+| `locales/es.json` y `locales/en.json` | Claves traducidas para pestañas de música, comando `!playlist` y notificaciones. |
+
+---
+
+## 4. Verificación y Pruebas
+1. **Validación de Sintaxis:** Verificado satisfactoriamente con `py_compile` en los 7 archivos Python creados y modificados.
+2. **Prueba de Ejecución:** Aplicación ejecutada con `uv run main.py` sin errores.

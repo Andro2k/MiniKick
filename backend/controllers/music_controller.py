@@ -23,6 +23,7 @@ class MusicController(QObject):
         self.auth_worker = None
         self.provider_type = "spotify"
         self._last_song: dict | None = None
+        self.music_service_enabled = True
         self.polling_timer = QTimer(self)
         self.polling_timer.setInterval(5000)
         self.polling_timer.timeout.connect(self._poll_now_playing)
@@ -40,6 +41,8 @@ class MusicController(QObject):
         self.view.play_pause_requested.connect(self.handle_play_pause)
         self.view.skip_requested.connect(self.handle_skip)
         self.view.youtube_auto_resume_toggled.connect(self.handle_youtube_auto_resume_toggle)
+        self.view.service_toggled.connect(self.handle_service_toggle)
+        self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
 
     def _sync_switches_from_db(self):
         saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.get_all_commands()}
@@ -49,6 +52,8 @@ class MusicController(QObject):
         self.view.sw_song.setChecked(saved_cmds.get("!song", False))
         self.view.sw_pause.setChecked(saved_cmds.get("!pause", False))
         self.view.sw_resume.setChecked(saved_cmds.get("!resume", False))
+        if hasattr(self.view, "sw_playlist"):
+            self.view.sw_playlist.setChecked(saved_cmds.get("!playlist", False))
         self.view.blockSignals(False)
 
     def _load_initial_state(self):
@@ -73,14 +78,26 @@ class MusicController(QObject):
                 is_regex=False,
                 permission="moderator"
             )
+        if not any(c for c in commands if c["response"] == "[PLUGIN_SPOTIFY_PLAYLIST]"):
+            self.command_service.save_command(
+                trigger="!playlist",
+                response="[PLUGIN_SPOTIFY_PLAYLIST]",
+                is_active=True,
+                cooldown=5,
+                aliases="!queue,!pl",
+                is_regex=False,
+                permission="everyone"
+            )
 
         self._sync_switches_from_db()
 
         if self.settings_storage:
             self.provider_type = self.settings_storage.load_string("music_provider_type", "spotify")
             auto_resume = self.settings_storage.load_bool("youtube_auto_resume", True)
+            self.music_service_enabled = self.settings_storage.load_bool("music_service_enabled", True)
             self.view.blockSignals(True)
             self.view.sw_auto_resume.setChecked(auto_resume)
+            self.view.set_service_state(self.music_service_enabled)
             self.view.blockSignals(False)
 
         index = self.view.combo_provider.findData(self.provider_type)
@@ -94,6 +111,18 @@ class MusicController(QObject):
                 self._init_session_success("music.status.session_remembered")
         elif self.provider_type == "youtube":
             self._init_youtube_provider()
+
+    @Slot(bool)
+    def handle_service_toggle(self, enabled: bool):
+        self.music_service_enabled = enabled
+        if self.settings_storage:
+            self.settings_storage.save_bool("music_service_enabled", enabled)
+        
+        status_title = self.i18n.get("music.stats.cmd_title")
+        status_msg = self.i18n.get("music.stats.service_active") if enabled else self.i18n.get("music.stats.service_disabled")
+        state_color = "success" if enabled else "warning"
+        if self.toast:
+            self.toast.show_toast(status_title, status_msg, state_color)
 
     @Slot()
     def handle_connect_request(self):
@@ -217,6 +246,16 @@ class MusicController(QObject):
                 msg = self.i18n.get("music.toast.removed_from_queue")
                 self.toast.show_toast(self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube", msg, "success")
 
+    @Slot(int, int)
+    def handle_move_queue_item(self, from_index: int, to_index: int):
+        if self.music_provider and hasattr(self.music_provider, "move_in_queue"):
+            success = self.music_provider.move_in_queue(from_index, to_index)
+            if success:
+                self._poll_now_playing()
+                msg = self.i18n.get("music.toast.moved_in_queue")
+                title_str = self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube"
+                self.toast.show_toast(title_str, msg, "info")
+
     @Slot(str, bool)
     def handle_command_toggle(self, trigger: str, is_active: bool):
         plugin_tags = {
@@ -224,14 +263,15 @@ class MusicController(QObject):
             "!skip": "[PLUGIN_SPOTIFY_SKIP]",
             "!song": "[PLUGIN_SPOTIFY_SONG]",
             "!pause": "[PLUGIN_SPOTIFY_PAUSE]",
-            "!resume": "[PLUGIN_SPOTIFY_RESUME]"
+            "!resume": "[PLUGIN_SPOTIFY_RESUME]",
+            "!playlist": "[PLUGIN_SPOTIFY_PLAYLIST]"
         }
         existing = next((c for c in self.command_service.storage.load_all() if c["trigger"] == trigger), None)
 
         cooldown = existing["cooldown"] if existing else 5
-        aliases = existing["aliases"] if existing else ""
+        aliases = existing["aliases"] if existing else ("!queue,!pl" if trigger == "!playlist" else "")
         is_regex = existing["is_regex"] if existing else False
-        permission = existing["permission"] if existing else ("everyone" if trigger in ("!sr", "!song") else "moderator")
+        permission = existing["permission"] if existing else ("everyone" if trigger in ("!sr", "!song", "!playlist") else "moderator")
 
         self.command_service.save_command(
             trigger=trigger,
@@ -322,6 +362,11 @@ class MusicController(QObject):
         if not api:
             return
         
+        if not getattr(self, "music_service_enabled", True):
+            msg = self.i18n.get("music.stats.service_disabled_chat").replace("{user}", user)
+            api.post_chat_message(msg)
+            return
+
         provider = self.music_provider
         dispatch_table = {
             "[PLUGIN_SPOTIFY_SR]": self._handle_plugin_sr,
@@ -329,11 +374,37 @@ class MusicController(QObject):
             "[PLUGIN_SPOTIFY_SONG]": self._handle_plugin_song,
             "[PLUGIN_SPOTIFY_PAUSE]": self._handle_plugin_pause,
             "[PLUGIN_SPOTIFY_RESUME]": self._handle_plugin_resume,
+            "[PLUGIN_SPOTIFY_PLAYLIST]": self._handle_plugin_playlist,
         }
         
         executor = dispatch_table.get(tag)
         if executor:
             executor(api, provider, user, message, prefix_used)
+
+    def _handle_plugin_playlist(self, api, provider, user, message, prefix_used):
+        if not provider or not hasattr(provider, "get_queue"):
+            msg = self.i18n.get("music.chat.no_queue_available").replace("{user}", user)
+            api.post_chat_message(msg)
+            return
+
+        queue_items = provider.get_queue()
+        user_lower = user.lower()
+        user_matches = []
+        for idx, song in enumerate(queue_items):
+            req = song.get("requester", "")
+            if req and req.lower() == user_lower:
+                title = song.get("title", "Canción")
+                pos = idx + 1
+                user_matches.append(f"#{pos} \"{title}\"")
+
+        if not user_matches:
+            msg = self.i18n.get("music.chat.playlist_empty_for_user").replace("{user}", user)
+            api.post_chat_message(msg)
+        else:
+            songs_str = ", ".join(user_matches)
+            count = len(user_matches)
+            msg = self.i18n.get("music.chat.playlist_user_songs").replace("{user}", user).replace("{count}", str(count)).replace("{songs}", songs_str)
+            api.post_chat_message(msg)
 
     def _handle_plugin_sr(self, api, provider, user, message, prefix_used):
         query = message[len(prefix_used):].strip() if prefix_used else ""
