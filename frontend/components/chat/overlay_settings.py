@@ -1,8 +1,8 @@
 # frontend\components\chat\overlay_settings.py
 
 from PySide6.QtCore import Signal, Slot, QTimer
-from PySide6.QtWidgets import QFrame, QApplication
-from frontend.widgets import ModernCard, SettingRow, ModernSwitch, ModernButton, CompactSlider
+from PySide6.QtWidgets import QApplication
+from frontend.widgets import ModernCard, SettingRow, ModernSwitch, ModernButton, CompactSlider, ModernDivider
 from frontend.common.utils import NoWheelComboBox
 
 class ChatOverlaySettingsPanel(ModernCard):
@@ -85,9 +85,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.addWidget(row_overlay_show_bots)
         self.addWidget(row_overlay_show_time)
         
-        divider = QFrame()
-        divider.setProperty("role", "divider")
-        divider.setFixedHeight(1)
+        divider = ModernDivider()
         self.addWidget(divider)
         self.addWidget(row_copy_obs)
         self.addStretch()

@@ -1,8 +1,8 @@
 # frontend\components\chat\tts_settings.py
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
-from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QFrame, QWidget, QHBoxLayout, QPushButton
-from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch
+from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton
+from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider
 from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix, get_icon_colored
 from frontend.common.theme import COLOR_NEUTRAL_200
 
@@ -80,9 +80,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.addWidget(row_prefix)
         self.addWidget(row_volume)
 
-        divider = QFrame()
-        divider.setProperty("role", "divider")
-        divider.setFixedHeight(1)
+        divider = ModernDivider()
         self.addWidget(divider)
         
         category_lbl = QLabel(self.i18n.get("chat.roles.title"))

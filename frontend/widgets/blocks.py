@@ -59,6 +59,12 @@ class SettingRow(QWidget):
         layout.addLayout(text_layout, stretch=1)
         layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
 
+class ModernDivider(QFrame):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setProperty("role", "divider")
+        self.setFixedHeight(2.5)
+
 class SliderRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_NEUTRAL_200, parent=None):
         super().__init__(parent)

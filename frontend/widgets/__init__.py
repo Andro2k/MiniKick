@@ -3,7 +3,7 @@
 from .base_view import BaseView
 from .blocks import (
     ViewHeader, SettingRow, SliderRow, StatCard, 
-    ModernCard, ModernScrollArea, ExpandableSettingCard
+    ModernCard, ModernScrollArea, ExpandableSettingCard, ModernDivider
 )
 from .controls import ModernButton, ModernSwitch, CompactSlider, VariableTextEdit
 from .flow_layout import FlowLayout
@@ -19,6 +19,7 @@ __all__ = [
     "ModernCard",
     "ModernScrollArea",
     "ExpandableSettingCard",
+    "ModernDivider",
     "ModernButton",
     "ModernSwitch",
     "CompactSlider",

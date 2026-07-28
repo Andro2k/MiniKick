@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, 
                                QFrame, QPushButton, QListWidgetItem)
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
-from frontend.widgets import ModernButton
+from frontend.widgets import ModernButton, ModernDivider
 from frontend.common.theme import COLOR_BLACK, COLOR_RED
 from frontend.common.utils import get_icon_colored
 
@@ -55,9 +55,7 @@ class BotMutePanel(QWidget):
         self.btn_add_bot.clicked.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
         self.txt_bot_input.returnPressed.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
 
-        divider = QFrame()
-        divider.setProperty("role", "divider")
-        divider.setFixedHeight(1)
+        divider = ModernDivider()
         layout.addWidget(divider)
         title_words = QLabel(self.i18n.get("chat.banned_words.title"))
         title_words.setProperty("role", "h3")

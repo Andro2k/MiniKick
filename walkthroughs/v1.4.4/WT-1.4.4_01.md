@@ -73,6 +73,10 @@ En esta entrega se han implementado mejoras clave en los módulos de chat y repr
 - **Eliminación de `setStyleSheet` Inline:** Se eliminaron 12 declaraciones inline en `tts_settings.py`, `command_dialog.py`, `timer_dialog.py`, `network_view.py` y `blocks.py`.
 - **Integración con Sistema de Temas:** Se definieron reglas globales en `frontend/common/theme.py` para bordes de error en inputs (`QLineEdit[state="error"]`, `QTextEdit[state="error"]`, `QPlainTextEdit[state="error"]`) y roles/estados de tipografía (`QLabel[state="bold"]`, `QLabel[state="danger"]`, `QLabel[state="success"]`, `QLabel[state="info"]`), utilizando la API nativa de Qt (`setProperty("state", ...)`, `unpolish`/`polish`).
 
+### J. Estandarización de Divisores (`ModernDivider`)
+- **Creación de `ModernDivider`:** Se implementó el componente reutilizable `ModernDivider` (`frontend/widgets/blocks.py`) de 1px de grosor con `role="divider"`.
+- **Homologación Global:** Se reemplazó la línea horizontal nativa `QFrame.Shape.HLine` en `dashboard_view.py` por `ModernDivider()`, igualando el diseño visual de divisores en `bot_mute.py`, `overlay_settings.py`, `tts_settings.py` y el resto del sistema.
+
 ---
 
 ## 3. Archivos Modificados y Creados

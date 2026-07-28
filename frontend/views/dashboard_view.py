@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal, QRectF, QSize
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
 from frontend.common.utils import create_circular_pixmap, get_icon_colored, get_assets_path, get_pixmap_colored
-from frontend.widgets import BaseView, StatCard, SettingRow, ModernCard, ScalableIllustration, ModernButton, ModernSwitch
+from frontend.widgets import BaseView, StatCard, SettingRow, ModernCard, ScalableIllustration, ModernButton, ModernSwitch, ModernDivider
 
 class SegmentedDistributionBar(QWidget):
     def __init__(self, parent=None):
@@ -150,9 +150,7 @@ class DashboardView(BaseView):
 
         conn_card.addWidget(row_autostart)
         
-        divider = QFrame()
-        divider.setFrameShape(QFrame.Shape.HLine)
-        divider.setProperty("role", "divider")
+        divider = ModernDivider()
         conn_card.addWidget(divider)
         
         conn_card.addLayout(status_layout)
