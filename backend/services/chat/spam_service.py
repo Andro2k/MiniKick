@@ -6,9 +6,10 @@ import re
 class SpamService:
     _LINK_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
     _SYMBOL_REGEX = re.compile(r'[^a-zA-Z0-9\s]')
-    def __init__(self, storage, api_client=None, max_history_size: int = 1000):
+    def __init__(self, storage, api_client=None, max_history_size: int = 1000, i18n=None):
         self.storage = storage
         self.api_client = api_client
+        self.i18n = i18n
         self.broadcaster_id = 0
         self.filters = {}
         self.user_history = {}
@@ -138,8 +139,9 @@ class SpamService:
                 
             elif penalty_type == "warn_delete":
                 self.api_client.delete_chat_message(msg_id)
-                warn_msg = f"@{user} por favor evita el spam en el chat."
-                self.api_client.post_chat_message(warn_msg, msg_type="bot")
+                if self.i18n:
+                    warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
+                    self.api_client.post_chat_message(warn_msg, msg_type="bot")
                 
         except Exception as e:
             logging.error("[SpamService] Error attempting to penalize %s: %s", user, e)

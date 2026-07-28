@@ -136,7 +136,8 @@ DEFAULT_DICTIONARY = {
             "activated": "Filter Activated",
             "deactivated": "Filter Deactivated",
             "activated_msg": "The filter '{filter_name}' is now active.",
-            "deactivated_msg": "The filter '{filter_name}' is now inactive."
+            "deactivated_msg": "The filter '{filter_name}' is now inactive.",
+            "warn_msg": "@{user} please avoid spamming in the chat."
         }
     },
     "command": {
@@ -359,7 +360,13 @@ DEFAULT_DICTIONARY = {
             "vip_desc": "Voice used for VIP users' messages.",
             "subscriber_title": "Subscriber Voice",
             "subscriber_desc": "Voice used for subscribers' messages.",
-            "default_voice": "(Use global voice)"
+            "default_voice": "(Use global voice)",
+            "name_broadcaster": "Streamer",
+            "name_moderator": "Moderator",
+            "name_vip": "VIP",
+            "name_subscriber": "Subscriber",
+            "name_bot": "Bot",
+            "name_user": "User"
         },
         "tabs": {
             "settings": "Voice Settings",
@@ -382,7 +389,15 @@ DEFAULT_DICTIONARY = {
             "provider_local": "SAPI5 / OS (Local)",
             "provider_active": "Active mode: {mode}",
             "tts_error_title": "Unstable TTS Network",
-            "tts_error_offline": "Loaded offline mode: {error}"
+            "tts_error_offline": "Loaded offline mode: {error}",
+            "voice_test_sample": "This is a voice sample test.",
+            "test_btn_tooltip": "Test voice",
+            "read_name_title": "Read Names",
+            "read_name_active": "Reading sender names enabled",
+            "read_name_inactive": "Reading sender names disabled",
+            "use_command_title": "Require Command",
+            "use_command_active": "TTS command requirement enabled",
+            "use_command_inactive": "TTS command requirement disabled"
         },
         "overlay": {
             "theme_title": "Chat Design",
@@ -668,9 +683,6 @@ DEFAULT_DICTIONARY = {
                 "import_success_title": "Import successful",
                 "import_success_desc": "Your settings have been restored.",
                 "import_error_desc": "The file is corrupt or invalid."
-            },
-            "chat": {
-                "voice_updated": "Voice updated."
             }
         },
         "workers": {

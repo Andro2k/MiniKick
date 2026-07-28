@@ -46,6 +46,7 @@ class ChatController(QObject):
         self.view.volume_changed.connect(self.service.set_volume)
         self.view.provider_toggled.connect(self._handle_provider_change)
         self.view.voice_changed.connect(self._handle_voice_change)
+        self.view.voice_test_requested.connect(self._handle_voice_test)
         self.view.settings_changed.connect(self._handle_settings_save)
         self.view.bot_add_requested.connect(self._add_bot)
         self.view.bot_remove_requested.connect(self._remove_bot)
@@ -67,6 +68,8 @@ class ChatController(QObject):
             self.service.set_voice(provider, saved_voice_id)
             
         self._tts_enabled = settings.get("enabled", True)
+        self._read_name_enabled = settings.get("read_name", True)
+        self._use_command_enabled = settings.get("use_command", False)
         self._tts_settings_cache = dict(settings)
         
         role_voices = {
@@ -175,13 +178,34 @@ class ChatController(QObject):
                         voice_id = self._resolve_voice_for_badges(dto.badges, settings)
                         self.service.speak(text, voice_id=voice_id)
 
+    @Slot(str)
+    def _handle_voice_test(self, voice_id: str):
+        if voice_id:
+            sample_text = self.i18n.get("chat.status.voice_test_sample")
+            self.service.speak(sample_text, voice_id=voice_id)
+
+    def _resolve_user_role(self, badges: list, user: str) -> str:
+        username_lower = user.lower()
+        if "broadcaster" in badges:
+            return self.i18n.get("chat.roles.name_broadcaster")
+        elif "moderator" in badges:
+            return self.i18n.get("chat.roles.name_moderator")
+        elif "vip" in badges:
+            return self.i18n.get("chat.roles.name_vip")
+        elif "subscriber" in badges:
+            return self.i18n.get("chat.roles.name_subscriber")
+        elif "bot" in badges or username_lower in self._DEFAULT_BOTS or username_lower in self.muted_bots:
+            return self.i18n.get("chat.roles.name_bot")
+        return self.i18n.get("chat.roles.name_user")
+
     def _step_ui_render(self, dto: ChatMessageDTO):
-        self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp)
         badges = list(dto.badges) if dto.badges else []
         username_lower = dto.user.lower()
-        if username_lower in self._DEFAULT_BOTS or username_lower.endswith("bot"):
+        if username_lower in self._DEFAULT_BOTS or username_lower in self.muted_bots:
             if "bot" not in badges:
                 badges.append("bot")
+        role_name = self._resolve_user_role(badges, dto.user)
+        self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name)
         self.message_received.emit(dto.user, dto.content, dto.color, badges)
 
     def _resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
@@ -306,8 +330,6 @@ class ChatController(QObject):
         if final_select_id and final_select_id != self.service.get_saved_voice_id(provider):
             self.service.set_voice(provider, final_select_id)
             self.sync_settings_cache()
-            if play_test:
-                self.service.speak(self.view.i18n.get("main.controllers.chat.voice_updated"))
 
         settings = self.service.get_settings()
         role_voices = {
@@ -335,7 +357,6 @@ class ChatController(QObject):
         provider = "web" if self.view.is_web_provider else "local"
         self.service.set_voice(provider, voice_id)
         self.sync_settings_cache()
-        self.service.speak(self.view.i18n.get("main.controllers.chat.voice_updated"))
 
     @Slot(bool)
     def _handle_provider_change(self, is_web: bool):
@@ -421,6 +442,24 @@ class ChatController(QObject):
                     message=status_msg,
                     state=state_color
                 )
+
+        new_read_name_state = settings["read_name"]
+        if hasattr(self, '_read_name_enabled') and self._read_name_enabled != new_read_name_state:
+            self._read_name_enabled = new_read_name_state
+            if self.toast:
+                title = self.i18n.get("chat.status.read_name_title")
+                msg = self.i18n.get("chat.status.read_name_active") if new_read_name_state else self.i18n.get("chat.status.read_name_inactive")
+                color = "success" if new_read_name_state else "warning"
+                self.toast.show_toast(title=title, message=msg, state=color)
+
+        new_use_cmd_state = settings["use_command"]
+        if hasattr(self, '_use_command_enabled') and self._use_command_enabled != new_use_cmd_state:
+            self._use_command_enabled = new_use_cmd_state
+            if self.toast:
+                title = self.i18n.get("chat.status.use_command_title")
+                msg = self.i18n.get("chat.status.use_command_active") if new_use_cmd_state else self.i18n.get("chat.status.use_command_inactive")
+                color = "success" if new_use_cmd_state else "warning"
+                self.toast.show_toast(title=title, message=msg, state=color)
 
     def _sync_tts_command_from_db(self):
         commands = self.command_service.get_all_commands()

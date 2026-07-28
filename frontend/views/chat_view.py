@@ -15,6 +15,7 @@ class ChatView(BaseView):
     word_add_requested = Signal(str)
     word_remove_requested = Signal(str)
     language_filter_changed = Signal(str)
+    voice_test_requested = Signal(str)
 
     def __init__(self, i18n):
         super().__init__(i18n=i18n,title_key="chat.header.title",subtitle_key="chat.header.subtitle")
@@ -63,6 +64,7 @@ class ChatView(BaseView):
         self.tts_settings_panel.language_filter_changed.connect(self.language_filter_changed.emit)
         self.tts_settings_panel.voice_changed.connect(self.voice_changed.emit)
         self.tts_settings_panel.settings_changed.connect(self.settings_changed.emit)
+        self.tts_settings_panel.voice_test_requested.connect(self.voice_test_requested.emit)
 
         self.bot_panel.bot_add_requested.connect(self.bot_add_requested.emit)
         self.bot_panel.bot_remove_requested.connect(self.bot_remove_requested.emit)
@@ -156,8 +158,8 @@ class ChatView(BaseView):
     def get_role_voices(self) -> dict:
         return self.tts_settings_panel.get_role_voices()
 
-    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False):
-        self.chat_display_panel.append_message(user, message, color, timestamp, is_html)
+    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = ""):
+        self.chat_display_panel.append_message(user, message, color, timestamp, is_html, role)
 
     def set_tts_command_configuration(self, use_command: bool, command_trigger: str):
         self.blockSignals(True)

@@ -106,7 +106,7 @@ class MainWindowCore(QMainWindow):
         self.rewards_service = RewardsService(self.rewards_storage, self.overlay_server)
         
         self.command_service = CommandService(self.commands_storage, api_client=None)
-        self.spam_service = SpamService(self.spam_storage, api_client=None)
+        self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
         self.log_service = LogService(self.container.db_manager)
         self.network_service = NetworkService(overlay_port=self.overlay_server.port)

@@ -134,7 +134,8 @@
             "activated": "Filtro Activado",
             "deactivated": "Filtro Desactivado",
             "activated_msg": "El filtro '{filter_name}' ahora está activo.",
-            "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo."
+            "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo.",
+            "warn_msg": "@{user} por favor evita el spam en el chat."
         }
     },
     "command": {
@@ -357,7 +358,13 @@
             "vip_desc": "Voz usada para los mensajes de usuarios VIP.",
             "subscriber_title": "Voz del Suscriptor",
             "subscriber_desc": "Voz usada para los mensajes de suscriptores.",
-            "default_voice": "(Usar voz global)"
+            "default_voice": "(Usar voz global)",
+            "name_broadcaster": "Streamer",
+            "name_moderator": "Moderador",
+            "name_vip": "VIP",
+            "name_subscriber": "Suscriptor",
+            "name_bot": "Bot",
+            "name_user": "Usuario"
         },
         "tabs": {
             "settings": "Ajustes de Voz",
@@ -380,7 +387,15 @@
             "provider_local": "SAPI5 / OS (Local)",
             "provider_active": "Modo activo: {mode}",
             "tts_error_title": "Red TTS Inestable",
-            "tts_error_offline": "Cargado modo offline: {error}"
+            "tts_error_offline": "Cargado modo offline: {error}",
+            "voice_test_sample": "Esta es una prueba de voz.",
+            "test_btn_tooltip": "Probar voz",
+            "read_name_title": "Leer Nombres",
+            "read_name_active": "Lectura de nombres activada",
+            "read_name_inactive": "Lectura de nombres desactivada",
+            "use_command_title": "Requerir Comando",
+            "use_command_active": "Requerir comando TTS activado",
+            "use_command_inactive": "Requerir comando TTS desactivado"
         },
         "overlay": {
             "theme_title": "Diseño de Chat",
@@ -666,9 +681,6 @@
                 "import_success_title": "Importación exitosa",
                 "import_success_desc": "Tus ajustes han sido restaurados.",
                 "import_error_desc": "El archivo está dañado o no es válido."
-            },
-            "chat": {
-                "voice_updated": "Voz actualizada."
             }
         },
         "workers": {

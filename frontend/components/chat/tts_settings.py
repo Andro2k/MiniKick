@@ -1,9 +1,10 @@
 # frontend\components\chat\tts_settings.py
 
-from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QFrame
+from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
+from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QFrame, QWidget, QHBoxLayout, QPushButton
 from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch
-from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix
+from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix, get_icon_colored
+from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ChatTtsSettingsPanel(ModernCard):
     volume_changed = Signal(int)
@@ -11,12 +12,41 @@ class ChatTtsSettingsPanel(ModernCard):
     provider_toggled = Signal(bool)
     settings_changed = Signal()
     language_filter_changed = Signal(str)
+    voice_test_requested = Signal(str)
 
     def __init__(self, i18n, parent=None):
         super().__init__(parent, margin=12, spacing=8, orientation="vertical")
         self.i18n = i18n
         self._setup_ui()
         self._connect_signals()
+
+    def _create_combo_with_test_btn(self, combo: NoWheelComboBox) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
+        
+        btn_test = QPushButton()
+        btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_200, size=16))
+        btn_test.setIconSize(QSize(16, 16))
+        btn_test.setFixedSize(32, 32)
+        btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
+        btn_test.setProperty("role", "action_neutral_border")
+
+        def trigger_test():
+            voice_id = combo.currentData() or ""
+            if not voice_id and hasattr(self, 'combo_voice'):
+                voice_id = self.combo_voice.currentData() or ""
+            if voice_id:
+                btn_test.setEnabled(False)
+                self.voice_test_requested.emit(voice_id)
+                QTimer.singleShot(3000, lambda: btn_test.setEnabled(True))
+
+        btn_test.clicked.connect(trigger_test)
+        
+        layout.addWidget(combo)
+        layout.addWidget(btn_test)
+        return container
 
     def _setup_ui(self):
         self.chk_tts = ModernSwitch()
@@ -71,12 +101,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.combo_voice.setMinimumWidth(100)
         self.combo_voice.setMaximumWidth(300)
         
-        row_voice_general = SettingRow(
-            "user.svg",
-            self.i18n.get("chat.settings.voice_general_title"),
-            self.i18n.get("chat.settings.voice_general_desc"),
-            self.combo_voice
-        )
+        row_voice_general = SettingRow("user.svg", self.i18n.get("chat.settings.voice_general_title"), self.i18n.get("chat.settings.voice_general_desc"), self._create_combo_with_test_btn(self.combo_voice))
         voices_card.addWidget(row_voice_general)
 
         self.combo_voice_broadcaster = NoWheelComboBox()
@@ -99,10 +124,10 @@ class ChatTtsSettingsPanel(ModernCard):
         self.combo_voice_subscriber.setMinimumWidth(100)
         self.combo_voice_subscriber.setMaximumWidth(300)
 
-        row_role_broadcaster = SettingRow("user.svg", self.i18n.get("chat.roles.broadcaster_title"), self.i18n.get("chat.roles.broadcaster_desc"), self.combo_voice_broadcaster)
-        row_role_moderator = SettingRow("shield-half.svg", self.i18n.get("chat.roles.moderator_title"), self.i18n.get("chat.roles.moderator_desc"), self.combo_voice_moderator)
-        row_role_vip = SettingRow("star.svg", self.i18n.get("chat.roles.vip_title"), self.i18n.get("chat.roles.vip_desc"), self.combo_voice_vip)
-        row_role_subscriber = SettingRow("users.svg", self.i18n.get("chat.roles.subscriber_title"), self.i18n.get("chat.roles.subscriber_desc"), self.combo_voice_subscriber)
+        row_role_broadcaster = SettingRow("user.svg", self.i18n.get("chat.roles.broadcaster_title"), self.i18n.get("chat.roles.broadcaster_desc"), self._create_combo_with_test_btn(self.combo_voice_broadcaster))
+        row_role_moderator = SettingRow("shield-half.svg", self.i18n.get("chat.roles.moderator_title"), self.i18n.get("chat.roles.moderator_desc"), self._create_combo_with_test_btn(self.combo_voice_moderator))
+        row_role_vip = SettingRow("star.svg", self.i18n.get("chat.roles.vip_title"), self.i18n.get("chat.roles.vip_desc"), self._create_combo_with_test_btn(self.combo_voice_vip))
+        row_role_subscriber = SettingRow("users.svg", self.i18n.get("chat.roles.subscriber_title"), self.i18n.get("chat.roles.subscriber_desc"), self._create_combo_with_test_btn(self.combo_voice_subscriber))
 
         voices_card.addWidget(row_role_broadcaster)
         voices_card.addWidget(row_role_moderator)

@@ -6,7 +6,6 @@ from .music.spotify_client import SpotifyAuthManager, SpotifyMusicProvider
 from .music.youtube_client import YouTubeMusicProvider
 from .voices.tts_local import LocalTTSProvider
 from .voices.tts_online import WebTTSProvider
-from .voices.tts_service import TTSManager
 
 __all__ = [
     "KickAPIClient",
@@ -15,6 +14,5 @@ __all__ = [
     "SpotifyMusicProvider",
     "YouTubeMusicProvider",
     "LocalTTSProvider",
-    "WebTTSProvider",
-    "TTSManager"
+    "WebTTSProvider"
 ]

@@ -1,4 +1,4 @@
-# backend\providers\voices\tts_service.py
+# backend\services\chat\tts_service.py
 
 import queue
 import threading

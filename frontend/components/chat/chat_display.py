@@ -28,12 +28,31 @@ class ChatDisplayPanel(ModernCard):
         self.addWidget(lbl_chat_title)
         self.addWidget(self.chat_display)
 
-    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False):
+    _ROLE_COLORS = {
+        "Streamer": "#ef4444",
+        "Broadcaster": "#ef4444",
+        "Moderador": "#22c55e",
+        "Moderator": "#22c55e",
+        "VIP": "#eab308",
+        "Suscriptor": "#a855f7",
+        "Subscriber": "#a855f7",
+        "Bot": "#3b82f6",
+        "Sistema": "#00e701",
+        "System": "#00e701",
+        "Usuario": "#9ca3af",
+        "User": "#9ca3af"
+    }
+
+    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = ""):
         safe_user = html.escape(user)
         safe_message = message if is_html else html.escape(message)        
         safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_NEUTRAL_200
-        ts_span = f'<span style="color: {COLOR_NEUTRAL_500}; font-size: 0.85em; margin-right: 6px;">[{timestamp}]</span>' if timestamp else ""
-        html_msg = f'{ts_span}<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
+        ts_span = f'<span style="color: {COLOR_NEUTRAL_500}; font-size: 0.85em; margin-right: 6px;">[{timestamp}] </span>' if timestamp else ""
+        
+        role_color = self._ROLE_COLORS.get(role, "#9ca3af") if role else ""
+        role_span = f'<span style="color: {role_color}; font-weight: 600; margin-right: 4px;">[{role}]</span>' if role else ""
+
+        html_msg = f'{ts_span}{role_span}<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
         self.chat_display.append(html_msg)
         self._trim_chat_history()
 
