@@ -346,35 +346,74 @@
             }, delayMs);
         }
 
-        const es = new EventSource(`/music_events?token=${token}`);
+        let es = null;
+        let reconnectTimer = null;
 
-        es.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-
-            if (data.type === 'stopped') {
-                scheduleHide(3000);
-                return;
+        function connectSSE() {
+            if (es) {
+                try { es.close(); } catch (e) {}
+                es = null;
             }
 
-            if (data.type === 'playing') {
-                showPlayer(
-                    data.title,
-                    data.artist,
-                    data.is_playing,
-                    data.thumbnail,
-                    data.progress,
-                    data.duration
-                );
+            es = new EventSource(`/music_events?token=${token}`);
 
-                if (!data.is_playing) {
-                    scheduleHide(8000);
+            es.onopen = function () {
+                console.log("[Music Overlay] Conectado exitosamente.");
+                if (reconnectTimer) {
+                    clearInterval(reconnectTimer);
+                    reconnectTimer = null;
                 }
-            }
-        };
+            };
 
-        es.onerror = function () {
-            scheduleHide(5000);
-        };
+            es.onmessage = function (event) {
+                try {
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === 'stopped') {
+                        scheduleHide(3000);
+                        return;
+                    }
+
+                    if (data.type === 'playing') {
+                        showPlayer(
+                            data.title,
+                            data.artist,
+                            data.is_playing,
+                            data.thumbnail,
+                            data.progress,
+                            data.duration
+                        );
+
+                        if (!data.is_playing) {
+                            scheduleHide(8000);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error parseando evento de música SSE:", e);
+                }
+            };
+
+            es.onerror = function () {
+                scheduleHide(5000);
+                console.warn("[Music Overlay] Conexión perdida o rechazada. Reintentando...");
+                if (es) {
+                    try { es.close(); } catch (e) {}
+                    es = null;
+                }
+                scheduleReconnect();
+            };
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setInterval(() => {
+                    console.log("[Music Overlay] Intentando reconectar SSE...");
+                    connectSSE();
+                }, 3000);
+            }
+        }
+
+        connectSSE();
     </script>
 </body>
 

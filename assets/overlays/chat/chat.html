@@ -164,16 +164,54 @@
         document.documentElement.style.setProperty('--font-size', fontSize);
 
         const container = document.getElementById('chat-container');
-        const eventSource = new EventSource(`/chat_events?token=${token}`);
+        let eventSource = null;
+        let reconnectTimer = null;
 
-        eventSource.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            addMessage(data);
-        };
+        function connectSSE() {
+            if (eventSource) {
+                try { eventSource.close(); } catch (e) {}
+                eventSource = null;
+            }
 
-        eventSource.onerror = function (err) {
-            console.error("Error en conexión SSE de Chat:", err);
-        };
+            eventSource = new EventSource(`/chat_events?token=${token}`);
+
+            eventSource.onopen = function () {
+                console.log("[Chat Overlay] Conectado exitosamente.");
+                if (reconnectTimer) {
+                    clearInterval(reconnectTimer);
+                    reconnectTimer = null;
+                }
+            };
+
+            eventSource.onmessage = function (event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    addMessage(data);
+                } catch (e) {
+                    console.error("Error parseando evento de chat SSE:", e);
+                }
+            };
+
+            eventSource.onerror = function (err) {
+                console.warn("[Chat Overlay] Conexión perdida o rechazada. Reintentando...");
+                if (eventSource) {
+                    try { eventSource.close(); } catch (e) {}
+                    eventSource = null;
+                }
+                scheduleReconnect();
+            };
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setInterval(() => {
+                    console.log("[Chat Overlay] Intentando reconectar SSE...");
+                    connectSSE();
+                }, 3000);
+            }
+        }
+
+        connectSSE();
 
         function addMessage(data) {
             if (!showBots && data.badges && data.badges.includes('bot')) {

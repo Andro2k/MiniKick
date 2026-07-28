@@ -27,17 +27,59 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || '';
-        const eventSource = new EventSource(`/events?token=${token}`);
         const container = document.getElementById('container');
 
         const alertQueue = [];
         let isPlaying = false;
+        let eventSource = null;
+        let reconnectTimer = null;
 
-        eventSource.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            alertQueue.push(data);
-            processQueue();
-        };
+        function connectSSE() {
+            if (eventSource) {
+                try { eventSource.close(); } catch (e) {}
+                eventSource = null;
+            }
+
+            eventSource = new EventSource(`/events?token=${token}`);
+
+            eventSource.onopen = function () {
+                console.log("[Rewards Overlay] Conectado exitosamente.");
+                if (reconnectTimer) {
+                    clearInterval(reconnectTimer);
+                    reconnectTimer = null;
+                }
+            };
+
+            eventSource.onmessage = function (event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    alertQueue.push(data);
+                    processQueue();
+                } catch (e) {
+                    console.error("Error parseando evento SSE:", e);
+                }
+            };
+
+            eventSource.onerror = function (err) {
+                console.warn("[Rewards Overlay] Conexión perdida o rechazada. Reintentando...");
+                if (eventSource) {
+                    try { eventSource.close(); } catch (e) {}
+                    eventSource = null;
+                }
+                scheduleReconnect();
+            };
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setInterval(() => {
+                    console.log("[Rewards Overlay] Intentando reconectar SSE...");
+                    connectSSE();
+                }, 3000);
+            }
+        }
+
+        connectSSE();
 
         function processQueue() {
             if (isPlaying || alertQueue.length === 0) {
