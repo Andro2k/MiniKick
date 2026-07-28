@@ -60,9 +60,10 @@ QLabel {{ background-color: transparent; }}
 /* ==============================================================================
    2. ESTILOS DE ELEMENTOS QT COMUNES
    ============================================================================== */
-QLineEdit, QTextEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
-QTextEdit {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
-QLineEdit:focus, QTextEdit:focus {{ border: 1.5px solid {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
+QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
+QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{ border: 1.5px solid {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
+QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"] {{ border: 1.5px solid {COLOR_RED}; }}
 
 QComboBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; combobox-popup: 0; }}
 QComboBox:focus, QComboBox:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
@@ -195,6 +196,11 @@ QLabel[role="body"] {{ font-size: {size_textline_1}px; font-weight: 400; color: 
 QLabel[role="caption"] {{ font-size: {size_textline_3}px; font-weight: 400; color: {COLOR_NEUTRAL_500}; }}
 QLabel[role="monospace"] {{ font-size: {size_textline_2}px; color: {COLOR_NEUTRAL_400}; }}
 QLabel[state="error"] {{ color: {COLOR_RED}; }}
+QLabel[state="danger"] {{ color: {COLOR_RED}; }}
+QLabel[state="success"] {{ color: {COLOR_GREEN}; }}
+QLabel[state="info"] {{ color: {COLOR_BLUE}; }}
+QLabel[state="warning"] {{ color: {COLOR_AMBER}; }}
+QLabel[state="bold"] {{ font-weight: bold; }}
 QLabel[role="code"] {{ font-size: {size_textline_2}px; font-weight: bold; background-color: {COLOR_NEUTRAL_850}; padding: 1px 4px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; }}
 QLabel[role="category"] {{ font-weight: bold; color: {COLOR_GREEN}; margin-top: 6px; font-size: {size_textline_2}px; }}
 

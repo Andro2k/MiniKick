@@ -319,10 +319,10 @@ class TimerConfigWizard(ModernWizardPanel):
         self.btn_next.setEnabled(self.validate_step(self.current_step))
         if self.current_step == 0:
             for row, txt in self.message_rows:
-                if len(txt.text().strip()) > 492:
-                    txt.setStyleSheet("border: 1.5px solid #EF4444;")
-                else:
-                    txt.setStyleSheet("")
+                is_invalid = len(txt.text().strip()) > 492
+                txt.setProperty("state", "error" if is_invalid else "normal")
+                txt.style().unpolish(txt)
+                txt.style().polish(txt)
 
 
 class MessageEditorDialog(ModernModal):
@@ -357,12 +357,11 @@ class MessageEditorDialog(ModernModal):
         
     def _validate_text_length(self):
         text = self.text_edit.toPlainText()
-        if len(text) > 492:
-            self.text_edit.setStyleSheet("border: 1.5px solid #EF4444;")
-            self.btn_save.setEnabled(False)
-        else:
-            self.text_edit.setStyleSheet("")
-            self.btn_save.setEnabled(True)
+        is_invalid = len(text) > 492
+        self.text_edit.setProperty("state", "error" if is_invalid else "normal")
+        self.text_edit.style().unpolish(self.text_edit)
+        self.text_edit.style().polish(self.text_edit)
+        self.btn_save.setEnabled(not is_invalid)
         
     def get_text(self) -> str:
         return self.text_edit.toPlainText().replace("\n", " ").strip()

@@ -262,11 +262,11 @@ class LiveNetworkGraph(QFrame):
         
         self.lbl_live = QLabel()
         self.lbl_live.setProperty("role", "caption")
-        self.lbl_live.setStyleSheet(f"color: {COLOR_BLUE}; font-weight: bold;")
+        self.lbl_live.setProperty("state", "info")
         
         self.lbl_avg = QLabel()
         self.lbl_avg.setProperty("role", "caption")
-        self.lbl_avg.setStyleSheet(f"color: {COLOR_GREEN}; font-weight: bold;")
+        self.lbl_avg.setProperty("state", "success")
         
         self.lbl_max = QLabel()
         self.lbl_max.setVisible(False)
@@ -305,7 +305,7 @@ class LiveNetworkGraph(QFrame):
         
         lbl_dot = QLabel("● ")
         lbl_dot.setProperty("role", "caption")
-        lbl_dot.setStyleSheet(f"color: {color};")
+        lbl_dot.setProperty("state", "info" if color == COLOR_BLUE else "success")
         
         lbl_text = QLabel(text)
         lbl_text.setProperty("role", "caption")
@@ -436,7 +436,7 @@ class NetworkView(BaseView):
         lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_200, size=16))
         
         lbl_title = QLabel(title)
-        lbl_title.setStyleSheet("font-weight: bold;")
+        lbl_title.setProperty("state", "bold")
         
         layout.addWidget(lbl_icon)
         layout.addWidget(lbl_title)
@@ -464,7 +464,7 @@ class NetworkView(BaseView):
         
         lbl_status = QLabel("-")
         lbl_status.setProperty("role", "body")
-        lbl_status.setStyleSheet("font-weight: bold;")
+        lbl_status.setProperty("state", "bold")
         
         layout.addWidget(lbl_status)
         return container, lbl_status
@@ -489,8 +489,14 @@ class NetworkView(BaseView):
         color, status_key = self._STATUS_CONFIG.get(status, (COLOR_RED, "offline"))
         latency_text = f"{latency} ms" if status_key != "checking" and latency >= 0 else ("-" if status_key == "offline" else "")
         
+        state_map = {"online": "success", "warning": "warning", "offline": "danger", "checking": "info"}
+        target_state = state_map.get(status, "danger")
+        
         widgets["status_label"].setText(status_text)
-        widgets["status_label"].setStyleSheet(f"color: {color}; font-weight: bold;")
+        widgets["status_label"].setProperty("state", target_state)
+        widgets["status_label"].style().unpolish(widgets["status_label"])
+        widgets["status_label"].style().polish(widgets["status_label"])
+        
         widgets["latency_label"].setText(latency_text)
         widgets["icon_label"].setPixmap(get_pixmap_colored(widgets["icon_name"], color, size=16))
 

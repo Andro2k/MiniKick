@@ -179,10 +179,10 @@ class ChatTtsSettingsPanel(ModernCard):
             self.voice_changed.emit(voice_id)
 
     def _enforce_prefix_mask(self, text):
-        if validate_trigger_prefix(text):
-            self.txt_command.setStyleSheet("")
-        else:
-            self.txt_command.setStyleSheet("border: 1.5px solid #ff4444;")
+        is_valid = validate_trigger_prefix(text)
+        self.txt_command.setProperty("state", "normal" if is_valid else "error")
+        self.txt_command.style().unpolish(self.txt_command)
+        self.txt_command.style().polish(self.txt_command)
 
     def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None):
         self.blockSignals(True)

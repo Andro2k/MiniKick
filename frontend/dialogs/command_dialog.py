@@ -170,10 +170,10 @@ class CommandConfigWizard(ModernWizardPanel):
 
 
     def _validate_trigger_prefix(self, text: str):
-        if validate_trigger_prefix(text):
-            self.txt_trigger.setStyleSheet("")
-        else:
-            self.txt_trigger.setStyleSheet("border: 1.5px solid #ff4444;")
+        is_valid = validate_trigger_prefix(text)
+        self.txt_trigger.setProperty("state", "normal" if is_valid else "error")
+        self.txt_trigger.style().unpolish(self.txt_trigger)
+        self.txt_trigger.style().polish(self.txt_trigger)
 
     def _update_step_ui(self):
         super()._update_step_ui()
@@ -183,12 +183,12 @@ class CommandConfigWizard(ModernWizardPanel):
         if self.current_step == 0:
             trigger_text = self.txt_trigger.text().strip()
             response_text = self.txt_response.toPlainText().strip()
-            if len(response_text) > 492:
-                self.txt_response.setStyleSheet("border: 1.5px solid #EF4444;")
-                is_valid = False
-            else:
-                self.txt_response.setStyleSheet("")
-                is_valid = bool(trigger_text.startswith("!") and response_text)
+            is_over_limit = len(response_text) > 492
+            self.txt_response.setProperty("state", "error" if is_over_limit else "normal")
+            self.txt_response.style().unpolish(self.txt_response)
+            self.txt_response.style().polish(self.txt_response)
+            
+            is_valid = not is_over_limit and bool(trigger_text.startswith("!") and response_text)
             self.btn_next.setEnabled(is_valid)
         else:
             self.btn_next.setEnabled(True)

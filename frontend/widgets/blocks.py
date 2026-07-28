@@ -17,7 +17,8 @@ class ViewHeader(QFrame):
         title = QLabel(title_text)
         title.setProperty("role", "h1")
         if title_color:
-            title.setStyleSheet(f"color: {title_color};")
+            color_state = "danger" if title_color in ("#EF4444", "#ff4444", "red") else ("success" if title_color in ("#2EC570", "#22c55e", "green") else "normal")
+            title.setProperty("state", color_state)
         
         subtitle = QLabel(subtitle_text)
         subtitle.setProperty("role", "body")
@@ -44,7 +45,8 @@ class SettingRow(QWidget):
         lbl_title.setProperty("role", "h3")
         lbl_title.setWordWrap(True)
         if title_color:
-            lbl_title.setStyleSheet(f"color: {title_color};")
+            color_state = "danger" if title_color in ("#EF4444", "#ff4444", "red") else ("success" if title_color in ("#2EC570", "#22c55e", "green") else "normal")
+            lbl_title.setProperty("state", color_state)
         
         lbl_desc = QLabel(desc_text)
         lbl_desc.setProperty("role", "body")

@@ -69,6 +69,10 @@ En esta entrega se han implementado mejoras clave en los módulos de chat y repr
 - **Actualización Inmediata (`view_shown`):** Se añadió la señal `view_shown` en `MusicView.showEvent` conectada directamente a `MusicController._poll_now_playing()`, eliminando el retraso de 2 a 5 segundos que ocurría al esperar el siguiente ciclo del temporizador de polling.
 - **Renderizado de Tabla Optimizado:** Se envolvió la actualización de filas en `MusicQueuePanel.update_queue` con `setUpdatesEnabled(False)` y `setUpdatesEnabled(True)` para evitar repintados celda por celda y lograr renderizado instantáneo.
 
+### I. Limpieza y Centralización de Estilos UI (`theme.py`)
+- **Eliminación de `setStyleSheet` Inline:** Se eliminaron 12 declaraciones inline en `tts_settings.py`, `command_dialog.py`, `timer_dialog.py`, `network_view.py` y `blocks.py`.
+- **Integración con Sistema de Temas:** Se definieron reglas globales en `frontend/common/theme.py` para bordes de error en inputs (`QLineEdit[state="error"]`, `QTextEdit[state="error"]`, `QPlainTextEdit[state="error"]`) y roles/estados de tipografía (`QLabel[state="bold"]`, `QLabel[state="danger"]`, `QLabel[state="success"]`, `QLabel[state="info"]`), utilizando la API nativa de Qt (`setProperty("state", ...)`, `unpolish`/`polish`).
+
 ---
 
 ## 3. Archivos Modificados y Creados
