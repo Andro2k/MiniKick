@@ -152,7 +152,7 @@ QFrame[role="profile_card"]:hover {{ background-color: {COLOR_NEUTRAL_800}; bord
 /* ==============================================================================
    4. ESTRUCTURAS Y ROLES DE COMPONENTES GENERALES (Con Role)
    ============================================================================== */
-QFrame[role="card"] {{ background-color: {COLOR_NEUTRAL_900}; border: none; border-radius: {RADIUS_LG}px; }}
+QFrame[role="card"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_LG}px; }}
 QFrame[role="dialog"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: 16px; }}
 QFrame[role="dialog"][state="accent"] {{ border-color: {COLOR_GREEN}; }}
 QFrame[role="dialog"][state="danger"] {{ border-color: {COLOR_RED}; }}

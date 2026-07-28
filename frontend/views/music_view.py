@@ -17,6 +17,7 @@ class MusicView(BaseView):
     youtube_auto_resume_toggled = Signal(bool)
     service_toggled = Signal(bool)
     move_queue_item_requested = Signal(int, int)
+    view_shown = Signal()
 
     def __init__(self, i18n, music_overlay_url: str = ""):
         super().__init__(i18n=i18n, title_key="music.header.title", subtitle_key="music.header.subtitle")
@@ -24,6 +25,10 @@ class MusicView(BaseView):
         self._last_direction = None
         self._setup_ui()
         self._connect_internal_signals()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.view_shown.emit()
 
     def _setup_ui(self):
         self.body_container = QWidget()

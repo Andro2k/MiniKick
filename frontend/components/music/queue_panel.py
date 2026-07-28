@@ -138,10 +138,10 @@ class MusicQueuePanel(QWidget):
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     def update_queue(self, queue_items: list[dict]):
-        new_urls = [song.get("url") for song in queue_items]
-        if self._current_queue_urls == new_urls:
+        new_signature = [(song.get("url") or song.get("title"), song.get("artist"), song.get("duration")) for song in queue_items]
+        if getattr(self, "_current_queue_signature", None) == new_signature:
             return
-        self._current_queue_urls = new_urls
+        self._current_queue_signature = new_signature
 
         total_songs = len(queue_items)
         total_secs = sum(self._parse_duration_to_seconds(song.get("duration", "")) for song in queue_items)
@@ -159,22 +159,25 @@ class MusicQueuePanel(QWidget):
             self.queue_table.setRowCount(0)
             return
             
-        self.queue_table.setRowCount(len(queue_items))
-        
-        for idx, song in enumerate(queue_items):
-            self.queue_table.setItem(idx, 0, self._create_table_item(f"{idx + 1}", Qt.AlignmentFlag.AlignCenter, Qt.GlobalColor.gray))
-            
-            title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
-            self.queue_table.setItem(idx, 1, self._create_table_item(title_text))
-            
-            artist_text = song.get("artist", "-")
-            self.queue_table.setItem(idx, 2, self._create_table_item(artist_text))
-            
-            requester = song.get("requester", "")
-            requester_text = f"@{requester}" if requester else "-"
-            req_color = Qt.GlobalColor.green if requester else None
-            self.queue_table.setItem(idx, 3, self._create_table_item(requester_text, color=req_color))
-            
-            duration = song.get("duration", "-")
-            self.queue_table.setItem(idx, 4, self._create_table_item(duration, Qt.AlignmentFlag.AlignCenter))
-            self.queue_table.setCellWidget(idx, 5, self._create_action_buttons(idx, total_songs))
+        self.queue_table.setUpdatesEnabled(False)
+        try:
+            self.queue_table.setRowCount(len(queue_items))
+            for idx, song in enumerate(queue_items):
+                self.queue_table.setItem(idx, 0, self._create_table_item(f"{idx + 1}", Qt.AlignmentFlag.AlignCenter, Qt.GlobalColor.gray))
+                
+                title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
+                self.queue_table.setItem(idx, 1, self._create_table_item(title_text))
+                
+                artist_text = song.get("artist", "-")
+                self.queue_table.setItem(idx, 2, self._create_table_item(artist_text))
+                
+                requester = song.get("requester", "")
+                requester_text = f"@{requester}" if requester else "-"
+                req_color = Qt.GlobalColor.green if requester else None
+                self.queue_table.setItem(idx, 3, self._create_table_item(requester_text, color=req_color))
+                
+                duration = song.get("duration", "-")
+                self.queue_table.setItem(idx, 4, self._create_table_item(duration, Qt.AlignmentFlag.AlignCenter))
+                self.queue_table.setCellWidget(idx, 5, self._create_action_buttons(idx, total_songs))
+        finally:
+            self.queue_table.setUpdatesEnabled(True)

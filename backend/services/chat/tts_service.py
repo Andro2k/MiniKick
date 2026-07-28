@@ -90,7 +90,7 @@ class TTSManager:
                     elif hasattr(active_provider, 'voice'):
                         active_provider.voice = target_voice
                 
-                active_provider.speak(text)
+                active_provider.speak(text, voice_id=target_voice)
                 
             except Exception as e:
                 logging.error(f"[TTS Manager] Critical engine failure avoided: {e}")

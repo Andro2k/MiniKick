@@ -43,6 +43,7 @@ class MusicController(QObject):
         self.view.youtube_auto_resume_toggled.connect(self.handle_youtube_auto_resume_toggle)
         self.view.service_toggled.connect(self.handle_service_toggle)
         self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
+        self.view.view_shown.connect(self._poll_now_playing)
 
     def _sync_switches_from_db(self):
         saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.get_all_commands()}

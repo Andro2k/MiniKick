@@ -134,6 +134,8 @@ class MusicStatsPanel(QWidget):
 
         self.badge_service_container.style().unpolish(self.badge_service_container)
         self.badge_service_container.style().polish(self.badge_service_container)
+        self.lbl_service_badge.style().unpolish(self.lbl_service_badge)
+        self.lbl_service_badge.style().polish(self.lbl_service_badge)
         self.lbl_stat_service_value.style().unpolish(self.lbl_stat_service_value)
         self.lbl_stat_service_value.style().polish(self.lbl_stat_service_value)
 

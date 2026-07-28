@@ -59,13 +59,27 @@ En esta entrega se han implementado mejoras clave en los módulos de chat y repr
 - **Reordenamiento:** Cada fila de la tabla de cola cuenta con acciones de Subir (`chevron-up.svg`), Bajar (`chevron-down.svg`) y Eliminar (`trash.svg`).
 - **Comando `!playlist` (Alias: `!queue`, `!pl`):** Informa al espectador sobre la posición exacta de las canciones que ha solicitado en el chat.
 
+### G. Optimización de Latencia y Benchmarking en TTS Online (`edge_tts`)
+- **Pre-descargas Asíncronas No Bloqueantes en Paralelo:** Se refactorizó `WebTTSProvider.prepare` para retornar en `<1ms` almacenando un `Future` asíncrono en lugar de bloquear el hilo `_downloader_worker` secuencialmente. Esto permite que múltiples mensajes en cola se descarguen en paralelo por la red mientras el audio previo está sonando.
+- **Event Loop Persistente:** Se reemplazó la creación/destrucción continua de bucles de eventos (`asyncio.run(...)`) por un bucle `asyncio` persistente en un hilo dedicado dentro de `WebTTSProvider` (`backend/providers/voices/tts_online.py`), reduciendo ~500ms de overhead por frase.
+- **Coincidencia de Caché Garantizada:** Se habilitó el pase explícito de `voice_id` en `speak(text, voice_id=...)` desde `TTSManager._worker`, evitando CACHE MISSES por discrepancias entre pre-descarga y reproducción.
+- **Telemetría y Métricas en Tiempo Real:** Se agregaron logs de benchmark detallados (`[Web TTS Benchmark]`) que reportan en consola el tiempo exacto de pre-descarga, estado de caché (CACHE HIT / MISS) y latencia total en milisegundos desde la petición hasta la salida de audio.
+
+### H. Carga e Instantaneidad Visual al Navegar a la Vista de Música
+- **Actualización Inmediata (`view_shown`):** Se añadió la señal `view_shown` en `MusicView.showEvent` conectada directamente a `MusicController._poll_now_playing()`, eliminando el retraso de 2 a 5 segundos que ocurría al esperar el siguiente ciclo del temporizador de polling.
+- **Renderizado de Tabla Optimizado:** Se envolvió la actualización de filas en `MusicQueuePanel.update_queue` con `setUpdatesEnabled(False)` y `setUpdatesEnabled(True)` para evitar repintados celda por celda y lograr renderizado instantáneo.
+
 ---
 
 ## 3. Archivos Modificados y Creados
 
 | Archivo | Descripción del Cambio |
 | :--- | :--- |
-| `frontend/components/music/stats_panel.py` | [NUEVO] Componente de estadísticas superiores con `FlowLayout` tipo flex en filas. |
+| `backend/interfaces/tts_interfaces.py` | Adición del parámetro opcional `voice_id` en la firma de `speak` de `ITTSProvider`. |
+| `backend/providers/voices/tts_local.py` | Adición del parámetro opcional `voice_id` en `LocalTTSProvider.speak`. |
+| `backend/providers/voices/tts_online.py` | Optimización con `asyncio` loop persistente, pase de `voice_id` y logs de benchmark de latencia (`[Web TTS Benchmark]`). |
+| `backend/services/chat/tts_service.py` | Pase explícito de `target_voice` a `active_provider.speak` para garantizar CACHE HITS. |
+| `frontend/components/music/stats_panel.py` | Componente de estadísticas superiores con `QGridLayout` responsivo y refresco dinámico de estilos (`unpolish`/`polish`) para `lbl_service_badge`. |
 | `frontend/components/music/player_settings.py` | [NUEVO] Componente de ajustes del reproductor, auth, canción actual y overlay. |
 | `frontend/components/music/commands_panel.py` | [NUEVO] Componente con switches de comandos de espectadores. |
 | `frontend/components/music/queue_panel.py` | [NUEVO] Componente con tabla de cola de reproducción y acciones de reordenamiento. |

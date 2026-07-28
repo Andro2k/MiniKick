@@ -19,7 +19,8 @@ class LocalTTSProvider:
     def prepare(self, text: str, voice_id: str = None) -> None:
         pass
 
-    def speak(self, text: str) -> None:
+    def speak(self, text: str, voice_id: str = None) -> None:
+        target_voice = voice_id if voice_id else self.voice_id
         with self._lock:
             try:
                 if not self._engine:
@@ -29,8 +30,8 @@ class LocalTTSProvider:
                 
                 self._engine.setProperty("rate", self.rate)
                 self._engine.setProperty("volume", self.volume)
-                if self.voice_id:
-                    self._engine.setProperty("voice", self.voice_id)
+                if target_voice:
+                    self._engine.setProperty("voice", target_voice)
                     
                 self._engine.say(text)
                 self._engine.runAndWait()
