@@ -185,6 +185,9 @@ QFrame[role="badge"][state="broadcaster"] {{ background-color: {COLOR_RED_GLOW};
 QFrame[role="badge"][state="broadcaster"] QLabel {{ color: {COLOR_RED}; }}
 QFrame[role="badge"][state="warning"] {{ background-color: {COLOR_AMBER_GLOW}; }}
 QFrame[role="badge"][state="warning"] QLabel {{ color: {COLOR_AMBER}; }}
+QFrame[role="badge"][state="plugin"] {{ background-color: {COLOR_PURPLE_GLOW}; }}
+QFrame[role="badge"][state="plugin"] QLabel {{ color: {COLOR_PURPLE}; }}
+QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.5px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: bold; background-color: {COLOR_NEUTRAL_900}; }}
 
 /* ==============================================================================
    5. SISTEMA DE TIPOGRAFÍA DE TEXTOS (Con Role)

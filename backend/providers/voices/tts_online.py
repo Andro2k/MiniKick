@@ -56,7 +56,7 @@ class WebTTSProvider:
         try:
             await communicate.save(temp_path)
             elapsed = time.perf_counter() - start_t
-            logging.info(f"[Web TTS Benchmark] Pre-downloaded audio in {elapsed:.3f}s for: '{text[:25]}...' (voice: {voice})")
+            logging.debug(f"[Web TTS Benchmark] Pre-downloaded audio in {elapsed:.3f}s for: '{text[:25]}...' (voice: {voice})")
             return temp_path
         except Exception as e:
             logging.error("[Web TTS] Error pre-downloading audio: %s", e)
@@ -89,7 +89,7 @@ class WebTTSProvider:
                 temp_path = await asyncio.wrap_future(future)
                 if temp_path and os.path.exists(temp_path):
                     t_cache_hit = time.perf_counter() - start_t
-                    logging.info(f"[Web TTS Benchmark] CACHE HIT! Prep wait/retrieval time: {t_cache_hit:.3f}s for: '{text[:25]}...'")
+                    logging.debug(f"[Web TTS Benchmark] CACHE HIT! Prep wait/retrieval time: {t_cache_hit:.3f}s for: '{text[:25]}...'")
                     await self._play_audio_file(temp_path, prep_start_t)
                     return
             except Exception as e:
@@ -103,7 +103,7 @@ class WebTTSProvider:
             communicate = edge_tts.Communicate(text, voice, volume=self.volume_str)
             await communicate.save(temp_path)
             t_dl_end = time.perf_counter() - t_dl_start
-            logging.info(f"[Web TTS Benchmark] On-the-fly download completed in {t_dl_end:.3f}s")
+            logging.debug(f"[Web TTS Benchmark] On-the-fly download completed in {t_dl_end:.3f}s")
             await self._play_audio_file(temp_path, start_t)
         except Exception as e:
             logging.error("[Web TTS] Error in fallback play: %s", e)
@@ -142,7 +142,7 @@ class WebTTSProvider:
             
             t_play_ready = time.perf_counter() - play_start_t
             t_total_delay = time.perf_counter() - request_start_t if request_start_t > 0 else t_play_ready
-            logging.info(f"[Web TTS Benchmark] 🔊 PLAYBACK STARTED! Audio Prep->Play Latency: {t_play_ready:.3f}s | TOTAL DELAY FROM REQUEST: {t_total_delay:.3f}s")
+            logging.debug(f"[Web TTS Benchmark] PLAYBACK STARTED! Audio Prep->Play Latency: {t_play_ready:.3f}s | TOTAL DELAY FROM REQUEST: {t_total_delay:.3f}s")
             
             loop.exec()
             

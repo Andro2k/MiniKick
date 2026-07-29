@@ -26,13 +26,14 @@ class CommandView(BaseView):
 
     def _setup_ui(self):
         col_1 = self.i18n.get("command.table.col_command")
-        col_2 = self.i18n.get("command.table.col_permission")
-        col_3 = self.i18n.get("command.table.col_aliases")
-        col_4 = self.i18n.get("command.table.col_actions")
+        col_2 = self.i18n.get("command.table.col_type")
+        col_3 = self.i18n.get("command.table.col_permission")
+        col_4 = self.i18n.get("command.table.col_aliases")
+        col_5 = self.i18n.get("command.table.col_actions")
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("command.table.title"),
-            headers=[col_1, col_2, col_3, col_4],
+            headers=[col_1, col_2, col_3, col_4, col_5],
             search_placeholder=self.i18n.get("command.table.search_placeholder"),
             add_button_text=self.i18n.get("command.table.btn_new"),
             add_button_icon="add.svg"
@@ -55,12 +56,14 @@ class CommandView(BaseView):
 
         h_header = self.table.horizontalHeader()
         h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-        h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
+        h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
+        h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        h_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
         
-        self.table.setColumnWidth(1, 140)
-        self.table.setColumnWidth(3, 130)
+        self.table.setColumnWidth(1, 130)
+        self.table.setColumnWidth(2, 140)
+        self.table.setColumnWidth(4, 130)
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
@@ -69,20 +72,46 @@ class CommandView(BaseView):
         self.table.setRowCount(len(commands))
         for row, cmd in enumerate(commands):
             self.table.setCellWidget(row, 0, self._create_command_cell(cmd))
-            self.table.setCellWidget(row, 1, self._create_permission_cell(cmd))
-            self.table.setCellWidget(row, 2, self._create_aliases_cell(cmd))
-            self.table.setCellWidget(row, 3, self._create_actions_cell(cmd))
+            self.table.setCellWidget(row, 1, self._create_type_cell(cmd))
+            self.table.setCellWidget(row, 2, self._create_permission_cell(cmd))
+            self.table.setCellWidget(row, 3, self._create_aliases_cell(cmd))
+            self.table.setCellWidget(row, 4, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
         self.table_card.set_empty(len(commands) == 0)
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(12, 0, 8, 0)       
+        layout.setContentsMargins(12, 0, 8, 0)
         lbl_trigger = QLabel(cmd_data["trigger"])
         lbl_trigger.setProperty("role", "body")
-        layout.addWidget(lbl_trigger)        
+        layout.addWidget(lbl_trigger)
         layout.addStretch()
+        return container
+
+    def _create_type_cell(self, cmd_data: dict) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 0, 8, 0)
+        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        
+        response_val = cmd_data.get("response", "")
+        is_plugin = "[PLUGIN_" in response_val
+        
+        tag = QFrame()
+        tag.setFixedHeight(22)
+        tag.setProperty("role", "badge")
+        tag.setProperty("state", "plugin" if is_plugin else "everyone")
+        
+        tag_layout = QHBoxLayout(tag)
+        tag_layout.setContentsMargins(8, 0, 8, 0)
+        tag_layout.setSpacing(0)
+        
+        type_key = "command.table.type_plugin" if is_plugin else "command.table.type_custom"
+        lbl_txt = QLabel(self.i18n.get(type_key))
+        lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        tag_layout.addWidget(lbl_txt)
+        layout.addWidget(tag)
         return container
 
     def _create_permission_cell(self, cmd_data: dict) -> QWidget:

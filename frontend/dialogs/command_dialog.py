@@ -1,6 +1,6 @@
 # frontend\dialogs\command_dialogs.py
 
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy, QFrame
 from .base_dialog import ModernWizardPanel
 from frontend.widgets import VariableTextEdit
 from frontend.common.utils import NoWheelComboBox, validate_trigger_prefix
@@ -31,13 +31,30 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.addWidget(lbl_trigger)
         basic_layout.addWidget(self.txt_trigger)
 
+        lbl_response_layout = QHBoxLayout()
         lbl_response = QLabel(self.i18n.get("command.dialog.response_label"))
         lbl_response.setProperty("role", "h3")
+        
+        self.badge_plugin = QFrame()
+        self.badge_plugin.setFixedHeight(20)
+        self.badge_plugin.setProperty("role", "badge")
+        self.badge_plugin.setProperty("state", "plugin")
+        self.badge_plugin.setVisible(False)
+        b_layout = QHBoxLayout(self.badge_plugin)
+        b_layout.setContentsMargins(6, 1, 6, 1)
+        lbl_p = QLabel(self.i18n.get("command.dialog.plugin_tag"))
+        b_layout.addWidget(lbl_p)
+        
+        lbl_response_layout.addWidget(lbl_response)
+        lbl_response_layout.addSpacing(6)
+        lbl_response_layout.addWidget(self.badge_plugin)
+        lbl_response_layout.addStretch()
+
         self.txt_response = VariableTextEdit()
         self.txt_response.textChanged.connect(self._update_btn_next_state)
         self.txt_response.setMinimumHeight(80) 
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        basic_layout.addWidget(lbl_response)
+        basic_layout.addLayout(lbl_response_layout)
         basic_layout.addWidget(self.txt_response)
 
         row_configs = QHBoxLayout()
@@ -183,12 +200,22 @@ class CommandConfigWizard(ModernWizardPanel):
         if self.current_step == 0:
             trigger_text = self.txt_trigger.text().strip()
             response_text = self.txt_response.toPlainText().strip()
-            is_over_limit = len(response_text) > 492
-            self.txt_response.setProperty("state", "error" if is_over_limit else "normal")
+            is_plugin = "[PLUGIN_" in response_text
+            
+            if hasattr(self, "badge_plugin"):
+                self.badge_plugin.setVisible(is_plugin)
+            self.txt_response.setReadOnly(is_plugin)
+            
+            if is_plugin:
+                self.txt_response.setProperty("state", "plugin")
+                is_valid = bool(trigger_text.startswith("!") and response_text)
+            else:
+                is_over_limit = len(response_text) > 492
+                self.txt_response.setProperty("state", "error" if is_over_limit else "normal")
+                is_valid = not is_over_limit and bool(trigger_text.startswith("!") and response_text)
+                
             self.txt_response.style().unpolish(self.txt_response)
             self.txt_response.style().polish(self.txt_response)
-            
-            is_valid = not is_over_limit and bool(trigger_text.startswith("!") and response_text)
             self.btn_next.setEnabled(is_valid)
         else:
             self.btn_next.setEnabled(True)

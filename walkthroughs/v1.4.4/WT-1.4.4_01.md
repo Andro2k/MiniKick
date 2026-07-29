@@ -77,6 +77,12 @@ En esta entrega se han implementado mejoras clave en los módulos de chat y repr
 - **Creación de `ModernDivider`:** Se implementó el componente reutilizable `ModernDivider` (`frontend/widgets/blocks.py`) de 1px de grosor con `role="divider"`.
 - **Homologación Global:** Se reemplazó la línea horizontal nativa `QFrame.Shape.HLine` en `dashboard_view.py` por `ModernDivider()`, igualando el diseño visual de divisores en `bot_mute.py`, `overlay_settings.py`, `tts_settings.py` y el resto del sistema.
 
+### K. Protección y Resaltado Visual de Comandos Plugin (`[PLUGIN_...]`)
+- **Resaltado Morado Púrpura (`state="plugin"`):** Se definieron reglas CSS en `theme.py` (`COLOR_PURPLE` / `{COLOR_PURPLE_GLOW}`) para destacar visualmente comandos generados por plugins del sistema (Música y TTS).
+- **Inhabilitación de Edición de Respuesta:** En `CommandConfigWizard` (`command_dialog.py`), cuando la respuesta contiene `[PLUGIN_...`, el campo de texto de respuesta se estiliza en púrpura y se bloquea como lectura exclusiva (`setReadOnly(True)`), junto a la aparición de la insignia traducida `COMANDO PLUGIN`. Esto evita que el usuario edite o altere accidentalmente las macros internas de plugins.
+- **Nueva Columna de Tipo en Tabla:** En `CommandView` (`command_view.py`), se agregó una nueva columna dedicada `Tipo` (`col_type`) con ancho asignado de `130px` y márgenes internos de `8px`, garantizando que textos como `"Personalizado"` se desplieguen holgadamente sin recortarse en la interfaz.
+- **Cumplimiento Estricto i18n:** Se eliminaron todos los textos harcodeados y fallbacks en código en `command_view.py`, haciendo uso exclusivo de las claves de internacionalización de `locales/es.json` y `locales/en.json`.
+
 ---
 
 ## 3. Archivos Modificados y Creados
@@ -96,6 +102,8 @@ En esta entrega se han implementado mejoras clave en los módulos de chat y repr
 | `backend/controllers/music_controller.py` | Corrección de persitencia del proveedor guardado al inicio en `_load_initial_state`. |
 | `backend/interfaces/music_interfaces.py` | Adición del método `move_in_queue(from_index, to_index)`. |
 | `backend/providers/music/youtube_client.py` | Implementación de `move_in_queue` en `YouTubeMusicProvider`. |
+| `frontend/dialogs/command_dialog.py` | Adición de importación `QFrame`, badge `COMANDO PLUGIN` y bloqueo de edición para comandos plugin. |
+| `frontend/views/command_view.py` | Adición del badge visual `[PLUGIN]` de color púrpura en la celda de comandos de la tabla. |
 | `locales/es.json` y `locales/en.json` | Claves traducidas para pestañas de música, comando `!playlist` y notificaciones. |
 
 ---

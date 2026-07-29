@@ -155,9 +155,12 @@ DEFAULT_DICTIONARY = {
             "search_placeholder": "Search linked command...",
             "btn_new": "New Command",
             "col_command": "Command",
+            "col_type": "Type",
             "col_aliases": "Aliases / Regex",
             "col_permission": "Access Level",
             "col_actions": "Actions",
+            "type_plugin": "Plugin",
+            "type_custom": "Custom",
             "regex_prefix": "RegEx",
             "tooltip_edit": "Modify command configuration",
             "tooltip_delete": "Delete command permanently"
@@ -167,6 +170,7 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Create or edit custom commands for your chat.",
             "trigger_label": "Command Name (Ex: !discord):",
             "response_label": "Bot Response (you can use {user}):",
+            "plugin_tag": "PLUGIN COMMAND",
             "cooldown_label": "Cooldown (sec):",
             "permission_label": "Minimum Permission:",
             "perm_everyone": "Everyone",
@@ -441,6 +445,23 @@ DEFAULT_DICTIONARY = {
             "volume_title": "Player Volume",
             "volume_desc": "Adjust YouTube playback volume."
         },
+        "stats": {
+            "queue_title": "Queue",
+            "queue_desc": "Songs after current track",
+            "duration_title": "Total duration",
+            "duration_desc": "Duration of all songs in list",
+            "cmd_title": "Chat command",
+            "cmd_desc": "If viewers can add songs with !sr",
+            "service_active": "Service Enabled",
+            "service_disabled": "Service Disabled",
+            "badge_active": "O ENABLED",
+            "badge_disabled": "O DISABLED",
+            "service_disabled_chat": "❌ @{user}, music service is currently disabled."
+        },
+        "tabs": {
+            "player": "Player",
+            "commands": "Commands"
+        },
         "cmds": {
             "title": "Viewer Commands",
             "sr_label": "Request Song (Default: !sr)",
@@ -453,6 +474,8 @@ DEFAULT_DICTIONARY = {
             "pause_desc": "Allows moderators to pause music from chat. You can customize the '!pause' trigger in the Commands view.",
             "resume_label": "Resume Music (Default: !resume)",
             "resume_desc": "Allows moderators to resume music from chat. You can customize the '!resume' trigger in the Commands view.",
+            "playlist_label": "View My Songs (Default: !playlist)",
+            "playlist_desc": "Shows viewers the position of songs they requested. Aliases: !queue, !pl.",
             "default_tag_name": "Music Plugin"
         },
         "toast": {
@@ -460,6 +483,7 @@ DEFAULT_DICTIONARY = {
             "connected": "Link with Spotify successfully established.",
             "disconnected": "Spotify account disconnected.",
             "removed_from_queue": "Song removed from queue",
+            "moved_in_queue": "Song position updated in queue",
             "error_playing": "Could not play '{title}': {error}",
             "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
             "chat_error_playing_no_user": "❌ Could not play '{title}': {error}"
@@ -477,6 +501,9 @@ DEFAULT_DICTIONARY = {
             "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
             "song_now_playing": "🎵 Now playing: {title} - {artist}",
             "song_paused": "🔇 Spotify is paused or closed.",
+            "playlist_empty_for_user": "❌ @{user}, you have no songs currently in the queue.",
+            "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
+            "no_queue_available": "❌ @{user}, music queue is not available right now.",
             "song_paused_spotify": "🔇 Spotify is paused.",
             "song_paused_youtube": "🔇 YouTube is paused.",
             "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing."
