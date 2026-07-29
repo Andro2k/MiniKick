@@ -1,3 +1,5 @@
-uv run python -m PyInstaller --clean --noconfirm MiniKick.spec | clear
+# Comando recomendado para compilar el ejecutable usando la especificación del proyecto (MiniKick.spec):
+uv run pyinstaller --clean --noconfirm MiniKick.spec
 
-uv run python -m PyInstaller --clean --noconfirm --onedir --windowed --icon="assets/icons/icon.ico" --name="MiniKick" --add-data="assets;assets" --add-data="locales;locales" main.py | clear
+# Si deseas compilar usando python directamente:
+# uv run python -m PyInstaller --clean --noconfirm MiniKick.spec

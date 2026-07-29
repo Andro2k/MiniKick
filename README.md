@@ -2,7 +2,7 @@
 
 **El centro de control definitivo, modular y ligero para streamers en Kick.com**
 
-[![Latest Release](https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Windows Support](https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Python Version](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919)](https://www.python.org/) [![PySide6](https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919)](https://doc.qt.io/qtforpython-6/) [![Clean Architecture](https://img.shields.io/badge/Arquitectura-Clean_Code-FFb900?style=for-the-badge&logo=dataiku&logoColor=white&labelColor=191919)](./#arquitectura-e-ingenieria) [![License](https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919)](https://github.com/Andro2k/MiniKick/blob/main/LICENSE/README.md)
+[![Latest Release](https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Windows Support](https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Python Version](https://img.shields.io/badge/Python-3.14.5-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919)](https://www.python.org/) [![PySide6](https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919)](https://doc.qt.io/qtforpython-6/) [![Clean Architecture](https://img.shields.io/badge/Arquitectura-Clean_Code-FFb900?style=for-the-badge&logo=dataiku&logoColor=white&labelColor=191919)](./#arquitectura-e-ingenieria) [![License](https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919)](https://github.com/Andro2k/MiniKick/blob/main/LICENSE/README.md)
 
 <br>
 
@@ -59,7 +59,7 @@ MiniKick está construido bajo estándares estrictos de **Ingeniería de Softwar
 
 ### Stack Tecnológico
 
-- **Core & GUI:** Python 3.10+ | PySide6 (Qt for Python) | Qt Style Sheets (QSS contextual)
+- **Core & GUI:** Python 3.14.5 | PySide6 (Qt for Python) | Qt Style Sheets (QSS contextual)
 - **Servicios de Red:** HTTP Server Local | WebSockets | Requests | Cloudscraper (Bypass de Cloudflare)
 - **Motores de Voz:** Edge-TTS (Edge Cloud) | Pyttsx3 (SAPI5 local de Windows)
 - **Motores de Audio:** YT-DLP (YouTube resolve) | Spotify Web API
