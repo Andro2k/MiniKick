@@ -4,6 +4,7 @@ from PySide6.QtCore import QObject, Slot, QTimer, Signal
 
 class MusicController(QObject):
     song_changed = Signal(dict)
+
     def __init__(self, view, spotify_auth, command_service, toast_manager, i18n, settings_storage=None, provider_factory=None):
         super().__init__()
         self.view = view
@@ -55,39 +56,51 @@ class MusicController(QObject):
         self.view.sw_resume.setChecked(saved_cmds.get("!resume", False))
         if hasattr(self.view, "sw_playlist"):
             self.view.sw_playlist.setChecked(saved_cmds.get("!playlist", False))
+        if hasattr(self.view, "sw_volume"):
+            self.view.sw_volume.setChecked(saved_cmds.get("!vol", False))
         self.view.blockSignals(False)
 
     def _load_initial_state(self):
         commands = self.command_service.get_all_commands()
-        if not any(c for c in commands if c["response"] == "[PLUGIN_SPOTIFY_PAUSE]"):
+        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_PAUSE]", "[PLUGIN_SPOTIFY_PAUSE]")):
             self.command_service.save_command(
                 trigger="!pause",
-                response="[PLUGIN_SPOTIFY_PAUSE]",
+                response="[PLUGIN_MUSIC_PAUSE]",
                 is_active=True,
                 cooldown=3,
                 aliases="",
                 is_regex=False,
                 permission="moderator"
             )
-        if not any(c for c in commands if c["response"] == "[PLUGIN_SPOTIFY_RESUME]"):
+        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_RESUME]", "[PLUGIN_SPOTIFY_RESUME]")):
             self.command_service.save_command(
                 trigger="!resume",
-                response="[PLUGIN_SPOTIFY_RESUME]",
+                response="[PLUGIN_MUSIC_RESUME]",
                 is_active=True,
                 cooldown=3,
                 aliases="!play",
                 is_regex=False,
                 permission="moderator"
             )
-        if not any(c for c in commands if c["response"] == "[PLUGIN_SPOTIFY_PLAYLIST]"):
+        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_PLAYLIST]", "[PLUGIN_SPOTIFY_PLAYLIST]")):
             self.command_service.save_command(
                 trigger="!playlist",
-                response="[PLUGIN_SPOTIFY_PLAYLIST]",
+                response="[PLUGIN_MUSIC_PLAYLIST]",
                 is_active=True,
                 cooldown=5,
                 aliases="!queue,!pl",
                 is_regex=False,
                 permission="everyone"
+            )
+        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_VOLUME]", "[PLUGIN_SPOTIFY_VOLUME]")):
+            self.command_service.save_command(
+                trigger="!vol",
+                response="[PLUGIN_MUSIC_VOLUME]",
+                is_active=True,
+                cooldown=3,
+                aliases="!volume",
+                is_regex=False,
+                permission="moderator"
             )
 
         self._sync_switches_from_db()
@@ -260,23 +273,25 @@ class MusicController(QObject):
     @Slot(str, bool)
     def handle_command_toggle(self, trigger: str, is_active: bool):
         plugin_tags = {
-            "!sr": "[PLUGIN_SPOTIFY_SR]",
-            "!skip": "[PLUGIN_SPOTIFY_SKIP]",
-            "!song": "[PLUGIN_SPOTIFY_SONG]",
-            "!pause": "[PLUGIN_SPOTIFY_PAUSE]",
-            "!resume": "[PLUGIN_SPOTIFY_RESUME]",
-            "!playlist": "[PLUGIN_SPOTIFY_PLAYLIST]"
+            "!sr": "[PLUGIN_MUSIC_SR]",
+            "!skip": "[PLUGIN_MUSIC_SKIP]",
+            "!song": "[PLUGIN_MUSIC_SONG]",
+            "!pause": "[PLUGIN_MUSIC_PAUSE]",
+            "!resume": "[PLUGIN_MUSIC_RESUME]",
+            "!playlist": "[PLUGIN_MUSIC_PLAYLIST]",
+            "!vol": "[PLUGIN_MUSIC_VOLUME]"
         }
-        existing = next((c for c in self.command_service.storage.load_all() if c["trigger"] == trigger), None)
+        all_cmds = self.command_service.get_all_commands()
+        existing = next((c for c in all_cmds if c["trigger"] == trigger), None)
 
         cooldown = existing["cooldown"] if existing else 5
-        aliases = existing["aliases"] if existing else ("!queue,!pl" if trigger == "!playlist" else "")
+        aliases = existing["aliases"] if existing else ("!queue,!pl" if trigger == "!playlist" else ("!volume" if trigger == "!vol" else ""))
         is_regex = existing["is_regex"] if existing else False
         permission = existing["permission"] if existing else ("everyone" if trigger in ("!sr", "!song", "!playlist") else "moderator")
 
         self.command_service.save_command(
             trigger=trigger,
-            response=plugin_tags.get(trigger, "[PLUGIN_SPOTIFY_SR]"),
+            response=plugin_tags.get(trigger, "[PLUGIN_MUSIC_SR]"),
             is_active=is_active,
             cooldown=cooldown,
             aliases=aliases,
@@ -357,6 +372,13 @@ class MusicController(QObject):
         if self.provider_type == "youtube" and self.music_provider:
             self.music_provider.auto_resume = enabled
 
+    def _require_active_provider(self, api) -> bool:
+        if self.music_provider:
+            return True
+        key = "music.chat.not_linked_youtube" if self.provider_type == 'youtube' else "music.chat.not_linked_spotify"
+        api.post_chat_message(self.i18n.get(key))
+        return False
+
     @Slot(str, str, str, str)
     def handle_music_plugin_command(self, tag: str, user: str, message: str, prefix_used: str):
         api = getattr(self.command_service, 'api_client', None)
@@ -370,12 +392,20 @@ class MusicController(QObject):
 
         provider = self.music_provider
         dispatch_table = {
+            "[PLUGIN_MUSIC_SR]": self._handle_plugin_sr,
             "[PLUGIN_SPOTIFY_SR]": self._handle_plugin_sr,
+            "[PLUGIN_MUSIC_SKIP]": self._handle_plugin_skip,
             "[PLUGIN_SPOTIFY_SKIP]": self._handle_plugin_skip,
+            "[PLUGIN_MUSIC_SONG]": self._handle_plugin_song,
             "[PLUGIN_SPOTIFY_SONG]": self._handle_plugin_song,
+            "[PLUGIN_MUSIC_PAUSE]": self._handle_plugin_pause,
             "[PLUGIN_SPOTIFY_PAUSE]": self._handle_plugin_pause,
+            "[PLUGIN_MUSIC_RESUME]": self._handle_plugin_resume,
             "[PLUGIN_SPOTIFY_RESUME]": self._handle_plugin_resume,
+            "[PLUGIN_MUSIC_PLAYLIST]": self._handle_plugin_playlist,
             "[PLUGIN_SPOTIFY_PLAYLIST]": self._handle_plugin_playlist,
+            "[PLUGIN_MUSIC_VOLUME]": self._handle_plugin_volume,
+            "[PLUGIN_SPOTIFY_VOLUME]": self._handle_plugin_volume,
         }
         
         executor = dispatch_table.get(tag)
@@ -389,22 +419,51 @@ class MusicController(QObject):
             return
 
         queue_items = provider.get_queue()
+        query = message[len(prefix_used):].strip() if prefix_used else ""
+
+        if query:
+            clean_query = query.lstrip("#").strip()
+            if clean_query.isdigit():
+                pos = int(clean_query)
+                total = len(queue_items)
+                if 1 <= pos <= total:
+                    song = queue_items[pos - 1]
+                    title = song.get("title", self.i18n.get("music.player.unknown_song"))
+                    artist = song.get("artist", "")
+                    artist_str = f" - {artist}" if artist else ""
+                    requester = song.get("requester", "Streamer")
+                    msg = self.i18n.get("music.chat.playlist_pos_info")\
+                        .replace("{pos}", str(pos))\
+                        .replace("{title}", title)\
+                        .replace("{artist}", artist_str)\
+                        .replace("{requester}", requester)
+                    api.post_chat_message(msg)
+                    return
+                else:
+                    msg = self.i18n.get("music.chat.playlist_invalid_pos")\
+                        .replace("{user}", user)\
+                        .replace("{pos}", str(pos))\
+                        .replace("{total}", str(total))
+                    api.post_chat_message(msg)
+                    return
+
         user_lower = user.lower()
-        user_matches = []
+        user_positions = []
         for idx, song in enumerate(queue_items):
             req = song.get("requester", "")
             if req and req.lower() == user_lower:
-                title = song.get("title", "Canción")
-                pos = idx + 1
-                user_matches.append(f"#{pos} \"{title}\"")
+                user_positions.append(f"#{idx + 1}")
 
-        if not user_matches:
+        if not user_positions:
             msg = self.i18n.get("music.chat.playlist_empty_for_user").replace("{user}", user)
             api.post_chat_message(msg)
         else:
-            songs_str = ", ".join(user_matches)
-            count = len(user_matches)
-            msg = self.i18n.get("music.chat.playlist_user_songs").replace("{user}", user).replace("{count}", str(count)).replace("{songs}", songs_str)
+            positions_str = ", ".join(user_positions)
+            count = len(user_positions)
+            msg = self.i18n.get("music.chat.playlist_user_songs")\
+                .replace("{user}", user)\
+                .replace("{count}", str(count))\
+                .replace("{songs}", positions_str)
             api.post_chat_message(msg)
 
     def _handle_plugin_sr(self, api, provider, user, message, prefix_used):
@@ -413,35 +472,23 @@ class MusicController(QObject):
             msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", prefix_used)
             api.post_chat_message(msg)
             return
-        if provider:
+        if self._require_active_provider(api):
             def on_complete(success, reply_msg):
                 api.post_chat_message(reply_msg)
                 
             success, immediate_reply = provider.add_to_queue(query, callback=on_complete, requester=user)
             if immediate_reply:
                 api.post_chat_message(immediate_reply)
-        else:
-            if self.provider_type == 'youtube':
-                msg = self.i18n.get("music.chat.not_linked_youtube")
-            else:
-                msg = self.i18n.get("music.chat.not_linked_spotify")
-            api.post_chat_message(msg)
 
     def _handle_plugin_skip(self, api, provider, user, message, prefix_used):
-        if provider:
+        if self._require_active_provider(api):
             if provider.skip_current():
                 api.post_chat_message(self.i18n.get("music.chat.skip_success"))
             else:
                 api.post_chat_message(self.i18n.get("music.chat.skip_failed"))
-        else:
-            if self.provider_type == 'youtube':
-                msg = self.i18n.get("music.chat.not_linked_youtube")
-            else:
-                msg = self.i18n.get("music.chat.not_linked_spotify")
-            api.post_chat_message(msg)
 
     def _handle_plugin_song(self, api, provider, user, message, prefix_used):
-        if provider:
+        if self._require_active_provider(api):
             is_youtube = getattr(provider, "provider_id", "") == "youtube"
             song = provider.get_current_song()
             if song:
@@ -450,48 +497,50 @@ class MusicController(QObject):
                     msg = self.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
                     api.post_chat_message(msg)
                 else:
-                    if is_youtube:
-                        msg = self.i18n.get("music.chat.song_paused_youtube")
-                    else:
-                        msg = self.i18n.get("music.chat.song_paused_spotify")
+                    msg = self.i18n.get("music.chat.song_paused_youtube") if is_youtube else self.i18n.get("music.chat.song_paused_spotify")
                     api.post_chat_message(msg)
             else:
-                if is_youtube:
-                    msg = self.i18n.get("music.chat.song_empty_youtube")
-                else:
-                    msg = self.i18n.get("music.chat.song_paused")
+                msg = self.i18n.get("music.chat.song_empty_youtube") if is_youtube else self.i18n.get("music.chat.song_paused")
                 api.post_chat_message(msg)
-        else:
-            if self.provider_type == 'youtube':
-                msg = self.i18n.get("music.chat.not_linked_youtube")
-            else:
-                msg = self.i18n.get("music.chat.not_linked_spotify")
-            api.post_chat_message(msg)
 
     def _handle_plugin_pause(self, api, provider, user, message, prefix_used):
-        if provider:
+        if self._require_active_provider(api):
             if hasattr(provider, "pause_playback") and provider.pause_playback():
                 api.post_chat_message(self.i18n.get("music.chat.pause_success"))
                 self._poll_now_playing()
             else:
                 api.post_chat_message(self.i18n.get("music.chat.pause_failed"))
-        else:
-            if self.provider_type == 'youtube':
-                msg = self.i18n.get("music.chat.not_linked_youtube")
-            else:
-                msg = self.i18n.get("music.chat.not_linked_spotify")
-            api.post_chat_message(msg)
 
     def _handle_plugin_resume(self, api, provider, user, message, prefix_used):
-        if provider:
+        if self._require_active_provider(api):
             if hasattr(provider, "resume_playback") and provider.resume_playback():
                 api.post_chat_message(self.i18n.get("music.chat.resume_success"))
                 self._poll_now_playing()
             else:
                 api.post_chat_message(self.i18n.get("music.chat.resume_failed"))
-        else:
-            if self.provider_type == 'youtube':
-                msg = self.i18n.get("music.chat.not_linked_youtube")
-            else:
-                msg = self.i18n.get("music.chat.not_linked_spotify")
+
+    def _handle_plugin_volume(self, api, provider, user, message, prefix_used):
+        query = message[len(prefix_used):].strip() if prefix_used else ""
+        if not query:
+            msg = self.i18n.get("music.chat.vol_usage").replace("{user}", user).replace("{trigger}", prefix_used)
             api.post_chat_message(msg)
+            return
+
+        try:
+            vol_val = int(query)
+            if not (0 <= vol_val <= 100):
+                raise ValueError("Volume out of range")
+        except ValueError:
+            msg = self.i18n.get("music.chat.vol_usage").replace("{user}", user).replace("{trigger}", prefix_used)
+            api.post_chat_message(msg)
+            return
+
+        self.set_volume(vol_val)
+        if hasattr(self.view, "slider_vol"):
+            self.view.blockSignals(True)
+            self.view.slider_vol.setValue(vol_val)
+            self.view.lbl_vol_perc.setText(f"{vol_val}%")
+            self.view.blockSignals(False)
+
+        msg = self.i18n.get("music.chat.vol_success").replace("{user}", user).replace("{volume}", str(vol_val))
+        api.post_chat_message(msg)

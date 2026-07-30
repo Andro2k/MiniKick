@@ -476,6 +476,8 @@ DEFAULT_DICTIONARY = {
             "resume_desc": "Allows moderators to resume music from chat. You can customize the '!resume' trigger in the Commands view.",
             "playlist_label": "View My Songs (Default: !playlist)",
             "playlist_desc": "Shows viewers the position of songs they requested. Aliases: !queue, !pl.",
+            "vol_label": "Modify Volume (Default: !vol)",
+            "vol_desc": "Allows moderators to change player volume from chat (0-100). Aliases: !volume.",
             "default_tag_name": "Music Plugin"
         },
         "toast": {
@@ -490,6 +492,8 @@ DEFAULT_DICTIONARY = {
         },
         "chat": {
             "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",
+            "vol_usage": "❌ @{user}, please specify a volume level between 0 and 100. (Ex: {trigger} 50)",
+            "vol_success": "🔊 @{user}, music volume has been set to {volume}%.",
             "not_linked": "❌ The broadcaster has not linked their Spotify account.",
             "not_linked_spotify": "❌ The broadcaster has not linked their Spotify account.",
             "not_linked_youtube": "❌ The streamer has not activated the YouTube player.",
@@ -503,6 +507,8 @@ DEFAULT_DICTIONARY = {
             "song_paused": "🔇 Spotify is paused or closed.",
             "playlist_empty_for_user": "❌ @{user}, you have no songs currently in the queue.",
             "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
+            "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
+            "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
             "no_queue_available": "❌ @{user}, music queue is not available right now.",
             "song_paused_spotify": "🔇 Spotify is paused.",
             "song_paused_youtube": "🔇 YouTube is paused.",

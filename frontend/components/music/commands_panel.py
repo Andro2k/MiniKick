@@ -49,12 +49,17 @@ class MusicCommandsPanel(QWidget):
         self.sw_playlist.toggled.connect(lambda val: self.command_toggled.emit("!playlist", val))
         row_playlist = SettingRow("list.svg", self.i18n.get("music.cmds.playlist_label"), self.i18n.get("music.cmds.playlist_desc"), self.sw_playlist)
 
+        self.sw_volume = ModernSwitch()
+        self.sw_volume.toggled.connect(lambda val: self.command_toggled.emit("!vol", val))
+        row_volume = SettingRow("volume.svg", self.i18n.get("music.cmds.vol_label"), self.i18n.get("music.cmds.vol_desc"), self.sw_volume)
+
         self.card_cmds.addWidget(row_sr)
         self.card_cmds.addWidget(row_skip)
         self.card_cmds.addWidget(row_song)
         self.card_cmds.addWidget(row_pause)
         self.card_cmds.addWidget(row_resume)
         self.card_cmds.addWidget(row_playlist)
+        self.card_cmds.addWidget(row_volume)
         
         panel_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)
 

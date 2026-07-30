@@ -151,6 +151,10 @@ class MusicView(BaseView):
         return self.commands_panel.sw_playlist
 
     @property
+    def sw_volume(self):
+        return self.commands_panel.sw_volume
+
+    @property
     def card_queue(self):
         return self.queue_panel.card_queue
 

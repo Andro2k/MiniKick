@@ -10,6 +10,7 @@ class ChatController(QObject):
     command_executed = Signal()
     message_received = Signal(str, str, str, list)
     music_plugin_triggered = Signal(str, str, str, str)
+
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
@@ -25,12 +26,19 @@ class ChatController(QObject):
         self.i18n = i18n        
         self.timer_service = timer_service
         self.toast = toast_manager
+
         self.muted_bots: set[str] = set()
         self.banned_words: set[str] = set()
+        self._banned_words_regex: re.Pattern | None = None
         self._all_voices: list[dict] = []
+        self._available_voice_ids: set[str] = set()
         self._voice_worker = None
+
         self._tts_enabled = True
+        self._read_name_enabled = True
+        self._use_command_enabled = False
         self._tts_settings_cache: dict = {}
+
         self.pipeline = MessagePipeline()
         self._build_pipeline()
         self._connect_signals()
@@ -88,7 +96,7 @@ class ChatController(QObject):
             volume=settings.get("volume", 100),
             role_voices=role_voices
         )
-        self.service.set_volume(settings["volume"])     
+        self.service.set_volume(settings.get("volume", 100))     
         
         bots_str = settings.get("ignored_users", "")
         self.muted_bots = {b.strip().lower() for b in bots_str.split(",") if b.strip()}
@@ -99,6 +107,7 @@ class ChatController(QObject):
 
         words_str = settings.get("banned_words", "")
         self.banned_words = {w.strip().lower() for w in words_str.split(",") if w.strip()}
+        self._recompile_banned_words_regex()
         
         self.view.clear_words_list()
         for word in self.banned_words:
@@ -147,12 +156,30 @@ class ChatController(QObject):
         self._tts_settings_cache = self.service.get_settings()
         self._tts_enabled = self._tts_settings_cache.get("enabled", True)
 
+    def _recompile_banned_words_regex(self):
+        if not self.banned_words:
+            self._banned_words_regex = None
+        else:
+            sorted_words = sorted(self.banned_words, key=len, reverse=True)
+            pattern = r'\b(?:' + '|'.join(re.escape(w) for w in sorted_words) + r')\b'
+            self._banned_words_regex = re.compile(pattern, re.IGNORECASE)
+
+    def _is_message_banned(self, msg: str) -> bool:
+        if not self._banned_words_regex:
+            return False
+        return bool(self._banned_words_regex.search(msg))
+
+    def _is_bot(self, username: str, badges: list | None = None) -> bool:
+        u_lower = username.lower()
+        if u_lower in self._DEFAULT_BOTS or u_lower in self.muted_bots:
+            return True
+        return bool(badges and "bot" in badges)
+
     @Slot(object)
     def process_message(self, dto: ChatMessageDTO):
         self.pipeline.execute(dto)
-        if not dto.is_cancelled:
-            if self.timer_service:
-                self.timer_service.increment_chat_lines()
+        if not dto.is_cancelled and self.timer_service:
+            self.timer_service.increment_chat_lines()
 
     def _step_spam(self, dto: ChatMessageDTO):
         if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id):
@@ -164,7 +191,7 @@ class ChatController(QObject):
         if handled:
             dto.is_command = True
             self.command_executed.emit()
-            if plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
+            if plugin_tag.startswith("[PLUGIN_MUSIC_") or plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
                 self.music_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
             elif plugin_tag == "[PLUGIN_CHAT_TTS]":
                 msg_content = dto.content[len(prefix):].strip()
@@ -174,7 +201,7 @@ class ChatController(QObject):
                     cleaned = self._clean_message_for_tts(msg_content)
                     if cleaned:
                         settings = self._tts_settings_cache
-                        text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings["read_name"] else cleaned
+                        text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
                         voice_id = self._resolve_voice_for_badges(dto.badges, settings)
                         self.service.speak(text, voice_id=voice_id)
 
@@ -185,7 +212,6 @@ class ChatController(QObject):
             self.service.speak(sample_text, voice_id=voice_id)
 
     def _resolve_user_role(self, badges: list, user: str) -> str:
-        username_lower = user.lower()
         if "broadcaster" in badges:
             return self.i18n.get("chat.roles.name_broadcaster")
         elif "moderator" in badges:
@@ -194,43 +220,36 @@ class ChatController(QObject):
             return self.i18n.get("chat.roles.name_vip")
         elif "subscriber" in badges:
             return self.i18n.get("chat.roles.name_subscriber")
-        elif "bot" in badges or username_lower in self._DEFAULT_BOTS or username_lower in self.muted_bots:
+        elif self._is_bot(user, badges):
             return self.i18n.get("chat.roles.name_bot")
         return self.i18n.get("chat.roles.name_user")
 
     def _step_ui_render(self, dto: ChatMessageDTO):
         badges = list(dto.badges) if dto.badges else []
-        username_lower = dto.user.lower()
-        if username_lower in self._DEFAULT_BOTS or username_lower in self.muted_bots:
-            if "bot" not in badges:
-                badges.append("bot")
+        if self._is_bot(dto.user) and "bot" not in badges:
+            badges.append("bot")
         role_name = self._resolve_user_role(badges, dto.user)
         self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name)
         self.message_received.emit(dto.user, dto.content, dto.color, badges)
 
     def _resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
-        available_ids = {v["id"] for v in self._all_voices}
         for badge in self._ROLE_PRIORITIES:
             if badge in badges:
                 voice_id = settings.get(f"role_voice_{badge}", "")
-                if voice_id in available_ids:
+                if voice_id in self._available_voice_ids:
                     return voice_id
         return None
-
-    def _is_message_banned(self, msg: str) -> bool:
-        msg_lower = msg.lower()
-        return any(re.search(r'\b' + re.escape(w) + r'\b', msg_lower) for w in self.banned_words)
 
     def _step_tts(self, dto: ChatMessageDTO):
         if getattr(dto, "is_command", False):
             return
         settings = self._tts_settings_cache
-        if not settings.get("enabled", True) or dto.user.lower() in self.muted_bots:
+        if not settings.get("enabled", True) or self._is_bot(dto.user):
             return
 
         msg = dto.content.strip()
-        if settings["use_command"]:
-            cmd = settings["command"]
+        if settings.get("use_command", False):
+            cmd = settings.get("command", "!tts")
             if not msg.lower().startswith(cmd):
                 return
             msg = msg[len(cmd):].strip()
@@ -240,7 +259,7 @@ class ChatController(QObject):
 
         cleaned = self._clean_message_for_tts(msg)
         if cleaned:
-            text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings["read_name"] else cleaned
+            text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
             voice_id = self._resolve_voice_for_badges(dto.badges, settings)
             self.service.speak(text, voice_id=voice_id)
 
@@ -260,8 +279,8 @@ class ChatController(QObject):
                     self._voice_worker.error_occurred.disconnect()
                 except Exception:
                     pass
-                self._voice_worker.terminate()
-                self._voice_worker.wait(500)
+                self._voice_worker.requestInterruption()
+                self._voice_worker.wait(300)
             self._voice_worker.deleteLater()
             self._voice_worker = None
 
@@ -276,6 +295,7 @@ class ChatController(QObject):
     @Slot(list, str, bool)
     def _on_voices_fetched(self, voices: list, provider: str, is_initial: bool):
         self._all_voices = voices
+        self._available_voice_ids = {v["id"] for v in voices}
         saved_voice_id = self.service.get_saved_voice_id(provider)
 
         if provider == "local":
@@ -507,6 +527,7 @@ class ChatController(QObject):
         clean_word = word.strip().lower()
         if clean_word and clean_word not in self.banned_words:
             self.banned_words.add(clean_word)
+            self._recompile_banned_words_regex()
             self.view.add_word_tag(clean_word)
             self._save_word_list()
         self.view.clear_word_input()
@@ -516,6 +537,7 @@ class ChatController(QObject):
         clean_word = word.lower()
         if clean_word in self.banned_words:
             self.banned_words.remove(clean_word)
+            self._recompile_banned_words_regex()
             self._save_word_list()
 
     def _save_word_list(self):

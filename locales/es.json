@@ -474,6 +474,8 @@
             "resume_desc": "Permite a los moderadores reanudar la música desde el chat. Puedes personalizar el disparador '!resume' en la vista de Comandos.",
             "playlist_label": "Ver Mis Canciones (Por defecto: !playlist)",
             "playlist_desc": "Muestra a los espectadores la posición de las canciones que han pedido. Alias: !queue, !pl.",
+            "vol_label": "Modificar Volumen (Por defecto: !vol)",
+            "vol_desc": "Permite a los moderadores cambiar el volumen del reproductor desde el chat (0-100). Alias: !volume.",
             "default_tag_name": "Plugin de Música"
         },
         "toast": {
@@ -488,6 +490,8 @@
         },
         "chat": {
             "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
+            "vol_usage": "❌ @{user}, por favor especifica un nivel de volumen entre 0 y 100. (Ej: {trigger} 50)",
+            "vol_success": "🔊 @{user}, el volumen de la música se ha cambiado a {volume}%.",
             "not_linked": "❌ El streamer no ha vinculado su cuenta de Spotify.",
             "not_linked_spotify": "❌ El streamer no ha vinculado su cuenta de Spotify.",
             "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
@@ -501,6 +505,8 @@
             "song_paused": "🔇 Spotify está en pausa o cerrado.",
             "playlist_empty_for_user": "❌ @{user}, no tienes canciones en la cola actualmente.",
             "playlist_user_songs": "🎵 @{user}, tienes {count} canción(es) en la cola: {songs}",
+            "playlist_pos_info": "🎵 Canción #{pos}: \"{title}\"{artist} (pedida por @{requester})",
+            "playlist_invalid_pos": "❌ @{user}, la posición #{pos} no es válida. Hay {total} canción(es) en la cola.",
             "no_queue_available": "❌ @{user}, la cola de reproducción no está disponible en este momento.",
             "song_paused_spotify": "🔇 Spotify está en pausa.",
             "song_paused_youtube": "🔇 YouTube está en pausa.",
