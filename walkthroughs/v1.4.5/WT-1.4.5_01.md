@@ -1,4 +1,4 @@
-# Walkthrough v1.4.5 - Comando de Volumen !vol, Renombrado a [PLUGIN_MUSIC_*], Optimización de Controllers, Mejoras en !playlist y Scroll en Overlay de Chat
+# Walkthrough v1.4.5 - Comando de Volumen !vol, Renombrado a [PLUGIN_MUSIC_*], Optimización de Controllers, Mejoras en !playlist, Scroll en Overlay y Reestructuración de Assets
 
 **Fecha:** 30 de Julio, 2026  
 **Versión Target:** v1.4.5  
@@ -8,7 +8,13 @@
 
 ## 1. Resumen de Cambios
 
-En esta versión (v1.4.5) se introducen mejoras importantes en la funcionalidad del chat, control de música y arquitectura interna:
+En esta versión (v1.4.5) se introducen mejoras importantes en la funcionalidad del chat, control de música, optimizaciones de arquitectura y empaquetado del ejecutable:
+
+- **Optimización de Empaquetado PyInstaller (Assets Externos)**:
+  - Movidas las capturas de pantalla de `assets/screenshots/` a `docs/screenshots/`.
+  - Movidos los recursos gráficos del instalador de `assets/installer/` a `resources/installer/`.
+  - Con este cambio, el empaquetado con PyInstaller (`MiniKick.spec`) ya no empaqueta imágenes pesadas dentro del archivo binario `.exe`, reduciendo considerablemente el tamaño final del ejecutable.
+  - Actualizados los enlaces en [README.md](file:///c:/Users/TheAn/Desktop/python/Kick/README.md) y [instalador.iss](file:///c:/Users/TheAn/Desktop/python/Kick/instalador.iss).
 
 - **Comando de Volumen `!vol` (`!volume`)**:
   - Nuevo comando de plugin asignado por defecto con restricción de **Moderador** (`moderator`).
@@ -38,31 +44,29 @@ En esta versión (v1.4.5) se introducen mejoras importantes en la funcionalidad 
 
 ## 2. Detalles de las Características Implementadas
 
-### A. Comando de Volumen (`!vol` / `!volume`)
+### A. Reestructuración de Assets y Optimización del .exe
+- **`docs/screenshots/`**: Contiene las capturas para el README (`dashboard_preview.png`, `chat_settings_preview.png`, etc.).
+- **`resources/installer/`**: Contiene los recursos gráficos para Inno Setup (`install_bg.png`, `install_small.png`).
+- **`assets/`**: Mantiene de forma exclusiva los recursos requeridos en tiempo de ejecución (`fonts`, `icons`, `overlays`, `web`), optimizando el proceso de construcción en `MiniKick.spec`.
+
+### B. Comando de Volumen (`!vol` / `!volume`)
 - **Ubicación:** `frontend/components/music/commands_panel.py`, `frontend/views/music_view.py` y `backend/controllers/music_controller.py`
 - **Permiso Predeterminado:** Moderador (`permission="moderator"`).
-- **Manejador:** `_handle_plugin_volume` procesa enteros entre 0 y 100, actualiza el estado guardado, aplica el volumen al proveedor de audio activo y sincroniza la UI del reproductor.
 
-### B. Renombrado e Integración de Tags Plugin (`[PLUGIN_MUSIC_*]`)
+### C. Renombrado e Integración de Tags Plugin (`[PLUGIN_MUSIC_*]`)
 - **Tags de Plugin:** `[PLUGIN_MUSIC_SR]`, `[PLUGIN_MUSIC_SKIP]`, `[PLUGIN_MUSIC_SONG]`, `[PLUGIN_MUSIC_PAUSE]`, `[PLUGIN_MUSIC_RESUME]`, `[PLUGIN_MUSIC_PLAYLIST]`, `[PLUGIN_MUSIC_VOLUME]`.
-- **Compatibilidad:** `chat_controller.py` reconoce prefijos `[PLUGIN_MUSIC_` y `[PLUGIN_SPOTIFY_`.
 
-### C. Auditoría y Refactorización de Controllers (`ChatController` y `MusicController`)
-- **Prevención ReDoS:** Se compila un único patrón ordenado por longitud de palabra `\b(?:w1|w2|...)\b`.
-- **Búsqueda $O(1)$ de Voces:** `self._available_voice_ids` almacena el conjunto de IDs de voz.
-
-### D. Rediseño del Comando `!playlist`
-- **Respuesta sin argumento:** `🎵 @user, tienes 2 canción(es) en la cola: #2, #5`
-- **Respuesta con número (`!playlist 2`):** `🎵 Canción #2: "Título" - Artista (pedida por @requester)`
-
-### E. Overlay de Chat en OBS con Scroll Invisible
+### D. Overlay de Chat en OBS con Scroll Invisible
 - **CSS:** `overflow-y: auto; scrollbar-width: none;` y `.message-box:first-child { margin-top: auto; }`.
-- **JS:** `const isUserScrolledUp = (container.scrollHeight - container.clientHeight - container.scrollTop) > 60;`
 
 ---
 
 ## 3. Archivos Modificados / Creados
 
+- `docs/screenshots/`
+- `resources/installer/`
+- `README.md`
+- `instalador.iss`
 - `frontend/components/music/commands_panel.py`
 - `frontend/views/music_view.py`
 - `backend/controllers/music_controller.py`

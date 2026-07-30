@@ -16,13 +16,13 @@ MiniKick es una aplicación de escritorio nativa diseñada para orquestar la int
 
 ### Vista Previa de la Interfaz
 
-![MiniKick Dashboard - Panel General de Control](assets/screenshots/dashboard_preview.png)
+![MiniKick Dashboard - Panel General de Control](docs/screenshots/dashboard_preview.png)
 
-![Ajustes de Voz, Roles y Moderacion de Chat](assets/screenshots/chat_settings_preview.png)
+![Ajustes de Voz, Roles y Moderacion de Chat](docs/screenshots/chat_settings_preview.png)
 
-![Reproductor de Musica y Cola de Reproduccion](assets/screenshots/music_player_preview.png)
+![Reproductor de Musica y Cola de Reproduccion](docs/screenshots/music_player_preview.png)
 
-![Lienzo de Overlay de Chat para OBS y Temas Visuales](assets/screenshots/chat_overlay_preview.png)
+![Lienzo de Overlay de Chat para OBS y Temas Visuales](docs/screenshots/chat_overlay_preview.png)
 
 ---
 

@@ -13,9 +13,9 @@ MiniKick_Backup_*.json
 *.exe
 *.log
 *.iss
-pyinstaller.txt
 *.spec
 *.txt
 # Archivos de configuración de IDEs
 *build/
 *dist/
+*resources/
