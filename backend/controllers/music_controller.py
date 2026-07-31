@@ -458,13 +458,26 @@ class MusicController(QObject):
             msg = self.i18n.get("music.chat.playlist_empty_for_user").replace("{user}", user)
             api.post_chat_message(msg)
         else:
-            positions_str = ", ".join(user_positions)
+            MAX_PER_MSG = 8
             count = len(user_positions)
-            msg = self.i18n.get("music.chat.playlist_user_songs")\
+            chunks = [user_positions[i:i + MAX_PER_MSG] for i in range(0, count, MAX_PER_MSG)]
+            
+            first_chunk_str = ", ".join(chunks[0])
+            first_msg = self.i18n.get("music.chat.playlist_user_songs")\
                 .replace("{user}", user)\
                 .replace("{count}", str(count))\
-                .replace("{songs}", positions_str)
-            api.post_chat_message(msg)
+                .replace("{songs}", first_chunk_str)
+            api.post_chat_message(first_msg)
+
+            total_pages = len(chunks)
+            for page_idx, chunk in enumerate(chunks[1:], start=2):
+                remaining_str = ", ".join(chunk)
+                extra_msg = self.i18n.get("music.chat.playlist_user_songs_more")\
+                    .replace("{user}", user)\
+                    .replace("{page}", str(page_idx))\
+                    .replace("{total_pages}", str(total_pages))\
+                    .replace("{songs}", remaining_str)
+                api.post_chat_message(extra_msg)
 
     def _handle_plugin_sr(self, api, provider, user, message, prefix_used):
         query = message[len(prefix_used):].strip() if prefix_used else ""

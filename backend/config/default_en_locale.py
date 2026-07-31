@@ -401,7 +401,13 @@ DEFAULT_DICTIONARY = {
             "read_name_inactive": "Reading sender names disabled",
             "use_command_title": "Require Command",
             "use_command_active": "TTS command requirement enabled",
-            "use_command_inactive": "TTS command requirement disabled"
+            "use_command_inactive": "TTS command requirement disabled",
+            "systts_on": "🔊 @{user}, TTS system has been ENABLED.",
+            "systts_off": "🔇 @{user}, TTS system has been DISABLED.",
+            "systts_status": "ℹ️ @{user}, TTS system is currently: {state}.",
+            "systts_usage": "⚠️ @{user}, command usage: !systts on | !systts off",
+            "enabled_upper": "ENABLED",
+            "disabled_upper": "DISABLED"
         },
         "overlay": {
             "theme_title": "Chat Design",
@@ -507,6 +513,7 @@ DEFAULT_DICTIONARY = {
             "song_paused": "🔇 Spotify is paused or closed.",
             "playlist_empty_for_user": "❌ @{user}, you have no songs currently in the queue.",
             "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
+            "playlist_user_songs_more": "🎵 @{user} (remaining positions {page}/{total_pages}): {songs}",
             "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
             "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
             "no_queue_available": "❌ @{user}, music queue is not available right now.",

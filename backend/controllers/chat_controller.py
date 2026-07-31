@@ -150,6 +150,22 @@ class ChatController(QObject):
             finally:
                 self.command_service.blockSignals(False)
 
+        existing_systts = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_SYSTTS]"), None)
+        if not existing_systts:
+            self.command_service.blockSignals(True)
+            try:
+                self.command_service.save_command(
+                    trigger="!systts",
+                    response="[PLUGIN_CHAT_SYSTTS]",
+                    is_active=True,
+                    cooldown=3,
+                    aliases="!ttssys",
+                    is_regex=False,
+                    permission="moderator"
+                )
+            finally:
+                self.command_service.blockSignals(False)
+
         self._load_voices(provider, is_initial=True)
 
     def sync_settings_cache(self) -> None:
@@ -187,9 +203,11 @@ class ChatController(QObject):
             self.spam_blocked.emit()
 
     def _step_commands(self, dto: ChatMessageDTO):
-        handled, plugin_tag, _, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges)
+        handled, plugin_tag, cmd_info, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges)
         if handled:
-            dto.is_command = True
+            is_regex = cmd_info.get("is_regex", False) if isinstance(cmd_info, dict) else False
+            if not is_regex:
+                dto.is_command = True
             self.command_executed.emit()
             if plugin_tag.startswith("[PLUGIN_MUSIC_") or plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
                 self.music_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
@@ -204,6 +222,37 @@ class ChatController(QObject):
                         text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
                         voice_id = self._resolve_voice_for_badges(dto.badges, settings)
                         self.service.speak(text, voice_id=voice_id)
+            elif plugin_tag == "[PLUGIN_CHAT_SYSTTS]":
+                msg_content = dto.content[len(prefix):].strip()
+                self._handle_systts_command(dto.user, msg_content)
+
+    def _handle_systts_command(self, user: str, arg: str):
+        arg_clean = arg.strip().lower()
+        if arg_clean in ("on", "1", "enable", "activar", "encender"):
+            new_state = True
+        elif arg_clean in ("off", "0", "disable", "desactivar", "apagar"):
+            new_state = False
+        elif not arg_clean or arg_clean == "status":
+            state_str = self.i18n.get("chat.status.enabled_upper") if self._tts_enabled else self.i18n.get("chat.status.disabled_upper")
+            status_msg = self.i18n.get("chat.status.systts_status").replace("{user}", user).replace("{state}", state_str)
+            self.command_service.send_response(status_msg)
+            return
+        else:
+            usage_msg = self.i18n.get("chat.status.systts_usage").replace("{user}", user)
+            self.command_service.send_response(usage_msg)
+            return
+
+        self._tts_enabled = new_state
+        settings = self.service.get_settings()
+        settings["enabled"] = new_state
+        self.service.save_settings(settings)
+        self.sync_settings_cache()
+
+        self.tts_state_changed.emit(new_state)
+
+        key = "chat.status.systts_on" if new_state else "chat.status.systts_off"
+        reply = self.i18n.get(key).replace("{user}", user)
+        self.command_service.send_response(reply)
 
     @Slot(str)
     def _handle_voice_test(self, voice_id: str):
@@ -444,6 +493,18 @@ class ChatController(QObject):
                     aliases="",
                     is_regex=False,
                     permission="everyone"
+                )
+
+            existing_systts = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_SYSTTS]"), None)
+            if not existing_systts:
+                self.command_service.save_command(
+                    trigger="!systts",
+                    response="[PLUGIN_CHAT_SYSTTS]",
+                    is_active=True,
+                    cooldown=3,
+                    aliases="!ttssys",
+                    is_regex=False,
+                    permission="moderator"
                 )
         finally:
             self.command_service.blockSignals(False)

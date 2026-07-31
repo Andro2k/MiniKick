@@ -242,9 +242,7 @@ class MainWindowCore(QMainWindow):
         self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
-        self.settings_controller.notification_requested.connect(
-            lambda title, msg: self.tray_manager.showMessage(title, msg)
-        )
+        self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
         self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
         self.q_log_handler.emitter.log_received.connect(self.log_controller.process_incoming_log)
         self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)

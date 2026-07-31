@@ -399,7 +399,13 @@
             "read_name_inactive": "Lectura de nombres desactivada",
             "use_command_title": "Requerir Comando",
             "use_command_active": "Requerir comando TTS activado",
-            "use_command_inactive": "Requerir comando TTS desactivado"
+            "use_command_inactive": "Requerir comando TTS desactivado",
+            "systts_on": "🔊 @{user}, el sistema de TTS ha sido ACTIVADO.",
+            "systts_off": "🔇 @{user}, el sistema de TTS ha sido DESACTIVADO.",
+            "systts_status": "ℹ️ @{user}, el sistema de TTS está actualmente: {state}.",
+            "systts_usage": "⚠️ @{user}, uso del comando: !systts on | !systts off",
+            "enabled_upper": "ACTIVADO",
+            "disabled_upper": "DESACTIVADO"
         },
         "overlay": {
             "theme_title": "Diseño de Chat",
@@ -505,6 +511,7 @@
             "song_paused": "🔇 Spotify está en pausa o cerrado.",
             "playlist_empty_for_user": "❌ @{user}, no tienes canciones en la cola actualmente.",
             "playlist_user_songs": "🎵 @{user}, tienes {count} canción(es) en la cola: {songs}",
+            "playlist_user_songs_more": "🎵 @{user} (posiciones restantes {page}/{total_pages}): {songs}",
             "playlist_pos_info": "🎵 Canción #{pos}: \"{title}\"{artist} (pedida por @{requester})",
             "playlist_invalid_pos": "❌ @{user}, la posición #{pos} no es válida. Hay {total} canción(es) en la cola.",
             "no_queue_available": "❌ @{user}, la cola de reproducción no está disponible en este momento.",
