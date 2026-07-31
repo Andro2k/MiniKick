@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 
 class LogService:
     def __init__(self, db_manager=None):
@@ -41,7 +42,11 @@ class LogService:
                                 cursor.execute("UPDATE system_logs SET message = message || '\n' || ? WHERE id = (SELECT max(id) FROM system_logs)", (message,))
                             conn.commit()
                     except Exception as e:
-                        print("Error updating log in DB:", e)
+                        if sys.__stderr__ is not None:
+                            try:
+                                sys.__stderr__.write(f"Error updating log in DB: {e}\n")
+                            except Exception:
+                                pass
 
         if not is_grouped:
             self._live_history.append((level, time_str, message))
@@ -56,7 +61,11 @@ class LogService:
                         self._last_log_id = cursor.lastrowid
                         conn.commit()
                 except Exception as e:
-                    print("Error inserting log into DB:", e)
+                    if sys.__stderr__ is not None:
+                        try:
+                            sys.__stderr__.write(f"Error inserting log into DB: {e}\n")
+                        except Exception:
+                            pass
 
         return is_grouped
 

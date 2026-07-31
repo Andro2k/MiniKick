@@ -57,6 +57,7 @@ class YouTubeResolveWorker(QThread):
                 'retries': 5,
                 'fragment_retries': 5,
                 'continuedl': False,
+                'nopart': True,
             }
             
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:

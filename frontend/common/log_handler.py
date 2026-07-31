@@ -29,7 +29,11 @@ class StreamToLogger:
 
     def write(self, buf):
         if self._in_write:
-            sys.__stderr__.write(buf)
+            if sys.__stderr__ is not None:
+                try:
+                    sys.__stderr__.write(buf)
+                except Exception:
+                    pass
             return
         self._in_write = True
         try:

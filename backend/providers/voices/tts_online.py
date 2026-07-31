@@ -3,6 +3,7 @@
 import asyncio
 import logging
 import os
+import re
 import tempfile
 import threading
 import time
@@ -24,6 +25,13 @@ class WebTTSProvider:
         self._loop_thread = threading.Thread(target=self._run_event_loop, daemon=True)
         self._loop_thread.start()
 
+    @staticmethod
+    def _is_speakable_text(text: str) -> bool:
+        if not text or not text.strip():
+            return False
+        cleaned = re.sub(r'[^\w\s]', '', text, flags=re.UNICODE).strip()
+        return len(cleaned) > 0
+
     def _run_event_loop(self):
         asyncio.set_event_loop(self._loop)
         self._loop.run_forever()
@@ -40,6 +48,9 @@ class WebTTSProvider:
         self.volume_str = f"{percent}%" if percent < 0 else f"+{percent}%"
 
     def prepare(self, text: str, voice_id: str = None) -> None:
+        if not self._is_speakable_text(text):
+            logging.debug(f"[Web TTS] Skipping prepare: no speakable content in '{text[:25]}...'")
+            return
         voice = voice_id if voice_id else self.voice
         start_t = time.perf_counter()
         cache_key = (text, voice)
@@ -68,6 +79,9 @@ class WebTTSProvider:
             raise e
 
     def speak(self, text: str, voice_id: str = None) -> None:
+        if not self._is_speakable_text(text):
+            logging.debug(f"[Web TTS] Skipping speak: no speakable content in '{text[:25]}...'")
+            return
         start_t = time.perf_counter()
         try:
             self._run_async(self._async_speak(text, voice_id, start_t))
