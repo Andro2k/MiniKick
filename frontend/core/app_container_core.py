@@ -2,13 +2,15 @@
 
 import os
 import sys
+import logging
+
 try:
     from backend.config.api_keys import (
         KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
         SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI
     )
 except ImportError:
-    print("ADVERTENCIA: Archivo backend/api_keys.py no encontrado. Usando credenciales vacías.")
+    logging.warning("Archivo backend/api_keys.py no encontrado. Usando credenciales vacías.")
     KICK_CLIENT_ID = ""
     KICK_CLIENT_SECRET = ""
     KICK_REDIRECT_URI = "http://localhost:8080/auth/callback"
@@ -73,14 +75,17 @@ class AppContainer:
             try:
                 with open(install_lang_path, 'r', encoding='utf-8') as f:
                     install_lang = f.read().strip()
-                if install_lang in ["es", "en"]:
+                if install_lang in ("es", "en"):
                     self.settings_storage.save_string("app_language", install_lang)
                 os.remove(install_lang_path)
-            except Exception:
-                pass
+            except Exception as e:
+                logging.error("[AppContainer] Error procesando .install_lang: %s", e)
+
         saved_lang = self.settings_storage.load_string("app_language", "es")
         return TranslationService(default_lang=saved_lang)
 
     def shutdown(self):
-        self.tts_manager.stop()
-        self.overlay_server.stop()
+        if hasattr(self, 'tts_manager') and self.tts_manager:
+            self.tts_manager.stop()
+        if hasattr(self, 'overlay_server') and self.overlay_server:
+            self.overlay_server.stop()

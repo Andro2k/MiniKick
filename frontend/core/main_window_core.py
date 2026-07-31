@@ -35,6 +35,19 @@ class MainWindowCore(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
 
+    _NAV_CONFIG = (
+        ("Dashboard", "dashboard.svg", "top"),
+        ("Chat", "message.svg", "top"),
+        ("Comandos", "code.svg", "top"),
+        ("Spam Filters", "shield-half.svg", "top"),
+        ("Timers", "clock.svg", "top"),
+        ("Music", "music.svg", "top"),
+        ("Triggers", "layout-dashboard.svg", "top"),
+        ("Network Status", "access-point.svg", "bottom"),
+        ("Settings", "settings.svg", "bottom"),
+        ("Developer", "brand-tabler.svg", "bottom"),
+    )
+
     def __init__(self, updater_manager, app_version: str):
         super().__init__()
         self._is_shutting_down = False
@@ -88,16 +101,8 @@ class MainWindowCore(QMainWindow):
         self.main_layout.setSpacing(0)
 
         self.sidebar = Sidebar(self.i18n, app_version=self.app_version)
-        self.sidebar.add_tab("Dashboard", "dashboard.svg", is_active=True)
-        self.sidebar.add_tab("Chat", "message.svg")
-        self.sidebar.add_tab("Comandos", "code.svg")
-        self.sidebar.add_tab("Spam Filters", "shield-half.svg")
-        self.sidebar.add_tab("Timers", "clock.svg")
-        self.sidebar.add_tab("Music", "music.svg")
-        self.sidebar.add_tab("Triggers", "layout-dashboard.svg")
-        self.sidebar.add_tab("Network Status", "access-point.svg", position="bottom")
-        self.sidebar.add_tab("Settings", "settings.svg", position="bottom")
-        self.sidebar.add_tab("Developer", "brand-tabler.svg", position="bottom")
+        for name, icon, pos in self._NAV_CONFIG:
+            self.sidebar.add_tab(name, icon, position=pos, is_active=(name == "Dashboard"))
 
         self.content_stack = QStackedWidget()
         self.avatar_service = AvatarService(self.container.db_manager)
@@ -199,16 +204,8 @@ class MainWindowCore(QMainWindow):
             "spam_blocked": 0
         }
 
-        self.content_stack.addWidget(self.view_dashboard)
-        self.content_stack.addWidget(self.view_chat)
-        self.content_stack.addWidget(self.view_music)
-        self.content_stack.addWidget(self.view_rewards)
-        self.content_stack.addWidget(self.view_commands)
-        self.content_stack.addWidget(self.view_spam)
-        self.content_stack.addWidget(self.view_timers)
-        self.content_stack.addWidget(self.view_settings)
-        self.content_stack.addWidget(self.view_logs)
-        self.content_stack.addWidget(self.view_network)
+        for view_widget in self._nav_mapping.values():
+            self.content_stack.addWidget(view_widget)
 
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
@@ -317,6 +314,20 @@ class MainWindowCore(QMainWindow):
         self._cleanup()
         QApplication.quit()
 
+    def _stop_all_workers(self):
+        worker_map = [
+            ("Worker_Chat_Socket", getattr(self, 'chat_worker', None)),
+            ("Worker_Reward_Polling", getattr(self, 'reward_worker', None)),
+            ("Worker_Auth", getattr(self, 'auth_worker', None)),
+            ("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None)),
+            ("Worker_Timers", getattr(self, 'timers_worker', None)),
+        ]
+        if hasattr(self, 'network_controller') and self.network_controller:
+            worker_map.append(("Worker_Network", getattr(self.network_controller, 'worker', None)))
+
+        for worker_name, worker_instance in worker_map:
+            self._stop_worker_safely(worker_name, worker_instance)
+
     def _cleanup(self):
         if self._is_shutting_down:
             return
@@ -328,17 +339,9 @@ class MainWindowCore(QMainWindow):
             self.music_controller.shutdown()
 
         self.logger.info(self.i18n.get("main.logs.shutdown_tts_overlay"))
-        self.tts_manager.stop()        
-        self.overlay_server.stop() 
+        self.container.shutdown()
 
-        self._stop_worker_safely("Worker_Chat_Socket", self.chat_worker)
-        self._stop_worker_safely("Worker_Reward_Polling", self.reward_worker)
-        self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
-        self._stop_worker_safely("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None))
-        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
-        
-        if hasattr(self, 'network_controller') and self.network_controller and getattr(self.network_controller, 'worker', None):
-            self._stop_worker_safely("Worker_Network", self.network_controller.worker)
+        self._stop_all_workers()
 
         if hasattr(self.container, 'db_manager') and self.container.db_manager:
             self.container.db_manager.cleanup()
@@ -347,10 +350,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_auth_process(self):
-        self._stop_worker_safely("Worker_Auth", getattr(self, 'auth_worker', None))
-        self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
-        self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
-        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
+        self._stop_all_workers()
         self.dashboard_controller.handle_connecting_state()
 
         self.auth_worker = AuthWorker(self.i18n, self.auth_manager)
@@ -417,6 +417,13 @@ class MainWindowCore(QMainWindow):
         dto = ChatMessageDTO(user, msg, badges, color, msg_id, sender_id, timestamp=current_time)
         self.chat_controller.process_message(dto)
 
+    def _format_reward_message(self, reward_name: str) -> str:
+        import html
+        safe_reward_name = html.escape(reward_name)
+        canje_template = self.i18n.get("main.chat.reward_redeemed")
+        texto_canje = canje_template.replace("{reward_name}", safe_reward_name)
+        return f'<span style="color: #00e701;">{texto_canje}</span>'
+
     @Slot(str, str, str)
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
         toast_template = self.i18n.get("main.toasts.reward_msg")
@@ -429,11 +436,7 @@ class MainWindowCore(QMainWindow):
         from datetime import datetime
         current_time = datetime.now().strftime("%H:%M:%S")
         
-        import html
-        safe_reward_name = html.escape(reward_name)
-        canje_template = self.i18n.get("main.chat.reward_redeemed")
-        texto_canje = canje_template.replace("{reward_name}", safe_reward_name)
-        msg_sistema = f'<span style="color: #00e701;">{texto_canje}</span>'
+        msg_sistema = self._format_reward_message(reward_name)
         tag = self.i18n.get("main.chat.points_tag")
         self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True)
         
@@ -525,7 +528,7 @@ class MainWindowCore(QMainWindow):
     def _increment_metric(self, name: str):
         if hasattr(self, 'session_metrics') and name in self.session_metrics:
             self.session_metrics[name] += 1
-        self._update_dashboard_metrics()
+        self._update_dashboard_metrics(force_db_query=False)
 
     @Slot()
     def _update_dashboard_metrics(self, force_db_query=False):
@@ -606,9 +609,7 @@ class MainWindowCore(QMainWindow):
                 message=self.i18n.get("settings.status.unlinked_msg"),
                 state="warning"
             )
-            self._stop_worker_safely("Worker_Chat_Socket", getattr(self, 'chat_worker', None))
-            self._stop_worker_safely("Worker_Reward_Polling", getattr(self, 'reward_worker', None))
-            self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
+            self._stop_all_workers()
             self.chat_worker = None
             self.reward_worker = None
             self.timers_worker = None

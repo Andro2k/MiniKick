@@ -6,6 +6,14 @@ import sys
 from logging.handlers import TimedRotatingFileHandler
 from frontend.common.log_handler import QLogHandler, StreamToLogger
 
+def _silence_c_level_stderr():
+    try:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, 2)
+        os.close(devnull)
+    except Exception:
+        pass
+
 def setup_application_logging():
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG) 
@@ -38,18 +46,12 @@ def setup_application_logging():
     file_handler.setLevel(logging.DEBUG)   
     logger.addHandler(file_handler)
     
-    logging.getLogger("urllib3").setLevel(logging.WARNING)
-    logging.getLogger("cloudscraper").setLevel(logging.WARNING)
-    logging.getLogger("comtypes").setLevel(logging.WARNING)
+    for lib_name in ("urllib3", "cloudscraper", "comtypes"):
+        logging.getLogger(lib_name).setLevel(logging.WARNING)
 
     sys.stdout = StreamToLogger(logger, logging.INFO)
     sys.stderr = StreamToLogger(logger, logging.ERROR)
 
-    try:
-        devnull = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(devnull, 2)
-        os.close(devnull)
-    except Exception:
-        pass
+    _silence_c_level_stderr()
     
     return logger, q_log_handler
