@@ -897,7 +897,7 @@
             "msg_reset": "🔄 @{user} ha reiniciado el contador de muertes a 0."
         },
         "score": {
-            "title": "Récord Victorias / Derrotas (!win / !loss)",
+            "title": "Récord Victorias / Derrotas (!win +1/ !lose +1)",
             "desc": "Registra las victorias y derrotas de tu sesión en juego con comandos de chat.",
             "wins_label": "Victorias (Wins):",
             "losses_label": "Derrotas (Losses):",

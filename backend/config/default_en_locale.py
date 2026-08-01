@@ -899,7 +899,7 @@ DEFAULT_DICTIONARY = {
             "msg_reset": "🔄 @{user} reset the death counter to 0."
         },
         "score": {
-            "title": "Win / Loss Record (!win / !loss)",
+            "title": "Win / Loss Record (!win +1/ !lose +1)",
             "desc": "Track your in-game session wins and losses with chat commands.",
             "wins_label": "Wins:",
             "losses_label": "Losses:",

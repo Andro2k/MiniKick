@@ -7,9 +7,8 @@ from .chat.pipeline import ChatMessageDTO, MessagePipeline
 from .chat.spam_service import SpamService
 from .chat.timer_service import TimerService
 from .chat.tts_service import TTSManager
-from .rewards.media_trigger import MediaTriggerService
-from .rewards.overlay_server import OverlayServerManager
-from .rewards.rewards_service import RewardsService
+from .overlay import OverlayServerManager
+from .rewards.rewards_service import RewardsService, MediaTriggerService
 from .system.dashboard_service import AvatarService
 from .system.backup_service import BackupService
 from .system.instance_services import SocketInstanceProvider
