@@ -350,7 +350,9 @@ class ChatController(QObject):
                 )
         finally:
             self.command_service.blockSignals(False)
-            self.command_service.commands_changed.emit()
+
+        from PySide6.QtCore import QTimer
+        QTimer.singleShot(0, self.command_service.commands_changed.emit)
 
         new_tts_state = settings["enabled"]
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:

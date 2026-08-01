@@ -879,6 +879,12 @@ DEFAULT_DICTIONARY = {
         },
         "obs_label": "OBS Overlay URL:",
         "obs_copy_btn": "Copy OBS URL",
+        "status": {
+            "activated": "Widget Enabled",
+            "deactivated": "Widget Disabled",
+            "activated_msg": "Widget '{widget_name}' is now active.",
+            "deactivated_msg": "Widget '{widget_name}' is now inactive."
+        },
         "so": {
             "title": "Streamer Promotion (Shoutout !so)",
             "desc": "Promote other creators in chat by sending a customized message with their channel link.",
@@ -888,7 +894,7 @@ DEFAULT_DICTIONARY = {
             "overlay_header": "Recommended Streamer"
         },
         "death": {
-            "title": "Death Counter (!muertes)",
+            "title": "Death Counter (!death)",
             "desc": "Track in-game deaths in real-time with chat commands and live controls.",
             "count_label": "Current In-Game Deaths:",
             "reset_btn": "Reset to 0",

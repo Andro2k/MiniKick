@@ -1,6 +1,6 @@
 # backend\controllers\command_controller.py
 
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Slot, QTimer
 
 class CommandController(QObject):
     def __init__(self, view, service, toast_manager=None):
@@ -29,7 +29,6 @@ class CommandController(QObject):
             data.pop("original_trigger", None)
             if data.get("trigger") and data.get("response"):
                 self.service.save_command(**data)
-                self.load_initial_data()
                 self._show_toast("command.status.created", "command.status.created_msg", data['trigger'], "success")
 
     @Slot(str)
@@ -46,28 +45,17 @@ class CommandController(QObject):
                     self.service.delete_command(original_trigger)
                     
                 self.service.save_command(**data)
-                self.load_initial_data()
                 self._show_toast("command.status.updated", "command.status.updated_msg", data['trigger'], "success")
 
     @Slot(str)
     def _handle_delete(self, trigger: str):
         self.service.delete_command(trigger)
-        self.load_initial_data()
         self._show_toast("command.status.deleted", "command.status.deleted_msg", trigger, "warning")
 
     @Slot(str, bool)
     def _handle_status_change(self, trigger: str, is_active: bool):
         existing = self.service.get_command_by_trigger(trigger)
         if existing:
-            self.service.save_command(
-                trigger=existing["trigger"],
-                response=existing["response"],
-                is_active=is_active,
-                cooldown=existing["cooldown"],
-                aliases=existing["aliases"],
-                is_regex=existing["is_regex"],
-                permission=existing.get("permission", "everyone")
-            )
             if self.toast:
                 title_key = "command.status.enabled" if is_active else "command.status.disabled"
                 state_color = "success" if is_active else "info"
@@ -76,6 +64,23 @@ class CommandController(QObject):
                     message=(self.view.i18n.get("command.status.toggled_msg")).replace("{trigger}", trigger),
                     state=state_color
                 )
+
+            def _save_status():
+                self.service.blockSignals(True)
+                try:
+                    self.service.save_command(
+                        trigger=existing["trigger"],
+                        response=existing["response"],
+                        is_active=is_active,
+                        cooldown=existing["cooldown"],
+                        aliases=existing["aliases"],
+                        is_regex=existing["is_regex"],
+                        permission=existing.get("permission", "everyone")
+                    )
+                finally:
+                    self.service.blockSignals(False)
+
+            QTimer.singleShot(0, _save_status)
 
     @Slot(str)
     def _handle_search(self, text: str):
@@ -90,6 +95,6 @@ class CommandController(QObject):
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get(title_key),
-                message=(self.view.i18n.get(msg_key)).replace("{trigger}", val),
+                message=(self.view.i18n.get("msg_key" if False else msg_key)).replace("{trigger}", val),
                 state=state
             )

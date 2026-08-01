@@ -877,6 +877,12 @@
         },
         "obs_label": "URL de Overlay OBS:",
         "obs_copy_btn": "Copiar URL para OBS",
+        "status": {
+            "activated": "Widget Activado",
+            "deactivated": "Widget Desactivado",
+            "activated_msg": "El widget '{widget_name}' ahora está activo.",
+            "deactivated_msg": "El widget '{widget_name}' ahora está inactivo."
+        },
         "so": {
             "title": "Promoción de Streamer (Shoutout !so)",
             "desc": "Promociona a otros creadores en el chat enviando un mensaje personalizado con su enlace.",
@@ -886,7 +892,7 @@
             "overlay_header": "Streamer Recomendado"
         },
         "death": {
-            "title": "Contador de Muertes (!muertes)",
+            "title": "Contador de Muertes (!death)",
             "desc": "Lleva el registro de muertes en juego en tiempo real con comandos de chat y controles en vivo.",
             "count_label": "Muertes Actuales en Juego:",
             "reset_btn": "Reiniciar a 0",

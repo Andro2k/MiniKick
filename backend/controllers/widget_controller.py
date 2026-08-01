@@ -1,7 +1,7 @@
 # backend\controllers\widget_controller.py
 
 import logging
-from PySide6.QtCore import QObject, Slot, Signal
+from PySide6.QtCore import QObject, Slot, Signal, QTimer
 from backend.services import WidgetService, CommandService
 
 logger = logging.getLogger("minikick.controllers.widgets")
@@ -17,13 +17,14 @@ class WidgetController(QObject):
         "score": "[PLUGIN_WIDGET_SCORE]"
     }
 
-    def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None):
+    def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None, toast_manager=None):
         super().__init__()
         self.view = view
         self.widget_service = widget_service
         self.command_service = command_service
         self.overlay_server = overlay_server
         self.i18n = i18n
+        self.toast = toast_manager
 
         self._widget_handlers = {
             self.PLUGIN_TAGS["shoutout"]: lambda user, args, first_word, prefix: self._process_shoutout(user, args, prefix),
@@ -85,8 +86,46 @@ class WidgetController(QObject):
 
     @Slot(str, bool, str, int, str, dict)
     def handle_widget_save(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):
-        self.widget_service.save_widget(widget_id, is_active, command, cooldown, permission, config)
-        self.sync_commands_with_db()
+        previous = self.widget_service.get_widget(widget_id)
+        was_active = previous.get("is_active", True) if previous else True
+
+        self.widget_service._cache[widget_id] = {
+            "widget_id": widget_id,
+            "is_active": is_active,
+            "command": command,
+            "cooldown": cooldown,
+            "permission": permission,
+            "config": dict(config)
+        }
+
+        if was_active != is_active:
+            title_key = "widgets.status.activated" if is_active else "widgets.status.deactivated"
+            msg_key = "widgets.status.activated_msg" if is_active else "widgets.status.deactivated_msg"
+            
+            widget_title_keys = {
+                "shoutout": "widgets.so.title",
+                "death": "widgets.death.title",
+                "score": "widgets.score.title"
+            }
+            title_k = widget_title_keys.get(widget_id)
+            w_name = self.i18n.get(title_k) if (self.i18n and title_k) else widget_id
+            
+            title = self.i18n.get(title_key) if self.i18n else ("Widget Activado" if is_active else "Widget Desactivado")
+            message = self.i18n.get(msg_key).replace("{widget_name}", w_name) if self.i18n else f"Widget '{w_name}' ahora está {'activo' if is_active else 'inactivo'}."
+            state = "success" if is_active else "info"
+
+            if self.toast:
+                self.toast.show_toast(
+                    title=title,
+                    message=message,
+                    state=state
+                )
+
+        def _save_and_sync():
+            self.widget_service.storage.save_widget(widget_id, is_active, command, cooldown, permission, config)
+            self.sync_commands_with_db()
+
+        QTimer.singleShot(0, _save_and_sync)
 
     @Slot(int)
     def handle_death_count_change(self, new_val: int):

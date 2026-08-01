@@ -18,7 +18,7 @@ class WidgetService:
         },
         "death": {
             "is_active": True,
-            "command": "!muertes",
+            "command": "!death",
             "cooldown": 3,
             "permission": "everyone",
             "config": {
@@ -39,9 +39,11 @@ class WidgetService:
 
     def __init__(self, widgets_storage: SQLiteWidgetsStorage):
         self.storage = widgets_storage
-        self._ensure_defaults()
+        self._cache: dict[str, dict] = {}
+        self._init_cache()
 
-    def _ensure_defaults(self):
+    def _init_cache(self):
+        """Initializes the in-memory O(1) cache from storage and ensures defaults exist."""
         loaded = self.storage.load_all_widgets()
         for w_id, default_data in self.DEFAULT_WIDGETS.items():
             if w_id not in loaded:
@@ -53,12 +55,7 @@ class WidgetService:
                     permission=default_data["permission"],
                     config=default_data["config"]
                 )
-
-    def get_all_widgets(self) -> dict[str, dict]:
-        widgets = self.storage.load_all_widgets()
-        for w_id, default_data in self.DEFAULT_WIDGETS.items():
-            if w_id not in widgets:
-                widgets[w_id] = {
+                loaded[w_id] = {
                     "widget_id": w_id,
                     "is_active": default_data["is_active"],
                     "command": default_data["command"],
@@ -66,13 +63,18 @@ class WidgetService:
                     "permission": default_data["permission"],
                     "config": dict(default_data["config"])
                 }
-        return widgets
+        self._cache = loaded
+
+    def get_all_widgets(self) -> dict[str, dict]:
+        """Returns all widgets from in-memory cache in O(1) time without disk I/O."""
+        return {w_id: dict(data) for w_id, data in self._cache.items()}
 
     def get_widget(self, widget_id: str) -> dict:
-        w = self.storage.get_widget(widget_id)
+        """Retrieves a single widget from in-memory cache in O(1) time."""
+        w = self._cache.get(widget_id)
         if not w and widget_id in self.DEFAULT_WIDGETS:
             default_data = self.DEFAULT_WIDGETS[widget_id]
-            return {
+            w = {
                 "widget_id": widget_id,
                 "is_active": default_data["is_active"],
                 "command": default_data["command"],
@@ -80,9 +82,20 @@ class WidgetService:
                 "permission": default_data["permission"],
                 "config": dict(default_data["config"])
             }
-        return w or {}
+            self._cache[widget_id] = w
+        return dict(w) if w else {}
 
     def save_widget(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):
+        """Updates in-memory cache in O(1) time and persists changes to storage."""
+        updated_data = {
+            "widget_id": widget_id,
+            "is_active": is_active,
+            "command": command,
+            "cooldown": cooldown,
+            "permission": permission,
+            "config": dict(config)
+        }
+        self._cache[widget_id] = updated_data
         self.storage.save_widget(widget_id, is_active, command, cooldown, permission, config)
 
     def format_shoutout(self, target_user: str) -> str:
@@ -117,7 +130,7 @@ class WidgetService:
         current = int(cfg.get("count", 0))
         new_val = set_val if set_val is not None else max(0, current + delta)
         cfg["count"] = new_val
-        self.save_widget("death", w.get("is_active", True), w.get("command", "!muertes"), w.get("cooldown", 3), w.get("permission", "everyone"), cfg)
+        self.save_widget("death", w.get("is_active", True), w.get("command", "!death"), w.get("cooldown", 3), w.get("permission", "everyone"), cfg)
         return new_val
 
     def get_score(self) -> tuple[int, int]:

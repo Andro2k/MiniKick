@@ -16,6 +16,7 @@ class WidgetsView(BaseView):
         self.death_overlay_url = death_overlay_url
         self.score_overlay_url = score_overlay_url
         self.cards: dict[str, WidgetCard] = {}
+        self._is_compact_layout: bool | None = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -81,9 +82,13 @@ class WidgetsView(BaseView):
             self.score_changed.emit(data.get("wins", 0), data.get("losses", 0))
 
     def populate_widgets(self, widgets_data: dict):
-        for w_id, card in self.cards.items():
-            if w_id in widgets_data:
-                card.set_data(widgets_data[w_id])
+        self.setUpdatesEnabled(False)
+        try:
+            for w_id, card in self.cards.items():
+                if w_id in widgets_data:
+                    card.set_data(widgets_data[w_id])
+        finally:
+            self.setUpdatesEnabled(True)
 
     def update_death_count_display(self, count: int):
         if "death" in self.cards:
@@ -95,13 +100,15 @@ class WidgetsView(BaseView):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        width = self.width()
         if hasattr(self, 'columns_layout'):
-            if width < 900:
-                self.columns_layout.setDirection(QBoxLayout.Direction.TopToBottom)
-                self.columns_layout.setStretch(0, 0)
-                self.columns_layout.setStretch(1, 0)
-            else:
-                self.columns_layout.setDirection(QBoxLayout.Direction.LeftToRight)
-                self.columns_layout.setStretch(0, 1)
-                self.columns_layout.setStretch(1, 1)
+            is_compact = self.width() < 900
+            if self._is_compact_layout != is_compact:
+                self._is_compact_layout = is_compact
+                if is_compact:
+                    self.columns_layout.setDirection(QBoxLayout.Direction.TopToBottom)
+                    self.columns_layout.setStretch(0, 0)
+                    self.columns_layout.setStretch(1, 0)
+                else:
+                    self.columns_layout.setDirection(QBoxLayout.Direction.LeftToRight)
+                    self.columns_layout.setStretch(0, 1)
+                    self.columns_layout.setStretch(1, 1)

@@ -9,8 +9,8 @@ from PySide6.QtCore import QObject, Signal
 class CommandService(QObject):
     commands_changed = Signal()
     _PERMISSIONS = {
-        "everyone": 0,"subscriber": 1,
-        "vip": 2,"moderator": 3,"broadcaster": 4
+        "everyone": 0, "subscriber": 1,
+        "vip": 2, "moderator": 3, "broadcaster": 4
     }
 
     def __init__(self, commands_storage, api_client=None):
@@ -20,13 +20,15 @@ class CommandService(QObject):
         self.cooldown_timers: dict[str, float] = {}
         self._dispatch_table: dict[str, dict] = {}
         self._regex_commands: list[dict] = []
+        self._all_commands_cache: list[dict] = []
         self.reload_cache()
 
     def reload_cache(self):
         self._dispatch_table.clear()
         self._regex_commands.clear()
+        self._all_commands_cache = self.storage.load_all()
         
-        for cmd in self.storage.load_all():
+        for cmd in self._all_commands_cache:
             if not cmd.get("is_active", True):
                 continue
             
@@ -51,13 +53,25 @@ class CommandService(QObject):
         self.commands_changed.emit()
 
     def get_all_commands(self) -> list[dict]:
-        return self.storage.load_all()
+        return list(self._all_commands_cache)
 
     def get_command_by_trigger(self, trigger: str) -> dict | None:
+        clean = trigger.strip().lower()
+        if clean in self._dispatch_table:
+            return self._dispatch_table[clean]
+        for cmd in self._all_commands_cache:
+            if cmd["trigger"].strip().lower() == clean:
+                return cmd
         return self.storage.get_command_by_trigger(trigger)
 
     def search_commands(self, query: str) -> list[dict]:
-        return self.storage.search_commands(query)
+        clean_q = query.strip().lower()
+        if not clean_q:
+            return self.get_all_commands()
+        return [
+            cmd for cmd in self._all_commands_cache
+            if clean_q in cmd["trigger"].lower() or clean_q in cmd.get("aliases", "").lower() or clean_q in cmd.get("response", "").lower()
+        ]
 
     def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str):
         self.storage.save_command(trigger.strip(), response, is_active, cooldown, aliases, is_regex, permission)

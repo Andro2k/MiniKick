@@ -168,7 +168,8 @@ class MainWindowCore(QMainWindow):
             widget_service=self.container.widget_service,
             command_service=self.command_service,
             overlay_server=self.overlay_server,
-            i18n=self.i18n
+            i18n=self.i18n,
+            toast_manager=self.toast
         )
         self.music_controller = MusicController(
             view=self.view_music,

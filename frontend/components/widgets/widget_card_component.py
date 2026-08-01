@@ -177,7 +177,10 @@ class WidgetCard(QFrame):
 
     def set_data(self, data: dict):
         self._is_loading = True
+        self.switch_enable.blockSignals(True)
         self.switch_enable.setChecked(data.get("is_active", True))
+        self.switch_enable.blockSignals(False)
+
         self._command = data.get("command", "")
         self._cooldown = data.get("cooldown", 3)
         self._permission = data.get("permission", "everyone")
@@ -186,27 +189,41 @@ class WidgetCard(QFrame):
         self._config_data = dict(cfg)
 
         if self.widget_id == "shoutout" and hasattr(self, "txt_template"):
+            self.txt_template.blockSignals(True)
             self.txt_template.setText(cfg.get("template", self.i18n.get("widgets.so.default_msg")))
+            self.txt_template.blockSignals(False)
         elif self.widget_id == "death" and hasattr(self, "spn_deaths"):
+            self.spn_deaths.blockSignals(True)
             self.spn_deaths.setValue(int(cfg.get("count", 0)))
+            self.spn_deaths.blockSignals(False)
         elif self.widget_id == "score" and hasattr(self, "spn_wins"):
+            self.spn_wins.blockSignals(True)
+            self.spn_losses.blockSignals(True)
             self.spn_wins.setValue(int(cfg.get("wins", 0)))
             self.spn_losses.setValue(int(cfg.get("losses", 0)))
+            self.spn_wins.blockSignals(False)
+            self.spn_losses.blockSignals(False)
 
         self._is_loading = False
 
     def update_death_count_display(self, count: int):
         if hasattr(self, "spn_deaths"):
             self._is_loading = True
+            self.spn_deaths.blockSignals(True)
             self.spn_deaths.setValue(count)
+            self.spn_deaths.blockSignals(False)
             self._config_data["count"] = count
             self._is_loading = False
 
     def update_score_display(self, wins: int, losses: int):
         if hasattr(self, "spn_wins"):
             self._is_loading = True
+            self.spn_wins.blockSignals(True)
+            self.spn_losses.blockSignals(True)
             self.spn_wins.setValue(wins)
             self.spn_losses.setValue(losses)
+            self.spn_wins.blockSignals(False)
+            self.spn_losses.blockSignals(False)
             self._config_data["wins"] = wins
             self._config_data["losses"] = losses
             self._is_loading = False
