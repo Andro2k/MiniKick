@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick - Death Counter OBS Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #death-container {
+            position: relative;
+            z-index: 1000;
+        }
+
+        .death-badge {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 250px;
+            min-height: 54px;
+            background: rgba(13, 17, 23, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1.5px solid rgba(255, 71, 87, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 71, 87, 0.3);
+            border-radius: 16px;
+            padding: 10px 22px;
+            color: #ffffff;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: rgba(255, 71, 87, 0.15);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        .skull-svg {
+            width: 26px;
+            height: 26px;
+            filter: drop-shadow(0 2px 6px rgba(255, 71, 87, 0.5));
+        }
+
+        .death-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1px;
+        }
+
+        .death-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #ff6b81;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+        }
+
+        .death-count {
+            font-size: 30px;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+            text-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
+        }
+
+        .death-badge.bounce {
+            animation: pulse-bump 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pulse-bump {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); border-color: #ffffff; box-shadow: 0 0 35px rgba(255, 71, 87, 0.6); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="death-container">
+        <div id="death-badge" class="death-badge">
+            <div class="icon-box">
+                <svg class="skull-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C7.03 2 3 6.03 3 11C3 13.68 4.18 16.09 6.05 17.75C6.65 18.28 7 19.04 7 19.84V21C7 21.55 7.45 22 8 22H16C16.55 22 17 21.55 17 21V19.84C17 19.04 17.35 18.28 17.95 17.75C19.82 16.09 21 13.68 21 11C21 6.03 16.97 2 12 2Z" fill="url(#skull-grad)" stroke="#ff4757" stroke-width="1.2"/>
+                    <circle cx="8.5" cy="11.5" r="2" fill="#0d1117"/>
+                    <circle cx="15.5" cy="11.5" r="2" fill="#0d1117"/>
+                    <path d="M12 14.5L10.5 16.5H13.5L12 14.5Z" fill="#0d1117"/>
+                    <path d="M9 19.5V22M12 19.5V22M15 19.5V22" stroke="#0d1117" stroke-width="1.5" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="skull-grad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#ff6b81"/>
+                            <stop offset="100%" stop-color="#ff4757"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div class="death-info">
+                <div id="death-title" class="death-title">MUERTES</div>
+                <div id="death-count" class="death-count">0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const eventSourceUrl = token ? `/widget_events?token=${encodeURIComponent(token)}` : '/widget_events';
+
+        const deathBadge = document.getElementById('death-badge');
+        const deathTitle = document.getElementById('death-title');
+        const deathCount = document.getElementById('death-count');
+
+        if (lang === 'en') {
+            deathTitle.textContent = 'DEATHS';
+        }
+
+        function connectSSE() {
+            const evtSource = new EventSource(eventSourceUrl);
+
+            evtSource.onmessage = function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.event === 'death_update') {
+                        updateDeaths(data);
+                    }
+                } catch (err) {
+                    console.error("Error parsing death update event:", err);
+                }
+            };
+
+            evtSource.onerror = function() {
+                evtSource.close();
+                setTimeout(connectSSE, 3000);
+            };
+        }
+
+        function updateDeaths(data) {
+            const count = typeof data === 'object' ? data.count : data;
+            const titleText = (typeof data === 'object' && data.title_text) ? data.title_text : (lang === 'en' ? 'DEATHS' : 'MUERTES');
+            
+            deathTitle.textContent = titleText;
+            deathCount.textContent = count;
+            deathBadge.classList.remove('bounce');
+            void deathBadge.offsetWidth;
+            deathBadge.classList.add('bounce');
+        }
+
+        connectSSE();
+    </script>
+</body>
+</html>

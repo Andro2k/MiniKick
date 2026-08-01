@@ -10,7 +10,7 @@ from backend.services import (
 from backend.controllers import (
     RewardsController, ChatController, CommandController, DashboardController,
     TimerController, LogController, MusicController, SettingsController,
-    SpamController, UpdateController, NetworkController
+    SpamController, UpdateController, NetworkController, WidgetController
 )
 from backend.providers import KickAPIClient
 from frontend.core.app_container_core import AppContainer
@@ -21,7 +21,7 @@ from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
-    LogView, MusicView, SettingsView, SpamView, NetworkView
+    LogView, MusicView, SettingsView, SpamView, NetworkView, WidgetsView
 )
 from frontend.dialogs import ModernConfirmDialog
 from backend.workers import AuthWorker, ChatWorker, FetchRewardsWorker, RewardWorker, TimerWorker
@@ -39,6 +39,7 @@ class MainWindowCore(QMainWindow):
         ("Dashboard", "dashboard.svg", "top"),
         ("Chat", "message.svg", "top"),
         ("Comandos", "code.svg", "top"),
+        ("Widgets", "apps.svg", "top"),
         ("Spam Filters", "shield-half.svg", "top"),
         ("Timers", "clock.svg", "top"),
         ("Music", "music.svg", "top"),
@@ -123,6 +124,12 @@ class MainWindowCore(QMainWindow):
         self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url())
         self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url())
         self.view_commands = CommandView(self.i18n)
+        self.view_widgets = WidgetsView(
+            self.i18n,
+            shoutout_overlay_url=self.overlay_server.get_shoutout_overlay_url(),
+            death_overlay_url=self.overlay_server.get_death_overlay_url(),
+            score_overlay_url=self.overlay_server.get_score_overlay_url()
+        )
         self.view_spam = SpamView(self.i18n)
         self.view_timers = TimersView(self.i18n)
         self.view_settings = SettingsView(self.i18n)
@@ -133,6 +140,7 @@ class MainWindowCore(QMainWindow):
             "Dashboard": self.view_dashboard,
             "Chat": self.view_chat,
             "Comandos": self.view_commands,
+            "Widgets": self.view_widgets,
             "Spam Filters": self.view_spam,
             "Timers": self.view_timers,
             "Music": self.view_music,
@@ -154,6 +162,13 @@ class MainWindowCore(QMainWindow):
             i18n=self.i18n,
             timer_service=self.timer_service,
             toast_manager=self.toast
+        )
+        self.widget_controller = WidgetController(
+            view=self.view_widgets,
+            widget_service=self.container.widget_service,
+            command_service=self.command_service,
+            overlay_server=self.overlay_server,
+            i18n=self.i18n
         )
         self.music_controller = MusicController(
             view=self.view_music,
@@ -233,6 +248,7 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
+        self.chat_controller.widget_plugin_triggered.connect(self.widget_controller.handle_widget_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.timer_controller.metrics_update_requested.connect(lambda: self._update_dashboard_metrics(force_db_query=True))
@@ -246,6 +262,7 @@ class MainWindowCore(QMainWindow):
 
     def _load_settings_into_ui(self):
         self.rewards_controller.load_initial_data()
+        self.widget_controller.load_initial_data()
         settings = self.chat_service.get_settings()
         self.tray_manager.set_tts_state(settings.get("enabled", True))
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))

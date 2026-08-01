@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick - Shoutout OBS Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #shoutout-container {
+            position: relative;
+            z-index: 1000;
+            perspective: 1000px;
+        }
+
+        .so-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 360px;
+            background: rgba(13, 17, 23, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid #00e701;
+            box-shadow: 0 8px 32px rgba(0, 231, 1, 0.3), 0 0 20px rgba(0, 0, 0, 0.8);
+            border-radius: 16px;
+            padding: 16px 24px;
+            color: #ffffff;
+            opacity: 0;
+            transform: translateY(60px) scale(0.9);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .so-card.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .so-avatar-wrapper {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid #00e701;
+            overflow: hidden;
+            background: #1b2129;
+            flex-shrink: 0;
+        }
+
+        .so-avatar-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .so-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: #00e701;
+            color: #000;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 8px;
+            text-transform: uppercase;
+        }
+
+        .so-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .so-header {
+            font-size: 12px;
+            font-weight: 800;
+            color: #00e701;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .so-username {
+            font-size: 22px;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .so-url {
+            font-size: 13px;
+            font-weight: 600;
+            color: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="shoutout-container">
+        <div id="so-card" class="so-card">
+            <div class="so-avatar-wrapper">
+                <img id="so-avatar" src="https://kick.com/favicon.ico" alt="Avatar">
+                <div class="so-badge">LIVE</div>
+            </div>
+            <div class="so-content">
+                <div id="so-header" class="so-header">Streamer Recomendado</div>
+                <div id="so-username" class="so-username">Streamer</div>
+                <div id="so-url" class="so-url">kick.com/streamer</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const eventSourceUrl = token ? `/widget_events?token=${encodeURIComponent(token)}` : '/widget_events';
+
+        const soCard = document.getElementById('so-card');
+        const soAvatar = document.getElementById('so-avatar');
+        const soHeader = document.getElementById('so-header');
+        const soUsername = document.getElementById('so-username');
+        const soUrl = document.getElementById('so-url');
+
+        let soTimeout = null;
+
+        if (lang === 'en') {
+            soHeader.textContent = 'Recommended Streamer';
+        }
+
+        function connectSSE() {
+            const evtSource = new EventSource(eventSourceUrl);
+
+            evtSource.onmessage = function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.event === 'shoutout') {
+                        showShoutout(data);
+                    }
+                } catch (err) {
+                    console.error("Error parsing shoutout event:", err);
+                }
+            };
+
+            evtSource.onerror = function() {
+                evtSource.close();
+                setTimeout(connectSSE, 3000);
+            };
+        }
+
+        function showShoutout(data) {
+            const target = data.target || 'Streamer';
+            const channelUrl = data.url || `https://kick.com/${target}`;
+            const avatar = data.avatar_url || `https://kick.com/favicon.ico`;
+            const headerText = data.header_text || (lang === 'en' ? 'Recommended Streamer' : 'Streamer Recomendado');
+
+            soHeader.textContent = headerText;
+            soUsername.textContent = `@${target}`;
+            soUrl.textContent = channelUrl.replace('https://', '');
+            soAvatar.src = avatar;
+
+            soCard.classList.add('active');
+
+            if (soTimeout) clearTimeout(soTimeout);
+            soTimeout = setTimeout(() => {
+                soCard.classList.remove('active');
+            }, 8000);
+        }
+
+        connectSSE();
+    </script>
+</body>
+</html>

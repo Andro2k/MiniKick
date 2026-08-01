@@ -11,6 +11,7 @@ from .settings_controller import SettingsController
 from .spam_controller import SpamController
 from .timer_controller import TimerController
 from .update_controller import UpdateController
+from .widget_controller import WidgetController
 
 __all__ = [
     "ChatController",
@@ -23,5 +24,6 @@ __all__ = [
     "SettingsController",
     "SpamController",
     "TimerController",
-    "UpdateController"
+    "UpdateController",
+    "WidgetController"
 ]

@@ -71,5 +71,9 @@ class SpamView(BaseView):
         if hasattr(self, 'columns_layout'):
             if width < 900:
                 self.columns_layout.setDirection(QBoxLayout.Direction.TopToBottom)
+                self.columns_layout.setStretch(0, 0)
+                self.columns_layout.setStretch(1, 0)
             else:
                 self.columns_layout.setDirection(QBoxLayout.Direction.LeftToRight)
+                self.columns_layout.setStretch(0, 1)
+                self.columns_layout.setStretch(1, 1)

@@ -178,6 +178,16 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS widgets_config (
+                    widget_id TEXT PRIMARY KEY,
+                    is_active INTEGER DEFAULT 1,
+                    command TEXT NOT NULL,
+                    cooldown INTEGER DEFAULT 3,
+                    permission TEXT DEFAULT 'everyone',
+                    config_json TEXT DEFAULT '{}'
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,

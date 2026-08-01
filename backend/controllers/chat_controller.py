@@ -10,6 +10,7 @@ class ChatController(QObject):
     command_executed = Signal()
     message_received = Signal(str, str, str, list)
     music_plugin_triggered = Signal(str, str, str, str)
+    widget_plugin_triggered = Signal(str, str, str, str)
 
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
     _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
@@ -211,6 +212,8 @@ class ChatController(QObject):
             self.command_executed.emit()
             if plugin_tag.startswith("[PLUGIN_MUSIC_") or plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
                 self.music_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
+            elif plugin_tag.startswith("[PLUGIN_WIDGET_"):
+                self.widget_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
             elif plugin_tag == "[PLUGIN_CHAT_TTS]":
                 msg_content = dto.content[len(prefix):].strip()
                 if msg_content:

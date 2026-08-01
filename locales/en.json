@@ -681,6 +681,7 @@
                 "music": "Music",
                 "triggers": "Triggers",
                 "comandos": "Commands",
+                "widgets": "Widgets",
                 "spam_filters": "Spam Filters",
                 "settings": "Settings",
                 "timers": "Timers",
@@ -869,10 +870,49 @@
         },
         "btn_check": "Check Network"
     },
+    "widgets": {
+        "header": {
+            "title": "Interactive Chat Widgets",
+            "subtitle": "Configure interactive widgets and counters that react to chat commands on your stream."
+        },
+        "obs_label": "OBS Overlay URL:",
+        "obs_copy_btn": "Copy OBS URL",
+        "so": {
+            "title": "Streamer Promotion (Shoutout !so)",
+            "desc": "Promote other creators in chat by sending a customized message with their channel link.",
+            "template_label": "Shoutout Message Template:",
+            "usage_error": "⚠️ @{user}, you must specify the streamer name. Example: {trigger} TheAndro2K",
+            "default_msg": "📢 Go support and follow @{target} at https://kick.com/{target} !",
+            "overlay_header": "Recommended Streamer"
+        },
+        "death": {
+            "title": "Death Counter (!muertes)",
+            "desc": "Track in-game deaths in real-time with chat commands and live controls.",
+            "count_label": "Current In-Game Deaths:",
+            "reset_btn": "Reset to 0",
+            "overlay_title": "DEATHS",
+            "msg_check": "💀 @{user}, we are at {count} death(s) on stream.",
+            "msg_add": "💀 @{user} added a death! Total: {count} death(s).",
+            "msg_sub": "💀 @{user} removed a death. Remaining: {count} death(s).",
+            "msg_reset": "🔄 @{user} reset the death counter to 0."
+        },
+        "score": {
+            "title": "Win / Loss Record (!win / !loss)",
+            "desc": "Track your in-game session wins and losses with chat commands.",
+            "wins_label": "Wins:",
+            "losses_label": "Losses:",
+            "reset_btn": "Reset Record",
+            "overlay_title": "WIN / LOSS RECORD",
+            "msg_check": "🏆 @{user}, today's record is: {wins} W - {losses} L.",
+            "msg_win": "🎉 @{user} logged a win! Current record: {wins} W - {losses} L.",
+            "msg_loss": "💔 @{user} logged a loss. Current record: {wins} W - {losses} L.",
+            "msg_reset": "🔄 @{user} reset the W/L record to 0 W - 0 L."
+        }
+    },
     "crash": {
         "title": "MiniKick has crashed",
         "lbl_contact": "Contact / Discord (Optional)",
-        "placeholder_contact": "E.g., Andro2k",
+        "placeholder_contact": "E.g., TheAndro2K",
         "lbl_desc": "What were you doing when it crashed? (Optional)",
         "placeholder_desc": "Briefly describe the steps...",
         "lbl_traceback": "Error Details (Traceback)",

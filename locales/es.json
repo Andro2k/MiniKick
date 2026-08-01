@@ -681,6 +681,7 @@
                 "music": "Música",
                 "triggers": "Recompensas",
                 "comandos": "Comandos",
+                "widgets": "Widgets",
                 "spam_filters": "Filtros Anti-Spam",
                 "settings": "Ajustes",
                 "timers": "Temporizadores",
@@ -869,10 +870,49 @@
         },
         "btn_check": "Comprobar Red"
     },
+    "widgets": {
+        "header": {
+            "title": "Widgets Interactivos de Chat",
+            "subtitle": "Configura widgets y contadores interactivos que reaccionan a comandos del chat de tu stream."
+        },
+        "obs_label": "URL de Overlay OBS:",
+        "obs_copy_btn": "Copiar URL para OBS",
+        "so": {
+            "title": "Promoción de Streamer (Shoutout !so)",
+            "desc": "Promociona a otros creadores en el chat enviando un mensaje personalizado con su enlace.",
+            "template_label": "Plantilla del Mensaje de Shoutout:",
+            "usage_error": "⚠️ @{user}, debes especificar el nombre del streamer. Ejemplo: {trigger} TheAndro2K",
+            "default_msg": "📢 Vayan a apoyar y seguir a @{target} en https://kick.com/{target} !",
+            "overlay_header": "Streamer Recomendado"
+        },
+        "death": {
+            "title": "Contador de Muertes (!muertes)",
+            "desc": "Lleva el registro de muertes en juego en tiempo real con comandos de chat y controles en vivo.",
+            "count_label": "Muertes Actuales en Juego:",
+            "reset_btn": "Reiniciar a 0",
+            "overlay_title": "MUERTES",
+            "msg_check": "💀 @{user}, llevamos {count} muerte(s) en el stream.",
+            "msg_add": "💀 @{user} sumó una muerte. ¡Llevamos {count} muerte(s)!",
+            "msg_sub": "💀 @{user} restó una muerte. Quedan {count} muerte(s).",
+            "msg_reset": "🔄 @{user} ha reiniciado el contador de muertes a 0."
+        },
+        "score": {
+            "title": "Récord Victorias / Derrotas (!win / !loss)",
+            "desc": "Registra las victorias y derrotas de tu sesión en juego con comandos de chat.",
+            "wins_label": "Victorias (Wins):",
+            "losses_label": "Derrotas (Losses):",
+            "reset_btn": "Reiniciar Récord",
+            "overlay_title": "RÉCORD V / D",
+            "msg_check": "🏆 @{user}, el récord de hoy es: {wins} W - {losses} L.",
+            "msg_win": "🎉 @{user} sumó una victoria. Récord actual: {wins} W - {losses} L.",
+            "msg_loss": "💔 @{user} sumó una derrota. Récord actual: {wins} W - {losses} L.",
+            "msg_reset": "🔄 @{user} ha reiniciado el récord a 0 W - 0 L."
+        }
+    },
     "crash": {
         "title": "MiniKick ha fallado",
         "lbl_contact": "Contacto / Discord (Opcional)",
-        "placeholder_contact": "Ej. Andro2k",
+        "placeholder_contact": "Ej. TheAndro2K",
         "lbl_desc": "¿Qué estabas haciendo cuando falló? (Opcional)",
         "placeholder_desc": "Describe brevemente los pasos...",
         "lbl_traceback": "Detalles del Error (Traceback)",

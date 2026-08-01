@@ -18,6 +18,7 @@ from .system.network_service import NetworkService
 from .system.settings_service import SettingsService
 from .system.translation_service import TranslationService
 from .system.updater_service import GithubUpdateProvider, WindowsInstaller, UpdateManager
+from .system.widget_service import WidgetService
 
 __all__ = [
     "AuthManager",
@@ -41,5 +42,6 @@ __all__ = [
     "TranslationService",
     "GithubUpdateProvider",
     "WindowsInstaller",
-    "UpdateManager"
+    "UpdateManager",
+    "WidgetService"
 ]

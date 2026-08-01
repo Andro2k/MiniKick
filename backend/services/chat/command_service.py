@@ -133,8 +133,11 @@ class CommandService(QObject):
         except Exception as e:
             logging.error("[CommandService] Error logging command execution: %s", e)
 
-        if final_response.startswith("[PLUGIN_"):
-            return True, final_response, cmd, matched_prefix
+        if final_response.startswith("[PLUGIN_") or final_response.startswith("__PLUGIN:"):
+            clean_tag = final_response
+            if clean_tag.startswith("__PLUGIN:") and clean_tag.endswith("__"):
+                clean_tag = clean_tag[len("__PLUGIN:"): -2]
+            return True, clean_tag, cmd, matched_prefix
 
         self.send_response(final_response)
         return True, "", cmd, matched_prefix

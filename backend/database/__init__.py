@@ -7,6 +7,7 @@ from backend.database.rewards_storage import SQLiteRewardsStorage
 from backend.database.commands_storage import SQLiteCommandsStorage
 from backend.database.spam_storage import SQLiteSpamStorage
 from backend.database.timers_storage import SQLiteTimersStorage
+from backend.database.widgets_storage import SQLiteWidgetsStorage
 
 __all__ = [
     "DatabaseManager",
@@ -15,5 +16,6 @@ __all__ = [
     "SQLiteRewardsStorage",
     "SQLiteCommandsStorage",
     "SQLiteSpamStorage",
-    "SQLiteTimersStorage"
+    "SQLiteTimersStorage",
+    "SQLiteWidgetsStorage"
 ]
