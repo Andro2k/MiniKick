@@ -20,7 +20,8 @@ except ImportError:
 
 from backend.providers import SpotifyAuthManager, SpotifyMusicProvider
 from backend.database import (DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
-                            SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage)
+                            SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
+                            SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage)
 from backend.services import (BackupService, TranslationService, AuthManager, OverlayServerManager, 
                               MediaTriggerService, TTSManager, WidgetService)
 from frontend.common.utils import resource_path
@@ -36,6 +37,9 @@ class AppContainer:
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
         self.timers_storage = SQLiteTimersStorage(self.db_manager)
         self.widgets_storage = SQLiteWidgetsStorage(self.db_manager)
+        self.avatar_storage = SQLiteAvatarStorage(self.db_manager)
+        self.log_storage = SQLiteSystemLogStorage(self.db_manager)
+        self.music_storage = SQLiteMusicStorage(self.db_manager)
         self.widget_service = WidgetService(self.widgets_storage)
         self.backup_service = BackupService(
             self.settings_storage, self.rewards_storage, 

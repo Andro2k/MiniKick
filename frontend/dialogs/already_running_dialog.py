@@ -31,7 +31,7 @@ class AlreadyRunningDialog(QDialog):
         card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         lbl_icon = QLabel()
-        icon_obj = get_icon("app-running.svg")
+        icon_obj = get_icon("illustration_app-running.svg")
         lbl_icon.setPixmap(icon_obj.pixmap(180, 180))
         lbl_icon.setFixedSize(180, 180)
         lbl_icon.setScaledContents(True)

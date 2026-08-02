@@ -43,7 +43,7 @@ class MainWindowCore(QMainWindow):
         ("Spam Filters", "shield-half.svg", "top"),
         ("Timers", "clock.svg", "top"),
         ("Music", "music.svg", "top"),
-        ("Triggers", "layout-dashboard.svg", "top"),
+        ("Triggers", "chart-bubble.svg", "top"),
         ("Network Status", "access-point.svg", "bottom"),
         ("Settings", "settings.svg", "bottom"),
         ("Developer", "brand-tabler.svg", "bottom"),
@@ -106,7 +106,7 @@ class MainWindowCore(QMainWindow):
             self.sidebar.add_tab(name, icon, position=pos, is_active=(name == "Dashboard"))
 
         self.content_stack = QStackedWidget()
-        self.avatar_service = AvatarService(self.container.db_manager)
+        self.avatar_service = AvatarService(avatar_storage=self.container.avatar_storage)
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.rewards_service = RewardsService(self.rewards_storage, self.overlay_server)
@@ -114,7 +114,7 @@ class MainWindowCore(QMainWindow):
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
-        self.log_service = LogService(self.container.db_manager)
+        self.log_service = LogService(log_storage=self.container.log_storage)
         self.network_service = NetworkService(overlay_port=self.overlay_server.port)
         self.timers_worker = None
 
@@ -177,7 +177,8 @@ class MainWindowCore(QMainWindow):
             command_service=self.command_service,
             toast_manager=self.toast,
             i18n=self.i18n,
-            settings_storage=self.container.settings_storage
+            settings_storage=self.container.settings_storage,
+            music_storage=self.container.music_storage
         )
         self.rewards_controller = RewardsController(
             view=self.view_rewards, 

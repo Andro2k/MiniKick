@@ -2,11 +2,17 @@
 
 import os
 import re
-import sys
+from backend.database.system_log_storage import SQLiteSystemLogStorage
 
 class LogService:
-    def __init__(self, db_manager=None):
-        self.db_manager = db_manager
+    def __init__(self, log_storage: SQLiteSystemLogStorage = None, db_manager=None):
+        if log_storage:
+            self.storage = log_storage
+        elif db_manager:
+            self.storage = SQLiteSystemLogStorage(db_manager)
+        else:
+            self.storage = None
+
         self.log_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), ".Minikick", "logs")
         os.makedirs(self.log_dir, exist_ok=True)
         self.max_logs = 1000
@@ -32,96 +38,38 @@ class LogService:
                 self._live_history[-1] = (l_level, l_time, f"{l_text}\n{message}")
                 is_grouped = True
                 
-                if self.db_manager:
-                    try:
-                        with self.db_manager.get_connection() as conn:
-                            cursor = conn.cursor()
-                            if self._last_log_id is not None:
-                                cursor.execute("UPDATE system_logs SET message = message || '\n' || ? WHERE id = ?", (message, self._last_log_id))
-                            else:
-                                cursor.execute("UPDATE system_logs SET message = message || '\n' || ? WHERE id = (SELECT max(id) FROM system_logs)", (message,))
-                            conn.commit()
-                    except Exception as e:
-                        if sys.__stderr__ is not None:
-                            try:
-                                sys.__stderr__.write(f"Error updating log in DB: {e}\n")
-                            except Exception:
-                                pass
+                if self.storage:
+                    self.storage.update_last_log(message, self._last_log_id)
 
         if not is_grouped:
             self._live_history.append((level, time_str, message))
             if len(self._live_history) > self.max_logs:
                 self._live_history.pop(0)
                 
-            if self.db_manager:
-                try:
-                    with self.db_manager.get_connection() as conn:
-                        cursor = conn.cursor()
-                        cursor.execute("INSERT INTO system_logs (level, timestamp, message) VALUES (?, ?, ?)", (level, time_str, message))
-                        self._last_log_id = cursor.lastrowid
-                        conn.commit()
-                except Exception as e:
-                    if sys.__stderr__ is not None:
-                        try:
-                            sys.__stderr__.write(f"Error inserting log into DB: {e}\n")
-                        except Exception:
-                            pass
+            if self.storage:
+                self._last_log_id = self.storage.append_log(level, time_str, message)
 
         return is_grouped
 
     def clear_history(self):
         self._live_history.clear()
         self._last_log_id = None
-        if self.db_manager:
-            try:
-                with self.db_manager.get_connection() as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("DELETE FROM system_logs")
-                    conn.commit()
-            except Exception as e:
-                print("Error clearing logs in DB:", e)
+        if self.storage:
+            self.storage.clear_logs()
 
     def get_history(self) -> list[tuple[str, str, str]]:
-        if self.db_manager:
-            try:
-                with self.db_manager.get_connection() as conn:
-                    cursor = conn.cursor()
-                    cursor.execute("SELECT level, timestamp, message FROM system_logs ORDER BY id ASC")
-                    return [(r[0], r[1], r[2]) for r in cursor.fetchall()]
-            except Exception as e:
-                print("Error fetching logs from DB:", e)
+        if self.storage:
+            logs = self.storage.get_all_logs()
+            if logs:
+                return logs
         return self._live_history
 
     def get_filtered_history(self, filter_level: str, all_label: str, search_term: str, date_filter: str = "") -> list[tuple[str, str, str]]:
-        if self.db_manager:
-            try:
-                with self.db_manager.get_connection() as conn:
-                    cursor = conn.cursor()
-                    query = "SELECT level, timestamp, message FROM system_logs WHERE 1=1"
-                    params = []
-                    
-                    if filter_level != all_label:
-                        query += " AND level = ?"
-                        params.append(filter_level)
-                        
-                    if date_filter:
-                        threshold = self._get_date_threshold(date_filter)
-                        if threshold:
-                            query += " AND timestamp >= ?"
-                            params.append(threshold)
-                        
-                    if search_term.strip():
-                        term = f"%{search_term.strip().lower()}%"
-                        query += " AND (LOWER(level) LIKE ? OR LOWER(timestamp) LIKE ? OR LOWER(message) LIKE ?)"
-                        params.extend([term, term, term])
-                        
-                    query += " ORDER BY id DESC LIMIT 300"
-                    cursor.execute(query, params)
-                    rows = cursor.fetchall()
-                    rows.reverse()
-                    return [(r[0], r[1], r[2]) for r in rows]
-            except Exception as e:
-                print("Error fetching filtered logs from DB:", e)
+        if self.storage:
+            threshold = self._get_date_threshold(date_filter) if date_filter else ""
+            logs = self.storage.get_filtered_logs(filter_level, all_label, search_term, threshold)
+            if logs:
+                return logs
         
         filtered = []
         threshold = self._get_date_threshold(date_filter) if date_filter else ""

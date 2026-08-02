@@ -9,13 +9,22 @@ from backend.workers.music_worker import YouTubeResolveWorker, YouTubeSearchWork
 _ERR_INVALID_MEDIA = "INVALID_MEDIA"
 _ERR_PLAYER_ERROR = "PLAYER_ERROR"
 
+from backend.database.music_storage import SQLiteMusicStorage
+
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
 
-    def __init__(self, i18n, db_manager=None):
+    def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None):
         super().__init__()
         self.i18n = i18n
         self.db_manager = db_manager
+        if music_storage:
+            self.music_storage = music_storage
+        elif db_manager:
+            self.music_storage = SQLiteMusicStorage(db_manager)
+        else:
+            self.music_storage = None
+
         self.queue: list[dict] = []
         self.current_song: dict | None = None
         self.current_local_file: str | None = None
@@ -42,8 +51,8 @@ class YouTubeMusicProvider(QObject):
             except Exception as e:
                 logging.error("[YouTubeMusicProvider] Error loading auto_resume setting: %s", e)
 
-        if self.db_manager:
-            pending = self.db_manager.load_pending_songs("youtube")
+        if self.music_storage:
+            pending = self.music_storage.load_pending_songs("youtube")
             for song in pending:
                 self.queue.append({
                     "db_id": song["db_id"],
@@ -64,34 +73,14 @@ class YouTubeMusicProvider(QObject):
                     QTimer.singleShot(0, lambda: self._play_next(start_playing=False))
 
     def _get_cached_search(self, query: str) -> dict | None:
-        if not self.db_manager:
+        if not self.music_storage:
             return None
-        try:
-            with self.db_manager.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT title, artist, url, duration FROM youtube_search_cache WHERE LOWER(query_raw) = ?", (query.lower().strip(),))
-                r = cursor.fetchone()
-                if r:
-                    return {"title": r[0], "artist": r[1], "url": r[2], "duration": r[3] or "-"}
-        except Exception as e:
-            logging.error("[YouTubeMusicProvider] Error reading from search cache: %s", e)
-        return None
+        return self.music_storage.get_cached_search(query)
 
     def _save_search_to_cache(self, query: str, song_entry: dict):
-        if not self.db_manager:
+        if not self.music_storage:
             return
-        try:
-            with self.db_manager.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO youtube_search_cache (query_raw, title, artist, url, duration) 
-                    VALUES (?, ?, ?, ?, ?)
-                    ON CONFLICT(query_raw) DO UPDATE SET 
-                        title=excluded.title, artist=excluded.artist, url=excluded.url, duration=excluded.duration, cached_at=CURRENT_TIMESTAMP
-                """, (query.lower().strip(), song_entry["title"], song_entry["artist"], song_entry["url"], song_entry.get("duration", "-")))
-                conn.commit()
-        except Exception as e:
-            logging.error("[YouTubeMusicProvider] Error saving to search cache: %s", e)
+        self.music_storage.save_search_cache(query, song_entry)
 
     def get_current_song(self) -> dict | None:
         if not self.current_song:
@@ -142,8 +131,8 @@ class YouTubeMusicProvider(QObject):
                     "requester": requester,
                     "duration": cached.get("duration", "-")
                 }
-                if self.db_manager:
-                    db_id = self.db_manager.add_song_to_queue(
+                if self.music_storage:
+                    db_id = self.music_storage.add_song_to_queue(
                         title=song_entry["title"],
                         artist=song_entry["artist"],
                         url=song_entry["url"],
@@ -175,8 +164,8 @@ class YouTubeMusicProvider(QObject):
         def on_worker_finished(success, message):
             if success and worker.song_entry:
                 worker.song_entry["requester"] = requester
-                if self.db_manager:
-                    db_id = self.db_manager.add_song_to_queue(
+                if self.music_storage:
+                    db_id = self.music_storage.add_song_to_queue(
                         title=worker.song_entry["title"],
                         artist=worker.song_entry["artist"],
                         url=worker.song_entry["url"],
@@ -219,8 +208,8 @@ class YouTubeMusicProvider(QObject):
         if 0 <= index < len(self.queue):
             song = self.queue.pop(index)
             db_id = song.get("db_id")
-            if db_id is not None and self.db_manager:
-                self.db_manager.update_song_status(db_id, 2)
+            if db_id is not None and self.music_storage:
+                self.music_storage.update_song_status(db_id, 2)
             if index == 0:
                 self._preload_next_song()
             return True
@@ -308,8 +297,8 @@ class YouTubeMusicProvider(QObject):
 
         if self.current_song:
             db_id = self.current_song.get("db_id")
-            if db_id is not None and self.db_manager:
-                self.db_manager.update_song_status(db_id, 2)
+            if db_id is not None and self.music_storage:
+                self.music_storage.update_song_status(db_id, 2)
 
         if not self.queue:
             self.current_song = None
@@ -323,8 +312,8 @@ class YouTubeMusicProvider(QObject):
         self.current_song = self.queue.pop(0)
         
         db_id = self.current_song.get("db_id")
-        if db_id is not None and self.db_manager:
-            self.db_manager.update_song_status(db_id, 1)
+        if db_id is not None and self.music_storage:
+            self.music_storage.update_song_status(db_id, 1)
 
         if self.current_song.get("resolved") and self.current_song.get("stream_url"):
             self._start_playing_current = start_playing

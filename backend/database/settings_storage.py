@@ -33,9 +33,14 @@ class SQLiteSettingsStorage:
             return {k: (v == "1" if v in ("1", "0") else v) for k, v in cursor.fetchall()}
 
     def save_all(self, settings: dict) -> None:
+        data = [
+            (key, "1" if val is True else "0" if val is False else str(val))
+            for key, val in settings.items()
+        ]
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            for key, value in settings.items():
-                str_val = "1" if value is True else "0" if value is False else str(value)
-                cursor.execute("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, str_val))
+            cursor.executemany(
+                "INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                data
+            )
             conn.commit()

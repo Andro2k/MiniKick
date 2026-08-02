@@ -5,7 +5,7 @@ from PySide6.QtCore import QObject, Slot, QTimer, Signal
 class MusicController(QObject):
     song_changed = Signal(dict)
 
-    def __init__(self, view, spotify_auth, command_service, toast_manager, i18n, settings_storage=None, provider_factory=None):
+    def __init__(self, view, spotify_auth, command_service, toast_manager, i18n, settings_storage=None, music_storage=None, provider_factory=None):
         super().__init__()
         self.view = view
         self.spotify_auth = spotify_auth
@@ -13,12 +13,13 @@ class MusicController(QObject):
         self.toast = toast_manager
         self.i18n = i18n
         self.settings_storage = settings_storage
+        self.music_storage = music_storage
         self.provider_factory = provider_factory
         if not self.provider_factory:
             from backend.providers import SpotifyMusicProvider, YouTubeMusicProvider
             self.provider_factory = {
                 "spotify": lambda auth, db: SpotifyMusicProvider(auth, self.i18n, db_manager=db),
-                "youtube": lambda db: YouTubeMusicProvider(self.i18n, db_manager=db)
+                "youtube": lambda db: YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=db)
             }
         self.music_provider = None
         self.auth_worker = None

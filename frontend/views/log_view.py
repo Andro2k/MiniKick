@@ -144,7 +144,7 @@ class LogControlsPanel(QFrame):
         val = self.combo_date.itemData(index)
         self.date_changed.emit(val if val is not None else "")
 
-LOG_ILLUSTRATION_FILE = "file-search.svg"
+LOG_ILLUSTRATION_FILE = "illustration_file-search.svg"
 _LEVEL_COLORS = {
     "DEBUG": COLOR_NEUTRAL_400,
     "INFO": COLOR_BLUE,

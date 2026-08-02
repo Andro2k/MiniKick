@@ -32,6 +32,10 @@ class DatabaseManager:
                     res = cursor.fetchone()
                     if not res or res[0] != "ok":
                         raise sqlite3.DatabaseError("Database integrity check failed")
+            
+            with sqlite3.connect(self.db_name) as conn:
+                conn.execute("PRAGMA journal_mode=WAL")
+
             self._create_tables()
             self._upgrade_schema()
         except sqlite3.DatabaseError as e:
@@ -42,7 +46,6 @@ class DatabaseManager:
         conn = None
         try:
             conn = sqlite3.connect(self.db_name, factory=AutoCloseConnection)
-            conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-20000")
             conn.execute("PRAGMA foreign_keys=ON")
@@ -226,7 +229,7 @@ class DatabaseManager:
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status ON music_queue(provider, is_played)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status_id ON music_queue(provider, is_played, id)")
             try:
                 cursor.execute("ALTER TABLE music_queue ADD COLUMN duration TEXT DEFAULT '-'")
             except sqlite3.OperationalError:
@@ -283,49 +286,45 @@ class DatabaseManager:
                     DELETE FROM avatar_cache WHERE cached_at < datetime('now', '-15 days');
                 END;
             """)
+            
+            cursor.execute("DROP TRIGGER IF EXISTS prune_system_logs")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_system_logs AFTER INSERT ON system_logs
-                WHEN (SELECT COUNT(*) FROM system_logs) > 2000
                 BEGIN
-                    DELETE FROM system_logs WHERE id IN (
-                        SELECT id FROM system_logs ORDER BY id ASC LIMIT (SELECT COUNT(*) - 2000 FROM system_logs)
-                    );
+                    DELETE FROM system_logs WHERE id <= (NEW.id - 2000);
                 END;
             """)
+            
+            cursor.execute("DROP TRIGGER IF EXISTS prune_spam_violations")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_spam_violations AFTER INSERT ON spam_violations
-                WHEN (SELECT COUNT(*) FROM spam_violations) > 1000
                 BEGIN
-                    DELETE FROM spam_violations WHERE id IN (
-                        SELECT id FROM spam_violations ORDER BY id ASC LIMIT (SELECT COUNT(*) - 1000 FROM spam_violations)
-                    );
+                    DELETE FROM spam_violations WHERE id <= (NEW.id - 1000);
                 END;
             """)
+            
+            cursor.execute("DROP TRIGGER IF EXISTS prune_timer_logs")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_timer_logs AFTER INSERT ON timer_execution_logs
-                WHEN (SELECT COUNT(*) FROM timer_execution_logs) > 1000
                 BEGIN
-                    DELETE FROM timer_execution_logs WHERE id IN (
-                        SELECT id FROM timer_execution_logs ORDER BY id ASC LIMIT (SELECT COUNT(*) - 1000 FROM timer_execution_logs)
-                    );
+                    DELETE FROM timer_execution_logs WHERE id <= (NEW.id - 1000);
                 END;
             """)
+            
+            cursor.execute("DROP TRIGGER IF EXISTS prune_music_queue")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_music_queue AFTER INSERT ON music_queue
-                WHEN (SELECT COUNT(*) FROM music_queue WHERE is_played = 2) > 100
+                WHEN NEW.is_played = 2
                 BEGIN
-                    DELETE FROM music_queue WHERE id IN (
-                        SELECT id FROM music_queue WHERE is_played = 2 ORDER BY id ASC LIMIT (SELECT COUNT(*) - 100 FROM music_queue WHERE is_played = 2)
-                    );
+                    DELETE FROM music_queue WHERE is_played = 2 AND id <= (NEW.id - 100);
                 END;
             """)
+            
+            cursor.execute("DROP TRIGGER IF EXISTS prune_reward_redemptions")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_reward_redemptions AFTER INSERT ON reward_redemptions
-                WHEN (SELECT COUNT(*) FROM reward_redemptions) > 1000
                 BEGIN
-                    DELETE FROM reward_redemptions WHERE id IN (
-                        SELECT id FROM reward_redemptions ORDER BY id ASC LIMIT (SELECT COUNT(*) - 1000 FROM reward_redemptions)
-                    );
+                    DELETE FROM reward_redemptions WHERE id <= (NEW.id - 1000);
                 END;
             """)
 

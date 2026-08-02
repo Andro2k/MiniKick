@@ -1,45 +1,32 @@
 # backend\services\system\dashboard_service.py
 
-import logging
 from PySide6.QtCore import QObject, Signal, QUrl
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+from backend.database.avatar_storage import SQLiteAvatarStorage
 
 class AvatarService(QObject):
     avatar_downloaded = Signal(bytes)
 
-    def __init__(self, db_manager=None):
+    def __init__(self, avatar_storage: SQLiteAvatarStorage = None, db_manager=None):
         super().__init__()
-        self.db_manager = db_manager
+        if avatar_storage:
+            self.storage = avatar_storage
+        elif db_manager:
+            self.storage = SQLiteAvatarStorage(db_manager)
+        else:
+            self.storage = None
         self.manager = QNetworkAccessManager(self)
         self.manager.finished.connect(self._on_finished)
 
     def _get_cached_avatar(self, url: str) -> bytes | None:
-        if not self.db_manager:
+        if not self.storage:
             return None
-        try:
-            with self.db_manager.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT image_bytes FROM avatar_cache WHERE url = ?", (url.strip(),))
-                r = cursor.fetchone()
-                if r:
-                    return r[0]
-        except Exception as e:
-            logging.error("[AvatarService] Error reading from cache: %s", e)
-        return None
+        return self.storage.get_cached(url)
 
     def _save_avatar_to_cache(self, url: str, data: bytes):
-        if not self.db_manager:
+        if not self.storage:
             return
-        try:
-            with self.db_manager.get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO avatar_cache (url, image_bytes) VALUES (?, ?)
-                    ON CONFLICT(url) DO UPDATE SET image_bytes=excluded.image_bytes, cached_at=CURRENT_TIMESTAMP
-                """, (url.strip(), data))
-                conn.commit()
-        except Exception as e:
-            logging.error("[AvatarService] Error saving to cache: %s", e)
+        self.storage.save_to_cache(url, data)
 
     def fetch_avatar(self, url_str: str):
         if not url_str:

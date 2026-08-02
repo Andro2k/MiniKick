@@ -3,6 +3,15 @@
 import json
 from backend.database.manager import DatabaseManager
 
+def _parse_json_list(raw_value: str | None) -> list:
+    if not raw_value:
+        return []
+    try:
+        data = json.loads(raw_value)
+        return data if isinstance(data, list) else [data]
+    except (json.JSONDecodeError, TypeError):
+        return [k.strip() for k in raw_value.split(",") if k.strip()]
+
 class SQLiteTimersStorage:
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
@@ -11,33 +20,20 @@ class SQLiteTimersStorage:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories FROM chat_timers")
-            timers = []
-            for r in cursor.fetchall():
-                try:
-                    messages = json.loads(r[2])
-                except Exception:
-                    messages = [r[2]] if r[2] else []
-                try:
-                    keywords = json.loads(r[7])
-                except Exception:
-                    keywords = [k.strip() for k in r[7].split(",") if k.strip()] if r[7] else []
-                try:
-                    categories = json.loads(r[8])
-                except Exception:
-                    categories = [c.strip() for c in r[8].split(",") if c.strip()] if r[8] else []
-
-                timers.append({
+            return [
+                {
                     "id": r[0],
                     "name": r[1],
-                    "messages": messages,
+                    "messages": _parse_json_list(r[2]),
                     "is_active": bool(r[3]),
                     "interval_online": r[4],
                     "interval_offline": r[5],
                     "chat_lines": r[6],
-                    "keywords": keywords,
-                    "categories": categories
-                })
-            return timers
+                    "keywords": _parse_json_list(r[7]),
+                    "categories": _parse_json_list(r[8])
+                }
+                for r in cursor.fetchall()
+            ]
 
     def get_timer_by_id(self, timer_id: int) -> dict | None:
         with self.db_manager.get_connection() as conn:
@@ -49,29 +45,16 @@ class SQLiteTimersStorage:
             r = cursor.fetchone()
             if not r:
                 return None
-            try:
-                messages = json.loads(r[2])
-            except Exception:
-                messages = [r[2]] if r[2] else []
-            try:
-                keywords = json.loads(r[7])
-            except Exception:
-                keywords = [k.strip() for k in r[7].split(",") if k.strip()] if r[7] else []
-            try:
-                categories = json.loads(r[8])
-            except Exception:
-                categories = [c.strip() for c in r[8].split(",") if c.strip()] if r[8] else []
-
             return {
                 "id": r[0],
                 "name": r[1],
-                "messages": messages,
+                "messages": _parse_json_list(r[2]),
                 "is_active": bool(r[3]),
                 "interval_online": r[4],
                 "interval_offline": r[5],
                 "chat_lines": r[6],
-                "keywords": keywords,
-                "categories": categories
+                "keywords": _parse_json_list(r[7]),
+                "categories": _parse_json_list(r[8])
             }
 
     def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], timer_id: int = None) -> None:
@@ -115,30 +98,17 @@ class SQLiteTimersStorage:
                 FROM chat_timers 
                 WHERE LOWER(name) LIKE ? OR LOWER(messages) LIKE ?
             """, (pattern, pattern))
-            timers = []
-            for r in cursor.fetchall():
-                try:
-                    messages = json.loads(r[2])
-                except Exception:
-                    messages = [r[2]] if r[2] else []
-                try:
-                    keywords = json.loads(r[7])
-                except Exception:
-                    keywords = [k.strip() for k in r[7].split(",") if k.strip()] if r[7] else []
-                try:
-                    categories = json.loads(r[8])
-                except Exception:
-                    categories = [c.strip() for c in r[8].split(",") if c.strip()] if r[8] else []
-
-                timers.append({
+            return [
+                {
                     "id": r[0],
                     "name": r[1],
-                    "messages": messages,
+                    "messages": _parse_json_list(r[2]),
                     "is_active": bool(r[3]),
                     "interval_online": r[4],
                     "interval_offline": r[5],
                     "chat_lines": r[6],
-                    "keywords": keywords,
-                    "categories": categories
-                })
-            return timers
+                    "keywords": _parse_json_list(r[7]),
+                    "categories": _parse_json_list(r[8])
+                }
+                for r in cursor.fetchall()
+            ]
