@@ -86,15 +86,20 @@ class TimersView(BaseView):
         messages = timer_data.get("messages", [])
         if not messages:
             preview_text = "-"
+            tooltip_text = ""
         else:
             first_msg = messages[0]
-            if len(first_msg) > 60:
-                first_msg = first_msg[:57] + "..."
             if len(messages) > 1:
                 preview_text = f"{first_msg} (+{len(messages)-1})"
+                tooltip_text = "\n".join(f"- {m}" for m in messages)
             else:
                 preview_text = first_msg
-        return self._create_table_item(preview_text)
+                tooltip_text = first_msg
+                
+        item = self._create_table_item(preview_text)
+        if tooltip_text:
+            item.setToolTip(tooltip_text)
+        return item
 
     def _create_online_item(self, timer_data: dict) -> QTableWidgetItem:
         online = timer_data.get("interval_online")

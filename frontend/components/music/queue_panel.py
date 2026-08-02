@@ -15,6 +15,11 @@ class MusicQueuePanel(QWidget):
         super().__init__(parent)
         self.i18n = i18n
         self._current_queue_urls = []
+        
+        self._icon_up = get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_200, 14)
+        self._icon_down = get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_200, 14)
+        self._icon_delete = get_icon_colored("trash.svg", COLOR_RED, 14)
+        
         self._setup_ui()
 
     def _setup_ui(self):
@@ -86,7 +91,7 @@ class MusicQueuePanel(QWidget):
 
         btn_up = QPushButton()
         btn_up.setProperty("role", "btn_ghost")
-        btn_up.setIcon(get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_200, 14))
+        btn_up.setIcon(self._icon_up)
         btn_up.setIconSize(QSize(14, 14))
         btn_up.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_up.setFixedSize(QSize(24, 24))
@@ -95,7 +100,7 @@ class MusicQueuePanel(QWidget):
 
         btn_down = QPushButton()
         btn_down.setProperty("role", "btn_ghost")
-        btn_down.setIcon(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_200, 14))
+        btn_down.setIcon(self._icon_down)
         btn_down.setIconSize(QSize(14, 14))
         btn_down.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_down.setFixedSize(QSize(24, 24))
@@ -104,7 +109,7 @@ class MusicQueuePanel(QWidget):
 
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
-        btn_delete.setIcon(get_icon_colored("trash.svg", COLOR_RED, 14))
+        btn_delete.setIcon(self._icon_delete)
         btn_delete.setIconSize(QSize(14, 14))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))

@@ -1,46 +1,62 @@
 /* assets/overlays/css/minimal.css */
 .message-box {
-    background: transparent !important;
+    background: rgba(20, 21, 26, 0.93) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: none !important;
-    box-shadow: none !important;
-    padding: 8px 0 !important;
+    border-left: calc(var(--font-size) * 0.28) solid var(--line-color, #C084FC) !important;
+    border-radius: calc(var(--font-size) * 0.85) !important;
+    box-shadow: 0 calc(var(--font-size) * 0.25) calc(var(--font-size) * 1.1) rgba(0, 0, 0, 0.3) !important;
+    padding: calc(var(--font-size) * 0.7) calc(var(--font-size) * 1.1) !important;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding-left: 20px !important;
+    gap: calc(var(--font-size) * 0.28);
+    align-self: flex-start !important;
+    box-sizing: border-box;
     position: relative;
+    margin-top: calc(var(--font-size) * 0.15);
 }
 
-/* Vertical dotted line on the left side of each message */
 .message-box::before {
-    content: "";
-    position: absolute;
-    left: 6px;
-    top: 8px;
-    bottom: 8px;
-    width: 2px;
-    border-left: 3px dotted var(--line-color, #C084FC);
+    display: none !important;
 }
 
 .message-header {
     display: flex;
     align-items: center;
+    gap: calc(var(--font-size) * 0.4);
+}
+
+.message-box.theme-minimal .badge {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    color: var(--line-color, #C084FC) !important;
+    font-size: calc(var(--font-size) * 0.95) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    height: auto !important;
 }
 
 .username {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: calc(var(--font-size) - 2px);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: bold;
+    background: transparent !important;
+    border-radius: 0px !important;
+    padding: 0 !important;
+    font-size: calc(var(--font-size) * 0.92) !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    font-weight: 700 !important;
+    font-family: 'Outfit', sans-serif !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
 }
 
 .message-content {
     color: #E4E4E7 !important;
     font-size: var(--font-size) !important;
-    padding-left: 4px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9), -1px -1px 2px rgba(0, 0, 0, 0.9) !important;
+    padding-left: 0px !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
     font-weight: 500;
 }

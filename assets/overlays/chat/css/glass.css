@@ -1,12 +1,23 @@
 /* assets/overlays/css/glass.css */
 .message-box {
-    background: rgba(18, 18, 20, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
-    border-radius: 12px;
+    background: rgba(20, 20, 25, 0.62);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: calc(var(--font-size) * 0.08) solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 calc(var(--font-size) * 0.5) calc(var(--font-size) * 2.0) rgba(0, 0, 0, 0.35);
+    border-radius: calc(var(--font-size) * 1.0);
+    padding: calc(var(--font-size) * 0.9) calc(var(--font-size) * 1.3);
+    align-self: flex-start;
+    box-sizing: border-box;
 }
+
+.username {
+    font-family: 'Outfit', sans-serif;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
 .message-content {
-    color: #F3F4F6;
+    color: #FFFFFF;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6) !important;
+    font-weight: 500;
 }

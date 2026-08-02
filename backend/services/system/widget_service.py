@@ -43,7 +43,6 @@ class WidgetService:
         self._init_cache()
 
     def _init_cache(self):
-        """Initializes the in-memory O(1) cache from storage and ensures defaults exist."""
         loaded = self.storage.load_all_widgets()
         for w_id, default_data in self.DEFAULT_WIDGETS.items():
             if w_id not in loaded:
@@ -66,11 +65,9 @@ class WidgetService:
         self._cache = loaded
 
     def get_all_widgets(self) -> dict[str, dict]:
-        """Returns all widgets from in-memory cache in O(1) time without disk I/O."""
         return {w_id: dict(data) for w_id, data in self._cache.items()}
 
     def get_widget(self, widget_id: str) -> dict:
-        """Retrieves a single widget from in-memory cache in O(1) time."""
         w = self._cache.get(widget_id)
         if not w and widget_id in self.DEFAULT_WIDGETS:
             default_data = self.DEFAULT_WIDGETS[widget_id]
@@ -85,8 +82,7 @@ class WidgetService:
             self._cache[widget_id] = w
         return dict(w) if w else {}
 
-    def save_widget(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):
-        """Updates in-memory cache in O(1) time and persists changes to storage."""
+    def save_widget(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict, defer_disk: bool = False):
         updated_data = {
             "widget_id": widget_id,
             "is_active": is_active,
@@ -96,7 +92,8 @@ class WidgetService:
             "config": dict(config)
         }
         self._cache[widget_id] = updated_data
-        self.storage.save_widget(widget_id, is_active, command, cooldown, permission, config)
+        if not defer_disk:
+            self.storage.save_widget(widget_id, is_active, command, cooldown, permission, config)
 
     def format_shoutout(self, target_user: str) -> str:
         w = self.get_widget("shoutout")
@@ -124,13 +121,13 @@ class WidgetService:
         w = self.get_widget("death")
         return int(w.get("config", {}).get("count", 0))
 
-    def update_death_count(self, delta: int = 0, set_val: int | None = None) -> int:
+    def update_death_count(self, delta: int = 0, set_val: int | None = None, defer_disk: bool = False) -> int:
         w = self.get_widget("death")
         cfg = w.get("config", {})
         current = int(cfg.get("count", 0))
         new_val = set_val if set_val is not None else max(0, current + delta)
         cfg["count"] = new_val
-        self.save_widget("death", w.get("is_active", True), w.get("command", "!death"), w.get("cooldown", 3), w.get("permission", "everyone"), cfg)
+        self.save_widget("death", w.get("is_active", True), w.get("command", "!death"), w.get("cooldown", 3), w.get("permission", "everyone"), cfg, defer_disk=defer_disk)
         return new_val
 
     def get_score(self) -> tuple[int, int]:
@@ -138,7 +135,7 @@ class WidgetService:
         cfg = w.get("config", {})
         return int(cfg.get("wins", 0)), int(cfg.get("losses", 0))
 
-    def update_score(self, delta_wins: int = 0, delta_losses: int = 0, reset: bool = False, set_wins: int | None = None, set_losses: int | None = None) -> tuple[int, int]:
+    def update_score(self, delta_wins: int = 0, delta_losses: int = 0, reset: bool = False, set_wins: int | None = None, set_losses: int | None = None, defer_disk: bool = False) -> tuple[int, int]:
         w = self.get_widget("score")
         cfg = w.get("config", {})
         if reset:
@@ -148,5 +145,5 @@ class WidgetService:
             losses = set_losses if set_losses is not None else max(0, int(cfg.get("losses", 0)) + delta_losses)
         cfg["wins"] = wins
         cfg["losses"] = losses
-        self.save_widget("score", w.get("is_active", True), w.get("command", "!score"), w.get("cooldown", 3), w.get("permission", "everyone"), cfg)
+        self.save_widget("score", w.get("is_active", True), w.get("command", "!score"), w.get("cooldown", 3), w.get("permission", "everyone"), cfg, defer_disk=defer_disk)
         return wins, losses

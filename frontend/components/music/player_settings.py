@@ -20,6 +20,14 @@ class MusicPlayerSettingsPanel(QWidget):
         self.i18n = i18n
         self._music_overlay_url = music_overlay_url
         self._cached_song_state = None
+        self._cached_auth_state = None
+        self._pending_volume = 100
+
+        self._volume_timer = QTimer(self)
+        self._volume_timer.setSingleShot(True)
+        self._volume_timer.setInterval(200)
+        self._volume_timer.timeout.connect(self._emit_volume)
+
         self._setup_ui()
 
     def _setup_ui(self):
@@ -161,7 +169,11 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def _on_volume_slider_changed(self, val):
         self.lbl_vol_perc.setText(f"{val}%")
-        self.volume_changed.emit(val)
+        self._pending_volume = val
+        self._volume_timer.start()
+
+    def _emit_volume(self):
+        self.volume_changed.emit(self._pending_volume)
 
     def _setup_overlay_url_card(self):
         self.card_overlay_url = ModernCard(margin=12, spacing=8)
@@ -218,6 +230,12 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def set_auth_state(self, connected: bool, label_key: str = ""):
         provider = self.combo_provider.currentData()
+        
+        state_key = (provider, connected, label_key)
+        if self._cached_auth_state == state_key:
+            return
+        self._cached_auth_state = state_key
+
         is_youtube = (provider == "youtube")
 
         if is_youtube:

@@ -32,7 +32,25 @@ class WidgetController(QObject):
             self.PLUGIN_TAGS["score"]: self._dispatch_score_command,
         }
 
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.setInterval(400)
+        self._save_timer.timeout.connect(self._flush_saves)
+        self._pending_saves = set()
+
         self._connect_signals()
+        self.sync_commands_with_db()
+
+    def _trigger_deferred_save(self, widget_id: str):
+        self._pending_saves.add(widget_id)
+        self._save_timer.start()
+
+    def _flush_saves(self):
+        for w_id in self._pending_saves:
+            w = self.widget_service.get_widget(w_id)
+            if w:
+                self.widget_service.storage.save_widget(w_id, w.get("is_active", True), w.get("command", ""), w.get("cooldown", 3), w.get("permission", "everyone"), w.get("config", {}))
+        self._pending_saves.clear()
         self.sync_commands_with_db()
 
     def _connect_signals(self):
@@ -121,16 +139,13 @@ class WidgetController(QObject):
                     state=state
                 )
 
-        def _save_and_sync():
-            self.widget_service.storage.save_widget(widget_id, is_active, command, cooldown, permission, config)
-            self.sync_commands_with_db()
-
-        QTimer.singleShot(0, _save_and_sync)
+        self._trigger_deferred_save(widget_id)
 
     @Slot(int)
     def handle_death_count_change(self, new_val: int):
-        final_val = self.widget_service.update_death_count(set_val=new_val)
+        final_val = self.widget_service.update_death_count(set_val=new_val, defer_disk=True)
         self.death_count_updated.emit(final_val)
+        self._trigger_deferred_save("death")
         if self.overlay_server:
             title_text = self.i18n.get("widgets.death.overlay_title")
             self.overlay_server.trigger_widget_event("death_update", {
@@ -140,8 +155,9 @@ class WidgetController(QObject):
 
     @Slot(int, int)
     def handle_score_change(self, wins: int, losses: int):
-        final_wins, final_losses = self.widget_service.update_score(set_wins=wins, set_losses=losses)
+        final_wins, final_losses = self.widget_service.update_score(set_wins=wins, set_losses=losses, defer_disk=True)
         self.score_updated.emit(final_wins, final_losses)
+        self._trigger_deferred_save("score")
         if self.overlay_server:
             title_text = self.i18n.get("widgets.score.overlay_title")
             self.overlay_server.trigger_widget_event("score", {

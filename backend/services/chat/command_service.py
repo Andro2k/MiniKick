@@ -21,12 +21,23 @@ class CommandService(QObject):
         self._dispatch_table: dict[str, dict] = {}
         self._regex_commands: list[dict] = []
         self._all_commands_cache: list[dict] = []
+        
+        from PySide6.QtCore import QTimer
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.setInterval(400)
+        self._save_timer.timeout.connect(self._flush_saves)
+        self._pending_saves = {}
+        
         self.reload_cache()
 
     def reload_cache(self):
+        self._all_commands_cache = self.storage.load_all()
+        self._rebuild_dispatch_table_from_cache()
+
+    def _rebuild_dispatch_table_from_cache(self):
         self._dispatch_table.clear()
         self._regex_commands.clear()
-        self._all_commands_cache = self.storage.load_all()
         
         for cmd in self._all_commands_cache:
             if not cmd.get("is_active", True):
@@ -52,6 +63,14 @@ class CommandService(QObject):
                             self._dispatch_table[clean_alias] = cmd
         self.commands_changed.emit()
 
+    def _flush_saves(self):
+        for trigger_lower, cmd in list(self._pending_saves.items()):
+            self.storage.save_command(
+                cmd["trigger"], cmd["response"], cmd["is_active"],
+                cmd["cooldown"], cmd["aliases"], cmd["is_regex"], cmd["permission"]
+            )
+        self._pending_saves.clear()
+
     def get_all_commands(self) -> list[dict]:
         return list(self._all_commands_cache)
 
@@ -74,12 +93,37 @@ class CommandService(QObject):
         ]
 
     def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str):
-        self.storage.save_command(trigger.strip(), response, is_active, cooldown, aliases, is_regex, permission)
-        self.reload_cache()
+        trigger_clean = trigger.strip()
+        cmd_dict = {
+            "trigger": trigger_clean,
+            "response": response,
+            "is_active": is_active,
+            "cooldown": cooldown,
+            "aliases": aliases,
+            "is_regex": is_regex,
+            "permission": permission
+        }
+        
+        existing_idx = -1
+        for i, cmd in enumerate(self._all_commands_cache):
+            if cmd["trigger"].strip().lower() == trigger_clean.lower():
+                existing_idx = i
+                break
+                
+        if existing_idx != -1:
+            self._all_commands_cache[existing_idx] = cmd_dict
+        else:
+            self._all_commands_cache.append(cmd_dict)
+            
+        self._rebuild_dispatch_table_from_cache()
+        
+        self._pending_saves[trigger_clean.lower()] = cmd_dict
+        self._save_timer.start()
 
     def delete_command(self, trigger: str):
         clean_trigger = trigger.strip()
         self.cooldown_timers.pop(clean_trigger, None)
+        self._pending_saves.pop(clean_trigger.lower(), None)
         self.storage.delete_command(clean_trigger)
         self.reload_cache()
 

@@ -1,76 +1,87 @@
-/* assets/overlays/css/cyber.css */
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
 .message-box.theme-cyber {
-    background: rgba(2, 9, 18, 0.95) !important;
-    border: 2px solid var(--cyber-color, #00ff66) !important;
-    border-radius: 8px !important;
-    padding: 20px 20px 14px 20px !important;
-    margin-top: 28px !important;
     position: relative !important;
-    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
-    color: #e2f9e6 !important;
-    box-shadow: 0 0 10px rgba(0, 255, 102, 0.15) !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: calc(var(--font-size) * 0.4) 0 calc(var(--font-size) * 0.4) calc(var(--font-size) * 1.5) !important;
+    margin-top: calc(var(--font-size) * 0.6) !important;
+    margin-bottom: calc(var(--font-size) * 0.6) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: calc(var(--font-size) * 0.3) !important;
+    align-self: flex-start !important;
+    box-sizing: border-box !important;
 }
 
-.message-box.theme-cyber .message-content {
-    color: #e2f9e6 !important;
-    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
-    font-size: var(--font-size) !important;
-    line-height: 1.5 !important;
+.message-box.theme-cyber::before {
+    content: "" !important;
+    position: absolute !important;
+    left: calc(var(--font-size) * 0.15) !important;
+    top: calc(var(--font-size) * 0.45) !important;
+    width: calc(var(--font-size) * 0.6) !important;
+    height: calc(var(--font-size) * 0.6) !important;
+    border-radius: 50% !important;
+    border: calc(var(--font-size) * 0.12) solid var(--cyber-color, #00ff66) !important;
+    background: radial-gradient(circle, var(--cyber-color, #00ff66) 35%, #0a0a0f 40%) !important;
+    box-shadow: 0 0 calc(var(--font-size) * 0.5) var(--cyber-color, #00ff66) !important;
+    z-index: 3 !important;
+}
+
+.message-box.theme-cyber::after {
+    content: "" !important;
+    position: absolute !important;
+    top: calc(var(--font-size) * -0.8) !important;
+    bottom: calc(var(--font-size) * -0.8) !important;
+    left: calc(var(--font-size) * 0.45) !important;
+    width: 0 !important;
+    border-left: 2px dashed rgba(255, 255, 255, 0.25) !important;
+    z-index: 1 !important;
 }
 
 .message-box.theme-cyber .message-header {
-    position: absolute !important;
-    top: -16px !important;
-    left: 14px !important;
     display: flex !important;
     align-items: center !important;
-    gap: 0px !important;
+    gap: calc(var(--font-size) * 0.4) !important;
+    position: static !important;
     background: transparent !important;
     padding: 0 !important;
+    margin: 0 !important;
 }
 
-/* Cyber badge box */
-.message-box.theme-cyber .cyber-badge-box {
-    background: #020912 !important;
-    border: 2px solid var(--cyber-color, #00ff66) !important;
-    border-radius: 4px !important;
+.message-box.theme-cyber .username {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: calc(var(--font-size) * 0.95) !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
     color: var(--cyber-color, #00ff66) !important;
-    font-weight: 700 !important;
-    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
-    font-size: calc(var(--font-size) * 0.72) !important;
-    padding: 2px 8px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    letter-spacing: 0.5px !important;
-    text-shadow: none !important;
 }
 
-/* Connector line between badge and icon */
-.message-box.theme-cyber .cyber-connector {
-    width: 8px !important;
-    height: 2px !important;
-    background: var(--cyber-color, #00ff66) !important;
+.message-box.theme-cyber .badge {
+    background: transparent !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    opacity: 0.8 !important;
+    font-size: calc(var(--font-size) * 1.25) !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-/* Cyber icon box */
-.message-box.theme-cyber .cyber-icon-box {
-    background: #020912 !important;
-    border: 2px solid var(--cyber-color, #00ff66) !important;
-    border-radius: 4px !important;
-    padding: 2px 6px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: calc(var(--font-size) * 0.75) !important;
-    line-height: 1 !important;
+.message-box.theme-cyber .message-content {
+    color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: var(--font-size) !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
 .message-box.theme-cyber .timestamp {
-    color: var(--cyber-color, #00ff66) !important;
-    font-family: 'Share Tech Mono', 'Courier New', monospace !important;
-    opacity: 0.8 !important;
-    margin-right: 6px !important;
-    font-size: calc(var(--font-size) * 0.95) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: calc(var(--font-size)) !important;
+    font-weight: 500 !important;
+    margin-right: calc(var(--font-size) * 0.25) !important;
 }

@@ -13,6 +13,9 @@ class MusicStatsPanel(QWidget):
         super().__init__(parent)
         self.i18n = i18n
         self._current_cols = -1
+        self._cached_queue_count = None
+        self._cached_duration_str = None
+        self._cached_service_enabled = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -121,6 +124,10 @@ class MusicStatsPanel(QWidget):
         self.service_toggled.emit(checked)
 
     def update_service_visual_state(self, enabled: bool):
+        if self._cached_service_enabled == enabled:
+            return
+        self._cached_service_enabled = enabled
+
         if enabled:
             self.lbl_service_badge.setText(self.i18n.get("music.stats.badge_active"))
             self.badge_service_container.setProperty("state", "everyone")
@@ -140,6 +147,10 @@ class MusicStatsPanel(QWidget):
         self.lbl_stat_service_value.style().polish(self.lbl_stat_service_value)
 
     def set_stats(self, queue_count: int, duration_str: str):
+        if self._cached_queue_count == queue_count and self._cached_duration_str == duration_str:
+            return
+        self._cached_queue_count = queue_count
+        self._cached_duration_str = duration_str
         self.lbl_stat_queue_count.setText(str(queue_count))
         self.lbl_stat_duration_sum.setText(duration_str)
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>MiniKick Chat Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link id="theme-style" rel="stylesheet" href="">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <style>
@@ -43,11 +43,11 @@
         }
 
         .message-box:first-child {
-            margin-top: auto;
+            margin-top: auto !important;
         }
 
         .chat-emote {
-            height: 28px;
+            height: 32px;
             vertical-align: middle;
             margin: -2px 2px;
             display: inline-block;
@@ -63,22 +63,25 @@
             position: relative;
             transform-origin: bottom left;
             animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+            will-change: transform, opacity;
+            transform: translate3d(0, 0, 0);
         }
 
         .message-box.fade-out {
             opacity: 0;
-            transform: translateY(-20px) scale(0.95);
+            transform: translate3d(0, -15px, 0);
+            pointer-events: none;
         }
 
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(30px) scale(0.9);
+                transform: translate3d(0, 30px, 0) scale(0.9);
             }
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                transform: translate3d(0, 0, 0) scale(1);
             }
         }
 
@@ -91,15 +94,16 @@
 
         .badge {
             font-family: 'Outfit', sans-serif;
-            font-size: calc(var(--font-size) * 0.72);
+            font-size: calc(var(--font-size) * 0.85);
             font-weight: 700;
             text-transform: uppercase;
-            padding: 0.2em 0.5em;
-            border-radius: 4px;
-            letter-spacing: 0.5px;
+            padding: 0;
+            border-radius: 50%;
             display: inline-flex;
             align-items: center;
-            gap: 0.25em;
+            justify-content: center;
+            width: 1.3em;
+            height: 1.3em;
         }
 
         .badge-broadcaster {
@@ -148,7 +152,7 @@
 
         .timestamp {
             font-size: calc(var(--font-size) - 3px);
-            color: #71717A;
+            color: #FFFFFF;
             margin-right: 4px;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
@@ -189,7 +193,7 @@
             eventSource.onopen = function () {
                 console.log("[Chat Overlay] Conectado exitosamente.");
                 if (reconnectTimer) {
-                    clearInterval(reconnectTimer);
+                    clearTimeout(reconnectTimer);
                     reconnectTimer = null;
                 }
             };
@@ -214,12 +218,10 @@
         }
 
         function scheduleReconnect() {
-            if (!reconnectTimer) {
-                reconnectTimer = setInterval(() => {
-                    console.log("[Chat Overlay] Intentando reconectar SSE...");
-                    connectSSE();
-                }, 3000);
-            }
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(() => {
+                connectSSE();
+            }, 3000);
         }
 
         connectSSE();
@@ -229,8 +231,29 @@
                 return;
             }
 
+            let roleClass = 'default';
+            let roleLabel = 'USER';
+            if (data.badges && Array.isArray(data.badges)) {
+                if (data.badges.includes('broadcaster')) {
+                    roleLabel = 'STREAMER';
+                    roleClass = 'broadcaster';
+                } else if (data.badges.includes('moderator')) {
+                    roleLabel = 'MODERATOR';
+                    roleClass = 'moderator';
+                } else if (data.badges.includes('vip')) {
+                    roleLabel = 'VIP';
+                    roleClass = 'vip';
+                } else if (data.badges.includes('subscriber')) {
+                    roleLabel = 'SUBSCRIBER';
+                    roleClass = 'subscriber';
+                } else if (data.badges.includes('bot')) {
+                    roleLabel = 'BOT';
+                    roleClass = 'bot';
+                }
+            }
+
             const msgBox = document.createElement('div');
-            msgBox.className = `message-box theme-${theme}`;
+            msgBox.className = `message-box theme-${theme} role-${roleClass}`;
             msgBox.style.fontSize = fontSize;
 
             if (theme === 'neon') {
@@ -252,35 +275,34 @@
             const header = document.createElement('div');
             header.className = 'message-header';
 
-            if (theme === 'cyber') {
-                const badgeBox = document.createElement('div');
-                badgeBox.className = 'cyber-badge-box';
-                badgeBox.innerText = data.user;
-                header.appendChild(badgeBox);
-
-                const connector = document.createElement('div');
-                connector.className = 'cyber-connector';
-                header.appendChild(connector);
-
-                const iconBox = document.createElement('div');
-                iconBox.className = 'cyber-icon-box';
+            if (theme === 'card') {
+                const floatBadge = document.createElement('div');
+                floatBadge.className = 'card-float-badge';
+                floatBadge.innerText = roleLabel;
                 
-                let iconHtml = '<i class="ti ti-message-dots"></i>';
-                if (data.badges && Array.isArray(data.badges)) {
-                    if (data.badges.includes('broadcaster')) {
-                        iconHtml = '<i class="ti ti-video"></i>';
-                    } else if (data.badges.includes('moderator')) {
-                        iconHtml = '<i class="ti ti-shield"></i>';
-                    } else if (data.badges.includes('vip')) {
-                        iconHtml = '<i class="ti ti-diamond"></i>';
-                    } else if (data.badges.includes('subscriber')) {
-                        iconHtml = '<i class="ti ti-star"></i>';
-                    } else if (data.badges.includes('bot')) {
-                        iconHtml = '<i class="ti ti-robot"></i>';
-                    }
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'username';
+                nameSpan.innerText = data.user;
+                
+                const winButtons = document.createElement('div');
+                winButtons.className = 'card-win-buttons';
+                
+                let timeHtml = '';
+                if (showTime) {
+                    const now = new Date();
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    timeHtml = `<span class="card-time-btn">${hours}:${minutes}</span>`;
                 }
-                iconBox.innerHTML = iconHtml;
-                header.appendChild(iconBox);
+                
+                winButtons.innerHTML = `
+                    ${timeHtml}
+                    <span class="card-close-btn"></span>
+                `;
+                
+                header.appendChild(floatBadge);
+                header.appendChild(nameSpan);
+                header.appendChild(winButtons);
             } else {
                 if (showTime) {
                     const timeSpan = document.createElement('span');
@@ -296,7 +318,16 @@
                     data.badges.forEach(badge => {
                         const badgeSpan = document.createElement('span');
                         badgeSpan.className = `badge badge-${badge}`;
-                        badgeSpan.innerText = getBadgeLabel(badge);
+                        
+                        let iconClass = 'ti ti-star';
+                        if (badge === 'broadcaster') iconClass = 'ti ti-crown';
+                        else if (badge === 'moderator') iconClass = 'ti ti-shield';
+                        else if (badge === 'vip') iconClass = 'ti ti-diamond';
+                        else if (badge === 'subscriber') iconClass = 'ti ti-star';
+                        else if (badge === 'bot') iconClass = 'ti ti-robot';
+                        
+                        badgeSpan.innerHTML = `<i class="${iconClass}"></i>`;
+                        badgeSpan.title = getBadgeLabel(badge);
                         header.appendChild(badgeSpan);
                     });
                 }
@@ -305,6 +336,10 @@
                 nameSpan.className = 'username';
                 nameSpan.style.color = data.color || '#FAFAFA';
                 nameSpan.innerText = data.user;
+                if (theme === 'neon') {
+                    const glowColor = data.color || '#2ECD70';
+                    nameSpan.style.textShadow = `0 0 8px ${glowColor}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
+                }
                 header.appendChild(nameSpan);
             }
 
@@ -312,21 +347,11 @@
 
             const content = document.createElement('div');
             content.className = 'message-content';
-            
-            if (theme === 'cyber' && showTime) {
-                const timeSpan = document.createElement('span');
-                timeSpan.className = 'timestamp';
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                timeSpan.innerText = `[${hours}:${minutes}] `;
-                content.appendChild(timeSpan);
-            }
 
             let safeMsg = escapeHtml(data.message);
             const emoteRegex = /\[emote:(\d+):([^\]]+)\]/g;
             safeMsg = safeMsg.replace(emoteRegex, (match, id, name) => {
-                return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" />`;
+                return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" loading="lazy" decoding="async" />`;
             });
             
             const textSpan = document.createElement('span');
@@ -337,8 +362,12 @@
             const isUserScrolledUp = (container.scrollHeight - container.clientHeight - container.scrollTop) > 60;
             container.appendChild(msgBox);
 
-            while (container.children.length > maxMessages) {
-                container.removeChild(container.firstChild);
+            const activeMessages = Array.from(container.children).filter(child => !child.classList.contains('fade-out'));
+            if (activeMessages.length > maxMessages) {
+                const toRemoveCount = activeMessages.length - maxMessages;
+                for (let i = 0; i < toRemoveCount; i++) {
+                    removeMessage(activeMessages[i]);
+                }
             }
 
             if (!isUserScrolledUp) {
@@ -346,14 +375,19 @@
             }
             if (fadeTime > 0) {
                 setTimeout(() => {
-                    msgBox.classList.add('fade-out');
-                    setTimeout(() => {
-                        if (msgBox.parentNode === container) {
-                            container.removeChild(msgBox);
-                        }
-                    }, 500);
+                    removeMessage(msgBox);
                 }, fadeTime * 1000);
             }
+        }
+
+        function removeMessage(msgBox) {
+            if (msgBox.classList.contains('fade-out')) return;
+            msgBox.classList.add('fade-out');
+            setTimeout(() => {
+                if (msgBox.parentNode === container) {
+                    container.removeChild(msgBox);
+                }
+            }, 400);
         }
 
         function escapeHtml(text) {
