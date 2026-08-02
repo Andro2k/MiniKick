@@ -56,7 +56,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_overlay_show_bots = ModernSwitch()
         self.sw_overlay_show_bots.setChecked(False)
         row_overlay_show_bots = SettingRow(
-            "user.svg",
+            "bot.svg",
             self.i18n.get("chat.overlay.show_bots_title"),
             self.i18n.get("chat.overlay.show_bots_desc"),
             self.sw_overlay_show_bots

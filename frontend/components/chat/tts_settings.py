@@ -99,7 +99,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.combo_voice.setMinimumWidth(100)
         self.combo_voice.setMaximumWidth(300)
         
-        row_voice_general = SettingRow("user.svg", self.i18n.get("chat.settings.voice_general_title"), self.i18n.get("chat.settings.voice_general_desc"), self._create_combo_with_test_btn(self.combo_voice))
+        row_voice_general = SettingRow("people-fill.svg", self.i18n.get("chat.settings.voice_general_title"), self.i18n.get("chat.settings.voice_general_desc"), self._create_combo_with_test_btn(self.combo_voice))
         voices_card.addWidget(row_voice_general)
 
         self.combo_voice_broadcaster = NoWheelComboBox()
@@ -122,10 +122,10 @@ class ChatTtsSettingsPanel(ModernCard):
         self.combo_voice_subscriber.setMinimumWidth(100)
         self.combo_voice_subscriber.setMaximumWidth(300)
 
-        row_role_broadcaster = SettingRow("user.svg", self.i18n.get("chat.roles.broadcaster_title"), self.i18n.get("chat.roles.broadcaster_desc"), self._create_combo_with_test_btn(self.combo_voice_broadcaster))
-        row_role_moderator = SettingRow("shield-half.svg", self.i18n.get("chat.roles.moderator_title"), self.i18n.get("chat.roles.moderator_desc"), self._create_combo_with_test_btn(self.combo_voice_moderator))
+        row_role_broadcaster = SettingRow("microphone.svg", self.i18n.get("chat.roles.broadcaster_title"), self.i18n.get("chat.roles.broadcaster_desc"), self._create_combo_with_test_btn(self.combo_voice_broadcaster))
+        row_role_moderator = SettingRow("shield-user-bold.svg", self.i18n.get("chat.roles.moderator_title"), self.i18n.get("chat.roles.moderator_desc"), self._create_combo_with_test_btn(self.combo_voice_moderator))
         row_role_vip = SettingRow("star.svg", self.i18n.get("chat.roles.vip_title"), self.i18n.get("chat.roles.vip_desc"), self._create_combo_with_test_btn(self.combo_voice_vip))
-        row_role_subscriber = SettingRow("users.svg", self.i18n.get("chat.roles.subscriber_title"), self.i18n.get("chat.roles.subscriber_desc"), self._create_combo_with_test_btn(self.combo_voice_subscriber))
+        row_role_subscriber = SettingRow("crown.svg", self.i18n.get("chat.roles.subscriber_title"), self.i18n.get("chat.roles.subscriber_desc"), self._create_combo_with_test_btn(self.combo_voice_subscriber))
 
         voices_card.addWidget(row_role_broadcaster)
         voices_card.addWidget(row_role_moderator)

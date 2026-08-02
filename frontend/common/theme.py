@@ -67,8 +67,8 @@ QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"
 
 QComboBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; combobox-popup: 0; }}
 QComboBox:focus, QComboBox:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
-QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 23px; border-left: 1.5px solid {COLOR_NEUTRAL_700}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
-QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_NEUTRAL_700}; }}
+QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 23px; border-left: 1.5px solid {COLOR_NEUTRAL_800}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
+QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_NEUTRAL_800}; }}
 QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
@@ -224,7 +224,7 @@ QPushButton[role="action_danger_border"] {{ background-color: transparent; color
 QPushButton[role="action_danger_border"]:hover {{ background-color: {COLOR_RED_GLOW}; }}
 QPushButton[role="action_accent_border"] {{ background-color: transparent; color: {COLOR_GREEN}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_GREEN}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent_border"]:hover {{ background-color: {COLOR_GREEN_GLOW}; }}
-QPushButton[role="action_neutral_border"] {{ background-color: transparent; color: {COLOR_NEUTRAL_200}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_NEUTRAL_700}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_neutral_border"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_neutral_border"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
