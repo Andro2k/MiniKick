@@ -179,52 +179,71 @@
         document.documentElement.style.setProperty('--font-size', fontSize);
 
         const container = document.getElementById('chat-container');
-        let eventSource = null;
+        let ws = null;
         let reconnectTimer = null;
+        let heartbeatTimer = null;
 
-        function connectSSE() {
-            if (eventSource) {
-                try { eventSource.close(); } catch (e) {}
-                eventSource = null;
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) {}
+                ws = null;
             }
 
-            eventSource = new EventSource(`/chat_events?token=${token}`);
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=chat&token=${encodeURIComponent(token)}`;
+            ws = new WebSocket(wsUrl);
 
-            eventSource.onopen = function () {
-                console.log("[Chat Overlay] Conectado exitosamente.");
+            ws.onopen = function () {
+                console.log("[Chat Overlay] WebSocket conectado exitosamente.");
                 if (reconnectTimer) {
                     clearTimeout(reconnectTimer);
                     reconnectTimer = null;
                 }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
             };
 
-            eventSource.onmessage = function (event) {
+            ws.onmessage = function (event) {
                 try {
                     const data = JSON.parse(event.data);
+                    if (data.type === 'pong') return;
                     addMessage(data);
                 } catch (e) {
-                    console.error("Error parseando evento de chat SSE:", e);
+                    console.error("Error parseando evento de chat WebSocket:", e);
                 }
             };
 
-            eventSource.onerror = function (err) {
-                console.warn("[Chat Overlay] Conexión perdida o rechazada. Reintentando...");
-                if (eventSource) {
-                    try { eventSource.close(); } catch (e) {}
-                    eventSource = null;
-                }
+            ws.onerror = function (err) {
+                console.warn("[Chat Overlay] Error en WebSocket. Reintentando...");
+                cleanup();
                 scheduleReconnect();
             };
+
+            ws.onclose = function () {
+                console.warn("[Chat Overlay] WebSocket cerrado. Reintentando...");
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
         }
 
         function scheduleReconnect() {
             if (reconnectTimer) clearTimeout(reconnectTimer);
             reconnectTimer = setTimeout(() => {
-                connectSSE();
+                connectWS();
             }, 3000);
         }
 
-        connectSSE();
+        connectWS();
 
         function addMessage(data) {
             if (!showBots && data.badges && data.badges.includes('bot')) {

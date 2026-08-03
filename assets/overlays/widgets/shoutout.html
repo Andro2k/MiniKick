@@ -146,12 +146,37 @@
             soHeader.textContent = 'Recommended Streamer';
         }
 
-        function connectSSE() {
-            const evtSource = new EventSource(eventSourceUrl);
+        let ws = null;
+        let reconnectTimer = null;
+        let heartbeatTimer = null;
 
-            evtSource.onmessage = function(e) {
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) {}
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Shoutout Overlay] WebSocket conectado.");
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
+            };
+
+            ws.onmessage = function (e) {
                 try {
                     const data = JSON.parse(e.data);
+                    if (data.type === 'pong') return;
                     if (data.event === 'shoutout') {
                         showShoutout(data);
                     }
@@ -160,10 +185,30 @@
                 }
             };
 
-            evtSource.onerror = function() {
-                evtSource.close();
-                setTimeout(connectSSE, 3000);
+            ws.onerror = function () {
+                cleanup();
+                scheduleReconnect();
             };
+
+            ws.onclose = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setTimeout(() => {
+                    connectWS();
+                }, 3000);
+            }
         }
 
         function showShoutout(data) {
@@ -185,7 +230,7 @@
             }, 8000);
         }
 
-        connectSSE();
+        connectWS();
     </script>
 </body>
 </html>

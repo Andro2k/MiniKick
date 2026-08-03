@@ -31,55 +31,74 @@
 
         const alertQueue = [];
         let isPlaying = false;
-        let eventSource = null;
+        let ws = null;
         let reconnectTimer = null;
+        let heartbeatTimer = null;
 
-        function connectSSE() {
-            if (eventSource) {
-                try { eventSource.close(); } catch (e) {}
-                eventSource = null;
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) {}
+                ws = null;
             }
 
-            eventSource = new EventSource(`/events?token=${token}`);
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=rewards&token=${encodeURIComponent(token)}`;
+            ws = new WebSocket(wsUrl);
 
-            eventSource.onopen = function () {
-                console.log("[Rewards Overlay] Conectado exitosamente.");
+            ws.onopen = function () {
+                console.log("[Rewards Overlay] WebSocket conectado exitosamente.");
                 if (reconnectTimer) {
                     clearInterval(reconnectTimer);
                     reconnectTimer = null;
                 }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
             };
 
-            eventSource.onmessage = function (event) {
+            ws.onmessage = function (event) {
                 try {
                     const data = JSON.parse(event.data);
+                    if (data.type === 'pong') return;
                     alertQueue.push(data);
                     processQueue();
                 } catch (e) {
-                    console.error("Error parseando evento SSE:", e);
+                    console.error("Error parseando evento WebSocket:", e);
                 }
             };
 
-            eventSource.onerror = function (err) {
-                console.warn("[Rewards Overlay] Conexión perdida o rechazada. Reintentando...");
-                if (eventSource) {
-                    try { eventSource.close(); } catch (e) {}
-                    eventSource = null;
-                }
+            ws.onerror = function (err) {
+                console.warn("[Rewards Overlay] Error en WebSocket. Reintentando...");
+                cleanup();
                 scheduleReconnect();
             };
+
+            ws.onclose = function () {
+                console.warn("[Rewards Overlay] WebSocket cerrado. Reintentando...");
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
         }
 
         function scheduleReconnect() {
             if (!reconnectTimer) {
                 reconnectTimer = setInterval(() => {
-                    console.log("[Rewards Overlay] Intentando reconectar SSE...");
-                    connectSSE();
+                    console.log("[Rewards Overlay] Intentando reconectar WebSocket...");
+                    connectWS();
                 }, 3000);
             }
         }
 
-        connectSSE();
+        connectWS();
 
         function processQueue() {
             if (isPlaying || alertQueue.length === 0) {

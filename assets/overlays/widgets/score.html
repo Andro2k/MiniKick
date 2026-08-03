@@ -169,7 +169,17 @@
 
         const eventSourceUrl = token ? `/widget_events?token=${encodeURIComponent(token)}` : '/widget_events';
 
-        function updateDisplay(wins, losses, titleText) {
+        function setWidgetActive(isActive) {
+            const badge = document.getElementById('scoreBadge');
+            if (badge) {
+                badge.style.display = isActive ? 'flex' : 'none';
+            }
+        }
+
+        function updateDisplay(wins, losses, titleText, isActive) {
+            if (isActive !== undefined) {
+                setWidgetActive(isActive !== false);
+            }
             if (titleText) {
                 scoreTitle.textContent = titleText;
             } else if (!scoreTitle.textContent) {
@@ -184,30 +194,77 @@
             scoreBadge.classList.add('bump');
         }
 
-        function connectSSE() {
-            const evtSource = new EventSource(eventSourceUrl);
+        let ws = null;
+        let reconnectTimer = null;
+        let heartbeatTimer = null;
 
-            evtSource.onmessage = function(e) {
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) {}
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Score Overlay] WebSocket conectado.");
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
+            };
+
+            ws.onmessage = function (e) {
                 try {
                     const data = JSON.parse(e.data);
+                    if (data.type === 'pong') return;
                     if (data.event === 'score') {
-                        updateDisplay(data.wins || 0, data.losses || 0, data.title_text);
+                        updateDisplay(data.wins || 0, data.losses || 0, data.title_text, data.is_active);
+                    } else if (data.event === 'widget_toggle' && data.widget_id === 'score') {
+                        setWidgetActive(data.is_active !== false);
                     } else if (data.event === 'initial_state' && data.widgets && data.widgets.score) {
                         const s = data.widgets.score.config || {};
-                        updateDisplay(s.wins || 0, s.losses || 0);
+                        updateDisplay(s.wins || 0, s.losses || 0, null, data.widgets.score.is_active);
                     }
                 } catch (err) {
                     console.error("Error parsing score event:", err);
                 }
             };
 
-            evtSource.onerror = function() {
-                evtSource.close();
-                setTimeout(connectSSE, 3000);
+            ws.onerror = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+
+            ws.onclose = function () {
+                cleanup();
+                scheduleReconnect();
             };
         }
 
-        connectSSE();
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setTimeout(() => {
+                    connectWS();
+                }, 3000);
+            }
+        }
+
+        connectWS();
     </script>
 </body>
 </html>

@@ -346,28 +346,37 @@
             }, delayMs);
         }
 
-        let es = null;
+        let ws = null;
         let reconnectTimer = null;
+        let heartbeatTimer = null;
 
-        function connectSSE() {
-            if (es) {
-                try { es.close(); } catch (e) {}
-                es = null;
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) {}
+                ws = null;
             }
 
-            es = new EventSource(`/music_events?token=${token}`);
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=music&token=${encodeURIComponent(token)}`;
+            ws = new WebSocket(wsUrl);
 
-            es.onopen = function () {
-                console.log("[Music Overlay] Conectado exitosamente.");
+            ws.onopen = function () {
+                console.log("[Music Overlay] WebSocket conectado exitosamente.");
                 if (reconnectTimer) {
                     clearInterval(reconnectTimer);
                     reconnectTimer = null;
                 }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
             };
 
-            es.onmessage = function (event) {
+            ws.onmessage = function (event) {
                 try {
                     const data = JSON.parse(event.data);
+                    if (data.type === 'pong') return;
 
                     if (data.type === 'stopped') {
                         scheduleHide(3000);
@@ -389,31 +398,42 @@
                         }
                     }
                 } catch (e) {
-                    console.error("Error parseando evento de música SSE:", e);
+                    console.error("Error parseando evento de música WebSocket:", e);
                 }
             };
 
-            es.onerror = function () {
+            ws.onerror = function () {
                 scheduleHide(5000);
-                console.warn("[Music Overlay] Conexión perdida o rechazada. Reintentando...");
-                if (es) {
-                    try { es.close(); } catch (e) {}
-                    es = null;
-                }
+                console.warn("[Music Overlay] Error en WebSocket. Reintentando...");
+                cleanup();
                 scheduleReconnect();
             };
+
+            ws.onclose = function () {
+                scheduleHide(5000);
+                console.warn("[Music Overlay] WebSocket cerrado. Reintentando...");
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
         }
 
         function scheduleReconnect() {
             if (!reconnectTimer) {
                 reconnectTimer = setInterval(() => {
-                    console.log("[Music Overlay] Intentando reconectar SSE...");
-                    connectSSE();
+                    console.log("[Music Overlay] Intentando reconectar WebSocket...");
+                    connectWS();
                 }, 3000);
             }
         }
 
-        connectSSE();
+        connectWS();
     </script>
 </body>
 

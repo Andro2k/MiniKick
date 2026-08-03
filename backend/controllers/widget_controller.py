@@ -66,6 +66,25 @@ class WidgetController(QObject):
         if self.view:
             self.view.populate_widgets(widgets)
 
+        if self.overlay_server:
+            death_w = widgets.get("death", {})
+            score_w = widgets.get("score", {})
+            title_death = self.i18n.get("widgets.death.overlay_title") if self.i18n else "MUERTES"
+            title_score = self.i18n.get("widgets.score.overlay_title") if self.i18n else "RÉCORD V / D"
+
+            self.overlay_server.trigger_widget_event("death_update", {
+                "count": death_w.get("config", {}).get("count", 0),
+                "is_active": death_w.get("is_active", True),
+                "title_text": title_death
+            })
+
+            self.overlay_server.trigger_widget_event("score", {
+                "wins": score_w.get("config", {}).get("wins", 0),
+                "losses": score_w.get("config", {}).get("losses", 0),
+                "is_active": score_w.get("is_active", True),
+                "title_text": title_score
+            })
+
     def sync_commands_with_db(self):
         widgets = self.widget_service.get_all_widgets()
         for w_id, data in widgets.items():
@@ -140,6 +159,11 @@ class WidgetController(QObject):
                 )
 
         self._trigger_deferred_save(widget_id)
+        if self.overlay_server:
+            self.overlay_server.trigger_widget_event("widget_toggle", {
+                "widget_id": widget_id,
+                "is_active": is_active
+            })
 
     @Slot(int)
     def handle_death_count_change(self, new_val: int):
@@ -147,9 +171,11 @@ class WidgetController(QObject):
         self.death_count_updated.emit(final_val)
         self._trigger_deferred_save("death")
         if self.overlay_server:
+            w_death = self.widget_service.get_widget("death")
             title_text = self.i18n.get("widgets.death.overlay_title")
             self.overlay_server.trigger_widget_event("death_update", {
                 "count": final_val,
+                "is_active": w_death.get("is_active", True),
                 "title_text": title_text
             })
 
@@ -159,10 +185,12 @@ class WidgetController(QObject):
         self.score_updated.emit(final_wins, final_losses)
         self._trigger_deferred_save("score")
         if self.overlay_server:
+            w_score = self.widget_service.get_widget("score")
             title_text = self.i18n.get("widgets.score.overlay_title")
             self.overlay_server.trigger_widget_event("score", {
                 "wins": final_wins,
                 "losses": final_losses,
+                "is_active": w_score.get("is_active", True),
                 "title_text": title_text
             })
 
@@ -208,10 +236,12 @@ class WidgetController(QObject):
     def _notify_score_change(self, wins: int, losses: int, msg: str) -> None:
         self.score_updated.emit(wins, losses)
         if self.overlay_server:
+            w_score = self.widget_service.get_widget("score")
             title_text = self.i18n.get("widgets.score.overlay_title")
             self.overlay_server.trigger_widget_event("score", {
                 "wins": wins,
                 "losses": losses,
+                "is_active": w_score.get("is_active", True),
                 "title_text": title_text
             })
         self.command_service.send_response(msg)
@@ -275,9 +305,11 @@ class WidgetController(QObject):
 
         self.death_count_updated.emit(new_count)
         if self.overlay_server:
+            w_death = self.widget_service.get_widget("death")
             title_text = self.i18n.get("widgets.death.overlay_title")
             self.overlay_server.trigger_widget_event("death_update", {
                 "count": new_count,
+                "is_active": w_death.get("is_active", True),
                 "title_text": title_text
             })
         self.command_service.send_response(msg)
