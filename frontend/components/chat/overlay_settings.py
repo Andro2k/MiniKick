@@ -36,6 +36,40 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.i18n.get("chat.overlay.theme_desc"), 
             self.combo_overlay_theme
         )
+
+        self.combo_overlay_orientation = NoWheelComboBox()
+        self.combo_overlay_orientation.addItem(self.i18n.get("chat.overlay.orientation_vertical"), "vertical")
+        self.combo_overlay_orientation.addItem(self.i18n.get("chat.overlay.orientation_horizontal"), "horizontal")
+        
+        row_overlay_orientation = SettingRow(
+            "align-left-2.svg",
+            self.i18n.get("chat.overlay.orientation_title"),
+            self.i18n.get("chat.overlay.orientation_desc"),
+            self.combo_overlay_orientation
+        )
+
+        self.combo_overlay_flow = NoWheelComboBox()
+        self._populate_flow_options("vertical")
+
+        row_overlay_flow = SettingRow(
+            "arrows-sort.svg",
+            self.i18n.get("chat.overlay.flow_title"),
+            self.i18n.get("chat.overlay.flow_desc"),
+            self.combo_overlay_flow
+        )
+
+        self.combo_overlay_entry = NoWheelComboBox()
+        self.combo_overlay_entry.addItem(self.i18n.get("chat.overlay.entry_bottom"), "bottom")
+        self.combo_overlay_entry.addItem(self.i18n.get("chat.overlay.entry_top"), "top")
+        self.combo_overlay_entry.addItem(self.i18n.get("chat.overlay.entry_left"), "left")
+        self.combo_overlay_entry.addItem(self.i18n.get("chat.overlay.entry_right"), "right")
+
+        row_overlay_entry = SettingRow(
+            "movie.svg",
+            self.i18n.get("chat.overlay.entry_title"),
+            self.i18n.get("chat.overlay.entry_desc"),
+            self.combo_overlay_entry
+        )
         
         self.slider_overlay_size = CompactSlider(10, 32, 14, suffix="px")
         row_overlay_size = SettingRow(
@@ -80,6 +114,9 @@ class ChatOverlaySettingsPanel(ModernCard):
         )
         
         self.addWidget(row_overlay_theme)
+        self.addWidget(row_overlay_orientation)
+        self.addWidget(row_overlay_flow)
+        self.addWidget(row_overlay_entry)
         self.addWidget(row_overlay_size)
         self.addWidget(row_overlay_fade)
         self.addWidget(row_overlay_show_bots)
@@ -90,8 +127,35 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.addWidget(row_copy_obs)
         self.addStretch()
 
+    def _populate_flow_options(self, orientation: str):
+        self.combo_overlay_flow.blockSignals(True)
+        self.combo_overlay_flow.clear()
+        if orientation == "horizontal":
+            self.combo_overlay_flow.addItem(self.i18n.get("chat.overlay.flow_r2l"), "right-to-left")
+            self.combo_overlay_flow.addItem(self.i18n.get("chat.overlay.flow_l2r"), "left-to-right")
+        else:
+            self.combo_overlay_flow.addItem(self.i18n.get("chat.overlay.flow_b2t"), "bottom-to-top")
+            self.combo_overlay_flow.addItem(self.i18n.get("chat.overlay.flow_t2b"), "top-to-bottom")
+        self.combo_overlay_flow.blockSignals(False)
+
+    def _on_orientation_changed(self):
+        orientation = self.combo_overlay_orientation.currentData() or "vertical"
+        self._populate_flow_options(orientation)
+        if orientation == "horizontal":
+            idx_entry = self.combo_overlay_entry.findData("right")
+            if idx_entry != -1:
+                self.combo_overlay_entry.setCurrentIndex(idx_entry)
+        else:
+            idx_entry = self.combo_overlay_entry.findData("bottom")
+            if idx_entry != -1:
+                self.combo_overlay_entry.setCurrentIndex(idx_entry)
+        self._update_overlay_url()
+
     def _connect_signals(self):
         self.combo_overlay_theme.currentIndexChanged.connect(self._update_overlay_url)
+        self.combo_overlay_orientation.currentIndexChanged.connect(self._on_orientation_changed)
+        self.combo_overlay_flow.currentIndexChanged.connect(self._update_overlay_url)
+        self.combo_overlay_entry.currentIndexChanged.connect(self._update_overlay_url)
         self.slider_overlay_size.slider.valueChanged.connect(self._update_overlay_url)
         self.slider_overlay_fade.slider.valueChanged.connect(self._update_overlay_url)
         self.sw_overlay_show_bots.toggled.connect(self._update_overlay_url)
@@ -99,7 +163,9 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.btn_copy_overlay_obs.clicked.connect(self._copy_overlay_obs_url)
 
         controls = [
-            self.combo_overlay_theme, self.sw_overlay_show_bots, self.sw_overlay_show_time
+            self.combo_overlay_theme, self.combo_overlay_orientation,
+            self.combo_overlay_flow, self.combo_overlay_entry,
+            self.sw_overlay_show_bots, self.sw_overlay_show_time
         ]
         for control in controls:
             if isinstance(control, ModernSwitch):
@@ -127,17 +193,21 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     def _update_overlay_url(self):
         theme = self.combo_overlay_theme.currentData() or "glass"
+        orientation = self.combo_overlay_orientation.currentData() or "vertical"
+        flow = self.combo_overlay_flow.currentData() or ("right-to-left" if orientation == "horizontal" else "bottom-to-top")
+        entry = self.combo_overlay_entry.currentData() or ("right" if orientation == "horizontal" else "bottom")
         size = self.slider_overlay_size.value()
         fade = self.slider_overlay_fade.value()
         show_bots = "true" if self.sw_overlay_show_bots.isChecked() else "false"
         show_time = "true" if self.sw_overlay_show_time.isChecked() else "false"
         
         base_url = self._chat_overlay_url or ""
+        params = f"theme={theme}&orientation={orientation}&flow={flow}&entry={entry}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
         if "?" in base_url:
             base_part, token_part = base_url.split("?", 1)
-            self.chat_overlay_full_url = f"{base_part}?{token_part}&theme={theme}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
+            self.chat_overlay_full_url = f"{base_part}?{token_part}&{params}"
         else:
-            self.chat_overlay_full_url = f"{base_url}?theme={theme}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
+            self.chat_overlay_full_url = f"{base_url}?{params}"
 
     @Slot()
     def _copy_overlay_obs_url(self):
@@ -151,9 +221,12 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.btn_copy_overlay_obs.setText(original_text)
         self.btn_copy_overlay_obs.setEnabled(True)
 
-    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool):
+    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = ""):
         self.blockSignals(True)
         self.combo_overlay_theme.blockSignals(True)
+        self.combo_overlay_orientation.blockSignals(True)
+        self.combo_overlay_flow.blockSignals(True)
+        self.combo_overlay_entry.blockSignals(True)
         self.slider_overlay_size.slider.blockSignals(True)
         self.slider_overlay_fade.slider.blockSignals(True)
         self.sw_overlay_show_bots.blockSignals(True)
@@ -162,12 +235,31 @@ class ChatOverlaySettingsPanel(ModernCard):
         idx = self.combo_overlay_theme.findData(theme)
         if idx != -1:
             self.combo_overlay_theme.setCurrentIndex(idx)
+
+        idx_orient = self.combo_overlay_orientation.findData(orientation)
+        if idx_orient != -1:
+            self.combo_overlay_orientation.setCurrentIndex(idx_orient)
+            self._populate_flow_options(orientation)
+
+        if flow:
+            idx_flow = self.combo_overlay_flow.findData(flow)
+            if idx_flow != -1:
+                self.combo_overlay_flow.setCurrentIndex(idx_flow)
+
+        if entry:
+            idx_entry = self.combo_overlay_entry.findData(entry)
+            if idx_entry != -1:
+                self.combo_overlay_entry.setCurrentIndex(idx_entry)
+
         self.slider_overlay_size.setValue(size)
         self.slider_overlay_fade.setValue(fade)
         self.sw_overlay_show_bots.setChecked(show_bots)
         self.sw_overlay_show_time.setChecked(show_time)
 
         self.combo_overlay_theme.blockSignals(False)
+        self.combo_overlay_orientation.blockSignals(False)
+        self.combo_overlay_flow.blockSignals(False)
+        self.combo_overlay_entry.blockSignals(False)
         self.slider_overlay_size.slider.blockSignals(False)
         self.slider_overlay_fade.slider.blockSignals(False)
         self.sw_overlay_show_bots.blockSignals(False)

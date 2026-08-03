@@ -198,7 +198,19 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
 
             try:
                 if topic == "music" and self.server.manager._last_song is not None:
-                    ws_client.send_json(self.server.manager._last_song)
+                    import time
+                    song_data = dict(self.server.manager._last_song)
+                    if song_data.get("type") == "playing" and song_data.get("is_playing"):
+                        ts = song_data.get("timestamp")
+                        if ts:
+                            elapsed = (time.time() * 1000) - ts
+                            dur = song_data.get("duration", 0)
+                            calc_prog = song_data.get("progress", 0) + elapsed
+                            if dur > 0:
+                                song_data["progress"] = min(dur, calc_prog)
+                            else:
+                                song_data["progress"] = calc_prog
+                    ws_client.send_json(song_data)
                 elif topic == "widgets":
                     ws_client.send_json({"event": "death_update", **getattr(self.server.manager, "_last_death_data", {"count": 0, "is_active": True})})
                     ws_client.send_json({"event": "score", **getattr(self.server.manager, "_last_score_data", {"wins": 0, "losses": 0, "is_active": True})})
@@ -625,6 +637,7 @@ class OverlayServerManager:
             ws_client.send_json(payload)
 
     def trigger_music_change(self, song: dict):
+        import time
         if not song:
             payload = {"type": "stopped"}
         else:
@@ -636,7 +649,8 @@ class OverlayServerManager:
                 "is_playing": song.get("is_playing", False),
                 "duration": song.get("duration", 0),
                 "progress": song.get("progress", 0),
-                "thumbnail": song.get("thumbnail", "")
+                "thumbnail": song.get("thumbnail", ""),
+                "timestamp": time.time() * 1000
             }
         self._last_song = payload
         

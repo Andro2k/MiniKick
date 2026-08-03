@@ -248,7 +248,11 @@ class MusicController(QObject):
             (self._last_song.get("title"), self._last_song.get("artist"), self._last_song.get("is_playing"))
             if self._last_song else None
         )
-        if current_key != last_key:
+        last_prog = self._last_song.get("progress", 0) if self._last_song else 0
+        curr_prog = song.get("progress", 0) if song else 0
+        progress_drift = abs(curr_prog - last_prog)
+
+        if current_key != last_key or progress_drift > 5000:
             self._last_song = song
             self.song_changed.emit(song or {})
 

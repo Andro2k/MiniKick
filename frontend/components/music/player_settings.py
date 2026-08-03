@@ -188,15 +188,29 @@ class MusicPlayerSettingsPanel(QWidget):
         url_info.addWidget(lbl_title)
         url_info.addWidget(lbl_desc)
 
+        layout_setting_row = QHBoxLayout()
+        lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"))
+        lbl_layout.setProperty("role", "body")
+        self.combo_music_layout = NoWheelComboBox()
+        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_banner"), "banner")
+        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_pill"), "pill")
+        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_floating"), "floating")
+        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_compact"), "compact")
+        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_standard"), "standard")
+
+        layout_setting_row.addWidget(lbl_layout)
+        layout_setting_row.addWidget(self.combo_music_layout)
+
         theme_layout = QHBoxLayout()
         lbl_theme = QLabel(self.i18n.get("music.overlay.theme_label"))
         lbl_theme.setProperty("role", "body")
         self.combo_music_theme = NoWheelComboBox()
-        self.combo_music_theme.addItem("Glassmorphism", "glass")
-        self.combo_music_theme.addItem("Minimalist", "minimal")
-        self.combo_music_theme.addItem("Neon Glow", "neon")
-        self.combo_music_theme.addItem("Cyberpunk", "cyber")
-        self.combo_music_theme.addItem("Premium Card", "card")
+        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_dynamic"), "dynamic")
+        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_glass"), "glass")
+        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_minimal"), "minimal")
+        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_neon"), "neon")
+        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_cyber"), "cyber")
+        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_card"), "card")
         
         theme_layout.addWidget(lbl_theme)
         theme_layout.addWidget(self.combo_music_theme)
@@ -208,15 +222,17 @@ class MusicPlayerSettingsPanel(QWidget):
         self.btn_copy_music_url.clicked.connect(self._copy_music_overlay_url)
 
         self.card_overlay_url.addLayout(url_info)
+        self.card_overlay_url.addLayout(layout_setting_row)
         self.card_overlay_url.addLayout(theme_layout)
         self.card_overlay_url.addWidget(self.btn_copy_music_url)
         self.panel_layout.addWidget(self.card_overlay_url, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _copy_music_overlay_url(self):
+        layout = self.combo_music_layout.currentData() or "standard"
         theme = self.combo_music_theme.currentData() or "glass"
         url = self._music_overlay_url
         sep = "&" if "?" in url else "?"
-        url += f"{sep}theme={theme}"
+        url += f"{sep}layout={layout}&theme={theme}"
         
         QApplication.clipboard().setText(url)
         original = self.btn_copy_music_url.text()

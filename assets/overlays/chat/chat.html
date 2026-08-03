@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>MiniKick Chat Overlay</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link id="theme-style" rel="stylesheet" href="">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
     <style>
@@ -27,12 +29,9 @@
 
         #chat-container {
             display: flex;
-            flex-direction: column;
             gap: 12px;
             height: 100%;
             width: 100%;
-            overflow-y: auto;
-            overflow-x: hidden;
             box-sizing: border-box;
             scrollbar-width: none;
             -ms-overflow-style: none;
@@ -42,8 +41,200 @@
             display: none;
         }
 
-        .message-box:first-child {
+        #chat-container.orientation-vertical.flow-bottom-to-top {
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #chat-container.orientation-vertical.flow-bottom-to-top .message-box:first-child {
             margin-top: auto !important;
+        }
+
+        #chat-container.orientation-vertical.flow-top-to-bottom {
+            flex-direction: column-reverse;
+            justify-content: flex-end;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #chat-container.orientation-horizontal {
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+            align-items: center;
+            height: 100%;
+        }
+
+        #chat-container.orientation-horizontal.flow-right-to-left {
+            flex-direction: row;
+            justify-content: flex-end;
+        }
+
+        #chat-container.orientation-horizontal.flow-right-to-left .message-box:first-child {
+            margin-left: auto !important;
+        }
+
+        #chat-container.orientation-horizontal.flow-left-to-right {
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        #chat-container.orientation-horizontal .message-box {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 8px !important;
+            padding: 6px 16px !important;
+            width: auto !important;
+            min-width: 100px !important;
+            max-width: none !important;
+            flex-shrink: 0 !important;
+            white-space: nowrap !important;
+            align-self: center !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+        }
+
+        #chat-container.orientation-horizontal .message-header {
+            display: inline-flex !important;
+            align-items: center !important;
+            flex-shrink: 0 !important;
+            gap: 6px !important;
+            position: static !important;
+            width: auto !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            white-space: nowrap !important;
+        }
+
+        #chat-container.orientation-horizontal .username::after {
+            content: ":";
+            margin-left: 1px;
+            opacity: 0.85;
+        }
+
+        #chat-container.orientation-horizontal .message-content {
+            display: inline-block !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            max-width: none !important;
+            vertical-align: middle !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-card {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            position: relative !important;
+            padding: 0 16px !important;
+            height: 40px !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            overflow: visible !important;
+            background: #FFFFFF !important;
+            border-radius: 12px !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-card .message-header {
+            display: inline-flex !important;
+            align-items: center !important;
+            position: static !important;
+            height: 100% !important;
+            border-bottom: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: auto !important;
+            gap: 6px !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-card .username {
+            margin: 0 !important;
+            display: inline-block !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-card .card-win-buttons {
+            position: static !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            margin-right: 2px !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-card .card-float-badge {
+            position: static !important;
+            top: auto !important;
+            left: auto !important;
+            margin: 0 4px 0 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: calc(var(--font-size) * 0.72) !important;
+            padding: 2px 8px !important;
+            line-height: 1 !important;
+            white-space: nowrap !important;
+            box-shadow: none !important;
+            border-radius: 10px !important;
+            vertical-align: middle !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-card .message-content {
+            padding: 0 !important;
+            margin-left: 4px !important;
+            text-align: left !important;
+            font-size: var(--font-size) !important;
+            font-weight: 600 !important;
+            color: #1b1e22 !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-cyber {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            position: relative !important;
+            padding: 6px 16px 6px 28px !important;
+            margin-top: 2px !important;
+            margin-bottom: 2px !important;
+            gap: 8px !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-cyber::before {
+            position: absolute !important;
+            left: 8px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-cyber::after {
+            display: none !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-cyber .message-header {
+            display: inline-flex !important;
+            align-items: center !important;
+            position: static !important;
+            gap: 6px !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-minimal {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            padding: 6px 14px !important;
+            gap: 8px !important;
+            margin-top: 0 !important;
+        }
+
+        #chat-container.orientation-horizontal .message-box.theme-minimal .message-header {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
         }
 
         .chat-emote {
@@ -61,8 +252,7 @@
             box-sizing: border-box;
             width: 100%;
             position: relative;
-            transform-origin: bottom left;
-            animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: center;
             transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
             will-change: transform, opacity;
             transform: translate3d(0, 0, 0);
@@ -70,15 +260,72 @@
 
         .message-box.fade-out {
             opacity: 0;
-            transform: translate3d(0, -15px, 0);
+            transform: translate3d(0, -15px, 0) scale(0.95);
             pointer-events: none;
+
         }
 
-        @keyframes slideIn {
+        .anim-entry-bottom {
+            animation: slideInFromBottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .anim-entry-top {
+            animation: slideInFromTop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+        }
+
+        .anim-entry-left {
+            animation: slideInFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+        }
+
+        .anim-entry-right {
+            animation: slideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+        }
+
+        @keyframes slideInFromBottom {
             from {
                 opacity: 0;
-                transform: translate3d(0, 30px, 0) scale(0.9);
+                transform: translate3d(0, 35px, 0) scale(0.92);
             }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translate3d(0, -35px, 0) scale(0.92);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+        }
+
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translate3d(-40px, 0, 0) scale(0.92);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0) scale(1);
+            }
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translate3d(40px, 0, 0) scale(0.92);
+            }
+
             to {
                 opacity: 1;
                 transform: translate3d(0, 0, 0) scale(1);
@@ -172,20 +419,26 @@
         const maxMessages = parseInt(urlParams.get('max')) || 15;
         const showBots = urlParams.get('show_bots') !== 'false';
         const showTime = urlParams.get('show_time') === 'true';
-
+        const orientation = urlParams.get('orientation') || 'vertical';
+        const defaultFlow = orientation === 'horizontal' ? 'right-to-left' : 'bottom-to-top';
+        const flow = urlParams.get('flow') || defaultFlow;
+        const defaultEntry = orientation === 'horizontal' ? 'right' : 'bottom';
+        const entryDir = urlParams.get('entry') || defaultEntry;
         const themeStyle = document.getElementById('theme-style');
         themeStyle.href = `/chat/css/${theme}.css`;
 
         document.documentElement.style.setProperty('--font-size', fontSize);
 
         const container = document.getElementById('chat-container');
+        container.classList.add(`orientation-${orientation}`);
+        container.classList.add(`flow-${flow}`);
         let ws = null;
         let reconnectTimer = null;
         let heartbeatTimer = null;
 
         function connectWS() {
             if (ws) {
-                try { ws.close(); } catch (e) {}
+                try { ws.close(); } catch (e) { }
                 ws = null;
             }
 
@@ -272,7 +525,7 @@
             }
 
             const msgBox = document.createElement('div');
-            msgBox.className = `message-box theme-${theme} role-${roleClass}`;
+            msgBox.className = `message-box theme-${theme} role-${roleClass} anim-entry-${entryDir}`;
             msgBox.style.fontSize = fontSize;
 
             if (theme === 'neon') {
@@ -298,14 +551,31 @@
                 const floatBadge = document.createElement('div');
                 floatBadge.className = 'card-float-badge';
                 floatBadge.innerText = roleLabel;
-                
+
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'username';
                 nameSpan.innerText = data.user;
-                
+
+                if (data.color) {
+                    nameSpan.style.color = data.color;
+
+                    let bgTint = data.color + '33';
+                    if (data.color.startsWith('#')) {
+                        let hex = data.color.replace('#', '');
+                        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+                        if (hex.length === 6) {
+                            const r = parseInt(hex.substring(0, 2), 16);
+                            const g = parseInt(hex.substring(2, 4), 16);
+                            const b = parseInt(hex.substring(4, 6), 16);
+                            bgTint = `rgba(${r}, ${g}, ${b}, 0.22)`;
+                        }
+                    }
+                    header.style.backgroundColor = bgTint;
+                }
+
                 const winButtons = document.createElement('div');
                 winButtons.className = 'card-win-buttons';
-                
+
                 let timeHtml = '';
                 if (showTime) {
                     const now = new Date();
@@ -313,12 +583,9 @@
                     const minutes = String(now.getMinutes()).padStart(2, '0');
                     timeHtml = `<span class="card-time-btn">${hours}:${minutes}</span>`;
                 }
-                
-                winButtons.innerHTML = `
-                    ${timeHtml}
-                    <span class="card-close-btn"></span>
-                `;
-                
+
+                winButtons.innerHTML = `${timeHtml}`;
+
                 header.appendChild(floatBadge);
                 header.appendChild(nameSpan);
                 header.appendChild(winButtons);
@@ -337,14 +604,14 @@
                     data.badges.forEach(badge => {
                         const badgeSpan = document.createElement('span');
                         badgeSpan.className = `badge badge-${badge}`;
-                        
+
                         let iconClass = 'ti ti-star';
                         if (badge === 'broadcaster') iconClass = 'ti ti-crown';
                         else if (badge === 'moderator') iconClass = 'ti ti-shield';
                         else if (badge === 'vip') iconClass = 'ti ti-diamond';
                         else if (badge === 'subscriber') iconClass = 'ti ti-star';
                         else if (badge === 'bot') iconClass = 'ti ti-robot';
-                        
+
                         badgeSpan.innerHTML = `<i class="${iconClass}"></i>`;
                         badgeSpan.title = getBadgeLabel(badge);
                         header.appendChild(badgeSpan);
@@ -372,13 +639,12 @@
             safeMsg = safeMsg.replace(emoteRegex, (match, id, name) => {
                 return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" loading="lazy" decoding="async" />`;
             });
-            
+
             const textSpan = document.createElement('span');
             textSpan.innerHTML = safeMsg;
             content.appendChild(textSpan);
             msgBox.appendChild(content);
 
-            const isUserScrolledUp = (container.scrollHeight - container.clientHeight - container.scrollTop) > 60;
             container.appendChild(msgBox);
 
             const activeMessages = Array.from(container.children).filter(child => !child.classList.contains('fade-out'));
@@ -389,9 +655,20 @@
                 }
             }
 
-            if (!isUserScrolledUp) {
-                container.scrollTop = container.scrollHeight;
+            if (orientation === 'horizontal') {
+                if (flow === 'right-to-left') {
+                    container.scrollLeft = container.scrollWidth;
+                } else {
+                    container.scrollLeft = 0;
+                }
+            } else {
+                if (flow === 'bottom-to-top') {
+                    container.scrollTop = container.scrollHeight;
+                } else {
+                    container.scrollTop = 0;
+                }
             }
+
             if (fadeTime > 0) {
                 setTimeout(() => {
                     removeMessage(msgBox);

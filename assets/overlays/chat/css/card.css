@@ -115,12 +115,7 @@
     line-height: 1;
 }
 .message-box.theme-card .card-win-buttons .card-close-btn {
-    display: inline-block;
-    width: calc(var(--font-size) * 0.5);
-    height: calc(var(--font-size) * 0.5);
-    border: calc(var(--font-size) * 0.12) solid #1b1e22;
-    border-radius: calc(var(--font-size) * 0.15);
-    background: transparent;
+    display: none !important;
 }
 
 .message-box.theme-card .message-content {

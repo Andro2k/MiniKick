@@ -6,7 +6,7 @@
     <title>MiniKick – Music Overlay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link id="theme-style" rel="stylesheet" href="">
     <style>
@@ -18,6 +18,13 @@
             padding: 0;
         }
 
+        :root {
+            --dynamic-accent: #3B82F6;
+            --dynamic-bg-start: rgba(20, 24, 33, 0.85);
+            --dynamic-bg-end: rgba(10, 12, 18, 0.95);
+            --dynamic-glow: rgba(59, 130, 246, 0.4);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background: transparent;
@@ -27,61 +34,343 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(8px, 2vw, 8px);
+            padding: 12px;
         }
 
         #player {
-            display: flex;
-            align-items: center;
-            gap: clamp(12px, 1.8vw, 20px);
-            padding: clamp(10px, 1.4vw, 10px) clamp(14px, 2.0vw, 14px);
-            border-radius: clamp(10px, 1.6vw, 10px);
-            width: clamp(320px, 95%, 520px);
+            position: relative;
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(20px) scale(0.96);
             transition:
                 opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+                transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+                background 0.5s ease,
+                border-color 0.5s ease,
+                box-shadow 0.5s ease;
             pointer-events: none;
+            overflow: hidden;
         }
 
         #player.visible {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
 
-        .cover-art-wrap {
-            position: relative;
-            flex-shrink: 0;
-            width: clamp(60px, 10vw, 100px);
-            height: clamp(60px, 10vw, 100px);
-            border-radius: 12px;
-            overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        #player.theme-dynamic {
+            background: linear-gradient(135deg, var(--dynamic-bg-start), var(--dynamic-bg-end)) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 20px var(--dynamic-glow) !important;
+            backdrop-filter: blur(16px);
+            color: #FFFFFF;
         }
 
-        .cover-art-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        #player.theme-dynamic .progress-bar-fill {
+            background: var(--dynamic-accent) !important;
+            box-shadow: 0 0 10px var(--dynamic-accent);
+        }
+
+        #player.theme-dynamic .label-now-badge {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--dynamic-accent);
+            border: 1px solid var(--dynamic-glow);
+        }
+
+        #player.theme-dynamic .eq span {
+            background: var(--dynamic-accent) !important;
+        }
+
+        #player.layout-standard {
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+            padding: 12px 18px !important;
+            border-radius: 18px !important;
+            width: clamp(360px, 92vw, 500px) !important;
+            box-sizing: border-box !important;
+        }
+
+        #player.layout-standard .cover-art-wrap {
+            position: relative !important;
+            flex-shrink: 0 !important;
+            width: 72px !important;
+            height: 72px !important;
+            border-radius: 14px !important;
+            overflow: hidden !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        #player.layout-standard .cover-art-wrap img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        #player.layout-banner {
+            display: flex !important;
+            flex-direction: column !important;
+            width: clamp(320px, 90vw, 420px) !important;
+            border-radius: 20px !important;
+            overflow: hidden !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        #player.layout-banner .cover-art-wrap {
+            width: 100% !important;
+            height: 180px !important;
+            position: relative !important;
+            overflow: hidden !important;
+            border-radius: 0 !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        #player.layout-banner .cover-art-wrap img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        #player.layout-banner .banner-play-btn {
+            position: absolute !important;
+            bottom: 14px !important;
+            right: 14px !important;
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 12px !important;
+            background: rgba(0, 0, 0, 0.45) !important;
+            backdrop-filter: blur(8px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #FFFFFF !important;
+        }
+
+        #player.layout-banner .banner-play-btn svg {
+            width: 20px !important;
+            height: 20px !important;
+            fill: currentColor !important;
+        }
+
+        #player.layout-banner .player-main {
+            padding: 16px 20px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+
+        #player.layout-pill {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 6px 18px 6px 10px !important;
+            border-radius: 999px !important;
+            width: auto !important;
+            max-width: none !important;
+            overflow: visible !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
+            box-sizing: border-box !important;
+        }
+
+        #player.layout-pill .cover-art-wrap {
+            display: none !important;
+        }
+
+        .pill-art-thumb {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .pill-art-thumb img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        #player.layout-pill .pill-text-wrap {
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            white-space: nowrap !important;
+            font-size: 13px !important;
+        }
+
+        #player.layout-pill .title {
+            font-weight: 700 !important;
+            font-size: 13px !important;
+        }
+
+        #player.layout-pill .pill-dot {
+            opacity: 0.4 !important;
+        }
+
+        #player.layout-pill .artist {
+            font-weight: 500 !important;
+            font-size: 13px !important;
+            opacity: 0.7 !important;
+        }
+
+        #player.layout-pill .pill-progress {
+            width: 64px !important;
+            height: 4px !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border-radius: 2px !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+            margin-left: 2px !important;
+        }
+
+        .vinyl-disc {
             display: none;
         }
 
+        #player.layout-vinyl .vinyl-disc,
+        #player.layout-floating .vinyl-disc {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 82px !important;
+            height: 82px !important;
+            border-radius: 50% !important;
+            background: radial-gradient(circle, #1c1c1c 18%, #090909 20%, #1c1c1c 24%, #090909 38%, #1c1c1c 42%, #050505 100%) !important;
+            border: 2px solid #2d2d2d !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.65), inset 0 0 4px rgba(255, 255, 255, 0.15) !important;
+            position: relative !important;
+            flex-shrink: 0 !important;
+            z-index: 2 !important;
+            transition: transform 0.4s ease !important;
+        }
+
+        #player.layout-vinyl.playing .vinyl-disc,
+        #player.layout-floating.playing .vinyl-disc {
+            animation: spin-vinyl 4s linear infinite !important;
+        }
+
+        #player.layout-vinyl:not(.playing) .vinyl-disc,
+        #player.layout-floating:not(.playing) .vinyl-disc {
+            animation: spin-vinyl 4s linear infinite !important;
+            animation-play-state: paused !important;
+        }
+
+        .vinyl-center {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 50% !important;
+            overflow: hidden !important;
+            position: relative !important;
+            border: 2px solid #000 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .vinyl-center img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        .pill-art-thumb .fallback-icon,
+        .vinyl-center .fallback-icon {
+            width: 100% !important;
+            height: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .pill-art-thumb .fallback-icon svg,
+        .vinyl-center .fallback-icon svg {
+            width: 50% !important;
+            height: 50% !important;
+            stroke: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .vinyl-hole {
+            position: absolute !important;
+            width: 6px !important;
+            height: 6px !important;
+            background: #000 !important;
+            border-radius: 50% !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            z-index: 3 !important;
+        }
+
+        @keyframes spin-vinyl {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #player.layout-vinyl,
+        #player.layout-floating {
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+            padding: 12px 18px !important;
+            border-radius: 20px !important;
+            width: clamp(360px, 90vw, 480px) !important;
+            box-sizing: border-box !important;
+        }
+
+        #player.layout-vinyl .cover-art-wrap,
+        #player.layout-floating .cover-art-wrap {
+            display: none !important;
+        }
+
+        #player.layout-compact {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            padding: 10px 16px !important;
+            border-radius: 14px !important;
+            width: clamp(290px, 85vw, 380px) !important;
+            box-sizing: border-box !important;
+        }
+
+        #player.layout-compact .cover-art-wrap {
+            width: 48px !important;
+            height: 48px !important;
+            border-radius: 10px !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+        }
+
+        #player.layout-compact .cover-art-wrap img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
         .cover-art-wrap .fallback-icon {
-            width: 50%;
-            height: 50%;
+            width: 100%;
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .cover-art-wrap .fallback-icon svg {
-            width: 100%;
-            height: 100%;
-            fill: none;
+            width: 40%;
+            height: 40%;
+            stroke: rgba(255, 255, 255, 0.7);
         }
 
         .cover-art-wrap.has-thumbnail .fallback-icon {
@@ -119,7 +408,7 @@
         }
 
         .title {
-            font-size: clamp(14px, 2.5vw, 18px);
+            font-size: clamp(14px, 2.5vw, 17px);
             font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
@@ -132,7 +421,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 2px;
+            opacity: 0.8;
         }
 
         .progress-container {
@@ -145,7 +434,7 @@
         .progress-bar-wrap {
             width: 100%;
             height: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.12);
             border-radius: 2px;
             overflow: hidden;
             position: relative;
@@ -156,6 +445,7 @@
             width: 0%;
             border-radius: 2px;
             transition: width 0.3s ease;
+            background: #FFFFFF;
         }
 
         .progress-time {
@@ -163,6 +453,7 @@
             justify-content: space-between;
             font-size: 10px;
             font-weight: 600;
+            opacity: 0.75;
         }
 
         .eq {
@@ -178,6 +469,7 @@
             width: 3px;
             border-radius: 1px;
             height: 3px;
+            background: #FFFFFF;
         }
 
         #player.playing .eq span:nth-child(1) {
@@ -213,58 +505,177 @@
 <body>
 
     <div id="player">
+        <div class="vinyl-disc" id="vinyl-disc">
+            <div class="vinyl-center">
+                <img id="vinyl-art" src="" alt="Vinyl Art" crossorigin="anonymous" style="display: none;">
+                <div class="fallback-icon" id="vinyl-fallback">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18V6l12-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                    </svg>
+                </div>
+                <div class="vinyl-hole"></div>
+            </div>
+        </div>
+
         <div class="cover-art-wrap" id="cover-art-wrap">
-            <img id="cover-art" src="" alt="Cover Art">
-            <div class="fallback-icon">
+            <img id="cover-art" src="" alt="Cover Art" crossorigin="anonymous" style="display: none;">
+            <div class="fallback-icon" id="cover-fallback">
                 <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M9 18V6l12-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
-                        stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                        stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                </svg>
+            </div>
+            <div class="banner-play-btn" id="banner-play-btn" style="display: none;">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 5v14l11-7z" />
                 </svg>
             </div>
         </div>
 
-        <div class="player-main">
-            <div class="header-row">
+        <div class="player-main" id="player-main">
+            <div class="header-row" id="header-row">
                 <div class="info">
                     <div class="artist" id="song-artist">–</div>
                     <div class="title" id="song-title">–</div>
                 </div>
-                <div class="label-now-badge" id="label-now">Now Playing</div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                    <div class="label-now-badge" id="label-now">Now Playing</div>
+                    <div class="eq" id="eq-container">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
             </div>
 
             <div class="progress-container" id="progress-container">
                 <div class="progress-bar-wrap">
                     <div class="progress-bar-fill" id="progress-fill"></div>
                 </div>
-                <div class="progress-time">
+                <div class="progress-time" id="progress-time">
                     <span id="time-current">0:00</span>
                     <span id="time-total">0:00</span>
                 </div>
             </div>
         </div>
 
-        <div class="eq">
-            <span></span><span></span><span></span><span></span>
+        <div id="pill-extra" style="display: none; align-items: center; gap: 10px;">
+            <div class="pill-art-thumb">
+                <img id="pill-art" src="" alt="Art" crossorigin="anonymous" style="display: none;">
+                <div class="fallback-icon" id="pill-fallback">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 18V6l12-2v12M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                    </svg>
+                </div>
+            </div>
+            <div class="pill-text-wrap">
+                <span class="title" id="pill-title">–</span>
+                <span class="pill-dot">•</span>
+                <span class="artist" id="pill-artist">–</span>
+            </div>
+            <div class="pill-progress">
+                <div class="progress-bar-fill" id="pill-progress-fill"></div>
+            </div>
+            <div class="eq" id="pill-eq">
+                <span></span><span></span><span></span><span></span>
+            </div>
         </div>
     </div>
+
+    <canvas id="color-canvas" width="32" height="32" style="display:none;"></canvas>
 
     <script>
         const player = document.getElementById('player');
         const elTitle = document.getElementById('song-title');
         const elArtist = document.getElementById('song-artist');
         const elLabel = document.getElementById('label-now');
+        const elCover = document.getElementById('cover-art');
+        const elWrap = document.getElementById('cover-art-wrap');
+        const elBannerBtn = document.getElementById('banner-play-btn');
+        const elPillExtra = document.getElementById('pill-extra');
+        const elPlayerMain = document.getElementById('player-main');
+
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || '';
         const theme = urlParams.get('theme') || 'glass';
+        const layout = urlParams.get('layout') || 'standard';
+
         const themeStyle = document.getElementById('theme-style');
-        themeStyle.href = `/music/css/${theme}.css`;
+        if (theme !== 'dynamic') {
+            themeStyle.href = `/music/css/${theme}.css`;
+        }
         player.classList.add(`theme-${theme}`);
+        player.classList.add(`layout-${layout}`);
+
+        if (layout === 'banner') {
+            elBannerBtn.style.display = 'flex';
+        } else if (layout === 'pill') {
+            elPlayerMain.style.display = 'none';
+            elWrap.style.display = 'none';
+            elPillExtra.style.display = 'flex';
+        } else if (layout === 'vinyl' || layout === 'floating') {
+            elWrap.style.display = 'none';
+        }
 
         let hideTimer = null;
         let currentProgress = 0;
         let totalDuration = 0;
         let isPlaying = false;
         let progressTimer = null;
+
+        function extractDynamicColors(imgElement) {
+            if (theme !== 'dynamic') return;
+            try {
+                const canvas = document.getElementById('color-canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, 32, 32);
+                ctx.drawImage(imgElement, 0, 0, 32, 32);
+
+                const imgData = ctx.getImageData(0, 0, 32, 32).data;
+                let rSum = 0, gSum = 0, bSum = 0, count = 0;
+
+                for (let i = 0; i < imgData.length; i += 16) {
+                    const r = imgData[i];
+                    const g = imgData[i + 1];
+                    const b = imgData[i + 2];
+                    const max = Math.max(r, g, b);
+                    const min = Math.min(r, g, b);
+
+                    if (max - min > 20) {
+                        rSum += r;
+                        gSum += g;
+                        bSum += b;
+                        count++;
+                    }
+                }
+
+                if (count === 0) {
+                    rSum = 59; gSum = 130; bSum = 246; count = 1;
+                }
+
+                const avgR = Math.round(rSum / count);
+                const avgG = Math.round(gSum / count);
+                const avgB = Math.round(bSum / count);
+
+                const accent = `rgb(${avgR}, ${avgG}, ${avgB})`;
+                const bgStart = `rgba(${Math.round(avgR * 0.35)}, ${Math.round(avgG * 0.35)}, ${Math.round(avgB * 0.35)}, 0.9)`;
+                const bgEnd = `rgba(${Math.round(avgR * 0.15)}, ${Math.round(avgG * 0.15)}, ${Math.round(avgB * 0.15)}, 0.96)`;
+                const glow = `rgba(${avgR}, ${avgG}, ${avgB}, 0.4)`;
+
+                player.style.setProperty('--dynamic-accent', accent);
+                player.style.setProperty('--dynamic-bg-start', bgStart);
+                player.style.setProperty('--dynamic-bg-end', bgEnd);
+                player.style.setProperty('--dynamic-glow', glow);
+            } catch (e) {
+                console.warn("[Music Overlay] Error extrayendo color dinámico (CORS/canvas):", e);
+            }
+        }
+
+        if (elCover) {
+            elCover.onload = function () {
+                extractDynamicColors(elCover);
+            };
+        }
 
         function formatTime(ms) {
             if (!ms || isNaN(ms) || ms < 0) return '0:00';
@@ -278,15 +689,14 @@
             const elCurrent = document.getElementById('time-current');
             const elTotal = document.getElementById('time-total');
             const elFill = document.getElementById('progress-fill');
+            const elPillFill = document.getElementById('pill-progress-fill');
 
             if (elCurrent) elCurrent.textContent = formatTime(currentProgress);
             if (elTotal) elTotal.textContent = formatTime(totalDuration);
-            if (elFill && totalDuration > 0) {
-                const percent = Math.min(100, (currentProgress / totalDuration) * 100);
-                elFill.style.width = `${percent}%`;
-            } else if (elFill) {
-                elFill.style.width = '0%';
-            }
+
+            const percent = (totalDuration > 0) ? Math.min(100, (currentProgress / totalDuration) * 100) : 0;
+            if (elFill) elFill.style.width = `${percent}%`;
+            if (elPillFill) elPillFill.style.width = `${percent}%`;
         }
 
         function startProgressTicker() {
@@ -307,25 +717,38 @@
             clearInterval(progressTimer);
         }
 
+        function updateThumb(imgEl, fallbackEl, url) {
+            if (!imgEl || !fallbackEl) return;
+            if (url) {
+                imgEl.src = url;
+                imgEl.style.display = 'block';
+                fallbackEl.style.display = 'none';
+                imgEl.onerror = function () {
+                    imgEl.style.display = 'none';
+                    fallbackEl.style.display = 'flex';
+                };
+            } else {
+                imgEl.src = '';
+                imgEl.style.display = 'none';
+                fallbackEl.style.display = 'flex';
+            }
+        }
+
         function showPlayer(title, artist, playing, thumbnail, progress, duration) {
             clearTimeout(hideTimer);
             elTitle.textContent = title || '–';
             elArtist.textContent = artist || '–';
             elLabel.textContent = playing ? 'Now Playing' : 'Paused';
 
-            const elCover = document.getElementById('cover-art');
-            const elWrap = document.getElementById('cover-art-wrap');
-            if (elCover && elWrap) {
-                if (thumbnail) {
-                    elCover.src = thumbnail;
-                    elCover.style.display = 'block';
-                    elWrap.classList.add('has-thumbnail');
-                } else {
-                    elCover.src = '';
-                    elCover.style.display = 'none';
-                    elWrap.classList.remove('has-thumbnail');
-                }
-            }
+            const elPillTitle = document.getElementById('pill-title');
+            const elPillArtist = document.getElementById('pill-artist');
+
+            if (elPillTitle) elPillTitle.textContent = title || '–';
+            if (elPillArtist) elPillArtist.textContent = artist || '–';
+
+            updateThumb(elCover, document.getElementById('cover-fallback'), thumbnail);
+            updateThumb(document.getElementById('pill-art'), document.getElementById('pill-fallback'), thumbnail);
+            updateThumb(document.getElementById('vinyl-art'), document.getElementById('vinyl-fallback'), thumbnail);
 
             isPlaying = playing;
             currentProgress = progress || 0;
@@ -352,7 +775,7 @@
 
         function connectWS() {
             if (ws) {
-                try { ws.close(); } catch (e) {}
+                try { ws.close(); } catch (e) { }
                 ws = null;
             }
 

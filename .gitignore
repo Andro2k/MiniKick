@@ -19,3 +19,4 @@ MiniKick_Backup_*.json
 *build/
 *dist/
 *resources/
+.agents/
