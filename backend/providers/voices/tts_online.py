@@ -16,8 +16,6 @@ class WebTTSProvider:
         self.voice = voice
         self.volume_str = "+0%"
         self.volume = 1.0
-        self.player = None
-        self.audio_output = None
         self._cache = {}
         self._cache_lock = threading.Lock()
         
@@ -27,10 +25,7 @@ class WebTTSProvider:
 
     @staticmethod
     def _is_speakable_text(text: str) -> bool:
-        if not text or not text.strip():
-            return False
-        cleaned = re.sub(r'[^\w\s]', '', text, flags=re.UNICODE).strip()
-        return len(cleaned) > 0
+        return bool(text and text.strip())
 
     def _run_event_loop(self):
         asyncio.set_event_loop(self._loop)
@@ -42,8 +37,6 @@ class WebTTSProvider:
 
     def set_volume(self, volume: float) -> None:
         self.volume = max(0.0, min(1.0, volume))
-        if self.audio_output:
-            self.audio_output.setVolume(self.volume)
         percent = int((self.volume - 1.0) * 100)
         self.volume_str = f"{percent}%" if percent < 0 else f"+{percent}%"
 
@@ -61,22 +54,31 @@ class WebTTSProvider:
             self._cache[cache_key] = (future, start_t)
 
     async def _async_prepare(self, text: str, voice: str, start_t: float) -> str:
-        communicate = edge_tts.Communicate(text, voice, volume=self.volume_str)
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
             temp_path = fp.name
-        try:
-            await communicate.save(temp_path)
-            elapsed = time.perf_counter() - start_t
-            logging.debug(f"[Web TTS Benchmark] Pre-downloaded audio in {elapsed:.3f}s for: '{text[:25]}...' (voice: {voice})")
-            return temp_path
-        except Exception as e:
-            logging.error("[Web TTS] Error pre-downloading audio: %s", e)
+        
+        last_err = None
+        for attempt in range(3):
             try:
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
-            except Exception:
-                pass
-            raise e
+                communicate = edge_tts.Communicate(text, voice, volume=self.volume_str)
+                await communicate.save(temp_path)
+                elapsed = time.perf_counter() - start_t
+                logging.debug(f"[Web TTS Benchmark] Pre-downloaded audio in {elapsed:.3f}s for: '{text[:25]}...' (voice: {voice})")
+                return temp_path
+            except Exception as e:
+                last_err = e
+                if attempt < 2:
+                    await asyncio.sleep(0.2 * (attempt + 1))
+
+        logging.error("[Web TTS] Error pre-downloading audio after retries: %s", last_err)
+        try:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+        except Exception:
+            pass
+        if last_err is not None:
+            raise last_err
+        raise RuntimeError("Error pre-downloading audio")
 
     def speak(self, text: str, voice_id: str = None) -> None:
         if not self._is_speakable_text(text):
@@ -113,31 +115,38 @@ class WebTTSProvider:
         t_dl_start = time.perf_counter()
         with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
             temp_path = fp.name
-        try:
-            communicate = edge_tts.Communicate(text, voice, volume=self.volume_str)
-            await communicate.save(temp_path)
-            t_dl_end = time.perf_counter() - t_dl_start
-            logging.debug(f"[Web TTS Benchmark] On-the-fly download completed in {t_dl_end:.3f}s")
-            await self._play_audio_file(temp_path, start_t)
-        except Exception as e:
-            logging.error("[Web TTS] Error in fallback play: %s", e)
-        finally:
+        
+        last_err = None
+        for attempt in range(3):
             try:
-                if os.path.exists(temp_path):
-                    os.remove(temp_path)
-            except Exception:
-                pass
+                communicate = edge_tts.Communicate(text, voice, volume=self.volume_str)
+                await communicate.save(temp_path)
+                t_dl_end = time.perf_counter() - t_dl_start
+                logging.debug(f"[Web TTS Benchmark] On-the-fly download completed in {t_dl_end:.3f}s")
+                await self._play_audio_file(temp_path, start_t)
+                return
+            except Exception as e:
+                last_err = e
+                if attempt < 2:
+                    await asyncio.sleep(0.2 * (attempt + 1))
+        
+        logging.error("[Web TTS] Error in fallback play after retries: %s", last_err)
+        try:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+        except Exception:
+            pass
 
     async def _play_audio_file(self, temp_path: str, request_start_t: float = 0.0) -> None:
         play_start_t = time.perf_counter()
+        player = None
+        audio_output = None
         try:
-            if not self.player:
-                self.player = QMediaPlayer()
-                self.audio_output = QAudioOutput()
-                self.player.setAudioOutput(self.audio_output)
-            
-            self.audio_output.setVolume(self.volume)
-            self.player.setSource(QUrl.fromLocalFile(os.path.abspath(temp_path)))
+            player = QMediaPlayer()
+            audio_output = QAudioOutput()
+            player.setAudioOutput(audio_output)
+            audio_output.setVolume(self.volume)
+            player.setSource(QUrl.fromLocalFile(os.path.abspath(temp_path)))
             
             loop = QEventLoop()
             
@@ -146,13 +155,13 @@ class WebTTSProvider:
                     loop.quit()
             
             def handle_status(status):
-                if status in (QMediaPlayer.MediaStatus.InvalidMedia, QMediaPlayer.MediaStatus.NoMedia):
+                if status in (QMediaPlayer.MediaStatus.InvalidMedia, QMediaPlayer.MediaStatus.NoMedia, QMediaPlayer.MediaStatus.EndOfMedia):
                     loop.quit()
                     
-            connection_state = self.player.playbackStateChanged.connect(handle_state)
-            connection_status = self.player.mediaStatusChanged.connect(handle_status)
+            connection_state = player.playbackStateChanged.connect(handle_state)
+            connection_status = player.mediaStatusChanged.connect(handle_status)
             
-            self.player.play()
+            player.play()
             
             t_play_ready = time.perf_counter() - play_start_t
             t_total_delay = time.perf_counter() - request_start_t if request_start_t > 0 else t_play_ready
@@ -160,15 +169,25 @@ class WebTTSProvider:
             
             loop.exec()
             
-            self.player.playbackStateChanged.disconnect(connection_state)
-            self.player.mediaStatusChanged.disconnect(connection_status)
+            try:
+                player.playbackStateChanged.disconnect(connection_state)
+                player.mediaStatusChanged.disconnect(connection_status)
+            except Exception:
+                pass
 
         except Exception as e:
             logging.error("[Web TTS] Error playing audio file: %s", e)
         finally:
-            if self.player:
+            if player:
                 try:
-                    self.player.setSource(QUrl())
+                    player.stop()
+                    player.setSource(QUrl())
+                    player.deleteLater()
+                except Exception:
+                    pass
+            if audio_output:
+                try:
+                    audio_output.deleteLater()
                 except Exception:
                     pass
             try:
@@ -178,15 +197,14 @@ class WebTTSProvider:
                 pass
 
     def stop(self) -> None:
-        if self.player:
-            self.player.stop()
-        
         with self._cache_lock:
             for item in self._cache.values():
-                temp_path = item[0] if isinstance(item, tuple) else item
                 try:
-                    if os.path.exists(temp_path):
-                        os.remove(temp_path)
+                    future = item[0] if isinstance(item, tuple) else item
+                    if hasattr(future, "result"):
+                        temp_path = future.result()
+                        if temp_path and os.path.exists(temp_path):
+                            os.remove(temp_path)
                 except Exception as e:
                     logging.error("[Web TTS] Error cleaning up cached file: %s", e)
             self._cache.clear()

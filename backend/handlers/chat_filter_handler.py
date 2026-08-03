@@ -7,7 +7,7 @@ logger = logging.getLogger("minikick.handlers.chat_filter")
 
 class ChatFilterHandler:
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
-    _EMOTE_REGEX = re.compile(r"\[emote:[^\]]+\]")
+    _EMOTE_REGEX = re.compile(r"\[emote:(?:\d+:)?([^\]]+)\]")
     _SPACES_REGEX = re.compile(r"\s+")
     _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
 
@@ -56,7 +56,7 @@ class ChatFilterHandler:
     def clean_message_for_tts(self, text: str) -> str:
         web_link_label = self.i18n.get("chat.status.web_link") if self.i18n else "enlace web"
         cleaned = self._URL_REGEX.sub(web_link_label, text)
-        cleaned = self._EMOTE_REGEX.sub("", cleaned)
+        cleaned = self._EMOTE_REGEX.sub(r"\1", cleaned)
         return self._SPACES_REGEX.sub(" ", cleaned).strip()
 
     def add_bot(self, bot_name: str, view) -> bool:
