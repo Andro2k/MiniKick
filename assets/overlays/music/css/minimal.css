@@ -1,5 +1,5 @@
 #player {
-    background: rgba(10, 10, 12, 0.55);
+    background: rgba(10, 10, 12, 0.85);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: none;
@@ -15,24 +15,30 @@
 }
 
 .label-now-badge {
-    color: rgba(255, 255, 255, 0.40);
-    font-weight: 600;
-    font-size: 9px;
-    padding: 0;
-    background: transparent;
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    padding: 2px 6px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px !important;
 }
 
 .title {
-    color: #ffffff;
-    font-weight: 600;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 18px !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9) !important;
 }
 
 .artist {
-    color: rgba(255, 255, 255, 0.60);
+    color: rgba(255, 255, 255, 0.90) !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
 }
 
 .progress-bar-wrap {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.15) !important;
 }
 
 .progress-bar-fill {
@@ -40,7 +46,9 @@
 }
 
 .progress-time {
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
 }
 
 .eq span {

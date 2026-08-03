@@ -1,6 +1,6 @@
 #player {
     background: linear-gradient(135deg, #1c1815 0%, #110e0c 100%);
-    border: 1.5px solid #332b24;
+    border: 2.5px solid #332b24;
     box-shadow: 
         0 15px 35px rgba(0, 0, 0, 0.65), 
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -37,29 +37,30 @@
 }
 
 .artist {
-    color: #c5a880;
-    font-weight: 600;
-    font-size: 15px;
+    color: #e8c89b !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
 }
 
 .title {
-    color: #ffffff;
-    font-weight: 700;
-    font-size: 20px;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95) !important;
 }
 
 .progress-bar-wrap {
     background: #25201b;
-    height: 4px;
+    height: 5px !important;
 }
 
 .progress-bar-fill {
-    background: #c5a880;
+    background: #e8c89b;
 }
 
 .progress-time {
-    color: #8c8273;
-    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
 }
 
 .eq span {

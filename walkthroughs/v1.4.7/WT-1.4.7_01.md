@@ -1,6 +1,6 @@
 # Walkthrough - Overlays Redesign (Chat & Music Layouts) - v1.4.7
 
-Se completó la implementación de mejoras estructurales para los overlays de **Chat** y **Música** en MiniKick versión v1.4.7, cumpliendo estrictamente con la regla de **Zero Hardcoded Text / i18n Obligatorio**.
+Se completó la implementación de mejoras estructurales para los overlays de **Chat** y **Música** en MiniKick versión v1.4.7, cumpliendo strictly con la regla de **Zero Hardcoded Text / i18n Obligatorio**.
 
 ## Cambios Principales
 
@@ -15,21 +15,18 @@ Se completó la implementación de mejoras estructurales para los overlays de **
 - **Eliminación del Botón Cuadrado de Ventana**:
   - Removido el ícono/cajón de ventana (`.card-close-btn`) tanto en modo vertical como horizontal.
 
-### 2. Music Overlay (`assets/overlays/music/music.html`, `overlay_server.py`, `music_controller.py`)
+### 2. Music Overlay (`assets/overlays/music/music.html`, `glass.css`, `minimal.css`, `neon.css`, `cyber.css`, `card.css`)
+- **Escala de Reproductores Aumentada y Tipografía de Alto Contraste**:
+  - Aumentado el tamaño global de los contenedores en todos los diseños (`standard`: `560px`, `banner`: `460px`, `vinyl`: `540px`, `pill`: `42px` art, `compact`: `420px`).
+  - **Sombra de Contraste Profunda (`text-shadow`)**: Aplicada sombra oscura `text-shadow: 0 2px 4px rgba(0,0,0,0.95)` a los títulos y artistas para garantizar legibilidad 100% nítida y legible sobre cualquier stream, imagen de álbum o tema visual.
+  - Aumentado el tamaño de fuente (`title`: `21px`, `artist`: `15px`, `pill title`: `15px`, `progress-time`: `11px` bold) y opacidad brillante a 95%.
 - **Corrección de Persistencia de Progreso en Recargas (Línea de Tiempo Sync)**:
-  - **Causa del Bug Anterior**: Al recargar la fuente navegador de OBS, el servidor enviaba el estado almacenado inicialmente en `_last_song` con `progress = 0`, lo que reiniciaba la línea de tiempo a 0:00.
-  - **Solución Implementada**:
-    - `overlay_server.py` guarda una marca de tiempo en milisegundos (`timestamp = time.time() * 1000`) en cada evento de reproducción.
-    - Al conectarse un cliente WebSocket (ej. cuando se recarga OBS), `overlay_server` calcula dinámicamente el tiempo transcurrido (`elapsed = now - timestamp`) y suma este tiempo al progreso inicial (`progress = progress + elapsed`).
-    - De este modo, al recargar la fuente en OBS, la barra de progreso y el cronómetro continúan de forma exacta en el segundo exacto que va corriendo la canción.
+  - `overlay_server.py` guarda una marca de tiempo en milisegundos (`timestamp = time.time() * 1000`) en cada evento de reproducción.
+  - Al conectarse un cliente WebSocket (ej. cuando se recarga OBS), `overlay_server` calcula dinámicamente el tiempo transcurrido (`elapsed = now - timestamp`) y suma este tiempo al progreso inicial (`progress = progress + elapsed`).
 - **Imágenes Fallback Elegantes (Iconos de Música SVG sin Errores)**:
   - Implementado el componente de imagen dinámica `updateThumb()` con soporte para `fallback-icon` de nota musical SVG en el **Disco de Vinilo (`.vinyl-center`)**, la **Cápsula Pill (`.pill-art-thumb`)** y el **Banner/Standard (`.cover-art-wrap`)**.
-  - Si una canción no contiene carátula o si la imagen falla al cargar (CORS/404), se muestra automáticamente el ícono SVG de nota musical sin mostrar recuadros de imagen rota del navegador.
-- **Integración de Ondas Ecualizadoras (`.eq`) en la Cabecera**:
-  - Trasladadas las barras de ecualización (`.eq`) al interior de `.header-row` junto a la etiqueta `NOW PLAYING` en los diseños `banner`, `standard`, `compact` y `vinyl`.
-  - Se eliminó el problema de las ondas de sonido que aparecían flotando aisladas en la esquina inferior izquierda de la tarjeta en el layout `banner`.
 - **Disco de Vinilo Retro Giratorio (`layout-vinyl` / `layout-floating`)**:
-  - Animación continua de 360° (`spin-vinyl`) con surcos concéntricos radíales y portada central.
+  - Animación continua de 360° (`spin-vinyl`) con surcos concéntricos radíales y portada central de mayor tamaño (`96px`).
 - **5 Diseños Completamente Únicos y Diferenciados**:
   1. `banner`: Poster grande vertical con portada superior.
   2. `vinyl`: Tocadiscos retro con disco de vinilo giratorio en 360°.
@@ -45,6 +42,11 @@ Se completó la implementación de mejoras estructurales para los overlays de **
 - `assets/overlays/chat/chat.html`
 - `assets/overlays/chat/css/card.css`
 - `assets/overlays/music/music.html`
+- `assets/overlays/music/css/glass.css`
+- `assets/overlays/music/css/minimal.css`
+- `assets/overlays/music/css/neon.css`
+- `assets/overlays/music/css/cyber.css`
+- `assets/overlays/music/css/card.css`
 - `backend/services/rewards/overlay_server.py`
 - `backend/controllers/music_controller.py`
 - `frontend/components/chat/overlay_settings.py`

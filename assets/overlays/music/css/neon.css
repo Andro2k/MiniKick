@@ -1,6 +1,6 @@
 #player {
     background: rgba(10, 10, 15, 0.96);
-    border: 1.8px solid #2ecd70;
+    border: 2.5px solid #2ecd70;
     box-shadow: 
         0 0 20px rgba(46, 205, 112, 0.45), 
         inset 0 0 8px rgba(46, 205, 112, 0.25);
@@ -8,7 +8,7 @@
 }
 
 .cover-art-wrap {
-    border: 1.5px solid #2ecd70;
+    border: 2.5px solid #2ecd70;
     box-shadow: 0 0 10px rgba(46, 205, 112, 0.35);
 }
 
@@ -20,20 +20,22 @@
     color: #2ecd70;
     text-shadow: 0 0 5px rgba(46, 205, 112, 0.5);
     background: rgba(46, 205, 112, 0.1);
-    border: 1px solid rgba(46, 205, 112, 0.3);
+    border: 1.5px solid rgba(46, 205, 112, 0.3);
 }
 
 .title {
-    color: #ffffff;
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 2px 4px #000 !important;
 }
 
 .artist {
-    color: rgba(255, 255, 255, 0.70);
+    color: #2ecd70 !important;
+    font-weight: 700 !important;
+    text-shadow: 0 0 6px rgba(46, 205, 112, 0.8), 0 1px 3px #000 !important;
 }
 
 .progress-bar-wrap {
-    background: rgba(46, 205, 112, 0.08);
+    background: rgba(46, 205, 112, 0.15);
 }
 
 .progress-bar-fill {
@@ -42,7 +44,8 @@
 }
 
 .progress-time {
-    color: rgba(46, 205, 112, 0.6);
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1px 3px #000 !important;
 }
 
 .eq span {

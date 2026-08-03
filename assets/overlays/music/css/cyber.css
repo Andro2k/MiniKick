@@ -4,7 +4,7 @@
         linear-gradient(rgba(163, 0, 163, 0.15) 1px, transparent 1px), 
         linear-gradient(90deg, rgba(163, 0, 163, 0.15) 1px, transparent 1px);
     background-size: 40px 40px;
-    border: 2px solid #a300a3;
+    border: 2.5px solid #a300a3;
     box-shadow: 
         0 0 20px rgba(163, 0, 163, 0.65), 
         inset 0 0 10px rgba(163, 0, 163, 0.35);
@@ -15,8 +15,8 @@
 .cover-art-wrap {
     width: 105px;
     height: 105px;
-    border-radius: 8px;
-    border: 2px solid #a300a3;
+    border-radius: 12px;
+    border: 1px solid #a300a3;
     box-shadow: 0 0 12px rgba(163, 0, 163, 0.7);
 }
 
@@ -39,20 +39,18 @@
 
 .artist {
     font-family: 'Orbitron', sans-serif;
-    color: #00f0ff;
-    text-shadow: 0 0 6px rgba(0, 240, 255, 0.8);
-    font-weight: 900;
-    font-size: 17px;
+    color: #00f0ff !important;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.9), 0 2px 4px #000 !important;
+    font-weight: 900 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .title {
     font-family: 'Orbitron', sans-serif;
-    color: #ff00ff;
-    text-shadow: 0 0 6px rgba(255, 0, 255, 0.8);
-    font-weight: 900;
-    font-size: 21px;
+    color: #ff00ff !important;
+    text-shadow: 0 0 8px rgba(255, 0, 255, 0.9), 0 2px 4px #000 !important;
+    font-weight: 900 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -71,9 +69,10 @@
 
 .progress-time {
     font-family: 'Orbitron', monospace;
-    color: #ffffff;
-    font-size: 11px;
-    text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    color: #00f0ff !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-shadow: 0 0 5px rgba(0, 240, 255, 0.9), 0 1px 3px #000 !important;
 }
 
 .eq span {
