@@ -80,7 +80,10 @@
             "unlinked": "Cuenta Desvinculada",
             "unlinked_msg": "Se ha cerrado tu sesión de Kick local.",
             "font_size_changed": "Interfaz Escalada",
-            "font_size_changed_msg": "Tamaño global aplicado: {size}px"
+            "font_size_changed_msg": "Tamaño global aplicado: {size}px",
+            "error_title": "Error de Respaldo",
+            "export_error": "No se pudo exportar el archivo de configuración.",
+            "import_error": "No se pudo restaurar el archivo de respaldo seleccionado."
         }
     },
     "spam": {

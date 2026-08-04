@@ -82,7 +82,10 @@ DEFAULT_DICTIONARY = {
             "unlinked": "Account Unlinked",
             "unlinked_msg": "Your local Kick session has been closed.",
             "font_size_changed": "UI Scaled",
-            "font_size_changed_msg": "Global text size applied: {size}px"
+            "font_size_changed_msg": "Global text size applied: {size}px",
+            "error_title": "Backup Error",
+            "export_error": "Could not export configuration backup file.",
+            "import_error": "Could not restore the selected backup file."
         }
     },
     "spam": {
@@ -943,6 +946,21 @@ DEFAULT_DICTIONARY = {
             "msg_win": "🎉 @{user} logged a win! Current record: {wins} W - {losses} L.",
             "msg_loss": "💔 @{user} logged a loss. Current record: {wins} W - {losses} L.",
             "msg_reset": "🔄 @{user} reset the W/L record to 0 W - 0 L."
+        },
+        "explosion": {
+            "title": "Emote Explosion (!explosion)",
+            "desc": "Displays an animated physical particle burst of emotes floating on your OBS overlay when sent in chat.",
+            "min_emotes_label": "Min Emotes per message:",
+            "particle_count_label": "Particles per burst:",
+            "overlay_title": "EMOTE EXPLOSION"
+        },
+        "combo": {
+            "title": "Emote Combo (!combo)",
+            "desc": "Tracks chat streaks of identical emotes used consecutively and displays a hype fire combo counter.",
+            "min_combo_label": "Min Combo to Display:",
+            "timeout_label": "Max Combo Window (sec):",
+            "overlay_title": "EMOTE COMBO",
+            "msg_combo": "🔥 EMOTE COMBO x{count} for {emote}! 🔥"
         }
     },
     "crash": {
