@@ -34,6 +34,26 @@ class WidgetService:
                 "wins": 0,
                 "losses": 0
             }
+        },
+        "explosion": {
+            "is_active": True,
+            "command": "!explosion",
+            "cooldown": 5,
+            "permission": "everyone",
+            "config": {
+                "min_emotes": 1,
+                "particle_count": 15
+            }
+        },
+        "combo": {
+            "is_active": True,
+            "command": "!combo",
+            "cooldown": 3,
+            "permission": "everyone",
+            "config": {
+                "min_combo": 3,
+                "timeout_sec": 5
+            }
         }
     }
 

@@ -941,6 +941,21 @@
             "msg_win": "🎉 @{user} sumó una victoria. Récord actual: {wins} W - {losses} L.",
             "msg_loss": "💔 @{user} sumó una derrota. Récord actual: {wins} W - {losses} L.",
             "msg_reset": "🔄 @{user} ha reiniciado el récord a 0 W - 0 L."
+        },
+        "explosion": {
+            "title": "Explosión de Emotes (!explosion)",
+            "desc": "Muestra una ráfaga física animada de emotes flotando y rebotando en el overlay de OBS cuando se envían en el chat.",
+            "min_emotes_label": "Mínimo de Emotes por mensaje:",
+            "particle_count_label": "Partículas por ráfaga:",
+            "overlay_title": "EXPLOSIÓN DE EMOTES"
+        },
+        "combo": {
+            "title": "Combo de Emotes (!combo)",
+            "desc": "Rastrea rachas del mismo emote en el chat y despliega un contador animado con efecto de fuego en pantalla.",
+            "min_combo_label": "Combo Mínimo para Mostrar:",
+            "timeout_label": "Tiempo Máximo de Combo (seg):",
+            "overlay_title": "COMBO DE EMOTES",
+            "msg_combo": "🔥 ¡COMBO DE EMOTES x{count} para {emote}! 🔥"
         }
     },
     "crash": {

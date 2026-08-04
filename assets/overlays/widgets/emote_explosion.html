@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick - Animated Emote Explosion OBS Overlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #explosion-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        .particle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            will-change: transform, opacity;
+            pointer-events: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
+        }
+
+        .particle img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .particle .text-emote {
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
+            line-height: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="explosion-container"></div>
+
+    <script>
+        const container = document.getElementById('explosion-container');
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        let particles = [];
+        let screenWidth = window.innerWidth;
+        let screenHeight = window.innerHeight;
+
+        function updateScreenBounds() {
+            screenWidth = window.innerWidth;
+            screenHeight = window.innerHeight;
+        }
+        window.addEventListener('resize', updateScreenBounds);
+
+        class DomParticle {
+            constructor(emote) {
+                this.type = emote.type || 'text';
+                this.src = emote.src || emote.name || '🔥';
+                this.name = emote.name || 'Emote';
+
+                this.el = document.createElement('div');
+                this.el.className = 'particle';
+
+                const size = 52 + Math.floor(Math.random() * 36);
+                this.size = size;
+                this.el.style.width = `${size}px`;
+                this.el.style.height = `${size}px`;
+
+                if (this.type === 'image' && this.src) {
+                    const img = document.createElement('img');
+                    img.src = this.src;
+                    img.alt = this.name;
+                    this.el.appendChild(img);
+                } else {
+                    const span = document.createElement('span');
+                    span.className = 'text-emote';
+                    span.style.fontSize = `${size * 0.85}px`;
+                    span.textContent = this.src;
+                    this.el.appendChild(span);
+                }
+
+                container.appendChild(this.el);
+
+                this.x = screenWidth / 2 + (Math.random() - 0.5) * (screenWidth * 0.4);
+                this.y = screenHeight - 60;
+
+                this.vx = (Math.random() - 0.5) * 18;
+                this.vy = - (14 + Math.random() * 16);
+                this.gravity = 0.45;
+                this.bounce = 0.65;
+                this.friction = 0.985;
+
+                this.rotation = (Math.random() - 0.5) * 0.4;
+                this.vRot = (Math.random() - 0.5) * 0.12;
+
+                this.alpha = 1.0;
+                this.decay = 0.008 + Math.random() * 0.006;
+                this.life = 0;
+            }
+
+            update() {
+                this.vy += this.gravity;
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.vRot;
+
+                if (this.x < 0) {
+                    this.x = 0;
+                    this.vx = -this.vx * this.bounce;
+                } else if (this.x + this.size > screenWidth) {
+                    this.x = screenWidth - this.size;
+                    this.vx = -this.vx * this.bounce;
+                }
+
+                if (this.y + this.size > screenHeight) {
+                    this.y = screenHeight - this.size;
+                    this.vy = -this.vy * this.bounce;
+                    this.vx *= 0.8;
+                }
+
+                this.life += 1;
+                if (this.life > 90) {
+                    this.alpha -= this.decay;
+                }
+
+                this.el.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px) rotate(${this.rotation}rad)`;
+                this.el.style.opacity = Math.max(0, this.alpha);
+            }
+
+            destroy() {
+                if (this.el && this.el.parentNode) {
+                    this.el.parentNode.removeChild(this.el);
+                }
+            }
+        }
+
+        function triggerExplosion(emotesList, count = 25) {
+            if (!emotesList || emotesList.length === 0) {
+                emotesList = [
+                    { type: 'text', src: '🔥', name: '🔥' },
+                    { type: 'text', src: '⚡', name: '⚡' },
+                    { type: 'text', src: '🎉', name: '🎉' }
+                ];
+            }
+
+            for (let i = 0; i < count; i++) {
+                const randomEmote = emotesList[Math.floor(Math.random() * emotesList.length)];
+                particles.push(new DomParticle(randomEmote));
+            }
+        }
+
+        function animationLoop() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+
+                if (p.alpha <= 0) {
+                    p.destroy();
+                    particles.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animationLoop);
+        }
+        animationLoop();
+
+        let ws = null;
+        let heartbeatTimer = null;
+        let reconnectTimer = null;
+
+        function connectWS() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Animated Emote Explosion Overlay] WebSocket conectado.");
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
+            };
+
+            ws.onmessage = function (e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'pong') return;
+
+                    if (data.event === 'emote_explosion') {
+                        triggerExplosion(data.emotes, data.count || 25);
+                    }
+                } catch (err) {
+                    console.error("Error parsing emote explosion event:", err);
+                }
+            };
+
+            ws.onerror = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+
+            ws.onclose = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setTimeout(() => {
+                    connectWS();
+                }, 3000);
+            }
+        }
+
+        connectWS();
+    </script>
+</body>
+
+</html>

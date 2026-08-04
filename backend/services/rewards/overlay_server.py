@@ -307,6 +307,34 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             except FileNotFoundError:
                 self.send_error(404, f"Score Overlay HTML not found at: {html_path}")
 
+        elif path in ("/widgets/emote_explosion", "/widgets/explosion", "/widgets/emotes", "/explosion"):
+            html_path = get_resource_path(os.path.join("assets", "overlays", "widgets", "emote_explosion.html"))
+            try:
+                with open(html_path, "rb") as f:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Expires", "0")
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except FileNotFoundError:
+                self.send_error(404, f"Emote Explosion Overlay HTML not found at: {html_path}")
+
+        elif path in ("/widgets/emote_combo", "/widgets/combo", "/combo"):
+            html_path = get_resource_path(os.path.join("assets", "overlays", "widgets", "emote_combo.html"))
+            try:
+                with open(html_path, "rb") as f:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Expires", "0")
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except FileNotFoundError:
+                self.send_error(404, f"Emote Combo Overlay HTML not found at: {html_path}")
+
         elif path.startswith("/css/"):
             css_filename = os.path.basename(path)
             css_path = get_resource_path(os.path.join("assets", "overlays", "chat", "css", css_filename))
@@ -579,6 +607,12 @@ class OverlayServerManager:
 
     def get_score_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/widgets/score?token={self.session_token}"
+
+    def get_explosion_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/emote_explosion?token={self.session_token}"
+
+    def get_combo_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/emote_combo?token={self.session_token}"
 
     def get_widgets_overlay_url(self) -> str:
         return self.get_shoutout_overlay_url()

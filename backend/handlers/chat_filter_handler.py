@@ -56,7 +56,7 @@ class ChatFilterHandler:
     def clean_message_for_tts(self, text: str) -> str:
         web_link_label = self.i18n.get("chat.status.web_link") if self.i18n else "enlace web"
         cleaned = self._URL_REGEX.sub(web_link_label, text)
-        cleaned = self._EMOTE_REGEX.sub(r"\1", cleaned)
+        cleaned = self._EMOTE_REGEX.sub("", cleaned)
         return self._SPACES_REGEX.sub(" ", cleaned).strip()
 
     def add_bot(self, bot_name: str, view) -> bool:

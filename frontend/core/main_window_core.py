@@ -128,7 +128,9 @@ class MainWindowCore(QMainWindow):
             self.i18n,
             shoutout_overlay_url=self.overlay_server.get_shoutout_overlay_url(),
             death_overlay_url=self.overlay_server.get_death_overlay_url(),
-            score_overlay_url=self.overlay_server.get_score_overlay_url()
+            score_overlay_url=self.overlay_server.get_score_overlay_url(),
+            explosion_overlay_url=self.overlay_server.get_explosion_overlay_url(),
+            combo_overlay_url=self.overlay_server.get_combo_overlay_url()
         )
         self.view_spam = SpamView(self.i18n)
         self.view_timers = TimersView(self.i18n)
@@ -248,6 +250,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
+        self.chat_controller.message_received.connect(self.widget_controller.handle_chat_message)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
         self.chat_controller.widget_plugin_triggered.connect(self.widget_controller.handle_widget_command)

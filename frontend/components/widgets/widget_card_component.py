@@ -1,6 +1,6 @@
 # frontend\components\widgets\widget_card_component.py
 
-from frontend.widgets import ModernDivider
+from frontend.widgets import ModernDivider, FlowLayout
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtWidgets import (QFrame, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QSpinBox, QPushButton, QApplication)
@@ -114,54 +114,130 @@ class WidgetCard(QFrame):
             self.specific_layout.addWidget(self.txt_template)
 
         elif self.widget_id == "death":
-            row = QHBoxLayout()
+            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+
+            group_count = QWidget()
+            g_layout = QHBoxLayout(group_count)
+            g_layout.setContentsMargins(0, 0, 0, 0)
+            g_layout.setSpacing(8)
             lbl_count = QLabel(self.i18n.get("widgets.death.count_label"))
             lbl_count.setProperty("role", "body")
-            
             self.spn_deaths = QSpinBox()
             self.spn_deaths.setRange(0, 99999)
             self.spn_deaths.valueChanged.connect(self._on_death_counter_changed)
+            g_layout.addWidget(lbl_count)
+            g_layout.addWidget(self.spn_deaths)
 
             btn_reset = QPushButton(self.i18n.get("widgets.death.reset_btn"))
             btn_reset.setProperty("role", "action_neutral_border")
             btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_reset.clicked.connect(lambda: self.spn_deaths.setValue(0))
 
-            row.addWidget(lbl_count)
-            row.addWidget(self.spn_deaths)
-            row.addWidget(btn_reset)
-            row.addStretch()
-            self.specific_layout.addLayout(row)
+            flow.addWidget(group_count)
+            flow.addWidget(btn_reset)
+            self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "score":
-            row = QHBoxLayout()
+            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+
+            group_w = QWidget()
+            gw_layout = QHBoxLayout(group_w)
+            gw_layout.setContentsMargins(0, 0, 0, 0)
+            gw_layout.setSpacing(8)
             lbl_w = QLabel(self.i18n.get("widgets.score.wins_label"))
             lbl_w.setProperty("role", "body")
             self.spn_wins = QSpinBox()
             self.spn_wins.setRange(0, 9999)
             self.spn_wins.valueChanged.connect(self._on_score_counter_changed)
+            gw_layout.addWidget(lbl_w)
+            gw_layout.addWidget(self.spn_wins)
 
+            group_l = QWidget()
+            gl_layout = QHBoxLayout(group_l)
+            gl_layout.setContentsMargins(0, 0, 0, 0)
+            gl_layout.setSpacing(8)
             lbl_l = QLabel(self.i18n.get("widgets.score.losses_label"))
             lbl_l.setProperty("role", "body")
             self.spn_losses = QSpinBox()
             self.spn_losses.setRange(0, 9999)
             self.spn_losses.valueChanged.connect(self._on_score_counter_changed)
+            gl_layout.addWidget(lbl_l)
+            gl_layout.addWidget(self.spn_losses)
 
             btn_reset = QPushButton(self.i18n.get("widgets.score.reset_btn"))
             btn_reset.setProperty("role", "action_neutral_border")
             btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_reset.clicked.connect(self._reset_score_counters)
 
-            row.addWidget(lbl_w)
-            row.addWidget(self.spn_wins)
-            row.addWidget(lbl_l)
-            row.addWidget(self.spn_losses)
-            row.addWidget(btn_reset)
-            row.addStretch()
-            self.specific_layout.addLayout(row)
+            flow.addWidget(group_w)
+            flow.addWidget(group_l)
+            flow.addWidget(btn_reset)
+            self.specific_layout.addLayout(flow)
+
+        elif self.widget_id == "explosion":
+            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+
+            group_min = QWidget()
+            gm_layout = QHBoxLayout(group_min)
+            gm_layout.setContentsMargins(0, 0, 0, 0)
+            gm_layout.setSpacing(8)
+            lbl_min = QLabel(self.i18n.get("widgets.explosion.min_emotes_label"))
+            lbl_min.setProperty("role", "body")
+            self.spn_min_emotes = QSpinBox()
+            self.spn_min_emotes.setRange(1, 30)
+            self.spn_min_emotes.valueChanged.connect(self._on_changed)
+            gm_layout.addWidget(lbl_min)
+            gm_layout.addWidget(self.spn_min_emotes)
+
+            group_parts = QWidget()
+            gp_layout = QHBoxLayout(group_parts)
+            gp_layout.setContentsMargins(0, 0, 0, 0)
+            gp_layout.setSpacing(8)
+            lbl_parts = QLabel(self.i18n.get("widgets.explosion.particle_count_label"))
+            lbl_parts.setProperty("role", "body")
+            self.spn_particle_count = QSpinBox()
+            self.spn_particle_count.setRange(5, 30)
+            self.spn_particle_count.valueChanged.connect(self._on_changed)
+            gp_layout.addWidget(lbl_parts)
+            gp_layout.addWidget(self.spn_particle_count)
+
+            flow.addWidget(group_min)
+            flow.addWidget(group_parts)
+            self.specific_layout.addLayout(flow)
+
+        elif self.widget_id == "combo":
+            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+
+            group_min_c = QWidget()
+            gmc_layout = QHBoxLayout(group_min_c)
+            gmc_layout.setContentsMargins(0, 0, 0, 0)
+            gmc_layout.setSpacing(8)
+            lbl_min_c = QLabel(self.i18n.get("widgets.combo.min_combo_label"))
+            lbl_min_c.setProperty("role", "body")
+            self.spn_min_combo = QSpinBox()
+            self.spn_min_combo.setRange(2, 50)
+            self.spn_min_combo.valueChanged.connect(self._on_changed)
+            gmc_layout.addWidget(lbl_min_c)
+            gmc_layout.addWidget(self.spn_min_combo)
+
+            group_tout = QWidget()
+            gt_layout = QHBoxLayout(group_tout)
+            gt_layout.setContentsMargins(0, 0, 0, 0)
+            gt_layout.setSpacing(8)
+            lbl_tout = QLabel(self.i18n.get("widgets.combo.timeout_label"))
+            lbl_tout.setProperty("role", "body")
+            self.spn_timeout_sec = QSpinBox()
+            self.spn_timeout_sec.setRange(1, 30)
+            self.spn_timeout_sec.valueChanged.connect(self._on_changed)
+            gt_layout.addWidget(lbl_tout)
+            gt_layout.addWidget(self.spn_timeout_sec)
+
+            flow.addWidget(group_min_c)
+            flow.addWidget(group_tout)
+            self.specific_layout.addLayout(flow)
 
         if self.obs_overlay_url:
-            obs_row = QHBoxLayout()
+            flow_obs = FlowLayout(margin=0, hspacing=12, vspacing=10)
             lbl_obs = QLabel(self.i18n.get("widgets.obs_label"))
             lbl_obs.setProperty("role", "body")
 
@@ -170,10 +246,9 @@ class WidgetCard(QFrame):
             btn_copy_obs.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_copy_obs.clicked.connect(self._copy_obs_url)
 
-            obs_row.addWidget(lbl_obs)
-            obs_row.addWidget(btn_copy_obs)
-            obs_row.addStretch()
-            self.specific_layout.addLayout(obs_row)
+            flow_obs.addWidget(lbl_obs)
+            flow_obs.addWidget(btn_copy_obs)
+            self.specific_layout.addLayout(flow_obs)
 
         b_layout.addWidget(self.specific_container)
         self.main_layout.addWidget(self.body_widget)
@@ -206,6 +281,20 @@ class WidgetCard(QFrame):
             self.spn_losses.setValue(int(cfg.get("losses", 0)))
             self.spn_wins.blockSignals(False)
             self.spn_losses.blockSignals(False)
+        elif self.widget_id == "explosion" and hasattr(self, "spn_min_emotes"):
+            self.spn_min_emotes.blockSignals(True)
+            self.spn_particle_count.blockSignals(True)
+            self.spn_min_emotes.setValue(int(cfg.get("min_emotes", 1)))
+            self.spn_particle_count.setValue(int(cfg.get("particle_count", 15)))
+            self.spn_min_emotes.blockSignals(False)
+            self.spn_particle_count.blockSignals(False)
+        elif self.widget_id == "combo" and hasattr(self, "spn_min_combo"):
+            self.spn_min_combo.blockSignals(True)
+            self.spn_timeout_sec.blockSignals(True)
+            self.spn_min_combo.setValue(int(cfg.get("min_combo", 3)))
+            self.spn_timeout_sec.setValue(int(cfg.get("timeout_sec", 5)))
+            self.spn_min_combo.blockSignals(False)
+            self.spn_timeout_sec.blockSignals(False)
 
         self._is_loading = False
 
@@ -239,6 +328,14 @@ class WidgetCard(QFrame):
 
         if self.widget_id == "shoutout" and hasattr(self, "txt_template"):
             self._config_data["template"] = self.txt_template.text()
+        elif self.widget_id == "explosion" and hasattr(self, "spn_min_emotes"):
+            self._config_data["min_emotes"] = self.spn_min_emotes.value()
+            self._config_data["particle_count"] = self.spn_particle_count.value()
+        elif self.widget_id == "combo" and hasattr(self, "spn_min_combo"):
+            self._config_data["min_combo"] = self.spn_min_combo.value()
+            self._config_data["timeout_sec"] = self.spn_timeout_sec.value()
+
+        self.widget_changed.emit(self.widget_id, is_active, self._command, self._cooldown, self._permission, self._config_data)
 
         self.widget_changed.emit(self.widget_id, is_active, self._command, self._cooldown, self._permission, self._config_data)
 

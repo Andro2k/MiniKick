@@ -1,6 +1,8 @@
 # backend\controllers\widget_controller.py
 
 import logging
+import re
+import time
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
 from backend.services import WidgetService, CommandService
 
@@ -14,8 +16,13 @@ class WidgetController(QObject):
     PLUGIN_TAGS = {
         "shoutout": "[PLUGIN_WIDGET_SO]",
         "death": "[PLUGIN_WIDGET_DEATH]",
-        "score": "[PLUGIN_WIDGET_SCORE]"
+        "score": "[PLUGIN_WIDGET_SCORE]",
+        "explosion": "[PLUGIN_WIDGET_EXPLOSION]",
+        "combo": "[PLUGIN_WIDGET_COMBO]"
     }
+
+    _KICK_EMOTE_REGEX = re.compile(r"\[emote:(?:(\d+):)?([^\]]+)\]")
+    _EMOJI_REGEX = re.compile(r"[\U00010000-\U0010ffff\u2600-\u27bf]")
 
     def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None, toast_manager=None):
         super().__init__()
@@ -26,10 +33,16 @@ class WidgetController(QObject):
         self.i18n = i18n
         self.toast = toast_manager
 
+        self._last_combo_emote = ""
+        self._last_combo_time = 0.0
+        self._combo_count = 0
+
         self._widget_handlers = {
             self.PLUGIN_TAGS["shoutout"]: lambda user, args, first_word, prefix: self._process_shoutout(user, args, prefix),
             self.PLUGIN_TAGS["death"]: lambda user, args, first_word, prefix: self._process_death(user, args or first_word),
             self.PLUGIN_TAGS["score"]: self._dispatch_score_command,
+            self.PLUGIN_TAGS["explosion"]: lambda user, args, first_word, prefix: self._process_explosion_command(user, args),
+            self.PLUGIN_TAGS["combo"]: lambda user, args, first_word, prefix: self._process_combo_command(user, args),
         }
 
         self._save_timer = QTimer(self)
@@ -313,3 +326,100 @@ class WidgetController(QObject):
                 "title_text": title_text
             })
         self.command_service.send_response(msg)
+
+    @Slot(str, str, str, list)
+    def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None):
+        if not content or not self.overlay_server:
+            return
+
+        emotes_list = []
+        
+        for match in self._KICK_EMOTE_REGEX.finditer(content):
+            e_id, e_name = match.groups()
+            if e_id:
+                emotes_list.append({
+                    "type": "image",
+                    "src": f"https://files.kick.com/emotes/{e_id}/fullsize",
+                    "name": e_name
+                })
+            else:
+                emotes_list.append({
+                    "type": "text",
+                    "src": e_name,
+                    "name": e_name
+                })
+
+        for emoji_char in self._EMOJI_REGEX.findall(content):
+            emotes_list.append({
+                "type": "text",
+                "src": emoji_char,
+                "name": emoji_char
+            })
+
+        if not emotes_list:
+            return
+
+        w_exp = self.widget_service.get_widget("explosion")
+        if w_exp.get("is_active", True):
+            cfg_exp = w_exp.get("config", {})
+            min_emotes = int(cfg_exp.get("min_emotes", 1))
+            particle_count = int(cfg_exp.get("particle_count", 15))
+            
+            if len(emotes_list) >= min_emotes:
+                self.overlay_server.trigger_widget_event("emote_explosion", {
+                    "emotes": emotes_list,
+                    "count": particle_count
+                })
+
+        w_combo = self.widget_service.get_widget("combo")
+        if w_combo.get("is_active", True):
+            cfg_combo = w_combo.get("config", {})
+            min_combo = int(cfg_combo.get("min_combo", 3))
+            timeout_sec = float(cfg_combo.get("timeout_sec", 5.0))
+            now = time.time()
+
+            for emote_obj in emotes_list:
+                emote_name = emote_obj["name"]
+                if self._last_combo_emote == emote_name and (now - self._last_combo_time) <= timeout_sec:
+                    self._combo_count += 1
+                else:
+                    self._last_combo_emote = emote_name
+                    self._combo_count = 1
+                self._last_combo_time = now
+
+                if self._combo_count >= min_combo:
+                    self.overlay_server.trigger_widget_event("emote_combo", {
+                        "emote": emote_name,
+                        "src": emote_obj.get("src", ""),
+                        "type": emote_obj.get("type", "text"),
+                        "count": self._combo_count,
+                        "timeout_sec": timeout_sec
+                    })
+
+    def _process_explosion_command(self, user: str, args: str):
+        if self.overlay_server:
+            sample_emotes = [
+                {"type": "text", "src": "🔥", "name": "🔥"},
+                {"type": "text", "src": "⚡", "name": "⚡"},
+                {"type": "text", "src": "🎉", "name": "🎉"},
+                {"type": "text", "src": "🚀", "name": "🚀"}
+            ]
+            self.overlay_server.trigger_widget_event("emote_explosion", {
+                "emotes": sample_emotes,
+                "count": 25
+            })
+            msg = f"💥 @{user} desató una explosión de emotes!"
+            self.command_service.send_response(msg)
+
+    def _process_combo_command(self, user: str, args: str):
+        if self.overlay_server:
+            emote = args.strip() if args.strip() else "KEKW"
+            self.overlay_server.trigger_widget_event("emote_combo", {
+                "emote": emote,
+                "src": "",
+                "type": "text",
+                "count": 5,
+                "timeout_sec": 5.0
+            })
+            msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote) if self.i18n else f"🔥 ¡COMBO DE EMOTES x5 para {emote}! 🔥"
+            self.command_service.send_response(msg)
