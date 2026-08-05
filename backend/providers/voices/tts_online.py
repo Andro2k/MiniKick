@@ -25,7 +25,12 @@ class WebTTSProvider:
 
     @staticmethod
     def _is_speakable_text(text: str) -> bool:
-        return bool(text and text.strip())
+        if not text or not text.strip():
+            return False
+        cleaned = re.sub(r'https?://\S+|www\.\S+', '', text).strip()
+        if not cleaned:
+            return False
+        return any(c.isalnum() for c in cleaned)
 
     def _run_event_loop(self):
         asyncio.set_event_loop(self._loop)
@@ -67,18 +72,25 @@ class WebTTSProvider:
                 return temp_path
             except Exception as e:
                 last_err = e
+                err_msg = str(e)
+                if "No audio was received" in err_msg or "parameters are correct" in err_msg:
+                    logging.warning(f"[Web TTS] Unsupported text for voice {voice}: '{text[:25]}...' ({e})")
+                    break
                 if attempt < 2:
                     await asyncio.sleep(0.2 * (attempt + 1))
 
-        logging.error("[Web TTS] Error pre-downloading audio after retries: %s", last_err)
         try:
             if os.path.exists(temp_path):
                 os.remove(temp_path)
         except Exception:
             pass
+            
         if last_err is not None:
+            err_msg = str(last_err)
+            if "No audio was received" in err_msg or "parameters are correct" in err_msg:
+                return ""
             raise last_err
-        raise RuntimeError("Error pre-downloading audio")
+        return ""
 
     def speak(self, text: str, voice_id: str = None) -> None:
         if not self._is_speakable_text(text):
@@ -127,10 +139,13 @@ class WebTTSProvider:
                 return
             except Exception as e:
                 last_err = e
+                err_msg = str(e)
+                if "No audio was received" in err_msg or "parameters are correct" in err_msg:
+                    logging.warning(f"[Web TTS] Unsupported text for voice {voice}: '{text[:25]}...' ({e})")
+                    break
                 if attempt < 2:
                     await asyncio.sleep(0.2 * (attempt + 1))
         
-        logging.error("[Web TTS] Error in fallback play after retries: %s", last_err)
         try:
             if os.path.exists(temp_path):
                 os.remove(temp_path)

@@ -567,8 +567,10 @@
             "auto_resume_desc": "Play automatically when queued, or wait for the streamer.",
             "error_title": "YouTube Error",
             "age_restricted": "This video requires age verification (Sign in to confirm your age)",
+            "bot_blocked": "This video requires authentication or was blocked by YouTube anti-bot policies.",
             "inappropriate": "This video is inappropriate for some users",
-            "invalid_media": "Invalid media or format"
+            "invalid_media": "Invalid media or format",
+            "generic_error": "Could not process audio for this video."
         },
         "overlay": {
             "url_title": "Music Overlay (OBS)",

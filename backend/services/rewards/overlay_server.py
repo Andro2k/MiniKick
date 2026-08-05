@@ -25,7 +25,6 @@ def get_resource_path(relative_path: str) -> str:
 
 
 class WebSocketClient:
-    """Manejador de cliente WebSocket optimizado (RFC 6455) para evitar el límite de sockets HTTP/1.1 de Chromium."""
     def __init__(self, handler, topic: str, token: str):
         self.handler = handler
         self.wfile = handler.wfile

@@ -14,5 +14,5 @@ dependencies = [
     "pyinstaller",
     "edge-tts",
     "asyncio",
-    "yt-dlp"
+    "yt-dlp",
 ]
