@@ -18,6 +18,12 @@
 - **Soporte Transparente de Cookies**: Detección automática de cookies de navegador (`Chrome`, `Edge`, `Firefox`, `Brave`, `Opera`, `Vivaldi`) y archivos `cookies.txt` en la carpeta `.Minikick`.
 - **Extracción Óptima de Stream Directo**: Filtrado en tiempo lineal $\mathcal{O}(n)$ del mejor formato de audio para streaming instantáneo en `QMediaPlayer`.
 
+### 🛡️ Mejoras en el Módulo de Protección Anti-Spam (Auto-Mod)
+- **Corrección de Conflicto de Emotes**: Eliminación previa de etiquetas de emotes de Kick (`[emote:ID:NOMBRE]`) para evitar que activen la protección de símbolos por error.
+- **Protección de Caracteres Extraños**: Detección de alfabetos no latinos (árabe, cirílico, zalgo y gráficos de bloques `█░`) sin afectar letras con acentos en español o signos de puntuación comunes.
+- **Filtro de Bloques de Texto**: Renombrado a **Límite de Caracteres por Mensaje** (rango 50-2000, por defecto 300) con control combinado de saltos de línea.
+- **Control Condicional de Duración**: Desactivación dinámica del campo numérico de duración cuando la sanción seleccionada no sea **Silenciar usuario** (`timeout`).
+
 ---
 *MiniKick v1.4.7*
 

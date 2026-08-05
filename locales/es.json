@@ -105,7 +105,9 @@
             "exclude_none": "Ninguno",
             "exclude_mod": "Moderadores y Streamer",
             "exclude_sub": "Suscriptores y VIPs",
-            "max_amount": "Cantidad máxima permitida"
+            "max_amount": "Cantidad máxima permitida",
+            "max_characters": "Límite de caracteres por mensaje",
+            "max_symbols": "Límite de símbolos/caracteres extraños"
         },
         "filters": {
             "caps": {
@@ -121,12 +123,12 @@
                 "desc": "Elimina mensajes que abusen de la cantidad de emotes."
             },
             "paragraph": {
-                "title": "Bloques de Texto (Walls of Text)",
-                "desc": "Bloquea mensajes excesivamente largos (Muchos caracteres)."
+                "title": "Bloques de Texto Largos",
+                "desc": "Bloquea mensajes excesivamente largos o paredes de texto (Límite de caracteres)."
             },
             "symbol": {
-                "title": "Protección de Símbolos",
-                "desc": "Elimina mensajes con uso excesivo de símbolos (Ej: @#!%)."
+                "title": "Protección de Símbolos y Textos Extraños",
+                "desc": "Filtra textos con caracteres no latinos (árabe, zalgo, cirílico) o abuso de símbolos, ignorando emotes de Kick."
             },
             "repetition": {
                 "title": "Protección de Repetición",

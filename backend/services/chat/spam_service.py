@@ -5,7 +5,9 @@ import re
 
 class SpamService:
     _LINK_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
-    _SYMBOL_REGEX = re.compile(r'[^a-zA-Z0-9\s]')
+    _KICK_EMOTE_REGEX = re.compile(r'\[emote:\d+:[^\]]+\]', re.IGNORECASE)
+    _ALLOWED_LATIN_PATTERN = re.compile(r'[a-zA-Z0-9\s\u00C0-\u024F\.\,\!\?\-\_\:\;\(\)\[\]\'\"\/\\\@\#\$\%\&\*\+\=\<\>]')
+
     def __init__(self, storage, api_client=None, max_history_size: int = 1000, i18n=None):
         self.storage = storage
         self.api_client = api_client
@@ -57,12 +59,17 @@ class SpamService:
                     is_violation = True
                     
             elif f_id == "symbol_protection":
-                symbol_count = len(self._SYMBOL_REGEX.findall(message))
-                if symbol_count > max_amount:
+                clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
+                strange_chars = self._ALLOWED_LATIN_PATTERN.sub('', clean_msg)
+                symbols_only = re.findall(r'[^a-zA-Z0-9\s\u00C0-\u024F]', clean_msg)
+                threshold = max_amount if max_amount > 0 else 15
+                if len(strange_chars) > threshold or len(symbols_only) > (threshold * 2):
                     is_violation = True
 
             elif f_id == "paragraph_protection":
-                if len(message) > max_amount:
+                clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
+                threshold = max_amount if max_amount > 0 else 300
+                if len(clean_msg) > threshold or clean_msg.count('\n') >= 5:
                     is_violation = True
 
             elif f_id == "link_protection":

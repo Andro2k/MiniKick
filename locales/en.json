@@ -105,7 +105,9 @@
             "exclude_none": "None",
             "exclude_mod": "Moderators & Broadcaster",
             "exclude_sub": "Subscribers & VIPs",
-            "max_amount": "Maximum allowed amount"
+            "max_amount": "Maximum allowed amount",
+            "max_characters": "Max characters per message",
+            "max_symbols": "Max symbols / foreign script limit"
         },
         "filters": {
             "caps": {
@@ -121,12 +123,12 @@
                 "desc": "Removes messages that abuse the amount of emotes."
             },
             "paragraph": {
-                "title": "Walls of Text",
-                "desc": "Blocks excessively long messages (Many characters)."
+                "title": "Long Walls of Text",
+                "desc": "Blocks excessively long messages or walls of text (Max character limit)."
             },
             "symbol": {
-                "title": "Symbol Protection",
-                "desc": "Removes messages with excessive use of symbols (Ex: @#!%)."
+                "title": "Symbols & Foreign Script Protection",
+                "desc": "Filters non-Latin scripts (Arabic, Zalgo, Cyrillic) or symbol spam, ignoring valid Kick emotes."
             },
             "repetition": {
                 "title": "Repetition Protection",

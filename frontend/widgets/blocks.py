@@ -253,7 +253,7 @@ class ExpandableSettingCard(QFrame):
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban"), "ban")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_warn_delete"), "warn_delete")
-        self.combo_penalty.currentIndexChanged.connect(self._emit_update)
+        self.combo_penalty.currentIndexChanged.connect(self._on_penalty_changed)
         col_left.addWidget(lbl_pen)
         col_left.addWidget(self.combo_penalty)
         
@@ -269,13 +269,13 @@ class ExpandableSettingCard(QFrame):
         col_left.addWidget(lbl_exc)
         col_left.addWidget(self.combo_exclude)
         
-        lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
-        lbl_dur.setProperty("role", "body")
+        self.lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
+        self.lbl_dur.setProperty("role", "body")
         self.spin_dur = QSpinBox()
         self.spin_dur.setRange(1, 10080)
         self.spin_dur.setValue(5)
         self.spin_dur.valueChanged.connect(self._emit_update)
-        col_right.addWidget(lbl_dur)
+        col_right.addWidget(self.lbl_dur)
         col_right.addWidget(self.spin_dur)
         
         if self.card_id == "link_protection":
@@ -290,11 +290,20 @@ class ExpandableSettingCard(QFrame):
         elif self.has_amount:
             col_right.addSpacing(4)
             
-            lbl_amt = QLabel(self.i18n.get("spam.card.max_amount"))
+            amt_label_key = "spam.card.max_amount"
+            min_val, max_val, default_val = 1, 500, 10
+            if self.card_id == "paragraph_protection":
+                amt_label_key = "spam.card.max_characters"
+                min_val, max_val, default_val = 50, 2000, 300
+            elif self.card_id == "symbol_protection":
+                amt_label_key = "spam.card.max_symbols"
+                min_val, max_val, default_val = 3, 100, 15
+
+            lbl_amt = QLabel(self.i18n.get(amt_label_key))
             lbl_amt.setProperty("role", "body")
             self.spin_amt = QSpinBox()
-            self.spin_amt.setRange(1, 500)
-            self.spin_amt.setValue(10)
+            self.spin_amt.setRange(min_val, max_val)
+            self.spin_amt.setValue(default_val)
             self.spin_amt.valueChanged.connect(self._emit_update)
             col_right.addWidget(lbl_amt)
             col_right.addWidget(self.spin_amt)
@@ -303,6 +312,7 @@ class ExpandableSettingCard(QFrame):
         options_layout.addLayout(col_right, stretch=1)
         b_layout.addLayout(options_layout)
 
+        self._update_duration_state()
         self.main_layout.addWidget(self.body_widget)
 
     def toggle_expand(self):
@@ -311,6 +321,17 @@ class ExpandableSettingCard(QFrame):
         icon = self._icon_up if not is_visible else self._icon_down
         self.btn_expand.setIcon(icon)
         self.btn_expand.setIconSize(QSize(20, 20))
+
+    def _on_penalty_changed(self, *args):
+        self._update_duration_state()
+        self._emit_update()
+
+    def _update_duration_state(self):
+        is_timeout = (self.combo_penalty.currentData() == "timeout")
+        if hasattr(self, 'lbl_dur'):
+            self.lbl_dur.setEnabled(is_timeout)
+        if hasattr(self, 'spin_dur'):
+            self.spin_dur.setEnabled(is_timeout)
 
     def _emit_update(self, *args):
         if self._is_loading: return
@@ -335,5 +356,7 @@ class ExpandableSettingCard(QFrame):
         if self.card_id == "link_protection":
             self.txt_allowlist.setText(config.get("allowlist", ""))
         elif self.has_amount:
-            self.spin_amt.setValue(config.get("max_amount", 10))
+            default_amt = 300 if self.card_id == "paragraph_protection" else (15 if self.card_id == "symbol_protection" else 10)
+            self.spin_amt.setValue(config.get("max_amount", default_amt))
+        self._update_duration_state()
         self._is_loading = False
