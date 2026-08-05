@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MiniKick - Animated Emote Explosion OBS Overlay</title>
+    <title>MiniKick - Animated Emote Explosion OBS Overlay (Canvas 2D Optimized)</title>
     <style>
         * {
             margin: 0;
@@ -20,93 +20,67 @@
             height: 100vh;
         }
 
-        #explosion-container {
+        #canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
             pointer-events: none;
-            overflow: hidden;
             z-index: 9999;
-        }
-
-        .particle {
-            position: absolute;
-            top: 0;
-            left: 0;
-            will-change: transform, opacity;
-            pointer-events: none;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
-        }
-
-        .particle img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        .particle .text-emote {
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            font-weight: 900;
-            color: #ffffff;
-            text-shadow: 0 0 12px rgba(0, 0, 0, 0.8);
-            line-height: 1;
         }
     </style>
 </head>
 
 <body>
-    <div id="explosion-container"></div>
+    <canvas id="canvas"></canvas>
 
     <script>
-        const container = document.getElementById('explosion-container');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d', { alpha: true });
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
 
         let particles = [];
+        const MAX_ACTIVE_PARTICLES = 250;
         let screenWidth = window.innerWidth;
         let screenHeight = window.innerHeight;
 
-        function updateScreenBounds() {
+        function resizeCanvas() {
             screenWidth = window.innerWidth;
             screenHeight = window.innerHeight;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = screenWidth * dpr;
+            canvas.height = screenHeight * dpr;
+            ctx.scale(dpr, dpr);
         }
-        window.addEventListener('resize', updateScreenBounds);
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        class DomParticle {
+        // Image cache to avoid re-instantiating image objects
+        const imageCache = new Map();
+
+        function getCachedImage(src) {
+            if (!src) return null;
+            if (imageCache.has(src)) {
+                return imageCache.get(src);
+            }
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = src;
+            imageCache.set(src, img);
+            return img;
+        }
+
+        class CanvasParticle {
             constructor(emote) {
                 this.type = emote.type || 'text';
                 this.src = emote.src || emote.name || '🔥';
                 this.name = emote.name || 'Emote';
+                
+                this.img = (this.type === 'image' && this.src) ? getCachedImage(this.src) : null;
 
-                this.el = document.createElement('div');
-                this.el.className = 'particle';
-
-                const size = 52 + Math.floor(Math.random() * 36);
-                this.size = size;
-                this.el.style.width = `${size}px`;
-                this.el.style.height = `${size}px`;
-
-                if (this.type === 'image' && this.src) {
-                    const img = document.createElement('img');
-                    img.src = this.src;
-                    img.alt = this.name;
-                    this.el.appendChild(img);
-                } else {
-                    const span = document.createElement('span');
-                    span.className = 'text-emote';
-                    span.style.fontSize = `${size * 0.85}px`;
-                    span.textContent = this.src;
-                    this.el.appendChild(span);
-                }
-
-                container.appendChild(this.el);
+                this.size = 52 + Math.floor(Math.random() * 36);
 
                 this.x = screenWidth / 2 + (Math.random() - 0.5) * (screenWidth * 0.4);
                 this.y = screenHeight - 60;
@@ -152,15 +126,29 @@
                 if (this.life > 90) {
                     this.alpha -= this.decay;
                 }
-
-                this.el.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px) rotate(${this.rotation}rad)`;
-                this.el.style.opacity = Math.max(0, this.alpha);
             }
 
-            destroy() {
-                if (this.el && this.el.parentNode) {
-                    this.el.parentNode.removeChild(this.el);
+            draw(ctx) {
+                if (this.alpha <= 0) return;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.translate(this.x + this.size / 2, this.y + this.size / 2);
+                ctx.rotate(this.rotation);
+
+                if (this.type === 'image' && this.img && this.img.complete && this.img.naturalWidth > 0) {
+                    ctx.drawImage(this.img, -this.size / 2, -this.size / 2, this.size, this.size);
+                } else {
+                    ctx.font = `900 ${Math.floor(this.size * 0.85)}px 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+                    ctx.shadowBlur = 8;
+                    ctx.fillText(this.src, 0, 0);
                 }
+
+                ctx.restore();
             }
         }
 
@@ -173,25 +161,33 @@
                 ];
             }
 
-            for (let i = 0; i < count; i++) {
+            // Cap count to prevent memory spikes
+            const actualCount = Math.min(count, 150);
+
+            for (let i = 0; i < actualCount; i++) {
+                if (particles.length >= MAX_ACTIVE_PARTICLES) {
+                    particles.shift(); // Remove oldest particle if max limit reached
+                }
                 const randomEmote = emotesList[Math.floor(Math.random() * emotesList.length)];
-                particles.push(new DomParticle(randomEmote));
+                particles.push(new CanvasParticle(randomEmote));
             }
         }
 
         function animationLoop() {
+            ctx.clearRect(0, 0, screenWidth, screenHeight);
+
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.update();
+                p.draw(ctx);
 
                 if (p.alpha <= 0) {
-                    p.destroy();
                     particles.splice(i, 1);
                 }
             }
             requestAnimationFrame(animationLoop);
         }
-        animationLoop();
+        requestAnimationFrame(animationLoop);
 
         let ws = null;
         let heartbeatTimer = null;
@@ -203,7 +199,7 @@
             ws = new WebSocket(wsUrl);
 
             ws.onopen = function () {
-                console.log("[Animated Emote Explosion Overlay] WebSocket conectado.");
+                console.log("[Animated Emote Explosion Canvas Overlay] WebSocket conectado.");
                 if (reconnectTimer) {
                     clearTimeout(reconnectTimer);
                     reconnectTimer = null;

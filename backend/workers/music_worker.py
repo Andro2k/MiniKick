@@ -97,7 +97,6 @@ class YouTubeResolveWorker(QThread):
                 ydl_opts['cookiefile'] = cookie_file
             
             info = None
-            # Primary client strategies (ios, android first for full audio format support without log errors)
             client_strategies = [
                 ['ios', 'android'],
                 ['web', 'mweb'],

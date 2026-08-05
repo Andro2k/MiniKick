@@ -225,20 +225,21 @@
             card.classList.add('bump');
 
             startTime = Date.now();
-            if (timerInterval) clearInterval(timerInterval);
+            if (timerInterval) cancelAnimationFrame(timerInterval);
             if (comboTimer) clearTimeout(comboTimer);
 
             timerBarEl.style.width = '100%';
 
-            timerInterval = setInterval(() => {
+            function animateTimerBar() {
                 const elapsed = (Date.now() - startTime) / 1000;
                 const remainingPct = Math.max(0, 100 * (1 - elapsed / comboTimeoutSec));
                 timerBarEl.style.width = `${remainingPct}%`;
 
-                if (remainingPct <= 0) {
-                    clearInterval(timerInterval);
+                if (remainingPct > 0) {
+                    timerInterval = requestAnimationFrame(animateTimerBar);
                 }
-            }, 50);
+            }
+            timerInterval = requestAnimationFrame(animateTimerBar);
 
             comboTimer = setTimeout(() => {
                 hideCombo();
@@ -247,7 +248,7 @@
 
         function hideCombo() {
             container.classList.remove('visible');
-            if (timerInterval) clearInterval(timerInterval);
+            if (timerInterval) cancelAnimationFrame(timerInterval);
             if (comboTimer) clearTimeout(comboTimer);
         }
 

@@ -1,14 +1,27 @@
 # frontend\views\network_view.py
 
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget, QHeaderView
+from PySide6.QtWidgets import (
+    QVBoxLayout, QHBoxLayout, QFrame, QLabel, QWidget, QHeaderView, QPushButton, QButtonGroup
+)
 from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
-from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
+from PySide6.QtGui import (
+    QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
+)
 from frontend.common.utils import get_icon_colored, get_pixmap_colored
 from frontend.widgets import BaseView, ModernButton, ModernTableCard
 from frontend.common.theme import (
-    COLOR_NEUTRAL_200, COLOR_NEUTRAL_500, 
-    COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK, COLOR_BLUE, COLOR_WHITE
+    COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_NEUTRAL_500, COLOR_NEUTRAL_800, COLOR_NEUTRAL_850,
+    COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK, COLOR_BLUE, COLOR_PURPLE, COLOR_WHITE
 )
+
+_SERVICE_PALETTE = {
+    "internet": (COLOR_BLUE, "network.graph.filter_internet"),
+    "kick": (COLOR_GREEN, "network.graph.filter_kick"),
+    "chat_websocket": (COLOR_PURPLE, "network.graph.filter_chat_websocket"),
+    "overlay": (COLOR_AMBER, "network.graph.filter_overlay"),
+    "spotify": ("#1DB954", "network.graph.filter_spotify"),
+    "youtube": (COLOR_RED, "network.graph.filter_youtube")
+}
 
 class GraphCanvas(QWidget):
     def __init__(self, parent):
@@ -22,24 +35,18 @@ class GraphCanvas(QWidget):
         self._cached_grid_lines = []   
         self._cached_labels = []       
         self._max_scale = 80
-        
-        self._blue_col = QColor(COLOR_BLUE)
-        self._blue_fill = QColor(self._blue_col)
-        self._blue_fill.setAlpha(30)
-        
-        self._green_col = QColor(COLOR_GREEN)
-        self._green_fill = QColor(self._green_col)
-        self._green_fill.setAlpha(30)
-
-        self._configs = [
-            ("internet", self._blue_col, self._blue_fill),
-            ("kick", self._green_col, self._green_fill)
-        ]
+        self.selected_service = "all"
         
         self._font_small = QFont("Inter", 8)
         self._font_bold = QFont("Inter", 8, QFont.Weight.Bold)
         self._metrics_small = QFontMetrics(self._font_small)
         self._base_tooltip_width = self._metrics_small.horizontalAdvance("Ping / Latency")
+
+    def set_selected_service(self, service_key: str):
+        if self.selected_service != service_key:
+            self.selected_service = service_key
+            self._dirty = True
+            self.update()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -47,7 +54,7 @@ class GraphCanvas(QWidget):
 
     def mark_dirty(self):
         self._dirty = True
-        
+
     def mouseMoveEvent(self, event):
         left_margin = 45
         right_margin = 10
@@ -89,8 +96,19 @@ class GraphCanvas(QWidget):
             return
             
         histories = self.parent_graph.histories
-        all_vals = histories["internet"] + histories["kick"]
-        max_val = max(80.0, max(all_vals))
+        
+        if self.selected_service != "all" and self.selected_service in histories:
+            active_keys = [self.selected_service]
+        else:
+            active_keys = [k for k in histories.keys() if k != "overlay"]
+            if not active_keys:
+                active_keys = list(histories.keys())
+
+        all_vals = []
+        for k in active_keys:
+            all_vals.extend(histories[k])
+
+        max_val = max(80.0, max(all_vals) if all_vals else 80.0)
         max_scale = ((int(max_val) // 40) + 1) * 40  
         self._max_scale = max_scale
         
@@ -105,13 +123,20 @@ class GraphCanvas(QWidget):
         self._cached_labels.append((left_margin + W // 2 - 15, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_20s")))
         self._cached_labels.append((self.width() - right_margin - 30, self.height() - 5, self.parent_graph.i18n.get("network.graph.time_now")))
 
-        for name, line_color, fill_color in self._configs:
-            history = histories[name]
+        for name, history in histories.items():
+            if self.selected_service != "all" and name != self.selected_service:
+                continue
+
+            color_str, _ = _SERVICE_PALETTE.get(name, (COLOR_GREEN, ""))
+            line_color = QColor(color_str)
+            fill_color = QColor(line_color)
+            fill_color.setAlpha(35 if self.selected_service == name else 18)
+
             points = []
             n_points = len(history)
             for i, val in enumerate(history):
                 x = left_margin + i * (W / (n_points - 1))
-                y = self.height() - bottom_margin - (val / max_scale) * H
+                y = self.height() - bottom_margin - (min(val, max_scale) / max_scale) * H
                 points.append(QPointF(x, y))
                 
             if len(points) >= 2:
@@ -130,7 +155,8 @@ class GraphCanvas(QWidget):
                 fill_path.lineTo(points[0].x(), self.height() - bottom_margin)
                 fill_path.closeSubpath()
                 
-                self._cached_paths.append((name, path, fill_path, line_color, fill_color))
+                line_width = 2.5 if (self.selected_service == name or self.selected_service == "all") else 1.5
+                self._cached_paths.append((name, path, fill_path, line_color, fill_color, line_width))
 
     def paintEvent(self, event):
         if self._dirty:
@@ -158,19 +184,20 @@ class GraphCanvas(QWidget):
                 painter.setPen(QPen(QColor(255, 255, 255, 12), 1, Qt.PenStyle.DashLine))
                 painter.drawLine(left_margin, y, self.width() - right_margin, y)
                 
-            painter.setPen(QColor(COLOR_NEUTRAL_200))
-            painter.drawText(5, y + 4, val_text)
+            painter.setPen(QColor(COLOR_NEUTRAL_400))
+            painter.drawText(5, int(y + 4), val_text)
 
-        painter.setPen(QColor(COLOR_NEUTRAL_200))
+        painter.setPen(QColor(COLOR_NEUTRAL_400))
         for x, y, text in self._cached_labels:
-            painter.drawText(x, y, text)
-        for name, path, fill_path, line_color, fill_color in self._cached_paths:
+            painter.drawText(int(x), int(y), text)
+
+        for name, path, fill_path, line_color, fill_color, line_w in self._cached_paths:
             gradient = QLinearGradient(0, top_margin, 0, self.height() - bottom_margin)
             gradient.setColorAt(0.0, fill_color)
             gradient.setColorAt(1.0, QColor(0, 0, 0, 0))
             painter.fillPath(fill_path, QBrush(gradient))
             
-            pen = QPen(line_color, 2.0)
+            pen = QPen(line_color, line_w)
             painter.setPen(pen)
             painter.drawPath(path)
 
@@ -178,24 +205,30 @@ class GraphCanvas(QWidget):
             hover_x = left_margin + self.hovered_idx * (W / 49)
             
             painter.setPen(QPen(QColor(255, 255, 255, 60), 1, Qt.PenStyle.DashLine))
-            painter.drawLine(hover_x, top_margin, hover_x, self.height() - bottom_margin)
+            painter.drawLine(int(hover_x), top_margin, int(hover_x), self.height() - bottom_margin)
             
             tooltip_data = []
             histories = self.parent_graph.histories
             max_scale = self._max_scale
 
-            for name, line_color, _ in self._configs:
+            active_services = list(histories.keys()) if self.selected_service == "all" else [self.selected_service]
+
+            for name in active_services:
+                if name not in histories:
+                    continue
                 val = histories[name][self.hovered_idx]
-                y = self.height() - bottom_margin - (val / max_scale) * H
+                y = self.height() - bottom_margin - (min(val, max_scale) / max_scale) * H
+                color_str, label_key = _SERVICE_PALETTE.get(name, (COLOR_GREEN, ""))
+                line_color = QColor(color_str)
                 
                 painter.setBrush(QBrush(QColor(line_color.red(), line_color.green(), line_color.blue(), 60)))
                 painter.setPen(Qt.PenStyle.NoPen)
-                painter.drawEllipse(QPointF(hover_x, y), 6, 6)
+                painter.drawEllipse(QPointF(hover_x, y), 5, 5)
                 
                 painter.setBrush(QBrush(line_color))
                 painter.drawEllipse(QPointF(hover_x, y), 3, 3)
                 
-                label = self.parent_graph.i18n.get(f"network.services.{name}")
+                label = self.parent_graph.i18n.get(label_key) or name
                 tooltip_data.append((label, int(val), line_color))
                 
             max_text_w = self._base_tooltip_width
@@ -205,7 +238,7 @@ class GraphCanvas(QWidget):
                     max_text_w = text_w
 
             tooltip_w = max_text_w + 35
-            tooltip_h = 70
+            tooltip_h = 24 + len(tooltip_data) * 18
             tooltip_x = hover_x + 15
             if tooltip_x + tooltip_w > self.width():
                 tooltip_x = hover_x - tooltip_w - 15
@@ -218,37 +251,37 @@ class GraphCanvas(QWidget):
             
             painter.setFont(self._font_bold)
             painter.setPen(QColor(COLOR_NEUTRAL_200))
-            painter.drawText(tooltip_x + 10, tooltip_y + 16, self.parent_graph.i18n.get("network.graph.tooltip_title"))
+            painter.drawText(int(tooltip_x + 10), int(tooltip_y + 16), self.parent_graph.i18n.get("network.graph.tooltip_title"))
             
             painter.setFont(self._font_small)
             for i, (label, val, col) in enumerate(tooltip_data):
-                y_offset = tooltip_y + 34 + i * 16
+                y_offset = tooltip_y + 32 + i * 16
                 painter.setBrush(QBrush(col))
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.drawEllipse(QPointF(tooltip_x + 15, y_offset - 3), 4, 4)
                 
                 painter.setPen(QColor(COLOR_WHITE))
-                painter.drawText(tooltip_x + 25, y_offset, f"{label}: {val} ms")
+                painter.drawText(int(tooltip_x + 25), int(y_offset), f"{label}: {val} ms")
 
 class LiveNetworkGraph(QFrame):
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
         self.i18n = i18n
         self.setProperty("role", "card")
-        self.setFixedHeight(295)
+        self.setFixedHeight(340)
         
-        self.histories = {
-            "internet": [35.0] * 50,
-            "kick": [45.0] * 50
-        }
-        self.current_latencies = {"internet": 35.0, "kick": 45.0}
-        self.avg_latencies = {"internet": 35.0, "kick": 45.0}
-        self.max_latencies = {"internet": 35.0, "kick": 45.0}
-        
+        self.histories = {}
+        self.current_latencies = {}
+        self.avg_latencies = {}
+        self.max_latencies = {}
+        self.min_latencies = {}
+        self.jitter_by_service = {}
+        self.stability_by_service = {}
+
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 12, 16, 12)
         self.main_layout.setSpacing(10)
-        
+
         self.header_layout = QHBoxLayout()
         self.header_layout.setSpacing(12)
         
@@ -258,7 +291,7 @@ class LiveNetworkGraph(QFrame):
         self.stats_container = QWidget()
         self.stats_layout = QHBoxLayout(self.stats_container)
         self.stats_layout.setContentsMargins(0, 0, 0, 0)
-        self.stats_layout.setSpacing(15)
+        self.stats_layout.setSpacing(12)
         
         self.lbl_live = QLabel()
         self.lbl_live.setProperty("role", "caption")
@@ -267,64 +300,143 @@ class LiveNetworkGraph(QFrame):
         self.lbl_avg = QLabel()
         self.lbl_avg.setProperty("role", "caption")
         self.lbl_avg.setProperty("state", "success")
-        
-        self.lbl_max = QLabel()
-        self.lbl_max.setVisible(False)
-        
+
+        self.lbl_min = QLabel()
+        self.lbl_min.setProperty("role", "caption")
+
+        self.lbl_jitter = QLabel()
+        self.lbl_jitter.setProperty("role", "caption")
+
+        self.lbl_stability = QLabel()
+        self.lbl_stability.setProperty("role", "caption")
+        self.lbl_stability.setProperty("state", "bold")
+
         self.stats_layout.addWidget(self.lbl_live)
         self.stats_layout.addWidget(self.lbl_avg)
-        self.stats_layout.addWidget(self.lbl_max)
+        self.stats_layout.addWidget(self.lbl_min)
+        self.stats_layout.addWidget(self.lbl_jitter)
+        self.stats_layout.addWidget(self.lbl_stability)
         
         self.header_layout.addWidget(self.lbl_title)
         self.header_layout.addStretch()
         self.header_layout.addWidget(self.stats_container)
         
         self.main_layout.addLayout(self.header_layout)
+
+        self.filter_container = QWidget()
+        self.filter_layout = QHBoxLayout(self.filter_container)
+        self.filter_layout.setContentsMargins(0, 0, 0, 0)
+        self.filter_layout.setSpacing(6)
+
+        self.btn_group = QButtonGroup(self)
+        self.btn_group.setExclusive(True)
+
+        self.filter_buttons = {}
+        filters = [
+            ("all", self.i18n.get("network.graph.filter_all")),
+            ("internet", self.i18n.get("network.graph.filter_internet")),
+            ("kick", self.i18n.get("network.graph.filter_kick")),
+            ("chat_websocket", self.i18n.get("network.graph.filter_chat_websocket")),
+            ("overlay", self.i18n.get("network.graph.filter_overlay")),
+            ("spotify", self.i18n.get("network.graph.filter_spotify")),
+            ("youtube", self.i18n.get("network.graph.filter_youtube"))
+        ]
+
+        for key, label_text in filters:
+            btn = QPushButton(label_text)
+            btn.setCheckable(True)
+            btn.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background-color: {COLOR_NEUTRAL_850};
+                    color: {COLOR_NEUTRAL_400};
+                    border: 1px solid {COLOR_NEUTRAL_800};
+                    border-radius: 6px;
+                    padding: 3px 10px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }}
+                QPushButton:hover {{
+                    background-color: {COLOR_NEUTRAL_800};
+                    color: {COLOR_WHITE};
+                }}
+                QPushButton:checked {{
+                    background-color: {COLOR_GREEN};
+                    color: {COLOR_BLACK};
+                    border-color: {COLOR_GREEN};
+                }}
+            """)
+            if key == "all":
+                btn.setChecked(True)
+
+            self.btn_group.addButton(btn)
+            self.filter_buttons[key] = btn
+            self.filter_layout.addWidget(btn)
+
+            btn.clicked.connect(lambda _, k=key: self._on_filter_changed(k))
+
+        self.filter_layout.addStretch()
+        self.main_layout.addWidget(self.filter_container)
         
         self.canvas = GraphCanvas(self)
         self.main_layout.addWidget(self.canvas, stretch=1)
         
-        self.legend_layout = QHBoxLayout()
-        self.legend_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.legend_layout.setSpacing(20)
-        
-        self.legend_internet = self._create_legend_item(COLOR_BLUE, self.i18n.get("network.services.internet"))
-        self.legend_kick = self._create_legend_item(COLOR_GREEN, self.i18n.get("network.services.kick"))
-        
-        self.legend_layout.addWidget(self.legend_internet)
-        self.legend_layout.addWidget(self.legend_kick)
-        
-        self.main_layout.addLayout(self.legend_layout)
         self._update_labels()
 
-    def _create_legend_item(self, color: str, text: str) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(2)
-        
-        lbl_dot = QLabel("● ")
-        lbl_dot.setProperty("role", "caption")
-        lbl_dot.setProperty("state", "info" if color == COLOR_BLUE else "success")
-        
-        lbl_text = QLabel(text)
-        lbl_text.setProperty("role", "caption")
-        
-        layout.addWidget(lbl_dot)
-        layout.addWidget(lbl_text)
-        return container
-        
+    def _on_filter_changed(self, service_key: str):
+        self.canvas.set_selected_service(service_key)
+        self._update_labels()
+
     def _update_labels(self):
-        int_lbl = self.i18n.get("network.services.internet")
-        kick_lbl = self.i18n.get("network.services.kick")
-        self.lbl_live.setText(f"{int_lbl}: {int(self.histories['internet'][-1])} ms")
-        self.lbl_avg.setText(f"{kick_lbl}: {int(self.histories['kick'][-1])} ms")
-        
-    def update_graph_data(self, histories: dict, currents: dict, averages: dict, maxima: dict):
+        selected = self.canvas.selected_service
+        live_str = self.i18n.get("network.graph.live")
+        avg_str = self.i18n.get("network.graph.avg")
+        min_str = self.i18n.get("network.graph.min")
+        jitter_str = self.i18n.get("network.graph.jitter")
+
+        if selected == "all":
+            int_curr = int(self.current_latencies.get("internet", 0))
+            int_avg = int(self.avg_latencies.get("internet", 0))
+            int_min = int(self.min_latencies.get("internet", 0))
+            int_jit = int(self.jitter_by_service.get("internet", 0))
+            stab = self.stability_by_service.get("internet", "good")
+
+            self.lbl_live.setText(f"{live_str}: {int_curr} ms")
+            self.lbl_avg.setText(f"{avg_str}: {int_avg} ms")
+            self.lbl_min.setText(f"{min_str}: {int_min} ms")
+            self.lbl_jitter.setText(f"{jitter_str}: ±{int_jit} ms")
+            
+            stab_text = self.i18n.get(f"network.graph.stability_{stab}") or stab.capitalize()
+            self.lbl_stability.setText(f"● {stab_text}")
+        elif selected in self.current_latencies:
+            curr = int(self.current_latencies.get(selected, 0))
+            avg = int(self.avg_latencies.get(selected, 0))
+            mn = int(self.min_latencies.get(selected, 0))
+            jit = int(self.jitter_by_service.get(selected, 0))
+            stab = self.stability_by_service.get(selected, "good")
+
+            self.lbl_live.setText(f"{live_str}: {curr} ms")
+            self.lbl_avg.setText(f"{avg_str}: {avg} ms")
+            self.lbl_min.setText(f"{min_str}: {mn} ms")
+            self.lbl_jitter.setText(f"{jitter_str}: ±{jit} ms")
+
+            stab_text = self.i18n.get(f"network.graph.stability_{stab}") or stab.capitalize()
+            self.lbl_stability.setText(f"● {stab_text}")
+
+    def update_graph_data(
+        self, histories: dict, currents: dict, averages: dict, maxima: dict,
+        minima: dict = None, jitters: dict = None, stabilities: dict = None
+    ):
         self.histories = histories
         self.current_latencies = currents
         self.avg_latencies = averages
         self.max_latencies = maxima
+        if minima:
+            self.min_latencies = minima
+        if jitters:
+            self.jitter_by_service = jitters
+        if stabilities:
+            self.stability_by_service = stabilities
 
         if self.isVisible():
             self._update_labels()
@@ -387,12 +499,12 @@ class NetworkView(BaseView):
         
         self.table = self.table_card.table
         self.table.setRowCount(len(self.service_configs))
-        self.table.verticalHeader().setDefaultSectionSize(48)
+        self.table.verticalHeader().setDefaultSectionSize(50)
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         
         h_header = self.table.horizontalHeader()
-        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
         h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
@@ -428,7 +540,7 @@ class NetworkView(BaseView):
     def _create_service_cell(self, title: str, icon_name: str) -> tuple[QWidget, QLabel]:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(12, 4, 8, 4)
+        layout.setContentsMargins(8, 4, 8, 4)
         layout.setSpacing(10)
         
         lbl_icon = QLabel()
@@ -472,7 +584,7 @@ class NetworkView(BaseView):
     def _create_latency_cell(self) -> tuple[QWidget, QLabel]:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 4, 12, 4)
+        layout.setContentsMargins(8, 4, 8, 4)
         layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         
         lbl_latency = QLabel("-")

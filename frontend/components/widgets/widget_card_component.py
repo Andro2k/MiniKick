@@ -196,7 +196,7 @@ class WidgetCard(QFrame):
             lbl_parts = QLabel(self.i18n.get("widgets.explosion.particle_count_label"))
             lbl_parts.setProperty("role", "body")
             self.spn_particle_count = QSpinBox()
-            self.spn_particle_count.setRange(5, 30)
+            self.spn_particle_count.setRange(5, 100)
             self.spn_particle_count.valueChanged.connect(self._on_changed)
             gp_layout.addWidget(lbl_parts)
             gp_layout.addWidget(self.spn_particle_count)

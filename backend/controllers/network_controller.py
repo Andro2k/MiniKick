@@ -22,5 +22,8 @@ class NetworkController(QObject):
             self.service.history_by_service,
             self.service.current_latencies,
             self.service.avg_latencies,
-            self.service.max_latencies
+            self.service.max_latencies,
+            getattr(self.service, "min_latencies", {}),
+            getattr(self.service, "jitter_by_service", {}),
+            getattr(self.service, "stability_by_service", {})
         )
