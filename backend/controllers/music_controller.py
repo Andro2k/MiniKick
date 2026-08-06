@@ -1,14 +1,14 @@
 # backend\controllers\music_controller.py
 
+import time
 from PySide6.QtCore import QObject, Slot, QTimer, Signal
 
 class MusicController(QObject):
     song_changed = Signal(dict)
 
-    def __init__(self, view, spotify_auth, command_service, toast_manager, i18n, settings_storage=None, music_storage=None, provider_factory=None):
+    def __init__(self, view, command_service, toast_manager, i18n, settings_storage=None, music_storage=None, provider_factory=None, music_provider=None):
         super().__init__()
         self.view = view
-        self.spotify_auth = spotify_auth
         self.command_service = command_service
         self.toast = toast_manager
         self.i18n = i18n
@@ -16,16 +16,21 @@ class MusicController(QObject):
         self.music_storage = music_storage
         self.provider_factory = provider_factory
         if not self.provider_factory:
-            from backend.providers import SpotifyMusicProvider, YouTubeMusicProvider
+            from backend.providers import YouTubeMusicProvider
             self.provider_factory = {
-                "spotify": lambda auth, db: SpotifyMusicProvider(auth, self.i18n, db_manager=db),
                 "youtube": lambda db: YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=db)
             }
-        self.music_provider = None
-        self.auth_worker = None
-        self.provider_type = "spotify"
+        self.music_provider = music_provider
+        self.provider_type = "youtube"
         self._last_song: dict | None = None
         self.music_service_enabled = True
+        self._user_last_request_time: dict[str, float] = {}
+
+        self.max_user_songs = 2
+        self.user_cooldown = 30
+        self.max_queue_size = 30
+        self.max_song_duration = 10
+
         self.polling_timer = QTimer(self)
         self.polling_timer.setInterval(5000)
         self.polling_timer.timeout.connect(self._poll_now_playing)
@@ -33,10 +38,7 @@ class MusicController(QObject):
         self._load_initial_state()
 
     def _connect_signals(self):
-        self.view.connect_requested.connect(self.handle_connect_request)
-        self.view.disconnect_requested.connect(self.handle_disconnect_request)
         self.view.command_toggled.connect(self.handle_command_toggle)
-        self.view.provider_changed.connect(self.set_provider_type)
         self.view.volume_changed.connect(self.set_volume)
         self.view.remove_queue_item_requested.connect(self.handle_remove_queue_item)
         self.command_service.commands_changed.connect(self._sync_switches_from_db)
@@ -46,6 +48,15 @@ class MusicController(QObject):
         self.view.service_toggled.connect(self.handle_service_toggle)
         self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
         self.view.view_shown.connect(self._poll_now_playing)
+
+        if hasattr(self.view, "max_user_songs_changed"):
+            self.view.max_user_songs_changed.connect(self.set_max_user_songs)
+        if hasattr(self.view, "user_cooldown_changed"):
+            self.view.user_cooldown_changed.connect(self.set_user_cooldown)
+        if hasattr(self.view, "max_queue_size_changed"):
+            self.view.max_queue_size_changed.connect(self.set_max_queue_size)
+        if hasattr(self.view, "max_song_duration_changed"):
+            self.view.max_song_duration_changed.connect(self.set_max_song_duration)
 
     def _sync_switches_from_db(self):
         saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.get_all_commands()}
@@ -63,7 +74,7 @@ class MusicController(QObject):
 
     def _load_initial_state(self):
         commands = self.command_service.get_all_commands()
-        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_PAUSE]", "[PLUGIN_SPOTIFY_PAUSE]")):
+        if not any(c for c in commands if c["response"] == "[PLUGIN_MUSIC_PAUSE]"):
             self.command_service.save_command(
                 trigger="!pause",
                 response="[PLUGIN_MUSIC_PAUSE]",
@@ -73,7 +84,7 @@ class MusicController(QObject):
                 is_regex=False,
                 permission="moderator"
             )
-        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_RESUME]", "[PLUGIN_SPOTIFY_RESUME]")):
+        if not any(c for c in commands if c["response"] == "[PLUGIN_MUSIC_RESUME]"):
             self.command_service.save_command(
                 trigger="!resume",
                 response="[PLUGIN_MUSIC_RESUME]",
@@ -83,7 +94,7 @@ class MusicController(QObject):
                 is_regex=False,
                 permission="moderator"
             )
-        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_PLAYLIST]", "[PLUGIN_SPOTIFY_PLAYLIST]")):
+        if not any(c for c in commands if c["response"] == "[PLUGIN_MUSIC_PLAYLIST]"):
             self.command_service.save_command(
                 trigger="!playlist",
                 response="[PLUGIN_MUSIC_PLAYLIST]",
@@ -93,7 +104,7 @@ class MusicController(QObject):
                 is_regex=False,
                 permission="everyone"
             )
-        if not any(c for c in commands if c["response"] in ("[PLUGIN_MUSIC_VOLUME]", "[PLUGIN_SPOTIFY_VOLUME]")):
+        if not any(c for c in commands if c["response"] == "[PLUGIN_MUSIC_VOLUME]"):
             self.command_service.save_command(
                 trigger="!vol",
                 response="[PLUGIN_MUSIC_VOLUME]",
@@ -107,25 +118,30 @@ class MusicController(QObject):
         self._sync_switches_from_db()
 
         if self.settings_storage:
-            self.provider_type = self.settings_storage.load_string("music_provider_type", "spotify")
             auto_resume = self.settings_storage.load_bool("youtube_auto_resume", True)
             self.music_service_enabled = self.settings_storage.load_bool("music_service_enabled", True)
+            
+            try:
+                self.max_user_songs = int(self.settings_storage.load_string("youtube_max_user_songs", "2"))
+                self.user_cooldown = int(self.settings_storage.load_string("youtube_user_cooldown", "30"))
+                self.max_queue_size = int(self.settings_storage.load_string("youtube_max_queue_size", "30"))
+                self.max_song_duration = int(self.settings_storage.load_string("youtube_max_song_duration", "10"))
+            except Exception:
+                pass
+
             self.view.blockSignals(True)
             self.view.sw_auto_resume.setChecked(auto_resume)
             self.view.set_service_state(self.music_service_enabled)
+            if hasattr(self.view, "set_rate_limit_values"):
+                self.view.set_rate_limit_values(
+                    self.max_user_songs,
+                    self.user_cooldown,
+                    self.max_queue_size,
+                    self.max_song_duration
+                )
             self.view.blockSignals(False)
 
-        index = self.view.combo_provider.findData(self.provider_type)
-        if index != -1:
-            self.view.blockSignals(True)
-            self.view.combo_provider.setCurrentIndex(index)
-            self.view.blockSignals(False)
-
-        if self.provider_type == "spotify":
-            if self.spotify_auth.get_access_token():
-                self._init_session_success("music.status.session_remembered")
-        elif self.provider_type == "youtube":
-            self._init_youtube_provider()
+        self._init_youtube_provider()
 
     @Slot(bool)
     def handle_service_toggle(self, enabled: bool):
@@ -139,37 +155,10 @@ class MusicController(QObject):
         if self.toast:
             self.toast.show_toast(status_title, status_msg, state_color)
 
-    @Slot()
-    def handle_connect_request(self):
-        if self.provider_type == "spotify":
-            self.view.btn_connect.setEnabled(False)
-            self.view.lbl_auth_status.setText(self.i18n.get("music.status.connecting"))
-
-            from backend.workers import SpotifyAuthWorker
-            self.auth_worker = SpotifyAuthWorker(self.i18n, self.spotify_auth)
-            self.auth_worker.auth_success.connect(lambda tokens: self._init_session_success("music.status.connected_user"))
-            self.auth_worker.auth_error.connect(self._handle_auth_error)
-            self.auth_worker.start()
-        elif self.provider_type == "youtube":
-            self._init_youtube_provider()
-
-    def _init_session_success(self, label_key: str):
-        db_mgr = self.settings_storage.db_manager if self.settings_storage else None
-        self.music_provider = self.provider_factory["spotify"](self.spotify_auth, db_mgr)
-        self.view.set_auth_state(connected=True, label_key=label_key)
-        self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), self.i18n.get("music.toast.connected"), "success")   
-        self.polling_timer.start()
-        self._poll_now_playing()
-
-    @Slot(str)
-    def _handle_auth_error(self, err_msg: str):
-        self.toast.show_toast(self.i18n.get("music.toast.title_spotify"), err_msg, "danger")
-        self.view.set_auth_state(connected=False)
-        self.view.btn_connect.setEnabled(True)
-
     def _init_youtube_provider(self):
-        db_mgr = self.settings_storage.db_manager if self.settings_storage else None
-        self.music_provider = self.provider_factory["youtube"](db_mgr)
+        if not self.music_provider:
+            db_mgr = self.settings_storage.db_manager if self.settings_storage else None
+            self.music_provider = self.provider_factory["youtube"](db_mgr)
         self.music_provider.resolve_error_occurred.connect(self.handle_resolve_error)
         
         vol = 100
@@ -180,32 +169,13 @@ class MusicController(QObject):
                 vol = 100
         self.music_provider.set_volume(vol)
         
-        self.view.blockSignals(True)
+        self.view.slider_vol.blockSignals(True)
         self.view.slider_vol.setValue(vol)
+        self.view.slider_vol.blockSignals(False)
         self.view.lbl_vol_perc.setText(f"{vol}%")
-        self.view.blockSignals(False)
         self.view.set_auth_state(connected=True, label_key="music.status.youtube_active")
         self.polling_timer.start()
         self._poll_now_playing()
-
-    def set_provider_type(self, provider_type: str):
-        if provider_type not in ("spotify", "youtube"):
-            return
-
-        self.polling_timer.stop()
-        if self.provider_type == "spotify" and self.spotify_auth.get_access_token():
-            self.spotify_auth.logout()
-
-        self.music_provider = None
-        self.provider_type = provider_type
-        if self.settings_storage:
-            self.settings_storage.save_string("music_provider_type", provider_type)
-
-        if provider_type == "spotify":
-            self.view.set_auth_state(connected=False)
-            self.view.update_current_song(None)
-        elif provider_type == "youtube":
-            self._init_youtube_provider()
 
     def set_volume(self, volume: int):
         if self.music_provider:
@@ -213,16 +183,25 @@ class MusicController(QObject):
         if self.settings_storage:
             self.settings_storage.save_string("music_volume", str(volume))
 
-    @Slot()
-    def handle_disconnect_request(self):
-        self.polling_timer.stop()
-        if self.provider_type == "spotify":
-            self.spotify_auth.logout()
-        self.music_provider = None
-        self.view.set_auth_state(connected=False)
-        self.view.update_current_song(None)
-        title_str = self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube"
-        self.toast.show_toast(title_str, self.i18n.get("music.toast.disconnected"), "info")
+    def set_max_user_songs(self, val: int):
+        self.max_user_songs = max(1, min(10, val))
+        if self.settings_storage:
+            self.settings_storage.save_string("youtube_max_user_songs", str(self.max_user_songs))
+
+    def set_user_cooldown(self, val: int):
+        self.user_cooldown = max(0, min(300, val))
+        if self.settings_storage:
+            self.settings_storage.save_string("youtube_user_cooldown", str(self.user_cooldown))
+
+    def set_max_queue_size(self, val: int):
+        self.max_queue_size = max(5, min(100, val))
+        if self.settings_storage:
+            self.settings_storage.save_string("youtube_max_queue_size", str(self.max_queue_size))
+
+    def set_max_song_duration(self, val: int):
+        self.max_song_duration = max(1, min(30, val))
+        if self.settings_storage:
+            self.settings_storage.save_string("youtube_max_song_duration", str(self.max_song_duration))
 
     @Slot()
     def _poll_now_playing(self):
@@ -263,7 +242,7 @@ class MusicController(QObject):
             if success:
                 self._poll_now_playing()
                 msg = self.i18n.get("music.toast.removed_from_queue")
-                self.toast.show_toast(self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube", msg, "success")
+                self.toast.show_toast("YouTube", msg, "success")
 
     @Slot(int, int)
     def handle_move_queue_item(self, from_index: int, to_index: int):
@@ -272,8 +251,7 @@ class MusicController(QObject):
             if success:
                 self._poll_now_playing()
                 msg = self.i18n.get("music.toast.moved_in_queue")
-                title_str = self.i18n.get("music.toast.title_spotify") if self.provider_type == "spotify" else "YouTube"
-                self.toast.show_toast(title_str, msg, "info")
+                self.toast.show_toast("YouTube", msg, "info")
 
     @Slot(str, bool)
     def handle_command_toggle(self, trigger: str, is_active: bool):
@@ -311,9 +289,6 @@ class MusicController(QObject):
 
     def shutdown(self):
         self.polling_timer.stop()
-        if self.auth_worker and self.auth_worker.isRunning():
-            self.auth_worker.terminate()
-            self.auth_worker.wait()
         if self.music_provider and hasattr(self.music_provider, "shutdown"):
             self.music_provider.shutdown()
 
@@ -378,14 +353,13 @@ class MusicController(QObject):
         if self.settings_storage:
             self.settings_storage.save_bool("youtube_auto_resume", enabled)
             
-        if self.provider_type == "youtube" and self.music_provider:
+        if self.music_provider:
             self.music_provider.auto_resume = enabled
 
     def _require_active_provider(self, api) -> bool:
         if self.music_provider:
             return True
-        key = "music.chat.not_linked_youtube" if self.provider_type == 'youtube' else "music.chat.not_linked_spotify"
-        api.post_chat_message(self.i18n.get(key))
+        api.post_chat_message(self.i18n.get("music.chat.not_linked_youtube"))
         return False
 
     @Slot(str, str, str, str)
@@ -402,19 +376,12 @@ class MusicController(QObject):
         provider = self.music_provider
         dispatch_table = {
             "[PLUGIN_MUSIC_SR]": self._handle_plugin_sr,
-            "[PLUGIN_SPOTIFY_SR]": self._handle_plugin_sr,
             "[PLUGIN_MUSIC_SKIP]": self._handle_plugin_skip,
-            "[PLUGIN_SPOTIFY_SKIP]": self._handle_plugin_skip,
             "[PLUGIN_MUSIC_SONG]": self._handle_plugin_song,
-            "[PLUGIN_SPOTIFY_SONG]": self._handle_plugin_song,
             "[PLUGIN_MUSIC_PAUSE]": self._handle_plugin_pause,
-            "[PLUGIN_SPOTIFY_PAUSE]": self._handle_plugin_pause,
             "[PLUGIN_MUSIC_RESUME]": self._handle_plugin_resume,
-            "[PLUGIN_SPOTIFY_RESUME]": self._handle_plugin_resume,
             "[PLUGIN_MUSIC_PLAYLIST]": self._handle_plugin_playlist,
-            "[PLUGIN_SPOTIFY_PLAYLIST]": self._handle_plugin_playlist,
             "[PLUGIN_MUSIC_VOLUME]": self._handle_plugin_volume,
-            "[PLUGIN_SPOTIFY_VOLUME]": self._handle_plugin_volume,
         }
         
         executor = dispatch_table.get(tag)
@@ -494,13 +461,50 @@ class MusicController(QObject):
             msg = self.i18n.get("music.chat.sr_usage").replace("{user}", user).replace("{trigger}", prefix_used)
             api.post_chat_message(msg)
             return
-        if self._require_active_provider(api):
-            def on_complete(success, reply_msg):
-                api.post_chat_message(reply_msg)
-                
-            success, immediate_reply = provider.add_to_queue(query, callback=on_complete, requester=user)
-            if immediate_reply:
-                api.post_chat_message(immediate_reply)
+
+        if not self._require_active_provider(api):
+            return
+
+        user_lower = user.lower()
+        now = time.time()
+
+        queue_items = provider.get_queue() if provider and hasattr(provider, "get_queue") else []
+        if len(queue_items) >= self.max_queue_size:
+            msg = self.i18n.get("music.chat.queue_full").replace("{user}", user).replace("{max}", str(self.max_queue_size))
+            api.post_chat_message(msg)
+            return
+
+        last_time = self._user_last_request_time.get(user_lower, 0.0)
+        elapsed = now - last_time
+        if elapsed < self.user_cooldown:
+            remaining = int(self.user_cooldown - elapsed) + 1
+            msg = self.i18n.get("music.chat.cooldown_active").replace("{user}", user).replace("{seconds}", str(remaining))
+            api.post_chat_message(msg)
+            return
+
+        user_active_count = sum(1 for song in queue_items if (song.get("requester") or "").lower() == user_lower)
+        current_song = provider.get_current_song() if provider else None
+        if current_song and (current_song.get("requester") or "").lower() == user_lower:
+            user_active_count += 1
+
+        if user_active_count >= self.max_user_songs:
+            msg = self.i18n.get("music.chat.user_limit_reached").replace("{user}", user).replace("{count}", str(user_active_count)).replace("{max}", str(self.max_user_songs))
+            api.post_chat_message(msg)
+            return
+
+        self._user_last_request_time[user_lower] = now
+
+        def on_complete(success, reply_msg):
+            api.post_chat_message(reply_msg)
+            
+        success, immediate_reply = provider.add_to_queue(
+            query,
+            callback=on_complete,
+            requester=user,
+            max_duration_min=self.max_song_duration
+        )
+        if immediate_reply:
+            api.post_chat_message(immediate_reply)
 
     def _handle_plugin_skip(self, api, provider, user, message, prefix_used):
         if self._require_active_provider(api):
@@ -511,7 +515,6 @@ class MusicController(QObject):
 
     def _handle_plugin_song(self, api, provider, user, message, prefix_used):
         if self._require_active_provider(api):
-            is_youtube = getattr(provider, "provider_id", "") == "youtube"
             song = provider.get_current_song()
             if song:
                 is_playing = song.get("is_playing", False)
@@ -519,10 +522,10 @@ class MusicController(QObject):
                     msg = self.i18n.get("music.chat.song_now_playing").replace("{title}", song["title"]).replace("{artist}", song["artist"])
                     api.post_chat_message(msg)
                 else:
-                    msg = self.i18n.get("music.chat.song_paused_youtube") if is_youtube else self.i18n.get("music.chat.song_paused_spotify")
+                    msg = self.i18n.get("music.chat.song_paused_youtube")
                     api.post_chat_message(msg)
             else:
-                msg = self.i18n.get("music.chat.song_empty_youtube") if is_youtube else self.i18n.get("music.chat.song_paused")
+                msg = self.i18n.get("music.chat.song_empty_youtube")
                 api.post_chat_message(msg)
 
     def _handle_plugin_pause(self, api, provider, user, message, prefix_used):

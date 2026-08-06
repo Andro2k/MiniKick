@@ -147,11 +147,12 @@ class YouTubeResolveWorker(QThread):
 class YouTubeSearchWorker(QThread):
     finished = Signal(bool, str)
 
-    def __init__(self, search_query: str, query_raw: str, i18n):
+    def __init__(self, search_query: str, query_raw: str, i18n, max_duration_min: int = 10):
         super().__init__()
         self.search_query = search_query
         self.query_raw = query_raw
         self.i18n = i18n
+        self.max_duration_min = max_duration_min
         self.song_entry = None
 
     def run(self):
@@ -241,6 +242,12 @@ class YouTubeSearchWorker(QThread):
             author = item.get('uploader') or item.get('channel', '-')
 
             duration_sec = item.get('duration')
+            if duration_sec and self.max_duration_min > 0:
+                if int(duration_sec) > self.max_duration_min * 60:
+                    msg = self.i18n.get("music.chat.song_too_long").replace("{user}", "").replace("{max}", str(self.max_duration_min))
+                    self.finished.emit(False, msg)
+                    return
+
             duration_str = "-"
             if duration_sec:
                 try:

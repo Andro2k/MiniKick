@@ -3,24 +3,31 @@
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QTabWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernScrollArea
-from frontend.components.music import MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicQueuePanel
+from frontend.components.music import (
+    MusicStatsPanel,
+    MusicPlayerSettingsPanel,
+    MusicCommandsPanel,
+    MusicQueuePanel,
+    MusicSettingsPanel
+)
 
 class MusicView(BaseView):
-    connect_requested = Signal()
-    disconnect_requested = Signal()
     command_toggled = Signal(str, bool)
-    provider_changed = Signal(str)
     volume_changed = Signal(int)
     remove_queue_item_requested = Signal(int)
     play_pause_requested = Signal()
     skip_requested = Signal()
     youtube_auto_resume_toggled = Signal(bool)
+    max_user_songs_changed = Signal(int)
+    user_cooldown_changed = Signal(int)
+    max_queue_size_changed = Signal(int)
+    max_song_duration_changed = Signal(int)
     service_toggled = Signal(bool)
     move_queue_item_requested = Signal(int, int)
     view_shown = Signal()
 
-    def __init__(self, i18n, music_overlay_url: str = "", parent=None):
-        super().__init__(i18n=i18n, title_key="music.header.title", subtitle_key="music.header.subtitle", parent=parent)
+    def __init__(self, i18n, music_overlay_url: str = ""):
+        super().__init__(i18n=i18n, title_key="music.header.title", subtitle_key="music.header.subtitle")
         self._music_overlay_url = music_overlay_url
         self._last_direction = None
         self._setup_ui()
@@ -54,10 +61,12 @@ class MusicView(BaseView):
 
         self.player_panel = MusicPlayerSettingsPanel(self.i18n, music_overlay_url=self._music_overlay_url)
         self.commands_panel = MusicCommandsPanel(self.i18n)
+        self.settings_panel = MusicSettingsPanel(self.i18n)
         self.queue_panel = MusicQueuePanel(self.i18n)
 
         self.tabs.addTab(ModernScrollArea(self.player_panel), self.i18n.get("music.tabs.player"))
         self.tabs.addTab(ModernScrollArea(self.commands_panel), self.i18n.get("music.tabs.commands"))
+        self.tabs.addTab(ModernScrollArea(self.settings_panel), self.i18n.get("music.tabs.settings"))
 
         self.col1_layout.addWidget(self.tabs)
 
@@ -75,14 +84,16 @@ class MusicView(BaseView):
 
     def _connect_internal_signals(self):
         self.stats_panel.service_toggled.connect(self._on_service_toggled)
-        
-        self.player_panel.connect_requested.connect(self.connect_requested.emit)
-        self.player_panel.disconnect_requested.connect(self.disconnect_requested.emit)
-        self.player_panel.provider_changed.connect(self.provider_changed.emit)
+
         self.player_panel.volume_changed.connect(self.volume_changed.emit)
         self.player_panel.play_pause_requested.connect(self.play_pause_requested.emit)
         self.player_panel.skip_requested.connect(self.skip_requested.emit)
-        self.player_panel.youtube_auto_resume_toggled.connect(self.youtube_auto_resume_toggled.emit)
+
+        self.settings_panel.youtube_auto_resume_toggled.connect(self.youtube_auto_resume_toggled.emit)
+        self.settings_panel.max_user_songs_changed.connect(self.max_user_songs_changed.emit)
+        self.settings_panel.user_cooldown_changed.connect(self.user_cooldown_changed.emit)
+        self.settings_panel.max_queue_size_changed.connect(self.max_queue_size_changed.emit)
+        self.settings_panel.max_song_duration_changed.connect(self.max_song_duration_changed.emit)
 
         self.commands_panel.command_toggled.connect(self.command_toggled.emit)
 
@@ -95,26 +106,6 @@ class MusicView(BaseView):
         self.service_toggled.emit(checked)
 
     @property
-    def combo_provider(self):
-        return self.player_panel.combo_provider
-
-    @property
-    def btn_connect(self):
-        return self.player_panel.btn_connect
-
-    @property
-    def btn_disconnect(self):
-        return self.player_panel.btn_disconnect
-
-    @property
-    def lbl_auth_status(self):
-        return self.player_panel.lbl_auth_status
-
-    @property
-    def lbl_provider_name(self):
-        return self.player_panel.lbl_provider_name
-
-    @property
     def slider_vol(self):
         return self.player_panel.slider_vol
 
@@ -124,7 +115,7 @@ class MusicView(BaseView):
 
     @property
     def sw_auto_resume(self):
-        return self.player_panel.sw_auto_resume
+        return self.settings_panel.sw_auto_resume
 
     @property
     def sw_sr(self):
@@ -171,14 +162,8 @@ class MusicView(BaseView):
 
     def set_auth_state(self, connected: bool, label_key: str = ""):
         self.player_panel.set_auth_state(connected, label_key)
-        
-        provider = self.combo_provider.currentData()
-        is_youtube = (provider == "youtube")
-        enable_commands = (is_youtube or connected)
-        show_queue = (is_youtube or connected)
-        
-        self.commands_panel.set_enabled_state(enable_commands)
-        self.queue_panel.card_queue.setVisible(show_queue)
+        self.commands_panel.set_enabled_state(True)
+        self.queue_panel.card_queue.setVisible(True)
 
     def update_current_song(self, song_data: dict | None):
         self.player_panel.update_current_song(song_data)
@@ -197,3 +182,4 @@ class MusicView(BaseView):
             self._last_direction = direction
             if hasattr(self, 'columns_layout'):
                 self.columns_layout.setDirection(direction)
+

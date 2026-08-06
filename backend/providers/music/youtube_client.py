@@ -43,13 +43,19 @@ class YouTubeMusicProvider(QObject):
 
         self.auto_resume = True
         self._start_playing_current = True
+        self._volume_gain = 1.0
+
         if self.db_manager:
             try:
                 from backend.database import SQLiteSettingsStorage
                 settings = SQLiteSettingsStorage(self.db_manager)
                 self.auto_resume = settings.load_bool("youtube_auto_resume", True)
+                saved_vol = int(settings.load_string("music_volume", "100"))
+                self._volume_gain = max(0.0, min(1.0, saved_vol / 100.0))
             except Exception as e:
-                logging.error("[YouTubeMusicProvider] Error loading auto_resume setting: %s", e)
+                logging.error("[YouTubeMusicProvider] Error loading settings: %s", e)
+
+        self.audio_output.setVolume(self._volume_gain)
 
         if self.music_storage:
             pending = self.music_storage.load_pending_songs("youtube")
@@ -115,13 +121,24 @@ class YouTubeMusicProvider(QObject):
     def provider_id(self) -> str:
         return "youtube"
 
-    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None) -> tuple[bool, str]:
+    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None, max_duration_min: int = 10) -> tuple[bool, str]:
         query = query_or_uri.strip()
         is_search = not (query.startswith("http://") or query.startswith("https://") or query.startswith("www."))
         
         if is_search:
             cached = self._get_cached_search(query)
             if cached:
+                dur_str = cached.get("duration", "-")
+                if dur_str and dur_str != "-" and max_duration_min > 0:
+                    try:
+                        parts = [int(p) for p in dur_str.split(":")]
+                        dur_sec = parts[0] * 60 + parts[1] if len(parts) == 2 else (parts[0] * 3600 + parts[1] * 60 + parts[2] if len(parts) == 3 else 0)
+                        if dur_sec > max_duration_min * 60:
+                            msg = self.i18n.get("music.chat.song_too_long").replace("{user}", requester or "").replace("{max}", str(max_duration_min))
+                            return False, msg
+                    except Exception:
+                        pass
+
                 song_entry = {
                     "title": cached["title"],
                     "artist": cached["artist"],
@@ -129,7 +146,7 @@ class YouTubeMusicProvider(QObject):
                     "resolved": False,
                     "stream_url": None,
                     "requester": requester,
-                    "duration": cached.get("duration", "-")
+                    "duration": dur_str
                 }
                 if self.music_storage:
                     db_id = self.music_storage.add_song_to_queue(
@@ -159,7 +176,7 @@ class YouTubeMusicProvider(QObject):
             search_query = query
             immediate_msg = self.i18n.get("music.queue.processing_link")
 
-        worker = YouTubeSearchWorker(search_query, query, self.i18n)
+        worker = YouTubeSearchWorker(search_query, query, self.i18n, max_duration_min=max_duration_min)
         
         def on_worker_finished(success, message):
             if success and worker.song_entry:
@@ -199,7 +216,8 @@ class YouTubeMusicProvider(QObject):
         return True
 
     def set_volume(self, volume: int) -> None:
-        self.audio_output.setVolume(volume / 100.0)
+        self._volume_gain = max(0.0, min(1.0, volume / 100.0))
+        self.audio_output.setVolume(self._volume_gain)
 
     def get_queue(self) -> list[dict]:
         return list(self.queue)
@@ -365,6 +383,8 @@ class YouTubeMusicProvider(QObject):
             self.current_local_file = path_or_url
             self.player.setSource(QUrl.fromLocalFile(path_or_url))
             
+        self.audio_output.setVolume(self._volume_gain)
+
         if self._start_playing_current:
             self.player.play()
         else:
@@ -403,5 +423,7 @@ class YouTubeMusicProvider(QObject):
         return True
 
     def resume_playback(self) -> bool:
+        self.audio_output.setVolume(self._volume_gain)
         self.player.play()
         return True
+

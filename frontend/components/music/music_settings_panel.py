@@ -1,5 +1,3 @@
-# frontend\components\music\music_settings_panel.py
-
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt
 from frontend.common.utils import NoWheelSlider
@@ -136,3 +134,4 @@ class MusicSettingsPanel(QWidget):
         self.slider_max_duration.setValue(max_song_duration)
         self.slider_max_duration.blockSignals(False)
         self.lbl_max_duration.setText(f"{max_song_duration}m")
+

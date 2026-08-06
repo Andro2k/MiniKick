@@ -287,7 +287,7 @@ class LiveNetworkGraph(QFrame):
         self.lbl_title = QLabel(self.i18n.get("network.graph.title"))
         self.lbl_title.setProperty("role", "h3")
         
-        self.stats_container = QWidget(self)
+        self.stats_container = QWidget()
         self.stats_layout = QHBoxLayout(self.stats_container)
         self.stats_layout.setContentsMargins(0, 0, 0, 0)
         self.stats_layout.setSpacing(12)
@@ -322,7 +322,7 @@ class LiveNetworkGraph(QFrame):
         
         self.main_layout.addLayout(self.header_layout)
 
-        self.filter_container = QWidget(self)
+        self.filter_container = QWidget()
         self.filter_layout = QHBoxLayout(self.filter_container)
         self.filter_layout.setContentsMargins(0, 0, 0, 0)
         self.filter_layout.setSpacing(6)
