@@ -192,7 +192,7 @@ class ChatController(QObject):
             exact_handler(dto, prefix)
             return
 
-        if plugin_tag.startswith("[PLUGIN_MUSIC_") or plugin_tag.startswith("[PLUGIN_SPOTIFY_"):
+        if plugin_tag.startswith("[PLUGIN_MUSIC_"):
             self.music_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
         elif plugin_tag.startswith("[PLUGIN_WIDGET_"):
             self.widget_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)

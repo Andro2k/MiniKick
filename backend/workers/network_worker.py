@@ -45,7 +45,6 @@ class NetworkWorker(QThread):
         services = [
             ("internet", "https://www.google.com", True, 80),
             ("kick", "https://kick.com", True, 80),
-            ("spotify", "https://api.spotify.com", True, 80),
             ("overlay", "127.0.0.1", False, self.overlay_port),
             ("youtube", "https://www.youtube.com", True, 80),
             ("chat_websocket", "ws-us2.pusher.com", False, 443)

@@ -4,7 +4,7 @@ from .auth_worker import AuthWorker
 from .bug_report_worker import BugReportWorker
 from .crash_report_worker import CrashReportWorker
 from .chat_worker import ChatWorker
-from .music_worker import SpotifyAuthWorker, YouTubeResolveWorker, YouTubeSearchWorker
+from .music_worker import YouTubeResolveWorker, YouTubeSearchWorker
 from .network_worker import NetworkWorker
 from .rewards_worker import RewardWorker, FetchRewardsWorker
 from .timers_worker import TimerWorker
@@ -16,7 +16,6 @@ __all__ = [
     "BugReportWorker",
     "CrashReportWorker",
     "ChatWorker",
-    "SpotifyAuthWorker",
     "YouTubeResolveWorker",
     "YouTubeSearchWorker",
     "NetworkWorker",

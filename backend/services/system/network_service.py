@@ -14,7 +14,6 @@ class NetworkService(QObject):
         "kick": 45.0,
         "chat_websocket": 40.0,
         "overlay": 2.0,
-        "spotify": 50.0,
         "youtube": 30.0
     }
 

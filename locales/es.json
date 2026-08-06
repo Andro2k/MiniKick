@@ -16,7 +16,6 @@
             "browse": "Examinar",
             "copy": "Copiar Enlace",
             "add": "Añadir",
-            "connect": "Conectar Spotify",
             "disconnect": "Desconectar",
             "report_bug": "Reportar Bug"
         },
@@ -452,15 +451,15 @@
             "subtitle": "Permite a tus espectadores controlar la música usando comandos del chat."
         },
         "provider": {
-            "name": "Proveedor de Audio Spotify",
+            "name": "Proveedor de Audio YouTube",
             "select_title": "Proveedor de Música",
-            "select_desc": "Selecciona el servicio para las peticiones de canciones en el chat."
+            "select_desc": "Servicio para las peticiones de canciones en el chat."
         },
         "status": {
             "session_remembered": "Streamer (Sesión recordada)",
             "connected_user": "Streamer (Conectado)",
             "youtube_active": "YouTube Activo",
-            "connecting": "Autorizar en tu navegador..."
+            "connecting": "Iniciando reproductor..."
         },
         "player": {
             "not_playing": "No se está reproduciendo ninguna canción",
@@ -485,7 +484,8 @@
         },
         "tabs": {
             "player": "Reproductor",
-            "commands": "Comandos"
+            "commands": "Comandos",
+            "settings": "Ajustes"
         },
         "cmds": {
             "title": "Comandos de Espectadores",
@@ -506,9 +506,6 @@
             "default_tag_name": "Plugin de Música"
         },
         "toast": {
-            "title_spotify": "Spotify",
-            "connected": "Vínculo con Spotify establecido con éxito.",
-            "disconnected": "Cuenta de Spotify desvinculada.",
             "removed_from_queue": "Canción eliminada de la cola",
             "moved_in_queue": "Posición de canción actualizada en la cola",
             "error_playing": "No se pudo reproducir '{title}': {error}",
@@ -519,8 +516,7 @@
             "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
             "vol_usage": "❌ @{user}, por favor especifica un nivel de volumen entre 0 y 100. (Ej: {trigger} 50)",
             "vol_success": "🔊 @{user}, el volumen de la música se ha cambiado a {volume}%.",
-            "not_linked": "❌ El streamer no ha vinculado su cuenta de Spotify.",
-            "not_linked_spotify": "❌ El streamer no ha vinculado su cuenta de Spotify.",
+            "not_linked": "❌ El streamer no ha activado el reproductor de YouTube.",
             "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
             "pause_success": "⏸️ Música pausada con éxito.",
             "pause_failed": "❌ No se pudo pausar la música.",
@@ -529,23 +525,26 @@
             "skip_success": "⏩ Canción saltada con éxito.",
             "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o cola vacía).",
             "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",
-            "song_paused": "🔇 Spotify está en pausa o cerrado.",
+            "song_paused": "🔇 YouTube está en pausa.",
             "playlist_empty_for_user": "❌ @{user}, no tienes canciones en la cola actualmente.",
             "playlist_user_songs": "🎵 @{user}, tienes {count} canción(es) en la cola: {songs}",
             "playlist_user_songs_more": "🎵 @{user} (posiciones restantes {page}/{total_pages}): {songs}",
             "playlist_pos_info": "🎵 Canción #{pos}: \"{title}\"{artist} (pedida por @{requester})",
             "playlist_invalid_pos": "❌ @{user}, la posición #{pos} no es válida. Hay {total} canción(es) en la cola.",
             "no_queue_available": "❌ @{user}, la cola de reproducción no está disponible en este momento.",
-            "song_paused_spotify": "🔇 Spotify está en pausa.",
             "song_paused_youtube": "🔇 YouTube está en pausa.",
-            "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando."
+            "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando.",
+            "user_limit_reached": "❌ @{user}, ya tienes {count} canción(es) en la cola (máximo permitido: {max}).",
+            "cooldown_active": "⏳ @{user}, por favor espera {seconds} segundo(s) antes de pedir otra canción.",
+            "queue_full": "❌ @{user}, la cola de canciones está llena ({max} canciones máximo).",
+            "song_too_long": "❌ @{user}, esa canción supera la duración máxima permitida de {max} minutos."
         },
         "queue": {
             "not_found": "❌ No se pudo encontrar ninguna canción llamada '{query}'.",
             "success": "🎵 Añadida a la cola: {track}",
-            "no_device": "❌ Error: Por favor abre Spotify en tu PC y reproduce cualquier canción primero.",
-            "rejected": "❌ Spotify rechazó la solicitud: {status}",
-            "error": "❌ Error interno de Spotify: {error}",
+            "no_device": "❌ Error: No se pudo procesar la canción.",
+            "rejected": "❌ Solicitud rechazada.",
+            "error": "❌ Error interno de música: {error}",
             "no_link": "❌ No se pudo obtener el enlace del video.",
             "searching": "🔍 Buscando '{query}' en YouTube...",
             "processing_link": "🔍 Procesando enlace de YouTube...",
@@ -561,12 +560,20 @@
             "col_actions": "Acciones"
         },
         "errors": {
-            "no_session": "Sin sesión activa de Spotify.",
-            "refresh_failed": "No se pudo actualizar el token de Spotify."
+            "no_session": "Sin sesión activa de YouTube.",
+            "refresh_failed": "No se pudo actualizar el reproductor."
         },
         "youtube": {
             "auto_resume_title": "Retomado automático (YouTube)",
             "auto_resume_desc": "Reproducir automáticamente al encolar o esperar al streamer.",
+            "max_user_songs_title": "Límite de canciones por usuario",
+            "max_user_songs_desc": "Número máximo de canciones activas que un espectador puede tener en cola a la vez.",
+            "user_cooldown_title": "Cooldown entre solicitudes (seg)",
+            "user_cooldown_desc": "Tiempo de espera requerido para que un espectador vuelva a pedir una canción.",
+            "max_queue_size_title": "Tamaño máximo de cola global",
+            "max_queue_size_desc": "Número máximo total de canciones permitidas en la cola de reproducción.",
+            "max_song_duration_title": "Duración máxima por canción (min)",
+            "max_song_duration_desc": "Rechazar canciones que superen este límite de tiempo.",
             "error_title": "Error de YouTube",
             "age_restricted": "Este video requiere verificación de edad (Inicia sesión para confirmar tu edad)",
             "bot_blocked": "Este video requiere autenticación o fue bloqueado por las políticas anti-bot de YouTube.",
@@ -590,12 +597,6 @@
             "theme_neon": "Brillo Neón",
             "theme_cyber": "Retro Cyberpunk",
             "theme_card": "Tarjeta Sólida"
-        }
-    },
-    "spotify": {
-        "error": {
-            "timeout": "El inicio de sesión expiró o fue cancelado por el usuario.",
-            "generic": "Error de conexión con Spotify:"
         }
     },
     "dashboard": {
@@ -870,8 +871,6 @@
             "internet_desc": "Verifica si tienes acceso general a la web.",
             "kick": "Servidores de Kick",
             "kick_desc": "Verifica la conexión con la API de Kick.",
-            "spotify": "Servicio de Spotify",
-            "spotify_desc": "Verifica la conexión con la API de Spotify.",
             "overlay": "Servidor de Overlay Local",
             "overlay_desc": "Verifica el estado del servidor local de overlays.",
             "youtube": "Servicio de YouTube",
@@ -903,7 +902,6 @@
             "filter_kick": "Kick API",
             "filter_chat_websocket": "WebSocket",
             "filter_overlay": "Overlay",
-            "filter_spotify": "Spotify",
             "filter_youtube": "YouTube",
             "time_45s": "-45s",
             "time_20s": "-20s",

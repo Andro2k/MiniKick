@@ -18,7 +18,6 @@ DEFAULT_DICTIONARY = {
             "browse": "Browse",
             "copy": "Copy Link",
             "add": "Add",
-            "connect": "Connect Spotify",
             "disconnect": "Disconnect",
             "report_bug": "Report Bug"
         },
@@ -454,7 +453,7 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Let your viewers control the music stream using chat commands."
         },
         "provider": {
-            "name": "Spotify Audio Provider",
+            "name": "YouTube Audio Provider",
             "select_title": "Music Provider",
             "select_desc": "Select the service for chat song requests."
         },
@@ -462,7 +461,7 @@ DEFAULT_DICTIONARY = {
             "session_remembered": "Broadcaster (Session remembered)",
             "connected_user": "Broadcaster (Connected)",
             "youtube_active": "YouTube Active",
-            "connecting": "Authorize in your browser..."
+            "connecting": "Starting player..."
         },
         "player": {
             "not_playing": "No song currently playing",
@@ -487,7 +486,8 @@ DEFAULT_DICTIONARY = {
         },
         "tabs": {
             "player": "Player",
-            "commands": "Commands"
+            "commands": "Commands",
+            "settings": "Settings"
         },
         "cmds": {
             "title": "Viewer Commands",
@@ -508,9 +508,6 @@ DEFAULT_DICTIONARY = {
             "default_tag_name": "Music Plugin"
         },
         "toast": {
-            "title_spotify": "Spotify",
-            "connected": "Link with Spotify successfully established.",
-            "disconnected": "Spotify account disconnected.",
             "removed_from_queue": "Song removed from queue",
             "moved_in_queue": "Song position updated in queue",
             "error_playing": "Could not play '{title}': {error}",
@@ -521,8 +518,7 @@ DEFAULT_DICTIONARY = {
             "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",
             "vol_usage": "❌ @{user}, please specify a volume level between 0 and 100. (Ex: {trigger} 50)",
             "vol_success": "🔊 @{user}, music volume has been set to {volume}%.",
-            "not_linked": "❌ The broadcaster has not linked their Spotify account.",
-            "not_linked_spotify": "❌ The broadcaster has not linked their Spotify account.",
+            "not_linked": "❌ The streamer has not activated the YouTube player.",
             "not_linked_youtube": "❌ The streamer has not activated the YouTube player.",
             "pause_success": "⏸️ Music paused successfully.",
             "pause_failed": "❌ Failed to pause music.",
@@ -531,23 +527,26 @@ DEFAULT_DICTIONARY = {
             "skip_success": "⏩ Song skipped successfully.",
             "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
             "song_now_playing": "🎵 Now playing: {title} - {artist}",
-            "song_paused": "🔇 Spotify is paused or closed.",
+            "song_paused": "🔇 YouTube is paused.",
             "playlist_empty_for_user": "❌ @{user}, you have no songs currently in the queue.",
             "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
             "playlist_user_songs_more": "🎵 @{user} (remaining positions {page}/{total_pages}): {songs}",
             "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
             "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
             "no_queue_available": "❌ @{user}, music queue is not available right now.",
-            "song_paused_spotify": "🔇 Spotify is paused.",
             "song_paused_youtube": "🔇 YouTube is paused.",
-            "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing."
+            "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing.",
+            "user_limit_reached": "❌ @{user}, you already have {count} song(s) in queue (max allowed: {max}).",
+            "cooldown_active": "⏳ @{user}, please wait {seconds} second(s) before requesting another song.",
+            "queue_full": "❌ @{user}, the song queue is full ({max} songs max).",
+            "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes."
         },
         "queue": {
             "not_found": "❌ Could not find any song named '{query}'.",
             "success": "🎵 Added to queue: {track}",
-            "no_device": "❌ Error: Please open Spotify on your PC and play any track first.",
-            "rejected": "❌ Spotify rejected the request: {status}",
-            "error": "❌ Internal Spotify error: {error}",
+            "no_device": "❌ Error: Could not resolve track.",
+            "rejected": "❌ Request rejected.",
+            "error": "❌ Internal music error: {error}",
             "no_link": "❌ Could not retrieve video link.",
             "searching": "🔍 Searching for '{query}' on YouTube...",
             "processing_link": "🔍 Processing YouTube link...",
@@ -563,12 +562,20 @@ DEFAULT_DICTIONARY = {
             "col_actions": "Actions"
         },
         "errors": {
-            "no_session": "No active Spotify session.",
-            "refresh_failed": "Could not refresh Spotify token."
+            "no_session": "No active YouTube session.",
+            "refresh_failed": "Could not refresh stream."
         },
         "youtube": {
             "auto_resume_title": "Auto-resume (YouTube)",
             "auto_resume_desc": "Play automatically when queued, or wait for the streamer.",
+            "max_user_songs_title": "Max songs per user",
+            "max_user_songs_desc": "Maximum active songs a viewer can have in the queue at once.",
+            "user_cooldown_title": "Request cooldown (sec)",
+            "user_cooldown_desc": "Cooldown time required before a viewer can request another song.",
+            "max_queue_size_title": "Max global queue size",
+            "max_queue_size_desc": "Maximum total songs allowed in the playback queue.",
+            "max_song_duration_title": "Max song duration (min)",
+            "max_song_duration_desc": "Reject songs that exceed this duration limit.",
             "error_title": "YouTube Error",
             "age_restricted": "This video requires age verification (Sign in to confirm your age)",
             "bot_blocked": "This video requires authentication or was blocked by YouTube anti-bot policies.",
@@ -592,12 +599,6 @@ DEFAULT_DICTIONARY = {
             "theme_neon": "Neon Glow",
             "theme_cyber": "Retro Cyberpunk",
             "theme_card": "Solid Card"
-        }
-    },
-    "spotify": {
-        "error": {
-            "timeout": "Login timed out or was canceled by user.",
-            "generic": "Spotify connection error:"
         }
     },
     "dashboard": {
@@ -872,8 +873,6 @@ DEFAULT_DICTIONARY = {
             "internet_desc": "Verify general access to the web.",
             "kick": "Kick Servers",
             "kick_desc": "Check connectivity with Kick API.",
-            "spotify": "Spotify Service",
-            "spotify_desc": "Check connectivity with Spotify API.",
             "overlay": "Local Overlay Server",
             "overlay_desc": "Verify the status of the local overlay server.",
             "youtube": "YouTube Service",
@@ -905,7 +904,6 @@ DEFAULT_DICTIONARY = {
             "filter_kick": "Kick API",
             "filter_chat_websocket": "WebSocket",
             "filter_overlay": "Overlay",
-            "filter_spotify": "Spotify",
             "filter_youtube": "YouTube",
             "time_45s": "-45s",
             "time_20s": "-20s",
