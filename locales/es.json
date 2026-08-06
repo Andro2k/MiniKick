@@ -335,6 +335,8 @@
             "name_desc": "Pronunciar el nombre del remitente antes del mensaje.",
             "provider_title": "Motor de Voz TTS",
             "provider_desc": "Cambiar entre voces web Edge o voces locales del sistema.",
+            "lang_title": "Filtro de Idioma / Región",
+            "lang_desc": "Filtrar la lista de voces disponibles según el idioma o región seleccionada.",
             "cmd_title": "Requerir Comando",
             "cmd_desc": "Solo leer mensajes que comiencen con un prefijo.",
             "vol_title": "Volumen General",

@@ -335,6 +335,8 @@
             "name_desc": "Pronounce the sender's name before the message.",
             "provider_title": "TTS Voice Engine",
             "provider_desc": "Toggle between Edge web voices or local voices.",
+            "lang_title": "Language / Region Filter",
+            "lang_desc": "Filter the list of available voices by the selected language or region.",
             "cmd_title": "Require Command",
             "cmd_desc": "Only read messages starting with a prefix.",
             "vol_title": "General Volume",

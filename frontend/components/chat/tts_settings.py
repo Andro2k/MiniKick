@@ -49,25 +49,25 @@ class ChatTtsSettingsPanel(ModernCard):
         return container
 
     def _setup_ui(self):
-        self.chk_tts = ModernSwitch()
-        self.chk_name = ModernSwitch() 
-        self.combo_provider = NoWheelComboBox()
+        self.chk_tts = ModernSwitch(self)
+        self.chk_name = ModernSwitch(self) 
+        self.combo_provider = NoWheelComboBox(self)
         self.combo_provider.addItem(self.i18n.get("chat.status.provider_local"), userData="local")
         self.combo_provider.addItem(self.i18n.get("chat.status.provider_cloud"), userData="web")
         self.combo_provider.setMinimumWidth(180)
-        self.chk_command = ModernSwitch()
+        self.chk_command = ModernSwitch(self)
         
-        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
+        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
-        self.lbl_vol_perc = QLabel("100%")
+        self.lbl_vol_perc = QLabel("100%", parent=self)
         self.lbl_vol_perc.setProperty("role", "monospace")
 
         row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
         row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
         row_cmd = SettingRow("code.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
         
-        self.txt_command = QLineEdit()
+        self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
@@ -87,14 +87,12 @@ class ChatTtsSettingsPanel(ModernCard):
         category_lbl.setProperty("role", "category")
         self.addWidget(category_lbl)
 
-        voices_card = ModernCard(margin=5, spacing=6, orientation="vertical")
+        voices_card = ModernCard(parent=self, margin=5, spacing=6, orientation="vertical")
 
         row_provider = SettingRow("world.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.combo_provider)
         voices_card.addWidget(row_provider)
         
-        self.combo_lang = NoWheelComboBox()
-        
-        self.combo_voice = NoWheelComboBox()
+        self.combo_voice = NoWheelComboBox(self)
         self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.combo_voice.setMinimumWidth(100)
         self.combo_voice.setMaximumWidth(300)
@@ -102,22 +100,22 @@ class ChatTtsSettingsPanel(ModernCard):
         row_voice_general = SettingRow("people-fill.svg", self.i18n.get("chat.settings.voice_general_title"), self.i18n.get("chat.settings.voice_general_desc"), self._create_combo_with_test_btn(self.combo_voice))
         voices_card.addWidget(row_voice_general)
 
-        self.combo_voice_broadcaster = NoWheelComboBox()
+        self.combo_voice_broadcaster = NoWheelComboBox(self)
         self.combo_voice_broadcaster.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.combo_voice_broadcaster.setMinimumWidth(100)
         self.combo_voice_broadcaster.setMaximumWidth(300)
         
-        self.combo_voice_moderator = NoWheelComboBox()
+        self.combo_voice_moderator = NoWheelComboBox(self)
         self.combo_voice_moderator.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.combo_voice_moderator.setMinimumWidth(100)
         self.combo_voice_moderator.setMaximumWidth(300)
         
-        self.combo_voice_vip = NoWheelComboBox()
+        self.combo_voice_vip = NoWheelComboBox(self)
         self.combo_voice_vip.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.combo_voice_vip.setMinimumWidth(100)
         self.combo_voice_vip.setMaximumWidth(300)
         
-        self.combo_voice_subscriber = NoWheelComboBox()
+        self.combo_voice_subscriber = NoWheelComboBox(self)
         self.combo_voice_subscriber.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.combo_voice_subscriber.setMinimumWidth(100)
         self.combo_voice_subscriber.setMaximumWidth(300)
@@ -138,7 +136,6 @@ class ChatTtsSettingsPanel(ModernCard):
     def _connect_signals(self):
         self.combo_provider.currentIndexChanged.connect(self._on_provider_combo_changed)
         self.slider_vol.valueChanged.connect(self._on_slider_vol_changed)
-        self.combo_lang.currentTextChanged.connect(self.language_filter_changed.emit)
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
         self.chk_command.toggled.connect(self.txt_command.setEnabled)
@@ -200,14 +197,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.blockSignals(False)
 
     def update_languages(self, langs: list[str], select_prefix: str = None):
-        self.combo_lang.blockSignals(True)
-        self.combo_lang.clear()
-        self.combo_lang.addItems(langs)
-        if select_prefix:
-            idx = self.combo_lang.findText(select_prefix)
-            if idx >= 0:
-                self.combo_lang.setCurrentIndex(idx)
-        self.combo_lang.blockSignals(False)
+        pass
 
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):
         self.combo_voice.blockSignals(True)

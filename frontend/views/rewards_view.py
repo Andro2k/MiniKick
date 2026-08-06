@@ -13,8 +13,8 @@ class RewardsView(BaseView):
     preview_requested = Signal(str)
     refresh_rewards_requested = Signal()
 
-    def __init__(self, i18n, overlay_url="http://localhost:8090/overlay"):
-        super().__init__(i18n=i18n,title_key="rewards.header.title",subtitle_key="rewards.header.subtitle")
+    def __init__(self, i18n, overlay_url="http://localhost:8090/overlay", parent=None):
+        super().__init__(i18n=i18n, title_key="rewards.header.title", subtitle_key="rewards.header.subtitle", parent=parent)
         self.overlay_url = overlay_url
         self._setup_ui()
 
@@ -23,7 +23,7 @@ class RewardsView(BaseView):
         self._build_table_card()
 
     def _build_obs_card(self):
-        obs_card = ModernCard()
+        obs_card = ModernCard(parent=self)
 
         self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)

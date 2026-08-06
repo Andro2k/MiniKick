@@ -178,8 +178,8 @@ class LogView(BaseView):
     view_toggle_requested = Signal()
     view_shown = Signal()
 
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n,title_key="log.header.title",subtitle_key="log.header.subtitle")
+    def __init__(self, i18n, parent=None):
+        super().__init__(i18n=i18n, title_key="log.header.title", subtitle_key="log.header.subtitle", parent=parent)
         self.str_all = self.i18n.get("log.controls.filter_all")
         self._pending_ui_ops: list[tuple] = []
         self.page_size = 50
@@ -213,7 +213,7 @@ class LogView(BaseView):
         table_layout = QVBoxLayout(self.table_card)
         table_layout.setContentsMargins(0, 0, 0, 0)
         
-        self.content_stack = QStackedWidget()
+        self.content_stack = QStackedWidget(self)
         self.empty_state = self._build_empty_state()
         self.content_stack.addWidget(self.empty_state)
 

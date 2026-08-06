@@ -14,13 +14,13 @@ class ViewHeader(QFrame):
         layout.setContentsMargins(0, 0, 0, 10)
         layout.setSpacing(4)
 
-        title = QLabel(title_text)
+        title = QLabel(title_text, parent=self)
         title.setProperty("role", "h1")
         if title_color:
             color_state = "danger" if title_color in ("#EF4444", "#ff4444", "red") else ("success" if title_color in ("#2EC570", "#22c55e", "green") else "normal")
             title.setProperty("state", color_state)
         
-        subtitle = QLabel(subtitle_text)
+        subtitle = QLabel(subtitle_text, parent=self)
         subtitle.setProperty("role", "body")
         subtitle.setWordWrap(True)
         subtitle.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
@@ -35,20 +35,20 @@ class SettingRow(QWidget):
         layout.setContentsMargins(5, 5, 5, 5)
         layout.setSpacing(3)
 
-        icon_lbl = QLabel()
+        icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
         
-        lbl_title = QLabel(title_text)
+        lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
         lbl_title.setWordWrap(True)
         if title_color:
             color_state = "danger" if title_color in ("#EF4444", "#ff4444", "red") else ("success" if title_color in ("#2EC570", "#22c55e", "green") else "normal")
             lbl_title.setProperty("state", color_state)
         
-        lbl_desc = QLabel(desc_text)
+        lbl_desc = QLabel(desc_text, parent=self)
         lbl_desc.setProperty("role", "body")
         lbl_desc.setWordWrap(True)
         
@@ -75,10 +75,10 @@ class SliderRow(QWidget):
         header_row = QHBoxLayout()
         header_row.setSpacing(6)
 
-        icon_lbl = QLabel()
+        icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
 
-        lbl_title = QLabel(title_text)
+        lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
 
         header_row.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -86,7 +86,7 @@ class SliderRow(QWidget):
         header_row.addStretch()
         header_row.addWidget(value_label, alignment=Qt.AlignmentFlag.AlignVCenter)
 
-        lbl_desc = QLabel(desc_text)
+        lbl_desc = QLabel(desc_text, parent=self)
         lbl_desc.setProperty("role", "body")
         lbl_desc.setWordWrap(True)
 
@@ -108,17 +108,17 @@ class StatCard(QFrame):
         header_layout = QHBoxLayout()
         header_layout.setSpacing(6)
 
-        icon_lbl = QLabel()
+        icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_200, size=14))
 
-        self.lbl_title = QLabel(title_text)
+        self.lbl_title = QLabel(title_text, parent=self)
         self.lbl_title.setProperty("role", "h3")
 
         header_layout.addWidget(icon_lbl)
         header_layout.addWidget(self.lbl_title)
         header_layout.addStretch()
 
-        self.lbl_value = QLabel(initial_value)
+        self.lbl_value = QLabel(initial_value, parent=self)
         self.lbl_value.setProperty("role", "body")
         self.lbl_value.setWordWrap(True)
 
@@ -166,8 +166,8 @@ class ModernScrollArea(QScrollArea):
 class ExpandableSettingCard(QFrame):
     updated = Signal(str, dict)
 
-    def __init__(self, card_id: str, title: str, desc: str, icon_name: str, has_amount: bool = True, i18n=None):
-        super().__init__()
+    def __init__(self, card_id: str, title: str, desc: str, icon_name: str, has_amount: bool = True, i18n=None, parent=None):
+        super().__init__(parent)
         self.i18n = i18n
         self.card_id = card_id
         self.has_amount = has_amount
@@ -246,9 +246,9 @@ class ExpandableSettingCard(QFrame):
         col_right.setSpacing(8)
         col_right.setAlignment(Qt.AlignmentFlag.AlignTop)
         
-        lbl_pen = QLabel(self.i18n.get("spam.card.action"))
+        lbl_pen = QLabel(self.i18n.get("spam.card.action"), parent=self)
         lbl_pen.setProperty("role", "body")
-        self.combo_penalty = NoWheelComboBox()
+        self.combo_penalty = NoWheelComboBox(self)
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_timeout"), "timeout")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_delete"), "delete")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban"), "ban")
@@ -259,9 +259,9 @@ class ExpandableSettingCard(QFrame):
         
         col_left.addSpacing(4)
         
-        lbl_exc = QLabel(self.i18n.get("spam.card.exclude"))
+        lbl_exc = QLabel(self.i18n.get("spam.card.exclude"), parent=self)
         lbl_exc.setProperty("role", "body")
-        self.combo_exclude = NoWheelComboBox()
+        self.combo_exclude = NoWheelComboBox(self)
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_none"), "none")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_sub"), "subscriber")

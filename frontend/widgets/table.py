@@ -38,19 +38,19 @@ class ModernTableCard(QFrame):
             self.header_layout = QHBoxLayout()
             
             if title_text:
-                self.lbl_title = QLabel(title_text)
+                self.lbl_title = QLabel(title_text, parent=self)
                 self.lbl_title.setProperty("role", "h3")
                 self.header_layout.addWidget(self.lbl_title)
                 
             self.header_layout.addStretch()
             
             if search_placeholder:
-                self.txt_search = QLineEdit()
+                self.txt_search = QLineEdit(parent=self)
                 self.txt_search.setPlaceholderText(search_placeholder)
                 self.header_layout.addWidget(self.txt_search)
                 
             if add_button_text:
-                self.btn_add = ModernButton(add_button_text, role="action_accent")
+                self.btn_add = ModernButton(add_button_text, role="action_accent", parent=self)
                 if add_button_icon:
                     self.btn_add.setIcon(get_icon_colored(add_button_icon, COLOR_BLACK, 16))
                     self.btn_add.setIconSize(QSize(16, 16))
@@ -58,9 +58,9 @@ class ModernTableCard(QFrame):
                 
             self.card_layout.addLayout(self.header_layout)
             
-        self.stack = QStackedWidget()
+        self.stack = QStackedWidget(self)
         
-        self.table = ModernTable(headers or [])
+        self.table = ModernTable(headers or [], parent=self)
         self.stack.addWidget(self.table)
         
         self.empty_widget = None
@@ -69,7 +69,7 @@ class ModernTableCard(QFrame):
         self.card_layout.addWidget(self.stack)
 
     def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked):
-        self.empty_widget = QWidget()
+        self.empty_widget = QWidget(self)
         layout = QVBoxLayout(self.empty_widget)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(12)
@@ -139,7 +139,7 @@ class TableActionCell(QWidget):
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
     def add_switch(self, checked: bool, callback) -> ModernSwitch:
-        sw = ModernSwitch()
+        sw = ModernSwitch(self)
         sw.setChecked(checked)
         sw.toggled.connect(callback)
         self.layout.addWidget(sw)
@@ -147,7 +147,7 @@ class TableActionCell(QWidget):
         return sw
         
     def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
-        btn = ModernButton("", role=role)
+        btn = ModernButton("", role=role, parent=self)
         btn.setFixedSize(28, 28)
         btn.setIcon(get_icon_colored(icon_name, color, size=16))
         btn.setIconSize(QSize(16, 16))

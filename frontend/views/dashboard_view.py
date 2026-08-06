@@ -57,8 +57,8 @@ class DashboardView(BaseView):
     _STATS_CARDS_ATTR = "_stats_cols"
     _SESSION_CARDS_ATTR = "_session_cols"
     
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle")
+    def __init__(self, i18n, parent=None):
+        super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
         self._stats_cols = -1
         self._session_cols = -1
         self._last_banner_dir = None
@@ -123,7 +123,7 @@ class DashboardView(BaseView):
         self.main_layout.addStretch()
 
     def _setup_connection_card(self):
-        conn_card = ModernCard()
+        conn_card = ModernCard(parent=self)
 
         self.sw_autostart = ModernSwitch()
         self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
@@ -157,7 +157,7 @@ class DashboardView(BaseView):
         self.main_layout.addWidget(conn_card)
 
     def _setup_profile_section(self):
-        self.profile_container = QWidget()
+        self.profile_container = QWidget(self)
         self.profile_container.setVisible(False)
         profile_layout = QVBoxLayout(self.profile_container)
         profile_layout.setContentsMargins(0, 0, 0, 0)
@@ -166,7 +166,7 @@ class DashboardView(BaseView):
         self.top_row_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.top_row_layout.setSpacing(12) 
 
-        avatar_card = ModernCard()
+        avatar_card = ModernCard(parent=self)
         avatar_card.card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_avatar = QLabel()
@@ -176,7 +176,7 @@ class DashboardView(BaseView):
         self.lbl_avatar.setText("?")
         avatar_card.addWidget(self.lbl_avatar)
 
-        info_card = ModernCard()
+        info_card = ModernCard(parent=self)
 
         self.lbl_username = QLabel("-")
         self.lbl_username.setProperty("role", "h1")
@@ -193,7 +193,7 @@ class DashboardView(BaseView):
         self.top_row_layout.addWidget(avatar_card)
         self.top_row_layout.addWidget(info_card, stretch=1)
 
-        stats_container = QWidget()
+        stats_container = QWidget(self)
         self.stats_grid = QGridLayout(stats_container)
         self.stats_grid.setContentsMargins(0, 0, 0, 0)
         self.stats_grid.setSpacing(12)
@@ -224,12 +224,12 @@ class DashboardView(BaseView):
         lbl_session_title.setProperty("role", "h2")
         profile_layout.addWidget(lbl_session_title)
 
-        bar_card = ModernCard(margin=8)
+        bar_card = ModernCard(parent=self, margin=8)
         self.session_bar = SegmentedDistributionBar()
         bar_card.addWidget(self.session_bar)
         profile_layout.addWidget(bar_card)
 
-        session_stats_container = QWidget()
+        session_stats_container = QWidget(self)
         self.session_grid = QGridLayout(session_stats_container)
         self.session_grid.setContentsMargins(0, 0, 0, 0)
         self.session_grid.setSpacing(12)

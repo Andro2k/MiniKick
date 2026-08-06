@@ -38,7 +38,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self._setup_overlay_url_card()
 
     def _setup_status_card(self):
-        card = ModernCard(margin=12, spacing=8)
+        card = ModernCard(parent=self, margin=12, spacing=8)
 
         status_layout = QHBoxLayout()
         self.lbl_provider_name = QLabel("YouTube Music")
@@ -56,7 +56,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
-        self.card_player = ModernCard(margin=12, spacing=8, orientation="horizontal")
+        self.card_player = ModernCard(parent=self, margin=12, spacing=8, orientation="horizontal")
         self.card_player.setVisible(True)
 
         self.icon_music = QLabel()
@@ -99,9 +99,9 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_volume_card(self):
-        self.card_volume = ModernCard(margin=12, spacing=8)
+        self.card_volume = ModernCard(parent=self, margin=12, spacing=8)
 
-        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
+        self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%")
@@ -127,7 +127,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.volume_changed.emit(self._pending_volume)
 
     def _setup_overlay_url_card(self):
-        self.card_overlay_url = ModernCard(margin=12, spacing=8)
+        self.card_overlay_url = ModernCard(parent=self, margin=12, spacing=8)
 
         url_info = QVBoxLayout()
         lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
@@ -139,9 +139,9 @@ class MusicPlayerSettingsPanel(QWidget):
         url_info.addWidget(lbl_desc)
 
         layout_setting_row = QHBoxLayout()
-        lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"))
+        lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
         lbl_layout.setProperty("role", "body")
-        self.combo_music_layout = NoWheelComboBox()
+        self.combo_music_layout = NoWheelComboBox(self)
         self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_banner"), "banner")
         self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_pill"), "pill")
         self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_floating"), "floating")
@@ -152,9 +152,9 @@ class MusicPlayerSettingsPanel(QWidget):
         layout_setting_row.addWidget(self.combo_music_layout)
 
         theme_layout = QHBoxLayout()
-        lbl_theme = QLabel(self.i18n.get("music.overlay.theme_label"))
+        lbl_theme = QLabel(self.i18n.get("music.overlay.theme_label"), parent=self)
         lbl_theme.setProperty("role", "body")
-        self.combo_music_theme = NoWheelComboBox()
+        self.combo_music_theme = NoWheelComboBox(self)
         self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_dynamic"), "dynamic")
         self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_glass"), "glass")
         self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_minimal"), "minimal")

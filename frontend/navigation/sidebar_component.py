@@ -11,8 +11,8 @@ from backend.config.version import APP_VERSION
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self, i18n, app_version: str = APP_VERSION):
-        super().__init__()
+    def __init__(self, i18n, app_version: str = APP_VERSION, parent=None):
+        super().__init__(parent)
         self.i18n = i18n
         self.app_version = app_version
         self.has_update = False  

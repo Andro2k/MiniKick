@@ -13,8 +13,8 @@ class TimersView(BaseView):
     status_toggled = Signal(int, bool)
     search_text_changed = Signal(str)
 
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n, title_key="timer.header.title", subtitle_key="timer.header.subtitle")
+    def __init__(self, i18n, parent=None):
+        super().__init__(i18n=i18n, title_key="timer.header.title", subtitle_key="timer.header.subtitle", parent=parent)
         self._setup_ui()
 
     def _setup_ui(self):

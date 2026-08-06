@@ -24,7 +24,7 @@ class SystemTrayManager(QSystemTrayIcon):
         icon_path = resource_path(os.path.join("assets", "icons", "icon.ico"))
         self.setIcon(QIcon(icon_path))
 
-        self.menu = QMenu()
+        self.menu = QMenu(self.parent())
 
         self.action_restore = self.menu.addAction(self.i18n.get("main.tray.open_panel"))
         self.action_restore.triggered.connect(self.restore_requested.emit)

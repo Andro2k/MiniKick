@@ -20,8 +20,8 @@ class CommandView(BaseView):
         "broadcaster": "command.dialog.perm_broadcaster",
     }
 
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n,title_key="command.header.title",subtitle_key="command.header.subtitle")
+    def __init__(self, i18n, parent=None):
+        super().__init__(i18n=i18n, title_key="command.header.title", subtitle_key="command.header.subtitle", parent=parent)
         self._setup_ui()
 
     def _setup_ui(self):

@@ -17,14 +17,14 @@ class SettingsView(BaseView):
     language_changed = Signal(str)
     feedback_clicked = Signal()
 
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n,title_key="settings.header.title",subtitle_key="settings.header.subtitle")
+    def __init__(self, i18n, parent=None):
+        super().__init__(i18n=i18n, title_key="settings.header.title", subtitle_key="settings.header.subtitle", parent=parent)
         self._setup_ui()
 
     def _setup_ui(self):
-        sys_card = ModernCard()
+        sys_card = ModernCard(parent=self)
 
-        self.combo_lang = NoWheelComboBox()
+        self.combo_lang = NoWheelComboBox(self)
         self.combo_lang.addItem("Español", "es")
         self.combo_lang.addItem("English", "en")
         self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
@@ -36,7 +36,7 @@ class SettingsView(BaseView):
             right_widget=self.combo_lang
         )
 
-        self.combo_font = NoWheelComboBox()
+        self.combo_font = NoWheelComboBox(self)
         font_sizes = [
             (self.i18n.get("settings.system.font_size_small"), 11),
             (self.i18n.get("settings.system.font_size_normal"), 13),
@@ -80,7 +80,7 @@ class SettingsView(BaseView):
         sys_card.addWidget(row_update)
         self.main_layout.addWidget(sys_card)
 
-        backup_card = ModernCard()
+        backup_card = ModernCard(parent=self)
 
         btn_container = QWidget()
         btn_layout = QHBoxLayout(btn_container)
@@ -106,7 +106,7 @@ class SettingsView(BaseView):
         backup_card.addWidget(row_backup)
         self.main_layout.addWidget(backup_card)
 
-        account_card = ModernCard()
+        account_card = ModernCard(parent=self)
 
         self.btn_unlink = ModernButton(self.i18n.get("common.buttons.unlink"), role="action_danger_border")
         self.btn_unlink.clicked.connect(self.unlink_clicked.emit)
@@ -123,7 +123,7 @@ class SettingsView(BaseView):
         account_card.addWidget(row_unlink)
         self.main_layout.addWidget(account_card)
 
-        feedback_card = ModernCard()
+        feedback_card = ModernCard(parent=self)
 
         self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_accent")
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)

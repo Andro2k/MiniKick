@@ -88,15 +88,9 @@ class TTSVoiceHandler(QObject):
             )
 
     @Slot(str)
-    def filter_voices_by_language(self, lang_prefix: str, select_id: str = None, play_test: bool = False) -> None:
+    def filter_voices_by_language(self, lang_prefix: str = "", select_id: str = None, play_test: bool = False) -> None:
         provider = "web" if self.view.is_web_provider else "local"
-        if provider == "local":
-            filtered = [(v["id"], v["name"]) for v in self._all_voices]
-        else:
-            filtered = [
-                (v["id"], v["name"]) for v in self._all_voices
-                if ("-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Local") == lang_prefix
-            ]
+        filtered = [(v["id"], v["name"]) for v in self._all_voices]
             
         final_select_id = select_id
         if filtered:

@@ -72,12 +72,12 @@ class CompactSlider(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(6)
         
-        self.slider = NoWheelSlider(Qt.Orientation.Horizontal)
+        self.slider = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider.setRange(min_val, max_val)
         self.slider.setValue(init_val)
         self.slider.setFixedWidth(140)
         
-        self.label = QLabel(self._format_value(init_val))
+        self.label = QLabel(self._format_value(init_val), parent=self)
         self.label.setFixedWidth(40)
         self.label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         
@@ -138,7 +138,7 @@ class VariableTextEdit(QTextEdit):
         bg_qcolor = QColor(highlight_bg) if highlight_bg else None
         self.highlighter = VariableHighlighter(self.document(), highlight_pattern, QColor(highlight_color), bg_qcolor)
         
-        self.popup = QListWidget()
+        self.popup = QListWidget(self)
         self.popup.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self.popup.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.popup.itemActivated.connect(self._insert_selected)

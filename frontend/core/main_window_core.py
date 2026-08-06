@@ -51,6 +51,9 @@ class MainWindowCore(QMainWindow):
 
     def __init__(self, updater_manager, app_version: str):
         super().__init__()
+        self.setUpdatesEnabled(False)
+        self.resize(1100, 750)
+        
         self._is_shutting_down = False
         self.updater_manager = updater_manager
         self.app_version = app_version
@@ -70,7 +73,6 @@ class MainWindowCore(QMainWindow):
         
         title_template = self.i18n.get("main.window.title")
         self.setWindowTitle(title_template.replace("{version}", app_version))
-        self.resize(1100, 750)
         
         self.chat_worker = None
         self.reward_worker = None
@@ -93,6 +95,7 @@ class MainWindowCore(QMainWindow):
         
         self._connect_signals()     
         self._load_settings_into_ui()
+        self.setUpdatesEnabled(True)
 
     def _setup_ui(self):
         self.central_widget = QWidget()
@@ -101,11 +104,11 @@ class MainWindowCore(QMainWindow):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        self.sidebar = Sidebar(self.i18n, app_version=self.app_version)
+        self.sidebar = Sidebar(self.i18n, app_version=self.app_version, parent=self)
         for name, icon, pos in self._NAV_CONFIG:
             self.sidebar.add_tab(name, icon, position=pos, is_active=(name == "Dashboard"))
 
-        self.content_stack = QStackedWidget()
+        self.content_stack = QStackedWidget(self.central_widget)
         self.avatar_service = AvatarService(avatar_storage=self.container.avatar_storage)
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
@@ -118,25 +121,26 @@ class MainWindowCore(QMainWindow):
         self.network_service = NetworkService(overlay_port=self.overlay_server.port)
         self.timers_worker = None
 
-        self.view_dashboard = DashboardView(self.i18n)
-        self.view_chat = ChatView(self.i18n)
+        self.view_dashboard = DashboardView(self.i18n, parent=self)
+        self.view_chat = ChatView(self.i18n, parent=self)
         self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
-        self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url())
-        self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url())
-        self.view_commands = CommandView(self.i18n)
+        self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self)
+        self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self)
+        self.view_commands = CommandView(self.i18n, parent=self)
         self.view_widgets = WidgetsView(
             self.i18n,
             shoutout_overlay_url=self.overlay_server.get_shoutout_overlay_url(),
             death_overlay_url=self.overlay_server.get_death_overlay_url(),
             score_overlay_url=self.overlay_server.get_score_overlay_url(),
             explosion_overlay_url=self.overlay_server.get_explosion_overlay_url(),
-            combo_overlay_url=self.overlay_server.get_combo_overlay_url()
+            combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
+            parent=self
         )
-        self.view_spam = SpamView(self.i18n)
-        self.view_timers = TimersView(self.i18n)
-        self.view_settings = SettingsView(self.i18n)
-        self.view_logs = LogView(self.i18n)
-        self.view_network = NetworkView(self.i18n)
+        self.view_spam = SpamView(self.i18n, parent=self)
+        self.view_timers = TimersView(self.i18n, parent=self)
+        self.view_settings = SettingsView(self.i18n, parent=self)
+        self.view_logs = LogView(self.i18n, parent=self)
+        self.view_network = NetworkView(self.i18n, parent=self)
 
         self._nav_mapping = {
             "Dashboard": self.view_dashboard,

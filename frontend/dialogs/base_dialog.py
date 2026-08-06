@@ -20,7 +20,7 @@ class ModernFramelessShell(QDialog):
         self.main_layout.setContentsMargins(16, 16, 16, 16)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.container = QFrame()
+        self.container = QFrame(self)
         self.container.setProperty("role", "dialog")
         self.container.setFixedWidth(width)
         self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
@@ -161,7 +161,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.lbl_subtitle.setWordWrap(True)
         self.panel_layout.addWidget(self.lbl_subtitle)
         
-        self.main_content = QStackedWidget()
+        self.main_content = QStackedWidget(self)
         self.panel_layout.addWidget(self.main_content)
         
         self.btn_layout = QHBoxLayout()

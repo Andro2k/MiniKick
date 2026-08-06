@@ -451,8 +451,8 @@ class NetworkView(BaseView):
         "warning":  (COLOR_AMBER,       "warning"),
     }
 
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n, title_key="network.header.title", subtitle_key="network.header.subtitle")
+    def __init__(self, i18n, parent=None):
+        super().__init__(i18n=i18n, title_key="network.header.title", subtitle_key="network.header.subtitle", parent=parent)
         self.status_widgets = {}
         self._setup_ui()
 

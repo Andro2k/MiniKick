@@ -23,7 +23,7 @@ class MusicStatsPanel(QWidget):
         self.stats_grid.setContentsMargins(0, 0, 0, 0)
         self.stats_grid.setSpacing(12)
 
-        self.card_stat_queue = ModernCard(margin=12, spacing=6)
+        self.card_stat_queue = ModernCard(parent=self, margin=12, spacing=6)
         
         queue_header = QHBoxLayout()
         icon_queue = QLabel()
@@ -45,7 +45,7 @@ class MusicStatsPanel(QWidget):
         self.card_stat_queue.addWidget(self.lbl_stat_queue_count)
         self.card_stat_queue.addWidget(lbl_queue_desc)
 
-        self.card_stat_duration = ModernCard(margin=12, spacing=6)
+        self.card_stat_duration = ModernCard(parent=self, margin=12, spacing=6)
 
         dur_header = QHBoxLayout()
         icon_dur = QLabel()
@@ -67,7 +67,7 @@ class MusicStatsPanel(QWidget):
         self.card_stat_duration.addWidget(self.lbl_stat_duration_sum)
         self.card_stat_duration.addWidget(lbl_dur_desc)
 
-        self.card_stat_service = ModernCard(margin=12, spacing=6)
+        self.card_stat_service = ModernCard(parent=self, margin=12, spacing=6)
 
         service_header = QHBoxLayout()
         icon_cmd = QLabel()

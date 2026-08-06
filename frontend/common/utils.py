@@ -125,6 +125,9 @@ def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
     return QPixmap.fromImage(out_img)
     
 class NoWheelComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
     def wheelEvent(self, event):
         if not self.hasFocus():
             event.ignore()
@@ -132,6 +135,12 @@ class NoWheelComboBox(QComboBox):
             super().wheelEvent(event)
 
 class NoWheelSlider(QSlider):
+    def __init__(self, orientation=None, parent=None):
+        if orientation is not None and not isinstance(orientation, QSlider):
+            super().__init__(orientation, parent)
+        else:
+            super().__init__(parent)
+
     def wheelEvent(self, event):
         if not self.hasFocus():
             event.ignore()

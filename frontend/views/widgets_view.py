@@ -10,8 +10,8 @@ class WidgetsView(BaseView):
     death_count_changed = Signal(int)
     score_changed = Signal(int, int)
 
-    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = ""):
-        super().__init__(i18n=i18n, title_key="widgets.header.title", subtitle_key="widgets.header.subtitle")
+    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", parent=None):
+        super().__init__(i18n=i18n, title_key="widgets.header.title", subtitle_key="widgets.header.subtitle", parent=parent)
         self.shoutout_overlay_url = shoutout_overlay_url
         self.death_overlay_url = death_overlay_url
         self.score_overlay_url = score_overlay_url

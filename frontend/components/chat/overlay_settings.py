@@ -23,7 +23,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self._connect_signals()
 
     def _setup_ui(self):
-        self.combo_overlay_theme = NoWheelComboBox()
+        self.combo_overlay_theme = NoWheelComboBox(self)
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_glass"), "glass")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_neon"), "neon")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_card"), "card")
@@ -37,7 +37,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.combo_overlay_theme
         )
 
-        self.combo_overlay_orientation = NoWheelComboBox()
+        self.combo_overlay_orientation = NoWheelComboBox(self)
         self.combo_overlay_orientation.addItem(self.i18n.get("chat.overlay.orientation_vertical"), "vertical")
         self.combo_overlay_orientation.addItem(self.i18n.get("chat.overlay.orientation_horizontal"), "horizontal")
         
@@ -48,7 +48,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.combo_overlay_orientation
         )
 
-        self.combo_overlay_flow = NoWheelComboBox()
+        self.combo_overlay_flow = NoWheelComboBox(self)
         self._populate_flow_options("vertical")
 
         row_overlay_flow = SettingRow(
@@ -58,7 +58,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.combo_overlay_flow
         )
 
-        self.combo_overlay_entry = NoWheelComboBox()
+        self.combo_overlay_entry = NoWheelComboBox(self)
         self.combo_overlay_entry.addItem(self.i18n.get("chat.overlay.entry_bottom"), "bottom")
         self.combo_overlay_entry.addItem(self.i18n.get("chat.overlay.entry_top"), "top")
         self.combo_overlay_entry.addItem(self.i18n.get("chat.overlay.entry_left"), "left")

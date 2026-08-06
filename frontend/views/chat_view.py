@@ -17,8 +17,8 @@ class ChatView(BaseView):
     language_filter_changed = Signal(str)
     voice_test_requested = Signal(str)
 
-    def __init__(self, i18n):
-        super().__init__(i18n=i18n,title_key="chat.header.title",subtitle_key="chat.header.subtitle")
+    def __init__(self, i18n, parent=None):
+        super().__init__(i18n=i18n, title_key="chat.header.title", subtitle_key="chat.header.subtitle", parent=parent)
         self._setup_ui()
         self._connect_internal_signals()
 
