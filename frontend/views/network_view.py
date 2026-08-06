@@ -19,7 +19,6 @@ _SERVICE_PALETTE = {
     "kick": (COLOR_GREEN, "network.graph.filter_kick"),
     "chat_websocket": (COLOR_PURPLE, "network.graph.filter_chat_websocket"),
     "overlay": (COLOR_AMBER, "network.graph.filter_overlay"),
-    "spotify": ("#1DB954", "network.graph.filter_spotify"),
     "youtube": (COLOR_RED, "network.graph.filter_youtube")
 }
 
@@ -288,7 +287,7 @@ class LiveNetworkGraph(QFrame):
         self.lbl_title = QLabel(self.i18n.get("network.graph.title"))
         self.lbl_title.setProperty("role", "h3")
         
-        self.stats_container = QWidget()
+        self.stats_container = QWidget(self)
         self.stats_layout = QHBoxLayout(self.stats_container)
         self.stats_layout.setContentsMargins(0, 0, 0, 0)
         self.stats_layout.setSpacing(12)
@@ -323,7 +322,7 @@ class LiveNetworkGraph(QFrame):
         
         self.main_layout.addLayout(self.header_layout)
 
-        self.filter_container = QWidget()
+        self.filter_container = QWidget(self)
         self.filter_layout = QHBoxLayout(self.filter_container)
         self.filter_layout.setContentsMargins(0, 0, 0, 0)
         self.filter_layout.setSpacing(6)
@@ -338,7 +337,6 @@ class LiveNetworkGraph(QFrame):
             ("kick", self.i18n.get("network.graph.filter_kick")),
             ("chat_websocket", self.i18n.get("network.graph.filter_chat_websocket")),
             ("overlay", self.i18n.get("network.graph.filter_overlay")),
-            ("spotify", self.i18n.get("network.graph.filter_spotify")),
             ("youtube", self.i18n.get("network.graph.filter_youtube"))
         ]
 
@@ -481,7 +479,6 @@ class NetworkView(BaseView):
             ("chat_websocket", "network.services.chat_websocket", "network.services.chat_websocket_desc", "message.svg"),
             ("overlay", "network.services.overlay", "network.services.overlay_desc", "plug.svg"),
             ("kick", "network.services.kick", "network.services.kick_desc", "kick.svg"),
-            ("spotify", "network.services.spotify", "network.services.spotify_desc", "brand-spotify.svg"),
             ("youtube", "network.services.youtube", "network.services.youtube_desc", "brand-youtube.svg")
         ]
 

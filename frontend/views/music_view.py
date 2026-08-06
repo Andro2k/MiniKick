@@ -19,8 +19,8 @@ class MusicView(BaseView):
     move_queue_item_requested = Signal(int, int)
     view_shown = Signal()
 
-    def __init__(self, i18n, music_overlay_url: str = ""):
-        super().__init__(i18n=i18n, title_key="music.header.title", subtitle_key="music.header.subtitle")
+    def __init__(self, i18n, music_overlay_url: str = "", parent=None):
+        super().__init__(i18n=i18n, title_key="music.header.title", subtitle_key="music.header.subtitle", parent=parent)
         self._music_overlay_url = music_overlay_url
         self._last_direction = None
         self._setup_ui()
@@ -182,6 +182,9 @@ class MusicView(BaseView):
 
     def update_current_song(self, song_data: dict | None):
         self.player_panel.update_current_song(song_data)
+
+    def set_rate_limit_values(self, max_user_songs: int, user_cooldown: int, max_queue_size: int, max_song_duration: int):
+        self.settings_panel.set_rate_limit_values(max_user_songs, user_cooldown, max_queue_size, max_song_duration)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

@@ -175,12 +175,12 @@ class MainWindowCore(QMainWindow):
         )
         self.music_controller = MusicController(
             view=self.view_music,
-            spotify_auth=self.container.spotify_auth,
             command_service=self.command_service,
             toast_manager=self.toast,
             i18n=self.i18n,
             settings_storage=self.container.settings_storage,
-            music_storage=self.container.music_storage
+            music_storage=self.container.music_storage,
+            music_provider=self.container.music_provider
         )
         self.rewards_controller = RewardsController(
             view=self.view_rewards, 

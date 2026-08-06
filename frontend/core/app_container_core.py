@@ -6,19 +6,15 @@ import logging
 
 try:
     from backend.config.api_keys import (
-        KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI,
-        SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI
+        KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI
     )
 except ImportError:
     logging.warning("Archivo backend/api_keys.py no encontrado. Usando credenciales vacías.")
     KICK_CLIENT_ID = ""
     KICK_CLIENT_SECRET = ""
     KICK_REDIRECT_URI = "http://localhost:8080/auth/callback"
-    SPOTIFY_CLIENT_ID = ""
-    SPOTIFY_CLIENT_SECRET = ""
-    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8080/auth/callback"
 
-from backend.providers import SpotifyAuthManager, SpotifyMusicProvider
+from backend.providers import YouTubeMusicProvider
 from backend.database import (DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
                             SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
                             SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage)
@@ -30,7 +26,6 @@ class AppContainer:
     def __init__(self, parent_widget):
         self.db_manager = DatabaseManager()
         self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
-        self.spotify_token_storage = SQLiteTokenStorage(self.db_manager, provider="spotify")
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
         self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
@@ -57,14 +52,7 @@ class AppContainer:
             success_html_path=html_path
         )
         
-        self.spotify_auth = SpotifyAuthManager(
-            client_id=SPOTIFY_CLIENT_ID,
-            client_secret=SPOTIFY_CLIENT_SECRET,
-            redirect_uri=SPOTIFY_REDIRECT_URI,
-            storage=self.spotify_token_storage,
-            success_html_path=html_path
-        )
-        self.music_provider = SpotifyMusicProvider(self.spotify_auth, self.i18n)
+        self.music_provider = YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=self.db_manager)
         
         self.tts_manager = TTSManager()
         self.media_trigger_service = MediaTriggerService(parent_widget)
