@@ -303,7 +303,7 @@ class MusicController(QObject):
                 clean_msg = self.i18n.get("music.youtube.bot_blocked")
             elif "INVALID_MEDIA" in error_msg or "Formato o medio inválido" in error_msg or "Invalid media" in error_msg:
                 clean_msg = self.i18n.get("music.youtube.invalid_media")
-            elif any(k in error_msg for k in ("cookies database", "DPAPI", "cookies", "AppData", ":\\", ":/")) or "ERROR:" in error_msg:
+            elif any(k in error_msg for k in ("DPAPI", "AppData", ":\\", ":/")) or "ERROR:" in error_msg:
                 clean_msg = self.i18n.get("music.youtube.generic_error")
             else:
                 display_err = error_msg.replace("PLAYER_ERROR: ", "")

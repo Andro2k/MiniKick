@@ -30,13 +30,6 @@ def _extract_best_audio_url(info: dict) -> str | None:
                 best_url = url
     return best_url
 
-def _get_cookie_filepath(app_data_dir: str) -> str | None:
-    for filename in ('cookies.txt', 'youtube_cookies.txt'):
-        cookie_path = os.path.join(app_data_dir, '.Minikick', filename)
-        if os.path.isfile(cookie_path) and os.path.getsize(cookie_path) > 0:
-            return cookie_path
-    return None
-
 class YouTubeResolveWorker(QThread):
     resolved = Signal(str, str)
     error = Signal(str)
@@ -54,7 +47,6 @@ class YouTubeResolveWorker(QThread):
             os.makedirs(cache_dir, exist_ok=True)
             
             outtmpl = os.path.join(cache_dir, 'yt_%(id)s.%(ext)s')
-            cookie_file = _get_cookie_filepath(app_data_dir)
             
             ydl_opts = {
                 'format': 'bestaudio/best',
@@ -69,8 +61,6 @@ class YouTubeResolveWorker(QThread):
                 'nopart': True,
                 'age_limit': 99,
             }
-            if cookie_file:
-                ydl_opts['cookiefile'] = cookie_file
             
             info = None
             client_strategies = [
@@ -158,8 +148,6 @@ class YouTubeSearchWorker(QThread):
     def run(self):
         try:
             import yt_dlp
-            app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
-            cookie_file = _get_cookie_filepath(app_data_dir)
 
             base_opts = {
                 'extract_flat': True,
@@ -172,8 +160,6 @@ class YouTubeSearchWorker(QThread):
                 'retries': 2,
                 'age_limit': 99,
             }
-            if cookie_file:
-                base_opts['cookiefile'] = cookie_file
 
             info = None
 
