@@ -8,15 +8,23 @@ class SpamController(QObject):
         self.view = view
         self.service = service
         self.toast = toast_manager
-        self._connect_signals()
+        if self.view is not None:
+            self._connect_signals()
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self.load_initial_data()
 
     def _connect_signals(self):
         self.view.filter_updated.connect(self._handle_filter_update)
 
     def load_initial_data(self):
         self.service.reload_filters()
-        filters = self.service.filters
-        self.view.populate_filters(filters)
+        if self.view is not None:
+            filters = self.service.filters
+            self.view.populate_filters(filters)
 
     @Slot(str, dict)
     def _handle_filter_update(self, filter_id: str, config: dict):

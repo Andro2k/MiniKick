@@ -8,7 +8,14 @@ class CommandController(QObject):
         self.view = view
         self.service = service
         self.toast = toast_manager
-        self._connect_signals()
+        if self.view is not None:
+            self._connect_signals()
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self.load_initial_data()
 
     def _connect_signals(self):
         self.view.add_requested.connect(self._handle_add)
@@ -19,8 +26,9 @@ class CommandController(QObject):
         self.service.commands_changed.connect(self.load_initial_data)
 
     def load_initial_data(self):
-        commands = self.service.get_all_commands()
-        self.view.populate_table(commands)
+        if self.view is not None:
+            commands = self.service.get_all_commands()
+            self.view.populate_table(commands)
 
     @Slot()
     def _handle_add(self):
@@ -66,7 +74,10 @@ class CommandController(QObject):
                 )
 
             def _save_status():
-                self.service.blockSignals(True)
+                try:
+                    self.service.commands_changed.disconnect(self.load_initial_data)
+                except Exception:
+                    pass
                 try:
                     self.service.save_command(
                         trigger=existing["trigger"],
@@ -78,7 +89,10 @@ class CommandController(QObject):
                         permission=existing.get("permission", "everyone")
                     )
                 finally:
-                    self.service.blockSignals(False)
+                    try:
+                        self.service.commands_changed.connect(self.load_initial_data)
+                    except Exception:
+                        pass
 
             QTimer.singleShot(0, _save_status)
 

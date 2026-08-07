@@ -3,10 +3,12 @@
 import time
 from PySide6.QtCore import QObject, Slot, QTimer, Signal
 
+from backend.interfaces import IMusicProvider
+
 class MusicController(QObject):
     song_changed = Signal(dict)
 
-    def __init__(self, view, command_service, toast_manager, i18n, settings_storage=None, music_storage=None, provider_factory=None, music_provider=None):
+    def __init__(self, view, command_service, toast_manager, i18n, settings_storage=None, music_storage=None, provider_factory=None, music_provider: IMusicProvider | None = None):
         super().__init__()
         self.view = view
         self.command_service = command_service
@@ -34,8 +36,16 @@ class MusicController(QObject):
         self.polling_timer = QTimer(self)
         self.polling_timer.setInterval(5000)
         self.polling_timer.timeout.connect(self._poll_now_playing)
-        self._connect_signals()
-        self._load_initial_state()
+        self.command_service.commands_changed.connect(self._sync_switches_from_db)
+        if self.view is not None:
+            self._connect_signals()
+            self._load_initial_state()
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self._load_initial_state()
 
     def _connect_signals(self):
         self.view.command_toggled.connect(self.handle_command_toggle)
@@ -59,6 +69,8 @@ class MusicController(QObject):
             self.view.max_song_duration_changed.connect(self.set_max_song_duration)
 
     def _sync_switches_from_db(self):
+        if self.view is None:
+            return
         saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.get_all_commands()}
         self.view.blockSignals(True)
         self.view.sw_sr.setChecked(saved_cmds.get("!sr", False))

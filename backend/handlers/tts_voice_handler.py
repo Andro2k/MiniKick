@@ -21,8 +21,9 @@ class TTSVoiceHandler(QObject):
         self._voice_worker = None
 
     def load_voices(self, provider: str, is_initial: bool = False) -> None:
-        loading_str = self.view.i18n.get("chat.status.loading_voices") if hasattr(self.view, "i18n") else "Cargando..."
-        self.view.update_voices([("loading", loading_str)], "loading")
+        if self.view is not None:
+            loading_str = self.view.i18n.get("chat.status.loading_voices") if hasattr(self.view, "i18n") else "Cargando..."
+            self.view.update_voices([("loading", loading_str)], "loading")
         
         cached = self.service.tts._voices_cache.get(provider, [])
         if cached:
@@ -65,14 +66,15 @@ class TTSVoiceHandler(QObject):
             ))
             sel_prefix = "-".join(saved_voice_id.split("-")[:2]) if ("-" in saved_voice_id and saved_voice_id) else (langs[0] if langs else "")
 
-        self.view.update_languages(langs, sel_prefix)
-        self.filter_voices_by_language(sel_prefix, select_id=saved_voice_id, play_test=(not is_initial))
+        if self.view is not None:
+            self.view.update_languages(langs, sel_prefix)
+            self.filter_voices_by_language(sel_prefix, select_id=saved_voice_id, play_test=(not is_initial))
 
         if self._voice_worker:
             self._voice_worker.deleteLater()
             self._voice_worker = None
 
-    @Slot(str, str)
+    @Slot(str)
     def _on_voices_error(self, error_msg: str, provider: str) -> None:
         fallback = [
             {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Sin conexión)"},
@@ -89,7 +91,8 @@ class TTSVoiceHandler(QObject):
 
     @Slot(str)
     def filter_voices_by_language(self, lang_prefix: str = "", select_id: str = None, play_test: bool = False) -> None:
-        provider = "web" if self.view.is_web_provider else "local"
+        is_web = self.view.is_web_provider if self.view is not None else False
+        provider = "web" if is_web else "local"
         filtered = [(v["id"], v["name"]) for v in self._all_voices]
             
         final_select_id = select_id
@@ -121,7 +124,8 @@ class TTSVoiceHandler(QObject):
                 display_name = f"[Local] {v_name}"
             all_voices_list.append((v_id, display_name))
             
-        self.view.update_voices(filtered, final_select_id, role_voices, all_voices_list)
+        if self.view is not None:
+            self.view.update_voices(filtered, final_select_id, role_voices, all_voices_list)
 
     def handle_voice_change(self, voice_id: str) -> None:
         provider = "web" if self.view.is_web_provider else "local"

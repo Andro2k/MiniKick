@@ -8,8 +8,15 @@ class RewardsController(QObject):
         self.view = view
         self.service = service
         self.toast = toast_manager
-        self.current_rewards_list = [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
-        self._connect_signals()
+        self.current_rewards_list = [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")] if self.view else ["No Rewards"]
+        if self.view is not None:
+            self._connect_signals()
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self.load_initial_data()
 
     def _connect_signals(self):
         self.view.add_requested.connect(self._handle_add)
@@ -18,13 +25,15 @@ class RewardsController(QObject):
         self.view.preview_requested.connect(self._handle_preview)
 
     def load_initial_data(self):
-        mappings = self.service.get_mappings()
-        self.view.populate_table(mappings)
+        if self.view is not None:
+            mappings = self.service.get_mappings()
+            self.view.populate_table(mappings)
 
     @Slot(list)
     def update_rewards_list(self, rewards: list):
-        self.current_rewards_list = rewards if rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
-        self.view.update_active_dialog_rewards(self._get_available_rewards())
+        if self.view is not None:
+            self.current_rewards_list = rewards if rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
+            self.view.update_active_dialog_rewards(self._get_available_rewards())
 
     def _get_available_rewards(self, ignore_reward=None):
         mappings = self.service.get_mappings()

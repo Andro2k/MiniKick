@@ -122,46 +122,25 @@ class MainWindowCore(QMainWindow):
         self.timers_worker = None
 
         self.view_dashboard = DashboardView(self.i18n, parent=self)
-        self.view_chat = ChatView(self.i18n, parent=self)
-        self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
-        self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self)
-        self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self)
-        self.view_commands = CommandView(self.i18n, parent=self)
-        self.view_widgets = WidgetsView(
-            self.i18n,
-            shoutout_overlay_url=self.overlay_server.get_shoutout_overlay_url(),
-            death_overlay_url=self.overlay_server.get_death_overlay_url(),
-            score_overlay_url=self.overlay_server.get_score_overlay_url(),
-            explosion_overlay_url=self.overlay_server.get_explosion_overlay_url(),
-            combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
-            parent=self
-        )
-        self.view_spam = SpamView(self.i18n, parent=self)
-        self.view_timers = TimersView(self.i18n, parent=self)
-        self.view_settings = SettingsView(self.i18n, parent=self)
-        self.view_logs = LogView(self.i18n, parent=self)
-        self.view_network = NetworkView(self.i18n, parent=self)
+        self.view_chat = None
+        self.view_music = None
+        self.view_rewards = None
+        self.view_commands = None
+        self.view_widgets = None
+        self.view_spam = None
+        self.view_timers = None
+        self.view_settings = None
+        self.view_logs = None
+        self.view_network = None
 
-        self._nav_mapping = {
-            "Dashboard": self.view_dashboard,
-            "Chat": self.view_chat,
-            "Comandos": self.view_commands,
-            "Widgets": self.view_widgets,
-            "Spam Filters": self.view_spam,
-            "Timers": self.view_timers,
-            "Music": self.view_music,
-            "Triggers": self.view_rewards,
-            "Settings": self.view_settings,
-            "Developer": self.view_logs,
-            "Network Status": self.view_network,
-        }
+        self._instantiated_views = {"Dashboard": self.view_dashboard}
 
         self.dashboard_controller = DashboardController(
             view=self.view_dashboard, 
             avatar_service=self.avatar_service
         )
         self.chat_controller = ChatController(
-            view=self.view_chat, 
+            view=None, 
             service=self.chat_service,
             command_service=self.command_service,
             spam_service=self.spam_service,
@@ -170,7 +149,7 @@ class MainWindowCore(QMainWindow):
             toast_manager=self.toast
         )
         self.widget_controller = WidgetController(
-            view=self.view_widgets,
+            view=None,
             widget_service=self.container.widget_service,
             command_service=self.command_service,
             overlay_server=self.overlay_server,
@@ -178,7 +157,7 @@ class MainWindowCore(QMainWindow):
             toast_manager=self.toast
         )
         self.music_controller = MusicController(
-            view=self.view_music,
+            view=None,
             command_service=self.command_service,
             toast_manager=self.toast,
             i18n=self.i18n,
@@ -187,37 +166,37 @@ class MainWindowCore(QMainWindow):
             music_provider=self.container.music_provider
         )
         self.rewards_controller = RewardsController(
-            view=self.view_rewards, 
+            view=None, 
             service=self.rewards_service,
             toast_manager=self.toast
         )
         self.command_controller = CommandController(
-            self.view_commands, 
+            None, 
             self.command_service,
             toast_manager=self.toast
         )
         self.spam_controller = SpamController(
-            self.view_spam, 
+            None, 
             self.spam_service,
             toast_manager=self.toast
         )
         self.timer_controller = TimerController(
-            self.view_timers,
+            None,
             self.timer_service,
             toast_manager=self.toast
         )
         self.settings_controller = SettingsController(
-            view=self.view_settings, 
+            view=None, 
             service=self.settings_service,
             toast_manager=self.toast
         )
         self.log_controller = LogController(
-            view=self.view_logs, 
+            view=None, 
             service=self.log_service,
             toast_manager=self.toast
         )
         self.network_controller = NetworkController(
-            view=self.view_network, 
+            view=None, 
             service=self.network_service
         )
         self.session_metrics = {
@@ -227,8 +206,7 @@ class MainWindowCore(QMainWindow):
             "spam_blocked": 0
         }
 
-        for view_widget in self._nav_mapping.values():
-            self.content_stack.addWidget(view_widget)
+        self.content_stack.addWidget(self.view_dashboard)
 
         self.main_layout.addWidget(self.sidebar)
         self.main_layout.addWidget(self.content_stack)
@@ -260,14 +238,74 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.widget_plugin_triggered.connect(self.widget_controller.handle_widget_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
-        self.timer_controller.metrics_update_requested.connect(lambda: self._update_dashboard_metrics(force_db_query=True))
-        self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
         self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
         self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
         self.q_log_handler.emitter.log_received.connect(self.log_controller.process_incoming_log)
         self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)
+
+    def _get_or_create_view(self, view_name: str):
+        if view_name in self._instantiated_views:
+            return self._instantiated_views[view_name]
+
+        view_widget = None
+        if view_name == "Chat":
+            self.view_chat = ChatView(self.i18n, parent=self)
+            self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
+            self.chat_controller.attach_view(self.view_chat)
+            view_widget = self.view_chat
+        elif view_name == "Music":
+            self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self)
+            self.music_controller.attach_view(self.view_music)
+            view_widget = self.view_music
+        elif view_name == "Triggers":
+            self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self)
+            self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
+            self.rewards_controller.attach_view(self.view_rewards)
+            view_widget = self.view_rewards
+        elif view_name == "Comandos":
+            self.view_commands = CommandView(self.i18n, parent=self)
+            self.command_controller.attach_view(self.view_commands)
+            view_widget = self.view_commands
+        elif view_name == "Widgets":
+            self.view_widgets = WidgetsView(
+                self.i18n,
+                shoutout_overlay_url=self.overlay_server.get_shoutout_overlay_url(),
+                death_overlay_url=self.overlay_server.get_death_overlay_url(),
+                score_overlay_url=self.overlay_server.get_score_overlay_url(),
+                explosion_overlay_url=self.overlay_server.get_explosion_overlay_url(),
+                combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
+                parent=self
+            )
+            self.widget_controller.attach_view(self.view_widgets)
+            view_widget = self.view_widgets
+        elif view_name == "Spam Filters":
+            self.view_spam = SpamView(self.i18n, parent=self)
+            self.spam_controller.attach_view(self.view_spam)
+            view_widget = self.view_spam
+        elif view_name == "Timers":
+            self.view_timers = TimersView(self.i18n, parent=self)
+            self.timer_controller.attach_view(self.view_timers)
+            view_widget = self.view_timers
+        elif view_name == "Settings":
+            self.view_settings = SettingsView(self.i18n, parent=self)
+            self.settings_controller.attach_view(self.view_settings)
+            view_widget = self.view_settings
+        elif view_name == "Developer":
+            self.view_logs = LogView(self.i18n, parent=self)
+            self.log_controller.attach_view(self.view_logs)
+            view_widget = self.view_logs
+        elif view_name == "Network Status":
+            self.view_network = NetworkView(self.i18n, parent=self)
+            self.network_controller.attach_view(self.view_network)
+            view_widget = self.view_network
+
+        if view_widget:
+            self._instantiated_views[view_name] = view_widget
+            self.content_stack.addWidget(view_widget)
+
+        return view_widget
 
     def _load_settings_into_ui(self):
         self.rewards_controller.load_initial_data()
@@ -288,8 +326,11 @@ class MainWindowCore(QMainWindow):
             self._handle_auth_process()
 
     def _handle_navigation(self, view_name):
-        target_view = self._nav_mapping.get(view_name)
+        target_view = self._get_or_create_view(view_name)
         if target_view:
+            self.content_stack.setCurrentWidget(target_view)
+            if view_name == "Dashboard":
+                self._update_dashboard_metrics(force_db_query=True)
             self.content_stack.setCurrentWidget(target_view)
             if view_name == "Dashboard":
                 self._update_dashboard_metrics(force_db_query=True)

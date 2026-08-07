@@ -14,11 +14,8 @@ class WidgetController(QObject):
     widgets_reloaded = Signal(dict)
 
     PLUGIN_TAGS = {
-        "shoutout": "[PLUGIN_WIDGET_SO]",
-        "death": "[PLUGIN_WIDGET_DEATH]",
-        "score": "[PLUGIN_WIDGET_SCORE]",
-        "explosion": "[PLUGIN_WIDGET_EXPLOSION]",
-        "combo": "[PLUGIN_WIDGET_COMBO]"
+        "shoutout": "[PLUGIN_WIDGET_SO]", "death": "[PLUGIN_WIDGET_DEATH]", "score": "[PLUGIN_WIDGET_SCORE]",
+        "explosion": "[PLUGIN_WIDGET_EXPLOSION]", "combo": "[PLUGIN_WIDGET_COMBO]"
     }
 
     _KICK_EMOTE_REGEX = re.compile(r"\[emote:(?:(\d+):)?([^\]]+)\]")
@@ -50,9 +47,18 @@ class WidgetController(QObject):
         self._save_timer.setInterval(400)
         self._save_timer.timeout.connect(self._flush_saves)
         self._pending_saves = set()
+        self._is_syncing_db = False
 
-        self._connect_signals()
+        self.command_service.commands_changed.connect(self._sync_widgets_from_commands_db)
+        if self.view is not None:
+            self._connect_signals()
         self.sync_commands_with_db()
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self.load_initial_data()
 
     def _trigger_deferred_save(self, widget_id: str):
         self._pending_saves.add(widget_id)
@@ -98,41 +104,88 @@ class WidgetController(QObject):
                 "title_text": title_score
             })
 
+    def _sync_widgets_from_commands_db(self):
+        if getattr(self, "_is_syncing_db", False):
+            return
+        self._is_syncing_db = True
+        try:
+            commands = self.command_service.get_all_commands()
+            tag_map = {c["response"]: c for c in commands if isinstance(c, dict) and "response" in c}
+            widgets = self.widget_service.get_all_widgets()
+            changed = False
+
+            for w_id, w_data in widgets.items():
+                tag = self.PLUGIN_TAGS.get(w_id)
+                if not tag or tag not in tag_map:
+                    continue
+                
+                cmd_info = tag_map[tag]
+                is_active = cmd_info.get("is_active", True)
+                cmd_trigger = cmd_info.get("trigger", "")
+                cooldown = cmd_info.get("cooldown", 3)
+                perm = cmd_info.get("permission", "everyone")
+
+                if (w_data.get("is_active") != is_active or 
+                    w_data.get("command") != cmd_trigger or 
+                    w_data.get("cooldown") != cooldown or 
+                    w_data.get("permission") != perm):
+                    
+                    w_data["is_active"] = is_active
+                    w_data["command"] = cmd_trigger
+                    w_data["cooldown"] = cooldown
+                    w_data["permission"] = perm
+                    
+                    self.widget_service.save_widget(
+                        w_id, is_active, cmd_trigger, cooldown, perm, w_data.get("config", {})
+                    )
+                    changed = True
+
+            if self.view:
+                self.view.populate_widgets(self.widget_service.get_all_widgets())
+        finally:
+            self._is_syncing_db = False
+
     def sync_commands_with_db(self):
-        widgets = self.widget_service.get_all_widgets()
-        for w_id, data in widgets.items():
-            tag = self.PLUGIN_TAGS.get(w_id)
-            if not tag:
-                continue
-            
-            cmd_name = data.get("command", "").strip()
-            if not cmd_name:
-                continue
+        if getattr(self, "_is_syncing_db", False):
+            return
+        self._is_syncing_db = True
+        try:
+            widgets = self.widget_service.get_all_widgets()
+            for w_id, data in widgets.items():
+                tag = self.PLUGIN_TAGS.get(w_id)
+                if not tag:
+                    continue
+                
+                cmd_name = data.get("command", "").strip()
+                if not cmd_name:
+                    continue
 
-            if not cmd_name.startswith("!"):
-                cmd_name = "!" + cmd_name
+                if not cmd_name.startswith("!"):
+                    cmd_name = "!" + cmd_name
 
-            is_active = data.get("is_active", True)
-            cooldown = data.get("cooldown", 3)
-            perm = data.get("permission", "everyone")
+                is_active = data.get("is_active", True)
+                cooldown = data.get("cooldown", 3)
+                perm = data.get("permission", "everyone")
 
-            aliases = ""
-            if w_id == "score":
-                aliases = "!win, !loss, !lose, !victoria, !derrota"
-            elif w_id == "death":
-                aliases = "!muerte, !death, !deaths, !muertes"
-            elif w_id == "shoutout":
-                aliases = "!shoutout"
+                aliases = ""
+                if w_id == "score":
+                    aliases = "!win, !loss, !lose, !victoria, !derrota"
+                elif w_id == "death":
+                    aliases = "!muerte, !death, !deaths, !muertes"
+                elif w_id == "shoutout":
+                    aliases = "!shoutout"
 
-            self.command_service.save_command(
-                trigger=cmd_name,
-                response=tag,
-                is_active=is_active,
-                cooldown=cooldown,
-                aliases=aliases,
-                is_regex=False,
-                permission=perm
-            )
+                self.command_service.save_command(
+                    trigger=cmd_name,
+                    response=tag,
+                    is_active=is_active,
+                    cooldown=cooldown,
+                    aliases=aliases,
+                    is_regex=False,
+                    permission=perm
+                )
+        finally:
+            self._is_syncing_db = False
 
     @Slot(str, bool, str, int, str, dict)
     def handle_widget_save(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):

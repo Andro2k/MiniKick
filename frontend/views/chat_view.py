@@ -171,3 +171,9 @@ class ChatView(BaseView):
         self.chk_command.blockSignals(False)
         self.txt_command.blockSignals(False)
         self.blockSignals(False)
+
+    def set_tts_enabled_state(self, enabled: bool):
+        if hasattr(self.tts_settings_panel, 'chk_tts'):
+            self.tts_settings_panel.chk_tts.blockSignals(True)
+            self.tts_settings_panel.chk_tts.setChecked(enabled)
+            self.tts_settings_panel.chk_tts.blockSignals(False)

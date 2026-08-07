@@ -14,8 +14,15 @@ class SettingsController(QObject):
         self.view = view
         self.service = service
         self.toast = toast_manager
-        self._connect_signals()
-        self._load_initial_state()
+        if self.view is not None:
+            self._connect_signals()
+            self._load_initial_state()
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self._load_initial_state()
 
     def _connect_signals(self):
         self.view.font_size_changed.connect(self.handle_font_size)
@@ -29,11 +36,12 @@ class SettingsController(QObject):
 
     def _load_initial_state(self):
         enabled = self.service.is_minimize_tray_enabled()
-        self.view.set_minimize_tray_enabled(enabled)
         lang = self.service.get_language()
-        self.view.set_current_language(lang)
         current_font = self.service.get_font_size()
-        self.view.set_current_font_size(current_font)
+        if self.view is not None:
+            self.view.set_minimize_tray_enabled(enabled)
+            self.view.set_current_language(lang)
+            self.view.set_current_font_size(current_font)
         self.style_reload_requested.emit(current_font)
 
     @Slot(bool)

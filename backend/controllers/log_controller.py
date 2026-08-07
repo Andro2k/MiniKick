@@ -15,16 +15,27 @@ class LogController(QObject):
         self.toast = toast_manager
         self._search_term = ""
         self._search_term_lower = ""
-        self._current_filter = self.view.str_all
+        self._current_filter = self.view.str_all if self.view else "ALL"
         self._date_filter = ""
         self._is_historical = False
         self._logs_streaming_visible = False
         self._historical_logs = []
-        self._connect_signals()
-        self.view.update_display_state(
-            is_historical=self._is_historical,
-            streaming_visible=self._logs_streaming_visible
-        )
+        if self.view is not None:
+            self._connect_signals()
+            self.view.update_display_state(
+                is_historical=self._is_historical,
+                streaming_visible=self._logs_streaming_visible
+            )
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._current_filter = getattr(self.view, "str_all", "ALL")
+            self._connect_signals()
+            self.view.update_display_state(
+                is_historical=self._is_historical,
+                streaming_visible=self._logs_streaming_visible
+            )
 
     def _connect_signals(self):
         self.view.search_changed.connect(self.handle_search_changed)

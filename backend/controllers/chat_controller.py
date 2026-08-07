@@ -40,8 +40,17 @@ class ChatController(QObject):
 
         self.pipeline = MessagePipeline()
         self._build_pipeline()
-        self._connect_signals()
-        self._load_initial_data()
+        if self.view is not None:
+            self._connect_signals()
+            self._load_initial_data()
+
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.voice_handler:
+            self.voice_handler.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self._load_initial_data()
 
     @property
     def muted_bots(self) -> set[str]:
@@ -94,18 +103,18 @@ class ChatController(QObject):
             "subscriber": settings.get("role_voice_subscriber", "")
         }
         
-        self.view.set_settings_ui(
-            enabled=settings.get("enabled", True),
-            read_name=settings.get("read_name", True),
-            use_command=settings.get("use_command", False),
-            command=settings.get("command", "!tts"),
-            is_web_provider=(provider == "web"),
-            volume=settings.get("volume", 100),
-            role_voices=role_voices
-        )
-        self.service.set_volume(settings.get("volume", 100))     
-        
-        self.filter_handler.initialize_from_settings(settings, self.view)
+        if self.view is not None:
+            self.view.set_settings_ui(
+                enabled=settings.get("enabled", True),
+                read_name=settings.get("read_name", True),
+                use_command=settings.get("use_command", False),
+                command=settings.get("command", "!tts"),
+                is_web_provider=(provider == "web"),
+                volume=settings.get("volume", 100),
+                role_voices=role_voices
+            )
+            self.filter_handler.initialize_from_settings(settings, self.view)
+        self.service.set_volume(settings.get("volume", 100))
 
         overlay_theme = self.service.storage.load_string("chat_overlay_theme", "glass")
         try:
@@ -119,13 +128,14 @@ class ChatController(QObject):
         overlay_show_bots = self.service.storage.load_bool("chat_overlay_show_bots", False)
         overlay_show_time = self.service.storage.load_bool("chat_overlay_show_time", False)
 
-        self.view.set_overlay_settings_ui(
-            theme=overlay_theme,
-            size=overlay_size,
-            fade=overlay_fade,
-            show_bots=overlay_show_bots,
-            show_time=overlay_show_time
-        )
+        if self.view is not None:
+            self.view.set_overlay_settings_ui(
+                theme=overlay_theme,
+                size=overlay_size,
+                fade=overlay_fade,
+                show_bots=overlay_show_bots,
+                show_time=overlay_show_time
+            )
 
         commands = self.command_service.get_all_commands()
         existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
@@ -237,6 +247,8 @@ class ChatController(QObject):
         self.sync_settings_cache()
 
         self.tts_state_changed.emit(new_state)
+        if self.view is not None and hasattr(self.view, "set_tts_enabled_state"):
+            self.view.set_tts_enabled_state(new_state)
 
         key = "chat.status.systts_on" if new_state else "chat.status.systts_off"
         reply = self.i18n.get(key).replace("{user}", user)
@@ -260,7 +272,8 @@ class ChatController(QObject):
         if self.filter_handler.is_bot(dto.user) and "bot" not in badges:
             badges.append("bot")
         role_name = self._resolve_user_role(badges, dto.user)
-        self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name)
+        if self.view is not None:
+            self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name)
         self.message_received.emit(dto.user, dto.content, dto.color, badges)
 
     def _step_tts(self, dto: ChatMessageDTO) -> None:
@@ -404,7 +417,8 @@ class ChatController(QObject):
             settings["command"] = command_trigger
             self.service.save_settings(settings)
             self._tts_settings_cache = settings           
-            self.view.set_tts_command_configuration(use_command, command_trigger)
+            if self.view is not None:
+                self.view.set_tts_command_configuration(use_command, command_trigger)
 
     @Slot(str)
     def _add_bot(self, bot_name: str) -> None:
