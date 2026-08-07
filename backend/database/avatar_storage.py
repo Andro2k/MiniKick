@@ -1,4 +1,4 @@
-# backend/database/avatar_storage.py
+# backend\database\avatar_storage.py
 
 import logging
 from backend.database.manager import DatabaseManager
