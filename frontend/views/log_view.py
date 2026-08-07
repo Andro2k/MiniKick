@@ -185,6 +185,7 @@ class LogView(BaseView):
         self.page_size = 50
         self.current_page = 1
         self.all_logs: list[tuple[str, str, str]] = []
+        self._current_sort: tuple[int, str] | None = None
         
         self._flush_timer = QTimer(self)
         self._flush_timer.setSingleShot(True)
@@ -228,10 +229,45 @@ class LogView(BaseView):
         self.table = ModernTable([col_1, col_2, col_3])
         self.table.setWordWrap(True)
 
-        h_header = self.table.horizontalHeader()
-        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.filter_header = self.table.enable_filter_header()
+
+        sort_asc_text = self.i18n.get("command.table.filter_sort_asc")
+        sort_desc_text = self.i18n.get("command.table.filter_sort_desc")
+        all_text = self.i18n.get("command.table.filter_all")
+
+        level_options = [
+            {"id": "INFO", "label": "INFO"},
+            {"id": "DEBUG", "label": "DEBUG"},
+            {"id": "WARNING", "label": "WARNING"},
+            {"id": "ERROR", "label": "ERROR"},
+        ]
+
+        self.filter_header.set_column_filter(
+            col_idx=0,
+            title=col_1,
+            options=level_options,
+            all_label=all_text,
+            sort_asc_label=sort_asc_text,
+            sort_desc_label=sort_desc_text
+        )
+
+        self.filter_header.set_column_filter(
+            col_idx=1,
+            title=col_2,
+            options=[],
+            all_label=all_text,
+            sort_asc_label=sort_asc_text,
+            sort_desc_label=sort_desc_text
+        )
+
+        self.filter_header.filter_changed.connect(self._on_header_filter_changed)
+        self.filter_header.sort_requested.connect(self._on_header_sort_requested)
+
+        self.filter_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.table.setColumnWidth(0, 150)
+        self.table.setColumnWidth(1, 160)
 
         table_page_layout.addWidget(self.table)
         
@@ -272,6 +308,43 @@ class LogView(BaseView):
         table_layout.addWidget(self.content_stack)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
+
+    def _on_header_filter_changed(self, filters: dict):
+        self.current_page = 1
+        self.update_page_display()
+
+    def _on_header_sort_requested(self, col_idx: int, order: str):
+        self._current_sort = (col_idx, order)
+        self.current_page = 1
+        self.update_page_display()
+
+    def _get_effective_logs(self) -> list[tuple[str, str, str]]:
+        if not hasattr(self, "filter_header") or not self.filter_header:
+            return self.all_logs
+
+        active_filters = self.filter_header.get_active_filters()
+        level_active = active_filters.get(0, {"INFO", "DEBUG", "WARNING", "ERROR"})
+
+        filtered = []
+        for item in self.all_logs:
+            lvl, t_str, txt = item
+            if level_active and lvl.upper() not in level_active:
+                continue
+            filtered.append(item)
+
+        if hasattr(self, "_current_sort") and self._current_sort:
+            col_idx, order = self._current_sort
+            reverse = (order == "desc")
+            level_ranks = {"DEBUG": 0, "INFO": 1, "WARNING": 2, "ERROR": 3}
+            def sort_key(item):
+                if col_idx == 0:
+                    return level_ranks.get(item[0].upper(), 0)
+                elif col_idx == 1:
+                    return item[1]
+                return 0
+            filtered.sort(key=sort_key, reverse=reverse)
+
+        return filtered
 
     def _build_empty_state(self) -> QWidget:
         container = QWidget()
@@ -390,7 +463,8 @@ class LogView(BaseView):
             self.update_page_display()
 
     def next_page(self):
-        total_logs = len(self.all_logs)
+        effective_logs = self._get_effective_logs()
+        total_logs = len(effective_logs)
         total_pages = max(1, (total_logs + self.page_size - 1) // self.page_size)
         if self.current_page < total_pages:
             self.current_page += 1
@@ -466,7 +540,8 @@ class LogView(BaseView):
             self._page_label_pool[i].setVisible(False)
 
     def update_page_display(self):
-        total_logs = len(self.all_logs)
+        effective_logs = self._get_effective_logs()
+        total_logs = len(effective_logs)
         total_pages = max(1, (total_logs + self.page_size - 1) // self.page_size)
 
         if self.current_page > total_pages:
@@ -477,7 +552,7 @@ class LogView(BaseView):
         start_idx = (self.current_page - 1) * self.page_size
         end_idx = min(start_idx + self.page_size, total_logs)
 
-        page_logs = self.all_logs[start_idx:end_idx]
+        page_logs = effective_logs[start_idx:end_idx]
 
         self.table.setUpdatesEnabled(False)
         self.table.blockSignals(True)

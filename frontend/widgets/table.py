@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QL
 from PySide6.QtCore import Qt, QSize
 from .controls import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
+from .filter_header import FilterHeaderView
 from frontend.common.theme import COLOR_BLACK
 from frontend.common.utils import get_icon_colored, get_assets_path
 
@@ -17,6 +18,13 @@ class ModernTable(QTableWidget):
         self.setShowGrid(False)
         self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+    def enable_filter_header(self) -> FilterHeaderView:
+        headers = [self.horizontalHeaderItem(i).text() if self.horizontalHeaderItem(i) else "" for i in range(self.columnCount())]
+        filter_header = FilterHeaderView(Qt.Orientation.Horizontal, parent=self)
+        self.setHorizontalHeader(filter_header)
+        self.setHorizontalHeaderLabels(headers)
+        return filter_header
 
 class ModernTableCard(QFrame):
     def __init__(self, title_text: str = None, headers: list[str] = None, 
@@ -129,6 +137,9 @@ class ModernTableCard(QFrame):
         if hasattr(self, "lbl_illustration") and self.lbl_illustration and self.stack.currentIndex() == 1:
             card_h = max(self.height(), 300)
             self.lbl_illustration.update_image(card_h)
+
+    def enable_filter_header(self) -> FilterHeaderView:
+        return self.table.enable_filter_header()
 
 class TableActionCell(QWidget):
     def __init__(self, parent=None):

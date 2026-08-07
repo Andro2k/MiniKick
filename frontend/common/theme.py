@@ -72,7 +72,11 @@ QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_N
 QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
-QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
+QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 4px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
+QMenu::item {{ padding: 6px 18px 6px 24px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; }}
+QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
+QMenu::separator {{ height: 1.5px; background-color: {COLOR_NEUTRAL_700}; margin: 4px 6px; }}
+
 QComboBox QAbstractItemView::item, QMenu::item {{ border-radius: {RADIUS_SM}px; padding: 2px; margin: 2px; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
 

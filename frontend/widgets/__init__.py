@@ -9,6 +9,7 @@ from .controls import ModernButton, ModernSwitch, CompactSlider, VariableTextEdi
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table import ModernTable, ModernTableCard, TableActionCell
+from .filter_header import FilterHeaderView
 
 __all__ = [
     "BaseView",
@@ -28,5 +29,7 @@ __all__ = [
     "ScalableIllustration",
     "ModernTable",
     "ModernTableCard",
-    "TableActionCell"
+    "TableActionCell",
+    "FilterHeaderView"
 ]
+

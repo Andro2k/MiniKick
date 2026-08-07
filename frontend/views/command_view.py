@@ -20,8 +20,18 @@ class CommandView(BaseView):
         "broadcaster": "command.dialog.perm_broadcaster",
     }
 
+    _PERM_RANKS: dict[str, int] = {
+        "everyone": 0,
+        "subscriber": 1,
+        "vip": 2,
+        "moderator": 3,
+        "broadcaster": 4,
+    }
+
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="command.header.title", subtitle_key="command.header.subtitle", parent=parent)
+        self._raw_commands: list[dict] = []
+        self._current_sort: tuple[int, str] | None = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -51,23 +61,110 @@ class CommandView(BaseView):
         self.txt_search = self.table_card.txt_search
         self.btn_new_add = self.table_card.btn_add
 
-        self.txt_search.textChanged.connect(self.search_text_changed.emit)
+        self.txt_search.textChanged.connect(self._apply_filters)
         self.btn_new_add.clicked.connect(self.add_requested.emit)
 
-        h_header = self.table.horizontalHeader()
-        h_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        h_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Interactive)
-        h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Interactive)
-        h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
-        h_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        self.filter_header = self.table_card.enable_filter_header()
         
-        self.table.setColumnWidth(1, 130)
-        self.table.setColumnWidth(2, 140)
+        sort_asc_text = self.i18n.get("command.table.filter_sort_asc")
+        sort_desc_text = self.i18n.get("command.table.filter_sort_desc")
+        all_text = self.i18n.get("command.table.filter_all")
+
+        type_options = [
+            {"id": "custom", "label": self.i18n.get("command.table.type_custom")},
+            {"id": "plugin", "label": self.i18n.get("command.table.type_plugin")}
+        ]
+        self.filter_header.set_column_filter(
+            col_idx=1,
+            title=col_2,
+            options=type_options,
+            all_label=all_text,
+            sort_asc_label=sort_asc_text,
+            sort_desc_label=sort_desc_text
+        )
+
+        perm_options = [
+            {"id": k, "label": self.i18n.get(v)} for k, v in self._PERM_KEYS.items()
+        ]
+        self.filter_header.set_column_filter(
+            col_idx=2,
+            title=col_3,
+            options=perm_options,
+            all_label=all_text,
+            sort_asc_label=sort_asc_text,
+            sort_desc_label=sort_desc_text
+        )
+
+        self.filter_header.filter_changed.connect(self._apply_filters)
+        self.filter_header.sort_requested.connect(self._on_sort_requested)
+
+        self.filter_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.filter_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        
+        self.table.setColumnWidth(1, 170)
+        self.table.setColumnWidth(2, 170)
         self.table.setColumnWidth(4, 130)
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
+    def _on_sort_requested(self, col_idx: int, order: str):
+        self._current_sort = (col_idx, order)
+        self._apply_filters()
+
     def populate_table(self, commands: list[dict]):
+        self._raw_commands = commands or []
+        self._apply_filters()
+
+    def _apply_filters(self):
+        query = self.txt_search.text().strip().lower() if self.txt_search else ""
+        active_filters = self.filter_header.get_active_filters()
+
+        type_active = active_filters.get(1, set())
+        perm_active = active_filters.get(2, set())
+
+        filtered: list[dict] = []
+        for cmd in self._raw_commands:
+            is_plugin = "[PLUGIN_" in cmd.get("response", "")
+            cmd_type = "plugin" if is_plugin else "custom"
+            if cmd_type not in type_active:
+                continue
+
+            raw_perm = cmd.get("permission", "everyone")
+            if raw_perm not in perm_active:
+                continue
+            if query:
+                trig = cmd.get("trigger", "").lower()
+                resp = cmd.get("response", "").lower()
+                alias = cmd.get("aliases", "").lower()
+                if query not in trig and query not in resp and query not in alias:
+                    continue
+
+            filtered.append(cmd)
+
+        if self._current_sort:
+            col_idx, order = self._current_sort
+            reverse = (order == "desc")
+
+            def get_sort_key(c: dict):
+                if col_idx == 0:
+                    return c.get("trigger", "").lower()
+                elif col_idx == 1:
+                    return "plugin" if "[PLUGIN_" in c.get("response", "") else "custom"
+                elif col_idx == 2:
+                    p = c.get("permission", "everyone")
+                    return self._PERM_RANKS.get(p, 0)
+                elif col_idx == 3:
+                    return c.get("aliases", "").lower()
+                return 0
+
+            filtered.sort(key=get_sort_key, reverse=reverse)
+
+        self._render_rows(filtered)
+
+    def _render_rows(self, commands: list[dict]):
         self.table.setUpdatesEnabled(False)
         self.table.setRowCount(len(commands))
         for row, cmd in enumerate(commands):
@@ -77,7 +174,7 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 3, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 4, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(commands) == 0)
+        self.table_card.set_empty(len(commands) == 0 and len(self._raw_commands) == 0)
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()

@@ -165,8 +165,14 @@
             "type_custom": "Personalizado",
             "regex_prefix": "RegEx",
             "tooltip_edit": "Modificar configuración del comando",
-            "tooltip_delete": "Eliminar comando permanentemente"
+            "tooltip_delete": "Eliminar comando permanentemente",
+            "filter_all": "Mostrar Todos",
+            "filter_title": "Filtrar por {column}",
+            "filter_sort_asc": "Orden Ascendente (A-Z)",
+            "filter_sort_desc": "Orden Descendente (Z-A)"
         },
+
+
         "dialog": {
             "title": "Configurar Comando",
             "subtitle": "Crea o edita comandos personalizados para tu chat.",
