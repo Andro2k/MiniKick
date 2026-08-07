@@ -505,7 +505,8 @@ class MainWindowCore(QMainWindow):
         
         msg_sistema = self._format_reward_message(reward_name)
         tag = self.i18n.get("main.chat.points_tag")
-        self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True)
+        if self.view_chat is not None:
+            self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True)
         
         mappings = self.rewards_service.get_mappings()
         if reward_name in mappings:
