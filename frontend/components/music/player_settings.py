@@ -1,10 +1,10 @@
 # frontend\components\music\player_settings.py
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication, QProgressBar
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common.theme import COLOR_NEUTRAL_200
 from frontend.common.utils import get_icon_colored, NoWheelComboBox, NoWheelSlider, get_pixmap
-from frontend.widgets import ModernCard, ModernButton, SettingRow, SliderRow
+from frontend.widgets import ModernCard, ModernButton, SliderRow
 
 class MusicPlayerSettingsPanel(QWidget):
     volume_changed = Signal(int)
@@ -19,10 +19,18 @@ class MusicPlayerSettingsPanel(QWidget):
         self._cached_auth_state = None
         self._pending_volume = 100
 
+        self._current_progress_ms = 0
+        self._duration_ms = 0
+        self._is_playing = False
+
         self._volume_timer = QTimer(self)
         self._volume_timer.setSingleShot(True)
         self._volume_timer.setInterval(200)
         self._volume_timer.timeout.connect(self._emit_volume)
+
+        self._progress_timer = QTimer(self)
+        self._progress_timer.setInterval(1000)
+        self._progress_timer.timeout.connect(self._on_progress_tick)
 
         self._setup_ui()
 
@@ -56,13 +64,18 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
-        self.card_player = ModernCard(parent=self, margin=12, spacing=8, orientation="horizontal")
+        self.card_player = ModernCard(parent=self, margin=12, spacing=8, orientation="vertical")
         self.card_player.setVisible(True)
 
+        top_layout = QHBoxLayout()
+        top_layout.setSpacing(12)
+
         self.icon_music = QLabel()
-        self.icon_music.setPixmap(get_pixmap("youtube.svg", 48))
+        self.icon_music.setPixmap(get_pixmap("youtube.svg", 56))
         
         info_layout = QVBoxLayout()
+        info_layout.setSpacing(2)
+
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
         self.lbl_song_title.setProperty("role", "h3")
         self.lbl_song_title.setWordWrap(True)
@@ -71,12 +84,14 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_song_artist.setProperty("role", "body")
         self.lbl_song_artist.setWordWrap(True)
 
+        self.lbl_song_requester = QLabel("-")
+        self.lbl_song_requester.setProperty("role", "caption")
+        self.lbl_song_requester.setWordWrap(True)
+
         info_layout.addWidget(self.lbl_song_title)
         info_layout.addWidget(self.lbl_song_artist)
+        info_layout.addWidget(self.lbl_song_requester)
 
-        self.card_player.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignVCenter)
-        self.card_player.addLayout(info_layout, stretch=1)
-        
         controls_layout = QHBoxLayout()
         controls_layout.setSpacing(6)
         
@@ -94,8 +109,37 @@ class MusicPlayerSettingsPanel(QWidget):
         
         controls_layout.addWidget(self.btn_play_pause)
         controls_layout.addWidget(self.btn_skip)
-        
-        self.card_player.addLayout(controls_layout)
+
+        controls_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        top_layout.addWidget(self.icon_music, alignment=Qt.AlignmentFlag.AlignTop)
+        top_layout.addLayout(info_layout, stretch=1)
+        top_layout.addLayout(controls_layout)
+
+        progress_layout = QVBoxLayout()
+        progress_layout.setSpacing(4)
+
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setFixedHeight(6)
+
+        time_layout = QHBoxLayout()
+        self.lbl_time_elapsed = QLabel("00:00")
+        self.lbl_time_elapsed.setProperty("role", "caption")
+
+        self.lbl_time_total = QLabel("00:00")
+        self.lbl_time_total.setProperty("role", "caption")
+
+        time_layout.addWidget(self.lbl_time_elapsed)
+        time_layout.addStretch()
+        time_layout.addWidget(self.lbl_time_total)
+
+        progress_layout.addWidget(self.progress_bar)
+        progress_layout.addLayout(time_layout)
+
+        self.card_player.addLayout(top_layout)
+        self.card_player.addLayout(progress_layout)
         self.panel_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_volume_card(self):
@@ -198,20 +242,76 @@ class MusicPlayerSettingsPanel(QWidget):
         self._cached_auth_state = (connected, label_key)
         self.lbl_auth_status.setText(self.i18n.get("music.status.youtube_active"))
 
+    def _format_time(self, ms: int) -> str:
+        if ms <= 0:
+            return "00:00"
+        seconds = int(ms // 1000)
+        minutes = seconds // 60
+        sec_rem = seconds % 60
+        if minutes >= 60:
+            hours = minutes // 60
+            min_rem = minutes % 60
+            return f"{hours:02d}:{min_rem:02d}:{sec_rem:02d}"
+        return f"{minutes:02d}:{sec_rem:02d}"
+
+    def _on_progress_tick(self):
+        if self._is_playing and self._duration_ms > 0:
+            self._current_progress_ms = min(self._current_progress_ms + 1000, self._duration_ms)
+            self._update_progress_ui()
+
+    def _update_progress_ui(self):
+        if self._duration_ms > 0:
+            percentage = int((self._current_progress_ms / self._duration_ms) * 100)
+            self.progress_bar.setValue(min(100, max(0, percentage)))
+            self.lbl_time_elapsed.setText(self._format_time(self._current_progress_ms))
+            self.lbl_time_total.setText(self._format_time(self._duration_ms))
+        else:
+            self.progress_bar.setValue(0)
+            self.lbl_time_elapsed.setText("00:00")
+            self.lbl_time_total.setText("00:00")
+
     def update_current_song(self, song_data: dict | None):
         self._cached_song_state = song_data
         if not song_data:
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
             self.lbl_song_artist.setText("-")
+            self.lbl_song_requester.setText("-")
             self.btn_play_pause.setIcon(get_icon_colored("player-play.svg", COLOR_NEUTRAL_200, 18))
+            self._is_playing = False
+            self._duration_ms = 0
+            self._current_progress_ms = 0
+            self._progress_timer.stop()
+            self._update_progress_ui()
             return
 
         title = song_data.get("title", self.i18n.get("music.player.unknown_song"))
         artist = song_data.get("artist", "-")
+        requester = song_data.get("requester", "")
         is_playing = song_data.get("is_playing", False)
+        duration = song_data.get("duration", 0) or 0
+        progress = song_data.get("progress", 0) or 0
 
         self.lbl_song_title.setText(title)
         self.lbl_song_artist.setText(artist)
 
+        if requester:
+            req_text = self.i18n.get("music.player.requested_by").replace("{user}", requester)
+        else:
+            req_text = self.i18n.get("music.player.requested_by_streamer")
+        self.lbl_song_requester.setText(req_text)
+
         icon_name = "player-pause.svg" if is_playing else "player-play.svg"
         self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_200, 18))
+
+        self._duration_ms = duration
+        self._current_progress_ms = progress
+        self._is_playing = is_playing
+
+        self._update_progress_ui()
+
+        if is_playing:
+            if not self._progress_timer.isActive():
+                self._progress_timer.start()
+        else:
+            self._progress_timer.stop()
+

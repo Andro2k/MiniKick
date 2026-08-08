@@ -175,6 +175,9 @@ QFrame[role="toast"][state="danger"] {{ border-color: {COLOR_RED_GLOW}; }}
 QFrame[role="toast"][state="warning"] {{ border-color: {COLOR_AMBER_GLOW}; }}
 QFrame[role="toast"][state="info"] {{ border-color: {COLOR_BLUE_GLOW}; }}
 
+QProgressBar {{ background-color: {COLOR_NEUTRAL_850}; border: 1px solid {COLOR_NEUTRAL_800}; border-radius: 4px; height: 6px; text-align: center; }}
+QProgressBar::chunk {{ background-color: {COLOR_GREEN}; border-radius: 3px; }}
+
 QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_850}; border-radius: {RADIUS_MD}px;}}
 QFrame[role="badge"] QLabel {{ font-size: {size_textline_3}px; font-weight: 700; color: {COLOR_NEUTRAL_200}; background: transparent; }}
 QFrame[role="badge"][state="everyone"] {{ background-color: {COLOR_GREEN_GLOW}; }}

@@ -474,6 +474,8 @@
             "paused_title": "Reproductor en pausa...",
             "paused_desc": "Usa el comando para reproducir canciones",
             "unknown_song": "Desconocido",
+            "requested_by": "Solicitado por: {user}",
+            "requested_by_streamer": "Solicitado por: Streamer",
             "volume_title": "Volumen del Reproductor",
             "volume_desc": "Ajustar el volumen de reproducción de YouTube."
         },

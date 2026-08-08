@@ -118,7 +118,8 @@ class YouTubeMusicProvider(QObject):
             "is_playing": is_playing,
             "duration": duration,
             "progress": self.player.position(),
-            "thumbnail": self.current_song.get("thumbnail", "")
+            "thumbnail": self.current_song.get("thumbnail", ""),
+            "requester": self.current_song.get("requester", "")
         }
 
     @property

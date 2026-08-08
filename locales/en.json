@@ -474,6 +474,8 @@
             "paused_title": "Player paused...",
             "paused_desc": "Use the command to play songs",
             "unknown_song": "Unknown",
+            "requested_by": "Requested by: {user}",
+            "requested_by_streamer": "Requested by: Broadcaster",
             "volume_title": "Player Volume",
             "volume_desc": "Adjust YouTube playback volume."
         },
