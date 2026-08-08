@@ -1,24 +1,21 @@
-# Walkthrough - Solución Migración SQLite 'last_accessed' en Transición de BD
+# Walkthrough - Solución TypeError en argparse ('100%% en crudo')
 
 ## Resumen de Cambios Completados
 
-Se corrigió la migración de la tabla `youtube_search_cache` en [manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/manager.py) y [music_storage.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/music_storage.py).
+Se corrigió la excepción `TypeError: must be real number, not dict` ocurrida al usar la bandera `--raw` en [test_kick_websocket_live.py](file:///c:/Users/TheAn/Desktop/python/Kick/tests/test_kick_websocket_live.py).
 
 ### Causa y Solución
 
-1. **Causa del Error en Logs (`no such column: last_accessed`)**:
-   - En SQLite, la sentencia `ALTER TABLE ... ADD COLUMN ... DEFAULT CURRENT_TIMESTAMP` falla con `OperationalError` al no permitir valores por defecto no constantes durante un `ALTER TABLE`.
-   - La migración capturaba la excepción silenciosamente sin añadir la columna `last_accessed` a las bases de datos previamente existentes.
+1. **Causa del Error en Python 3.14**:
+   - `argparse` procesa la sintaxis de formateo `%` dentro del parámetro `help="..."`. El texto `100% en` era interpretado como `% e` (especificador de número real), lanzando `TypeError` al recibir el diccionario de parámetros del parser.
 
 2. **Solución Aplicada**:
-   - Se ajustó la declaración a `ALTER TABLE youtube_search_cache ADD COLUMN last_accessed TEXT` (sin `DEFAULT CURRENT_TIMESTAMP` no constante) en `_upgrade_schema`.
-   - Se agregó `youtube_search_cache` a `expected_columns` para que `DatabaseManager` garantice la presencia de las columnas `play_count` y `last_accessed`.
-   - En [music_storage.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/music_storage.py), las consultas `INSERT` y `UPDATE` pasan explícitamente el valor de fecha y hora `datetime.now().strftime('%Y-%m-%d %H:%M:%S')`.
+   - Se escapó el signo de porcentaje cambiando `100%` a `100%%` en la cadena de ayuda de `add_argument("--raw", ...)`.
 
 ---
 
 ## Verificación
 
-- **Compilación Python (`py_compile`)**:
-  `uv run python -m py_compile backend/database/manager.py backend/database/music_storage.py backend/database/cache_manager.py` -> **Éxito (0 errores)**.
-- **Logs Limpios**: Eliminado el error `no such column: last_accessed` en la base de datos.
+- **Ejecución `--help`**: `uv run python tests/test_kick_websocket_live.py --help` -> **Éxito (0 errores)**.
+- **Ejecución `--raw`**: `uv run python tests/test_kick_websocket_live.py --channel theandro2k --raw` -> **Ejecución limpia y sin errores de parseo**.
+- **Pytest**: `uv run pytest tests/` -> **11/11 pasadas (100%)**.
