@@ -167,8 +167,14 @@ DEFAULT_DICTIONARY = {
             "type_custom": "Custom",
             "regex_prefix": "RegEx",
             "tooltip_edit": "Modify command configuration",
-            "tooltip_delete": "Delete command permanently"
+            "tooltip_delete": "Delete command permanently",
+            "filter_all": "Show All",
+            "filter_title": "Filter by {column}",
+            "filter_sort_asc": "Ascending Order (A-Z)",
+            "filter_sort_desc": "Descending Order (Z-A)"
         },
+
+
         "dialog": {
             "title": "Configure Command",
             "subtitle": "Create or edit custom commands for your chat.",
