@@ -41,11 +41,25 @@ class YouTubeResolveWorker(QThread):
     def run(self):
         try:
             import yt_dlp
+            import re
             
             app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
             cache_dir = os.path.join(app_data_dir, '.Minikick', 'cache')
             os.makedirs(cache_dir, exist_ok=True)
-            
+
+            url_match = re.search(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})', self.query_or_url)
+            if url_match:
+                direct_id = url_match.group(1)
+                matching_files = [
+                    os.path.join(cache_dir, f) for f in os.listdir(cache_dir)
+                    if f.startswith(f"yt_{direct_id}.") and not f.endswith(".part")
+                ]
+                for fpath in matching_files:
+                    if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
+                        logging.info("[YouTubeResolveWorker] Instant disk cache hit for direct URL ID %s: %s", direct_id, fpath)
+                        self.resolved.emit("Cached Track", fpath)
+                        return
+
             outtmpl = os.path.join(cache_dir, 'yt_%(id)s.%(ext)s')
             
             ydl_opts = {
@@ -96,7 +110,20 @@ class YouTubeResolveWorker(QThread):
                 info['id'] = hashlib.md5(self.query_or_url.encode('utf-8')).hexdigest()
             
             title = info.get('title', 'Unknown Title')
+
+            if raw_id:
+                matching_files = [
+                    os.path.join(cache_dir, f) for f in os.listdir(cache_dir)
+                    if f.startswith(f"yt_{raw_id}.") and not f.endswith(".part")
+                ]
+                for fpath in matching_files:
+                    if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
+                        logging.info("[YouTubeResolveWorker] Disk cache hit for ID %s: %s", raw_id, fpath)
+                        self.resolved.emit(title, fpath)
+                        return
+
             best_stream_url = _extract_best_audio_url(info)
+
 
             download_opts = dict(ydl_opts)
             download_opts['format'] = 'bestaudio/best'

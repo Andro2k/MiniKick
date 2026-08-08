@@ -2,9 +2,55 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt, QSize
-from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_200
+from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400
 from frontend.common.utils import get_icon_colored
-from frontend.widgets import ModernTableCard
+from frontend.widgets import ModernTable, ModernTableCard
+
+class DragDropQueueTable(ModernTable):
+    row_moved = Signal(int, int)
+
+    def __init__(self, headers: list[str], parent=None):
+        super().__init__(headers, parent)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
+        self.setDefaultDropAction(Qt.DropAction.TargetMoveAction)
+        self._drag_start_row = -1
+        self.pending_select_row = -1
+
+    def dragEnterEvent(self, event):
+        if event.source() == self:
+            self._drag_start_row = self.currentRow()
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        if event.source() == self:
+            event.acceptProposedAction()
+        else:
+            super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        if event.source() == self:
+            pos = event.position().toPoint() if hasattr(event.position(), "toPoint") else event.pos()
+            drop_item = self.itemAt(pos)
+            target_row = drop_item.row() if drop_item else (self.rowCount() - 1)
+            source_row = self._drag_start_row if self._drag_start_row != -1 else self.currentRow()
+
+            event.acceptProposedAction()
+            event.accept()
+
+            if source_row != -1 and target_row != -1 and source_row != target_row:
+                self.pending_select_row = target_row
+                self.row_moved.emit(source_row, target_row)
+
+            self._drag_start_row = -1
+        else:
+            super().dropEvent(event)
+
+
 
 class MusicQueuePanel(QWidget):
     remove_queue_item_requested = Signal(int)
@@ -16,9 +62,8 @@ class MusicQueuePanel(QWidget):
         self.i18n = i18n
         self._current_queue_urls = []
         
-        self._icon_up = get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_200, 14)
-        self._icon_down = get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_200, 14)
         self._icon_delete = get_icon_colored("trash.svg", COLOR_RED, 14)
+        self._icon_grip = get_icon_colored("grip-vertical.svg", COLOR_NEUTRAL_400, 14)
         
         self._setup_ui()
 
@@ -27,28 +72,40 @@ class MusicQueuePanel(QWidget):
         panel_layout.setContentsMargins(0, 0, 0, 0)
         panel_layout.setSpacing(0)
 
+        headers = [
+            self.i18n.get("music.queue.col_num"),
+            self.i18n.get("music.queue.col_title"),
+            self.i18n.get("music.queue.col_artist"),
+            self.i18n.get("music.queue.col_requester"),
+            self.i18n.get("music.queue.col_duration"),
+            self.i18n.get("music.queue.col_actions")
+        ]
+
         self.card_queue = ModernTableCard(
             title_text=self.i18n.get("music.queue.title"),
-            headers=[
-                self.i18n.get("music.queue.col_num"),
-                self.i18n.get("music.queue.col_title"),
-                self.i18n.get("music.queue.col_artist"),
-                self.i18n.get("music.queue.col_requester"),
-                self.i18n.get("music.queue.col_duration"),
-                self.i18n.get("music.queue.col_actions")
-            ]
+            headers=headers
         )
         self.card_queue.setVisible(False)
         
-        self.queue_table = self.card_queue.table
+        old_table = self.card_queue.table
+        self.card_queue.stack.removeWidget(old_table)
+        old_table.deleteLater()
+
+        self.queue_table = DragDropQueueTable(headers, parent=self.card_queue)
+        self.card_queue.table = self.queue_table
+        self.card_queue.stack.insertWidget(0, self.queue_table)
+        self.card_queue.stack.setCurrentIndex(0)
+
         self.queue_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.queue_table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.queue_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.queue_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.queue_table.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.queue_table.setShowGrid(False)
         self.queue_table.verticalHeader().setVisible(False)
         self.queue_table.horizontalHeader().setHighlightSections(False)
         
+        self.queue_table.row_moved.connect(self.move_queue_item_requested.emit)
+
         column_stretch_modes = {
             0: QHeaderView.ResizeMode.ResizeToContents,
             1: QHeaderView.ResizeMode.Stretch,
@@ -82,30 +139,12 @@ class MusicQueuePanel(QWidget):
             item.setForeground(color)
         return item
 
-    def _create_action_buttons(self, index: int, total_count: int) -> QWidget:
+    def _create_action_buttons(self, index: int) -> QWidget:
         cell_widget = QWidget()
         cell_layout = QHBoxLayout(cell_widget)
         cell_layout.setContentsMargins(0, 0, 0, 0)
         cell_layout.setSpacing(4)
         cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        btn_up = QPushButton()
-        btn_up.setProperty("role", "btn_ghost")
-        btn_up.setIcon(self._icon_up)
-        btn_up.setIconSize(QSize(14, 14))
-        btn_up.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_up.setFixedSize(QSize(24, 24))
-        btn_up.setEnabled(index > 0)
-        btn_up.clicked.connect(lambda *args, idx=index: self.move_queue_item_requested.emit(idx, idx - 1))
-
-        btn_down = QPushButton()
-        btn_down.setProperty("role", "btn_ghost")
-        btn_down.setIcon(self._icon_down)
-        btn_down.setIconSize(QSize(14, 14))
-        btn_down.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_down.setFixedSize(QSize(24, 24))
-        btn_down.setEnabled(index < total_count - 1)
-        btn_down.clicked.connect(lambda *args, idx=index: self.move_queue_item_requested.emit(idx, idx + 1))
 
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
@@ -116,8 +155,6 @@ class MusicQueuePanel(QWidget):
         btn_delete.setFixedSize(QSize(24, 24))
         btn_delete.clicked.connect(lambda *args, idx=index: self.remove_queue_item_requested.emit(idx))
 
-        cell_layout.addWidget(btn_up)
-        cell_layout.addWidget(btn_down)
         cell_layout.addWidget(btn_delete)
         return cell_widget
 
@@ -168,7 +205,9 @@ class MusicQueuePanel(QWidget):
         try:
             self.queue_table.setRowCount(len(queue_items))
             for idx, song in enumerate(queue_items):
-                self.queue_table.setItem(idx, 0, self._create_table_item(f"{idx + 1}", Qt.AlignmentFlag.AlignCenter, Qt.GlobalColor.gray))
+                item_num = self._create_table_item(f"  {idx + 1}", Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, Qt.GlobalColor.gray)
+                item_num.setIcon(self._icon_grip)
+                self.queue_table.setItem(idx, 0, item_num)
                 
                 title_text = song.get("title", self.i18n.get("music.player.unknown_song"))
                 self.queue_table.setItem(idx, 1, self._create_table_item(title_text))
@@ -183,6 +222,13 @@ class MusicQueuePanel(QWidget):
                 
                 duration = song.get("duration", "-")
                 self.queue_table.setItem(idx, 4, self._create_table_item(duration, Qt.AlignmentFlag.AlignCenter))
-                self.queue_table.setCellWidget(idx, 5, self._create_action_buttons(idx, total_songs))
+                self.queue_table.setCellWidget(idx, 5, self._create_action_buttons(idx))
         finally:
             self.queue_table.setUpdatesEnabled(True)
+
+        if hasattr(self.queue_table, "pending_select_row") and self.queue_table.pending_select_row != -1:
+            target_r = self.queue_table.pending_select_row
+            self.queue_table.pending_select_row = -1
+            if 0 <= target_r < total_songs:
+                self.queue_table.selectRow(target_r)
+

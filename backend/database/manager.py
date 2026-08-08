@@ -158,6 +158,8 @@ class DatabaseManager:
                     artist TEXT NOT NULL,
                     url TEXT NOT NULL,
                     duration TEXT DEFAULT '-',
+                    play_count INTEGER DEFAULT 1,
+                    last_accessed TEXT,
                     cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -165,6 +167,16 @@ class DatabaseManager:
                 cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN duration TEXT DEFAULT '-'")
             except sqlite3.OperationalError:
                 pass
+            try:
+                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN play_count INTEGER DEFAULT 1")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN last_accessed TEXT")
+            except sqlite3.OperationalError:
+                pass
+
+
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS avatar_cache (
                     url TEXT PRIMARY KEY,
@@ -363,8 +375,17 @@ class DatabaseManager:
                 ("chat_lines", "INTEGER DEFAULT 0"),
                 ("keywords", "TEXT DEFAULT '[]'"),
                 ("categories", "TEXT DEFAULT '[]'")
+            ],
+            "youtube_search_cache": [
+                ("duration", "TEXT DEFAULT '-'"),
+                ("play_count", "INTEGER DEFAULT 1"),
+                ("last_accessed", "TEXT")
+            ],
+            "music_queue": [
+                ("duration", "TEXT DEFAULT '-'")
             ]
         }
+
         
         try:
             with self.get_connection() as conn:

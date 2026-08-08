@@ -25,6 +25,10 @@ class YouTubeMusicProvider(QObject):
         else:
             self.music_storage = None
 
+        from backend.database.cache_manager import MusicCacheManager
+        self.cache_manager = MusicCacheManager(self.music_storage)
+
+
         self.queue: list[dict] = []
         self.current_song: dict | None = None
         self.current_local_file: str | None = None
@@ -375,6 +379,12 @@ class YouTubeMusicProvider(QObject):
             return
 
         self.current_song["resolved"] = True
+        if self.cache_manager:
+            try:
+                self.cache_manager.check_and_clean_cache(max_size_mb=1000)
+            except Exception as cache_err:
+                logging.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
+
         
         if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
             self.current_local_file = None
