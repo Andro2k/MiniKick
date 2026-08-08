@@ -11,6 +11,7 @@ KICK_API_URL = "https://api.kick.com/public/v1/users"
 KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
 KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
 KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redemptions"
+KICK_PUBLIC_V2_REWARDS_URL = "https://kick.com/api/v2/channels/{slug}/rewards"
 
 class ScraperFactory:
     @staticmethod
@@ -91,8 +92,7 @@ class KickAPIClient:
         last_category = categories[0].get("name", "") if categories else ""     
         is_verified = channel_data.get("verified") is not None
         raw_bio = user_data.get("bio", "")
-        clean_bio = " ".join(str(raw_bio).splitlines()) if raw_bio else ""
-        
+        clean_bio = " ".join(str(raw_bio).splitlines()) if raw_bio else ""       
         created_at_raw = chatroom_data.get("created_at", "")
         created_at = created_at_raw[:10] if created_at_raw and len(created_at_raw) >= 10 else "-"
 
@@ -119,6 +119,31 @@ class KickAPIClient:
 
     def fetch_channel_rewards(self) -> dict:
         return self._request("GET", KICK_REWARDS_URL, timeout=10).json()
+
+    def fetch_public_channel_rewards(self, channel_slug: str) -> list[dict]:
+        slug = channel_slug.lstrip("@").strip().lower()
+        if not slug:
+            return []
+        url = f"{KICK_PUBLIC_V2_REWARDS_URL.format(slug=slug)}?is_enabled=true"
+        try:
+            resp = self.scraper.get(url, timeout=5)
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception as e:
+            logging.warning("[KickAPI] Error fetching public v2 rewards for %s: %s", slug, e)
+        return []
+
+    def fetch_public_avatar(self, channel_slug: str) -> str:
+        slug = channel_slug.lstrip("@").strip().lower()
+        if not slug:
+            return ""
+        try:
+            channel_data = self._fetch_channel_details(slug)
+            return channel_data.get("user", {}).get("profile_pic", "")
+        except Exception as e:
+            logging.warning("[KickAPI] Could not fetch public avatar for %s: %s", slug, e)
+            return ""
+
 
     def accept_redemptions(self, redemption_ids: list[str]) -> dict:
         if not redemption_ids:

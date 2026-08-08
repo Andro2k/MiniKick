@@ -126,10 +126,10 @@ class WidgetService:
         if not clean_target:
             return ""
         try:
-            import requests
-            url = f"https://kick.com/api/v1/channels/{clean_target}"
-            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-            resp = requests.get(url, headers=headers, timeout=3)
+            from backend.providers.chat.kick_client import ScraperFactory, KICK_CHANNEL_URL
+            scraper = ScraperFactory.create()
+            url = KICK_CHANNEL_URL.format(slug=clean_target)
+            resp = scraper.get(url, timeout=3)
             if resp.status_code == 200:
                 data = resp.json()
                 return data.get("user", {}).get("profile_pic", "")
