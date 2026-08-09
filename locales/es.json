@@ -6,7 +6,6 @@
             "back": "Atrás",
             "next": "Siguiente",
             "continue": "Continuar",
-            "close": "Cerrar",
             "exit": "Salir",
             "understood": "Entendido",
             "export": "Exportar",
@@ -16,22 +15,17 @@
             "browse": "Examinar",
             "copy": "Copiar Enlace",
             "add": "Añadir",
-            "disconnect": "Desconectar",
             "report_bug": "Reportar Bug"
         },
         "status": {
             "online": "En Línea",
             "offline": "Desconectado",
             "connected": "Conectado",
-            "disconnected": "Desconectado",
             "active": "Activo",
             "inactive": "Inactivo",
             "yes": "Sí",
             "no": "No",
-            "searching": "Buscando...",
-            "loading": "Cargando...",
-            "error": "Error",
-            "success": "Éxito"
+            "error": "Error"
         }
     },
     "settings": {
@@ -167,12 +161,9 @@
             "tooltip_edit": "Modificar configuración del comando",
             "tooltip_delete": "Eliminar comando permanentemente",
             "filter_all": "Mostrar Todos",
-            "filter_title": "Filtrar por {column}",
             "filter_sort_asc": "Orden Ascendente (A-Z)",
             "filter_sort_desc": "Orden Descendente (Z-A)"
         },
-
-
         "dialog": {
             "title": "Configurar Comando",
             "subtitle": "Crea o edita comandos personalizados para tu chat.",
@@ -193,7 +184,6 @@
             "regex_label": "Sintaxis de Expresión Regular:",
             "regex_placeholder": "Ej: \\b(hola|buenas)\\b",
             "regex_help": "Si activas RegEx, el bot buscará este patrón en cualquier parte del mensaje.",
-            "tab_basic": "Básico",
             "tab_advanced": "Avanzado"
         },
         "status": {
@@ -240,8 +230,6 @@
                 "desc": "Arrastra tus recompensas. Al soltarlas, se mostrará una vista previa en OBS."
             },
             "wizard": {
-                "title_edit": "Editar Recompensas",
-                "title_new": "Nuevas Recompensas",
                 "file_dialog_title": "Multimedia",
                 "file_dialog_filter": "Multimedia (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
                 "step1": {
@@ -292,7 +280,6 @@
             "btn_report": "Reportar Bug",
             "btn_show_logs": "Ver Logs",
             "btn_hide_logs": "Ocultar Logs",
-            "filter_by_date": "Filtrar por fecha",
             "date_all": "Todo el tiempo",
             "date_1d": "Últimas 24 horas",
             "date_3d": "Últimos 3 días",
@@ -341,8 +328,6 @@
             "name_desc": "Pronunciar el nombre del remitente antes del mensaje.",
             "provider_title": "Motor de Voz TTS",
             "provider_desc": "Cambiar entre voces web Edge o voces locales del sistema.",
-            "lang_title": "Filtro de Idioma / Región",
-            "lang_desc": "Filtrar la lista de voces disponibles según el idioma o región seleccionada.",
             "cmd_title": "Requerir Comando",
             "cmd_desc": "Solo leer mensajes que comiencen con un prefijo.",
             "vol_title": "Volumen General",
@@ -365,7 +350,6 @@
         },
         "roles": {
             "title": "Voces por Rol",
-            "subtitle": "Define voces personalizadas para los distintos roles del chat.",
             "broadcaster_title": "Voz del Streamer",
             "broadcaster_desc": "Voz usada para los mensajes del streamer.",
             "moderator_title": "Voz del Moderador",
@@ -384,7 +368,6 @@
         },
         "tabs": {
             "settings": "Ajustes de Voz",
-            "roles": "Voces por Rol",
             "muted": "Silenciados",
             "overlay": "Lienzo (Overlay)"
         },
@@ -458,21 +441,11 @@
             "title": "Reproductor de Música",
             "subtitle": "Permite a tus espectadores controlar la música usando comandos del chat."
         },
-        "provider": {
-            "name": "Proveedor de Audio YouTube",
-            "select_title": "Proveedor de Música",
-            "select_desc": "Servicio para las peticiones de canciones en el chat."
-        },
         "status": {
-            "session_remembered": "Streamer (Sesión recordada)",
-            "connected_user": "Streamer (Conectado)",
-            "youtube_active": "YouTube Activo",
-            "connecting": "Iniciando reproductor..."
+            "youtube_active": "YouTube Activo"
         },
         "player": {
             "not_playing": "No se está reproduciendo ninguna canción",
-            "paused_title": "Reproductor en pausa...",
-            "paused_desc": "Usa el comando para reproducir canciones",
             "unknown_song": "Desconocido",
             "requested_by": "Solicitado por: {user}",
             "requested_by_streamer": "Solicitado por: Streamer",
@@ -512,8 +485,7 @@
             "playlist_label": "Ver Mis Canciones (Por defecto: !playlist)",
             "playlist_desc": "Muestra a los espectadores la posición de las canciones que han pedido. Alias: !queue, !pl.",
             "vol_label": "Modificar Volumen (Por defecto: !vol)",
-            "vol_desc": "Permite a los moderadores cambiar el volumen del reproductor desde el chat (0-100). Alias: !volume.",
-            "default_tag_name": "Plugin de Música"
+            "vol_desc": "Permite a los moderadores cambiar el volumen del reproductor desde el chat (0-100). Alias: !volume."
         },
         "toast": {
             "removed_from_queue": "Canción eliminada de la cola",
@@ -552,8 +524,6 @@
         "queue": {
             "not_found": "❌ No se pudo encontrar ninguna canción llamada '{query}'.",
             "success": "🎵 Añadida a la cola: {track}",
-            "no_device": "❌ Error: No se pudo procesar la canción.",
-            "rejected": "❌ Solicitud rechazada.",
             "error": "❌ Error interno de música: {error}",
             "no_link": "❌ No se pudo obtener el enlace del video.",
             "searching": "🔍 Buscando '{query}' en YouTube...",
@@ -568,10 +538,6 @@
             "col_requester": "Pedido por",
             "col_duration": "Duración",
             "col_actions": "Acciones"
-        },
-        "errors": {
-            "no_session": "Sin sesión activa de YouTube.",
-            "refresh_failed": "No se pudo actualizar el reproductor."
         },
         "youtube": {
             "auto_resume_title": "Retomado automático (YouTube)",
@@ -690,7 +656,6 @@
             "desc": "El controlador de transmisión ya está operando en segundo plano. Por favor, revisa la bandeja de sistema de Windows (al lado del reloj) para acceder al panel de control."
         },
         "update": {
-            "top_searching": "Buscando...",
             "title_default": "Actualización del Sistema",
             "subtitle_connecting": "Conectando al servidor...",
             "lbl_progress": "Progreso",
@@ -705,7 +670,6 @@
             "subtitle_installed": "Versión {version} instalada.",
             "title_up_to_date": "Sistema Actualizado",
             "subtitle_up_to_date": "La versión de tu sistema ya es la última disponible.",
-            "top_error": "Error de Actualización",
             "title_error": "Fallo en la descarga",
             "msg_unexpected_error": "Fallo inesperado al descargar el archivo."
         }
@@ -760,14 +724,6 @@
             "log": {
                 "read_error": "No se pudo leer el archivo: {error}",
                 "folder_error": "No se pudo abrir la carpeta: {error}"
-            },
-            "settings": {
-                "export_success_title": "Exportación exitosa",
-                "export_success_desc": "Tus ajustes han sido guardados.",
-                "export_error_desc": "No se pudo exportar el archivo.",
-                "import_success_title": "Importación exitosa",
-                "import_success_desc": "Tus ajustes han sido restaurados.",
-                "import_error_desc": "El archivo está dañado o no es válido."
             }
         },
         "workers": {
@@ -780,8 +736,6 @@
             "reward": {
                 "unknown_reward": "Recompensa Desconocida",
                 "someone": "Alguien",
-                "batch_success": "Se marcaron exitosamente {count} canjes como completados en Kick.",
-                "batch_error": "No se pudo confirmar el lote en Kick: {error}",
                 "poll_error": "Error al consultar recompensas: {error}"
             }
         },
@@ -794,7 +748,6 @@
         },
         "logs": {
             "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada.",
-            "automod_sanction": "Mensaje sancionado por Auto-Mod: {user}: {msg}",
             "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
             "api_fetching": "Las recompensas ya están siendo obtenidas. Por favor espera.",
             "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
@@ -824,7 +777,6 @@
         "table": {
             "search_placeholder": "Buscar temporizador...",
             "btn_new": "Nuevo Temporizador",
-            "col_enabled": "Activo",
             "col_name": "Nombre",
             "col_message": "Mensaje",
             "col_interval_online": "Int. Online",
@@ -855,8 +807,6 @@
             "categories_placeholder": "Ej: Just Chatting, IRL",
             "categories_desc": "Activa el temporizador solo si la categoría del stream es una de las seleccionadas.",
             "help_desc": "Puedes usar filtros para restringir cuándo se envía el mensaje. Por ejemplo, puedes hacer que se envíe un temporizador de sorteos únicamente cuando tu stream contenga la palabra 'sorteo' en el título o pertenezca a la categoría 'IRL'.",
-            "btn_cancel": "Cancelar",
-            "btn_save": "Activar Temporizador",
             "editor_title": "Editar Mensaje"
         },
         "status": {
@@ -899,7 +849,6 @@
             "title": "Latencia de Red en Vivo",
             "live": "En Vivo",
             "avg": "Promedio",
-            "max": "Máximo",
             "min": "Mínimo",
             "jitter": "Jitter",
             "stability": "Estabilidad",
@@ -931,6 +880,10 @@
         "header": {
             "title": "Widgets Interactivos de Chat",
             "subtitle": "Configura widgets y contadores interactivos que reaccionan a comandos del chat de tu stream."
+        },
+        "poll": {
+            "title": "Encuesta en Vivo",
+            "desc": "Muestra la encuesta activa del chat de Kick en tiempo real."
         },
         "obs_label": "URL de Overlay OBS:",
         "obs_copy_btn": "Copiar URL para OBS",
@@ -975,15 +928,13 @@
             "title": "Explosión de Emotes (!explosion)",
             "desc": "Muestra una ráfaga física animada de emotes flotando y rebotando en el overlay de OBS cuando se envían en el chat.",
             "min_emotes_label": "Mínimo de Emotes por mensaje:",
-            "particle_count_label": "Partículas por ráfaga:",
-            "overlay_title": "EXPLOSIÓN DE EMOTES"
+            "particle_count_label": "Partículas por ráfaga:"
         },
         "combo": {
             "title": "Combo de Emotes (!combo)",
             "desc": "Rastrea rachas del mismo emote en el chat y despliega un contador animado con efecto de fuego en pantalla.",
             "min_combo_label": "Combo Mínimo para Mostrar:",
             "timeout_label": "Tiempo Máximo de Combo (seg):",
-            "overlay_title": "COMBO DE EMOTES",
             "msg_combo": "🔥 ¡COMBO DE EMOTES x{count} para {emote}! 🔥"
         }
     },

@@ -8,7 +8,6 @@ DEFAULT_DICTIONARY = {
             "back": "Back",
             "next": "Next",
             "continue": "Continue",
-            "close": "Close",
             "exit": "Exit",
             "understood": "Understood",
             "export": "Export",
@@ -18,22 +17,17 @@ DEFAULT_DICTIONARY = {
             "browse": "Browse",
             "copy": "Copy Link",
             "add": "Add",
-            "disconnect": "Disconnect",
             "report_bug": "Report Bug"
         },
         "status": {
             "online": "Online",
             "offline": "Offline",
             "connected": "Connected",
-            "disconnected": "Disconnected",
             "active": "Active",
             "inactive": "Inactive",
             "yes": "Yes",
             "no": "No",
-            "searching": "Searching...",
-            "loading": "Loading...",
-            "error": "Error",
-            "success": "Success"
+            "error": "Error"
         }
     },
     "settings": {
@@ -169,12 +163,9 @@ DEFAULT_DICTIONARY = {
             "tooltip_edit": "Modify command configuration",
             "tooltip_delete": "Delete command permanently",
             "filter_all": "Show All",
-            "filter_title": "Filter by {column}",
             "filter_sort_asc": "Ascending Order (A-Z)",
             "filter_sort_desc": "Descending Order (Z-A)"
         },
-
-
         "dialog": {
             "title": "Configure Command",
             "subtitle": "Create or edit custom commands for your chat.",
@@ -195,7 +186,6 @@ DEFAULT_DICTIONARY = {
             "regex_label": "Regular Expression Syntax:",
             "regex_placeholder": "Ex: \\b(hello|hi)\\b",
             "regex_help": "If you enable RegEx, the bot will search for this pattern anywhere in the message.",
-            "tab_basic": "Basic",
             "tab_advanced": "Advanced"
         },
         "status": {
@@ -242,8 +232,6 @@ DEFAULT_DICTIONARY = {
                 "desc": "Drag your rewards. When you release it, a preview will be shown in OBS."
             },
             "wizard": {
-                "title_edit": "Edit Rewards",
-                "title_new": "New Rewards",
                 "file_dialog_title": "Multimedia",
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
                 "step1": {
@@ -294,7 +282,6 @@ DEFAULT_DICTIONARY = {
             "btn_report": "Report Bug",
             "btn_show_logs": "View Logs",
             "btn_hide_logs": "Hide Logs",
-            "filter_by_date": "Filter by date",
             "date_all": "All Time",
             "date_1d": "Last 24 Hours",
             "date_3d": "Last 3 Days",
@@ -343,8 +330,6 @@ DEFAULT_DICTIONARY = {
             "name_desc": "Pronounce the sender's name before the message.",
             "provider_title": "TTS Voice Engine",
             "provider_desc": "Toggle between Edge web voices or local voices.",
-            "lang_title": "Language / Region Filter",
-            "lang_desc": "Filter the list of available voices by the selected language or region.",
             "cmd_title": "Require Command",
             "cmd_desc": "Only read messages starting with a prefix.",
             "vol_title": "General Volume",
@@ -367,7 +352,6 @@ DEFAULT_DICTIONARY = {
         },
         "roles": {
             "title": "Voices by Role",
-            "subtitle": "Define custom voices for different chat roles.",
             "broadcaster_title": "Streamer Voice",
             "broadcaster_desc": "Voice used for the streamer's messages.",
             "moderator_title": "Moderator Voice",
@@ -386,7 +370,6 @@ DEFAULT_DICTIONARY = {
         },
         "tabs": {
             "settings": "Voice Settings",
-            "roles": "Role Voices",
             "muted": "Muted Users",
             "overlay": "Chat Overlay"
         },
@@ -460,21 +443,11 @@ DEFAULT_DICTIONARY = {
             "title": "Music Player",
             "subtitle": "Let your viewers control the music stream using chat commands."
         },
-        "provider": {
-            "name": "YouTube Audio Provider",
-            "select_title": "Music Provider",
-            "select_desc": "Select the service for chat song requests."
-        },
         "status": {
-            "session_remembered": "Broadcaster (Session remembered)",
-            "connected_user": "Broadcaster (Connected)",
-            "youtube_active": "YouTube Active",
-            "connecting": "Starting player..."
+            "youtube_active": "YouTube Active"
         },
         "player": {
             "not_playing": "No song currently playing",
-            "paused_title": "Player paused...",
-            "paused_desc": "Use the command to play songs",
             "unknown_song": "Unknown",
             "requested_by": "Requested by: {user}",
             "requested_by_streamer": "Requested by: Broadcaster",
@@ -514,8 +487,7 @@ DEFAULT_DICTIONARY = {
             "playlist_label": "View My Songs (Default: !playlist)",
             "playlist_desc": "Shows viewers the position of songs they requested. Aliases: !queue, !pl.",
             "vol_label": "Modify Volume (Default: !vol)",
-            "vol_desc": "Allows moderators to change player volume from chat (0-100). Aliases: !volume.",
-            "default_tag_name": "Music Plugin"
+            "vol_desc": "Allows moderators to change player volume from chat (0-100). Aliases: !volume."
         },
         "toast": {
             "removed_from_queue": "Song removed from queue",
@@ -554,8 +526,6 @@ DEFAULT_DICTIONARY = {
         "queue": {
             "not_found": "❌ Could not find any song named '{query}'.",
             "success": "🎵 Added to queue: {track}",
-            "no_device": "❌ Error: Could not resolve track.",
-            "rejected": "❌ Request rejected.",
             "error": "❌ Internal music error: {error}",
             "no_link": "❌ Could not retrieve video link.",
             "searching": "🔍 Searching for '{query}' on YouTube...",
@@ -570,10 +540,6 @@ DEFAULT_DICTIONARY = {
             "col_requester": "Requested by",
             "col_duration": "Duration",
             "col_actions": "Actions"
-        },
-        "errors": {
-            "no_session": "No active YouTube session.",
-            "refresh_failed": "Could not refresh stream."
         },
         "youtube": {
             "auto_resume_title": "Auto-resume (YouTube)",
@@ -692,7 +658,6 @@ DEFAULT_DICTIONARY = {
             "desc": "The broadcasting controller is already operating in the background. Please check the Windows system tray (next to the clock) to access the dashboard."
         },
         "update": {
-            "top_searching": "Searching...",
             "title_default": "System Update",
             "subtitle_connecting": "Connecting to the server...",
             "lbl_progress": "Progress",
@@ -707,7 +672,6 @@ DEFAULT_DICTIONARY = {
             "subtitle_installed": "Version {version} installed.",
             "title_up_to_date": "System Up to Date",
             "subtitle_up_to_date": "Your system version is already the latest available.",
-            "top_error": "Update Error",
             "title_error": "Download failed",
             "msg_unexpected_error": "Unexpected failure downloading the file."
         }
@@ -762,14 +726,6 @@ DEFAULT_DICTIONARY = {
             "log": {
                 "read_error": "Could not read the file: {error}",
                 "folder_error": "Could not open the folder: {error}"
-            },
-            "settings": {
-                "export_success_title": "Export successful",
-                "export_success_desc": "Your settings have been saved.",
-                "export_error_desc": "Failed to export the file.",
-                "import_success_title": "Import successful",
-                "import_success_desc": "Your settings have been restored.",
-                "import_error_desc": "The file is corrupt or invalid."
             }
         },
         "workers": {
@@ -782,8 +738,6 @@ DEFAULT_DICTIONARY = {
             "reward": {
                 "unknown_reward": "Unknown Reward",
                 "someone": "Someone",
-                "batch_success": "Successfully marked {count} redemptions as completed on Kick.",
-                "batch_error": "Could not confirm the batch on Kick: {error}",
                 "poll_error": "Error querying rewards: {error}"
             }
         },
@@ -796,7 +750,6 @@ DEFAULT_DICTIONARY = {
         },
         "logs": {
             "reward_no_rewards": "Reward '{reward_name}' does not have an rewards configured.",
-            "automod_sanction": "Message sanctioned by Auto-Mod: {user}: {msg}",
             "api_offline": "Attempted to update rewards without being connected to Kick.",
             "api_fetching": "Rewards are already being fetched. Please wait.",
             "api_error_setup": "Error setting up rewards query: {error}",
@@ -826,7 +779,6 @@ DEFAULT_DICTIONARY = {
         "table": {
             "search_placeholder": "Search timer...",
             "btn_new": "Add new timer",
-            "col_enabled": "Enabled",
             "col_name": "Name",
             "col_message": "Message",
             "col_interval_online": "Interval Online",
@@ -857,8 +809,6 @@ DEFAULT_DICTIONARY = {
             "categories_placeholder": "e.g., Just Chatting, IRL",
             "categories_desc": "Enable the timer only when the stream category is one of the selected categories.",
             "help_desc": "You can use filters to restrict when the message is sent. For example, you can make a giveaway timer send only when your stream contains the word 'giveaway' in the title or belongs to the 'IRL' category.",
-            "btn_cancel": "Cancel",
-            "btn_save": "Activate Timer",
             "editor_title": "Edit Message"
         },
         "status": {
@@ -901,7 +851,6 @@ DEFAULT_DICTIONARY = {
             "title": "Live Network Latency",
             "live": "Live",
             "avg": "Avg",
-            "max": "Max",
             "min": "Min",
             "jitter": "Jitter",
             "stability": "Stability",
@@ -933,6 +882,10 @@ DEFAULT_DICTIONARY = {
         "header": {
             "title": "Interactive Chat Widgets",
             "subtitle": "Configure interactive widgets and counters that react to chat commands on your stream."
+        },
+        "poll": {
+            "title": "Live Poll",
+            "desc": "Displays the active Kick chat poll in real time."
         },
         "obs_label": "OBS Overlay URL:",
         "obs_copy_btn": "Copy OBS URL",
@@ -977,15 +930,13 @@ DEFAULT_DICTIONARY = {
             "title": "Emote Explosion (!explosion)",
             "desc": "Displays an animated physical particle burst of emotes floating on your OBS overlay when sent in chat.",
             "min_emotes_label": "Min Emotes per message:",
-            "particle_count_label": "Particles per burst:",
-            "overlay_title": "EMOTE EXPLOSION"
+            "particle_count_label": "Particles per burst:"
         },
         "combo": {
             "title": "Emote Combo (!combo)",
             "desc": "Tracks chat streaks of identical emotes used consecutively and displays a hype fire combo counter.",
             "min_combo_label": "Min Combo to Display:",
             "timeout_label": "Max Combo Window (sec):",
-            "overlay_title": "EMOTE COMBO",
             "msg_combo": "🔥 EMOTE COMBO x{count} for {emote}! 🔥"
         }
     },

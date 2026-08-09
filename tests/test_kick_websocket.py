@@ -53,3 +53,58 @@ def test_chat_socket_manager_parse_chat_message_frame():
     assert color == "#00FF00"
     assert msg_id == "msg_999"
     assert sender_id == 12345
+
+
+def test_chat_socket_manager_parse_poll_update_frame():
+    received_polls = []
+
+    def mock_poll_update(poll_data):
+        received_polls.append(poll_data)
+
+    manager = ChatSocketManager("us2", "eb12322a5d259020583b")
+    manager._on_poll_update = mock_poll_update
+    manager._running = True
+
+    sample_poll_frame = json.dumps({
+        "event": "App\\Events\\PollUpdateEvent",
+        "data": json.dumps({
+            "poll": {
+                "title": "¿Cuál es tu juego favorito?",
+                "options": [
+                    {"id": 1, "label": "Minecraft", "votes": 15},
+                    {"id": 2, "label": "Valorant", "votes": 30}
+                ],
+                "duration": 60,
+                "remaining": 45
+            }
+        })
+    })
+
+    manager._on_raw_frame(None, sample_poll_frame)
+
+    assert len(received_polls) == 1
+    poll = received_polls[0]
+    assert poll["title"] == "¿Cuál es tu juego favorito?"
+    assert len(poll["options"]) == 2
+    assert poll["options"][1]["votes"] == 30
+
+
+def test_chat_socket_manager_parse_poll_delete_frame():
+    deleted_calls = []
+
+    def mock_poll_delete():
+        deleted_calls.append(True)
+
+    manager = ChatSocketManager("us2", "eb12322a5d259020583b")
+    manager._on_poll_delete = mock_poll_delete
+    manager._running = True
+
+    sample_delete_frame = json.dumps({
+        "event": "App\\Events\\PollDeleteEvent",
+        "data": "[]"
+    })
+
+    manager._on_raw_frame(None, sample_delete_frame)
+
+    assert len(deleted_calls) == 1
+    assert deleted_calls[0] is True
