@@ -9,6 +9,8 @@ class ChatWorker(QThread):
     connection_success = Signal(dict)
     poll_updated = Signal(dict)
     poll_deleted = Signal()
+    pinned_created = Signal(dict)
+    pinned_deleted = Signal()
     
     def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):
         super().__init__(parent)
@@ -38,6 +40,8 @@ class ChatWorker(QThread):
                     on_message=self._dispatch_message,
                     on_poll_update=self._dispatch_poll_update,
                     on_poll_delete=self._dispatch_poll_delete,
+                    on_pinned_created=self._dispatch_pinned_created,
+                    on_pinned_deleted=self._dispatch_pinned_deleted,
                 )
                 if not self._is_stopped:
                     self.msleep(5000)
@@ -57,6 +61,14 @@ class ChatWorker(QThread):
     def _dispatch_poll_delete(self):
         if not self._is_stopped:
             self.poll_deleted.emit()
+
+    def _dispatch_pinned_created(self, pinned_data: dict):
+        if not self._is_stopped:
+            self.pinned_created.emit(pinned_data)
+
+    def _dispatch_pinned_deleted(self):
+        if not self._is_stopped:
+            self.pinned_deleted.emit()
 
     def stop(self):
         self._is_stopped = True

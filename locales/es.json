@@ -939,6 +939,10 @@
             "title": "Récord Victorias / Derrotas (!win +1/ !lose +1)",
             "wins_label": "Victorias (Wins):"
         },
+        "pinned": {
+            "title": "Mensaje Fijado (Pinned Message)",
+            "desc": "Muestra en tiempo real cualquier mensaje anclado por ti o tus moderadores en el chat de Kick."
+        },
         "so": {
             "default_msg": "📢 Vayan a apoyar y seguir a @{target} en https://kick.com/{target} !",
             "desc": "Promociona a otros creadores en el chat enviando un mensaje personalizado con su enlace.",

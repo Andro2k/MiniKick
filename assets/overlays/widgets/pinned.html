@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick - Pinned Message OBS Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #pinned-container {
+            width: 100%;
+            max-width: 580px;
+            margin: auto;
+            position: relative;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-24px) scale(0.95);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        #pinned-container.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .pinned-card {
+            background: rgba(13, 17, 23, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2.5px solid rgba(255, 193, 7, 0.45);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 193, 7, 0.15);
+            border-radius: 20px;
+            padding: 16px 20px;
+            color: #ffffff;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.35);
+            border-radius: 14px;
+            flex-shrink: 0;
+        }
+
+        .pin-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .content-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .author-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-tag {
+            font-size: 12px;
+            font-weight: 800;
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            padding: 2px 6px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .author-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffc107;
+        }
+
+        .pinned-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f0f6fc;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="pinned-container">
+        <div class="pinned-card">
+            <div class="icon-box">
+                <span class="pin-icon">📌</span>
+            </div>
+            <div class="content-box">
+                <div class="header-row">
+                    <div class="author-box">
+                        <span id="badge-tag" class="badge-tag">MENSAJE FIJADO</span>
+                        <span id="author-name" class="author-name">@Streamer</span>
+                    </div>
+                </div>
+                <div id="pinned-text" class="pinned-text">--</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const lang = (urlParams.get('lang') || 'es').toLowerCase();
+
+        const pinnedContainer = document.getElementById('pinned-container');
+        const badgeTag = document.getElementById('badge-tag');
+        const authorName = document.getElementById('author-name');
+        const pinnedText = document.getElementById('pinned-text');
+
+        if (lang === 'en') {
+            badgeTag.textContent = 'PINNED MESSAGE';
+        }
+
+        let ws = null;
+        let reconnectTimer = null;
+
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) { }
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Pinned Overlay] WebSocket conectado.");
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+            };
+
+            ws.onmessage = function (e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'pong') return;
+                    if (data.event === 'pinned_created') {
+                        renderPinned(data.pinned || data);
+                    } else if (data.event === 'pinned_deleted') {
+                        hidePinned();
+                    } else if (data.event === 'widget_toggle' && data.widget_id === 'pinned') {
+                        if (data.is_active === false) {
+                            hidePinned();
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error al procesar evento mensaje fijado:", err);
+                }
+            };
+
+            ws.onerror = function () {
+                scheduleReconnect();
+            };
+
+            ws.onclose = function () {
+                scheduleReconnect();
+            };
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setTimeout(() => {
+                    connectWS();
+                }, 3000);
+            }
+        }
+
+        function renderPinned(pinned) {
+            if (!pinned) {
+                hidePinned();
+                return;
+            }
+
+            let content = '';
+            if (typeof pinned === 'string') {
+                content = pinned;
+            } else if (typeof pinned.content === 'string') {
+                content = pinned.content;
+            } else if (pinned.content && typeof pinned.content.content === 'string') {
+                content = pinned.content.content;
+            } else if (typeof pinned.message === 'string') {
+                content = pinned.message;
+            } else if (pinned.message && typeof pinned.message.content === 'string') {
+                content = pinned.message.content;
+            }
+
+            if (!content || typeof content !== 'string') {
+                hidePinned();
+                return;
+            }
+
+            let sender = pinned.sender || {};
+            if ((!sender || !sender.username) && pinned.message && typeof pinned.message === 'object') {
+                sender = pinned.message.sender || sender;
+            }
+
+            const username = sender.username || sender.slug || '@Streamer';
+            const identity = sender.identity || {};
+            const userColor = identity.color || '#ffc107';
+
+            authorName.textContent = username.startsWith('@') ? username : `@${username}`;
+            authorName.style.color = userColor;
+            pinnedText.textContent = content;
+
+            pinnedContainer.classList.add('visible');
+        }
+
+        function hidePinned() {
+            pinnedContainer.classList.remove('visible');
+        }
+
+        connectWS();
+    </script>
+</body>
+
+</html>

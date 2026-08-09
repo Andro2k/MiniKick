@@ -108,3 +108,75 @@ def test_chat_socket_manager_parse_poll_delete_frame():
 
     assert len(deleted_calls) == 1
     assert deleted_calls[0] is True
+
+
+def test_chat_socket_manager_parse_pinned_events():
+    created_pinned = []
+    deleted_pinned = []
+
+    def mock_pinned_created(data):
+        created_pinned.append(data)
+
+    def mock_pinned_deleted():
+        deleted_pinned.append(True)
+
+    manager = ChatSocketManager("us2", "eb12322a5d259020583b")
+    manager._on_pinned_created = mock_pinned_created
+    manager._on_pinned_deleted = mock_pinned_deleted
+    manager._running = True
+
+    sample_created = json.dumps({
+        "event": "App\\Events\\PinnedMessageCreatedEvent",
+        "data": json.dumps({
+            "pinned_message": {
+                "id": "pin_1",
+                "content": "¡Leed las reglas del chat!",
+                "sender": {"username": "Moderador1"}
+            }
+        })
+    })
+
+    manager._on_raw_frame(None, sample_created)
+    assert len(created_pinned) == 1
+    assert created_pinned[0]["content"] == "¡Leed las reglas del chat!"
+
+    sample_deleted = json.dumps({
+        "event": "App\\Events\\PinnedMessageDeletedEvent",
+        "data": "{}"
+    })
+
+    manager._on_raw_frame(None, sample_deleted)
+    assert len(deleted_pinned) == 1
+
+
+def test_chat_socket_manager_parse_badges_v2_level():
+    received_data = []
+
+    def mock_callback(user, msg, badges, color, msg_id, sender_id):
+        received_data.append((user, msg, badges, color, msg_id, sender_id))
+
+    manager = ChatSocketManager("us2", "eb12322a5d259020583b")
+    manager._callback = mock_callback
+    manager._running = True
+
+    sample_frame = json.dumps({
+        "event": "App\\Events\\ChatMessageEvent",
+        "data": json.dumps({
+            "id": "msg_lvl",
+            "content": "Hola con nivel",
+            "sender": {
+                "id": 55,
+                "username": "NivelUser",
+                "identity": {
+                    "color": "#75FD46",
+                    "badges": [{"type": "subscriber"}],
+                    "badges_v2": [{"name": "level", "metadata": {"level": 25}}]
+                }
+            }
+        })
+    })
+
+    manager._on_raw_frame(None, sample_frame)
+    assert len(received_data) == 1
+    _, _, badges, _, _, _ = received_data[0]
+    assert badges == ["subscriber", "level_25"]

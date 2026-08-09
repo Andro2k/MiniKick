@@ -1,21 +1,37 @@
-# Walkthrough - WT-1.4.9_03: i18n Key Cleanup & Locale Synchronization
+# Walkthrough - WT-1.4.9_03: Mensaje Fijado OBS Overlay & Chat Overlay Enriquecido (Niveles & Badges v2)
 
-## Changes Made
-- **Audit & Cleanup of `locales/en.json`**: Identified and removed 36 unused translation keys across the application codebase.
-- **Synchronization of `locales/es.json`**: Removed 9 desynchronized keys (previously removed from EN) plus the 36 newly identified unused keys (45 keys total).
-- **Fallback Synchronization in `backend/config/default_en_locale.py`**: Cleaned the exact 45 keys from the hardcoded `DEFAULT_DICTIONARY` fallback object.
-- **Parity achieved**: Total translation keys reduced from 743 (EN) / 752 (ES) to exactly **707 keys per language** ($100\%$ symmetry).
-
----
-
-## Files Modified
-- [en.json](file:///c:/Users/TheAn/Desktop/python/Kick/locales/en.json)
-- [es.json](file:///c:/Users/TheAn/Desktop/python/Kick/locales/es.json)
-- [default_en_locale.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/config/default_en_locale.py)
+## Resumen del Cambio
+Se han implementado y verificado con éxito dos nuevas funcionalidades clave para transmisiones en vivo con OBS Studio y Kick:
+1. **Pinned Message OBS Overlay Widget** (`assets/overlays/widgets/pinned.html`): Banner dinámico en pantalla que reacciona instantáneamente cuando un mensaje es fijado o desfijado en el chat de Kick.
+2. **Chat Overlay Enriquecido (Niveles & Badges v2)** (`assets/overlays/chat/chat.html`): Extracción y renderizado automático de medallas de nivel de usuario (`badges_v2` -> `Lvl X`), insignias `OG`, VIP, Mod, Sub y Broadcaster.
 
 ---
 
-## Verification Results
-- **Key Count Verification**: `check_sync.py` confirmed 707 keys in EN and 707 keys in ES with 0 missing keys.
-- **Unused Key Verification**: `verify_unused.py` confirmed 0 false positives and 0 remaining unused keys.
-- **Automated Test Suite**: All 15 unit tests passed cleanly (`.venv\Scripts\python.exe -m pytest`).
+## Cambios Realizados
+
+### Backend & Providers (`kick_websocket.py`, `chat_worker.py`, `overlay_server.py`)
+- **`backend/providers/chat/kick_websocket.py`**:
+  - Registradas las entradas en la Dispatch Table ($\mathcal{O}(1)$) para `App\Events\PinnedMessageCreatedEvent` y `App\Events\PinnedMessageDeletedEvent`.
+  - Extracción de medallas de nivel `badges_v2` (`level_X`) y pasadas en la lista de badges.
+- **`backend/workers/chat_worker.py`**:
+  - Añadidas señales Qt `pinned_created = Signal(dict)` y `pinned_deleted = Signal()`.
+- **`backend/services/rewards/overlay_server.py`**:
+  - Añadida ruta HTTP `/widgets/pinned` y método `get_pinned_overlay_url()`.
+  - Almacenado de `_last_pinned_data` para persistencia en OBS al recargar fuentes.
+
+### OBS HTML Overlays (`pinned.html`, `chat.html`)
+- **`assets/overlays/widgets/pinned.html`**:
+  - Overlay de mensaje anclado con diseño glassmorphic, icono `📌`, nombre del autor en su color de identidad y texto del mensaje.
+- **`assets/overlays/chat/chat.html`**:
+  - Añadidos estilos CSS y lógica JS para medallas de nivel (`.badge-level` ej: `Lvl 25`) y badge `.badge-og`.
+
+### UI App Integration & i18n
+- **`frontend/views/widgets_view.py`**:
+  - Añadido el card de widget "Mensaje Fijado" con el botón para copiar la URL de OBS.
+- **`locales/es.json` & `locales/en.json`**:
+  - Registradas llaves para `widgets.pinned.title` y `widgets.pinned.desc`.
+
+---
+
+## Verificación Realizada
+- Ejecutado `uv run pytest`: 17 passed in 2.31s.

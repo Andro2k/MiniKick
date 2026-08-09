@@ -16,3 +16,6 @@ dependencies = [
     "asyncio",
     "yt-dlp",
 ]
+
+[tool.pytest.ini_options]
+addopts = "-v -s"

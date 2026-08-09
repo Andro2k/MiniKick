@@ -383,6 +383,23 @@
             border: 1px solid rgba(156, 163, 175, 0.4);
         }
 
+        .badge-og {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .badge-level {
+            width: auto;
+            min-width: 1.4em;
+            padding: 0 5px;
+            border-radius: 8px;
+            font-size: calc(var(--font-size) * 0.72);
+            background-color: rgba(46, 205, 112, 0.2);
+            color: #2ECD70;
+            border: 1px solid rgba(46, 205, 112, 0.4);
+        }
+
         .username {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
@@ -603,17 +620,24 @@
                 if (data.badges && Array.isArray(data.badges)) {
                     data.badges.forEach(badge => {
                         const badgeSpan = document.createElement('span');
-                        badgeSpan.className = `badge badge-${badge}`;
+                        if (typeof badge === 'string' && badge.startsWith('level_')) {
+                            const lvl = badge.replace('level_', '');
+                            badgeSpan.className = 'badge badge-level';
+                            badgeSpan.innerText = `Lvl ${lvl}`;
+                            badgeSpan.title = `Nivel ${lvl}`;
+                        } else {
+                            badgeSpan.className = `badge badge-${badge}`;
+                            let iconClass = 'ti ti-star';
+                            if (badge === 'broadcaster') iconClass = 'ti ti-crown';
+                            else if (badge === 'moderator') iconClass = 'ti ti-shield';
+                            else if (badge === 'vip') iconClass = 'ti ti-diamond';
+                            else if (badge === 'subscriber') iconClass = 'ti ti-star';
+                            else if (badge === 'og') iconClass = 'ti ti-sparkles';
+                            else if (badge === 'bot') iconClass = 'ti ti-robot';
 
-                        let iconClass = 'ti ti-star';
-                        if (badge === 'broadcaster') iconClass = 'ti ti-crown';
-                        else if (badge === 'moderator') iconClass = 'ti ti-shield';
-                        else if (badge === 'vip') iconClass = 'ti ti-diamond';
-                        else if (badge === 'subscriber') iconClass = 'ti ti-star';
-                        else if (badge === 'bot') iconClass = 'ti ti-robot';
-
-                        badgeSpan.innerHTML = `<i class="${iconClass}"></i>`;
-                        badgeSpan.title = getBadgeLabel(badge);
+                            badgeSpan.innerHTML = `<i class="${iconClass}"></i>`;
+                            badgeSpan.title = getBadgeLabel(badge);
+                        }
                         header.appendChild(badgeSpan);
                     });
                 }

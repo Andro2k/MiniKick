@@ -15,10 +15,14 @@ class ChatSocketManager:
         self._callback: Callable | None = None
         self._on_poll_update: Callable[[dict], None] | None = None
         self._on_poll_delete: Callable[[], None] | None = None
+        self._on_pinned_created: Callable[[dict], None] | None = None
+        self._on_pinned_deleted: Callable[[], None] | None = None
         self._dispatch_table: dict[str, Callable[[dict, websocket.WebSocketApp], None]] = {
             "App\\Events\\ChatMessageEvent": self._handle_chat_message,
             "App\\Events\\PollUpdateEvent": self._handle_poll_update,
             "App\\Events\\PollDeleteEvent": self._handle_poll_delete,
+            "App\\Events\\PinnedMessageCreatedEvent": self._handle_pinned_created,
+            "App\\Events\\PinnedMessageDeletedEvent": self._handle_pinned_deleted,
             "pusher:connection_established": self._handle_connection_established,
             "pusher:ping": self._handle_ping,
         }
@@ -29,11 +33,15 @@ class ChatSocketManager:
         on_message: Callable[[str, str, list, str, str, int], None],
         on_poll_update: Callable[[dict], None] | None = None,
         on_poll_delete: Callable[[], None] | None = None,
+        on_pinned_created: Callable[[dict], None] | None = None,
+        on_pinned_deleted: Callable[[], None] | None = None,
     ) -> None:
         self._room_id = room_id
         self._callback = on_message
         self._on_poll_update = on_poll_update
         self._on_poll_delete = on_poll_delete
+        self._on_pinned_created = on_pinned_created
+        self._on_pinned_deleted = on_pinned_deleted
         self._running = True
         
         url = f"wss://ws-{self.cluster}.pusher.com/app/{self.key}?protocol=7&client=js&version=7.6.0"
@@ -75,6 +83,14 @@ class ChatSocketManager:
         raw_badges = identity.get("badges", [])
         badges = [b["type"] for b in raw_badges if isinstance(b, dict) and "type" in b]
         
+        badges_v2 = identity.get("badges_v2", [])
+        if isinstance(badges_v2, list):
+            for b in badges_v2:
+                if isinstance(b, dict) and b.get("name") == "level":
+                    lvl = b.get("metadata", {}).get("level")
+                    if lvl is not None:
+                        badges.append(f"level_{lvl}")
+        
         color = identity.get("color", "") or COLOR_GREEN
         msg_id = inner.get("id", "")
         sender_id = sender.get("id", 0)
@@ -91,6 +107,33 @@ class ChatSocketManager:
     def _handle_poll_delete(self, outer: dict, ws: websocket.WebSocketApp) -> None:
         if self._on_poll_delete:
             self._on_poll_delete()
+
+    def _handle_pinned_created(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        inner = self._parse_inner_data(outer)
+        pinned = inner.get("pinned_message") or inner
+        if isinstance(pinned, dict):
+            msg_obj = pinned.get("message")
+            if isinstance(msg_obj, dict):
+                content = str(msg_obj.get("content", ""))
+                sender = msg_obj.get("sender") or pinned.get("sender") or {}
+            elif isinstance(pinned.get("content"), dict):
+                content = str(pinned.get("content", {}).get("content", ""))
+                sender = pinned.get("content", {}).get("sender") or pinned.get("sender") or {}
+            else:
+                content = str(pinned.get("content") or pinned.get("message") or "")
+                sender = pinned.get("sender") or {}
+
+            normalized = {
+                "id": pinned.get("id") or (msg_obj.get("id") if isinstance(msg_obj, dict) else ""),
+                "content": content,
+                "sender": sender
+            }
+            if self._on_pinned_created:
+                self._on_pinned_created(normalized)
+
+    def _handle_pinned_deleted(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        if self._on_pinned_deleted:
+            self._on_pinned_deleted()
 
     def _handle_connection_established(self, outer: dict, ws: websocket.WebSocketApp) -> None:
         payload = json.dumps({

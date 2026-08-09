@@ -277,6 +277,7 @@ class MainWindowCore(QMainWindow):
                 explosion_overlay_url=self.overlay_server.get_explosion_overlay_url(),
                 combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
                 poll_overlay_url=self.overlay_server.get_poll_overlay_url(),
+                pinned_overlay_url=self.overlay_server.get_pinned_overlay_url(),
                 parent=self
             )
             self.widget_controller.attach_view(self.view_widgets)
@@ -444,6 +445,8 @@ class MainWindowCore(QMainWindow):
         self.chat_worker.message_received.connect(self._route_incoming_message)
         self.chat_worker.poll_updated.connect(self._on_poll_updated)
         self.chat_worker.poll_deleted.connect(self._on_poll_deleted)
+        self.chat_worker.pinned_created.connect(self._on_pinned_created)
+        self.chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
         self.chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
         
         self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=10, parent=self)
@@ -462,6 +465,14 @@ class MainWindowCore(QMainWindow):
         self._active_poll_data = None
         if hasattr(self, 'overlay_server') and self.overlay_server:
             self.overlay_server.trigger_widget_event("poll_delete", {})
+
+    def _on_pinned_created(self, pinned_data: dict):
+        if hasattr(self, 'overlay_server') and self.overlay_server:
+            self.overlay_server.trigger_widget_event("pinned_created", {"pinned": pinned_data})
+
+    def _on_pinned_deleted(self):
+        if hasattr(self, 'overlay_server') and self.overlay_server:
+            self.overlay_server.trigger_widget_event("pinned_deleted", {})
 
     def _on_web_socket_connected(self, user_data):
         self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)

@@ -220,6 +220,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                         orig_rem = poll_copy.get("remaining", 0)
                         poll_copy["remaining"] = max(0, int(orig_rem - elapsed))
                         ws_client.send_json({"event": "poll_update", "poll": poll_copy})
+                    if getattr(self.server.manager, "_last_pinned_data", None):
+                        ws_client.send_json({"event": "pinned_created", "pinned": self.server.manager._last_pinned_data})
 
                 while not ws_client.closed:
                     msg = ws_client.read_frame()
@@ -354,6 +356,20 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
             except FileNotFoundError:
                 self.send_error(404, f"Poll Overlay HTML not found at: {html_path}")
+
+        elif path in ("/widgets/pinned", "/widgets/pinned_message", "/pinned"):
+            html_path = get_resource_path(os.path.join("assets", "overlays", "widgets", "pinned.html"))
+            try:
+                with open(html_path, "rb") as f:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Expires", "0")
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except FileNotFoundError:
+                self.send_error(404, f"Pinned Message Overlay HTML not found at: {html_path}")
 
         elif path.startswith("/css/"):
             css_filename = os.path.basename(path)
@@ -639,6 +655,9 @@ class OverlayServerManager:
     def get_poll_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/widgets/poll?token={self.session_token}"
 
+    def get_pinned_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/pinned?token={self.session_token}"
+
     def get_widgets_overlay_url(self) -> str:
         return self.get_shoutout_overlay_url()
 
@@ -736,6 +755,10 @@ class OverlayServerManager:
         elif event_type == "poll_delete":
             self._last_poll_data = None
             self._last_poll_timestamp = 0.0
+        elif event_type == "pinned_created":
+            self._last_pinned_data = data.get("pinned") or data
+        elif event_type == "pinned_deleted":
+            self._last_pinned_data = None
         elif event_type == "widget_toggle":
             w_id = data.get("widget_id")
             if w_id == "death":
