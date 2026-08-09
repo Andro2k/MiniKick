@@ -1,730 +1,457 @@
 {
-    "common": {
-        "buttons": {
-            "cancel": "Cancel",
-            "save": "Save",
-            "back": "Back",
-            "next": "Next",
-            "continue": "Continue",
-            "exit": "Exit",
-            "understood": "Understood",
-            "export": "Export",
-            "import": "Import",
-            "unlink": "Unlink",
-            "update": "Check for updates",
-            "browse": "Browse",
-            "copy": "Copy Link",
-            "add": "Add",
-            "report_bug": "Report Bug"
-        },
-        "status": {
-            "online": "Online",
-            "offline": "Offline",
-            "connected": "Connected",
-            "active": "Active",
-            "inactive": "Inactive",
-            "yes": "Yes",
-            "no": "No",
-            "error": "Error"
-        }
-    },
-    "settings": {
-        "header": {
-            "title": "General Settings",
-            "subtitle": "Global system settings, account management, and updates."
-        },
-        "system": {
-            "tray_title": "Run in Background",
-            "tray_desc": "Minimize to the system tray instead of fully closing the application.",
-            "lang_title": "Application Language",
-            "lang_desc": "Select the interface language (requires restart).",
-            "update_title": "Software Updates",
-            "update_desc": "Check for and install new MiniKick versions.",
-            "font_title": "Global Font Size",
-            "font_desc": "Scale the interface text size across the entire application.",
-            "font_size_small": "Small (11px)",
-            "font_size_normal": "Normal (13px)",
-            "font_size_large": "Large (14px)",
-            "font_size_xlarge": "Extra Large (16px)"
-        },
-        "backup": {
-            "title": "Configuration Backup",
-            "desc": "Export or import your rewards, voices, and general settings."
-        },
-        "account": {
-            "title": "Unlink Account",
-            "desc": "Close the current session. You will need to re-authorize MiniKick next time."
-        },
-        "feedback": {
-            "title": "Support and Bug Reporting",
-            "desc": "Found a bug or want to share feedback? Send us a direct report."
-        },
-        "status": {
-            "tray_enabled": "Background Execution On",
-            "tray_enabled_msg": "MiniKick will minimize to the tray when closed.",
-            "tray_disabled": "Background Execution Off",
-            "tray_disabled_msg": "The application will exit completely when closed.",
-            "exported": "Backup Exported",
-            "exported_msg": "Your settings have been saved successfully.",
-            "imported": "Backup Restored",
-            "imported_msg": "Settings have been loaded successfully.",
-            "lang_changed": "Language Changed",
-            "lang_changed_msg": "Please restart the application to apply the new language.",
-            "unlinked": "Account Unlinked",
-            "unlinked_msg": "Your local Kick session has been closed.",
-            "font_size_changed": "UI Scaled",
-            "font_size_changed_msg": "Global text size applied: {size}px",
-            "error_title": "Backup Error",
-            "export_error": "Could not export configuration backup file.",
-            "import_error": "Could not restore the selected backup file."
-        }
-    },
-    "spam": {
-        "header": {
-            "title": "Anti-Spam Filters (Auto-Mod)",
-            "subtitle": "Use these filters to keep your chat friendly, fun, and toxicity-free."
-        },
-        "card": {
-            "config_title": "Penalty Configuration",
-            "action": "Action",
-            "action_timeout": "Timeout user",
-            "action_delete": "Delete message",
-            "action_ban": "Ban user",
-            "action_warn_delete": "Warn and delete message",
-            "allowlist": "Allowed links (Allowlist)",
-            "allowlist_placeholder": "e.g., clips.kick.com, youtube.com",
-            "duration": "Duration (minutes)",
-            "exclude": "Exclude rank (Immune)",
-            "exclude_none": "None",
-            "exclude_mod": "Moderators & Broadcaster",
-            "exclude_sub": "Subscribers & VIPs",
-            "max_amount": "Maximum allowed amount",
-            "max_characters": "Max characters per message",
-            "max_symbols": "Max symbols / foreign script limit"
-        },
-        "filters": {
-            "caps": {
-                "title": "Caps Protection",
-                "desc": "Removes messages with an excessive amount of uppercase letters."
-            },
-            "link": {
-                "title": "Link Protection",
-                "desc": "Removes messages containing unauthorized links."
-            },
-            "emote": {
-                "title": "Emote Protection",
-                "desc": "Removes messages that abuse the amount of emotes."
-            },
-            "paragraph": {
-                "title": "Long Walls of Text",
-                "desc": "Blocks excessively long messages or walls of text (Max character limit)."
-            },
-            "symbol": {
-                "title": "Symbols & Foreign Script Protection",
-                "desc": "Filters non-Latin scripts (Arabic, Zalgo, Cyrillic) or symbol spam, ignoring valid Kick emotes."
-            },
-            "repetition": {
-                "title": "Repetition Protection",
-                "desc": "Penalizes duplicate messages and excessive use of the same word."
-            }
-        },
-        "status": {
-            "activated": "Filter Activated",
-            "deactivated": "Filter Deactivated",
-            "activated_msg": "The filter '{filter_name}' is now active.",
-            "deactivated_msg": "The filter '{filter_name}' is now inactive.",
-            "warn_msg": "@{user} please avoid spamming in the chat."
-        }
-    },
-    "command": {
-        "header": {
-            "title": "Triggers and Command Responses",
-            "subtitle": "Link chat commands or regular expressions to automated bot responses."
-        },
-        "empty": {
-            "title": "No commands yet",
-            "desc": "Create custom commands to let the bot respond automatically to your chat.",
-            "btn": "Create Command"
-        },
-        "table": {
-            "title": "Linked Commands",
-            "search_placeholder": "Search linked command...",
-            "btn_new": "New Command",
-            "col_command": "Command",
-            "col_type": "Type",
-            "col_aliases": "Aliases / Regex",
-            "col_permission": "Access Level",
-            "col_actions": "Actions",
-            "type_plugin": "Plugin",
-            "type_custom": "Custom",
-            "regex_prefix": "RegEx",
-            "tooltip_edit": "Modify command configuration",
-            "tooltip_delete": "Delete command permanently",
-            "filter_all": "Show All",
-            "filter_sort_asc": "Ascending Order (A-Z)",
-            "filter_sort_desc": "Descending Order (Z-A)"
-        },
-        "dialog": {
-            "title": "Configure Command",
-            "subtitle": "Create or edit custom commands for your chat.",
-            "trigger_label": "Command Name (Ex: !discord):",
-            "response_label": "Bot Response (you can use {user}):",
-            "plugin_tag": "PLUGIN COMMAND",
-            "cooldown_label": "Cooldown (sec):",
-            "permission_label": "Minimum Permission:",
-            "perm_everyone": "Everyone",
-            "perm_subscriber": "Subscriber",
-            "perm_vip": "VIP",
-            "perm_moderator": "Moderator",
-            "perm_broadcaster": "Broadcaster",
-            "active_checkbox": "Active Command",
-            "aliases_label": "Standard Aliases (comma separated):",
-            "aliases_placeholder": "!dc, !discord server",
-            "regex_checkbox": "Use RegEx (Ignores Prefixes and Aliases)",
-            "regex_label": "Regular Expression Syntax:",
-            "regex_placeholder": "Ex: \\b(hello|hi)\\b",
-            "regex_help": "If you enable RegEx, the bot will search for this pattern anywhere in the message.",
-            "tab_advanced": "Advanced"
-        },
-        "status": {
-            "created": "Command Created",
-            "updated": "Command Updated",
-            "deleted": "Command Deleted",
-            "enabled": "Command Enabled",
-            "disabled": "Command Disabled",
-            "created_msg": "Available in chat: {trigger}",
-            "updated_msg": "Changes saved for: {trigger}",
-            "deleted_msg": "Deleted: {trigger}",
-            "toggled_msg": "Trigger word: {trigger}"
-        }
-    },
-    "rewards": {
-        "header": {
-            "title": "Triggers & Rewards",
-            "subtitle": "Link your channel rewards with on-screen multimedia elements."
-        },
-        "empty": {
-            "title": "No linked rewards yet",
-            "desc": "Link your Kick channel points rewards with on-screen alerts or sound effects.",
-            "btn": "Link Reward"
-        },
-        "obs": {
-            "title": "OBS Browser Source",
-            "desc": "Copy this link and paste it into your broadcasting software (Recommended resolution: 1920x1080).",
-            "copied": "Link Copied!"
-        },
-        "table": {
-            "title": "Linked Rewards",
-            "btn_new": "New Rewards",
-            "col_reward": "Kick Reward",
-            "col_file": "File",
-            "col_actions": "Actions",
-            "unknown_file": "Unknown",
-            "tooltip_play": "Test in OBS",
-            "tooltip_edit": "Modify settings",
-            "tooltip_delete": "Delete Rewards"
-        },
-        "dialogs": {
-            "visual": {
-                "title": "Visual Positioner (1920x1080)",
-                "desc": "Drag your rewards. When you release it, a preview will be shown in OBS."
-            },
-            "wizard": {
-                "file_dialog_title": "Multimedia",
-                "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
-                "step1": {
-                    "title": "Reward and File",
-                    "desc": "Configure which channel point will trigger this rewards.",
-                    "reward_selection": "Reward Selection",
-                    "loading": "Loading rewards...",
-                    "tooltip_refresh": "Refresh Kick Rewards",
-                    "file_label": "Multimedia File",
-                    "file_placeholder": "Ex. your_rewards.mp4 or sound.mp3",
-                    "no_rewards": "No rewards",
-                    "no_available": "No available rewards"
-                },
-                "step2": {
-                    "title": "Display Settings",
-                    "desc": "Define how and where your rewards will be displayed on the canvas.",
-                    "volume": "Rewards volume",
-                    "random_pos": "Random Position",
-                    "btn_visual": "Position in OBS",
-                    "coord_x": "X:",
-                    "coord_y": "Y:",
-                    "scale": "Scale:"
-                }
-            }
-        },
-        "status": {
-            "created": "Rewards Created",
-            "updated": "Rewards Updated",
-            "deleted": "Rewards Deleted",
-            "created_msg": "Linked to reward: {reward}",
-            "updated_msg": "Configuration saved for: {reward}",
-            "deleted_msg": "Unlinked reward: {reward}"
-        }
-    },
-    "log": {
-        "header": {
-            "title": "Developer Logs",
-            "subtitle": "Monitor system events, debug errors, and load historical data using the file explorer."
-        },
-        "controls": {
-            "search_placeholder": "Search logs...",
-            "filter_all": "ALL",
-            "btn_folder": "Folder",
-            "tooltip_folder": "Open location in Windows",
-            "btn_load": "Load History",
-            "btn_live": "Live View",
-            "btn_clear": "Clear",
-            "btn_report": "Report Bug",
-            "btn_show_logs": "View Logs",
-            "btn_hide_logs": "Hide Logs",
-            "date_all": "All Time",
-            "date_1d": "Last 24 Hours",
-            "date_3d": "Last 3 Days",
-            "date_7d": "Last 7 Days"
-        },
-        "empty": {
-            "title": "Console paused",
-            "desc": "Events are still being recorded in the background. Press the button to view real-time diagnostics.",
-            "btn_show": "View live logs"
-        },
-        "table": {
-            "col_level": "Log Level",
-            "col_time": "Timestamp",
-            "col_message": "Log Message"
-        },
-        "dialogs": {
-            "select_history": "Select Log History",
-            "file_filter": "Log Files (*.log*);;All files (*.*)"
-        },
-        "misc": {
-            "historical": "HISTORICAL"
-        },
-        "status": {
-            "historical_title": "Log File Loaded",
-            "historical_msg": "Inspecting: {file}",
-            "live_title": "Live Console",
-            "live_msg": "Showing real-time event diagnostics.",
-            "paused_title": "Live mode",
-            "paused_msg": "You returned to live mode. Use 'View Logs' whenever you want to monitor events.",
-            "cleared_title": "Logs Cleared",
-            "cleared_msg": "The log view has been cleared successfully."
-        },
-        "pagination": {
-            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
-        }
-    },
     "chat": {
-        "header": {
-            "title": "Live Chat",
-            "subtitle": "Manage moderation, interactive Text-to-Speech (TTS), and real-time channel events."
-        },
-        "settings": {
-            "tts_title": "Voice Service (TTS)",
-            "tts_desc": "Enable automated message reading.",
-            "name_title": "Read Names",
-            "name_desc": "Pronounce the sender's name before the message.",
-            "provider_title": "TTS Voice Engine",
-            "provider_desc": "Toggle between Edge web voices or local voices.",
-            "cmd_title": "Require Command",
-            "cmd_desc": "Only read messages starting with a prefix.",
-            "vol_title": "General Volume",
-            "vol_desc": "Adjust the intensity of the speech synthesizer.",
-            "prefix_title": "Command Prefix",
-            "prefix_desc": "Define the exact text that will trigger the bot's reading.",
-            "prefix_placeholder": "Ex. !tts",
-            "obs_title": "OBS Source (Overlay)",
-            "obs_desc": "Copy this link to add the chat browser source in your OBS.",
-            "voice_general_title": "Followers Voice",
-            "voice_general_desc": "Set the voice for general messages and followers."
+        "banned_words": {
+            "input_placeholder": "ex. insult",
+            "title": "Banned Words"
         },
         "bots": {
-            "title": "Muted Users",
-            "input_placeholder": "ex. botrix"
-        },
-        "banned_words": {
-            "title": "Banned Words",
-            "input_placeholder": "ex. insult"
-        },
-        "roles": {
-            "title": "Voices by Role",
-            "broadcaster_title": "Streamer Voice",
-            "broadcaster_desc": "Voice used for the streamer's messages.",
-            "moderator_title": "Moderator Voice",
-            "moderator_desc": "Voice used for moderators' messages.",
-            "vip_title": "VIP Voice",
-            "vip_desc": "Voice used for VIP users' messages.",
-            "subscriber_title": "Subscriber Voice",
-            "subscriber_desc": "Voice used for subscribers' messages.",
-            "default_voice": "(Use global voice)",
-            "name_broadcaster": "Streamer",
-            "name_moderator": "Moderator",
-            "name_vip": "VIP",
-            "name_subscriber": "Subscriber",
-            "name_bot": "Bot",
-            "name_user": "User"
-        },
-        "tabs": {
-            "settings": "Voice Settings",
-            "muted": "Muted Users",
-            "overlay": "Chat Overlay"
+            "input_placeholder": "ex. botrix",
+            "title": "Muted Users"
         },
         "display": {
             "title": "Room History"
         },
-        "status": {
-            "loading_voices": "Fetching cloud voices...",
-            "provider_title": "Speech Engine",
-            "tts_title": "Chat Text-to-Speech",
-            "tts_active": "Automatic voice enabled",
-            "tts_muted": "Chat muted",
-            "web_link": "a web link",
-            "user_says": "{user} says: {message}",
-            "provider_cloud": "Neural AI (Edge Cloud)",
-            "provider_local": "SAPI5 / OS (Local)",
-            "provider_active": "Active mode: {mode}",
-            "tts_error_title": "Unstable TTS Network",
-            "tts_error_offline": "Loaded offline mode: {error}",
-            "voice_test_sample": "This is a voice sample test.",
-            "test_btn_tooltip": "Test voice",
-            "read_name_title": "Read Names",
-            "read_name_active": "Reading sender names enabled",
-            "read_name_inactive": "Reading sender names disabled",
-            "use_command_title": "Require Command",
-            "use_command_active": "TTS command requirement enabled",
-            "use_command_inactive": "TTS command requirement disabled",
-            "systts_on": "🔊 @{user}, TTS system has been ENABLED.",
-            "systts_off": "🔇 @{user}, TTS system has been DISABLED.",
-            "systts_status": "ℹ️ @{user}, TTS system is currently: {state}.",
-            "systts_usage": "⚠️ @{user}, command usage: !systts on | !systts off",
-            "enabled_upper": "ENABLED",
-            "disabled_upper": "DISABLED"
+        "header": {
+            "subtitle": "Manage moderation, interactive Text-to-Speech (TTS), and real-time channel events.",
+            "title": "Live Chat"
         },
         "overlay": {
-            "theme_title": "Chat Design",
-            "theme_desc": "Select the visual theme for the chat overlay.",
-            "theme_glass": "Glassmorphism",
-            "theme_neon": "Neon Glow (Neon)",
-            "theme_card": "Solid Card",
-            "theme_cyber": "Retro Cyberpunk (Cyber)",
-            "theme_minimal": "Minimalist",
-            "orientation_title": "Chat Orientation",
-            "orientation_desc": "Traditional vertical column or horizontal ticker mode.",
-            "orientation_vertical": "Vertical (Column)",
-            "orientation_horizontal": "Horizontal (Ticker)",
-            "flow_title": "Flow Direction",
-            "flow_desc": "Direction in which new chat messages advance.",
-            "flow_b2t": "Bottom to Top",
-            "flow_t2b": "Top to Bottom",
-            "flow_r2l": "Right to Left",
-            "flow_l2r": "Left to Right",
-            "entry_title": "Animation Origin",
-            "entry_desc": "Direction from which new messages enter.",
             "entry_bottom": "From Bottom",
-            "entry_top": "From Top",
+            "entry_desc": "Direction from which new messages enter.",
             "entry_left": "From Left",
             "entry_right": "From Right",
-            "size_title": "Font Size",
-            "size_desc": "Modify the overlay text font size in pixels.",
-            "fade_title": "On-Screen Time",
+            "entry_title": "Animation Origin",
+            "entry_top": "From Top",
             "fade_desc": "Seconds before messages fade out (0 = never hide).",
-            "show_bots_title": "Show Bots",
+            "fade_title": "On-Screen Time",
+            "flow_b2t": "Bottom to Top",
+            "flow_desc": "Direction in which new chat messages advance.",
+            "flow_l2r": "Left to Right",
+            "flow_r2l": "Right to Left",
+            "flow_t2b": "Top to Bottom",
+            "flow_title": "Flow Direction",
+            "orientation_desc": "Traditional vertical column or horizontal ticker mode.",
+            "orientation_horizontal": "Horizontal (Ticker)",
+            "orientation_title": "Chat Orientation",
+            "orientation_vertical": "Vertical (Column)",
             "show_bots_desc": "Display messages from muted bots in the overlay.",
+            "show_bots_title": "Show Bots",
+            "show_time_desc": "Show the message timestamp next to the username.",
             "show_time_title": "Show Timestamp",
-            "show_time_desc": "Show the message timestamp next to the username."
-        }
-    },
-    "music": {
-        "header": {
-            "title": "Music Player",
-            "subtitle": "Let your viewers control the music stream using chat commands."
-        },
-        "status": {
-            "youtube_active": "YouTube Active"
-        },
-        "player": {
-            "not_playing": "No song currently playing",
-            "unknown_song": "Unknown",
-            "requested_by": "Requested by: {user}",
-            "requested_by_streamer": "Requested by: Broadcaster",
-            "volume_title": "Player Volume",
-            "volume_desc": "Adjust YouTube playback volume."
-        },
-        "stats": {
-            "queue_title": "Queue",
-            "queue_desc": "Songs after current track",
-            "duration_title": "Total duration",
-            "duration_desc": "Duration of all songs in list",
-            "cmd_title": "Chat command",
-            "cmd_desc": "If viewers can add songs with !sr",
-            "service_active": "Service Enabled",
-            "service_disabled": "Service Disabled",
-            "badge_active": "O ENABLED",
-            "badge_disabled": "O DISABLED",
-            "service_disabled_chat": "❌ @{user}, music service is currently disabled."
-        },
-        "tabs": {
-            "player": "Player",
-            "commands": "Commands",
-            "settings": "Settings"
-        },
-        "cmds": {
-            "title": "Viewer Commands",
-            "sr_label": "Request Song (Default: !sr)",
-            "sr_desc": "Allows viewers to add music to the queue. You can customize the '!sr' trigger in the Commands view.",
-            "skip_label": "Skip Track (Default: !skip)",
-            "skip_desc": "Forces playback to the next song. You can customize the '!skip' trigger in the Commands view.",
-            "song_label": "Current Song (Default: !song)",
-            "song_desc": "Displays the currently playing track in chat. You can customize the '!song' trigger in the Commands view.",
-            "pause_label": "Pause Music (Default: !pause)",
-            "pause_desc": "Allows moderators to pause music from chat. You can customize the '!pause' trigger in the Commands view.",
-            "resume_label": "Resume Music (Default: !resume)",
-            "resume_desc": "Allows moderators to resume music from chat. You can customize the '!resume' trigger in the Commands view.",
-            "playlist_label": "View My Songs (Default: !playlist)",
-            "playlist_desc": "Shows viewers the position of songs they requested. Aliases: !queue, !pl.",
-            "vol_label": "Modify Volume (Default: !vol)",
-            "vol_desc": "Allows moderators to change player volume from chat (0-100). Aliases: !volume."
-        },
-        "toast": {
-            "removed_from_queue": "Song removed from queue",
-            "moved_in_queue": "Song position updated in queue",
-            "error_playing": "Could not play '{title}': {error}",
-            "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
-            "chat_error_playing_no_user": "❌ Could not play '{title}': {error}"
-        },
-        "chat": {
-            "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",
-            "vol_usage": "❌ @{user}, please specify a volume level between 0 and 100. (Ex: {trigger} 50)",
-            "vol_success": "🔊 @{user}, music volume has been set to {volume}%.",
-            "not_linked": "❌ The streamer has not activated the YouTube player.",
-            "not_linked_youtube": "❌ The streamer has not activated the YouTube player.",
-            "pause_success": "⏸️ Music paused successfully.",
-            "pause_failed": "❌ Failed to pause music.",
-            "resume_success": "▶️ Music resumed successfully.",
-            "resume_failed": "❌ Failed to resume music.",
-            "skip_success": "⏩ Song skipped successfully.",
-            "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
-            "song_now_playing": "🎵 Now playing: {title} - {artist}",
-            "song_paused": "🔇 YouTube is paused.",
-            "playlist_empty_for_user": "❌ @{user}, you have no songs currently in the queue.",
-            "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
-            "playlist_user_songs_more": "🎵 @{user} (remaining positions {page}/{total_pages}): {songs}",
-            "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
-            "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
-            "no_queue_available": "❌ @{user}, music queue is not available right now.",
-            "song_paused_youtube": "🔇 YouTube is paused.",
-            "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing.",
-            "user_limit_reached": "❌ @{user}, you already have {count} song(s) in queue (max allowed: {max}).",
-            "cooldown_active": "⏳ @{user}, please wait {seconds} second(s) before requesting another song.",
-            "queue_full": "❌ @{user}, the song queue is full ({max} songs max).",
-            "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes."
-        },
-        "queue": {
-            "not_found": "❌ Could not find any song named '{query}'.",
-            "success": "🎵 Added to queue: {track}",
-            "error": "❌ Internal music error: {error}",
-            "no_link": "❌ Could not retrieve video link.",
-            "searching": "🔍 Searching for '{query}' on YouTube...",
-            "processing_link": "🔍 Processing YouTube link...",
-            "empty": "The queue is empty",
-            "title": "Playback Queue",
-            "remove_tooltip": "Remove from queue",
-            "empty_desc": "Use !sr in chat to request music and it will appear here.",
-            "col_num": "#",
-            "col_title": "Title",
-            "col_artist": "Artist",
-            "col_requester": "Requested by",
-            "col_duration": "Duration",
-            "col_actions": "Actions"
-        },
-        "youtube": {
-            "auto_resume_title": "Auto-resume (YouTube)",
-            "auto_resume_desc": "Play automatically when queued, or wait for the streamer.",
-            "max_user_songs_title": "Max songs per user",
-            "max_user_songs_desc": "Maximum active songs a viewer can have in the queue at once.",
-            "user_cooldown_title": "Request cooldown (sec)",
-            "user_cooldown_desc": "Cooldown time required before a viewer can request another song.",
-            "max_queue_size_title": "Max global queue size",
-            "max_queue_size_desc": "Maximum total songs allowed in the playback queue.",
-            "max_song_duration_title": "Max song duration (min)",
-            "max_song_duration_desc": "Reject songs that exceed this duration limit.",
-            "error_title": "YouTube Error",
-            "age_restricted": "This video requires age verification (Sign in to confirm your age)",
-            "bot_blocked": "This video requires authentication or was blocked by YouTube anti-bot policies.",
-            "inappropriate": "This video is inappropriate for some users",
-            "invalid_media": "Invalid media or format",
-            "generic_error": "Could not process audio for this video."
-        },
-        "overlay": {
-            "url_title": "Music Overlay (OBS)",
-            "url_desc": "Add this URL as a browser source in OBS to display the current song on screen.",
-            "layout_label": "Overlay Layout:",
-            "theme_label": "Visual Theme:",
-            "layout_banner": "Banner Header (Large Artwork)",
-            "layout_pill": "Minimal Capsule (Pill Bar)",
-            "layout_floating": "Vinyl Record (Retro Spin)",
-            "layout_compact": "Compact Card",
-            "layout_standard": "Standard Bar",
-            "theme_dynamic": "Dynamic (Auto-Album Colors)",
+            "size_desc": "Modify the overlay text font size in pixels.",
+            "size_title": "Font Size",
+            "theme_card": "Solid Card",
+            "theme_cyber": "Retro Cyberpunk (Cyber)",
+            "theme_desc": "Select the visual theme for the chat overlay.",
             "theme_glass": "Glassmorphism",
             "theme_minimal": "Minimalist",
-            "theme_neon": "Neon Glow",
-            "theme_cyber": "Retro Cyberpunk",
-            "theme_card": "Solid Card"
+            "theme_neon": "Neon Glow (Neon)",
+            "theme_title": "Chat Design"
+        },
+        "roles": {
+            "broadcaster_desc": "Voice used for the streamer's messages.",
+            "broadcaster_title": "Streamer Voice",
+            "default_voice": "(Use global voice)",
+            "moderator_desc": "Voice used for moderators' messages.",
+            "moderator_title": "Moderator Voice",
+            "name_bot": "Bot",
+            "name_broadcaster": "Streamer",
+            "name_moderator": "Moderator",
+            "name_subscriber": "Subscriber",
+            "name_user": "User",
+            "name_vip": "VIP",
+            "subscriber_desc": "Voice used for subscribers' messages.",
+            "subscriber_title": "Subscriber Voice",
+            "title": "Voices by Role",
+            "vip_desc": "Voice used for VIP users' messages.",
+            "vip_title": "VIP Voice"
+        },
+        "settings": {
+            "cmd_desc": "Only read messages starting with a prefix.",
+            "cmd_title": "Require Command",
+            "name_desc": "Pronounce the sender's name before the message.",
+            "name_title": "Read Names",
+            "obs_desc": "Copy this link to add the chat browser source in your OBS.",
+            "obs_title": "OBS Source (Overlay)",
+            "prefix_desc": "Define the exact text that will trigger the bot's reading.",
+            "prefix_placeholder": "Ex. !tts",
+            "prefix_title": "Command Prefix",
+            "provider_desc": "Toggle between Edge web voices or local voices.",
+            "provider_title": "TTS Voice Engine",
+            "tts_desc": "Enable automated message reading.",
+            "tts_title": "Voice Service (TTS)",
+            "voice_general_desc": "Set the voice for general messages and followers.",
+            "voice_general_title": "Followers Voice",
+            "vol_desc": "Adjust the intensity of the speech synthesizer.",
+            "vol_title": "General Volume"
+        },
+        "status": {
+            "disabled_upper": "DISABLED",
+            "enabled_upper": "ENABLED",
+            "loading_voices": "Fetching cloud voices...",
+            "provider_active": "Active mode: {mode}",
+            "provider_cloud": "Neural AI (Edge Cloud)",
+            "provider_local": "SAPI5 / OS (Local)",
+            "provider_title": "Speech Engine",
+            "read_name_active": "Reading sender names enabled",
+            "read_name_inactive": "Reading sender names disabled",
+            "read_name_title": "Read Names",
+            "systts_off": "🔇 @{user}, TTS system has been DISABLED.",
+            "systts_on": "🔊 @{user}, TTS system has been ENABLED.",
+            "systts_status": "ℹ️ @{user}, TTS system is currently: {state}.",
+            "systts_usage": "⚠️ @{user}, command usage: !systts on | !systts off",
+            "test_btn_tooltip": "Test voice",
+            "tts_active": "Automatic voice enabled",
+            "tts_error_offline": "Loaded offline mode: {error}",
+            "tts_error_title": "Unstable TTS Network",
+            "tts_muted": "Chat muted",
+            "tts_title": "Chat Text-to-Speech",
+            "use_command_active": "TTS command requirement enabled",
+            "use_command_inactive": "TTS command requirement disabled",
+            "use_command_title": "Require Command",
+            "user_says": "{user} says: {message}",
+            "voice_test_sample": "This is a voice sample test.",
+            "web_link": "a web link"
+        },
+        "tabs": {
+            "muted": "Muted Users",
+            "overlay": "Chat Overlay",
+            "settings": "Voice Settings"
         }
     },
-    "dashboard": {
-        "header": {
-            "title": "Dashboard",
-            "subtitle": "Authentication management, automatic connection, and general system status."
+    "command": {
+        "dialog": {
+            "active_checkbox": "Active Command",
+            "aliases_label": "Standard Aliases (comma separated):",
+            "aliases_placeholder": "!dc, !discord server",
+            "cooldown_label": "Cooldown (sec):",
+            "perm_broadcaster": "Broadcaster",
+            "perm_everyone": "Everyone",
+            "perm_moderator": "Moderator",
+            "perm_subscriber": "Subscriber",
+            "perm_vip": "VIP",
+            "permission_label": "Minimum Permission:",
+            "plugin_tag": "PLUGIN COMMAND",
+            "regex_checkbox": "Use RegEx (Ignores Prefixes and Aliases)",
+            "regex_help": "If you enable RegEx, the bot will search for this pattern anywhere in the message.",
+            "regex_label": "Regular Expression Syntax:",
+            "regex_placeholder": "Ex: \\b(hello|hi)\\b",
+            "response_label": "Bot Response (you can use {user}):",
+            "subtitle": "Create or edit custom commands for your chat.",
+            "tab_advanced": "Advanced",
+            "title": "Configure Command",
+            "trigger_label": "Command Name (Ex: !discord):"
         },
+        "empty": {
+            "btn": "Create Command",
+            "desc": "Create custom commands to let the bot respond automatically to your chat.",
+            "title": "No commands yet"
+        },
+        "header": {
+            "subtitle": "Link chat commands or regular expressions to automated bot responses.",
+            "title": "Triggers and Command Responses"
+        },
+        "status": {
+            "created": "Command Created",
+            "created_msg": "Available in chat: {trigger}",
+            "deleted": "Command Deleted",
+            "deleted_msg": "Deleted: {trigger}",
+            "disabled": "Command Disabled",
+            "enabled": "Command Enabled",
+            "toggled_msg": "Trigger word: {trigger}",
+            "updated": "Command Updated",
+            "updated_msg": "Changes saved for: {trigger}"
+        },
+        "table": {
+            "btn_new": "New Command",
+            "col_actions": "Actions",
+            "col_aliases": "Aliases / Regex",
+            "col_command": "Command",
+            "col_permission": "Access Level",
+            "col_type": "Type",
+            "filter_all": "Show All",
+            "filter_sort_asc": "Ascending Order (A-Z)",
+            "filter_sort_desc": "Descending Order (Z-A)",
+            "regex_prefix": "RegEx",
+            "search_placeholder": "Search linked command...",
+            "title": "Linked Commands",
+            "tooltip_delete": "Delete command permanently",
+            "tooltip_edit": "Modify command configuration",
+            "type_custom": "Custom",
+            "type_plugin": "Plugin"
+        }
+    },
+    "common": {
+        "buttons": {
+            "add": "Add",
+            "back": "Back",
+            "browse": "Browse",
+            "cancel": "Cancel",
+            "continue": "Continue",
+            "copy": "Copy Link",
+            "exit": "Exit",
+            "export": "Export",
+            "import": "Import",
+            "next": "Next",
+            "report_bug": "Report Bug",
+            "save": "Save",
+            "understood": "Understood",
+            "unlink": "Unlink",
+            "update": "Check for updates"
+        },
+        "status": {
+            "active": "Active",
+            "connected": "Connected",
+            "error": "Error",
+            "inactive": "Inactive",
+            "no": "No",
+            "offline": "Offline",
+            "online": "Online",
+            "yes": "Yes"
+        }
+    },
+    "crash": {
+        "anonymous": "Anonymous",
+        "btn_close": "Close Without Sending",
+        "btn_send": "Send Report and Close",
+        "err_no_webhook": "Discord Webhook URL is not configured.",
+        "err_send": "Could not send the report. Error: {error}",
+        "lbl_contact": "Contact / Discord (Optional)",
+        "lbl_desc": "What were you doing when it crashed? (Optional)",
+        "lbl_traceback": "Error Details (Traceback)",
+        "no_comments": "No user comments.",
+        "placeholder_contact": "E.g., TheAndro2K",
+        "placeholder_desc": "Briefly describe the steps...",
+        "subtitle": "An unhandled error occurred in the application. Help us solve the problem by sending this report.",
+        "title": "MiniKick has crashed",
+        "truncated_tb": "\n[Traceback truncated due to length]"
+    },
+    "dashboard": {
         "banner": {
-            "text_prefix": "<b>Update required:</b> Your account is missing the following permissions:",
             "btn_update": "Update Permissions",
             "scope": {
                 "moderation_ban": "Ban users",
                 "moderation_chat": "Manage chat messages"
-            }
+            },
+            "text_prefix": "<b>Update required:</b> Your account is missing the following permissions:"
         },
         "connection": {
-            "autostart_title": "Automatic Connection",
             "autostart_desc": "Start the bot automatically.",
-            "status_waiting": "Status: Waiting for connection...",
+            "autostart_title": "Automatic Connection",
+            "btn_active": "System Active",
+            "btn_connect": "Connect to Kick",
+            "btn_retry": "Retry",
             "status_auth": "Status: Authenticating...",
             "status_connected": "Status: Connected and Listening",
-            "btn_connect": "Connect to Kick",
-            "btn_active": "System Active",
-            "btn_retry": "Retry"
+            "status_waiting": "Status: Waiting for connection..."
         },
-        "stats": {
-            "followers": "Followers",
-            "room_id": "ChatRoom ID",
-            "category": "Last Category",
-            "affiliate": "Affiliate Status",
-            "vods": "VODs",
-            "created_at": "Creation Date"
+        "empty": {
+            "desc": "Connect your Kick account to sync the bot, view real-time statistics, and manage your chat.",
+            "title": "Let's get started!"
+        },
+        "header": {
+            "subtitle": "Authentication management, automatic connection, and general system status.",
+            "title": "Dashboard"
         },
         "session": {
-            "title": "Session Statistics",
-            "messages": "Session Messages",
             "commands": "Command Executions",
+            "messages": "Session Messages",
+            "spam": "Spam Filtered",
             "timers": "Active Timers",
-            "spam": "Spam Filtered"
+            "title": "Session Statistics"
+        },
+        "stats": {
+            "affiliate": "Affiliate Status",
+            "category": "Last Category",
+            "created_at": "Creation Date",
+            "followers": "Followers",
+            "room_id": "ChatRoom ID",
+            "vods": "VODs"
         },
         "status": {
             "connected_toast_msg": "Channel linked: {username}"
-        },
-        "empty": {
-            "title": "Let's get started!",
-            "desc": "Connect your Kick account to sync the bot, view real-time statistics, and manage your chat."
         }
     },
     "dialogs": {
-        "wizard": {
-            "step_indicator": "Step {current}/{total}"
+        "already_running": {
+            "desc": "The broadcasting controller is already operating in the background. Please check the Windows system tray (next to the clock) to access the dashboard.",
+            "title": "MiniKick is Already Running"
         },
         "bug_report": {
-            "lbl_contact": "Contact (Discord, Email, etc. - Optional):",
-            "lbl_description": "Problem Description (Required):",
-            "chk_include_logs": "Include diagnostic logs (minikick.log)",
-            "placeholder_contact": "Your username or contact...",
-            "placeholder_desc": "Explain what you were doing and what error occurred...",
-            "err_empty_desc": "Description cannot be empty.",
-            "err_no_webhook": "Discord webhook is not configured by the developer.",
-            "success_send": "Report sent successfully.",
-            "err_discord": "Discord error: Code {code}",
-            "err_send": "Error sending: {error}",
-            "success_title": "Report Sent",
-            "success_msg": "Thank you for reporting this issue.",
             "btn_send": "Send Report",
             "btn_sending": "Sending...",
+            "chk_include_logs": "Include diagnostic logs (minikick.log)",
+            "err_discord": "Discord error: Code {code}",
+            "err_empty_desc": "Description cannot be empty.",
+            "err_no_webhook": "Discord webhook is not configured by the developer.",
+            "err_send": "Error sending: {error}",
+            "lbl_contact": "Contact (Discord, Email, etc. - Optional):",
+            "lbl_description": "Problem Description (Required):",
             "lbl_image": "Attach Screenshot / Image (Optional):",
-            "placeholder_image": "No file selected..."
-        },
-        "unlink": {
-            "title": "Unlink Account",
-            "desc": "Are you sure you want to log out? You will need to re-authorize MiniKick next time."
+            "placeholder_contact": "Your username or contact...",
+            "placeholder_desc": "Explain what you were doing and what error occurred...",
+            "placeholder_image": "No file selected...",
+            "success_msg": "Thank you for reporting this issue.",
+            "success_send": "Report sent successfully.",
+            "success_title": "Report Sent"
         },
         "close": {
-            "title": "Close MiniKick",
-            "desc": "Are you sure you want to exit the application? The bot will stop listening to the chat."
+            "desc": "Are you sure you want to exit the application? The bot will stop listening to the chat.",
+            "title": "Close MiniKick"
         },
-        "already_running": {
-            "title": "MiniKick is Already Running",
-            "desc": "The broadcasting controller is already operating in the background. Please check the Windows system tray (next to the clock) to access the dashboard."
+        "unlink": {
+            "desc": "Are you sure you want to log out? You will need to re-authorize MiniKick next time.",
+            "title": "Unlink Account"
         },
         "update": {
-            "title_default": "System Update",
-            "subtitle_connecting": "Connecting to the server...",
-            "lbl_progress": "Progress",
-            "btn_restart": "Restart now",
             "btn_close": "Close",
-            "top_available": "Version {version} available",
-            "subtitle_restart_req": "A restart is required to complete the installation.",
             "btn_download": "Download now",
-            "subtitle_downloading": "Downloading the new version...",
             "btn_downloading": "Downloading...",
-            "title_completed": "Update completed",
+            "btn_restart": "Restart now",
+            "lbl_progress": "Progress",
+            "msg_unexpected_error": "Unexpected failure downloading the file.",
+            "subtitle_connecting": "Connecting to the server...",
+            "subtitle_downloading": "Downloading the new version...",
             "subtitle_installed": "Version {version} installed.",
-            "title_up_to_date": "System Up to Date",
+            "subtitle_restart_req": "A restart is required to complete the installation.",
             "subtitle_up_to_date": "Your system version is already the latest available.",
+            "title_completed": "Update completed",
+            "title_default": "System Update",
             "title_error": "Download failed",
-            "msg_unexpected_error": "Unexpected failure downloading the file."
+            "title_up_to_date": "System Up to Date",
+            "top_available": "Version {version} available"
+        },
+        "wizard": {
+            "step_indicator": "Step {current}/{total}"
+        }
+    },
+    "log": {
+        "controls": {
+            "btn_clear": "Clear",
+            "btn_folder": "Folder",
+            "btn_hide_logs": "Hide Logs",
+            "btn_live": "Live View",
+            "btn_load": "Load History",
+            "btn_report": "Report Bug",
+            "btn_show_logs": "View Logs",
+            "date_1d": "Last 24 Hours",
+            "date_3d": "Last 3 Days",
+            "date_7d": "Last 7 Days",
+            "date_all": "All Time",
+            "filter_all": "ALL",
+            "search_placeholder": "Search logs...",
+            "tooltip_folder": "Open location in Windows"
+        },
+        "dialogs": {
+            "file_filter": "Log Files (*.log*);;All files (*.*)",
+            "select_history": "Select Log History"
+        },
+        "empty": {
+            "btn_show": "View live logs",
+            "desc": "Events are still being recorded in the background. Press the button to view real-time diagnostics.",
+            "title": "Console paused"
+        },
+        "header": {
+            "subtitle": "Monitor system events, debug errors, and load historical data using the file explorer.",
+            "title": "Developer Logs"
+        },
+        "misc": {
+            "historical": "HISTORICAL"
+        },
+        "pagination": {
+            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
+        },
+        "status": {
+            "cleared_msg": "The log view has been cleared successfully.",
+            "cleared_title": "Logs Cleared",
+            "historical_msg": "Inspecting: {file}",
+            "historical_title": "Log File Loaded",
+            "live_msg": "Showing real-time event diagnostics.",
+            "live_title": "Live Console",
+            "paused_msg": "You returned to live mode. Use 'View Logs' whenever you want to monitor events.",
+            "paused_title": "Live mode"
+        },
+        "table": {
+            "col_level": "Log Level",
+            "col_message": "Log Message",
+            "col_time": "Timestamp"
         }
     },
     "main": {
-        "sidebar": {
-            "new_version": "New Version",
-            "version": "Version {version}",
-            "section": {
-                "navigate": "Navigate",
-                "more": "More"
-            },
-            "profile": {
-                "offline_name": "No Connection"
-            },
-            "tabs": {
-                "dashboard": "Dashboard",
-                "chat": "Chat",
-                "music": "Music",
-                "triggers": "Triggers",
-                "comandos": "Commands",
-                "widgets": "Widgets",
-                "spam_filters": "Spam Filters",
-                "settings": "Settings",
-                "timers": "Timers",
-                "developer": "Developer",
-                "network_status": "Network Status"
-            }
-        },
-        "tray": {
-            "open_panel": "Open Panel",
-            "read_chat": "Read chat aloud",
-            "play_pause": "Play / Pause Music",
-            "skip": "Skip Song",
-            "tts_use_command": "Require command for TTS",
-            "tts_voice_type": "Use Web Voices",
-            "tts_on": "Enabled",
-            "tts_off": "Disabled",
-            "close_app": "Close MiniKick",
-            "tts_msg": "Chat reading: {estado}",
-            "bg_title": "MiniKick in background",
-            "bg_desc": "I will keep reading the chat for you. Double click to return."
+        "chat": {
+            "points_tag": "POINTS",
+            "reward_redeemed": "redeemed {reward_name}"
         },
         "controllers": {
             "dashboard": {
-                "unknown_user": "Unknown user",
+                "affiliate": "Affiliate",
                 "no_bio": "No description",
                 "none": "None",
-                "affiliate": "Affiliate",
-                "not_affiliate": "Not Affiliate"
+                "not_affiliate": "Not Affiliate",
+                "unknown_user": "Unknown user"
             },
             "log": {
-                "read_error": "Could not read the file: {error}",
-                "folder_error": "Could not open the folder: {error}"
+                "folder_error": "Could not open the folder: {error}",
+                "read_error": "Could not read the file: {error}"
             }
+        },
+        "logs": {
+            "api_error": "Kick Rewards API failed: {error}",
+            "api_error_setup": "Error setting up rewards query: {error}",
+            "api_fetching": "Rewards are already being fetched. Please wait.",
+            "api_offline": "Attempted to update rewards without being connected to Kick.",
+            "reward_no_rewards": "Reward '{reward_name}' does not have an rewards configured.",
+            "shutdown_complete": "Thread shutdown sequence completed.",
+            "shutdown_init": "Initiating shutdown sequence...",
+            "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
+            "worker_stopped": "{worker} closed cleanly.",
+            "worker_stopping": "Requesting {worker} to stop...",
+            "worker_stuck": "{worker} stuck (possible network lock). Forcing termination..."
+        },
+        "sidebar": {
+            "new_version": "New Version",
+            "profile": {
+                "offline_name": "No Connection"
+            },
+            "section": {
+                "more": "More",
+                "navigate": "Navigate"
+            },
+            "tabs": {
+                "chat": "Chat",
+                "comandos": "Commands",
+                "dashboard": "Dashboard",
+                "developer": "Developer",
+                "music": "Music",
+                "network_status": "Network Status",
+                "settings": "Settings",
+                "spam_filters": "Spam Filters",
+                "timers": "Timers",
+                "triggers": "Triggers",
+                "widgets": "Widgets"
+            },
+            "version": "Version {version}"
+        },
+        "toasts": {
+            "reward_msg": "{user} redeemed: {reward_name}",
+            "reward_title": "Reward Redeemed"
+        },
+        "tray": {
+            "bg_desc": "I will keep reading the chat for you. Double click to return.",
+            "bg_title": "MiniKick in background",
+            "close_app": "Close MiniKick",
+            "open_panel": "Open Panel",
+            "play_pause": "Play / Pause Music",
+            "read_chat": "Read chat aloud",
+            "skip": "Skip Song",
+            "tts_msg": "Chat reading: {estado}",
+            "tts_off": "Disabled",
+            "tts_on": "Enabled",
+            "tts_use_command": "Require command for TTS",
+            "tts_voice_type": "Use Web Voices"
+        },
+        "window": {
+            "title": "MiniKick - Version {version}"
         },
         "workers": {
             "auth": {
@@ -734,99 +461,182 @@
                 "error_room_id": "Could not get the room ID from the API."
             },
             "reward": {
-                "unknown_reward": "Unknown Reward",
+                "poll_error": "Error querying rewards: {error}",
                 "someone": "Someone",
-                "poll_error": "Error querying rewards: {error}"
+                "unknown_reward": "Unknown Reward"
             }
-        },
-        "window": {
-            "title": "MiniKick - Version {version}"
-        },
-        "chat": {
-            "reward_redeemed": "redeemed {reward_name}",
-            "points_tag": "POINTS"
-        },
-        "logs": {
-            "reward_no_rewards": "Reward '{reward_name}' does not have an rewards configured.",
-            "api_offline": "Attempted to update rewards without being connected to Kick.",
-            "api_fetching": "Rewards are already being fetched. Please wait.",
-            "api_error_setup": "Error setting up rewards query: {error}",
-            "api_error": "Kick Rewards API failed: {error}",
-            "worker_stopping": "Requesting {worker} to stop...",
-            "worker_stuck": "{worker} stuck (possible network lock). Forcing termination...",
-            "worker_stopped": "{worker} closed cleanly.",
-            "shutdown_init": "Initiating shutdown sequence...",
-            "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
-            "shutdown_complete": "Thread shutdown sequence completed."
-        },
-        "toasts": {
-            "reward_title": "Reward Redeemed",
-            "reward_msg": "{user} redeemed: {reward_name}"
         }
     },
-    "timer": {
+    "music": {
+        "chat": {
+            "cooldown_active": "⏳ @{user}, please wait {seconds} second(s) before requesting another song.",
+            "no_queue_available": "❌ @{user}, music queue is not available right now.",
+            "not_linked": "❌ The streamer has not activated the YouTube player.",
+            "not_linked_youtube": "❌ The streamer has not activated the YouTube player.",
+            "pause_failed": "❌ Failed to pause music.",
+            "pause_success": "⏸️ Music paused successfully.",
+            "playlist_empty_for_user": "❌ @{user}, you have no songs currently in the queue.",
+            "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
+            "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
+            "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
+            "playlist_user_songs_more": "🎵 @{user} (remaining positions {page}/{total_pages}): {songs}",
+            "queue_full": "❌ @{user}, the song queue is full ({max} songs max).",
+            "resume_failed": "❌ Failed to resume music.",
+            "resume_success": "▶️ Music resumed successfully.",
+            "skip_failed": "❌ Could not skip song (Player paused or queue empty).",
+            "skip_success": "⏩ Song skipped successfully.",
+            "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing.",
+            "song_now_playing": "🎵 Now playing: {title} - {artist}",
+            "song_paused": "🔇 YouTube is paused.",
+            "song_paused_youtube": "🔇 YouTube is paused.",
+            "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
+            "sr_usage": "@{user} please provide a song name. (Ex: {trigger} Torero Chayanne)",
+            "user_limit_reached": "❌ @{user}, you already have {count} song(s) in queue (max allowed: {max}).",
+            "vol_success": "🔊 @{user}, music volume has been set to {volume}%.",
+            "vol_usage": "❌ @{user}, please specify a volume level between 0 and 100. (Ex: {trigger} 50)"
+        },
+        "cmds": {
+            "pause_desc": "Allows moderators to pause music from chat. You can customize the '!pause' trigger in the Commands view.",
+            "pause_label": "Pause Music (Default: !pause)",
+            "playlist_desc": "Shows viewers the position of songs they requested. Aliases: !queue, !pl.",
+            "playlist_label": "View My Songs (Default: !playlist)",
+            "resume_desc": "Allows moderators to resume music from chat. You can customize the '!resume' trigger in the Commands view.",
+            "resume_label": "Resume Music (Default: !resume)",
+            "skip_desc": "Forces playback to the next song. You can customize the '!skip' trigger in the Commands view.",
+            "skip_label": "Skip Track (Default: !skip)",
+            "song_desc": "Displays the currently playing track in chat. You can customize the '!song' trigger in the Commands view.",
+            "song_label": "Current Song (Default: !song)",
+            "sr_desc": "Allows viewers to add music to the queue. You can customize the '!sr' trigger in the Commands view.",
+            "sr_label": "Request Song (Default: !sr)",
+            "title": "Viewer Commands",
+            "vol_desc": "Allows moderators to change player volume from chat (0-100). Aliases: !volume.",
+            "vol_label": "Modify Volume (Default: !vol)"
+        },
         "header": {
-            "title": "Bot Timers",
-            "subtitle": "Auto-post announcements, social links, your schedule or anything else."
+            "subtitle": "Let your viewers control the music stream using chat commands.",
+            "title": "Music Player"
         },
-        "empty": {
-            "title": "No timers yet",
-            "desc": "Schedule automatic announcements or links to post in the chat periodically.",
-            "btn": "Create Timer"
+        "overlay": {
+            "layout_banner": "Banner Header (Large Artwork)",
+            "layout_compact": "Compact Card",
+            "layout_floating": "Vinyl Record (Retro Spin)",
+            "layout_label": "Overlay Layout:",
+            "layout_pill": "Minimal Capsule (Pill Bar)",
+            "layout_standard": "Standard Bar",
+            "theme_card": "Solid Card",
+            "theme_cyber": "Retro Cyberpunk",
+            "theme_dynamic": "Dynamic (Auto-Album Colors)",
+            "theme_glass": "Glassmorphism",
+            "theme_label": "Visual Theme:",
+            "theme_minimal": "Minimalist",
+            "theme_neon": "Neon Glow",
+            "url_desc": "Add this URL as a browser source in OBS to display the current song on screen.",
+            "url_title": "Music Overlay (OBS)"
         },
-        "table": {
-            "search_placeholder": "Search timer...",
-            "btn_new": "Add new timer",
-            "col_name": "Name",
-            "col_message": "Message",
-            "col_interval_online": "Interval Online",
-            "col_interval_offline": "Interval Offline",
-            "col_chat_lines": "Chat Lines",
+        "player": {
+            "not_playing": "No song currently playing",
+            "requested_by": "Requested by: {user}",
+            "requested_by_streamer": "Requested by: Broadcaster",
+            "unknown_song": "Unknown",
+            "volume_desc": "Adjust YouTube playback volume.",
+            "volume_title": "Player Volume"
+        },
+        "queue": {
             "col_actions": "Actions",
-            "tooltip_edit": "Edit timer",
-            "tooltip_delete": "Delete timer permanently",
-            "unit_minutes": "Minutes",
-            "unit_lines": "Lines"
+            "col_artist": "Artist",
+            "col_duration": "Duration",
+            "col_num": "#",
+            "col_requester": "Requested by",
+            "col_title": "Title",
+            "empty": "The queue is empty",
+            "empty_desc": "Use !sr in chat to request music and it will appear here.",
+            "error": "❌ Internal music error: {error}",
+            "no_link": "❌ Could not retrieve video link.",
+            "not_found": "❌ Could not find any song named '{query}'.",
+            "processing_link": "🔍 Processing YouTube link...",
+            "remove_tooltip": "Remove from queue",
+            "searching": "🔍 Searching for '{query}' on YouTube...",
+            "success": "🎵 Added to queue: {track}",
+            "title": "Playback Queue"
         },
-        "dialog": {
-            "title": "Configure Timer",
-            "subtitle": "Define a new automatic timer to send messages to the chat.",
-            "name_label": "Timer Name:",
-            "name_placeholder": "e.g., Social Links",
-            "response_label": "Response messages (one will be chosen randomly):",
-            "response_placeholder": "Enter a message...",
-            "btn_add_message": "+ Add Message",
-            "online_interval_label": "Online interval (minutes)",
-            "offline_interval_label": "Offline interval (minutes)",
-            "chat_lines_label": "Min Chat Lines",
-            "chat_lines_desc": "Minimum amount of chat messages required in the last 5 minutes to activate the timer.",
-            "keywords_label": "Stream title keywords (comma-separated):",
-            "keywords_placeholder": "e.g., giveaway, special",
-            "keywords_desc": "Enable the timer only when the stream title contains one or more keywords.",
-            "categories_label": "Stream categories (comma-separated):",
-            "categories_placeholder": "e.g., Just Chatting, IRL",
-            "categories_desc": "Enable the timer only when the stream category is one of the selected categories.",
-            "help_desc": "You can use filters to restrict when the message is sent. For example, you can make a giveaway timer send only when your stream contains the word 'giveaway' in the title or belongs to the 'IRL' category.",
-            "editor_title": "Edit Message"
+        "stats": {
+            "badge_active": "O ENABLED",
+            "badge_disabled": "O DISABLED",
+            "cmd_desc": "If viewers can add songs with !sr",
+            "cmd_title": "Chat command",
+            "duration_desc": "Duration of all songs in list",
+            "duration_title": "Total duration",
+            "queue_desc": "Songs after current track",
+            "queue_title": "Queue",
+            "service_active": "Service Enabled",
+            "service_disabled": "Service Disabled",
+            "service_disabled_chat": "❌ @{user}, music service is currently disabled."
         },
         "status": {
-            "created": "Timer Created",
-            "created_msg": "Timer '{name}' has been successfully created.",
-            "updated": "Timer Updated",
-            "updated_msg": "Timer '{name}' has been successfully updated.",
-            "deleted": "Timer Deleted",
-            "deleted_msg": "Timer '{name}' has been permanently deleted.",
-            "enabled": "Timer Enabled",
-            "disabled": "Timer Disabled",
-            "toggled_msg": "Timer '{name}' has been {status}."
+            "youtube_active": "YouTube Active"
+        },
+        "tabs": {
+            "commands": "Commands",
+            "player": "Player",
+            "settings": "Settings"
+        },
+        "toast": {
+            "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
+            "chat_error_playing_no_user": "❌ Could not play '{title}': {error}",
+            "error_playing": "Could not play '{title}': {error}",
+            "moved_in_queue": "Song position updated in queue",
+            "removed_from_queue": "Song removed from queue"
+        },
+        "youtube": {
+            "age_restricted": "This video requires age verification (Sign in to confirm your age)",
+            "auto_resume_desc": "Play automatically when queued, or wait for the streamer.",
+            "auto_resume_title": "Auto-resume (YouTube)",
+            "bot_blocked": "This video requires authentication or was blocked by YouTube anti-bot policies.",
+            "error_title": "YouTube Error",
+            "generic_error": "Could not process audio for this video.",
+            "inappropriate": "This video is inappropriate for some users",
+            "invalid_media": "Invalid media or format",
+            "max_queue_size_desc": "Maximum total songs allowed in the playback queue.",
+            "max_queue_size_title": "Max global queue size",
+            "max_song_duration_desc": "Reject songs that exceed this duration limit.",
+            "max_song_duration_title": "Max song duration (min)",
+            "max_user_songs_desc": "Maximum active songs a viewer can have in the queue at once.",
+            "max_user_songs_title": "Max songs per user",
+            "user_cooldown_desc": "Cooldown time required before a viewer can request another song.",
+            "user_cooldown_title": "Request cooldown (sec)"
         }
     },
     "network": {
+        "btn_check": "Check Network",
+        "graph": {
+            "avg": "Avg",
+            "filter_all": "All Services",
+            "filter_chat_websocket": "WebSocket",
+            "filter_internet": "Internet",
+            "filter_kick": "Kick API",
+            "filter_overlay": "Overlay",
+            "filter_youtube": "YouTube",
+            "jitter": "Jitter",
+            "live": "Live",
+            "min": "Min",
+            "stability": "Stability",
+            "stability_fair": "Fair",
+            "stability_good": "Good",
+            "stability_optimal": "Optimal",
+            "stability_poor": "Poor",
+            "time_20s": "-20s",
+            "time_45s": "-45s",
+            "time_now": "Now",
+            "title": "Live Network Latency",
+            "tooltip_title": "Ping / Latency"
+        },
         "header": {
-            "title": "Network Status",
-            "subtitle": "Check your latency and connectivity with MiniKick services."
+            "subtitle": "Check your latency and connectivity with MiniKick services.",
+            "title": "Network Status"
         },
         "services": {
+            "chat_websocket": "Chat WebSocket (Pusher)",
+            "chat_websocket_desc": "Verify connectivity with Kick's chat server.",
             "internet": "Internet Connection",
             "internet_desc": "Verify general access to the web.",
             "kick": "Kick Servers",
@@ -834,124 +644,314 @@
             "overlay": "Local Overlay Server",
             "overlay_desc": "Verify the status of the local overlay server.",
             "youtube": "YouTube Service",
-            "youtube_desc": "Check connectivity with YouTube servers.",
-            "chat_websocket": "Chat WebSocket (Pusher)",
-            "chat_websocket_desc": "Verify connectivity with Kick's chat server."
+            "youtube_desc": "Check connectivity with YouTube servers."
         },
         "status": {
             "checking": "Checking...",
-            "online": "Connected",
-            "warning": "High latency",
+            "ms": "{latency} ms",
             "offline": "Disconnected",
-            "ms": "{latency} ms"
-        },
-        "graph": {
-            "title": "Live Network Latency",
-            "live": "Live",
-            "avg": "Avg",
-            "min": "Min",
-            "jitter": "Jitter",
-            "stability": "Stability",
-            "stability_optimal": "Optimal",
-            "stability_good": "Good",
-            "stability_fair": "Fair",
-            "stability_poor": "Poor",
-            "filter_all": "All Services",
-            "filter_internet": "Internet",
-            "filter_kick": "Kick API",
-            "filter_chat_websocket": "WebSocket",
-            "filter_overlay": "Overlay",
-            "filter_youtube": "YouTube",
-            "time_45s": "-45s",
-            "time_20s": "-20s",
-            "time_now": "Now",
-            "tooltip_title": "Ping / Latency"
+            "online": "Connected",
+            "warning": "High latency"
         },
         "table": {
-            "title": "Service Status",
-            "col_service": "Service",
             "col_desc": "Description",
+            "col_latency": "Latency",
+            "col_service": "Service",
             "col_status": "Status",
-            "col_latency": "Latency"
-        },
-        "btn_check": "Check Network"
-    },
-    "widgets": {
-        "header": {
-            "title": "Interactive Chat Widgets",
-            "subtitle": "Configure interactive widgets and counters that react to chat commands on your stream."
-        },
-        "poll": {
-            "title": "Live Poll",
-            "desc": "Displays the active Kick chat poll in real time."
-        },
-        "obs_label": "OBS Overlay URL:",
-        "obs_copy_btn": "Copy OBS URL",
-        "status": {
-            "activated": "Widget Enabled",
-            "deactivated": "Widget Disabled",
-            "activated_msg": "Widget '{widget_name}' is now active.",
-            "deactivated_msg": "Widget '{widget_name}' is now inactive."
-        },
-        "so": {
-            "title": "Streamer Promotion (Shoutout !so)",
-            "desc": "Promote other creators in chat by sending a customized message with their channel link.",
-            "template_label": "Shoutout Message Template:",
-            "usage_error": "⚠️ @{user}, you must specify the streamer name. Example: {trigger} TheAndro2K",
-            "default_msg": "📢 Go support and follow @{target} at https://kick.com/{target} !",
-            "overlay_header": "Recommended Streamer"
-        },
-        "death": {
-            "title": "Death Counter (!death)",
-            "desc": "Track in-game deaths in real-time with chat commands and live controls.",
-            "count_label": "Current In-Game Deaths:",
-            "reset_btn": "Reset to 0",
-            "overlay_title": "DEATHS",
-            "msg_check": "💀 @{user}, we are at {count} death(s) on stream.",
-            "msg_add": "💀 @{user} added a death! Total: {count} death(s).",
-            "msg_sub": "💀 @{user} removed a death. Remaining: {count} death(s).",
-            "msg_reset": "🔄 @{user} reset the death counter to 0."
-        },
-        "score": {
-            "title": "Win / Loss Record (!win +1/ !lose +1)",
-            "desc": "Track your in-game session wins and losses with chat commands.",
-            "wins_label": "Wins:",
-            "losses_label": "Losses:",
-            "reset_btn": "Reset Record",
-            "overlay_title": "WIN / LOSS RECORD",
-            "msg_check": "🏆 @{user}, today's record is: {wins} W - {losses} L.",
-            "msg_win": "🎉 @{user} logged a win! Current record: {wins} W - {losses} L.",
-            "msg_loss": "💔 @{user} logged a loss. Current record: {wins} W - {losses} L.",
-            "msg_reset": "🔄 @{user} reset the W/L record to 0 W - 0 L."
-        },
-        "explosion": {
-            "title": "Emote Explosion (!explosion)",
-            "desc": "Displays an animated physical particle burst of emotes floating on your OBS overlay when sent in chat.",
-            "min_emotes_label": "Min Emotes per message:",
-            "particle_count_label": "Particles per burst:"
-        },
-        "combo": {
-            "title": "Emote Combo (!combo)",
-            "desc": "Tracks chat streaks of identical emotes used consecutively and displays a hype fire combo counter.",
-            "min_combo_label": "Min Combo to Display:",
-            "timeout_label": "Max Combo Window (sec):",
-            "msg_combo": "🔥 EMOTE COMBO x{count} for {emote}! 🔥"
+            "title": "Service Status"
         }
     },
-    "crash": {
-        "title": "MiniKick has crashed",
-        "lbl_contact": "Contact / Discord (Optional)",
-        "placeholder_contact": "E.g., TheAndro2K",
-        "lbl_desc": "What were you doing when it crashed? (Optional)",
-        "placeholder_desc": "Briefly describe the steps...",
-        "lbl_traceback": "Error Details (Traceback)",
-        "btn_send": "Send Report and Close",
-        "btn_close": "Close Without Sending",
-        "err_send": "Could not send the report. Error: {error}",
-        "err_no_webhook": "Discord Webhook URL is not configured.",
-        "subtitle": "An unhandled error occurred in the application. Help us solve the problem by sending this report.",
-        "anonymous": "Anonymous",
-        "no_comments": "No user comments.",
-        "truncated_tb": "\n[Traceback truncated due to length]"
+    "rewards": {
+        "dialogs": {
+            "visual": {
+                "desc": "Drag your rewards. When you release it, a preview will be shown in OBS.",
+                "title": "Visual Positioner (1920x1080)"
+            },
+            "wizard": {
+                "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
+                "file_dialog_title": "Multimedia",
+                "step1": {
+                    "desc": "Configure which channel point will trigger this rewards.",
+                    "file_label": "Multimedia File",
+                    "file_placeholder": "Ex. your_rewards.mp4 or sound.mp3",
+                    "loading": "Loading rewards...",
+                    "no_available": "No available rewards",
+                    "no_rewards": "No rewards",
+                    "reward_selection": "Reward Selection",
+                    "title": "Reward and File",
+                    "tooltip_refresh": "Refresh Kick Rewards"
+                },
+                "step2": {
+                    "btn_visual": "Position in OBS",
+                    "coord_x": "X:",
+                    "coord_y": "Y:",
+                    "desc": "Define how and where your rewards will be displayed on the canvas.",
+                    "random_pos": "Random Position",
+                    "scale": "Scale:",
+                    "title": "Display Settings",
+                    "volume": "Rewards volume"
+                }
+            }
+        },
+        "empty": {
+            "btn": "Link Reward",
+            "desc": "Link your Kick channel points rewards with on-screen alerts or sound effects.",
+            "title": "No linked rewards yet"
+        },
+        "header": {
+            "subtitle": "Link your channel rewards with on-screen multimedia elements.",
+            "title": "Triggers & Rewards"
+        },
+        "obs": {
+            "copied": "Link Copied!",
+            "desc": "Copy this link and paste it into your broadcasting software (Recommended resolution: 1920x1080).",
+            "title": "OBS Browser Source"
+        },
+        "status": {
+            "created": "Rewards Created",
+            "created_msg": "Linked to reward: {reward}",
+            "deleted": "Rewards Deleted",
+            "deleted_msg": "Unlinked reward: {reward}",
+            "updated": "Rewards Updated",
+            "updated_msg": "Configuration saved for: {reward}"
+        },
+        "table": {
+            "btn_new": "New Rewards",
+            "col_actions": "Actions",
+            "col_file": "File",
+            "col_reward": "Kick Reward",
+            "title": "Linked Rewards",
+            "tooltip_delete": "Delete Rewards",
+            "tooltip_edit": "Modify settings",
+            "tooltip_play": "Test in OBS",
+            "unknown_file": "Unknown"
+        }
+    },
+    "settings": {
+        "account": {
+            "desc": "Close the current session. You will need to re-authorize MiniKick next time.",
+            "title": "Unlink Account"
+        },
+        "backup": {
+            "desc": "Export or import your rewards, voices, and general settings.",
+            "title": "Configuration Backup"
+        },
+        "feedback": {
+            "desc": "Found a bug or want to share feedback? Send us a direct report.",
+            "title": "Support and Bug Reporting"
+        },
+        "header": {
+            "subtitle": "Global system settings, account management, and updates.",
+            "title": "General Settings"
+        },
+        "status": {
+            "error_title": "Backup Error",
+            "export_error": "Could not export configuration backup file.",
+            "exported": "Backup Exported",
+            "exported_msg": "Your settings have been saved successfully.",
+            "font_size_changed": "UI Scaled",
+            "font_size_changed_msg": "Global text size applied: {size}px",
+            "import_error": "Could not restore the selected backup file.",
+            "imported": "Backup Restored",
+            "imported_msg": "Settings have been loaded successfully.",
+            "lang_changed": "Language Changed",
+            "lang_changed_msg": "Please restart the application to apply the new language.",
+            "tray_disabled": "Background Execution Off",
+            "tray_disabled_msg": "The application will exit completely when closed.",
+            "tray_enabled": "Background Execution On",
+            "tray_enabled_msg": "MiniKick will minimize to the tray when closed.",
+            "unlinked": "Account Unlinked",
+            "unlinked_msg": "Your local Kick session has been closed."
+        },
+        "system": {
+            "font_desc": "Scale the interface text size across the entire application.",
+            "font_size_large": "Large (14px)",
+            "font_size_normal": "Normal (13px)",
+            "font_size_small": "Small (11px)",
+            "font_size_xlarge": "Extra Large (16px)",
+            "font_title": "Global Font Size",
+            "lang_desc": "Select the interface language (requires restart).",
+            "lang_title": "Application Language",
+            "tray_desc": "Minimize to the system tray instead of fully closing the application.",
+            "tray_title": "Run in Background",
+            "update_desc": "Check for and install new MiniKick versions.",
+            "update_title": "Software Updates"
+        }
+    },
+    "spam": {
+        "card": {
+            "action": "Action",
+            "action_ban": "Ban user",
+            "action_delete": "Delete message",
+            "action_timeout": "Timeout user",
+            "action_warn_delete": "Warn and delete message",
+            "allowlist": "Allowed links (Allowlist)",
+            "allowlist_placeholder": "e.g., clips.kick.com, youtube.com",
+            "config_title": "Penalty Configuration",
+            "duration": "Duration (minutes)",
+            "exclude": "Exclude rank (Immune)",
+            "exclude_mod": "Moderators & Broadcaster",
+            "exclude_none": "None",
+            "exclude_sub": "Subscribers & VIPs",
+            "max_amount": "Maximum allowed amount",
+            "max_characters": "Max characters per message",
+            "max_symbols": "Max symbols / foreign script limit"
+        },
+        "filters": {
+            "caps": {
+                "desc": "Removes messages with an excessive amount of uppercase letters.",
+                "title": "Caps Protection"
+            },
+            "emote": {
+                "desc": "Removes messages that abuse the amount of emotes.",
+                "title": "Emote Protection"
+            },
+            "link": {
+                "desc": "Removes messages containing unauthorized links.",
+                "title": "Link Protection"
+            },
+            "paragraph": {
+                "desc": "Blocks excessively long messages or walls of text (Max character limit).",
+                "title": "Long Walls of Text"
+            },
+            "repetition": {
+                "desc": "Penalizes duplicate messages and excessive use of the same word.",
+                "title": "Repetition Protection"
+            },
+            "symbol": {
+                "desc": "Filters non-Latin scripts (Arabic, Zalgo, Cyrillic) or symbol spam, ignoring valid Kick emotes.",
+                "title": "Symbols & Foreign Script Protection"
+            }
+        },
+        "header": {
+            "subtitle": "Use these filters to keep your chat friendly, fun, and toxicity-free.",
+            "title": "Anti-Spam Filters (Auto-Mod)"
+        },
+        "status": {
+            "activated": "Filter Activated",
+            "activated_msg": "The filter '{filter_name}' is now active.",
+            "deactivated": "Filter Deactivated",
+            "deactivated_msg": "The filter '{filter_name}' is now inactive.",
+            "warn_msg": "@{user} please avoid spamming in the chat."
+        }
+    },
+    "timer": {
+        "dialog": {
+            "btn_add_message": "+ Add Message",
+            "categories_desc": "Enable the timer only when the stream category is one of the selected categories.",
+            "categories_label": "Stream categories (comma-separated):",
+            "categories_placeholder": "e.g., Just Chatting, IRL",
+            "chat_lines_desc": "Minimum amount of chat messages required in the last 5 minutes to activate the timer.",
+            "chat_lines_label": "Min Chat Lines",
+            "editor_title": "Edit Message",
+            "help_desc": "You can use filters to restrict when the message is sent. For example, you can make a giveaway timer send only when your stream contains the word 'giveaway' in the title or belongs to the 'IRL' category.",
+            "keywords_desc": "Enable the timer only when the stream title contains one or more keywords.",
+            "keywords_label": "Stream title keywords (comma-separated):",
+            "keywords_placeholder": "e.g., giveaway, special",
+            "name_label": "Timer Name:",
+            "name_placeholder": "e.g., Social Links",
+            "offline_interval_label": "Offline interval (minutes)",
+            "online_interval_label": "Online interval (minutes)",
+            "response_label": "Response messages (one will be chosen randomly):",
+            "response_placeholder": "Enter a message...",
+            "subtitle": "Define a new automatic timer to send messages to the chat.",
+            "title": "Configure Timer"
+        },
+        "empty": {
+            "btn": "Create Timer",
+            "desc": "Schedule automatic announcements or links to post in the chat periodically.",
+            "title": "No timers yet"
+        },
+        "header": {
+            "subtitle": "Auto-post announcements, social links, your schedule or anything else.",
+            "title": "Bot Timers"
+        },
+        "status": {
+            "created": "Timer Created",
+            "created_msg": "Timer '{name}' has been successfully created.",
+            "deleted": "Timer Deleted",
+            "deleted_msg": "Timer '{name}' has been permanently deleted.",
+            "disabled": "Timer Disabled",
+            "enabled": "Timer Enabled",
+            "toggled_msg": "Timer '{name}' has been {status}.",
+            "updated": "Timer Updated",
+            "updated_msg": "Timer '{name}' has been successfully updated."
+        },
+        "table": {
+            "btn_new": "Add new timer",
+            "col_actions": "Actions",
+            "col_chat_lines": "Chat Lines",
+            "col_interval_offline": "Interval Offline",
+            "col_interval_online": "Interval Online",
+            "col_message": "Message",
+            "col_name": "Name",
+            "search_placeholder": "Search timer...",
+            "tooltip_delete": "Delete timer permanently",
+            "tooltip_edit": "Edit timer",
+            "unit_lines": "Lines",
+            "unit_minutes": "Minutes"
+        }
+    },
+    "widgets": {
+        "combo": {
+            "desc": "Tracks chat streaks of identical emotes used consecutively and displays a hype fire combo counter.",
+            "min_combo_label": "Min Combo to Display:",
+            "msg_combo": "🔥 EMOTE COMBO x{count} for {emote}! 🔥",
+            "timeout_label": "Max Combo Window (sec):",
+            "title": "Emote Combo (!combo)"
+        },
+        "death": {
+            "count_label": "Current In-Game Deaths:",
+            "desc": "Track in-game deaths in real-time with chat commands and live controls.",
+            "msg_add": "💀 @{user} added a death! Total: {count} death(s).",
+            "msg_check": "💀 @{user}, we are at {count} death(s) on stream.",
+            "msg_reset": "🔄 @{user} reset the death counter to 0.",
+            "msg_sub": "💀 @{user} removed a death. Remaining: {count} death(s).",
+            "overlay_title": "DEATHS",
+            "reset_btn": "Reset to 0",
+            "title": "Death Counter (!death)"
+        },
+        "explosion": {
+            "desc": "Displays an animated physical particle burst of emotes floating on your OBS overlay when sent in chat.",
+            "min_emotes_label": "Min Emotes per message:",
+            "particle_count_label": "Particles per burst:",
+            "title": "Emote Explosion (!explosion)"
+        },
+        "header": {
+            "subtitle": "Configure interactive widgets and counters that react to chat commands on your stream.",
+            "title": "Interactive Chat Widgets"
+        },
+        "obs_copy_btn": "Copy OBS URL",
+        "obs_label": "OBS Overlay URL:",
+        "poll": {
+            "desc": "Displays the active Kick chat poll in real time.",
+            "title": "Live Poll"
+        },
+        "score": {
+            "desc": "Track your in-game session wins and losses with chat commands.",
+            "losses_label": "Losses:",
+            "msg_check": "🏆 @{user}, today's record is: {wins} W - {losses} L.",
+            "msg_loss": "💔 @{user} logged a loss. Current record: {wins} W - {losses} L.",
+            "msg_reset": "🔄 @{user} reset the W/L record to 0 W - 0 L.",
+            "msg_win": "🎉 @{user} logged a win! Current record: {wins} W - {losses} L.",
+            "overlay_title": "WIN / LOSS RECORD",
+            "reset_btn": "Reset Record",
+            "title": "Win / Loss Record (!win +1/ !lose +1)",
+            "wins_label": "Wins:"
+        },
+        "so": {
+            "default_msg": "📢 Go support and follow @{target} at https://kick.com/{target} !",
+            "desc": "Promote other creators in chat by sending a customized message with their channel link.",
+            "overlay_header": "Recommended Streamer",
+            "template_label": "Shoutout Message Template:",
+            "title": "Streamer Promotion (Shoutout !so)",
+            "usage_error": "⚠️ @{user}, you must specify the streamer name. Example: {trigger} TheAndro2K"
+        },
+        "status": {
+            "activated": "Widget Enabled",
+            "activated_msg": "Widget '{widget_name}' is now active.",
+            "deactivated": "Widget Disabled",
+            "deactivated_msg": "Widget '{widget_name}' is now inactive."
+        }
     }
 }

@@ -1,730 +1,457 @@
 {
-    "common": {
-        "buttons": {
-            "cancel": "Cancelar",
-            "save": "Guardar",
-            "back": "Atrás",
-            "next": "Siguiente",
-            "continue": "Continuar",
-            "exit": "Salir",
-            "understood": "Entendido",
-            "export": "Exportar",
-            "import": "Importar",
-            "unlink": "Desvincular",
-            "update": "Buscar actualizaciones",
-            "browse": "Examinar",
-            "copy": "Copiar Enlace",
-            "add": "Añadir",
-            "report_bug": "Reportar Bug"
-        },
-        "status": {
-            "online": "En Línea",
-            "offline": "Desconectado",
-            "connected": "Conectado",
-            "active": "Activo",
-            "inactive": "Inactivo",
-            "yes": "Sí",
-            "no": "No",
-            "error": "Error"
-        }
-    },
-    "settings": {
-        "header": {
-            "title": "Configuración General",
-            "subtitle": "Ajustes globales del sistema, gestión de cuenta y actualizaciones."
-        },
-        "system": {
-            "tray_title": "Ejecución en Segundo Plano",
-            "tray_desc": "Minimizar a la bandeja del sistema en lugar de cerrar la aplicación por completo.",
-            "lang_title": "Idioma de la Aplicación",
-            "lang_desc": "Selecciona el idioma de la interfaz (requiere reiniciar).",
-            "update_title": "Actualizaciones de Software",
-            "update_desc": "Buscar e instalar nuevas versiones de MiniKick.",
-            "font_title": "Tamaño de Fuente Global",
-            "font_desc": "Escala el tamaño del texto en toda la interfaz de la aplicación.",
-            "font_size_small": "Pequeño (11px)",
-            "font_size_normal": "Normal (13px)",
-            "font_size_large": "Grande (14px)",
-            "font_size_xlarge": "Extra Grande (16px)"
-        },
-        "backup": {
-            "title": "Respaldo de Configuración",
-            "desc": "Exporta o importa tus recompensas, voces y ajustes generales."
-        },
-        "account": {
-            "title": "Desvincular Cuenta",
-            "desc": "Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez."
-        },
-        "feedback": {
-            "title": "Soporte y Reporte de Bugs",
-            "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo."
-        },
-        "status": {
-            "tray_enabled": "Segundo Plano Activo",
-            "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar.",
-            "tray_disabled": "Segundo Plano Inactivo",
-            "tray_disabled_msg": "La aplicación se cerrará por completo.",
-            "exported": "Respaldo Exportado",
-            "exported_msg": "Tus configuraciones se guardaron con éxito.",
-            "imported": "Respaldo Restaurado",
-            "imported_msg": "La configuración se ha cargado correctamente.",
-            "lang_changed": "Idioma Cambiado",
-            "lang_changed_msg": "Reinicia la aplicación para aplicar el nuevo idioma.",
-            "unlinked": "Cuenta Desvinculada",
-            "unlinked_msg": "Se ha cerrado tu sesión de Kick local.",
-            "font_size_changed": "Interfaz Escalada",
-            "font_size_changed_msg": "Tamaño global aplicado: {size}px",
-            "error_title": "Error de Respaldo",
-            "export_error": "No se pudo exportar el archivo de configuración.",
-            "import_error": "No se pudo restaurar el archivo de respaldo seleccionado."
-        }
-    },
-    "spam": {
-        "header": {
-            "title": "Filtros Anti-Spam (Auto-Mod)",
-            "subtitle": "Usa estos filtros para mantener tu chat amigable, divertido y libre de toxicidad."
-        },
-        "card": {
-            "config_title": "Configuración de Sanción",
-            "action": "Acción",
-            "action_timeout": "Silenciar usuario",
-            "action_delete": "Eliminar mensaje",
-            "action_ban": "Expulsar usuario (Ban)",
-            "action_warn_delete": "Advertir y borrar mensaje",
-            "allowlist": "Enlaces permitidos (Allowlist)",
-            "allowlist_placeholder": "ej: clips.kick.com, youtube.com",
-            "duration": "Duración (minutos)",
-            "exclude": "Excluir rango (Inmune)",
-            "exclude_none": "Ninguno",
-            "exclude_mod": "Moderadores y Streamer",
-            "exclude_sub": "Suscriptores y VIPs",
-            "max_amount": "Cantidad máxima permitida",
-            "max_characters": "Límite de caracteres por mensaje",
-            "max_symbols": "Límite de símbolos/caracteres extraños"
-        },
-        "filters": {
-            "caps": {
-                "title": "Protección de Mayúsculas",
-                "desc": "Elimina mensajes con una cantidad excesiva de letras mayúsculas."
-            },
-            "link": {
-                "title": "Protección de Enlaces",
-                "desc": "Elimina mensajes que contengan enlaces no autorizados."
-            },
-            "emote": {
-                "title": "Protección de Emotes",
-                "desc": "Elimina mensajes que abusen de la cantidad de emotes."
-            },
-            "paragraph": {
-                "title": "Bloques de Texto Largos",
-                "desc": "Bloquea mensajes excesivamente largos o paredes de texto (Límite de caracteres)."
-            },
-            "symbol": {
-                "title": "Protección de Símbolos y Textos Extraños",
-                "desc": "Filtra textos con caracteres no latinos (árabe, zalgo, cirílico) o abuso de símbolos, ignorando emotes de Kick."
-            },
-            "repetition": {
-                "title": "Protección de Repetición",
-                "desc": "Penaliza mensajes duplicados y el uso excesivo de la misma palabra."
-            }
-        },
-        "status": {
-            "activated": "Filtro Activado",
-            "deactivated": "Filtro Desactivado",
-            "activated_msg": "El filtro '{filter_name}' ahora está activo.",
-            "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo.",
-            "warn_msg": "@{user} por favor evita el spam en el chat."
-        }
-    },
-    "command": {
-        "header": {
-            "title": "Comandos Vinculados",
-            "subtitle": "Vincula comandos de chat o expresiones regulares con respuestas automáticas del bot."
-        },
-        "empty": {
-            "title": "Aún no hay comandos",
-            "desc": "Crea comandos personalizados para que el bot responda automáticamente en el chat.",
-            "btn": "Crear Comando"
-        },
-        "table": {
-            "title": "Comandos Vinculados",
-            "search_placeholder": "Buscar comando vinculado...",
-            "btn_new": "Nuevo Comando",
-            "col_command": "Comando",
-            "col_type": "Tipo",
-            "col_aliases": "Alias / Regex",
-            "col_permission": "Nivel de Acceso",
-            "col_actions": "Acciones",
-            "type_plugin": "Plugin",
-            "type_custom": "Personalizado",
-            "regex_prefix": "RegEx",
-            "tooltip_edit": "Modificar configuración del comando",
-            "tooltip_delete": "Eliminar comando permanentemente",
-            "filter_all": "Mostrar Todos",
-            "filter_sort_asc": "Orden Ascendente (A-Z)",
-            "filter_sort_desc": "Orden Descendente (Z-A)"
-        },
-        "dialog": {
-            "title": "Configurar Comando",
-            "subtitle": "Crea o edita comandos personalizados para tu chat.",
-            "trigger_label": "Nombre del comando (Ej: !discord):",
-            "response_label": "Respuesta del bot (puedes usar {user}):",
-            "plugin_tag": "COMANDO PLUGIN",
-            "cooldown_label": "Enfriamiento (seg):",
-            "permission_label": "Permiso Mínimo:",
-            "perm_everyone": "Todos",
-            "perm_subscriber": "Suscriptor",
-            "perm_vip": "VIP",
-            "perm_moderator": "Moderador",
-            "perm_broadcaster": "Streamer",
-            "active_checkbox": "Comando Activo",
-            "aliases_label": "Alias Estándar (separados por coma):",
-            "aliases_placeholder": "!dc, !servidor discord",
-            "regex_checkbox": "Usar RegEx (Ignora Prefijos y Alias)",
-            "regex_label": "Sintaxis de Expresión Regular:",
-            "regex_placeholder": "Ej: \\b(hola|buenas)\\b",
-            "regex_help": "Si activas RegEx, el bot buscará este patrón en cualquier parte del mensaje.",
-            "tab_advanced": "Avanzado"
-        },
-        "status": {
-            "created": "Comando Creado",
-            "updated": "Comando Actualizado",
-            "deleted": "Comando Eliminado",
-            "enabled": "Comando Activado",
-            "disabled": "Comando Desactivado",
-            "created_msg": "Disponible en el chat: {trigger}",
-            "updated_msg": "Cambios guardados para: {trigger}",
-            "deleted_msg": "Eliminado: {trigger}",
-            "toggled_msg": "Palabra clave: {trigger}"
-        }
-    },
-    "rewards": {
-        "header": {
-            "title": "Recompensas Vinculadas",
-            "subtitle": "Vincula las recompensas de tu canal con elementos multimedia en pantalla."
-        },
-        "empty": {
-            "title": "Aún no hay recompensas vinculadas",
-            "desc": "Vincula las recompensas de tu canal de Kick con alertas en pantalla o efectos de sonido.",
-            "btn": "Vincular Recompensa"
-        },
-        "obs": {
-            "title": "Fuente de Navegador OBS",
-            "desc": "Copia este enlace y pégalo en tu software de transmisión (Resolución recomendada: 1920x1080).",
-            "copied": "¡Enlace Copiado!"
-        },
-        "table": {
-            "title": "Recompensas Vinculadas",
-            "btn_new": "Nuevas Recompensas",
-            "col_reward": "Recompensa Kick",
-            "col_file": "Archivo",
-            "col_actions": "Acciones",
-            "unknown_file": "Desconocido",
-            "tooltip_play": "Probar en OBS",
-            "tooltip_edit": "Modificar ajustes",
-            "tooltip_delete": "Eliminar Recompensa"
-        },
-        "dialogs": {
-            "visual": {
-                "title": "Posicionador Visual (1920x1080)",
-                "desc": "Arrastra tus recompensas. Al soltarlas, se mostrará una vista previa en OBS."
-            },
-            "wizard": {
-                "file_dialog_title": "Multimedia",
-                "file_dialog_filter": "Multimedia (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
-                "step1": {
-                    "title": "Recompensa y Archivo",
-                    "desc": "Configura qué punto de canal activará esta recompensa.",
-                    "reward_selection": "Selección de Recompensa",
-                    "loading": "Cargando recompensas...",
-                    "tooltip_refresh": "Actualizar Recompensas de Kick",
-                    "file_label": "Archivo Multimedia",
-                    "file_placeholder": "Ej. mi_recompensa.mp4 o sonido.mp3",
-                    "no_rewards": "Sin recompensas",
-                    "no_available": "Sin recompensas disponibles"
-                },
-                "step2": {
-                    "title": "Ajustes de Pantalla",
-                    "desc": "Define cómo y dónde se mostrará tu recompensa en el lienzo.",
-                    "volume": "Volumen de recompensa",
-                    "random_pos": "Posición Aleatoria",
-                    "btn_visual": "Posicionar en OBS",
-                    "coord_x": "X:",
-                    "coord_y": "Y:",
-                    "scale": "Escala:"
-                }
-            }
-        },
-        "status": {
-            "created": "Recompensa Creada",
-            "updated": "Recompensa Actualizada",
-            "deleted": "Recompensa Eliminada",
-            "created_msg": "Vinculada a la recompensa: {reward}",
-            "updated_msg": "Configuración guardada para: {reward}",
-            "deleted_msg": "Recompensa desvinculada: {reward}"
-        }
-    },
-    "log": {
-        "header": {
-            "title": "Registros del Desarrollador",
-            "subtitle": "Monitorea eventos del sistema, depura errores y carga registros históricos usando el explorador."
-        },
-        "controls": {
-            "search_placeholder": "Buscar logs...",
-            "filter_all": "TODOS",
-            "btn_folder": "Carpeta",
-            "tooltip_folder": "Abrir ubicación en Windows",
-            "btn_load": "Cargar Historial",
-            "btn_live": "Vista en Vivo",
-            "btn_clear": "Limpiar",
-            "btn_report": "Reportar Bug",
-            "btn_show_logs": "Ver Logs",
-            "btn_hide_logs": "Ocultar Logs",
-            "date_all": "Todo el tiempo",
-            "date_1d": "Últimas 24 horas",
-            "date_3d": "Últimos 3 días",
-            "date_7d": "Últimos 7 días"
-        },
-        "empty": {
-            "title": "Consola en pausa",
-            "desc": "Los eventos se siguen registrando en segundo plano. Presiona el botón para ver diagnósticos en tiempo real.",
-            "btn_show": "Ver logs en vivo"
-        },
-        "table": {
-            "col_level": "Nivel de Log",
-            "col_time": "Marca de Tiempo",
-            "col_message": "Mensaje de Log"
-        },
-        "dialogs": {
-            "select_history": "Seleccionar Historial de Logs",
-            "file_filter": "Archivos de Log (*.log*);;Todos los archivos (*.*)"
-        },
-        "misc": {
-            "historical": "HISTÓRICO"
-        },
-        "status": {
-            "historical_title": "Archivo de Log Cargado",
-            "historical_msg": "Inspeccionando: {file}",
-            "live_title": "Consola en Vivo",
-            "live_msg": "Mostrando diagnósticos de eventos en tiempo real.",
-            "paused_title": "Modo en vivo",
-            "paused_msg": "Regresaste al modo en vivo. Usa 'Ver Logs' cuando desees monitorear eventos.",
-            "cleared_title": "Consola Limpiada",
-            "cleared_msg": "La vista de registros se ha limpiado correctamente."
-        },
-        "pagination": {
-            "info": "{showing_from}-{showing_to} de {total} fila(s) mostradas."
-        }
-    },
     "chat": {
-        "header": {
-            "title": "Chat en Vivo",
-            "subtitle": "Gestiona la moderación, lectura de voz (TTS) interactiva y eventos del canal en tiempo real."
-        },
-        "settings": {
-            "tts_title": "Servicio de Voz (TTS)",
-            "tts_desc": "Habilitar la lectura automatizada de mensajes.",
-            "name_title": "Leer Nombres",
-            "name_desc": "Pronunciar el nombre del remitente antes del mensaje.",
-            "provider_title": "Motor de Voz TTS",
-            "provider_desc": "Cambiar entre voces web Edge o voces locales del sistema.",
-            "cmd_title": "Requerir Comando",
-            "cmd_desc": "Solo leer mensajes que comiencen con un prefijo.",
-            "vol_title": "Volumen General",
-            "vol_desc": "Ajustar la intensidad del sintetizador de voz.",
-            "prefix_title": "Prefijo de Comando",
-            "prefix_desc": "Define el texto exacto que activará la lectura del bot.",
-            "prefix_placeholder": "Ej. !tts",
-            "obs_title": "Lienzo de OBS (Overlay)",
-            "obs_desc": "Copia este enlace para añadir la fuente de navegador del chat en tu OBS.",
-            "voice_general_title": "Voz de Seguidores",
-            "voice_general_desc": "Configura la voz para espectadores y seguidores en general."
+        "banned_words": {
+            "input_placeholder": "ej. insulto",
+            "title": "Palabras Prohibidas"
         },
         "bots": {
-            "title": "Usuarios Silenciados",
-            "input_placeholder": "ej. botrix"
-        },
-        "banned_words": {
-            "title": "Palabras Prohibidas",
-            "input_placeholder": "ej. insulto"
-        },
-        "roles": {
-            "title": "Voces por Rol",
-            "broadcaster_title": "Voz del Streamer",
-            "broadcaster_desc": "Voz usada para los mensajes del streamer.",
-            "moderator_title": "Voz del Moderador",
-            "moderator_desc": "Voz usada para los mensajes de moderadores.",
-            "vip_title": "Voz del VIP",
-            "vip_desc": "Voz usada para los mensajes de usuarios VIP.",
-            "subscriber_title": "Voz del Suscriptor",
-            "subscriber_desc": "Voz usada para los mensajes de suscriptores.",
-            "default_voice": "(Usar voz global)",
-            "name_broadcaster": "Streamer",
-            "name_moderator": "Moderador",
-            "name_vip": "VIP",
-            "name_subscriber": "Suscriptor",
-            "name_bot": "Bot",
-            "name_user": "Usuario"
-        },
-        "tabs": {
-            "settings": "Ajustes de Voz",
-            "muted": "Silenciados",
-            "overlay": "Lienzo (Overlay)"
+            "input_placeholder": "ej. botrix",
+            "title": "Usuarios Silenciados"
         },
         "display": {
             "title": "Historial de la Sala"
         },
-        "status": {
-            "loading_voices": "Obteniendo voces de la nube...",
-            "provider_title": "Motor de Voz",
-            "tts_title": "Lector de Voz de Chat",
-            "tts_active": "Voz automática activada",
-            "tts_muted": "Chat silenciado",
-            "web_link": "un enlace web",
-            "user_says": "{user} dice: {message}",
-            "provider_cloud": "Neural IA (Nube Edge)",
-            "provider_local": "SAPI5 / OS (Local)",
-            "provider_active": "Modo activo: {mode}",
-            "tts_error_title": "Red TTS Inestable",
-            "tts_error_offline": "Cargado modo offline: {error}",
-            "voice_test_sample": "Esta es una prueba de voz.",
-            "test_btn_tooltip": "Probar voz",
-            "read_name_title": "Leer Nombres",
-            "read_name_active": "Lectura de nombres activada",
-            "read_name_inactive": "Lectura de nombres desactivada",
-            "use_command_title": "Requerir Comando",
-            "use_command_active": "Requerir comando TTS activado",
-            "use_command_inactive": "Requerir comando TTS desactivado",
-            "systts_on": "🔊 @{user}, el sistema de TTS ha sido ACTIVADO.",
-            "systts_off": "🔇 @{user}, el sistema de TTS ha sido DESACTIVADO.",
-            "systts_status": "ℹ️ @{user}, el sistema de TTS está actualmente: {state}.",
-            "systts_usage": "⚠️ @{user}, uso del comando: !systts on | !systts off",
-            "enabled_upper": "ACTIVADO",
-            "disabled_upper": "DESACTIVADO"
+        "header": {
+            "subtitle": "Gestiona la moderación, lectura de voz (TTS) interactiva y eventos del canal en tiempo real.",
+            "title": "Chat en Vivo"
         },
         "overlay": {
-            "theme_title": "Diseño de Chat",
-            "theme_desc": "Elige el estilo visual del overlay del chat.",
-            "theme_glass": "Glassmorphism",
-            "theme_neon": "Brillo Neon (Neon)",
-            "theme_card": "Tarjeta Sólida (Card)",
-            "theme_cyber": "Retro Cyberpunk (Cyber)",
-            "theme_minimal": "Minimalista",
-            "orientation_title": "Orientación del Chat",
-            "orientation_desc": "Formato vertical tradicional o Lineal.",
-            "orientation_vertical": "Vertical (Columna)",
-            "orientation_horizontal": "Horizontal (Lineal)",
-            "flow_title": "Dirección del Flujo",
-            "flow_desc": "Dirección hacia la que avanzan los nuevos mensajes.",
-            "flow_b2t": "De abajo hacia arriba",
-            "flow_t2b": "De arriba hacia abajo",
-            "flow_r2l": "De derecha a izquierda",
-            "flow_l2r": "De izquierda a derecha",
-            "entry_title": "Origen de Animación",
-            "entry_desc": "Dirección desde la que aparecen los mensajes.",
             "entry_bottom": "Desde Abajo",
-            "entry_top": "Desde Arriba",
+            "entry_desc": "Dirección desde la que aparecen los mensajes.",
             "entry_left": "Desde la Izquierda",
             "entry_right": "Desde la Derecha",
-            "size_title": "Tamaño de Fuente",
-            "size_desc": "Modifica el tamaño de la letra del overlay.",
-            "fade_title": "Tiempo en Pantalla",
+            "entry_title": "Origen de Animación",
+            "entry_top": "Desde Arriba",
             "fade_desc": "Segundos antes de ocultar los mensajes (0 = no ocultar).",
-            "show_bots_title": "Mostrar Bots",
+            "fade_title": "Tiempo en Pantalla",
+            "flow_b2t": "De abajo hacia arriba",
+            "flow_desc": "Dirección hacia la que avanzan los nuevos mensajes.",
+            "flow_l2r": "De izquierda a derecha",
+            "flow_r2l": "De derecha a izquierda",
+            "flow_t2b": "De arriba hacia abajo",
+            "flow_title": "Dirección del Flujo",
+            "orientation_desc": "Formato vertical tradicional o Lineal.",
+            "orientation_horizontal": "Horizontal (Lineal)",
+            "orientation_title": "Orientación del Chat",
+            "orientation_vertical": "Vertical (Columna)",
             "show_bots_desc": "Mostrar los bots en la pantalla del overlay.",
+            "show_bots_title": "Mostrar Bots",
+            "show_time_desc": "Muestra la hora del mensaje al lado del nombre.",
             "show_time_title": "Mostrar Hora",
-            "show_time_desc": "Muestra la hora del mensaje al lado del nombre."
-        }
-    },
-    "music": {
-        "header": {
-            "title": "Reproductor de Música",
-            "subtitle": "Permite a tus espectadores controlar la música usando comandos del chat."
-        },
-        "status": {
-            "youtube_active": "YouTube Activo"
-        },
-        "player": {
-            "not_playing": "No se está reproduciendo ninguna canción",
-            "unknown_song": "Desconocido",
-            "requested_by": "Solicitado por: {user}",
-            "requested_by_streamer": "Solicitado por: Streamer",
-            "volume_title": "Volumen del Reproductor",
-            "volume_desc": "Ajustar el volumen de reproducción de YouTube."
-        },
-        "stats": {
-            "queue_title": "Cola",
-            "queue_desc": "Canciones después del título actual",
-            "duration_title": "Duración total",
-            "duration_desc": "Duración de todas las canciones de la lista",
-            "cmd_title": "Comando del chat",
-            "cmd_desc": "Si los espectadores pueden añadir canciones con !sr",
-            "service_active": "Servicio Activado",
-            "service_disabled": "Servicio Desactivado",
-            "badge_active": "O ACTIVADO",
-            "badge_disabled": "O DESACTIVADO",
-            "service_disabled_chat": "❌ @{user}, el servicio de música está desactivado en este momento."
-        },
-        "tabs": {
-            "player": "Reproductor",
-            "commands": "Comandos",
-            "settings": "Ajustes"
-        },
-        "cmds": {
-            "title": "Comandos de Espectadores",
-            "sr_label": "Pedir Canción (Por defecto: !sr)",
-            "sr_desc": "Permite a los espectadores añadir música a la cola. Puedes personalizar el disparador '!sr' en la vista de Comandos.",
-            "skip_label": "Saltar Pista (Por defecto: !skip)",
-            "skip_desc": "Fuerza la reproducción de la siguiente canción. Puedes personalizar el disparador '!skip' en la vista de Comandos.",
-            "song_label": "Canción Actual (Por defecto: !song)",
-            "song_desc": "Muestra la canción reproduciéndose actualmente en el chat. Puedes personalizar el disparador '!song' en la vista de Comandos.",
-            "pause_label": "Pausar Música (Por defecto: !pause)",
-            "pause_desc": "Permite a los moderadores pausar la música desde el chat. Puedes personalizar el disparador '!pause' en la vista de Comandos.",
-            "resume_label": "Reanudar Música (Por defecto: !resume)",
-            "resume_desc": "Permite a los moderadores reanudar la música desde el chat. Puedes personalizar el disparador '!resume' en la vista de Comandos.",
-            "playlist_label": "Ver Mis Canciones (Por defecto: !playlist)",
-            "playlist_desc": "Muestra a los espectadores la posición de las canciones que han pedido. Alias: !queue, !pl.",
-            "vol_label": "Modificar Volumen (Por defecto: !vol)",
-            "vol_desc": "Permite a los moderadores cambiar el volumen del reproductor desde el chat (0-100). Alias: !volume."
-        },
-        "toast": {
-            "removed_from_queue": "Canción eliminada de la cola",
-            "moved_in_queue": "Posición de canción actualizada en la cola",
-            "error_playing": "No se pudo reproducir '{title}': {error}",
-            "chat_error_playing": "❌ @{user}, no se pudo reproducir '{title}': {error}",
-            "chat_error_playing_no_user": "❌ No se pudo reproducir '{title}': {error}"
-        },
-        "chat": {
-            "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
-            "vol_usage": "❌ @{user}, por favor especifica un nivel de volumen entre 0 y 100. (Ej: {trigger} 50)",
-            "vol_success": "🔊 @{user}, el volumen de la música se ha cambiado a {volume}%.",
-            "not_linked": "❌ El streamer no ha activado el reproductor de YouTube.",
-            "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
-            "pause_success": "⏸️ Música pausada con éxito.",
-            "pause_failed": "❌ No se pudo pausar la música.",
-            "resume_success": "▶️ Música reanudada con éxito.",
-            "resume_failed": "❌ No se pudo reanudar la música.",
-            "skip_success": "⏩ Canción saltada con éxito.",
-            "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o cola vacía).",
-            "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",
-            "song_paused": "🔇 YouTube está en pausa.",
-            "playlist_empty_for_user": "❌ @{user}, no tienes canciones en la cola actualmente.",
-            "playlist_user_songs": "🎵 @{user}, tienes {count} canción(es) en la cola: {songs}",
-            "playlist_user_songs_more": "🎵 @{user} (posiciones restantes {page}/{total_pages}): {songs}",
-            "playlist_pos_info": "🎵 Canción #{pos}: \"{title}\"{artist} (pedida por @{requester})",
-            "playlist_invalid_pos": "❌ @{user}, la posición #{pos} no es válida. Hay {total} canción(es) en la cola.",
-            "no_queue_available": "❌ @{user}, la cola de reproducción no está disponible en este momento.",
-            "song_paused_youtube": "🔇 YouTube está en pausa.",
-            "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando.",
-            "user_limit_reached": "❌ @{user}, ya tienes {count} canción(es) en la cola (máximo permitido: {max}).",
-            "cooldown_active": "⏳ @{user}, por favor espera {seconds} segundo(s) antes de pedir otra canción.",
-            "queue_full": "❌ @{user}, la cola de canciones está llena ({max} canciones máximo).",
-            "song_too_long": "❌ @{user}, esa canción supera la duración máxima permitida de {max} minutos."
-        },
-        "queue": {
-            "not_found": "❌ No se pudo encontrar ninguna canción llamada '{query}'.",
-            "success": "🎵 Añadida a la cola: {track}",
-            "error": "❌ Error interno de música: {error}",
-            "no_link": "❌ No se pudo obtener el enlace del video.",
-            "searching": "🔍 Buscando '{query}' en YouTube...",
-            "processing_link": "🔍 Procesando enlace de YouTube...",
-            "empty": "La cola está vacía",
-            "title": "Cola de Reproducción",
-            "remove_tooltip": "Eliminar de la cola",
-            "empty_desc": "Usa !sr en el chat para pedir música y aparecerá aquí.",
-            "col_num": "#",
-            "col_title": "Título",
-            "col_artist": "Autor",
-            "col_requester": "Pedido por",
-            "col_duration": "Duración",
-            "col_actions": "Acciones"
-        },
-        "youtube": {
-            "auto_resume_title": "Retomado automático (YouTube)",
-            "auto_resume_desc": "Reproducir automáticamente al encolar o esperar al streamer.",
-            "max_user_songs_title": "Límite de canciones por usuario",
-            "max_user_songs_desc": "Número máximo de canciones activas que un espectador puede tener en cola a la vez.",
-            "user_cooldown_title": "Cooldown entre solicitudes (seg)",
-            "user_cooldown_desc": "Tiempo de espera requerido para que un espectador vuelva a pedir una canción.",
-            "max_queue_size_title": "Tamaño máximo de cola global",
-            "max_queue_size_desc": "Número máximo total de canciones permitidas en la cola de reproducción.",
-            "max_song_duration_title": "Duración máxima por canción (min)",
-            "max_song_duration_desc": "Rechazar canciones que superen este límite de tiempo.",
-            "error_title": "Error de YouTube",
-            "age_restricted": "Este video requiere verificación de edad (Inicia sesión para confirmar tu edad)",
-            "bot_blocked": "Este video requiere autenticación o fue bloqueado por las políticas anti-bot de YouTube.",
-            "inappropriate": "Este video es inapropiado para algunos usuarios",
-            "invalid_media": "Formato o medio no válido",
-            "generic_error": "No se pudo procesar el audio de este video."
-        },
-        "overlay": {
-            "url_title": "Overlay de Música (OBS)",
-            "url_desc": "Agrega esta URL como fuente de navegador en OBS para mostrar la canción en pantalla.",
-            "layout_label": "Diseño del Overlay:",
-            "theme_label": "Tema Visual:",
-            "layout_banner": "Banner Header (Arte Grande)",
-            "layout_pill": "Cápsula Minimal (Pill Bar)",
-            "layout_floating": "Disco de Vinilo (Vinyl Spin)",
-            "layout_compact": "Tarjeta Compacta",
-            "layout_standard": "Barra Estándar",
-            "theme_dynamic": "Dinámico (Auto-Color de Álbum)",
+            "size_desc": "Modifica el tamaño de la letra del overlay.",
+            "size_title": "Tamaño de Fuente",
+            "theme_card": "Tarjeta Sólida (Card)",
+            "theme_cyber": "Retro Cyberpunk (Cyber)",
+            "theme_desc": "Elige el estilo visual del overlay del chat.",
             "theme_glass": "Glassmorphism",
             "theme_minimal": "Minimalista",
-            "theme_neon": "Brillo Neón",
-            "theme_cyber": "Retro Cyberpunk",
-            "theme_card": "Tarjeta Sólida"
+            "theme_neon": "Brillo Neon (Neon)",
+            "theme_title": "Diseño de Chat"
+        },
+        "roles": {
+            "broadcaster_desc": "Voz usada para los mensajes del streamer.",
+            "broadcaster_title": "Voz del Streamer",
+            "default_voice": "(Usar voz global)",
+            "moderator_desc": "Voz usada para los mensajes de moderadores.",
+            "moderator_title": "Voz del Moderador",
+            "name_bot": "Bot",
+            "name_broadcaster": "Streamer",
+            "name_moderator": "Moderador",
+            "name_subscriber": "Suscriptor",
+            "name_user": "Usuario",
+            "name_vip": "VIP",
+            "subscriber_desc": "Voz usada para los mensajes de suscriptores.",
+            "subscriber_title": "Voz del Suscriptor",
+            "title": "Voces por Rol",
+            "vip_desc": "Voz usada para los mensajes de usuarios VIP.",
+            "vip_title": "Voz del VIP"
+        },
+        "settings": {
+            "cmd_desc": "Solo leer mensajes que comiencen con un prefijo.",
+            "cmd_title": "Requerir Comando",
+            "name_desc": "Pronunciar el nombre del remitente antes del mensaje.",
+            "name_title": "Leer Nombres",
+            "obs_desc": "Copia este enlace para añadir la fuente de navegador del chat en tu OBS.",
+            "obs_title": "Lienzo de OBS (Overlay)",
+            "prefix_desc": "Define el texto exacto que activará la lectura del bot.",
+            "prefix_placeholder": "Ej. !tts",
+            "prefix_title": "Prefijo de Comando",
+            "provider_desc": "Cambiar entre voces web Edge o voces locales del sistema.",
+            "provider_title": "Motor de Voz TTS",
+            "tts_desc": "Habilitar la lectura automatizada de mensajes.",
+            "tts_title": "Servicio de Voz (TTS)",
+            "voice_general_desc": "Configura la voz para espectadores y seguidores en general.",
+            "voice_general_title": "Voz de Seguidores",
+            "vol_desc": "Ajustar la intensidad del sintetizador de voz.",
+            "vol_title": "Volumen General"
+        },
+        "status": {
+            "disabled_upper": "DESACTIVADO",
+            "enabled_upper": "ACTIVADO",
+            "loading_voices": "Obteniendo voces de la nube...",
+            "provider_active": "Modo activo: {mode}",
+            "provider_cloud": "Neural IA (Nube Edge)",
+            "provider_local": "SAPI5 / OS (Local)",
+            "provider_title": "Motor de Voz",
+            "read_name_active": "Lectura de nombres activada",
+            "read_name_inactive": "Lectura de nombres desactivada",
+            "read_name_title": "Leer Nombres",
+            "systts_off": "🔇 @{user}, el sistema de TTS ha sido DESACTIVADO.",
+            "systts_on": "🔊 @{user}, el sistema de TTS ha sido ACTIVADO.",
+            "systts_status": "ℹ️ @{user}, el sistema de TTS está actualmente: {state}.",
+            "systts_usage": "⚠️ @{user}, uso del comando: !systts on | !systts off",
+            "test_btn_tooltip": "Probar voz",
+            "tts_active": "Voz automática activada",
+            "tts_error_offline": "Cargado modo offline: {error}",
+            "tts_error_title": "Red TTS Inestable",
+            "tts_muted": "Chat silenciado",
+            "tts_title": "Lector de Voz de Chat",
+            "use_command_active": "Requerir comando TTS activado",
+            "use_command_inactive": "Requerir comando TTS desactivado",
+            "use_command_title": "Requerir Comando",
+            "user_says": "{user} dice: {message}",
+            "voice_test_sample": "Esta es una prueba de voz.",
+            "web_link": "un enlace web"
+        },
+        "tabs": {
+            "muted": "Silenciados",
+            "overlay": "Lienzo (Overlay)",
+            "settings": "Ajustes de Voz"
         }
     },
-    "dashboard": {
-        "header": {
-            "title": "Panel de Control",
-            "subtitle": "Gestión de autenticación, conexión automática y estado general del sistema."
+    "command": {
+        "dialog": {
+            "active_checkbox": "Comando Activo",
+            "aliases_label": "Alias Estándar (separados por coma):",
+            "aliases_placeholder": "!dc, !servidor discord",
+            "cooldown_label": "Enfriamiento (seg):",
+            "perm_broadcaster": "Streamer",
+            "perm_everyone": "Todos",
+            "perm_moderator": "Moderador",
+            "perm_subscriber": "Suscriptor",
+            "perm_vip": "VIP",
+            "permission_label": "Permiso Mínimo:",
+            "plugin_tag": "COMANDO PLUGIN",
+            "regex_checkbox": "Usar RegEx (Ignora Prefijos y Alias)",
+            "regex_help": "Si activas RegEx, el bot buscará este patrón en cualquier parte del mensaje.",
+            "regex_label": "Sintaxis de Expresión Regular:",
+            "regex_placeholder": "Ej: \\b(hola|buenas)\\b",
+            "response_label": "Respuesta del bot (puedes usar {user}):",
+            "subtitle": "Crea o edita comandos personalizados para tu chat.",
+            "tab_advanced": "Avanzado",
+            "title": "Configurar Comando",
+            "trigger_label": "Nombre del comando (Ej: !discord):"
         },
+        "empty": {
+            "btn": "Crear Comando",
+            "desc": "Crea comandos personalizados para que el bot responda automáticamente en el chat.",
+            "title": "Aún no hay comandos"
+        },
+        "header": {
+            "subtitle": "Vincula comandos de chat o expresiones regulares con respuestas automáticas del bot.",
+            "title": "Comandos Vinculados"
+        },
+        "status": {
+            "created": "Comando Creado",
+            "created_msg": "Disponible en el chat: {trigger}",
+            "deleted": "Comando Eliminado",
+            "deleted_msg": "Eliminado: {trigger}",
+            "disabled": "Comando Desactivado",
+            "enabled": "Comando Activado",
+            "toggled_msg": "Palabra clave: {trigger}",
+            "updated": "Comando Actualizado",
+            "updated_msg": "Cambios guardados para: {trigger}"
+        },
+        "table": {
+            "btn_new": "Nuevo Comando",
+            "col_actions": "Acciones",
+            "col_aliases": "Alias / Regex",
+            "col_command": "Comando",
+            "col_permission": "Nivel de Acceso",
+            "col_type": "Tipo",
+            "filter_all": "Mostrar Todos",
+            "filter_sort_asc": "Orden Ascendente (A-Z)",
+            "filter_sort_desc": "Orden Descendente (Z-A)",
+            "regex_prefix": "RegEx",
+            "search_placeholder": "Buscar comando vinculado...",
+            "title": "Comandos Vinculados",
+            "tooltip_delete": "Eliminar comando permanentemente",
+            "tooltip_edit": "Modificar configuración del comando",
+            "type_custom": "Personalizado",
+            "type_plugin": "Plugin"
+        }
+    },
+    "common": {
+        "buttons": {
+            "add": "Añadir",
+            "back": "Atrás",
+            "browse": "Examinar",
+            "cancel": "Cancelar",
+            "continue": "Continuar",
+            "copy": "Copiar Enlace",
+            "exit": "Salir",
+            "export": "Exportar",
+            "import": "Importar",
+            "next": "Siguiente",
+            "report_bug": "Reportar Bug",
+            "save": "Guardar",
+            "understood": "Entendido",
+            "unlink": "Desvincular",
+            "update": "Buscar actualizaciones"
+        },
+        "status": {
+            "active": "Activo",
+            "connected": "Conectado",
+            "error": "Error",
+            "inactive": "Inactivo",
+            "no": "No",
+            "offline": "Desconectado",
+            "online": "En Línea",
+            "yes": "Sí"
+        }
+    },
+    "crash": {
+        "anonymous": "Anónimo",
+        "btn_close": "Cerrar sin Enviar",
+        "btn_send": "Enviar Reporte y Cerrar",
+        "err_no_webhook": "URL del Webhook de Discord no configurada.",
+        "err_send": "No se pudo enviar el reporte. Error: {error}",
+        "lbl_contact": "Contacto / Discord (Opcional)",
+        "lbl_desc": "¿Qué estabas haciendo cuando falló? (Opcional)",
+        "lbl_traceback": "Detalles del Error (Traceback)",
+        "no_comments": "Sin comentarios del usuario.",
+        "placeholder_contact": "Ej. TheAndro2K",
+        "placeholder_desc": "Describe brevemente los pasos...",
+        "subtitle": "Se produjo un error no controlado en la aplicación. Ayúdanos a solucionar el problema enviando este reporte.",
+        "title": "MiniKick ha fallado",
+        "truncated_tb": "\n[Traceback truncado por longitud]"
+    },
+    "dashboard": {
         "banner": {
-            "text_prefix": "<b>Actualización requerida:</b> Tu cuenta no tiene los permisos necesarios:",
             "btn_update": "Actualizar Permisos",
             "scope": {
                 "moderation_ban": "Banear usuarios",
                 "moderation_chat": "Gestionar mensajes de chat"
-            }
+            },
+            "text_prefix": "<b>Actualización requerida:</b> Tu cuenta no tiene los permisos necesarios:"
         },
         "connection": {
-            "autostart_title": "Conexión Automática",
             "autostart_desc": "Iniciar el bot automáticamente.",
-            "status_waiting": "Estado: Esperando conexión...",
+            "autostart_title": "Conexión Automática",
+            "btn_active": "Sistema Activo",
+            "btn_connect": "Conectar a Kick",
+            "btn_retry": "Reintentar",
             "status_auth": "Estado: Autenticando...",
             "status_connected": "Estado: Conectado y Escuchando",
-            "btn_connect": "Conectar a Kick",
-            "btn_active": "Sistema Activo",
-            "btn_retry": "Reintentar"
+            "status_waiting": "Estado: Esperando conexión..."
         },
-        "stats": {
-            "followers": "Seguidores",
-            "room_id": "ID de ChatRoom",
-            "category": "Última Categoría",
-            "affiliate": "Estado de Afiliado",
-            "vods": "VODs",
-            "created_at": "Fecha de Creación"
+        "empty": {
+            "desc": "Conecta tu cuenta de Kick para sincronizar el bot, ver tus estadísticas en tiempo real y gestionar el chat.",
+            "title": "¡Comencemos!"
+        },
+        "header": {
+            "subtitle": "Gestión de autenticación, conexión automática y estado general del sistema.",
+            "title": "Panel de Control"
         },
         "session": {
-            "title": "Estadísticas de la Sesión",
-            "messages": "Mensajes Sesión",
             "commands": "Ejecuciones Comandos",
+            "messages": "Mensajes Sesión",
+            "spam": "Spam Filtrado",
             "timers": "Timers Activos",
-            "spam": "Spam Filtrado"
+            "title": "Estadísticas de la Sesión"
+        },
+        "stats": {
+            "affiliate": "Estado de Afiliado",
+            "category": "Última Categoría",
+            "created_at": "Fecha de Creación",
+            "followers": "Seguidores",
+            "room_id": "ID de ChatRoom",
+            "vods": "VODs"
         },
         "status": {
             "connected_toast_msg": "Canal enlazado: {username}"
-        },
-        "empty": {
-            "title": "¡Comencemos!",
-            "desc": "Conecta tu cuenta de Kick para sincronizar el bot, ver tus estadísticas en tiempo real y gestionar el chat."
         }
     },
     "dialogs": {
-        "wizard": {
-            "step_indicator": "Paso {current}/{total}"
+        "already_running": {
+            "desc": "El controlador de transmisión ya está operando en segundo plano. Por favor, revisa la bandeja de sistema de Windows (al lado del reloj) para acceder al panel de control.",
+            "title": "MiniKick ya se está Ejecutando"
         },
         "bug_report": {
-            "lbl_contact": "Contacto (Discord, Correo, etc. - Opcional):",
-            "lbl_description": "Descripción del problema (Requerido):",
-            "chk_include_logs": "Incluir log de depuración (minikick.log)",
-            "placeholder_contact": "Tu nombre de usuario o contacto...",
-            "placeholder_desc": "Explica qué estabas haciendo y qué error ocurrió...",
-            "err_empty_desc": "La descripción no puede estar vacía.",
-            "err_no_webhook": "El webhook de Discord no está configurado por el desarrollador.",
-            "success_send": "Reporte enviado con éxito.",
-            "err_discord": "Error de Discord: Código {code}",
-            "err_send": "Error al enviar: {error}",
-            "success_title": "Reporte Enviado",
-            "success_msg": "Gracias por reportar el problema.",
             "btn_send": "Enviar Reporte",
             "btn_sending": "Enviando...",
+            "chk_include_logs": "Incluir log de depuración (minikick.log)",
+            "err_discord": "Error de Discord: Código {code}",
+            "err_empty_desc": "La descripción no puede estar vacía.",
+            "err_no_webhook": "El webhook de Discord no está configurado por el desarrollador.",
+            "err_send": "Error al enviar: {error}",
+            "lbl_contact": "Contacto (Discord, Correo, etc. - Opcional):",
+            "lbl_description": "Descripción del problema (Requerido):",
             "lbl_image": "Adjuntar Captura / Imagen (Opcional):",
-            "placeholder_image": "Ningún archivo seleccionado..."
-        },
-        "unlink": {
-            "title": "Desvincular Cuenta",
-            "desc": "¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes."
+            "placeholder_contact": "Tu nombre de usuario o contacto...",
+            "placeholder_desc": "Explica qué estabas haciendo y qué error ocurrió...",
+            "placeholder_image": "Ningún archivo seleccionado...",
+            "success_msg": "Gracias por reportar el problema.",
+            "success_send": "Reporte enviado con éxito.",
+            "success_title": "Reporte Enviado"
         },
         "close": {
-            "title": "Cerrar MiniKick",
-            "desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat."
+            "desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat.",
+            "title": "Cerrar MiniKick"
         },
-        "already_running": {
-            "title": "MiniKick ya se está Ejecutando",
-            "desc": "El controlador de transmisión ya está operando en segundo plano. Por favor, revisa la bandeja de sistema de Windows (al lado del reloj) para acceder al panel de control."
+        "unlink": {
+            "desc": "¿Estás seguro de que deseas cerrar sesión? Tendrás que volver a autorizar a MiniKick la próxima vez que te conectes.",
+            "title": "Desvincular Cuenta"
         },
         "update": {
-            "title_default": "Actualización del Sistema",
-            "subtitle_connecting": "Conectando al servidor...",
-            "lbl_progress": "Progreso",
-            "btn_restart": "Reiniciar ahora",
             "btn_close": "Cerrar",
-            "top_available": "Versión {version} disponible",
-            "subtitle_restart_req": "Se requiere reiniciar para completar la instalación.",
             "btn_download": "Descargar ahora",
-            "subtitle_downloading": "Descargando la nueva versión...",
             "btn_downloading": "Descargando...",
-            "title_completed": "Actualización completada",
+            "btn_restart": "Reiniciar ahora",
+            "lbl_progress": "Progreso",
+            "msg_unexpected_error": "Fallo inesperado al descargar el archivo.",
+            "subtitle_connecting": "Conectando al servidor...",
+            "subtitle_downloading": "Descargando la nueva versión...",
             "subtitle_installed": "Versión {version} instalada.",
-            "title_up_to_date": "Sistema Actualizado",
+            "subtitle_restart_req": "Se requiere reiniciar para completar la instalación.",
             "subtitle_up_to_date": "La versión de tu sistema ya es la última disponible.",
+            "title_completed": "Actualización completada",
+            "title_default": "Actualización del Sistema",
             "title_error": "Fallo en la descarga",
-            "msg_unexpected_error": "Fallo inesperado al descargar el archivo."
+            "title_up_to_date": "Sistema Actualizado",
+            "top_available": "Versión {version} disponible"
+        },
+        "wizard": {
+            "step_indicator": "Paso {current}/{total}"
+        }
+    },
+    "log": {
+        "controls": {
+            "btn_clear": "Limpiar",
+            "btn_folder": "Carpeta",
+            "btn_hide_logs": "Ocultar Logs",
+            "btn_live": "Vista en Vivo",
+            "btn_load": "Cargar Historial",
+            "btn_report": "Reportar Bug",
+            "btn_show_logs": "Ver Logs",
+            "date_1d": "Últimas 24 horas",
+            "date_3d": "Últimos 3 días",
+            "date_7d": "Últimos 7 días",
+            "date_all": "Todo el tiempo",
+            "filter_all": "TODOS",
+            "search_placeholder": "Buscar logs...",
+            "tooltip_folder": "Abrir ubicación en Windows"
+        },
+        "dialogs": {
+            "file_filter": "Archivos de Log (*.log*);;Todos los archivos (*.*)",
+            "select_history": "Seleccionar Historial de Logs"
+        },
+        "empty": {
+            "btn_show": "Ver logs en vivo",
+            "desc": "Los eventos se siguen registrando en segundo plano. Presiona el botón para ver diagnósticos en tiempo real.",
+            "title": "Consola en pausa"
+        },
+        "header": {
+            "subtitle": "Monitorea eventos del sistema, depura errores y carga registros históricos usando el explorador.",
+            "title": "Registros del Desarrollador"
+        },
+        "misc": {
+            "historical": "HISTÓRICO"
+        },
+        "pagination": {
+            "info": "{showing_from}-{showing_to} de {total} fila(s) mostradas."
+        },
+        "status": {
+            "cleared_msg": "La vista de registros se ha limpiado correctamente.",
+            "cleared_title": "Consola Limpiada",
+            "historical_msg": "Inspeccionando: {file}",
+            "historical_title": "Archivo de Log Cargado",
+            "live_msg": "Mostrando diagnósticos de eventos en tiempo real.",
+            "live_title": "Consola en Vivo",
+            "paused_msg": "Regresaste al modo en vivo. Usa 'Ver Logs' cuando desees monitorear eventos.",
+            "paused_title": "Modo en vivo"
+        },
+        "table": {
+            "col_level": "Nivel de Log",
+            "col_message": "Mensaje de Log",
+            "col_time": "Marca de Tiempo"
         }
     },
     "main": {
-        "sidebar": {
-            "new_version": "Nueva Versión",
-            "version": "Versión {version}",
-            "section": {
-                "navigate": "Navegar",
-                "more": "Más"
-            },
-            "profile": {
-                "offline_name": "Sin Conexión"
-            },
-            "tabs": {
-                "dashboard": "Panel de Control",
-                "chat": "Chat",
-                "music": "Música",
-                "triggers": "Recompensas",
-                "comandos": "Comandos",
-                "widgets": "Widgets",
-                "spam_filters": "Filtros Anti-Spam",
-                "settings": "Ajustes",
-                "timers": "Temporizadores",
-                "developer": "Desarrollador",
-                "network_status": "Estado de Red"
-            }
-        },
-        "tray": {
-            "open_panel": "Abrir Panel",
-            "read_chat": "Leer chat en voz alta",
-            "play_pause": "Reproducir / Pausar Música",
-            "skip": "Saltar Canción",
-            "tts_use_command": "Requerir comando para TTS",
-            "tts_voice_type": "Usar Voces Web (Premium)",
-            "tts_on": "Activado",
-            "tts_off": "Desactivado",
-            "close_app": "Cerrar MiniKick",
-            "tts_msg": "Lectura de chat: {estado}",
-            "bg_title": "MiniKick en segundo plano",
-            "bg_desc": "Seguiré leyendo el chat por ti. Doble clic para volver."
+        "chat": {
+            "points_tag": "PUNTOS",
+            "reward_redeemed": "canjeó {reward_name}"
         },
         "controllers": {
             "dashboard": {
-                "unknown_user": "Desconocido",
+                "affiliate": "Afiliado",
                 "no_bio": "Sin descripción",
                 "none": "Ninguno",
-                "affiliate": "Afiliado",
-                "not_affiliate": "No Afiliado"
+                "not_affiliate": "No Afiliado",
+                "unknown_user": "Desconocido"
             },
             "log": {
-                "read_error": "No se pudo leer el archivo: {error}",
-                "folder_error": "No se pudo abrir la carpeta: {error}"
+                "folder_error": "No se pudo abrir la carpeta: {error}",
+                "read_error": "No se pudo leer el archivo: {error}"
             }
+        },
+        "logs": {
+            "api_error": "Fallo en la API de Recompensas de Kick: {error}",
+            "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
+            "api_fetching": "Las recompensas ya están siendo obtenidas. Por favor espera.",
+            "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
+            "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada.",
+            "shutdown_complete": "Secuencia de apagado de hilos completada.",
+            "shutdown_init": "Iniciando secuencia de apagado...",
+            "shutdown_tts_overlay": "Apagando TTS y Overlay...",
+            "worker_stopped": "{worker} cerrado limpiamente.",
+            "worker_stopping": "Solicitando parada de {worker}...",
+            "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación..."
+        },
+        "sidebar": {
+            "new_version": "Nueva Versión",
+            "profile": {
+                "offline_name": "Sin Conexión"
+            },
+            "section": {
+                "more": "Más",
+                "navigate": "Navegar"
+            },
+            "tabs": {
+                "chat": "Chat",
+                "comandos": "Comandos",
+                "dashboard": "Panel de Control",
+                "developer": "Desarrollador",
+                "music": "Música",
+                "network_status": "Estado de Red",
+                "settings": "Ajustes",
+                "spam_filters": "Filtros Anti-Spam",
+                "timers": "Temporizadores",
+                "triggers": "Recompensas",
+                "widgets": "Widgets"
+            },
+            "version": "Versión {version}"
+        },
+        "toasts": {
+            "reward_msg": "{user} canjeó: {reward_name}",
+            "reward_title": "Premio Canjeado"
+        },
+        "tray": {
+            "bg_desc": "Seguiré leyendo el chat por ti. Doble clic para volver.",
+            "bg_title": "MiniKick en segundo plano",
+            "close_app": "Cerrar MiniKick",
+            "open_panel": "Abrir Panel",
+            "play_pause": "Reproducir / Pausar Música",
+            "read_chat": "Leer chat en voz alta",
+            "skip": "Saltar Canción",
+            "tts_msg": "Lectura de chat: {estado}",
+            "tts_off": "Desactivado",
+            "tts_on": "Activado",
+            "tts_use_command": "Requerir comando para TTS",
+            "tts_voice_type": "Usar Voces Web (Premium)"
+        },
+        "window": {
+            "title": "MiniKick - Versión {version}"
         },
         "workers": {
             "auth": {
@@ -734,99 +461,182 @@
                 "error_room_id": "No se pudo obtener el ID de la sala de chat desde la API."
             },
             "reward": {
-                "unknown_reward": "Recompensa Desconocida",
+                "poll_error": "Error al consultar recompensas: {error}",
                 "someone": "Alguien",
-                "poll_error": "Error al consultar recompensas: {error}"
+                "unknown_reward": "Recompensa Desconocida"
             }
-        },
-        "window": {
-            "title": "MiniKick - Versión {version}"
-        },
-        "chat": {
-            "reward_redeemed": "canjeó {reward_name}",
-            "points_tag": "PUNTOS"
-        },
-        "logs": {
-            "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada.",
-            "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
-            "api_fetching": "Las recompensas ya están siendo obtenidas. Por favor espera.",
-            "api_error_setup": "Error al preparar la consulta de recompensas: {error}",
-            "api_error": "Fallo en la API de Recompensas de Kick: {error}",
-            "worker_stopping": "Solicitando parada de {worker}...",
-            "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación...",
-            "worker_stopped": "{worker} cerrado limpiamente.",
-            "shutdown_init": "Iniciando secuencia de apagado...",
-            "shutdown_tts_overlay": "Apagando TTS y Overlay...",
-            "shutdown_complete": "Secuencia de apagado de hilos completada."
-        },
-        "toasts": {
-            "reward_title": "Premio Canjeado",
-            "reward_msg": "{user} canjeó: {reward_name}"
         }
     },
-    "timer": {
+    "music": {
+        "chat": {
+            "cooldown_active": "⏳ @{user}, por favor espera {seconds} segundo(s) antes de pedir otra canción.",
+            "no_queue_available": "❌ @{user}, la cola de reproducción no está disponible en este momento.",
+            "not_linked": "❌ El streamer no ha activado el reproductor de YouTube.",
+            "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
+            "pause_failed": "❌ No se pudo pausar la música.",
+            "pause_success": "⏸️ Música pausada con éxito.",
+            "playlist_empty_for_user": "❌ @{user}, no tienes canciones en la cola actualmente.",
+            "playlist_invalid_pos": "❌ @{user}, la posición #{pos} no es válida. Hay {total} canción(es) en la cola.",
+            "playlist_pos_info": "🎵 Canción #{pos}: \"{title}\"{artist} (pedida por @{requester})",
+            "playlist_user_songs": "🎵 @{user}, tienes {count} canción(es) en la cola: {songs}",
+            "playlist_user_songs_more": "🎵 @{user} (posiciones restantes {page}/{total_pages}): {songs}",
+            "queue_full": "❌ @{user}, la cola de canciones está llena ({max} canciones máximo).",
+            "resume_failed": "❌ No se pudo reanudar la música.",
+            "resume_success": "▶️ Música reanudada con éxito.",
+            "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o cola vacía).",
+            "skip_success": "⏩ Canción saltada con éxito.",
+            "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando.",
+            "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",
+            "song_paused": "🔇 YouTube está en pausa.",
+            "song_paused_youtube": "🔇 YouTube está en pausa.",
+            "song_too_long": "❌ @{user}, esa canción supera la duración máxima permitida de {max} minutos.",
+            "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
+            "user_limit_reached": "❌ @{user}, ya tienes {count} canción(es) en la cola (máximo permitido: {max}).",
+            "vol_success": "🔊 @{user}, el volumen de la música se ha cambiado a {volume}%.",
+            "vol_usage": "❌ @{user}, por favor especifica un nivel de volumen entre 0 y 100. (Ej: {trigger} 50)"
+        },
+        "cmds": {
+            "pause_desc": "Permite a los moderadores pausar la música desde el chat. Puedes personalizar el disparador '!pause' en la vista de Comandos.",
+            "pause_label": "Pausar Música (Por defecto: !pause)",
+            "playlist_desc": "Muestra a los espectadores la posición de las canciones que han pedido. Alias: !queue, !pl.",
+            "playlist_label": "Ver Mis Canciones (Por defecto: !playlist)",
+            "resume_desc": "Permite a los moderadores reanudar la música desde el chat. Puedes personalizar el disparador '!resume' en la vista de Comandos.",
+            "resume_label": "Reanudar Música (Por defecto: !resume)",
+            "skip_desc": "Fuerza la reproducción de la siguiente canción. Puedes personalizar el disparador '!skip' en la vista de Comandos.",
+            "skip_label": "Saltar Pista (Por defecto: !skip)",
+            "song_desc": "Muestra la canción reproduciéndose actualmente en el chat. Puedes personalizar el disparador '!song' en la vista de Comandos.",
+            "song_label": "Canción Actual (Por defecto: !song)",
+            "sr_desc": "Permite a los espectadores añadir música a la cola. Puedes personalizar el disparador '!sr' en la vista de Comandos.",
+            "sr_label": "Pedir Canción (Por defecto: !sr)",
+            "title": "Comandos de Espectadores",
+            "vol_desc": "Permite a los moderadores cambiar el volumen del reproductor desde el chat (0-100). Alias: !volume.",
+            "vol_label": "Modificar Volumen (Por defecto: !vol)"
+        },
         "header": {
-            "title": "Temporizadores del Bot",
-            "subtitle": "Publica anuncios automáticos, enlaces de redes sociales, tu horario o cualquier otra cosa."
+            "subtitle": "Permite a tus espectadores controlar la música usando comandos del chat.",
+            "title": "Reproductor de Música"
         },
-        "empty": {
-            "title": "Aún no hay temporizadores",
-            "desc": "Programa mensajes automáticos para enviarse al chat cada cierto tiempo.",
-            "btn": "Crear Temporizador"
+        "overlay": {
+            "layout_banner": "Banner Header (Arte Grande)",
+            "layout_compact": "Tarjeta Compacta",
+            "layout_floating": "Disco de Vinilo (Vinyl Spin)",
+            "layout_label": "Diseño del Overlay:",
+            "layout_pill": "Cápsula Minimal (Pill Bar)",
+            "layout_standard": "Barra Estándar",
+            "theme_card": "Tarjeta Sólida",
+            "theme_cyber": "Retro Cyberpunk",
+            "theme_dynamic": "Dinámico (Auto-Color de Álbum)",
+            "theme_glass": "Glassmorphism",
+            "theme_label": "Tema Visual:",
+            "theme_minimal": "Minimalista",
+            "theme_neon": "Brillo Neón",
+            "url_desc": "Agrega esta URL como fuente de navegador en OBS para mostrar la canción en pantalla.",
+            "url_title": "Overlay de Música (OBS)"
         },
-        "table": {
-            "search_placeholder": "Buscar temporizador...",
-            "btn_new": "Nuevo Temporizador",
-            "col_name": "Nombre",
-            "col_message": "Mensaje",
-            "col_interval_online": "Int. Online",
-            "col_interval_offline": "Int. Offline",
-            "col_chat_lines": "Mensajes",
+        "player": {
+            "not_playing": "No se está reproduciendo ninguna canción",
+            "requested_by": "Solicitado por: {user}",
+            "requested_by_streamer": "Solicitado por: Streamer",
+            "unknown_song": "Desconocido",
+            "volume_desc": "Ajustar el volumen de reproducción de YouTube.",
+            "volume_title": "Volumen del Reproductor"
+        },
+        "queue": {
             "col_actions": "Acciones",
-            "tooltip_edit": "Editar temporizador",
-            "tooltip_delete": "Eliminar temporizador permanentemente",
-            "unit_minutes": "Minutos",
-            "unit_lines": "Líneas"
+            "col_artist": "Autor",
+            "col_duration": "Duración",
+            "col_num": "#",
+            "col_requester": "Pedido por",
+            "col_title": "Título",
+            "empty": "La cola está vacía",
+            "empty_desc": "Usa !sr en el chat para pedir música y aparecerá aquí.",
+            "error": "❌ Error interno de música: {error}",
+            "no_link": "❌ No se pudo obtener el enlace del video.",
+            "not_found": "❌ No se pudo encontrar ninguna canción llamada '{query}'.",
+            "processing_link": "🔍 Procesando enlace de YouTube...",
+            "remove_tooltip": "Eliminar de la cola",
+            "searching": "🔍 Buscando '{query}' en YouTube...",
+            "success": "🎵 Añadida a la cola: {track}",
+            "title": "Cola de Reproducción"
         },
-        "dialog": {
-            "title": "Configurar Temporizador",
-            "subtitle": "Define un nuevo temporizador automático para enviar mensajes al chat.",
-            "name_label": "Nombre del Temporizador:",
-            "name_placeholder": "Ej: Redes Sociales",
-            "response_label": "Mensajes de respuesta (se elegirá uno aleatoriamente):",
-            "response_placeholder": "Escribe el mensaje de respuesta aquí...",
-            "btn_add_message": "+ Agregar Mensaje",
-            "online_interval_label": "Intervalo Online (minutos)",
-            "offline_interval_label": "Intervalo Offline (minutos)",
-            "chat_lines_label": "Mensajes de Chat Mínimos",
-            "chat_lines_desc": "Cantidad mínima de mensajes de chat requeridos en los últimos 5 minutos para activar el temporizador.",
-            "keywords_label": "Palabras clave en el título de Stream (separadas por coma):",
-            "keywords_placeholder": "Ej: sorteo, especial",
-            "keywords_desc": "Activa el temporizador solo si el título del stream contiene alguna de estas palabras clave.",
-            "categories_label": "Categorías de Stream (separadas por coma):",
-            "categories_placeholder": "Ej: Just Chatting, IRL",
-            "categories_desc": "Activa el temporizador solo si la categoría del stream es una de las seleccionadas.",
-            "help_desc": "Puedes usar filtros para restringir cuándo se envía el mensaje. Por ejemplo, puedes hacer que se envíe un temporizador de sorteos únicamente cuando tu stream contenga la palabra 'sorteo' en el título o pertenezca a la categoría 'IRL'.",
-            "editor_title": "Editar Mensaje"
+        "stats": {
+            "badge_active": "O ACTIVADO",
+            "badge_disabled": "O DESACTIVADO",
+            "cmd_desc": "Si los espectadores pueden añadir canciones con !sr",
+            "cmd_title": "Comando del chat",
+            "duration_desc": "Duración de todas las canciones de la lista",
+            "duration_title": "Duración total",
+            "queue_desc": "Canciones después del título actual",
+            "queue_title": "Cola",
+            "service_active": "Servicio Activado",
+            "service_disabled": "Servicio Desactivado",
+            "service_disabled_chat": "❌ @{user}, el servicio de música está desactivado en este momento."
         },
         "status": {
-            "created": "Temporizador Creado",
-            "created_msg": "El temporizador '{name}' ha sido creado exitosamente.",
-            "updated": "Temporizador Actualizado",
-            "updated_msg": "El temporizador '{name}' ha sido actualizado exitosamente.",
-            "deleted": "Temporizador Eliminado",
-            "deleted_msg": "El temporizador '{name}' ha sido eliminado permanentemente.",
-            "enabled": "Temporizador Activado",
-            "disabled": "Temporizador Desactivado",
-            "toggled_msg": "El temporizador '{name}' ha sido {status}."
+            "youtube_active": "YouTube Activo"
+        },
+        "tabs": {
+            "commands": "Comandos",
+            "player": "Reproductor",
+            "settings": "Ajustes"
+        },
+        "toast": {
+            "chat_error_playing": "❌ @{user}, no se pudo reproducir '{title}': {error}",
+            "chat_error_playing_no_user": "❌ No se pudo reproducir '{title}': {error}",
+            "error_playing": "No se pudo reproducir '{title}': {error}",
+            "moved_in_queue": "Posición de canción actualizada en la cola",
+            "removed_from_queue": "Canción eliminada de la cola"
+        },
+        "youtube": {
+            "age_restricted": "Este video requiere verificación de edad (Inicia sesión para confirmar tu edad)",
+            "auto_resume_desc": "Reproducir automáticamente al encolar o esperar al streamer.",
+            "auto_resume_title": "Retomado automático (YouTube)",
+            "bot_blocked": "Este video requiere autenticación o fue bloqueado por las políticas anti-bot de YouTube.",
+            "error_title": "Error de YouTube",
+            "generic_error": "No se pudo procesar el audio de este video.",
+            "inappropriate": "Este video es inapropiado para algunos usuarios",
+            "invalid_media": "Formato o medio no válido",
+            "max_queue_size_desc": "Número máximo total de canciones permitidas en la cola de reproducción.",
+            "max_queue_size_title": "Tamaño máximo de cola global",
+            "max_song_duration_desc": "Rechazar canciones que superen este límite de tiempo.",
+            "max_song_duration_title": "Duración máxima por canción (min)",
+            "max_user_songs_desc": "Número máximo de canciones activas que un espectador puede tener en cola a la vez.",
+            "max_user_songs_title": "Límite de canciones por usuario",
+            "user_cooldown_desc": "Tiempo de espera requerido para que un espectador vuelva a pedir una canción.",
+            "user_cooldown_title": "Cooldown entre solicitudes (seg)"
         }
     },
     "network": {
+        "btn_check": "Comprobar Red",
+        "graph": {
+            "avg": "Promedio",
+            "filter_all": "Todos los Servicios",
+            "filter_chat_websocket": "WebSocket",
+            "filter_internet": "Internet",
+            "filter_kick": "Kick API",
+            "filter_overlay": "Overlay",
+            "filter_youtube": "YouTube",
+            "jitter": "Jitter",
+            "live": "En Vivo",
+            "min": "Mínimo",
+            "stability": "Estabilidad",
+            "stability_fair": "Regular",
+            "stability_good": "Buena",
+            "stability_optimal": "Óptima",
+            "stability_poor": "Deficiente",
+            "time_20s": "-20s",
+            "time_45s": "-45s",
+            "time_now": "Ahora",
+            "title": "Latencia de Red en Vivo",
+            "tooltip_title": "Ping / Latencia"
+        },
         "header": {
-            "title": "Estado de la Red",
-            "subtitle": "Verifica tu latencia y conexión con los servicios de MiniKick."
+            "subtitle": "Verifica tu latencia y conexión con los servicios de MiniKick.",
+            "title": "Estado de la Red"
         },
         "services": {
+            "chat_websocket": "Chat WebSocket (Pusher)",
+            "chat_websocket_desc": "Verifica la conexión con el servidor de chat de Kick.",
             "internet": "Conexión a Internet",
             "internet_desc": "Verifica si tienes acceso general a la web.",
             "kick": "Servidores de Kick",
@@ -834,124 +644,314 @@
             "overlay": "Servidor de Overlay Local",
             "overlay_desc": "Verifica el estado del servidor local de overlays.",
             "youtube": "Servicio de YouTube",
-            "youtube_desc": "Verifica la conexión con los servidores de YouTube.",
-            "chat_websocket": "Chat WebSocket (Pusher)",
-            "chat_websocket_desc": "Verifica la conexión con el servidor de chat de Kick."
+            "youtube_desc": "Verifica la conexión con los servidores de YouTube."
         },
         "status": {
             "checking": "Comprobando...",
-            "online": "Conectado",
-            "warning": "Latencia alta",
+            "ms": "{latency} ms",
             "offline": "Desconectado",
-            "ms": "{latency} ms"
-        },
-        "graph": {
-            "title": "Latencia de Red en Vivo",
-            "live": "En Vivo",
-            "avg": "Promedio",
-            "min": "Mínimo",
-            "jitter": "Jitter",
-            "stability": "Estabilidad",
-            "stability_optimal": "Óptima",
-            "stability_good": "Buena",
-            "stability_fair": "Regular",
-            "stability_poor": "Deficiente",
-            "filter_all": "Todos los Servicios",
-            "filter_internet": "Internet",
-            "filter_kick": "Kick API",
-            "filter_chat_websocket": "WebSocket",
-            "filter_overlay": "Overlay",
-            "filter_youtube": "YouTube",
-            "time_45s": "-45s",
-            "time_20s": "-20s",
-            "time_now": "Ahora",
-            "tooltip_title": "Ping / Latencia"
+            "online": "Conectado",
+            "warning": "Latencia alta"
         },
         "table": {
-            "title": "Estado de los Servicios",
-            "col_service": "Servicio",
             "col_desc": "Descripción",
+            "col_latency": "Latencia",
+            "col_service": "Servicio",
             "col_status": "Estado",
-            "col_latency": "Latencia"
-        },
-        "btn_check": "Comprobar Red"
-    },
-    "widgets": {
-        "header": {
-            "title": "Widgets Interactivos de Chat",
-            "subtitle": "Configura widgets y contadores interactivos que reaccionan a comandos del chat de tu stream."
-        },
-        "poll": {
-            "title": "Encuesta en Vivo",
-            "desc": "Muestra la encuesta activa del chat de Kick en tiempo real."
-        },
-        "obs_label": "URL de Overlay OBS:",
-        "obs_copy_btn": "Copiar URL para OBS",
-        "status": {
-            "activated": "Widget Activado",
-            "deactivated": "Widget Desactivado",
-            "activated_msg": "El widget '{widget_name}' ahora está activo.",
-            "deactivated_msg": "El widget '{widget_name}' ahora está inactivo."
-        },
-        "so": {
-            "title": "Promoción de Streamer (Shoutout !so)",
-            "desc": "Promociona a otros creadores en el chat enviando un mensaje personalizado con su enlace.",
-            "template_label": "Plantilla del Mensaje de Shoutout:",
-            "usage_error": "⚠️ @{user}, debes especificar el nombre del streamer. Ejemplo: {trigger} TheAndro2K",
-            "default_msg": "📢 Vayan a apoyar y seguir a @{target} en https://kick.com/{target} !",
-            "overlay_header": "Streamer Recomendado"
-        },
-        "death": {
-            "title": "Contador de Muertes (!death)",
-            "desc": "Lleva el registro de muertes en juego en tiempo real con comandos de chat y controles en vivo.",
-            "count_label": "Muertes Actuales en Juego:",
-            "reset_btn": "Reiniciar a 0",
-            "overlay_title": "MUERTES",
-            "msg_check": "💀 @{user}, llevamos {count} muerte(s) en el stream.",
-            "msg_add": "💀 @{user} sumó una muerte. ¡Llevamos {count} muerte(s)!",
-            "msg_sub": "💀 @{user} restó una muerte. Quedan {count} muerte(s).",
-            "msg_reset": "🔄 @{user} ha reiniciado el contador de muertes a 0."
-        },
-        "score": {
-            "title": "Récord Victorias / Derrotas (!win +1/ !lose +1)",
-            "desc": "Registra las victorias y derrotas de tu sesión en juego con comandos de chat.",
-            "wins_label": "Victorias (Wins):",
-            "losses_label": "Derrotas (Losses):",
-            "reset_btn": "Reiniciar Récord",
-            "overlay_title": "RÉCORD V / D",
-            "msg_check": "🏆 @{user}, el récord de hoy es: {wins} W - {losses} L.",
-            "msg_win": "🎉 @{user} sumó una victoria. Récord actual: {wins} W - {losses} L.",
-            "msg_loss": "💔 @{user} sumó una derrota. Récord actual: {wins} W - {losses} L.",
-            "msg_reset": "🔄 @{user} ha reiniciado el récord a 0 W - 0 L."
-        },
-        "explosion": {
-            "title": "Explosión de Emotes (!explosion)",
-            "desc": "Muestra una ráfaga física animada de emotes flotando y rebotando en el overlay de OBS cuando se envían en el chat.",
-            "min_emotes_label": "Mínimo de Emotes por mensaje:",
-            "particle_count_label": "Partículas por ráfaga:"
-        },
-        "combo": {
-            "title": "Combo de Emotes (!combo)",
-            "desc": "Rastrea rachas del mismo emote en el chat y despliega un contador animado con efecto de fuego en pantalla.",
-            "min_combo_label": "Combo Mínimo para Mostrar:",
-            "timeout_label": "Tiempo Máximo de Combo (seg):",
-            "msg_combo": "🔥 ¡COMBO DE EMOTES x{count} para {emote}! 🔥"
+            "title": "Estado de los Servicios"
         }
     },
-    "crash": {
-        "title": "MiniKick ha fallado",
-        "lbl_contact": "Contacto / Discord (Opcional)",
-        "placeholder_contact": "Ej. TheAndro2K",
-        "lbl_desc": "¿Qué estabas haciendo cuando falló? (Opcional)",
-        "placeholder_desc": "Describe brevemente los pasos...",
-        "lbl_traceback": "Detalles del Error (Traceback)",
-        "btn_send": "Enviar Reporte y Cerrar",
-        "btn_close": "Cerrar sin Enviar",
-        "err_send": "No se pudo enviar el reporte. Error: {error}",
-        "err_no_webhook": "URL del Webhook de Discord no configurada.",
-        "subtitle": "Se produjo un error no controlado en la aplicación. Ayúdanos a solucionar el problema enviando este reporte.",
-        "anonymous": "Anónimo",
-        "no_comments": "Sin comentarios del usuario.",
-        "truncated_tb": "\n[Traceback truncado por longitud]"
+    "rewards": {
+        "dialogs": {
+            "visual": {
+                "desc": "Arrastra tus recompensas. Al soltarlas, se mostrará una vista previa en OBS.",
+                "title": "Posicionador Visual (1920x1080)"
+            },
+            "wizard": {
+                "file_dialog_filter": "Multimedia (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
+                "file_dialog_title": "Multimedia",
+                "step1": {
+                    "desc": "Configura qué punto de canal activará esta recompensa.",
+                    "file_label": "Archivo Multimedia",
+                    "file_placeholder": "Ej. mi_recompensa.mp4 o sonido.mp3",
+                    "loading": "Cargando recompensas...",
+                    "no_available": "Sin recompensas disponibles",
+                    "no_rewards": "Sin recompensas",
+                    "reward_selection": "Selección de Recompensa",
+                    "title": "Recompensa y Archivo",
+                    "tooltip_refresh": "Actualizar Recompensas de Kick"
+                },
+                "step2": {
+                    "btn_visual": "Posicionar en OBS",
+                    "coord_x": "X:",
+                    "coord_y": "Y:",
+                    "desc": "Define cómo y dónde se mostrará tu recompensa en el lienzo.",
+                    "random_pos": "Posición Aleatoria",
+                    "scale": "Escala:",
+                    "title": "Ajustes de Pantalla",
+                    "volume": "Volumen de recompensa"
+                }
+            }
+        },
+        "empty": {
+            "btn": "Vincular Recompensa",
+            "desc": "Vincula las recompensas de tu canal de Kick con alertas en pantalla o efectos de sonido.",
+            "title": "Aún no hay recompensas vinculadas"
+        },
+        "header": {
+            "subtitle": "Vincula las recompensas de tu canal con elementos multimedia en pantalla.",
+            "title": "Recompensas Vinculadas"
+        },
+        "obs": {
+            "copied": "¡Enlace Copiado!",
+            "desc": "Copia este enlace y pégalo en tu software de transmisión (Resolución recomendada: 1920x1080).",
+            "title": "Fuente de Navegador OBS"
+        },
+        "status": {
+            "created": "Recompensa Creada",
+            "created_msg": "Vinculada a la recompensa: {reward}",
+            "deleted": "Recompensa Eliminada",
+            "deleted_msg": "Recompensa desvinculada: {reward}",
+            "updated": "Recompensa Actualizada",
+            "updated_msg": "Configuración guardada para: {reward}"
+        },
+        "table": {
+            "btn_new": "Nuevas Recompensas",
+            "col_actions": "Acciones",
+            "col_file": "Archivo",
+            "col_reward": "Recompensa Kick",
+            "title": "Recompensas Vinculadas",
+            "tooltip_delete": "Eliminar Recompensa",
+            "tooltip_edit": "Modificar ajustes",
+            "tooltip_play": "Probar en OBS",
+            "unknown_file": "Desconocido"
+        }
+    },
+    "settings": {
+        "account": {
+            "desc": "Cierra la sesión actual. Tendrás que volver a autorizar a MiniKick la próxima vez.",
+            "title": "Desvincular Cuenta"
+        },
+        "backup": {
+            "desc": "Exporta o importa tus recompensas, voces y ajustes generales.",
+            "title": "Respaldo de Configuración"
+        },
+        "feedback": {
+            "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo.",
+            "title": "Soporte y Reporte de Bugs"
+        },
+        "header": {
+            "subtitle": "Ajustes globales del sistema, gestión de cuenta y actualizaciones.",
+            "title": "Configuración General"
+        },
+        "status": {
+            "error_title": "Error de Respaldo",
+            "export_error": "No se pudo exportar el archivo de configuración.",
+            "exported": "Respaldo Exportado",
+            "exported_msg": "Tus configuraciones se guardaron con éxito.",
+            "font_size_changed": "Interfaz Escalada",
+            "font_size_changed_msg": "Tamaño global aplicado: {size}px",
+            "import_error": "No se pudo restaurar el archivo de respaldo seleccionado.",
+            "imported": "Respaldo Restaurado",
+            "imported_msg": "La configuración se ha cargado correctamente.",
+            "lang_changed": "Idioma Cambiado",
+            "lang_changed_msg": "Reinicia la aplicación para aplicar el nuevo idioma.",
+            "tray_disabled": "Segundo Plano Inactivo",
+            "tray_disabled_msg": "La aplicación se cerrará por completo.",
+            "tray_enabled": "Segundo Plano Activo",
+            "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar.",
+            "unlinked": "Cuenta Desvinculada",
+            "unlinked_msg": "Se ha cerrado tu sesión de Kick local."
+        },
+        "system": {
+            "font_desc": "Escala el tamaño del texto en toda la interfaz de la aplicación.",
+            "font_size_large": "Grande (14px)",
+            "font_size_normal": "Normal (13px)",
+            "font_size_small": "Pequeño (11px)",
+            "font_size_xlarge": "Extra Grande (16px)",
+            "font_title": "Tamaño de Fuente Global",
+            "lang_desc": "Selecciona el idioma de la interfaz (requiere reiniciar).",
+            "lang_title": "Idioma de la Aplicación",
+            "tray_desc": "Minimizar a la bandeja del sistema en lugar de cerrar la aplicación por completo.",
+            "tray_title": "Ejecución en Segundo Plano",
+            "update_desc": "Buscar e instalar nuevas versiones de MiniKick.",
+            "update_title": "Actualizaciones de Software"
+        }
+    },
+    "spam": {
+        "card": {
+            "action": "Acción",
+            "action_ban": "Expulsar usuario (Ban)",
+            "action_delete": "Eliminar mensaje",
+            "action_timeout": "Silenciar usuario",
+            "action_warn_delete": "Advertir y borrar mensaje",
+            "allowlist": "Enlaces permitidos (Allowlist)",
+            "allowlist_placeholder": "ej: clips.kick.com, youtube.com",
+            "config_title": "Configuración de Sanción",
+            "duration": "Duración (minutos)",
+            "exclude": "Excluir rango (Inmune)",
+            "exclude_mod": "Moderadores y Streamer",
+            "exclude_none": "Ninguno",
+            "exclude_sub": "Suscriptores y VIPs",
+            "max_amount": "Cantidad máxima permitida",
+            "max_characters": "Límite de caracteres por mensaje",
+            "max_symbols": "Límite de símbolos/caracteres extraños"
+        },
+        "filters": {
+            "caps": {
+                "desc": "Elimina mensajes con una cantidad excesiva de letras mayúsculas.",
+                "title": "Protección de Mayúsculas"
+            },
+            "emote": {
+                "desc": "Elimina mensajes que abusen de la cantidad de emotes.",
+                "title": "Protección de Emotes"
+            },
+            "link": {
+                "desc": "Elimina mensajes que contengan enlaces no autorizados.",
+                "title": "Protección de Enlaces"
+            },
+            "paragraph": {
+                "desc": "Bloquea mensajes excesivamente largos o paredes de texto (Límite de caracteres).",
+                "title": "Bloques de Texto Largos"
+            },
+            "repetition": {
+                "desc": "Penaliza mensajes duplicados y el uso excesivo de la misma palabra.",
+                "title": "Protección de Repetición"
+            },
+            "symbol": {
+                "desc": "Filtra textos con caracteres no latinos (árabe, zalgo, cirílico) o abuso de símbolos, ignorando emotes de Kick.",
+                "title": "Protección de Símbolos y Textos Extraños"
+            }
+        },
+        "header": {
+            "subtitle": "Usa estos filtros para mantener tu chat amigable, divertido y libre de toxicidad.",
+            "title": "Filtros Anti-Spam (Auto-Mod)"
+        },
+        "status": {
+            "activated": "Filtro Activado",
+            "activated_msg": "El filtro '{filter_name}' ahora está activo.",
+            "deactivated": "Filtro Desactivado",
+            "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo.",
+            "warn_msg": "@{user} por favor evita el spam en el chat."
+        }
+    },
+    "timer": {
+        "dialog": {
+            "btn_add_message": "+ Agregar Mensaje",
+            "categories_desc": "Activa el temporizador solo si la categoría del stream es una de las seleccionadas.",
+            "categories_label": "Categorías de Stream (separadas por coma):",
+            "categories_placeholder": "Ej: Just Chatting, IRL",
+            "chat_lines_desc": "Cantidad mínima de mensajes de chat requeridos en los últimos 5 minutos para activar el temporizador.",
+            "chat_lines_label": "Mensajes de Chat Mínimos",
+            "editor_title": "Editar Mensaje",
+            "help_desc": "Puedes usar filtros para restringir cuándo se envía el mensaje. Por ejemplo, puedes hacer que se envíe un temporizador de sorteos únicamente cuando tu stream contenga la palabra 'sorteo' en el título o pertenezca a la categoría 'IRL'.",
+            "keywords_desc": "Activa el temporizador solo si el título del stream contiene alguna de estas palabras clave.",
+            "keywords_label": "Palabras clave en el título de Stream (separadas por coma):",
+            "keywords_placeholder": "Ej: sorteo, especial",
+            "name_label": "Nombre del Temporizador:",
+            "name_placeholder": "Ej: Redes Sociales",
+            "offline_interval_label": "Intervalo Offline (minutos)",
+            "online_interval_label": "Intervalo Online (minutos)",
+            "response_label": "Mensajes de respuesta (se elegirá uno aleatoriamente):",
+            "response_placeholder": "Escribe el mensaje de respuesta aquí...",
+            "subtitle": "Define un nuevo temporizador automático para enviar mensajes al chat.",
+            "title": "Configurar Temporizador"
+        },
+        "empty": {
+            "btn": "Crear Temporizador",
+            "desc": "Programa mensajes automáticos para enviarse al chat cada cierto tiempo.",
+            "title": "Aún no hay temporizadores"
+        },
+        "header": {
+            "subtitle": "Publica anuncios automáticos, enlaces de redes sociales, tu horario o cualquier otra cosa.",
+            "title": "Temporizadores del Bot"
+        },
+        "status": {
+            "created": "Temporizador Creado",
+            "created_msg": "El temporizador '{name}' ha sido creado exitosamente.",
+            "deleted": "Temporizador Eliminado",
+            "deleted_msg": "El temporizador '{name}' ha sido eliminado permanentemente.",
+            "disabled": "Temporizador Desactivado",
+            "enabled": "Temporizador Activado",
+            "toggled_msg": "El temporizador '{name}' ha sido {status}.",
+            "updated": "Temporizador Actualizado",
+            "updated_msg": "El temporizador '{name}' ha sido actualizado exitosamente."
+        },
+        "table": {
+            "btn_new": "Nuevo Temporizador",
+            "col_actions": "Acciones",
+            "col_chat_lines": "Mensajes",
+            "col_interval_offline": "Int. Offline",
+            "col_interval_online": "Int. Online",
+            "col_message": "Mensaje",
+            "col_name": "Nombre",
+            "search_placeholder": "Buscar temporizador...",
+            "tooltip_delete": "Eliminar temporizador permanentemente",
+            "tooltip_edit": "Editar temporizador",
+            "unit_lines": "Líneas",
+            "unit_minutes": "Minutos"
+        }
+    },
+    "widgets": {
+        "combo": {
+            "desc": "Rastrea rachas del mismo emote en el chat y despliega un contador animado con efecto de fuego en pantalla.",
+            "min_combo_label": "Combo Mínimo para Mostrar:",
+            "msg_combo": "🔥 ¡COMBO DE EMOTES x{count} para {emote}! 🔥",
+            "timeout_label": "Tiempo Máximo de Combo (seg):",
+            "title": "Combo de Emotes (!combo)"
+        },
+        "death": {
+            "count_label": "Muertes Actuales en Juego:",
+            "desc": "Lleva el registro de muertes en juego en tiempo real con comandos de chat y controles en vivo.",
+            "msg_add": "💀 @{user} sumó una muerte. ¡Llevamos {count} muerte(s)!",
+            "msg_check": "💀 @{user}, llevamos {count} muerte(s) en el stream.",
+            "msg_reset": "🔄 @{user} ha reiniciado el contador de muertes a 0.",
+            "msg_sub": "💀 @{user} restó una muerte. Quedan {count} muerte(s).",
+            "overlay_title": "MUERTES",
+            "reset_btn": "Reiniciar a 0",
+            "title": "Contador de Muertes (!death)"
+        },
+        "explosion": {
+            "desc": "Muestra una ráfaga física animada de emotes flotando y rebotando en el overlay de OBS cuando se envían en el chat.",
+            "min_emotes_label": "Mínimo de Emotes por mensaje:",
+            "particle_count_label": "Partículas por ráfaga:",
+            "title": "Explosión de Emotes (!explosion)"
+        },
+        "header": {
+            "subtitle": "Configura widgets y contadores interactivos que reaccionan a comandos del chat de tu stream.",
+            "title": "Widgets Interactivos de Chat"
+        },
+        "obs_copy_btn": "Copiar URL para OBS",
+        "obs_label": "URL de Overlay OBS:",
+        "poll": {
+            "desc": "Muestra la encuesta activa del chat de Kick en tiempo real.",
+            "title": "Encuesta en Vivo"
+        },
+        "score": {
+            "desc": "Registra las victorias y derrotas de tu sesión en juego con comandos de chat.",
+            "losses_label": "Derrotas (Losses):",
+            "msg_check": "🏆 @{user}, el récord de hoy es: {wins} W - {losses} L.",
+            "msg_loss": "💔 @{user} sumó una derrota. Récord actual: {wins} W - {losses} L.",
+            "msg_reset": "🔄 @{user} ha reiniciado el récord a 0 W - 0 L.",
+            "msg_win": "🎉 @{user} sumó una victoria. Récord actual: {wins} W - {losses} L.",
+            "overlay_title": "RÉCORD V / D",
+            "reset_btn": "Reiniciar Récord",
+            "title": "Récord Victorias / Derrotas (!win +1/ !lose +1)",
+            "wins_label": "Victorias (Wins):"
+        },
+        "so": {
+            "default_msg": "📢 Vayan a apoyar y seguir a @{target} en https://kick.com/{target} !",
+            "desc": "Promociona a otros creadores en el chat enviando un mensaje personalizado con su enlace.",
+            "overlay_header": "Streamer Recomendado",
+            "template_label": "Plantilla del Mensaje de Shoutout:",
+            "title": "Promoción de Streamer (Shoutout !so)",
+            "usage_error": "⚠️ @{user}, debes especificar el nombre del streamer. Ejemplo: {trigger} TheAndro2K"
+        },
+        "status": {
+            "activated": "Widget Activado",
+            "activated_msg": "El widget '{widget_name}' ahora está activo.",
+            "deactivated": "Widget Desactivado",
+            "deactivated_msg": "El widget '{widget_name}' ahora está inactivo."
+        }
     }
 }
