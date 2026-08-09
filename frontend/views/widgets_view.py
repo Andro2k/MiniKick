@@ -10,13 +10,14 @@ class WidgetsView(BaseView):
     death_count_changed = Signal(int)
     score_changed = Signal(int, int)
 
-    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", parent=None):
+    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", poll_overlay_url: str = "", parent=None):
         super().__init__(i18n=i18n, title_key="widgets.header.title", subtitle_key="widgets.header.subtitle", parent=parent)
         self.shoutout_overlay_url = shoutout_overlay_url
         self.death_overlay_url = death_overlay_url
         self.score_overlay_url = score_overlay_url
         self.explosion_overlay_url = explosion_overlay_url
         self.combo_overlay_url = combo_overlay_url
+        self.poll_overlay_url = poll_overlay_url
         self.cards: dict[str, WidgetCard] = {}
         self._is_compact_layout: bool | None = None
         self._setup_ui()
@@ -48,6 +49,7 @@ class WidgetsView(BaseView):
 
         self.body_layout.addLayout(self.columns_layout)
 
+        self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-text.svg", column=1, obs_url=self.poll_overlay_url)
         self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), "user-check.svg", column=1, obs_url=self.shoutout_overlay_url)
         self._add_card("score", self.i18n.get("widgets.score.title"), self.i18n.get("widgets.score.desc"), "trophy.svg", column=1, obs_url=self.score_overlay_url)
         self._add_card("explosion", self.i18n.get("widgets.explosion.title"), self.i18n.get("widgets.explosion.desc"), "bomb.svg", column=1, obs_url=self.explosion_overlay_url)
@@ -57,12 +59,15 @@ class WidgetsView(BaseView):
         self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()
 
-    def set_overlay_urls(self, shoutout_url: str = "", death_url: str = "", score_url: str = "", explosion_url: str = "", combo_url: str = ""):
+    def set_overlay_urls(self, shoutout_url: str = "", death_url: str = "", score_url: str = "", explosion_url: str = "", combo_url: str = "", poll_url: str = ""):
         self.shoutout_overlay_url = shoutout_url
         self.death_overlay_url = death_url
         self.score_overlay_url = score_url
         self.explosion_overlay_url = explosion_url
         self.combo_overlay_url = combo_url
+        self.poll_overlay_url = poll_url
+        if "poll" in self.cards and poll_url:
+            self.cards["poll"].set_obs_overlay_url(poll_url)
         if "shoutout" in self.cards and shoutout_url:
             self.cards["shoutout"].set_obs_overlay_url(shoutout_url)
         if "death" in self.cards and death_url:

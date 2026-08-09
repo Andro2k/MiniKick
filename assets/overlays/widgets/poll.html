@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick - Live Poll OBS Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 8px;
+        }
+
+        #poll-container {
+            width: 100%;
+            max-width: 640px;
+            margin: auto;
+            position: relative;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        #poll-container.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .poll-card {
+            background: rgba(13, 17, 23, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2.5px solid rgba(46, 205, 112, 0.35);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 30px rgba(46, 205, 112, 0.18);
+            border-radius: 22px;
+            padding: 20px 22px;
+            color: #ffffff;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .poll-card.finished {
+            border-color: rgba(255, 215, 0, 0.6);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 215, 0, 0.25);
+        }
+
+        .poll-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            background: rgba(46, 205, 112, 0.15);
+            border: 1px solid rgba(46, 205, 112, 0.35);
+            border-radius: 14px;
+            flex-shrink: 0;
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .poll-card.finished .icon-box {
+            background: rgba(255, 215, 0, 0.18);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        .poll-icon {
+            width: 24px;
+            height: 24px;
+            color: #2ecd70;
+            transition: color 0.4s ease;
+        }
+
+        .poll-card.finished .poll-icon {
+            color: #ffd700;
+        }
+
+        .poll-title-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .poll-badge {
+            font-size: 10px;
+            font-weight: 800;
+            color: #2ecd70;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            transition: color 0.4s ease;
+        }
+
+        .poll-card.finished .poll-badge {
+            color: #ffd700;
+        }
+
+        .poll-question {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.35;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .option-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            transition: background 0.3s ease, border 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+
+        .option-item.winner {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1.5px solid rgba(255, 215, 0, 0.6);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            animation: pulse-winner 1.5s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-winner {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            }
+
+            100% {
+                transform: scale(1.02);
+                box-shadow: 0 0 28px rgba(255, 215, 0, 0.4);
+            }
+        }
+
+        .option-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .option-label-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .winner-crown {
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .winner-tag {
+            font-size: 9px;
+            font-weight: 900;
+            background: #ffd700;
+            color: #0d1117;
+            padding: 2px 6px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .option-label {
+            color: #f0f6fc;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 260px;
+        }
+
+        .option-votes {
+            color: #8b949e;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .bar-track {
+            width: 100%;
+            height: 9px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecd70 0%, #25ae60 100%);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
+            box-shadow: 0 0 10px rgba(46, 205, 112, 0.4);
+        }
+
+        .option-item.winner .bar-fill {
+            background: linear-gradient(90deg, #ffd700 0%, #ffaa00 100%);
+            box-shadow: 0 0 14px rgba(255, 215, 0, 0.6);
+        }
+
+        .poll-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #8b949e;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .timer-badge {
+            color: #38d9a9;
+            font-weight: 800;
+            transition: color 0.4s ease;
+        }
+
+        .poll-card.finished .timer-badge {
+            color: #ffd700;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="poll-container">
+        <div id="poll-card" class="poll-card">
+            <div class="poll-header">
+                <div class="icon-box">
+                    <svg class="poll-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </div>
+                <div class="poll-title-box">
+                    <span id="poll-badge-text" class="poll-badge">ENCUESTA EN VIVO</span>
+                    <span id="poll-question" class="poll-question">--</span>
+                </div>
+            </div>
+
+            <div id="options-list" class="options-list">
+            </div>
+
+            <div class="poll-footer">
+                <span id="poll-timer" class="timer-badge">--</span>
+                <span id="poll-total-votes">0 votos</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const lang = (urlParams.get('lang') || 'es').toLowerCase();
+
+        const pollContainer = document.getElementById('poll-container');
+        const pollCard = document.getElementById('poll-card');
+        const pollBadgeText = document.getElementById('poll-badge-text');
+        const pollQuestion = document.getElementById('poll-question');
+        const optionsList = document.getElementById('options-list');
+        const pollTimer = document.getElementById('poll-timer');
+        const pollTotalVotes = document.getElementById('poll-total-votes');
+
+        let ws = null;
+        let reconnectTimer = null;
+        let heartbeatTimer = null;
+        let countdownInterval = null;
+
+        let currentPollState = null;
+        let remainingSeconds = 0;
+        let resultDisplaySeconds = 15;
+        let isResultPhase = false;
+
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) { }
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Poll Overlay] WebSocket conectado.");
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
+            };
+
+            ws.onmessage = function (e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'pong') return;
+                    if (data.event === 'poll_update') {
+                        handlePollUpdate(data.poll || data);
+                    } else if (data.event === 'poll_delete') {
+                        hidePoll();
+                    } else if (data.event === 'widget_toggle' && data.widget_id === 'poll') {
+                        if (data.is_active === false) {
+                            hidePoll();
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error al procesar evento de encuesta:", err);
+                }
+            };
+
+            ws.onerror = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+
+            ws.onclose = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        function scheduleReconnect() {
+            if (!reconnectTimer) {
+                reconnectTimer = setTimeout(() => {
+                    connectWS();
+                }, 3000);
+            }
+        }
+
+        function handlePollUpdate(poll) {
+            if (!poll || !poll.title) {
+                hidePoll();
+                return;
+            }
+
+            currentPollState = poll;
+            remainingSeconds = typeof poll.remaining === 'number' ? poll.remaining : (poll.duration || 30);
+            resultDisplaySeconds = typeof poll.result_display_duration === 'number' ? poll.result_display_duration : 15;
+            isResultPhase = (remainingSeconds <= 0);
+
+            startTimerLoop();
+            renderUI();
+        }
+
+        function startTimerLoop() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+
+            countdownInterval = setInterval(() => {
+                if (!isResultPhase) {
+                    remainingSeconds--;
+                    if (remainingSeconds <= 0) {
+                        remainingSeconds = 0;
+                        isResultPhase = true;
+                    }
+                } else {
+                    resultDisplaySeconds--;
+                    if (resultDisplaySeconds <= 0) {
+                        cleanup();
+                        hidePoll();
+                        return;
+                    }
+                }
+                renderUI();
+            }, 1000);
+        }
+
+        function renderUI() {
+            if (!currentPollState) return;
+
+            pollQuestion.textContent = currentPollState.title || '';
+            const options = currentPollState.options || [];
+            const totalVotes = options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
+
+            let maxVotes = -1;
+            options.forEach(opt => {
+                const v = opt.votes || 0;
+                if (v > maxVotes) maxVotes = v;
+            });
+
+            const hasWinners = isResultPhase && maxVotes > 0;
+
+            if (isResultPhase) {
+                pollCard.classList.add('finished');
+                pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT' : 'RESULTADO FINAL';
+                pollTimer.textContent = lang === 'en' ? `Closing in ${resultDisplaySeconds}s` : `Cerrando en ${resultDisplaySeconds}s`;
+            } else {
+                pollCard.classList.remove('finished');
+                pollBadgeText.textContent = lang === 'en' ? 'LIVE POLL' : 'ENCUESTA EN VIVO';
+                pollTimer.textContent = lang === 'en' ? `Time: ${remainingSeconds}s` : `Tiempo: ${remainingSeconds}s`;
+            }
+
+            pollTotalVotes.textContent = lang === 'en' ? `${totalVotes} votes` : `${totalVotes} votos`;
+
+            optionsList.innerHTML = '';
+            options.forEach(opt => {
+                const votes = opt.votes || 0;
+                const percent = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0';
+                const isWinner = hasWinners && (votes === maxVotes);
+
+                const optItem = document.createElement('div');
+                optItem.className = `option-item ${isWinner ? 'winner' : ''}`;
+
+                const winnerBadge = isWinner ? `<span class="winner-crown">👑</span><span class="winner-tag">${lang === 'en' ? 'WINNER' : 'GANADOR'}</span>` : '';
+
+                optItem.innerHTML = `
+                    <div class="option-meta">
+                        <div class="option-label-container">
+                            ${winnerBadge}
+                            <span class="option-label">${escapeHtml(opt.label || '')}</span>
+                        </div>
+                        <span class="option-votes">${votes} (${percent}%)</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${percent}%"></div>
+                    </div>
+                `;
+                optionsList.appendChild(optItem);
+            });
+
+            pollContainer.classList.add('visible');
+        }
+
+        function hidePoll() {
+            pollContainer.classList.remove('visible');
+            currentPollState = null;
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        connectWS();
+    </script>
+</body>
+
+</html>

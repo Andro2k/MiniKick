@@ -6,7 +6,9 @@ from backend.providers import KickAPIClient, ChatSocketManager
 class ChatWorker(QThread):
     message_received = Signal(str, str, list, str, str, int) 
     error_occurred = Signal(str)        
-    connection_success = Signal(dict)   
+    connection_success = Signal(dict)
+    poll_updated = Signal(dict)
+    poll_deleted = Signal()
     
     def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):
         super().__init__(parent)
@@ -31,7 +33,12 @@ class ChatWorker(QThread):
             self.connection_success.emit(user_data)
 
             while not self._is_stopped:
-                self.chat_manager.start_socket(room_id, on_message=self._dispatch_message)
+                self.chat_manager.start_socket(
+                    room_id,
+                    on_message=self._dispatch_message,
+                    on_poll_update=self._dispatch_poll_update,
+                    on_poll_delete=self._dispatch_poll_delete,
+                )
                 if not self._is_stopped:
                     self.msleep(5000)
 
@@ -42,6 +49,14 @@ class ChatWorker(QThread):
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
         if not self._is_stopped:
             self.message_received.emit(user, msg, badges, color, msg_id, sender_id)
+
+    def _dispatch_poll_update(self, poll_data: dict):
+        if not self._is_stopped:
+            self.poll_updated.emit(poll_data)
+
+    def _dispatch_poll_delete(self):
+        if not self._is_stopped:
+            self.poll_deleted.emit()
 
     def stop(self):
         self._is_stopped = True

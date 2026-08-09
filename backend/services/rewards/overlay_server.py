@@ -213,6 +213,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 elif topic == "widgets":
                     ws_client.send_json({"event": "death_update", **getattr(self.server.manager, "_last_death_data", {"count": 0, "is_active": True})})
                     ws_client.send_json({"event": "score", **getattr(self.server.manager, "_last_score_data", {"wins": 0, "losses": 0, "is_active": True})})
+                    if getattr(self.server.manager, "_last_poll_data", None):
+                        import time
+                        poll_copy = dict(self.server.manager._last_poll_data)
+                        elapsed = time.time() - getattr(self.server.manager, "_last_poll_timestamp", time.time())
+                        orig_rem = poll_copy.get("remaining", 0)
+                        poll_copy["remaining"] = max(0, int(orig_rem - elapsed))
+                        ws_client.send_json({"event": "poll_update", "poll": poll_copy})
 
                 while not ws_client.closed:
                     msg = ws_client.read_frame()
@@ -333,6 +340,20 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
             except FileNotFoundError:
                 self.send_error(404, f"Emote Combo Overlay HTML not found at: {html_path}")
+
+        elif path in ("/widgets/poll", "/widgets/polls", "/poll"):
+            html_path = get_resource_path(os.path.join("assets", "overlays", "widgets", "poll.html"))
+            try:
+                with open(html_path, "rb") as f:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Expires", "0")
+                    self.end_headers()
+                    self.wfile.write(f.read())
+            except FileNotFoundError:
+                self.send_error(404, f"Poll Overlay HTML not found at: {html_path}")
 
         elif path.startswith("/css/"):
             css_filename = os.path.basename(path)
@@ -565,6 +586,8 @@ class OverlayServerManager:
         self._last_score: dict = {"wins": 0, "losses": 0}
         self._last_death_data: dict = {"count": 0, "is_active": True}
         self._last_score_data: dict = {"wins": 0, "losses": 0, "is_active": True}
+        self._last_poll_data: dict | None = None
+        self._last_poll_timestamp: float = 0.0
         self.settings_storage = settings_storage
         self.lock = threading.Lock()
         
@@ -612,6 +635,9 @@ class OverlayServerManager:
 
     def get_combo_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/widgets/emote_combo?token={self.session_token}"
+
+    def get_poll_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/poll?token={self.session_token}"
 
     def get_widgets_overlay_url(self) -> str:
         return self.get_shoutout_overlay_url()
@@ -703,6 +729,13 @@ class OverlayServerManager:
         elif event_type == "score":
             self._last_score = {"wins": data.get("wins", 0), "losses": data.get("losses", 0)}
             self._last_score_data.update(data)
+        elif event_type == "poll_update":
+            import time
+            self._last_poll_data = data.get("poll") or data
+            self._last_poll_timestamp = time.time()
+        elif event_type == "poll_delete":
+            self._last_poll_data = None
+            self._last_poll_timestamp = 0.0
         elif event_type == "widget_toggle":
             w_id = data.get("widget_id")
             if w_id == "death":

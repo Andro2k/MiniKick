@@ -13,15 +13,40 @@ class ChatSocketManager:
         self.ws: websocket.WebSocketApp | None = None
         self._room_id = 0
         self._callback: Callable | None = None
+        self._on_poll_update: Callable[[dict], None] | None = None
+        self._on_poll_delete: Callable[[], None] | None = None
+        self._dispatch_table: dict[str, Callable[[dict, websocket.WebSocketApp], None]] = {
+            "App\\Events\\ChatMessageEvent": self._handle_chat_message,
+            "App\\Events\\PollUpdateEvent": self._handle_poll_update,
+            "App\\Events\\PollDeleteEvent": self._handle_poll_delete,
+            "pusher:connection_established": self._handle_connection_established,
+            "pusher:ping": self._handle_ping,
+        }
 
-    def start_socket(self, room_id: int, on_message: Callable[[str, str, list, str, str, int], None]) -> None:
+    def start_socket(
+        self,
+        room_id: int,
+        on_message: Callable[[str, str, list, str, str, int], None],
+        on_poll_update: Callable[[dict], None] | None = None,
+        on_poll_delete: Callable[[], None] | None = None,
+    ) -> None:
         self._room_id = room_id
         self._callback = on_message
+        self._on_poll_update = on_poll_update
+        self._on_poll_delete = on_poll_delete
         self._running = True
         
         url = f"wss://ws-{self.cluster}.pusher.com/app/{self.key}?protocol=7&client=js&version=7.6.0"
         self.ws = websocket.WebSocketApp(url, on_message=self._on_raw_frame)
         self.ws.run_forever(ping_interval=30, ping_timeout=10)
+
+    def _parse_inner_data(self, outer: dict) -> dict:
+        data_raw = outer.get("data", {})
+        if isinstance(data_raw, str):
+            return json.loads(data_raw) if data_raw else {}
+        elif isinstance(data_raw, dict):
+            return data_raw
+        return {}
 
     def _on_raw_frame(self, ws: websocket.WebSocketApp, raw: str) -> None:
         if not self._running:
@@ -30,39 +55,52 @@ class ChatSocketManager:
         try:
             outer = json.loads(raw)
             event = outer.get("event")
-
-            if event == "App\\Events\\ChatMessageEvent":
-                inner = json.loads(outer.get("data", "{}"))
-                sender = inner.get("sender", {})
-                
-                user = sender.get("username", "")
-                msg = inner.get("content", "")
-                if not user or not msg:
-                    return
-
-                identity = sender.get("identity", {})
-                raw_badges = identity.get("badges", [])
-                badges = [b["type"] for b in raw_badges if isinstance(b, dict) and "type" in b]
-                
-                color = identity.get("color", "") or COLOR_GREEN
-                msg_id = inner.get("id", "")
-                sender_id = sender.get("id", 0)
-
-                if self._callback:
-                    self._callback(user, msg, badges, color, msg_id, sender_id)
-
-            elif event == "pusher:connection_established":
-                payload = json.dumps({
-                    "event": "pusher:subscribe",
-                    "data": {"channel": f"chatrooms.{self._room_id}.v2"}
-                })
-                ws.send(payload)
-
-            elif event == "pusher:ping":
-                ws.send('{"event":"pusher:pong"}')
+            handler = self._dispatch_table.get(event)
+            if handler:
+                handler(outer, ws)
 
         except (json.JSONDecodeError, KeyError, TypeError, AttributeError):
             pass
+
+    def _handle_chat_message(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        inner = self._parse_inner_data(outer)
+        sender = inner.get("sender", {})
+        
+        user = sender.get("username", "")
+        msg = inner.get("content", "")
+        if not user or not msg:
+            return
+
+        identity = sender.get("identity", {})
+        raw_badges = identity.get("badges", [])
+        badges = [b["type"] for b in raw_badges if isinstance(b, dict) and "type" in b]
+        
+        color = identity.get("color", "") or COLOR_GREEN
+        msg_id = inner.get("id", "")
+        sender_id = sender.get("id", 0)
+
+        if self._callback:
+            self._callback(user, msg, badges, color, msg_id, sender_id)
+
+    def _handle_poll_update(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        inner = self._parse_inner_data(outer)
+        poll_data = inner.get("poll") or inner
+        if poll_data and self._on_poll_update:
+            self._on_poll_update(poll_data)
+
+    def _handle_poll_delete(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        if self._on_poll_delete:
+            self._on_poll_delete()
+
+    def _handle_connection_established(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        payload = json.dumps({
+            "event": "pusher:subscribe",
+            "data": {"channel": f"chatrooms.{self._room_id}.v2"}
+        })
+        ws.send(payload)
+
+    def _handle_ping(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        ws.send('{"event":"pusher:pong"}')
 
     def stop_socket(self) -> None:
         self._running = False
@@ -70,3 +108,4 @@ class ChatSocketManager:
             self.ws.keep_running = False
             if self.ws.sock and self.ws.sock.connected:
                 self.ws.sock.close()
+

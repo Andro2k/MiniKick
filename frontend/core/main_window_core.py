@@ -276,6 +276,7 @@ class MainWindowCore(QMainWindow):
                 score_overlay_url=self.overlay_server.get_score_overlay_url(),
                 explosion_overlay_url=self.overlay_server.get_explosion_overlay_url(),
                 combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
+                poll_overlay_url=self.overlay_server.get_poll_overlay_url(),
                 parent=self
             )
             self.widget_controller.attach_view(self.view_widgets)
@@ -441,6 +442,8 @@ class MainWindowCore(QMainWindow):
         self.chat_worker = ChatWorker(self.i18n, api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, parent=self)
         self.chat_worker.connection_success.connect(self._on_web_socket_connected)
         self.chat_worker.message_received.connect(self._route_incoming_message)
+        self.chat_worker.poll_updated.connect(self._on_poll_updated)
+        self.chat_worker.poll_deleted.connect(self._on_poll_deleted)
         self.chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
         
         self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=10, parent=self)
@@ -449,6 +452,16 @@ class MainWindowCore(QMainWindow):
         self.chat_worker.start()
         self.reward_worker.start()
         self.auth_worker = None
+
+    def _on_poll_updated(self, poll_data: dict):
+        self._active_poll_data = poll_data
+        if hasattr(self, 'overlay_server') and self.overlay_server:
+            self.overlay_server.trigger_widget_event("poll_update", {"poll": poll_data})
+
+    def _on_poll_deleted(self):
+        self._active_poll_data = None
+        if hasattr(self, 'overlay_server') and self.overlay_server:
+            self.overlay_server.trigger_widget_event("poll_delete", {})
 
     def _on_web_socket_connected(self, user_data):
         self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
