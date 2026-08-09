@@ -344,26 +344,7 @@ class LiveNetworkGraph(QFrame):
             btn = QPushButton(label_text)
             btn.setCheckable(True)
             btn.setCursor(Qt.CursorShape.PointingHandCursor)
-            btn.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: {COLOR_NEUTRAL_850};
-                    color: {COLOR_NEUTRAL_400};
-                    border: 1px solid {COLOR_NEUTRAL_800};
-                    border-radius: 6px;
-                    padding: 3px 10px;
-                    font-size: 11px;
-                    font-weight: 600;
-                }}
-                QPushButton:hover {{
-                    background-color: {COLOR_NEUTRAL_800};
-                    color: {COLOR_WHITE};
-                }}
-                QPushButton:checked {{
-                    background-color: {COLOR_GREEN};
-                    color: {COLOR_BLACK};
-                    border-color: {COLOR_GREEN};
-                }}
-            """)
+            btn.setProperty("role", "filter_chip")
             if key == "all":
                 btn.setChecked(True)
 

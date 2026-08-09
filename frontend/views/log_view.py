@@ -41,14 +41,6 @@ class LogControlsPanel(QFrame):
         self.txt_search.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.txt_search.textChanged.connect(self.search_changed.emit)
 
-        self.combo_filter = NoWheelComboBox()
-        self.combo_filter.addItems([
-            self.i18n.get("log.controls.filter_all"),
-            "INFO", "DEBUG", "WARNING", "ERROR",
-        ])
-        self.combo_filter.setMinimumWidth(110)
-        self.combo_filter.currentTextChanged.connect(self.filter_changed.emit)
-
         self.combo_date = NoWheelComboBox()
         self.combo_date.addItem(self.i18n.get("log.controls.date_all"), "")
         self.combo_date.addItem(self.i18n.get("log.controls.date_1d"), "1d")
@@ -58,7 +50,6 @@ class LogControlsPanel(QFrame):
         self.combo_date.currentIndexChanged.connect(self._on_date_changed)
 
         self._search.addWidget(self.txt_search, 1)
-        self._search.addWidget(self.combo_filter)
         self._search.addWidget(self.combo_date)
         root.addLayout(self._search)
 
@@ -130,7 +121,6 @@ class LogControlsPanel(QFrame):
 
     def set_streaming_controls_enabled(self, enabled: bool):
         self.txt_search.setEnabled(enabled)
-        self.combo_filter.setEnabled(enabled)
         self.combo_date.setEnabled(enabled)
         if not self.btn_live.isVisible():
             self.btn_clear.setEnabled(enabled)

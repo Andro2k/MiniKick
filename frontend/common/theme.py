@@ -174,7 +174,6 @@ QFrame[role="toast"][state="success"] {{ border-color: {COLOR_NEUTRAL_750}; }}
 QFrame[role="toast"][state="danger"] {{ border-color: {COLOR_RED_GLOW}; }}
 QFrame[role="toast"][state="warning"] {{ border-color: {COLOR_AMBER_GLOW}; }}
 QFrame[role="toast"][state="info"] {{ border-color: {COLOR_BLUE_GLOW}; }}
-
 QProgressBar {{ background-color: {COLOR_NEUTRAL_850}; border: 1px solid {COLOR_NEUTRAL_800}; border-radius: 4px; height: 6px; text-align: center; }}
 QProgressBar::chunk {{ background-color: {COLOR_GREEN}; border-radius: 3px; }}
 
@@ -222,7 +221,6 @@ QPushButton[role="nav_button"]:hover {{ background-color: {COLOR_NEUTRAL_800}; c
 QPushButton[role="nav_button"]:checked {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_GREEN}; font-weight: 700; }}
 QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-left: 10px; }}
 QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 10px; }}
-
 QPushButton[role="action_accent"] {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; font-size: {size_textline_1}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_GREEN_DARK}; }}
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-size: {size_textline_1}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
@@ -235,6 +233,9 @@ QPushButton[role="action_neutral_border"] {{ background-color: {COLOR_NEUTRAL_85
 QPushButton[role="action_neutral_border"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QPushButton[role="filter_chip"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_SM}px; padding: 3px 10px; font-size: {size_textline_2}px; font-weight: 600; }}
+QPushButton[role="filter_chip"]:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
+QPushButton[role="filter_chip"]:checked {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; border-color: {COLOR_GREEN}; font-weight: 700; }}
 
 /* ==============================================================================
    7. ESTADOS DESHABILITADOS (Global)

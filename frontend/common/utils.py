@@ -6,7 +6,7 @@ import sys
 from functools import lru_cache
 from PySide6.QtWidgets import QComboBox, QSlider
 from PySide6.QtCore import Qt, QByteArray, QRectF
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QImage, QPainterPath
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
 logger = logging.getLogger("minikick.utils")
 
@@ -127,6 +127,7 @@ def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
 class NoWheelComboBox(QComboBox):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
     def wheelEvent(self, event):
         if not self.hasFocus():
@@ -140,6 +141,7 @@ class NoWheelSlider(QSlider):
             super().__init__(orientation, parent)
         else:
             super().__init__(parent)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
     def wheelEvent(self, event):
         if not self.hasFocus():

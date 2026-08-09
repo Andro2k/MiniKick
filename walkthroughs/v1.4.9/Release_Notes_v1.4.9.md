@@ -1,62 +1,98 @@
 # Release Notes - MiniKick Version v1.4.9
 
 > [!NOTE]
-> MiniKick v1.4.9 es una versión enfocada en la **Extensión de Almacenamiento Local a 5 GB**, **Persistencia Real de Canciones en Disco Duro**, **Fix de Retención de Audio Local**, **Herramientas de Diagnóstico de Kick WebSocket en Tiempo Real**, **Refactorización de la API de Kick (v1/v2)** y **Fortalecimiento de la Suite de Pruebas Automatizadas (`pytest`)**.
+> MiniKick v1.4.9 representa una actualización integral del ecosistema. Consolida **10 avances fundamentales** desarrollados a lo largo de la versión: **Extensión del Almacenamiento Local a 5 GB (5000 MB)**, **Inspector de Kick WebSocket con Modo RAW y Registro en Tiempo Real**, **API Pública de Kick v2 (`/rewards`)**, **Widgets OBS Overlay en Vivo para Encuestas (`poll.html`) y Mensajes Fijados (`pinned.html`)**, **Chat Overlay Enriquecido (Niveles `badges_v2` & Badge `OG`)**, **Modularización del Servidor Overlay (`backend/services/overlay/`)**, **Separación de Comandos de Música (`MusicCommandHandler`)**, **Fix de Carga Diferida del Overlay de Música al Inicio**, **Encapsulamiento del Diálogo de Actualizaciones (`UpdateController`)**, **Menú Lateral con Scroll Adaptativo (`Sidebar`)**, **Protección de Foco en ComboBoxes (`NoWheelComboBox`)** y **Cumplimiento Estricto del Sistema de Temas (Cero `setStyleSheet` Inline en el Frontend)**.
 
 ---
 
-## 🚀 Novedades Destacadas v1.4.9
+## Novedades Destacadas v1.4.9
 
 > [!IMPORTANT]
-> **1. Ampliación de Capacidad a 5 GB, Persistencia Real de Canciones y Gestión LFU/LRU**
-> - **Límite Incrementado a 5 GB (5000 MB):** Se amplió el espacio total de caché en disco de 1 GB a **5 GB** en [cache_manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/cache_manager.py) y [youtube_client.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/music/youtube_client.py).
-> - **Retención en Disco Duro Corregida:** Se eliminó la instrucción antigua que borraba el archivo de audio local al finalizar la reproducción en [youtube_client.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/music/youtube_client.py). Ahora las canciones permanecen guardadas en `%LOCALAPPDATA%\.Minikick\cache` para reproducciones instantáneas en 0.01s.
-> - **Gestor de Espacio e Histórico LFU/LRU (`MusicCacheManager`):** Control automático del disco en `%LOCALAPPDATA%\.Minikick\cache` con el nuevo límite de **5 GB**. Las canciones acumulan popularidad (`play_count`) y fecha de acceso (`last_accessed`). Si la carpeta supera 5 GB, el sistema purga únicamente los archivos de canciones poco populares y antiguas, protegiendo las canciones más queridas del canal.
-> - **Reordenamiento por Arrastrar y Soltar:** La tabla de la cola de música ([queue_panel.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/music/queue_panel.py)) permite arrastrar filas usando la manija visual (`grip-vertical.svg`), preservando la selección de la canción movida en su nuevo índice.
-> - **Normalización y Coincidencia Difusa (*Fuzzy Match*):** En [music_storage.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/music_storage.py), la función `normalize_query` y `difflib.SequenceMatcher` ($\ge 85\%$ de umbral) detectan búsquedas equivalentes (ej. *"zombie vs creeper"* = *"creeper vs zombie"*), previniendo descargas redundantes.
+> **1. Almacenamiento de Música a 5 GB (5000 MB) & Reuso Instantáneo en Disco**
+>
+> - **Extensión de Caché a 5 GB:** En [cache_manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/cache_manager.py), el límite `DEFAULT_MAX_CACHE_MB` se incrementó a `5000` (5 GB).
+> - **Persistencia de Audio:** Eliminada la instrucción de borrado automático `os.remove()` al finalizar canciones. Los archivos permanecen almacenados en `%LOCALAPPDATA%\.Minikick\cache\yt_<id>.*`.
+> - **Reuso Instantáneo ($\mathcal{O}(1)$ Red):** Al volver a pedir una canción guardada, la verificación por Video ID (`yt_<video_id>.*`) se realiza en disco en 0.01 segundos con **0 descargas y 0 peticiones HTTP a YouTube**.
+> - **Gestión Inteligente LFU/LRU:** Las canciones se purgan únicamente al superar los **5 GB**, eliminando en primer lugar los archivos con menor reproducción (`play_count`) y más antiguos (`last_accessed`).
 
 > [!IMPORTANT]
 > **2. Inspector en Tiempo Real de Kick WebSocket (`test_kick_websocket_live.py`)**
-> - **Monitoreo en Vivo de Eventos de Kick:** Script interactivo ([test_kick_websocket_live.py](file:///c:/Users/TheAn/Desktop/python/Kick/tests/test_kick_websocket_live.py)) para inspeccionar eventos en tiempo real: `ChatMessageEvent`, `GiftedSubscriptionsEvent`, `SubscriptionEvent`, `StreamHostEvent`, `PollUpdateEvent`, `UserBannedEvent`, `UserUnbannedEvent` y estadísticas de espectadores.
-> - **Modo RAW (`--raw` / `-r`):** Visualización del paquete JSON 100% en crudo decodificado para analizar todos los atributos enviados por Pusher.
-> - **Registro Automático en Archivo con Fecha y Hora:** Toda sesión graba automáticamente sus logs en `tests/logs/ws_<canal>_YYYY-MM-DD_HH-MM-SS.log` en tiempo real.
-> - **Clave Pusher Oficial Integrada:** Sincronizado directamente con las constantes oficiales en [api_keys.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/config/api_keys.py) (`32cbd69e4b950bf97679`, cluster `us2`).
+>
+> - **Monitoreo de Eventos en Vivo:** Herramienta interactiva ([test_kick_websocket_live.py](file:///c:/Users/TheAn/Desktop/python/Kick/tests/test_kick_websocket_live.py)) para inspeccionar `ChatMessageEvent`, `GiftedSubscriptionsEvent`, `SubscriptionEvent`, `StreamHostEvent`, `PollUpdateEvent`, `UserBannedEvent`, `UserUnbannedEvent` y métricas de espectadores.
+> - **Modo RAW (`--raw` / `-r`):** Visualización del paquete JSON 100% en crudo para auditoría de Pusher.
+> - **Registro en Archivo:** Grabación en tiempo real en `tests/logs/ws_<canal>_YYYY-MM-DD_HH-MM-SS.log`.
 
 > [!IMPORTANT]
-> **3. Arquitectura Kick API Client & Consumo v2**
-> - **Centralización SoR:** Eliminación de llamadas `import requests` improvisadas dentro de los *Services* (como en [widget_service.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/widget_service.py)), canalizando todo el tráfico HTTP a través del proveedor [kick_client.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/kick_client.py) usando `ScraperFactory`.
-> - **Soporte para API Pública v2 (`/rewards`):** Método `fetch_public_channel_rewards(channel_slug)` para consultar las recompensas públicas activas de cualquier canal sin requerir tokens OAuth.
+> **3. Arquitectura Kick API Client & Consumo Público v2**
+>
+> - **Centralización SoR:** Eliminadas las peticiones `requests` directas en capas de servicio ([widget_service.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/widget_service.py)), canalizando todo el tráfico a través del cliente [kick_client.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/kick_client.py) mediante `ScraperFactory`.
+> - **Soporte para API Pública v2 (`/rewards`):** Método `fetch_public_channel_rewards(channel_slug)` para consultar las recompensas de canal públicas de cualquier streamer sin requerir tokens OAuth.
 
 > [!IMPORTANT]
-> **4. Carga Diferida de Vistas (*Lazy Loading*) & Reproductor de Música Integrado**
-> - **Instanciación Bajo Demanda:** [main_window_core.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/core/main_window_core.py) carga únicamente `DashboardView` al iniciar la app. Las demás vistas se instancian únicamente al cambiar de pestaña.
-> - **Reproductor Interactivo:** Visualización del nombre del solicitante de la canción (*"Solicitado por: Usuario"*), barra de progreso dinámica (`QProgressBar`) y reloj de tiempo transcurrido / total.
+> **4. Captura de Encuestas en Vivo (OBS Overlay Widget `poll.html`)**
+>
+> - **Widget Web de Encuestas:** Creación del overlay [poll.html](file:///c:/Users/TheAn/Desktop/python/Kick/assets/overlays/widgets/poll.html) con diseño glassmorphism, barras de progreso animadas en gradiente verde, temporizador y conteo de votos en tiempo real.
+> - **Eventos WebSocket de Encuestas:** Servidor [overlay_server.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/overlay/overlay_routes.py) emite `poll_update` y `poll_delete` hacia OBS en tiempo real.
 
 > [!IMPORTANT]
-> **5. Contratos de Interfaz & Suite de Pruebas Automatizadas (`pytest`)**
-> - Contratos formales `IMusicProvider`, `IStorageRepository` y `IChatService` en [backend/interfaces/](file:///c:/Users/TheAn/Desktop/python/Kick/backend/interfaces/).
-> - Suite de 13 pruebas unitarias en `tests/` con 100% de éxito (incluyendo `test_cache_manager.py`).
+> **5. Mensaje Fijado OBS Overlay & Chat Overlay Enriquecido (Niveles `badges_v2` & Badge `OG`)**
+>
+> - **Pinned Message Overlay (`pinned.html`):** Banner dinámico en pantalla ([pinned.html](file:///c:/Users/TheAn/Desktop/python/Kick/assets/overlays/widgets/pinned.html)) que muestra mensajes fijados en el chat de Kick en tiempo real con persistencia en OBS.
+> - **Chat Overlay Enriquecido (`chat.html`):** Renderizado de niveles de usuario (`badges_v2` -> `Lvl X`), insignias `OG`, VIP, Mod, Sub y Broadcaster.
+
+> [!IMPORTANT]
+> **6. Modularización del Servidor Overlay (`backend/services/overlay/`)**
+>
+> - **Descomposición del Monolito:** El archivo legacy `overlay_server.py` (802 líneas) fue refactorizado y dividido en tres módulos dentro de [backend/services/overlay/](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/overlay/):
+>   - [websocket_client.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/overlay/websocket_client.py): Trama binaria WebSocket RFC 6455 y desenmascaramiento XOR vectorizado.
+>   - [overlay_routes.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/overlay/overlay_routes.py): Enrutador HTTP con tabla de despacho $\mathcal{O}(1)$ (`STATIC_ENDPOINTS_MAP`), caché RAM de activos estáticos (`_ASSET_CACHE`) y transmisiones SSE unificadas.
+>   - [overlay_manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/overlay/overlay_manager.py): Gestor HTTP global, tokens de seguridad y difusión multitema thread-safe.
+> - **Promoción de Dominio:** `overlay` promovido a servicio de dominio de primer nivel en `backend/services/overlay/`.
+
+> [!IMPORTANT]
+> **7. Refactorización de Controlador y Delegación de Comandos (`MusicCommandHandler`)**
+>
+> - **Separación de Responsabilidades (SRP):** Lógica de comandos de chat bot (`!sr`, `!skip`, `!song`, `!pause`, `!resume`, `!playlist`, `!vol`) extraída a [music_command_handler.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/handlers/music_command_handler.py).
+> - **Reducción de Controlador:** [music_controller.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/music_controller.py) reducido de 584 a ~380 líneas.
+> - **Despacho $\mathcal{O}(1)$ & Paginación:** Dispatch Table en tiempo constante $\mathcal{O}(1)$ y paginación de playlist por espectador (`MAX_PER_MSG = 8`).
+
+> [!IMPORTANT]
+> **8. Corrección del Inicio del Overlay de Música con Carga Diferida**
+>
+> - **Sondeo en Segundo Plano al Iniciar:** Inicialización de `_init_youtube_provider()` ejecutada en el constructor `__init__` de `MusicController`.
+> - **Broadcasting Instantáneo:** El reproductor y el sondeo inician al arrancar la app (`view=None`). El overlay `/music` en navegador recibe eventos `song_changed` al instante sin requerir abrir la pestaña "Music".
+
+> [!IMPORTANT]
+> **9. Encapsulamiento de Diálogos de Actualización & Simplificación de `MainWindowCore`**
+>
+> - **Centralización en `UpdateController`:** Método `show_update_dialog(...)` en [update_controller.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/update_controller.py) que gestiona `UpdateDialog`, callbacks y reinicio.
+> - **Reducción de `MainWindowCore`:** Reducido [main_window_core.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/core/main_window_core.py) de 782 a ~730 líneas.
+
+> [!IMPORTANT]
+> **10. Mejoras en la Interfaz de Usuario & Sistema de Diseño Centralizado**
+>
+> - **Sidebar con Scroll Adaptativo:** [sidebar_component.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/sidebar_component.py) con `QScrollArea` transparente para albergar módulos ilimitados.
+> - **Control de Foco en ComboBoxes (`NoWheelComboBox`):** `FocusPolicy.StrongFocus` en [utils.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/utils.py) previniendo cambios de selección involuntarios al desplazar la rueda del ratón.
+> - **Limpieza de Filtro Redundante:** Removido `combo_filter` del panel de [log_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/log_view.py), usando exclusivamente el filtro de encabezado de `ModernTableWidget`.
+> - **Cero `setStyleSheet` Inline:** Creado el rol `QPushButton[role="filter_chip"]` en [theme.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py) y migrado [network_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/network_view.py). 0 estilos CSS inline en todo el frontend.
 
 ---
 
-## 📊 Comparativa de Eficiencia y Rendimiento (Big-O)
+## Comparativa de Eficiencia y Rendimiento (Big-O)
 
-| Módulo / Operación | Comportamiento Anterior | Optimización v1.4.9 | Impacto en Rendimiento |
-|---|---|---|---|
-| Límite de Almacenamiento Local | 1000 MB (1 GB) | **5000 MB (5 GB)** | **5x mayor capacidad** para almacenar cientos de canciones locales |
-| Persistencia de Audio | Borrado automático al terminar de sonar | Archivos preservados en `%LOCALAPPDATA%\.Minikick\cache` | Reuso real de archivos descargados |
-| Búsqueda de Canciones Repetidas | Consulta y descarga redundante en YouTube | Búsqueda Difusa $\mathcal{O}(N)$ + Caché instantánea por Video ID $\mathcal{O}(1)$ | Respuesta en **0.01s** sin consumo de ancho de banda |
-| Gestión de Disco de Música | Acumulación indefinida o borrado total | Purga Inteligente LFU/LRU $\mathcal{O}(N \log N)$ al superar 5 GB | Uso de disco optimizado sin borrar canciones populares |
-| Carga de Vistas (UI) | Instanciación simultánea de 11 vistas $\mathcal{O}(V)$ | Carga diferida perezosa (*Lazy Loading*) | Menor uso de memoria RAM y arranque instantáneo |
-| Reordenamiento de Cola | Sin capacidad de arrastrar | Arrastrar y soltar (*Drag & Drop*) con preservación de selección | Experiencia de usuario interactiva y fluida |
-| Inspección de WebSocket | Sin herramienta de pruebas | Inspector en vivo con Modo RAW y guardado en archivo con fecha | Diagnóstico completo de eventos de Kick |
+| Módulo / Operación            | Comportamiento Anterior                          | Optimización v1.4.9                                                       | Impacto en Rendimiento                                        |
+| ----------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Límite de Caché de Música     | Límite restringido a 1 GB                        | Extensión a **5 GB (5000 MB)** en `MusicCacheManager`                     | Mayor almacenamiento de canciones locales en disco            |
+| Reuso de Canciones Repetidas  | Peticiones HTTP repetidas                        | Verificación por ID en disco $\mathcal{O}(1)$                             | Reproducción instantánea en **0.01s** sin uso de red          |
+| Encuestas de Kick en OBS      | Sin widget dinámico                              | Overlay Web `poll.html` en tiempo real vía WebSocket                      | Visualización interactiva de encuestas en transmisión         |
+| Mensajes Fijados de Kick      | Sin widget dinámico                              | Overlay Web `pinned.html` en tiempo real vía WebSocket                    | Banner dinámico en pantalla para destacar mensajes            |
+| Chat Overlay                  | Solo badges básicas                              | Niveles `badges_v2` (`Lvl X`) + Badge `OG`                                | Identidad visual enriquecida para los viewers                 |
+| Servidor Overlay HTTP/WS      | Monolito de 802 líneas                           | Paquete `backend/services/overlay/` con mapa $\mathcal{O}(1)$ y RAM Cache | Despacho de rutas en **$\mathcal{O}(1)$** y código modular    |
+| Controlador de Música         | 584 líneas con comandos mezclados                | Delegación en `MusicCommandHandler` con Dispatch Table $\mathcal{O}(1)$   | Código limpio (SRP) y paginación eficiente de playlist        |
+| Transmisión Overlay de Música | Inactiva hasta abrir la vista                    | Invocación en `__init__` del controlador                                  | Difusión instantánea a `/music` al iniciar la app             |
+| Diálogo de Actualizaciones    | ~50 líneas anidadas en MainWindowCore            | Métodos encapsulados en `UpdateController`                                | Reducción de complejidad en la clase principal                |
+| Menú Lateral (`Sidebar`)      | Layout rígido con desbordamiento                 | `QScrollArea` transparente integrado                                      | Escala adaptable a cualquier cantidad de módulos              |
+| Desplazamiento por Rueda      | Alteraba opciones de ComboBox al pasar el cursor | `FocusPolicy.StrongFocus` en `NoWheelComboBox`                            | Desplazamiento de página sin modificar selecciones            |
+| Sistema de Estilos QSS        | Estilos CSS inline dispersos                     | Rol `filter_chip` en `theme.py`                                           | Cero CSS inline en todo el frontend y 100% adherencia al tema |
 
 ---
-
-## 🧪 Verificación de Pruebas
-
-Puedes ejecutar la suite completa de 13 pruebas integradas con:
-
-```bash
-uv run pytest
-```

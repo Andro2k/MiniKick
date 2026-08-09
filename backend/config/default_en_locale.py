@@ -941,6 +941,10 @@ DEFAULT_DICTIONARY = {
             "title": "Win / Loss Record (!win +1/ !lose +1)",
             "wins_label": "Wins:"
         },
+        "pinned": {
+            "title": "Pinned Message Widget",
+            "desc": "Displays in real time any message pinned by you or your moderators in the Kick chat."
+        },
         "so": {
             "default_msg": "📢 Go support and follow @{target} at https://kick.com/{target} !",
             "desc": "Promote other creators in chat by sending a customized message with their channel link.",

@@ -1,7 +1,7 @@
 # frontend\navigation\sidebar_component.py
 
 from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton, 
-                               QLabel, QSizePolicy, QWidget, QButtonGroup)
+                               QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea)
 from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common.utils import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored
@@ -69,26 +69,40 @@ class Sidebar(QFrame):
         self.main_layout.addWidget(self.header_container)
         self.main_layout.addSpacing(6)
         
+        self.scroll_area = QScrollArea(self)
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
+        scroll_content = QWidget()
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_layout.setSpacing(6)
+
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
         self.lbl_navigate_header = QLabel(navigate_text)
         self.lbl_navigate_header.setProperty("role", "body")
-        self.main_layout.addWidget(self.lbl_navigate_header)
+        scroll_layout.addWidget(self.lbl_navigate_header)
         
         self.top_nav_layout = QVBoxLayout()
         self.top_nav_layout.setContentsMargins(0, 0, 0, 0)
         self.top_nav_layout.setSpacing(6)
-        self.main_layout.addLayout(self.top_nav_layout)
-        self.main_layout.addStretch()
+        scroll_layout.addLayout(self.top_nav_layout)
+        scroll_layout.addStretch(1)
 
         more_text = self.i18n.get("main.sidebar.section.more")
         self.lbl_more_header = QLabel(more_text)
         self.lbl_more_header.setProperty("role", "body")
-        self.main_layout.addWidget(self.lbl_more_header)
+        scroll_layout.addWidget(self.lbl_more_header)
 
         self.bottom_nav_layout = QVBoxLayout()
         self.bottom_nav_layout.setContentsMargins(0, 0, 0, 0)
         self.bottom_nav_layout.setSpacing(6)
-        self.main_layout.addLayout(self.bottom_nav_layout)
+        scroll_layout.addLayout(self.bottom_nav_layout)
+
+        self.scroll_area.setWidget(scroll_content)
+        self.main_layout.addWidget(self.scroll_area, stretch=1)
         self.main_layout.addSpacing(6)
         
         self._setup_profile_card()
