@@ -310,12 +310,6 @@ class YouTubeMusicProvider(QObject):
 
         self.player.stop()
         self.player.setSource(QUrl())
-
-        if self.current_local_file and os.path.exists(self.current_local_file):
-            try:
-                os.remove(self.current_local_file)
-            except Exception as e:
-                logging.error("[YouTubeMusicProvider] Error deleting temporary file: %s", e)
         self.current_local_file = None
 
         if self.current_song:
@@ -382,7 +376,8 @@ class YouTubeMusicProvider(QObject):
         self.current_song["resolved"] = True
         if self.cache_manager:
             try:
-                self.cache_manager.check_and_clean_cache(max_size_mb=1000)
+                self.cache_manager.check_and_clean_cache(max_size_mb=5000)
+
             except Exception as cache_err:
                 logging.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
 

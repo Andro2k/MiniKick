@@ -8,6 +8,8 @@ from backend.database.music_storage import SQLiteMusicStorage
 logger = logging.getLogger("minikick.database.cache_manager")
 
 class MusicCacheManager:
+    DEFAULT_MAX_CACHE_MB = 5000
+
     def __init__(self, music_storage: SQLiteMusicStorage = None):
         self.music_storage = music_storage
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
@@ -31,7 +33,8 @@ class MusicCacheManager:
     def get_cache_size_mb(self) -> float:
         return round(self.get_cache_size_bytes() / (1024 * 1024), 2)
 
-    def check_and_clean_cache(self, max_size_mb: int = 1000) -> int:
+    def check_and_clean_cache(self, max_size_mb: int = DEFAULT_MAX_CACHE_MB) -> int:
+
         current_bytes = self.get_cache_size_bytes()
         max_bytes = max_size_mb * 1024 * 1024
         target_bytes = int(max_bytes * 0.8)
