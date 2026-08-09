@@ -734,48 +734,4 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def handle_update_check(self):
-        from frontend.dialogs import UpdateDialog
-        
-        dialog = UpdateDialog(self.i18n, parent=self)
-        update_info = {"url": ""}
-
-        def on_update_found(info):
-            update_info["url"] = info['download_url']
-            dialog.show_update_available(info['version'])
-
-        def on_download_finished(success):
-            if success:
-                dialog.show_complete()
-            else:
-                error_msg = self.i18n.get("dialogs.update.msg_unexpected_error")
-                dialog.show_error(error_msg)
-
-        self.update_controller.update_found.connect(on_update_found)
-        self.update_controller.no_update.connect(dialog.show_no_update)
-        self.update_controller.error.connect(dialog.show_error)
-        self.update_controller.download_progress.connect(dialog.update_progress)
-        self.update_controller.download_finished.connect(on_download_finished)
-
-        def on_download_requested():
-            dialog.show_downloading()
-            self.update_controller.start_download(update_info["url"])
-
-        def on_restart_requested():
-            dialog.accept()
-            self.update_controller.install_update()
-            self._force_quit()
-
-        dialog.download_requested.connect(on_download_requested)
-        dialog.restart_requested.connect(on_restart_requested)
-
-        self.update_controller.start_update_check()
-        dialog.exec()
-
-        try:
-            self.update_controller.update_found.disconnect(on_update_found)
-            self.update_controller.no_update.disconnect(dialog.show_no_update)
-            self.update_controller.error.disconnect(dialog.show_error)
-            self.update_controller.download_progress.disconnect(dialog.update_progress)
-            self.update_controller.download_finished.disconnect(on_download_finished)
-        except Exception:
-            pass
+        self.update_controller.show_update_dialog(self, self.i18n, on_restart_callback=self._force_quit)
