@@ -5,20 +5,27 @@ import sys
 import logging
 
 try:
-    from backend.config.api_keys import (
-        KICK_CLIENT_ID, KICK_CLIENT_SECRET, KICK_REDIRECT_URI
-    )
+    import backend.config.api_keys as _api_keys
+    KICK_CLIENT_ID = getattr(_api_keys, "KICK_CLIENT_ID", "")
+    KICK_CLIENT_SECRET = getattr(_api_keys, "KICK_CLIENT_SECRET", "")
+    KICK_REDIRECT_URI = getattr(_api_keys, "KICK_REDIRECT_URI", "http://localhost:8080/auth/callback")
+    TWITCH_CLIENT_ID = getattr(_api_keys, "TWITCH_CLIENT_ID", "")
+    TWITCH_CLIENT_SECRET = getattr(_api_keys, "TWITCH_CLIENT_SECRET", "")
+    TWITCH_REDIRECT_URI = getattr(_api_keys, "TWITCH_REDIRECT_URI", "http://localhost:8080/auth/callback")
 except ImportError:
-    logging.warning("Archivo backend/api_keys.py no encontrado. Usando credenciales vacías.")
+    logging.warning("Archivo backend/config/api_keys.py no encontrado. Usando credenciales vacías.")
     KICK_CLIENT_ID = ""
     KICK_CLIENT_SECRET = ""
     KICK_REDIRECT_URI = "http://localhost:8080/auth/callback"
+    TWITCH_CLIENT_ID = ""
+    TWITCH_CLIENT_SECRET = ""
+    TWITCH_REDIRECT_URI = "http://localhost:8080/auth/callback"
 
 from backend.providers import YouTubeMusicProvider
 from backend.database import (DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
                             SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
                             SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage)
-from backend.services import (BackupService, TranslationService, AuthManager, OverlayServerManager, 
+from backend.services import (BackupService, TranslationService, AuthManager, TwitchAuthManager, OverlayServerManager, 
                               MediaTriggerService, TTSManager, WidgetService)
 from frontend.common.utils import resource_path
 
@@ -26,6 +33,7 @@ class AppContainer:
     def __init__(self, parent_widget):
         self.db_manager = DatabaseManager()
         self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
+        self.twitch_token_storage = SQLiteTokenStorage(self.db_manager, provider="twitch")
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
         self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
@@ -49,6 +57,14 @@ class AppContainer:
             client_secret=KICK_CLIENT_SECRET,
             redirect_uri=KICK_REDIRECT_URI,
             storage=self.kick_token_storage,
+            success_html_path=html_path
+        )
+        
+        self.twitch_auth_manager = TwitchAuthManager(
+            client_id=TWITCH_CLIENT_ID,
+            client_secret=TWITCH_CLIENT_SECRET,
+            redirect_uri=TWITCH_REDIRECT_URI,
+            storage=self.twitch_token_storage,
             success_html_path=html_path
         )
         

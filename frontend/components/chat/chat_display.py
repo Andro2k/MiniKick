@@ -28,31 +28,40 @@ class ChatDisplayPanel(ModernCard):
         self.addWidget(lbl_chat_title)
         self.addWidget(self.chat_display)
 
-    _ROLE_COLORS = {
-        "Streamer": "#ef4444",
-        "Broadcaster": "#ef4444",
-        "Moderador": "#22c55e",
-        "Moderator": "#22c55e",
-        "VIP": "#eab308",
-        "Suscriptor": "#a855f7",
-        "Subscriber": "#a855f7",
-        "Bot": "#3b82f6",
-        "Sistema": "#00e701",
-        "System": "#00e701",
-        "Usuario": "#9ca3af",
-        "User": "#9ca3af"
+    _ROLE_SYMBOLS = {
+        "Streamer": ("\uf130", "#ef4444"),
+        "Broadcaster": ("\uf130", "#ef4444"),
+        "Moderador": ("\udb82\udc8f", "#22c55e"),
+        "Moderator": ("\udb82\udc8f", "#22c55e"),
+        "VIP": ("\udb80\uddc8", "#eab308"),
+        "Suscriptor": ("\uedeb", "#a855f7"),
+        "Subscriber": ("\uedeb", "#a855f7"),
+        "Bot": ("\udb81\udea9", "#3b82f6"),
+        "Sistema": ("\ue615", "#00e701"),
+        "System": ("\ue615", "#00e701"),
+        "Usuario": ("\ued35", "#9ca3af"),
+        "User": ("\ued35", "#9ca3af")
     }
 
-    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = ""):
+    _PLATFORM_ICONS = {
+        "twitch": ("\uf1e8", "#9146FF", "Twitch"),
+        "kick": ("\uf2f3", "#53FC18", "Kick")
+    }
+
+    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = "", platform: str = "kick"):
         safe_user = html.escape(user)
         safe_message = message if is_html else html.escape(message)        
         safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_NEUTRAL_200
-        ts_span = f'<span style="color: {COLOR_NEUTRAL_500}; font-size: 0.85em; margin-right: 6px;">[{timestamp}] </span>' if timestamp else ""
         
-        role_color = self._ROLE_COLORS.get(role, "#9ca3af") if role else ""
-        role_span = f'<span style="color: {role_color}; font-weight: 600; margin-right: 4px;">[{role}]</span>' if role else ""
+        ts_span = f'<span style="color: {COLOR_NEUTRAL_500}; font-size: 0.85em;">[{timestamp}]</span>&nbsp;&nbsp;' if timestamp else ""
+        
+        plat_icon, plat_color, plat_name = self._PLATFORM_ICONS.get(platform.lower() if platform else "kick", ("\uf2f3", "#53FC18", "Kick"))
+        plat_span = f'<span style="color: {plat_color};" title="{plat_name}">{plat_icon}</span>&nbsp;&nbsp;'
+        
+        symbol, role_color = self._ROLE_SYMBOLS.get(role, ("\ued35", "#9ca3af"))
+        role_span = f'<span style="color: {role_color};" title="{role}">{symbol}</span>&nbsp;&nbsp;' if role else ""
 
-        html_msg = f'{ts_span}{role_span}<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
+        html_msg = f'{ts_span}{plat_span}{role_span}<b style="color: {safe_color};">{safe_user}:</b> <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
         self.chat_display.append(html_msg)
         self._trim_chat_history()
 

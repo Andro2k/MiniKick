@@ -158,8 +158,8 @@ class ChatView(BaseView):
     def get_role_voices(self) -> dict:
         return self.tts_settings_panel.get_role_voices()
 
-    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = ""):
-        self.chat_display_panel.append_message(user, message, color, timestamp, is_html, role)
+    def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = "", platform: str = "kick"):
+        self.chat_display_panel.append_message(user, message, color, timestamp, is_html, role, platform=platform)
 
     def set_tts_command_configuration(self, use_command: bool, command_trigger: str):
         self.blockSignals(True)

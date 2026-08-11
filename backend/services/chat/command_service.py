@@ -17,6 +17,7 @@ class CommandService(QObject):
         super().__init__()
         self.storage = commands_storage
         self.api_client = api_client
+        self.twitch_worker = None
         self.cooldown_timers: dict[str, float] = {}
         self._dispatch_table: dict[str, dict] = {}
         self._regex_commands: list[dict] = []
@@ -140,7 +141,7 @@ class CommandService(QObject):
 
         return user_level >= req_level
 
-    def process_incoming_message(self, user: str, message: str, badges: list) -> tuple[bool, str, dict, str]:
+    def process_incoming_message(self, user: str, message: str, badges: list, platform: str = "kick") -> tuple[bool, str, dict, str]:
         if not message:
             return False, "", {}, ""
 
@@ -155,7 +156,7 @@ class CommandService(QObject):
 
         cmd = self._dispatch_table.get(first_word)
         if cmd:
-            return self._try_execute(cmd, user, touser, badges, raw_first_word)
+            return self._try_execute(cmd, user, touser, badges, raw_first_word, platform=platform)
 
         for regex_cmd in self._regex_commands:
             compiled = regex_cmd.get("_compiled_regex")
@@ -166,11 +167,11 @@ class CommandService(QObject):
                     reg_touser = remaining.split()[0] if remaining else user
                     if reg_touser.startswith("@"):
                         reg_touser = reg_touser[1:]
-                    return self._try_execute(regex_cmd, user, reg_touser, badges, match.group(0))
+                    return self._try_execute(regex_cmd, user, reg_touser, badges, match.group(0), platform=platform)
 
         return False, "", {}, ""
 
-    def _try_execute(self, cmd: dict, user: str, touser: str, badges: list, matched_prefix: str) -> tuple[bool, str, dict, str]:
+    def _try_execute(self, cmd: dict, user: str, touser: str, badges: list, matched_prefix: str, platform: str = "kick") -> tuple[bool, str, dict, str]:
         if not self._has_permission(cmd.get("permission", "everyone"), badges):
             return False, "", {}, ""
 
@@ -197,13 +198,22 @@ class CommandService(QObject):
                 clean_tag = clean_tag[len("__PLUGIN:"): -2]
             return True, clean_tag, cmd, matched_prefix
 
-        self.send_response(final_response)
+        self.send_response(final_response, platform=platform)
         return True, "", cmd, matched_prefix
 
-    def send_response(self, response_text: str):
+    def send_response(self, response_text: str, platform: str = "kick"):
+        if platform == "twitch":
+            tw_worker = getattr(self, "twitch_worker", None)
+            if tw_worker and hasattr(tw_worker, "send_bot_message"):
+                try:
+                    tw_worker.send_bot_message(response_text)
+                    return
+                except Exception as e:
+                    logging.error("[CommandService] Error enviando mensaje a Twitch: %s", e)
+
         if not self.api_client:
             return
         try:
             self.api_client.post_chat_message(content=response_text, msg_type="bot")
         except Exception as e:
-            logging.error("[CommandService] Error sending command to chat: %s", e)
+            logging.error("[CommandService] Error enviando respuesta a Kick: %s", e)

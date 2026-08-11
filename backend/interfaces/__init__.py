@@ -9,6 +9,7 @@ from .updater_interfaces import IUpdateChecker, IUpdateDownloader, IUpdateInstal
 from .music_provider import IMusicProvider
 from .storage_repository import IStorageRepository
 from .chat_service import IChatService
+from .chat_provider import IChatProvider
 
 __all__ = [
     "TokenStorage",
@@ -23,4 +24,5 @@ __all__ = [
     "IMusicProvider",
     "IStorageRepository",
     "IChatService",
+    "IChatProvider",
 ]

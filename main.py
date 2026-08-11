@@ -28,7 +28,6 @@ from backend.services import SocketInstanceProvider
 from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from backend.config.version import APP_VERSION
 
-
 def _get_safe_i18n():
     try:
         from backend.database.manager import DatabaseManager
@@ -86,7 +85,7 @@ def bootstrap():
     
     if os.path.exists(fonts_dir):
         for archivo in os.listdir(fonts_dir):
-            if archivo.startswith(FONT_FILE_PREFIX) and archivo.endswith(('.ttf', '.otf')):
+            if archivo.endswith(('.ttf', '.otf')):
                 font_path = os.path.join(fonts_dir, archivo)
                 QFontDatabase.addApplicationFont(font_path)
 

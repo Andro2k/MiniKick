@@ -12,6 +12,8 @@ from backend.interfaces import TokenStorage
 
 KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
 KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
+TWITCH_AUTH_URL = "https://id.twitch.tv/oauth2/authorize"
+TWITCH_TOKEN_URL = "https://id.twitch.tv/oauth2/token"
 
 class _OAuthCallbackHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
@@ -186,3 +188,62 @@ class AuthManager:
 
     def has_missing_scopes(self) -> bool:
         return len(self.get_missing_scopes()) > 0
+
+class TwitchAuthManager:
+    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage, success_html_path: str = "") -> None:
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
+        self.storage = storage
+        self.success_html_path = success_html_path
+
+    def get_tokens(self) -> dict:
+        tokens = self.storage.load()
+        if tokens and "access_token" in tokens:
+            return tokens
+        return self._new_login()
+
+    def _new_login(self) -> dict:
+        scopes = "chat:read chat:edit user:read:chat channel:moderate"
+        auth_url = (
+            f"{TWITCH_AUTH_URL}?response_type=code"
+            f"&client_id={self.client_id}"
+            f"&redirect_uri={self.redirect_uri}"
+            f"&scope={scopes}"
+            f"&state=random"
+        )
+        port = int(urlparse(self.redirect_uri).port or 8080)
+        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path, provider="twitch")
+
+        if not auth_code:
+            raise TimeoutError("Auth timeout or user canceled login.")
+
+        tokens = self._exchange_code(auth_code)
+        self.storage.save(tokens)
+        return tokens
+
+    def _exchange_code(self, code: str) -> dict:
+        if not self.client_secret:
+            raise ValueError("Falta el TWITCH_CLIENT_SECRET en backend/config/api_keys.py. Twitch requiere un Client Secret válido para el flujo OAuth.")
+
+        response = requests.post(
+            TWITCH_TOKEN_URL,
+            data={
+                "grant_type": "authorization_code",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "code": code,
+                "redirect_uri": self.redirect_uri,
+            },
+        )
+        if response.status_code != 200:
+            try:
+                err_json = response.json()
+                msg = err_json.get("message", response.text)
+            except Exception:
+                msg = response.text
+            raise ValueError(f"Error {response.status_code} de Twitch: {msg}")
+        return response.json()
+
+    def logout(self) -> None:
+        self.storage.clear()
