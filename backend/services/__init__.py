@@ -1,6 +1,6 @@
 # backend\services\__init__.py
 
-from .auth.oauth_service import AuthManager, OAuthCallbackServer
+from .auth.oauth_service import AuthManager, TwitchAuthManager, OAuthCallbackServer
 from .chat.chat_service import ChatService
 from .chat.command_service import CommandService
 from .chat.pipeline import ChatMessageDTO, MessagePipeline
@@ -22,6 +22,7 @@ from .system.widget_service import WidgetService
 
 __all__ = [
     "AuthManager",
+    "TwitchAuthManager",
     "OAuthCallbackServer",
     "ChatService",
     "CommandService",

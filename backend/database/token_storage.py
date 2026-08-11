@@ -20,12 +20,25 @@ class SQLiteTokenStorage:
             return None
 
     def save(self, tokens: dict) -> None:
+        scope_val = tokens.get("scope")
+        if isinstance(scope_val, list):
+            scope_val = " ".join(scope_val)
+        elif scope_val is None:
+            scope_val = ""
+
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM tokens WHERE provider = ?", (self.provider,))
             cursor.execute(
                 "INSERT INTO tokens (provider, access_token, refresh_token, expires_in, scope, token_type) VALUES (?, ?, ?, ?, ?, ?)", 
-                (self.provider, tokens.get("access_token"), tokens.get("refresh_token"), tokens.get("expires_in"), tokens.get("scope"), tokens.get("token_type"))
+                (
+                    self.provider,
+                    tokens.get("access_token"),
+                    tokens.get("refresh_token"),
+                    tokens.get("expires_in"),
+                    scope_val,
+                    tokens.get("token_type")
+                )
             )
             conn.commit()
 

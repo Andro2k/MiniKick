@@ -26,7 +26,7 @@ class SpamService:
         self.storage.save_filter(filter_id, config)
         self.reload_filters()
 
-    def is_spam(self, user: str, message: str, badges: list, msg_id: str, sender_id: int) -> bool:
+    def is_spam(self, user: str, message: str, badges: list, msg_id: str, sender_id: int, emotes_tag: str = "") -> bool:
         if not message:
             return False
 
@@ -35,6 +35,9 @@ class SpamService:
 
         is_mod = "moderator" in badges
         is_sub = "subscriber" in badges or "vip" in badges
+
+        from backend.providers.chat.twitch_websocket import TwitchSocketManager
+        twitch_emotes = TwitchSocketManager.count_twitch_emotes(emotes_tag)
 
         for f_id, config in self.filters.items():
             if not config.get("is_active"):
@@ -54,12 +57,15 @@ class SpamService:
                     is_violation = True
 
             elif f_id == "emote_protection":
-                emote_count = message.count("[emote:")
-                if emote_count > max_amount:
+                kick_emotes = message.count("[emote:")
+                total_emotes = kick_emotes + twitch_emotes
+                if total_emotes > max_amount:
                     is_violation = True
                     
             elif f_id == "symbol_protection":
                 clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
+                if emotes_tag:
+                    clean_msg = TwitchSocketManager.strip_twitch_emotes(clean_msg, emotes_tag)
                 strange_chars = self._ALLOWED_LATIN_PATTERN.sub('', clean_msg)
                 symbols_only = re.findall(r'[^a-zA-Z0-9\s\u00C0-\u024F]', clean_msg)
                 threshold = max_amount if max_amount > 0 else 15
@@ -68,6 +74,8 @@ class SpamService:
 
             elif f_id == "paragraph_protection":
                 clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
+                if emotes_tag:
+                    clean_msg = TwitchSocketManager.strip_twitch_emotes(clean_msg, emotes_tag)
                 threshold = max_amount if max_amount > 0 else 300
                 if len(clean_msg) > threshold or clean_msg.count('\n') >= 5:
                     is_violation = True

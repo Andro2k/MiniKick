@@ -48,16 +48,20 @@ class SettingRow(QWidget):
             color_state = "danger" if title_color in ("#EF4444", "#ff4444", "red") else ("success" if title_color in ("#2EC570", "#22c55e", "green") else "normal")
             lbl_title.setProperty("state", color_state)
         
-        lbl_desc = QLabel(desc_text, parent=self)
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
+        self.lbl_desc = QLabel(desc_text, parent=self)
+        self.lbl_desc.setProperty("role", "body")
+        self.lbl_desc.setWordWrap(True)
         
         text_layout.addWidget(lbl_title)
-        text_layout.addWidget(lbl_desc)
-
+        text_layout.addWidget(self.lbl_desc)
+        
         layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         layout.addLayout(text_layout, stretch=1)
         layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
+
+    def set_description(self, text: str):
+        if hasattr(self, 'lbl_desc') and self.lbl_desc:
+            self.lbl_desc.setText(text)
 
 class ModernDivider(QFrame):
     def __init__(self, parent=None):

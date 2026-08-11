@@ -40,10 +40,14 @@ class MusicController(QObject):
         self.command_service.commands_changed.connect(self._sync_switches_from_db)
 
         self._init_youtube_provider()
+        self._load_initial_state()
 
         if self.view is not None:
             self._connect_signals()
             self._load_initial_state()
+
+    def load_initial_data(self):
+        self._load_initial_state()
 
     def attach_view(self, view) -> None:
         self.view = view
@@ -382,6 +386,6 @@ class MusicController(QObject):
         if self.music_provider:
             self.music_provider.auto_resume = enabled
 
-    @Slot(str, str, str, str)
-    def handle_music_plugin_command(self, tag: str, user: str, message: str, prefix_used: str):
-        self.command_handler.handle_command(tag, user, message, prefix_used)
+    @Slot(str, str, str, str, str)
+    def handle_music_plugin_command(self, tag: str, user: str, message: str, prefix_used: str, platform: str = "kick"):
+        self.command_handler.handle_command(tag, user, message, prefix_used, platform=platform)

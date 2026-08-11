@@ -16,6 +16,8 @@ class SettingsView(BaseView):
     update_clicked = Signal()
     language_changed = Signal(str)
     feedback_clicked = Signal()
+    kick_integration_clicked = Signal()
+    twitch_integration_clicked = Signal()
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="settings.header.title", subtitle_key="settings.header.subtitle", parent=parent)
@@ -54,9 +56,9 @@ class SettingsView(BaseView):
             right_widget=self.combo_font
         )
 
-        self.sw_start_bg = ModernSwitch()
+        self.sw_start_bg = ModernSwitch(self)
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
-        
+
         row_tray = SettingRow(
             icon_name="minimize.svg", 
             title_text=self.i18n.get("settings.system.tray_title"), 
@@ -73,12 +75,27 @@ class SettingsView(BaseView):
             desc_text=self.i18n.get("settings.system.update_desc"), 
             right_widget=self.btn_update
         )
-        
+
         sys_card.addWidget(row_lang)
         sys_card.addWidget(row_font)
         sys_card.addWidget(row_tray)        
         sys_card.addWidget(row_update)
         self.main_layout.addWidget(sys_card)
+
+        integrations_card = ModernCard(parent=self)
+
+        self.btn_twitch_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_twitch"), role="action_accent", parent=self)
+        self.btn_twitch_integration.clicked.connect(self.twitch_integration_clicked.emit)
+
+        self.row_twitch_integration = SettingRow(
+            icon_name="twitch.svg",
+            title_text=self.i18n.get("settings.integrations.twitch_title"),
+            desc_text=self.i18n.get("settings.integrations.desc"),
+            right_widget=self.btn_twitch_integration
+        )
+
+        integrations_card.addWidget(self.row_twitch_integration)
+        self.main_layout.addWidget(integrations_card)
 
         backup_card = ModernCard(parent=self)
 
@@ -93,14 +110,14 @@ class SettingsView(BaseView):
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
 
-        btn_layout.addWidget(self.btn_import)
         btn_layout.addWidget(self.btn_export)
+        btn_layout.addWidget(self.btn_import)
 
         row_backup = SettingRow(
             icon_name="restore.svg", 
             title_text=self.i18n.get("settings.backup.title"), 
             desc_text=self.i18n.get("settings.backup.desc"), 
-            right_widget=btn_container 
+            right_widget=btn_container
         )
 
         backup_card.addWidget(row_backup)
@@ -152,6 +169,13 @@ class SettingsView(BaseView):
             self.combo_font.setCurrentIndex(idx)
         self.combo_font.blockSignals(False)
 
+    def set_current_language(self, lang_code: str):
+        self.combo_lang.blockSignals(True)
+        idx = self.combo_lang.findData(lang_code)
+        if idx >= 0:
+            self.combo_lang.setCurrentIndex(idx)
+        self.combo_lang.blockSignals(False)
+
     def ask_save_path(self) -> str:
         default_name = f"MiniKick_Backup_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.json"
         dialog_title = self.i18n.get("settings.dialogs.export_title")
@@ -166,13 +190,6 @@ class SettingsView(BaseView):
             self, dialog_title, "", "JSON Files (*.json)"
         )
         return filepath
-    
-    def set_current_language(self, lang_code: str):
-        self.combo_lang.blockSignals(True)
-        idx = self.combo_lang.findData(lang_code)
-        if idx >= 0:
-            self.combo_lang.setCurrentIndex(idx)
-        self.combo_lang.blockSignals(False)
 
     def _on_language_changed(self, index: int):
         lang_code = self.combo_lang.itemData(index)
@@ -186,3 +203,22 @@ class SettingsView(BaseView):
         from frontend.dialogs.bug_report_dialog import BugReportDialog
         dialog = BugReportDialog(self.i18n, parent=self.window())
         dialog.exec()
+
+    def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "") -> None:
+        if twitch_connected and twitch_channel:
+            text = self.i18n.get("settings.integrations.btn_disconnect_twitch").replace("{channel}", twitch_channel)
+            desc = self.i18n.get("settings.integrations.twitch_desc_connected").replace("{channel}", twitch_channel)
+            self.btn_twitch_integration.setText(text)
+            self.btn_twitch_integration.setProperty("role", "action_danger_border")
+            if hasattr(self, 'row_twitch_integration') and self.row_twitch_integration:
+                self.row_twitch_integration.set_description(desc)
+        else:
+            text = self.i18n.get("settings.integrations.btn_connect_twitch")
+            desc = self.i18n.get("settings.integrations.desc")
+            self.btn_twitch_integration.setText(text)
+            self.btn_twitch_integration.setProperty("role", "action_accent")
+            if hasattr(self, 'row_twitch_integration') and self.row_twitch_integration:
+                self.row_twitch_integration.set_description(desc)
+
+        self.btn_twitch_integration.style().unpolish(self.btn_twitch_integration)
+        self.btn_twitch_integration.style().polish(self.btn_twitch_integration)

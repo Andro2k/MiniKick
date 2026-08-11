@@ -136,12 +136,14 @@ class OverlayServerManager:
 
         self._broadcast("clients", "rewards", payload)
 
-    def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None):
+    def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = ""):
         payload = {
             "user": user,
             "message": message,
             "color": color,
-            "badges": badges or []
+            "badges": badges or [],
+            "platform": platform,
+            "emotes_tag": emotes_tag
         }
         self._broadcast("chat_clients", "chat", payload)
 

@@ -53,10 +53,13 @@ class ChatFilterHandler:
             return True
         return bool(badges and "bot" in badges)
 
-    def clean_message_for_tts(self, text: str) -> str:
+    def clean_message_for_tts(self, text: str, emotes_tag: str = "") -> str:
         web_link_label = self.i18n.get("chat.status.web_link") if self.i18n else "enlace web"
         cleaned = self._URL_REGEX.sub(web_link_label, text)
         cleaned = self._EMOTE_REGEX.sub("", cleaned)
+        if emotes_tag:
+            from backend.providers.chat.twitch_websocket import TwitchSocketManager
+            cleaned = TwitchSocketManager.strip_twitch_emotes(cleaned, emotes_tag)
         return self._SPACES_REGEX.sub(" ", cleaned).strip()
 
     def add_bot(self, bot_name: str, view) -> bool:

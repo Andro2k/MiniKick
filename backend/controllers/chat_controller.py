@@ -11,8 +11,8 @@ class ChatController(QObject):
     tts_state_changed = Signal(bool)
     spam_blocked = Signal()
     command_executed = Signal()
-    message_received = Signal(str, str, str, list)
-    music_plugin_triggered = Signal(str, str, str, str)
+    message_received = Signal(str, str, str, list, str, str)
+    music_plugin_triggered = Signal(str, str, str, str, str)
     widget_plugin_triggered = Signal(str, str, str, str)
 
     def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None):
@@ -183,12 +183,14 @@ class ChatController(QObject):
             self.timer_service.increment_chat_lines()
 
     def _step_spam(self, dto: ChatMessageDTO) -> None:
-        if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id):
+        emotes_tag = getattr(dto, "emotes_tag", "")
+        if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id, emotes_tag=emotes_tag):
             dto.is_cancelled = True
             self.spam_blocked.emit()
 
     def _step_commands(self, dto: ChatMessageDTO) -> None:
-        handled, plugin_tag, cmd_info, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges)
+        platform = getattr(dto, "platform", "kick")
+        handled, plugin_tag, cmd_info, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges, platform=platform)
         if not handled:
             return
 
@@ -203,7 +205,7 @@ class ChatController(QObject):
             return
 
         if plugin_tag.startswith("[PLUGIN_MUSIC_"):
-            self.music_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
+            self.music_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix, platform)
         elif plugin_tag.startswith("[PLUGIN_WIDGET_"):
             self.widget_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
 
@@ -211,9 +213,8 @@ class ChatController(QObject):
         msg_content = dto.content[len(prefix):].strip()
         if not msg_content:
             return
-        if self.filter_handler.is_message_banned(msg_content):
-            return
-        cleaned = self.filter_handler.clean_message_for_tts(msg_content)
+        emotes_tag = getattr(dto, "emotes_tag", "")
+        cleaned = self.filter_handler.clean_message_for_tts(msg_content, emotes_tag=emotes_tag)
         if cleaned:
             settings = self._tts_settings_cache
             text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
@@ -222,9 +223,10 @@ class ChatController(QObject):
 
     def _handle_plugin_systts(self, dto: ChatMessageDTO, prefix: str) -> None:
         msg_content = dto.content[len(prefix):].strip()
-        self._handle_systts_command(dto.user, msg_content)
+        platform = getattr(dto, "platform", "kick")
+        self._handle_systts_command(dto.user, msg_content, platform=platform)
 
-    def _handle_systts_command(self, user: str, arg: str) -> None:
+    def _handle_systts_command(self, user: str, arg: str, platform: str = "kick") -> None:
         arg_clean = arg.strip().lower()
         if arg_clean in ("on", "1", "enable", "activar", "encender"):
             new_state = True
@@ -233,11 +235,11 @@ class ChatController(QObject):
         elif not arg_clean or arg_clean == "status":
             state_str = self.i18n.get("chat.status.enabled_upper") if self._tts_enabled else self.i18n.get("chat.status.disabled_upper")
             status_msg = self.i18n.get("chat.status.systts_status").replace("{user}", user).replace("{state}", state_str)
-            self.command_service.send_response(status_msg)
+            self.command_service.send_response(status_msg, platform=platform)
             return
         else:
             usage_msg = self.i18n.get("chat.status.systts_usage").replace("{user}", user)
-            self.command_service.send_response(usage_msg)
+            self.command_service.send_response(usage_msg, platform=platform)
             return
 
         self._tts_enabled = new_state
@@ -252,7 +254,7 @@ class ChatController(QObject):
 
         key = "chat.status.systts_on" if new_state else "chat.status.systts_off"
         reply = self.i18n.get(key).replace("{user}", user)
-        self.command_service.send_response(reply)
+        self.command_service.send_response(reply, platform=platform)
 
     def _resolve_user_role(self, badges: list, user: str) -> str:
         if "broadcaster" in badges:
@@ -272,9 +274,11 @@ class ChatController(QObject):
         if self.filter_handler.is_bot(dto.user) and "bot" not in badges:
             badges.append("bot")
         role_name = self._resolve_user_role(badges, dto.user)
+        platform = getattr(dto, "platform", "kick")
         if self.view is not None:
-            self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name)
-        self.message_received.emit(dto.user, dto.content, dto.color, badges)
+            self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
+        emotes_tag = getattr(dto, "emotes_tag", "")
+        self.message_received.emit(dto.user, dto.content, dto.color, badges, platform, emotes_tag)
 
     def _step_tts(self, dto: ChatMessageDTO) -> None:
         if getattr(dto, "is_command", False):
@@ -293,7 +297,8 @@ class ChatController(QObject):
         if self.filter_handler.is_message_banned(msg):
             return
 
-        cleaned = self.filter_handler.clean_message_for_tts(msg)
+        emotes_tag = getattr(dto, "emotes_tag", "")
+        cleaned = self.filter_handler.clean_message_for_tts(msg, emotes_tag=emotes_tag)
         if cleaned:
             text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
             voice_id = self.voice_handler.resolve_voice_for_badges(dto.badges, settings)

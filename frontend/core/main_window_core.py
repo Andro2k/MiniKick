@@ -1,5 +1,6 @@
 # frontend\views\main_window_view.py
 
+from backend.providers.chat.twitch_client import TwitchAPIClient
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent, QTimer
@@ -24,12 +25,13 @@ from frontend.views import (
     LogView, MusicView, SettingsView, SpamView, NetworkView, WidgetsView
 )
 from frontend.dialogs import ModernConfirmDialog
-from backend.workers import AuthWorker, ChatWorker, FetchRewardsWorker, RewardWorker, TimerWorker
+from backend.workers import AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker, FetchRewardsWorker, RewardWorker, TimerWorker
 try:
-    from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
+    from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
 except ImportError:
     KICK_PUSHER_CLUSTER = "us2"
     KICK_PUSHER_KEY = "32cbd69e4b950bf97679"
+    TWITCH_CLIENT_ID = ""
 
 class MainWindowCore(QMainWindow):
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
@@ -292,7 +294,9 @@ class MainWindowCore(QMainWindow):
             view_widget = self.view_timers
         elif view_name == "Settings":
             self.view_settings = SettingsView(self.i18n, parent=self)
+            self.view_settings.twitch_integration_clicked.connect(self._on_twitch_integration_button_clicked)
             self.settings_controller.attach_view(self.view_settings)
+            self._update_integrations_status_ui()
             view_widget = self.view_settings
         elif view_name == "Developer":
             self.view_logs = LogView(self.i18n, parent=self)
@@ -321,11 +325,16 @@ class MainWindowCore(QMainWindow):
         self.command_service.reload_cache()
         self.spam_controller.load_initial_data()
         self.timer_controller.load_initial_data()
+        self.music_controller.load_initial_data()
         self.chat_controller.load_initial_data()
         self.chat_controller.sync_settings_cache()
         self._apply_dynamic_theme(self.settings_service.get_font_size(), immediate=True)
+        self._update_integrations_status_ui()
         if autostart_enabled:
             self._handle_auth_process()
+            twitch_tokens = self.container.twitch_token_storage.load()
+            if twitch_tokens and twitch_tokens.get("access_token"):
+                self._on_twitch_auth_success(twitch_tokens)
 
     def _handle_navigation(self, view_name):
         target_view = self._get_or_create_view(view_name)
@@ -333,9 +342,8 @@ class MainWindowCore(QMainWindow):
             self.content_stack.setCurrentWidget(target_view)
             if view_name == "Dashboard":
                 self._update_dashboard_metrics(force_db_query=True)
-            self.content_stack.setCurrentWidget(target_view)
-            if view_name == "Dashboard":
-                self._update_dashboard_metrics(force_db_query=True)
+            elif view_name == "Settings":
+                self._update_integrations_status_ui()
 
     @Slot()
     def _restore_from_tray(self):
@@ -390,6 +398,8 @@ class MainWindowCore(QMainWindow):
             ("Worker_Auth", getattr(self, 'auth_worker', None)),
             ("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None)),
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
+            ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
+            ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
         ]
         if hasattr(self, 'network_controller') and self.network_controller:
             worker_map.append(("Worker_Network", getattr(self.network_controller, 'worker', None)))
@@ -479,6 +489,10 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.handle_connection_success(user_data)
         
         username = user_data.get("username", "Kick")
+        self._kick_connected = True
+        self._kick_username = username
+        self._update_integrations_status_ui()
+
         online_str = self.i18n.get("common.status.online")
         self.sidebar.update_profile_info(username, online_str)
 
@@ -492,6 +506,96 @@ class MainWindowCore(QMainWindow):
         slug = username.replace("_", "-").replace(" ", "")
         self._start_timers_worker(slug)
 
+    def _update_integrations_status_ui(self):
+        kick_connected = getattr(self, "_kick_connected", False)
+        kick_user = getattr(self, "_kick_username", "")
+        twitch_connected = getattr(self, "_twitch_connected", False)
+        twitch_channel = getattr(self, "_twitch_channel", "")
+
+        if hasattr(self, "view_settings") and self.view_settings:
+            self.view_settings.set_integrations_status(
+                kick_connected=kick_connected,
+                kick_channel=kick_user,
+                twitch_connected=twitch_connected,
+                twitch_channel=twitch_channel
+            )
+
+    @Slot()
+    def _handle_twitch_auth_process(self):
+        self.toast.show_toast(
+            title="Twitch OAuth",
+            message="Abriendo inicio de sesión en el navegador...",
+            state="info"
+        )
+        self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, parent=self)
+        self.twitch_auth_worker.auth_success.connect(self._on_twitch_auth_success)
+        self.twitch_auth_worker.auth_error.connect(self._on_twitch_auth_error)
+        self.twitch_auth_worker.finished.connect(self.twitch_auth_worker.deleteLater)
+        self.twitch_auth_worker.start()
+
+    def _on_twitch_auth_error(self, err: str):
+        import logging
+        logging.error("[TwitchAuth] Error de autenticación en Twitch: %s", err)
+        if hasattr(self, "log_controller") and self.log_controller:
+            self.log_controller.process_incoming_log("ERROR", f"[TwitchAuth] {err}")
+        self.toast.show_toast(title="Error Twitch Auth", message=err, state="danger")
+
+    def _on_twitch_auth_success(self, tokens):
+        access_token = tokens.get("access_token", "")
+        twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID)
+        
+        self.twitch_chat_worker = TwitchChatWorker(
+            oauth_token=access_token,
+            api_client=twitch_api,
+            parent=self
+        )
+        self.command_service.twitch_worker = self.twitch_chat_worker
+        self.twitch_chat_worker.connection_success.connect(self._on_twitch_connected)
+        self.twitch_chat_worker.message_received.connect(self._route_incoming_message)
+        self.twitch_chat_worker.start()
+
+    def _on_twitch_connected(self, user_data: dict):
+        username = user_data.get("username", "")
+        self._twitch_connected = True
+        self._twitch_channel = username
+        self._update_integrations_status_ui()
+
+        self.toast.show_toast(
+            title="Twitch Conectado",
+            message=f"Conectado exitosamente al chat de Twitch: #{username}",
+            state="success"
+        )
+
+    @Slot()
+    def _handle_twitch_disconnect(self):
+        if hasattr(self, 'twitch_chat_worker') and self.twitch_chat_worker:
+            self.twitch_chat_worker.stop()
+            self.twitch_chat_worker = None
+        self.command_service.twitch_worker = None
+        self.container.twitch_auth_manager.logout()
+        self._twitch_connected = False
+        self._twitch_channel = ""
+        self._update_integrations_status_ui()
+        self.toast.show_toast(
+            title="Twitch Desconectado",
+            message="Se ha desvinculado la sesión de Twitch.",
+            state="info"
+        )
+
+    @Slot()
+    def _on_twitch_integration_button_clicked(self):
+        if getattr(self, "_twitch_connected", False):
+            self._handle_twitch_disconnect()
+        else:
+            self._handle_twitch_auth_process()
+
+    @Slot()
+    def _on_kick_integration_button_clicked(self):
+        if getattr(self, "_kick_connected", False):
+            self._force_reauth()
+        else:
+            self._handle_reauth_process()
+
     @Slot()
     def _force_reauth(self):
         self.auth_manager.logout()
@@ -500,12 +604,16 @@ class MainWindowCore(QMainWindow):
     def _handle_reauth_process(self):
         self._handle_auth_process()
 
-    @Slot(str, str, list, str, str, int)
-    def _route_incoming_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
+    def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0):
         self._increment_metric("messages_processed")
         from datetime import datetime
         current_time = datetime.now().strftime("%H:%M:%S")
-        dto = ChatMessageDTO(user, msg, badges, color, msg_id, sender_id, timestamp=current_time)
+        if isinstance(user_or_dto, ChatMessageDTO):
+            dto = user_or_dto
+            if not dto.timestamp:
+                dto.timestamp = current_time
+        else:
+            dto = ChatMessageDTO(user_or_dto, msg, badges or [], color, msg_id, sender_id, timestamp=current_time)
         self.chat_controller.process_message(dto)
 
     def _format_reward_message(self, reward_name: str) -> str:

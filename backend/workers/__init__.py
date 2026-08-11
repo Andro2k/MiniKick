@@ -1,9 +1,11 @@
 # backend\workers\__init__.py
 
 from .auth_worker import AuthWorker
+from .twitch_auth_worker import TwitchAuthWorker
 from .bug_report_worker import BugReportWorker
 from .crash_report_worker import CrashReportWorker
 from .chat_worker import ChatWorker
+from .twitch_chat_worker import TwitchChatWorker
 from .music_worker import YouTubeResolveWorker, YouTubeSearchWorker
 from .network_worker import NetworkWorker
 from .rewards_worker import RewardWorker, FetchRewardsWorker
@@ -13,9 +15,11 @@ from .voice_worker import VoiceFetcherWorker
 
 __all__ = [
     "AuthWorker",
+    "TwitchAuthWorker",
     "BugReportWorker",
     "CrashReportWorker",
     "ChatWorker",
+    "TwitchChatWorker",
     "YouTubeResolveWorker",
     "YouTubeSearchWorker",
     "NetworkWorker",

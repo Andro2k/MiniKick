@@ -740,6 +740,15 @@
             "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo.",
             "title": "Soporte y Reporte de Bugs"
         },
+        "integrations": {
+            "btn_connect_twitch": "Conectar Twitch",
+            "btn_connected_twitch": "Conectado: #{channel}",
+            "btn_disconnect_twitch": "Desconectar #{channel}",
+            "desc": "Estado de la conexión del chat en tiempo real para cada plataforma.",
+            "title": "Integraciones de Chat y Plataformas",
+            "twitch_desc_connected": "Conectado exitosamente al chat de #{channel}.",
+            "twitch_title": "Canal de Twitch"
+        },
         "header": {
             "subtitle": "Ajustes globales del sistema, gestión de cuenta y actualizaciones.",
             "title": "Configuración General"

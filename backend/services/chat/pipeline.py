@@ -12,7 +12,9 @@ class ChatMessageDTO:
     msg_id: str
     sender_id: int
     timestamp: str = ""
+    platform: str = "kick"
     is_cancelled: bool = False
+    emotes_tag: str = ""
 
 class MessagePipeline:
     def __init__(self):
