@@ -441,7 +441,8 @@ class MainWindowCore(QMainWindow):
 
     def _on_auth_success(self, tokens):
         api_client = KickAPIClient(auth_provider=self.auth_manager)
-        self.dashboard_controller.evaluate_scopes(self.auth_manager.get_missing_scopes())
+        missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
+        self.dashboard_controller.evaluate_scopes(missing_scopes)
         
         self.command_service.api_client = api_client
         self.spam_service.api_client = api_client
@@ -521,13 +522,13 @@ class MainWindowCore(QMainWindow):
             )
 
     @Slot()
-    def _handle_twitch_auth_process(self):
+    def _handle_twitch_auth_process(self, force: bool = False):
         self.toast.show_toast(
             title="Twitch OAuth",
             message="Abriendo inicio de sesión en el navegador...",
             state="info"
         )
-        self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, parent=self)
+        self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, force=force, parent=self)
         self.twitch_auth_worker.auth_success.connect(self._on_twitch_auth_success)
         self.twitch_auth_worker.auth_error.connect(self._on_twitch_auth_error)
         self.twitch_auth_worker.finished.connect(self.twitch_auth_worker.deleteLater)
@@ -550,15 +551,23 @@ class MainWindowCore(QMainWindow):
             parent=self
         )
         self.command_service.twitch_worker = self.twitch_chat_worker
+        self.spam_service.twitch_api = twitch_api
+        self.spam_service.twitch_worker = self.twitch_chat_worker
         self.twitch_chat_worker.connection_success.connect(self._on_twitch_connected)
         self.twitch_chat_worker.message_received.connect(self._route_incoming_message)
         self.twitch_chat_worker.start()
 
     def _on_twitch_connected(self, user_data: dict):
         username = user_data.get("username", "")
+        broadcaster_id = user_data.get("broadcaster_id", "")
+        if broadcaster_id:
+            self.spam_service.twitch_broadcaster_id = broadcaster_id
         self._twitch_connected = True
         self._twitch_channel = username
         self._update_integrations_status_ui()
+
+        missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
+        self.dashboard_controller.evaluate_scopes(missing_scopes)
 
         self.toast.show_toast(
             title="Twitch Conectado",
@@ -572,6 +581,9 @@ class MainWindowCore(QMainWindow):
             self.twitch_chat_worker.stop()
             self.twitch_chat_worker = None
         self.command_service.twitch_worker = None
+        self.spam_service.twitch_api = None
+        self.spam_service.twitch_worker = None
+        self.spam_service.twitch_broadcaster_id = ""
         self.container.twitch_auth_manager.logout()
         self._twitch_connected = False
         self._twitch_channel = ""
@@ -587,7 +599,7 @@ class MainWindowCore(QMainWindow):
         if getattr(self, "_twitch_connected", False):
             self._handle_twitch_disconnect()
         else:
-            self._handle_twitch_auth_process()
+            self._handle_twitch_auth_process(force=True)
 
     @Slot()
     def _on_kick_integration_button_clicked(self):
@@ -598,8 +610,11 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _force_reauth(self):
-        self.auth_manager.logout()
-        self._handle_reauth_process()
+        if self.container.twitch_auth_manager.has_missing_scopes():
+            self._handle_twitch_auth_process(force=True)
+        if self.auth_manager.has_missing_scopes() or not self.container.twitch_auth_manager.has_missing_scopes():
+            self.auth_manager.logout()
+            self._handle_reauth_process()
 
     def _handle_reauth_process(self):
         self._handle_auth_process()

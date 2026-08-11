@@ -15,6 +15,7 @@ class ChatMessageDTO:
     platform: str = "kick"
     is_cancelled: bool = False
     emotes_tag: str = ""
+    is_command: bool = False
 
 class MessagePipeline:
     def __init__(self):

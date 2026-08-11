@@ -197,20 +197,23 @@ class TwitchAuthManager:
         self.storage = storage
         self.success_html_path = success_html_path
 
-    def get_tokens(self) -> dict:
-        tokens = self.storage.load()
-        if tokens and "access_token" in tokens:
-            return tokens
-        return self._new_login()
+    def get_tokens(self, force: bool = False) -> dict:
+        if not force:
+            tokens = self.storage.load()
+            if tokens and "access_token" in tokens and not self.has_missing_scopes():
+                return tokens
+        return self._new_login(force=force)
 
-    def _new_login(self) -> dict:
-        scopes = "chat:read chat:edit user:read:chat channel:moderate"
+    def _new_login(self, force: bool = False) -> dict:
+        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users"
+        force_param = "&force_verify=true" if force else ""
         auth_url = (
             f"{TWITCH_AUTH_URL}?response_type=code"
             f"&client_id={self.client_id}"
             f"&redirect_uri={self.redirect_uri}"
             f"&scope={scopes}"
             f"&state=random"
+            f"{force_param}"
         )
         port = int(urlparse(self.redirect_uri).port or 8080)
         auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path, provider="twitch")
@@ -247,3 +250,28 @@ class TwitchAuthManager:
 
     def logout(self) -> None:
         self.storage.clear()
+
+    def get_missing_scopes(self) -> list[str]:
+        tokens = self.storage.load()
+        if not tokens:
+            return []
+
+        REQUIRED_TWITCH_SCOPES = {
+            "moderator:manage:chat_messages": "dashboard.banner.scope.twitch_moderation_chat",
+            "moderator:manage:banned_users": "dashboard.banner.scope.twitch_moderation_ban",
+        }
+
+        raw_scopes = tokens.get("scope", "")
+        if isinstance(raw_scopes, list):
+            scopes_set = set(raw_scopes)
+        else:
+            scopes_set = set(raw_scopes.split())
+
+        return [
+            i18n_key
+            for scope, i18n_key in REQUIRED_TWITCH_SCOPES.items()
+            if scope not in scopes_set
+        ]
+
+    def has_missing_scopes(self) -> bool:
+        return len(self.get_missing_scopes()) > 0

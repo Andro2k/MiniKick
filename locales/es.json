@@ -230,8 +230,10 @@
         "banner": {
             "btn_update": "Actualizar Permisos",
             "scope": {
-                "moderation_ban": "Banear usuarios",
-                "moderation_chat": "Gestionar mensajes de chat"
+                "moderation_ban": "Banear usuarios en Kick",
+                "moderation_chat": "Gestionar mensajes de chat en Kick",
+                "twitch_moderation_ban": "Banear/Timeout usuarios en Twitch",
+                "twitch_moderation_chat": "Eliminar mensajes de chat en Twitch"
             },
             "text_prefix": "<b>Actualización requerida:</b> Tu cuenta no tiene los permisos necesarios:"
         },
@@ -804,7 +806,10 @@
             "exclude_sub": "Suscriptores y VIPs",
             "max_amount": "Cantidad máxima permitida",
             "max_characters": "Límite de caracteres por mensaje",
-            "max_symbols": "Límite de símbolos/caracteres extraños"
+            "max_symbols": "Límite de símbolos/caracteres extraños",
+            "platform_kick": "Kick",
+            "platform_twitch": "Twitch",
+            "platforms": "Plataformas Aplicables"
         },
         "filters": {
             "caps": {

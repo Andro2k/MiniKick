@@ -1,5 +1,6 @@
 # backend\controllers\chat_controller.py
 
+from collections import deque
 import logging
 from PySide6.QtCore import QObject, Slot, Signal
 from backend.handlers import TTSVoiceHandler, ChatFilterHandler
@@ -24,6 +25,7 @@ class ChatController(QObject):
         self.i18n = i18n
         self.timer_service = timer_service
         self.toast = toast_manager
+        self._message_buffer = deque(maxlen=200)
 
         self.filter_handler = ChatFilterHandler(i18n, service)
         self.voice_handler = TTSVoiceHandler(self, view, service, toast_manager, i18n)
@@ -40,17 +42,22 @@ class ChatController(QObject):
 
         self.pipeline = MessagePipeline()
         self._build_pipeline()
+        self.command_service.response_generated.connect(self._handle_bot_response)
         if self.view is not None:
             self._connect_signals()
             self._load_initial_data()
 
     def attach_view(self, view) -> None:
+        first_attach = (self.view is None)
         self.view = view
         if self.voice_handler:
             self.voice_handler.view = view
         if self.view is not None:
             self._connect_signals()
             self._load_initial_data()
+            if first_attach and self._message_buffer:
+                for item in self._message_buffer:
+                    self.view.append_message(item["user"], item["content"], item["color"], timestamp=item["timestamp"], role=item["role"], platform=item["platform"])
 
     @property
     def muted_bots(self) -> set[str]:
@@ -62,8 +69,8 @@ class ChatController(QObject):
 
     def _build_pipeline(self) -> None:
         self.pipeline.register(self._step_spam)
-        self.pipeline.register(self._step_commands)
         self.pipeline.register(self._step_ui_render)
+        self.pipeline.register(self._step_commands)
         self.pipeline.register(self._step_tts)
 
     def _connect_signals(self) -> None:
@@ -184,7 +191,8 @@ class ChatController(QObject):
 
     def _step_spam(self, dto: ChatMessageDTO) -> None:
         emotes_tag = getattr(dto, "emotes_tag", "")
-        if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id, emotes_tag=emotes_tag):
+        platform = getattr(dto, "platform", "kick")
+        if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id, emotes_tag=emotes_tag, platform=platform):
             dto.is_cancelled = True
             self.spam_blocked.emit()
 
@@ -275,10 +283,31 @@ class ChatController(QObject):
             badges.append("bot")
         role_name = self._resolve_user_role(badges, dto.user)
         platform = getattr(dto, "platform", "kick")
+        item = {
+            "user": dto.user, "content": dto.content, "color": dto.color, "timestamp": dto.timestamp,
+            "role": role_name, "platform": platform
+        }
+        self._message_buffer.append(item)
         if self.view is not None:
             self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
         emotes_tag = getattr(dto, "emotes_tag", "")
         self.message_received.emit(dto.user, dto.content, dto.color, badges, platform, emotes_tag)
+
+    def _handle_bot_response(self, text: str, platform: str = "kick") -> None:
+        if not text or platform != "twitch":
+            return
+        import datetime
+        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        bot_user = "MiniKick"
+        if hasattr(self.command_service, "twitch_worker") and self.command_service.twitch_worker:
+            tw_worker = self.command_service.twitch_worker
+            bot_user = getattr(tw_worker, "bot_nick", "") or getattr(tw_worker, "channel_name", "") or "MiniKick"
+        
+        dto = ChatMessageDTO(
+            user=bot_user, content=text, badges=["broadcaster", "bot"], color="#9146FF",
+            msg_id="", sender_id=0, timestamp=now_str, platform="twitch", is_cancelled=False, is_command=False
+        )
+        self._step_ui_render(dto)
 
     def _step_tts(self, dto: ChatMessageDTO) -> None:
         if getattr(dto, "is_command", False):

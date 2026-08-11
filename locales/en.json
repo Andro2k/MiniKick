@@ -230,8 +230,10 @@
         "banner": {
             "btn_update": "Update Permissions",
             "scope": {
-                "moderation_ban": "Ban users",
-                "moderation_chat": "Manage chat messages"
+                "moderation_ban": "Ban users on Kick",
+                "moderation_chat": "Manage chat messages on Kick",
+                "twitch_moderation_ban": "Ban/Timeout users on Twitch",
+                "twitch_moderation_chat": "Delete chat messages on Twitch"
             },
             "text_prefix": "<b>Update required:</b> Your account is missing the following permissions:"
         },
@@ -804,7 +806,10 @@
             "exclude_sub": "Subscribers & VIPs",
             "max_amount": "Maximum allowed amount",
             "max_characters": "Max characters per message",
-            "max_symbols": "Max symbols / foreign script limit"
+            "max_symbols": "Max symbols / foreign script limit",
+            "platform_kick": "Kick",
+            "platform_twitch": "Twitch",
+            "platforms": "Applicable Platforms"
         },
         "filters": {
             "caps": {

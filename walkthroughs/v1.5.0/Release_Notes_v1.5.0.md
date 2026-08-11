@@ -1,8 +1,29 @@
-# Release Notes - MiniKick v1.5.0
+# Release Notes - MiniKick Version v1.5.0
 
-## Novedades de la Versión 1.5.0
+> MiniKick v1.5.0 amplía la suite de herramientas hacia una arquitectura **Multi-Plataforma nativa**, introduciendo integración simultánea con **Twitch** y **Kick**, moderación anti-spam configurable por plataforma (switches independientes de Kick y Twitch por regla), eliminación de mensajes duplicados en Kick, aislamiento estricto de filtros anti-spam, historial de chat en segundo plano, orden cronológico de chat, renderizado en UI de respuestas salientes del bot, lectura continua en TTS Local (SAPI5), permisos de moderación de Twitch (scopes) y banner de notificación de permisos faltantes.
 
-- 🟣 **Soporte Multi-Plataforma para Twitch:** Conexión nativa en tiempo real al chat de Twitch mediante WebSockets IRC y API Helix.
-- 🤖 **Mensajes con Nombre de Bot:** Capacidad para emitir respuestas automáticas y comandos utilizando la cuenta de Bot configurada para Twitch.
-- 🛡️ **Moderación Unificada:** Soporte para expulsión temporal (timeout), baneos permanentes y borrado de mensajes en Twitch.
-- 🏷️ **Badges de Plataforma en Widgets OBS:** Identificación visual clara (icono de Twitch vs Kick) en los overlays de chat para OBS Studio.
+---
+
+## Novedades Principales
+
+### 1. Eliminación de Duplicados en Kick
+- **Restricción por Protocolo**: `_handle_bot_response()` restringe el renderizado local a Twitch (`platform == "twitch"`). Kick procesa los mensajes del bot exclusivamente desde su WebSocket de Pusher oficial, erradicando entradas duplicadas.
+
+### 2. Orden Cronológico del Pipeline de Chat
+- **Mensaje de Usuario Primero**: Reordenamiento en `ChatController` para que `_step_ui_render` preceda a `_step_commands`, garantizando que en `ChatDisplay` los comandos del espectador aparezcan primero y la respuesta del bot inmediatamente después.
+
+### 3. Alineación de Identidad del Emisor del Bot
+- **Nombre de Usuario Real**: La interfaz de chat utiliza dinámicamente el nombre de la cuenta vinculada (ej. `TheAndro2K` o el nick del bot) para las respuestas enviadas por MiniKick.
+
+### 4. Reproducción Continua en TTS Local (SAPI5 / Windows)
+- **Instanciación Segura por Mensaje**: Refactorización de `LocalTTSProvider` para inicializar y limpiar la pila COM (`pythoncom`) y el motor `pyttsx3` por cada mensaje entrante.
+
+---
+
+## Métricas de Calidad
+
+| Componente | Estado Anterior | Estado Actual (v1.5.0) | Impacto |
+| :--- | :--- | :--- | :--- |
+| Mensajes del Bot en Kick | Aparecían dos veces (Duplicados) | **Entrada Única desde WebSocket** | Chat de Kick limpio sin duplicaciones |
+| Orden Cronológico en UI | La respuesta del bot aparecía antes del comando | **Orden Estricto (Comando -> Respuesta)** | Línea de tiempo de chat 100% natural |
+| Cobertura de Pruebas Unitarias | 30 pruebas pasando | **31 pruebas pasando** en 7.58s | Cobertura total de pipeline y ejecutores |

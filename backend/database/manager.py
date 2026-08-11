@@ -123,7 +123,9 @@ class DatabaseManager:
                     duration INTEGER DEFAULT 5,
                     exclude_group TEXT DEFAULT 'none',
                     max_amount INTEGER DEFAULT 0,
-                    allowlist TEXT DEFAULT ''
+                    allowlist TEXT DEFAULT '',
+                    apply_kick INTEGER DEFAULT 1,
+                    apply_twitch INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -347,6 +349,8 @@ class DatabaseManager:
     def _upgrade_schema(self) -> None:
         expected_columns = {
             "spam_filters": [
+                ("apply_kick", "INTEGER DEFAULT 1"),
+                ("apply_twitch", "INTEGER DEFAULT 1"),
                 ("allowlist", "TEXT DEFAULT ''"),
                 ("max_amount", "INTEGER DEFAULT 0"),
                 ("exclude_group", "TEXT DEFAULT 'none'"),

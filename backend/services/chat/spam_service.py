@@ -11,6 +11,9 @@ class SpamService:
     def __init__(self, storage, api_client=None, max_history_size: int = 1000, i18n=None):
         self.storage = storage
         self.api_client = api_client
+        self.twitch_api = None
+        self.twitch_worker = None
+        self.twitch_broadcaster_id = ""
         self.i18n = i18n
         self.broadcaster_id = 0
         self.filters = {}
@@ -26,7 +29,16 @@ class SpamService:
         self.storage.save_filter(filter_id, config)
         self.reload_filters()
 
-    def is_spam(self, user: str, message: str, badges: list, msg_id: str, sender_id: int, emotes_tag: str = "") -> bool:
+    def _get_clean_text(self, message: str, emotes_tag: str = "", strip_urls: bool = False) -> str:
+        clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
+        if emotes_tag:
+            from backend.providers.chat.twitch_websocket import TwitchSocketManager
+            clean_msg = TwitchSocketManager.strip_twitch_emotes(clean_msg, emotes_tag)
+        if strip_urls:
+            clean_msg = self._LINK_REGEX.sub('', clean_msg)
+        return clean_msg
+
+    def is_spam(self, user: str, message: str, badges: list, msg_id: str, sender_id: int, emotes_tag: str = "", platform: str = "kick") -> bool:
         if not message:
             return False
 
@@ -42,6 +54,11 @@ class SpamService:
         for f_id, config in self.filters.items():
             if not config.get("is_active"):
                 continue
+            if platform == "kick" and not config.get("apply_kick", True):
+                continue
+            if platform == "twitch" and not config.get("apply_twitch", True):
+                continue
+
             exclude_group = config.get("exclude_group", "none")
             if exclude_group == "moderator" and is_mod:
                 continue
@@ -52,8 +69,9 @@ class SpamService:
             is_violation = False
 
             if f_id == "caps_protection":
-                caps_count = sum(1 for c in message if c.isupper())
-                if len(message) > 5 and caps_count > max_amount:
+                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag, strip_urls=True)
+                caps_count = sum(1 for c in clean_msg if c.isupper())
+                if len(clean_msg.strip()) > 5 and caps_count > max_amount:
                     is_violation = True
 
             elif f_id == "emote_protection":
@@ -63,9 +81,7 @@ class SpamService:
                     is_violation = True
                     
             elif f_id == "symbol_protection":
-                clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
-                if emotes_tag:
-                    clean_msg = TwitchSocketManager.strip_twitch_emotes(clean_msg, emotes_tag)
+                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag)
                 strange_chars = self._ALLOWED_LATIN_PATTERN.sub('', clean_msg)
                 symbols_only = re.findall(r'[^a-zA-Z0-9\s\u00C0-\u024F]', clean_msg)
                 threshold = max_amount if max_amount > 0 else 15
@@ -73,9 +89,7 @@ class SpamService:
                     is_violation = True
 
             elif f_id == "paragraph_protection":
-                clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
-                if emotes_tag:
-                    clean_msg = TwitchSocketManager.strip_twitch_emotes(clean_msg, emotes_tag)
+                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag)
                 threshold = max_amount if max_amount > 0 else 300
                 if len(clean_msg) > threshold or clean_msg.count('\n') >= 5:
                     is_violation = True
@@ -94,19 +108,21 @@ class SpamService:
                             break
 
             elif f_id == "repetition_protection":
-                words = message.lower().split()
-                word_counts = {}
-                for w in words:
-                    word_counts[w] = word_counts.get(w, 0) + 1
-                
-                if any(count > max_amount for count in word_counts.values()):
-                    is_violation = True
-                else:
-                    self._track_user_message(user, message.lower())
-                    if self.user_history[user]["count"] > max_amount:
+                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag, strip_urls=True)
+                words = clean_msg.lower().split()
+                if words:
+                    word_counts = {}
+                    for w in words:
+                        word_counts[w] = word_counts.get(w, 0) + 1
+                    
+                    if any(count > max_amount for count in word_counts.values()):
                         is_violation = True
+                    else:
+                        self._track_user_message(user, clean_msg.lower())
+                        if self.user_history[user]["count"] > max_amount:
+                            is_violation = True
             if is_violation:
-                self._apply_penalty(user, sender_id, msg_id, config, f_id, message)
+                self._apply_penalty(user, sender_id, msg_id, config, f_id, message, platform=platform)
                 return True
 
         return False
@@ -125,7 +141,7 @@ class SpamService:
             else:
                 self.user_history[user] = {"message": msg_lower, "count": 1}
 
-    def _apply_penalty(self, user: str, sender_id: int, msg_id: str, config: dict, filter_id: str, message: str):
+    def _apply_penalty(self, user: str, sender_id: int, msg_id: str, config: dict, filter_id: str, message: str, platform: str = "kick"):
         penalty_type = config.get("penalty", "timeout")
         duration_mins = config.get("duration", 5)
 
@@ -139,24 +155,52 @@ class SpamService:
                 duration=duration_mins
             )
 
-        if not self.api_client:
-            return
+        if platform == "kick":
+            if not self.api_client:
+                return
 
-        try:
-            if penalty_type == "delete":
-                self.api_client.delete_chat_message(msg_id)
+            try:
+                if penalty_type == "delete":
+                    self.api_client.delete_chat_message(msg_id)
+                elif penalty_type == "timeout" and self.broadcaster_id:
+                    self.api_client.timeout_user(self.broadcaster_id, sender_id, duration_mins)
+                elif penalty_type == "ban" and self.broadcaster_id:
+                    self.api_client.ban_user(self.broadcaster_id, sender_id)
+                elif penalty_type == "warn_delete":
+                    self.api_client.delete_chat_message(msg_id)
+                    if self.i18n:
+                        warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
+                        self.api_client.post_chat_message(warn_msg, msg_type="bot")
+            except Exception as e:
+                logging.error("[SpamService] Error attempting to penalize Kick user %s: %s", user, e)
+
+        elif platform == "twitch":
+            try:
+                duration_sec = duration_mins * 60
+                b_id = str(self.twitch_broadcaster_id) if hasattr(self, 'twitch_broadcaster_id') and self.twitch_broadcaster_id else ""
                 
-            elif penalty_type == "timeout" and self.broadcaster_id:
-                self.api_client.timeout_user(self.broadcaster_id, sender_id, duration_mins)
-                
-            elif penalty_type == "ban" and self.broadcaster_id:
-                self.api_client.ban_user(self.broadcaster_id, sender_id)
-                
-            elif penalty_type == "warn_delete":
-                self.api_client.delete_chat_message(msg_id)
-                if self.i18n:
-                    warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
-                    self.api_client.post_chat_message(warn_msg, msg_type="bot")
-                
-        except Exception as e:
-            logging.error("[SpamService] Error attempting to penalize %s: %s", user, e)
+                if penalty_type == "delete":
+                    if self.twitch_api and b_id:
+                        self.twitch_api.delete_chat_message(b_id, b_id, msg_id)
+                    elif self.twitch_worker:
+                        self.twitch_worker.send_bot_message(f"/delete {msg_id}")
+                elif penalty_type == "timeout":
+                    if self.twitch_api and b_id:
+                        self.twitch_api.timeout_user(b_id, b_id, str(sender_id), duration_sec)
+                    elif self.twitch_worker:
+                        self.twitch_worker.send_bot_message(f"/timeout {user} {duration_sec}")
+                elif penalty_type == "ban":
+                    if self.twitch_api and b_id:
+                        self.twitch_api.ban_user(b_id, b_id, str(sender_id))
+                    elif self.twitch_worker:
+                        self.twitch_worker.send_bot_message(f"/ban {user}")
+                elif penalty_type == "warn_delete":
+                    if self.twitch_api and b_id:
+                        self.twitch_api.delete_chat_message(b_id, b_id, msg_id)
+                    elif self.twitch_worker:
+                        self.twitch_worker.send_bot_message(f"/delete {msg_id}")
+                    if self.i18n and self.twitch_worker:
+                        warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
+                        self.twitch_worker.send_bot_message(warn_msg)
+            except Exception as e:
+                logging.error("[SpamService] Error attempting to penalize Twitch user %s: %s", user, e)
