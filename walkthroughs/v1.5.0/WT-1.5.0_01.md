@@ -1,18 +1,16 @@
-# Walkthrough Unificado - WT-1.5.0_01: Integración Completa de Twitch, Renderizado de Emotes de Twitch en Overlay y Filtros Multi-Plataforma (v1.5.0)
+# Walkthrough Unificado - WT-1.5.0_01: Integración Completa de Twitch, Prompt Powerline con Símbolo \ue0b2 e Iconos de Plataforma (v1.5.0)
 
 ## Resumen General
 
-En la versión **v1.5.0**, MiniKick ha expandido sus capacidades hacia una arquitectura **Multi-Plataforma**, permitiendo la integración simultánea con **Kick** y **Twitch**. Se incorporó inicio de sesión mediante Twitch OAuth, auto-detección del canal vía Twitch Helix API, inspector de WebSocket de Twitch en tiempo real (`test_twitch_websocket_live.py`), auto-conexión al iniciar la app usando tokens guardados, lectura y renderizado unificado de chat con timestamps exactos en segundos (`%H:%M:%S`), distintivos visuales por plataforma (`\uf1e8` Twitch vs `\uf2f3` Kick), símbolos estilizados de Nerd Font en la app, transmisión de `emotes_tag` al servidor de overlay, y renderizado automático de imágenes de emotes de Twitch desde el CDN de Twitch en `chat.html`.
+En la versión **v1.5.0**, MiniKick ha expandido sus capacidades hacia una arquitectura **Multi-Plataforma**, permitiendo la integración simultánea con **Kick** y **Twitch**. Se incorporó inicio de sesión mediante Twitch OAuth, auto-detección del canal vía Twitch Helix API, inspector de WebSocket de Twitch en tiempo real (`test_twitch_websocket_live.py`), auto-conexión al iniciar la app usando tokens guardados, lectura y renderizado unificado de chat con timestamps exactos en segundos (`%H:%M:%S`), distintivos visuales por plataforma (`\uf1e8` Twitch vs `\uf2f3` Kick), transmisión de `emotes_tag` al servidor de overlay, y renderizado de la barra Powerline con el símbolo de inicio `` (`\ue0b2`), separadores `` (`\ue0b0`), punta final `` (`\ue0b0`) e icono exclusivo de plataforma en `chat_display.py`.
 
 ---
 
-## 1. Renderizado de Emotes de Twitch en `chat.html`
+## 1. Ajustes del Prompt Powerline en `chat_display.py`
 
-- **[overlay_manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/overlay/overlay_manager.py) & [chat_controller.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/chat_controller.py):**
-  - La señal `message_received` emite ahora `emotes_tag` como sexto parámetro, transmitiéndolo a `OverlayServerManager.trigger_chat_message()`.
-
-- **[chat.html](file:///c:/Users/TheAn/Desktop/python/Kick/assets/overlays/chat/chat.html):**
-  - En `addMessage`, si `data.emotes_tag` está presente, analiza los rangos de caracteres (`inicio-fin`) y sustituye las palabras textuales de los emotes por elementos `<img src="https://static-cdn.jtvnw.net/emoticons/v2/<id>/default/dark/2.0" class="chat-emote" />` provenientes del CDN oficial de Twitch.
+- **[chat_display.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/chat_display.py):**
+  - **Símbolo de Inicio `` (`\ue0b2`):** Se reemplazó el semicírculo `` (`\ue0b6`) por la flecha de inicio hacia la izquierda `` (`\ue0b2` PL LEFT HARD DIVIDER).
+  - **Icono Exclusivo de Plataforma:** Se removió la palabra textual `"Twitch"` / `"Kick"`, mostrando únicamente el icono del logo (`\uf1e8` Twitch / `\uf2f3` Kick).
 
 ---
 
@@ -25,5 +23,5 @@ Se ejecutó la suite completa de pruebas unitarias:
 
 ### Resultados:
 ```text
-============================= 25 passed in 0.57s ==============================
+============================= 25 passed in 0.61s ==============================
 ```
