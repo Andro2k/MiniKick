@@ -103,18 +103,47 @@ class SQLiteMusicStorage:
             logger.error("[SQLiteMusicStorage] Error saving search cache: %s", e)
 
 
+    def update_file_size(self, query_or_url: str, size_mb: float) -> None:
+        if not self.db_manager or not query_or_url or size_mb <= 0:
+            return
+        try:
+            norm_q = normalize_query(query_or_url) or query_or_url.lower().strip()
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE youtube_search_cache SET file_size_mb = ? WHERE LOWER(query_raw) = ? OR LOWER(url) = ?",
+                    (round(size_mb, 2), norm_q, query_or_url.lower().strip())
+                )
+                conn.commit()
+        except Exception as e:
+            logger.error("[SQLiteMusicStorage] Error updating file size: %s", e)
+
     def get_least_popular_cached_songs(self) -> list[dict]:
         if not self.db_manager:
             return []
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute(
-                    "SELECT query_raw, title, artist, url, COALESCE(play_count, 1) as pc, last_accessed FROM youtube_search_cache ORDER BY pc ASC, last_accessed ASC"
-                )
+                cursor.execute("""
+                    SELECT query_raw, title, artist, url, COALESCE(play_count, 1) as pc, last_accessed, COALESCE(file_size_mb, 4.0) as sz,
+                           (COALESCE(play_count, 1) / (
+                               ((julianday('now') - julianday(COALESCE(last_accessed, datetime('now')))) + 0.5) * COALESCE(file_size_mb, 4.0)
+                           )) AS score
+                    FROM youtube_search_cache
+                    ORDER BY score ASC
+                """)
                 rows = cursor.fetchall()
                 return [
-                    {"query_raw": r[0], "title": r[1], "artist": r[2], "url": r[3], "play_count": r[4], "last_accessed": r[5]}
+                    {
+                        "query_raw": r[0],
+                        "title": r[1],
+                        "artist": r[2],
+                        "url": r[3],
+                        "play_count": r[4],
+                        "last_accessed": r[5],
+                        "file_size_mb": r[6],
+                        "score": r[7]
+                    }
                     for r in rows
                 ]
         except Exception as e:

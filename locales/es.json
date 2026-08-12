@@ -230,8 +230,10 @@
         "banner": {
             "btn_update": "Actualizar Permisos",
             "scope": {
-                "moderation_ban": "Banear usuarios",
-                "moderation_chat": "Gestionar mensajes de chat"
+                "moderation_ban": "Banear usuarios en Kick",
+                "moderation_chat": "Gestionar mensajes de chat en Kick",
+                "twitch_moderation_ban": "Banear/Timeout usuarios en Twitch",
+                "twitch_moderation_chat": "Eliminar mensajes de chat en Twitch"
             },
             "text_prefix": "<b>Actualización requerida:</b> Tu cuenta no tiene los permisos necesarios:"
         },
@@ -719,7 +721,10 @@
             "btn_new": "Nuevas Recompensas",
             "col_actions": "Acciones",
             "col_file": "Archivo",
+            "col_pos": "Posición",
             "col_reward": "Recompensa Kick",
+            "col_volume": "Volumen",
+            "pos_random": "Aleatorio",
             "title": "Recompensas Vinculadas",
             "tooltip_delete": "Eliminar Recompensa",
             "tooltip_edit": "Modificar ajustes",
@@ -804,7 +809,10 @@
             "exclude_sub": "Suscriptores y VIPs",
             "max_amount": "Cantidad máxima permitida",
             "max_characters": "Límite de caracteres por mensaje",
-            "max_symbols": "Límite de símbolos/caracteres extraños"
+            "max_symbols": "Límite de símbolos/caracteres extraños",
+            "platform_kick": "Kick",
+            "platform_twitch": "Twitch",
+            "platforms": "Plataformas Aplicables"
         },
         "filters": {
             "caps": {
@@ -861,6 +869,8 @@
             "name_placeholder": "Ej: Redes Sociales",
             "offline_interval_label": "Intervalo Offline (minutos)",
             "online_interval_label": "Intervalo Online (minutos)",
+            "platforms_desc": "Activa las plataformas en las que se emitirá este temporizador.",
+            "platforms_label": "Plataforma(s) activas:",
             "response_label": "Mensajes de respuesta (se elegirá uno aleatoriamente):",
             "response_placeholder": "Escribe el mensaje de respuesta aquí...",
             "subtitle": "Define un nuevo temporizador automático para enviar mensajes al chat.",
@@ -894,6 +904,8 @@
             "col_interval_online": "Int. Online",
             "col_message": "Mensaje",
             "col_name": "Nombre",
+            "col_platforms": "Plataformas",
+            "platform_both": "Ambos",
             "search_placeholder": "Buscar temporizador...",
             "tooltip_delete": "Eliminar temporizador permanentemente",
             "tooltip_edit": "Editar temporizador",

@@ -20,24 +20,42 @@ class LocalTTSProvider:
         pass
 
     def speak(self, text: str, voice_id: str = None) -> None:
+        if not text:
+            return
         target_voice = voice_id if voice_id else self.voice_id
         with self._lock:
+            engine = None
             try:
-                if not self._engine:
-                    import pythoncom
-                    pythoncom.CoInitialize()
-                    self._engine = pyttsx3.init()
-                
-                self._engine.setProperty("rate", self.rate)
-                self._engine.setProperty("volume", self.volume)
+                import pythoncom
+                pythoncom.CoInitialize()
+                engine = pyttsx3.init()
+                engine.setProperty("rate", self.rate)
+                engine.setProperty("volume", self.volume)
                 if target_voice:
-                    self._engine.setProperty("voice", target_voice)
+                    try:
+                        engine.setProperty("voice", target_voice)
+                    except Exception as ve:
+                        logging.warning("[Local TTS] Could not set voice %s: %s", target_voice, ve)
                     
-                self._engine.say(text)
-                self._engine.runAndWait()
-
+                engine.say(text)
+                engine.runAndWait()
             except Exception as e:
                 logging.error("[Local TTS] Speech error: %s", e)
+            finally:
+                if engine is not None:
+                    try:
+                        engine.stop()
+                    except Exception:
+                        pass
+                    try:
+                        del engine
+                    except Exception:
+                        pass
+                try:
+                    import pythoncom
+                    pythoncom.CoUninitialize()
+                except Exception:
+                    pass
 
     def stop(self) -> None:
         pass

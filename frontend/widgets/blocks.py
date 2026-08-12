@@ -239,6 +239,37 @@ class ExpandableSettingCard(QFrame):
         lbl_gen.setProperty("role", "h3")
         b_layout.addWidget(lbl_gen)
         
+        platforms_layout = QHBoxLayout()
+        platforms_layout.setSpacing(16)
+        lbl_platforms = QLabel(self.i18n.get("spam.card.platforms"))
+        lbl_platforms.setProperty("role", "body")
+        platforms_layout.addWidget(lbl_platforms)
+
+        kick_layout = QHBoxLayout()
+        kick_layout.setSpacing(6)
+        lbl_kick = QLabel(self.i18n.get("spam.card.platform_kick"))
+        lbl_kick.setProperty("role", "body")
+        self.switch_kick = ModernSwitch()
+        self.switch_kick.setChecked(True)
+        self.switch_kick.toggled.connect(self._emit_update)
+        kick_layout.addWidget(lbl_kick)
+        kick_layout.addWidget(self.switch_kick)
+
+        twitch_layout = QHBoxLayout()
+        twitch_layout.setSpacing(6)
+        lbl_twitch = QLabel(self.i18n.get("spam.card.platform_twitch"))
+        lbl_twitch.setProperty("role", "body")
+        self.switch_twitch = ModernSwitch()
+        self.switch_twitch.setChecked(True)
+        self.switch_twitch.toggled.connect(self._emit_update)
+        twitch_layout.addWidget(lbl_twitch)
+        twitch_layout.addWidget(self.switch_twitch)
+
+        platforms_layout.addLayout(kick_layout)
+        platforms_layout.addLayout(twitch_layout)
+        platforms_layout.addStretch()
+        b_layout.addLayout(platforms_layout)
+        
         options_layout = QHBoxLayout()
         options_layout.setSpacing(16)
         
@@ -341,6 +372,8 @@ class ExpandableSettingCard(QFrame):
         if self._is_loading: return
         config = {
             "is_active": self.switch.isChecked(),
+            "apply_kick": self.switch_kick.isChecked() if hasattr(self, 'switch_kick') else True,
+            "apply_twitch": self.switch_twitch.isChecked() if hasattr(self, 'switch_twitch') else True,
             "penalty": self.combo_penalty.currentData(),
             "duration": self.spin_dur.value(),
             "exclude_group": self.combo_exclude.currentData(),
@@ -352,6 +385,10 @@ class ExpandableSettingCard(QFrame):
     def set_data(self, config: dict):
         self._is_loading = True
         self.switch.setChecked(config.get("is_active", False))
+        if hasattr(self, 'switch_kick'):
+            self.switch_kick.setChecked(config.get("apply_kick", True))
+        if hasattr(self, 'switch_twitch'):
+            self.switch_twitch.setChecked(config.get("apply_twitch", True))
         index_pen = self.combo_penalty.findData(config.get("penalty", "timeout"))
         if index_pen >= 0: self.combo_penalty.setCurrentIndex(index_pen)
         self.spin_dur.setValue(config.get("duration", 300))

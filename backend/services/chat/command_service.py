@@ -8,6 +8,7 @@ from PySide6.QtCore import QObject, Signal
 
 class CommandService(QObject):
     commands_changed = Signal()
+    response_generated = Signal(str, str)
     _PERMISSIONS = {
         "everyone": 0, "subscriber": 1,
         "vip": 2, "moderator": 3, "broadcaster": 4
@@ -202,18 +203,21 @@ class CommandService(QObject):
         return True, "", cmd, matched_prefix
 
     def send_response(self, response_text: str, platform: str = "kick"):
+        if not response_text:
+            return
+
         if platform == "twitch":
             tw_worker = getattr(self, "twitch_worker", None)
             if tw_worker and hasattr(tw_worker, "send_bot_message"):
                 try:
                     tw_worker.send_bot_message(response_text)
-                    return
                 except Exception as e:
                     logging.error("[CommandService] Error enviando mensaje a Twitch: %s", e)
+        else:
+            if self.api_client:
+                try:
+                    self.api_client.post_chat_message(content=response_text, msg_type="bot")
+                except Exception as e:
+                    logging.error("[CommandService] Error enviando respuesta a Kick: %s", e)
 
-        if not self.api_client:
-            return
-        try:
-            self.api_client.post_chat_message(content=response_text, msg_type="bot")
-        except Exception as e:
-            logging.error("[CommandService] Error enviando respuesta a Kick: %s", e)
+        self.response_generated.emit(response_text, platform)

@@ -1,4 +1,4 @@
-# tests/test_twitch_websocket.py
+# tests\test_twitch_websocket.py
 
 from backend.providers.chat.twitch_websocket import TwitchSocketManager
 

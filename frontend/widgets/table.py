@@ -1,11 +1,12 @@
 # frontend\widgets\table.py
 
 import os
-from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QWidget, QStackedWidget
+from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget
 from PySide6.QtCore import Qt, QSize
 from .controls import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
+from .search_bar import UnifiedSearchBar
 from frontend.common.theme import COLOR_BLACK
 from frontend.common.utils import get_icon_colored, get_assets_path
 
@@ -53,8 +54,7 @@ class ModernTableCard(QFrame):
             self.header_layout.addStretch()
             
             if search_placeholder:
-                self.txt_search = QLineEdit(parent=self)
-                self.txt_search.setPlaceholderText(search_placeholder)
+                self.txt_search = UnifiedSearchBar(placeholder=search_placeholder, parent=self)
                 self.header_layout.addWidget(self.txt_search)
                 
             if add_button_text:
@@ -87,9 +87,9 @@ class ModernTableCard(QFrame):
         self.lbl_illustration = ScalableIllustration(
             icon_path=illustration_path,
             aspect_ratio=1.0,
-            min_size=80,
-            max_size=160,
-            size_offset=200,
+            min_size=120,
+            max_size=300,
+            size_offset=320,
             parent=self
         )
         

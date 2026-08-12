@@ -20,8 +20,8 @@ class TimerService:
     def get_active_timers(self) -> list[dict]:
         return [t for t in self.storage.load_all() if t.get("is_active", True)]
 
-    def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], timer_id: int = None):
-        self.storage.save_timer(name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, timer_id)
+    def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], apply_kick: bool = True, apply_twitch: bool = True, timer_id: int = None):
+        self.storage.save_timer(name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, timer_id)
 
     def delete_timer(self, timer_id: int):
         self.storage.delete_timer(timer_id)
@@ -31,7 +31,7 @@ class TimerService:
         for timer_id in list(self.tracking_state.keys()):
             self.tracking_state[timer_id]["chat_lines"] += 1
 
-    def check_timers(self, stream_status: dict) -> list[str]:
+    def check_timers(self, stream_status: dict) -> list[tuple[str, bool, bool]]:
         messages_to_send = []
         now = time.time()
 
@@ -82,7 +82,9 @@ class TimerService:
             msgs = timer.get("messages", [])
             if msgs:
                 msg = msgs[state["message_index"] % len(msgs)]
-                messages_to_send.append(msg)
+                apply_kick = timer.get("apply_kick", True)
+                apply_twitch = timer.get("apply_twitch", True)
+                messages_to_send.append((msg, apply_kick, apply_twitch))
                 if hasattr(self.storage, "db_manager") and self.storage.db_manager:
                     self.storage.db_manager.log_timer_execution(timer_id, msg)
 

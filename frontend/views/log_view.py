@@ -5,9 +5,9 @@ from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import (
     QFileDialog, QFrame, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QStackedWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget, QGridLayout, QLineEdit, QBoxLayout, QSizePolicy
+    QVBoxLayout, QWidget, QGridLayout, QBoxLayout, QSizePolicy
 )
-from frontend.widgets import BaseView, ModernTable, ScalableIllustration, ModernButton
+from frontend.widgets import BaseView, ModernTable, ScalableIllustration, ModernButton, UnifiedSearchBar, SegmentedPagination
 from frontend.common.theme import COLOR_BLACK, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE, COLOR_AMBER, COLOR_RED
 from frontend.common.utils import get_assets_path, get_icon_colored, NoWheelComboBox
 
@@ -36,9 +36,7 @@ class LogControlsPanel(QFrame):
         self._search = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self._search.setSpacing(6)
 
-        self.txt_search = QLineEdit()
-        self.txt_search.setPlaceholderText(self.i18n.get("log.controls.search_placeholder"))
-        self.txt_search.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.txt_search = UnifiedSearchBar(placeholder=self.i18n.get("log.controls.search_placeholder"))
         self.txt_search.textChanged.connect(self.search_changed.emit)
 
         self.combo_date = NoWheelComboBox()
@@ -134,7 +132,7 @@ class LogControlsPanel(QFrame):
         val = self.combo_date.itemData(index)
         self.date_changed.emit(val if val is not None else "")
 
-LOG_ILLUSTRATION_FILE = "illustration_file-search.svg"
+LOG_ILLUSTRATION_FILE = "illustration-document.svg"
 _LEVEL_COLORS = {
     "DEBUG": COLOR_NEUTRAL_400,
     "INFO": COLOR_BLUE,
@@ -265,33 +263,20 @@ class LogView(BaseView):
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
         self.pagination_layout.setContentsMargins(8, 8, 8, 8)
         self.pagination_layout.setSpacing(6)
-        
-        self.btn_prev = ModernButton("", role="action_outlined")
-        self.btn_prev.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_200, 16))
-        self.btn_prev.setIconSize(QSize(16, 16))
-        self.btn_prev.setFixedWidth(28)
-        self.btn_prev.clicked.connect(self.prev_page)
-        self.pagination_layout.addWidget(self.btn_prev)
-        
-        self.page_buttons_container = QWidget()
-        self.page_buttons_layout = QHBoxLayout(self.page_buttons_container)
-        self.page_buttons_layout.setContentsMargins(0, 0, 0, 0)
-        self.page_buttons_layout.setSpacing(4)
-        self.pagination_layout.addWidget(self.page_buttons_container)
-        
-        self.btn_next = ModernButton("", role="action_outlined")
-        self.btn_next.setIcon(get_icon_colored("chevron-right-pipe.svg", COLOR_NEUTRAL_200, 16))
-        self.btn_next.setIconSize(QSize(16, 16))
-        self.btn_next.setFixedWidth(28)
-        self.btn_next.clicked.connect(self.next_page)
-        self.pagination_layout.addWidget(self.btn_next)
-        
+
+        self.segmented_pagination = SegmentedPagination(self)
+        self.segmented_pagination.first_requested.connect(self.first_page)
+        self.segmented_pagination.prev_requested.connect(self.prev_page)
+        self.segmented_pagination.next_requested.connect(self.next_page)
+        self.segmented_pagination.last_requested.connect(self.last_page)
+
+        self.pagination_layout.addWidget(self.segmented_pagination)
         self.pagination_layout.addStretch(1)
-        
+
         self.lbl_page_info = QLabel()
         self.lbl_page_info.setProperty("role", "body")
         self.pagination_layout.addWidget(self.lbl_page_info)
-        
+
         table_page_layout.addWidget(self.pagination_bar)
 
         self.content_stack.addWidget(table_page)
@@ -346,10 +331,10 @@ class LogView(BaseView):
         illustration_path = get_assets_path(os.path.join("icons", LOG_ILLUSTRATION_FILE))
         self.lbl_illustration = ScalableIllustration(
             icon_path=illustration_path,
-            aspect_ratio=460/750,
-            min_size=120,
+            aspect_ratio=1.0,
+            min_size=160,
             max_size=320,
-            size_offset=220,
+            size_offset=240,
             parent=self
         )
 
@@ -447,6 +432,11 @@ class LogView(BaseView):
 
         self.update_page_display()
 
+    def first_page(self):
+        if self.current_page > 1:
+            self.current_page = 1
+            self.update_page_display()
+
     def prev_page(self):
         if self.current_page > 1:
             self.current_page -= 1
@@ -460,74 +450,17 @@ class LogView(BaseView):
             self.current_page += 1
             self.update_page_display()
 
+    def last_page(self):
+        effective_logs = self._get_effective_logs()
+        total_logs = len(effective_logs)
+        total_pages = max(1, (total_logs + self.page_size - 1) // self.page_size)
+        if self.current_page < total_pages:
+            self.current_page = total_pages
+            self.update_page_display()
+
     def go_to_page(self, page: int):
         self.current_page = page
         self.update_page_display()
-
-    @Slot()
-    def _on_page_button_clicked(self):
-        btn = self.sender()
-        if btn:
-            val = btn.property("page_num")
-            if val is not None:
-                self.go_to_page(int(val))
-
-    def update_page_buttons(self, total_pages: int):
-        if total_pages <= 7:
-            pages = list(range(1, total_pages + 1))
-        else:
-            if self.current_page <= 4:
-                pages = [1, 2, 3, 4, 5, None, total_pages]
-            elif self.current_page >= total_pages - 3:
-                pages = [1, None, total_pages - 4, total_pages - 3, total_pages - 2, total_pages - 1, total_pages]
-            else:
-                pages = [1, None, self.current_page - 1, self.current_page, self.current_page + 1, None, total_pages]
-
-        while self.page_buttons_layout.count() > 0:
-            item = self.page_buttons_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                if widget not in self._page_btn_pool and widget not in self._page_label_pool:
-                    widget.deleteLater()
-
-        pool_idx = 0
-        label_pool_idx = 0
-        for p in pages:
-            if p is None:
-                if label_pool_idx < len(self._page_label_pool):
-                    lbl = self._page_label_pool[label_pool_idx]
-                else:
-                    lbl = QLabel("...")
-                    lbl.setProperty("role", "body")
-                    lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                    lbl.setParent(self.page_buttons_container)
-                    self._page_label_pool.append(lbl)
-                lbl.setVisible(True)
-                self.page_buttons_layout.addWidget(lbl)
-                label_pool_idx += 1
-            else:
-                role = "action_accent" if p == self.current_page else "action_outlined"
-                if pool_idx < len(self._page_btn_pool):
-                    btn = self._page_btn_pool[pool_idx]
-                    btn.setText(str(p))
-                    btn.setProperty("role", role)
-                    btn.style().unpolish(btn)
-                    btn.style().polish(btn)
-                else:
-                    btn = ModernButton(str(p), role=role)
-                    btn.setParent(self.page_buttons_container)
-                    btn.clicked.connect(self._on_page_button_clicked)
-                    self._page_btn_pool.append(btn)
-                
-                btn.setProperty("page_num", p)
-                btn.setVisible(True)
-                self.page_buttons_layout.addWidget(btn)
-                pool_idx += 1
-
-        for i in range(pool_idx, len(self._page_btn_pool)):
-            self._page_btn_pool[i].setVisible(False)
-        for i in range(label_pool_idx, len(self._page_label_pool)):
-            self._page_label_pool[i].setVisible(False)
 
     def update_page_display(self):
         effective_logs = self._get_effective_logs()
@@ -562,10 +495,8 @@ class LogView(BaseView):
         info_text = info_text.replace("{total}", str(total_logs))
         self.lbl_page_info.setText(info_text)
 
-        self.btn_prev.setEnabled(self.current_page > 1)
-        self.btn_next.setEnabled(self.current_page < total_pages)
-
-        self.update_page_buttons(total_pages)
+        if hasattr(self, "segmented_pagination"):
+            self.segmented_pagination.set_page_info(self.current_page, total_pages)
 
         if self.current_page == total_pages:
             scrollbar = self.table.verticalScrollBar()

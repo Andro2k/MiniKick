@@ -7,14 +7,15 @@ class TwitchAuthWorker(QThread):
     auth_success = Signal(dict)
     auth_error = Signal(str)
 
-    def __init__(self, twitch_auth_manager: TwitchAuthManager, parent=None):
+    def __init__(self, twitch_auth_manager: TwitchAuthManager, force: bool = False, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_Twitch_Auth")
         self.auth_manager = twitch_auth_manager
+        self.force = force
 
     def run(self):
         try:
-            tokens = self.auth_manager._new_login()
+            tokens = self.auth_manager.get_tokens(force=self.force)
             self.auth_success.emit(tokens)
         except Exception as e:
             self.auth_error.emit(str(e))

@@ -51,7 +51,7 @@ class CommandView(BaseView):
         self.table_card.setup_empty_state(
             title=self.i18n.get("command.empty.title"),
             desc=self.i18n.get("command.empty.desc"),
-            icon_name="illustration_add-files.svg",
+            icon_name="illustration-menu.svg",
             button_text=self.i18n.get("command.empty.btn"),
             on_button_clicked=self.add_requested.emit
         )
@@ -176,6 +176,11 @@ class CommandView(BaseView):
         self.table.setUpdatesEnabled(True)
         self.table_card.set_empty(len(commands) == 0 and len(self._raw_commands) == 0)
 
+        if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
+            title_base = self.i18n.get("command.table.title")
+            total_count = len(self._raw_commands)
+            self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
+
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
@@ -218,7 +223,7 @@ class CommandView(BaseView):
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         raw_perm = cmd_data.get("permission", "everyone")
         i18n_key = self._PERM_KEYS.get(raw_perm, "command.dialog.perm_everyone")
-        translated_text = self.i18n.get(i18n_key) or raw_perm
+        translated_text = self.i18n.get(i18n_key)
         tag = QFrame()
         tag.setFixedHeight(22)
         tag.setProperty("role", "badge")

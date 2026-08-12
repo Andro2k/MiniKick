@@ -82,6 +82,8 @@ class TimerController(QObject):
             chat_lines=existing["chat_lines"],
             keywords=existing["keywords"],
             categories=existing["categories"],
+            apply_kick=existing.get("apply_kick", True),
+            apply_twitch=existing.get("apply_twitch", True),
             timer_id=timer_id
         )
         self.metrics_update_requested.emit()

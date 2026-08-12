@@ -101,7 +101,8 @@ class DatabaseManager:
                     scale REAL DEFAULT 1.0,
                     pos_x INTEGER DEFAULT 0,
                     pos_y INTEGER DEFAULT 0,
-                    is_random_pos INTEGER DEFAULT 0
+                    is_random_pos INTEGER DEFAULT 0,
+                    thumbnail_bytes BLOB
                 )
             """)
             cursor.execute("""
@@ -123,7 +124,9 @@ class DatabaseManager:
                     duration INTEGER DEFAULT 5,
                     exclude_group TEXT DEFAULT 'none',
                     max_amount INTEGER DEFAULT 0,
-                    allowlist TEXT DEFAULT ''
+                    allowlist TEXT DEFAULT '',
+                    apply_kick INTEGER DEFAULT 1,
+                    apply_twitch INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -136,7 +139,9 @@ class DatabaseManager:
                     interval_offline INTEGER,
                     chat_lines INTEGER DEFAULT 0,
                     keywords TEXT DEFAULT '[]',
-                    categories TEXT DEFAULT '[]'
+                    categories TEXT DEFAULT '[]',
+                    apply_kick INTEGER DEFAULT 1,
+                    apply_twitch INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -160,6 +165,7 @@ class DatabaseManager:
                     duration TEXT DEFAULT '-',
                     play_count INTEGER DEFAULT 1,
                     last_accessed TEXT,
+                    file_size_mb REAL DEFAULT 4.0,
                     cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -173,6 +179,10 @@ class DatabaseManager:
                 pass
             try:
                 cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN last_accessed TEXT")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN file_size_mb REAL DEFAULT 4.0")
             except sqlite3.OperationalError:
                 pass
 
@@ -286,12 +296,7 @@ class DatabaseManager:
                     DELETE FROM command_execution_logs WHERE timestamp < datetime('now', '-30 days');
                 END;
             """)
-            cursor.execute("""
-                CREATE TRIGGER IF NOT EXISTS prune_youtube_cache AFTER INSERT ON youtube_search_cache
-                BEGIN
-                    DELETE FROM youtube_search_cache WHERE cached_at < datetime('now', '-15 days');
-                END;
-            """)
+            cursor.execute("DROP TRIGGER IF EXISTS prune_youtube_cache")
             cursor.execute("""
                 CREATE TRIGGER IF NOT EXISTS prune_avatar_cache AFTER INSERT ON avatar_cache
                 BEGIN
@@ -347,6 +352,8 @@ class DatabaseManager:
     def _upgrade_schema(self) -> None:
         expected_columns = {
             "spam_filters": [
+                ("apply_kick", "INTEGER DEFAULT 1"),
+                ("apply_twitch", "INTEGER DEFAULT 1"),
                 ("allowlist", "TEXT DEFAULT ''"),
                 ("max_amount", "INTEGER DEFAULT 0"),
                 ("exclude_group", "TEXT DEFAULT 'none'"),
@@ -366,9 +373,12 @@ class DatabaseManager:
                 ("scale", "REAL DEFAULT 1.0"),
                 ("pos_x", "INTEGER DEFAULT 0"),
                 ("pos_y", "INTEGER DEFAULT 0"),
-                ("is_random_pos", "INTEGER DEFAULT 0")
+                ("is_random_pos", "INTEGER DEFAULT 0"),
+                ("thumbnail_bytes", "BLOB")
             ],
             "chat_timers": [
+                ("apply_kick", "INTEGER DEFAULT 1"),
+                ("apply_twitch", "INTEGER DEFAULT 1"),
                 ("is_active", "INTEGER DEFAULT 1"),
                 ("interval_online", "INTEGER"),
                 ("interval_offline", "INTEGER"),

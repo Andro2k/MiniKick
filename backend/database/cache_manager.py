@@ -69,7 +69,8 @@ class MusicCacheManager:
                             os.remove(fpath)
                             freed_bytes += fsize
                             deleted_files += 1
-                            logger.info("[MusicCacheManager] Evicted low-popularity file: %s (freed %.2f MB)", fname, fsize / (1024 * 1024))
+                            logger.info("[MusicCacheManager] Evicted low-score track: '%s' (Score: %.4f, freed %.2f MB)", 
+                                        song.get("title", fname), song.get("score", 0.0), fsize / (1024 * 1024))
                         except Exception as del_err:
                             logger.warning("[MusicCacheManager] Failed to delete cache file %s: %s", fpath, del_err)
 

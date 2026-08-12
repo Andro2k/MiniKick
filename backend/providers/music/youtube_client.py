@@ -252,11 +252,6 @@ class YouTubeMusicProvider(QObject):
     def shutdown(self):
         self.player.stop()
         self.player.setSource(QUrl())
-        if self.current_local_file and os.path.exists(self.current_local_file):
-            try:
-                os.remove(self.current_local_file)
-            except Exception:
-                pass
         self.current_local_file = None
         if self.preload_worker and self.preload_worker.isRunning():
             self.preload_worker.terminate()
@@ -287,6 +282,13 @@ class YouTubeMusicProvider(QObject):
             if self.queue and self.queue[0]["url"] == self.preload_song_url:
                 self.queue[0]["resolved"] = True
                 self.queue[0]["stream_url"] = path_or_url
+                if path_or_url and not (path_or_url.startswith("http://") or path_or_url.startswith("https://")):
+                    if os.path.exists(path_or_url) and self.music_storage:
+                        try:
+                            fsize_mb = os.path.getsize(path_or_url) / (1024 * 1024)
+                            self.music_storage.update_file_size(self.preload_song_url, fsize_mb)
+                        except Exception:
+                            pass
             if self.preload_worker:
                 self.preload_worker.deleteLater()
                 self.preload_worker = None
@@ -374,10 +376,17 @@ class YouTubeMusicProvider(QObject):
             return
 
         self.current_song["resolved"] = True
+        if path_or_url and not (path_or_url.startswith("http://") or path_or_url.startswith("https://")):
+            if os.path.exists(path_or_url) and self.music_storage and self.current_song.get("url"):
+                try:
+                    fsize_mb = os.path.getsize(path_or_url) / (1024 * 1024)
+                    self.music_storage.update_file_size(self.current_song["url"], fsize_mb)
+                except Exception as sz_err:
+                    logging.debug("[YouTubeMusicProvider] Could not update file size: %s", sz_err)
+
         if self.cache_manager:
             try:
                 self.cache_manager.check_and_clean_cache(max_size_mb=5000)
-
             except Exception as cache_err:
                 logging.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
 

@@ -1,9 +1,9 @@
 # frontend\views\chat_view.py
 
 from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBoxLayout
 from PySide6.QtCore import Signal
-from frontend.widgets import BaseView, FlowLayout, ModernCard, ModernScrollArea
+from frontend.widgets import BaseView, ModernCard, ModernScrollArea
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -19,14 +19,16 @@ class ChatView(BaseView):
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="chat.header.title", subtitle_key="chat.header.subtitle", parent=parent)
+        self._last_body_dir = None
         self._setup_ui()
         self._connect_internal_signals()
 
     def _setup_ui(self):
-        self.body_layout = FlowLayout(hspacing=16, vspacing=16)
+        self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.body_layout.setSpacing(16)
 
         self.tabs = QTabWidget()
-        self.tabs.setMinimumWidth(380)
+        self.tabs.setMinimumWidth(480)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.tts_settings_panel = ChatTtsSettingsPanel(self.i18n)
@@ -45,18 +47,35 @@ class ChatView(BaseView):
         
         self.tabs.addTab(ModernScrollArea(self.overlay_settings_panel), self.i18n.get("chat.tabs.overlay"))
 
-        left_container = QWidget()
-        left_layout = QVBoxLayout(left_container)
+        self.left_container = QWidget()
+        left_layout = QVBoxLayout(self.left_container)
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
         left_layout.addWidget(self.tabs)
-        left_container.setMinimumWidth(380)
-        left_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.left_container.setMinimumWidth(480)
+        self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
 
-        self.body_layout.addWidget(left_container)
-        self.body_layout.addWidget(self.chat_display_panel)
+        self.chat_display_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        self.body_layout.addWidget(self.left_container, stretch=2)
+        self.body_layout.addWidget(self.chat_display_panel, stretch=3)
         
-        self.main_layout.addLayout(self.body_layout)
+        self.main_layout.addLayout(self.body_layout, stretch=1)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        width = self.width()
+        direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
+        if self._last_body_dir != direction:
+            self._last_body_dir = direction
+            self.body_layout.setDirection(direction)
+        
+        if direction == QBoxLayout.Direction.TopToBottom:
+            self.body_layout.setStretch(0, 1)
+            self.body_layout.setStretch(1, 1)
+        else:
+            self.body_layout.setStretch(0, 2)
+            self.body_layout.setStretch(1, 3)
 
     def _connect_internal_signals(self):
         self.tts_settings_panel.provider_toggled.connect(self.provider_toggled.emit)

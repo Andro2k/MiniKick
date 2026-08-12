@@ -7,6 +7,8 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 
 class ScalableIllustration(QLabel):
+    _aspect_ratio_cache: dict[str, float] = {}
+
     def __init__(self, icon_path: str, aspect_ratio: float = 1.0, 
                  min_size: int = 120, max_size: int = 300, size_offset: int = 220, parent=None):
         super().__init__(parent)
@@ -28,6 +30,9 @@ class ScalableIllustration(QLabel):
             self.setFixedSize(self.min_size, int(self.min_size * self.aspect_ratio))
 
     def _detect_aspect_ratio(self, fallback: float) -> float:
+        if self.icon_path in ScalableIllustration._aspect_ratio_cache:
+            return ScalableIllustration._aspect_ratio_cache[self.icon_path]
+
         if not os.path.exists(self.icon_path):
             return fallback
         try:
@@ -42,7 +47,9 @@ class ScalableIllustration(QLabel):
                 vb_w = float(viewbox_match.group(3))
                 vb_h = float(viewbox_match.group(4))
                 if vb_w > 0:
-                    return vb_h / vb_w
+                    ratio = vb_h / vb_w
+                    ScalableIllustration._aspect_ratio_cache[self.icon_path] = ratio
+                    return ratio
 
             width_match = re.search(r'width\s*=\s*["\']\s*([0-9.]+)(?:px)?\s*["\']', content, re.IGNORECASE)
             height_match = re.search(r'height\s*=\s*["\']\s*([0-9.]+)(?:px)?\s*["\']', content, re.IGNORECASE)
@@ -50,9 +57,12 @@ class ScalableIllustration(QLabel):
                 w = float(width_match.group(1))
                 h = float(height_match.group(1))
                 if w > 0:
-                    return h / w
+                    ratio = h / w
+                    ScalableIllustration._aspect_ratio_cache[self.icon_path] = ratio
+                    return ratio
         except Exception:
             pass
+        ScalableIllustration._aspect_ratio_cache[self.icon_path] = fallback
         return fallback
 
     def update_image(self, container_height: int):
@@ -62,6 +72,11 @@ class ScalableIllustration(QLabel):
             
         width_size = min(max(container_height - self.size_offset, self.min_size), self.max_size)
         height_size = int(width_size * self.aspect_ratio)
+
+        if hasattr(self, "_current_target_width") and abs(self._current_target_width - width_size) < 6:
+            return
+            
+        self._current_target_width = width_size
         
         icon = QIcon(self.icon_path)
         dpr = self.devicePixelRatio()

@@ -13,6 +13,8 @@ class FilterHeaderView(QHeaderView):
     def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):
         super().__init__(orientation, parent)
         self._column_filters: dict[int, dict] = {}
+        self._icon_filtered = get_icon_colored("adjustments.svg", COLOR_GREEN, 16)
+        self._icon_unfiltered = get_icon_colored("adjustments.svg", COLOR_NEUTRAL_500, 16)
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
         self.sectionClicked.connect(self._on_section_clicked)
@@ -61,8 +63,7 @@ class FilterHeaderView(QHeaderView):
                 icon_size
             )
 
-            icon_color = COLOR_GREEN if is_filtered else COLOR_NEUTRAL_500
-            icon = get_icon_colored("adjustments.svg", icon_color, icon_size)
+            icon = self._icon_filtered if is_filtered else self._icon_unfiltered
             icon.paint(painter, icon_rect, Qt.AlignmentFlag.AlignCenter)
 
 

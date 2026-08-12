@@ -2,9 +2,78 @@
 
 import os
 from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
-from PySide6.QtCore import QTimer, Qt, Signal, Slot
+from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
+from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_RED
+from frontend.common.utils import get_pixmap_colored
+
+AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
+
+def _create_reward_icon(config: dict, filepath: str) -> QIcon:
+    ext = os.path.splitext(filepath)[1].lower() if filepath else ""
+    is_audio = ext in AUDIO_EXTENSIONS
+    
+    target_w, target_h = 48, 32
+    
+    if is_audio:
+        pixmap = QPixmap(target_w, target_h)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        rect = QRectF(0, 0, target_w, target_h)
+        path = QPainterPath()
+        path.addRoundedRect(rect, 6, 6)
+        painter.fillPath(path, QColor("#1e293b"))
+        
+        icon_pixmap = get_pixmap_colored("volume.svg", COLOR_GREEN, 18)
+        if not icon_pixmap.isNull():
+            x = (target_w - 18) / 2
+            y = (target_h - 18) / 2
+            painter.drawPixmap(int(x), int(y), icon_pixmap)
+            
+        painter.end()
+        return QIcon(pixmap)
+        
+    thumb_bytes = config.get("thumbnail_bytes") if isinstance(config, dict) else None
+    if thumb_bytes:
+        img = QImage()
+        if img.loadFromData(thumb_bytes):
+            scaled = img.scaled(target_w, target_h, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
+            
+            final_pix = QPixmap(target_w, target_h)
+            final_pix.fill(Qt.GlobalColor.transparent)
+            
+            painter = QPainter(final_pix)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            
+            path = QPainterPath()
+            path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
+            painter.setClipPath(path)
+            
+            x = (target_w - scaled.width()) / 2
+            y = (target_h - scaled.height()) / 2
+            painter.drawImage(int(x), int(y), scaled)
+            painter.end()
+            return QIcon(final_pix)
+            
+    pixmap = QPixmap(target_w, target_h)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    path = QPainterPath()
+    path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
+    painter.fillPath(path, QColor("#1e293b"))
+    
+    icon_pixmap = get_pixmap_colored("movie.svg", COLOR_NEUTRAL_200, 18)
+    if not icon_pixmap.isNull():
+        x = (target_w - 18) / 2
+        y = (target_h - 18) / 2
+        painter.drawPixmap(int(x), int(y), icon_pixmap)
+    painter.end()
+    return QIcon(pixmap)
 
 class RewardsView(BaseView):
     add_requested = Signal()
@@ -41,31 +110,39 @@ class RewardsView(BaseView):
     def _build_table_card(self):
         col_1 = self.i18n.get("rewards.table.col_reward")
         col_2 = self.i18n.get("rewards.table.col_file")
-        col_3 = self.i18n.get("rewards.table.col_actions")
+        col_3 = self.i18n.get("rewards.table.col_pos")
+        col_4 = self.i18n.get("rewards.table.col_volume")
+        col_5 = self.i18n.get("rewards.table.col_actions")
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("rewards.table.title"),
-            headers=[col_1, col_2, col_3],
+            headers=[col_1, col_2, col_3, col_4, col_5],
             add_button_text=self.i18n.get("rewards.table.btn_new"),
             add_button_icon="add.svg"
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("rewards.empty.title"),
             desc=self.i18n.get("rewards.empty.desc"),
-            icon_name="illustration_image-files.svg",
+            icon_name="illustration-picture.svg",
             button_text=self.i18n.get("rewards.empty.btn"),
             on_button_clicked=self.add_requested.emit
         )
         self.table_card.setMinimumHeight(300)
         
         self.table_rewards = self.table_card.table
+        self.table_rewards.setIconSize(QSize(48, 32))
         self.btn_new_rewards = self.table_card.btn_add
         self.btn_new_rewards.clicked.connect(self.add_requested.emit)
         
         self.table_rewards.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.table_rewards.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.table_rewards.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.table_rewards.setColumnWidth(2, 140) 
+        self.table_rewards.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        self.table_rewards.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        
+        self.table_rewards.setColumnWidth(2, 130)
+        self.table_rewards.setColumnWidth(3, 90)
+        self.table_rewards.setColumnWidth(4, 140)
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
@@ -78,15 +155,35 @@ class RewardsView(BaseView):
             row = self.table_rewards.rowCount()
             self.table_rewards.insertRow(row)
             
+            filepath = config if isinstance(config, str) else config.get("filepath", str_unknown)
+            conf_dict = config if isinstance(config, dict) else {}
+            
             item_reward = QTableWidgetItem(reward)
+            item_reward.setIcon(_create_reward_icon(conf_dict, filepath))
             item_reward.setFlags(item_reward.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 0, item_reward)
             
-            filepath = config if isinstance(config, str) else config.get("filepath", str_unknown)
             item_file = QTableWidgetItem(os.path.basename(filepath))
             item_file.setToolTip(filepath)
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 1, item_file)
+            
+            is_random = conf_dict.get("is_random_pos", False)
+            if is_random:
+                pos_str = self.i18n.get("rewards.table.pos_random")
+            else:
+                pos_x = conf_dict.get("pos_x", 0)
+                pos_y = conf_dict.get("pos_y", 0)
+                pos_str = f"X: {pos_x}, Y: {pos_y}"
+            item_pos = QTableWidgetItem(pos_str)
+            item_pos.setFlags(item_pos.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table_rewards.setItem(row, 2, item_pos)
+            
+            vol = conf_dict.get("volume", 1.0)
+            vol_pct = int(round(vol * 100)) if isinstance(vol, (int, float)) else 100
+            item_vol = QTableWidgetItem(f"{vol_pct}%")
+            item_vol.setFlags(item_vol.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table_rewards.setItem(row, 3, item_vol)
             
             cell = TableActionCell()
             cell.add_button(
@@ -111,10 +208,15 @@ class RewardsView(BaseView):
                 callback=lambda checked=False, r=reward: self.delete_requested.emit(r)
             )
             
-            self.table_rewards.setCellWidget(row, 2, cell)
+            self.table_rewards.setCellWidget(row, 4, cell)
 
         self.table_rewards.setUpdatesEnabled(True)
         self.table_card.set_empty(len(mappings) == 0)
+
+        if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
+            title_base = self.i18n.get("rewards.table.title")
+            total_count = len(mappings)
+            self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
 
     @Slot()
     def _copy_obs_url(self):

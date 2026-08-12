@@ -177,7 +177,7 @@ class MusicView(BaseView):
         if hasattr(self, 'stats_panel'):
             self.stats_panel.relayout(width)
 
-        direction = QBoxLayout.Direction.TopToBottom if width < 900 else QBoxLayout.Direction.LeftToRight
+        direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
         if direction != self._last_direction:
             self._last_direction = direction
             if hasattr(self, 'columns_layout'):

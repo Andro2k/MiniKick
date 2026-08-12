@@ -45,8 +45,14 @@ def test_command_service_platform_routing():
     service.twitch_worker = DummyTwitchWorker()
     service.api_client = DummyKickClient()
 
+    responses = []
+    service.response_generated.connect(lambda text, plat: responses.append((text, plat)))
+
     service.process_incoming_message("TwitchViewer", "!hola", [], platform="twitch")
     assert service.twitch_worker.last_msg == "Hola TwitchViewer!"
     assert service.api_client.last_msg == ""
+    assert ("Hola TwitchViewer!", "twitch") in responses
+
     service.process_incoming_message("KickViewer", "!hola", [], platform="kick")
     assert service.api_client.last_msg == "Hola KickViewer!"
+    assert ("Hola KickViewer!", "kick") in responses

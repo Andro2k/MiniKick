@@ -53,6 +53,8 @@ class RewardsController(QObject):
             no_avail_str = self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")
             
             if reward and reward not in [loading_str, no_rewards_str, no_avail_str] and config["filepath"]:
+                from backend.services.rewards.thumbnail_service import generate_media_thumbnail
+                config["thumbnail_bytes"] = generate_media_thumbnail(config["filepath"])
                 mappings = self.service.get_mappings()
                 mappings[reward] = config
                 self.service.save_mappings(mappings)
@@ -75,6 +77,13 @@ class RewardsController(QObject):
         if res:
             new_reward, updated_config = res
             if updated_config["filepath"]:
+                from backend.services.rewards.thumbnail_service import generate_media_thumbnail
+                old_filepath = mappings[reward_name].get("filepath", "") if reward_name in mappings else ""
+                if updated_config["filepath"] != old_filepath or "thumbnail_bytes" not in mappings[reward_name]:
+                    updated_config["thumbnail_bytes"] = generate_media_thumbnail(updated_config["filepath"])
+                else:
+                    updated_config["thumbnail_bytes"] = mappings[reward_name].get("thumbnail_bytes")
+                    
                 if new_reward != reward_name:
                     del mappings[reward_name]
                     
