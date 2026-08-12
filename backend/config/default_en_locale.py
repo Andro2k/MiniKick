@@ -232,8 +232,10 @@ DEFAULT_DICTIONARY = {
         "banner": {
             "btn_update": "Update Permissions",
             "scope": {
-                "moderation_ban": "Ban users",
-                "moderation_chat": "Manage chat messages"
+                "moderation_ban": "Ban users on Kick",
+                "moderation_chat": "Manage chat messages on Kick",
+                "twitch_moderation_ban": "Ban/Timeout users on Twitch",
+                "twitch_moderation_chat": "Delete chat messages on Twitch"
             },
             "text_prefix": "<b>Update required:</b> Your account is missing the following permissions:"
         },
@@ -721,7 +723,10 @@ DEFAULT_DICTIONARY = {
             "btn_new": "New Rewards",
             "col_actions": "Actions",
             "col_file": "File",
+            "col_pos": "Position",
             "col_reward": "Kick Reward",
+            "col_volume": "Volume",
+            "pos_random": "Random",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Rewards",
             "tooltip_edit": "Modify settings",
@@ -741,6 +746,15 @@ DEFAULT_DICTIONARY = {
         "feedback": {
             "desc": "Found a bug or want to share feedback? Send us a direct report.",
             "title": "Support and Bug Reporting"
+        },
+        "integrations": {
+            "btn_connect_twitch": "Connect Twitch",
+            "btn_connected_twitch": "Connected: #{channel}",
+            "btn_disconnect_twitch": "Disconnect #{channel}",
+            "desc": "Real-time chat connection status for each platform.",
+            "title": "Chat & Platform Integrations",
+            "twitch_desc_connected": "Successfully connected to #{channel} chat.",
+            "twitch_title": "Twitch Channel"
         },
         "header": {
             "subtitle": "Global system settings, account management, and updates.",
@@ -797,7 +811,10 @@ DEFAULT_DICTIONARY = {
             "exclude_sub": "Subscribers & VIPs",
             "max_amount": "Maximum allowed amount",
             "max_characters": "Max characters per message",
-            "max_symbols": "Max symbols / foreign script limit"
+            "max_symbols": "Max symbols / foreign script limit",
+            "platform_kick": "Kick",
+            "platform_twitch": "Twitch",
+            "platforms": "Applicable Platforms"
         },
         "filters": {
             "caps": {
@@ -854,6 +871,8 @@ DEFAULT_DICTIONARY = {
             "name_placeholder": "e.g., Social Links",
             "offline_interval_label": "Offline interval (minutes)",
             "online_interval_label": "Online interval (minutes)",
+            "platforms_desc": "Activate platforms where this timer will post.",
+            "platforms_label": "Active Platform(s):",
             "response_label": "Response messages (one will be chosen randomly):",
             "response_placeholder": "Enter a message...",
             "subtitle": "Define a new automatic timer to send messages to the chat.",
@@ -887,6 +906,8 @@ DEFAULT_DICTIONARY = {
             "col_interval_online": "Interval Online",
             "col_message": "Message",
             "col_name": "Name",
+            "col_platforms": "Platforms",
+            "platform_both": "Both",
             "search_placeholder": "Search timer...",
             "tooltip_delete": "Delete timer permanently",
             "tooltip_edit": "Edit timer",

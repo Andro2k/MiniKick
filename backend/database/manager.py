@@ -101,7 +101,8 @@ class DatabaseManager:
                     scale REAL DEFAULT 1.0,
                     pos_x INTEGER DEFAULT 0,
                     pos_y INTEGER DEFAULT 0,
-                    is_random_pos INTEGER DEFAULT 0
+                    is_random_pos INTEGER DEFAULT 0,
+                    thumbnail_bytes BLOB
                 )
             """)
             cursor.execute("""
@@ -372,7 +373,8 @@ class DatabaseManager:
                 ("scale", "REAL DEFAULT 1.0"),
                 ("pos_x", "INTEGER DEFAULT 0"),
                 ("pos_y", "INTEGER DEFAULT 0"),
-                ("is_random_pos", "INTEGER DEFAULT 0")
+                ("is_random_pos", "INTEGER DEFAULT 0"),
+                ("thumbnail_bytes", "BLOB")
             ],
             "chat_timers": [
                 ("apply_kick", "INTEGER DEFAULT 1"),

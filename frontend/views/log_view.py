@@ -134,7 +134,7 @@ class LogControlsPanel(QFrame):
         val = self.combo_date.itemData(index)
         self.date_changed.emit(val if val is not None else "")
 
-LOG_ILLUSTRATION_FILE = "illustration_file-search.svg"
+LOG_ILLUSTRATION_FILE = "illustration-document.svg"
 _LEVEL_COLORS = {
     "DEBUG": COLOR_NEUTRAL_400,
     "INFO": COLOR_BLUE,
@@ -346,10 +346,10 @@ class LogView(BaseView):
         illustration_path = get_assets_path(os.path.join("icons", LOG_ILLUSTRATION_FILE))
         self.lbl_illustration = ScalableIllustration(
             icon_path=illustration_path,
-            aspect_ratio=460/750,
-            min_size=120,
+            aspect_ratio=1.0,
+            min_size=160,
             max_size=320,
-            size_offset=220,
+            size_offset=240,
             parent=self
         )
 

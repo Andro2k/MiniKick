@@ -87,9 +87,9 @@ class ModernTableCard(QFrame):
         self.lbl_illustration = ScalableIllustration(
             icon_path=illustration_path,
             aspect_ratio=1.0,
-            min_size=80,
-            max_size=160,
-            size_offset=200,
+            min_size=120,
+            max_size=300,
+            size_offset=320,
             parent=self
         )
         

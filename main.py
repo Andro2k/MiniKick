@@ -77,6 +77,14 @@ def global_crash_handler(exctype, value, tb):
 
 
 def bootstrap():
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            myappid = "andro2k.minikick.app.1.5"
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        except Exception:
+            pass
+
     app = QApplication(sys.argv)
     FONT_FILE_PREFIX = "GoogleSans"
     FONT_FAMILY_NAME = "Google Sans"

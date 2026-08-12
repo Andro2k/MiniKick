@@ -122,7 +122,7 @@ class MusicQueuePanel(QWidget):
         self.card_queue.setup_empty_state(
             title=self.i18n.get("music.queue.empty"),
             desc=self.i18n.get("music.queue.empty_desc"),
-            icon_name="illustration_music.svg",
+            icon_name="illustration-earphone.svg",
             button_text="",
             on_button_clicked=lambda: None
         )

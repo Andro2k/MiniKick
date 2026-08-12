@@ -3,7 +3,9 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QGraphicsDropShadowEffect
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
-from frontend.common.utils import get_icon
+import os
+from frontend.common.utils import get_icon, get_assets_path
+from frontend.widgets import ScalableIllustration
 
 class AlreadyRunningDialog(QDialog):
     def __init__(self, i18n, parent=None):
@@ -11,7 +13,7 @@ class AlreadyRunningDialog(QDialog):
         self.i18n = i18n
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(480, 350)
+        self.setFixedSize(480, 400)
 
         shadow = QGraphicsDropShadowEffect(self)
         shadow.setBlurRadius(30)
@@ -26,16 +28,20 @@ class AlreadyRunningDialog(QDialog):
         self.card.setGraphicsEffect(shadow)
         
         card_layout = QVBoxLayout(self.card)
-        card_layout.setContentsMargins(24, 32, 24, 24)
+        card_layout.setContentsMargins(24, 24, 24, 24)
         card_layout.setSpacing(16)
         card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        lbl_icon = QLabel()
-        icon_obj = get_icon("illustration_app-running.svg")
-        lbl_icon.setPixmap(icon_obj.pixmap(180, 180))
-        lbl_icon.setFixedSize(180, 180)
-        lbl_icon.setScaledContents(True)
-        card_layout.addWidget(lbl_icon, alignment=Qt.AlignmentFlag.AlignCenter)
+        illustration_path = get_assets_path(os.path.join("icons", "illustration-thumbs-up.svg"))
+        self.lbl_illustration = ScalableIllustration(
+            icon_path=illustration_path,
+            aspect_ratio=1.0,
+            min_size=160,
+            max_size=320,
+            size_offset=180,
+            parent=self
+        )
+        card_layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
 
         card_layout.addSpacing(4)
         title_str = self.i18n.get("dialogs.already_running.title")
@@ -75,3 +81,9 @@ class AlreadyRunningDialog(QDialog):
 
         card_layout.addLayout(btn_layout)
         main_layout.addWidget(self.card)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if hasattr(self, "lbl_illustration"):
+            self.lbl_illustration.update_image(self.card.height())
+
