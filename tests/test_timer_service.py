@@ -1,4 +1,4 @@
-# tests/test_timer_service.py
+# tests\test_timer_service.py
 
 import os
 import pytest

@@ -1,4 +1,4 @@
-# frontend\dialogs\command_dialogs.py
+# frontend\dialogs\command_dialog.py
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy, QFrame
 from .base_dialog import ModernWizardPanel

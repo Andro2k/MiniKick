@@ -1,4 +1,4 @@
-# frontend\dialogs\base_dialogs.py
+# frontend\dialogs\base_dialog.py
 
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
                                QStackedWidget, QProgressBar, QWidget)

@@ -1,4 +1,4 @@
-# tests/test_twitch_auth.py
+# tests\test_twitch_auth.py
 
 from backend.services.auth.oauth_service import TwitchAuthManager
 

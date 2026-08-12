@@ -101,11 +101,11 @@ class CompactSlider(QWidget):
         self.slider.setValue(val)
         self.label.setText(self._format_value(val))
 
-
 class VariableHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, pattern=r"\{[a-zA-Z_]+\}", color=QColor("#C084FC"), bg_color=None):
         super().__init__(parent)
         self.pattern = pattern
+        self._regex = re.compile(pattern)
         self.color = color
         self.bg_color = bg_color
         
@@ -116,10 +116,9 @@ class VariableHighlighter(QSyntaxHighlighter):
         if self.bg_color:
             fmt.setBackground(self.bg_color)
             
-        for match in re.finditer(self.pattern, text):
+        for match in self._regex.finditer(text):
             start, end = match.span()
             self.setFormat(start, end - start, fmt)
-
 
 class VariableTextEdit(QTextEdit):
     def __init__(self, autocomplete_data=None, highlight_pattern=r"\{[a-zA-Z_]+\}", highlight_color="#C084FC", highlight_bg=None, parent=None):

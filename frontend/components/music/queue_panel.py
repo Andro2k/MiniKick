@@ -1,8 +1,9 @@
 # frontend\components\music\queue_panel.py
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
-from PySide6.QtCore import Signal, Qt, QSize
-from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400
+from PySide6.QtCore import Signal, Qt, QSize, QRect, QRectF
+from PySide6.QtGui import QPainter, QPen, QColor
+from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN
 from frontend.common.utils import get_icon_colored
 from frontend.widgets import ModernTable, ModernTableCard
 
@@ -13,11 +14,12 @@ class DragDropQueueTable(ModernTable):
         super().__init__(headers, parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
+        self.setDropIndicatorShown(False)
         self.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
         self.setDefaultDropAction(Qt.DropAction.TargetMoveAction)
         self._drag_start_row = -1
         self.pending_select_row = -1
+        self._drop_target_row = -1
 
     def dragEnterEvent(self, event):
         if event.source() == self:
@@ -29,10 +31,27 @@ class DragDropQueueTable(ModernTable):
     def dragMoveEvent(self, event):
         if event.source() == self:
             event.acceptProposedAction()
+            pos = event.position().toPoint() if hasattr(event.position(), "toPoint") else event.pos()
+            drop_item = self.itemAt(pos)
+            if drop_item:
+                target_row = drop_item.row()
+            else:
+                target_row = max(0, self.rowCount() - 1) if self.rowCount() > 0 else 0
+
+            if self._drop_target_row != target_row:
+                self._drop_target_row = target_row
+                self.viewport().update()
         else:
             super().dragMoveEvent(event)
 
+    def dragLeaveEvent(self, event):
+        self._drop_target_row = -1
+        self.viewport().update()
+        super().dragLeaveEvent(event)
+
     def dropEvent(self, event):
+        self._drop_target_row = -1
+        self.viewport().update()
         if event.source() == self:
             pos = event.position().toPoint() if hasattr(event.position(), "toPoint") else event.pos()
             drop_item = self.itemAt(pos)
@@ -50,7 +69,29 @@ class DragDropQueueTable(ModernTable):
         else:
             super().dropEvent(event)
 
-
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        
+        if self._drop_target_row != -1 and self.rowCount() > 0:
+            row = min(max(0, self._drop_target_row), self.rowCount() - 1)
+            row_rect = QRect()
+            for col in range(self.columnCount()):
+                rect = self.visualRect(self.model().index(row, col))
+                if row_rect.isEmpty():
+                    row_rect = rect
+                else:
+                    row_rect = row_rect.united(rect)
+                    
+            if not row_rect.isEmpty():
+                painter = QPainter(self.viewport())
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+                painter.fillRect(row_rect, QColor(46, 205, 112, 22))
+                pen = QPen(QColor(COLOR_GREEN), 2, Qt.PenStyle.DashLine)
+                painter.setPen(pen)
+                painter.setBrush(Qt.BrushStyle.NoBrush)
+                target_draw_rect = QRectF(row_rect).adjusted(1, 1, -1, -1)
+                painter.drawRoundedRect(target_draw_rect, 6, 6)
+                painter.end()
 
 class MusicQueuePanel(QWidget):
     remove_queue_item_requested = Signal(int)

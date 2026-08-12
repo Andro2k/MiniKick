@@ -1,4 +1,4 @@
-# frontend\dialogs\rewards_dialogs.py
+# frontend\dialogs\rewards_dialog.py
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox, QFileDialog
 from PySide6.QtCore import Qt, QSize

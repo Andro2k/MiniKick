@@ -189,6 +189,10 @@ class Sidebar(QFrame):
             self.reset_profile_avatar()
 
     def reset_profile_avatar(self):
+        if hasattr(self, "_default_avatar_pixmap") and self._default_avatar_pixmap and not self._default_avatar_pixmap.isNull():
+            self.profile_avatar.setPixmap(self._default_avatar_pixmap)
+            return
+
         dpr = self.devicePixelRatio()
         logical_size = 36
         physical_size = int(logical_size * dpr)
@@ -209,6 +213,7 @@ class Sidebar(QFrame):
         painter.drawPixmap(6, 6, icon_pixmap)
         painter.end()
         
+        self._default_avatar_pixmap = circle_pixmap
         self.profile_avatar.setPixmap(circle_pixmap)
 
     def reset_profile_info(self):

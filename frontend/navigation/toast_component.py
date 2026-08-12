@@ -114,7 +114,6 @@ class ToastManager(QObject):
         toast = ModernToast(title, message, state, duration, parent=self.main_window)
         self._stack.append(toast)
         toast.expired.connect(self._on_toast_expired)
-        toast.setStyleSheet(self.main_window.styleSheet())
         toast.show()
         toast.adjustSize()
         toast.raise_()
