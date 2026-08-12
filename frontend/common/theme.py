@@ -248,5 +248,25 @@ QLineEdit:disabled, QTextEdit:disabled,
 QComboBox:disabled, QSpinBox:disabled, 
 QDoubleSpinBox:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_800}; padding: {PADDING_INPUT}; }}
 QCheckBox:disabled {{ color: {COLOR_NEUTRAL_500}; }}
+
+/* ==============================================================================
+   8. COMPONENTES COMPUESTOS (Search Bar y Segmented Pagination)
+   ============================================================================== */
+QFrame[role="search_bar"] {{ background-color: {COLOR_NEUTRAL_850}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="search_bar"]:hover {{ border-color: {COLOR_NEUTRAL_700}; }}
+QFrame[role="search_bar"]:focus-within {{ border-color: {COLOR_GREEN}; }}
+QFrame[role="search_bar"] QLineEdit {{ background: transparent; border: none; padding: 0px 12px; color: {COLOR_WHITE}; font-size: {size_textline_1}px; }}
+QFrame[role="search_bar"] QPushButton {{ background: transparent; border: none; border-left: 1.5px solid {COLOR_NEUTRAL_800}; border-top-right-radius: {RADIUS_MD - 2}px; border-bottom-right-radius: {RADIUS_MD - 2}px; min-width: 36px; max-width: 36px; min-height: 32px; max-height: 32px; }}
+QFrame[role="search_bar"] QPushButton:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QFrame[role="search_bar"] QPushButton:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
+
+QFrame[role="segmented_pagination"] {{ background-color: {COLOR_NEUTRAL_850}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="segmented_pagination"] QPushButton {{ background: transparent; border: none; border-left: 1.5px solid {COLOR_NEUTRAL_800}; min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px; }}
+QFrame[role="segmented_pagination"] QPushButton#btn_first {{ border-left: none; border-top-left-radius: {RADIUS_MD - 2}px; border-bottom-left-radius: {RADIUS_MD - 2}px; }}
+QFrame[role="segmented_pagination"] QPushButton#btn_last {{ border-top-right-radius: {RADIUS_MD - 2}px; border-bottom-right-radius: {RADIUS_MD - 2}px; }}
+QFrame[role="segmented_pagination"] QPushButton:hover:enabled {{ background-color: {COLOR_NEUTRAL_800}; }}
+QFrame[role="segmented_pagination"] QPushButton:pressed:enabled {{ background-color: {COLOR_NEUTRAL_700}; }}
+QFrame[role="segmented_pagination"] QPushButton:disabled {{ opacity: 0.5; }}
+QFrame[role="segmented_pagination"] QLabel#lbl_page_status {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; font-size: {size_textline_1}px; font-weight: 600; padding: 0px 16px; min-height: 32px; max-height: 32px; border-left: 1.5px solid {COLOR_NEUTRAL_800}; }}
 """
 GLOBAL_QSS = get_global_qss(13)

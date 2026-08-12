@@ -10,6 +10,8 @@ from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table import ModernTable, ModernTableCard, TableActionCell
 from .filter_header import FilterHeaderView
+from .search_bar import UnifiedSearchBar
+from .pagination import SegmentedPagination
 
 __all__ = [
     "BaseView",
@@ -30,6 +32,8 @@ __all__ = [
     "ModernTable",
     "ModernTableCard",
     "TableActionCell",
-    "FilterHeaderView"
+    "FilterHeaderView",
+    "UnifiedSearchBar",
+    "SegmentedPagination"
 ]
 
