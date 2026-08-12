@@ -702,13 +702,26 @@ class MainWindowCore(QMainWindow):
         self.logger.error(err_template.replace("{error}", error_msg))
         self.rewards_controller.update_rewards_list([])
 
-    @Slot(str)
-    def _send_timer_message(self, message: str):
-        if self.timer_service.api_client:
+    @Slot(str, bool, bool)
+    def _send_timer_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True):
+        if not message:
+            return
+        if apply_kick and hasattr(self, "command_service") and self.command_service:
+            try:
+                self.command_service.send_response(message, platform="kick")
+            except Exception as e:
+                self.logger.error(f"[Timer] Error posting Kick message: {e}")
+        elif apply_kick and self.timer_service.api_client:
             try:
                 self.timer_service.api_client.post_chat_message(content=message, msg_type="bot")
             except Exception as e:
-                self.logger.error(f"[Timer] Error posting message: {e}")
+                self.logger.error(f"[Timer] Error posting Kick message: {e}")
+
+        if apply_twitch and hasattr(self, "command_service") and self.command_service:
+            try:
+                self.command_service.send_response(message, platform="twitch")
+            except Exception as e:
+                self.logger.error(f"[Timer] Error posting Twitch message: {e}")
 
     def _start_timers_worker(self, channel_slug: str):
         self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))

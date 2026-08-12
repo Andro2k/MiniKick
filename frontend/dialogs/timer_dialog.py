@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QColor
 from .base_dialog import ModernWizardPanel, ModernModal
-from frontend.widgets import ModernButton, VariableTextEdit
+from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
 from frontend.common.utils import get_icon_colored, NoWheelSlider, get_assets_path
 
@@ -66,6 +66,38 @@ class TimerConfigWizard(ModernWizardPanel):
         self.txt_name.textChanged.connect(self._update_btn_next_state)
         left_layout.addWidget(lbl_name)
         left_layout.addWidget(self.txt_name)
+
+        lbl_platforms = QLabel(self.i18n.get("timer.dialog.platforms_label"))
+        lbl_platforms.setProperty("role", "h3")
+        left_layout.addWidget(lbl_platforms)
+
+        platforms_row = QWidget()
+        platforms_layout = QHBoxLayout(platforms_row)
+        platforms_layout.setContentsMargins(0, 0, 0, 0)
+        platforms_layout.setSpacing(16)
+
+        kick_box = QHBoxLayout()
+        lbl_kick = QLabel(self.i18n.get("spam.card.platform_kick"))
+        lbl_kick.setProperty("role", "body")
+        self.switch_kick = ModernSwitch()
+        self.switch_kick.setChecked(True)
+        self.switch_kick.toggled.connect(self._update_btn_next_state)
+        kick_box.addWidget(lbl_kick)
+        kick_box.addWidget(self.switch_kick)
+
+        twitch_box = QHBoxLayout()
+        lbl_twitch = QLabel(self.i18n.get("spam.card.platform_twitch"))
+        lbl_twitch.setProperty("role", "body")
+        self.switch_twitch = ModernSwitch()
+        self.switch_twitch.setChecked(True)
+        self.switch_twitch.toggled.connect(self._update_btn_next_state)
+        twitch_box.addWidget(lbl_twitch)
+        twitch_box.addWidget(self.switch_twitch)
+
+        platforms_layout.addLayout(kick_box)
+        platforms_layout.addLayout(twitch_box)
+        platforms_layout.addStretch()
+        left_layout.addWidget(platforms_row)
 
         lbl_response = QLabel(self.i18n.get("timer.dialog.response_label"))
         lbl_response.setProperty("role", "h3")
@@ -233,6 +265,8 @@ class TimerConfigWizard(ModernWizardPanel):
         if step_index == 0:
             if not self.txt_name.text().strip():
                 return False
+            if not self.switch_kick.isChecked() and not self.switch_twitch.isChecked():
+                return False
             messages = [txt.text().strip() for row, txt in self.message_rows if txt.text().strip()]
             if not messages:
                 return False
@@ -244,6 +278,8 @@ class TimerConfigWizard(ModernWizardPanel):
 
     def _load_existing(self):
         self.txt_name.setText(self.existing_config.get("name", ""))
+        self.switch_kick.setChecked(self.existing_config.get("apply_kick", True))
+        self.switch_twitch.setChecked(self.existing_config.get("apply_twitch", True))
         
         messages = self.existing_config.get("messages", [])
         if not messages:
@@ -308,7 +344,9 @@ class TimerConfigWizard(ModernWizardPanel):
             "interval_offline": interval_offline,
             "chat_lines": chat_lines,
             "keywords": keywords,
-            "categories": categories
+            "categories": categories,
+            "apply_kick": self.switch_kick.isChecked(),
+            "apply_twitch": self.switch_twitch.isChecked()
         }
 
     def _update_step_ui(self):
@@ -338,16 +376,16 @@ class MessageEditorDialog(ModernModal):
         self.set_dialog_state("accent", QColor(46, 205, 112, 60))
         
         self.text_edit = VariableTextEdit()
-        self.text_edit.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder") or "Escribe tu mensaje aquí...")
+        self.text_edit.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))
         self.text_edit.setPlainText(current_text)
         self.text_edit.setMinimumHeight(150)
         self.text_edit.setAcceptRichText(False)
         self.content_layout.addWidget(self.text_edit)
         
-        btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel") or "Cancelar", role="action_outlined")
+        btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel"), role="action_outlined")
         btn_cancel.clicked.connect(self.reject)
         
-        self.btn_save = ModernButton(self.i18n.get("common.buttons.save") or "Guardar", role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("common.buttons.save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
         
         self.add_action_buttons(btn_cancel, self.btn_save)

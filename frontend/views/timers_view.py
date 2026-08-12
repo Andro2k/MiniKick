@@ -1,6 +1,6 @@
 # frontend\views\timers_view.py
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem, QFrame
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell
@@ -20,14 +20,15 @@ class TimersView(BaseView):
     def _setup_ui(self):
         col_1 = self.i18n.get("timer.table.col_name")
         col_2 = self.i18n.get("timer.table.col_message")
-        col_3 = self.i18n.get("timer.table.col_interval_online")
-        col_4 = self.i18n.get("timer.table.col_interval_offline")
-        col_5 = self.i18n.get("timer.table.col_chat_lines")
-        col_6 = self.i18n.get("timer.table.col_actions")
+        col_3 = self.i18n.get("timer.table.col_platforms")
+        col_4 = self.i18n.get("timer.table.col_interval_online")
+        col_5 = self.i18n.get("timer.table.col_interval_offline")
+        col_6 = self.i18n.get("timer.table.col_chat_lines")
+        col_7 = self.i18n.get("timer.table.col_actions")
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("timer.header.title"),
-            headers=[col_1, col_2, col_3, col_4, col_5, col_6],
+            headers=[col_1, col_2, col_3, col_4, col_5, col_6, col_7],
             search_placeholder=self.i18n.get("timer.table.search_placeholder"),
             add_button_text=self.i18n.get("timer.table.btn_new"),
             add_button_icon="add.svg"
@@ -53,9 +54,10 @@ class TimersView(BaseView):
         h_header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        h_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
+        h_header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
+        h_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
         
-        self.table.setColumnWidth(5, 130)
+        self.table.setColumnWidth(6, 130)
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
@@ -65,10 +67,11 @@ class TimersView(BaseView):
         for row, timer in enumerate(timers):
             self.table.setItem(row, 0, self._create_name_item(timer))
             self.table.setItem(row, 1, self._create_message_item(timer))
-            self.table.setItem(row, 2, self._create_online_item(timer))
-            self.table.setItem(row, 3, self._create_offline_item(timer))
-            self.table.setItem(row, 4, self._create_lines_item(timer))
-            self.table.setCellWidget(row, 5, self._create_actions_cell(timer))
+            self.table.setCellWidget(row, 2, self._create_platforms_cell(timer))
+            self.table.setItem(row, 3, self._create_online_item(timer))
+            self.table.setItem(row, 4, self._create_offline_item(timer))
+            self.table.setItem(row, 5, self._create_lines_item(timer))
+            self.table.setCellWidget(row, 6, self._create_actions_cell(timer))
         self.table.setUpdatesEnabled(True)
         self.table_card.set_empty(len(timers) == 0)
 
@@ -100,6 +103,46 @@ class TimersView(BaseView):
         if tooltip_text:
             item.setToolTip(tooltip_text)
         return item
+
+    def _create_platforms_cell(self, timer_data: dict) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 0, 8, 0)
+        layout.setSpacing(6)
+        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        
+        apply_kick = timer_data.get("apply_kick", True)
+        apply_twitch = timer_data.get("apply_twitch", True)
+        
+        if not apply_kick and not apply_twitch:
+            lbl_none = QLabel("-")
+            lbl_none.setProperty("role", "body")
+            layout.addWidget(lbl_none)
+            return container
+
+        tag = QFrame()
+        tag.setFixedHeight(22)
+        tag.setProperty("role", "badge")
+        
+        if apply_kick and apply_twitch:
+            tag.setProperty("state", "warning")
+            text = self.i18n.get("timer.table.platform_both")
+        elif apply_kick:
+            tag.setProperty("state", "everyone")
+            text = "Kick"
+        else:
+            tag.setProperty("state", "plugin")
+            text = "Twitch"
+
+        tag_layout = QHBoxLayout(tag)
+        tag_layout.setContentsMargins(8, 0, 8, 0)
+        tag_layout.setSpacing(0)
+        lbl_txt = QLabel(text)
+        lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        tag_layout.addWidget(lbl_txt)
+        layout.addWidget(tag)
+
+        return container
 
     def _create_online_item(self, timer_data: dict) -> QTableWidgetItem:
         online = timer_data.get("interval_online")

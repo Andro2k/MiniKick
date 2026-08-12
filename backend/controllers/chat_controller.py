@@ -301,7 +301,7 @@ class ChatController(QObject):
         bot_user = "MiniKick"
         if hasattr(self.command_service, "twitch_worker") and self.command_service.twitch_worker:
             tw_worker = self.command_service.twitch_worker
-            bot_user = getattr(tw_worker, "bot_nick", "") or getattr(tw_worker, "channel_name", "") or "MiniKick"
+            bot_user = getattr(tw_worker, "bot_nick", "") or getattr(tw_worker, "channel_name", "")
         
         dto = ChatMessageDTO(
             user=bot_user, content=text, badges=["broadcaster", "bot"], color="#9146FF",

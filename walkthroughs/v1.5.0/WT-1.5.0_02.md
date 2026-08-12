@@ -103,8 +103,40 @@ Documento consolidado de la versión **v1.5.0** de MiniKick. Resume la totalidad
 
 ---
 
-## 6. Pruebas Automatizadas (Pytest)
+## 8. Timers Multi-Plataforma (Switches Kick/Twitch y Tags en Tabla)
 
+### 8.1. Interfaz del Diálogo (`frontend/dialogs/timer_dialog.py`)
+- **[timer_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/timer_dialog.py):**
+  - Añadida la sección de activación de plataforma en `TimerConfigWizard` con dos switches `ModernSwitch` (`switch_kick` y `switch_twitch`).
+  - `_load_existing()` e `get_timer_data()` cargan y persisten los campos `apply_kick` y `apply_twitch`.
+
+### 8.2. Persistencia y Migración de Base de Datos (`backend/database/`)
+- **[manager.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/manager.py):**
+  - Incorporadas las columnas `apply_kick INTEGER DEFAULT 1` y `apply_twitch INTEGER DEFAULT 1` en la tabla `chat_timers`.
+  - Migración automática integrada en `_upgrade_schema()` mediante `ALTER TABLE`.
+- **[timers_storage.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/timers_storage.py):**
+  - `load_all()`, `get_timer_by_id()`, `save_timer()` y `search_timers()` actualizados para leer y escribir los flags de plataforma.
+
+### 8.3. Vista de Tabla e Insignias Stylized (`frontend/views/timers_view.py` & i18n)
+- **[timers_view.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/timers_view.py):**
+  - Añadida la columna **Plataformas** (`timer.table.col_platforms`).
+  - Renderizado de badges/tags con `QFrame` (`[Kick]` en verde y `[Twitch]` en morado) según el estado activo de cada temporizador.
+- **Traducciones ([es.json](file:///c:/Users/TheAn/Desktop/python/Kick/locales/es.json) / [en.json](file:///c:/Users/TheAn/Desktop/python/Kick/en.json)):**
+  - Añadidas las claves i18n: `timer.table.col_platforms`, `timer.dialog.platforms_label` y `timer.dialog.platforms_desc`. Zero hardcoded UI text.
+
+### 8.4. Enrutamiento y Ejecución (`backend/services/chat/timer_service.py` & `main_window_core.py`)
+- **[timer_service.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/chat/timer_service.py):**
+  - `check_timers()` retorna tuplas `(message, apply_kick, apply_twitch)`.
+- **[timers_worker.py](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/timers_worker.py):**
+  - Emite `post_message_requested(msg, apply_kick, apply_twitch)`.
+- **[main_window_core.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/core/main_window_core.py):**
+  - `_send_timer_message` enruta los mensajes a través de `CommandService.send_response(message, platform="kick" / "twitch")`, permitiendo su visualización uniforme en el chat y overlay.
+
+---
+
+## 9. Pruebas Automatizadas (Pytest)
+
+- **[test_timer_service.py](file:///c:/Users/TheAn/Desktop/python/Kick/tests/test_timer_service.py)**: Pruebas de persistencia y enrutamiento por plataforma para temporizadores.
 - **[test_spam_service.py](file:///c:/Users/TheAn/Desktop/python/Kick/tests/test_spam_service.py)**: Pruebas para filtrado específico por plataforma e inmunidad de emotes en mayúsculas.
 - **[test_twitch_auth.py](file:///c:/Users/TheAn/Desktop/python/Kick/tests/test_twitch_auth.py)**: Pruebas de verificación de scopes faltantes de Twitch.
 - **[test_tts_local.py](file:///c:/Users/TheAn/Desktop/python/Kick/tests/test_tts_local.py)**: Prueba de habla continua en `LocalTTSProvider`.
@@ -115,5 +147,5 @@ Documento consolidado de la versión **v1.5.0** de MiniKick. Resume la totalidad
 uv run pytest
 ```
 ```text
-============================= 31 passed in 7.58s ==============================
+============================= 17 passed in 0.76s ==============================
 ```

@@ -227,7 +227,7 @@ class GraphCanvas(QWidget):
                 painter.setBrush(QBrush(line_color))
                 painter.drawEllipse(QPointF(hover_x, y), 3, 3)
                 
-                label = self.parent_graph.i18n.get(label_key) or name
+                label = self.parent_graph.i18n.get(label_key)
                 tooltip_data.append((label, int(val), line_color))
                 
             max_text_w = self._base_tooltip_width
@@ -385,7 +385,7 @@ class LiveNetworkGraph(QFrame):
             self.lbl_min.setText(f"{min_str}: {int_min} ms")
             self.lbl_jitter.setText(f"{jitter_str}: ±{int_jit} ms")
             
-            stab_text = self.i18n.get(f"network.graph.stability_{stab}") or stab.capitalize()
+            stab_text = self.i18n.get(f"network.graph.stability_{stab}")
             self.lbl_stability.setText(f"● {stab_text}")
         elif selected in self.current_latencies:
             curr = int(self.current_latencies.get(selected, 0))
@@ -399,7 +399,7 @@ class LiveNetworkGraph(QFrame):
             self.lbl_min.setText(f"{min_str}: {mn} ms")
             self.lbl_jitter.setText(f"{jitter_str}: ±{jit} ms")
 
-            stab_text = self.i18n.get(f"network.graph.stability_{stab}") or stab.capitalize()
+            stab_text = self.i18n.get(f"network.graph.stability_{stab}")
             self.lbl_stability.setText(f"● {stab_text}")
 
     def update_graph_data(

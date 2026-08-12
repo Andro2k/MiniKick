@@ -18,6 +18,10 @@
 ### 4. Reproducción Continua en TTS Local (SAPI5 / Windows)
 - **Instanciación Segura por Mensaje**: Refactorización de `LocalTTSProvider` para inicializar y limpiar la pila COM (`pythoncom`) y el motor `pyttsx3` por cada mensaje entrante.
 
+### 5. Timers Multi-Plataforma (Switches Kick/Twitch y Tags en Tabla)
+- **Selección de Plataforma por Timer**: Inclusión de switches independientes en `TimerConfigWizard` para activar o desactivar cada temporizador por canal (Kick, Twitch o Ambos).
+- **Insignias en Tabla e Integración i18n**: Visualización de tags estilizadas (`[Kick]` en verde y `[Twitch]` en morado) en la columna Plataformas de `TimersView`. Enrutamiento automatizado con `CommandService`.
+
 ---
 
 ## Métricas de Calidad
@@ -26,4 +30,5 @@
 | :--- | :--- | :--- | :--- |
 | Mensajes del Bot en Kick | Aparecían dos veces (Duplicados) | **Entrada Única desde WebSocket** | Chat de Kick limpio sin duplicaciones |
 | Orden Cronológico en UI | La respuesta del bot aparecía antes del comando | **Orden Estricto (Comando -> Respuesta)** | Línea de tiempo de chat 100% natural |
-| Cobertura de Pruebas Unitarias | 30 pruebas pasando | **31 pruebas pasando** en 7.58s | Cobertura total de pipeline y ejecutores |
+| Timers de Chat | Únicamente emisión global a Kick | **Switches Kick/Twitch + Insignias en Tabla** | Control total multi-plataforma por temporizador |
+| Cobertura de Pruebas Unitarias | 15 pruebas pasando | **17 pruebas pasando** en 0.76s | Cobertura total de pipeline, timers y ejecutores |

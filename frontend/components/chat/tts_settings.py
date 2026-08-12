@@ -1,10 +1,65 @@
 # frontend\components\chat\tts_settings.py
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
-from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton
+from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider
-from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix, get_icon_colored
+from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix, get_icon_colored, get_pixmap_colored
 from frontend.common.theme import COLOR_NEUTRAL_200
+
+class VoiceSettingRow(QWidget):
+    def __init__(self, icon_name: str, title_text: str, desc_text: str, combo: NoWheelComboBox, test_signal=None, tooltip_text="", icon_color=COLOR_NEUTRAL_200, parent=None):
+        super().__init__(parent)
+        
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(4, 4, 4, 4)
+        main_layout.setSpacing(4)
+        
+        header_layout = QHBoxLayout()
+        header_layout.setSpacing(6)
+        
+        icon_lbl = QLabel(parent=self)
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+        
+        lbl_title = QLabel(title_text, parent=self)
+        lbl_title.setProperty("role", "h3")
+        
+        header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
+        header_layout.addWidget(lbl_title, alignment=Qt.AlignmentFlag.AlignVCenter)
+        header_layout.addStretch()
+        
+        main_layout.addLayout(header_layout)
+        
+        if desc_text:
+            lbl_desc = QLabel(desc_text, parent=self)
+            lbl_desc.setProperty("role", "body")
+            lbl_desc.setWordWrap(True)
+            main_layout.addWidget(lbl_desc)
+            
+        controls_layout = QHBoxLayout()
+        controls_layout.setSpacing(6)
+        
+        combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        controls_layout.addWidget(combo, stretch=1)
+        
+        if test_signal is not None:
+            btn_test = QPushButton()
+            btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_200, size=16))
+            btn_test.setIconSize(QSize(16, 16))
+            btn_test.setFixedSize(32, 32)
+            btn_test.setToolTip(tooltip_text)
+            btn_test.setProperty("role", "action_neutral_border")
+            
+            def trigger_test():
+                voice_id = combo.currentData() or ""
+                if voice_id and test_signal is not None:
+                    btn_test.setEnabled(False)
+                    test_signal.emit(voice_id)
+                    QTimer.singleShot(3000, lambda: btn_test.setEnabled(True))
+                    
+            btn_test.clicked.connect(trigger_test)
+            controls_layout.addWidget(btn_test)
+            
+        main_layout.addLayout(controls_layout)
 
 class ChatTtsSettingsPanel(ModernCard):
     volume_changed = Signal(int)
@@ -19,34 +74,6 @@ class ChatTtsSettingsPanel(ModernCard):
         self.i18n = i18n
         self._setup_ui()
         self._connect_signals()
-
-    def _create_combo_with_test_btn(self, combo: NoWheelComboBox) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(6)
-        
-        btn_test = QPushButton()
-        btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_200, size=16))
-        btn_test.setIconSize(QSize(16, 16))
-        btn_test.setFixedSize(32, 32)
-        btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
-        btn_test.setProperty("role", "action_neutral_border")
-
-        def trigger_test():
-            voice_id = combo.currentData() or ""
-            if not voice_id and hasattr(self, 'combo_voice'):
-                voice_id = self.combo_voice.currentData() or ""
-            if voice_id:
-                btn_test.setEnabled(False)
-                self.voice_test_requested.emit(voice_id)
-                QTimer.singleShot(3000, lambda: btn_test.setEnabled(True))
-
-        btn_test.clicked.connect(trigger_test)
-        
-        layout.addWidget(combo)
-        layout.addWidget(btn_test)
-        return container
 
     def _setup_ui(self):
         self.chk_tts = ModernSwitch(self)
@@ -93,38 +120,53 @@ class ChatTtsSettingsPanel(ModernCard):
         voices_card.addWidget(row_provider)
         
         self.combo_voice = NoWheelComboBox(self)
-        self.combo_voice.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.combo_voice.setMinimumWidth(100)
-        self.combo_voice.setMaximumWidth(300)
-        
-        row_voice_general = SettingRow("people-fill.svg", self.i18n.get("chat.settings.voice_general_title"), self.i18n.get("chat.settings.voice_general_desc"), self._create_combo_with_test_btn(self.combo_voice))
-        voices_card.addWidget(row_voice_general)
-
         self.combo_voice_broadcaster = NoWheelComboBox(self)
-        self.combo_voice_broadcaster.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.combo_voice_broadcaster.setMinimumWidth(100)
-        self.combo_voice_broadcaster.setMaximumWidth(300)
-        
         self.combo_voice_moderator = NoWheelComboBox(self)
-        self.combo_voice_moderator.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.combo_voice_moderator.setMinimumWidth(100)
-        self.combo_voice_moderator.setMaximumWidth(300)
-        
         self.combo_voice_vip = NoWheelComboBox(self)
-        self.combo_voice_vip.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.combo_voice_vip.setMinimumWidth(100)
-        self.combo_voice_vip.setMaximumWidth(300)
-        
         self.combo_voice_subscriber = NoWheelComboBox(self)
-        self.combo_voice_subscriber.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.combo_voice_subscriber.setMinimumWidth(100)
-        self.combo_voice_subscriber.setMaximumWidth(300)
 
-        row_role_broadcaster = SettingRow("microphone.svg", self.i18n.get("chat.roles.broadcaster_title"), self.i18n.get("chat.roles.broadcaster_desc"), self._create_combo_with_test_btn(self.combo_voice_broadcaster))
-        row_role_moderator = SettingRow("shield-user-bold.svg", self.i18n.get("chat.roles.moderator_title"), self.i18n.get("chat.roles.moderator_desc"), self._create_combo_with_test_btn(self.combo_voice_moderator))
-        row_role_vip = SettingRow("star.svg", self.i18n.get("chat.roles.vip_title"), self.i18n.get("chat.roles.vip_desc"), self._create_combo_with_test_btn(self.combo_voice_vip))
-        row_role_subscriber = SettingRow("crown.svg", self.i18n.get("chat.roles.subscriber_title"), self.i18n.get("chat.roles.subscriber_desc"), self._create_combo_with_test_btn(self.combo_voice_subscriber))
+        row_voice_general = VoiceSettingRow(
+            "people-fill.svg", 
+            self.i18n.get("chat.settings.voice_general_title"), 
+            self.i18n.get("chat.settings.voice_general_desc"), 
+            self.combo_voice,
+            test_signal=self.voice_test_requested,
+            tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
+        )
+        row_role_broadcaster = VoiceSettingRow(
+            "microphone.svg", 
+            self.i18n.get("chat.roles.broadcaster_title"), 
+            self.i18n.get("chat.roles.broadcaster_desc"), 
+            self.combo_voice_broadcaster,
+            test_signal=self.voice_test_requested,
+            tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
+        )
+        row_role_moderator = VoiceSettingRow(
+            "shield-user-bold.svg", 
+            self.i18n.get("chat.roles.moderator_title"), 
+            self.i18n.get("chat.roles.moderator_desc"), 
+            self.combo_voice_moderator,
+            test_signal=self.voice_test_requested,
+            tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
+        )
+        row_role_vip = VoiceSettingRow(
+            "star.svg", 
+            self.i18n.get("chat.roles.vip_title"), 
+            self.i18n.get("chat.roles.vip_desc"), 
+            self.combo_voice_vip,
+            test_signal=self.voice_test_requested,
+            tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
+        )
+        row_role_subscriber = VoiceSettingRow(
+            "crown.svg", 
+            self.i18n.get("chat.roles.subscriber_title"), 
+            self.i18n.get("chat.roles.subscriber_desc"), 
+            self.combo_voice_subscriber,
+            test_signal=self.voice_test_requested,
+            tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
+        )
 
+        voices_card.addWidget(row_voice_general)
         voices_card.addWidget(row_role_broadcaster)
         voices_card.addWidget(row_role_moderator)
         voices_card.addWidget(row_role_vip)

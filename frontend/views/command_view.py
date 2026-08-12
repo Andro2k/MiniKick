@@ -218,7 +218,7 @@ class CommandView(BaseView):
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         raw_perm = cmd_data.get("permission", "everyone")
         i18n_key = self._PERM_KEYS.get(raw_perm, "command.dialog.perm_everyone")
-        translated_text = self.i18n.get(i18n_key) or raw_perm
+        translated_text = self.i18n.get(i18n_key)
         tag = QFrame()
         tag.setFixedHeight(22)
         tag.setProperty("role", "badge")

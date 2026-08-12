@@ -1,7 +1,7 @@
 # frontend\views\dashboard_view.py
 
 import os
-from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout)
+from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy)
 from PySide6.QtCore import Qt, Signal, QRectF, QSize
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
@@ -168,6 +168,7 @@ class DashboardView(BaseView):
 
         avatar_card = ModernCard(parent=self)
         avatar_card.card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        avatar_card.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
 
         self.lbl_avatar = QLabel()
         self.lbl_avatar.setFixedSize(140, 140)
@@ -177,6 +178,7 @@ class DashboardView(BaseView):
         avatar_card.addWidget(self.lbl_avatar)
 
         info_card = ModernCard(parent=self)
+        info_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self.lbl_username = QLabel("-")
         self.lbl_username.setProperty("role", "h1")
@@ -188,7 +190,6 @@ class DashboardView(BaseView):
 
         info_card.addWidget(self.lbl_username)
         info_card.addWidget(self.lbl_bio)
-        info_card.card_layout.addStretch()
         
         self.top_row_layout.addWidget(avatar_card)
         self.top_row_layout.addWidget(info_card, stretch=1)

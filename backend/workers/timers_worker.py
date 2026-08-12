@@ -6,7 +6,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.providers import KickAPIClient
 
 class TimerWorker(QThread):
-    post_message_requested = Signal(str)
+    post_message_requested = Signal(str, bool, bool)
 
     def __init__(self, timer_service, api_client: KickAPIClient, channel_slug: str, check_interval_seconds: int = 10, parent=None):
         super().__init__(parent)
@@ -37,8 +37,12 @@ class TimerWorker(QThread):
                         stream_status = self.api_client.fetch_stream_status(self.channel_slug)
                         last_status_fetch_time = now
                 messages_to_send = self.timer_service.check_timers(stream_status)
-                for msg in messages_to_send:
-                    self.post_message_requested.emit(msg)
+                for item in messages_to_send:
+                    if isinstance(item, tuple) and len(item) == 3:
+                        msg, apply_kick, apply_twitch = item
+                        self.post_message_requested.emit(msg, apply_kick, apply_twitch)
+                    else:
+                        self.post_message_requested.emit(str(item), True, True)
 
             except Exception as e:
                 logging.error("[TimerWorker] Error in run loop: %s", e)

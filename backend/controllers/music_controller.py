@@ -325,23 +325,16 @@ class MusicController(QObject):
     def handle_resolve_error(self, title: str, error_msg: str, requester: str = ""):
         if self.toast:
             clean_msg = error_msg
-            if "Sign in to confirm your age" in error_msg:
+            if "age" in error_msg.lower():
                 clean_msg = self.i18n.get("music.youtube.age_restricted")
-            elif "inappropriate for some users" in error_msg:
+            elif "inappropriate" in error_msg.lower():
                 clean_msg = self.i18n.get("music.youtube.inappropriate")
-            elif "Sign in to confirm you’re not a bot" in error_msg or "confirm you're not a bot" in error_msg:
+            elif "bot" in error_msg.lower() or "confirm" in error_msg.lower():
                 clean_msg = self.i18n.get("music.youtube.bot_blocked")
-            elif "INVALID_MEDIA" in error_msg or "Formato o medio inválido" in error_msg or "Invalid media" in error_msg:
+            elif "INVALID_MEDIA" in error_msg or "invalid" in error_msg.lower():
                 clean_msg = self.i18n.get("music.youtube.invalid_media")
-            elif any(k in error_msg for k in ("DPAPI", "AppData", ":\\", ":/")) or "ERROR:" in error_msg:
-                clean_msg = self.i18n.get("music.youtube.generic_error")
             else:
-                display_err = error_msg.replace("PLAYER_ERROR: ", "")
-                first_line = display_err.split('\n')[0]
-                if len(first_line) > 80 or any(c in first_line for c in ('\\', '/', ':', 'AppData', 'http', 'ERROR')):
-                    clean_msg = self.i18n.get("music.youtube.generic_error")
-                else:
-                    clean_msg = first_line
+                clean_msg = self.i18n.get("music.youtube.generic_error")
 
             title_toast = self.i18n.get("music.youtube.error_title")
             msg_toast = self.i18n.get("music.toast.error_playing").replace("{title}", title).replace("{error}", clean_msg)
