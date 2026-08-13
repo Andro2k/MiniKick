@@ -270,3 +270,6 @@ QFrame[role="segmented_pagination"] QPushButton:disabled {{ opacity: 0.5; }}
 QFrame[role="segmented_pagination"] QLabel#lbl_page_status {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; font-size: {size_textline_1}px; font-weight: 600; padding: 0px 16px; min-height: 32px; max-height: 32px; border-left: 1.5px solid {COLOR_NEUTRAL_800}; }}
 """
 GLOBAL_QSS = get_global_qss(13)
+
+def get_swatch_qss(bg_color: str, border_width: int = 1, radius: int = RADIUS_SM) -> str:
+    return f"background-color: {bg_color}; border: {border_width}px solid {COLOR_NEUTRAL_700}; border-radius: {radius}px;"

@@ -170,7 +170,8 @@ class MainWindowCore(QMainWindow):
         self.rewards_controller = RewardsController(
             view=None, 
             service=self.rewards_service,
-            toast_manager=self.toast
+            toast_manager=self.toast,
+            auth_manager=self.auth_manager
         )
         self.command_controller = CommandController(
             None, 
@@ -265,6 +266,7 @@ class MainWindowCore(QMainWindow):
             self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self)
             self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
             self.rewards_controller.attach_view(self.view_rewards)
+            self._fetch_api_rewards()
             view_widget = self.view_rewards
         elif view_name == "Comandos":
             self.view_commands = CommandView(self.i18n, parent=self)
@@ -344,6 +346,8 @@ class MainWindowCore(QMainWindow):
                 self._update_dashboard_metrics(force_db_query=True)
             elif view_name == "Settings":
                 self._update_integrations_status_ui()
+            elif view_name == "Triggers":
+                self._fetch_api_rewards()
 
     @Slot()
     def _restore_from_tray(self):
@@ -506,6 +510,7 @@ class MainWindowCore(QMainWindow):
         
         slug = username.replace("_", "-").replace(" ", "")
         self._start_timers_worker(slug)
+        self._fetch_api_rewards()
 
     def _update_integrations_status_ui(self):
         kick_connected = getattr(self, "_kick_connected", False)
@@ -846,7 +851,8 @@ class MainWindowCore(QMainWindow):
             self.dashboard_controller.reset_to_disconnected()
             self.sidebar.reset_profile_info()
             
-            self.view_chat.chat_display.clear()
+            if self.view_chat and hasattr(self.view_chat, "chat_display") and self.view_chat.chat_display is not None:
+                self.view_chat.chat_display.clear()
             self._handle_navigation("Dashboard")
             
             for btn in self.sidebar.nav_buttons:

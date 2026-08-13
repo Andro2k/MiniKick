@@ -230,12 +230,13 @@ class RewardsView(BaseView):
         self.btn_copy_url.setText(original_text)
         self.btn_copy_url.setEnabled(True)
 
-    def show_add_dialog(self, available_rewards: list) -> tuple[str, dict] | None:
+    def show_add_dialog(self, available_rewards: list, rewards_details_map: dict = None) -> tuple[str, dict] | None:
         from frontend.dialogs.rewards_dialog import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
             parent=self, 
-            rewards_list=available_rewards
+            rewards_list=available_rewards,
+            rewards_details_map=rewards_details_map
         )
         try:
             if self._active_dialog.exec():
@@ -244,12 +245,13 @@ class RewardsView(BaseView):
             self._active_dialog = None
         return None
 
-    def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str) -> tuple[str, dict] | None:
+    def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str, rewards_details_map: dict = None) -> tuple[str, dict] | None:
         from frontend.dialogs.rewards_dialog import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
             parent=self, 
             rewards_list=available_rewards, 
+            rewards_details_map=rewards_details_map,
             existing_config=existing_config, 
             existing_reward=existing_reward
         )

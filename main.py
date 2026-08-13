@@ -41,7 +41,6 @@ def _get_safe_i18n():
         print(f"[Bootstrap] Advertencia: Falló hidratación de i18n pre-boot ({e})")
         return None
 
-
 def global_crash_handler(exctype, value, tb):
     import traceback
     tb_text = "".join(traceback.format_exception(exctype, value, tb))
@@ -75,7 +74,6 @@ def global_crash_handler(exctype, value, tb):
 
     sys.exit(1)
 
-
 def bootstrap():
     if sys.platform == "win32":
         try:
@@ -86,7 +84,6 @@ def bootstrap():
             pass
 
     app = QApplication(sys.argv)
-    FONT_FILE_PREFIX = "GoogleSans"
     FONT_FAMILY_NAME = "Google Sans"
 
     fonts_dir = resource_path(os.path.join("assets", "fonts"))

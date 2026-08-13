@@ -163,7 +163,7 @@ class MusicQueuePanel(QWidget):
         self.card_queue.setup_empty_state(
             title=self.i18n.get("music.queue.empty"),
             desc=self.i18n.get("music.queue.empty_desc"),
-            icon_name="illustration-earphone.svg",
+            icon_name="illustration-music.svg",
             button_text="",
             on_button_clicked=lambda: None
         )
@@ -272,4 +272,3 @@ class MusicQueuePanel(QWidget):
             self.queue_table.pending_select_row = -1
             if 0 <= target_r < total_songs:
                 self.queue_table.selectRow(target_r)
-

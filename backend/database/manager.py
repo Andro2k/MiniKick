@@ -102,9 +102,25 @@ class DatabaseManager:
                     pos_x INTEGER DEFAULT 0,
                     pos_y INTEGER DEFAULT 0,
                     is_random_pos INTEGER DEFAULT 0,
-                    thumbnail_bytes BLOB
+                    thumbnail_bytes BLOB,
+                    reward_id TEXT,
+                    cost INTEGER DEFAULT 100,
+                    description TEXT DEFAULT '',
+                    background_color TEXT DEFAULT '#00e701',
+                    is_user_input_required INTEGER DEFAULT 0
                 )
             """)
+            for col, col_def in [
+                ("reward_id", "TEXT"),
+                ("cost", "INTEGER DEFAULT 100"),
+                ("description", "TEXT DEFAULT ''"),
+                ("background_color", "TEXT DEFAULT '#00e701'"),
+                ("is_user_input_required", "INTEGER DEFAULT 0")
+            ]:
+                try:
+                    cursor.execute(f"ALTER TABLE obs_rewards ADD COLUMN {col} {col_def}")
+                except sqlite3.OperationalError:
+                    pass
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS chat_commands (
                     trigger TEXT PRIMARY KEY,

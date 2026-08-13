@@ -120,6 +120,41 @@ class KickAPIClient:
     def fetch_channel_rewards(self) -> dict:
         return self._request("GET", KICK_REWARDS_URL, timeout=10).json()
 
+    def create_channel_reward(
+        self,
+        title: str,
+        cost: int,
+        description: str = "",
+        background_color: str = "#00e701",
+        is_user_input_required: bool = False,
+        should_redemptions_skip_request_queue: bool = False,
+        is_enabled: bool = True
+    ) -> dict:
+        payload = {
+            "title": title,
+            "cost": cost,
+            "is_enabled": is_enabled
+        }
+        if description:
+            payload["description"] = description
+        if background_color:
+            payload["background_color"] = background_color
+        if is_user_input_required is not None:
+            payload["is_user_input_required"] = is_user_input_required
+        if should_redemptions_skip_request_queue is not None:
+            payload["should_redemptions_skip_request_queue"] = should_redemptions_skip_request_queue
+
+        return self._request("POST", KICK_REWARDS_URL, json=payload, timeout=10).json()
+
+    def update_channel_reward(self, reward_id: str, payload: dict) -> dict:
+        url = f"{KICK_REWARDS_URL}/{reward_id}"
+        return self._request("PATCH", url, json=payload, timeout=10).json()
+
+    def delete_channel_reward(self, reward_id: str) -> bool:
+        url = f"{KICK_REWARDS_URL}/{reward_id}"
+        resp = self._request("DELETE", url, timeout=10)
+        return resp.status_code == 204
+
     def fetch_public_channel_rewards(self, channel_slug: str) -> list[dict]:
         slug = channel_slug.lstrip("@").strip().lower()
         if not slug:
