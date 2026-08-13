@@ -19,25 +19,31 @@ class CrashReportWorker(QThread):
 
     def run(self):
         if not DISCORD_WEBHOOK_URL:
-            err_msg = self._get_text("crash.err_no_webhook", "URL del Webhook de Discord no configurada.")
+            err_msg = self._get_text("crash.err_no_webhook")
             self.finished.emit(False, err_msg)
             return
 
         try:
-            contact_str = self.contact.strip() or self._get_text("crash.anonymous", "Anónimo")
-            desc_str = self.description.strip() or self._get_text("crash.no_comments", "Sin comentarios del usuario.")
+            contact_str = self.contact.strip() or self._get_text("crash.anonymous")
+            desc_str = self.description.strip() or self._get_text("crash.no_comments")
             
             truncated_tb = self.traceback_text
             if len(truncated_tb) > 1500:
-                truncated_tb = truncated_tb[-1500:] + self._get_text("crash.truncated_tb", "\n[Traceback truncado por longitud]")
+                truncated_tb = truncated_tb[-1500:] + self._get_text("crash.truncated_tb")
+
+            header = self._get_text("crash.header")
+            u_label = self._get_text("crash.user_label")
+            v_label = self._get_text("crash.version_label")
+            a_label = self._get_text("crash.action_label")
+            tb_label = self._get_text("crash.traceback_label")
 
             content = (
-                f"🚨 **CRASH REPORT / REPORTE DE FALLO CRÍTICO** 🚨\n"
-                f"**Usuario/Discord:** {contact_str}\n"
-                f"**Versión de MiniKick:** {APP_VERSION}\n"
-                f"**¿Qué hacía el usuario?:** {desc_str}\n"
+                f"{header}\n"
+                f"{u_label} {contact_str}\n"
+                f"{v_label} {APP_VERSION}\n"
+                f"{a_label} {desc_str}\n"
                 f"----------------------------------------\n"
-                f"**Traceback:**\n```python\n{truncated_tb}\n```\n"
+                f"{tb_label}\n```python\n{truncated_tb}\n```\n"
                 f"----------------------------------------"
             )
             
@@ -66,10 +72,11 @@ class CrashReportWorker(QThread):
                 self.finished.emit(False, f"Discord status: {resp.status_code}")
                 
         except Exception as e:
-            err_tmpl = self._get_text("crash.err_send", "No se pudo enviar el reporte. Error: {error}")
+            err_tmpl = self._get_text("crash.err_send")
             self.finished.emit(False, err_tmpl.replace("{error}", str(e)))
 
-    def _get_text(self, key: str, default: str) -> str:
+    def _get_text(self, key: str) -> str:
         if self.i18n:
-            return self.i18n.get(key) or default
-        return default
+            return self.i18n.get(key)
+        return key
+

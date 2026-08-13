@@ -182,6 +182,7 @@
         }
     },
     "common": {
+        "anonymous": "Anónimo",
         "buttons": {
             "add": "Añadir",
             "back": "Atrás",
@@ -211,11 +212,13 @@
         }
     },
     "crash": {
+        "action_label": "**¿Qué hacía el usuario?:**",
         "anonymous": "Anónimo",
         "btn_close": "Cerrar sin Enviar",
         "btn_send": "Enviar Reporte y Cerrar",
         "err_no_webhook": "URL del Webhook de Discord no configurada.",
         "err_send": "No se pudo enviar el reporte. Error: {error}",
+        "header": "🚨 **REPORTE DE FALLO CRÍTICO** 🚨",
         "lbl_contact": "Contacto / Discord (Opcional)",
         "lbl_desc": "¿Qué estabas haciendo cuando falló? (Opcional)",
         "lbl_traceback": "Detalles del Error (Traceback)",
@@ -224,7 +227,10 @@
         "placeholder_desc": "Describe brevemente los pasos...",
         "subtitle": "Se produjo un error no controlado en la aplicación. Ayúdanos a solucionar el problema enviando este reporte.",
         "title": "MiniKick ha fallado",
-        "truncated_tb": "\n[Traceback truncado por longitud]"
+        "traceback_label": "**Traceback:**",
+        "truncated_tb": "\n[Traceback truncado por longitud]",
+        "user_label": "**Usuario/Discord:**",
+        "version_label": "**Versión de MiniKick:**"
     },
     "dashboard": {
         "banner": {
@@ -283,10 +289,12 @@
             "btn_send": "Enviar Reporte",
             "btn_sending": "Enviando...",
             "chk_include_logs": "Incluir log de depuración (minikick.log)",
+            "description_label": "**Descripción:**",
             "err_discord": "Error de Discord: Código {code}",
             "err_empty_desc": "La descripción no puede estar vacía.",
             "err_no_webhook": "El webhook de Discord no está configurado por el desarrollador.",
             "err_send": "Error al enviar: {error}",
+            "header": "**REPORTE DE BUG**",
             "lbl_contact": "Contacto (Discord, Correo, etc. - Opcional):",
             "lbl_description": "Descripción del problema (Requerido):",
             "lbl_image": "Adjuntar Captura / Imagen (Opcional):",
@@ -295,7 +303,9 @@
             "placeholder_image": "Ningún archivo seleccionado...",
             "success_msg": "Gracias por reportar el problema.",
             "success_send": "Reporte enviado con éxito.",
-            "success_title": "Reporte Enviado"
+            "success_title": "Reporte Enviado",
+            "user_label": "**Usuario/Discord:**",
+            "version_label": "**Versión de MiniKick:**"
         },
         "close": {
             "desc": "¿Estás seguro de que deseas salir de la aplicación? El bot dejará de escuchar el chat.",
@@ -379,6 +389,22 @@
             "col_time": "Marca de Tiempo"
         }
     },
+    "logs": {
+        "app_container": {
+            "api_keys_not_found": "Archivo backend/config/api_keys.py no encontrado. Usando credenciales vacías.",
+            "install_lang_error": "[AppContainer] Error procesando .install_lang: {error}"
+        },
+        "bootstrap": {
+            "crash_dialog_failed": "[Bootstrap] Falló la visualización del diálogo de crash: {error}"
+        },
+        "main_window": {
+            "twitch_auth_error": "[TwitchAuth] Error de autenticación en Twitch: {error}"
+        },
+        "twitch": {
+            "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",
+            "user_not_found": "No se encontraron datos de usuario en Twitch Helix API."
+        }
+    },
     "main": {
         "chat": {
             "points_tag": "PUNTOS",
@@ -393,6 +419,7 @@
                 "unknown_user": "Desconocido"
             },
             "log": {
+                "error_title": "Error de Registro de Logs",
                 "folder_error": "No se pudo abrir la carpeta: {error}",
                 "read_error": "No se pudo leer el archivo: {error}"
             }
@@ -434,6 +461,15 @@
             },
             "version": "Versión {version}"
         },
+        "toast": {
+            "twitch_auth_error_title": "Error Twitch Auth",
+            "twitch_auth_opening": "Abriendo inicio de sesión en el navegador...",
+            "twitch_auth_title": "Twitch OAuth",
+            "twitch_connected_msg": "Conectado exitosamente al chat de Twitch: #{username}",
+            "twitch_connected_title": "Twitch Conectado",
+            "twitch_disconnected_msg": "Se ha desvinculado la sesión de Twitch.",
+            "twitch_disconnected_title": "Twitch Desconectado"
+        },
         "toasts": {
             "reward_msg": "{user} canjeó: {reward_name}",
             "reward_title": "Premio Canjeado"
@@ -467,6 +503,12 @@
                 "someone": "Alguien",
                 "unknown_reward": "Recompensa Desconocida"
             }
+        }
+    },
+    "moderation": {
+        "reasons": {
+            "ban": "Ban aplicado por MiniKick AutoMod",
+            "timeout": "Timeout aplicado por MiniKick AutoMod"
         }
     },
     "music": {
@@ -759,6 +801,10 @@
             "desc": "Exporta o importa tus recompensas, voces y ajustes generales.",
             "title": "Respaldo de Configuración"
         },
+        "dialogs": {
+            "export_title": "Exportar Configuración",
+            "import_title": "Importar Configuración"
+        },
         "feedback": {
             "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo.",
             "title": "Soporte y Reporte de Bugs"
@@ -950,6 +996,7 @@
         "explosion": {
             "desc": "Muestra una ráfaga física animada de emotes flotando y rebotando en el overlay de OBS cuando se envían en el chat.",
             "min_emotes_label": "Mínimo de Emotes por mensaje:",
+            "msg_explosion": "💥 @{user} desató una explosión de emotes!",
             "particle_count_label": "Partículas por ráfaga:",
             "title": "Explosión de Emotes (!explosion)"
         },

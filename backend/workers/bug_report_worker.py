@@ -24,17 +24,24 @@ class BugReportWorker(QThread):
             return
 
         try:
-            user_text = self.username.strip() or "Anónimo"
+            anon_str = self.i18n.get("common.anonymous") if self.i18n else ""
+            user_text = self.username.strip() or anon_str
+            header = self.i18n.get("dialogs.bug_report.header") if self.i18n else ""
+            u_label = self.i18n.get("dialogs.bug_report.user_label") if self.i18n else ""
+            v_label = self.i18n.get("dialogs.bug_report.version_label") if self.i18n else ""
+            d_label = self.i18n.get("dialogs.bug_report.description_label") if self.i18n else ""
             content = (
-                f"**REPORTE DE BUG**\n"
-                f"**Usuario/Discord:** {user_text}\n"
-                f"**Versión de MiniKick:** {APP_VERSION}\n"
-                f"**Descripción:**\n{self.description}\n"
+                f"{header}\n"
+                f"{u_label} {user_text}\n"
+                f"{v_label} {APP_VERSION}\n"
+                f"{d_label}\n{self.description}\n"
                 f"----------------------------------------"
             )
             data = {
                 "content": content
             }
+
+
             
             files = {}
             if self.include_logs:

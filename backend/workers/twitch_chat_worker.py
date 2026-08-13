@@ -15,14 +15,15 @@ class TwitchChatWorker(QThread):
     error_occurred = Signal(str)
     connection_success = Signal(dict)
 
-    def __init__(self, channel_name: str = "", oauth_token: str = "", bot_nick: str = "", api_client=None, parent=None):
+    def __init__(self, channel_name: str = "", oauth_token: str = "", bot_nick: str = "", api_client=None, i18n=None, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_Twitch_Chat_Socket")
         self.channel_name = channel_name
         self.oauth_token = oauth_token
         self.bot_nick = bot_nick or TWITCH_BOT_USERNAME
         self.api_client = api_client
-        self.socket_manager = TwitchSocketManager(token=oauth_token, nick=self.bot_nick)
+        self.i18n = i18n
+        self.socket_manager = TwitchSocketManager(token=oauth_token, nick=self.bot_nick, i18n=self.i18n)
         self._is_stopped = False
 
     def run(self):
@@ -38,7 +39,9 @@ class TwitchChatWorker(QThread):
                     pass
 
             if not self.channel_name:
-                raise ValueError("El nombre del canal de Twitch no puede estar vacío.")
+                err_msg = self.i18n.get("logs.twitch.channel_empty") if self.i18n else ""
+                raise ValueError(err_msg)
+
 
             if not self.bot_nick:
                 self.bot_nick = TWITCH_BOT_USERNAME or self.channel_name

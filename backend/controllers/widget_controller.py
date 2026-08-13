@@ -88,8 +88,8 @@ class WidgetController(QObject):
         if self.overlay_server:
             death_w = widgets.get("death", {})
             score_w = widgets.get("score", {})
-            title_death = self.i18n.get("widgets.death.overlay_title") if self.i18n else "MUERTES"
-            title_score = self.i18n.get("widgets.score.overlay_title") if self.i18n else "RÉCORD V / D"
+            title_death = self.i18n.get("widgets.death.overlay_title") if self.i18n else ""
+            title_score = self.i18n.get("widgets.score.overlay_title") if self.i18n else ""
 
             self.overlay_server.trigger_widget_event("death_update", {
                 "count": death_w.get("config", {}).get("count", 0),
@@ -103,6 +103,7 @@ class WidgetController(QObject):
                 "is_active": score_w.get("is_active", True),
                 "title_text": title_score
             })
+
 
     def _sync_widgets_from_commands_db(self):
         if getattr(self, "_is_syncing_db", False):
@@ -213,9 +214,10 @@ class WidgetController(QObject):
             title_k = widget_title_keys.get(widget_id)
             w_name = self.i18n.get(title_k) if (self.i18n and title_k) else widget_id
             
-            title = self.i18n.get(title_key) if self.i18n else ("Widget Activado" if is_active else "Widget Desactivado")
-            message = self.i18n.get(msg_key).replace("{widget_name}", w_name) if self.i18n else f"Widget '{w_name}' ahora está {'activo' if is_active else 'inactivo'}."
+            title = self.i18n.get(title_key) if self.i18n else ""
+            message = self.i18n.get(msg_key).replace("{widget_name}", w_name) if self.i18n else ""
             state = "success" if is_active else "info"
+
 
             if self.toast:
                 self.toast.show_toast(
@@ -461,7 +463,7 @@ class WidgetController(QObject):
                 "emotes": sample_emotes,
                 "count": 25
             })
-            msg = f"💥 @{user} desató una explosión de emotes!"
+            msg = self.i18n.get("widgets.explosion.msg_explosion").replace("{user}", user) if self.i18n else ""
             self.command_service.send_response(msg)
 
     def _process_combo_command(self, user: str, args: str):
@@ -474,5 +476,6 @@ class WidgetController(QObject):
                 "count": 5,
                 "timeout_sec": 5.0
             })
-            msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote) if self.i18n else f"🔥 ¡COMBO DE EMOTES x5 para {emote}! 🔥"
+            msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote) if self.i18n else ""
             self.command_service.send_response(msg)
+

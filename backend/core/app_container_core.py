@@ -13,7 +13,7 @@ try:
     TWITCH_CLIENT_SECRET = getattr(_api_keys, "TWITCH_CLIENT_SECRET", "")
     TWITCH_REDIRECT_URI = getattr(_api_keys, "TWITCH_REDIRECT_URI", "http://localhost:8080/auth/callback")
 except ImportError:
-    logging.warning("Archivo backend/config/api_keys.py no encontrado. Usando credenciales vacías.")
+    sys._api_keys_missing = True
     KICK_CLIENT_ID = ""
     KICK_CLIENT_SECRET = ""
     KICK_REDIRECT_URI = "http://localhost:8080/auth/callback"
@@ -82,6 +82,8 @@ class AppContainer:
             app_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             
         install_lang_path = os.path.join(app_dir, ".install_lang")
+        saved_lang = self.settings_storage.load_string("app_language", "es")
+        ts = TranslationService(default_lang=saved_lang)
         if os.path.exists(install_lang_path):
             try:
                 with open(install_lang_path, 'r', encoding='utf-8') as f:
@@ -90,10 +92,10 @@ class AppContainer:
                     self.settings_storage.save_string("app_language", install_lang)
                 os.remove(install_lang_path)
             except Exception as e:
-                logging.error("[AppContainer] Error procesando .install_lang: %s", e)
-
-        saved_lang = self.settings_storage.load_string("app_language", "es")
-        return TranslationService(default_lang=saved_lang)
+                logging.error(ts.get("logs.app_container.install_lang_error").replace("{error}", str(e)))
+        if getattr(sys, "_api_keys_missing", False):
+            logging.warning(ts.get("logs.app_container.api_keys_not_found"))
+        return ts
 
     def shutdown(self):
         if hasattr(self, 'tts_manager') and self.tts_manager:

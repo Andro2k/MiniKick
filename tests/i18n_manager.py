@@ -219,20 +219,91 @@ def auto_clean_unused_and_sync():
 
     print("\n[OK] Limpieza y sincronizacion completada exitosamente.")
 
+def audit_missing_keys_in_code():
+    print("\n--- Auditando Claves Faltantes en JSON (Usadas en Código Python) ---")
+    if not os.path.exists(EN_PATH) or not os.path.exists(ES_PATH):
+        print("[X] Error: Archivos de traducción no encontrados.")
+        return
+
+    with open(ES_PATH, "r", encoding="utf-8") as f:
+        es_data = json.load(f)
+
+    with open(EN_PATH, "r", encoding="utf-8") as f:
+        en_data = json.load(f)
+
+    es_flat = get_flattened_keys(es_data)
+    en_flat = get_flattened_keys(en_data)
+
+    target_paths = [
+        os.path.join(BASE_DIR, "frontend"),
+        os.path.join(BASE_DIR, "backend"),
+        os.path.join(BASE_DIR, "main.py"),
+    ]
+
+    pattern = re.compile(r'i18n\.(?:get|t)\(\s*["\']([^"\'\)]+)["\']')
+    missing_in_es = []
+    missing_in_en = []
+
+    for tp in target_paths:
+        file_list = []
+        if os.path.isfile(tp):
+            file_list.append(tp)
+        elif os.path.isdir(tp):
+            for root, _, files in os.walk(tp):
+                if any(x in root for x in ["__pycache__", ".venv", "venv"]):
+                    continue
+                for file in files:
+                    if file.endswith(".py"):
+                        file_list.append(os.path.join(root, file))
+
+        for filepath in file_list:
+            try:
+                with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                    for m in pattern.finditer(content):
+                        key = m.group(1)
+                        rel_path = os.path.relpath(filepath, BASE_DIR)
+                        if key not in es_flat:
+                            missing_in_es.append((key, rel_path))
+                        if key not in en_flat:
+                            missing_in_en.append((key, rel_path))
+            except Exception:
+                pass
+
+    missing_in_es = sorted(list(set(missing_in_es)))
+    missing_in_en = sorted(list(set(missing_in_en)))
+
+    print(f"Claves faltantes en es.json: {len(missing_in_es)}")
+    print(f"Claves faltantes en en.json: {len(missing_in_en)}")
+
+    if missing_in_es:
+        print("\n[!] Claves faltantes en es.json:")
+        for k, p in missing_in_es:
+            print(f"  - {k} (en {p})")
+
+    if missing_in_en:
+        print("\n[!] Claves faltantes en en.json:")
+        for k, p in missing_in_en:
+            print(f"  - {k} (en {p})")
+
+    if not missing_in_es and not missing_in_en:
+        print("\n[OK] ¡Excelente! Todas las claves i18n usadas en el código existen en ambos archivos JSON.")
+
 def main_menu():
     while True:
         print("\n" + "=" * 50)
         print("     MINI-KICK i18N TOOLKIT & MANAGER")
         print("=" * 50)
-        print("1. Auditar claves sin uso en el codigo")
-        print("2. Verificar paridad entre idiomas (en.json vs es.json)")
-        print("3. Ordenar alfabeticamente (en.json y es.json)")
-        print("4. Limpiar claves sin uso y sincronizar archivos")
-        print("5. Salir")
+        print("1. Auditar claves sin uso en JSON")
+        print("2. Auditar claves faltantes en JSON (usadas en codigo Python)")
+        print("3. Verificar paridad entre idiomas (en.json vs es.json)")
+        print("4. Ordenar alfabeticamente (en.json y es.json)")
+        print("5. Limpiar claves sin uso y sincronizar archivos")
+        print("6. Salir")
         print("=" * 50)
 
         try:
-            choice = input("Selecciona una opcion (1-5): ").strip()
+            choice = input("Selecciona una opcion (1-6): ").strip()
         except (KeyboardInterrupt, EOFError):
             print("\n[!] Saliendo...")
             break
@@ -240,16 +311,19 @@ def main_menu():
         if choice == "1":
             audit_unused_keys()
         elif choice == "2":
-            check_key_parity()
+            audit_missing_keys_in_code()
         elif choice == "3":
-            sort_json_files()
+            check_key_parity()
         elif choice == "4":
-            auto_clean_unused_and_sync()
+            sort_json_files()
         elif choice == "5":
-            print("\n Hasta luego!")
+            auto_clean_unused_and_sync()
+        elif choice == "6":
+            print("\n ¡Hasta luego!")
             break
         else:
             print("[X] Opcion invalida. Intenta nuevamente.")
 
 if __name__ == "__main__":
     main_menu()
+

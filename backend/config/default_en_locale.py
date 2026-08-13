@@ -184,6 +184,7 @@ DEFAULT_DICTIONARY = {
         }
     },
     "common": {
+        "anonymous": "Anonymous",
         "buttons": {
             "add": "Add",
             "back": "Back",
@@ -213,11 +214,13 @@ DEFAULT_DICTIONARY = {
         }
     },
     "crash": {
+        "action_label": "**What was the user doing?:**",
         "anonymous": "Anonymous",
         "btn_close": "Close Without Sending",
         "btn_send": "Send Report and Close",
         "err_no_webhook": "Discord Webhook URL is not configured.",
         "err_send": "Could not send the report. Error: {error}",
+        "header": "🚨 **CRASH REPORT / CRITICAL FAILURE** 🚨",
         "lbl_contact": "Contact / Discord (Optional)",
         "lbl_desc": "What were you doing when it crashed? (Optional)",
         "lbl_traceback": "Error Details (Traceback)",
@@ -226,7 +229,10 @@ DEFAULT_DICTIONARY = {
         "placeholder_desc": "Briefly describe the steps...",
         "subtitle": "An unhandled error occurred in the application. Help us solve the problem by sending this report.",
         "title": "MiniKick has crashed",
-        "truncated_tb": "\n[Traceback truncated due to length]"
+        "traceback_label": "**Traceback:**",
+        "truncated_tb": "\n[Traceback truncated due to length]",
+        "user_label": "**User/Discord:**",
+        "version_label": "**MiniKick Version:**"
     },
     "dashboard": {
         "banner": {
@@ -284,20 +290,24 @@ DEFAULT_DICTIONARY = {
         "bug_report": {
             "btn_send": "Send Report",
             "btn_sending": "Sending...",
-            "chk_include_logs": "Include diagnostic logs (minikick.log)",
-            "err_discord": "Discord error: Code {code}",
+            "chk_include_logs": "Include debug log (minikick.log)",
+            "description_label": "**Description:**",
+            "err_discord": "Discord Error: Code {code}",
             "err_empty_desc": "Description cannot be empty.",
             "err_no_webhook": "Discord webhook is not configured by the developer.",
             "err_send": "Error sending: {error}",
+            "header": "**BUG REPORT**",
             "lbl_contact": "Contact (Discord, Email, etc. - Optional):",
             "lbl_description": "Problem Description (Required):",
             "lbl_image": "Attach Screenshot / Image (Optional):",
             "placeholder_contact": "Your username or contact...",
             "placeholder_desc": "Explain what you were doing and what error occurred...",
             "placeholder_image": "No file selected...",
-            "success_msg": "Thank you for reporting this issue.",
+            "success_msg": "Thank you for reporting the issue.",
             "success_send": "Report sent successfully.",
-            "success_title": "Report Sent"
+            "success_title": "Report Sent",
+            "user_label": "**User/Discord:**",
+            "version_label": "**MiniKick Version:**"
         },
         "close": {
             "desc": "Are you sure you want to exit the application? The bot will stop listening to the chat.",
@@ -381,6 +391,22 @@ DEFAULT_DICTIONARY = {
             "col_time": "Timestamp"
         }
     },
+    "logs": {
+        "app_container": {
+            "api_keys_not_found": "File backend/config/api_keys.py not found. Using empty credentials.",
+            "install_lang_error": "[AppContainer] Error processing .install_lang: {error}"
+        },
+        "bootstrap": {
+            "crash_dialog_failed": "[Bootstrap] Failed to display crash dialog: {error}"
+        },
+        "main_window": {
+            "twitch_auth_error": "[TwitchAuth] Twitch authentication error: {error}"
+        },
+        "twitch": {
+            "channel_empty": "Twitch channel name cannot be empty.",
+            "user_not_found": "User data not found in Twitch Helix API."
+        }
+    },
     "main": {
         "chat": {
             "points_tag": "POINTS",
@@ -395,6 +421,7 @@ DEFAULT_DICTIONARY = {
                 "unknown_user": "Unknown user"
             },
             "log": {
+                "error_title": "Log Recording Error",
                 "folder_error": "Could not open the folder: {error}",
                 "read_error": "Could not read the file: {error}"
             }
@@ -436,6 +463,15 @@ DEFAULT_DICTIONARY = {
             },
             "version": "Version {version}"
         },
+        "toast": {
+            "twitch_auth_error_title": "Twitch Auth Error",
+            "twitch_auth_opening": "Opening browser login...",
+            "twitch_auth_title": "Twitch OAuth",
+            "twitch_connected_msg": "Successfully connected to Twitch chat: #{username}",
+            "twitch_connected_title": "Twitch Connected",
+            "twitch_disconnected_msg": "Twitch session has been unlinked.",
+            "twitch_disconnected_title": "Twitch Disconnected"
+        },
         "toasts": {
             "reward_msg": "{user} redeemed: {reward_name}",
             "reward_title": "Reward Redeemed"
@@ -469,6 +505,12 @@ DEFAULT_DICTIONARY = {
                 "someone": "Someone",
                 "unknown_reward": "Unknown Reward"
             }
+        }
+    },
+    "moderation": {
+        "reasons": {
+            "ban": "Ban applied by MiniKick AutoMod",
+            "timeout": "Timeout applied by MiniKick AutoMod"
         }
     },
     "music": {
@@ -761,6 +803,10 @@ DEFAULT_DICTIONARY = {
             "desc": "Export or import your rewards, voices, and general settings.",
             "title": "Configuration Backup"
         },
+        "dialogs": {
+            "export_title": "Export Settings",
+            "import_title": "Import Settings"
+        },
         "feedback": {
             "desc": "Found a bug or want to share feedback? Send us a direct report.",
             "title": "Support and Bug Reporting"
@@ -952,6 +998,7 @@ DEFAULT_DICTIONARY = {
         "explosion": {
             "desc": "Displays an animated physical particle burst of emotes floating on your OBS overlay when sent in chat.",
             "min_emotes_label": "Min Emotes per message:",
+            "msg_explosion": "💥 @{user} unleashed an emote explosion!",
             "particle_count_label": "Particles per burst:",
             "title": "Emote Explosion (!explosion)"
         },

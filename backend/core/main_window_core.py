@@ -1,4 +1,4 @@
-# frontend\views\main_window_view.py
+# backend\core\main_window_core.py
 
 from backend.providers.chat.twitch_client import TwitchAPIClient
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
@@ -528,9 +528,11 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
+        title = self.container.i18n.get("main.toast.twitch_auth_title")
+        msg = self.container.i18n.get("main.toast.twitch_auth_opening")
         self.toast.show_toast(
-            title="Twitch OAuth",
-            message="Abriendo inicio de sesión en el navegador...",
+            title=title,
+            message=msg,
             state="info"
         )
         self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, force=force, parent=self)
@@ -541,20 +543,25 @@ class MainWindowCore(QMainWindow):
 
     def _on_twitch_auth_error(self, err: str):
         import logging
-        logging.error("[TwitchAuth] Error de autenticación en Twitch: %s", err)
+        log_msg = self.container.i18n.get("logs.main_window.twitch_auth_error").replace("{error}", str(err))
+        logging.error(log_msg)
         if hasattr(self, "log_controller") and self.log_controller:
             self.log_controller.process_incoming_log("ERROR", f"[TwitchAuth] {err}")
-        self.toast.show_toast(title="Error Twitch Auth", message=err, state="danger")
+        err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
+        self.toast.show_toast(title=err_title, message=err, state="danger")
+
 
     def _on_twitch_auth_success(self, tokens):
         access_token = tokens.get("access_token", "")
-        twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID)
+        twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID, i18n=self.container.i18n)
         
         self.twitch_chat_worker = TwitchChatWorker(
             oauth_token=access_token,
             api_client=twitch_api,
+            i18n=self.container.i18n,
             parent=self
         )
+
         self.command_service.twitch_worker = self.twitch_chat_worker
         self.spam_service.twitch_api = twitch_api
         self.spam_service.twitch_worker = self.twitch_chat_worker
@@ -574,9 +581,11 @@ class MainWindowCore(QMainWindow):
         missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
         self.dashboard_controller.evaluate_scopes(missing_scopes)
 
+        title = self.container.i18n.get("main.toast.twitch_connected_title")
+        msg = self.container.i18n.get("main.toast.twitch_connected_msg").replace("{username}", username)
         self.toast.show_toast(
-            title="Twitch Conectado",
-            message=f"Conectado exitosamente al chat de Twitch: #{username}",
+            title=title,
+            message=msg,
             state="success"
         )
 
@@ -593,9 +602,11 @@ class MainWindowCore(QMainWindow):
         self._twitch_connected = False
         self._twitch_channel = ""
         self._update_integrations_status_ui()
+        title_disc = self.container.i18n.get("main.toast.twitch_disconnected_title")
+        msg_disc = self.container.i18n.get("main.toast.twitch_disconnected_msg")
         self.toast.show_toast(
-            title="Twitch Desconectado",
-            message="Se ha desvinculado la sesión de Twitch.",
+            title=title_disc,
+            message=msg_disc,
             state="info"
         )
 

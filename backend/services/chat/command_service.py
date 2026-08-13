@@ -212,12 +212,13 @@ class CommandService(QObject):
                 try:
                     tw_worker.send_bot_message(response_text)
                 except Exception as e:
-                    logging.error("[CommandService] Error enviando mensaje a Twitch: %s", e)
+                    logging.error("[CommandService] Error sending message to Twitch: %s", e)
         else:
             if self.api_client:
                 try:
                     self.api_client.post_chat_message(content=response_text, msg_type="bot")
                 except Exception as e:
-                    logging.error("[CommandService] Error enviando respuesta a Kick: %s", e)
+                    logging.error("[CommandService] Error sending response to Kick: %s", e)
 
         self.response_generated.emit(response_text, platform)
+

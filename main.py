@@ -39,7 +39,7 @@ def _get_safe_i18n():
         saved_lang = settings.load_string("app_language", "es")
         return TranslationService(default_lang=saved_lang)
     except Exception as e:
-        print(f"[Bootstrap] Advertencia: Falló hidratación de i18n pre-boot ({e})")
+        print(f"[Bootstrap] Warning: Pre-boot i18n hydration failed ({e})")
         return None
 
 def global_crash_handler(exctype, value, tb):
@@ -54,6 +54,7 @@ def global_crash_handler(exctype, value, tb):
 
     print(tb_text, file=sys.stderr)
 
+    i18n = None
     try:
         app = QApplication.instance()
         if not app:
@@ -71,9 +72,11 @@ def global_crash_handler(exctype, value, tb):
         dialog = CrashReportDialog(traceback_text=tb_text, i18n=i18n)
         dialog.exec()
     except Exception as dialog_err:
-        print(f"[Bootstrap] Falló la visualización del diálogo de crash: {dialog_err}", file=sys.stderr)
+        err_msg = i18n.get("logs.bootstrap.crash_dialog_failed").replace("{error}", str(dialog_err)) if i18n else f"[Bootstrap] Failed to display crash dialog: {dialog_err}"
+        print(err_msg, file=sys.stderr)
 
     sys.exit(1)
+
 
 def bootstrap():
     if sys.platform == "win32":
