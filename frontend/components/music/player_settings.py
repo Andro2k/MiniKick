@@ -103,7 +103,7 @@ class MusicPlayerSettingsPanel(QWidget):
         
         self.btn_skip = ModernButton("", role="action_neutral_border")
         self.btn_skip.setFixedSize(36, 36)
-        self.btn_skip.setIcon(get_icon_colored("player-skip-forward.svg", COLOR_NEUTRAL_200, 18))
+        self.btn_skip.setIcon(get_icon_colored("player-skip.svg", COLOR_NEUTRAL_200, 18))
         self.btn_skip.setIconSize(QSize(18, 18))
         self.btn_skip.clicked.connect(self.skip_requested.emit)
         

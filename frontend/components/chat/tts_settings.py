@@ -126,7 +126,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.combo_voice_subscriber = NoWheelComboBox(self)
 
         row_voice_general = VoiceSettingRow(
-            "people-fill.svg", 
+            "users.svg", 
             self.i18n.get("chat.settings.voice_general_title"), 
             self.i18n.get("chat.settings.voice_general_desc"), 
             self.combo_voice,
