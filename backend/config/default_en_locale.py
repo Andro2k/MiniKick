@@ -675,10 +675,22 @@ DEFAULT_DICTIONARY = {
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
                 "file_dialog_title": "Multimedia",
                 "step1": {
+                    "color_pick_tooltip": "Pick background color",
                     "desc": "Configure which channel point will trigger this rewards.",
+                    "edit_title_label": "Reward Title",
                     "file_label": "Multimedia File",
                     "file_placeholder": "Ex. your_rewards.mp4 or sound.mp3",
                     "loading": "Loading rewards...",
+                    "mode_create": "Create New Kick Reward",
+                    "mode_existing": "Use Existing Reward",
+                    "mode_select": "Reward Source",
+                    "new_color_label": "Background Color (Hex)",
+                    "new_cost_label": "Channel Points Cost",
+                    "new_desc_label": "Description (Optional)",
+                    "new_desc_placeholder": "Ex. Displays a special video on screen (Max 200 chars)",
+                    "new_title_label": "Reward Title",
+                    "new_title_placeholder": "Ex. Explosive Alert (Max 50 chars)",
+                    "new_user_input_label": "Require Viewer Text Input",
                     "no_available": "No available rewards",
                     "no_rewards": "No rewards",
                     "reward_selection": "Reward Selection",
@@ -713,11 +725,17 @@ DEFAULT_DICTIONARY = {
         },
         "status": {
             "created": "Rewards Created",
+            "created_api_error": "Error creating Kick reward: {error}",
+            "created_api_success": "Reward '{reward}' created successfully on Kick.",
             "created_msg": "Linked to reward: {reward}",
+            "creating_api": "Creating Kick Reward...",
             "deleted": "Rewards Deleted",
             "deleted_msg": "Unlinked reward: {reward}",
             "updated": "Rewards Updated",
-            "updated_msg": "Configuration saved for: {reward}"
+            "updated_api_error": "Error updating Kick reward: {error}",
+            "updated_api_success": "Reward '{reward}' updated successfully on Kick.",
+            "updated_msg": "Configuration saved for: {reward}",
+            "updating_api": "Updating Kick Reward..."
         },
         "table": {
             "btn_new": "New Rewards",
@@ -747,18 +765,16 @@ DEFAULT_DICTIONARY = {
             "desc": "Found a bug or want to share feedback? Send us a direct report.",
             "title": "Support and Bug Reporting"
         },
-        "integrations": {
-            "btn_connect_twitch": "Connect Twitch",
-            "btn_connected_twitch": "Connected: #{channel}",
-            "btn_disconnect_twitch": "Disconnect #{channel}",
-            "desc": "Real-time chat connection status for each platform.",
-            "title": "Chat & Platform Integrations",
-            "twitch_desc_connected": "Successfully connected to #{channel} chat.",
-            "twitch_title": "Twitch Channel"
-        },
         "header": {
             "subtitle": "Global system settings, account management, and updates.",
             "title": "General Settings"
+        },
+        "integrations": {
+            "btn_connect_twitch": "Connect Twitch",
+            "btn_disconnect_twitch": "Disconnect #{channel}",
+            "desc": "Real-time chat connection status for each platform.",
+            "twitch_desc_connected": "Successfully connected to #{channel} chat.",
+            "twitch_title": "Twitch Channel"
         },
         "status": {
             "error_title": "Backup Error",
@@ -871,7 +887,6 @@ DEFAULT_DICTIONARY = {
             "name_placeholder": "e.g., Social Links",
             "offline_interval_label": "Offline interval (minutes)",
             "online_interval_label": "Online interval (minutes)",
-            "platforms_desc": "Activate platforms where this timer will post.",
             "platforms_label": "Active Platform(s):",
             "response_label": "Response messages (one will be chosen randomly):",
             "response_placeholder": "Enter a message...",
@@ -946,6 +961,10 @@ DEFAULT_DICTIONARY = {
         },
         "obs_copy_btn": "Copy OBS URL",
         "obs_label": "OBS Overlay URL:",
+        "pinned": {
+            "desc": "Displays in real time any message pinned by you or your moderators in the Kick chat.",
+            "title": "Pinned Message Widget"
+        },
         "poll": {
             "desc": "Displays the active Kick chat poll in real time.",
             "title": "Live Poll"
@@ -961,10 +980,6 @@ DEFAULT_DICTIONARY = {
             "reset_btn": "Reset Record",
             "title": "Win / Loss Record (!win +1/ !lose +1)",
             "wins_label": "Wins:"
-        },
-        "pinned": {
-            "title": "Pinned Message Widget",
-            "desc": "Displays in real time any message pinned by you or your moderators in the Kick chat."
         },
         "so": {
             "default_msg": "📢 Go support and follow @{target} at https://kick.com/{target} !",

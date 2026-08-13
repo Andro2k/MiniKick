@@ -673,8 +673,8 @@
                 "file_dialog_filter": "Multimedia (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;Todos (*.*)",
                 "file_dialog_title": "Multimedia",
                 "step1": {
-                    "desc": "Configura qué punto de canal activará esta recompensa.",
                     "color_pick_tooltip": "Seleccionar color de fondo",
+                    "desc": "Configura qué punto de canal activará esta recompensa.",
                     "edit_title_label": "Nombre de la Recompensa",
                     "file_label": "Archivo Multimedia",
                     "file_placeholder": "Ej. mi_recompensa.mp4 o sonido.mp3",
@@ -763,18 +763,16 @@
             "desc": "¿Has encontrado algún problema o quieres dar tu opinión? Envíanos un reporte directo.",
             "title": "Soporte y Reporte de Bugs"
         },
-        "integrations": {
-            "btn_connect_twitch": "Conectar Twitch",
-            "btn_connected_twitch": "Conectado: #{channel}",
-            "btn_disconnect_twitch": "Desconectar #{channel}",
-            "desc": "Estado de la conexión del chat en tiempo real para cada plataforma.",
-            "title": "Integraciones de Chat y Plataformas",
-            "twitch_desc_connected": "Conectado exitosamente al chat de #{channel}.",
-            "twitch_title": "Canal de Twitch"
-        },
         "header": {
             "subtitle": "Ajustes globales del sistema, gestión de cuenta y actualizaciones.",
             "title": "Configuración General"
+        },
+        "integrations": {
+            "btn_connect_twitch": "Conectar Twitch",
+            "btn_disconnect_twitch": "Desconectar #{channel}",
+            "desc": "Estado de la conexión del chat en tiempo real para cada plataforma.",
+            "twitch_desc_connected": "Conectado exitosamente al chat de #{channel}.",
+            "twitch_title": "Canal de Twitch"
         },
         "status": {
             "error_title": "Error de Respaldo",
@@ -887,7 +885,6 @@
             "name_placeholder": "Ej: Redes Sociales",
             "offline_interval_label": "Intervalo Offline (minutos)",
             "online_interval_label": "Intervalo Online (minutos)",
-            "platforms_desc": "Activa las plataformas en las que se emitirá este temporizador.",
             "platforms_label": "Plataforma(s) activas:",
             "response_label": "Mensajes de respuesta (se elegirá uno aleatoriamente):",
             "response_placeholder": "Escribe el mensaje de respuesta aquí...",
@@ -962,6 +959,10 @@
         },
         "obs_copy_btn": "Copiar URL para OBS",
         "obs_label": "URL de Overlay OBS:",
+        "pinned": {
+            "desc": "Muestra en tiempo real cualquier mensaje anclado por ti o tus moderadores en el chat de Kick.",
+            "title": "Mensaje Fijado (Pinned Message)"
+        },
         "poll": {
             "desc": "Muestra la encuesta activa del chat de Kick en tiempo real.",
             "title": "Encuesta en Vivo"
@@ -977,10 +978,6 @@
             "reset_btn": "Reiniciar Récord",
             "title": "Récord Victorias / Derrotas (!win +1/ !lose +1)",
             "wins_label": "Victorias (Wins):"
-        },
-        "pinned": {
-            "title": "Mensaje Fijado (Pinned Message)",
-            "desc": "Muestra en tiempo real cualquier mensaje anclado por ti o tus moderadores en el chat de Kick."
         },
         "so": {
             "default_msg": "📢 Vayan a apoyar y seguir a @{target} en https://kick.com/{target} !",

@@ -76,7 +76,7 @@ def test_twitch_api_client_fetch_user_data(monkeypatch):
 
 def test_route_incoming_message_dto():
     from backend.services.chat.pipeline import ChatMessageDTO
-    from frontend.core.main_window_core import MainWindowCore
+    from backend.core.main_window_core import MainWindowCore
 
     class DummyChatController:
         def __init__(self):

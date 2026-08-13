@@ -1,4 +1,4 @@
-# frontend\core\app_logger_core.py
+# backend\core\app_logger_core.py
 
 import logging
 import os

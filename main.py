@@ -1,6 +1,5 @@
 # main.py
 
-from backend.database import SQLiteSettingsStorage
 import os
 import sys
 from PySide6.QtWidgets import QApplication
@@ -21,12 +20,14 @@ try:
 except Exception:
     pass
 from backend.services import GithubUpdateProvider, UpdateManager, WindowsInstaller
-from frontend.core.main_window_core import MainWindowCore
+from backend.core.main_window_core import MainWindowCore
+from backend.database import SQLiteSettingsStorage
+from backend.config.version import APP_VERSION
+from backend.services import SocketInstanceProvider
+
+from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.common.theme import GLOBAL_QSS
 from frontend.common.utils import resource_path
-from backend.services import SocketInstanceProvider
-from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
-from backend.config.version import APP_VERSION
 
 def _get_safe_i18n():
     try:

@@ -673,8 +673,8 @@
                 "file_dialog_filter": "Media (*.mp4 *.webm *.mp3 *.wav *.ogg *.gif *.png *.jpg);;All (*.*)",
                 "file_dialog_title": "Multimedia",
                 "step1": {
-                    "desc": "Configure which channel point will trigger this rewards.",
                     "color_pick_tooltip": "Pick background color",
+                    "desc": "Configure which channel point will trigger this rewards.",
                     "edit_title_label": "Reward Title",
                     "file_label": "Multimedia File",
                     "file_placeholder": "Ex. your_rewards.mp4 or sound.mp3",
@@ -763,18 +763,16 @@
             "desc": "Found a bug or want to share feedback? Send us a direct report.",
             "title": "Support and Bug Reporting"
         },
-        "integrations": {
-            "btn_connect_twitch": "Connect Twitch",
-            "btn_connected_twitch": "Connected: #{channel}",
-            "btn_disconnect_twitch": "Disconnect #{channel}",
-            "desc": "Real-time chat connection status for each platform.",
-            "title": "Chat & Platform Integrations",
-            "twitch_desc_connected": "Successfully connected to #{channel} chat.",
-            "twitch_title": "Twitch Channel"
-        },
         "header": {
             "subtitle": "Global system settings, account management, and updates.",
             "title": "General Settings"
+        },
+        "integrations": {
+            "btn_connect_twitch": "Connect Twitch",
+            "btn_disconnect_twitch": "Disconnect #{channel}",
+            "desc": "Real-time chat connection status for each platform.",
+            "twitch_desc_connected": "Successfully connected to #{channel} chat.",
+            "twitch_title": "Twitch Channel"
         },
         "status": {
             "error_title": "Backup Error",
@@ -887,7 +885,6 @@
             "name_placeholder": "e.g., Social Links",
             "offline_interval_label": "Offline interval (minutes)",
             "online_interval_label": "Online interval (minutes)",
-            "platforms_desc": "Activate platforms where this timer will post.",
             "platforms_label": "Active Platform(s):",
             "response_label": "Response messages (one will be chosen randomly):",
             "response_placeholder": "Enter a message...",
@@ -962,6 +959,10 @@
         },
         "obs_copy_btn": "Copy OBS URL",
         "obs_label": "OBS Overlay URL:",
+        "pinned": {
+            "desc": "Displays in real time any message pinned by you or your moderators in the Kick chat.",
+            "title": "Pinned Message Widget"
+        },
         "poll": {
             "desc": "Displays the active Kick chat poll in real time.",
             "title": "Live Poll"
@@ -977,10 +978,6 @@
             "reset_btn": "Reset Record",
             "title": "Win / Loss Record (!win +1/ !lose +1)",
             "wins_label": "Wins:"
-        },
-        "pinned": {
-            "title": "Pinned Message Widget",
-            "desc": "Displays in real time any message pinned by you or your moderators in the Kick chat."
         },
         "so": {
             "default_msg": "📢 Go support and follow @{target} at https://kick.com/{target} !",

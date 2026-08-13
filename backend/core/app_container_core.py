@@ -1,4 +1,4 @@
-# frontend\core\app_container_core.py
+# backend\core\app_container_core.py
 
 import os
 import sys

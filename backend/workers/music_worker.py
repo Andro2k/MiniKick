@@ -34,9 +34,10 @@ class YouTubeResolveWorker(QThread):
     resolved = Signal(str, str)
     error = Signal(str)
 
-    def __init__(self, query_or_url: str):
+    def __init__(self, query_or_url: str, expected_title: str = ""):
         super().__init__()
         self.query_or_url = query_or_url
+        self.expected_title = expected_title
 
     def run(self):
         try:
@@ -56,8 +57,9 @@ class YouTubeResolveWorker(QThread):
                 ]
                 for fpath in matching_files:
                     if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
-                        logging.info("[YouTubeResolveWorker] Instant disk cache hit for direct URL ID %s: %s", direct_id, fpath)
-                        self.resolved.emit("Cached Track", fpath)
+                        cache_title = self.expected_title or f"Track {direct_id}"
+                        logging.info("[YouTubeResolveWorker] Instant disk cache hit for '%s' (ID %s): %s", cache_title, direct_id, fpath)
+                        self.resolved.emit(cache_title, fpath)
                         return
 
             outtmpl = os.path.join(cache_dir, 'yt_%(id)s.%(ext)s')
@@ -109,7 +111,7 @@ class YouTubeResolveWorker(QThread):
             if len(raw_id) > 64 or any(c in raw_id for c in ('?', '&', '=', '/', '\\')):
                 info['id'] = hashlib.md5(self.query_or_url.encode('utf-8')).hexdigest()
             
-            title = info.get('title', 'Unknown Title')
+            title = info.get('title') or self.expected_title or 'Unknown Title'
 
             if raw_id:
                 matching_files = [
@@ -118,12 +120,13 @@ class YouTubeResolveWorker(QThread):
                 ]
                 for fpath in matching_files:
                     if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
-                        logging.info("[YouTubeResolveWorker] Disk cache hit for ID %s: %s", raw_id, fpath)
+                        logging.info("[YouTubeResolveWorker] Disk cache hit for '%s' (ID %s): %s", title, raw_id, fpath)
                         self.resolved.emit(title, fpath)
                         return
 
             best_stream_url = _extract_best_audio_url(info)
 
+            logging.info("[YouTubeResolveWorker] Downloading audio stream for '%s' (ID %s)...", title, raw_id)
 
             download_opts = dict(ydl_opts)
             download_opts['format'] = 'bestaudio/best'

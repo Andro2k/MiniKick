@@ -276,7 +276,7 @@ class YouTubeMusicProvider(QObject):
             self.preload_song_url = None
 
         self.preload_song_url = next_song["url"]
-        self.preload_worker = YouTubeResolveWorker(next_song["url"])
+        self.preload_worker = YouTubeResolveWorker(next_song["url"], expected_title=next_song.get("title", ""))
         
         def on_preload_resolved(title, path_or_url):
             if self.queue and self.queue[0]["url"] == self.preload_song_url:
@@ -356,7 +356,7 @@ class YouTubeMusicProvider(QObject):
             self.preload_worker = None
             self.preload_song_url = None
 
-            self.resolve_worker = YouTubeResolveWorker(self.current_song["url"])
+            self.resolve_worker = YouTubeResolveWorker(self.current_song["url"], expected_title=self.current_song.get("title", ""))
             self.resolve_worker.resolved.connect(self._on_song_resolved)
             self.resolve_worker.error.connect(self._on_resolve_error)
             self._start_playing_current = start_playing

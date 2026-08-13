@@ -14,8 +14,8 @@ from backend.controllers import (
     SpamController, UpdateController, NetworkController, WidgetController
 )
 from backend.providers import KickAPIClient
-from frontend.core.app_container_core import AppContainer
-from frontend.core.app_logger_core import setup_application_logging
+from backend.core.app_container_core import AppContainer
+from backend.core.app_logger_core import setup_application_logging
 from frontend.common.theme import COLOR_GREEN, get_global_qss
 from frontend.navigation.sidebar_component import Sidebar
 from frontend.navigation.toast_component import ToastManager
