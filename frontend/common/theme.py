@@ -6,6 +6,7 @@ PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\',
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
 PATH_ICON_CHECK = get_assets_path("icons/check.svg").replace('\\', '/')
 
+# Escala Neutra Zinc (Armonizada)
 COLOR_NEUTRAL_950  = "#09090B"
 COLOR_NEUTRAL_900  = "#121214"
 COLOR_NEUTRAL_850  = "#18181B"
@@ -13,23 +14,26 @@ COLOR_NEUTRAL_800  = "#27272A"
 COLOR_NEUTRAL_750  = "#29292B"
 COLOR_NEUTRAL_700  = "#3F3F46"
 COLOR_NEUTRAL_500  = "#71717A"
-COLOR_NEUTRAL_400  = "#767676"
-COLOR_NEUTRAL_200  = "#CCCCCC"
+COLOR_NEUTRAL_400  = "#A1A1AA"  # Ajustado: Zinc 400 en lugar de #767676
+COLOR_NEUTRAL_200  = "#E4E4E7"  # Ajustado: Zinc 200 en lugar de #CCCCCC
 COLOR_WHITE        = "#FAFAFA"
 COLOR_BLACK        = "#000000"
+
+# Colores de Acento y Semánticos
 COLOR_GREEN        = "#2ECD70"
-COLOR_GREEN_DARK   = "#25AE60"
+COLOR_GREEN_DARK   = "#27AA5E"
 COLOR_RED          = "#EF4444"
 COLOR_AMBER        = "#F59E0B"
 COLOR_BLUE         = "#3B82F6"
 COLOR_PURPLE       = "#C084FC"
 
+# Glows / Opacidades Semánticas Sincronizadas
 COLOR_WHITE_GLOW   = "rgba(255, 255, 255, 0.1)"
-COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.1)"
-COLOR_RED_GLOW     = "rgba(239, 68, 68, 0.1)"
-COLOR_AMBER_GLOW   = "rgba(245, 158, 11, 0.1)"
-COLOR_BLUE_GLOW    = "rgba(59, 130, 246, 0.1)"
-COLOR_PURPLE_GLOW  = "rgba(139, 92, 246, 0.1)"
+COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.12)"
+COLOR_RED_GLOW     = "rgba(239, 68, 68, 0.12)"
+COLOR_AMBER_GLOW   = "rgba(245, 158, 11, 0.12)"
+COLOR_BLUE_GLOW    = "rgba(59, 130, 246, 0.12)"
+COLOR_PURPLE_GLOW  = "rgba(192, 132, 252, 0.15)"  # Ajustado: Sincronizado con #C084FC
 
 FONT_FAMILY = "'Google Sans', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -43,10 +47,10 @@ PADDING_BUTTON  = "6px 12px"
 
 def get_global_qss(base: int = 13) -> str:
     size_headline_1 = base + 12
-    size_headline_2 = base + 9  
-    size_headline_3 = base + 3  
-    size_textline_1 = base       
-    size_textline_2 = max(10, base - 1) 
+    size_headline_2 = base + 9
+    size_headline_3 = base + 3
+    size_textline_1 = base
+    size_textline_2 = max(10, base - 1)
     size_textline_3 = max(9, base - 2)
 
     return f"""
@@ -73,21 +77,18 @@ QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
 QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 4px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
+QComboBox QAbstractItemView::item, QMenu::item {{ border-radius: {RADIUS_SM}px; padding: 2px; margin: 2px; }}
+QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
 QMenu::item {{ padding: 6px 18px 6px 24px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; }}
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
 QMenu::separator {{ height: 1.5px; background-color: {COLOR_NEUTRAL_700}; margin: 4px 6px; }}
 
-QComboBox QAbstractItemView::item, QMenu::item {{ border-radius: {RADIUS_SM}px; padding: 2px; margin: 2px; }}
-QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
-
 QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 30px 3px 3px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QSpinBox:hover, QDoubleSpinBox:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
-
 QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 28px; border: none; background-color: transparent; }}
 QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
 QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
 QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); width: 16px; height: 16px; }}
-
 QSpinBox::down-button, QDoubleSpinBox::down-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 4px; border: none; background-color: transparent; }}
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
 QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
@@ -134,7 +135,7 @@ QListWidget[role="transparent_list"] {{ background: transparent; border: none; }
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
 
 QTabWidget::pane {{ border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_LG}px; border-top-left-radius: 0px; background-color: {COLOR_NEUTRAL_900}; padding: 8px; }}
-QTabBar::tab {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-bottom-color: transparent; border-top-left-radius: 0px; border-top-right-radius: {RADIUS_MD}px; padding: 8px 16px; margin-right: 4px; font-weight: bold;}}
+QTabBar::tab {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-bottom-color: transparent; border-top-left-radius: 0px; border-top-right-radius: {RADIUS_MD}px; padding: 8px 16px; margin-right: 4px; font-weight: bold; }}
 QTabBar::tab:selected {{ color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_900}; border-color: {COLOR_NEUTRAL_800}; border-bottom-color: {COLOR_NEUTRAL_900}; }}
 QTabBar::tab:hover:!selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QTabWidget QFrame[role="card"] {{ background-color: transparent; border: none; }}
@@ -177,7 +178,7 @@ QFrame[role="toast"][state="info"] {{ border-color: {COLOR_BLUE_GLOW}; }}
 QProgressBar {{ background-color: {COLOR_NEUTRAL_850}; border: 1px solid {COLOR_NEUTRAL_800}; border-radius: 4px; height: 6px; text-align: center; }}
 QProgressBar::chunk {{ background-color: {COLOR_GREEN}; border-radius: 3px; }}
 
-QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_850}; border-radius: {RADIUS_MD}px;}}
+QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_850}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="badge"] QLabel {{ font-size: {size_textline_3}px; font-weight: 700; color: {COLOR_NEUTRAL_200}; background: transparent; }}
 QFrame[role="badge"][state="everyone"] {{ background-color: {COLOR_GREEN_GLOW}; }}
 QFrame[role="badge"][state="everyone"] QLabel {{ color: {COLOR_GREEN}; }}
@@ -240,12 +241,12 @@ QPushButton[role="filter_chip"]:checked {{ background-color: {COLOR_GREEN}; colo
 /* ==============================================================================
    7. ESTADOS DESHABILITADOS (Global)
    ============================================================================== */
-QPushButton:disabled, QPushButton[role="action_accent"]:disabled, 
-QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_border"]:disabled, 
-QPushButton[role="action_accent_border"]:disabled, QPushButton[role="action_neutral_border"]:disabled, 
+QPushButton:disabled, QPushButton[role="action_accent"]:disabled,
+QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_border"]:disabled,
+QPushButton[role="action_accent_border"]:disabled, QPushButton[role="action_neutral_border"]:disabled,
 QPushButton[role="btn_ghost"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: 1.5px solid {COLOR_NEUTRAL_800}; padding: {PADDING_BUTTON}; }}
-QLineEdit:disabled, QTextEdit:disabled, 
-QComboBox:disabled, QSpinBox:disabled, 
+QLineEdit:disabled, QTextEdit:disabled,
+QComboBox:disabled, QSpinBox:disabled,
 QDoubleSpinBox:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_800}; padding: {PADDING_INPUT}; }}
 QCheckBox:disabled {{ color: {COLOR_NEUTRAL_500}; }}
 
