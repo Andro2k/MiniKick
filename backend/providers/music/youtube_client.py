@@ -56,6 +56,8 @@ class YouTubeMusicProvider(QObject):
                 self.auto_resume = settings.load_bool("youtube_auto_resume", True)
                 saved_vol = int(settings.load_string("music_volume", "100"))
                 self._volume_gain = max(0.0, min(1.0, saved_vol / 100.0))
+                saved_device = settings.load_string("youtube_audio_device", "default")
+                self.set_audio_device(saved_device)
             except Exception as e:
                 logging.error("[YouTubeMusicProvider] Error loading settings: %s", e)
 
@@ -72,6 +74,7 @@ class YouTubeMusicProvider(QObject):
                     "resolved": False,
                     "stream_url": None,
                     "requester": song["requester"],
+                    "platform": song.get("platform", "kick"),
                     "duration": song.get("duration", "-")
                 })
             
@@ -119,14 +122,15 @@ class YouTubeMusicProvider(QObject):
             "duration": duration,
             "progress": self.player.position(),
             "thumbnail": self.current_song.get("thumbnail", ""),
-            "requester": self.current_song.get("requester", "")
+            "requester": self.current_song.get("requester", ""),
+            "platform": self.current_song.get("platform", "kick")
         }
 
     @property
     def provider_id(self) -> str:
         return "youtube"
 
-    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None, max_duration_min: int = 10) -> tuple[bool, str]:
+    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None, platform: str = "kick", max_duration_min: int = 10) -> tuple[bool, str]:
         query = query_or_uri.strip()
         is_search = not (query.startswith("http://") or query.startswith("https://") or query.startswith("www."))
         
@@ -151,6 +155,7 @@ class YouTubeMusicProvider(QObject):
                     "resolved": False,
                     "stream_url": None,
                     "requester": requester,
+                    "platform": platform,
                     "duration": dur_str
                 }
                 if self.music_storage:
@@ -160,6 +165,7 @@ class YouTubeMusicProvider(QObject):
                         url=song_entry["url"],
                         requester=requester,
                         provider="youtube",
+                        platform=platform,
                         duration=song_entry.get("duration", "-")
                     )
                     song_entry["db_id"] = db_id
@@ -186,6 +192,7 @@ class YouTubeMusicProvider(QObject):
         def on_worker_finished(success, message):
             if success and worker.song_entry:
                 worker.song_entry["requester"] = requester
+                worker.song_entry["platform"] = platform
                 if self.music_storage:
                     db_id = self.music_storage.add_song_to_queue(
                         title=worker.song_entry["title"],
@@ -193,6 +200,7 @@ class YouTubeMusicProvider(QObject):
                         url=worker.song_entry["url"],
                         requester=requester,
                         provider="youtube",
+                        platform=platform,
                         duration=worker.song_entry.get("duration", "-")
                     )
                     worker.song_entry["db_id"] = db_id
@@ -223,6 +231,26 @@ class YouTubeMusicProvider(QObject):
     def set_volume(self, volume: int) -> None:
         self._volume_gain = max(0.0, min(1.0, volume / 100.0))
         self.audio_output.setVolume(self._volume_gain)
+
+    def set_audio_device(self, device_id: str) -> None:
+        self._audio_device_id = device_id
+        try:
+            from PySide6.QtMultimedia import QMediaDevices
+            outputs = QMediaDevices.audioOutputs()
+            target_device = None
+            if device_id and device_id != "default":
+                for dev in outputs:
+                    dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
+                    if dev_id_str == device_id or dev.description() == device_id:
+                        target_device = dev
+                        break
+            if not target_device:
+                target_device = QMediaDevices.defaultAudioOutput()
+            if target_device:
+                self.audio_output.setDevice(target_device)
+                logging.info("[YouTubeMusicProvider] Audio output device set to: %s", target_device.description())
+        except Exception as e:
+            logging.error("[YouTubeMusicProvider] Error setting audio device: %s", e)
 
     def get_queue(self) -> list[dict]:
         return list(self.queue)

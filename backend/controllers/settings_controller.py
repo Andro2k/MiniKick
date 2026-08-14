@@ -9,11 +9,13 @@ class SettingsController(QObject):
     backup_restored = Signal()
     notification_requested = Signal(str, str)
 
-    def __init__(self, view, service, toast_manager=None):
+    def __init__(self, view, service, toast_manager=None, music_provider=None, tts_manager=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
+        self.music_provider = music_provider
+        self.tts_manager = tts_manager
         if self.view is not None:
             self._connect_signals()
             self._load_initial_state()
@@ -32,17 +34,42 @@ class SettingsController(QObject):
         self.view.unlink_clicked.connect(self.unlink_account_requested.emit)
         self.view.update_clicked.connect(self.check_update_requested.emit)
         self.view.language_changed.connect(self.handle_language_change)
+        self.view.music_audio_device_changed.connect(self.handle_music_audio_device)
+        self.view.tts_audio_device_changed.connect(self.handle_tts_audio_device)
         self.view.feedback_clicked.connect(self.handle_feedback)
 
     def _load_initial_state(self):
         enabled = self.service.is_minimize_tray_enabled()
         lang = self.service.get_language()
         current_font = self.service.get_font_size()
+        music_device = self.service.get_music_audio_device()
+        tts_device = self.service.get_tts_audio_device()
+
         if self.view is not None:
             self.view.set_minimize_tray_enabled(enabled)
             self.view.set_current_language(lang)
             self.view.set_current_font_size(current_font)
+            self.view.set_current_music_audio_device(music_device)
+            self.view.set_current_tts_audio_device(tts_device)
+
+        if hasattr(self, 'music_provider') and self.music_provider and hasattr(self.music_provider, 'set_audio_device'):
+            self.music_provider.set_audio_device(music_device)
+        if hasattr(self, 'tts_manager') and self.tts_manager and hasattr(self.tts_manager, 'set_audio_device'):
+            self.tts_manager.set_audio_device(tts_device)
+
         self.style_reload_requested.emit(current_font)
+
+    @Slot(str)
+    def handle_music_audio_device(self, device_id: str):
+        self.service.set_music_audio_device(device_id)
+        if hasattr(self, 'music_provider') and self.music_provider and hasattr(self.music_provider, 'set_audio_device'):
+            self.music_provider.set_audio_device(device_id)
+
+    @Slot(str)
+    def handle_tts_audio_device(self, device_id: str):
+        self.service.set_tts_audio_device(device_id)
+        if hasattr(self, 'tts_manager') and self.tts_manager and hasattr(self.tts_manager, 'set_audio_device'):
+            self.tts_manager.set_audio_device(device_id)
 
     @Slot(bool)
     def handle_minimize_tray(self, enabled: bool):

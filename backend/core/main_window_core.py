@@ -191,7 +191,9 @@ class MainWindowCore(QMainWindow):
         self.settings_controller = SettingsController(
             view=None, 
             service=self.settings_service,
-            toast_manager=self.toast
+            toast_manager=self.toast,
+            music_provider=self.container.music_provider,
+            tts_manager=self.tts_manager
         )
         self.log_controller = LogController(
             view=None, 

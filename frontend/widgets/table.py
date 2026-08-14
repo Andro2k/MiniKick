@@ -79,7 +79,7 @@ class ModernTableCard(QFrame):
     def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked):
         self.empty_widget = QWidget(self)
         layout = QVBoxLayout(self.empty_widget)
-        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -88,8 +88,8 @@ class ModernTableCard(QFrame):
             icon_path=illustration_path,
             aspect_ratio=1.0,
             min_size=120,
-            max_size=300,
-            size_offset=320,
+            max_size=280,
+            size_offset=180,
             parent=self
         )
         

@@ -6,7 +6,6 @@ PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\',
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
 PATH_ICON_CHECK = get_assets_path("icons/check.svg").replace('\\', '/')
 
-# Escala Neutra Zinc (Armonizada)
 COLOR_NEUTRAL_950  = "#09090B"
 COLOR_NEUTRAL_900  = "#121214"
 COLOR_NEUTRAL_850  = "#18181B"
@@ -14,12 +13,11 @@ COLOR_NEUTRAL_800  = "#27272A"
 COLOR_NEUTRAL_750  = "#29292B"
 COLOR_NEUTRAL_700  = "#3F3F46"
 COLOR_NEUTRAL_500  = "#71717A"
-COLOR_NEUTRAL_400  = "#A1A1AA"  # Ajustado: Zinc 400 en lugar de #767676
-COLOR_NEUTRAL_200  = "#E4E4E7"  # Ajustado: Zinc 200 en lugar de #CCCCCC
+COLOR_NEUTRAL_400  = "#A1A1AA"
+COLOR_NEUTRAL_200  = "#E4E4E7"
 COLOR_WHITE        = "#FAFAFA"
 COLOR_BLACK        = "#000000"
 
-# Colores de Acento y Semánticos
 COLOR_GREEN        = "#2ECD70"
 COLOR_GREEN_DARK   = "#27AA5E"
 COLOR_RED          = "#EF4444"
@@ -27,13 +25,12 @@ COLOR_AMBER        = "#F59E0B"
 COLOR_BLUE         = "#3B82F6"
 COLOR_PURPLE       = "#C084FC"
 
-# Glows / Opacidades Semánticas Sincronizadas
 COLOR_WHITE_GLOW   = "rgba(255, 255, 255, 0.1)"
 COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.12)"
 COLOR_RED_GLOW     = "rgba(239, 68, 68, 0.12)"
 COLOR_AMBER_GLOW   = "rgba(245, 158, 11, 0.12)"
 COLOR_BLUE_GLOW    = "rgba(59, 130, 246, 0.12)"
-COLOR_PURPLE_GLOW  = "rgba(192, 132, 252, 0.15)"  # Ajustado: Sincronizado con #C084FC
+COLOR_PURPLE_GLOW  = "rgba(192, 132, 252, 0.15)"
 
 FONT_FAMILY = "'Google Sans', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -76,12 +73,13 @@ QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_N
 QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
-QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 4px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
-QComboBox QAbstractItemView::item, QMenu::item {{ border-radius: {RADIUS_SM}px; padding: 2px; margin: 2px; }}
+QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 3px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
+QComboBox QAbstractItemView::item {{ border-radius: {RADIUS_SM}px; padding: 4px 8px; margin: 1px 2px; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
-QMenu::item {{ padding: 6px 18px 6px 24px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; }}
+QMenu::item {{ padding: 4px 12px 4px 18px; margin: 1px 2px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; font-size: 12px; }}
+QMenu::item:disabled {{ color: {COLOR_NEUTRAL_400}; font-weight: 600; padding: 4px 8px; background-color: transparent; }}
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
-QMenu::separator {{ height: 1.5px; background-color: {COLOR_NEUTRAL_700}; margin: 4px 6px; }}
+QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 3px 6px; }}
 
 QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 30px 3px 3px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QSpinBox:hover, QDoubleSpinBox:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
