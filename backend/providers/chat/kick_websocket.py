@@ -72,31 +72,43 @@ class ChatSocketManager:
 
     def _handle_chat_message(self, outer: dict, ws: websocket.WebSocketApp) -> None:
         inner = self._parse_inner_data(outer)
-        sender = inner.get("sender", {})
-        
+        sender = inner.get("sender")
+        if not isinstance(sender, dict):
+            return
+
         user = sender.get("username", "")
         msg = inner.get("content", "")
         if not user or not msg:
             return
 
-        identity = sender.get("identity", {})
-        raw_badges = identity.get("badges", [])
-        badges = [b["type"] for b in raw_badges if isinstance(b, dict) and "type" in b]
-        
-        badges_v2 = identity.get("badges_v2", [])
-        if isinstance(badges_v2, list):
-            for b in badges_v2:
-                if isinstance(b, dict) and b.get("name") == "level":
-                    lvl = b.get("metadata", {}).get("level")
-                    if lvl is not None:
-                        badges.append(f"level_{lvl}")
-        
-        color = identity.get("color", "") or COLOR_GREEN
+        identity = sender.get("identity")
+        badges = []
+        color = COLOR_GREEN
+
+        if isinstance(identity, dict):
+            color = identity.get("color") or COLOR_GREEN
+            raw_badges = identity.get("badges")
+            if isinstance(raw_badges, list):
+                for b in raw_badges:
+                    if isinstance(b, dict) and "type" in b:
+                        badges.append(b["type"])
+
+            badges_v2 = identity.get("badges_v2")
+            if isinstance(badges_v2, list):
+                for b in badges_v2:
+                    if isinstance(b, dict) and b.get("name") == "level":
+                        meta = b.get("metadata")
+                        if isinstance(meta, dict):
+                            lvl = meta.get("level")
+                            if lvl is not None:
+                                badges.append(f"level_{lvl}")
+
         msg_id = inner.get("id", "")
         sender_id = sender.get("id", 0)
 
         if self._callback:
             self._callback(user, msg, badges, color, msg_id, sender_id)
+
 
     def _handle_poll_update(self, outer: dict, ws: websocket.WebSocketApp) -> None:
         inner = self._parse_inner_data(outer)

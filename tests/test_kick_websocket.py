@@ -180,3 +180,33 @@ def test_chat_socket_manager_parse_badges_v2_level():
     assert len(received_data) == 1
     _, _, badges, _, _, _ = received_data[0]
     assert badges == ["subscriber", "level_25"]
+
+def test_chat_worker_emits_dto():
+    from backend.workers.chat_worker import ChatWorker
+    from backend.services.chat.pipeline import ChatMessageDTO
+
+    class DummyI18n:
+        def get(self, key):
+            return key
+
+    class DummyAPI:
+        def fetch_user_data(self):
+            return {"room_id": 12345}
+
+    worker = ChatWorker(DummyI18n(), DummyAPI(), "us2", "key123")
+    received_dtos = []
+    worker.message_received.connect(lambda dto: received_dtos.append(dto))
+
+    worker._dispatch_message("KickUser", "Hola Kick", ["subscriber"], "#00FF00", "msg_100", 777)
+
+    assert len(received_dtos) == 1
+    dto = received_dtos[0]
+    assert isinstance(dto, ChatMessageDTO)
+    assert dto.user == "KickUser"
+    assert dto.content == "Hola Kick"
+    assert dto.badges == ["subscriber"]
+    assert dto.color == "#00FF00"
+    assert dto.msg_id == "msg_100"
+    assert dto.sender_id == 777
+    assert dto.platform == "kick"
+

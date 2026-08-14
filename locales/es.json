@@ -308,7 +308,6 @@
             "lbl_image": "Adjuntar Captura / Imagen (Opcional):",
             "placeholder_contact": "Tu nombre de usuario o contacto...",
             "placeholder_desc": "Describe brevemente qué estabas haciendo y qué error ocurrió...",
-            "placeholder_image": "Ningún archivo seleccionado...",
             "remove_image_tooltip": "Quitar imagen",
             "severity_low": "Baja",
             "severity_low_desc": "Detalle estético o sugerencia",

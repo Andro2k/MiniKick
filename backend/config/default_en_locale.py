@@ -310,7 +310,6 @@ DEFAULT_DICTIONARY = {
             "lbl_image": "Attach Screenshot / Image (Optional):",
             "placeholder_contact": "Your username or contact info...",
             "placeholder_desc": "Briefly describe what you were doing and what error occurred...",
-            "placeholder_image": "No file selected...",
             "remove_image_tooltip": "Remove image",
             "severity_low": "Low",
             "severity_low_desc": "Something's a little off",

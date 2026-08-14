@@ -49,6 +49,7 @@ def test_twitch_api_client_fetch_user_data(monkeypatch):
             return {"access_token": "mock_token"}
 
     class DummyResponse:
+        status_code = 200
         def raise_for_status(self):
             pass
         def json(self):
@@ -66,13 +67,71 @@ def test_twitch_api_client_fetch_user_data(monkeypatch):
             }
 
     client = TwitchAPIClient(auth_provider=DummyAuth(), client_id="test_client_id")
-    monkeypatch.setattr(client.session, "get", lambda url, headers, timeout: DummyResponse())
+    monkeypatch.setattr(client.session, "request", lambda method, url, headers=None, **kwargs: DummyResponse())
+
 
     user_data = client.fetch_user_data()
     assert user_data["username"] == "streamer_twitch"
     assert user_data["display_name"] == "StreamerTwitch"
     assert user_data["broadcaster_id"] == "99999"
     assert user_data["platform"] == "twitch"
+
+def test_twitch_api_client_401_auto_refresh():
+    from backend.providers.chat.twitch_client import TwitchAPIClient
+
+    class DummyAuth:
+        def __init__(self):
+            self.refreshed = False
+            self.token = "expired_token"
+
+        def get_tokens(self):
+            return {"access_token": self.token}
+
+        def refresh_token(self):
+            self.refreshed = True
+            self.token = "refreshed_token"
+            return {"access_token": self.token}
+
+    class MockResponse:
+        def __init__(self, status_code, json_data):
+            self.status_code = status_code
+            self._json_data = json_data
+
+        def raise_for_status(self):
+            if self.status_code >= 400:
+                import requests
+                raise requests.exceptions.HTTPError(f"{self.status_code} Error", response=self)
+
+        def json(self):
+            return self._json_data
+
+    auth = DummyAuth()
+    client = TwitchAPIClient(auth_provider=auth, client_id="test_client_id")
+
+    calls = []
+
+    def mock_request(method, url, headers=None, **kwargs):
+        calls.append(headers.get("Authorization"))
+        if len(calls) == 1:
+            return MockResponse(401, {"message": "Unauthorized"})
+        return MockResponse(200, {
+            "data": [{
+                "id": "12345",
+                "login": "refreshed_user",
+                "display_name": "Refreshed User",
+                "description": "",
+                "profile_image_url": "",
+                "created_at": "2024-01-01T00:00:00Z"
+            }]
+        })
+
+    client.session.request = mock_request
+
+    user_data = client.fetch_user_data()
+    assert auth.refreshed is True
+    assert user_data["username"] == "refreshed_user"
+    assert calls == ["Bearer expired_token", "Bearer refreshed_token"]
+
 
 def test_route_incoming_message_dto():
     from backend.services.chat.pipeline import ChatMessageDTO

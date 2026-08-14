@@ -1,10 +1,12 @@
 # backend\workers\chat_worker.py
 
+import datetime
 from PySide6.QtCore import QThread, Signal
 from backend.providers import KickAPIClient, ChatSocketManager
+from backend.services.chat.pipeline import ChatMessageDTO
 
 class ChatWorker(QThread):
-    message_received = Signal(str, str, list, str, str, int) 
+    message_received = Signal(object) 
     error_occurred = Signal(str)        
     connection_success = Signal(dict)
     poll_updated = Signal(dict)
@@ -52,7 +54,19 @@ class ChatWorker(QThread):
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
         if not self._is_stopped:
-            self.message_received.emit(user, msg, badges, color, msg_id, sender_id)
+            now_str = datetime.datetime.now().strftime("%H:%M:%S")
+            dto = ChatMessageDTO(
+                user=user,
+                content=msg,
+                badges=badges,
+                color=color,
+                msg_id=msg_id,
+                sender_id=sender_id,
+                timestamp=now_str,
+                platform="kick"
+            )
+            self.message_received.emit(dto)
+
 
     def _dispatch_poll_update(self, poll_data: dict):
         if not self._is_stopped:

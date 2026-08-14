@@ -22,15 +22,32 @@ class TwitchAPIClient:
             "Content-Type": "application/json"
         }
 
+    def _request(self, method: str, url: str, **kwargs) -> requests.Response:
+        headers = kwargs.pop("headers", None)
+        if headers is None:
+            headers = self._get_headers()
+
+        resp = self.session.request(method, url, headers=headers, **kwargs)
+
+        if resp.status_code == 401 and self.auth_provider and hasattr(self.auth_provider, "refresh_token"):
+            logging.info("[TwitchAPI] Token 401 recibido, intentando refrescar token...")
+            try:
+                self.auth_provider.refresh_token()
+                headers = self._get_headers()
+                resp = self.session.request(method, url, headers=headers, **kwargs)
+            except Exception as refresh_err:
+                logging.error("[TwitchAPI] Fallo al refrescar token tras 401: %s", refresh_err)
+
+        return resp
+
     def fetch_user_data(self) -> dict:
         url = f"{TWITCH_HELIX_BASE}/users"
-        headers = self._get_headers()
         try:
-            resp = self.session.get(url, headers=headers, timeout=10)
+            resp = self._request("GET", url, timeout=10)
             resp.raise_for_status()
             data = resp.json().get("data", [])
             if not data:
-                err_msg = self.i18n.get("logs.twitch.user_not_found") if self.i18n else self.i18n.get("logs.twitch.user_not_found")
+                err_msg = self.i18n.get("logs.twitch.user_not_found") if self.i18n else "User not found"
                 raise ValueError(err_msg)
             user_info = data[0]
             created_at_raw = user_info.get("created_at", "")
@@ -50,14 +67,13 @@ class TwitchAPIClient:
 
     def post_chat_message(self, broadcaster_id: str, sender_id: str, message: str) -> bool:
         url = f"{TWITCH_HELIX_BASE}/chat/messages"
-        headers = self._get_headers()
         payload = {
             "broadcaster_id": broadcaster_id,
             "sender_id": sender_id,
             "message": message
         }
         try:
-            resp = self.session.post(url, json=payload, headers=headers, timeout=10)
+            resp = self._request("POST", url, json=payload, timeout=10)
             if resp.status_code == 200:
                 return True
             logging.warning("[TwitchAPI] Failed sending Helix message HTTP %s: %s", resp.status_code, resp.text)
@@ -68,9 +84,8 @@ class TwitchAPIClient:
 
     def delete_chat_message(self, broadcaster_id: str, moderator_id: str, message_id: str) -> bool:
         url = f"{TWITCH_HELIX_BASE}/moderation/chat?broadcaster_id={broadcaster_id}&moderator_id={moderator_id}&message_id={message_id}"
-        headers = self._get_headers()
         try:
-            resp = self.session.delete(url, headers=headers, timeout=10)
+            resp = self._request("DELETE", url, timeout=10)
             return resp.status_code == 204
         except Exception as e:
             logging.error("[TwitchAPI] Error deleting message on Twitch: %s", e)
@@ -78,7 +93,6 @@ class TwitchAPIClient:
 
     def timeout_user(self, broadcaster_id: str, moderator_id: str, user_id: str, duration_seconds: int, reason: str = "") -> bool:
         url = f"{TWITCH_HELIX_BASE}/moderation/bans?broadcaster_id={broadcaster_id}&moderator_id={moderator_id}"
-        headers = self._get_headers()
         default_reason = self.i18n.get("moderation.reasons.timeout") if self.i18n else ""
         payload = {
             "data": {
@@ -88,7 +102,7 @@ class TwitchAPIClient:
             }
         }
         try:
-            resp = self.session.post(url, json=payload, headers=headers, timeout=10)
+            resp = self._request("POST", url, json=payload, timeout=10)
             return resp.status_code in (200, 202)
         except Exception as e:
             logging.error("[TwitchAPI] Error applying timeout on Twitch: %s", e)
@@ -96,7 +110,6 @@ class TwitchAPIClient:
 
     def ban_user(self, broadcaster_id: str, moderator_id: str, user_id: str, reason: str = "") -> bool:
         url = f"{TWITCH_HELIX_BASE}/moderation/bans?broadcaster_id={broadcaster_id}&moderator_id={moderator_id}"
-        headers = self._get_headers()
         default_reason = self.i18n.get("moderation.reasons.ban") if self.i18n else ""
         payload = {
             "data": {
@@ -105,10 +118,11 @@ class TwitchAPIClient:
             }
         }
         try:
-            resp = self.session.post(url, json=payload, headers=headers, timeout=10)
+            resp = self._request("POST", url, json=payload, timeout=10)
             return resp.status_code in (200, 202)
         except Exception as e:
             logging.error("[TwitchAPI] Error applying ban on Twitch: %s", e)
             return False
+
 
 

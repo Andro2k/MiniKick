@@ -43,3 +43,36 @@ def test_twitch_auth_manager_logout():
     
     manager.logout()
     assert storage.load() == {}
+
+def test_twitch_auth_manager_refresh_token_success(monkeypatch):
+    storage = DummyTokenStorage({
+        "access_token": "old_access_token",
+        "refresh_token": "valid_refresh_token",
+        "scope": "chat:read"
+    })
+    manager = TwitchAuthManager("test_client_id", "test_client_secret", "http://localhost:8080/callback", storage)
+
+    class DummyResponse:
+        status_code = 200
+        def raise_for_status(self):
+            pass
+        def json(self):
+            return {
+                "access_token": "new_access_token",
+                "refresh_token": "new_refresh_token",
+                "expires_in": 14400
+            }
+
+    def mock_post(url, data=None, timeout=None):
+        assert data["grant_type"] == "refresh_token"
+        assert data["client_id"] == "test_client_id"
+        assert data["client_secret"] == "test_client_secret"
+        assert data["refresh_token"] == "valid_refresh_token"
+        return DummyResponse()
+
+    monkeypatch.setattr("backend.services.auth.oauth_service.requests.post", mock_post)
+
+    new_tokens = manager.refresh_token()
+    assert new_tokens["access_token"] == "new_access_token"
+    assert storage.load()["access_token"] == "new_access_token"
+
