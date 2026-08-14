@@ -82,7 +82,7 @@ def bootstrap():
     if sys.platform == "win32":
         try:
             import ctypes
-            myappid = "andro2k.minikick.app.1.5"
+            myappid = "MiniKick"
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         except Exception:
             pass

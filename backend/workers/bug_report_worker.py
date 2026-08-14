@@ -10,13 +10,14 @@ from backend.config.version import APP_VERSION
 class BugReportWorker(QThread):
     finished = Signal(bool, str)
 
-    def __init__(self, username: str, description: str, include_logs: bool, image_path: str, i18n):
+    def __init__(self, username: str, description: str, include_logs: bool, image_path: str, i18n, severity: str = "Low"):
         super().__init__()
         self.username = username
         self.description = description
         self.include_logs = include_logs
         self.image_path = image_path
         self.i18n = i18n
+        self.severity = severity
 
     def run(self):
         if not DISCORD_WEBHOOK_URL:
@@ -30,10 +31,12 @@ class BugReportWorker(QThread):
             u_label = self.i18n.get("dialogs.bug_report.user_label") if self.i18n else ""
             v_label = self.i18n.get("dialogs.bug_report.version_label") if self.i18n else ""
             d_label = self.i18n.get("dialogs.bug_report.description_label") if self.i18n else ""
+            s_label = f"**Priority / Severity:** {self.severity.upper()}"
             content = (
                 f"{header}\n"
                 f"{u_label} {user_text}\n"
                 f"{v_label} {APP_VERSION}\n"
+                f"{s_label}\n"
                 f"{d_label}\n{self.description}\n"
                 f"----------------------------------------"
             )
