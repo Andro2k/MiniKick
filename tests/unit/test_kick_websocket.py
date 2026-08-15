@@ -1,4 +1,4 @@
-# tests\test_kick_websocket.py
+# tests\unit\test_kick_websocket.py
 
 import json
 from backend.providers.chat.kick_websocket import ChatSocketManager
@@ -209,4 +209,3 @@ def test_chat_worker_emits_dto():
     assert dto.msg_id == "msg_100"
     assert dto.sender_id == 777
     assert dto.platform == "kick"
-

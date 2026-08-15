@@ -1,4 +1,4 @@
-# tests\test_command_parser.py
+# tests\unit\test_command_parser.py
 
 from frontend.common.utils import validate_trigger_prefix
 

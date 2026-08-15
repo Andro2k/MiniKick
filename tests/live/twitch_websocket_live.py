@@ -1,11 +1,16 @@
-# tests\test_twitch_websocket_live.py
+# tests\live\twitch_websocket_live.py
 
 import os
+import sys
 import json
 import time
 import argparse
 import websocket
 from datetime import datetime
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 class TwitchWebsocketInspector:
     def __init__(self, channel_name: str = "xqc", oauth_token: str = "", nick: str = "", raw_mode: bool = False, save_log: bool = True, log_path: str = None):
@@ -33,7 +38,7 @@ class TwitchWebsocketInspector:
         if not self.save_log:
             return
         try:
-            logs_dir = os.path.join(os.path.dirname(__file__), "logs")
+            logs_dir = os.path.join(os.path.dirname(__file__), "..", "logs")
             os.makedirs(logs_dir, exist_ok=True)
             if not self.log_filepath:
                 dt_tag = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

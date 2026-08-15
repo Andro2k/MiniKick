@@ -1,4 +1,4 @@
-# tests\test_twitch_websocket.py
+# tests\unit\test_twitch_websocket.py
 
 from backend.providers.chat.twitch_websocket import TwitchSocketManager
 
@@ -68,7 +68,6 @@ def test_twitch_api_client_fetch_user_data(monkeypatch):
 
     client = TwitchAPIClient(auth_provider=DummyAuth(), client_id="test_client_id")
     monkeypatch.setattr(client.session, "request", lambda method, url, headers=None, **kwargs: DummyResponse())
-
 
     user_data = client.fetch_user_data()
     assert user_data["username"] == "streamer_twitch"

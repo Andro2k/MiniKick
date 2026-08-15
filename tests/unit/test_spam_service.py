@@ -1,4 +1,4 @@
-# tests\test_spam_service.py
+# tests\unit\test_spam_service.py
 
 from backend.services.chat.spam_service import SpamService
 

@@ -1,4 +1,4 @@
-# tests\test_twitch_auth.py
+# tests\unit\test_twitch_auth.py
 
 from backend.services.auth.oauth_service import TwitchAuthManager
 
@@ -75,4 +75,3 @@ def test_twitch_auth_manager_refresh_token_success(monkeypatch):
     new_tokens = manager.refresh_token()
     assert new_tokens["access_token"] == "new_access_token"
     assert storage.load()["access_token"] == "new_access_token"
-

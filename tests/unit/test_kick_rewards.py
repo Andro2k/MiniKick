@@ -1,4 +1,4 @@
-# tests\test_kick_rewards.py
+# tests\unit\test_kick_rewards.py
 
 from unittest.mock import MagicMock
 from backend.providers.chat.kick_client import KickAPIClient

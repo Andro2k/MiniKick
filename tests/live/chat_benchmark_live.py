@@ -1,4 +1,4 @@
-# tests\test_chat_benchmark_live.py
+# tests\live\chat_benchmark_live.py
 
 import os
 import sys
@@ -10,7 +10,9 @@ import requests
 import websocket
 from datetime import datetime
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 if sys.platform == "win32":
     try:
@@ -20,9 +22,7 @@ if sys.platform == "win32":
         pass
 
 from backend.providers.chat.kick_websocket import ChatSocketManager
-
 from backend.providers.chat.twitch_websocket import TwitchSocketManager
-from backend.services.chat.pipeline import ChatMessageDTO
 
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY
@@ -117,7 +117,7 @@ class ChatBenchmarkRunner:
     def _init_logfile(self):
         if not self.log_enabled:
             return
-        logs_dir = os.path.join(os.path.dirname(__file__), "logs")
+        logs_dir = os.path.join(os.path.dirname(__file__), "..", "logs")
         os.makedirs(logs_dir, exist_ok=True)
         dt_tag = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         self.log_filepath = os.path.join(logs_dir, f"benchmark_{dt_tag}.log")
@@ -146,7 +146,7 @@ class ChatBenchmarkRunner:
                 event = outer.get("event")
                 if event == "App\\Events\\ChatMessageEvent":
                     socket_mgr._handle_chat_message(outer, ws)
-            except Exception as e:
+            except Exception:
                 self.kick_stats.errors += 1
             t1 = time.perf_counter_ns()
             self.kick_stats.record_message(len(raw_data.encode('utf-8')), t1 - t0)
