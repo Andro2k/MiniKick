@@ -13,9 +13,17 @@ class TwitchAPIClient:
         self.i18n = i18n
         self.session = requests.Session()
 
+    def is_authenticated(self) -> bool:
+        if not self.auth_provider:
+            return False
+        tokens = self.auth_provider.get_tokens() if hasattr(self.auth_provider, "get_tokens") else {}
+        return bool(tokens and tokens.get("access_token"))
+
     def _get_headers(self) -> dict:
         tokens = self.auth_provider.get_tokens() if self.auth_provider else {}
         access_token = tokens.get("access_token", "")
+        if not access_token:
+            return {}
         return {
             "Client-ID": self.client_id,
             "Authorization": f"Bearer {access_token}",
@@ -27,14 +35,20 @@ class TwitchAPIClient:
         if headers is None:
             headers = self._get_headers()
 
+        if not headers or not headers.get("Authorization"):
+            resp = requests.Response()
+            resp.status_code = 401
+            return resp
+
         resp = self.session.request(method, url, headers=headers, **kwargs)
 
         if resp.status_code == 401 and self.auth_provider and hasattr(self.auth_provider, "refresh_token"):
             logging.info("[TwitchAPI] Token 401 recibido, intentando refrescar token...")
             try:
-                self.auth_provider.refresh_token()
-                headers = self._get_headers()
-                resp = self.session.request(method, url, headers=headers, **kwargs)
+                new_tokens = self.auth_provider.refresh_token()
+                if new_tokens and new_tokens.get("access_token"):
+                    headers = self._get_headers()
+                    resp = self.session.request(method, url, headers=headers, **kwargs)
             except Exception as refresh_err:
                 logging.error("[TwitchAPI] Fallo al refrescar token tras 401: %s", refresh_err)
 
@@ -124,5 +138,68 @@ class TwitchAPIClient:
             logging.error("[TwitchAPI] Error applying ban on Twitch: %s", e)
             return False
 
+    def update_channel_metadata(self, broadcaster_id: str, title: str | None = None, game_id: str | None = None, broadcaster_language: str | None = None) -> bool:
+        if not broadcaster_id:
+            return False
+        url = f"{TWITCH_HELIX_BASE}/channels?broadcaster_id={broadcaster_id}"
+        payload = {}
+        if title is not None and str(title).strip():
+            payload["title"] = str(title).strip()
+        if game_id is not None and str(game_id).strip():
+            payload["game_id"] = str(game_id).strip()
+        if broadcaster_language is not None and str(broadcaster_language).strip():
+            payload["broadcaster_language"] = str(broadcaster_language).strip()
 
+        if not payload:
+            return False
 
+        try:
+            resp = self._request("PATCH", url, json=payload, timeout=10)
+            return resp.status_code == 204
+        except Exception as e:
+            logging.error("[TwitchAPI] Error updating channel metadata on Twitch: %s", e)
+            return False
+
+    def get_channel_metadata(self, broadcaster_id: str) -> dict:
+        if not broadcaster_id:
+            return {}
+        url = f"{TWITCH_HELIX_BASE}/channels?broadcaster_id={broadcaster_id}"
+        try:
+            resp = self._request("GET", url, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json().get("data", [])
+                if data and isinstance(data, list):
+                    item = data[0]
+                    return {
+                        "broadcaster_id": item.get("broadcaster_id", ""),
+                        "broadcaster_name": item.get("broadcaster_name", ""),
+                        "title": item.get("title", ""),
+                        "game_id": item.get("game_id", ""),
+                        "game_name": item.get("game_name", ""),
+                        "broadcaster_language": item.get("broadcaster_language", "")
+                    }
+            return {}
+        except Exception as e:
+            logging.error("[TwitchAPI] Error fetching channel metadata on Twitch: %s", e)
+            return {}
+
+    def search_categories(self, query: str) -> list[dict]:
+        if not query or not query.strip():
+            return []
+        url = f"{TWITCH_HELIX_BASE}/search/categories?query={requests.utils.quote(query.strip())}"
+        try:
+            resp = self._request("GET", url, timeout=8)
+            if resp.status_code == 200:
+                data = resp.json().get("data", [])
+                return [
+                    {
+                        "id": item.get("id", ""),
+                        "name": item.get("name", ""),
+                        "thumbnail": item.get("box_art_url", "").replace("{width}", "52").replace("{height}", "72") if item.get("box_art_url") else ""
+                    }
+                    for item in data if item.get("name")
+                ]
+            return []
+        except Exception as e:
+            logging.error("[TwitchAPI] Error searching categories on Twitch: %s", e)
+            return []

@@ -24,9 +24,9 @@ except ImportError:
 from backend.providers import YouTubeMusicProvider
 from backend.database import (DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
                             SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
-                            SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage)
+                            SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage)
 from backend.services import (BackupService, TranslationService, AuthManager, TwitchAuthManager, OverlayServerManager, 
-                              MediaTriggerService, TTSManager, WidgetService)
+                              MediaTriggerService, TTSManager, WidgetService, ScheduleService)
 from frontend.common.utils import resource_path
 
 class AppContainer:
@@ -43,6 +43,8 @@ class AppContainer:
         self.avatar_storage = SQLiteAvatarStorage(self.db_manager)
         self.log_storage = SQLiteSystemLogStorage(self.db_manager)
         self.music_storage = SQLiteMusicStorage(self.db_manager)
+        self.schedule_storage = SQLiteScheduleStorage(self.db_manager)
+        self.stream_schedule_storage = self.schedule_storage
         self.widget_service = WidgetService(self.widgets_storage)
         self.backup_service = BackupService(
             self.settings_storage, self.rewards_storage, 
@@ -50,6 +52,8 @@ class AppContainer:
             self.timers_storage
         )
         self.i18n = self._init_i18n()
+        self.schedule_service = ScheduleService(self.schedule_storage, i18n=self.i18n)
+        self.stream_info_service = self.schedule_service
         html_path = resource_path(os.path.join("assets", "web", "auth.html"))
         
         self.auth_manager = AuthManager(

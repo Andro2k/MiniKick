@@ -470,6 +470,7 @@
                 "network_status": "Estado de Red",
                 "settings": "Ajustes",
                 "spam_filters": "Filtros Anti-Spam",
+                "stream_info": "Información del Stream",
                 "timers": "Temporizadores",
                 "triggers": "Recompensas",
                 "widgets": "Widgets"
@@ -530,7 +531,6 @@
         "chat": {
             "cooldown_active": "⏳ @{user}, por favor espera {seconds} segundo(s) antes de pedir otra canción.",
             "no_queue_available": "❌ @{user}, la cola de reproducción no está disponible en este momento.",
-            "not_linked": "❌ El streamer no ha activado el reproductor de YouTube.",
             "not_linked_youtube": "❌ El streamer no ha activado el reproductor de YouTube.",
             "pause_failed": "❌ No se pudo pausar la música.",
             "pause_success": "⏸️ Música pausada con éxito.",
@@ -546,7 +546,6 @@
             "skip_success": "⏩ Canción saltada con éxito.",
             "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando.",
             "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",
-            "song_paused": "🔇 YouTube está en pausa.",
             "song_paused_youtube": "🔇 YouTube está en pausa.",
             "song_too_long": "❌ @{user}, esa canción supera la duración máxima permitida de {max} minutos.",
             "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
@@ -678,7 +677,6 @@
             "jitter": "Jitter",
             "live": "En Vivo",
             "min": "Mínimo",
-            "stability": "Estabilidad",
             "stability_fair": "Regular",
             "stability_good": "Buena",
             "stability_optimal": "Óptima",
@@ -934,6 +932,90 @@
             "deactivated": "Filtro Desactivado",
             "deactivated_msg": "El filtro '{filter_name}' ahora está inactivo.",
             "warn_msg": "@{user} por favor evita el spam en el chat."
+        }
+    },
+    "stream_info": {
+        "confirm_delete": {
+            "desc": "Esta acción eliminará el horario seleccionado de forma permanente.",
+            "title": "¿Eliminar Horario?"
+        },
+        "empty": {
+            "btn": "Crear Horario",
+            "desc": "Crea horarios automáticos para cambiar el título y la categoría en tus días de directo.",
+            "title": "No hay horarios programados"
+        },
+        "errors": {
+            "update_failed": "Fallo al enviar la actualización a la plataforma."
+        },
+        "header": {
+            "subtitle": "Actualiza el título y categoría de tu canal en Kick y Twitch al instante o programa horarios automáticos.",
+            "title": "Información del Stream"
+        },
+        "platforms": {
+            "both": "Ambos (Kick & Twitch)"
+        },
+        "quick_change": {
+            "btn_update": "Actualizar Stream",
+            "category": "Categoría / Juego:",
+            "category_placeholder": "Buscar categoría o juego...",
+            "stream_title": "Título del Stream:",
+            "target_platform": "Plataforma(s) Destino:",
+            "title": "Cambio Rápido de Información",
+            "title_placeholder": "Escribe el título de tu transmisión..."
+        },
+        "schedule_dialog": {
+            "btn_clear": "Limpiar Formulario",
+            "btn_save": "Guardar Horario",
+            "category_placeholder": "ej. Just Chatting",
+            "date_label": "Fecha de ejecución:",
+            "kick_category_label": "Categoría Kick (Opcional):",
+            "name_label": "Nombre del Horario:",
+            "name_placeholder": "ej. Stream de Minecraft los Viernes",
+            "platform_label": "Plataforma(s) a aplicar:",
+            "stream_title_label": "Título del Stream:",
+            "stream_title_placeholder": "Título para el directo...",
+            "time_label": "Hora de ejecución:",
+            "title_edit": "Editar Horario de Stream",
+            "title_new": "Nuevo Horario de Stream",
+            "twitch_category_label": "Categoría Twitch (Opcional):"
+        },
+        "schedule_section": {
+            "btn_new": "Nuevo Horario",
+            "title": "Horarios Programados"
+        },
+        "status": {
+            "connected": "Conectado",
+            "disconnected": "Desconectado",
+            "loading": "Cargando...",
+            "no_category": "Sin categoría",
+            "refresh_tooltip": "Actualizar información de canales",
+            "title": "Estado Actual de Canales"
+        },
+        "table": {
+            "col_actions": "Acciones",
+            "col_category": "Categoría",
+            "col_date": "Fecha",
+            "col_name": "Nombre",
+            "col_platform": "Plataforma",
+            "col_time": "Hora",
+            "col_title": "Título",
+            "search_placeholder": "Buscar horario..."
+        },
+        "tabs": {
+            "quick_change": "Información Rápida",
+            "schedule_form": "Programar Horario"
+        },
+        "toasts": {
+            "all_updated_success": "Información de Kick y Twitch actualizada",
+            "kick_updated_error": "Error al actualizar la información de Kick",
+            "kick_updated_success": "Información de Kick actualizada con éxito",
+            "partial_updated": "Se actualizó solo una de las plataformas",
+            "schedule_auto_applied": "Horario Automático Aplicado",
+            "schedule_deleted": "Horario eliminado",
+            "schedule_saved": "Horario guardado con éxito",
+            "twitch_updated_error": "Error al actualizar la información de Twitch",
+            "twitch_updated_success": "Información de Twitch actualizada con éxito",
+            "update_error": "No se pudo actualizar la información del stream"
         }
     },
     "timer": {

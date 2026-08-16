@@ -11,6 +11,7 @@ from .settings_view import SettingsView
 from .spam_view import SpamView
 from .timers_view import TimersView
 from .widgets_view import WidgetsView
+from .schedule_view import ScheduleView
 
 __all__ = [
     "ChatView",
@@ -23,5 +24,6 @@ __all__ = [
     "SettingsView",
     "SpamView",
     "TimersView",
-    "WidgetsView"
+    "WidgetsView",
+    "ScheduleView"
 ]

@@ -119,7 +119,6 @@ def extract_all_keys_from_code(root_namespaces):
             continue
 
         for node in ast.walk(tree):
-            # 1. AST Method Calls: i18n.get(...) / i18n.t(...)
             if isinstance(node, ast.Call):
                 func = node.func
                 is_i18n_call = False
@@ -153,7 +152,6 @@ def extract_all_keys_from_code(root_namespaces):
                             if key_val and not key_val.endswith((".", "_")):
                                 static_keys.setdefault(key_val, []).append((rel_path, node.lineno, f"kwarg:{kw.arg}"))
 
-            # 2. String literals matching known root namespaces (e.g. 'dashboard.xxx', 'settings.xxx')
             if isinstance(node, ast.Constant) and isinstance(node.value, str):
                 val = node.value.strip()
                 if "." in val and any(val.startswith(ns + ".") for ns in root_namespaces):

@@ -11,7 +11,8 @@ from backend.services import (
 from backend.controllers import (
     RewardsController, ChatController, CommandController, DashboardController,
     TimerController, LogController, MusicController, SettingsController,
-    SpamController, UpdateController, NetworkController, WidgetController
+    SpamController, UpdateController, NetworkController, WidgetController,
+    ScheduleController
 )
 from backend.providers import KickAPIClient
 from backend.core.app_container_core import AppContainer
@@ -22,10 +23,14 @@ from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
-    LogView, MusicView, SettingsView, SpamView, NetworkView, WidgetsView
+    LogView, MusicView, SettingsView, SpamView, NetworkView, WidgetsView,
+    ScheduleView
 )
 from frontend.dialogs import ModernConfirmDialog
-from backend.workers import AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker, FetchRewardsWorker, RewardWorker, TimerWorker
+from backend.workers import (
+    AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker,
+    FetchRewardsWorker, RewardWorker, TimerWorker, ScheduleWorker
+)
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
 except ImportError:
@@ -39,6 +44,7 @@ class MainWindowCore(QMainWindow):
 
     _NAV_CONFIG = (
         ("Dashboard", "dashboard.svg", "top"),
+        ("Stream Info", "calendar.svg", "top"),
         ("Chat", "message.svg", "top"),
         ("Spam Filters", "shield-half.svg", "top"),
         ("Comandos", "code.svg", "top"),
@@ -121,9 +127,15 @@ class MainWindowCore(QMainWindow):
         self.timer_service = TimerService(self.timers_storage, api_client=None)
         self.log_service = LogService(log_storage=self.container.log_storage)
         self.network_service = NetworkService(overlay_port=self.overlay_server.port)
+        self.schedule_service = self.container.schedule_service
+        self.stream_info_service = self.schedule_service
         self.timers_worker = None
+        self.schedule_worker = None
+        self.stream_schedule_worker = None
 
         self.view_dashboard = DashboardView(self.i18n, parent=self)
+        self.view_schedule = None
+        self.view_stream_info = None
         self.view_chat = None
         self.view_music = None
         self.view_rewards = None
@@ -204,6 +216,14 @@ class MainWindowCore(QMainWindow):
             view=None, 
             service=self.network_service
         )
+        self.schedule_controller = ScheduleController(
+            view=None,
+            service=self.schedule_service,
+            toast_manager=self.toast,
+            i18n=self.i18n
+        )
+        self.stream_info_controller = self.schedule_controller
+        self._start_schedule_worker()
         self.session_metrics = {
             "messages_processed": 0,
             "commands_executed": 0,
@@ -255,7 +275,12 @@ class MainWindowCore(QMainWindow):
             return self._instantiated_views[view_name]
 
         view_widget = None
-        if view_name == "Chat":
+        if view_name == "Stream Info":
+            self.view_schedule = ScheduleView(self.i18n, parent=self)
+            self.view_stream_info = self.view_schedule
+            self.schedule_controller.attach_view(self.view_schedule)
+            view_widget = self.view_schedule
+        elif view_name == "Chat":
             self.view_chat = ChatView(self.i18n, parent=self)
             self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
             self.chat_controller.attach_view(self.view_chat)
@@ -397,6 +422,19 @@ class MainWindowCore(QMainWindow):
         self._cleanup()
         QApplication.quit()
 
+    def _stop_connection_workers(self):
+        worker_map = [
+            ("Worker_Chat_Socket", getattr(self, 'chat_worker', None)),
+            ("Worker_Reward_Polling", getattr(self, 'reward_worker', None)),
+            ("Worker_Auth", getattr(self, 'auth_worker', None)),
+            ("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None)),
+            ("Worker_Timers", getattr(self, 'timers_worker', None)),
+            ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
+            ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
+        ]
+        for worker_name, worker_instance in worker_map:
+            self._stop_worker_safely(worker_name, worker_instance)
+
     def _stop_all_workers(self):
         worker_map = [
             ("Worker_Chat_Socket", getattr(self, 'chat_worker', None)),
@@ -406,6 +444,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
             ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
+            ("Worker_Stream_Schedule", getattr(self, 'schedule_worker', getattr(self, 'stream_schedule_worker', None))),
         ]
         if hasattr(self, 'network_controller') and self.network_controller:
             worker_map.append(("Worker_Network", getattr(self.network_controller, 'worker', None)))
@@ -435,7 +474,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_auth_process(self):
-        self._stop_all_workers()
+        self._stop_connection_workers()
         self.dashboard_controller.handle_connecting_state()
 
         self.auth_worker = AuthWorker(self.i18n, self.auth_manager)
@@ -456,6 +495,11 @@ class MainWindowCore(QMainWindow):
         
         self.command_service.reload_cache()
         self.spam_service.reload_filters()
+
+        self.schedule_service.set_kick_client(api_client)
+        self._start_schedule_worker()
+        if hasattr(self, "schedule_controller") and self.schedule_controller:
+            self.schedule_controller.fetch_current_info()
 
         self.chat_worker = ChatWorker(self.i18n, api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, parent=self)
         self.chat_worker.connection_success.connect(self._on_web_socket_connected)
@@ -579,6 +623,10 @@ class MainWindowCore(QMainWindow):
         self._twitch_connected = True
         self._twitch_channel = username
         self._update_integrations_status_ui()
+
+        self.schedule_service.set_twitch_client(self.spam_service.twitch_api, broadcaster_id)
+        if hasattr(self, "schedule_controller") and self.schedule_controller:
+            self.schedule_controller.fetch_current_info()
 
         missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
         self.dashboard_controller.evaluate_scopes(missing_scopes)
@@ -748,6 +796,32 @@ class MainWindowCore(QMainWindow):
         self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug, parent=self)
         self.timers_worker.post_message_requested.connect(self._send_timer_message)
         self.timers_worker.start()
+
+    def _start_schedule_worker(self):
+        current_worker = getattr(self, "schedule_worker", None)
+        if current_worker is None or not current_worker.isRunning():
+            self.schedule_worker = ScheduleWorker(self.schedule_service, parent=self)
+            self.stream_schedule_worker = self.schedule_worker
+            self.schedule_worker.schedule_triggered.connect(self._on_schedule_triggered)
+            self.schedule_worker.start()
+
+    def _start_stream_schedule_worker(self):
+        self._start_schedule_worker()
+
+    def _on_schedule_triggered(self, schedule: dict, result: dict):
+        name = schedule.get("name", "")
+        title = self.i18n.get("stream_info.toasts.schedule_auto_applied")
+        self.toast.show_toast(
+            title=title,
+            message=name,
+            state="success"
+        )
+        if hasattr(self, "schedule_controller") and self.schedule_controller:
+            self.schedule_controller.fetch_current_info()
+
+    def _on_stream_schedule_triggered(self, schedule: dict, result: dict):
+        self._on_schedule_triggered(schedule, result)
+
 
     def _stop_worker_safely(self, worker_name: str, worker_instance):
         if not worker_instance:

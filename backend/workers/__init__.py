@@ -12,6 +12,7 @@ from .rewards_worker import RewardWorker, FetchRewardsWorker, CreateRewardWorker
 from .timers_worker import TimerWorker
 from .update_worker import UpdateCheckWorker, UpdateDownloadWorker
 from .voice_worker import VoiceFetcherWorker
+from .schedule_worker import ScheduleWorker
 
 __all__ = [
     "AuthWorker",
@@ -30,5 +31,6 @@ __all__ = [
     "TimerWorker",
     "UpdateCheckWorker",
     "UpdateDownloadWorker",
-    "VoiceFetcherWorker"
+    "VoiceFetcherWorker",
+    "ScheduleWorker"
 ]

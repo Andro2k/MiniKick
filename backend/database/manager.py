@@ -253,6 +253,32 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_timer ON timer_execution_logs(timer_id)")
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS stream_schedules (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    date_str TEXT DEFAULT '',
+                    time_str TEXT NOT NULL,
+                    target_platform TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    kick_category_id INTEGER,
+                    kick_category_name TEXT,
+                    twitch_category_id TEXT,
+                    twitch_category_name TEXT,
+                    is_active INTEGER DEFAULT 1,
+                    last_executed_date TEXT DEFAULT '',
+                    days TEXT DEFAULT ''
+                )
+            """)
+            try:
+                cursor.execute("ALTER TABLE stream_schedules ADD COLUMN date_str TEXT DEFAULT ''")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                cursor.execute("ALTER TABLE stream_schedules ADD COLUMN days TEXT DEFAULT ''")
+            except sqlite3.OperationalError:
+                pass
             
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS music_queue (

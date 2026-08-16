@@ -4,6 +4,8 @@ from frontend.common.utils import get_assets_path
 PATH_ICON_HELP = get_assets_path("icons/help.svg")
 PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')
 PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
+PATH_ICON_CHEVRON_LEFT = get_assets_path("icons/chevron-left.svg").replace('\\', '/')
+PATH_ICON_CHEVRON_RIGHT = get_assets_path("icons/chevron-right.svg").replace('\\', '/')
 PATH_ICON_CHECK = get_assets_path("icons/check.svg").replace('\\', '/')
 
 COLOR_NEUTRAL_950  = "#09090B"
@@ -81,21 +83,46 @@ QMenu::item:disabled {{ color: {COLOR_NEUTRAL_400}; font-weight: 600; padding: 4
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
 QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 3px 6px; }}
 
-QSpinBox, QDoubleSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 30px 3px 3px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
-QSpinBox:focus, QDoubleSpinBox:focus, QSpinBox:hover, QDoubleSpinBox:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
-QSpinBox::up-button, QDoubleSpinBox::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 28px; border: none; background-color: transparent; }}
-QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
-QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
-QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); width: 16px; height: 16px; }}
-QSpinBox::down-button, QDoubleSpinBox::down-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 4px; border: none; background-color: transparent; }}
-QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
-QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
-QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
+QSpinBox, QDoubleSpinBox, QTimeEdit, QDateTimeEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 56px 3px 8px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
+QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus, QDateTimeEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
+QSpinBox:hover, QDoubleSpinBox:hover, QTimeEdit:hover, QDateTimeEdit:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QSpinBox::up-button, QDoubleSpinBox::up-button, QTimeEdit::up-button, QDateTimeEdit::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 28px; border: none; background-color: transparent; }}
+QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover, QTimeEdit::up-button:hover, QDateTimeEdit::up-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
+QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed, QTimeEdit::up-button:pressed, QDateTimeEdit::up-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QTimeEdit::up-arrow, QDateTimeEdit::up-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); width: 16px; height: 16px; }}
+QSpinBox::down-button, QDoubleSpinBox::down-button, QTimeEdit::down-button, QDateTimeEdit::down-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 4px; border: none; background-color: transparent; }}
+QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover, QTimeEdit::down-button:hover, QDateTimeEdit::down-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
+QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed, QTimeEdit::down-button:pressed, QDateTimeEdit::down-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow, QDateTimeEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
 
-QDateEdit, QDateTimeEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
-QDateEdit:focus, QDateTimeEdit:focus, QDateEdit:hover, QDateTimeEdit:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
-QDateEdit::drop-down, QDateTimeEdit::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 23px; border-left: 1.5px solid {COLOR_NEUTRAL_700}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
-QDateEdit::down-arrow, QDateTimeEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 14px; height: 14px; }}
+QDateEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 32px 3px 8px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
+QDateEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
+QDateEdit:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QDateEdit::drop-down {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 4px; border: none; background-color: transparent; }}
+QDateEdit::drop-down:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
+QDateEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
+
+/* ==============================================================================
+   CALENDAR POPUP (QCalendarWidget - Minimalist Dark Aesthetic)
+   ============================================================================== */
+QCalendarWidget {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_LG}px; padding: 6px; }}
+QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: transparent; border: none; min-height: 38px; margin-bottom: 4px; }}
+QCalendarWidget QToolButton {{ background-color: transparent; color: {COLOR_WHITE}; font-weight: 600; font-size: 13px; border: none; border-radius: {RADIUS_SM}px; padding: 4px 8px; margin: 2px; }}
+QCalendarWidget QToolButton:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
+QCalendarWidget QToolButton:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
+QCalendarWidget QToolButton#qt_calendar_prevmonth {{ qproperty-icon: url("{PATH_ICON_CHEVRON_LEFT}"); icon-size: 16px; width: 28px; height: 28px; }}
+QCalendarWidget QToolButton#qt_calendar_nextmonth {{ qproperty-icon: url("{PATH_ICON_CHEVRON_RIGHT}"); icon-size: 16px; width: 28px; height: 28px; }}
+QCalendarWidget QToolButton#qt_calendar_monthbutton, QCalendarWidget QToolButton#qt_calendar_yearbutton {{ color: {COLOR_WHITE}; font-size: 14px; font-weight: 600; }}
+QCalendarWidget QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 4px; }}
+QCalendarWidget QSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_SM}px; padding: 2px 6px; font-weight: 600; }}
+QCalendarWidget QSpinBox:focus {{ border-color: {COLOR_GREEN}; }}
+QCalendarWidget QTableView {{ background-color: transparent; border: none; gridline-color: transparent; selection-background-color: {COLOR_WHITE}; selection-color: {COLOR_NEUTRAL_950}; }}
+QCalendarWidget QTableView:enabled {{ color: {COLOR_NEUTRAL_200}; }}
+QCalendarWidget QTableView:disabled {{ color: {COLOR_NEUTRAL_700}; }}
+QCalendarWidget QHeaderView::section {{ background-color: transparent; color: {COLOR_NEUTRAL_500}; font-size: 11px; font-weight: 600; padding: 4px 0px; border: none; text-align: center; }}
+QCalendarWidget QTableView::item {{ border-radius: 8px; padding: 4px; margin: 2px; }}
+QCalendarWidget QTableView::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; border-radius: 8px; }}
+QCalendarWidget QTableView::item:selected {{ background-color: {COLOR_WHITE}; color: {COLOR_NEUTRAL_950}; font-weight: 700; border-radius: 8px; }}
 
 QCheckBox {{ spacing: 8px; color: {COLOR_NEUTRAL_200}; background-color: transparent; }}
 QCheckBox:hover {{ color: {COLOR_WHITE}; }}
@@ -192,7 +219,10 @@ QFrame[role="badge"][state="warning"] {{ background-color: {COLOR_AMBER_GLOW}; }
 QFrame[role="badge"][state="warning"] QLabel {{ color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="plugin"] {{ background-color: {COLOR_PURPLE_GLOW}; }}
 QFrame[role="badge"][state="plugin"] QLabel {{ color: {COLOR_PURPLE}; }}
+QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: 2px 6px; font-size: {size_textline_3}px; }}
+QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: 2px 6px; font-size: {size_textline_3}px; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.5px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: bold; background-color: {COLOR_NEUTRAL_900}; }}
+QTextEdit[role="ConsoleDisplay"], QTextEdit[role="console"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; }}
 
 /* ==============================================================================
    5. SISTEMA DE TIPOGRAFÍA DE TEXTOS (Con Role)
@@ -203,6 +233,7 @@ QLabel[role="h3"] {{ font-size: {size_headline_3}px; font-weight: 400; color: {C
 QLabel[role="body"] {{ font-size: {size_textline_1}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; }}
 QLabel[role="caption"] {{ font-size: {size_textline_3}px; font-weight: 400; color: {COLOR_NEUTRAL_500}; }}
 QLabel[role="monospace"] {{ font-size: {size_textline_2}px; color: {COLOR_NEUTRAL_400}; }}
+QLabel[state="normal"] {{ color: {COLOR_NEUTRAL_200}; }}
 QLabel[state="error"] {{ color: {COLOR_RED}; }}
 QLabel[state="danger"] {{ color: {COLOR_RED}; }}
 QLabel[state="success"] {{ color: {COLOR_GREEN}; }}

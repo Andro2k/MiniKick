@@ -470,6 +470,7 @@
                 "network_status": "Network Status",
                 "settings": "Settings",
                 "spam_filters": "Anti-Spam Filters",
+                "stream_info": "Stream Info",
                 "timers": "Timers",
                 "triggers": "Rewards",
                 "widgets": "Widgets"
@@ -530,7 +531,6 @@
         "chat": {
             "cooldown_active": "⏳ @{user}, please wait {seconds} second(s) before requesting another song.",
             "no_queue_available": "❌ @{user}, playback queue is currently unavailable.",
-            "not_linked": "❌ Streamer has not enabled the YouTube player.",
             "not_linked_youtube": "❌ Streamer has not enabled the YouTube player.",
             "pause_failed": "❌ Could not pause music.",
             "pause_success": "⏸️ Music paused successfully.",
@@ -546,7 +546,6 @@
             "skip_success": "⏩ Song skipped successfully.",
             "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing.",
             "song_now_playing": "🎵 Now playing: {title} - {artist}",
-            "song_paused": "🔇 YouTube is paused.",
             "song_paused_youtube": "🔇 YouTube is paused.",
             "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
             "sr_usage": "@{user} please enter a song name. (Ex: {trigger} Chayanne Torero)",
@@ -678,7 +677,6 @@
             "jitter": "Jitter",
             "live": "Live",
             "min": "Minimum",
-            "stability": "Stability",
             "stability_fair": "Fair",
             "stability_good": "Good",
             "stability_optimal": "Optimal",
@@ -934,6 +932,90 @@
             "deactivated": "Filter Disabled",
             "deactivated_msg": "Filter '{filter_name}' is now inactive.",
             "warn_msg": "@{user} please avoid spamming in chat."
+        }
+    },
+    "stream_info": {
+        "confirm_delete": {
+            "desc": "This action will permanently delete the selected schedule.",
+            "title": "Delete Schedule?"
+        },
+        "empty": {
+            "btn": "Create Schedule",
+            "desc": "Create automated schedules to change the stream title and category on your streaming days.",
+            "title": "No scheduled streams"
+        },
+        "errors": {
+            "update_failed": "Failed to send update to the platform."
+        },
+        "header": {
+            "subtitle": "Update your stream title and category on Kick and Twitch instantly or schedule automated rules.",
+            "title": "Stream Information"
+        },
+        "platforms": {
+            "both": "Both (Kick & Twitch)"
+        },
+        "quick_change": {
+            "btn_update": "Update Stream",
+            "category": "Category / Game:",
+            "category_placeholder": "Search category or game...",
+            "stream_title": "Stream Title:",
+            "target_platform": "Target Platform(s):",
+            "title": "Quick Stream Info Update",
+            "title_placeholder": "Enter your stream title..."
+        },
+        "schedule_dialog": {
+            "btn_clear": "Clear Form",
+            "btn_save": "Save Schedule",
+            "category_placeholder": "e.g. Just Chatting",
+            "date_label": "Execution Date:",
+            "kick_category_label": "Kick Category (Optional):",
+            "name_label": "Schedule Name:",
+            "name_placeholder": "e.g. Friday Minecraft Stream",
+            "platform_label": "Target Platform(s):",
+            "stream_title_label": "Stream Title:",
+            "stream_title_placeholder": "Title for the stream...",
+            "time_label": "Execution Time:",
+            "title_edit": "Edit Stream Schedule",
+            "title_new": "New Stream Schedule",
+            "twitch_category_label": "Twitch Category (Optional):"
+        },
+        "schedule_section": {
+            "btn_new": "New Schedule",
+            "title": "Scheduled Streams"
+        },
+        "status": {
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "loading": "Loading...",
+            "no_category": "No category",
+            "refresh_tooltip": "Refresh channel status",
+            "title": "Current Channel Status"
+        },
+        "table": {
+            "col_actions": "Actions",
+            "col_category": "Category",
+            "col_date": "Date",
+            "col_name": "Name",
+            "col_platform": "Platform",
+            "col_time": "Time",
+            "col_title": "Title",
+            "search_placeholder": "Search schedule..."
+        },
+        "tabs": {
+            "quick_change": "Quick Stream Info",
+            "schedule_form": "Schedule Stream"
+        },
+        "toasts": {
+            "all_updated_success": "Kick and Twitch stream info updated successfully",
+            "kick_updated_error": "Error updating Kick stream info",
+            "kick_updated_success": "Kick stream info updated successfully",
+            "partial_updated": "Only one platform was updated",
+            "schedule_auto_applied": "Automated Schedule Applied",
+            "schedule_deleted": "Schedule deleted",
+            "schedule_saved": "Schedule saved successfully",
+            "twitch_updated_error": "Error updating Twitch stream info",
+            "twitch_updated_success": "Twitch stream info updated successfully",
+            "update_error": "Could not update stream info"
         }
     },
     "timer": {
