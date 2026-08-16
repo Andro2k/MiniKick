@@ -153,6 +153,12 @@ class TTSVoiceHandler(QObject):
             sample_text = self.i18n.get("chat.status.voice_test_sample")
             self.service.speak(sample_text, voice_id=voice_id)
 
+    def is_role_enabled(self, badges: list, settings: dict) -> bool:
+        for badge in self._ROLE_PRIORITIES:
+            if badge in badges:
+                return settings.get(f"role_enabled_{badge}", True)
+        return settings.get("role_enabled_everyone", True)
+
     def resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
         for badge in self._ROLE_PRIORITIES:
             if badge in badges:

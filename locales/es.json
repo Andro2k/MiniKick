@@ -49,10 +49,8 @@
             "theme_title": "Diseño del Overlay"
         },
         "roles": {
-            "broadcaster_desc": "Voz personalizada para leer tus propios mensajes de chat.",
             "broadcaster_title": "Voz del Streamer",
             "default_voice": "(Usar voz global)",
-            "moderator_desc": "Voz asignada a los mensajes enviados por tus moderadores.",
             "moderator_title": "Voz del Moderador",
             "name_bot": "Bot",
             "name_broadcaster": "Streamer",
@@ -60,10 +58,8 @@
             "name_subscriber": "Suscriptor",
             "name_user": "Usuario",
             "name_vip": "VIP",
-            "subscriber_desc": "Voz asignada a los mensajes de tus suscriptores.",
             "subscriber_title": "Voz del Suscriptor",
             "title": "Voces por Rol",
-            "vip_desc": "Voz asignada a los mensajes de usuarios VIP.",
             "vip_title": "Voz del VIP"
         },
         "settings": {
@@ -76,11 +72,9 @@
             "prefix_desc": "Especifica el prefijo necesario para que el bot lea un mensaje.",
             "prefix_placeholder": "Ej. !tts",
             "prefix_title": "Prefijo de Comando",
-            "provider_desc": "Elige entre voces neuronales en la nube (Edge) o voces instaladas en tu equipo (SAPI5).",
             "provider_title": "Motor de Voz TTS",
             "tts_desc": "Activa o desactiva la lectura automática del chat en voz alta.",
             "tts_title": "Servicio de Voz (TTS)",
-            "voice_general_desc": "Configura la voz predeterminada para todos tus seguidores y espectadores.",
             "voice_general_title": "Voz de Seguidores",
             "vol_desc": "Ajusta el nivel de volumen de la lectura de voz.",
             "vol_title": "Volumen General"

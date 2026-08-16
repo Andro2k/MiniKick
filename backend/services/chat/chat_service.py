@@ -19,7 +19,12 @@ class ChatService:
             "role_voice_broadcaster": self.storage.load_string(f"tts_voice_{provider}_broadcaster", ""),
             "role_voice_moderator": self.storage.load_string(f"tts_voice_{provider}_moderator", ""),
             "role_voice_vip": self.storage.load_string(f"tts_voice_{provider}_vip", ""),
-            "role_voice_subscriber": self.storage.load_string(f"tts_voice_{provider}_subscriber", "")
+            "role_voice_subscriber": self.storage.load_string(f"tts_voice_{provider}_subscriber", ""),
+            "role_enabled_everyone": self.storage.load_bool("tts_role_enabled_everyone", True),
+            "role_enabled_broadcaster": self.storage.load_bool("tts_role_enabled_broadcaster", True),
+            "role_enabled_moderator": self.storage.load_bool("tts_role_enabled_moderator", True),
+            "role_enabled_vip": self.storage.load_bool("tts_role_enabled_vip", True),
+            "role_enabled_subscriber": self.storage.load_bool("tts_role_enabled_subscriber", True)
         }
 
     def save_settings(self, settings: dict):
@@ -39,6 +44,16 @@ class ChatService:
             self.storage.save_string(f"tts_voice_{provider}_vip", settings["role_voice_vip"])
         if "role_voice_subscriber" in settings:
             self.storage.save_string(f"tts_voice_{provider}_subscriber", settings["role_voice_subscriber"])
+        if "role_enabled_everyone" in settings:
+            self.storage.save_bool("tts_role_enabled_everyone", settings["role_enabled_everyone"])
+        if "role_enabled_broadcaster" in settings:
+            self.storage.save_bool("tts_role_enabled_broadcaster", settings["role_enabled_broadcaster"])
+        if "role_enabled_moderator" in settings:
+            self.storage.save_bool("tts_role_enabled_moderator", settings["role_enabled_moderator"])
+        if "role_enabled_vip" in settings:
+            self.storage.save_bool("tts_role_enabled_vip", settings["role_enabled_vip"])
+        if "role_enabled_subscriber" in settings:
+            self.storage.save_bool("tts_role_enabled_subscriber", settings["role_enabled_subscriber"])
         if "chat_overlay_theme" in settings:
             self.storage.save_string("chat_overlay_theme", settings["chat_overlay_theme"])
         if "chat_overlay_size" in settings:

@@ -44,14 +44,15 @@ class MainWindowCore(QMainWindow):
 
     _NAV_CONFIG = (
         ("Dashboard", "dashboard.svg", "top"),
-        ("Stream Info", "calendar.svg", "top"),
         ("Chat", "message.svg", "top"),
+        ("Stream Info", "calendar.svg", "top"),
         ("Spam Filters", "shield-half.svg", "top"),
         ("Comandos", "code.svg", "top"),
         ("Timers", "clock.svg", "top"),
-        ("Triggers", "chart-bubble.svg", "top"),
         ("Music", "music.svg", "top"),
         ("Widgets", "apps.svg", "top"),
+        ("Triggers", "chart-bubble.svg", "top"),
+
         ("Network Status", "access-point.svg", "bottom"),
         ("Settings", "settings.svg", "bottom"),
         ("Developer", "brand-tabler.svg", "bottom"),

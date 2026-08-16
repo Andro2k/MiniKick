@@ -51,10 +51,8 @@ DEFAULT_DICTIONARY = {
             "theme_title": "Overlay Design"
         },
         "roles": {
-            "broadcaster_desc": "Custom voice used to read your own chat messages.",
             "broadcaster_title": "Streamer Voice",
             "default_voice": "(Use global voice)",
-            "moderator_desc": "Voice assigned to messages sent by your moderators.",
             "moderator_title": "Moderator Voice",
             "name_bot": "Bot",
             "name_broadcaster": "Streamer",
@@ -62,10 +60,8 @@ DEFAULT_DICTIONARY = {
             "name_subscriber": "Subscriber",
             "name_user": "User",
             "name_vip": "VIP",
-            "subscriber_desc": "Voice assigned to messages sent by your subscribers.",
             "subscriber_title": "Subscriber Voice",
             "title": "Voices by Role",
-            "vip_desc": "Voice assigned to messages sent by VIP users.",
             "vip_title": "VIP Voice"
         },
         "settings": {
@@ -78,11 +74,9 @@ DEFAULT_DICTIONARY = {
             "prefix_desc": "Specify the required command prefix for the bot to read a message.",
             "prefix_placeholder": "Ex. !tts",
             "prefix_title": "Command Prefix",
-            "provider_desc": "Choose between cloud neural voices (Edge) or system voices (SAPI5).",
             "provider_title": "TTS Voice Engine",
             "tts_desc": "Enable or disable automated message reading out loud.",
             "tts_title": "Voice Service (TTS)",
-            "voice_general_desc": "Set the default voice for all followers and viewers.",
             "voice_general_title": "Followers Voice",
             "vol_desc": "Adjust the volume level of the voice synthesizer.",
             "vol_title": "General Volume"

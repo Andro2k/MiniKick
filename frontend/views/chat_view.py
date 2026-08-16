@@ -28,7 +28,7 @@ class ChatView(BaseView):
         self.body_layout.setSpacing(16)
 
         self.tabs = QTabWidget()
-        self.tabs.setMinimumWidth(480)
+        self.tabs.setMinimumWidth(440)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.tts_settings_panel = ChatTtsSettingsPanel(self.i18n)
@@ -52,13 +52,13 @@ class ChatView(BaseView):
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
         left_layout.addWidget(self.tabs)
-        self.left_container.setMinimumWidth(480)
+        self.left_container.setMinimumWidth(440)
         self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
 
         self.chat_display_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.body_layout.addWidget(self.left_container, stretch=2)
-        self.body_layout.addWidget(self.chat_display_panel, stretch=3)
+        self.body_layout.addWidget(self.left_container, stretch=4)
+        self.body_layout.addWidget(self.chat_display_panel, stretch=5)
         
         self.main_layout.addLayout(self.body_layout, stretch=1)
 
@@ -69,13 +69,8 @@ class ChatView(BaseView):
         if self._last_body_dir != direction:
             self._last_body_dir = direction
             self.body_layout.setDirection(direction)
-        
-        if direction == QBoxLayout.Direction.TopToBottom:
-            self.body_layout.setStretch(0, 1)
-            self.body_layout.setStretch(1, 1)
-        else:
-            self.body_layout.setStretch(0, 2)
-            self.body_layout.setStretch(1, 3)
+        self.body_layout.setStretch(0, 1)
+        self.body_layout.setStretch(1, 1)
 
     def _connect_internal_signals(self):
         self.tts_settings_panel.provider_toggled.connect(self.provider_toggled.emit)
@@ -144,8 +139,8 @@ class ChatView(BaseView):
     def chat_overlay_url(self, value: str):
         self.overlay_settings_panel.chat_overlay_url = value
 
-    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None):
-        self.tts_settings_panel.set_settings_ui(enabled, read_name, use_command, command, is_web_provider, volume, role_voices)
+    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None, role_enabled: dict = None):
+        self.tts_settings_panel.set_settings_ui(enabled, read_name, use_command, command, is_web_provider, volume, role_voices, role_enabled)
 
     def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool):
         self.overlay_settings_panel.set_overlay_settings_ui(theme, size, fade, show_bots, show_time)

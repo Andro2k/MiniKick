@@ -49,7 +49,7 @@ class AppContainer:
         self.backup_service = BackupService(
             self.settings_storage, self.rewards_storage, 
             self.commands_storage, self.spam_storage,
-            self.timers_storage
+            self.timers_storage, self.schedule_storage
         )
         self.i18n = self._init_i18n()
         self.schedule_service = ScheduleService(self.schedule_storage, i18n=self.i18n)

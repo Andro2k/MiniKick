@@ -109,6 +109,13 @@ class ChatController(QObject):
             "vip": settings.get("role_voice_vip", ""),
             "subscriber": settings.get("role_voice_subscriber", "")
         }
+        role_enabled = {
+            "everyone": settings.get("role_enabled_everyone", True),
+            "broadcaster": settings.get("role_enabled_broadcaster", True),
+            "moderator": settings.get("role_enabled_moderator", True),
+            "vip": settings.get("role_enabled_vip", True),
+            "subscriber": settings.get("role_enabled_subscriber", True)
+        }
         
         if self.view is not None:
             self.view.set_settings_ui(
@@ -118,7 +125,8 @@ class ChatController(QObject):
                 command=settings.get("command", "!tts"),
                 is_web_provider=(provider == "web"),
                 volume=settings.get("volume", 100),
-                role_voices=role_voices
+                role_voices=role_voices,
+                role_enabled=role_enabled
             )
             self.filter_handler.initialize_from_settings(settings, self.view)
         self.service.set_volume(settings.get("volume", 100))
@@ -221,10 +229,12 @@ class ChatController(QObject):
         msg_content = dto.content[len(prefix):].strip()
         if not msg_content:
             return
+        settings = self._tts_settings_cache
+        if not self.voice_handler.is_role_enabled(dto.badges, settings):
+            return
         emotes_tag = getattr(dto, "emotes_tag", "")
         cleaned = self.filter_handler.clean_message_for_tts(msg_content, emotes_tag=emotes_tag)
         if cleaned:
-            settings = self._tts_settings_cache
             text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
             voice_id = self.voice_handler.resolve_voice_for_badges(dto.badges, settings)
             self.service.speak(text, voice_id=voice_id)
@@ -251,18 +261,25 @@ class ChatController(QObject):
             return
 
         self._tts_enabled = new_state
-        settings = self.service.get_settings()
-        settings["enabled"] = new_state
-        self.service.save_settings(settings)
-        self.sync_settings_cache()
-
+        self.service.storage.save_bool("tts_enabled", new_state)
+        self._tts_settings_cache["enabled"] = new_state
         self.tts_state_changed.emit(new_state)
-        if self.view is not None and hasattr(self.view, "set_tts_enabled_state"):
-            self.view.set_tts_enabled_state(new_state)
 
-        key = "chat.status.systts_on" if new_state else "chat.status.systts_off"
-        reply = self.i18n.get(key).replace("{user}", user)
-        self.command_service.send_response(reply, platform=platform)
+        if self.view is not None:
+            self.view.blockSignals(True)
+            self.view.tts_enabled = new_state
+            self.view.blockSignals(False)
+
+        resp_template = self.i18n.get("chat.status.systts_on") if new_state else self.i18n.get("chat.status.systts_off")
+        resp_msg = resp_template.replace("{user}", user)
+        self.command_service.send_response(resp_msg, platform=platform)
+
+    @Slot(object)
+    def handle_incoming_message(self, dto: ChatMessageDTO) -> None:
+        self._step_chat_filter(dto)
+        self._step_plugins(dto)
+        self._step_tts(dto)
+        self._step_ui_render(dto)
 
     def _resolve_user_role(self, badges: list, user: str) -> str:
         if "broadcaster" in badges:
@@ -314,6 +331,9 @@ class ChatController(QObject):
             return
         settings = self._tts_settings_cache
         if not settings.get("enabled", True) or self.filter_handler.is_bot(dto.user):
+            return
+
+        if not self.voice_handler.is_role_enabled(dto.badges, settings):
             return
 
         msg = dto.content.strip()
