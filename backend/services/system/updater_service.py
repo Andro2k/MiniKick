@@ -29,6 +29,28 @@ class GithubUpdateProvider:
         except Exception:
             return None
 
+    def fetch_latest_release(self) -> dict | None:
+        try:
+            headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "MiniKick-App"}
+            response = requests.get(self.api_url, headers=headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            author_login = ""
+            if isinstance(data.get("author"), dict):
+                author_login = data.get("author", {}).get("login", "")
+
+            return {
+                "tag_name": data.get("tag_name", ""),
+                "name": data.get("name", "") or data.get("tag_name", ""),
+                "published_at": data.get("published_at", ""),
+                "body": data.get("body", ""),
+                "html_url": data.get("html_url", ""),
+                "author": author_login,
+                "assets": data.get("assets", [])
+            }
+        except Exception:
+            return None
+
     def download_file(self, url: str, destination_path: str, progress_callback=None) -> bool:
         try:
             response = requests.get(url, stream=True, timeout=15)

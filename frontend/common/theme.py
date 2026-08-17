@@ -226,6 +226,7 @@ QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR
 QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: 2px 6px; font-size: {size_textline_3}px; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.5px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: bold; background-color: {COLOR_NEUTRAL_900}; }}
 QTextEdit[role="ConsoleDisplay"], QTextEdit[role="console"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; }}
+QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 12px; }}
 
 /* ==============================================================================
    5. SISTEMA DE TIPOGRAFÍA DE TEXTOS (Con Role)
@@ -269,6 +270,12 @@ QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="filter_chip"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_SM}px; padding: 3px 10px; font-size: {size_textline_2}px; font-weight: 600; }}
 QPushButton[role="filter_chip"]:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QPushButton[role="filter_chip"]:checked {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; border-color: {COLOR_GREEN}; font-weight: 700; }}
+
+QFrame[role="segmented_control"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 2px; }}
+QPushButton[role="segmented_item"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 3px 5px; }}
+QPushButton[role="segmented_item"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QPushButton[role="segmented_item"]:checked {{ background-color: {COLOR_NEUTRAL_750}; }}
+QPushButton[role="segmented_item"]:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
 
 /* ==============================================================================
    7. ESTADOS DESHABILITADOS (Global)

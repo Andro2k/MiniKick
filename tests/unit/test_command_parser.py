@@ -72,7 +72,6 @@ def test_command_view_filter_and_toggle_preservation():
     ]
     view.populate_table(initial_commands)
 
-    # Filter with search
     view.txt_search.setText("test1")
     assert view.table.rowCount() == 1
 
@@ -82,11 +81,9 @@ def test_command_view_filter_and_toggle_preservation():
     assert switch is not None
     switch.setChecked(False)
 
-    # Clear search
     view.txt_search.setText("")
     assert view.table.rowCount() == 2
 
-    # Verify that test1 is still inactive in view's state
     cmd_1 = next(c for c in view._raw_commands if c["trigger"] == "!test1")
     assert cmd_1["is_active"] is False
 
@@ -103,9 +100,65 @@ def test_widget_controller_twitch_platform_routing():
     command_service = MagicMock()
     ctrl = WidgetController(view=None, widget_service=widget_service, command_service=command_service, i18n=i18n)
 
-    # Dispatch death command from twitch
     ctrl.handle_widget_command("[PLUGIN_WIDGET_DEATH]", "TwitchUser", "!death +", "!death", platform="twitch")
 
     command_service.send_response.assert_called_once()
     _, kwargs = command_service.send_response.call_args
     assert kwargs.get("platform") == "twitch"
+
+def test_modern_segmented_control_options_and_selection():
+    from PySide6.QtWidgets import QApplication
+    from frontend.widgets.segmented_control import ModernSegmentedControl
+    _app = QApplication.instance() or QApplication([])
+    seg = ModernSegmentedControl()
+    seg.add_option("vertical", "align-left-2.svg", "Vertical")
+    seg.add_option("horizontal", "apps.svg", "Horizontal")
+
+    assert seg.current_value() == "vertical"
+
+    changes = []
+    seg.value_changed.connect(changes.append)
+
+    seg.set_current_value("horizontal")
+    assert seg.current_value() == "horizontal"
+
+    seg.set_options([("opt1", "chevron-up.svg", "Opt 1"), ("opt2", "chevron-down.svg", "Opt 2")])
+    assert seg.current_value() == "opt1"
+
+def test_release_notes_provider_and_dialog(monkeypatch):
+    from unittest.mock import MagicMock
+    from PySide6.QtWidgets import QApplication
+    from backend.services.system.updater_service import GithubUpdateProvider
+    from backend.services.system.translation_service import TranslationService
+    from frontend.dialogs.release_notes_dialog import ReleaseNotesDialog
+
+    _app = QApplication.instance() or QApplication([])
+    i18n = TranslationService(default_lang="es")
+
+    fake_release_json = {
+        "tag_name": "v1.4.9",
+        "name": "MiniKick V1.4.9",
+        "published_at": "2026-08-09T17:50:14Z",
+        "html_url": "https://github.com/Andro2k/MiniKick/releases/tag/v1.4.9",
+        "author": {"login": "Andro2k"},
+        "body": "## Test Notes\n- Feature A\n- Fix B",
+        "assets": []
+    }
+
+    mock_resp = MagicMock()
+    mock_resp.json.return_value = fake_release_json
+    mock_resp.raise_for_status.return_value = None
+    monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock_resp)
+
+    provider = GithubUpdateProvider("Andro2k", "MiniKick")
+    info = provider.fetch_latest_release()
+    assert info is not None
+    assert info["tag_name"] == "v1.4.9"
+    assert info["author"] == "Andro2k"
+    assert "Test Notes" in info["body"]
+
+    dialog = ReleaseNotesDialog(i18n=i18n)
+    dialog._on_release_fetched(info)
+    assert dialog.title_lbl.text() == "MiniKick V1.4.9"
+    assert dialog.lbl_tag_badge.text() == "v1.4.9"
+    assert dialog.txt_content.toPlainText() != ""

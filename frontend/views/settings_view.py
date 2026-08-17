@@ -14,6 +14,7 @@ class SettingsView(BaseView):
     import_clicked = Signal()
     unlink_clicked = Signal()
     update_clicked = Signal()
+    release_notes_clicked = Signal()
     language_changed = Signal(str)
     music_audio_device_changed = Signal(str)
     tts_audio_device_changed = Signal(str)
@@ -78,10 +79,21 @@ class SettingsView(BaseView):
             right_widget=self.btn_update
         )
 
+        self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined")
+        self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
+
+        row_release_notes = SettingRow(
+            icon_name="file-text.svg",
+            title_text=self.i18n.get("settings.system.release_notes_title"),
+            desc_text=self.i18n.get("settings.system.release_notes_desc"),
+            right_widget=self.btn_release_notes
+        )
+
         sys_card.addWidget(row_lang)
         sys_card.addWidget(row_font)
         sys_card.addWidget(row_tray)        
         sys_card.addWidget(row_update)
+        sys_card.addWidget(row_release_notes)
         self.main_layout.addWidget(sys_card)
 
         audio_card = ModernCard(parent=self)
@@ -240,6 +252,11 @@ class SettingsView(BaseView):
     def show_bug_report_dialog(self) -> None:
         from frontend.dialogs.bug_report_dialog import BugReportDialog
         dialog = BugReportDialog(self.i18n, parent=self.window())
+        dialog.exec()
+
+    def show_release_notes_dialog(self) -> None:
+        from frontend.dialogs.release_notes_dialog import ReleaseNotesDialog
+        dialog = ReleaseNotesDialog(self.i18n, parent=self.window())
         dialog.exec()
 
     def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "") -> None:

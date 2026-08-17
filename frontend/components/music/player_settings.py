@@ -227,7 +227,7 @@ class MusicPlayerSettingsPanel(QWidget):
             url += f"{sep}layout={layout}&theme={theme}"
             QApplication.clipboard().setText(url)
             original = self.btn_copy_music_url.text()
-            self.btn_copy_music_url.setText(self.i18n.get("common.buttons.copy") + " ✓")
+            self.btn_copy_music_url.setText(self.i18n.get("rewards.obs.copied"))
             self.btn_copy_music_url.setEnabled(False)
             QTimer.singleShot(2000, lambda: self._reset_copy_btn(original))
 

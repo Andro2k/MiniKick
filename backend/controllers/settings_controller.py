@@ -37,6 +37,7 @@ class SettingsController(QObject):
         self.view.music_audio_device_changed.connect(self.handle_music_audio_device)
         self.view.tts_audio_device_changed.connect(self.handle_tts_audio_device)
         self.view.feedback_clicked.connect(self.handle_feedback)
+        self.view.release_notes_clicked.connect(self.handle_release_notes)
 
     def _load_initial_state(self):
         enabled = self.service.is_minimize_tray_enabled()
@@ -153,3 +154,7 @@ class SettingsController(QObject):
     @Slot()
     def handle_feedback(self):
         self.view.show_bug_report_dialog()
+
+    @Slot()
+    def handle_release_notes(self):
+        self.view.show_release_notes_dialog()

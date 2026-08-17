@@ -12,6 +12,7 @@ from .table import ModernTable, ModernTableCard, TableActionCell
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .pagination import SegmentedPagination
+from .segmented_control import ModernSegmentedControl
 
 __all__ = [
     "BaseView",
@@ -34,6 +35,7 @@ __all__ = [
     "TableActionCell",
     "FilterHeaderView",
     "UnifiedSearchBar",
-    "SegmentedPagination"
+    "SegmentedPagination",
+    "ModernSegmentedControl"
 ]
 

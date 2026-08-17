@@ -41,3 +41,22 @@ class UpdateDownloadWorker(QThread):
             self.finished.emit(success)
         except Exception as e:
             self.error.emit(str(e))
+
+class ReleaseNotesWorker(QThread):
+    release_fetched = Signal(dict)
+    error_occurred = Signal(str)
+
+    def __init__(self, repo_owner: str = "Andro2k", repo_name: str = "MiniKick", parent=None):
+        super().__init__(parent)
+        from backend.services.system.updater_service import GithubUpdateProvider
+        self.provider = GithubUpdateProvider(repo_owner, repo_name)
+
+    def run(self):
+        try:
+            data = self.provider.fetch_latest_release()
+            if data and data.get("tag_name"):
+                self.release_fetched.emit(data)
+            else:
+                self.error_occurred.emit("No release data found")
+        except Exception as e:
+            self.error_occurred.emit(str(e))

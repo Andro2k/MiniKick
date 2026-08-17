@@ -182,6 +182,7 @@
             "back": "Atrás",
             "browse": "Examinar",
             "cancel": "Cancelar",
+            "close": "Cerrar",
             "continue": "Continuar",
             "copy": "Copiar Enlace",
             "exit": "Salir",
@@ -192,7 +193,8 @@
             "save": "Guardar",
             "understood": "Entendido",
             "unlink": "Desvincular",
-            "update": "Buscar actualizaciones"
+            "update": "Buscar actualizaciones",
+            "view_release_notes": "Ver Novedades"
         },
         "status": {
             "active": "Activo",
@@ -319,6 +321,15 @@
         "close": {
             "desc": "¿Quieres salir de MiniKick? El bot dejará de leer el chat y responder a tus comandos.",
             "title": "Cerrar MiniKick"
+        },
+        "release_notes": {
+            "btn_github": "Ver en GitHub",
+            "error": "No se pudieron obtener las notas de la versión. Revisa tu conexión a internet.",
+            "lbl_author": "Por @{author}",
+            "lbl_published": "Publicado el {date}",
+            "loading": "Obteniendo novedades de la versión desde GitHub...",
+            "subtitle": "Notas de parche y cambios de la última versión publicada.",
+            "title": "Novedades de la Versión"
         },
         "unlink": {
             "desc": "¿Deseas desvincular tu cuenta? Tendrás que iniciar sesión nuevamente la próxima vez que habras MiniKick.",
@@ -862,6 +873,8 @@
             "font_title": "Tamaño de Fuente Global",
             "lang_desc": "Elige el idioma preferido para la interfaz (requiere reiniciar MiniKick).",
             "lang_title": "Idioma de la Aplicación",
+            "release_notes_desc": "Consulta los cambios, optimizaciones y notas de la última versión.",
+            "release_notes_title": "Novedades de la Versión",
             "tray_desc": "Mantiene MiniKick activo en la bandeja del sistema al presionar el botón de cerrar.",
             "tray_title": "Ejecución en Segundo Plano",
             "update_desc": "Comprueba si hay nuevas versiones y mejoras disponibles.",

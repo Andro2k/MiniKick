@@ -184,6 +184,7 @@ DEFAULT_DICTIONARY = {
             "back": "Back",
             "browse": "Browse",
             "cancel": "Cancel",
+            "close": "Close",
             "continue": "Continue",
             "copy": "Copy Link",
             "exit": "Exit",
@@ -194,7 +195,8 @@ DEFAULT_DICTIONARY = {
             "save": "Save",
             "understood": "Understood",
             "unlink": "Unlink",
-            "update": "Check for updates"
+            "update": "Check for updates",
+            "view_release_notes": "View Notes"
         },
         "status": {
             "active": "Active",
@@ -321,6 +323,15 @@ DEFAULT_DICTIONARY = {
         "close": {
             "desc": "Are you sure you want to exit MiniKick? The bot will stop reading chat and responding to commands.",
             "title": "Close MiniKick"
+        },
+        "release_notes": {
+            "btn_github": "View on GitHub",
+            "error": "Could not retrieve release notes. Please check your internet connection.",
+            "lbl_author": "By @{author}",
+            "lbl_published": "Published on {date}",
+            "loading": "Fetching release notes from GitHub...",
+            "subtitle": "Patch notes and changelog from the latest published version.",
+            "title": "Release Notes"
         },
         "unlink": {
             "desc": "Are you sure you want to unlink your account? You will need to log in again next time you open MiniKick.",
@@ -864,6 +875,8 @@ DEFAULT_DICTIONARY = {
             "font_title": "Global Font Size",
             "lang_desc": "Select preferred interface language (requires restarting MiniKick).",
             "lang_title": "Application Language",
+            "release_notes_desc": "Check out changes, optimizations, and notes from the latest version.",
+            "release_notes_title": "Release Notes",
             "tray_desc": "Keep MiniKick running in the system tray when pressing close.",
             "tray_title": "Background Execution",
             "update_desc": "Check for new versions and improvements.",
