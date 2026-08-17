@@ -109,6 +109,6 @@ class CommandController(QObject):
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get(title_key),
-                message=(self.view.i18n.get("msg_key" if False else msg_key)).replace("{trigger}", val),
+                message=self.view.i18n.get(msg_key).replace("{trigger}", val),
                 state=state
             )

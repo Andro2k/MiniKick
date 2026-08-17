@@ -53,7 +53,7 @@ class SQLiteMusicStorage:
                     self._increment_play_count(conn, r[4])
                     return {"title": r[0], "artist": r[1], "url": r[2], "duration": r[3] or "-"}
 
-                cursor.execute("SELECT query_raw, title, artist, url, duration FROM youtube_search_cache")
+                cursor.execute("SELECT query_raw, title, artist, url, duration FROM youtube_search_cache ORDER BY play_count DESC LIMIT 150")
                 rows = cursor.fetchall()
                 best_match = None
                 best_ratio = 0.0
@@ -153,7 +153,7 @@ class SQLiteMusicStorage:
 
 
     def add_song_to_queue(
-        self, title: str, artist: str, url: str, requester: str, provider: str, duration: str = "-"
+        self, title: str, artist: str, url: str, requester: str, provider: str, platform: str = "kick", duration: str = "-"
     ) -> int:
         if not self.db_manager:
             return -1
@@ -162,8 +162,8 @@ class SQLiteMusicStorage:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO music_queue (title, artist, url, requester, provider, is_played, duration, created_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)",
-                    (title, artist, url, requester, provider, duration, local_now)
+                    "INSERT INTO music_queue (title, artist, url, requester, provider, platform, is_played, duration, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)",
+                    (title, artist, url, requester, provider, platform or "kick", duration, local_now)
                 )
                 conn.commit()
                 return cursor.lastrowid
@@ -189,7 +189,7 @@ class SQLiteMusicStorage:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "SELECT id, title, artist, url, requester, provider, duration FROM music_queue WHERE provider = ? AND is_played = 0 ORDER BY id ASC",
+                    "SELECT id, title, artist, url, requester, provider, duration, platform FROM music_queue WHERE provider = ? AND is_played = 0 ORDER BY id ASC",
                     (provider,)
                 )
                 return [
@@ -200,7 +200,8 @@ class SQLiteMusicStorage:
                         "url": r[3],
                         "requester": r[4],
                         "provider": r[5],
-                        "duration": r[6]
+                        "duration": r[6],
+                        "platform": r[7] if len(r) > 7 and r[7] else "kick"
                     }
                     for r in cursor.fetchall()
                 ]

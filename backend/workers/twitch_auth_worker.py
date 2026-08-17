@@ -15,7 +15,7 @@ class TwitchAuthWorker(QThread):
 
     def run(self):
         try:
-            tokens = self.auth_manager.get_tokens(force=self.force)
+            tokens = self.auth_manager.login(force=self.force)
             self.auth_success.emit(tokens)
         except Exception as e:
             self.auth_error.emit(str(e))

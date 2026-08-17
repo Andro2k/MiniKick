@@ -5,13 +5,14 @@ from .blocks import (
     ViewHeader, SettingRow, SliderRow, StatCard, 
     ModernCard, ModernScrollArea, ExpandableSettingCard, ModernDivider
 )
-from .controls import ModernButton, ModernSwitch, CompactSlider, VariableTextEdit
+from .controls import ModernButton, ModernSwitch, CompactSlider, CompactSpinBox, VariableTextEdit
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table import ModernTable, ModernTableCard, TableActionCell
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .pagination import SegmentedPagination
+from .segmented_control import ModernSegmentedControl
 
 __all__ = [
     "BaseView",
@@ -26,6 +27,7 @@ __all__ = [
     "ModernButton",
     "ModernSwitch",
     "CompactSlider",
+    "CompactSpinBox",
     "VariableTextEdit",
     "FlowLayout",
     "ScalableIllustration",
@@ -34,6 +36,7 @@ __all__ = [
     "TableActionCell",
     "FilterHeaderView",
     "UnifiedSearchBar",
-    "SegmentedPagination"
+    "SegmentedPagination",
+    "ModernSegmentedControl"
 ]
 

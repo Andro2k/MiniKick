@@ -1,48 +1,66 @@
+/* assets/overlays/music/css/glass.css */
 #player {
-    background: rgba(12, 12, 18, 0.9);
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    border: 2.5px solid rgba(255, 255, 255, 0.10);
+    background: rgba(18, 20, 28, 0.58);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-top: 1.5px solid rgba(255, 255, 255, 0.32);
+    border-left: 1.5px solid rgba(255, 255, 255, 0.25);
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        inset 0 1px 2px rgba(255, 255, 255, 0.25),
+        0 12px 36px rgba(0, 0, 0, 0.50);
+    border-radius: 20px;
 }
 
 .cover-art-wrap {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
 }
 
 .fallback-icon {
-    background: linear-gradient(135deg, #53d68a 0%, #1db954 100%);
+    background: linear-gradient(135deg, #38ef7d 0%, #11998e 100%);
 }
 
 .label-now-badge {
-    background: rgba(83, 214, 138, 0.15);
-    border: 1px solid rgba(83, 214, 138, 0.3);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     color: #53d68a;
+    backdrop-filter: blur(8px);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border-radius: 12px;
 }
 
 .title {
-    color: #ffffff !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9) !important;
+    color: #FFFFFF !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8) !important;
+    font-weight: 700;
 }
 
 .artist {
-    color: rgba(255, 255, 255, 0.90) !important;
-    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.8) !important;
+    font-weight: 600;
+}
+
+.progress-bar-wrap {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
 }
 
 .progress-bar-fill {
-    background: #53d68a;
-    box-shadow: 0 0 4px rgba(83, 214, 138, 0.5);
+    background: linear-gradient(90deg, #38ef7d, #11998e);
+    box-shadow: 0 0 8px rgba(56, 239, 125, 0.6);
+    border-radius: 4px;
 }
 
 .progress-time {
     color: rgba(255, 255, 255, 0.90) !important;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
+    font-weight: 600;
 }
 
 .eq span {
-    background: #53d68a;
+    background: #38ef7d;
 }

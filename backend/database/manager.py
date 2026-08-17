@@ -26,14 +26,14 @@ class DatabaseManager:
     def _initialize_database(self) -> None:
         try:
             if os.path.exists(self.db_name):
-                with sqlite3.connect(self.db_name, factory=AutoCloseConnection) as conn:
+                with sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection) as conn:
                     cursor = conn.cursor()
                     cursor.execute("PRAGMA integrity_check")
                     res = cursor.fetchone()
                     if not res or res[0] != "ok":
                         raise sqlite3.DatabaseError("Database integrity check failed")
             
-            with sqlite3.connect(self.db_name) as conn:
+            with sqlite3.connect(self.db_name, timeout=10.0) as conn:
                 conn.execute("PRAGMA journal_mode=WAL")
 
             self._create_tables()
@@ -45,7 +45,8 @@ class DatabaseManager:
     def get_connection(self) -> sqlite3.Connection:
         conn = None
         try:
-            conn = sqlite3.connect(self.db_name, factory=AutoCloseConnection)
+            conn = sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection)
+            conn.execute("PRAGMA busy_timeout=5000")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-20000")
             conn.execute("PRAGMA foreign_keys=ON")
@@ -59,7 +60,7 @@ class DatabaseManager:
             if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
                 logger.error("Database error in get_connection, recreating database: %s", e)
                 self._handle_corrupt_database()
-                return sqlite3.connect(self.db_name, factory=AutoCloseConnection)
+                return sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection)
             raise e
 
     def _handle_corrupt_database(self) -> None:
@@ -102,9 +103,25 @@ class DatabaseManager:
                     pos_x INTEGER DEFAULT 0,
                     pos_y INTEGER DEFAULT 0,
                     is_random_pos INTEGER DEFAULT 0,
-                    thumbnail_bytes BLOB
+                    thumbnail_bytes BLOB,
+                    reward_id TEXT,
+                    cost INTEGER DEFAULT 100,
+                    description TEXT DEFAULT '',
+                    background_color TEXT DEFAULT '#00e701',
+                    is_user_input_required INTEGER DEFAULT 0
                 )
             """)
+            for col, col_def in [
+                ("reward_id", "TEXT"),
+                ("cost", "INTEGER DEFAULT 100"),
+                ("description", "TEXT DEFAULT ''"),
+                ("background_color", "TEXT DEFAULT '#00e701'"),
+                ("is_user_input_required", "INTEGER DEFAULT 0")
+            ]:
+                try:
+                    cursor.execute(f"ALTER TABLE obs_rewards ADD COLUMN {col} {col_def}")
+                except sqlite3.OperationalError:
+                    pass
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS chat_commands (
                     trigger TEXT PRIMARY KEY,
@@ -202,6 +219,9 @@ class DatabaseManager:
                     message TEXT NOT NULL
                 )
             """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_level_timestamp ON system_logs(level, timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_youtube_cache_play_count ON youtube_search_cache(play_count DESC)")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS widgets_config (
                     widget_id TEXT PRIMARY KEY,
@@ -237,6 +257,32 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_timer ON timer_execution_logs(timer_id)")
+
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS stream_schedules (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    date_str TEXT DEFAULT '',
+                    time_str TEXT NOT NULL,
+                    target_platform TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    kick_category_id INTEGER,
+                    kick_category_name TEXT,
+                    twitch_category_id TEXT,
+                    twitch_category_name TEXT,
+                    is_active INTEGER DEFAULT 1,
+                    last_executed_date TEXT DEFAULT '',
+                    days TEXT DEFAULT ''
+                )
+            """)
+            try:
+                cursor.execute("ALTER TABLE stream_schedules ADD COLUMN date_str TEXT DEFAULT ''")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                cursor.execute("ALTER TABLE stream_schedules ADD COLUMN days TEXT DEFAULT ''")
+            except sqlite3.OperationalError:
+                pass
             
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS music_queue (
@@ -254,6 +300,10 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status_id ON music_queue(provider, is_played, id)")
             try:
                 cursor.execute("ALTER TABLE music_queue ADD COLUMN duration TEXT DEFAULT '-'")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                cursor.execute("ALTER TABLE music_queue ADD COLUMN platform TEXT DEFAULT 'kick'")
             except sqlite3.OperationalError:
                 pass
             
@@ -455,14 +505,14 @@ class DatabaseManager:
         except Exception as e:
             logger.error("[DatabaseManager] Error logging reward redemption: %s", e)
 
-    def add_song_to_queue(self, title: str, artist: str, url: str, requester: str, provider: str, duration: str = "-") -> int:
+    def add_song_to_queue(self, title: str, artist: str, url: str, requester: str, provider: str, platform: str = "kick", duration: str = "-") -> int:
         try:
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO music_queue (title, artist, url, requester, provider, is_played, duration, created_at) VALUES (?, ?, ?, ?, ?, 0, ?, ?)",
-                    (title, artist, url, requester, provider, duration, local_now)
+                    "INSERT INTO music_queue (title, artist, url, requester, provider, platform, is_played, duration, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)",
+                    (title, artist, url, requester, provider, platform or "kick", duration, local_now)
                 )
                 conn.commit()
                 return cursor.lastrowid
@@ -486,7 +536,7 @@ class DatabaseManager:
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "SELECT id, title, artist, url, requester, provider, duration FROM music_queue WHERE provider = ? AND is_played = 0 ORDER BY id ASC",
+                    "SELECT id, title, artist, url, requester, provider, duration, platform FROM music_queue WHERE provider = ? AND is_played = 0 ORDER BY id ASC",
                     (provider,)
                 )
                 return [
@@ -497,7 +547,8 @@ class DatabaseManager:
                         "url": r[3],
                         "requester": r[4],
                         "provider": r[5],
-                        "duration": r[6]
+                        "duration": r[6],
+                        "platform": r[7] if len(r) > 7 and r[7] else "kick"
                     }
                     for r in cursor.fetchall()
                 ]

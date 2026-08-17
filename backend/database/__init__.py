@@ -11,6 +11,7 @@ from backend.database.widgets_storage import SQLiteWidgetsStorage
 from backend.database.avatar_storage import SQLiteAvatarStorage
 from backend.database.system_log_storage import SQLiteSystemLogStorage
 from backend.database.music_storage import SQLiteMusicStorage
+from backend.database.schedule_storage import SQLiteScheduleStorage
 
 __all__ = [
     "DatabaseManager",
@@ -23,5 +24,6 @@ __all__ = [
     "SQLiteWidgetsStorage",
     "SQLiteAvatarStorage",
     "SQLiteSystemLogStorage",
-    "SQLiteMusicStorage"
+    "SQLiteMusicStorage",
+    "SQLiteScheduleStorage"
 ]

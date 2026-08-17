@@ -46,21 +46,28 @@ class TwitchSocketManager:
         cleaned = "".join(text_chars)
         return " ".join(cleaned.split())
 
-    def __init__(self, token: str = "", nick: str = "justinfan12345") -> None:
+    def __init__(self, token: str = "", nick: str = "justinfan12345", i18n=None) -> None:
         self.token = token.replace("oauth:", "").strip() if token else ""
         self.nick = nick.lower().strip() if nick else "justinfan12345"
+        self.i18n = i18n
         self._running = False
         self.ws: websocket.WebSocketApp | None = None
         self._channel = ""
         self._callback: Callable[[str, str, list, str, str, int], None] | None = None
+        self._on_connected: Callable[[], None] | None = None
+        self._on_disconnected: Callable[[], None] | None = None
 
     def start_socket(
         self,
         channel_name: str,
-        on_message: Callable[[str, str, list, str, str, int], None]
+        on_message: Callable[[str, str, list, str, str, int], None],
+        on_connected: Callable[[], None] | None = None,
+        on_disconnected: Callable[[], None] | None = None
     ) -> None:
         self._channel = channel_name.lower().lstrip("#")
         self._callback = on_message
+        self._on_connected = on_connected
+        self._on_disconnected = on_disconnected
         self._running = True
 
         self.ws = websocket.WebSocketApp(
@@ -70,16 +77,21 @@ class TwitchSocketManager:
             on_error=self._on_error,
             on_close=self._on_close
         )
-        self.ws.run_forever(ping_interval=30, ping_timeout=10)
+        self.ws.run_forever(ping_interval=0)
 
     def _on_open(self, ws: websocket.WebSocketApp) -> None:
-        logging.info("[TwitchWS] Conectando a canal Twitch: #%s", self._channel)
+        logging.info("[TwitchWS] Connecting to Twitch channel: #%s", self._channel)
         ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands\r\n")
         
         pass_str = f"oauth:{self.token}" if self.token else "SCHMOOPIIE"
         ws.send(f"PASS {pass_str}\r\n")
         ws.send(f"NICK {self.nick}\r\n")
         ws.send(f"JOIN #{self._channel}\r\n")
+        if self._on_connected:
+            try:
+                self._on_connected()
+            except Exception:
+                pass
 
     def _on_message(self, ws: websocket.WebSocketApp, raw_data: str) -> None:
         if not self._running:
@@ -127,7 +139,8 @@ class TwitchSocketManager:
                 if prefix_and_cmd.startswith(":"):
                     user = prefix_and_cmd[1:].split("!", 1)[0]
                 else:
-                    user = "Anónimo"
+                    user = self.i18n.get("common.anonymous") if self.i18n else ""
+
 
             msg_id = tags.get("id", "")
             try:
@@ -153,7 +166,7 @@ class TwitchSocketManager:
                     self._callback(user, msg_text, badges, color, msg_id, sender_id)
 
         except Exception as e:
-            logging.debug("[TwitchWS] Error parseando línea PRIVMSG: %s", e)
+            logging.debug("[TwitchWS] Error parsing PRIVMSG line: %s", e)
 
     def send_privmsg(self, text: str) -> bool:
         if self.ws and self.ws.sock and self.ws.sock.connected and self._channel:
@@ -161,14 +174,19 @@ class TwitchSocketManager:
                 self.ws.send(f"PRIVMSG #{self._channel} :{text}\r\n")
                 return True
             except Exception as e:
-                logging.error("[TwitchWS] Error enviando mensaje IRC: %s", e)
+                logging.error("[TwitchWS] Error sending IRC message: %s", e)
         return False
 
     def _on_error(self, ws: websocket.WebSocketApp, error: Exception) -> None:
-        logging.warning("[TwitchWS] Error en conexión WebSocket: %s", error)
+        logging.warning("[TwitchWS] Error in WebSocket connection: %s", error)
 
     def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:
-        logging.info("[TwitchWS] Conexión cerrada. Status: %s Msg: %s", close_status_code, close_msg)
+        logging.info("[TwitchWS] Connection closed. Status: %s Msg: %s", close_status_code, close_msg)
+        if self._on_disconnected:
+            try:
+                self._on_disconnected()
+            except Exception:
+                pass
 
     def stop_socket(self) -> None:
         self._running = False
@@ -176,3 +194,4 @@ class TwitchSocketManager:
             self.ws.keep_running = False
             if self.ws.sock and self.ws.sock.connected:
                 self.ws.sock.close()
+

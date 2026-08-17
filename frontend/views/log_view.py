@@ -67,7 +67,7 @@ class LogControlsPanel(QFrame):
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_neutral_border",
              "trash.svg", COLOR_NEUTRAL_200, self.clear_requested.emit, True),
             ("btn_report", self.i18n.get("log.controls.btn_report"), "action_neutral_border",
-             "help.svg", COLOR_NEUTRAL_200, self.report_requested.emit, True),
+             "bug.svg", COLOR_NEUTRAL_200, self.report_requested.emit, True),
         ]
 
         self._buttons: list[ModernButton] = []

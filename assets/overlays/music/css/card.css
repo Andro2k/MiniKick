@@ -1,68 +1,66 @@
+/* assets/overlays/music/css/card.css */
 #player {
-    background: linear-gradient(135deg, #1c1815 0%, #110e0c 100%);
-    border: 2.5px solid #332b24;
+    background: #16161E;
+    border: 1.5px solid #2A2A38;
     box-shadow: 
-        0 15px 35px rgba(0, 0, 0, 0.65), 
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        0 18px 42px rgba(0, 0, 0, 0.75), 
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
     border-radius: 18px;
     padding: 16px 22px;
 }
 
 .cover-art-wrap {
-    width: 95px;
-    height: 95px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    width: 88px;
+    height: 88px;
+    border-radius: 14px;
+    border: 1.5px solid #2A2A38;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
 
 .fallback-icon {
-    background: #272320;
+    background: #22222E;
 }
 
 .label-now-badge {
-    background: rgba(46, 205, 112, 0.15);
-    border: 1px solid rgba(46, 205, 112, 0.4);
-    color: #2ecd70;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #E4E4E7;
     font-weight: 700;
     font-size: 10px;
     padding: 4px 12px;
-    border-radius: 20px;
-}
-
-.label-now-badge::before {
-    content: "• ";
-    color: #2ecd70;
-    font-size: 12px;
-    margin-right: 2px;
+    border-radius: 14px;
+    letter-spacing: 0.5px;
 }
 
 .artist {
-    color: #e8c89b !important;
-    font-weight: 700 !important;
-    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.9) !important;
+    color: #A1A1AA !important;
+    font-weight: 600 !important;
+    font-size: 13px;
 }
 
 .title {
-    color: #ffffff !important;
-    font-weight: 800 !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.95) !important;
+    color: #FAFAFA !important;
+    font-weight: 700 !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7) !important;
 }
 
 .progress-bar-wrap {
-    background: #25201b;
+    background: #22222E;
     height: 5px !important;
+    border-radius: 3px;
 }
 
 .progress-bar-fill {
-    background: #e8c89b;
+    background: #6366F1;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+    border-radius: 3px;
 }
 
 .progress-time {
-    color: rgba(255, 255, 255, 0.9) !important;
-    font-weight: 700 !important;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+    color: #A1A1AA !important;
+    font-weight: 600 !important;
 }
 
 .eq span {
-    background: #c5a880;
+    background: #6366F1;
 }

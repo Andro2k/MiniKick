@@ -16,12 +16,16 @@ class WebTTSProvider:
         self.voice = voice
         self.volume_str = "+0%"
         self.volume = 1.0
+        self._audio_device_id = "default"
         self._cache = {}
         self._cache_lock = threading.Lock()
         
         self._loop = asyncio.new_event_loop()
         self._loop_thread = threading.Thread(target=self._run_event_loop, daemon=True)
         self._loop_thread.start()
+
+    def set_audio_device(self, device_id: str) -> None:
+        self._audio_device_id = device_id
 
     @staticmethod
     def _is_speakable_text(text: str) -> bool:
@@ -159,6 +163,16 @@ class WebTTSProvider:
         try:
             player = QMediaPlayer()
             audio_output = QAudioOutput()
+            if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
+                try:
+                    from PySide6.QtMultimedia import QMediaDevices
+                    for dev in QMediaDevices.audioOutputs():
+                        dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
+                        if dev_id_str == self._audio_device_id or dev.description() == self._audio_device_id:
+                            audio_output.setDevice(dev)
+                            break
+                except Exception as dev_err:
+                    logging.error("[Web TTS] Error setting audio output device: %s", dev_err)
             player.setAudioOutput(audio_output)
             audio_output.setVolume(self.volume)
             player.setSource(QUrl.fromLocalFile(os.path.abspath(temp_path)))

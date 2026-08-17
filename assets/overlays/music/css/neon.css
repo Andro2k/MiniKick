@@ -1,54 +1,65 @@
+/* assets/overlays/music/css/neon.css */
 #player {
-    background: rgba(10, 10, 15, 0.96);
-    border: 2.5px solid #2ecd70;
+    background: rgba(6, 8, 14, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 2px solid #2ECD70;
     box-shadow: 
-        0 0 20px rgba(46, 205, 112, 0.45), 
-        inset 0 0 8px rgba(46, 205, 112, 0.25);
-    border-radius: 12px;
+        0 0 22px rgba(46, 205, 112, 0.55), 
+        inset 0 0 10px rgba(46, 205, 112, 0.22),
+        0 12px 32px rgba(0, 0, 0, 0.7);
+    border-radius: 16px;
 }
 
 .cover-art-wrap {
-    border: 2.5px solid #2ecd70;
-    box-shadow: 0 0 10px rgba(46, 205, 112, 0.35);
+    border: 2px solid #2ECD70;
+    box-shadow: 0 0 14px rgba(46, 205, 112, 0.45);
+    border-radius: 14px;
 }
 
 .fallback-icon {
-    background: #2ecd70;
+    background: #2ECD70;
 }
 
 .label-now-badge {
-    color: #2ecd70;
-    text-shadow: 0 0 5px rgba(46, 205, 112, 0.5);
-    background: rgba(46, 205, 112, 0.1);
-    border: 1.5px solid rgba(46, 205, 112, 0.3);
+    color: #2ECD70;
+    text-shadow: 0 0 6px rgba(46, 205, 112, 0.8);
+    background: rgba(46, 205, 112, 0.12);
+    border: 1.5px solid rgba(46, 205, 112, 0.45);
+    font-weight: 800;
+    border-radius: 12px;
 }
 
 .title {
-    color: #ffffff !important;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.9), 0 2px 4px #000 !important;
+    color: #FFFFFF !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 2px 4px #000 !important;
+    font-weight: 800;
 }
 
 .artist {
-    color: #2ecd70 !important;
+    color: #2ECD70 !important;
     font-weight: 700 !important;
-    text-shadow: 0 0 6px rgba(46, 205, 112, 0.8), 0 1px 3px #000 !important;
+    text-shadow: 0 0 8px rgba(46, 205, 112, 0.8), 0 1px 3px #000 !important;
 }
 
 .progress-bar-wrap {
     background: rgba(46, 205, 112, 0.15);
+    border-radius: 4px;
 }
 
 .progress-bar-fill {
-    background: #2ecd70;
-    box-shadow: 0 0 8px rgba(46, 205, 112, 0.8);
+    background: #2ECD70;
+    box-shadow: 0 0 10px rgba(46, 205, 112, 0.9);
+    border-radius: 4px;
 }
 
 .progress-time {
     color: rgba(255, 255, 255, 0.92) !important;
     text-shadow: 0 1px 3px #000 !important;
+    font-weight: 700;
 }
 
 .eq span {
-    background: #2ecd70;
-    box-shadow: 0 0 8px rgba(46, 205, 112, 0.8);
+    background: #2ECD70;
+    box-shadow: 0 0 8px rgba(46, 205, 112, 0.9);
 }

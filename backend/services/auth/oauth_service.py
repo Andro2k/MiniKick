@@ -140,7 +140,7 @@ class AuthManager:
         return verifier, challenge
 
     def _build_auth_url(self, challenge: str) -> str:
-        scopes = "user:read channel:rewards:read channel:rewards:write chat:write moderation:ban moderation:chat_message:manage"
+        scopes = "user:read channel:read channel:write channel:rewards:read channel:rewards:write chat:write moderation:ban moderation:chat_message:manage"
         return (
             f"{KICK_AUTH_URL}?response_type=code"
             f"&client_id={self.client_id}"
@@ -198,14 +198,56 @@ class TwitchAuthManager:
         self.success_html_path = success_html_path
 
     def get_tokens(self, force: bool = False) -> dict:
-        if not force:
-            tokens = self.storage.load()
-            if tokens and "access_token" in tokens and not self.has_missing_scopes():
-                return tokens
+        if force:
+            return self.login(force=True)
+        tokens = self.storage.load()
+        if tokens and "access_token" in tokens:
+            return tokens
+        return {}
+
+    def login(self, force: bool = False) -> dict:
         return self._new_login(force=force)
 
+    def is_authenticated(self) -> bool:
+        tokens = self.storage.load()
+        return bool(tokens and tokens.get("access_token"))
+
+    def refresh_token(self) -> dict:
+        tokens = self.storage.load()
+        refresh_token = tokens.get("refresh_token") if tokens else None
+
+        if not refresh_token:
+            return {}
+
+        if not self.client_secret:
+            raise ValueError("Falta el TWITCH_CLIENT_SECRET en backend/config/api_keys.py.")
+
+        try:
+            response = requests.post(
+                TWITCH_TOKEN_URL,
+                data={
+                    "grant_type": "refresh_token",
+                    "client_id": self.client_id,
+                    "client_secret": self.client_secret,
+                    "refresh_token": refresh_token,
+                },
+                timeout=10,
+            )
+            response.raise_for_status()
+            new_tokens = response.json()
+            if "refresh_token" not in new_tokens and refresh_token:
+                new_tokens["refresh_token"] = refresh_token
+            self.storage.save(new_tokens)
+            return new_tokens
+        except requests.exceptions.RequestException as e:
+            import logging
+            logging.warning("[TwitchAuth] Fallo al refrescar token de Twitch: %s", e)
+            self.logout()
+            raise e
+
+
     def _new_login(self, force: bool = False) -> dict:
-        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users"
+        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast"
         force_param = "&force_verify=true" if force else ""
         auth_url = (
             f"{TWITCH_AUTH_URL}?response_type=code"

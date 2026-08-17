@@ -14,7 +14,10 @@ class SettingsView(BaseView):
     import_clicked = Signal()
     unlink_clicked = Signal()
     update_clicked = Signal()
+    release_notes_clicked = Signal()
     language_changed = Signal(str)
+    music_audio_device_changed = Signal(str)
+    tts_audio_device_changed = Signal(str)
     feedback_clicked = Signal()
     kick_integration_clicked = Signal()
     twitch_integration_clicked = Signal()
@@ -76,11 +79,58 @@ class SettingsView(BaseView):
             right_widget=self.btn_update
         )
 
+        self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined")
+        self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
+
+        row_release_notes = SettingRow(
+            icon_name="file-text.svg",
+            title_text=self.i18n.get("settings.system.release_notes_title"),
+            desc_text=self.i18n.get("settings.system.release_notes_desc"),
+            right_widget=self.btn_release_notes
+        )
+
         sys_card.addWidget(row_lang)
         sys_card.addWidget(row_font)
         sys_card.addWidget(row_tray)        
         sys_card.addWidget(row_update)
+        sys_card.addWidget(row_release_notes)
         self.main_layout.addWidget(sys_card)
+
+        audio_card = ModernCard(parent=self)
+
+        self.combo_music_audio_device = NoWheelComboBox(self)
+        self.combo_tts_audio_device = NoWheelComboBox(self)
+
+        try:
+            from PySide6.QtMultimedia import QMediaDevices
+            self._media_devices = QMediaDevices(self)
+            self._media_devices.audioOutputsChanged.connect(self.populate_audio_devices)
+        except Exception as dev_err:
+            import logging
+            logging.error("[SettingsView] Error connecting audioOutputsChanged: %s", dev_err)
+
+        self.populate_audio_devices()
+
+        self.combo_music_audio_device.currentIndexChanged.connect(self._on_music_audio_device_changed)
+        self.combo_tts_audio_device.currentIndexChanged.connect(self._on_tts_audio_device_changed)
+
+        row_music_audio = SettingRow(
+            icon_name="music.svg",
+            title_text=self.i18n.get("settings.audio.music_title"),
+            desc_text=self.i18n.get("settings.audio.music_desc"),
+            right_widget=self.combo_music_audio_device
+        )
+
+        row_tts_audio = SettingRow(
+            icon_name="volume.svg",
+            title_text=self.i18n.get("settings.audio.tts_title"),
+            desc_text=self.i18n.get("settings.audio.tts_desc"),
+            right_widget=self.combo_tts_audio_device
+        )
+
+        audio_card.addWidget(row_music_audio)
+        audio_card.addWidget(row_tts_audio)
+        self.main_layout.addWidget(audio_card)
 
         integrations_card = ModernCard(parent=self)
 
@@ -204,6 +254,11 @@ class SettingsView(BaseView):
         dialog = BugReportDialog(self.i18n, parent=self.window())
         dialog.exec()
 
+    def show_release_notes_dialog(self) -> None:
+        from frontend.dialogs.release_notes_dialog import ReleaseNotesDialog
+        dialog = ReleaseNotesDialog(self.i18n, parent=self.window())
+        dialog.exec()
+
     def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "") -> None:
         if twitch_connected and twitch_channel:
             text = self.i18n.get("settings.integrations.btn_disconnect_twitch").replace("{channel}", twitch_channel)
@@ -222,3 +277,68 @@ class SettingsView(BaseView):
 
         self.btn_twitch_integration.style().unpolish(self.btn_twitch_integration)
         self.btn_twitch_integration.style().polish(self.btn_twitch_integration)
+
+    def populate_audio_devices(self):
+        curr_music_dev = self.combo_music_audio_device.currentData() if hasattr(self, 'combo_music_audio_device') else "default"
+        curr_tts_dev = self.combo_tts_audio_device.currentData() if hasattr(self, 'combo_tts_audio_device') else "default"
+
+        self.combo_music_audio_device.blockSignals(True)
+        self.combo_tts_audio_device.blockSignals(True)
+        try:
+            self.combo_music_audio_device.clear()
+            self.combo_tts_audio_device.clear()
+
+            default_text = self.i18n.get("settings.audio.default_device")
+            self.combo_music_audio_device.addItem(default_text, "default")
+            self.combo_tts_audio_device.addItem(default_text, "default")
+
+            try:
+                from PySide6.QtMultimedia import QMediaDevices
+                for dev in QMediaDevices.audioOutputs():
+                    dev_id = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
+                    name = dev.description()
+                    self.combo_music_audio_device.addItem(name, dev_id)
+                    self.combo_tts_audio_device.addItem(name, dev_id)
+            except Exception as e:
+                import logging
+                logging.error("[SettingsView] Error populating audio devices: %s", e)
+
+            if curr_music_dev:
+                idx = self.combo_music_audio_device.findData(curr_music_dev)
+                if idx >= 0:
+                    self.combo_music_audio_device.setCurrentIndex(idx)
+            if curr_tts_dev:
+                idx = self.combo_tts_audio_device.findData(curr_tts_dev)
+                if idx >= 0:
+                    self.combo_tts_audio_device.setCurrentIndex(idx)
+        finally:
+            self.combo_music_audio_device.blockSignals(False)
+            self.combo_tts_audio_device.blockSignals(False)
+
+    def set_current_music_audio_device(self, device_id: str):
+        self.combo_music_audio_device.blockSignals(True)
+        idx = self.combo_music_audio_device.findData(device_id)
+        if idx >= 0:
+            self.combo_music_audio_device.setCurrentIndex(idx)
+        else:
+            self.combo_music_audio_device.setCurrentIndex(0)
+        self.combo_music_audio_device.blockSignals(False)
+
+    def set_current_tts_audio_device(self, device_id: str):
+        self.combo_tts_audio_device.blockSignals(True)
+        idx = self.combo_tts_audio_device.findData(device_id)
+        if idx >= 0:
+            self.combo_tts_audio_device.setCurrentIndex(idx)
+        else:
+            self.combo_tts_audio_device.setCurrentIndex(0)
+        self.combo_tts_audio_device.blockSignals(False)
+
+    def _on_music_audio_device_changed(self, index: int):
+        device_id = self.combo_music_audio_device.itemData(index)
+        if device_id is not None:
+            self.music_audio_device_changed.emit(str(device_id))
+
+    def _on_tts_audio_device_changed(self, index: int):
+        device_id = self.combo_tts_audio_device.itemData(index)
+        if device_id is not None:
+            self.tts_audio_device_changed.emit(str(device_id))

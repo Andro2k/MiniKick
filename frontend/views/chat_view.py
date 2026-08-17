@@ -28,7 +28,7 @@ class ChatView(BaseView):
         self.body_layout.setSpacing(16)
 
         self.tabs = QTabWidget()
-        self.tabs.setMinimumWidth(480)
+        self.tabs.setMinimumWidth(440)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.tts_settings_panel = ChatTtsSettingsPanel(self.i18n)
@@ -52,13 +52,13 @@ class ChatView(BaseView):
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
         left_layout.addWidget(self.tabs)
-        self.left_container.setMinimumWidth(480)
+        self.left_container.setMinimumWidth(440)
         self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
 
         self.chat_display_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.body_layout.addWidget(self.left_container, stretch=2)
-        self.body_layout.addWidget(self.chat_display_panel, stretch=3)
+        self.body_layout.addWidget(self.left_container, stretch=4)
+        self.body_layout.addWidget(self.chat_display_panel, stretch=5)
         
         self.main_layout.addLayout(self.body_layout, stretch=1)
 
@@ -69,13 +69,8 @@ class ChatView(BaseView):
         if self._last_body_dir != direction:
             self._last_body_dir = direction
             self.body_layout.setDirection(direction)
-        
-        if direction == QBoxLayout.Direction.TopToBottom:
-            self.body_layout.setStretch(0, 1)
-            self.body_layout.setStretch(1, 1)
-        else:
-            self.body_layout.setStretch(0, 2)
-            self.body_layout.setStretch(1, 3)
+        self.body_layout.setStretch(0, 1)
+        self.body_layout.setStretch(1, 1)
 
     def _connect_internal_signals(self):
         self.tts_settings_panel.provider_toggled.connect(self.provider_toggled.emit)
@@ -96,17 +91,41 @@ class ChatView(BaseView):
     def tts_enabled(self) -> bool:
         return self.tts_settings_panel.chk_tts.isChecked()
 
+    @tts_enabled.setter
+    def tts_enabled(self, value: bool):
+        self.tts_settings_panel.chk_tts.blockSignals(True)
+        self.tts_settings_panel.chk_tts.setChecked(value)
+        self.tts_settings_panel.chk_tts.blockSignals(False)
+
     @property
     def read_name_enabled(self) -> bool:
         return self.tts_settings_panel.chk_name.isChecked()
+
+    @read_name_enabled.setter
+    def read_name_enabled(self, value: bool):
+        self.tts_settings_panel.chk_name.blockSignals(True)
+        self.tts_settings_panel.chk_name.setChecked(value)
+        self.tts_settings_panel.chk_name.blockSignals(False)
 
     @property
     def use_command_enabled(self) -> bool:
         return self.tts_settings_panel.chk_command.isChecked()
 
+    @use_command_enabled.setter
+    def use_command_enabled(self, value: bool):
+        self.tts_settings_panel.chk_command.blockSignals(True)
+        self.tts_settings_panel.chk_command.setChecked(value)
+        self.tts_settings_panel.chk_command.blockSignals(False)
+
     @property
     def tts_command(self) -> str:
         return self.tts_settings_panel.txt_command.text().strip().lower()
+
+    @tts_command.setter
+    def tts_command(self, value: str):
+        self.tts_settings_panel.txt_command.blockSignals(True)
+        self.tts_settings_panel.txt_command.setText(value)
+        self.tts_settings_panel.txt_command.blockSignals(False)
 
     @property
     def is_web_provider(self) -> bool:
@@ -116,17 +135,23 @@ class ChatView(BaseView):
     def tts_volume(self) -> int:
         return self.tts_settings_panel.slider_vol.value()
 
+    @tts_volume.setter
+    def tts_volume(self, value: int):
+        self.tts_settings_panel.slider_vol.blockSignals(True)
+        self.tts_settings_panel.slider_vol.setValue(value)
+        self.tts_settings_panel.slider_vol.blockSignals(False)
+
     @property
     def overlay_theme(self) -> str:
         return self.overlay_settings_panel.combo_overlay_theme.currentData() or "glass"
 
     @property
     def overlay_size(self) -> int:
-        return self.overlay_settings_panel.slider_overlay_size.value()
+        return self.overlay_settings_panel.spin_overlay_size.value()
 
     @property
     def overlay_fade(self) -> int:
-        return self.overlay_settings_panel.slider_overlay_fade.value()
+        return self.overlay_settings_panel.spin_overlay_fade.value()
 
     @property
     def overlay_show_bots(self) -> bool:
@@ -144,8 +169,8 @@ class ChatView(BaseView):
     def chat_overlay_url(self, value: str):
         self.overlay_settings_panel.chat_overlay_url = value
 
-    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None):
-        self.tts_settings_panel.set_settings_ui(enabled, read_name, use_command, command, is_web_provider, volume, role_voices)
+    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None, role_enabled: dict = None):
+        self.tts_settings_panel.set_settings_ui(enabled, read_name, use_command, command, is_web_provider, volume, role_voices, role_enabled)
 
     def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool):
         self.overlay_settings_panel.set_overlay_settings_ui(theme, size, fade, show_bots, show_time)

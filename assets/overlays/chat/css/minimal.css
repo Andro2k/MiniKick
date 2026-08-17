@@ -1,62 +1,27 @@
-/* assets/overlays/css/minimal.css */
+/* assets/overlays/chat/css/minimal.css */
 .message-box {
-    background: rgba(20, 21, 26, 0.93) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: none !important;
-    border-left: calc(var(--font-size) * 0.28) solid var(--line-color, #C084FC) !important;
-    border-radius: calc(var(--font-size) * 0.85) !important;
-    box-shadow: 0 calc(var(--font-size) * 0.25) calc(var(--font-size) * 1.1) rgba(0, 0, 0, 0.3) !important;
-    padding: calc(var(--font-size) * 0.7) calc(var(--font-size) * 1.1) !important;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.78) 0%, rgba(0, 0, 0, 0.45) 75%, rgba(0, 0, 0, 0.15) 100%);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none;
+    border-radius: calc(var(--font-size) * 0.4);
+    padding: calc(var(--font-size) * 0.6) calc(var(--font-size) * 1.1);
+    box-shadow: 0 calc(var(--font-size) * 0.25) calc(var(--font-size) * 1.0) rgba(0, 0, 0, 0.35);
+    align-self: flex-start;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: calc(var(--font-size) * 0.28);
-    align-self: flex-start !important;
-    box-sizing: border-box;
-    position: relative;
-    margin-top: calc(var(--font-size) * 0.15);
-}
-
-.message-box::before {
-    display: none !important;
-}
-
-.message-header {
-    display: flex;
-    align-items: center;
-    gap: calc(var(--font-size) * 0.4);
-}
-
-.message-box.theme-minimal .badge {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    color: var(--line-color, #C084FC) !important;
-    font-size: calc(var(--font-size) * 0.95) !important;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: auto !important;
-    height: auto !important;
 }
 
 .username {
-    background: transparent !important;
-    border-radius: 0px !important;
-    padding: 0 !important;
-    font-size: calc(var(--font-size) * 0.92) !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
-    font-weight: 700 !important;
-    font-family: 'Outfit', sans-serif !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+    font-family: 'Outfit', sans-serif;
+    font-size: calc(var(--font-size) + 1px);
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
 }
 
 .message-content {
-    color: #E4E4E7 !important;
-    font-size: var(--font-size) !important;
-    padding-left: 0px !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+    color: #FFFFFF;
     font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8) !important;
 }

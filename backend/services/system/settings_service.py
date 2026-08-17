@@ -36,3 +36,15 @@ class SettingsService:
 
     def set_font_size(self, size: int):
         self.storage.save_string(self.SETTING_FONT_SIZE, str(size))
+
+    def get_music_audio_device(self) -> str:
+        return self.storage.load_string("youtube_audio_device", "default")
+
+    def set_music_audio_device(self, device_id: str):
+        self.storage.save_string("youtube_audio_device", device_id)
+
+    def get_tts_audio_device(self) -> str:
+        return self.storage.load_string("tts_audio_device", "default")
+
+    def set_tts_audio_device(self, device_id: str):
+        self.storage.save_string("tts_audio_device", device_id)

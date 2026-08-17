@@ -1,133 +1,37 @@
-/* assets/overlays/css/card.css */
-.message-box.theme-card {
-    background: #FFFFFF !important;
-    border: calc(var(--font-size) * 0.2) solid #1b1e22 !important;
-    border-radius: calc(var(--font-size) * 0.8) !important;
-    padding: 0 !important;
-    margin-top: calc(var(--font-size) * 1.5) !important;
+/* assets/overlays/chat/css/card.css */
+.message-box {
+    background: #181920;
+    border: calc(var(--font-size) * 0.08) solid #282a36;
+    border-radius: calc(var(--font-size) * 0.8);
+    padding: calc(var(--font-size) * 0.85) calc(var(--font-size) * 1.25);
+    box-shadow: 
+        0 calc(var(--font-size) * 0.4) calc(var(--font-size) * 1.6) rgba(0, 0, 0, 0.5),
+        0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    align-self: flex-start;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    box-shadow: calc(var(--font-size) * 0.25) calc(var(--font-size) * 0.25) 0px #1b1e22 !important;
-    align-self: flex-start;
-    overflow: visible !important;
-    box-sizing: border-box;
 }
 
-.message-box.theme-card .message-header {
-    height: calc(var(--font-size) * 2.4);
-    border-bottom: calc(var(--font-size) * 0.2) solid #1b1e22;
-    padding: 0 calc(var(--font-size) * 1.0);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    border-radius: calc(var(--font-size) * 0.6) calc(var(--font-size) * 0.6) 0 0;
-    width: 100%;
-    box-sizing: border-box;
+.message-header {
+    margin-bottom: calc(var(--font-size) * 0.2);
 }
 
-.message-box.theme-card.role-broadcaster .message-header {
-    background-color: #ffc0d9;
-}
-.message-box.theme-card.role-moderator .message-header {
-    background-color: #d6dfff;
-}
-.message-box.theme-card.role-vip .message-header {
-    background-color: #c9f7ff;
-}
-.message-box.theme-card.role-subscriber .message-header {
-    background-color: #fff5b8;
-}
-.message-box.theme-card.role-bot .message-header {
-    background-color: #e2f9e6;
-}
-.message-box.theme-card.role-default .message-header {
-    background-color: #f3f4f6;
-}
-
-.message-box.theme-card .card-float-badge {
-    position: absolute;
-    top: calc(var(--font-size) * -0.8);
-    left: calc(var(--font-size) * 1.2);
-    background: #FFFFFF;
-    border: calc(var(--font-size) * 0.15) solid #1b1e22;
-    border-radius: calc(var(--font-size) * 1.2);
+.username {
     font-family: 'Outfit', sans-serif;
-    font-size: calc(var(--font-size) * 0.8);
-    font-weight: 800;
-    color: #1b1e22;
-    padding: calc(var(--font-size) * 0.15) calc(var(--font-size) * 0.5);
-    letter-spacing: 0.5px;
-    line-height: 1;
-    z-index: 10;
-}
-
-.message-box.theme-card .username {
-    font-family: 'Outfit', sans-serif !important;
-    font-size: calc(var(--font-size) * 0.85) !important;
-    font-weight: 800 !important;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    text-shadow: none !important;
-    margin: 0 auto;
-}
-
-.message-box.theme-card.role-broadcaster .username {
-    color: #a82052 !important;
-}
-.message-box.theme-card.role-moderator .username {
-    color: #1f3bb3 !important;
-}
-.message-box.theme-card.role-vip .username {
-    color: #158b9e !important;
-}
-.message-box.theme-card.role-subscriber .username {
-    color: #8c731e !important;
-}
-.message-box.theme-card.role-bot .username {
-    color: #278c43 !important;
-}
-.message-box.theme-card.role-default .username {
-    color: #4b5563 !important;
-}
-
-.message-box.theme-card .card-win-buttons {
-    position: absolute;
-    right: calc(var(--font-size) * 0.9);
-    display: flex;
-    gap: calc(var(--font-size) * 0.25);
-    align-items: center;
-}
-.message-box.theme-card .card-win-buttons .card-time-btn {
+    font-size: calc(var(--font-size) * 0.95);
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.08);
+    padding: calc(var(--font-size) * 0.15) calc(var(--font-size) * 0.55);
+    border-radius: calc(var(--font-size) * 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    letter-spacing: 0.3px;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    border: calc(var(--font-size) * 0.12) solid #1b1e22;
-    border-radius: calc(var(--font-size) * 0.15);
-    background: #FFFFFF;
-    color: #1b1e22;
-    font-family: 'Outfit', sans-serif;
-    font-size: calc(var(--font-size) * 0.8);
-    font-weight: 800;
-    padding: calc(var(--font-size) * 0.05) calc(var(--font-size) * 0.25);
-    height: calc(var(--font-size) * 1.0);
-    box-sizing: border-box;
-    line-height: 1;
-}
-.message-box.theme-card .card-win-buttons .card-close-btn {
-    display: none !important;
 }
 
-.message-box.theme-card .message-content {
-    background: transparent !important;
-    border: none !important;
-    border-radius: 0px !important;
-    color: #1b1e22 !important;
-    padding: calc(var(--font-size) * 0.8) calc(var(--font-size) * 1.2) !important;
-    font-weight: 600;
-    text-shadow: none !important;
-    text-align: center;
-    box-shadow: none !important;
-    font-family: 'Inter', sans-serif;
-    font-size: var(--font-size);
+.message-content {
+    color: #F1F1F5;
+    font-weight: 500;
+    line-height: 1.45;
 }

@@ -49,14 +49,11 @@ class MusicPlayerSettingsPanel(QWidget):
         card = ModernCard(parent=self, margin=12, spacing=8)
 
         status_layout = QHBoxLayout()
-        self.lbl_provider_name = QLabel("YouTube Music")
-        self.lbl_provider_name.setProperty("role", "h3")
         
         self.lbl_auth_status = QLabel(self.i18n.get("music.status.youtube_active"))
-        self.lbl_auth_status.setProperty("role", "body")
+        self.lbl_auth_status.setProperty("role", "h3")
         
         provider_info = QVBoxLayout()
-        provider_info.addWidget(self.lbl_provider_name)
         provider_info.addWidget(self.lbl_auth_status)
 
         status_layout.addLayout(provider_info, stretch=1)
@@ -103,7 +100,7 @@ class MusicPlayerSettingsPanel(QWidget):
         
         self.btn_skip = ModernButton("", role="action_neutral_border")
         self.btn_skip.setFixedSize(36, 36)
-        self.btn_skip.setIcon(get_icon_colored("player-skip-forward.svg", COLOR_NEUTRAL_200, 18))
+        self.btn_skip.setIcon(get_icon_colored("player-skip.svg", COLOR_NEUTRAL_200, 18))
         self.btn_skip.setIconSize(QSize(18, 18))
         self.btn_skip.clicked.connect(self.skip_requested.emit)
         
@@ -230,7 +227,7 @@ class MusicPlayerSettingsPanel(QWidget):
             url += f"{sep}layout={layout}&theme={theme}"
             QApplication.clipboard().setText(url)
             original = self.btn_copy_music_url.text()
-            self.btn_copy_music_url.setText(self.i18n.get("common.buttons.copy") + " ✓")
+            self.btn_copy_music_url.setText(self.i18n.get("rewards.obs.copied"))
             self.btn_copy_music_url.setEnabled(False)
             QTimer.singleShot(2000, lambda: self._reset_copy_btn(original))
 
@@ -295,7 +292,10 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_song_artist.setText(artist)
 
         if requester:
-            req_text = self.i18n.get("music.player.requested_by").replace("{user}", requester)
+            platform = (song_data.get("platform") or "kick").lower()
+            color_hex = "#A970FF" if platform == "twitch" else "#53FC18"
+            user_styled = f"<span style='color:{color_hex}; font-weight:600;'>@{requester}</span>"
+            req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)
         else:
             req_text = self.i18n.get("music.player.requested_by_streamer")
         self.lbl_song_requester.setText(req_text)

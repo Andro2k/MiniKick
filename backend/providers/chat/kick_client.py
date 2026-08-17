@@ -120,6 +120,41 @@ class KickAPIClient:
     def fetch_channel_rewards(self) -> dict:
         return self._request("GET", KICK_REWARDS_URL, timeout=10).json()
 
+    def create_channel_reward(
+        self,
+        title: str,
+        cost: int,
+        description: str = "",
+        background_color: str = "#00e701",
+        is_user_input_required: bool = False,
+        should_redemptions_skip_request_queue: bool = False,
+        is_enabled: bool = True
+    ) -> dict:
+        payload = {
+            "title": title,
+            "cost": cost,
+            "is_enabled": is_enabled
+        }
+        if description:
+            payload["description"] = description
+        if background_color:
+            payload["background_color"] = background_color
+        if is_user_input_required is not None:
+            payload["is_user_input_required"] = is_user_input_required
+        if should_redemptions_skip_request_queue is not None:
+            payload["should_redemptions_skip_request_queue"] = should_redemptions_skip_request_queue
+
+        return self._request("POST", KICK_REWARDS_URL, json=payload, timeout=10).json()
+
+    def update_channel_reward(self, reward_id: str, payload: dict) -> dict:
+        url = f"{KICK_REWARDS_URL}/{reward_id}"
+        return self._request("PATCH", url, json=payload, timeout=10).json()
+
+    def delete_channel_reward(self, reward_id: str) -> bool:
+        url = f"{KICK_REWARDS_URL}/{reward_id}"
+        resp = self._request("DELETE", url, timeout=10)
+        return resp.status_code == 204
+
     def fetch_public_channel_rewards(self, channel_slug: str) -> list[dict]:
         slug = channel_slug.lstrip("@").strip().lower()
         if not slug:
@@ -238,3 +273,166 @@ class KickAPIClient:
                 "title": "",
                 "category": ""
             }
+
+    def update_channel_metadata(self, category_id: int | None = None, stream_title: str | None = None, custom_tags: list[str] | None = None) -> bool:
+        url = "https://api.kick.com/public/v1/channels"
+        payload = {}
+        if category_id is not None:
+            try:
+                cid = int(category_id)
+                if cid > 0:
+                    payload["category_id"] = cid
+            except (ValueError, TypeError):
+                pass
+        if stream_title is not None and str(stream_title).strip():
+            payload["stream_title"] = str(stream_title).strip()
+        if custom_tags is not None:
+            payload["custom_tags"] = custom_tags[:10]
+
+        if not payload:
+            return False
+
+        try:
+            resp = self._request("PATCH", url, json=payload, timeout=10)
+            return resp.status_code in (200, 204)
+        except Exception as e:
+            logging.error("[KickAPI] Error updating channel metadata: %s", e)
+            return False
+
+    def get_channel_metadata(self) -> dict:
+        url = "https://api.kick.com/public/v1/channels"
+        try:
+            resp = self._request("GET", url, timeout=10)
+            if resp.status_code == 200:
+                body = resp.json()
+                data = body.get("data", [])
+                item = None
+                if isinstance(data, list) and data:
+                    item = data[0]
+                elif isinstance(data, dict):
+                    item = data
+                elif isinstance(body, dict) and "stream_title" in body:
+                    item = body
+
+                if item:
+                    cat = item.get("category", {}) or {}
+                    cat_id = cat.get("id") or item.get("category_id")
+                    cat_name = cat.get("name") or item.get("category_name", "")
+                    title = item.get("stream_title", "")
+                    if title or cat_name:
+                        return {
+                            "broadcaster_user_id": item.get("broadcaster_user_id"),
+                            "slug": item.get("slug", ""),
+                            "stream_title": title,
+                            "category_id": cat_id,
+                            "category_name": cat_name
+                        }
+        except Exception as e:
+            logging.debug("[KickAPI] Official channel metadata failed, trying fallback: %s", e)
+
+        try:
+            slug = getattr(self, "_cached_slug", None)
+            if not slug:
+                username = self._fetch_authenticated_username()
+                if username:
+                    slug = self._generate_channel_slug(username)
+                    self._cached_slug = slug
+
+            if slug:
+                channel_data = self._fetch_channel_details(slug)
+                livestream = channel_data.get("livestream")
+                is_live = livestream is not None
+                
+                title = ""
+                cat_id = None
+                cat_name = ""
+
+                if is_live and livestream:
+                    title = livestream.get("session_title", "")
+                    cats = livestream.get("categories", [])
+                    if cats:
+                        cat_name = cats[0].get("name", "")
+                        cat_id = cats[0].get("id")
+                else:
+                    prev_streams = channel_data.get("previous_livestreams", [])
+                    if prev_streams:
+                        title = prev_streams[0].get("session_title", "")
+                    recent_cats = channel_data.get("recent_categories", [])
+                    if recent_cats:
+                        cat_name = recent_cats[0].get("name", "")
+                        cat_id = recent_cats[0].get("id")
+
+                user = channel_data.get("user", {})
+                return {
+                    "broadcaster_user_id": user.get("id"),
+                    "slug": channel_data.get("slug", slug),
+                    "stream_title": title,
+                    "category_id": cat_id,
+                    "category_name": cat_name
+                }
+        except Exception as e:
+            logging.error("[KickAPI] Error in fallback channel metadata: %s", e)
+
+        return {}
+
+    def search_categories(self, query: str) -> list[dict]:
+        if not query or not query.strip():
+            return []
+        
+        q = query.strip()
+        encoded_q = requests.utils.quote(q)
+        
+        try:
+            url = f"https://api.kick.com/public/v1/categories?q={encoded_q}"
+            resp = self._request("GET", url, timeout=8)
+            if resp.status_code == 200:
+                res_data = resp.json()
+                items = res_data.get("data", []) if isinstance(res_data, dict) else res_data
+                if isinstance(items, list) and items:
+                    return [
+                        {
+                            "id": item.get("id"),
+                            "name": item.get("name", ""),
+                            "thumbnail": item.get("thumbnail", "") or item.get("banner", "")
+                        }
+                        for item in items if item.get("name")
+                    ]
+        except Exception as e:
+            logging.debug("[KickAPI] Error in public v1 category search: %s", e)
+
+        try:
+            url = f"https://api.kick.com/public/v2/categories?name={encoded_q}&limit=25"
+            resp = self._request("GET", url, timeout=8)
+            if resp.status_code == 200:
+                res_data = resp.json()
+                items = res_data.get("data", []) if isinstance(res_data, dict) else res_data
+                if isinstance(items, list) and items:
+                    return [
+                        {
+                            "id": item.get("id"),
+                            "name": item.get("name", ""),
+                            "thumbnail": item.get("thumbnail", "") or item.get("banner", "")
+                        }
+                        for item in items if item.get("name")
+                    ]
+        except Exception as e:
+            logging.debug("[KickAPI] Error in public v2 category search: %s", e)
+
+        try:
+            url = f"https://kick.com/api/v1/subcategories/search?query={encoded_q}"
+            resp = self.scraper.get(url, timeout=8)
+            if resp.status_code == 200:
+                items = resp.json()
+                if isinstance(items, list):
+                    return [
+                        {
+                            "id": item.get("id"),
+                            "name": item.get("name", ""),
+                            "thumbnail": item.get("banner", {}).get("url", "") if isinstance(item.get("banner"), dict) else ""
+                        }
+                        for item in items if item.get("name")
+                    ]
+        except Exception as e:
+            logging.warning("[KickAPI] Fallback subcategories search failed: %s", e)
+
+        return []

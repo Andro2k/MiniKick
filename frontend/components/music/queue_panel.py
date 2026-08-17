@@ -163,7 +163,7 @@ class MusicQueuePanel(QWidget):
         self.card_queue.setup_empty_state(
             title=self.i18n.get("music.queue.empty"),
             desc=self.i18n.get("music.queue.empty_desc"),
-            icon_name="illustration-earphone.svg",
+            icon_name="illustration-music.svg",
             button_text="",
             on_button_clicked=lambda: None
         )
@@ -257,8 +257,18 @@ class MusicQueuePanel(QWidget):
                 self.queue_table.setItem(idx, 2, self._create_table_item(artist_text))
                 
                 requester = song.get("requester", "")
+                platform = (song.get("platform") or "kick").lower()
                 requester_text = f"@{requester}" if requester else "-"
-                req_color = Qt.GlobalColor.green if requester else None
+                
+                if platform == "twitch":
+                    req_color = QColor("#A970FF")
+                elif platform == "kick":
+                    req_color = QColor("#53FC18")
+                elif requester:
+                    req_color = QColor(COLOR_GREEN)
+                else:
+                    req_color = None
+                    
                 self.queue_table.setItem(idx, 3, self._create_table_item(requester_text, color=req_color))
                 
                 duration = song.get("duration", "-")
@@ -272,4 +282,3 @@ class MusicQueuePanel(QWidget):
             self.queue_table.pending_select_row = -1
             if 0 <= target_r < total_songs:
                 self.queue_table.selectRow(target_r)
-

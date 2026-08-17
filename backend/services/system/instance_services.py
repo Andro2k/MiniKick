@@ -19,4 +19,5 @@ class SocketInstanceProvider:
         try:
             self.sock.close()
         except Exception as e:
-            logging.error(f"Error cleaning up instance socket: {e}")
+            logging.error("[SocketInstance] Error cleaning up instance socket: %s", e)
+

@@ -175,6 +175,7 @@ class MusicCommandHandler:
             query,
             callback=on_complete,
             requester=user,
+            platform=platform,
             max_duration_min=self.controller.max_song_duration
         )
         if immediate_reply:

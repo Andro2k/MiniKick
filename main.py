@@ -1,6 +1,5 @@
 # main.py
 
-from backend.database import SQLiteSettingsStorage
 import os
 import sys
 from PySide6.QtWidgets import QApplication
@@ -21,12 +20,14 @@ try:
 except Exception:
     pass
 from backend.services import GithubUpdateProvider, UpdateManager, WindowsInstaller
-from frontend.core.main_window_core import MainWindowCore
+from backend.core.main_window_core import MainWindowCore
+from backend.database import SQLiteSettingsStorage
+from backend.config.version import APP_VERSION
+from backend.services import SocketInstanceProvider
+
+from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.common.theme import GLOBAL_QSS
 from frontend.common.utils import resource_path
-from backend.services import SocketInstanceProvider
-from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
-from backend.config.version import APP_VERSION
 
 def _get_safe_i18n():
     try:
@@ -38,9 +39,8 @@ def _get_safe_i18n():
         saved_lang = settings.load_string("app_language", "es")
         return TranslationService(default_lang=saved_lang)
     except Exception as e:
-        print(f"[Bootstrap] Advertencia: Falló hidratación de i18n pre-boot ({e})")
+        print(f"[Bootstrap] Warning: Pre-boot i18n hydration failed ({e})")
         return None
-
 
 def global_crash_handler(exctype, value, tb):
     import traceback
@@ -54,6 +54,7 @@ def global_crash_handler(exctype, value, tb):
 
     print(tb_text, file=sys.stderr)
 
+    i18n = None
     try:
         app = QApplication.instance()
         if not app:
@@ -71,7 +72,8 @@ def global_crash_handler(exctype, value, tb):
         dialog = CrashReportDialog(traceback_text=tb_text, i18n=i18n)
         dialog.exec()
     except Exception as dialog_err:
-        print(f"[Bootstrap] Falló la visualización del diálogo de crash: {dialog_err}", file=sys.stderr)
+        err_msg = i18n.get("logs.bootstrap.crash_dialog_failed").replace("{error}", str(dialog_err)) if i18n else f"[Bootstrap] Failed to display crash dialog: {dialog_err}"
+        print(err_msg, file=sys.stderr)
 
     sys.exit(1)
 
@@ -80,13 +82,12 @@ def bootstrap():
     if sys.platform == "win32":
         try:
             import ctypes
-            myappid = "andro2k.minikick.app.1.5"
+            myappid = "MiniKick"
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
         except Exception:
             pass
 
     app = QApplication(sys.argv)
-    FONT_FILE_PREFIX = "GoogleSans"
     FONT_FAMILY_NAME = "Google Sans"
 
     fonts_dir = resource_path(os.path.join("assets", "fonts"))

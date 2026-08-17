@@ -1,0 +1,307 @@
+# frontend\dialogs\release_notes_dialog.py
+
+import re
+from PySide6.QtWidgets import (
+    QLabel, QTextBrowser, QPushButton, QHBoxLayout, 
+    QWidget, QSizePolicy
+)
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QColor, QDesktopServices, QFont
+from .base_dialog import ModernModal
+from frontend.common.utils import get_assets_path
+from frontend.common.theme import COLOR_GREEN
+from backend.workers import ReleaseNotesWorker
+
+def markdown_to_github_html(md: str) -> str:
+    if not md:
+        return ""
+    text = re.sub(
+        r'\$\\mathcal\{O\}\((.*?)\)\$', 
+        r'<span style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; color: #a5b4fc; font-weight: bold;">O(\1)</span>', 
+        md
+    )
+    text = re.sub(
+        r'\$(.*?)\$', 
+        r'<span style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; color: #a5b4fc;">\1</span>', 
+        text
+    )
+    text = re.sub(
+        r'\[([^\]]+)\]\(file:///[^\)]+\)', 
+        r'<code style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; background-color: #27272a; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\1</code>', 
+        text
+    )
+    text = re.sub(
+        r'\[([^\]]+)\]\([a-zA-Z0-9_\-/\\\.]+\.(?:py|json|md|html)\)', 
+        r'<code style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; background-color: #27272a; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\1</code>', 
+        text
+    )
+    text = re.sub(
+        r'\[([^\]]+)\]\((https?://[^\)]+)\)', 
+        r'<a href="\2" style="color: #38bdf8; text-decoration: underline;">\1</a>', 
+        text
+    )
+    text = re.sub(
+        r'`([^`]+)`', 
+        r'<code style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; background-color: #27272a; color: #e4e4e7; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\1</code>', 
+        text
+    )
+    text = re.sub(r'\*\*([^\*]+)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r'(?<!\*)\*([^\*]+)\*(?!\*)', r'<i>\1</i>', text)
+
+    lines = text.splitlines()
+    html_out = []
+
+    in_table = False
+    table_rows = []
+
+    in_callout = False
+    callout_type = ''
+    callout_lines = []
+
+    CALLOUT_STYLES = {
+        'NOTE': ('#3b82f6', '#60a5fa', 'ℹ️ Note', 'rgba(59, 130, 246, 0.08)'),
+        'IMPORTANT': ('#a855f7', '#c084fc', '💬 Important', 'rgba(168, 85, 247, 0.08)'),
+        'WARNING': ('#eab308', '#facc15', '⚠️ Warning', 'rgba(234, 179, 8, 0.08)'),
+        'TIP': ('#22c55e', '#4ade80', '💡 Tip', 'rgba(34, 197, 94, 0.08)'),
+        'CAUTION': ('#ef4444', '#f87171', '🚨 Caution', 'rgba(239, 68, 68, 0.08)')
+    }
+
+    def flush_callout():
+        nonlocal in_callout, callout_type, callout_lines
+        if in_callout and callout_type in CALLOUT_STYLES:
+            border_c, title_c, title_text, bg_c = CALLOUT_STYLES[callout_type]
+            body_content = "<br/>".join(callout_lines)
+            html_out.append(
+                f'<div style="border-left: 3px solid {border_c}; background-color: {bg_c}; padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0;">'
+                f'<div style="color: {title_c}; font-weight: bold; margin-bottom: 6px; font-size: 13px;">{title_text}</div>'
+                f'<div style="color: #e4e4e7; font-size: 13px; line-height: 1.5;">{body_content}</div>'
+                f'</div>'
+            )
+        in_callout = False
+        callout_type = ''
+        callout_lines = []
+
+    def flush_table():
+        nonlocal in_table, table_rows
+        if in_table and table_rows:
+            html_out.append('<table style="border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 12px;">')
+            for r_idx, row in enumerate(table_rows):
+                if r_idx == 0:
+                    html_out.append('<tr style="background-color: #18181b;">')
+                    for cell in row:
+                        html_out.append(f'<th style="border: 1px solid #27272a; padding: 7px 10px; color: #a1a1aa; text-align: left; font-weight: bold;">{cell}</th>')
+                    html_out.append('</tr>')
+                else:
+                    html_out.append('<tr style="background-color: #121214;">')
+                    for cell in row:
+                        html_out.append(f'<td style="border: 1px solid #27272a; padding: 7px 10px; color: #e4e4e7;">{cell}</td>')
+                    html_out.append('</tr>')
+            html_out.append('</table>')
+        in_table = False
+        table_rows = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        callout_match = re.match(r'^>\s*\[!(NOTE|IMPORTANT|WARNING|TIP|CAUTION)\]', stripped, re.IGNORECASE)
+        if callout_match:
+            flush_table()
+            flush_callout()
+            in_callout = True
+            callout_type = callout_match.group(1).upper()
+            continue
+
+        if in_callout:
+            if stripped.startswith('>'):
+                callout_lines.append(stripped.lstrip('>').strip())
+                continue
+            else:
+                flush_callout()
+
+        if stripped.startswith('|') and stripped.endswith('|'):
+            flush_callout()
+            cols = [c.strip() for c in stripped.strip('|').split('|')]
+            if all(re.match(r'^[\s\-:]+$', c) for c in cols):
+                continue
+            in_table = True
+            table_rows.append(cols)
+            continue
+        elif in_table:
+            flush_table()
+
+        if not stripped:
+            continue
+
+        if stripped.startswith('# '):
+            html_out.append(f'<h1 style="color: #fafafa; font-size: 17px; font-weight: bold; border-bottom: 1px solid #27272a; padding-bottom: 6px; margin: 16px 0 10px 0;">{stripped[2:]}</h1>')
+        elif stripped.startswith('## '):
+            html_out.append(f'<h2 style="color: #fafafa; font-size: 15px; font-weight: bold; border-bottom: 1px solid #27272a; padding-bottom: 4px; margin: 14px 0 8px 0;">{stripped[3:]}</h2>')
+        elif stripped.startswith('### '):
+            html_out.append(f'<h3 style="color: #e4e4e7; font-size: 13px; font-weight: bold; margin: 10px 0 6px 0;">{stripped[4:]}</h3>')
+        elif stripped in ('---', '***'):
+            html_out.append('<hr style="border: none; border-top: 1px solid #27272a; margin: 14px 0;" />')
+        elif stripped.startswith('- ') or stripped.startswith('* '):
+            html_out.append(f'<div style="color: #e4e4e7; font-size: 13px; margin: 4px 0 4px 16px; line-height: 1.5;">• {stripped[2:]}</div>')
+        elif stripped.startswith(('• ', '◦ ')):
+            html_out.append(f'<div style="color: #e4e4e7; font-size: 13px; margin: 4px 0 4px 16px; line-height: 1.5;">{stripped}</div>')
+        else:
+            html_out.append(f'<p style="color: #e4e4e7; font-size: 13px; margin: 6px 0; line-height: 1.5;">{stripped}</p>')
+
+    flush_callout()
+    flush_table()
+
+    body = "\n".join(html_out)
+    return (
+        f'<html><head><style>'
+        f'body {{ font-family: "Google Sans", "Segoe UI", sans-serif; color: #e4e4e7; font-size: 13px; }}'
+        f'code {{ font-family: "Google Sans Code Nerd Font", Consolas, monospace; }}'
+        f'</style></head>'
+        f'<body style="font-family: \'Google Sans\', \'Segoe UI\', sans-serif; color: #e4e4e7; background-color: transparent;">{body}</body></html>'
+    )
+
+class ReleaseNotesDialog(ModernModal):
+    def __init__(self, i18n, parent=None):
+        self.i18n = i18n
+        super().__init__(
+            title=self.i18n.get("dialogs.release_notes.title"),
+            icon_path=get_assets_path("icons/file-text.svg"),
+            icon_bg_color=COLOR_GREEN,
+            width=700,
+            parent=parent
+        )
+        self.set_dialog_state("accent", QColor(46, 205, 112, 60))
+        self._release_url = "https://github.com/Andro2k/MiniKick/releases/latest"
+        self._worker = None
+
+        self._setup_ui()
+        self._fetch_release_notes()
+
+    def _setup_ui(self):
+        self.lbl_subtitle = QLabel(self.i18n.get("dialogs.release_notes.subtitle"))
+        self.lbl_subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_subtitle.setWordWrap(True)
+        self.lbl_subtitle.setProperty("role", "body")
+        self.content_layout.addWidget(self.lbl_subtitle)
+
+        self.meta_container = QWidget(self.container)
+        meta_layout = QHBoxLayout(self.meta_container)
+        meta_layout.setContentsMargins(0, 4, 0, 4)
+        meta_layout.setSpacing(8)
+        meta_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.lbl_tag_badge = QLabel("", parent=self.meta_container)
+        self.lbl_tag_badge.setProperty("role", "badge_kick")
+
+        self.lbl_published = QLabel("", parent=self.meta_container)
+        self.lbl_published.setProperty("role", "caption")
+
+        self.lbl_author = QLabel("", parent=self.meta_container)
+        self.lbl_author.setProperty("role", "caption")
+
+        meta_layout.addWidget(self.lbl_tag_badge)
+        meta_layout.addWidget(self.lbl_published)
+        meta_layout.addWidget(self.lbl_author)
+
+        self.content_layout.addWidget(self.meta_container)
+        self.meta_container.hide()
+
+        self.txt_content = QTextBrowser(self.container)
+        self.txt_content.setOpenExternalLinks(False)
+        self.txt_content.anchorClicked.connect(self._handle_anchor_clicked)
+        self.txt_content.setReadOnly(True)
+        self.txt_content.setProperty("role", "release_notes_browser")
+        self.txt_content.setFixedHeight(480)
+        self.txt_content.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Fixed)
+
+        base_font = QFont("Google Sans", 10)
+        base_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+        self.txt_content.setFont(base_font)
+
+        loading_html = f"<html><body style=\"font-family: 'Google Sans', sans-serif; color: #a1a1aa; text-align: center; margin-top: 180px;\"><i>{self.i18n.get('dialogs.release_notes.loading')}</i></body></html>"
+        self.txt_content.setHtml(loading_html)
+        self.content_layout.addWidget(self.txt_content)
+
+        self.content_layout.addStretch()
+
+        self.btn_github = QPushButton(self.i18n.get("dialogs.release_notes.btn_github"))
+        self.btn_github.setProperty("role", "action_accent")
+        self.btn_github.clicked.connect(self._open_github_release)
+
+        self.btn_close = QPushButton(self.i18n.get("common.buttons.close"))
+        self.btn_close.setProperty("role", "action_outlined")
+        self.btn_close.clicked.connect(self.reject)
+
+        self.add_action_buttons(self.btn_close, self.btn_github, stretch_center=False)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._center_on_parent()
+
+    def _center_on_parent(self):
+        parent = self.parentWidget() or (self.parent() if isinstance(self.parent(), QWidget) else None)
+        if parent:
+            p_geo = parent.geometry()
+            x = p_geo.x() + (p_geo.width() - self.width()) // 2
+            y = p_geo.y() + (p_geo.height() - self.height()) // 2
+            self.move(max(0, x), max(0, y))
+        else:
+            from PySide6.QtWidgets import QApplication
+            screen = self.screen() or QApplication.primaryScreen()
+            if screen:
+                s_geo = screen.availableGeometry()
+                x = s_geo.x() + (s_geo.width() - self.width()) // 2
+                y = s_geo.y() + (s_geo.height() - self.height()) // 2
+                self.move(max(0, x), max(0, y))
+
+    def _fetch_release_notes(self):
+        self._worker = ReleaseNotesWorker(parent=self)
+        self._worker.release_fetched.connect(self._on_release_fetched)
+        self._worker.error_occurred.connect(self._on_error_occurred)
+        self._worker.finished.connect(self._worker.deleteLater)
+        self._worker.start()
+
+    def _on_release_fetched(self, data: dict):
+        tag_name = data.get("tag_name", "")
+        release_name = data.get("name", "") or tag_name
+        published_raw = data.get("published_at", "")
+        published_date = published_raw.split("T")[0] if "T" in published_raw else published_raw
+        author = data.get("author", "")
+        body_text = data.get("body", "")
+        self._release_url = data.get("html_url", self._release_url)
+
+        if release_name:
+            self.title_lbl.setText(release_name)
+
+        if tag_name:
+            self.lbl_tag_badge.setText(tag_name)
+            self.lbl_tag_badge.show()
+
+        if published_date:
+            pub_text = self.i18n.get("dialogs.release_notes.lbl_published").replace("{date}", published_date)
+            self.lbl_published.setText(pub_text)
+            self.lbl_published.show()
+
+        if author:
+            auth_text = self.i18n.get("dialogs.release_notes.lbl_author").replace("{author}", author)
+            self.lbl_author.setText(auth_text)
+            self.lbl_author.show()
+
+        self.meta_container.show()
+
+        if body_text:
+            cleaned_html = markdown_to_github_html(body_text)
+            self.txt_content.setHtml(cleaned_html)
+        
+        self._center_on_parent()
+
+    def _on_error_occurred(self, err: str):
+        err_html = f"<html><body style=\"font-family: 'Google Sans', sans-serif; color: #ef4444; text-align: center; margin-top: 180px;\">⚠️ <i>{self.i18n.get('dialogs.release_notes.error')}</i></body></html>"
+        self.txt_content.setHtml(err_html)
+
+    def _handle_anchor_clicked(self, url: QUrl):
+        if url.scheme() in ("http", "https"):
+            QDesktopServices.openUrl(url)
+
+    def _open_github_release(self):
+        if self._release_url:
+            QDesktopServices.openUrl(QUrl(self._release_url))

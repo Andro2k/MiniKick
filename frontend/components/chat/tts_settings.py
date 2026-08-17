@@ -7,59 +7,70 @@ from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigg
 from frontend.common.theme import COLOR_NEUTRAL_200
 
 class VoiceSettingRow(QWidget):
-    def __init__(self, icon_name: str, title_text: str, desc_text: str, combo: NoWheelComboBox, test_signal=None, tooltip_text="", icon_color=COLOR_NEUTRAL_200, parent=None):
+    def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
+                 switch: ModernSwitch = None, test_signal=None, tooltip_text="",
+                 icon_color=COLOR_NEUTRAL_200, parent=None):
         super().__init__(parent)
-        
+        self.switch = switch
+        self.combo = combo
+        self.btn_test = None
+
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(4, 4, 4, 4)
-        main_layout.setSpacing(4)
-        
+        main_layout.setContentsMargins(2, 2, 2, 2)
+        main_layout.setSpacing(2)
+
         header_layout = QHBoxLayout()
         header_layout.setSpacing(6)
-        
+
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
-        
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
+
         lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
-        
+
         header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
         header_layout.addWidget(lbl_title, alignment=Qt.AlignmentFlag.AlignVCenter)
         header_layout.addStretch()
-        
+
         main_layout.addLayout(header_layout)
-        
-        if desc_text:
-            lbl_desc = QLabel(desc_text, parent=self)
-            lbl_desc.setProperty("role", "body")
-            lbl_desc.setWordWrap(True)
-            main_layout.addWidget(lbl_desc)
-            
+
         controls_layout = QHBoxLayout()
         controls_layout.setSpacing(6)
-        
+
+        if self.switch is not None:
+            controls_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)
+            self.switch.toggled.connect(self._on_switch_toggled)
+
         combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         controls_layout.addWidget(combo, stretch=1)
-        
+
         if test_signal is not None:
-            btn_test = QPushButton()
-            btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_200, size=16))
-            btn_test.setIconSize(QSize(16, 16))
-            btn_test.setFixedSize(32, 32)
-            btn_test.setToolTip(tooltip_text)
-            btn_test.setProperty("role", "action_neutral_border")
-            
+            self.btn_test = QPushButton()
+            self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_200, size=14))
+            self.btn_test.setIconSize(QSize(14, 14))
+            self.btn_test.setFixedSize(28, 28)
+            self.btn_test.setToolTip(tooltip_text)
+            self.btn_test.setProperty("role", "action_neutral_border")
+
             def trigger_test():
                 voice_id = combo.currentData() or ""
                 if voice_id and test_signal is not None:
-                    btn_test.setEnabled(False)
+                    self.btn_test.setEnabled(False)
                     test_signal.emit(voice_id)
-                    QTimer.singleShot(3000, lambda: btn_test.setEnabled(True))
-                    
-            btn_test.clicked.connect(trigger_test)
-            controls_layout.addWidget(btn_test)
-            
+                    QTimer.singleShot(3000, lambda: self.btn_test.setEnabled(True) if (not self.switch or self.switch.isChecked()) else None)
+
+            self.btn_test.clicked.connect(trigger_test)
+            controls_layout.addWidget(self.btn_test)
+
         main_layout.addLayout(controls_layout)
+
+        if self.switch is not None:
+            self._on_switch_toggled(self.switch.isChecked())
+
+    def _on_switch_toggled(self, checked: bool):
+        self.combo.setEnabled(checked)
+        if self.btn_test is not None:
+            self.btn_test.setEnabled(checked)
 
 class ChatTtsSettingsPanel(ModernCard):
     volume_changed = Signal(int)
@@ -70,20 +81,19 @@ class ChatTtsSettingsPanel(ModernCard):
     voice_test_requested = Signal(str)
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=12, spacing=8, orientation="vertical")
+        super().__init__(parent, margin=8, spacing=4, orientation="vertical")
         self.i18n = i18n
         self._setup_ui()
         self._connect_signals()
 
     def _setup_ui(self):
         self.chk_tts = ModernSwitch(self)
-        self.chk_name = ModernSwitch(self) 
+        self.chk_name = ModernSwitch(self)
         self.combo_provider = NoWheelComboBox(self)
         self.combo_provider.addItem(self.i18n.get("chat.status.provider_local"), userData="local")
         self.combo_provider.addItem(self.i18n.get("chat.status.provider_cloud"), userData="web")
-        self.combo_provider.setMinimumWidth(180)
         self.chk_command = ModernSwitch(self)
-        
+
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
@@ -93,7 +103,7 @@ class ChatTtsSettingsPanel(ModernCard):
         row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
         row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
         row_cmd = SettingRow("code.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
-        
+
         self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
@@ -109,59 +119,74 @@ class ChatTtsSettingsPanel(ModernCard):
 
         divider = ModernDivider()
         self.addWidget(divider)
-        
+
         category_lbl = QLabel(self.i18n.get("chat.roles.title"))
         category_lbl.setProperty("role", "category")
         self.addWidget(category_lbl)
 
-        voices_card = ModernCard(parent=self, margin=5, spacing=6, orientation="vertical")
+        voices_card = ModernCard(parent=self, margin=4, spacing=4, orientation="vertical")
 
-        row_provider = SettingRow("world.svg", self.i18n.get("chat.settings.provider_title"), self.i18n.get("chat.settings.provider_desc"), self.combo_provider)
+        row_provider = VoiceSettingRow(
+            "world.svg",
+            self.i18n.get("chat.settings.provider_title"),
+            self.combo_provider
+        )
         voices_card.addWidget(row_provider)
-        
+
         self.combo_voice = NoWheelComboBox(self)
         self.combo_voice_broadcaster = NoWheelComboBox(self)
         self.combo_voice_moderator = NoWheelComboBox(self)
         self.combo_voice_vip = NoWheelComboBox(self)
         self.combo_voice_subscriber = NoWheelComboBox(self)
 
+        self.sw_role_everyone = ModernSwitch(self)
+        self.sw_role_everyone.setChecked(True)
+        self.sw_role_broadcaster = ModernSwitch(self)
+        self.sw_role_broadcaster.setChecked(True)
+        self.sw_role_moderator = ModernSwitch(self)
+        self.sw_role_moderator.setChecked(True)
+        self.sw_role_vip = ModernSwitch(self)
+        self.sw_role_vip.setChecked(True)
+        self.sw_role_subscriber = ModernSwitch(self)
+        self.sw_role_subscriber.setChecked(True)
+
         row_voice_general = VoiceSettingRow(
-            "people-fill.svg", 
-            self.i18n.get("chat.settings.voice_general_title"), 
-            self.i18n.get("chat.settings.voice_general_desc"), 
+            "users.svg",
+            self.i18n.get("chat.settings.voice_general_title"),
             self.combo_voice,
+            switch=self.sw_role_everyone,
             test_signal=self.voice_test_requested,
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_broadcaster = VoiceSettingRow(
-            "microphone.svg", 
-            self.i18n.get("chat.roles.broadcaster_title"), 
-            self.i18n.get("chat.roles.broadcaster_desc"), 
+            "microphone.svg",
+            self.i18n.get("chat.roles.broadcaster_title"),
             self.combo_voice_broadcaster,
+            switch=self.sw_role_broadcaster,
             test_signal=self.voice_test_requested,
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_moderator = VoiceSettingRow(
-            "shield-user-bold.svg", 
-            self.i18n.get("chat.roles.moderator_title"), 
-            self.i18n.get("chat.roles.moderator_desc"), 
+            "shield-user-bold.svg",
+            self.i18n.get("chat.roles.moderator_title"),
             self.combo_voice_moderator,
+            switch=self.sw_role_moderator,
             test_signal=self.voice_test_requested,
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_vip = VoiceSettingRow(
-            "star.svg", 
-            self.i18n.get("chat.roles.vip_title"), 
-            self.i18n.get("chat.roles.vip_desc"), 
+            "star.svg",
+            self.i18n.get("chat.roles.vip_title"),
             self.combo_voice_vip,
+            switch=self.sw_role_vip,
             test_signal=self.voice_test_requested,
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_subscriber = VoiceSettingRow(
-            "crown.svg", 
-            self.i18n.get("chat.roles.subscriber_title"), 
-            self.i18n.get("chat.roles.subscriber_desc"), 
+            "crown.svg",
+            self.i18n.get("chat.roles.subscriber_title"),
             self.combo_voice_subscriber,
+            switch=self.sw_role_subscriber,
             test_signal=self.voice_test_requested,
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
@@ -186,7 +211,9 @@ class ChatTtsSettingsPanel(ModernCard):
             self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
             self.combo_provider,
             self.combo_voice_broadcaster, self.combo_voice_moderator,
-            self.combo_voice_vip, self.combo_voice_subscriber
+            self.combo_voice_vip, self.combo_voice_subscriber,
+            self.sw_role_everyone, self.sw_role_broadcaster,
+            self.sw_role_moderator, self.sw_role_vip, self.sw_role_subscriber
         ]
         for control in controls:
             if isinstance(control, ModernSwitch):
@@ -221,21 +248,30 @@ class ChatTtsSettingsPanel(ModernCard):
         self.txt_command.style().unpolish(self.txt_command)
         self.txt_command.style().polish(self.txt_command)
 
-    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None):
+    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str,
+                        is_web_provider: bool, volume: int, role_voices: dict = None, role_enabled: dict = None):
         self.blockSignals(True)
         self.chk_tts.setChecked(enabled)
         self.chk_name.setChecked(read_name)
         self.chk_command.setChecked(use_command)
         self.txt_command.setText(command)
         self.txt_command.setEnabled(use_command)
-        
+
         provider_val = "web" if is_web_provider else "local"
         idx = self.combo_provider.findData(provider_val)
         if idx >= 0:
             self.combo_provider.setCurrentIndex(idx)
-            
+
         self.slider_vol.setValue(volume)
         self._pending_role_voices = role_voices or {}
+
+        if role_enabled:
+            self.sw_role_everyone.setChecked(role_enabled.get("everyone", True))
+            self.sw_role_broadcaster.setChecked(role_enabled.get("broadcaster", True))
+            self.sw_role_moderator.setChecked(role_enabled.get("moderator", True))
+            self.sw_role_vip.setChecked(role_enabled.get("vip", True))
+            self.sw_role_subscriber.setChecked(role_enabled.get("subscriber", True))
+
         self.blockSignals(False)
 
     def update_languages(self, langs: list[str], select_prefix: str = None):
@@ -244,14 +280,14 @@ class ChatTtsSettingsPanel(ModernCard):
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):
         self.combo_voice.blockSignals(True)
         self.combo_voice.clear()
-        
+
         role_voices_pool = all_voices if all_voices is not None else voices
-        
+
         index_to_select = 0
         for i, (v_id, v_name) in enumerate(role_voices_pool):
             self.combo_voice.addItem(v_name, userData=v_id)
             if v_id == select_id:
-                index_to_select = i                
+                index_to_select = i
         if self.combo_voice.count() > 0:
             self.combo_voice.setCurrentIndex(index_to_select)
         self.combo_voice.blockSignals(False)
@@ -293,4 +329,9 @@ class ChatTtsSettingsPanel(ModernCard):
             "role_voice_moderator": self.combo_voice_moderator.currentData() or "",
             "role_voice_vip": self.combo_voice_vip.currentData() or "",
             "role_voice_subscriber": self.combo_voice_subscriber.currentData() or "",
+            "role_enabled_everyone": self.sw_role_everyone.isChecked(),
+            "role_enabled_broadcaster": self.sw_role_broadcaster.isChecked(),
+            "role_enabled_moderator": self.sw_role_moderator.isChecked(),
+            "role_enabled_vip": self.sw_role_vip.isChecked(),
+            "role_enabled_subscriber": self.sw_role_subscriber.isChecked(),
         }

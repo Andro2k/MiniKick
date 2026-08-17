@@ -2,7 +2,7 @@
 
 import re
 from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, QWidget, 
-                               QHBoxLayout, QLabel, QTextEdit, QListWidget)
+                               QHBoxLayout, QLabel, QTextEdit, QListWidget, QSpinBox)
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QSyntaxHighlighter, 
                            QTextCharFormat, QFont, QKeyEvent)
@@ -63,6 +63,32 @@ class ModernSwitch(QAbstractButton):
         painter.drawRoundedRect(handle_rect, handle_radius, handle_radius)
         
         painter.end()
+
+class CompactSpinBox(QSpinBox):
+    def __init__(self, min_val: int = 0, max_val: int = 100, init_val: int = 0, 
+                 step: int = 1, suffix: str = "", prefix: str = "", 
+                 special_value_text: str = "", fixed_width: int = 145, parent=None):
+        super().__init__(parent)
+        self.setRange(min_val, max_val)
+        self.setSingleStep(step)
+        self.setValue(init_val)
+        if suffix:
+            formatted_suffix = suffix if suffix.startswith(" ") else f" {suffix}"
+            self.setSuffix(formatted_suffix)
+        if prefix:
+            self.setPrefix(prefix)
+        if special_value_text:
+            self.setSpecialValueText(special_value_text)
+        if fixed_width:
+            self.setFixedWidth(fixed_width)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+    def wheelEvent(self, event):
+        if not self.hasFocus():
+            event.ignore()
+        else:
+            super().wheelEvent(event)
 
 class CompactSlider(QWidget):
     def __init__(self, min_val: int, max_val: int, init_val: int, suffix: str = "", parent=None):

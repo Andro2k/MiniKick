@@ -31,7 +31,7 @@ class MusicCommandsPanel(QWidget):
 
         self.sw_skip = ModernSwitch()
         self.sw_skip.toggled.connect(lambda val: self.command_toggled.emit("!skip", val))
-        row_skip = SettingRow("player-skip-forward.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
+        row_skip = SettingRow("player-skip.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
 
         self.sw_song = ModernSwitch()
         self.sw_song.toggled.connect(lambda val: self.command_toggled.emit("!song", val))

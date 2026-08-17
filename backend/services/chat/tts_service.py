@@ -30,6 +30,12 @@ class TTSManager:
         if provider_type in self._providers:
             self._active_provider_key = provider_type
 
+    def set_audio_device(self, device_id: str) -> None:
+        self._audio_device_id = device_id
+        for provider in self._providers.values():
+            if hasattr(provider, "set_audio_device"):
+                provider.set_audio_device(device_id)
+
     def say(self, text: str, voice_id: str = None) -> None:
         if text and text.strip():
             self.text_queue.put((text.strip(), voice_id))

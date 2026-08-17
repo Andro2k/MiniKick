@@ -52,10 +52,10 @@ class RewardWorker(QThread):
                     
             except Exception as e:
                 self.error_occurred.emit(self.i18n.get("main.workers.reward.poll_error").replace("{error}", str(e)))
-            for _ in range(self.poll_interval * 2):
+            for _ in range(self.poll_interval * 10):
                 if not self._running:
                     break
-                self.msleep(500)
+                self.msleep(100)
 
     def _process_and_emit_redemptions(self, redemptions: list, user_ids: list):
         user_names_map = {}
@@ -94,7 +94,7 @@ class RewardWorker(QThread):
         self._running = False
 
 class FetchRewardsWorker(QThread):
-    rewards_fetched = Signal(list)
+    rewards_fetched = Signal(list, dict)
     error_occurred = Signal(str)
 
     def __init__(self, api_client: KickAPIClient, parent=None):
@@ -106,7 +106,53 @@ class FetchRewardsWorker(QThread):
     def run(self):
         try:
             resp = self.api_client.fetch_channel_rewards()
-            rewards = [item["title"] for item in resp.get("data", [])]
-            self.rewards_fetched.emit(rewards)
+            data = resp.get("data", [])
+            rewards_list = [item["title"] for item in data if isinstance(item, dict) and "title" in item]
+            rewards_map = {item["title"]: item for item in data if isinstance(item, dict) and "title" in item}
+            self.rewards_fetched.emit(rewards_list, rewards_map)
+        except Exception as e:
+            self.error_occurred.emit(str(e))
+
+class CreateRewardWorker(QThread):
+    reward_created = Signal(dict)
+    error_occurred = Signal(str)
+
+    def __init__(self, api_client: KickAPIClient, payload: dict, parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Create_Reward")
+        self.api_client = api_client
+        self.payload = payload
+
+    def run(self):
+        try:
+            resp = self.api_client.create_channel_reward(
+                title=self.payload.get("title", ""),
+                cost=self.payload.get("cost", 100),
+                description=self.payload.get("description", ""),
+                background_color=self.payload.get("background_color", "#00e701"),
+                is_user_input_required=self.payload.get("is_user_input_required", False),
+                should_redemptions_skip_request_queue=self.payload.get("should_redemptions_skip_request_queue", False)
+            )
+            reward_data = resp.get("data", {})
+            self.reward_created.emit(reward_data)
+        except Exception as e:
+            self.error_occurred.emit(str(e))
+
+class UpdateRewardWorker(QThread):
+    reward_updated = Signal(dict)
+    error_occurred = Signal(str)
+
+    def __init__(self, api_client: KickAPIClient, reward_id: str, payload: dict, parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Update_Reward")
+        self.api_client = api_client
+        self.reward_id = reward_id
+        self.payload = payload
+
+    def run(self):
+        try:
+            resp = self.api_client.update_channel_reward(self.reward_id, self.payload)
+            reward_data = resp.get("data", {})
+            self.reward_updated.emit(reward_data)
         except Exception as e:
             self.error_occurred.emit(str(e))
