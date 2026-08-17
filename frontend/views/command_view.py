@@ -277,9 +277,16 @@ class CommandView(BaseView):
         trigger_name = cmd_data["trigger"]
         cell = TableActionCell()
         
+        def _on_toggled(checked: bool, t: str = trigger_name):
+            for cmd in self._raw_commands:
+                if cmd.get("trigger") == t:
+                    cmd["is_active"] = checked
+                    break
+            self.status_toggled.emit(t, checked)
+
         cell.add_switch(
             checked=cmd_data.get("is_active", True),
-            callback=lambda checked, t=trigger_name: self.status_toggled.emit(t, checked)
+            callback=_on_toggled
         )
         
         cell.add_button(

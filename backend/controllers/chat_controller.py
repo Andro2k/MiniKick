@@ -14,7 +14,7 @@ class ChatController(QObject):
     command_executed = Signal()
     message_received = Signal(str, str, str, list, str, str)
     music_plugin_triggered = Signal(str, str, str, str, str)
-    widget_plugin_triggered = Signal(str, str, str, str)
+    widget_plugin_triggered = Signal(str, str, str, str, str)
 
     def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None):
         super().__init__()
@@ -223,7 +223,7 @@ class ChatController(QObject):
         if plugin_tag.startswith("[PLUGIN_MUSIC_"):
             self.music_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix, platform)
         elif plugin_tag.startswith("[PLUGIN_WIDGET_"):
-            self.widget_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix)
+            self.widget_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix, platform)
 
     def _handle_plugin_tts(self, dto: ChatMessageDTO, prefix: str) -> None:
         msg_content = dto.content[len(prefix):].strip()
@@ -277,9 +277,9 @@ class ChatController(QObject):
     @Slot(object)
     def handle_incoming_message(self, dto: ChatMessageDTO) -> None:
         self._step_chat_filter(dto)
+        self._step_ui_render(dto)
         self._step_plugins(dto)
         self._step_tts(dto)
-        self._step_ui_render(dto)
 
     def _resolve_user_role(self, badges: list, user: str) -> str:
         if "broadcaster" in badges:

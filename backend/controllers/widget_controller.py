@@ -35,11 +35,11 @@ class WidgetController(QObject):
         self._combo_count = 0
 
         self._widget_handlers = {
-            self.PLUGIN_TAGS["shoutout"]: lambda user, args, first_word, prefix: self._process_shoutout(user, args, prefix),
-            self.PLUGIN_TAGS["death"]: lambda user, args, first_word, prefix: self._process_death(user, args or first_word),
-            self.PLUGIN_TAGS["score"]: self._dispatch_score_command,
-            self.PLUGIN_TAGS["explosion"]: lambda user, args, first_word, prefix: self._process_explosion_command(user, args),
-            self.PLUGIN_TAGS["combo"]: lambda user, args, first_word, prefix: self._process_combo_command(user, args),
+            self.PLUGIN_TAGS["shoutout"]: lambda user, args, first_word, prefix, platform: self._process_shoutout(user, args, prefix, platform=platform),
+            self.PLUGIN_TAGS["death"]: lambda user, args, first_word, prefix, platform: self._process_death(user, args or first_word, platform=platform),
+            self.PLUGIN_TAGS["score"]: lambda user, args, first_word, prefix, platform: self._dispatch_score_command(user, args, first_word, prefix, platform=platform),
+            self.PLUGIN_TAGS["explosion"]: lambda user, args, first_word, prefix, platform: self._process_explosion_command(user, args, platform=platform),
+            self.PLUGIN_TAGS["combo"]: lambda user, args, first_word, prefix, platform: self._process_combo_command(user, args, platform=platform),
         }
 
         self._save_timer = QTimer(self)
@@ -262,13 +262,13 @@ class WidgetController(QObject):
                 "title_text": title_text
             })
 
-    def _dispatch_score_command(self, user: str, args: str, first_word: str, prefix: str) -> None:
+    def _dispatch_score_command(self, user: str, args: str, first_word: str, prefix: str, platform: str = "kick") -> None:
         arg_clean = args.strip().lower()
 
         if arg_clean in ("reset", "0", "reiniciar", "clear"):
             wins, losses = self.widget_service.update_score(reset=True)
             msg = self.i18n.get("widgets.score.msg_reset").replace("{user}", user)
-            self._notify_score_change(wins, losses, msg)
+            self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
         if first_word in ("win", "w", "victoria"):
@@ -277,7 +277,7 @@ class WidgetController(QObject):
             else:
                 wins, losses = self.widget_service.update_score(delta_wins=1)
             msg = self.i18n.get("widgets.score.msg_win").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
-            self._notify_score_change(wins, losses, msg)
+            self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
         if first_word in ("loss", "lose", "l", "derrota"):
@@ -286,7 +286,7 @@ class WidgetController(QObject):
             else:
                 wins, losses = self.widget_service.update_score(delta_losses=1)
             msg = self.i18n.get("widgets.score.msg_loss").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
-            self._notify_score_change(wins, losses, msg)
+            self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
         if arg_clean in ("+1", "+", "win", "w", "victoria"):
@@ -299,9 +299,9 @@ class WidgetController(QObject):
             wins, losses = self.widget_service.get_score()
             msg = self.i18n.get("widgets.score.msg_check").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
 
-        self._notify_score_change(wins, losses, msg)
+        self._notify_score_change(wins, losses, msg, platform=platform)
 
-    def _notify_score_change(self, wins: int, losses: int, msg: str) -> None:
+    def _notify_score_change(self, wins: int, losses: int, msg: str, platform: str = "kick") -> None:
         self.score_updated.emit(wins, losses)
         if self.overlay_server:
             w_score = self.widget_service.get_widget("score")
@@ -312,43 +312,44 @@ class WidgetController(QObject):
                 "is_active": w_score.get("is_active", True),
                 "title_text": title_text
             })
-        self.command_service.send_response(msg)
+        self.command_service.send_response(msg, platform=platform)
 
-    @Slot(str, str, str, str)
-    def handle_widget_command(self, plugin_tag: str, user: str, content: str, prefix: str):
+    @Slot(str, str, str, str, str)
+    def handle_widget_command(self, plugin_tag: str, user: str, content: str, prefix: str, platform: str = "kick"):
         parts = content.strip().split()
         first_word = parts[0][len(prefix):].lower() if parts else ""
         args = " ".join(parts[1:]).strip() if len(parts) > 1 else ""
 
         handler = self._widget_handlers.get(plugin_tag)
         if handler:
-            handler(user, args, first_word, prefix)
+            handler(user, args, first_word, prefix, platform)
 
-    def _process_shoutout(self, user: str, args: str, prefix: str):
+    def _process_shoutout(self, user: str, args: str, prefix: str, platform: str = "kick"):
         if not args:
             err_msg = self.i18n.get("widgets.so.usage_error").replace("{user}", user).replace("{trigger}", prefix)
-            self.command_service.send_response(err_msg)
+            self.command_service.send_response(err_msg, platform=platform)
             return
 
         target_user = args.split()[0].lstrip("@").strip()
         reply = self.widget_service.format_shoutout(target_user)
-        self.command_service.send_response(reply)
+        self.command_service.send_response(reply, platform=platform)
 
         if self.overlay_server:
             import threading
             def _fetch_and_trigger():
                 avatar_url = self.widget_service.fetch_streamer_avatar(target_user)
                 header_text = self.i18n.get("widgets.so.overlay_header")
+                target_url = f"https://twitch.tv/{target_user}" if platform == "twitch" else f"https://kick.com/{target_user}"
                 self.overlay_server.trigger_widget_event("shoutout", {
                     "target": target_user,
-                    "url": f"https://kick.com/{target_user}",
+                    "url": target_url,
                     "avatar_url": avatar_url,
                     "header_text": header_text
                 })
 
             threading.Thread(target=_fetch_and_trigger, daemon=True).start()
 
-    def _process_death(self, user: str, args: str):
+    def _process_death(self, user: str, args: str, platform: str = "kick"):
         arg_clean = args.strip().lower()
         if arg_clean in ("reset", "0", "reiniciar", "clear"):
             new_count = self.widget_service.update_death_count(set_val=0)
@@ -380,7 +381,7 @@ class WidgetController(QObject):
                 "is_active": w_death.get("is_active", True),
                 "title_text": title_text
             })
-        self.command_service.send_response(msg)
+        self.command_service.send_response(msg, platform=platform)
 
     @Slot(str, str, str, list)
     def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None):
@@ -451,7 +452,7 @@ class WidgetController(QObject):
                         "timeout_sec": timeout_sec
                     })
 
-    def _process_explosion_command(self, user: str, args: str):
+    def _process_explosion_command(self, user: str, args: str, platform: str = "kick"):
         if self.overlay_server:
             sample_emotes = [
                 {"type": "text", "src": "🔥", "name": "🔥"},
@@ -464,9 +465,9 @@ class WidgetController(QObject):
                 "count": 25
             })
             msg = self.i18n.get("widgets.explosion.msg_explosion").replace("{user}", user) if self.i18n else ""
-            self.command_service.send_response(msg)
+            self.command_service.send_response(msg, platform=platform)
 
-    def _process_combo_command(self, user: str, args: str):
+    def _process_combo_command(self, user: str, args: str, platform: str = "kick"):
         if self.overlay_server:
             emote = args.strip() if args.strip() else "KEKW"
             self.overlay_server.trigger_widget_event("emote_combo", {
@@ -477,5 +478,5 @@ class WidgetController(QObject):
                 "timeout_sec": 5.0
             })
             msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote) if self.i18n else ""
-            self.command_service.send_response(msg)
+            self.command_service.send_response(msg, platform=platform)
 

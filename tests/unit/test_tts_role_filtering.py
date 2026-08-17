@@ -60,3 +60,33 @@ def test_chat_service_role_enabled_persistence():
     assert loaded["role_enabled_moderator"] is False
     assert loaded["role_enabled_vip"] is True
     assert loaded["role_enabled_subscriber"] is False
+
+def test_chat_view_property_setters():
+    from PySide6.QtWidgets import QApplication
+    from frontend.views.chat_view import ChatView
+    from backend.services.system.translation_service import TranslationService
+
+    app = QApplication.instance() or QApplication([])
+    i18n = TranslationService(default_lang="es")
+    view = ChatView(i18n=i18n)
+    
+    view.tts_enabled = False
+    assert view.tts_enabled is False
+    view.tts_enabled = True
+    assert view.tts_enabled is True
+
+    view.read_name_enabled = False
+    assert view.read_name_enabled is False
+    view.read_name_enabled = True
+    assert view.read_name_enabled is True
+
+    view.use_command_enabled = True
+    assert view.use_command_enabled is True
+    view.use_command_enabled = False
+    assert view.use_command_enabled is False
+
+    view.tts_command = "!custom"
+    assert view.tts_command == "!custom"
+
+    view.tts_volume = 75
+    assert view.tts_volume == 75

@@ -26,14 +26,14 @@ class DatabaseManager:
     def _initialize_database(self) -> None:
         try:
             if os.path.exists(self.db_name):
-                with sqlite3.connect(self.db_name, factory=AutoCloseConnection) as conn:
+                with sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection) as conn:
                     cursor = conn.cursor()
                     cursor.execute("PRAGMA integrity_check")
                     res = cursor.fetchone()
                     if not res or res[0] != "ok":
                         raise sqlite3.DatabaseError("Database integrity check failed")
             
-            with sqlite3.connect(self.db_name) as conn:
+            with sqlite3.connect(self.db_name, timeout=10.0) as conn:
                 conn.execute("PRAGMA journal_mode=WAL")
 
             self._create_tables()
@@ -45,7 +45,8 @@ class DatabaseManager:
     def get_connection(self) -> sqlite3.Connection:
         conn = None
         try:
-            conn = sqlite3.connect(self.db_name, factory=AutoCloseConnection)
+            conn = sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection)
+            conn.execute("PRAGMA busy_timeout=5000")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-20000")
             conn.execute("PRAGMA foreign_keys=ON")
@@ -59,7 +60,7 @@ class DatabaseManager:
             if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
                 logger.error("Database error in get_connection, recreating database: %s", e)
                 self._handle_corrupt_database()
-                return sqlite3.connect(self.db_name, factory=AutoCloseConnection)
+                return sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection)
             raise e
 
     def _handle_corrupt_database(self) -> None:
@@ -218,6 +219,9 @@ class DatabaseManager:
                     message TEXT NOT NULL
                 )
             """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_level_timestamp ON system_logs(level, timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_youtube_cache_play_count ON youtube_search_cache(play_count DESC)")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS widgets_config (
                     widget_id TEXT PRIMARY KEY,

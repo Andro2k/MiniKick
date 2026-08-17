@@ -95,13 +95,13 @@ class ChatDisplayPanel(ModernCard):
     def _trim_chat_history(self):
         doc = self.chat_display.document()
         excess = doc.blockCount() - self._MAX_CHAT_BLOCKS
-        if excess <= 0:
+        if excess <= 20:
             return
         cursor = self.chat_display.textCursor()
         cursor.beginEditBlock()
         cursor.movePosition(cursor.MoveOperation.Start)
         for _ in range(excess):
-            cursor.select(cursor.SelectionType.BlockUnderCursor)
-            cursor.removeSelectedText()
-            cursor.deleteChar()
+            cursor.movePosition(cursor.MoveOperation.NextBlock, cursor.MoveMode.KeepAnchor)
+        cursor.removeSelectedText()
+        cursor.deleteChar()
         cursor.endEditBlock()

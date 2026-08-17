@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 from functools import lru_cache
-from PySide6.QtWidgets import QComboBox, QSlider
+from PySide6.QtWidgets import QComboBox, QSlider, QDateEdit, QTimeEdit
 from PySide6.QtCore import Qt, QByteArray, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
@@ -148,6 +148,22 @@ class NoWheelSlider(QSlider):
             event.ignore()
         else:
             super().wheelEvent(event)
+
+class NoWheelDateEdit(QDateEdit):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+    def wheelEvent(self, event):
+        event.ignore()
+
+class NoWheelTimeEdit(QTimeEdit):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+    def wheelEvent(self, event):
+        event.ignore()
 
 def validate_trigger_prefix(text: str) -> bool:
     return not text.strip() or text.startswith("!")

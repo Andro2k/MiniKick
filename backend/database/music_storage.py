@@ -53,7 +53,7 @@ class SQLiteMusicStorage:
                     self._increment_play_count(conn, r[4])
                     return {"title": r[0], "artist": r[1], "url": r[2], "duration": r[3] or "-"}
 
-                cursor.execute("SELECT query_raw, title, artist, url, duration FROM youtube_search_cache")
+                cursor.execute("SELECT query_raw, title, artist, url, duration FROM youtube_search_cache ORDER BY play_count DESC LIMIT 150")
                 rows = cursor.fetchall()
                 best_match = None
                 best_ratio = 0.0

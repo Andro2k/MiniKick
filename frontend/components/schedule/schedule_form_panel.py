@@ -1,10 +1,13 @@
 # frontend\components\schedule\schedule_form_panel.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-                               QPushButton, QTimeEdit, QDateEdit)
+                               QPushButton, QCalendarWidget)
+from PySide6.QtGui import QTextCharFormat, QColor
 from PySide6.QtCore import Qt, Signal, QTime, QDate, QTimer
 from frontend.widgets import ModernCard, ModernButton, ModernSwitch, UnifiedSearchBar
 from frontend.components.schedule.quick_change_panel import CategorySuggestionsPopup
+from frontend.common.utils import NoWheelDateEdit, NoWheelTimeEdit
+from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ScheduleFormPanel(QWidget):
     schedule_saved = Signal(dict)
@@ -83,11 +86,22 @@ class ScheduleFormPanel(QWidget):
         date_box.setSpacing(6)
         lbl_date = QLabel(self.i18n.get("stream_info.schedule_dialog.date_label"))
         lbl_date.setProperty("role", "h3")
-        self.date_edit = QDateEdit()
+        self.date_edit = NoWheelDateEdit()
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         self.date_edit.setDate(QDate.currentDate())
         self.date_edit.setFixedWidth(160)
+        
+        cal = self.date_edit.calendarWidget()
+        if cal:
+            cal.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
+            cal.setHorizontalHeaderFormat(QCalendarWidget.HorizontalHeaderFormat.ShortDayNames)
+            neutral_fmt = QTextCharFormat()
+            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_200))
+            cal.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, neutral_fmt)
+            cal.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, neutral_fmt)
+            cal.setHeaderTextFormat(neutral_fmt)
+
         date_box.addWidget(lbl_date)
         date_box.addWidget(self.date_edit)
         datetime_row.addLayout(date_box)
@@ -96,7 +110,7 @@ class ScheduleFormPanel(QWidget):
         time_box.setSpacing(6)
         lbl_time = QLabel(self.i18n.get("stream_info.schedule_dialog.time_label"))
         lbl_time.setProperty("role", "h3")
-        self.time_edit = QTimeEdit()
+        self.time_edit = NoWheelTimeEdit()
         self.time_edit.setDisplayFormat("HH:mm")
         self.time_edit.setTime(QTime.currentTime())
         self.time_edit.setFixedWidth(150)

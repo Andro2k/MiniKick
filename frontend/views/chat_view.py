@@ -91,17 +91,41 @@ class ChatView(BaseView):
     def tts_enabled(self) -> bool:
         return self.tts_settings_panel.chk_tts.isChecked()
 
+    @tts_enabled.setter
+    def tts_enabled(self, value: bool):
+        self.tts_settings_panel.chk_tts.blockSignals(True)
+        self.tts_settings_panel.chk_tts.setChecked(value)
+        self.tts_settings_panel.chk_tts.blockSignals(False)
+
     @property
     def read_name_enabled(self) -> bool:
         return self.tts_settings_panel.chk_name.isChecked()
+
+    @read_name_enabled.setter
+    def read_name_enabled(self, value: bool):
+        self.tts_settings_panel.chk_name.blockSignals(True)
+        self.tts_settings_panel.chk_name.setChecked(value)
+        self.tts_settings_panel.chk_name.blockSignals(False)
 
     @property
     def use_command_enabled(self) -> bool:
         return self.tts_settings_panel.chk_command.isChecked()
 
+    @use_command_enabled.setter
+    def use_command_enabled(self, value: bool):
+        self.tts_settings_panel.chk_command.blockSignals(True)
+        self.tts_settings_panel.chk_command.setChecked(value)
+        self.tts_settings_panel.chk_command.blockSignals(False)
+
     @property
     def tts_command(self) -> str:
         return self.tts_settings_panel.txt_command.text().strip().lower()
+
+    @tts_command.setter
+    def tts_command(self, value: str):
+        self.tts_settings_panel.txt_command.blockSignals(True)
+        self.tts_settings_panel.txt_command.setText(value)
+        self.tts_settings_panel.txt_command.blockSignals(False)
 
     @property
     def is_web_provider(self) -> bool:
@@ -110,6 +134,12 @@ class ChatView(BaseView):
     @property
     def tts_volume(self) -> int:
         return self.tts_settings_panel.slider_vol.value()
+
+    @tts_volume.setter
+    def tts_volume(self, value: int):
+        self.tts_settings_panel.slider_vol.blockSignals(True)
+        self.tts_settings_panel.slider_vol.setValue(value)
+        self.tts_settings_panel.slider_vol.blockSignals(False)
 
     @property
     def overlay_theme(self) -> str:

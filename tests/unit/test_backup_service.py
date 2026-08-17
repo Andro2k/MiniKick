@@ -103,8 +103,6 @@ def test_backup_service_export_and_import_with_bytes():
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
         filepath = os.path.join(tmpdir, "backup.json")
-        
-        # Test export
         success = service.export_to_json(filepath)
         assert success is True
         assert os.path.exists(filepath)
@@ -117,7 +115,6 @@ def test_backup_service_export_and_import_with_bytes():
         assert "thumbnail_bytes" in data["rewards"]["gnomo"]
         assert isinstance(data["rewards"]["gnomo"]["thumbnail_bytes"], str)
 
-        # Test import into fresh storages
         new_settings_st = DummySettingsStorage({"overlay_session_token": "preserved_local_token"})
         new_rewards_st = DummyRewardsStorage()
         new_commands_st = DummyCommandsStorage()
@@ -138,7 +135,6 @@ def test_backup_service_export_and_import_with_bytes():
         assert new_settings_st.data["tts_enabled"] is True
         assert new_settings_st.data["overlay_session_token"] == "preserved_local_token"
         
-        # Thumbnail bytes reconstructed accurately as bytes
         restored_thumbnail = new_rewards_st.data["gnomo"]["thumbnail_bytes"]
         assert isinstance(restored_thumbnail, bytes)
         assert restored_thumbnail == raw_png_bytes
