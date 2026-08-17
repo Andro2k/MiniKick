@@ -14,6 +14,8 @@ class TwitchChatWorker(QThread):
     message_received = Signal(object)
     error_occurred = Signal(str)
     connection_success = Signal(dict)
+    connection_lost = Signal()
+    connection_restored = Signal()
 
     def __init__(self, channel_name: str = "", oauth_token: str = "", bot_nick: str = "", api_client=None, i18n=None, parent=None):
         super().__init__(parent)
@@ -42,7 +44,6 @@ class TwitchChatWorker(QThread):
                 err_msg = self.i18n.get("logs.twitch.channel_empty") if self.i18n else ""
                 raise ValueError(err_msg)
 
-
             if not self.bot_nick:
                 self.bot_nick = TWITCH_BOT_USERNAME or self.channel_name
 
@@ -51,12 +52,27 @@ class TwitchChatWorker(QThread):
 
             user_data["username"] = self.channel_name
             user_data["platform"] = "twitch"
-            self.connection_success.emit(user_data)
+            
+            initial_notified = False
+
+            def _on_connected():
+                nonlocal initial_notified
+                if not initial_notified:
+                    initial_notified = True
+                    self.connection_success.emit(user_data)
+                else:
+                    self.connection_restored.emit()
+
+            def _on_disconnected():
+                if not self._is_stopped:
+                    self.connection_lost.emit()
 
             while not self._is_stopped:
                 self.socket_manager.start_socket(
                     channel_name=self.channel_name,
-                    on_message=self._dispatch_message
+                    on_message=self._dispatch_message,
+                    on_connected=_on_connected,
+                    on_disconnected=_on_disconnected
                 )
                 if not self._is_stopped:
                     self.msleep(5000)

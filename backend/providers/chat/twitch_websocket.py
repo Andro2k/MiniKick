@@ -54,14 +54,20 @@ class TwitchSocketManager:
         self.ws: websocket.WebSocketApp | None = None
         self._channel = ""
         self._callback: Callable[[str, str, list, str, str, int], None] | None = None
+        self._on_connected: Callable[[], None] | None = None
+        self._on_disconnected: Callable[[], None] | None = None
 
     def start_socket(
         self,
         channel_name: str,
-        on_message: Callable[[str, str, list, str, str, int], None]
+        on_message: Callable[[str, str, list, str, str, int], None],
+        on_connected: Callable[[], None] | None = None,
+        on_disconnected: Callable[[], None] | None = None
     ) -> None:
         self._channel = channel_name.lower().lstrip("#")
         self._callback = on_message
+        self._on_connected = on_connected
+        self._on_disconnected = on_disconnected
         self._running = True
 
         self.ws = websocket.WebSocketApp(
@@ -71,7 +77,7 @@ class TwitchSocketManager:
             on_error=self._on_error,
             on_close=self._on_close
         )
-        self.ws.run_forever(ping_interval=30, ping_timeout=10)
+        self.ws.run_forever(ping_interval=0)
 
     def _on_open(self, ws: websocket.WebSocketApp) -> None:
         logging.info("[TwitchWS] Connecting to Twitch channel: #%s", self._channel)
@@ -81,6 +87,11 @@ class TwitchSocketManager:
         ws.send(f"PASS {pass_str}\r\n")
         ws.send(f"NICK {self.nick}\r\n")
         ws.send(f"JOIN #{self._channel}\r\n")
+        if self._on_connected:
+            try:
+                self._on_connected()
+            except Exception:
+                pass
 
     def _on_message(self, ws: websocket.WebSocketApp, raw_data: str) -> None:
         if not self._running:
@@ -171,6 +182,11 @@ class TwitchSocketManager:
 
     def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:
         logging.info("[TwitchWS] Connection closed. Status: %s Msg: %s", close_status_code, close_msg)
+        if self._on_disconnected:
+            try:
+                self._on_disconnected()
+            except Exception:
+                pass
 
     def stop_socket(self) -> None:
         self._running = False

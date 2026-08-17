@@ -613,6 +613,8 @@ class MainWindowCore(QMainWindow):
         self.spam_service.twitch_api = twitch_api
         self.spam_service.twitch_worker = self.twitch_chat_worker
         self.twitch_chat_worker.connection_success.connect(self._on_twitch_connected)
+        self.twitch_chat_worker.connection_lost.connect(self._on_twitch_socket_lost)
+        self.twitch_chat_worker.connection_restored.connect(self._on_twitch_socket_restored)
         self.twitch_chat_worker.message_received.connect(self._route_incoming_message)
         self.twitch_chat_worker.start()
 
@@ -639,6 +641,14 @@ class MainWindowCore(QMainWindow):
             message=msg,
             state="success"
         )
+
+    def _on_twitch_socket_lost(self):
+        self._twitch_connected = False
+        self._update_integrations_status_ui()
+
+    def _on_twitch_socket_restored(self):
+        self._twitch_connected = True
+        self._update_integrations_status_ui()
 
     @Slot()
     def _handle_twitch_disconnect(self):
