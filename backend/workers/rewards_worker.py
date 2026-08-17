@@ -52,10 +52,10 @@ class RewardWorker(QThread):
                     
             except Exception as e:
                 self.error_occurred.emit(self.i18n.get("main.workers.reward.poll_error").replace("{error}", str(e)))
-            for _ in range(self.poll_interval * 2):
+            for _ in range(self.poll_interval * 10):
                 if not self._running:
                     break
-                self.msleep(500)
+                self.msleep(100)
 
     def _process_and_emit_redemptions(self, redemptions: list, user_ids: list):
         user_names_map = {}

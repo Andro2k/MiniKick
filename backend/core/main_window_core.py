@@ -61,7 +61,7 @@ class MainWindowCore(QMainWindow):
     def __init__(self, updater_manager, app_version: str):
         super().__init__()
         self.setUpdatesEnabled(False)
-        self.resize(1100, 750)
+        self.resize(1200, 800)
         
         self._is_shutting_down = False
         self.updater_manager = updater_manager
@@ -406,6 +406,7 @@ class MainWindowCore(QMainWindow):
                 body_text=self.i18n.get("dialogs.close.desc")
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
+                self.hide()
                 event.accept() 
                 self._force_quit() 
             else:
@@ -420,6 +421,7 @@ class MainWindowCore(QMainWindow):
         )
 
     def _force_quit(self):
+        self.hide()
         self._cleanup()
         QApplication.quit()
 
@@ -433,8 +435,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
             ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
         ]
-        for worker_name, worker_instance in worker_map:
-            self._stop_worker_safely(worker_name, worker_instance)
+        self._stop_workers_parallel(worker_map)
 
     def _stop_all_workers(self):
         worker_map = [
@@ -450,8 +451,7 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, 'network_controller') and self.network_controller:
             worker_map.append(("Worker_Network", getattr(self.network_controller, 'worker', None)))
 
-        for worker_name, worker_instance in worker_map:
-            self._stop_worker_safely(worker_name, worker_instance)
+        self._stop_workers_parallel(worker_map)
 
     def _cleanup(self):
         if self._is_shutting_down:
@@ -834,27 +834,47 @@ class MainWindowCore(QMainWindow):
         self._on_schedule_triggered(schedule, result)
 
 
+    def _stop_workers_parallel(self, worker_map: list):
+        active_workers = []
+        for name, instance in worker_map:
+            if instance:
+                try:
+                    if instance.isRunning():
+                        active_workers.append((name, instance))
+                except RuntimeError:
+                    pass
+
+        if not active_workers:
+            return
+
+        stop_template = self.i18n.get("main.logs.worker_stopping")
+        for name, instance in active_workers:
+            try:
+                self.logger.info(stop_template.replace("{worker}", name))
+                if hasattr(instance, 'stop'):
+                    instance.stop()
+                elif hasattr(instance, 'quit'):
+                    instance.quit()
+            except RuntimeError:
+                pass
+
+        stuck_template = self.i18n.get("main.logs.worker_stuck")
+        stopped_template = self.i18n.get("main.logs.worker_stopped")
+        for name, instance in active_workers:
+            try:
+                if not instance.wait(1000):
+                    self.logger.warning(stuck_template.replace("{worker}", name))
+                    instance.terminate()
+                    instance.wait(300)
+                else:
+                    self.logger.info(stopped_template.replace("{worker}", name))
+            except RuntimeError:
+                pass
+
     def _stop_worker_safely(self, worker_name: str, worker_instance):
         if not worker_instance:
             return
-        try:
-            if worker_instance.isRunning():
-                stop_template = self.i18n.get("main.logs.worker_stopping")
-                self.logger.info(stop_template.replace("{worker}", worker_name))
-
-                if hasattr(worker_instance, 'stop'):
-                    worker_instance.stop()
-
-                if not worker_instance.wait(1500):
-                    stuck_template = self.i18n.get("main.logs.worker_stuck")
-                    self.logger.warning(stuck_template.replace("{worker}", worker_name))
-                    worker_instance.terminate()
-                    worker_instance.wait()
-                else:
-                    stopped_template = self.i18n.get("main.logs.worker_stopped")
-                    self.logger.info(stopped_template.replace("{worker}", worker_name))
-        except RuntimeError:
-            pass
+        self._stop_workers_parallel([(worker_name, worker_instance)])
 
     def _increment_metric(self, name: str):
         if hasattr(self, 'session_metrics') and name in self.session_metrics:

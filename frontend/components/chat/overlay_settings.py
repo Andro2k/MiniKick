@@ -4,7 +4,7 @@ from PySide6.QtCore import Signal, Slot, QTimer
 from PySide6.QtWidgets import QApplication
 from frontend.widgets import (
     ModernCard, SettingRow, ModernSwitch, ModernButton, 
-    CompactSlider, ModernDivider, ModernSegmentedControl
+    CompactSpinBox, ModernDivider, ModernSegmentedControl
 )
 from frontend.common.utils import NoWheelComboBox
 
@@ -74,20 +74,20 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.seg_overlay_entry
         )
         
-        self.slider_overlay_size = CompactSlider(10, 32, 14, suffix="px")
+        self.spin_overlay_size = CompactSpinBox(10, 32, 14, suffix="px")
         row_overlay_size = SettingRow(
             "text-size.svg",
             self.i18n.get("chat.overlay.size_title"),
             self.i18n.get("chat.overlay.size_desc"),
-            self.slider_overlay_size
+            self.spin_overlay_size
         )
         
-        self.slider_overlay_fade = CompactSlider(0, 120, 15, suffix="s")
+        self.spin_overlay_fade = CompactSpinBox(0, 120, 15, suffix="s", special_value_text=self.i18n.get("chat.overlay.fade_never"))
         row_overlay_fade = SettingRow(
             "stopwatch.svg",
             self.i18n.get("chat.overlay.fade_title"),
             self.i18n.get("chat.overlay.fade_desc"),
-            self.slider_overlay_fade
+            self.spin_overlay_fade
         )
         
         self.sw_overlay_show_bots = ModernSwitch()
@@ -158,8 +158,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.seg_overlay_orientation.value_changed.connect(self._on_orientation_changed)
         self.seg_overlay_flow.value_changed.connect(self._update_overlay_url)
         self.seg_overlay_entry.value_changed.connect(self._update_overlay_url)
-        self.slider_overlay_size.slider.valueChanged.connect(self._update_overlay_url)
-        self.slider_overlay_fade.slider.valueChanged.connect(self._update_overlay_url)
+        self.spin_overlay_size.valueChanged.connect(self._update_overlay_url)
+        self.spin_overlay_fade.valueChanged.connect(self._update_overlay_url)
         self.sw_overlay_show_bots.toggled.connect(self._update_overlay_url)
         self.sw_overlay_show_time.toggled.connect(self._update_overlay_url)
         self.btn_copy_overlay_obs.clicked.connect(self._copy_overlay_obs_url)
@@ -170,8 +170,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.seg_overlay_entry.value_changed.connect(self._on_setting_changed)
         self.sw_overlay_show_bots.toggled.connect(self._on_setting_changed)
         self.sw_overlay_show_time.toggled.connect(self._on_setting_changed)
-        self.slider_overlay_size.slider.valueChanged.connect(self._on_setting_changed)
-        self.slider_overlay_fade.slider.valueChanged.connect(self._on_setting_changed)
+        self.spin_overlay_size.valueChanged.connect(self._on_setting_changed)
+        self.spin_overlay_fade.valueChanged.connect(self._on_setting_changed)
 
     def _on_setting_changed(self, *args):
         self._save_timer.start()
@@ -193,8 +193,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         orientation = self.seg_overlay_orientation.current_value() or "vertical"
         flow = self.seg_overlay_flow.current_value() or ("right-to-left" if orientation == "horizontal" else "bottom-to-top")
         entry = self.seg_overlay_entry.current_value() or ("right" if orientation == "horizontal" else "bottom")
-        size = self.slider_overlay_size.value()
-        fade = self.slider_overlay_fade.value()
+        size = self.spin_overlay_size.value()
+        fade = self.spin_overlay_fade.value()
         show_bots = "true" if self.sw_overlay_show_bots.isChecked() else "false"
         show_time = "true" if self.sw_overlay_show_time.isChecked() else "false"
         
@@ -224,8 +224,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.seg_overlay_orientation.blockSignals(True)
         self.seg_overlay_flow.blockSignals(True)
         self.seg_overlay_entry.blockSignals(True)
-        self.slider_overlay_size.slider.blockSignals(True)
-        self.slider_overlay_fade.slider.blockSignals(True)
+        self.spin_overlay_size.blockSignals(True)
+        self.spin_overlay_fade.blockSignals(True)
         self.sw_overlay_show_bots.blockSignals(True)
         self.sw_overlay_show_time.blockSignals(True)
 
@@ -243,8 +243,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         if entry:
             self.seg_overlay_entry.set_current_value(entry)
 
-        self.slider_overlay_size.setValue(size)
-        self.slider_overlay_fade.setValue(fade)
+        self.spin_overlay_size.setValue(size)
+        self.spin_overlay_fade.setValue(fade)
         self.sw_overlay_show_bots.setChecked(show_bots)
         self.sw_overlay_show_time.setChecked(show_time)
 
@@ -252,8 +252,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.seg_overlay_orientation.blockSignals(False)
         self.seg_overlay_flow.blockSignals(False)
         self.seg_overlay_entry.blockSignals(False)
-        self.slider_overlay_size.slider.blockSignals(False)
-        self.slider_overlay_fade.slider.blockSignals(False)
+        self.spin_overlay_size.blockSignals(False)
+        self.spin_overlay_fade.blockSignals(False)
         self.sw_overlay_show_bots.blockSignals(False)
         self.sw_overlay_show_time.blockSignals(False)
         self.blockSignals(False)

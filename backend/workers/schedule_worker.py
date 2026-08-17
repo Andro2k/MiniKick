@@ -26,10 +26,10 @@ class ScheduleWorker(QThread):
             except Exception as e:
                 logger.error("[ScheduleWorker] Error checking schedules: %s", e)
 
-            for _ in range(10):
+            for _ in range(100):
                 if not self._is_running:
                     break
-                self.msleep(1000)
+                self.msleep(100)
 
         logger.info("[ScheduleWorker] Worker stopped.")
 

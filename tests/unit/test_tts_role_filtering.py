@@ -90,3 +90,9 @@ def test_chat_view_property_setters():
 
     view.tts_volume = 75
     assert view.tts_volume == 75
+
+    assert isinstance(view.overlay_size, int)
+    assert isinstance(view.overlay_fade, int)
+    assert isinstance(view.overlay_show_bots, bool)
+    assert isinstance(view.overlay_show_time, bool)
+    assert isinstance(view.overlay_theme, str)

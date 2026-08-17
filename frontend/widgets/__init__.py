@@ -5,7 +5,7 @@ from .blocks import (
     ViewHeader, SettingRow, SliderRow, StatCard, 
     ModernCard, ModernScrollArea, ExpandableSettingCard, ModernDivider
 )
-from .controls import ModernButton, ModernSwitch, CompactSlider, VariableTextEdit
+from .controls import ModernButton, ModernSwitch, CompactSlider, CompactSpinBox, VariableTextEdit
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table import ModernTable, ModernTableCard, TableActionCell
@@ -27,6 +27,7 @@ __all__ = [
     "ModernButton",
     "ModernSwitch",
     "CompactSlider",
+    "CompactSpinBox",
     "VariableTextEdit",
     "FlowLayout",
     "ScalableIllustration",

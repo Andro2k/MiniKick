@@ -147,11 +147,11 @@ class ChatView(BaseView):
 
     @property
     def overlay_size(self) -> int:
-        return self.overlay_settings_panel.slider_overlay_size.value()
+        return self.overlay_settings_panel.spin_overlay_size.value()
 
     @property
     def overlay_fade(self) -> int:
-        return self.overlay_settings_panel.slider_overlay_fade.value()
+        return self.overlay_settings_panel.spin_overlay_fade.value()
 
     @property
     def overlay_show_bots(self) -> bool:

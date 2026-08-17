@@ -126,117 +126,6 @@
             vertical-align: middle !important;
         }
 
-        #chat-container.orientation-horizontal .message-box.theme-card {
-            display: inline-flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            position: relative !important;
-            padding: 0 16px !important;
-            height: 40px !important;
-            margin-top: 0 !important;
-            margin-bottom: 0 !important;
-            overflow: visible !important;
-            background: #FFFFFF !important;
-            border-radius: 12px !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-card .message-header {
-            display: inline-flex !important;
-            align-items: center !important;
-            position: static !important;
-            height: 100% !important;
-            border-bottom: none !important;
-            background: transparent !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            width: auto !important;
-            gap: 6px !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-card .username {
-            margin: 0 !important;
-            display: inline-block !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-card .card-win-buttons {
-            position: static !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            margin-right: 2px !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-card .card-float-badge {
-            position: static !important;
-            top: auto !important;
-            left: auto !important;
-            margin: 0 4px 0 0 !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-size: calc(var(--font-size) * 0.72) !important;
-            padding: 2px 8px !important;
-            line-height: 1 !important;
-            white-space: nowrap !important;
-            box-shadow: none !important;
-            border-radius: 10px !important;
-            vertical-align: middle !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-card .message-content {
-            padding: 0 !important;
-            margin-left: 4px !important;
-            text-align: left !important;
-            font-size: var(--font-size) !important;
-            font-weight: 600 !important;
-            color: #1b1e22 !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-cyber {
-            display: inline-flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            position: relative !important;
-            padding: 6px 16px 6px 28px !important;
-            margin-top: 2px !important;
-            margin-bottom: 2px !important;
-            gap: 8px !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-cyber::before {
-            position: absolute !important;
-            left: 8px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-cyber::after {
-            display: none !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-cyber .message-header {
-            display: inline-flex !important;
-            align-items: center !important;
-            position: static !important;
-            gap: 6px !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-minimal {
-            display: inline-flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            padding: 6px 14px !important;
-            gap: 8px !important;
-            margin-top: 0 !important;
-        }
-
-        #chat-container.orientation-horizontal .message-box.theme-minimal .message-header {
-            display: inline-flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-        }
-
         .chat-emote {
             height: 32px;
             vertical-align: middle;
@@ -597,95 +486,54 @@
             const header = document.createElement('div');
             header.className = 'message-header';
 
-            if (theme === 'card') {
-                const floatBadge = document.createElement('div');
-                floatBadge.className = 'card-float-badge';
-                floatBadge.innerText = roleLabel;
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'username';
-                nameSpan.innerText = data.user;
-
-                if (data.color) {
-                    nameSpan.style.color = data.color;
-
-                    let bgTint = data.color + '33';
-                    if (data.color.startsWith('#')) {
-                        let hex = data.color.replace('#', '');
-                        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-                        if (hex.length === 6) {
-                            const r = parseInt(hex.substring(0, 2), 16);
-                            const g = parseInt(hex.substring(2, 4), 16);
-                            const b = parseInt(hex.substring(4, 6), 16);
-                            bgTint = `rgba(${r}, ${g}, ${b}, 0.22)`;
-                        }
-                    }
-                    header.style.backgroundColor = bgTint;
-                }
-
-                const winButtons = document.createElement('div');
-                winButtons.className = 'card-win-buttons';
-
-                let timeHtml = '';
-                if (showTime) {
-                    const now = new Date();
-                    const hours = String(now.getHours()).padStart(2, '0');
-                    const minutes = String(now.getMinutes()).padStart(2, '0');
-                    timeHtml = `<span class="card-time-btn">${hours}:${minutes}</span>`;
-                }
-
-                winButtons.innerHTML = `${timeHtml}`;
-
-                header.appendChild(floatBadge);
-                header.appendChild(nameSpan);
-                header.appendChild(winButtons);
-            } else {
-                if (showTime) {
-                    const timeSpan = document.createElement('span');
-                    timeSpan.className = 'timestamp';
-                    const now = new Date();
-                    const hours = String(now.getHours()).padStart(2, '0');
-                    const minutes = String(now.getMinutes()).padStart(2, '0');
-                    const seconds = String(now.getSeconds()).padStart(2, '0');
-                    timeSpan.innerText = `[${hours}:${minutes}:${seconds}]`;
-                    header.appendChild(timeSpan);
-                }
-
-                const platform = data.platform || 'kick';
-                const platformSpan = document.createElement('span');
-                platformSpan.className = `badge badge-platform-${platform}`;
-                platformSpan.innerHTML = ICONS[platform] || ICONS.kick;
-                platformSpan.title = platform === 'twitch' ? 'Twitch' : 'Kick';
-                header.appendChild(platformSpan);
-
-                if (data.badges && Array.isArray(data.badges)) {
-                    data.badges.forEach(badge => {
-                        const badgeSpan = document.createElement('span');
-                        if (typeof badge === 'string' && badge.startsWith('level_')) {
-                            const lvl = badge.replace('level_', '');
-                            badgeSpan.className = 'badge badge-level';
-                            badgeSpan.innerText = `Lvl ${lvl}`;
-                            badgeSpan.title = `Nivel ${lvl}`;
-                        } else {
-                            if (!ICONS[badge]) return;
-                            badgeSpan.className = `badge badge-${badge}`;
-                            badgeSpan.innerHTML = ICONS[badge];
-                            badgeSpan.title = getBadgeLabel(badge);
-                        }
-                        header.appendChild(badgeSpan);
-                    });
-                }
-
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'username';
-                nameSpan.style.color = data.color || '#FAFAFA';
-                nameSpan.innerText = data.user;
-                if (theme === 'neon') {
-                    const glowColor = data.color || '#2ECD70';
-                    nameSpan.style.textShadow = `0 0 8px ${glowColor}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
-                }
-                header.appendChild(nameSpan);
+            if (showTime) {
+                const timeSpan = document.createElement('span');
+                timeSpan.className = 'timestamp';
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                timeSpan.innerText = `[${hours}:${minutes}:${seconds}]`;
+                header.appendChild(timeSpan);
             }
+
+            const platform = data.platform || 'kick';
+            const platformSpan = document.createElement('span');
+            platformSpan.className = `badge badge-platform-${platform}`;
+            platformSpan.innerHTML = ICONS[platform] || ICONS.kick;
+            platformSpan.title = platform === 'twitch' ? 'Twitch' : 'Kick';
+            header.appendChild(platformSpan);
+
+            if (data.badges && Array.isArray(data.badges)) {
+                data.badges.forEach(badge => {
+                    const badgeSpan = document.createElement('span');
+                    if (typeof badge === 'string' && badge.startsWith('level_')) {
+                        const lvl = badge.replace('level_', '');
+                        badgeSpan.className = 'badge badge-level';
+                        badgeSpan.innerText = `Lvl ${lvl}`;
+                        badgeSpan.title = `Nivel ${lvl}`;
+                    } else {
+                        if (!ICONS[badge]) return;
+                        badgeSpan.className = `badge badge-${badge}`;
+                        badgeSpan.innerHTML = ICONS[badge];
+                        badgeSpan.title = getBadgeLabel(badge);
+                    }
+                    header.appendChild(badgeSpan);
+                });
+            }
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'username';
+            nameSpan.style.color = data.color || '#FAFAFA';
+            nameSpan.innerText = data.user;
+            if (theme === 'neon') {
+                const glowColor = data.color || '#2ECD70';
+                nameSpan.style.textShadow = `0 0 8px ${glowColor}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
+            } else if (theme === 'cyber') {
+                const cyberColor = data.color || '#00ff66';
+                nameSpan.style.textShadow = `0 0 8px ${cyberColor}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
+            }
+            header.appendChild(nameSpan);
 
             msgBox.appendChild(header);
 

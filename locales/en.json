@@ -23,6 +23,7 @@
             "entry_title": "Animation Origin",
             "entry_top": "From Top",
             "fade_desc": "Seconds each message stays visible before fading out (0 = never hide).",
+            "fade_never": "Never",
             "fade_title": "On-Screen Time",
             "flow_b2t": "Bottom to Top",
             "flow_desc": "Direction in which chat messages advance on screen.",

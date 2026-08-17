@@ -109,4 +109,3 @@ class TwitchChatWorker(QThread):
         self._is_stopped = True
         self.socket_manager.stop_socket()
         self.quit()
-        self.wait(1500)

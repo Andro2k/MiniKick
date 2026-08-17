@@ -23,6 +23,7 @@
             "entry_title": "Origen de Animación",
             "entry_top": "Desde Arriba",
             "fade_desc": "Segundos que permanece cada mensaje visible antes de desaparecer (0 = no ocultar nunca).",
+            "fade_never": "Nunca",
             "fade_title": "Tiempo en Pantalla",
             "flow_b2t": "De abajo hacia arriba",
             "flow_desc": "Dirección hacia la que se desplazan los mensajes en pantalla.",
