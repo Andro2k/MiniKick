@@ -268,7 +268,7 @@ QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-l
 QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 10px; }}
 QPushButton[role="action_accent"] {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid transparent; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_GREEN_DARK}; }}
-QPushButton[role="action_accent"]:focus {{ border-color: {COLOR_WHITE}; }}
+QPushButton[role="action_accent"]:focus {{ border-color: {COLOR_NEUTRAL_700}; }}
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="action_outlined"]:focus {{ border-color: {COLOR_GREEN}; }}
