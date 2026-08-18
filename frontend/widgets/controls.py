@@ -20,6 +20,7 @@ class ModernSwitch(QAbstractButton):
         super().__init__(parent)
         self.setCheckable(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.toggled.connect(self.update)
         
@@ -27,21 +28,42 @@ class ModernSwitch(QAbstractButton):
         self._bg_color_unchecked = QColor(COLOR_NEUTRAL_850)
         self._border_color_checked = QColor(COLOR_GREEN)
         self._border_color_unchecked = QColor(COLOR_NEUTRAL_800)
+        self._border_color_focus = QColor(COLOR_GREEN)
         self._handle_color = QColor(COLOR_WHITE)
 
     def sizeHint(self) -> QSize:
         return QSize(44, 22)
 
+    def focusInEvent(self, event):
+        super().focusInEvent(event)
+        self.update()
+
+    def focusOutEvent(self, event):
+        super().focusOutEvent(event)
+        self.update()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.toggle()
+            event.accept()
+            return
+        super().keyPressEvent(event)
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        pen_width = 1.5 if not self.isChecked() else 1.0
+        has_focus = self.hasFocus()
+        pen_width = 1.5
         rect = QRectF(pen_width / 2, pen_width / 2, self.width() - pen_width, self.height() - pen_width)
         radius = rect.height() / 1.8
 
         bg_color = self._bg_color_checked if self.isChecked() else self._bg_color_unchecked
-        border_color = self._border_color_checked if self.isChecked() else self._border_color_unchecked
+        
+        if has_focus:
+            border_color = QColor(COLOR_WHITE) if self.isChecked() else self._border_color_focus
+        else:
+            border_color = self._border_color_checked if self.isChecked() else self._border_color_unchecked
 
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)

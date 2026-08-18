@@ -112,8 +112,8 @@ class Sidebar(QFrame):
         self.btn_update_rewards = QPushButton(self.i18n.get("main.sidebar.new_version"))
         self.btn_update_rewards.setProperty("role", "action_accent")
         self.btn_update_rewards.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_update_rewards.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 14))
-        self.btn_update_rewards.setIconSize(QSize(14, 14))
+        self.btn_update_rewards.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 16))
+        self.btn_update_rewards.setIconSize(QSize(16, 16))
         
         self.btn_update_rewards.setVisible(False)
         self.btn_update_rewards.clicked.connect(self._on_update_rewards_clicked)
