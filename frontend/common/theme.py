@@ -1,12 +1,17 @@
 # frontend\common\theme.py
 
+from functools import lru_cache
 from frontend.common.utils import get_assets_path
-PATH_ICON_HELP = get_assets_path("icons/help.svg")
-PATH_ICON_CHEVRON_DOWN = get_assets_path("icons/chevron-down.svg").replace('\\', '/')
-PATH_ICON_CHEVRON_UP = get_assets_path("icons/chevron-up.svg").replace('\\', '/')
-PATH_ICON_CHEVRON_LEFT = get_assets_path("icons/chevron-left.svg").replace('\\', '/')
-PATH_ICON_CHEVRON_RIGHT = get_assets_path("icons/chevron-right.svg").replace('\\', '/')
-PATH_ICON_CHECK = get_assets_path("icons/check.svg").replace('\\', '/')
+
+def _get_qss_icon_url(relative_path: str) -> str:
+    return get_assets_path(relative_path).replace('\\', '/')
+
+PATH_ICON_HELP = _get_qss_icon_url("icons/help.svg")
+PATH_ICON_CHEVRON_DOWN = _get_qss_icon_url("icons/chevron-down.svg")
+PATH_ICON_CHEVRON_UP = _get_qss_icon_url("icons/chevron-up.svg")
+PATH_ICON_CHEVRON_LEFT = _get_qss_icon_url("icons/chevron-left.svg")
+PATH_ICON_CHEVRON_RIGHT = _get_qss_icon_url("icons/chevron-right.svg")
+PATH_ICON_CHECK = _get_qss_icon_url("icons/check.svg")
 
 COLOR_NEUTRAL_950  = "#09090B"
 COLOR_NEUTRAL_900  = "#121214"
@@ -43,7 +48,7 @@ RADIUS_LG = 12
 PADDING_INPUT   = "5px 10px"
 PADDING_BUTTON  = "6px 12px"
 
-
+@lru_cache(maxsize=16)
 def get_global_qss(base: int = 13) -> str:
     size_headline_1 = base + 12
     size_headline_2 = base + 9
@@ -61,15 +66,15 @@ QMainWindow, QDialog {{ background-color: {COLOR_NEUTRAL_950}; }}
 QLabel {{ background-color: transparent; }}
 
 /* ==============================================================================
-   2. ESTILOS DE ELEMENTOS QT COMUNES
+   2. ESTILOS DE ELEMENTOS QT COMUNES & NAVEGACIÓN TAB (FOCUS)
    ============================================================================== */
-QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
-QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
+QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; }}
+QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_900}; }}
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{ border: 1.5px solid {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
 QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"] {{ border: 1.5px solid {COLOR_RED}; }}
 
 QComboBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: 1.5px solid {COLOR_NEUTRAL_800}; combobox-popup: 0; }}
-QComboBox:focus, QComboBox:hover {{ border-color: transparent; background-color: {COLOR_NEUTRAL_800}; }}
+QComboBox:focus, QComboBox:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 23px; border-left: 1.5px solid {COLOR_NEUTRAL_800}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
 QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_NEUTRAL_800}; }}
 QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
@@ -83,7 +88,7 @@ QMenu::item:disabled {{ color: {COLOR_NEUTRAL_400}; font-weight: 600; padding: 4
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
 QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 3px 6px; }}
 
-QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 56px 3px 8px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
+QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 24px 3px 8px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
 QSpinBox:hover, QDoubleSpinBox:hover, QTimeEdit:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QSpinBox::up-button, QDoubleSpinBox::up-button, QTimeEdit::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 28px; border: none; background-color: transparent; }}
@@ -95,7 +100,7 @@ QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover, QTimeEdit::down-
 QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed, QTimeEdit::down-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
 QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
 
-QDateEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 32px 3px 8px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
+QDateEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: 3px 24px 3px 8px; border: 1.5px solid {COLOR_NEUTRAL_800}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_200}; }}
 QDateEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
 QDateEdit:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QDateEdit::up-button, QDateEdit::down-button {{ width: 0px; height: 0px; border: none; background: transparent; }}
@@ -105,12 +110,11 @@ QDateEdit::drop-down:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radi
 QDateEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
 
 /* ==============================================================================
-   CALENDAR POPUP (QCalendarWidget - Minimalist Dark Aesthetic)
+   CALENDAR POPUP (QCalendarWidget)
    ============================================================================== */
 QCalendarWidget {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_LG}px; padding: 4px; }}
 QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: transparent; border: none; min-height: 36px; margin-bottom: 4px; }}
-QCalendarWidget QToolButton {{ background-color: transparent; color: {COLOR_WHITE}; font-weight: 600; font-size: 13px; border: none; border-radius: {RADIUS_SM}px; padding: 4px 8px; margin: 2px; }}
-QCalendarWidget QToolButton::menu-indicator {{ image: none; width: 0px; height: 0px; }}
+QCalendarWidget QToolButton {{ background-color: transparent; color: {COLOR_WHITE}; font-weight: 600; font-size: 13px; border: 1.5px solid transparent; border-radius: {RADIUS_SM}px; padding: 4px 8px; margin: 2px; }}
 QCalendarWidget QToolButton:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QCalendarWidget QToolButton:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
 QCalendarWidget QToolButton#qt_calendar_prevmonth {{ qproperty-icon: url("{PATH_ICON_CHEVRON_LEFT}"); icon-size: 16px; width: 26px; height: 26px; }}
@@ -129,7 +133,9 @@ QCalendarWidget QTableView::item:selected {{ background-color: {COLOR_WHITE}; co
 
 QCheckBox {{ spacing: 8px; color: {COLOR_NEUTRAL_200}; background-color: transparent; }}
 QCheckBox:hover {{ color: {COLOR_WHITE}; }}
+QCheckBox:focus {{ color: {COLOR_WHITE}; border-color: {COLOR_GREEN}; }}
 QCheckBox::indicator {{ width: 12px; height: 12px; border-radius: {RADIUS_SM}px; border: 1.5px solid {COLOR_NEUTRAL_800}; background-color: {COLOR_NEUTRAL_850}; }}
+QCheckBox::indicator:focus, QCheckBox:focus::indicator {{ border-color: {COLOR_GREEN}; }}
 QCheckBox::indicator:unchecked:hover {{ border-color: {COLOR_NEUTRAL_700}; background-color: {COLOR_NEUTRAL_800}; }}
 QCheckBox::indicator:checked {{ border-color: {COLOR_GREEN}; background-color: {COLOR_GREEN}; image: url("{PATH_ICON_CHECK}"); }}
 QCheckBox::indicator:checked:hover {{ border-color: {COLOR_GREEN_DARK}; background-color: {COLOR_GREEN_DARK}; }}
@@ -139,14 +145,15 @@ QCheckBox::indicator:checked:disabled {{ border-color: {COLOR_NEUTRAL_800}; back
 QTableWidget {{ background-color: {COLOR_NEUTRAL_900}; border: none; gridline-color: transparent; }}
 QTableWidget::item {{ padding: 4px; border-bottom: 1px solid {COLOR_NEUTRAL_800}; }}
 QTableWidget::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
-QHeaderView::section {{ background-color: transparent; color: {COLOR_NEUTRAL_400}; font-weight: 700; padding: {PADDING_INPUT}; border: none; border-bottom: 2px solid {COLOR_NEUTRAL_800}; text-align: left; }}
-QHeaderView {{ background-color: transparent; border: none; }}
+QHeaderView, QHeaderView::section {{ background-color: transparent; border: none; }}
+QHeaderView::section {{ color: {COLOR_NEUTRAL_400}; font-weight: 700; padding: {PADDING_INPUT}; border-bottom: 2px solid {COLOR_NEUTRAL_800}; text-align: left; }}
 
-QScrollBar:vertical {{ border: none; background: transparent; width: 10px; margin: 2px 2px 2px 0px; }}
+QScrollBar:vertical {{ border: none; background: transparent; width: 8px; margin: 2px 0px 2px 0px; }}
 QScrollBar::handle:vertical {{ background-color: {COLOR_NEUTRAL_500}; border-radius: 4px; min-height: 30px; }}
 QScrollBar::handle:vertical:hover {{ background-color: {COLOR_NEUTRAL_200}; }}
 QScrollBar::handle:vertical:pressed {{ background-color: {COLOR_GREEN}; }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ height: 5px; background: none; }}
+
 QScrollBar:horizontal {{ border: none; background: transparent; height: 10px; margin: 0px 2px 2px 2px; }}
 QScrollBar::handle:horizontal {{ background-color: {COLOR_NEUTRAL_500}; border-radius: 4px; min-width: 30px; }}
 QScrollBar::handle:horizontal:hover {{ background-color: {COLOR_NEUTRAL_200}; }}
@@ -154,6 +161,8 @@ QScrollBar::handle:horizontal:pressed {{ background-color: {COLOR_GREEN}; }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ width: 5px; background: none; }}
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 
+QProgressBar {{ background-color: {COLOR_NEUTRAL_850}; border: 1px solid {COLOR_NEUTRAL_800}; border-radius: 4px; height: 6px; text-align: center; }}
+QProgressBar::chunk {{ background-color: {COLOR_GREEN}; border-radius: 3px; }}
 QProgressBar[role="update_progress"] {{ background-color: {COLOR_NEUTRAL_900}; border: none; border-radius: {RADIUS_SM}px; }}
 QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_GREEN}, stop:1 {COLOR_GREEN}); border-radius: {RADIUS_SM}px; }}
 QProgressBar[role="wizard_progress"] {{ background-color: {COLOR_NEUTRAL_700}; border: none; border-radius: 2px; }}
@@ -166,6 +175,7 @@ QTabWidget::pane {{ border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RAD
 QTabBar::tab {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-bottom-color: transparent; border-top-left-radius: 0px; border-top-right-radius: {RADIUS_MD}px; padding: 8px 16px; margin-right: 4px; font-weight: bold; }}
 QTabBar::tab:selected {{ color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_900}; border-color: {COLOR_NEUTRAL_800}; border-bottom-color: {COLOR_NEUTRAL_900}; }}
 QTabBar::tab:hover:!selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
+QTabBar::tab:focus {{ border-color: {COLOR_GREEN}; }}
 QTabWidget QFrame[role="card"] {{ background-color: transparent; border: none; }}
 
 QToolTip {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; padding: {PADDING_INPUT}; font-size: {size_textline_1}px; }}
@@ -173,7 +183,7 @@ QToolTip {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; p
 QSlider::groove:horizontal {{ border: none; height: 6px; background: {COLOR_NEUTRAL_850}; border-radius: 3px; }}
 QSlider::sub-page:horizontal {{ background: {COLOR_GREEN}; border-radius: 3px; }}
 QSlider::handle:horizontal {{ background: {COLOR_GREEN}; width: 14px; height: 14px; margin-top: -4px; margin-bottom: -4px; border-radius: 7px; }}
-QSlider::handle:horizontal:hover {{ border-color: {COLOR_GREEN_DARK}; }}
+QSlider::handle:horizontal:hover, QSlider:focus::handle:horizontal {{ border-color: {COLOR_GREEN}; }}
 
 /* ==============================================================================
    3. ELEMENTOS DE NAVEGACIÓN Y COMPONENTES ESPECÍFICOS (Con Role)
@@ -203,8 +213,6 @@ QFrame[role="toast"][state="success"] {{ border-color: {COLOR_NEUTRAL_750}; }}
 QFrame[role="toast"][state="danger"] {{ border-color: {COLOR_RED_GLOW}; }}
 QFrame[role="toast"][state="warning"] {{ border-color: {COLOR_AMBER_GLOW}; }}
 QFrame[role="toast"][state="info"] {{ border-color: {COLOR_BLUE_GLOW}; }}
-QProgressBar {{ background-color: {COLOR_NEUTRAL_850}; border: 1px solid {COLOR_NEUTRAL_800}; border-radius: 4px; height: 6px; text-align: center; }}
-QProgressBar::chunk {{ background-color: {COLOR_GREEN}; border-radius: 3px; }}
 
 QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_850}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="badge"] QLabel {{ font-size: {size_textline_3}px; font-weight: 700; color: {COLOR_NEUTRAL_200}; background: transparent; }}
@@ -248,45 +256,51 @@ QLabel[role="code"] {{ font-size: {size_textline_2}px; font-weight: bold; backgr
 QLabel[role="category"] {{ font-weight: bold; color: {COLOR_GREEN}; margin-top: 6px; font-size: {size_textline_2}px; }}
 
 /* ==============================================================================
-   6. BOTONES Y ACCIONES (Con Role)
+   6. BOTONES Y ACCIONES (Con Role & Indicadores de Foco)
    ============================================================================== */
-QPushButton[role="nav_button"] {{ background: transparent; border-radius: {RADIUS_MD}px; padding: 10px; text-align: left; color: {COLOR_NEUTRAL_400}; font-weight: 500; }}
+QPushButton {{ border: 1.5px solid transparent; }}
+QPushButton:focus {{ border: 1.5px solid {COLOR_GREEN}; }}
+QPushButton[role="nav_button"] {{ background: transparent; border-radius: {RADIUS_MD}px; padding: 10px; text-align: left; color: {COLOR_NEUTRAL_400}; font-weight: 500; border: 1.5px solid transparent; }}
 QPushButton[role="nav_button"]:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; }}
+QPushButton[role="nav_button"]:focus {{ border-color: {COLOR_GREEN}; }}
 QPushButton[role="nav_button"]:checked {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_GREEN}; font-weight: 700; }}
 QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-left: 10px; }}
 QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 10px; }}
-QPushButton[role="action_accent"] {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; font-size: {size_textline_1}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_accent"] {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid transparent; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_GREEN_DARK}; }}
-QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-size: {size_textline_1}px; font-weight: 700; border: none; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_accent"]:focus {{ border-color: {COLOR_NEUTRAL_700}; }}
+QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QPushButton[role="action_outlined"]:focus {{ border-color: {COLOR_GREEN}; }}
 QPushButton[role="action_danger_border"] {{ background-color: transparent; color: {COLOR_RED}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_RED}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_danger_border"]:hover {{ background-color: {COLOR_RED_GLOW}; }}
+QPushButton[role="action_danger_border"]:focus {{ border-color: {COLOR_RED}; background-color: {COLOR_RED_GLOW}; }}
 QPushButton[role="action_accent_border"] {{ background-color: transparent; color: {COLOR_GREEN}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_GREEN}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent_border"]:hover {{ background-color: {COLOR_GREEN_GLOW}; }}
+QPushButton[role="action_accent_border"]:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_GREEN_GLOW}; }}
 QPushButton[role="action_neutral_border"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-size: {size_textline_1}px; font-weight: 700; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_neutral_border"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
-QPushButton[role="btn_ghost"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
+QPushButton[role="action_neutral_border"]:focus {{ border-color: {COLOR_GREEN}; }}
+QPushButton[role="btn_ghost"] {{ background-color: transparent; border: 1.5px solid transparent; border-radius: {RADIUS_SM}px; padding: 2px; }}
 QPushButton[role="btn_ghost"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QPushButton[role="btn_ghost"]:focus {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="filter_chip"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_SM}px; padding: 3px 10px; font-size: {size_textline_2}px; font-weight: 600; }}
 QPushButton[role="filter_chip"]:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
+QPushButton[role="filter_chip"]:focus {{ border-color: {COLOR_WHITE}; }}
 QPushButton[role="filter_chip"]:checked {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; border-color: {COLOR_GREEN}; font-weight: 700; }}
 
 QFrame[role="segmented_control"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; padding: 2px; }}
-QPushButton[role="segmented_item"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 3px 5px; }}
+QPushButton[role="segmented_item"] {{ background-color: transparent; border: 1.5px solid transparent; border-radius: {RADIUS_SM}px; padding: 3px 5px; }}
 QPushButton[role="segmented_item"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QPushButton[role="segmented_item"]:focus {{ border-color: {COLOR_GREEN}; }}
 QPushButton[role="segmented_item"]:checked {{ background-color: {COLOR_NEUTRAL_750}; }}
 QPushButton[role="segmented_item"]:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
 
 /* ==============================================================================
    7. ESTADOS DESHABILITADOS (Global)
    ============================================================================== */
-QPushButton:disabled, QPushButton[role="action_accent"]:disabled,
-QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_border"]:disabled,
-QPushButton[role="action_accent_border"]:disabled, QPushButton[role="action_neutral_border"]:disabled,
-QPushButton[role="btn_ghost"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: 1.5px solid {COLOR_NEUTRAL_800}; padding: {PADDING_BUTTON}; }}
-QLineEdit:disabled, QTextEdit:disabled,
-QComboBox:disabled, QSpinBox:disabled,
-QDoubleSpinBox:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_800}; padding: {PADDING_INPUT}; }}
+QPushButton:disabled, QPushButton[role="action_accent"]:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_border"]:disabled, QPushButton[role="action_accent_border"]:disabled, QPushButton[role="action_neutral_border"]:disabled, QPushButton[role="btn_ghost"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: 1.5px solid {COLOR_NEUTRAL_800}; padding: {PADDING_BUTTON}; }}
+QLineEdit:disabled, QTextEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_800}; padding: {PADDING_INPUT}; }}
 QCheckBox:disabled {{ color: {COLOR_NEUTRAL_500}; }}
 
 /* ==============================================================================
@@ -298,6 +312,7 @@ QFrame[role="search_bar"]:focus-within {{ border-color: {COLOR_GREEN}; }}
 QFrame[role="search_bar"] QLineEdit {{ background: transparent; border: none; padding: 0px 12px; color: {COLOR_WHITE}; font-size: {size_textline_1}px; }}
 QFrame[role="search_bar"] QPushButton {{ background: transparent; border: none; border-left: 1.5px solid {COLOR_NEUTRAL_800}; border-top-right-radius: {RADIUS_MD - 2}px; border-bottom-right-radius: {RADIUS_MD - 2}px; min-width: 36px; max-width: 36px; min-height: 32px; max-height: 32px; }}
 QFrame[role="search_bar"] QPushButton:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
+QFrame[role="search_bar"] QPushButton:focus {{ background-color: {COLOR_NEUTRAL_750}; }}
 QFrame[role="search_bar"] QPushButton:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
 
 QFrame[role="segmented_pagination"] {{ background-color: {COLOR_NEUTRAL_850}; border: 1.5px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_MD}px; }}
@@ -305,10 +320,12 @@ QFrame[role="segmented_pagination"] QPushButton {{ background: transparent; bord
 QFrame[role="segmented_pagination"] QPushButton#btn_first {{ border-left: none; border-top-left-radius: {RADIUS_MD - 2}px; border-bottom-left-radius: {RADIUS_MD - 2}px; }}
 QFrame[role="segmented_pagination"] QPushButton#btn_last {{ border-top-right-radius: {RADIUS_MD - 2}px; border-bottom-right-radius: {RADIUS_MD - 2}px; }}
 QFrame[role="segmented_pagination"] QPushButton:hover:enabled {{ background-color: {COLOR_NEUTRAL_800}; }}
+QFrame[role="segmented_pagination"] QPushButton:focus:enabled {{ background-color: {COLOR_NEUTRAL_750}; }}
 QFrame[role="segmented_pagination"] QPushButton:pressed:enabled {{ background-color: {COLOR_NEUTRAL_700}; }}
-QFrame[role="segmented_pagination"] QPushButton:disabled {{ opacity: 0.5; }}
+QFrame[role="segmented_pagination"] QPushButton:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; }}
 QFrame[role="segmented_pagination"] QLabel#lbl_page_status {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; font-size: {size_textline_1}px; font-weight: 600; padding: 0px 16px; min-height: 32px; max-height: 32px; border-left: 1.5px solid {COLOR_NEUTRAL_800}; }}
 """
+
 GLOBAL_QSS = get_global_qss(13)
 
 def get_swatch_qss(bg_color: str, border_width: int = 1, radius: int = RADIUS_SM) -> str:
