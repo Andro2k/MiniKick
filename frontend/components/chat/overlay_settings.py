@@ -4,9 +4,8 @@ from PySide6.QtCore import Signal, Slot, QTimer
 from PySide6.QtWidgets import QApplication
 from frontend.widgets import (
     ModernCard, SettingRow, ModernSwitch, ModernButton, 
-    CompactSpinBox, ModernDivider, ModernSegmentedControl
+    CompactSpinBox, ModernDivider, ModernSegmentedControl, NoWheelComboBox
 )
-from frontend.common.utils import NoWheelComboBox
 
 class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()

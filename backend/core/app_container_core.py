@@ -27,7 +27,7 @@ from backend.database import (DatabaseManager, SQLiteCommandsStorage, SQLiteToke
                             SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage)
 from backend.services import (BackupService, TranslationService, AuthManager, TwitchAuthManager, OverlayServerManager, 
                               MediaTriggerService, TTSManager, WidgetService, ScheduleService)
-from frontend.common.utils import resource_path
+from frontend.common.paths import resource_path
 
 class AppContainer:
     def __init__(self, parent_widget):

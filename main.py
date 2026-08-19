@@ -27,7 +27,7 @@ from backend.services import SocketInstanceProvider
 
 from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.common.theme import GLOBAL_QSS
-from frontend.common.utils import resource_path
+from frontend.common.paths import resource_path
 
 def _get_safe_i18n():
     try:

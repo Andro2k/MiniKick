@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineE
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
 from frontend.widgets import ModernButton, ModernDivider
 from frontend.common.theme import COLOR_BLACK, COLOR_RED
-from frontend.common.utils import get_icon_colored
+from frontend.common import get_icon_colored
 
 class BotMutePanel(QWidget):
     bot_add_requested = Signal(str)

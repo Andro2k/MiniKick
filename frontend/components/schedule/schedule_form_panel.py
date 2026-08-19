@@ -4,9 +4,8 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineE
                                QPushButton, QCalendarWidget)
 from PySide6.QtGui import QTextCharFormat, QColor
 from PySide6.QtCore import Qt, Signal, QTime, QDate, QTimer
-from frontend.widgets import ModernCard, ModernButton, ModernSwitch, UnifiedSearchBar
+from frontend.widgets import ModernCard, ModernButton, ModernSwitch, UnifiedSearchBar, NoWheelDateEdit, NoWheelTimeEdit
 from frontend.components.schedule.quick_change_panel import CategorySuggestionsPopup
-from frontend.common.utils import NoWheelDateEdit, NoWheelTimeEdit
 from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ScheduleFormPanel(QWidget):

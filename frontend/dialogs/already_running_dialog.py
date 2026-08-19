@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushBu
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 import os
-from frontend.common.utils import get_icon, get_assets_path
+from frontend.common import get_assets_path
 from frontend.widgets import ScalableIllustration
 
 class AlreadyRunningDialog(QDialog):

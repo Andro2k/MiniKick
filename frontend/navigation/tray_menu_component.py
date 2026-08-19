@@ -4,7 +4,7 @@ import os
 from PySide6.QtWidgets import QSystemTrayIcon, QMenu
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import Signal
-from frontend.common.utils import resource_path
+from frontend.common.paths import resource_path
 
 class SystemTrayManager(QSystemTrayIcon):
     restore_requested = Signal()

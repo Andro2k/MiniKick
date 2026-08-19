@@ -33,15 +33,14 @@ class ModernFramelessShell(QDialog):
 
         self.main_layout.addWidget(self.container)
 
-        from frontend.common.utils import get_icon_colored
-        from frontend.common.theme import COLOR_NEUTRAL_400
+        from frontend.common import get_icon_colored
 
         self.btn_close_shell = QPushButton(self.container)
         self.btn_close_shell.setProperty("role", "btn_ghost")
         self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_close_shell.setFixedSize(26, 26)
         if ModernFramelessShell._icon_close is None:
-            ModernFramelessShell._icon_close = get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14)
+            ModernFramelessShell._icon_close = get_icon_colored("x.svg", size=14)
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
         self.btn_close_shell.setIconSize(QSize(14, 14))
         self.btn_close_shell.clicked.connect(self.reject)

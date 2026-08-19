@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt
-from frontend.common.utils import NoWheelSlider
-from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow
+from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow, NoWheelSlider
 
 class MusicSettingsPanel(QWidget):
     youtube_auto_resume_toggled = Signal(bool)

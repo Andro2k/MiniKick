@@ -4,7 +4,7 @@ from frontend.widgets import ModernDivider, FlowLayout
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtWidgets import (QFrame, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QSpinBox, QPushButton, QApplication)
-from frontend.common.utils import get_pixmap_colored, get_icon_colored
+from frontend.common import get_pixmap_colored, get_icon_colored
 from frontend.common.theme import COLOR_NEUTRAL_400
 from frontend.widgets.controls import ModernSwitch
 

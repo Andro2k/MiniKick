@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
 from .base_dialog import ModernModal
-from frontend.common.utils import get_assets_path, get_icon_colored
+from frontend.common import get_assets_path, get_icon_colored
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
 from backend.workers import BugReportWorker
 

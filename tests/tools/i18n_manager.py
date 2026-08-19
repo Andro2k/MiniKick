@@ -1,9 +1,4 @@
-# tests/tools/i18n_manager.py
-
-"""
-MiniKick i18n Toolkit & Manager
-Robust AST + Regex scanner for auditing, synchronizing, sorting, and cleaning i18n JSON files.
-"""
+# tests\tools\i18n_manager.py
 
 import ast
 import json

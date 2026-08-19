@@ -2,8 +2,9 @@
 
 from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea, QSpinBox, QPushButton, QLineEdit
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common.utils import get_icon_colored, get_pixmap_colored, NoWheelComboBox
-from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400
+from frontend.common.icons import get_icon_colored, get_pixmap_colored
+from frontend.common.theme import COLOR_NEUTRAL_400
+from .no_wheel import NoWheelComboBox
 from .controls import ModernSwitch
 
 class ViewHeader(QFrame):
@@ -29,7 +30,7 @@ class ViewHeader(QFrame):
         layout.addWidget(subtitle)
 
 class SettingRow(QWidget):
-    def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_NEUTRAL_200, title_color: str = None, parent=None):
+    def __init__(self, icon_name: str, title_text: str, desc_text: str, right_widget: QWidget, icon_color: str = COLOR_NEUTRAL_400, title_color: str = None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
@@ -70,7 +71,7 @@ class ModernDivider(QFrame):
         self.setFixedHeight(2.5)
 
 class SliderRow(QWidget):
-    def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_NEUTRAL_200, parent=None):
+    def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_NEUTRAL_400, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(5, 5, 5, 5)
@@ -113,7 +114,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(6)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_200, size=14))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=14))
 
         self.lbl_title = QLabel(title_text, parent=self)
         self.lbl_title.setProperty("role", "h3")

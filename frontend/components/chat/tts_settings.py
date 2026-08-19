@@ -2,9 +2,10 @@
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
-from frontend.widgets import ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider
-from frontend.common.utils import NoWheelComboBox, NoWheelSlider, validate_trigger_prefix, get_icon_colored, get_pixmap_colored
-from frontend.common.theme import COLOR_NEUTRAL_200
+from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider,
+                              NoWheelComboBox, NoWheelSlider)
+from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored
+from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400
 
 class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
@@ -46,7 +47,7 @@ class VoiceSettingRow(QWidget):
 
         if test_signal is not None:
             self.btn_test = QPushButton()
-            self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_200, size=14))
+            self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_400, size=14))
             self.btn_test.setIconSize(QSize(14, 14))
             self.btn_test.setFixedSize(28, 28)
             self.btn_test.setToolTip(tooltip_text)

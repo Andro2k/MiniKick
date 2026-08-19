@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, Q
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent
 from frontend.widgets import ModernCard, ModernButton, ModernSwitch, UnifiedSearchBar
 from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_PURPLE
-from frontend.common.utils import get_icon_colored, get_pixmap_colored
+from frontend.common import get_icon_colored, get_pixmap_colored
 
 class CategorySuggestionsPopup(QListWidget):
     category_selected = Signal(dict)

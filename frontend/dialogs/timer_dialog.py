@@ -5,9 +5,9 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QColor
 from .base_dialog import ModernWizardPanel, ModernModal
-from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit
+from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit, NoWheelSlider
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
-from frontend.common.utils import get_icon_colored, NoWheelSlider, get_assets_path
+from frontend.common import get_icon_colored, get_assets_path
 
 class TimerConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):

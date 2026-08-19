@@ -2,8 +2,8 @@
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy, QFrame
 from .base_dialog import ModernWizardPanel
-from frontend.widgets import VariableTextEdit
-from frontend.common.utils import NoWheelComboBox, validate_trigger_prefix
+from frontend.widgets import VariableTextEdit, NoWheelComboBox
+from frontend.common import validate_trigger_prefix
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):

@@ -7,10 +7,10 @@ from PySide6.QtCore import Qt, Signal, QPointF, QSize, QRectF
 from PySide6.QtGui import (
     QPainter, QPen, QBrush, QColor, QLinearGradient, QPainterPath, QFont, QFontMetrics
 )
-from frontend.common.utils import get_icon_colored, get_pixmap_colored
+from frontend.common import get_icon_colored, get_pixmap_colored
 from frontend.widgets import BaseView, ModernButton, ModernTableCard
 from frontend.common.theme import (
-    COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_NEUTRAL_500, COLOR_NEUTRAL_800, COLOR_NEUTRAL_850,
+    COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_NEUTRAL_500,
     COLOR_GREEN, COLOR_AMBER, COLOR_RED, COLOR_BLACK, COLOR_BLUE, COLOR_PURPLE, COLOR_WHITE
 )
 
@@ -523,7 +523,7 @@ class NetworkView(BaseView):
         
         lbl_icon = QLabel()
         lbl_icon.setFixedSize(20, 20)
-        lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_200, size=16))
+        lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=16))
         
         lbl_title = QLabel(title)
         lbl_title.setProperty("state", "bold")

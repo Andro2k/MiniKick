@@ -1,13 +1,12 @@
 # frontend\dialogs\update_dialog.py
 
-from frontend.common.theme import COLOR_NEUTRAL_950
+from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_RED, COLOR_BLUE
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QPushButton, QWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
-from frontend.common.theme import COLOR_GREEN, COLOR_RED, COLOR_BLUE
-from frontend.common.utils import get_icon_colored, get_assets_path
+from frontend.common import get_icon_colored, get_assets_path
 
 class UpdateDialog(ModernModal):
     download_requested = Signal() 

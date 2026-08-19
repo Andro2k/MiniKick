@@ -6,8 +6,8 @@ from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, QWidge
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QSyntaxHighlighter, 
                            QTextCharFormat, QFont, QKeyEvent)
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_WHITE
-from frontend.common.utils import NoWheelSlider
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_750, COLOR_WHITE
+from .no_wheel import NoWheelSlider
 
 class ModernButton(QPushButton):
     def __init__(self, text: str, role: str = "action_accent", parent=None):
@@ -27,7 +27,7 @@ class ModernSwitch(QAbstractButton):
         self._bg_color_checked = QColor(COLOR_GREEN)
         self._bg_color_unchecked = QColor(COLOR_NEUTRAL_850)
         self._border_color_checked = QColor(COLOR_GREEN)
-        self._border_color_unchecked = QColor(COLOR_NEUTRAL_800)
+        self._border_color_unchecked = QColor(COLOR_NEUTRAL_750)
         self._border_color_focus = QColor(COLOR_GREEN)
         self._handle_color = QColor(COLOR_WHITE)
 

@@ -1,34 +1,23 @@
-# frontend\common\utils.py
+# frontend\common\icons.py
 
 import logging
-import os
-import sys
 from functools import lru_cache
-from PySide6.QtWidgets import QComboBox, QSlider, QDateEdit, QTimeEdit
-from PySide6.QtCore import Qt, QByteArray, QRectF
+from PySide6.QtCore import Qt, QByteArray, QRectF, QSize
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
-logger = logging.getLogger("minikick.utils")
 
-def resource_path(relative_path: str) -> str:
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    return os.path.join(base_path, relative_path)
+from frontend.common.paths import resolve_icon_path
+from frontend.common.theme import COLOR_NEUTRAL_400
 
-def get_assets_path(subfolder: str = "") -> str:
-    path = resource_path("assets")
-    if subfolder:
-        path = os.path.join(path, subfolder)
-    return os.path.normpath(path).replace("\\", "/")
+logger = logging.getLogger("minikick.icons")
 
-def _resolve_icon_path(name: str) -> str | None:
-    full_path = get_assets_path(os.path.join("icons", name))
-    if not os.path.exists(full_path):
-        logger.warning(f"No se encontró el archivo de ícono: '{name}' en {full_path}")
-        return None
-    return full_path
+ICON_SIZE_XS = 12
+ICON_SIZE_SM = 14
+ICON_SIZE_MD = 16
+ICON_SIZE_LG = 20
+ICON_SIZE_XL = 24
+ICON_SIZE_2XL = 32
+ICON_SIZE_HERO = 48
 
 @lru_cache(maxsize=64)
 def _load_svg_raw(full_path: str) -> str:
@@ -37,16 +26,16 @@ def _load_svg_raw(full_path: str) -> str:
 
 @lru_cache(maxsize=64)
 def get_icon(name: str) -> QIcon:
-    full_path = _resolve_icon_path(name)
+    full_path = resolve_icon_path(name)
     return QIcon(full_path) if full_path else QIcon()
 
 @lru_cache(maxsize=256)
 def _get_icon_colored_impl(name: str, color_str: str, size: int, dpr: float) -> QIcon:
-    full_path = _resolve_icon_path(name)
+    full_path = resolve_icon_path(name)
     if not full_path:
         return QIcon()
 
-    logical_size = size if size else 24
+    logical_size = size if size else 16
     physical_size = int(logical_size * dpr)
 
     try:
@@ -84,23 +73,21 @@ def _get_default_dpr() -> float:
             return screen.devicePixelRatio()
     return 1.0
 
-def get_icon_colored(name: str, color_str: str, size: int = 24, dpr: float | None = None) -> QIcon:
+def get_icon_colored(name: str, color_str: str = COLOR_NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QIcon:
     if dpr is None:
         dpr = _get_default_dpr()
     return _get_icon_colored_impl(name, color_str, size, dpr)
 
-def get_pixmap_colored(name: str, color_str: str, size: int = 24, dpr: float | None = None) -> QPixmap:
+def get_pixmap_colored(name: str, color_str: str = COLOR_NEUTRAL_400, size: int = 16, dpr: float | None = None) -> QPixmap:
     if dpr is None:
         dpr = _get_default_dpr()
     icon = get_icon_colored(name, color_str, size, dpr)
-    from PySide6.QtCore import QSize
     return icon.pixmap(QSize(size, size), dpr)
 
-def get_pixmap(name: str, size: int, dpr: float | None = None) -> QPixmap:
+def get_pixmap(name: str, size: int = 16, dpr: float | None = None) -> QPixmap:
     if dpr is None:
         dpr = _get_default_dpr()
     icon = get_icon(name)
-    from PySide6.QtCore import QSize
     return icon.pixmap(QSize(size, size), dpr)
 
 def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
@@ -123,47 +110,3 @@ def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
     painter.drawImage(0, 0, image)
     painter.end()
     return QPixmap.fromImage(out_img)
-    
-class NoWheelComboBox(QComboBox):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-
-    def wheelEvent(self, event):
-        if not self.hasFocus():
-            event.ignore()
-        else:
-            super().wheelEvent(event)
-
-class NoWheelSlider(QSlider):
-    def __init__(self, orientation=None, parent=None):
-        if orientation is not None and not isinstance(orientation, QSlider):
-            super().__init__(orientation, parent)
-        else:
-            super().__init__(parent)
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-
-    def wheelEvent(self, event):
-        if not self.hasFocus():
-            event.ignore()
-        else:
-            super().wheelEvent(event)
-
-class NoWheelDateEdit(QDateEdit):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-
-    def wheelEvent(self, event):
-        event.ignore()
-
-class NoWheelTimeEdit(QTimeEdit):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-
-    def wheelEvent(self, event):
-        event.ignore()
-
-def validate_trigger_prefix(text: str) -> bool:
-    return not text.strip() or text.startswith("!")
