@@ -7,7 +7,6 @@ from .chat.pipeline import ChatMessageDTO, MessagePipeline
 from .chat.spam_service import SpamService
 from .chat.timer_service import TimerService
 from .chat.tts_service import TTSManager
-from .rewards.media_trigger import MediaTriggerService
 from .overlay import OverlayServerManager
 from .rewards.rewards_service import RewardsService
 from .system.dashboard_service import AvatarService
@@ -32,7 +31,6 @@ __all__ = [
     "SpamService",
     "TimerService",
     "TTSManager",
-    "MediaTriggerService",
     "OverlayServerManager",
     "RewardsService",
     "AvatarService",

@@ -22,16 +22,21 @@ except ImportError:
     TWITCH_REDIRECT_URI = "http://localhost:8080/auth/callback"
 
 from backend.providers import YouTubeMusicProvider
-from backend.database import (DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
-                            SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
-                            SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage)
-from backend.services import (BackupService, TranslationService, AuthManager, TwitchAuthManager, OverlayServerManager, 
-                              MediaTriggerService, TTSManager, WidgetService, ScheduleService)
+from backend.database import (
+    DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
+    SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
+    SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage
+)
+from backend.services import (
+    BackupService, TranslationService, AuthManager, TwitchAuthManager, 
+    OverlayServerManager, TTSManager, WidgetService, ScheduleService
+)
 from frontend.common.paths import resource_path
 
 class AppContainer:
-    def __init__(self, parent_widget):
+    def __init__(self, parent_widget=None):
         self.db_manager = DatabaseManager()
+        
         self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
         self.twitch_token_storage = SQLiteTokenStorage(self.db_manager, provider="twitch")
         self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
@@ -44,7 +49,7 @@ class AppContainer:
         self.log_storage = SQLiteSystemLogStorage(self.db_manager)
         self.music_storage = SQLiteMusicStorage(self.db_manager)
         self.schedule_storage = SQLiteScheduleStorage(self.db_manager)
-        self.stream_schedule_storage = self.schedule_storage
+
         self.widget_service = WidgetService(self.widgets_storage)
         self.backup_service = BackupService(
             self.settings_storage, self.rewards_storage, 
@@ -53,9 +58,8 @@ class AppContainer:
         )
         self.i18n = self._init_i18n()
         self.schedule_service = ScheduleService(self.schedule_storage, i18n=self.i18n)
-        self.stream_info_service = self.schedule_service
+
         html_path = resource_path(os.path.join("assets", "web", "auth.html"))
-        
         self.auth_manager = AuthManager(
             client_id=KICK_CLIENT_ID,
             client_secret=KICK_CLIENT_SECRET,
@@ -63,7 +67,6 @@ class AppContainer:
             storage=self.kick_token_storage,
             success_html_path=html_path
         )
-        
         self.twitch_auth_manager = TwitchAuthManager(
             client_id=TWITCH_CLIENT_ID,
             client_secret=TWITCH_CLIENT_SECRET,
@@ -73,9 +76,7 @@ class AppContainer:
         )
         
         self.music_provider = YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=self.db_manager)
-        
         self.tts_manager = TTSManager()
-        self.media_trigger_service = MediaTriggerService(parent_widget)
         self.overlay_server = OverlayServerManager(port=8090, settings_storage=self.settings_storage)
         self.overlay_server.start()
 

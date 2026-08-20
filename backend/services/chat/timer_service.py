@@ -86,7 +86,8 @@ class TimerService:
                 apply_twitch = timer.get("apply_twitch", True)
                 messages_to_send.append((msg, apply_kick, apply_twitch))
                 if hasattr(self.storage, "db_manager") and self.storage.db_manager:
-                    self.storage.db_manager.log_timer_execution(timer_id, msg)
+                    target_plat = "all" if (apply_kick and apply_twitch) else ("kick" if apply_kick else ("twitch" if apply_twitch else "none"))
+                    self.storage.db_manager.log_timer_execution(timer_id, msg, platform=target_plat)
 
                 state["message_index"] = (state["message_index"] + 1) % len(msgs)
                 state["last_posted_time"] = now

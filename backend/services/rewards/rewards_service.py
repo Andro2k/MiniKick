@@ -31,6 +31,6 @@ class RewardsService:
     def trigger_preview(self, reward_name: str, config: dict):
         self.overlay.trigger_rewards(reward_name, config)
 
-    def log_redemption(self, reward_name: str, username: str):
+    def log_redemption(self, reward_name: str, username: str, platform: str = "kick"):
         if hasattr(self.storage, "db_manager") and self.storage.db_manager:
-            self.storage.db_manager.log_reward_redemption(reward_name, username)
+            self.storage.db_manager.log_reward_redemption(reward_name, username, platform=platform)

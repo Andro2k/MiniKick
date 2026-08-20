@@ -38,9 +38,14 @@ class DatabaseManager:
 
             self._create_tables()
             self._upgrade_schema()
+            self._create_indexes_and_views()
         except sqlite3.DatabaseError as e:
-            logger.error("Database file is malformed at startup, recreating: %s", e)
-            self._handle_corrupt_database()
+            if "malformed" in str(e).lower() or "corrupt" in str(e).lower() or "integrity" in str(e).lower():
+                logger.error("Database file is malformed at startup, recreating: %s", e)
+                self._handle_corrupt_database()
+            else:
+                logger.error("Database initialization error: %s", e)
+                raise e
 
     def get_connection(self) -> sqlite3.Connection:
         conn = None
@@ -73,6 +78,8 @@ class DatabaseManager:
                 except Exception as del_err:
                     logger.warning("Could not delete database file %s: %s", file_path, del_err)
         self._create_tables()
+        self._upgrade_schema()
+        self._create_indexes_and_views()
 
     def _create_tables(self) -> None:
         with self.get_connection() as conn:
@@ -111,17 +118,6 @@ class DatabaseManager:
                     is_user_input_required INTEGER DEFAULT 0
                 )
             """)
-            for col, col_def in [
-                ("reward_id", "TEXT"),
-                ("cost", "INTEGER DEFAULT 100"),
-                ("description", "TEXT DEFAULT ''"),
-                ("background_color", "TEXT DEFAULT '#00e701'"),
-                ("is_user_input_required", "INTEGER DEFAULT 0")
-            ]:
-                try:
-                    cursor.execute(f"ALTER TABLE obs_rewards ADD COLUMN {col} {col_def}")
-                except sqlite3.OperationalError:
-                    pass
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS chat_commands (
                     trigger TEXT PRIMARY KEY,
@@ -130,7 +126,9 @@ class DatabaseManager:
                     cooldown INTEGER DEFAULT 5,
                     aliases TEXT DEFAULT '',
                     is_regex INTEGER DEFAULT 0,
-                    permission TEXT DEFAULT 'everyone'
+                    permission TEXT DEFAULT 'everyone',
+                    apply_kick INTEGER DEFAULT 1,
+                    apply_twitch INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -166,13 +164,11 @@ class DatabaseManager:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     command_trigger TEXT NOT NULL,
                     username TEXT NOT NULL,
+                    platform TEXT DEFAULT 'kick',
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (command_trigger) REFERENCES chat_commands(trigger) ON DELETE CASCADE
                 )
             """)
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_trigger ON command_execution_logs(command_trigger)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_timestamp ON command_execution_logs(timestamp)")
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS youtube_search_cache (
                     query_raw TEXT PRIMARY KEY,
@@ -186,24 +182,6 @@ class DatabaseManager:
                     cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            try:
-                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN duration TEXT DEFAULT '-'")
-            except sqlite3.OperationalError:
-                pass
-            try:
-                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN play_count INTEGER DEFAULT 1")
-            except sqlite3.OperationalError:
-                pass
-            try:
-                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN last_accessed TEXT")
-            except sqlite3.OperationalError:
-                pass
-            try:
-                cursor.execute("ALTER TABLE youtube_search_cache ADD COLUMN file_size_mb REAL DEFAULT 4.0")
-            except sqlite3.OperationalError:
-                pass
-
-
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS avatar_cache (
                     url TEXT PRIMARY KEY,
@@ -219,9 +197,6 @@ class DatabaseManager:
                     message TEXT NOT NULL
                 )
             """)
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_level_timestamp ON system_logs(level, timestamp)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_youtube_cache_play_count ON youtube_search_cache(play_count DESC)")
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS widgets_config (
                     widget_id TEXT PRIMARY KEY,
@@ -236,28 +211,25 @@ class DatabaseManager:
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
-                    sender_id INTEGER NOT NULL,
+                    sender_id TEXT NOT NULL,
                     filter_id TEXT NOT NULL,
                     message_content TEXT,
                     penalty_type TEXT NOT NULL,
                     duration INTEGER,
+                    platform TEXT DEFAULT 'kick',
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_user ON spam_violations(username)")
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_filter ON spam_violations(filter_id)")
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS timer_execution_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     timer_id INTEGER NOT NULL,
                     message_sent TEXT NOT NULL,
+                    platform TEXT DEFAULT 'all',
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(timer_id) REFERENCES chat_timers(id) ON DELETE CASCADE
                 )
             """)
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_timer ON timer_execution_logs(timer_id)")
-
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS stream_schedules (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -275,15 +247,6 @@ class DatabaseManager:
                     days TEXT DEFAULT ''
                 )
             """)
-            try:
-                cursor.execute("ALTER TABLE stream_schedules ADD COLUMN date_str TEXT DEFAULT ''")
-            except sqlite3.OperationalError:
-                pass
-            try:
-                cursor.execute("ALTER TABLE stream_schedules ADD COLUMN days TEXT DEFAULT ''")
-            except sqlite3.OperationalError:
-                pass
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS music_queue (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -292,32 +255,45 @@ class DatabaseManager:
                     url TEXT NOT NULL,
                     requester TEXT,
                     provider TEXT NOT NULL,
+                    platform TEXT DEFAULT 'kick',
                     is_played INTEGER DEFAULT 0,
                     duration TEXT DEFAULT '-',
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status_id ON music_queue(provider, is_played, id)")
-            try:
-                cursor.execute("ALTER TABLE music_queue ADD COLUMN duration TEXT DEFAULT '-'")
-            except sqlite3.OperationalError:
-                pass
-            try:
-                cursor.execute("ALTER TABLE music_queue ADD COLUMN platform TEXT DEFAULT 'kick'")
-            except sqlite3.OperationalError:
-                pass
-            
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS reward_redemptions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     reward_name TEXT NOT NULL,
                     username TEXT NOT NULL,
+                    platform TEXT DEFAULT 'kick',
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY(reward_name) REFERENCES obs_rewards(reward_name) ON DELETE CASCADE
                 )
             """)
+            conn.commit()
+
+    def _create_indexes_and_views(self) -> None:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_trigger ON command_execution_logs(command_trigger)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_timestamp ON command_execution_logs(timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_command_logs_platform ON command_execution_logs(platform)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_level_timestamp ON system_logs(level, timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_system_logs_timestamp ON system_logs(timestamp)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_youtube_cache_play_count ON youtube_search_cache(play_count DESC)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_user ON spam_violations(username)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_filter ON spam_violations(filter_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_ts ON spam_violations(timestamp DESC)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_spam_violations_platform_ts ON spam_violations(platform, timestamp DESC)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_timer ON timer_execution_logs(timer_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_timer_logs_platform ON timer_execution_logs(platform)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_music_queue_provider_status_id ON music_queue(provider, is_played, id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name ON reward_redemptions(reward_name)")
-            
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_platform ON reward_redemptions(platform)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name_ts ON reward_redemptions(reward_name, timestamp DESC)")
+
             cursor.execute("""
                 CREATE VIEW IF NOT EXISTS command_analytics AS
                 SELECT 
@@ -394,9 +370,6 @@ class DatabaseManager:
                     DELETE FROM reward_redemptions WHERE id <= (NEW.id - 1000);
                 END;
             """)
-
-            cursor.execute("CREATE INDEX IF NOT EXISTS idx_tokens_provider ON tokens (provider)")
-            
             conn.commit()
 
     def _upgrade_schema(self) -> None:
@@ -416,7 +389,9 @@ class DatabaseManager:
                 ("cooldown", "INTEGER DEFAULT 5"),
                 ("aliases", "TEXT DEFAULT ''"),
                 ("is_regex", "INTEGER DEFAULT 0"),
-                ("permission", "TEXT DEFAULT 'everyone'")
+                ("permission", "TEXT DEFAULT 'everyone'"),
+                ("apply_kick", "INTEGER DEFAULT 1"),
+                ("apply_twitch", "INTEGER DEFAULT 1")
             ],
             "obs_rewards": [
                 ("volume", "REAL DEFAULT 1.0"),
@@ -424,7 +399,16 @@ class DatabaseManager:
                 ("pos_x", "INTEGER DEFAULT 0"),
                 ("pos_y", "INTEGER DEFAULT 0"),
                 ("is_random_pos", "INTEGER DEFAULT 0"),
-                ("thumbnail_bytes", "BLOB")
+                ("thumbnail_bytes", "BLOB"),
+                ("reward_id", "TEXT"),
+                ("cost", "INTEGER DEFAULT 100"),
+                ("description", "TEXT DEFAULT ''"),
+                ("background_color", "TEXT DEFAULT '#00e701'"),
+                ("is_user_input_required", "INTEGER DEFAULT 0")
+            ],
+            "stream_schedules": [
+                ("date_str", "TEXT DEFAULT ''"),
+                ("days", "TEXT DEFAULT ''")
             ],
             "chat_timers": [
                 ("apply_kick", "INTEGER DEFAULT 1"),
@@ -439,10 +423,24 @@ class DatabaseManager:
             "youtube_search_cache": [
                 ("duration", "TEXT DEFAULT '-'"),
                 ("play_count", "INTEGER DEFAULT 1"),
-                ("last_accessed", "TEXT")
+                ("last_accessed", "TEXT"),
+                ("file_size_mb", "REAL DEFAULT 4.0")
             ],
             "music_queue": [
-                ("duration", "TEXT DEFAULT '-'")
+                ("duration", "TEXT DEFAULT '-'"),
+                ("platform", "TEXT DEFAULT 'kick'")
+            ],
+            "command_execution_logs": [
+                ("platform", "TEXT DEFAULT 'kick'")
+            ],
+            "spam_violations": [
+                ("platform", "TEXT DEFAULT 'kick'")
+            ],
+            "timer_execution_logs": [
+                ("platform", "TEXT DEFAULT 'all'")
+            ],
+            "reward_redemptions": [
+                ("platform", "TEXT DEFAULT 'kick'")
             ]
         }
 
@@ -466,44 +464,57 @@ class DatabaseManager:
         except Exception as e:
             logger.error("Error executing database schema upgrade: %s", e)
 
-    def log_spam_violation(self, username: str, sender_id: int, filter_id: str, message_content: str, penalty_type: str, duration: int) -> None:
+    def log_spam_violation(self, username: str, sender_id: str | int, filter_id: str, message_content: str, penalty_type: str, duration: int, platform: str = "kick") -> None:
         try:
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO spam_violations (username, sender_id, filter_id, message_content, penalty_type, duration, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (username, sender_id, filter_id, message_content, penalty_type, duration, local_now)
+                    "INSERT INTO spam_violations (username, sender_id, filter_id, message_content, penalty_type, duration, platform, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (username, str(sender_id), filter_id, message_content, penalty_type, duration, platform or "kick", local_now)
                 )
                 conn.commit()
         except Exception as e:
             logger.error("[DatabaseManager] Error logging spam violation: %s", e)
 
-    def log_timer_execution(self, timer_id: int, message_sent: str) -> None:
+    def log_timer_execution(self, timer_id: int, message_sent: str, platform: str = "all") -> None:
         try:
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO timer_execution_logs (timer_id, message_sent, timestamp) VALUES (?, ?, ?)",
-                    (timer_id, message_sent, local_now)
+                    "INSERT INTO timer_execution_logs (timer_id, message_sent, platform, timestamp) VALUES (?, ?, ?, ?)",
+                    (timer_id, message_sent, platform or "all", local_now)
                 )
                 conn.commit()
         except Exception as e:
             logger.error("[DatabaseManager] Error logging timer execution: %s", e)
 
-    def log_reward_redemption(self, reward_name: str, username: str) -> None:
+    def log_reward_redemption(self, reward_name: str, username: str, platform: str = "kick") -> None:
         try:
             local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO reward_redemptions (reward_name, username, timestamp) VALUES (?, ?, ?)",
-                    (reward_name, username, local_now)
+                    "INSERT INTO reward_redemptions (reward_name, username, platform, timestamp) VALUES (?, ?, ?, ?)",
+                    (reward_name, username, platform or "kick", local_now)
                 )
                 conn.commit()
         except Exception as e:
             logger.error("[DatabaseManager] Error logging reward redemption: %s", e)
+
+    def log_command_execution(self, trigger: str, username: str, platform: str = "kick") -> None:
+        try:
+            local_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO command_execution_logs (command_trigger, username, platform, timestamp) VALUES (?, ?, ?, ?)",
+                    (trigger, username, platform or "kick", local_now)
+                )
+                conn.commit()
+        except Exception as e:
+            logger.error("[DatabaseManager] Error logging command execution: %s", e)
 
     def add_song_to_queue(self, title: str, artist: str, url: str, requester: str, provider: str, platform: str = "kick", duration: str = "-") -> int:
         try:

@@ -249,7 +249,9 @@ DEFAULT_DICTIONARY = {
             "autostart_desc": "Automatically connect MiniKick upon launching the application.",
             "autostart_title": "Auto Connect",
             "btn_active": "System Active",
+            "btn_active_twitch": "Twitch Active",
             "btn_connect": "Connect to Kick",
+            "btn_connect_twitch": "Connect Twitch",
             "btn_retry": "Retry",
             "status_auth": "Status: Authenticating...",
             "status_connected": "Status: Connected & Listening",
@@ -335,8 +337,12 @@ DEFAULT_DICTIONARY = {
             "title": "Release Notes"
         },
         "unlink": {
-            "desc": "Are you sure you want to unlink your account? You will need to log in again next time you open MiniKick.",
-            "title": "Unlink Account"
+            "desc": "Do you want to disconnect your account? You will have to log in again the next time you open MiniKick.",
+            "title": "Disconnect Account"
+        },
+        "unlink_twitch": {
+            "desc": "Are you sure you want to disconnect your Twitch account? Chat and command features for Twitch will become inactive.",
+            "title": "Disconnect Twitch"
         },
         "update": {
             "btn_close": "Close",
