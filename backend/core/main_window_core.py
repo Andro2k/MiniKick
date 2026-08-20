@@ -1,9 +1,12 @@
 # backend\core\main_window_core.py
 
+import logging
 from backend.providers.chat.twitch_client import TwitchAPIClient
 from PySide6.QtWidgets import (QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
                                QSystemTrayIcon, QApplication)
 from PySide6.QtCore import Slot, QEvent, QTimer
+
+logger = logging.getLogger("minikick.core")
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
     LogService, SettingsService, NetworkService, SpamService, TimerService
@@ -254,6 +257,7 @@ class MainWindowCore(QMainWindow):
         self.settings_controller.style_reload_requested.connect(self._apply_dynamic_theme)
         self.sidebar.view_selected.connect(self._handle_navigation)
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
+        self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
@@ -565,6 +569,12 @@ class MainWindowCore(QMainWindow):
         twitch_connected = getattr(self, "_twitch_connected", False)
         twitch_channel = getattr(self, "_twitch_channel", "")
 
+        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+            self.dashboard_controller.set_twitch_status(
+                connected=twitch_connected,
+                channel=twitch_channel
+            )
+
         if hasattr(self, "view_settings") and self.view_settings:
             self.view_settings.set_integrations_status(
                 kick_connected=kick_connected,
@@ -589,28 +599,50 @@ class MainWindowCore(QMainWindow):
         self.twitch_auth_worker.start()
 
     def _on_twitch_auth_error(self, err: str):
-        import logging
+        logger.error(f"[Twitch Auth Error] {err}")
         log_msg = self.container.i18n.get("logs.main_window.twitch_auth_error").replace("{error}", str(err))
-        logging.error(log_msg)
-        if hasattr(self, "log_controller") and self.log_controller:
-            self.log_controller.process_incoming_log("ERROR", f"[TwitchAuth] {err}")
+        self.q_log_handler.emitter.log_received.emit(log_msg)
+        if getattr(self, "_is_window_closing", False):
+            return
         err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
-        self.toast.show_toast(title=err_title, message=err, state="danger")
-
+        self.toast.show_toast(title=err_title, message=str(err), state="danger")
 
     def _on_twitch_auth_success(self, tokens):
-        access_token = tokens.get("access_token", "")
+        logger.info("[Twitch Auth] Success callback received.")
         twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID, i18n=self.container.i18n)
-        
+        user_data = twitch_api.fetch_user_data()
+        if not user_data:
+            logger.error("[Twitch Auth] Failed to fetch user data after auth.")
+            return
+
+        broadcaster_id = user_data.get("user_id", "")
+        broadcaster_login = user_data.get("user_login", "")
+
+        self._twitch_connected = True
+        self._twitch_channel = broadcaster_login
+        self.spam_service.twitch_api = twitch_api
+        self.spam_service.twitch_broadcaster_id = broadcaster_id
+
+        self._start_twitch_chat_worker(broadcaster_login)
+        self._update_integrations_status_ui()
+        missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
+        self.dashboard_controller.evaluate_scopes(missing_scopes)
+
+    def _start_twitch_chat_worker(self, channel: str):
+        if hasattr(self, 'twitch_chat_worker') and self.twitch_chat_worker:
+            self.twitch_chat_worker.stop()
+            self.twitch_chat_worker = None
+
         self.twitch_chat_worker = TwitchChatWorker(
-            oauth_token=access_token,
-            api_client=twitch_api,
+            channel_name=channel,
+            oauth_token="",
+            bot_nick="",
+            api_client=self.spam_service.twitch_api,
             i18n=self.container.i18n,
             parent=self
         )
 
         self.command_service.twitch_worker = self.twitch_chat_worker
-        self.spam_service.twitch_api = twitch_api
         self.spam_service.twitch_worker = self.twitch_chat_worker
         self.twitch_chat_worker.connection_success.connect(self._on_twitch_connected)
         self.twitch_chat_worker.connection_lost.connect(self._on_twitch_socket_lost)
@@ -674,9 +706,16 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _on_twitch_integration_button_clicked(self):
         if getattr(self, "_twitch_connected", False):
-            self._handle_twitch_disconnect()
+            dialog = ModernConfirmDialog(
+                self.i18n,
+                self,
+                title_text=self.i18n.get("dialogs.unlink_twitch.title"),
+                body_text=self.i18n.get("dialogs.unlink_twitch.desc")
+            )
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                self._handle_twitch_disconnect()
         else:
-            self._handle_twitch_auth_process(force=True)
+            self._handle_twitch_auth_process(force=False)
 
     @Slot()
     def _on_kick_integration_button_clicked(self):

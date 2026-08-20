@@ -206,3 +206,38 @@ def test_command_controller_lazy_rendering():
     assert controller._needs_reload is False
     assert mock_view.populate_table.call_count == 1
 
+def test_dashboard_twitch_connection_ui():
+    from PySide6.QtWidgets import QApplication
+    from backend.services.system.translation_service import TranslationService
+    from frontend.views.dashboard_view import DashboardView
+    from backend.controllers.dashboard_controller import DashboardController
+    from unittest.mock import MagicMock
+
+    _app = QApplication.instance() or QApplication([])
+    i18n = TranslationService(default_lang="es")
+
+    view = DashboardView(i18n=i18n)
+    avatar_service = MagicMock()
+    controller = DashboardController(view=view, avatar_service=avatar_service)
+
+    twitch_signals = []
+    controller.twitch_connect_requested.connect(lambda: twitch_signals.append(True))
+
+    # Initial state
+    assert view.btn_connect_twitch.text() == "Conectar Twitch"
+
+    # Emitting click on view button triggers controller signal
+    view.btn_connect_twitch.click()
+    assert len(twitch_signals) == 1
+
+    # Setting connected status updates button text and disables it
+    controller.set_twitch_status(connected=True, channel="sryunior64")
+    assert view.btn_connect_twitch.text() == "Twitch Activo"
+    assert view.btn_connect_twitch.isEnabled() is False
+
+    # Disconnecting reverts text and enables it
+    controller.set_twitch_status(connected=False)
+    assert view.btn_connect_twitch.text() == "Conectar Twitch"
+    assert view.btn_connect_twitch.isEnabled() is True
+
+

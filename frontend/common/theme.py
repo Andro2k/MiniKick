@@ -31,6 +31,8 @@ COLOR_RED          = "#EF4444"
 COLOR_AMBER        = "#F59E0B"
 COLOR_BLUE         = "#3B82F6"
 COLOR_PURPLE       = "#C084FC"
+COLOR_TWITCH       = "#9146FF"
+COLOR_TWITCH_DARK  = "#772CE8"
 
 COLOR_WHITE_GLOW   = "rgba(255, 255, 255, 0.1)"
 COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.12)"
@@ -38,6 +40,7 @@ COLOR_RED_GLOW     = "rgba(239, 68, 68, 0.12)"
 COLOR_AMBER_GLOW   = "rgba(245, 158, 11, 0.12)"
 COLOR_BLUE_GLOW    = "rgba(59, 130, 246, 0.12)"
 COLOR_PURPLE_GLOW  = "rgba(192, 132, 252, 0.15)"
+COLOR_TWITCH_GLOW  = "rgba(145, 70, 255, 0.15)"
 
 FONT_FAMILY = "'Google Sans', '-apple-system', 'Segoe UI', sans-serif"
 
@@ -294,6 +297,14 @@ QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding:
 QPushButton[role="action_accent"] {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_GREEN_DARK}; }}
 QPushButton[role="action_accent"]:focus {{ border-color: {COLOR_NEUTRAL_700}; }}
+QPushButton[role="action_kick"] {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_kick"]:hover {{ background-color: {COLOR_GREEN_DARK}; }}
+QPushButton[role="action_kick"]:focus {{ border-color: {COLOR_WHITE}; }}
+QPushButton[role="action_kick"]:disabled {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; border: 1.5px solid {COLOR_GREEN}; }}
+QPushButton[role="action_twitch"] {{ background-color: {COLOR_TWITCH}; color: {COLOR_WHITE}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_twitch"]:hover {{ background-color: {COLOR_TWITCH_DARK}; }}
+QPushButton[role="action_twitch"]:focus {{ border-color: {COLOR_WHITE}; }}
+QPushButton[role="action_twitch"]:disabled {{ background-color: {COLOR_TWITCH_GLOW}; color: {COLOR_TWITCH}; border: 1.5px solid {COLOR_TWITCH}; }}
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="action_outlined"]:focus {{ border-color: {COLOR_GREEN}; }}

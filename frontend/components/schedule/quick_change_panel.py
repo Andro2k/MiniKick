@@ -108,21 +108,23 @@ class ScheduleQuickChangePanel(QWidget):
 
     def _setup_status_section(self, parent_layout: QVBoxLayout):
         status_header = QHBoxLayout()
+        status_header.setContentsMargins(10, 2, 10, 2)
         status_header.setSpacing(8)
+        status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         lbl_status_title = QLabel(self.i18n.get("stream_info.status.title"))
         lbl_status_title.setProperty("role", "h2")
-        status_header.addWidget(lbl_status_title)
+        status_header.addWidget(lbl_status_title, alignment=Qt.AlignmentFlag.AlignVCenter)
         status_header.addStretch()
 
         self.btn_refresh = QPushButton()
         self.btn_refresh.setProperty("role", "action_outlined")
         self.btn_refresh.setIcon(self._icon_refresh)
-        self.btn_refresh.setFixedSize(36, 36)
+        self.btn_refresh.setFixedSize(32, 32)
         self.btn_refresh.setToolTip(self.i18n.get("stream_info.status.refresh_tooltip"))
         self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_refresh.clicked.connect(self.refresh_info_requested.emit)
-        status_header.addWidget(self.btn_refresh)
+        status_header.addWidget(self.btn_refresh, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         parent_layout.addLayout(status_header)
 

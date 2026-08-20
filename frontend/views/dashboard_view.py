@@ -4,7 +4,7 @@ import os
 from PySide6.QtWidgets import (QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QGridLayout, QSizePolicy)
 from PySide6.QtCore import Qt, Signal, QRectF, QSize
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
-from frontend.common.theme import COLOR_BLACK, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
+from frontend.common.theme import COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_800, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE
 from frontend.common import create_circular_pixmap, get_icon_colored, get_assets_path, get_pixmap_colored
 from frontend.widgets import BaseView, StatCard, SettingRow, ModernCard, ScalableIllustration, ModernButton, ModernSwitch, ModernDivider
 
@@ -51,6 +51,7 @@ class SegmentedDistributionBar(QWidget):
 
 class DashboardView(BaseView):
     connect_requested = Signal()
+    twitch_connect_requested = Signal()
     autostart_toggled = Signal(bool)
     reauth_requested = Signal()
     
@@ -136,17 +137,24 @@ class DashboardView(BaseView):
         )
 
         status_layout = QHBoxLayout()
+        status_layout.setSpacing(8)
         self.status_label = QLabel(self.i18n.get("dashboard.connection.status_waiting"))
         self.status_label.setProperty("role", "body")
         self.status_label.setWordWrap(True)
 
-        self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_accent")
+        self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_kick")
         self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
         self.btn_connect.setIconSize(QSize(16, 16))
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
+        self.btn_connect_twitch = ModernButton(self.i18n.get("dashboard.connection.btn_connect_twitch"), role="action_twitch")
+        self.btn_connect_twitch.setIcon(get_icon_colored("twitch.svg", COLOR_WHITE, 16))
+        self.btn_connect_twitch.setIconSize(QSize(16, 16))
+        self.btn_connect_twitch.clicked.connect(self.twitch_connect_requested.emit)
+
         status_layout.addWidget(self.status_label, stretch=1)
         status_layout.addWidget(self.btn_connect, alignment=Qt.AlignmentFlag.AlignVCenter)
+        status_layout.addWidget(self.btn_connect_twitch, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         conn_card.addWidget(row_autostart)
         
@@ -155,6 +163,21 @@ class DashboardView(BaseView):
         
         conn_card.addLayout(status_layout)
         self.main_layout.addWidget(conn_card)
+
+    def set_twitch_status(self, connected: bool = False, channel: str = ""):
+        if connected and channel:
+            self.btn_connect_twitch.setText(self.i18n.get("dashboard.connection.btn_active_twitch"))
+            self.btn_connect_twitch.setIcon(get_icon_colored("twitch.svg", COLOR_PURPLE, 16))
+            self.btn_connect_twitch.setEnabled(False)
+            self.btn_connect_twitch.setProperty("role", "action_twitch")
+        else:
+            self.btn_connect_twitch.setText(self.i18n.get("dashboard.connection.btn_connect_twitch"))
+            self.btn_connect_twitch.setIcon(get_icon_colored("twitch.svg", COLOR_WHITE, 16))
+            self.btn_connect_twitch.setEnabled(True)
+            self.btn_connect_twitch.setProperty("role", "action_twitch")
+
+        self.btn_connect_twitch.style().unpolish(self.btn_connect_twitch)
+        self.btn_connect_twitch.style().polish(self.btn_connect_twitch)
 
     def _setup_profile_section(self):
         self.profile_container = QWidget(self)
