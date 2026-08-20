@@ -82,17 +82,20 @@ class MusicController(QObject):
         if self.view is None:
             return
         saved_cmds = {c["trigger"]: c["is_active"] for c in self.command_service.get_all_commands()}
-        self.view.blockSignals(True)
-        self.view.sw_sr.setChecked(saved_cmds.get("!sr", False))
-        self.view.sw_skip.setChecked(saved_cmds.get("!skip", False))
-        self.view.sw_song.setChecked(saved_cmds.get("!song", False))
-        self.view.sw_pause.setChecked(saved_cmds.get("!pause", False))
-        self.view.sw_resume.setChecked(saved_cmds.get("!resume", False))
-        if hasattr(self.view, "sw_playlist"):
-            self.view.sw_playlist.setChecked(saved_cmds.get("!playlist", False))
-        if hasattr(self.view, "sw_volume"):
-            self.view.sw_volume.setChecked(saved_cmds.get("!vol", False))
-        self.view.blockSignals(False)
+        if hasattr(self.view, "set_command_switches_states"):
+            self.view.set_command_switches_states(saved_cmds)
+        else:
+            self.view.blockSignals(True)
+            self.view.sw_sr.setChecked(saved_cmds.get("!sr", False))
+            self.view.sw_skip.setChecked(saved_cmds.get("!skip", False))
+            self.view.sw_song.setChecked(saved_cmds.get("!song", False))
+            self.view.sw_pause.setChecked(saved_cmds.get("!pause", False))
+            self.view.sw_resume.setChecked(saved_cmds.get("!resume", False))
+            if hasattr(self.view, "sw_playlist"):
+                self.view.sw_playlist.setChecked(saved_cmds.get("!playlist", False))
+            if hasattr(self.view, "sw_volume"):
+                self.view.sw_volume.setChecked(saved_cmds.get("!vol", False))
+            self.view.blockSignals(False)
 
     def _load_initial_state(self):
         commands = self.command_service.get_all_commands()

@@ -9,6 +9,7 @@ class WidgetsView(BaseView):
     widget_saved = Signal(str, bool, str, int, str, dict)
     death_count_changed = Signal(int)
     score_changed = Signal(int, int)
+    view_shown = Signal()
 
     def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", poll_overlay_url: str = "", pinned_overlay_url: str = "", parent=None):
         super().__init__(i18n=i18n, title_key="widgets.header.title", subtitle_key="widgets.header.subtitle", parent=parent)
@@ -22,6 +23,10 @@ class WidgetsView(BaseView):
         self.cards: dict[str, WidgetCard] = {}
         self._is_compact_layout: bool | None = None
         self._setup_ui()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.view_shown.emit()
 
     def _setup_ui(self):
         self.body_container = QWidget()

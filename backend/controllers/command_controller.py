@@ -8,6 +8,7 @@ class CommandController(QObject):
         self.view = view
         self.service = service
         self.toast = toast_manager
+        self._needs_reload = False
         if self.view is not None:
             self._connect_signals()
 
@@ -15,7 +16,7 @@ class CommandController(QObject):
         self.view = view
         if self.view is not None:
             self._connect_signals()
-            self.load_initial_data()
+            self.load_initial_data(force=True)
 
     def _connect_signals(self):
         self.view.add_requested.connect(self._handle_add)
@@ -23,12 +24,27 @@ class CommandController(QObject):
         self.view.delete_requested.connect(self._handle_delete)
         self.view.status_toggled.connect(self._handle_status_change)
         self.view.search_text_changed.connect(self._handle_search)
-        self.service.commands_changed.connect(self.load_initial_data)
+        if hasattr(self.view, "view_shown"):
+            self.view.view_shown.connect(self._on_view_shown)
+        self.service.commands_changed.connect(self._on_commands_changed)
 
-    def load_initial_data(self):
+    def _on_view_shown(self):
+        if self._needs_reload:
+            self.load_initial_data(force=True)
+
+    def _on_commands_changed(self):
+        if getattr(self, "_is_internal_toggle", False):
+            return
+        self.load_initial_data(force=False)
+
+    def load_initial_data(self, force: bool = False):
         if self.view is not None:
-            commands = self.service.get_all_commands()
-            self.view.populate_table(commands)
+            if force or self.view.isVisible():
+                self._needs_reload = False
+                commands = self.service.get_all_commands()
+                self.view.populate_table(commands)
+            else:
+                self._needs_reload = True
 
     @Slot()
     def _handle_add(self):
@@ -73,28 +89,19 @@ class CommandController(QObject):
                     state=state_color
                 )
 
-            def _save_status():
-                try:
-                    self.service.commands_changed.disconnect(self.load_initial_data)
-                except Exception:
-                    pass
-                try:
-                    self.service.save_command(
-                        trigger=existing["trigger"],
-                        response=existing["response"],
-                        is_active=is_active,
-                        cooldown=existing["cooldown"],
-                        aliases=existing["aliases"],
-                        is_regex=existing["is_regex"],
-                        permission=existing.get("permission", "everyone")
-                    )
-                finally:
-                    try:
-                        self.service.commands_changed.connect(self.load_initial_data)
-                    except Exception:
-                        pass
-
-            QTimer.singleShot(0, _save_status)
+            self._is_internal_toggle = True
+            try:
+                self.service.save_command(
+                    trigger=existing["trigger"],
+                    response=existing["response"],
+                    is_active=is_active,
+                    cooldown=existing["cooldown"],
+                    aliases=existing["aliases"],
+                    is_regex=existing["is_regex"],
+                    permission=existing.get("permission", "everyone")
+                )
+            finally:
+                self._is_internal_toggle = False
 
     @Slot(str)
     def _handle_search(self, text: str):

@@ -1,6 +1,6 @@
 # frontend\dialogs\update_dialog.py
 
-from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_RED, COLOR_BLUE
+from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_RED, COLOR_GREEN
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QPushButton, QWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
@@ -16,10 +16,10 @@ class UpdateDialog(ModernModal):
         self.i18n = i18n
         super().__init__(
             title=self.i18n.get("dialogs.update.title_default"), icon_path=get_assets_path("icons/cloud-download.svg"), 
-            icon_bg_color=COLOR_BLUE, width=400, parent=parent
+            icon_bg_color=COLOR_GREEN, width=400, parent=parent
         )
         self.version = ""
-        self.set_dialog_state("accent", QColor(59, 130, 246, 60))
+        self.set_dialog_state("accent", QColor(46, 205, 112, 60))
         self.header_icon = None
         for lbl in self.container.findChildren(QLabel):
             if lbl.pixmap():

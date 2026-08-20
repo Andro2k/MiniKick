@@ -48,6 +48,7 @@ class WidgetController(QObject):
         self._save_timer.timeout.connect(self._flush_saves)
         self._pending_saves = set()
         self._is_syncing_db = False
+        self._needs_reload = False
 
         self.command_service.commands_changed.connect(self._sync_widgets_from_commands_db)
         if self.view is not None:
@@ -78,6 +79,14 @@ class WidgetController(QObject):
             self.view.death_count_changed.connect(self.handle_death_count_change)
             self.view.score_changed.connect(self.handle_score_change)
             self.death_count_updated.connect(self.view.update_death_count_display)
+            if hasattr(self.view, "view_shown"):
+                self.view.view_shown.connect(self._on_view_shown)
+
+    def _on_view_shown(self):
+        if self._needs_reload:
+            self._needs_reload = False
+            if self.view:
+                self.view.populate_widgets(self.widget_service.get_all_widgets())
             self.score_updated.connect(self.view.update_score_display)
 
     def load_initial_data(self):
@@ -142,7 +151,11 @@ class WidgetController(QObject):
                     changed = True
 
             if self.view:
-                self.view.populate_widgets(self.widget_service.get_all_widgets())
+                if self.view.isVisible():
+                    self._needs_reload = False
+                    self.view.populate_widgets(self.widget_service.get_all_widgets())
+                else:
+                    self._needs_reload = True
         finally:
             self._is_syncing_db = False
 

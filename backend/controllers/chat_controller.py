@@ -1,5 +1,6 @@
 # backend\controllers\chat_controller.py
 
+from PySide6.QtCore import QTimer
 from collections import deque
 import logging
 from PySide6.QtCore import QObject, Slot, Signal
@@ -39,6 +40,11 @@ class ChatController(QObject):
             "[PLUGIN_CHAT_TTS]": self._handle_plugin_tts,
             "[PLUGIN_CHAT_SYSTTS]": self._handle_plugin_systts,
         }
+
+        self._save_timer = QTimer(self)
+        self._save_timer.setSingleShot(True)
+        self._save_timer.setInterval(200)
+        self._save_timer.timeout.connect(self._flush_settings_save)
 
         self.pipeline = MessagePipeline()
         self._build_pipeline()
@@ -355,6 +361,8 @@ class ChatController(QObject):
 
     @Slot()
     def _handle_settings_save(self) -> None:
+        if self.view is None:
+            return
         settings = {
             "enabled": self.view.tts_enabled,
             "read_name": self.view.read_name_enabled,
@@ -372,54 +380,9 @@ class ChatController(QObject):
             "chat_overlay_show_bots": self.view.overlay_show_bots,
             "chat_overlay_show_time": self.view.overlay_show_time
         })
-        self.service.save_settings(settings)
-        self._tts_settings_cache = self.service.get_settings()
+        self._tts_settings_cache = dict(settings)
         self.tts_state_changed.emit(settings["enabled"])
-        commands = self.command_service.get_all_commands()
-        existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
-        
-        self.command_service.blockSignals(True)
-        try:
-            target_trigger = settings["command"].strip()
-            if existing:
-                if existing["trigger"] != target_trigger:
-                    self.command_service.delete_command(existing["trigger"])
-                self.command_service.save_command(
-                    trigger=target_trigger,
-                    response="[PLUGIN_CHAT_TTS]",
-                    is_active=settings["use_command"],
-                    cooldown=existing.get("cooldown", 1),
-                    aliases=existing.get("aliases", ""),
-                    is_regex=existing.get("is_regex", False),
-                    permission=existing.get("permission", "everyone")
-                )
-            else:
-                self.command_service.save_command(
-                    trigger=target_trigger,
-                    response="[PLUGIN_CHAT_TTS]",
-                    is_active=settings["use_command"],
-                    cooldown=1,
-                    aliases="",
-                    is_regex=False,
-                    permission="everyone"
-                )
-
-            existing_systts = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_SYSTTS]"), None)
-            if not existing_systts:
-                self.command_service.save_command(
-                    trigger="!systts",
-                    response="[PLUGIN_CHAT_SYSTTS]",
-                    is_active=True,
-                    cooldown=3,
-                    aliases="!ttssys",
-                    is_regex=False,
-                    permission="moderator"
-                )
-        finally:
-            self.command_service.blockSignals(False)
-
-        from PySide6.QtCore import QTimer
-        QTimer.singleShot(0, self.command_service.commands_changed.emit)
+        self._save_timer.start()
 
         new_tts_state = settings["enabled"]
         if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
@@ -428,7 +391,6 @@ class ChatController(QObject):
                 status_title = self.view.i18n.get("chat.status.tts_title")
                 status_msg = self.view.i18n.get("chat.status.tts_active") if new_tts_state else self.view.i18n.get("chat.status.tts_muted")
                 state_color = "success" if new_tts_state else "warning"
-                
                 self.toast.show_toast(
                     title=status_title,
                     message=status_msg,
@@ -452,6 +414,67 @@ class ChatController(QObject):
                 msg = self.i18n.get("chat.status.use_command_active") if new_use_cmd_state else self.i18n.get("chat.status.use_command_inactive")
                 color = "success" if new_use_cmd_state else "warning"
                 self.toast.show_toast(title=title, message=msg, state=color)
+
+    def _flush_settings_save(self) -> None:
+        if not self._tts_settings_cache:
+            return
+        settings = dict(self._tts_settings_cache)
+        self.service.save_settings(settings)
+
+        commands = self.command_service.get_all_commands()
+        existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
+        target_trigger = settings.get("command", "!tts").strip()
+        target_use_cmd = settings.get("use_command", False)
+        
+        cmd_needs_update = False
+        if existing:
+            if existing.get("trigger") != target_trigger or existing.get("is_active") != target_use_cmd:
+                cmd_needs_update = True
+        else:
+            cmd_needs_update = True
+
+        if cmd_needs_update:
+            self.command_service.blockSignals(True)
+            try:
+                if existing:
+                    if existing["trigger"] != target_trigger:
+                        self.command_service.delete_command(existing["trigger"])
+                    self.command_service.save_command(
+                        trigger=target_trigger,
+                        response="[PLUGIN_CHAT_TTS]",
+                        is_active=target_use_cmd,
+                        cooldown=existing.get("cooldown", 1),
+                        aliases=existing.get("aliases", ""),
+                        is_regex=existing.get("is_regex", False),
+                        permission=existing.get("permission", "everyone")
+                    )
+                else:
+                    self.command_service.save_command(
+                        trigger=target_trigger,
+                        response="[PLUGIN_CHAT_TTS]",
+                        is_active=target_use_cmd,
+                        cooldown=1,
+                        aliases="",
+                        is_regex=False,
+                        permission="everyone"
+                    )
+
+                existing_systts = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_SYSTTS]"), None)
+                if not existing_systts:
+                    self.command_service.save_command(
+                        trigger="!systts",
+                        response="[PLUGIN_CHAT_SYSTTS]",
+                        is_active=True,
+                        cooldown=3,
+                        aliases="!ttssys",
+                        is_regex=False,
+                        permission="moderator"
+                    )
+            finally:
+                self.command_service.blockSignals(False)
+
+            from PySide6.QtCore import QTimer
+            QTimer.singleShot(0, self.command_service.commands_changed.emit)
 
     def _sync_tts_command_from_db(self) -> None:
         commands = self.command_service.get_all_commands()

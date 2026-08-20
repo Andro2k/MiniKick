@@ -91,10 +91,11 @@ class ModernSegmentedControl(QFrame):
 
     def set_current_value(self, option_id: str):
         if option_id in self._buttons:
-            self._buttons[option_id].setChecked(True)
-            self._current_value = option_id
-            for oid, btn in self._buttons.items():
-                icon = self._icons.get(oid, "")
+            btn = self._buttons[option_id]
+            if not btn.isChecked():
+                btn.setChecked(True)
+            else:
+                self._current_value = option_id
+                icon = self._icons.get(option_id, "")
                 if icon:
-                    color = COLOR_WHITE if oid == option_id else COLOR_NEUTRAL_400
-                    btn.setIcon(get_icon_colored(icon, color, self._icon_size.width()))
+                    btn.setIcon(get_icon_colored(icon, COLOR_WHITE, self._icon_size.width()))

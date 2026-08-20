@@ -177,3 +177,73 @@ def test_clean_message_for_tts_twitch_emotes():
     tag2 = "emotesv2_a04b827d1e9043e7b11ce01c59be26f0:14-31"
     cleaned2 = handler.clean_message_for_tts(text_with_msg, emotes_tag=tag2)
     assert cleaned2 == "Hola streamer"
+
+def test_twitch_socket_manager_on_open_commands():
+    class DummyWS:
+        def __init__(self):
+            self.sent = []
+        def send(self, data):
+            self.sent.append(data)
+
+    # 1. Anonymous connection without token
+    manager_anon = TwitchSocketManager(token="", nick="randomnick")
+    manager_anon._channel = "streamerchannel"
+    dummy_ws_anon = DummyWS()
+    manager_anon._on_open(dummy_ws_anon)
+
+    assert "PASS SCHMOOPIIE\r\n" in dummy_ws_anon.sent
+    assert "NICK justinfan12345\r\n" in dummy_ws_anon.sent
+    assert "JOIN #streamerchannel\r\n" in dummy_ws_anon.sent
+
+    # 2. Authenticated connection with token
+    manager_auth = TwitchSocketManager(token="oauth:mysecrettoken", nick="StreamerUser")
+    manager_auth._channel = "streamerchannel"
+    dummy_ws_auth = DummyWS()
+    manager_auth._on_open(dummy_ws_auth)
+
+    assert "PASS oauth:mysecrettoken\r\n" in dummy_ws_auth.sent
+    assert "NICK streameruser\r\n" in dummy_ws_auth.sent
+    assert "JOIN #streamerchannel\r\n" in dummy_ws_auth.sent
+
+def test_twitch_socket_manager_ping_pong():
+    class DummyWS:
+        def __init__(self):
+            self.sent = []
+        def send(self, data):
+            self.sent.append(data)
+
+    manager = TwitchSocketManager()
+    manager._running = True
+    dummy_ws = DummyWS()
+
+    manager._on_message(dummy_ws, "PING :tmi.twitch.tv\r\n")
+    assert dummy_ws.sent == ["PONG :tmi.twitch.tv\r\n"]
+
+    dummy_ws.sent.clear()
+    manager._on_message(dummy_ws, "PING 123456\r\n")
+    assert dummy_ws.sent == ["PONG 123456\r\n"]
+
+def test_twitch_chat_worker_resolves_bot_nick_from_api(monkeypatch):
+    from backend.workers.twitch_chat_worker import TwitchChatWorker
+
+    class DummyAPI:
+        def fetch_user_data(self):
+            return {
+                "username": "sryunior64",
+                "broadcaster_id": "123456",
+                "platform": "twitch"
+            }
+
+    worker = TwitchChatWorker(oauth_token="dummy_token", api_client=DummyAPI())
+    assert worker.bot_nick == ""
+
+    # Mock start_socket to prevent real network call
+    worker.socket_manager.start_socket = lambda **kwargs: None
+    worker._is_stopped = True  # Stop the loop after first run
+    
+    worker.run()
+
+    assert worker.channel_name == "sryunior64"
+    assert worker.bot_nick == "sryunior64"
+    assert worker.socket_manager.nick == "sryunior64"
+

@@ -3,9 +3,10 @@
 from .base_view import BaseView
 from .blocks import (
     ViewHeader, SettingRow, SliderRow, StatCard, 
-    ModernCard, ModernScrollArea, ExpandableSettingCard, ModernDivider
+    ModernCard, ModernScrollArea, ExpandableSettingCard, ModernDivider,
+    create_badge
 )
-from .controls import ModernButton, ModernSwitch, CompactSlider, CompactSpinBox, VariableTextEdit
+from .controls import ModernButton, ModernSwitch, CompactSpinBox, VariableTextEdit
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table import ModernTable, ModernTableCard, TableActionCell
@@ -25,9 +26,9 @@ __all__ = [
     "ModernScrollArea",
     "ExpandableSettingCard",
     "ModernDivider",
+    "create_badge",
     "ModernButton",
     "ModernSwitch",
-    "CompactSlider",
     "CompactSpinBox",
     "VariableTextEdit",
     "FlowLayout",

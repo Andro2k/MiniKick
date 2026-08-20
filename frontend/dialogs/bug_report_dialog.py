@@ -22,8 +22,8 @@ class SeverityCard(QFrame):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 10, 12, 10)
-        layout.setSpacing(10)
+        layout.setContentsMargins(8, 10, 8, 10)
+        layout.setSpacing(8)
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
@@ -70,7 +70,7 @@ class ImageDropzone(QFrame):
 
     def _setup_ui(self):
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(10, 10, 10, 10)
+        self.layout.setContentsMargins(8, 8, 8, 8)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.empty_container = QWidget()
@@ -100,7 +100,7 @@ class ImageDropzone(QFrame):
         self.preview_container = QWidget()
         preview_layout = QHBoxLayout(self.preview_container)
         preview_layout.setContentsMargins(4, 4, 4, 4)
-        preview_layout.setSpacing(8)
+        preview_layout.setSpacing(4)
 
         self.img_lbl = QLabel()
         self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)

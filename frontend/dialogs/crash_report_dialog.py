@@ -12,39 +12,32 @@ from frontend.common import get_assets_path, get_icon_colored
 from frontend.common.theme import COLOR_RED
 from backend.config.api_keys import DISCORD_WEBHOOK_URL
 from backend.workers import CrashReportWorker
+from backend.services.system.translation_service import TranslationService
 
 
 class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n=None, parent=None):
         self.traceback_text = traceback_text
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self.worker = None
-        self.title_text = self._get_text("crash.title", "MiniKick ha fallado")
-        self.lbl_contact_text = self._get_text("crash.lbl_contact", "Contacto / Discord (Opcional)")
-        self.placeholder_contact_text = self._get_text("crash.placeholder_contact", "Ej. Andro2k")
-        self.lbl_desc_text = self._get_text("crash.lbl_desc", "¿Qué estabas haciendo cuando falló? (Opcional)")
-        self.placeholder_desc_text = self._get_text("crash.placeholder_desc", "Describe brevemente los pasos...")
-        self.lbl_traceback_text = self._get_text("crash.lbl_traceback", "Detalles del Error (Traceback)")
-        self.btn_send_text = self._get_text("crash.btn_send", "Enviar Reporte y Cerrar")
-        self.btn_close_text = self._get_text("crash.btn_close", "Cerrar sin Enviar")
-        self.btn_copy_text = self._get_text("crash.btn_copy_traceback", "Copiar Detalles")
-        self.copied_toast_text = self._get_text("crash.traceback_copied", "¡Detalles copiados!")
-        self.err_send_text = self._get_text("crash.err_send", "No se pudo enviar el reporte. Error: {error}")
-        self.err_no_webhook_text = self._get_text("crash.err_no_webhook", "URL del Webhook de Discord no configurada.")
-        self.subtitle_text = self._get_text(
-            "crash.subtitle",
-            "Se produjo un error no controlado en la aplicación. Ayúdanos a solucionar el problema enviando este reporte."
-        )
+        self.title_text = self.i18n.get("crash.title")
+        self.lbl_contact_text = self.i18n.get("crash.lbl_contact")
+        self.placeholder_contact_text = self.i18n.get("crash.placeholder_contact")
+        self.lbl_desc_text = self.i18n.get("crash.lbl_desc")
+        self.placeholder_desc_text = self.i18n.get("crash.placeholder_desc")
+        self.lbl_traceback_text = self.i18n.get("crash.lbl_traceback")
+        self.btn_send_text = self.i18n.get("crash.btn_send")
+        self.btn_close_text = self.i18n.get("crash.btn_close")
+        self.btn_copy_text = self.i18n.get("crash.btn_copy_traceback")
+        self.copied_toast_text = self.i18n.get("crash.traceback_copied")
+        self.err_send_text = self.i18n.get("crash.err_send")
+        self.err_no_webhook_text = self.i18n.get("crash.err_no_webhook")
+        self.subtitle_text = self.i18n.get("crash.subtitle")
 
         icon_path = get_assets_path("icons/bug.svg")
         super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=COLOR_RED, width=580, parent=parent)
         self.set_dialog_state("danger", QColor(239, 68, 68, 80))
         self._setup_crash_form()
-
-    def _get_text(self, key: str, default: str) -> str:
-        if self.i18n:
-            return self.i18n.get(key) or default
-        return default
 
     def _setup_crash_form(self):
         header_card = QFrame()
@@ -141,7 +134,7 @@ class CrashReportDialog(ModernModal):
 
         self.btn_send.setEnabled(False)
         self.btn_cancel.setEnabled(False)
-        self.btn_send.setText(self._get_text("crash.btn_sending", "Enviando..."))
+        self.btn_send.setText(self.i18n.get("crash.btn_sending"))
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
 
         self.worker = CrashReportWorker(
@@ -164,3 +157,8 @@ class CrashReportDialog(ModernModal):
         else:
             self.lbl_error.setText(message)
             self.lbl_error.show()
+
+    def closeEvent(self, event):
+        if self.worker and self.worker.isRunning():
+            self.worker.wait(1000)
+        super().closeEvent(event)

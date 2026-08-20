@@ -402,3 +402,27 @@ class ExpandableSettingCard(QFrame):
             self.spin_amt.setValue(config.get("max_amount", default_amt))
         self._update_duration_state()
         self._is_loading = False
+
+def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
+    container = QWidget(parent)
+    layout = QHBoxLayout(container)
+    layout.setContentsMargins(8, 0, 8, 0)
+    layout.setSpacing(0)
+    layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+    tag = QFrame(container)
+    tag.setFixedHeight(22)
+    tag.setProperty("role", "badge")
+    tag.setProperty("state", state)
+
+    tag_layout = QHBoxLayout(tag)
+    tag_layout.setContentsMargins(6, 0, 6, 0)
+    tag_layout.setSpacing(0)
+
+    lbl_txt = QLabel(text, tag)
+    lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    tag_layout.addWidget(lbl_txt)
+
+    layout.addWidget(tag)
+    return container
+

@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
                                QStackedWidget, QProgressBar, QWidget)
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QIcon, QColor, QMouseEvent
+from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
 from frontend.common.theme import COLOR_RED, PATH_ICON_HELP
 
 class ModernFramelessShell(QDialog):
@@ -39,6 +39,8 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.setProperty("role", "btn_ghost")
         self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_close_shell.setFixedSize(26, 26)
+        self.btn_close_shell.setAutoDefault(False)
+        self.btn_close_shell.setDefault(False)
         if ModernFramelessShell._icon_close is None:
             ModernFramelessShell._icon_close = get_icon_colored("x.svg", size=14)
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
@@ -56,6 +58,12 @@ class ModernFramelessShell(QDialog):
         self.container.style().unpolish(self.container)
         self.container.style().polish(self.container)
         self.glow.setColor(glow_color if glow_color else QColor(0, 0, 0, 0))
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            event.ignore()
+            return
+        super().keyPressEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent):
         if event.button() == Qt.MouseButton.LeftButton:
@@ -78,16 +86,15 @@ class ModernModal(ModernFramelessShell):
         super().__init__(width=width, parent=parent)
         
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(16, 16, 16, 16)
+        self.content_layout.setContentsMargins(20, 20, 20, 20)
         self.content_layout.setSpacing(12)
-        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         if icon_path:
             self._setup_header(icon_path, icon_bg_color)
         
         if title:
             self.title_lbl = QLabel(title)
-            self.title_lbl.setProperty("role", "h1")
+            self.title_lbl.setProperty("role", "h2")
             self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.title_lbl.setWordWrap(True)
             self.content_layout.addWidget(self.title_lbl)
@@ -117,9 +124,16 @@ class ModernModal(ModernFramelessShell):
         btn_layout = QHBoxLayout()
         btn_layout.setSpacing(12)
         
-        if btn_left: btn_layout.addWidget(btn_left)
-        if stretch_center: btn_layout.addStretch()
-        if btn_right: btn_layout.addWidget(btn_right)
+        if btn_left:
+            btn_left.setAutoDefault(False)
+            btn_left.setDefault(False)
+            btn_layout.addWidget(btn_left)
+        if stretch_center:
+            btn_layout.addStretch()
+        if btn_right:
+            btn_right.setAutoDefault(False)
+            btn_right.setDefault(False)
+            btn_layout.addWidget(btn_right)
         
         self.content_layout.addSpacing(8)
         self.content_layout.addLayout(btn_layout)
@@ -169,11 +183,15 @@ class ModernWizardPanel(ModernFramelessShell):
         self.btn_back = QPushButton()
         self.btn_back.setProperty("role", "action_outlined")
         self.btn_back.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_back.setAutoDefault(False)
+        self.btn_back.setDefault(False)
         self.btn_back.clicked.connect(self._go_back)
         
         self.btn_next = QPushButton()
         self.btn_next.setProperty("role", "action_accent")
         self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_next.setAutoDefault(False)
+        self.btn_next.setDefault(False)
         self.btn_next.clicked.connect(self._go_next)
         
         self.btn_layout.addWidget(self.btn_back)
@@ -245,6 +263,8 @@ class ModernConfirmDialog(ModernModal):
         btn = QPushButton(text)
         btn.setProperty("role", role)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setAutoDefault(False)
+        btn.setDefault(False)
         btn.setMinimumWidth(110)
         btn.clicked.connect(callback)
         return btn

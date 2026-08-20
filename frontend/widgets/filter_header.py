@@ -24,9 +24,9 @@ class FilterHeaderView(QHeaderView):
         col_idx: int,
         title: str,
         options: list[dict],
-        all_label: str = "Mostrar Todos",
-        sort_asc_label: str = "Ascendente (A-Z)",
-        sort_desc_label: str = "Descendente (Z-A)",
+        all_label: str = "",
+        sort_asc_label: str = "",
+        sort_desc_label: str = "",
         default_active: list[str] | None = None
     ):
         all_ids = {opt["id"] for opt in options}

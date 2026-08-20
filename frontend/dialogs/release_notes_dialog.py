@@ -257,7 +257,8 @@ class ReleaseNotesDialog(ModernModal):
         release_name = data.get("name", "") or tag_name
         published_raw = data.get("published_at", "")
         published_date = published_raw.split("T")[0] if "T" in published_raw else published_raw
-        author = data.get("author", "")
+        author_raw = data.get("author", "")
+        author = author_raw.get("login", "") if isinstance(author_raw, dict) else str(author_raw or "")
         body_text = data.get("body", "")
         self._release_url = data.get("html_url", self._release_url)
 
@@ -306,4 +307,5 @@ class ReleaseNotesDialog(ModernModal):
         if self._worker and self._worker.isRunning():
             self._worker.blockSignals(True)
             self._worker.quit()
+            self._worker.wait(1000)
         super().closeEvent(event)

@@ -1,11 +1,13 @@
 # frontend\dialogs\timer_dialog.py
 
+import threading
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox)
-from PySide6.QtCore import Qt, QSize
+                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QListWidgetItem)
+from PySide6.QtCore import Qt, QSize, QTimer, QPoint
 from PySide6.QtGui import QColor
 from .base_dialog import ModernWizardPanel, ModernModal
-from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit, NoWheelSlider
+from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit, UnifiedSearchBar
+from frontend.components.schedule.quick_change_panel import CategorySuggestionsPopup
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
 from frontend.common import get_icon_colored, get_assets_path
 
@@ -28,25 +30,6 @@ class TimerConfigWizard(ModernWizardPanel):
         else:
             self._add_message_field()            
         self.start_wizard()
-
-    def _create_interval_controls(self, layout, min_val: int, max_val: int, default_val: int):
-        controls_layout = QHBoxLayout()
-        slider = NoWheelSlider(Qt.Orientation.Horizontal)
-        slider.setRange(min_val, max_val)
-        slider.setValue(default_val)
-        
-        spin = QSpinBox()
-        spin.setRange(min_val, max_val)
-        spin.setValue(default_val)
-        spin.setFixedWidth(100)
-        
-        slider.valueChanged.connect(spin.setValue)
-        spin.spin.valueChanged.connect(slider.setValue) if hasattr(spin, "spin") else spin.valueChanged.connect(slider.setValue)
-        
-        controls_layout.addWidget(slider, stretch=1)
-        controls_layout.addWidget(spin)
-        layout.addLayout(controls_layout)
-        return slider, spin
 
     def _setup_ui(self):
         self.tab_basic = QWidget()
@@ -130,26 +113,38 @@ class TimerConfigWizard(ModernWizardPanel):
 
         self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval_label"))
         self.chk_online.setChecked(True)
-        right_layout.addWidget(self.chk_online)
-        self.slider_online, self.spin_online = self._create_interval_controls(right_layout, 1, 120, 5)
-        self.chk_online.toggled.connect(self.slider_online.setEnabled)
+        self.spin_online = QSpinBox()
+        self.spin_online.setRange(1, 120)
+        self.spin_online.setValue(5)
+        self.spin_online.setSuffix(" min")
+        self.spin_online.setFixedHeight(34)
         self.chk_online.toggled.connect(self.spin_online.setEnabled)
         self.chk_online.toggled.connect(self._update_btn_next_state)
+        right_layout.addWidget(self.chk_online)
+        right_layout.addWidget(self.spin_online)
 
         self.chk_offline = QCheckBox(self.i18n.get("timer.dialog.offline_interval_label"))
         self.chk_offline.setChecked(True)
-        right_layout.addWidget(self.chk_offline)
-        self.slider_offline, self.spin_offline = self._create_interval_controls(right_layout, 1, 480, 30)
-        self.chk_offline.toggled.connect(self.slider_offline.setEnabled)
+        self.spin_offline = QSpinBox()
+        self.spin_offline.setRange(1, 480)
+        self.spin_offline.setValue(30)
+        self.spin_offline.setSuffix(" min")
+        self.spin_offline.setFixedHeight(34)
         self.chk_offline.toggled.connect(self.spin_offline.setEnabled)
         self.chk_offline.toggled.connect(self._update_btn_next_state)
+        right_layout.addWidget(self.chk_offline)
+        right_layout.addWidget(self.spin_offline)
 
         self.chk_lines = QCheckBox(self.i18n.get("timer.dialog.chat_lines_label"))
         self.chk_lines.setChecked(True)
-        right_layout.addWidget(self.chk_lines)
-        self.slider_lines, self.spin_lines = self._create_interval_controls(right_layout, 0, 100, 5)
-        self.chk_lines.toggled.connect(self.slider_lines.setEnabled)
+        self.spin_lines = QSpinBox()
+        self.spin_lines.setRange(0, 500)
+        self.spin_lines.setValue(5)
+        self.spin_lines.setSuffix(" líneas")
+        self.spin_lines.setFixedHeight(34)
         self.chk_lines.toggled.connect(self.spin_lines.setEnabled)
+        right_layout.addWidget(self.chk_lines)
+        right_layout.addWidget(self.spin_lines)
         
         lbl_lines_desc = QLabel(self.i18n.get("timer.dialog.chat_lines_desc"))
         lbl_lines_desc.setProperty("role", "caption")
@@ -183,9 +178,27 @@ class TimerConfigWizard(ModernWizardPanel):
 
         lbl_categories = QLabel(self.i18n.get("timer.dialog.categories_label"))
         lbl_categories.setProperty("role", "h3")
+        left_filt_layout.addWidget(lbl_categories)
+
+        self.search_category = UnifiedSearchBar(
+            placeholder=self.i18n.get("stream_info.quick_change.category_placeholder"),
+            parent=self
+        )
+        left_filt_layout.addWidget(self.search_category)
+
+        self.popup_suggestions = CategorySuggestionsPopup(self.search_category, parent=self)
+        self.popup_suggestions.category_selected.connect(self._on_category_selected)
+
+        self._cached_subcategories = []
+        self._category_search_timer = QTimer(self)
+        self._category_search_timer.setSingleShot(True)
+        self._category_search_timer.setInterval(350)
+        self._category_search_timer.timeout.connect(self._on_category_search_timeout)
+        self.search_category.textChanged.connect(self._on_category_search_text_changed)
+        self.search_category.returnPressed.connect(self._on_category_search_return_pressed)
+
         self.txt_categories = QLineEdit()
         self.txt_categories.setPlaceholderText(self.i18n.get("timer.dialog.categories_placeholder"))
-        left_filt_layout.addWidget(lbl_categories)
         left_filt_layout.addWidget(self.txt_categories)
         
         lbl_cat_desc = QLabel(self.i18n.get("timer.dialog.categories_desc"))
@@ -215,6 +228,101 @@ class TimerConfigWizard(ModernWizardPanel):
 
         self.add_page(self.tab_basic)
         self.add_page(self.tab_filters)
+
+    def _on_category_search_text_changed(self, text: str):
+        if len(text.strip()) >= 2:
+            self._category_search_timer.start()
+        else:
+            self._category_search_timer.stop()
+            if hasattr(self, 'popup_suggestions'):
+                self.popup_suggestions.hide()
+
+    def _on_category_search_return_pressed(self):
+        text = self.search_category.text().strip()
+        if text:
+            current_cats = [c.strip() for c in self.txt_categories.text().split(",") if c.strip()]
+            if text not in current_cats:
+                current_cats.append(text)
+            self.txt_categories.setText(", ".join(current_cats))
+            self.search_category.clear()
+            if hasattr(self, 'popup_suggestions'):
+                self.popup_suggestions.hide()
+
+    def _on_category_search_timeout(self):
+        query = self.search_category.text().strip()
+        if len(query) < 2:
+            return
+        
+        if self._cached_subcategories:
+            q_lower = query.lower()
+            filtered = [
+                item for item in self._cached_subcategories
+                if q_lower in item.get("name", "").lower()
+            ]
+            self._display_category_results(filtered)
+            return
+
+        def _search_worker():
+            results = []
+            try:
+                from backend.providers.chat.kick_client import ScraperFactory
+                s = ScraperFactory.create()
+                resp = s.get("https://kick.com/api/v1/subcategories", params={"page": 1, "limit": 100}, timeout=5)
+                if resp.status_code == 200:
+                    res_data = resp.json()
+                    items = res_data.get("data", []) if isinstance(res_data, dict) else res_data
+                    if isinstance(items, list):
+                        all_subcats = []
+                        for item in items:
+                            if isinstance(item, dict) and item.get("name"):
+                                all_subcats.append({
+                                    "platform": "kick",
+                                    "id": item.get("id"),
+                                    "name": item.get("name", "")
+                                })
+                        self._cached_subcategories = all_subcats
+                        q_lower = query.lower()
+                        results = [cat for cat in all_subcats if q_lower in cat.get("name", "").lower()]
+            except Exception:
+                pass
+            
+            QTimer.singleShot(0, lambda: self._display_category_results(results))
+
+        threading.Thread(target=_search_worker, daemon=True).start()
+
+    def _display_category_results(self, results: list[dict]):
+        if hasattr(self, 'popup_suggestions') and self.search_category.isVisible():
+            self.popup_suggestions.clear()
+            if not results:
+                self.popup_suggestions.hide()
+                return
+            for item in results[:8]:
+                plat = item.get("platform", "kick")
+                name = item.get("name", "")
+                list_item = QListWidgetItem(f"[{plat.upper()}] {name}")
+                list_item.setData(Qt.ItemDataRole.UserRole, item)
+                self.popup_suggestions.addItem(list_item)
+            
+            global_pos = self.search_category.mapToGlobal(QPoint(0, self.search_category.height() + 2))
+            self.popup_suggestions.move(global_pos)
+            self.popup_suggestions.setFixedWidth(max(self.search_category.width(), 240))
+            item_count = min(len(results), 8)
+            self.popup_suggestions.setFixedHeight(item_count * 34 + 8)
+            self.popup_suggestions.show()
+
+    def _on_category_selected(self, data: dict):
+        cat_name = data.get("name", "")
+        if cat_name:
+            current_cats = [c.strip() for c in self.txt_categories.text().split(",") if c.strip()]
+            if cat_name not in current_cats:
+                current_cats.append(cat_name)
+            self.txt_categories.setText(", ".join(current_cats))
+            self.search_category.clear()
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        if hasattr(self, 'popup_suggestions'):
+            self.popup_suggestions.hide()
 
     def _add_message_field(self, text=""):
         row = QWidget()
@@ -292,30 +400,24 @@ class TimerConfigWizard(ModernWizardPanel):
         has_online = online_min is not None and online_min > 0
         self.chk_online.setChecked(has_online)
         if has_online:
-            self.slider_online.setValue(online_min)
             self.spin_online.setValue(online_min)
         else:
-            self.slider_online.setEnabled(False)
             self.spin_online.setEnabled(False)
 
         offline_min = self.existing_config.get("interval_offline")
         has_offline = offline_min is not None and offline_min > 0
         self.chk_offline.setChecked(has_offline)
         if has_offline:
-            self.slider_offline.setValue(offline_min)
             self.spin_offline.setValue(offline_min)
         else:
-            self.slider_offline.setEnabled(False)
             self.spin_offline.setEnabled(False)
 
         lines = self.existing_config.get("chat_lines", 0)
         has_lines = lines is not None and lines > 0
         self.chk_lines.setChecked(has_lines)
         if has_lines:
-            self.slider_lines.setValue(lines)
             self.spin_lines.setValue(lines)
         else:
-            self.slider_lines.setEnabled(False)
             self.spin_lines.setEnabled(False)
 
         keywords = self.existing_config.get("keywords", [])

@@ -171,6 +171,9 @@ class MusicView(BaseView):
     def set_rate_limit_values(self, max_user_songs: int, user_cooldown: int, max_queue_size: int, max_song_duration: int):
         self.settings_panel.set_rate_limit_values(max_user_songs, user_cooldown, max_queue_size, max_song_duration)
 
+    def set_command_switches_states(self, states: dict[str, bool]):
+        self.commands_panel.set_switch_states(states)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()

@@ -139,6 +139,10 @@ class ModernTableCard(QFrame):
             card_h = max(self.height(), 300)
             self.lbl_illustration.update_image(card_h)
 
+    def set_title_count(self, base_title: str, count: int):
+        if self.lbl_title:
+            self.lbl_title.setText(f"{base_title} ({count})")
+
     def enable_filter_header(self) -> FilterHeaderView:
         return self.table.enable_filter_header()
 

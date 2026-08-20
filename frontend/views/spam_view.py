@@ -10,6 +10,7 @@ class SpamView(BaseView):
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="spam.header.title", subtitle_key="spam.header.subtitle", parent=parent)
         self.cards = {}
+        self._last_direction = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -68,12 +69,14 @@ class SpamView(BaseView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
-        if hasattr(self, 'columns_layout'):
-            if width < 950:
-                self.columns_layout.setDirection(QBoxLayout.Direction.TopToBottom)
-                self.columns_layout.setStretch(0, 0)
-                self.columns_layout.setStretch(1, 0)
-            else:
-                self.columns_layout.setDirection(QBoxLayout.Direction.LeftToRight)
-                self.columns_layout.setStretch(0, 1)
-                self.columns_layout.setStretch(1, 1)
+        direction = QBoxLayout.Direction.TopToBottom if width < 950 else QBoxLayout.Direction.LeftToRight
+        if direction != self._last_direction:
+            self._last_direction = direction
+            if hasattr(self, 'columns_layout'):
+                self.columns_layout.setDirection(direction)
+                if direction == QBoxLayout.Direction.TopToBottom:
+                    self.columns_layout.setStretch(0, 0)
+                    self.columns_layout.setStretch(1, 0)
+                else:
+                    self.columns_layout.setStretch(0, 1)
+                    self.columns_layout.setStretch(1, 1)

@@ -132,9 +132,9 @@ class BotMutePanel(QWidget):
         if event and event.type() in (QEvent.Type.StyleChange, QEvent.Type.FontChange):
             self.recalculate_item_sizes()
 
-    def add_bot_tag(self, bot_name: str):
-        item = QListWidgetItem(bot_name)
-        self.list_bots.addItem(item)
+    def _add_tag_item(self, list_widget: QListWidget, text: str, remove_callback):
+        item = QListWidgetItem(text)
+        list_widget.addItem(item)
         
         tag_widget = QFrame()
         tag_widget.setProperty("role", "bot_tag")
@@ -143,42 +143,24 @@ class BotMutePanel(QWidget):
         layout.setSpacing(2)
         layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
         
-        lbl_name = QLabel(bot_name)
+        lbl_name = QLabel(text)
         
         btn_delete = QPushButton()
         btn_delete.setProperty("role", "btn_ghost")
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_delete.clicked.connect(lambda checked=False, i=item: self._on_bot_remove_click(i))
+        btn_delete.clicked.connect(lambda checked=False, i=item: remove_callback(i))
         
         layout.addWidget(btn_delete)
         layout.addWidget(lbl_name)
         
-        self.list_bots.setItemWidget(item, tag_widget)
+        list_widget.setItemWidget(item, tag_widget)
         self._configure_tag_item(item, tag_widget)
 
+    def add_bot_tag(self, bot_name: str):
+        self._add_tag_item(self.list_bots, bot_name, self._on_bot_remove_click)
+
     def add_word_tag(self, word: str):
-        item = QListWidgetItem(word)
-        self.list_words.addItem(item)
-        
-        tag_widget = QFrame()
-        tag_widget.setProperty("role", "bot_tag")
-        layout = QHBoxLayout(tag_widget)
-        layout.setContentsMargins(4, 4, 8, 4) 
-        layout.setSpacing(2)
-        layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
-        
-        lbl_name = QLabel(word)
-        
-        btn_delete = QPushButton()
-        btn_delete.setProperty("role", "btn_ghost")
-        btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_delete.clicked.connect(lambda checked=False, i=item: self._on_word_remove_click(i))
-        
-        layout.addWidget(btn_delete)
-        layout.addWidget(lbl_name)
-        
-        self.list_words.setItemWidget(item, tag_widget)
-        self._configure_tag_item(item, tag_widget)
+        self._add_tag_item(self.list_words, word, self._on_word_remove_click)
 
     def clear_list(self):
         self.list_bots.clear()
