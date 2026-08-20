@@ -8,10 +8,10 @@ from backend.services.schedule.schedule_service import ScheduleService
 logger = logging.getLogger("minikick.schedule_controller")
 
 class ScheduleController(QObject):
-    info_refreshed = Signal(dict)
-    categories_found = Signal(str, list)
-    update_completed = Signal(dict)
-    schedules_updated = Signal(list)
+    info_refreshed = Signal(object)
+    categories_found = Signal(str, object)
+    update_completed = Signal(object)
+    schedules_updated = Signal(object)
     loading_changed = Signal(bool)
     toast_requested = Signal(str, str)
 

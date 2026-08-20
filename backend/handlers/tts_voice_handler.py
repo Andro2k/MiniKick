@@ -50,7 +50,7 @@ class TTSVoiceHandler(QObject):
         self._voice_worker.error_occurred.connect(self._on_voices_error)
         self._voice_worker.start()
 
-    @Slot(list, str, bool)
+    @Slot(object, str, bool)
     def _on_voices_fetched(self, voices: list, provider: str, is_initial: bool) -> None:
         self._all_voices = voices
         self._available_voice_ids = {v["id"] for v in voices}

@@ -26,7 +26,7 @@ class SpamController(QObject):
             filters = self.service.filters
             self.view.populate_filters(filters)
 
-    @Slot(str, dict)
+    @Slot(str, object)
     def _handle_filter_update(self, filter_id: str, config: dict):
         previous_config = self.service.filters.get(filter_id, {})
         was_active = previous_config.get("is_active", False)

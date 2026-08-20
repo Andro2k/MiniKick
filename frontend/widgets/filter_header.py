@@ -7,7 +7,7 @@ from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_500
 from frontend.common.icons import get_icon_colored
 
 class FilterHeaderView(QHeaderView):
-    filter_changed = Signal(dict)
+    filter_changed = Signal(object)
     sort_requested = Signal(int, str)
 
     def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):

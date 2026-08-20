@@ -9,7 +9,7 @@ from frontend.components.schedule.quick_change_panel import CategorySuggestionsP
 from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ScheduleFormPanel(QWidget):
-    schedule_saved = Signal(dict)
+    schedule_saved = Signal(object)
     form_cleared = Signal()
     search_category_requested = Signal(str, str)
 

@@ -138,13 +138,15 @@ _LEVEL_COLORS = {
     "DEBUG": COLOR_NEUTRAL_400,
     "INFO": COLOR_BLUE,
     "WARNING": COLOR_AMBER,
-    "ERROR": COLOR_RED
+    "ERROR": COLOR_RED,
+    "CRITICAL": COLOR_RED
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code.svg",
     "INFO": "info-circle.svg",
     "WARNING": "alert-triangle.svg",
-    "ERROR": "bug.svg"
+    "ERROR": "bug.svg",
+    "CRITICAL": "alert-circle.svg"
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}
 
@@ -229,6 +231,7 @@ class LogView(BaseView):
             {"id": "DEBUG", "label": "DEBUG"},
             {"id": "WARNING", "label": "WARNING"},
             {"id": "ERROR", "label": "ERROR"},
+            {"id": "CRITICAL", "label": "CRITICAL"},
         ]
 
         self.filter_header.set_column_filter(

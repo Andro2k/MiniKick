@@ -11,7 +11,7 @@ logger = logging.getLogger("minikick.controllers.widgets")
 class WidgetController(QObject):
     death_count_updated = Signal(int)
     score_updated = Signal(int, int)
-    widgets_reloaded = Signal(dict)
+    widgets_reloaded = Signal(object)
 
     PLUGIN_TAGS = {
         "shoutout": "[PLUGIN_WIDGET_SO]", "death": "[PLUGIN_WIDGET_DEATH]", "score": "[PLUGIN_WIDGET_SCORE]",
@@ -201,7 +201,7 @@ class WidgetController(QObject):
         finally:
             self._is_syncing_db = False
 
-    @Slot(str, bool, str, int, str, dict)
+    @Slot(str, bool, str, int, str, object)
     def handle_widget_save(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):
         previous = self.widget_service.get_widget(widget_id)
         was_active = previous.get("is_active", True) if previous else True
@@ -396,7 +396,7 @@ class WidgetController(QObject):
             })
         self.command_service.send_response(msg, platform=platform)
 
-    @Slot(str, str, str, list)
+    @Slot(str, str, str, object)
     def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None):
         if not content or not self.overlay_server:
             return

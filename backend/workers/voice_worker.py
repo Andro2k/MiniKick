@@ -3,7 +3,7 @@
 from PySide6.QtCore import QThread, Signal
 
 class VoiceFetcherWorker(QThread):
-    voices_fetched = Signal(list, str)
+    voices_fetched = Signal(object, str)
     error_occurred = Signal(str, str)
 
     def __init__(self, tts_manager, provider_type: str, parent=None):

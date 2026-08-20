@@ -9,8 +9,8 @@ from frontend.common.theme import COLOR_NEUTRAL_400
 from frontend.widgets.controls import ModernSwitch
 
 class WidgetCard(QFrame):
-    widget_changed = Signal(str, bool, str, int, str, dict)
-    counter_action_triggered = Signal(str, str, dict)
+    widget_changed = Signal(str, bool, str, int, str, object)
+    counter_action_triggered = Signal(str, str, object)
 
     def __init__(self, widget_id: str, title: str, desc: str, icon_name: str, i18n, obs_overlay_url: str = "", parent=None):
         super().__init__(parent)

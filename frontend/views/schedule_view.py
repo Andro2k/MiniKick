@@ -13,7 +13,7 @@ class ScheduleView(BaseView):
     refresh_info_requested = Signal()
     update_stream_requested = Signal(str, object, object, str, str)
     search_category_requested = Signal(str, str)
-    save_schedule_requested = Signal(dict)
+    save_schedule_requested = Signal(object)
     delete_schedule_requested = Signal(int)
     toggle_schedule_requested = Signal(int, bool)
     view_shown = Signal()

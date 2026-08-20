@@ -8,7 +8,7 @@ import datetime
 class TwitchChatWorker(QThread):
     message_received = Signal(object)
     error_occurred = Signal(str)
-    connection_success = Signal(dict)
+    connection_success = Signal(object)
     connection_lost = Signal()
     connection_restored = Signal()
 

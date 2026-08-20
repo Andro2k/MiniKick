@@ -5,7 +5,7 @@ from backend.interfaces import IMusicProvider
 from backend.handlers import MusicCommandHandler
 
 class MusicController(QObject):
-    song_changed = Signal(dict)
+    song_changed = Signal(object)
 
     def __init__(self, view, command_service, toast_manager, i18n, settings_storage=None, music_storage=None, provider_factory=None, music_provider: IMusicProvider | None = None):
         super().__init__()

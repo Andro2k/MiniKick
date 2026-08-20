@@ -8,7 +8,7 @@ from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_PURPLE
 from frontend.common import get_icon_colored, get_pixmap_colored
 
 class CategorySuggestionsPopup(QListWidget):
-    category_selected = Signal(dict)
+    category_selected = Signal(object)
 
     def __init__(self, target_widget: QWidget, parent=None):
         super().__init__(parent)

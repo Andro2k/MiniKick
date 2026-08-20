@@ -13,7 +13,7 @@ class ChatController(QObject):
     tts_state_changed = Signal(bool)
     spam_blocked = Signal()
     command_executed = Signal()
-    message_received = Signal(str, str, str, list, str, str)
+    message_received = Signal(str, str, str, object, str, str)
     music_plugin_triggered = Signal(str, str, str, str, str)
     widget_plugin_triggered = Signal(str, str, str, str, str)
 

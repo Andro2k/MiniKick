@@ -1,6 +1,6 @@
 # backend\controllers\command_controller.py
 
-from PySide6.QtCore import QObject, Slot, QTimer
+from PySide6.QtCore import QObject, Slot
 
 class CommandController(QObject):
     def __init__(self, view, service, toast_manager=None):

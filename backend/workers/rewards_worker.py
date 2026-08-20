@@ -94,7 +94,7 @@ class RewardWorker(QThread):
         self._running = False
 
 class FetchRewardsWorker(QThread):
-    rewards_fetched = Signal(list, dict)
+    rewards_fetched = Signal(object, object)
     error_occurred = Signal(str)
 
     def __init__(self, api_client: KickAPIClient, parent=None):
@@ -114,7 +114,7 @@ class FetchRewardsWorker(QThread):
             self.error_occurred.emit(str(e))
 
 class CreateRewardWorker(QThread):
-    reward_created = Signal(dict)
+    reward_created = Signal(object)
     error_occurred = Signal(str)
 
     def __init__(self, api_client: KickAPIClient, payload: dict, parent=None):
@@ -139,7 +139,7 @@ class CreateRewardWorker(QThread):
             self.error_occurred.emit(str(e))
 
 class UpdateRewardWorker(QThread):
-    reward_updated = Signal(dict)
+    reward_updated = Signal(object)
     error_occurred = Signal(str)
 
     def __init__(self, api_client: KickAPIClient, reward_id: str, payload: dict, parent=None):

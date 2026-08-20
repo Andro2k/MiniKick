@@ -25,7 +25,7 @@ class DashboardController(QObject):
         if self.view:
             self.view.set_twitch_status(connected=connected, channel=channel)
 
-    @Slot(dict)
+    @Slot(object)
     def handle_connection_success(self, user_data: dict):
         self.view.update_connection_status(is_connecting=False)
 
@@ -69,6 +69,6 @@ class DashboardController(QObject):
     def reset_to_disconnected(self):
         self.view.reset_to_disconnected()
 
-    @Slot(list)
+    @Slot(object)
     def evaluate_scopes(self, missing_scope_keys: list):
         self.view.show_scope_warning(missing_scope_keys)

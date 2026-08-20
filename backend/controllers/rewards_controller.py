@@ -35,8 +35,8 @@ class RewardsController(QObject):
             mappings = self.service.get_mappings()
             self.view.populate_table(mappings)
 
-    @Slot(list)
-    @Slot(list, dict)
+    @Slot(object)
+    @Slot(object, object)
     def update_rewards_list(self, rewards: list, rewards_map: dict = None):
         if self.view is not None:
             self.current_rewards_list = rewards if rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]

@@ -7,7 +7,7 @@ import time
 from PySide6.QtCore import QThread, Signal
 
 class NetworkWorker(QThread):
-    result_ready = Signal(dict)
+    result_ready = Signal(object)
 
     def __init__(self, overlay_port=8090, parent=None):
         super().__init__(parent)

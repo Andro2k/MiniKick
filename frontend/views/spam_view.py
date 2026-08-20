@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout
 from frontend.widgets import BaseView, ExpandableSettingCard
 
 class SpamView(BaseView):
-    filter_updated = Signal(str, dict)
+    filter_updated = Signal(str, object)
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="spam.header.title", subtitle_key="spam.header.subtitle", parent=parent)

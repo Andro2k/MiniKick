@@ -169,7 +169,7 @@ class ModernScrollArea(QScrollArea):
         self.setWidget(widget)
 
 class ExpandableSettingCard(QFrame):
-    updated = Signal(str, dict)
+    updated = Signal(str, object)
 
     def __init__(self, card_id: str, title: str, desc: str, icon_name: str, has_amount: bool = True, i18n=None, parent=None):
         super().__init__(parent)

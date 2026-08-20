@@ -6,7 +6,7 @@ from frontend.widgets import BaseView
 from frontend.components.widgets import WidgetCard
 
 class WidgetsView(BaseView):
-    widget_saved = Signal(str, bool, str, int, str, dict)
+    widget_saved = Signal(str, bool, str, int, str, object)
     death_count_changed = Signal(int)
     score_changed = Signal(int, int)
     view_shown = Signal()
