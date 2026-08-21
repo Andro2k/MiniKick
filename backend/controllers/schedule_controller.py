@@ -51,11 +51,14 @@ class ScheduleController(QObject):
 
         self.load_initial_data()
 
-    def load_initial_data(self) -> None:
+    def reload_schedules(self) -> None:
         if not self.service:
             return
         schedules = self.service.get_all_schedules()
         self.schedules_updated.emit(schedules)
+
+    def load_initial_data(self) -> None:
+        self.reload_schedules()
         self.fetch_current_info()
 
     def fetch_current_info(self) -> None:

@@ -243,8 +243,7 @@ class DatabaseManager:
                     twitch_category_id TEXT,
                     twitch_category_name TEXT,
                     is_active INTEGER DEFAULT 1,
-                    last_executed_date TEXT DEFAULT '',
-                    days TEXT DEFAULT ''
+                    last_executed_date TEXT DEFAULT ''
                 )
             """)
             cursor.execute("""

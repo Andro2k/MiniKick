@@ -1,3 +1,5 @@
+# frontend\components\music\music_settings_panel.py
+
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow, NoWheelSlider

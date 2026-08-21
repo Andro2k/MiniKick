@@ -927,6 +927,7 @@ class MainWindowCore(QMainWindow):
             state="success"
         )
         if hasattr(self, "schedule_controller") and self.schedule_controller:
+            self.schedule_controller.reload_schedules()
             self.schedule_controller.fetch_current_info()
 
     def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0):
