@@ -10,7 +10,6 @@ from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
 from .base_dialog import ModernModal
 from frontend.common import get_assets_path, get_icon_colored
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
-from backend.workers import BugReportWorker
 
 class SeverityCard(QFrame):
     clicked = Signal(str)
@@ -172,11 +171,12 @@ class ImageDropzone(QFrame):
                 self.set_image(file_path)
 
 class BugReportDialog(ModernModal):
-    def __init__(self, i18n, parent=None):
+    def __init__(self, i18n, worker_class=None, parent=None):
         title = i18n.get("settings.feedback.title")
         icon_path = get_assets_path("icons/bug.svg")
         super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=720, parent=parent)
         self.i18n = i18n
+        self.worker_class = worker_class
         self.worker = None
         self.selected_severity = "Low"
         self.severity_cards = {}
@@ -293,7 +293,12 @@ class BugReportDialog(ModernModal):
         self.lbl_error.hide()
         self._set_loading(True)
 
-        self.worker = BugReportWorker(
+        worker_cls = self.worker_class
+        if not worker_cls:
+            from backend.workers import BugReportWorker
+            worker_cls = BugReportWorker
+
+        self.worker = worker_cls(
             username=self.txt_username.text(),
             description=desc,
             include_logs=self.chk_logs.isChecked(),

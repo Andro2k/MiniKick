@@ -2,13 +2,13 @@
 
 Documento de referencia: `WT-1.5.3_04`  
 Versión: `v1.5.3`  
-Módulos modificados: `backend/core/app_logger_core.py`, `main.py`, `backend/providers/voices/tts_local.py`, `backend/providers/voices/tts_online.py`, `backend/services/chat/chat_service.py`, `backend/providers/chat/kick_client.py`, `frontend/views/log_view.py`, `frontend/views/chat_view.py`, `frontend/views/settings_view.py`, `frontend/views/spam_view.py`, `frontend/components/chat/tts_settings.py`, `frontend/widgets/no_wheel.py`, `frontend/widgets/blocks.py`, `frontend/common/theme.py`, `frontend/navigation/sidebar_component.py`, `backend/workers/*`, `backend/controllers/*`, `backend/handlers/*`
+Módulos modificados: `locales/es.json`, `locales/en.json`, `backend/core/app_logger_core.py`, `main.py`, `backend/providers/voices/tts_local.py`, `backend/providers/voices/tts_online.py`, `backend/services/chat/chat_service.py`, `backend/providers/chat/kick_client.py`, `backend/providers/chat/twitch_client.py`, `backend/services/schedule/schedule_service.py`, `backend/controllers/timer_controller.py`, `backend/controllers/settings_controller.py`, `backend/core/main_window_core.py`, `frontend/views/log_view.py`, `frontend/views/chat_view.py`, `frontend/views/settings_view.py`, `frontend/views/spam_view.py`, `frontend/views/timers_view.py`, `frontend/components/chat/tts_settings.py`, `frontend/components/schedule/quick_change_panel.py`, `frontend/components/schedule/schedule_form_panel.py`, `frontend/dialogs/timer_dialog.py`, `frontend/dialogs/bug_report_dialog.py`, `frontend/dialogs/release_notes_dialog.py`, `frontend/dialogs/crash_report_dialog.py`, `frontend/widgets/category_search.py`, `frontend/widgets/no_wheel.py`, `frontend/widgets/blocks.py`, `frontend/common/theme.py`, `frontend/navigation/sidebar_component.py`, `backend/workers/*`, `backend/controllers/*`, `backend/handlers/*`
 
 ---
 
 ## 📋 Resumen
 
-Se implementó un sistema integral para la captura y persistencia de fallos y diagnósticos en **MiniKick**, se completó la optimización de tipado de señales y slots en PySide6/Qt (`Signal(object)` / `@Slot(object)`), se silenciaron a nivel nativo C los volcados informativos de FFmpeg (`avutil.av_log_set_level`) en consola, se calibró el dimensionamiento responsivo de los ComboBoxes, se alinearon con precisión de cuadrícula (`QGridLayout`) todos los campos de las tarjetas de protección anti-spam, se resolvieron los errores multiplataforma reportados en **Ubuntu / Linux**, y se blindó la sincronización de voces al alternar entre motores TTS Local y Web/Neural.
+Se implementó un sistema integral para la captura y persistencia de fallos y diagnósticos en **MiniKick**, se completó la optimización de tipado de señales y slots en PySide6/Qt (`Signal(object)` / `@Slot(object)`), se silenciaron a nivel nativo C los volcados informativos de FFmpeg (`avutil.av_log_set_level`) en consola, se calibró el dimensionamiento responsivo de los ComboBoxes, se alinearon con precisión de cuadrícula (`QGridLayout`) todos los campos de las tarjetas de protección anti-spam, se resolvieron los errores multiplataforma reportados en **Ubuntu / Linux**, se blindó la sincronización de voces al alternar entre motores TTS, se rediseñó por completo el sistema de búsqueda y selección de categorías (Kick y Twitch) con un componente moderno reutilizable (`CategorySearchComboBox`), se realizó un desacoplamiento arquitectónico estricto (Separation of Responsibilities) eliminando el 100% de las importaciones a nivel de módulo desde `backend` en todo el paquete `frontend/`, y se refinó la interfaz y traducción del asistente modal de temporizadores.
 
 ---
 
@@ -33,8 +33,8 @@ Se implementó un sistema integral para la captura y persistencia de fallos y di
 ### 5. Optimización Integral de Señales y Slots Qt (Eliminación de Advertencias Shiboken)
 - Se estandarizaron todas las señales y slots que transportan diccionarios y listas dinámicas de Python (`Signal(object)` / `@Slot(object)`):
   - Workers: `NetworkWorker`, `UpdateCheckWorker`, `ReleaseNotesWorker`, `AuthWorker`, `TwitchAuthWorker`, `ChatWorker`, `TwitchChatWorker`, `ScheduleWorker`, `FetchRewardsWorker`, `CreateRewardWorker`, `UpdateRewardWorker`, `VoiceFetcherWorker`.
-  - Controladores y Handlers: `DashboardController`, `UpdateController`, `ScheduleController`, `WidgetController`, `MusicController`, `RewardsController`, `SpamController`, `ChatController`, `TTSVoiceHandler`.
-  - Vistas y componentes: `FilterHeaderView`, `LogView`, `ScheduleView`, `SpamView`, `WidgetsView`, `ScheduleTablePanel`, `ScheduleFormPanel`, `QuickChangePanel`, `WidgetCard`.
+  - Controladores y Handlers: `DashboardController`, `UpdateController`, `ScheduleController`, `WidgetController`, `MusicController`, `RewardsController`, `SpamController`, `ChatController`, `TTSVoiceHandler`, `TimerController`, `SettingsController`.
+  - Vistas y componentes: `FilterHeaderView`, `LogView`, `ScheduleView`, `SpamView`, `WidgetsView`, `TimersView`, `SettingsView`, `ScheduleTablePanel`, `ScheduleFormPanel`, `QuickChangePanel`, `WidgetCard`.
 - Esto garantiza que todas las colecciones pasen por **referencia directa de Python (`PyObject*`)**, evitando copias profundas defensivas y eliminando avisos de Shiboken.
 
 ### 6. Supresión Nativa C de Volcados de FFmpeg en Consola
@@ -59,7 +59,29 @@ Se implementó un sistema integral para la captura y persistencia de fallos y di
 
 ### 11. Sincronización y Validación de Voces entre Motores TTS
 - **Sincronización de Voz al Cambiar Proveedor (`chat_service.py:72`)**: Al cambiar entre `local` y `web`, `set_provider()` ahora restaura y sincroniza inmediatamente la voz correspondiente guardada para ese proveedor en `TTSManager`.
-- **Validador y Fallback de Voz en `WebTTSProvider` (`tts_online.py:50`)**: Se añadió `_resolve_valid_voice()` en el motor online para verificar que la voz sea una voz Neural válida de Edge TTS. Si contiene un ID local (como `jpx/ja` o `roa/es`), automáticamente recurre a la voz online por defecto (`es-ES-AlvaroNeural`) en lugar de arrojar error `Invalid voice`.
+- **Validador y Fallback de Voz en `WebTTSProvider` (`tts_online.py:50`)**: Se añadió `_resolve_valid_voice()` en el motor online para verificar que la voz sea una voz Neural válida de Edge TTS.
+
+### 12. Modernización del Selector y Búsqueda de Categorías (Kick & Twitch)
+- **Componente Reutilizable `CategorySearchComboBox` ([frontend/widgets/category_search.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/category_search.py))**:
+  - Estética moderna tipo Combobox con campo de entrada, botón de borrado (`x`) / búsqueda, debounce integrado (300ms) y navegación por teclado (Arriba, Abajo, Enter, Escape).
+  - Menú desplegable flotante enriquecido con badges de plataforma (`[KICK]` verde `#2ECD70` y `[TWITCH]` morado `#9146FF`).
+  - Flag `WindowStaysOnTopHint` y `raise_()` para que el menú emergente flote siempre sobre diálogos modales sin ser ocultado.
+  - **100% Integrado al Sistema de Temas (`theme.py`)**: Cero `setStyleSheet` inline; utiliza `role="category_dropdown"`, `role="category_list"`, `role="badge_kick"`, `role="badge_twitch"` y `role="body"`.
+
+### 13. Desacoplamiento Total y SoR en Todo el Paquete `frontend/`
+- **Zero Importaciones a Nivel de Módulo desde `backend` en `frontend/`**:
+  - [sidebar_component.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/sidebar_component.py): Eliminada la importación `APP_VERSION`, ahora inyectada vía parámetro `app_version`.
+  - [bug_report_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/bug_report_dialog.py): Eliminado `from backend.workers import BugReportWorker`, inyectado vía `worker_class`.
+  - [release_notes_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/release_notes_dialog.py): Eliminado `from backend.workers import ReleaseNotesWorker`, inyectado vía `worker_class`.
+  - [crash_report_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/crash_report_dialog.py): Eliminadas todas las importaciones fijas de `backend`, inyectando `webhook_url` y `worker_class` desde `main.py`.
+  - [timer_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/timer_dialog.py): Cero backend, comunicación por señales Qt puras.
+- **Inyección desde Controladores**:
+  - `SettingsController` y `LogController` se encargan de suministrar las clases de worker correspondientes a las vistas.
+
+### 14. Rediseño Espacial Vertical en `TimerConfigWizard`
+- **Reorganización Vertical de Tarjetas ([timer_dialog.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/timer_dialog.py))**:
+  - **Tarjeta Superior (Configuración General)**: Nombre (izq) + Plataformas Kick/Twitch (der), Intervalo Online/Offline en 2 columnas, y Mensajes mínimos de chat.
+  - **Tarjeta Inferior (Mensajes de Respuesta)**: A ancho completo con botón inferior.
 
 ---
 
@@ -69,4 +91,7 @@ Se implementó un sistema integral para la captura y persistencia de fallos y di
 2. **Prueba de Auto-Flush**: Validación de persistencia inmediata en disco de mensajes `CRITICAL` y `ERROR`.
 3. **Prueba de Excepciones en Hilos**: Disparo de excepción no controlada en un hilo secundario y verificación del traceback completo en `minikick.log`.
 4. **Prueba de Compilación y Limpieza de Terminal**: Verificación de ejecución limpia sin advertencias de Shiboken ni texto verboso de FFmpeg.
-5. **Prueba de Conmutación de Voces TTS**: Validación de alternancia bidireccional (`local` $\leftrightarrow$ `web`) asegurando que `WebTTSProvider` y `LocalTTSProvider` reciban siempre sus respectivos IDs válidos.
+5. **Prueba Multiplataforma y Alternancia TTS**: Validación de `tts_local.py`, `tts_online.py` y `kick_client.py` en Linux y Windows.
+6. **Prueba de Búsqueda y Relevancia de Categorías**: Validación del algoritmo de ordenamiento con `PEAK`, visualización de insignias de plataforma y scroll para listas de hasta 50 resultados en las 3 vistas.
+7. **Prueba MVC End-to-End en Diálogo de Temporizadores**: Verificación del flujo desacoplado `TimerConfigWizard -> TimersView -> TimerController -> ScheduleService -> CategorySearchComboBox` con despliegue interactivo del popup y asignación de datos.
+8. **Prueba de Frontend Puro**: Verificación con script automatizado de que todos los diálogos y componentes del frontend instancian limpiamente con cero dependencias duras de backend a nivel de módulo.

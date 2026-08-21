@@ -250,14 +250,14 @@ class SettingsView(BaseView):
         size = self.combo_font.itemData(index)
         self.font_size_changed.emit(size)
 
-    def show_bug_report_dialog(self) -> None:
+    def show_bug_report_dialog(self, worker_class=None) -> None:
         from frontend.dialogs.bug_report_dialog import BugReportDialog
-        dialog = BugReportDialog(self.i18n, parent=self.window())
+        dialog = BugReportDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()
 
-    def show_release_notes_dialog(self) -> None:
+    def show_release_notes_dialog(self, worker_class=None) -> None:
         from frontend.dialogs.release_notes_dialog import ReleaseNotesDialog
-        dialog = ReleaseNotesDialog(self.i18n, parent=self.window())
+        dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()
 
     def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "") -> None:

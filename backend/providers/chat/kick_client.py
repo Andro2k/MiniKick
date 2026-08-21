@@ -40,27 +40,40 @@ class KickAPIClient:
     def __init__(self, auth_provider: TokenProvider):
         self.auth_provider = auth_provider
         self.scraper = ScraperFactory.create()
+        self._cached_subcategories = []
+
+    def _get_tokens(self) -> dict:
+        if not self.auth_provider:
+            return {}
+        if hasattr(self.auth_provider, "get_tokens"):
+            tokens = self.auth_provider.get_tokens()
+        elif hasattr(self.auth_provider, "load"):
+            tokens = self.auth_provider.load()
+        else:
+            tokens = {}
+        return tokens or {}
 
     def _request(self, method: str, url: str, **kwargs) -> requests.Response:
-        tokens = self.auth_provider.get_tokens()
+        tokens = self._get_tokens()
         access_token = tokens.get("access_token", "")
         
         headers = kwargs.pop("headers", {})
-        headers["Authorization"] = f"Bearer {access_token}"
+        if access_token:
+            headers["Authorization"] = f"Bearer {access_token}"
         
         try:
             response = self.scraper.request(method, url, headers=headers, **kwargs)
             response.raise_for_status()
             return response
         except requests.exceptions.HTTPError as e:
-            if e.response is not None and e.response.status_code == 401:
+            if e.response is not None and e.response.status_code == 401 and hasattr(self.auth_provider, "refresh_token"):
                 self.auth_provider.refresh_token()
-                tokens = self.auth_provider.get_tokens()
-                headers["Authorization"] = f"Bearer {tokens.get('access_token', '')}"
-
-                retry_response = self.scraper.request(method, url, headers=headers, **kwargs)
-                retry_response.raise_for_status()
-                return retry_response
+                tokens = self._get_tokens()
+                if tokens.get("access_token"):
+                    headers["Authorization"] = f"Bearer {tokens.get('access_token', '')}"
+                    response = self.scraper.request(method, url, headers=headers, **kwargs)
+                    response.raise_for_status()
+                    return response
             raise e
 
     def fetch_user_data(self) -> dict:
@@ -409,7 +422,7 @@ class KickAPIClient:
             logging.debug("[KickAPI] Error in public v1 category search: %s", e)
 
         try:
-            url = f"https://api.kick.com/public/v2/categories?name={encoded_q}&limit=25"
+            url = f"https://api.kick.com/public/v2/categories?name={encoded_q}&limit=50"
             resp = self._request("GET", url, timeout=8)
             if resp.status_code == 200:
                 res_data = resp.json()
@@ -427,20 +440,28 @@ class KickAPIClient:
             logging.debug("[KickAPI] Error in public v2 category search: %s", e)
 
         try:
-            url = f"https://kick.com/api/v1/subcategories/search?query={encoded_q}"
-            resp = self.scraper.get(url, timeout=8)
-            if resp.status_code == 200:
-                items = resp.json()
-                if isinstance(items, list):
-                    return [
-                        {
-                            "id": item.get("id"),
-                            "name": item.get("name", ""),
-                            "thumbnail": item.get("banner", {}).get("url", "") if isinstance(item.get("banner"), dict) else ""
-                        }
-                        for item in items if item.get("name")
-                    ]
+            if not getattr(self, "_cached_subcategories", None):
+                self._cached_subcategories = []
+                for page in (1, 2, 3):
+                    resp = self.scraper.get(f"https://kick.com/api/v1/subcategories?page={page}&limit=100", timeout=5)
+                    if resp.status_code == 200:
+                        data = resp.json().get("data", [])
+                        if isinstance(data, list):
+                            self._cached_subcategories.extend(data)
+            
+            q_lower = q.lower()
+            results = []
+            for item in self._cached_subcategories:
+                name = item.get("name", "")
+                if name and q_lower in name.lower():
+                    results.append({
+                        "id": item.get("id"),
+                        "name": name,
+                        "thumbnail": item.get("banner", {}).get("url", "") if isinstance(item.get("banner"), dict) else ""
+                    })
+            if results:
+                return results
         except Exception as e:
-            logging.warning("[KickAPI] Fallback subcategories search failed: %s", e)
+            logging.debug("[KickAPI] Error in fallback subcategories search: %s", e)
 
         return []

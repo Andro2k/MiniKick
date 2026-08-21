@@ -1,15 +1,21 @@
 # backend\controllers\timer_controller.py
 
+import threading
+import logging
 from PySide6.QtCore import QObject, Slot, Signal
+
+logger = logging.getLogger("minikick.timer_controller")
 
 class TimerController(QObject):
     metrics_update_requested = Signal()
+    categories_found = Signal(str, object)
 
-    def __init__(self, view, service, toast_manager=None):
+    def __init__(self, view, service, toast_manager=None, schedule_service=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
+        self.schedule_service = schedule_service
         if self.view is not None:
             self._connect_signals()
 
@@ -25,6 +31,34 @@ class TimerController(QObject):
         self.view.delete_requested.connect(self._handle_delete)
         self.view.status_toggled.connect(self._handle_status_change)
         self.view.search_text_changed.connect(self._handle_search)
+        if hasattr(self.view, "search_category_requested"):
+            self.view.search_category_requested.connect(self.search_categories)
+        if hasattr(self.view, "set_category_search_results"):
+            self.categories_found.connect(self.view.set_category_search_results)
+
+    def search_categories(self, query: str, platform: str = "both") -> None:
+        if not self.schedule_service or not query.strip():
+            return
+
+        def _worker():
+            try:
+                res = self.schedule_service.search_categories(query.strip(), platform)
+                kick_items = res.get("kick", []) if isinstance(res, dict) else []
+                twitch_items = res.get("twitch", []) if isinstance(res, dict) else []
+                combined = kick_items + twitch_items
+
+                q_lower = query.strip().lower()
+                def _sort_key(item: dict) -> tuple[int, int, str]:
+                    n = item.get("name", "").strip().lower()
+                    score = 0 if n == q_lower else (1 if n.startswith(q_lower) else 2)
+                    return (score, len(n), n)
+
+                sorted_results = sorted(combined, key=_sort_key)
+                self.categories_found.emit("both", sorted_results)
+            except Exception as e:
+                logger.error("[TimerController] Error searching categories: %s", e)
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def load_initial_data(self):
         if self.view is not None:

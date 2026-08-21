@@ -15,6 +15,7 @@ from .search_bar import UnifiedSearchBar
 from .pagination import SegmentedPagination
 from .segmented_control import ModernSegmentedControl
 from .no_wheel import NoWheelComboBox, NoWheelSlider, NoWheelDateEdit, NoWheelTimeEdit, NoWheelSpinBox
+from .category_search import CategorySearchComboBox, CategorySuggestionsPopup
 
 __all__ = [
     "BaseView",
@@ -44,6 +45,8 @@ __all__ = [
     "NoWheelSlider",
     "NoWheelDateEdit",
     "NoWheelTimeEdit",
-    "NoWheelSpinBox"
+    "NoWheelSpinBox",
+    "CategorySearchComboBox",
+    "CategorySuggestionsPopup"
 ]
 

@@ -206,7 +206,8 @@ class MainWindowCore(QMainWindow):
         self.timer_controller = TimerController(
             None,
             self.timer_service,
-            toast_manager=self.toast
+            toast_manager=self.toast,
+            schedule_service=self.schedule_service
         )
         self.settings_controller = SettingsController(
             view=None, 

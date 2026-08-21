@@ -153,8 +153,10 @@ class SettingsController(QObject):
 
     @Slot()
     def handle_feedback(self):
-        self.view.show_bug_report_dialog()
+        from backend.workers import BugReportWorker
+        self.view.show_bug_report_dialog(worker_class=BugReportWorker)
 
     @Slot()
     def handle_release_notes(self):
-        self.view.show_release_notes_dialog()
+        from backend.workers import ReleaseNotesWorker
+        self.view.show_release_notes_dialog(worker_class=ReleaseNotesWorker)

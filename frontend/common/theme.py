@@ -352,6 +352,11 @@ QFrame[role="search_bar"] QPushButton:hover {{ background-color: {COLOR_NEUTRAL_
 QFrame[role="search_bar"] QPushButton:focus {{ background-color: {COLOR_NEUTRAL_750}; }}
 QFrame[role="search_bar"] QPushButton:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
 
+QFrame[role="category_dropdown"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_MUTED}; border-radius: {RADIUS_MD}px; }}
+QListWidget[role="category_list"] {{ background: transparent; border: none; outline: none; }}
+QListWidget[role="category_list"]::item {{ background: transparent; border-radius: {RADIUS_SM}px; padding: 2px; min-height: 32px; }}
+QListWidget[role="category_list"]::item:hover, QListWidget[role="category_list"]::item:selected {{ background-color: {COLOR_NEUTRAL_800}; }}
+
 QFrame[role="segmented_pagination"] {{ background-color: {COLOR_NEUTRAL_850}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="segmented_pagination"] QPushButton {{ background: transparent; border: none; border-left: {BORDER_SUBTLE}; min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px; }}
 QFrame[role="segmented_pagination"] QPushButton#btn_first {{ border-left: none; border-top-left-radius: {RADIUS_MD_INNER}px; border-bottom-left-radius: {RADIUS_MD_INNER}px; }}

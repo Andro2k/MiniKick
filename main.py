@@ -75,8 +75,15 @@ def global_crash_handler(exctype, value, tb):
             app.setFont(app_font)
 
         i18n = _get_safe_i18n()
+        from backend.config.api_keys import DISCORD_WEBHOOK_URL
+        from backend.workers import CrashReportWorker
         from frontend.dialogs.crash_report_dialog import CrashReportDialog
-        dialog = CrashReportDialog(traceback_text=tb_text, i18n=i18n)
+        dialog = CrashReportDialog(
+            traceback_text=tb_text,
+            i18n=i18n,
+            webhook_url=DISCORD_WEBHOOK_URL,
+            worker_class=CrashReportWorker
+        )
         dialog.exec()
     except Exception as dialog_err:
         err_msg = i18n.get("logs.bootstrap.crash_dialog_failed").replace("{error}", str(dialog_err)) if i18n else f"[Bootstrap] Failed to display crash dialog: {dialog_err}"

@@ -20,7 +20,15 @@ class TwitchAPIClient:
         return bool(tokens and tokens.get("access_token"))
 
     def _get_headers(self) -> dict:
-        tokens = self.auth_provider.get_tokens() if self.auth_provider else {}
+        if not self.auth_provider:
+            return {}
+        if hasattr(self.auth_provider, "get_tokens"):
+            tokens = self.auth_provider.get_tokens()
+        elif hasattr(self.auth_provider, "load"):
+            tokens = self.auth_provider.load()
+        else:
+            tokens = {}
+        tokens = tokens or {}
         access_token = tokens.get("access_token", "")
         if not access_token:
             return {}
@@ -186,7 +194,7 @@ class TwitchAPIClient:
     def search_categories(self, query: str) -> list[dict]:
         if not query or not query.strip():
             return []
-        url = f"{TWITCH_HELIX_BASE}/search/categories?query={requests.utils.quote(query.strip())}"
+        url = f"{TWITCH_HELIX_BASE}/search/categories?query={requests.utils.quote(query.strip())}&first=50"
         try:
             resp = self._request("GET", url, timeout=8)
             if resp.status_code == 200:

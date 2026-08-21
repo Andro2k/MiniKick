@@ -16,8 +16,6 @@ ICON_SIZE_SM = 14
 ICON_SIZE_MD = 16
 ICON_SIZE_LG = 20
 ICON_SIZE_XL = 24
-ICON_SIZE_2XL = 32
-ICON_SIZE_HERO = 48
 
 @lru_cache(maxsize=64)
 def _load_svg_raw(full_path: str) -> str:

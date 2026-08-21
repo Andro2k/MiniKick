@@ -10,15 +10,13 @@ from PySide6.QtGui import QColor
 from .base_dialog import ModernModal
 from frontend.common import get_assets_path, get_icon_colored
 from frontend.common.theme import COLOR_RED
-from backend.config.api_keys import DISCORD_WEBHOOK_URL
-from backend.workers import CrashReportWorker
-from backend.services.system.translation_service import TranslationService
-
 
 class CrashReportDialog(ModernModal):
-    def __init__(self, traceback_text: str, i18n=None, parent=None):
+    def __init__(self, traceback_text: str, i18n, webhook_url: str = "", worker_class=None, parent=None):
         self.traceback_text = traceback_text
-        self.i18n = i18n or TranslationService()
+        self.i18n = i18n
+        self.webhook_url = webhook_url
+        self.worker_class = worker_class
         self.worker = None
         self.title_text = self.i18n.get("crash.title")
         self.lbl_contact_text = self.i18n.get("crash.lbl_contact")
@@ -127,7 +125,12 @@ class CrashReportDialog(ModernModal):
 
     @Slot()
     def _send_and_close(self):
-        if not DISCORD_WEBHOOK_URL:
+        webhook_url = self.webhook_url
+        if not webhook_url:
+            from backend.config.api_keys import DISCORD_WEBHOOK_URL
+            webhook_url = DISCORD_WEBHOOK_URL
+
+        if not webhook_url:
             self.lbl_error.setText(self.err_no_webhook_text)
             self.lbl_error.show()
             return
@@ -137,7 +140,12 @@ class CrashReportDialog(ModernModal):
         self.btn_send.setText(self.i18n.get("crash.btn_sending"))
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
 
-        self.worker = CrashReportWorker(
+        worker_cls = self.worker_class
+        if not worker_cls:
+            from backend.workers import CrashReportWorker
+            worker_cls = CrashReportWorker
+
+        self.worker = worker_cls(
             traceback_text=self.traceback_text,
             contact=self.txt_contact.text(),
             description=self.txt_desc.toPlainText(),

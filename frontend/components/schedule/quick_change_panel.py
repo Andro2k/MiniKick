@@ -1,86 +1,11 @@
 # frontend\components\schedule\quick_change_panel.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel,
-                               QLineEdit, QPushButton, QListWidget, QListWidgetItem, QFrame)
-from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent
-from frontend.widgets import ModernCard, ModernButton, ModernSwitch, UnifiedSearchBar
+                               QLineEdit, QPushButton, QFrame)
+from PySide6.QtCore import Qt, Signal
+from frontend.widgets import ModernCard, ModernButton, ModernSwitch, CategorySearchComboBox
 from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_PURPLE
 from frontend.common import get_icon_colored, get_pixmap_colored
-
-class CategorySuggestionsPopup(QListWidget):
-    category_selected = Signal(object)
-
-    def __init__(self, target_widget: QWidget, parent=None):
-        super().__init__(parent)
-        self.target_widget = target_widget
-        self.setWindowFlags(Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
-        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.itemClicked.connect(self._on_item_clicked)
-
-        input_widget = getattr(self.target_widget, "txt_input", self.target_widget)
-        input_widget.installEventFilter(self)
-
-    def eventFilter(self, obj, event):
-        if event.type() == QEvent.Type.KeyPress and self.isVisible():
-            key = event.key()
-            if key == Qt.Key.Key_Escape:
-                self.hide()
-                return True
-            elif key == Qt.Key.Key_Down:
-                cur = self.currentRow()
-                if cur < self.count() - 1:
-                    self.setCurrentRow(cur + 1)
-                else:
-                    self.setCurrentRow(0)
-                return True
-            elif key == Qt.Key.Key_Up:
-                cur = self.currentRow()
-                if cur > 0:
-                    self.setCurrentRow(cur - 1)
-                else:
-                    self.setCurrentRow(self.count() - 1)
-                return True
-            elif key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-                item = self.currentItem()
-                if item:
-                    self._on_item_clicked(item)
-                    return True
-        elif event.type() == QEvent.Type.FocusOut:
-            QTimer.singleShot(150, self._check_hide_on_focus_lost)
-        return super().eventFilter(obj, event)
-
-    def _check_hide_on_focus_lost(self):
-        input_widget = getattr(self.target_widget, "txt_input", self.target_widget)
-        if not input_widget.hasFocus() and not self.hasFocus():
-            self.hide()
-
-    def show_results(self, platform: str, results: list[dict]):
-        self.clear()
-        if not results or not self.target_widget.isVisible():
-            self.hide()
-            return
-
-        for item in results[:8]:
-            name = item.get("name", "")
-            cat_id = item.get("id", "")
-            list_item = QListWidgetItem(f"[{platform.upper()}] {name}")
-            list_item.setData(Qt.ItemDataRole.UserRole, {"platform": platform, "id": cat_id, "name": name})
-            self.addItem(list_item)
-
-        global_pos = self.target_widget.mapToGlobal(QPoint(0, self.target_widget.height() + 2))
-        self.move(global_pos)
-        self.setFixedWidth(max(self.target_widget.width(), 200))
-        item_count = min(len(results), 8)
-        self.setFixedHeight(item_count * 34 + 8)
-        self.show()
-
-    def _on_item_clicked(self, item: QListWidgetItem):
-        data = item.data(Qt.ItemDataRole.UserRole)
-        self.hide()
-        if data:
-            self.category_selected.emit(data)
 
 class ScheduleQuickChangePanel(QWidget):
     refresh_info_requested = Signal()
@@ -222,29 +147,41 @@ class ScheduleQuickChangePanel(QWidget):
         twitch_cat_layout.addWidget(self.lbl_twitch_cat)
         self.twitch_card.addWidget(self.twitch_cat_box)
 
-        self.relayout(1200)
+        self.cards_grid.addWidget(self.kick_card, 0, 0)
+        self.cards_grid.addWidget(self.twitch_card, 0, 1)
         parent_layout.addLayout(self.cards_grid)
 
-    def relayout(self, width: int):
-        cols = 1 if width < 480 else 2
-        if cols != self._current_cols:
-            self._current_cols = cols
-            if cols == 1:
-                self.cards_grid.addWidget(self.kick_card, 0, 0)
-                self.cards_grid.addWidget(self.twitch_card, 1, 0)
-            else:
-                self.cards_grid.addWidget(self.kick_card, 0, 0)
-                self.cards_grid.addWidget(self.twitch_card, 0, 1)
+    def relayout(self, width: int = None):
+        self._update_grid_layout(width)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.relayout(self.width())
+        self._update_grid_layout()
+
+    def _update_grid_layout(self, width: int = None):
+        w = width if width is not None else self.width()
+        cols = 1 if w < 680 else 2
+
+        if cols == self._current_cols:
+            return
+
+        self._current_cols = cols
+
+        self.cards_grid.removeWidget(self.kick_card)
+        self.cards_grid.removeWidget(self.twitch_card)
+
+        if cols == 1:
+            self.cards_grid.addWidget(self.kick_card, 0, 0)
+            self.cards_grid.addWidget(self.twitch_card, 1, 0)
+        else:
+            self.cards_grid.addWidget(self.kick_card, 0, 0)
+            self.cards_grid.addWidget(self.twitch_card, 0, 1)
 
     def _setup_quick_change_card(self, parent_layout: QVBoxLayout):
-        change_card = ModernCard(parent=self, margin=14, spacing=10)
-
+        change_card = ModernCard(parent=self, margin=16, spacing=14)
         header_layout = QHBoxLayout()
         header_layout.setSpacing(8)
+
         lbl_title = QLabel(self.i18n.get("stream_info.quick_change.title"))
         lbl_title.setProperty("role", "h2")
         header_layout.addWidget(lbl_title)
@@ -296,20 +233,14 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_category.setProperty("role", "h3")
         form_layout.addWidget(lbl_category)
 
-        self.search_category = UnifiedSearchBar(
+        self.search_category = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.quick_change.category_placeholder"),
+            default_platform="both",
             parent=self
         )
+        self.search_category.category_selected.connect(self._on_category_selected)
+        self.search_category.search_requested.connect(self._on_search_requested)
         form_layout.addWidget(self.search_category)
-
-        self.popup_suggestions = CategorySuggestionsPopup(self.search_category, parent=self)
-        self.popup_suggestions.category_selected.connect(self._on_category_selected)
-
-        self.search_timer = QTimer(self)
-        self.search_timer.setSingleShot(True)
-        self.search_timer.setInterval(400)
-        self.search_timer.timeout.connect(self._on_search_timer)
-        self.search_category.txt_input.textChanged.connect(self._on_category_text_changed)
 
         form_layout.addSpacing(6)
         action_row = QHBoxLayout()
@@ -323,10 +254,6 @@ class ScheduleQuickChangePanel(QWidget):
 
         change_card.addLayout(form_layout)
         parent_layout.addWidget(change_card)
-
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        self.popup_suggestions.hide()
 
     def get_selected_platform(self) -> str:
         kick_on = self.switch_kick.isChecked()
@@ -350,38 +277,24 @@ class ScheduleQuickChangePanel(QWidget):
             self.switch_kick.setChecked(True)
             self.switch_twitch.setChecked(True)
 
-    def _on_category_text_changed(self, text: str):
-        if len(text.strip()) >= 2:
-            self.search_timer.start()
-        else:
-            self.search_timer.stop()
-            self.popup_suggestions.hide()
-
-    def _on_search_timer(self):
-        query = self.search_category.text().strip()
-        if query:
-            self.search_category_requested.emit(query, self.get_selected_platform())
+    def _on_search_requested(self, query: str, _platform: str):
+        target_platform = self.get_selected_platform()
+        self.search_category_requested.emit(query, target_platform)
 
     def set_category_search_results(self, platform: str, results: list[dict]):
-        if self.search_category.txt_input.hasFocus() and len(self.search_category.text().strip()) >= 2:
-            self.popup_suggestions.show_results(platform, results)
+        self.search_category.set_results(platform, results)
 
     def _on_category_selected(self, data: dict):
-        self.search_timer.stop()
         platform = data.get("platform")
         name = data.get("name", "")
         cat_id = data.get("id")
 
-        self.search_category.txt_input.blockSignals(True)
-        self.search_category.setText(name)
-        self.search_category.txt_input.blockSignals(False)
-        self.search_category.setFocus()
-
-        self.popup_suggestions.hide()
-
         if platform == "kick":
             self.kick_selected_category = {"id": cat_id, "name": name}
         elif platform == "twitch":
+            self.twitch_selected_category = {"id": cat_id, "name": name}
+        else:
+            self.kick_selected_category = {"id": cat_id, "name": name}
             self.twitch_selected_category = {"id": cat_id, "name": name}
 
     def _on_update_clicked(self):

@@ -1,6 +1,6 @@
 # frontend\views\timers_view.py
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem, QFrame
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
@@ -12,6 +12,7 @@ class TimersView(BaseView):
     delete_requested = Signal(int)
     status_toggled = Signal(int, bool)
     search_text_changed = Signal(str)
+    search_category_requested = Signal(str, str)
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="timer.header.title", subtitle_key="timer.header.subtitle", parent=parent)
@@ -167,16 +168,30 @@ class TimersView(BaseView):
         
         return cell
 
+    def set_category_search_results(self, platform: str, results: list[dict]):
+        if hasattr(self, "_active_timer_dialog") and self._active_timer_dialog:
+            self._active_timer_dialog.set_category_search_results(platform, results)
+
     def show_add_dialog(self) -> dict | None:
         from frontend.dialogs.timer_dialog import TimerConfigWizard
         dialog = TimerConfigWizard(self.i18n, parent=self)
-        if dialog.exec():
-            return dialog.get_timer_data()
+        dialog.search_category_requested.connect(self.search_category_requested.emit)
+        self._active_timer_dialog = dialog
+        try:
+            if dialog.exec():
+                return dialog.get_timer_data()
+        finally:
+            self._active_timer_dialog = None
         return None
 
     def show_edit_dialog(self, existing_config: dict) -> dict | None:
         from frontend.dialogs.timer_dialog import TimerConfigWizard
         dialog = TimerConfigWizard(self.i18n, parent=self, existing_config=existing_config)
-        if dialog.exec():
-            return dialog.get_timer_data()
+        dialog.search_category_requested.connect(self.search_category_requested.emit)
+        self._active_timer_dialog = dialog
+        try:
+            if dialog.exec():
+                return dialog.get_timer_data()
+        finally:
+            self._active_timer_dialog = None
         return None

@@ -6,12 +6,11 @@ from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSiz
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored
 from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800
-from backend.config.version import APP_VERSION
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self, i18n, app_version: str = APP_VERSION, parent=None):
+    def __init__(self, i18n, app_version: str = "", parent=None):
         super().__init__(parent)
         self.i18n = i18n
         self.app_version = app_version
