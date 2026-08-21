@@ -1,3 +1,10 @@
-uv venv
-.venv\Scripts\activate
-uv pip install -r requirements.txt
+# =======================================================
+# INSTALACIÓN Y CONFIGURACIÓN DEL ENTORNO VIRTUAL
+# =======================================================
+# 1. Usando el script automatizado (Recomendado):
+.\build.bat  (Seleccionar opción 2)
+# o directamente:
+uv run python tools/build_manager.py --install-venv
+
+# 2. Instalación nativa con UV:
+uv sync
