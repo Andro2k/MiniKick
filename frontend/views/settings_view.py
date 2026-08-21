@@ -98,7 +98,9 @@ class SettingsView(BaseView):
         audio_card = ModernCard(parent=self)
 
         self.combo_music_audio_device = NoWheelComboBox(self)
+        self.combo_music_audio_device.setMinimumWidth(160)
         self.combo_tts_audio_device = NoWheelComboBox(self)
+        self.combo_tts_audio_device.setMinimumWidth(160)
 
         try:
             from PySide6.QtMultimedia import QMediaDevices

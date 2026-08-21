@@ -1,7 +1,6 @@
 # backend\providers\chat\kick_client.py
 
 import logging
-import sys
 import time
 import cloudscraper
 import requests
@@ -16,16 +15,25 @@ KICK_PUBLIC_V2_REWARDS_URL = "https://kick.com/api/v2/channels/{slug}/rewards"
 class ScraperFactory:
     @staticmethod
     def create() -> cloudscraper.CloudScraper:
-        scraper = cloudscraper.create_scraper()
-        
-        if sys.platform.startswith("linux"):
-            ua = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        elif sys.platform == "darwin":
-            ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        else:
-            ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            
-        scraper.headers.update({'User-Agent': ua})
+        scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'desktop': True
+            }
+        )
+        ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+        scraper.headers.update({
+            'User-Agent': ua,
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'en-US,en;q=0.9,es;q=0.8',
+            'Sec-Ch-Ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-origin'
+        })
         return scraper
 
 class KickAPIClient:

@@ -42,6 +42,10 @@ class VoiceSettingRow(QWidget):
             controls_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)
             self.switch.toggled.connect(self._on_switch_toggled)
 
+        combo.setMinimumWidth(0)
+        from PySide6.QtWidgets import QComboBox
+        combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
+        combo.setMinimumContentsLength(1)
         combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         controls_layout.addWidget(combo, stretch=1)
 

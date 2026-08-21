@@ -2,13 +2,13 @@
 
 Documento de referencia: `WT-1.5.3_04`  
 Versión: `v1.5.3`  
-Módulos modificados: `backend/core/app_logger_core.py`, `main.py`, `frontend/views/log_view.py`, `backend/workers/*`, `backend/controllers/*`, `backend/handlers/*`, `frontend/components/*`
+Módulos modificados: `backend/core/app_logger_core.py`, `main.py`, `backend/providers/voices/tts_local.py`, `backend/providers/chat/kick_client.py`, `frontend/views/log_view.py`, `frontend/views/chat_view.py`, `frontend/views/settings_view.py`, `frontend/views/spam_view.py`, `frontend/components/chat/tts_settings.py`, `frontend/widgets/no_wheel.py`, `frontend/widgets/blocks.py`, `frontend/common/theme.py`, `frontend/navigation/sidebar_component.py`, `backend/workers/*`, `backend/controllers/*`, `backend/handlers/*`
 
 ---
 
 ## 📋 Resumen
 
-Se implementó un sistema integral para la captura y persistencia de fallos y diagnósticos en **MiniKick**, y se completó la optimización de tipado de señales y slots en PySide6/Qt (`Signal(object)` / `@Slot(object)`), eliminando por completo las advertencias de conversión de C++ de **Shiboken** (`Cannot copy-convert ... (dict/list) to C++`) y silenciando a nivel nativo C los volcados informativos de FFmpeg (`avutil.av_log_set_level`) en la consola.
+Se implementó un sistema integral para la captura y persistencia de fallos y diagnósticos en **MiniKick**, se completó la optimización de tipado de señales y slots en PySide6/Qt (`Signal(object)` / `@Slot(object)`), se silenciaron a nivel nativo C los volcados informativos de FFmpeg (`avutil.av_log_set_level`) en consola, se calibró el dimensionamiento responsivo de los ComboBoxes, se alinearon con precisión de cuadrícula (`QGridLayout`) todos los campos de las tarjetas de protección anti-spam, y se resolvieron los errores multiplataforma reportados en **Ubuntu / Linux** (TTS Local y CloudScraper).
 
 ---
 
@@ -38,7 +38,24 @@ Se implementó un sistema integral para la captura y persistencia de fallos y di
 - Esto garantiza que todas las colecciones pasen por **referencia directa de Python (`PyObject*`)**, evitando copias profundas defensivas y eliminando avisos de Shiboken.
 
 ### 6. Supresión Nativa C de Volcados de FFmpeg en Consola
-- Se implementó `_silence_ffmpeg_native_logging()` en `backend/core/app_logger_core.py` utilizando la DLL nativa `avutil-59.dll` (`avutil.av_log_set_level(16)`) para suprimir las salidas de sondeo e inspección de metadatos de audios mp3 (TTS) y videos mp4 (YouTube Music) en la terminal, manteniendo intacta la captura de errores críticos.
+- Se implementó `_silence_ffmpeg_native_logging()` en `backend/core/app_logger_core.py` utilizando la DLL nativa `avutil-59.dll` (`avutil.av_log_set_level(16)`) para suprimir las salidas de sondeo e inspección de metadatos de audios mp3 (TTS) y videos mp4 (YouTube Music) en la terminal.
+
+### 7. Calibración Responsiva de ComboBoxes
+- `NoWheelComboBox`: Se estableció `setMinimumWidth(130)` y política `AdjustToContentsOnFirstShow` como estándar global, garantizando que textos como *"Español"*, *"Normal"* y *"(Predeterminado)"* se muestren completos y sin truncarse en [SettingsView](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/settings_view.py).
+- `VoiceSettingRow`: Se configuró la política elástica `AdjustToMinimumContentsLengthWithIcon` (`setMinimumWidth(0)`) exclusivamente para las filas de selección de voces TTS.
+
+### 8. Alineación de Cuadrícula en Tarjetas de Filtros Anti-Spam (`ExpandableSettingCard`)
+- **Migración a `QGridLayout`**: Se reemplazaron las dos columnas independientes de `QVBoxLayout` por un `QGridLayout` de 4 filas y 2 columnas con espaciado vertical de `4px` y horizontal de `16px`.
+- **Creación de `NoWheelSpinBox`**: Se creó la clase `NoWheelSpinBox` en `frontend/widgets/no_wheel.py` para prevenir saltos de valores accidentales con la rueda del ratón.
+- **Corrección de Padding en Estado Deshabilitado (`theme.py:339`)**: Se separó la regla QSS para que los SpinBoxes conserven su padding específico al deshabilitarse.
+
+### 9. Optimización Visual de la Barra Lateral Colapsada (`Sidebar`)
+- **Supresión de Scrollbar Visible en Modo Colapsado**: En [sidebar_component.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/sidebar_component.py#L317), al colapsar la barra lateral se establece `setVerticalScrollBarPolicy(ScrollBarAlwaysOff)` y al expandirla se restaura `ScrollBarAsNeeded`.
+- **Centrado Perfecto de Íconos**: En [theme.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py#L296), se actualizó el padding del botón colapsado a `10px 0px`.
+
+### 10. Compatibilidad Multiplataforma para Linux / Ubuntu
+- **Blindaje de COM en TTS Local (`tts_local.py`)**: `pythoncom` es una librería exclusiva de la API Win32/COM de Windows. Se agregaron los métodos `_init_com()` y `_uninit_com()` condicionados a `sys.platform == "win32"`. En Ubuntu/Linux, `pyttsx3` opera de forma transparente con el driver nativo `espeak` sin lanzar `ModuleNotFoundError: No module named 'pythoncom'`.
+- **Cabeceras de Navegador en CloudScraper (`kick_client.py`)**: Se reforzó `ScraperFactory.create()` con emulación completa de cabeceras de cliente moderno (Sec-Ch-Ua, Accept-Language, Platform) para sortear bloqueos 403 automáticos de Cloudflare en entornos Linux.
 
 ---
 
@@ -48,3 +65,4 @@ Se implementó un sistema integral para la captura y persistencia de fallos y di
 2. **Prueba de Auto-Flush**: Validación de persistencia inmediata en disco de mensajes `CRITICAL` y `ERROR`.
 3. **Prueba de Excepciones en Hilos**: Disparo de excepción no controlada en un hilo secundario y verificación del traceback completo en `minikick.log`.
 4. **Prueba de Compilación y Limpieza de Terminal**: Verificación de ejecución limpia sin advertencias de Shiboken ni texto verboso de FFmpeg.
+5. **Prueba Multiplataforma**: Validación de `tts_local.py` y `kick_client.py` con inicialización segura en Linux y Windows.

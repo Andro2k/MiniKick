@@ -1,8 +1,25 @@
 # backend\providers\voices\tts_local.py
 
 import logging
+import sys
 import pyttsx3
 import threading
+
+def _init_com():
+    if sys.platform == "win32":
+        try:
+            import pythoncom
+            pythoncom.CoInitialize()
+        except Exception:
+            pass
+
+def _uninit_com():
+    if sys.platform == "win32":
+        try:
+            import pythoncom
+            pythoncom.CoUninitialize()
+        except Exception:
+            pass
 
 class LocalTTSProvider:
     _lock = threading.Lock()
@@ -26,8 +43,7 @@ class LocalTTSProvider:
         with self._lock:
             engine = None
             try:
-                import pythoncom
-                pythoncom.CoInitialize()
+                _init_com()
                 engine = pyttsx3.init()
                 engine.setProperty("rate", self.rate)
                 engine.setProperty("volume", self.volume)
@@ -51,11 +67,7 @@ class LocalTTSProvider:
                         del engine
                     except Exception:
                         pass
-                try:
-                    import pythoncom
-                    pythoncom.CoUninitialize()
-                except Exception:
-                    pass
+                _uninit_com()
 
     def stop(self) -> None:
         pass
@@ -64,8 +76,7 @@ class LocalTTSProvider:
         with self._lock:
             engine = None
             try:
-                import pythoncom
-                pythoncom.CoInitialize()
+                _init_com()
                 engine = pyttsx3.init()
                 voices = [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
                 return voices
@@ -78,8 +89,4 @@ class LocalTTSProvider:
                         del engine
                     except Exception:
                         pass
-                try:
-                    import pythoncom
-                    pythoncom.CoUninitialize()
-                except Exception:
-                    pass
+                _uninit_com()

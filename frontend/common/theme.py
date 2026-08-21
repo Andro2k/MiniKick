@@ -55,7 +55,7 @@ RADIUS_PILL        = 26
 
 PADDING_INPUT      = "5px"
 PADDING_BUTTON     = "6px 12px"
-PADDING_SPINBOX    = "3px 24px 3px 8px"
+PADDING_SPINBOX    = "3px 18px 3px 8px"
 PADDING_ITEM       = "4px 8px"
 PADDING_BADGE      = "2px 6px"
 PADDING_CHIP       = "3px 10px"
@@ -113,14 +113,14 @@ QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 
 QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_400}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
 QSpinBox:hover, QDoubleSpinBox:hover, QTimeEdit:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_700}; }}
-QSpinBox::up-button, QDoubleSpinBox::up-button, QTimeEdit::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 28px; border: none; background-color: transparent; }}
+QSpinBox::up-button, QDoubleSpinBox::up-button, QTimeEdit::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 22px; height: 22px; right: 28px; border: none; background-color: transparent; }}
 QSpinBox::up-button:hover, QDoubleSpinBox::up-button:hover, QTimeEdit::up-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
 QSpinBox::up-button:pressed, QDoubleSpinBox::up-button:pressed, QTimeEdit::up-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
-QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QTimeEdit::up-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); width: 16px; height: 16px; }}
-QSpinBox::down-button, QDoubleSpinBox::down-button, QTimeEdit::down-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 4px; border: none; background-color: transparent; }}
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow, QTimeEdit::up-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); width: 15px; height: 15px; }}
+QSpinBox::down-button, QDoubleSpinBox::down-button, QTimeEdit::down-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 22px; height: 22px; right: 6px; border: none; background-color: transparent; }}
 QSpinBox::down-button:hover, QDoubleSpinBox::down-button:hover, QTimeEdit::down-button:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
 QSpinBox::down-button:pressed, QDoubleSpinBox::down-button:pressed, QTimeEdit::down-button:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
-QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 
 QDateEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_400}; }}
 QDateEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
@@ -161,8 +161,8 @@ QCheckBox::indicator:focus, QCheckBox:focus::indicator {{ border-color: {COLOR_G
 QCheckBox::indicator:unchecked:hover {{ border-color: {COLOR_NEUTRAL_700}; background-color: {COLOR_NEUTRAL_800}; }}
 QCheckBox::indicator:checked {{ border-color: {COLOR_GREEN}; background-color: {COLOR_GREEN}; image: url("{PATH_ICON_CHECK}"); }}
 QCheckBox::indicator:checked:hover {{ border-color: {COLOR_GREEN_DARK}; background-color: {COLOR_GREEN_DARK}; }}
-QCheckBox::indicator:disabled {{ border-color: {COLOR_NEUTRAL_800}; background-color: {COLOR_WHITE_GLOW}; }}
-QCheckBox::indicator:checked:disabled {{ border-color: {COLOR_NEUTRAL_800}; background-color: {COLOR_WHITE_GLOW}; image: url("{PATH_ICON_CHECK}"); }}
+QCheckBox::indicator:disabled {{ border-color: {COLOR_NEUTRAL_700}; background-color: {COLOR_WHITE_GLOW}; }}
+QCheckBox::indicator:checked:disabled {{ border-color: {COLOR_NEUTRAL_700}; background-color: {COLOR_WHITE_GLOW}; image: url("{PATH_ICON_CHECK}"); }}
 
 QTableWidget {{ background-color: {COLOR_NEUTRAL_900}; border: none; gridline-color: transparent; }}
 QTableWidget::item {{ padding: 4px; border-bottom: 1px solid {COLOR_NEUTRAL_800}; }}
@@ -213,7 +213,7 @@ QSlider::handle:horizontal:hover, QSlider:focus::handle:horizontal {{ border-col
 QFrame[role="canvas_container"] {{ background-color: {COLOR_NEUTRAL_950}; border: 2px solid {COLOR_NEUTRAL_750}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="sidebar"] {{ background-color: {COLOR_NEUTRAL_900}; border-right: {BORDER_DEFAULT}; }}
 QFrame[role="profile_card"] {{ background-color: transparent; border-radius: {RADIUS_MD}px; }}
-QFrame[role="profile_card"]:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_800}; }}
+QFrame[role="profile_card"]:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_700}; }}
 
 /* ==============================================================================
    4. ESTRUCTURAS Y ROLES DE COMPONENTES GENERALES (Con Role)
@@ -226,7 +226,7 @@ QFrame[role="dialog"][state="danger"] {{ border-color: {COLOR_RED}; }}
 QFrame[role="dialog"][state="error"] {{ border-color: {COLOR_RED}; }}
 QFrame[role="dialog"][state="warning"] {{ border-color: {COLOR_AMBER}; }}
 QFrame[role="dialog"][state="info"] {{ border-color: {COLOR_BLUE}; }}
-QFrame[role="dialog"][state="neutral"] {{ border-color: {COLOR_NEUTRAL_750}; }}
+QFrame[role="dialog"][state="neutral"] {{ border-color: {COLOR_NEUTRAL_700}; }}
 QFrame[role="banner_danger"] {{ background-color: {COLOR_RED_GLOW}; border: 1.5px solid {COLOR_RED}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="danger_icon"] {{ background-color: {COLOR_RED}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="warning_icon"] {{ background-color: {COLOR_AMBER}; border-radius: {RADIUS_PILL}px; }}
@@ -293,7 +293,7 @@ QPushButton[role="nav_button"]:hover {{ background-color: {COLOR_NEUTRAL_800}; c
 QPushButton[role="nav_button"]:focus {{ border-color: {COLOR_GREEN}; }}
 QPushButton[role="nav_button"]:checked {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_GREEN}; font-weight: 700; }}
 QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-left: 10px; }}
-QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 10px; }}
+QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 10px 0px; }}
 QPushButton[role="action_accent"] {{ background-color: {COLOR_GREEN}; color: {COLOR_NEUTRAL_950}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_accent"]:hover {{ background-color: {COLOR_GREEN_DARK}; }}
 QPushButton[role="action_accent"]:focus {{ border-color: {COLOR_NEUTRAL_700}; }}
@@ -336,7 +336,8 @@ QPushButton[role="segmented_item"]:pressed {{ background-color: {COLOR_NEUTRAL_7
    7. ESTADOS DESHABILITADOS (Global)
    ============================================================================== */
 QPushButton:disabled, QPushButton[role="action_accent"]:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_border"]:disabled, QPushButton[role="action_accent_border"]:disabled, QPushButton[role="action_neutral_border"]:disabled, QPushButton[role="btn_ghost"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_DEFAULT}; padding: {PADDING_BUTTON}; }}
-QLineEdit:disabled, QTextEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_700}; padding: {PADDING_INPUT}; }}
+QLineEdit:disabled, QTextEdit:disabled, QComboBox:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_700}; padding: {PADDING_INPUT}; }}
+QSpinBox:disabled, QDoubleSpinBox:disabled, QTimeEdit:disabled, QDateEdit:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_700}; padding: {PADDING_SPINBOX}; }}
 QCheckBox:disabled {{ color: {COLOR_NEUTRAL_500}; }}
 
 /* ==============================================================================

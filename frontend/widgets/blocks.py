@@ -1,10 +1,11 @@
 # frontend\widgets\blocks.py
 
-from PySide6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QScrollArea, QSpinBox, QPushButton, QLineEdit
+from PySide6.QtWidgets import (QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, 
+                               QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit)
 from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common.icons import get_icon_colored, get_pixmap_colored
 from frontend.common.theme import COLOR_NEUTRAL_400
-from .no_wheel import NoWheelComboBox
+from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls import ModernSwitch
 
 class ViewHeader(QFrame):
@@ -271,16 +272,9 @@ class ExpandableSettingCard(QFrame):
         platforms_layout.addStretch()
         b_layout.addLayout(platforms_layout)
         
-        options_layout = QHBoxLayout()
-        options_layout.setSpacing(16)
-        
-        col_left = QVBoxLayout()
-        col_left.setSpacing(8)
-        col_left.setAlignment(Qt.AlignmentFlag.AlignTop)
-        
-        col_right = QVBoxLayout()
-        col_right.setSpacing(8)
-        col_right.setAlignment(Qt.AlignmentFlag.AlignTop)
+        options_layout = QGridLayout()
+        options_layout.setHorizontalSpacing(16)
+        options_layout.setVerticalSpacing(4)
         
         lbl_pen = QLabel(self.i18n.get("spam.card.action"), parent=self)
         lbl_pen.setProperty("role", "body")
@@ -290,10 +284,18 @@ class ExpandableSettingCard(QFrame):
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_ban"), "ban")
         self.combo_penalty.addItem(self.i18n.get("spam.card.action_warn_delete"), "warn_delete")
         self.combo_penalty.currentIndexChanged.connect(self._on_penalty_changed)
-        col_left.addWidget(lbl_pen)
-        col_left.addWidget(self.combo_penalty)
         
-        col_left.addSpacing(4)
+        self.lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
+        self.lbl_dur.setProperty("role", "body")
+        self.spin_dur = NoWheelSpinBox(self)
+        self.spin_dur.setRange(1, 10080)
+        self.spin_dur.setValue(5)
+        self.spin_dur.valueChanged.connect(self._emit_update)
+        
+        options_layout.addWidget(lbl_pen, 0, 0)
+        options_layout.addWidget(self.lbl_dur, 0, 1)
+        options_layout.addWidget(self.combo_penalty, 1, 0)
+        options_layout.addWidget(self.spin_dur, 1, 1)
         
         lbl_exc = QLabel(self.i18n.get("spam.card.exclude"), parent=self)
         lbl_exc.setProperty("role", "body")
@@ -302,30 +304,19 @@ class ExpandableSettingCard(QFrame):
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_mod"), "moderator")
         self.combo_exclude.addItem(self.i18n.get("spam.card.exclude_sub"), "subscriber")
         self.combo_exclude.currentIndexChanged.connect(self._emit_update)
-        col_left.addWidget(lbl_exc)
-        col_left.addWidget(self.combo_exclude)
         
-        self.lbl_dur = QLabel(self.i18n.get("spam.card.duration"))
-        self.lbl_dur.setProperty("role", "body")
-        self.spin_dur = QSpinBox()
-        self.spin_dur.setRange(1, 10080)
-        self.spin_dur.setValue(5)
-        self.spin_dur.valueChanged.connect(self._emit_update)
-        col_right.addWidget(self.lbl_dur)
-        col_right.addWidget(self.spin_dur)
+        options_layout.addWidget(lbl_exc, 2, 0)
+        options_layout.addWidget(self.combo_exclude, 3, 0)
         
         if self.card_id == "link_protection":
-            col_right.addSpacing(4)
             lbl_allow = QLabel(self.i18n.get("spam.card.allowlist"))
             lbl_allow.setProperty("role", "body")
             self.txt_allowlist = QLineEdit()
             self.txt_allowlist.setPlaceholderText(self.i18n.get("spam.card.allowlist_placeholder"))
             self.txt_allowlist.textChanged.connect(self._emit_update)
-            col_right.addWidget(lbl_allow)
-            col_right.addWidget(self.txt_allowlist)
+            options_layout.addWidget(lbl_allow, 2, 1)
+            options_layout.addWidget(self.txt_allowlist, 3, 1)
         elif self.has_amount:
-            col_right.addSpacing(4)
-            
             amt_label_key = "spam.card.max_amount"
             min_val, max_val, default_val = 1, 500, 10
             if self.card_id == "paragraph_protection":
@@ -337,15 +328,15 @@ class ExpandableSettingCard(QFrame):
 
             lbl_amt = QLabel(self.i18n.get(amt_label_key))
             lbl_amt.setProperty("role", "body")
-            self.spin_amt = QSpinBox()
+            self.spin_amt = NoWheelSpinBox(self)
             self.spin_amt.setRange(min_val, max_val)
             self.spin_amt.setValue(default_val)
             self.spin_amt.valueChanged.connect(self._emit_update)
-            col_right.addWidget(lbl_amt)
-            col_right.addWidget(self.spin_amt)
+            options_layout.addWidget(lbl_amt, 2, 1)
+            options_layout.addWidget(self.spin_amt, 3, 1)
             
-        options_layout.addLayout(col_left, stretch=1)
-        options_layout.addLayout(col_right, stretch=1)
+        options_layout.setColumnStretch(0, 1)
+        options_layout.setColumnStretch(1, 1)
         b_layout.addLayout(options_layout)
 
         self._update_duration_state()

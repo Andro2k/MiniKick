@@ -310,9 +310,11 @@ class Sidebar(QFrame):
             
         self.profile_text_widget.setVisible(show)
         if show:
+            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self.profile_layout.setContentsMargins(6, 6, 6, 6)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         else:
+            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             self.profile_layout.setContentsMargins(0, 6, 0, 6)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
