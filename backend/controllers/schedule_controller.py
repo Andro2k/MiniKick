@@ -61,6 +61,7 @@ class ScheduleController(QObject):
     def fetch_current_info(self) -> None:
         if not self.service:
             return
+        logger.info("[User Action] Requested refresh of current stream info")
 
         def _worker():
             self.loading_changed.emit(True)
@@ -77,6 +78,7 @@ class ScheduleController(QObject):
     def search_categories(self, query: str, platform: str = "both") -> None:
         if not self.service or not query.strip():
             return
+        logger.info("[User Action] Searching stream categories: query='%s', platform='%s'", query, platform)
 
         def _worker():
             try:
@@ -93,6 +95,8 @@ class ScheduleController(QObject):
     def update_stream_info(self, title: str, kick_cat_id: int | None, twitch_cat_id: str | None, platform: str = "both", category_query: str = "") -> None:
         if not self.service:
             return
+        logger.info("[User Action] Executing quick stream update: title='%s', kick_cat_id=%s, twitch_cat_id=%s, platform='%s'",
+                    title, kick_cat_id, twitch_cat_id, platform)
 
         def _worker():
             self.loading_changed.emit(True)
@@ -139,6 +143,8 @@ class ScheduleController(QObject):
     def save_schedule(self, data: dict) -> None:
         if not self.service:
             return
+        logger.info("[User Action] Saved schedule slot: id=%s, name='%s', date='%s', time='%s', target='%s'",
+                    data.get("id"), data.get("name"), data.get("date_str"), data.get("time_str"), data.get("target_platform"))
         sched_id = self.service.save_schedule(
             name=data.get("name", ""),
             date_str=data.get("date_str", ""),
@@ -158,6 +164,7 @@ class ScheduleController(QObject):
     def delete_schedule(self, schedule_id: int) -> None:
         if not self.service:
             return
+        logger.info("[User Action] Deleted schedule slot: id=%d", schedule_id)
         self.service.delete_schedule(schedule_id)
         self._show_toast("stream_info.toasts.schedule_deleted", state="info")
         self.schedules_updated.emit(self.service.get_all_schedules())
@@ -165,6 +172,7 @@ class ScheduleController(QObject):
     def toggle_schedule(self, schedule_id: int, is_active: bool) -> None:
         if not self.service:
             return
+        logger.info("[User Action] Toggled schedule slot status: id=%d, is_active=%s", schedule_id, is_active)
         self.service.toggle_schedule(schedule_id, is_active)
         self.schedules_updated.emit(self.service.get_all_schedules())
 

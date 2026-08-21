@@ -1,6 +1,9 @@
 # backend\controllers\command_controller.py
 
+import logging
 from PySide6.QtCore import QObject, Slot
+
+logger = logging.getLogger("minikick.controllers.commands")
 
 class CommandController(QObject):
     def __init__(self, view, service, toast_manager=None):
@@ -48,10 +51,13 @@ class CommandController(QObject):
 
     @Slot()
     def _handle_add(self):
+        logger.info("[User Action] Opened Add Command dialog")
         data = self.view.show_add_dialog()
         if data:
             data.pop("original_trigger", None)
             if data.get("trigger") and data.get("response"):
+                logger.info("[User Action] Created new command: trigger='%s', response='%s', cooldown=%s, perm='%s'",
+                            data.get("trigger"), data.get("response"), data.get("cooldown"), data.get("permission"))
                 self.service.save_command(**data)
                 self._show_toast("command.status.created", "command.status.created_msg", data['trigger'], "success")
 
@@ -60,19 +66,24 @@ class CommandController(QObject):
         existing = self.service.get_command_by_trigger(trigger)
         if not existing:
             return
+        logger.info("[User Action] Opened Edit Command dialog: trigger='%s'", trigger)
         
         data = self.view.show_edit_dialog(existing)
         if data:
             original_trigger = data.pop("original_trigger", None)
             if data.get("response") and data.get("trigger"):
                 if original_trigger and original_trigger != data["trigger"]:
+                    logger.info("[User Action] Renamed command trigger from '%s' to '%s'", original_trigger, data["trigger"])
                     self.service.delete_command(original_trigger)
                     
+                logger.info("[User Action] Updated command: trigger='%s', response='%s', cooldown=%s, perm='%s'",
+                            data.get("trigger"), data.get("response"), data.get("cooldown"), data.get("permission"))
                 self.service.save_command(**data)
                 self._show_toast("command.status.updated", "command.status.updated_msg", data['trigger'], "success")
 
     @Slot(str)
     def _handle_delete(self, trigger: str):
+        logger.info("[User Action] Deleted command: trigger='%s'", trigger)
         self.service.delete_command(trigger)
         self._show_toast("command.status.deleted", "command.status.deleted_msg", trigger, "warning")
 
@@ -80,6 +91,7 @@ class CommandController(QObject):
     def _handle_status_change(self, trigger: str, is_active: bool):
         existing = self.service.get_command_by_trigger(trigger)
         if existing:
+            logger.info("[User Action] Toggled command status: trigger='%s', is_active=%s", trigger, is_active)
             if self.toast:
                 title_key = "command.status.enabled" if is_active else "command.status.disabled"
                 state_color = "success" if is_active else "info"
@@ -105,6 +117,7 @@ class CommandController(QObject):
 
     @Slot(str)
     def _handle_search(self, text: str):
+        logger.debug("[User Action] Filtered commands by search term: '%s'", text)
         if not text.strip():
             self.load_initial_data()
             return

@@ -303,6 +303,7 @@ class MainWindowCore(QMainWindow):
                 self._on_twitch_auth_success(twitch_tokens)
 
     def _handle_navigation(self, view_name: str):
+        self.logger.info("[User Action] Navigated to view: '%s'", view_name)
         target_view = self._get_or_create_view(view_name)
         if target_view:
             self.content_stack.setCurrentWidget(target_view)
@@ -386,12 +387,14 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _restore_from_tray(self):
+        self.logger.info("[User Action] Window restored from system tray")
         self.showNormal()
         self.activateWindow()
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.WindowStateChange:
             if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+                self.logger.info("[User Action] Window minimized to system tray")
                 self.hide()
                 self._notify_background()
         super().changeEvent(event)
@@ -401,7 +404,9 @@ class MainWindowCore(QMainWindow):
             event.accept()
             return
             
-        if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+        minimize_tray = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
+        self.logger.info("[User Action] Window close triggered (minimize_tray=%s)", minimize_tray)
+        if minimize_tray:
             self.hide()
             self._notify_background()
             event.ignore() 
@@ -413,10 +418,12 @@ class MainWindowCore(QMainWindow):
                 body_text=self.i18n.get("dialogs.close.desc")
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
+                self.logger.info("[User Action] App exit confirmed by user")
                 self.hide()
                 event.accept() 
                 self._force_quit() 
             else:
+                self.logger.info("[User Action] App exit cancelled by user")
                 event.ignore()
 
     def _notify_background(self):
@@ -867,6 +874,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_unlink_account(self):
+        self.logger.info("[User Action] Requested unlinking Kick account")
         dialog = ModernConfirmDialog(
             self.i18n,
             self, 
@@ -875,22 +883,27 @@ class MainWindowCore(QMainWindow):
         )
         
         if dialog.exec() == dialog.DialogCode.Accepted:
+            self.logger.info("[User Action] Kick account unlinked successfully")
             self.toast.show_toast(
                 title=self.i18n.get("settings.status.unlinked"),
                 message=self.i18n.get("settings.status.unlinked_msg"),
                 state="warning"
             )
-            self._stop_all_workers()
+            self._stop_kick_connection_workers()
             self.chat_worker = None
             self.reward_worker = None
             self.timers_worker = None
 
             self.auth_manager.logout()
+            self._kick_connected = False
+            self._kick_username = ""
             self.dashboard_controller.reset_to_disconnected()
             self.sidebar.reset_profile_info()
+            self._update_integrations_status_ui()
+
+            missing_scopes = self.container.twitch_auth_manager.get_missing_scopes()
+            self.dashboard_controller.evaluate_scopes(missing_scopes)
             
-            if self.view_chat and hasattr(self.view_chat, "chat_display") and self.view_chat.chat_display is not None:
-                self.view_chat.chat_display.clear()
             self._handle_navigation("Dashboard")
             
             for btn in self.sidebar.nav_buttons:

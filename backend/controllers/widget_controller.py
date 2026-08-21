@@ -203,6 +203,8 @@ class WidgetController(QObject):
 
     @Slot(str, bool, str, int, str, object)
     def handle_widget_save(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):
+        logger.info("[User Action] Updated widget '%s': is_active=%s, command='%s', cooldown=%d, perm='%s'",
+                    widget_id, is_active, command, cooldown, permission)
         previous = self.widget_service.get_widget(widget_id)
         was_active = previous.get("is_active", True) if previous else True
 
@@ -231,7 +233,6 @@ class WidgetController(QObject):
             message = self.i18n.get(msg_key).replace("{widget_name}", w_name) if self.i18n else ""
             state = "success" if is_active else "info"
 
-
             if self.toast:
                 self.toast.show_toast(
                     title=title,
@@ -248,6 +249,7 @@ class WidgetController(QObject):
 
     @Slot(int)
     def handle_death_count_change(self, new_val: int):
+        logger.info("[User Action] Manual death counter change: count=%d", new_val)
         final_val = self.widget_service.update_death_count(set_val=new_val, defer_disk=True)
         self.death_count_updated.emit(final_val)
         self._trigger_deferred_save("death")
@@ -262,6 +264,7 @@ class WidgetController(QObject):
 
     @Slot(int, int)
     def handle_score_change(self, wins: int, losses: int):
+        logger.info("[User Action] Manual score counter change: wins=%d, losses=%d", wins, losses)
         final_wins, final_losses = self.widget_service.update_score(set_wins=wins, set_losses=losses, defer_disk=True)
         self.score_updated.emit(final_wins, final_losses)
         self._trigger_deferred_save("score")

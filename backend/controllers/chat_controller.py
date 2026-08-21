@@ -380,6 +380,8 @@ class ChatController(QObject):
             "chat_overlay_show_bots": self.view.overlay_show_bots,
             "chat_overlay_show_time": self.view.overlay_show_time
         })
+        logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
+                    settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))
         self._tts_settings_cache = dict(settings)
         self.tts_state_changed.emit(settings["enabled"])
         self._save_timer.start()
@@ -499,18 +501,22 @@ class ChatController(QObject):
 
     @Slot(str)
     def _add_bot(self, bot_name: str) -> None:
+        logger.info("[User Action] Added bot to muted list: '%s'", bot_name)
         self.filter_handler.add_bot(bot_name, self.view)
         self.view.clear_bot_input()
 
     @Slot(str)
     def _remove_bot(self, bot_name: str) -> None:
+        logger.info("[User Action] Removed bot from muted list: '%s'", bot_name)
         self.filter_handler.remove_bot(bot_name)
 
     @Slot(str)
     def _add_word(self, word: str) -> None:
+        logger.info("[User Action] Added banned word: '%s'", word)
         self.filter_handler.add_word(word, self.view)
         self.view.clear_word_input()
 
     @Slot(str)
     def _remove_word(self, word: str) -> None:
+        logger.info("[User Action] Removed banned word: '%s'", word)
         self.filter_handler.remove_word(word)

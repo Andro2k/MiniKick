@@ -1,6 +1,9 @@
 # backend\controllers\spam_controller.py
 
+import logging
 from PySide6.QtCore import QObject, Slot
+
+logger = logging.getLogger("minikick.controllers.spam")
 
 class SpamController(QObject):
     def __init__(self, view, service, toast_manager=None):
@@ -31,6 +34,8 @@ class SpamController(QObject):
         previous_config = self.service.filters.get(filter_id, {})
         was_active = previous_config.get("is_active", False)
         is_active = config.get("is_active", False)
+        logger.info("[User Action] Updated spam filter '%s': is_active=%s, was_active=%s, params=%s",
+                    filter_id, is_active, was_active, {k: v for k, v in config.items() if k != "is_active"})
         self.service.save_filter(filter_id, config)
         filter_keys = {
             "caps_protection": "spam.filters.caps.title",

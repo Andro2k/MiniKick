@@ -1,8 +1,11 @@
 # backend\controllers\music_controller.py
 
+import logging
 from PySide6.QtCore import QObject, Slot, QTimer, Signal
 from backend.interfaces import IMusicProvider
 from backend.handlers import MusicCommandHandler
+
+logger = logging.getLogger("minikick.controllers.music")
 
 class MusicController(QObject):
     song_changed = Signal(object)
@@ -208,6 +211,7 @@ class MusicController(QObject):
         self._poll_now_playing()
 
     def set_volume(self, volume: int):
+        logger.info("[User Action] Changed music player volume: %d%%", volume)
         if self.music_provider:
             self.music_provider.set_volume(volume)
         if self.settings_storage:
@@ -215,21 +219,25 @@ class MusicController(QObject):
 
     def set_max_user_songs(self, val: int):
         self.max_user_songs = max(1, min(10, val))
+        logger.info("[User Action] Changed music max user songs setting: %d", self.max_user_songs)
         if self.settings_storage:
             self.settings_storage.save_string("youtube_max_user_songs", str(self.max_user_songs))
 
     def set_user_cooldown(self, val: int):
         self.user_cooldown = max(0, min(300, val))
+        logger.info("[User Action] Changed music user cooldown setting: %ds", self.user_cooldown)
         if self.settings_storage:
             self.settings_storage.save_string("youtube_user_cooldown", str(self.user_cooldown))
 
     def set_max_queue_size(self, val: int):
         self.max_queue_size = max(5, min(100, val))
+        logger.info("[User Action] Changed music max queue size setting: %d", self.max_queue_size)
         if self.settings_storage:
             self.settings_storage.save_string("youtube_max_queue_size", str(self.max_queue_size))
 
     def set_max_song_duration(self, val: int):
         self.max_song_duration = max(1, min(30, val))
+        logger.info("[User Action] Changed music max song duration setting: %d min", self.max_song_duration)
         if self.settings_storage:
             self.settings_storage.save_string("youtube_max_song_duration", str(self.max_song_duration))
 
@@ -267,6 +275,7 @@ class MusicController(QObject):
 
     @Slot(int)
     def handle_remove_queue_item(self, index: int):
+        logger.info("[User Action] Removed song from queue at index %d", index)
         if self.music_provider and hasattr(self.music_provider, "remove_from_queue"):
             success = self.music_provider.remove_from_queue(index)
             if success:
@@ -277,6 +286,7 @@ class MusicController(QObject):
 
     @Slot(int, int)
     def handle_move_queue_item(self, from_index: int, to_index: int):
+        logger.info("[User Action] Reordered queue item from index %d to %d", from_index, to_index)
         if self.music_provider and hasattr(self.music_provider, "move_in_queue"):
             success = self.music_provider.move_in_queue(from_index, to_index)
             if success:
@@ -287,6 +297,7 @@ class MusicController(QObject):
 
     @Slot(str, bool)
     def handle_command_toggle(self, trigger: str, is_active: bool):
+        logger.info("[User Action] Toggled music command: trigger='%s', is_active=%s", trigger, is_active)
         plugin_tags = {
             "!sr": "[PLUGIN_MUSIC_SR]",
             "!skip": "[PLUGIN_MUSIC_SKIP]",
@@ -299,24 +310,33 @@ class MusicController(QObject):
         all_cmds = self.command_service.get_all_commands()
         existing = next((c for c in all_cmds if c["trigger"] == trigger), None)
 
-        cooldown = existing["cooldown"] if existing else 5
-        aliases = existing["aliases"] if existing else ("!queue,!pl" if trigger == "!playlist" else ("!volume" if trigger == "!vol" else ""))
-        is_regex = existing["is_regex"] if existing else False
-        permission = existing["permission"] if existing else ("everyone" if trigger in ("!sr", "!song", "!playlist") else "moderator")
+        tag = plugin_tags.get(trigger, "[PLUGIN_MUSIC_CUSTOM]")
+        if existing:
+            self.command_service.save_command(
+                trigger=trigger,
+                response=tag,
+                is_active=is_active,
+                cooldown=existing.get("cooldown", 5),
+                aliases=existing.get("aliases", ""),
+                is_regex=False,
+                permission=existing.get("permission", "everyone")
+            )
+        else:
+            self.command_service.save_command(
+                trigger=trigger,
+                response=tag,
+                is_active=is_active,
+                cooldown=5,
+                aliases="",
+                is_regex=False,
+                permission="everyone"
+            )
 
-        self.command_service.save_command(
-            trigger=trigger,
-            response=plugin_tags.get(trigger, "[PLUGIN_MUSIC_SR]"),
-            is_active=is_active,
-            cooldown=cooldown,
-            aliases=aliases,
-            is_regex=is_regex,
-            permission=permission
-        )
+        status_text = self.i18n.get("music.status.enabled") if is_active else self.i18n.get("music.status.disabled")
+        status_msg = (self.i18n.get("music.toast.command_toggled")).replace("{trigger}", trigger).replace("{status}", status_text.lower())
+        status_title = self.i18n.get("music.status.updated")
+        state_color = "success" if is_active else "info"
 
-        status_title = self.i18n.get("command.status.enabled") if is_active else self.i18n.get("command.status.disabled")
-        status_msg = self.i18n.get("command.status.toggled_msg").replace("{trigger}", trigger)
-        state_color = "success" if is_active else "warning"
         if self.toast:
             self.toast.show_toast(status_title, status_msg, state_color)
 
@@ -358,6 +378,7 @@ class MusicController(QObject):
 
     @Slot()
     def handle_play_pause(self):
+        logger.info("[User Action] Toggled play/pause")
         if not self.music_provider:
             return
 
@@ -370,17 +391,32 @@ class MusicController(QObject):
 
     @Slot()
     def handle_skip(self):
+        logger.info("[User Action] Skipped current song")
         if self.music_provider:
             self.music_provider.skip_current()
             self._poll_now_playing()
 
     @Slot(bool)
     def handle_youtube_auto_resume_toggle(self, enabled: bool):
+        logger.info("[User Action] Toggled YouTube auto-resume: %s", enabled)
         if self.settings_storage:
             self.settings_storage.save_bool("youtube_auto_resume", enabled)
 
         if self.music_provider:
             self.music_provider.auto_resume = enabled
+
+    @Slot(bool)
+    def handle_service_toggle(self, enabled: bool):
+        logger.info("[User Action] Toggled music service enabled: %s", enabled)
+        self.music_service_enabled = enabled
+        if self.settings_storage:
+            self.settings_storage.save_bool("music_service_enabled", enabled)
+
+        status_title = self.i18n.get("music.stats.cmd_title")
+        status_msg = self.i18n.get("music.stats.service_active") if enabled else self.i18n.get("music.stats.service_disabled")
+        state_color = "success" if enabled else "warning"
+        if self.toast:
+            self.toast.show_toast(status_title, status_msg, state_color)
 
     @Slot(str, str, str, str, str)
     def handle_music_plugin_command(self, tag: str, user: str, message: str, prefix_used: str, platform: str = "kick"):
