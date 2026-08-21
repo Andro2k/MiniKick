@@ -198,10 +198,8 @@
             "view_release_notes": "Ver Novedades"
         },
         "status": {
-            "active": "Activo",
             "connected": "Conectado",
             "error": "Error",
-            "inactive": "Inactivo",
             "no": "No",
             "offline": "Desconectado",
             "online": "En Línea",
@@ -643,6 +641,9 @@
             "service_disabled_chat": "❌ @{user}, el servicio de música está desactivado en este momento."
         },
         "status": {
+            "disabled": "Desactivado",
+            "enabled": "Activado",
+            "updated": "Comando de Música Actualizado",
             "youtube_active": "YouTube Activo"
         },
         "tabs": {
@@ -653,6 +654,7 @@
         "toast": {
             "chat_error_playing": "❌ @{user}, no se pudo reproducir '{title}': {error}",
             "chat_error_playing_no_user": "❌ No se pudo reproducir '{title}': {error}",
+            "command_toggled": "El comando {trigger} ha sido {status}.",
             "error_playing": "No se pudo reproducir '{title}': {error}",
             "moved_in_queue": "Posición de canción actualizada en la cola",
             "removed_from_queue": "Canción eliminada de la cola"

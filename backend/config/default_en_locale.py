@@ -200,10 +200,8 @@ DEFAULT_DICTIONARY = {
             "view_release_notes": "View Notes"
         },
         "status": {
-            "active": "Active",
             "connected": "Connected",
             "error": "Error",
-            "inactive": "Inactive",
             "no": "No",
             "offline": "Offline",
             "online": "Online",
@@ -645,6 +643,9 @@ DEFAULT_DICTIONARY = {
             "service_disabled_chat": "❌ @{user}, music service is currently disabled."
         },
         "status": {
+            "disabled": "Disabled",
+            "enabled": "Enabled",
+            "updated": "Music Command Updated",
             "youtube_active": "YouTube Active"
         },
         "tabs": {
@@ -655,6 +656,7 @@ DEFAULT_DICTIONARY = {
         "toast": {
             "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
             "chat_error_playing_no_user": "❌ Could not play '{title}': {error}",
+            "command_toggled": "Command {trigger} has been {status}.",
             "error_playing": "Could not play '{title}': {error}",
             "moved_in_queue": "Song position updated in queue",
             "removed_from_queue": "Song removed from queue"
