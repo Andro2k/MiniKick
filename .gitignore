@@ -21,4 +21,5 @@ MiniKick_Backup_*.json
 *dist/
 *resources/
 .agents/
-*tests/
+tests/
+tools/
