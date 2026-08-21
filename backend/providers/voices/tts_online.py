@@ -49,11 +49,18 @@ class WebTTSProvider:
         percent = int((self.volume - 1.0) * 100)
         self.volume_str = f"{percent}%" if percent < 0 else f"+{percent}%"
 
+    def _resolve_valid_voice(self, voice_id: str | None) -> str:
+        if voice_id and ("Neural" in voice_id or "-" in voice_id):
+            return voice_id
+        if self.voice and ("Neural" in self.voice or "-" in self.voice):
+            return self.voice
+        return "es-ES-AlvaroNeural"
+
     def prepare(self, text: str, voice_id: str = None) -> None:
         if not self._is_speakable_text(text):
             logging.debug(f"[Web TTS] Skipping prepare: no speakable content in '{text[:25]}...'")
             return
-        voice = voice_id if voice_id else self.voice
+        voice = self._resolve_valid_voice(voice_id)
         start_t = time.perf_counter()
         cache_key = (text, voice)
         with self._cache_lock:
@@ -107,7 +114,7 @@ class WebTTSProvider:
             logging.error("[Web TTS] Error in speak wrapper: %s", e)
 
     async def _async_speak(self, text: str, voice_id: str = None, start_t: float = 0.0) -> None:
-        voice = voice_id if voice_id else self.voice
+        voice = self._resolve_valid_voice(voice_id)
         cache_key = (text, voice)
         
         cached_entry = None

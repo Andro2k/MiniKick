@@ -1,13 +1,15 @@
 # frontend\widgets\controls.py
 
 import re
-from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, QWidget, 
-                               QHBoxLayout, QLabel, QTextEdit, QListWidget, QSpinBox)
+from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, 
+                               QTextEdit, QListWidget, QSpinBox)
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QSyntaxHighlighter, 
                            QTextCharFormat, QFont, QKeyEvent)
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_WHITE
-from frontend.common.utils import NoWheelSlider
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_750, COLOR_WHITE
+
+_REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
+_REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
 class ModernButton(QPushButton):
     def __init__(self, text: str, role: str = "action_accent", parent=None):
@@ -27,8 +29,9 @@ class ModernSwitch(QAbstractButton):
         self._bg_color_checked = QColor(COLOR_GREEN)
         self._bg_color_unchecked = QColor(COLOR_NEUTRAL_850)
         self._border_color_checked = QColor(COLOR_GREEN)
-        self._border_color_unchecked = QColor(COLOR_NEUTRAL_800)
+        self._border_color_unchecked = QColor(COLOR_NEUTRAL_750)
         self._border_color_focus = QColor(COLOR_GREEN)
+        self._border_color_focus_checked = QColor(COLOR_WHITE)
         self._handle_color = QColor(COLOR_WHITE)
 
     def sizeHint(self) -> QSize:
@@ -54,16 +57,17 @@ class ModernSwitch(QAbstractButton):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         has_focus = self.hasFocus()
+        is_checked = self.isChecked()
         pen_width = 1.5
         rect = QRectF(pen_width / 2, pen_width / 2, self.width() - pen_width, self.height() - pen_width)
         radius = rect.height() / 1.8
 
-        bg_color = self._bg_color_checked if self.isChecked() else self._bg_color_unchecked
+        bg_color = self._bg_color_checked if is_checked else self._bg_color_unchecked
         
         if has_focus:
-            border_color = QColor(COLOR_WHITE) if self.isChecked() else self._border_color_focus
+            border_color = self._border_color_focus_checked if is_checked else self._border_color_focus
         else:
-            border_color = self._border_color_checked if self.isChecked() else self._border_color_unchecked
+            border_color = self._border_color_checked if is_checked else self._border_color_unchecked
 
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)
@@ -75,7 +79,7 @@ class ModernSwitch(QAbstractButton):
 
         padding = 3
         handle_size = self.height() - (padding * 2)
-        handle_x = self.width() - handle_size - padding if self.isChecked() else padding
+        handle_x = self.width() - handle_size - padding if is_checked else padding
         
         handle_rect = QRectF(handle_x, padding, handle_size, handle_size)
         handle_radius = handle_size / 2.0
@@ -111,43 +115,6 @@ class CompactSpinBox(QSpinBox):
             event.ignore()
         else:
             super().wheelEvent(event)
-
-class CompactSlider(QWidget):
-    def __init__(self, min_val: int, max_val: int, init_val: int, suffix: str = "", parent=None):
-        super().__init__(parent)
-        self.suffix = suffix
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(6)
-        
-        self.slider = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
-        self.slider.setRange(min_val, max_val)
-        self.slider.setValue(init_val)
-        self.slider.setFixedWidth(140)
-        
-        self.label = QLabel(self._format_value(init_val), parent=self)
-        self.label.setFixedWidth(40)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        
-        self.slider.valueChanged.connect(self._on_value_changed)
-        
-        layout.addWidget(self.slider)
-        layout.addWidget(self.label)
-        
-    def _format_value(self, val: int) -> str:
-        if self.suffix == "s" and val == 0:
-            return "Nunca"
-        return f"{val}{self.suffix}"
-        
-    def _on_value_changed(self, val: int):
-        self.label.setText(self._format_value(val))
-        
-    def value(self) -> int:
-        return self.slider.value()
-        
-    def setValue(self, val: int):
-        self.slider.setValue(val)
-        self.label.setText(self._format_value(val))
 
 class VariableHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None, pattern=r"\{[a-zA-Z_]+\}", color=QColor("#C084FC"), bg_color=None):
@@ -252,7 +219,7 @@ class VariableTextEdit(QTextEdit):
         cursor = self.textCursor()
         pos = cursor.position()
         text_before = self.toPlainText()[:pos]
-        match = re.search(r"\{[a-zA-Z_]+\}$", text_before)
+        match = _REGEX_VAR_END.search(text_before)
         if match:
             tag_len = match.end() - match.start()
             cursor.movePosition(cursor.MoveOperation.Left, cursor.MoveMode.KeepAnchor, tag_len)
@@ -264,7 +231,7 @@ class VariableTextEdit(QTextEdit):
         cursor = self.textCursor()
         pos = cursor.position()
         text_after = self.toPlainText()[pos:]
-        match = re.match(r"^\{[a-zA-Z_]+\}", text_after)
+        match = _REGEX_VAR_START.match(text_after)
         if match:
             tag_len = match.end() - match.start()
             cursor.movePosition(cursor.MoveOperation.Right, cursor.MoveMode.KeepAnchor, tag_len)

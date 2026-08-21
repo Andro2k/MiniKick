@@ -8,7 +8,8 @@ from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from frontend.common.theme import COLOR_BLACK
-from frontend.common.utils import get_icon_colored, get_assets_path
+from frontend.common.icons import get_icon_colored
+from frontend.common.paths import get_assets_path
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -137,6 +138,10 @@ class ModernTableCard(QFrame):
         if hasattr(self, "lbl_illustration") and self.lbl_illustration and self.stack.currentIndex() == 1:
             card_h = max(self.height(), 300)
             self.lbl_illustration.update_image(card_h)
+
+    def set_title_count(self, base_title: str, count: int):
+        if self.lbl_title:
+            self.lbl_title.setText(f"{base_title} ({count})")
 
     def enable_filter_header(self) -> FilterHeaderView:
         return self.table.enable_filter_header()

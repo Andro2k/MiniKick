@@ -5,8 +5,8 @@ from PySide6.QtCore import QObject, Signal, QTimer, Slot
 from backend.workers.network_worker import NetworkWorker
 
 class NetworkService(QObject):
-    results_updated = Signal(dict)
-    history_updated = Signal(dict, dict, dict, dict, dict, dict, dict)
+    results_updated = Signal(object)
+    history_updated = Signal(object, object, object, object, object, object, object)
     checking_started = Signal()
 
     _DEFAULT_SERVICES = {
@@ -110,7 +110,7 @@ class NetworkService(QObject):
             self.stability_by_service.copy()
         )
 
-    @Slot(dict)
+    @Slot(object)
     def handle_results(self, results):
         self.last_results = results
         self.results_updated.emit(results)

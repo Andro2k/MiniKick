@@ -1,9 +1,9 @@
 # frontend\dialogs\command_dialog.py
 
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy, QFrame
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
-from frontend.widgets import VariableTextEdit
-from frontend.common.utils import NoWheelComboBox, validate_trigger_prefix
+from frontend.widgets import VariableTextEdit, NoWheelComboBox, create_badge
+from frontend.common import validate_trigger_prefix
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None):
@@ -35,15 +35,8 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_response = QLabel(self.i18n.get("command.dialog.response_label"))
         lbl_response.setProperty("role", "h3")
         
-        self.badge_plugin = QFrame()
-        self.badge_plugin.setFixedHeight(20)
-        self.badge_plugin.setProperty("role", "badge")
-        self.badge_plugin.setProperty("state", "plugin")
+        self.badge_plugin = create_badge(self.i18n.get("command.dialog.plugin_tag"), state="plugin")
         self.badge_plugin.setVisible(False)
-        b_layout = QHBoxLayout(self.badge_plugin)
-        b_layout.setContentsMargins(6, 1, 6, 1)
-        lbl_p = QLabel(self.i18n.get("command.dialog.plugin_tag"))
-        b_layout.addWidget(lbl_p)
         
         lbl_response_layout.addWidget(lbl_response)
         lbl_response_layout.addSpacing(6)

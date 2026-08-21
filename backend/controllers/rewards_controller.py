@@ -1,8 +1,11 @@
 # backend\controllers\rewards_controller.py
 
+import logging
 from PySide6.QtCore import QObject, Slot
 from backend.providers import KickAPIClient
 from backend.workers import CreateRewardWorker, UpdateRewardWorker
+
+logger = logging.getLogger("minikick.controllers.rewards")
 
 class RewardsController(QObject):
     def __init__(self, view, service, toast_manager=None, auth_manager=None):
@@ -35,8 +38,8 @@ class RewardsController(QObject):
             mappings = self.service.get_mappings()
             self.view.populate_table(mappings)
 
-    @Slot(list)
-    @Slot(list, dict)
+    @Slot(object)
+    @Slot(object, object)
     def update_rewards_list(self, rewards: list, rewards_map: dict = None):
         if self.view is not None:
             self.current_rewards_list = rewards if rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
@@ -76,6 +79,7 @@ class RewardsController(QObject):
 
     @Slot()
     def _handle_add(self):
+        logger.info("[User Action] Opened Add Reward dialog")
         available_rewards = self._get_available_rewards()
         res = self.view.show_add_dialog(available_rewards, self.rewards_details_map)
         if not res:
@@ -85,6 +89,7 @@ class RewardsController(QObject):
         if not config.get("filepath"):
             return
 
+        logger.info("[User Action] Added custom reward trigger: name='%s', is_new=%s", reward, config.get("is_new_reward"))
         if config.get("is_new_reward") and config.get("new_reward_data"):
             if not self.auth_manager or not self.auth_manager.get_tokens():
                 if self.toast:
@@ -103,37 +108,38 @@ class RewardsController(QObject):
                 )
 
             api_client = KickAPIClient(auth_provider=self.auth_manager)
-            self.create_reward_worker = CreateRewardWorker(api_client, config["new_reward_data"], parent=self)
+            self.create_reward_worker = CreateRewardWorker(
+                api_client=api_client,
+                payload=config["new_reward_data"],
+                parent=self
+            )
             self.create_reward_worker.reward_created.connect(
-                lambda data: self._on_reward_created_success(data, reward, config)
+                lambda res_dict: self._on_reward_created_api(res_dict, config)
             )
             self.create_reward_worker.error_occurred.connect(self._on_reward_creation_error)
             self.create_reward_worker.finished.connect(self.create_reward_worker.deleteLater)
             self.create_reward_worker.start()
         else:
-            loading_str = self.view.i18n.get("rewards.dialogs.wizard.step1.loading")
-            no_rewards_str = self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")
-            no_avail_str = self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")
-            
-            if reward and reward not in [loading_str, no_rewards_str, no_avail_str]:
-                details = self.rewards_details_map.get(reward, {})
-                if details and isinstance(details, dict):
-                    if "id" in details and "id" not in config: config["id"] = details["id"]
-                    if "cost" in details and "cost" not in config: config["cost"] = details["cost"]
-                    if "description" in details and "description" not in config: config["description"] = details["description"]
-                    if "background_color" in details and "background_color" not in config: config["background_color"] = details["background_color"]
-                    if "is_user_input_required" in details and "is_user_input_required" not in config: config["is_user_input_required"] = details["is_user_input_required"]
+            self._save_reward_mapping(reward, config)
 
-                self._save_reward_mapping(reward, config)
+    def _on_reward_created_api(self, api_response: dict, config: dict):
+        created_title = api_response.get("title", "")
+        created_id = api_response.get("id", "")
 
-    def _on_reward_created_success(self, data: dict, fallback_title: str, config: dict):
-        created_title = data.get("title", fallback_title)
-        if isinstance(data, dict) and "id" in data:
-            config["id"] = data["id"]
-            if "cost" in data: config["cost"] = data["cost"]
-            if "description" in data: config["description"] = data["description"]
-            if "background_color" in data: config["background_color"] = data["background_color"]
-            if "is_user_input_required" in data: config["is_user_input_required"] = data["is_user_input_required"]
+        config["id"] = created_id
+        config["cost"] = api_response.get("cost", config.get("new_reward_data", {}).get("cost", 100))
+        config["description"] = api_response.get("description", config.get("new_reward_data", {}).get("description", ""))
+        config["background_color"] = api_response.get("background_color", config.get("new_reward_data", {}).get("background_color", "#53FC18"))
+        config["is_user_input_required"] = api_response.get("is_user_input_required", config.get("new_reward_data", {}).get("is_user_input_required", False))
+
+        self.current_rewards_list.append(created_title)
+        self.rewards_details_map[created_title] = {
+            "id": created_id,
+            "cost": config["cost"],
+            "description": config["description"],
+            "background_color": config["background_color"],
+            "is_user_input_required": config["is_user_input_required"]
+        }
 
         self._save_reward_mapping(created_title, config)
         
@@ -148,6 +154,7 @@ class RewardsController(QObject):
             self.view.refresh_rewards_requested.emit()
 
     def _on_reward_creation_error(self, err_msg: str):
+        logger.error("[RewardsController] Error creating reward on API: %s", err_msg)
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get("common.status.error"),
@@ -176,6 +183,7 @@ class RewardsController(QObject):
         if reward_name not in mappings:
             return
             
+        logger.info("[User Action] Opened Edit Reward dialog: name='%s'", reward_name)
         available_rewards = self._get_available_rewards(ignore_reward=reward_name)
         res = self.view.show_edit_dialog(available_rewards, mappings[reward_name], reward_name, self.rewards_details_map)
         if res:
@@ -201,13 +209,19 @@ class RewardsController(QObject):
                         "title": new_reward,
                         "cost": updated_config.get("cost", 100),
                         "description": updated_config.get("description", ""),
-                        "background_color": updated_config.get("background_color", "#00e701"),
+                        "background_color": updated_config.get("background_color", "#53FC18"),
                         "is_user_input_required": updated_config.get("is_user_input_required", False)
                     }
+
                     api_client = KickAPIClient(auth_provider=self.auth_manager)
-                    self.update_reward_worker = UpdateRewardWorker(api_client, reward_id, payload, parent=self)
+                    self.update_reward_worker = UpdateRewardWorker(
+                        api_client=api_client,
+                        reward_id=reward_id,
+                        payload=payload,
+                        parent=self
+                    )
                     self.update_reward_worker.reward_updated.connect(
-                        lambda data: self._on_reward_updated_success(data, reward_name, new_reward, updated_config)
+                        lambda res_dict, o=reward_name, n=new_reward, c=updated_config: self._on_reward_updated_api(res_dict, o, n, c)
                     )
                     self.update_reward_worker.error_occurred.connect(self._on_reward_update_error)
                     self.update_reward_worker.finished.connect(self.update_reward_worker.deleteLater)
@@ -215,11 +229,31 @@ class RewardsController(QObject):
                 else:
                     self._save_edited_mapping(reward_name, new_reward, updated_config)
 
-    def _on_reward_updated_success(self, data: dict, old_reward: str, new_reward: str, config: dict):
-        updated_title = data.get("title", new_reward) if isinstance(data, dict) else new_reward
-        if isinstance(data, dict) and "id" in data:
-            config["id"] = data["id"]
-        self._save_edited_mapping(old_reward, updated_title, config)
+    def _on_reward_updated_api(self, api_response: dict, old_reward: str, new_reward: str, updated_config: dict):
+        updated_title = api_response.get("title", new_reward)
+        updated_id = api_response.get("id", updated_config.get("id"))
+
+        updated_config["id"] = updated_id
+        updated_config["cost"] = api_response.get("cost", updated_config.get("cost", 100))
+        updated_config["description"] = api_response.get("description", updated_config.get("description", ""))
+        updated_config["background_color"] = api_response.get("background_color", updated_config.get("background_color", "#53FC18"))
+        updated_config["is_user_input_required"] = api_response.get("is_user_input_required", updated_config.get("is_user_input_required", False))
+
+        if old_reward in self.current_rewards_list:
+            self.current_rewards_list.remove(old_reward)
+        self.current_rewards_list.append(updated_title)
+
+        if old_reward in self.rewards_details_map:
+            del self.rewards_details_map[old_reward]
+        self.rewards_details_map[updated_title] = {
+            "id": updated_id,
+            "cost": updated_config["cost"],
+            "description": updated_config["description"],
+            "background_color": updated_config["background_color"],
+            "is_user_input_required": updated_config["is_user_input_required"]
+        }
+
+        self._save_edited_mapping(old_reward, updated_title, updated_config)
 
         if self.toast:
             self.toast.show_toast(
@@ -232,6 +266,7 @@ class RewardsController(QObject):
             self.view.refresh_rewards_requested.emit()
 
     def _on_reward_update_error(self, err_msg: str):
+        logger.error("[RewardsController] Error updating reward on API: %s", err_msg)
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get("common.status.error"),
@@ -240,6 +275,7 @@ class RewardsController(QObject):
             )
 
     def _save_edited_mapping(self, old_reward: str, new_reward: str, updated_config: dict):
+        logger.info("[User Action] Saved edited reward trigger mapping: old='%s', new='%s'", old_reward, new_reward)
         from backend.services.rewards.thumbnail_service import generate_media_thumbnail
         mappings = self.service.get_mappings()
         old_filepath = mappings.get(old_reward, {}).get("filepath", "") if old_reward in mappings else ""
@@ -264,6 +300,7 @@ class RewardsController(QObject):
 
     @Slot(str)
     def _handle_delete(self, reward_name: str):
+        logger.info("[User Action] Deleted reward trigger mapping: name='%s'", reward_name)
         mappings = self.service.get_mappings()
         if reward_name in mappings:
             del mappings[reward_name]
@@ -278,6 +315,7 @@ class RewardsController(QObject):
 
     @Slot(str)
     def _handle_preview(self, reward_name: str):
+        logger.info("[User Action] Preview triggered for reward: name='%s'", reward_name)
         mappings = self.service.get_mappings()
         if reward_name in mappings:
             self.service.trigger_preview(reward_name, mappings[reward_name])

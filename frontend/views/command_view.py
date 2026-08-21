@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
 
 class CommandView(BaseView):
@@ -11,6 +11,7 @@ class CommandView(BaseView):
     delete_requested = Signal(str)
     status_toggled = Signal(str, bool)
     search_text_changed = Signal(str)
+    view_shown = Signal()
 
     _PERM_KEYS: dict[str, str] = {
         "everyone":    "command.dialog.perm_everyone",
@@ -33,6 +34,10 @@ class CommandView(BaseView):
         self._raw_commands: list[dict] = []
         self._current_sort: tuple[int, str] | None = None
         self._setup_ui()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.view_shown.emit()
 
     def _setup_ui(self):
         col_1 = self.i18n.get("command.table.col_command")
@@ -175,11 +180,7 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 4, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
         self.table_card.set_empty(len(commands) == 0 and len(self._raw_commands) == 0)
-
-        if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
-            title_base = self.i18n.get("command.table.title")
-            total_count = len(self._raw_commands)
-            self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
+        self.table_card.set_title_count(self.i18n.get("command.table.title"), len(self._raw_commands))
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
@@ -192,50 +193,15 @@ class CommandView(BaseView):
         return container
 
     def _create_type_cell(self, cmd_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        
-        response_val = cmd_data.get("response", "")
-        is_plugin = "[PLUGIN_" in response_val
-        
-        tag = QFrame()
-        tag.setFixedHeight(22)
-        tag.setProperty("role", "badge")
-        tag.setProperty("state", "plugin" if is_plugin else "everyone")
-        
-        tag_layout = QHBoxLayout(tag)
-        tag_layout.setContentsMargins(8, 0, 8, 0)
-        tag_layout.setSpacing(0)
-        
+        is_plugin = "[PLUGIN_" in cmd_data.get("response", "")
         type_key = "command.table.type_plugin" if is_plugin else "command.table.type_custom"
-        lbl_txt = QLabel(self.i18n.get(type_key))
-        lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        tag_layout.addWidget(lbl_txt)
-        layout.addWidget(tag)
-        return container
+        state = "plugin" if is_plugin else "everyone"
+        return create_badge(self.i18n.get(type_key), state=state)
 
     def _create_permission_cell(self, cmd_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         raw_perm = cmd_data.get("permission", "everyone")
         i18n_key = self._PERM_KEYS.get(raw_perm, "command.dialog.perm_everyone")
-        translated_text = self.i18n.get(i18n_key)
-        tag = QFrame()
-        tag.setFixedHeight(22)
-        tag.setProperty("role", "badge")
-        tag.setProperty("state", raw_perm)
-        tag_layout = QHBoxLayout(tag)
-        tag_layout.setContentsMargins(5, 0, 5, 0)
-        tag_layout.setSpacing(0)
-        lbl_txt = QLabel(translated_text)
-        lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        tag_layout.addWidget(lbl_txt)
-        layout.addWidget(tag)
-        return container
+        return create_badge(self.i18n.get(i18n_key), state=raw_perm)
 
     def _create_aliases_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()

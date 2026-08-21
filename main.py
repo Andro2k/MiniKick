@@ -2,9 +2,15 @@
 
 import os
 import sys
+
+os.environ["AV_LOG_LEVEL"] = "error"
+os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg=false;qt.multimedia=false;qt.qpa.wayland.*=false"
+
+import logging
+import traceback
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QFont, QFontDatabase, QIcon
-os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
+
 try:
     clean_paths = []
     for path_dir in os.environ.get("PATH", "").split(os.pathsep):
@@ -19,15 +25,17 @@ try:
     os.environ["PATH"] = os.pathsep.join(clean_paths)
 except Exception:
     pass
-from backend.services import GithubUpdateProvider, UpdateManager, WindowsInstaller
+
+from backend.core.app_logger_core import setup_application_logging, flush_all_logs
+setup_application_logging()
+
+from backend.services import GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
 from backend.core.main_window_core import MainWindowCore
-from backend.database import SQLiteSettingsStorage
 from backend.config.version import APP_VERSION
-from backend.services import SocketInstanceProvider
 
 from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.common.theme import GLOBAL_QSS
-from frontend.common.utils import resource_path
+from frontend.common.paths import resource_path
 
 def _get_safe_i18n():
     try:
@@ -39,16 +47,16 @@ def _get_safe_i18n():
         saved_lang = settings.load_string("app_language", "es")
         return TranslationService(default_lang=saved_lang)
     except Exception as e:
-        print(f"[Bootstrap] Warning: Pre-boot i18n hydration failed ({e})")
+        logging.warning("[Bootstrap] Pre-boot i18n hydration failed: %s", e)
         return None
 
+
 def global_crash_handler(exctype, value, tb):
-    import traceback
     tb_text = "".join(traceback.format_exception(exctype, value, tb))
     
     try:
-        import logging
-        logging.critical("Unhandled exception captured by global exception hook:\n%s", tb_text)
+        logging.critical("[FATAL CRASH] Unhandled exception caught by global excepthook:\n%s", tb_text)
+        flush_all_logs()
     except Exception:
         pass
 
@@ -59,17 +67,23 @@ def global_crash_handler(exctype, value, tb):
         app = QApplication.instance()
         if not app:
             app = QApplication(sys.argv)
-            from frontend.common.theme import GLOBAL_QSS
             app.setStyleSheet(GLOBAL_QSS)
             
-            FONT_FAMILY_NAME = "Google Sans"
-            app_font = QFont(FONT_FAMILY_NAME)
+            font_family = "Google Sans"
+            app_font = QFont(font_family)
             app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
             app.setFont(app_font)
 
         i18n = _get_safe_i18n()
+        from backend.config.api_keys import DISCORD_WEBHOOK_URL
+        from backend.workers import CrashReportWorker
         from frontend.dialogs.crash_report_dialog import CrashReportDialog
-        dialog = CrashReportDialog(traceback_text=tb_text, i18n=i18n)
+        dialog = CrashReportDialog(
+            traceback_text=tb_text,
+            i18n=i18n,
+            webhook_url=DISCORD_WEBHOOK_URL,
+            worker_class=CrashReportWorker
+        )
         dialog.exec()
     except Exception as dialog_err:
         err_msg = i18n.get("logs.bootstrap.crash_dialog_failed").replace("{error}", str(dialog_err)) if i18n else f"[Bootstrap] Failed to display crash dialog: {dialog_err}"
@@ -79,6 +93,10 @@ def global_crash_handler(exctype, value, tb):
 
 
 def bootstrap():
+    logging.info("==================================================================")
+    logging.info("MiniKick Starting | Version: %s | Platform: %s | Python: %s", APP_VERSION, sys.platform, sys.version.split()[0])
+    logging.info("==================================================================")
+
     if sys.platform == "win32":
         try:
             import ctypes
@@ -88,17 +106,16 @@ def bootstrap():
             pass
 
     app = QApplication(sys.argv)
-    FONT_FAMILY_NAME = "Google Sans"
+    font_family = "Google Sans"
 
     fonts_dir = resource_path(os.path.join("assets", "fonts"))
-    
     if os.path.exists(fonts_dir):
         for archivo in os.listdir(fonts_dir):
             if archivo.endswith(('.ttf', '.otf')):
                 font_path = os.path.join(fonts_dir, archivo)
                 QFontDatabase.addApplicationFont(font_path)
 
-    app_font = QFont(FONT_FAMILY_NAME)
+    app_font = QFont(font_family)
     app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     app.setFont(app_font)
     app.setStyleSheet(GLOBAL_QSS)

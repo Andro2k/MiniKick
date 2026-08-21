@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_RED
-from frontend.common.utils import get_pixmap_colored
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED
+from frontend.common import get_pixmap_colored
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
 
@@ -67,7 +67,7 @@ def _create_reward_icon(config: dict, filepath: str) -> QIcon:
     path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
     painter.fillPath(path, QColor("#1e293b"))
     
-    icon_pixmap = get_pixmap_colored("movie.svg", COLOR_NEUTRAL_200, 18)
+    icon_pixmap = get_pixmap_colored("movie.svg", COLOR_NEUTRAL_400, 18)
     if not icon_pixmap.isNull():
         x = (target_w - 18) / 2
         y = (target_h - 18) / 2

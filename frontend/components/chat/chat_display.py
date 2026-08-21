@@ -35,14 +35,14 @@ class ChatDisplayPanel(ModernCard):
     _ROLE_SYMBOLS = {
         "Streamer": ("\uf130", "#dc2626", "#ffffff"),
         "Broadcaster": ("\uf130", "#dc2626", "#ffffff"),
-        "Moderador": ("\udb82\udc8f", "#16a34a", "#ffffff"),
-        "Moderator": ("\udb82\udc8f", "#16a34a", "#ffffff"),
-        "VIP": ("\udb80\uddc8", "#ca8a04", "#ffffff"),
-        "Suscriptor": ("\uedeb", "#9333ea", "#ffffff"),
-        "Subscriber": ("\uedeb", "#9333ea", "#ffffff"),
-        "Bot": ("\udb81\udea9", "#2563eb", "#ffffff"),
-        "Sistema": ("\ue615", "#059669", "#ffffff"),
-        "System": ("\ue615", "#059669", "#ffffff"),
+        "Moderador": ("\ued25", "#16a34a", "#ffffff"),
+        "Moderator": ("\ued25", "#16a34a", "#ffffff"),
+        "VIP": ("\uedeb", "#ca8a04", "#ffffff"),
+        "Suscriptor": ("\udb83\ude44", "#9333ea", "#ffffff"),
+        "Subscriber": ("\udb83\ude44", "#9333ea", "#ffffff"),
+        "Bot": ("\uee0d", "#2563eb", "#ffffff"),
+        "Sistema": ("\uf113", "#059669", "#ffffff"),
+        "System": ("\uf113", "#059669", "#ffffff"),
         "Usuario": ("\ued35", "#374151", "#e2e8f0"),
         "User": ("\ued35", "#374151", "#e2e8f0")
     }

@@ -198,10 +198,8 @@
             "view_release_notes": "Ver Novedades"
         },
         "status": {
-            "active": "Activo",
             "connected": "Conectado",
             "error": "Error",
-            "inactive": "Inactivo",
             "no": "No",
             "offline": "Desconectado",
             "online": "En Línea",
@@ -247,7 +245,9 @@
             "autostart_desc": "Conecta automáticamente MiniKick al iniciar la aplicación.",
             "autostart_title": "Conexión Automática",
             "btn_active": "Sistema Activo",
+            "btn_active_twitch": "Twitch Activo",
             "btn_connect": "Conectar a Kick",
+            "btn_connect_twitch": "Conectar Twitch",
             "btn_retry": "Reintentar",
             "status_auth": "Estado: Autenticando...",
             "status_connected": "Estado: Conectado y Escuchando",
@@ -335,6 +335,10 @@
         "unlink": {
             "desc": "¿Deseas desvincular tu cuenta? Tendrás que iniciar sesión nuevamente la próxima vez que habras MiniKick.",
             "title": "Desvincular Cuenta"
+        },
+        "unlink_twitch": {
+            "desc": "¿Estás seguro de que deseas desvincular tu cuenta de Twitch? Las funciones de chat y comandos para Twitch dejarán de estar activas.",
+            "title": "Desvincular Twitch"
         },
         "update": {
             "btn_close": "Cerrar",
@@ -637,6 +641,9 @@
             "service_disabled_chat": "❌ @{user}, el servicio de música está desactivado en este momento."
         },
         "status": {
+            "disabled": "Desactivado",
+            "enabled": "Activado",
+            "updated": "Comando de Música Actualizado",
             "youtube_active": "YouTube Activo"
         },
         "tabs": {
@@ -647,6 +654,7 @@
         "toast": {
             "chat_error_playing": "❌ @{user}, no se pudo reproducir '{title}': {error}",
             "chat_error_playing_no_user": "❌ No se pudo reproducir '{title}': {error}",
+            "command_toggled": "El comando {trigger} ha sido {status}.",
             "error_playing": "No se pudo reproducir '{title}': {error}",
             "moved_in_queue": "Posición de canción actualizada en la cola",
             "removed_from_queue": "Canción eliminada de la cola"
@@ -1033,21 +1041,28 @@
             "categories_label": "Categorías de Stream (separadas por coma):",
             "categories_placeholder": "Ej: Just Chatting, IRL",
             "chat_lines_desc": "Cantidad de mensajes que debe tener el chat en los últimos 5 minutos antes de enviar el anuncio.",
-            "chat_lines_label": "Mensajes de Chat Mínimos",
             "editor_title": "Editar Mensaje",
+            "enable_chat_lines": "Activar requisito de mensajes mínimos",
             "help_desc": "Configura condiciones opcionales para tus anuncios. Por ejemplo, activa un mensaje solo cuando el título incluya palabras como 'sorteo' o cuando estés en la categoría 'IRL'.",
+            "help_title": "Filtros y Condiciones",
+            "intervals_label": "Intervalos de Envío",
             "keywords_desc": "Envía el anuncio solo si el título de tu transmisión contiene alguna de estas palabras clave.",
             "keywords_label": "Palabras clave en el título de Stream (separadas por coma):",
             "keywords_placeholder": "Ej: sorteo, especial",
             "name_label": "Nombre del Temporizador:",
             "name_placeholder": "Ej: Redes Sociales",
-            "offline_interval_label": "Intervalo Offline (minutos)",
-            "online_interval_label": "Intervalo Online (minutos)",
-            "platforms_label": "Plataforma(s) activas:",
-            "response_label": "Mensajes de respuesta (se elegirá uno aleatoriamente):",
+            "offline_interval": "Intervalo Offline",
+            "online_interval": "Intervalo Online",
+            "platform_label": "Plataforma(s) activas:",
             "response_placeholder": "Escribe el mensaje de respuesta aquí...",
-            "subtitle": "Programa un mensaje recurrente para compartir tus redes, reglas o anuncios en el chat.",
-            "title": "Configurar Temporizador"
+            "responses_desc": "Se elegirá uno aleatoriamente cada vez que se ejecute el temporizador.",
+            "responses_title": "Mensajes de Respuesta",
+            "step_filters_subtitle": "Define filtros por categoría o palabras clave en el título.",
+            "step_filters_title": "Filtros del Temporizador",
+            "step_general_subtitle": "Configura el nombre, intervalos y respuestas del anuncio.",
+            "step_general_title": "Configurar Temporizador",
+            "suffix_lines": "mensajes",
+            "suffix_min": "min"
         },
         "empty": {
             "btn": "Crear Temporizador",

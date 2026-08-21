@@ -69,7 +69,8 @@ class CommandService(QObject):
         for trigger_lower, cmd in list(self._pending_saves.items()):
             self.storage.save_command(
                 cmd["trigger"], cmd["response"], cmd["is_active"],
-                cmd["cooldown"], cmd["aliases"], cmd["is_regex"], cmd["permission"]
+                cmd["cooldown"], cmd["aliases"], cmd["is_regex"], cmd["permission"],
+                cmd.get("apply_kick", True), cmd.get("apply_twitch", True)
             )
         self._pending_saves.clear()
 
@@ -94,7 +95,7 @@ class CommandService(QObject):
             if clean_q in cmd["trigger"].lower() or clean_q in cmd.get("aliases", "").lower() or clean_q in cmd.get("response", "").lower()
         ]
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str):
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = True, apply_twitch: bool = True):
         trigger_clean = trigger.strip()
         cmd_dict = {
             "trigger": trigger_clean,
@@ -103,7 +104,9 @@ class CommandService(QObject):
             "cooldown": cooldown,
             "aliases": aliases,
             "is_regex": is_regex,
-            "permission": permission
+            "permission": permission,
+            "apply_kick": apply_kick,
+            "apply_twitch": apply_twitch
         }
         
         existing_idx = -1
@@ -173,6 +176,11 @@ class CommandService(QObject):
         return False, "", {}, ""
 
     def _try_execute(self, cmd: dict, user: str, touser: str, badges: list, matched_prefix: str, platform: str = "kick") -> tuple[bool, str, dict, str]:
+        if platform == "kick" and not cmd.get("apply_kick", True):
+            return False, "", {}, ""
+        if platform == "twitch" and not cmd.get("apply_twitch", True):
+            return False, "", {}, ""
+
         if not self._has_permission(cmd.get("permission", "everyone"), badges):
             return False, "", {}, ""
 
@@ -189,7 +197,7 @@ class CommandService(QObject):
         final_response = cmd["response"].replace("{user}", user).replace("{touser}", touser).replace("{random}", str(random.randint(1, 100)))
 
         try:
-            self.storage.log_command_execution(trigger, user)
+            self.storage.log_command_execution(trigger, user, platform=platform)
         except Exception as e:
             logging.error("[CommandService] Error logging command execution: %s", e)
 

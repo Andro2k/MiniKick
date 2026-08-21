@@ -5,6 +5,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
 # Archivos de configuración locales y secretos
 api_keys.py
 .env
@@ -20,3 +21,4 @@ MiniKick_Backup_*.json
 *dist/
 *resources/
 .agents/
+*tests/

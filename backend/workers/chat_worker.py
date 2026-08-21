@@ -8,10 +8,10 @@ from backend.services.chat.pipeline import ChatMessageDTO
 class ChatWorker(QThread):
     message_received = Signal(object) 
     error_occurred = Signal(str)        
-    connection_success = Signal(dict)
-    poll_updated = Signal(dict)
+    connection_success = Signal(object)
+    poll_updated = Signal(object)
     poll_deleted = Signal()
-    pinned_created = Signal(dict)
+    pinned_created = Signal(object)
     pinned_deleted = Signal()
     
     def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):

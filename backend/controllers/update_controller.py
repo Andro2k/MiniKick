@@ -6,7 +6,7 @@ class UpdateController(QObject):
     update_found_silent = Signal()
 
     update_check_started = Signal()
-    update_found = Signal(dict)
+    update_found = Signal(object)
     no_update = Signal()
     error = Signal(str)
 

@@ -2,8 +2,8 @@
 
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Signal
-from frontend.common.theme import COLOR_NEUTRAL_200
-from frontend.common.utils import get_pixmap_colored
+from frontend.common.theme import COLOR_NEUTRAL_400
+from frontend.common import get_pixmap_colored
 from frontend.widgets import ModernCard, ModernSwitch
 
 class MusicStatsPanel(QWidget):
@@ -27,7 +27,7 @@ class MusicStatsPanel(QWidget):
         
         queue_header = QHBoxLayout()
         icon_queue = QLabel()
-        icon_queue.setPixmap(get_pixmap_colored("music.svg", COLOR_NEUTRAL_200, 18))
+        icon_queue.setPixmap(get_pixmap_colored("music.svg", COLOR_NEUTRAL_400, 18))
         lbl_queue_title = QLabel(self.i18n.get("music.stats.queue_title"))
         lbl_queue_title.setProperty("role", "h3")
         queue_header.addWidget(icon_queue)
@@ -49,7 +49,7 @@ class MusicStatsPanel(QWidget):
 
         dur_header = QHBoxLayout()
         icon_dur = QLabel()
-        icon_dur.setPixmap(get_pixmap_colored("clock.svg", COLOR_NEUTRAL_200, 18))
+        icon_dur.setPixmap(get_pixmap_colored("clock.svg", COLOR_NEUTRAL_400, 18))
         lbl_dur_title = QLabel(self.i18n.get("music.stats.duration_title"))
         lbl_dur_title.setProperty("role", "h3")
         dur_header.addWidget(icon_dur)
@@ -71,7 +71,7 @@ class MusicStatsPanel(QWidget):
 
         service_header = QHBoxLayout()
         icon_cmd = QLabel()
-        icon_cmd.setPixmap(get_pixmap_colored("code.svg", COLOR_NEUTRAL_200, 18))
+        icon_cmd.setPixmap(get_pixmap_colored("code.svg", COLOR_NEUTRAL_400, 18))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))
         lbl_cmd_title.setProperty("role", "h3")
         

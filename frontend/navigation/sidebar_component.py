@@ -4,14 +4,13 @@ from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
                                QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea)
 from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
 from PySide6.QtGui import QPainter, QPixmap, QColor
-from frontend.common.utils import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored
+from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored
 from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800
-from backend.config.version import APP_VERSION
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
 
-    def __init__(self, i18n, app_version: str = APP_VERSION, parent=None):
+    def __init__(self, i18n, app_version: str = "", parent=None):
         super().__init__(parent)
         self.i18n = i18n
         self.app_version = app_version
@@ -310,9 +309,11 @@ class Sidebar(QFrame):
             
         self.profile_text_widget.setVisible(show)
         if show:
+            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
             self.profile_layout.setContentsMargins(6, 6, 6, 6)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         else:
+            self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
             self.profile_layout.setContentsMargins(0, 6, 0, 6)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 

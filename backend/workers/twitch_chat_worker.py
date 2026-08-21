@@ -5,15 +5,10 @@ from backend.providers.chat.twitch_websocket import TwitchSocketManager
 from backend.services.chat.pipeline import ChatMessageDTO
 import datetime
 
-try:
-    from backend.config.api_keys import TWITCH_BOT_USERNAME
-except ImportError:
-    TWITCH_BOT_USERNAME = "Minikick"
-
 class TwitchChatWorker(QThread):
     message_received = Signal(object)
     error_occurred = Signal(str)
-    connection_success = Signal(dict)
+    connection_success = Signal(object)
     connection_lost = Signal()
     connection_restored = Signal()
 
@@ -22,7 +17,7 @@ class TwitchChatWorker(QThread):
         self.setObjectName("Worker_Twitch_Chat_Socket")
         self.channel_name = channel_name
         self.oauth_token = oauth_token
-        self.bot_nick = bot_nick or TWITCH_BOT_USERNAME
+        self.bot_nick = bot_nick
         self.api_client = api_client
         self.i18n = i18n
         self.socket_manager = TwitchSocketManager(token=oauth_token, nick=self.bot_nick, i18n=self.i18n)
@@ -40,12 +35,17 @@ class TwitchChatWorker(QThread):
                 except Exception as api_err:
                     pass
 
+                if hasattr(self.api_client, "auth_provider") and self.api_client.auth_provider:
+                    fresh_tokens = self.api_client.auth_provider.get_tokens() if hasattr(self.api_client.auth_provider, "get_tokens") else {}
+                    if fresh_tokens and fresh_tokens.get("access_token"):
+                        self.oauth_token = fresh_tokens.get("access_token")
+
             if not self.channel_name:
                 err_msg = self.i18n.get("logs.twitch.channel_empty") if self.i18n else ""
                 raise ValueError(err_msg)
 
             if not self.bot_nick:
-                self.bot_nick = TWITCH_BOT_USERNAME or self.channel_name
+                self.bot_nick = self.channel_name
 
             self.socket_manager.nick = self.bot_nick.lower()
             self.socket_manager.token = self.oauth_token

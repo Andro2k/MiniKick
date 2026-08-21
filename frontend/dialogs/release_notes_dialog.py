@@ -9,13 +9,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QColor, QDesktopServices, QFont
 from .base_dialog import ModernModal
-from frontend.common.utils import get_assets_path
+from frontend.common import get_assets_path
 from frontend.common.theme import (
-    COLOR_GREEN, COLOR_NEUTRAL_900, 
-    COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_NEUTRAL_400, 
-    COLOR_NEUTRAL_200, COLOR_WHITE, COLOR_RED
+    COLOR_GREEN, COLOR_NEUTRAL_900, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_WHITE, COLOR_RED
 )
-from backend.workers import ReleaseNotesWorker
 
 _RE_LATEX_O     = re.compile(r'\$\\mathcal\{O\}\((.*?)\)\$')
 _RE_LATEX_MATH  = re.compile(r'\$(.*?)\$')
@@ -27,11 +24,11 @@ _RE_ITALIC      = re.compile(r'(?<!\*)\*([^\*]+)\*(?!\*)')
 _RE_CALLOUT     = re.compile(r'^>\s*\[!(NOTE|IMPORTANT|WARNING|TIP|CAUTION)\]', re.IGNORECASE)
 _RE_TABLE_DIV   = re.compile(r'^[\s\-:]+$')
 _CALLOUT_STYLES = {
-    'NOTE': ('#3b82f6', '#60a5fa', 'ℹ️ Note', 'rgba(59, 130, 246, 0.08)'),
-    'IMPORTANT': ('#a855f7', '#c084fc', '💬 Important', 'rgba(168, 85, 247, 0.08)'),
-    'WARNING': ('#eab308', '#facc15', '⚠️ Warning', 'rgba(234, 179, 8, 0.08)'),
-    'TIP': ('#22c55e', '#4ade80', '💡 Tip', 'rgba(34, 197, 94, 0.08)'),
-    'CAUTION': ('#ef4444', '#f87171', '🚨 Caution', 'rgba(239, 68, 68, 0.08)')
+    'NOTE': ('#3b82f6', '#60a5fa', '\udb80\udefc-Note', 'rgba(59, 130, 246, 0.08)'),
+    'IMPORTANT': ('#a855f7', '#c084fc', '\udb80\udf61-Important', 'rgba(168, 85, 247, 0.08)'),
+    'WARNING': ('#eab308', '#facc15', '\uf40c-Warning', 'rgba(234, 179, 8, 0.08)'),
+    'TIP': ('#22c55e', '#4ade80', '\udb81\udee8-Tip', 'rgba(34, 197, 94, 0.08)'),
+    'CAUTION': ('#ef4444', '#f87171', '\udb80\udc29-Caution', 'rgba(239, 68, 68, 0.08)')
 }
 _CODE_SPAN = f'<code style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; background-color: {COLOR_NEUTRAL_800}; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
 _CODE_INLINE_SPAN = f'<code style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
@@ -123,11 +120,11 @@ def markdown_to_github_html(md: str) -> str:
             continue
 
         if stripped.startswith('# '):
-            html_out.append(f'<h1 style="color: {COLOR_WHITE}; font-size: 17px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_800}; padding-bottom: 6px; margin: 16px 0 10px 0;">{stripped[2:]}</h1>')
+            html_out.append(f'<h1 style="color: {COLOR_WHITE}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_800}; padding-bottom: 6px; margin: 16px 0 10px 0;">{stripped[2:]}</h1>')
         elif stripped.startswith('## '):
-            html_out.append(f'<h2 style="color: {COLOR_WHITE}; font-size: 15px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_800}; padding-bottom: 4px; margin: 14px 0 8px 0;">{stripped[3:]}</h2>')
+            html_out.append(f'<h2 style="color: {COLOR_WHITE}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_800}; padding-bottom: 4px; margin: 14px 0 8px 0;">{stripped[3:]}</h2>')
         elif stripped.startswith('### '):
-            html_out.append(f'<h3 style="color: {COLOR_NEUTRAL_200}; font-size: 13px; font-weight: bold; margin: 10px 0 6px 0;">{stripped[4:]}</h3>')
+            html_out.append(f'<h3 style="color: {COLOR_NEUTRAL_200}; font-size: 14px; font-weight: bold; margin: 10px 0 6px 0;">{stripped[4:]}</h3>')
         elif stripped in ('---', '***'):
             html_out.append(f'<hr style="border: none; border-top: 1px solid {COLOR_NEUTRAL_800}; margin: 14px 0;" />')
         elif stripped.startswith(('- ', '* ')):
@@ -151,8 +148,9 @@ def markdown_to_github_html(md: str) -> str:
 
 
 class ReleaseNotesDialog(ModernModal):
-    def __init__(self, i18n, parent=None):
+    def __init__(self, i18n, worker_class=None, parent=None):
         self.i18n = i18n
+        self.worker_class = worker_class
         super().__init__(
             title=self.i18n.get("dialogs.release_notes.title"),
             icon_path=get_assets_path("icons/file-text.svg"),
@@ -246,7 +244,12 @@ class ReleaseNotesDialog(ModernModal):
                 self.move(max(0, x), max(0, y))
 
     def _fetch_release_notes(self):
-        self._worker = ReleaseNotesWorker(parent=self)
+        worker_cls = self.worker_class
+        if not worker_cls:
+            from backend.workers import ReleaseNotesWorker
+            worker_cls = ReleaseNotesWorker
+
+        self._worker = worker_cls(parent=self)
         self._worker.release_fetched.connect(self._on_release_fetched)
         self._worker.error_occurred.connect(self._on_error_occurred)
         self._worker.finished.connect(self._worker.deleteLater)
@@ -257,7 +260,8 @@ class ReleaseNotesDialog(ModernModal):
         release_name = data.get("name", "") or tag_name
         published_raw = data.get("published_at", "")
         published_date = published_raw.split("T")[0] if "T" in published_raw else published_raw
-        author = data.get("author", "")
+        author_raw = data.get("author", "")
+        author = author_raw.get("login", "") if isinstance(author_raw, dict) else str(author_raw or "")
         body_text = data.get("body", "")
         self._release_url = data.get("html_url", self._release_url)
 
@@ -306,4 +310,5 @@ class ReleaseNotesDialog(ModernModal):
         if self._worker and self._worker.isRunning():
             self._worker.blockSignals(True)
             self._worker.quit()
+            self._worker.wait(1000)
         super().closeEvent(event)

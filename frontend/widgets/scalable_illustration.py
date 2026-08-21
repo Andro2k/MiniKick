@@ -16,6 +16,13 @@ class ScalableIllustration(QLabel):
         self.min_size = min_size
         self.max_size = max_size
         self.size_offset = size_offset
+        self._svg_renderer: QSvgRenderer | None = None
+        
+        if os.path.exists(self.icon_path) and self.icon_path.lower().endswith(".svg"):
+            renderer = QSvgRenderer(self.icon_path)
+            if renderer.isValid():
+                self._svg_renderer = renderer
+
         self.aspect_ratio = self._detect_aspect_ratio(aspect_ratio)
         
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -34,14 +41,12 @@ class ScalableIllustration(QLabel):
             return fallback
 
         try:
-            if self.icon_path.lower().endswith(".svg"):
-                renderer = QSvgRenderer(self.icon_path)
-                if renderer.isValid():
-                    sz = renderer.defaultSize()
-                    if sz.width() > 0 and sz.height() > 0:
-                        ratio = sz.height() / sz.width()
-                        ScalableIllustration._aspect_ratio_cache[self.icon_path] = ratio
-                        return ratio
+            if self._svg_renderer:
+                sz = self._svg_renderer.defaultSize()
+                if sz.width() > 0 and sz.height() > 0:
+                    ratio = sz.height() / sz.width()
+                    ScalableIllustration._aspect_ratio_cache[self.icon_path] = ratio
+                    return ratio
             
             pix = QPixmap(self.icon_path)
             if not pix.isNull() and pix.width() > 0:
@@ -62,21 +67,19 @@ class ScalableIllustration(QLabel):
         pixel_w = int(width_size * dpr)
         pixel_h = int(height_size * dpr)
 
-        if self.icon_path.lower().endswith(".svg"):
-            renderer = QSvgRenderer(self.icon_path)
-            if renderer.isValid():
-                pixmap = QPixmap(QSize(pixel_w, pixel_h))
-                pixmap.fill(Qt.GlobalColor.transparent)
-                painter = QPainter(pixmap)
-                painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-                painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
-                renderer.render(painter)
-                painter.end()
-                pixmap.setDevicePixelRatio(dpr)
-                self.setPixmap(pixmap)
-                self.setFixedSize(width_size, height_size)
-                self._current_target_width = width_size
-                return
+        if self._svg_renderer:
+            pixmap = QPixmap(QSize(pixel_w, pixel_h))
+            pixmap.fill(Qt.GlobalColor.transparent)
+            painter = QPainter(pixmap)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
+            self._svg_renderer.render(painter)
+            painter.end()
+            pixmap.setDevicePixelRatio(dpr)
+            self.setPixmap(pixmap)
+            self.setFixedSize(width_size, height_size)
+            self._current_target_width = width_size
+            return
 
         pixmap = QPixmap(self.icon_path)
         if not pixmap.isNull():

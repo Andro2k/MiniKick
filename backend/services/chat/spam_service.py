@@ -152,7 +152,8 @@ class SpamService:
                 filter_id=filter_id,
                 message_content=message,
                 penalty_type=penalty_type,
-                duration=duration_mins
+                duration=duration_mins,
+                platform=platform
             )
 
         if platform == "kick":

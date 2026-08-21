@@ -46,9 +46,9 @@ class TwitchSocketManager:
         cleaned = "".join(text_chars)
         return " ".join(cleaned.split())
 
-    def __init__(self, token: str = "", nick: str = "justinfan12345", i18n=None) -> None:
+    def __init__(self, token: str = "", nick: str = "", i18n=None) -> None:
         self.token = token.replace("oauth:", "").strip() if token else ""
-        self.nick = nick.lower().strip() if nick else "justinfan12345"
+        self.nick = nick.lower().strip() if nick else ""
         self.i18n = i18n
         self._running = False
         self.ws: websocket.WebSocketApp | None = None
@@ -84,8 +84,10 @@ class TwitchSocketManager:
         ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands\r\n")
         
         pass_str = f"oauth:{self.token}" if self.token else "SCHMOOPIIE"
+        nick_str = self.nick.lower().strip() if self.token and self.nick else "justinfan12345"
+
         ws.send(f"PASS {pass_str}\r\n")
-        ws.send(f"NICK {self.nick}\r\n")
+        ws.send(f"NICK {nick_str}\r\n")
         ws.send(f"JOIN #{self._channel}\r\n")
         if self._on_connected:
             try:
@@ -103,8 +105,13 @@ class TwitchSocketManager:
                 continue
 
             if line.startswith("PING"):
-                ws.send("PONG :tmi.twitch.tv\r\n")
+                ping_arg = line.split("PING", 1)[1].strip()
+                pong_payload = ping_arg if ping_arg else ":tmi.twitch.tv"
+                ws.send(f"PONG {pong_payload}\r\n")
                 continue
+
+            if "NOTICE" in line and "authentication failed" in line.lower():
+                logging.error("[TwitchWS] Twitch IRC login failed: %s", line)
 
             if "PRIVMSG" in line:
                 self._parse_privmsg(line)

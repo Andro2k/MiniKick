@@ -79,7 +79,7 @@ class SQLiteScheduleStorage:
                     SET name = ?, date_str = ?, time_str = ?, target_platform = ?,
                         title = ?, kick_category_id = ?, kick_category_name = ?,
                         twitch_category_id = ?, twitch_category_name = ?,
-                        is_active = ?
+                        is_active = ?, last_executed_date = ''
                     WHERE id = ?
                 """, (
                     name, date_str, time_str, target_platform,
@@ -94,8 +94,8 @@ class SQLiteScheduleStorage:
                         name, date_str, time_str, target_platform, title,
                         kick_category_id, kick_category_name,
                         twitch_category_id, twitch_category_name,
-                        is_active, last_executed_date, days
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', '')
+                        is_active, last_executed_date
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '')
                 """, (
                     name, date_str, time_str, target_platform,
                     title, kick_category_id, kick_category_name,
@@ -113,7 +113,10 @@ class SQLiteScheduleStorage:
     def toggle_active(self, schedule_id: int, is_active: bool) -> bool:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("UPDATE stream_schedules SET is_active = ? WHERE id = ?", (1 if is_active else 0, schedule_id))
+            if is_active:
+                cursor.execute("UPDATE stream_schedules SET is_active = 1, last_executed_date = '' WHERE id = ?", (schedule_id,))
+            else:
+                cursor.execute("UPDATE stream_schedules SET is_active = 0 WHERE id = ?", (schedule_id,))
             return cursor.rowcount > 0
 
     def update_last_executed(self, schedule_id: int, date_str: str) -> bool:

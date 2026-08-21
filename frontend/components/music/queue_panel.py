@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QH
 from PySide6.QtCore import Signal, Qt, QSize, QRect, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN
-from frontend.common.utils import get_icon_colored
+from frontend.common import get_icon_colored
 from frontend.widgets import ModernTable, ModernTableCard
 
 class DragDropQueueTable(ModernTable):

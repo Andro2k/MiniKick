@@ -7,9 +7,20 @@ from frontend.widgets import ModernCard, ModernSwitch, SettingRow
 class MusicCommandsPanel(QWidget):
     command_toggled = Signal(str, bool)
 
+    _COMMANDS_CONFIG = [
+        ("!sr", "add.svg", "music.cmds.sr_label", "music.cmds.sr_desc", "sw_sr"),
+        ("!skip", "player-skip.svg", "music.cmds.skip_label", "music.cmds.skip_desc", "sw_skip"),
+        ("!song", "info-circle.svg", "music.cmds.song_label", "music.cmds.song_desc", "sw_song"),
+        ("!pause", "player-pause.svg", "music.cmds.pause_label", "music.cmds.pause_desc", "sw_pause"),
+        ("!resume", "player-play.svg", "music.cmds.resume_label", "music.cmds.resume_desc", "sw_resume"),
+        ("!playlist", "list.svg", "music.cmds.playlist_label", "music.cmds.playlist_desc", "sw_playlist"),
+        ("!vol", "volume.svg", "music.cmds.vol_label", "music.cmds.vol_desc", "sw_volume"),
+    ]
+
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
         self.i18n = i18n
+        self.switches: dict[str, ModernSwitch] = {}
         self._setup_ui()
 
     def _setup_ui(self):
@@ -25,43 +36,24 @@ class MusicCommandsPanel(QWidget):
         lbl_title.setProperty("role", "h3")
         self.card_cmds.addWidget(lbl_title)
 
-        self.sw_sr = ModernSwitch()
-        self.sw_sr.toggled.connect(lambda val: self.command_toggled.emit("!sr", val))
-        row_sr = SettingRow("add.svg", self.i18n.get("music.cmds.sr_label"), self.i18n.get("music.cmds.sr_desc"), self.sw_sr)
+        for cmd, icon, lbl_key, desc_key, attr_name in self._COMMANDS_CONFIG:
+            sw = ModernSwitch()
+            sw.toggled.connect(lambda val, c=cmd: self.command_toggled.emit(c, val))
+            self.switches[cmd] = sw
+            setattr(self, attr_name, sw)
+            row = SettingRow(icon, self.i18n.get(lbl_key), self.i18n.get(desc_key), sw)
+            self.card_cmds.addWidget(row)
 
-        self.sw_skip = ModernSwitch()
-        self.sw_skip.toggled.connect(lambda val: self.command_toggled.emit("!skip", val))
-        row_skip = SettingRow("player-skip.svg", self.i18n.get("music.cmds.skip_label"), self.i18n.get("music.cmds.skip_desc"), self.sw_skip)
-
-        self.sw_song = ModernSwitch()
-        self.sw_song.toggled.connect(lambda val: self.command_toggled.emit("!song", val))
-        row_song = SettingRow("info-circle.svg", self.i18n.get("music.cmds.song_label"), self.i18n.get("music.cmds.song_desc"), self.sw_song)
-
-        self.sw_pause = ModernSwitch()
-        self.sw_pause.toggled.connect(lambda val: self.command_toggled.emit("!pause", val))
-        row_pause = SettingRow("player-pause.svg", self.i18n.get("music.cmds.pause_label"), self.i18n.get("music.cmds.pause_desc"), self.sw_pause)
-
-        self.sw_resume = ModernSwitch()
-        self.sw_resume.toggled.connect(lambda val: self.command_toggled.emit("!resume", val))
-        row_resume = SettingRow("player-play.svg", self.i18n.get("music.cmds.resume_label"), self.i18n.get("music.cmds.resume_desc"), self.sw_resume)
-
-        self.sw_playlist = ModernSwitch()
-        self.sw_playlist.toggled.connect(lambda val: self.command_toggled.emit("!playlist", val))
-        row_playlist = SettingRow("list.svg", self.i18n.get("music.cmds.playlist_label"), self.i18n.get("music.cmds.playlist_desc"), self.sw_playlist)
-
-        self.sw_volume = ModernSwitch()
-        self.sw_volume.toggled.connect(lambda val: self.command_toggled.emit("!vol", val))
-        row_volume = SettingRow("volume.svg", self.i18n.get("music.cmds.vol_label"), self.i18n.get("music.cmds.vol_desc"), self.sw_volume)
-
-        self.card_cmds.addWidget(row_sr)
-        self.card_cmds.addWidget(row_skip)
-        self.card_cmds.addWidget(row_song)
-        self.card_cmds.addWidget(row_pause)
-        self.card_cmds.addWidget(row_resume)
-        self.card_cmds.addWidget(row_playlist)
-        self.card_cmds.addWidget(row_volume)
-        
         panel_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)
 
     def set_enabled_state(self, enabled: bool):
         self.card_cmds.setEnabled(enabled)
+
+    def set_switch_states(self, states: dict[str, bool]) -> None:
+        for cmd, sw in self.switches.items():
+            if cmd in states:
+                val = bool(states[cmd])
+                if sw.isChecked() != val:
+                    sw.blockSignals(True)
+                    sw.setChecked(val)
+                    sw.blockSignals(False)

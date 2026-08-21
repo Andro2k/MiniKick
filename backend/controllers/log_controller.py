@@ -2,8 +2,11 @@
 
 import os
 import re
+import logging
 from PySide6.QtCore import QObject, Slot, Signal, QUrl
 from PySide6.QtGui import QDesktopServices
+
+logger = logging.getLogger("minikick.controllers.logs")
 
 class LogController(QObject):
     log_processed = Signal(bool, str, str, str)
@@ -94,23 +97,27 @@ class LogController(QObject):
 
     @Slot(str)
     def handle_search_changed(self, text: str):
+        logger.debug("[User Action] Filtered logs viewer by text: '%s'", text)
         self._search_term = text.strip()
         self._search_term_lower = self._search_term.lower()
         self._refresh_view_logs()
 
     @Slot(str)
     def handle_filter_changed(self, filter_text: str):
+        logger.info("[User Action] Filtered logs viewer by level: '%s'", filter_text)
         self._current_filter = filter_text
         self._refresh_view_logs()
 
     @Slot(str)
     def handle_date_changed(self, date_str: str):
+        logger.info("[User Action] Filtered logs viewer by date: '%s'", date_str)
         self._date_filter = date_str
         self._refresh_view_logs()
 
     @Slot()
     def handle_view_toggle_requested(self):
         self._logs_streaming_visible = not self._logs_streaming_visible
+        logger.info("[User Action] Toggled live log streaming: visible=%s", self._logs_streaming_visible)
         self.view.update_display_state(
             is_historical=self._is_historical,
             streaming_visible=self._logs_streaming_visible
@@ -135,6 +142,7 @@ class LogController(QObject):
 
     @Slot()
     def handle_live_requested(self):
+        logger.info("[User Action] Paused live log streaming")
         self._is_historical = False
         self._logs_streaming_visible = False
         self._historical_logs.clear()
@@ -154,6 +162,7 @@ class LogController(QObject):
 
     @Slot()
     def handle_clear_requested(self):
+        logger.info("[User Action] Cleared logs viewer table")
         self.service.clear_history()
         self.view.clear_table()
         self.view.clear_pending_ops()
@@ -170,6 +179,7 @@ class LogController(QObject):
         default_dir = self.service.log_dir
         file_path = self.view.ask_open_log_file(default_dir)
         if file_path:
+            logger.info("[User Action] Loaded historical log file: '%s'", file_path)
             self.read_file(file_path)
 
     def read_file(self, file_path: str):

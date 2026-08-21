@@ -4,7 +4,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.services.system.updater_service import UpdateManager
 
 class UpdateCheckWorker(QThread):
-    update_found = Signal(dict)
+    update_found = Signal(object)
     no_update = Signal()
     error = Signal(str)
 
@@ -43,7 +43,7 @@ class UpdateDownloadWorker(QThread):
             self.error.emit(str(e))
 
 class ReleaseNotesWorker(QThread):
-    release_fetched = Signal(dict)
+    release_fetched = Signal(object)
     error_occurred = Signal(str)
 
     def __init__(self, repo_owner: str = "Andro2k", repo_name: str = "MiniKick", parent=None):

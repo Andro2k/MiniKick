@@ -1,16 +1,15 @@
 # frontend\components\schedule\schedule_form_panel.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-                               QPushButton, QCalendarWidget)
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
+                               QLineEdit, QPushButton, QCalendarWidget)
+from PySide6.QtCore import Qt, Signal, QDate, QTime
 from PySide6.QtGui import QTextCharFormat, QColor
-from PySide6.QtCore import Qt, Signal, QTime, QDate, QTimer
-from frontend.widgets import ModernCard, ModernButton, ModernSwitch, UnifiedSearchBar
-from frontend.components.schedule.quick_change_panel import CategorySuggestionsPopup
-from frontend.common.utils import NoWheelDateEdit, NoWheelTimeEdit
+from frontend.widgets import (ModernCard, ModernButton, ModernSwitch,
+                              NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox)
 from frontend.common.theme import COLOR_NEUTRAL_200
 
 class ScheduleFormPanel(QWidget):
-    schedule_saved = Signal(dict)
+    schedule_saved = Signal(object)
     form_cleared = Signal()
     search_category_requested = Signal(str, str)
 
@@ -26,10 +25,11 @@ class ScheduleFormPanel(QWidget):
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(16)
+        main_layout.setSpacing(12)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        card = ModernCard(parent=self, margin=14, spacing=12)
+        card = ModernCard(parent=self, margin=16, spacing=14)
+        card.card_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         header_layout = QHBoxLayout()
         header_layout.setSpacing(8)
@@ -49,9 +49,9 @@ class ScheduleFormPanel(QWidget):
         form_layout.addWidget(lbl_name)
         form_layout.addWidget(self.txt_name)
 
-        lbl_plat = QLabel(self.i18n.get("stream_info.schedule_dialog.platform_label"))
-        lbl_plat.setProperty("role", "h3")
-        form_layout.addWidget(lbl_plat)
+        lbl_target = QLabel(self.i18n.get("stream_info.schedule_dialog.platform_label"))
+        lbl_target.setProperty("role", "h3")
+        form_layout.addWidget(lbl_target)
 
         switches_row = QHBoxLayout()
         switches_row.setSpacing(24)
@@ -130,39 +130,27 @@ class ScheduleFormPanel(QWidget):
 
         lbl_cat_kick = QLabel(self.i18n.get("stream_info.schedule_dialog.kick_category_label"))
         lbl_cat_kick.setProperty("role", "h3")
-        self.search_kick_cat = UnifiedSearchBar(
+        self.search_kick_cat = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.schedule_dialog.category_placeholder"),
+            default_platform="kick",
             parent=self
         )
+        self.search_kick_cat.category_selected.connect(self._on_kick_cat_selected)
+        self.search_kick_cat.search_requested.connect(lambda q, p: self._trigger_category_search("kick", q))
         form_layout.addWidget(lbl_cat_kick)
         form_layout.addWidget(self.search_kick_cat)
 
-        self.popup_kick = CategorySuggestionsPopup(self.search_kick_cat, parent=self)
-        self.popup_kick.category_selected.connect(self._on_kick_cat_selected)
-
-        self.search_kick_timer = QTimer(self)
-        self.search_kick_timer.setSingleShot(True)
-        self.search_kick_timer.setInterval(400)
-        self.search_kick_timer.timeout.connect(lambda: self._trigger_category_search("kick", self.search_kick_cat.text()))
-        self.search_kick_cat.txt_input.textChanged.connect(self._on_kick_cat_text_changed)
-
         lbl_cat_twitch = QLabel(self.i18n.get("stream_info.schedule_dialog.twitch_category_label"))
         lbl_cat_twitch.setProperty("role", "h3")
-        self.search_twitch_cat = UnifiedSearchBar(
+        self.search_twitch_cat = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.schedule_dialog.category_placeholder"),
+            default_platform="twitch",
             parent=self
         )
+        self.search_twitch_cat.category_selected.connect(self._on_twitch_cat_selected)
+        self.search_twitch_cat.search_requested.connect(lambda q, p: self._trigger_category_search("twitch", q))
         form_layout.addWidget(lbl_cat_twitch)
         form_layout.addWidget(self.search_twitch_cat)
-
-        self.popup_twitch = CategorySuggestionsPopup(self.search_twitch_cat, parent=self)
-        self.popup_twitch.category_selected.connect(self._on_twitch_cat_selected)
-
-        self.search_twitch_timer = QTimer(self)
-        self.search_twitch_timer.setSingleShot(True)
-        self.search_twitch_timer.setInterval(400)
-        self.search_twitch_timer.timeout.connect(lambda: self._trigger_category_search("twitch", self.search_twitch_cat.text()))
-        self.search_twitch_cat.txt_input.textChanged.connect(self._on_twitch_cat_text_changed)
 
         form_layout.addSpacing(6)
         action_row = QHBoxLayout()
@@ -183,11 +171,6 @@ class ScheduleFormPanel(QWidget):
 
         card.addLayout(form_layout)
         main_layout.addWidget(card)
-
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        self.popup_kick.hide()
-        self.popup_twitch.hide()
 
     def _get_target_platform(self) -> str:
         kick_on = self.switch_kick.isChecked()
@@ -211,56 +194,23 @@ class ScheduleFormPanel(QWidget):
             self.switch_kick.setChecked(True)
             self.switch_twitch.setChecked(True)
 
-    def _on_kick_cat_text_changed(self, text: str):
-        if len(text.strip()) >= 2:
-            self.search_kick_timer.start()
-        else:
-            self.search_kick_timer.stop()
-            self.popup_kick.hide()
-
-    def _on_twitch_cat_text_changed(self, text: str):
-        if len(text.strip()) >= 2:
-            self.search_twitch_timer.start()
-        else:
-            self.search_twitch_timer.stop()
-            self.popup_twitch.hide()
-
     def _trigger_category_search(self, platform: str, query: str):
         if query.strip():
             self.search_category_requested.emit(query.strip(), platform)
 
     def set_category_search_results(self, platform: str, results: list[dict]):
-        if platform == "kick" and self.search_kick_cat.txt_input.hasFocus() and len(self.search_kick_cat.text().strip()) >= 2:
-            self.popup_kick.show_results(platform, results)
-        elif platform == "twitch" and self.search_twitch_cat.txt_input.hasFocus() and len(self.search_twitch_cat.text().strip()) >= 2:
-            self.popup_twitch.show_results(platform, results)
+        if platform == "kick":
+            self.search_kick_cat.set_results(platform, results)
+        elif platform == "twitch":
+            self.search_twitch_cat.set_results(platform, results)
 
     def _on_kick_cat_selected(self, data: dict):
-        self.search_kick_timer.stop()
-        name = data.get("name", "")
-        self.search_kick_cat.txt_input.blockSignals(True)
-        self.search_kick_cat.setText(name)
-        self.search_kick_cat.txt_input.blockSignals(False)
-        self.search_kick_cat.setFocus()
         self._kick_cat_id = data.get("id")
-        self.popup_kick.hide()
 
     def _on_twitch_cat_selected(self, data: dict):
-        self.search_twitch_timer.stop()
-        name = data.get("name", "")
-        self.search_twitch_cat.txt_input.blockSignals(True)
-        self.search_twitch_cat.setText(name)
-        self.search_twitch_cat.txt_input.blockSignals(False)
-        self.search_twitch_cat.setFocus()
         self._twitch_cat_id = data.get("id")
-        self.popup_twitch.hide()
 
     def load_schedule(self, schedule_data: dict):
-        self.search_kick_timer.stop()
-        self.search_twitch_timer.stop()
-        self.popup_kick.hide()
-        self.popup_twitch.hide()
-
         self.editing_schedule_id = schedule_data.get("id")
         self.lbl_title.setText(self.i18n.get("stream_info.schedule_dialog.title_edit"))
 
@@ -283,22 +233,15 @@ class ScheduleFormPanel(QWidget):
 
         self.txt_title.setText(schedule_data.get("title", ""))
 
-        self.search_kick_cat.txt_input.blockSignals(True)
-        self.search_twitch_cat.txt_input.blockSignals(True)
-        self.search_kick_cat.setText(schedule_data.get("kick_category_name", ""))
-        self.search_twitch_cat.setText(schedule_data.get("twitch_category_name", ""))
-        self.search_kick_cat.txt_input.blockSignals(False)
-        self.search_twitch_cat.txt_input.blockSignals(False)
-
+        kick_name = schedule_data.get("kick_category_name", "")
+        twitch_name = schedule_data.get("twitch_category_name", "")
         self._kick_cat_id = schedule_data.get("kick_category_id")
         self._twitch_cat_id = schedule_data.get("twitch_category_id")
 
-    def clear_form(self):
-        self.search_kick_timer.stop()
-        self.search_twitch_timer.stop()
-        self.popup_kick.hide()
-        self.popup_twitch.hide()
+        self.search_kick_cat.set_selected_category(kick_name, self._kick_cat_id, "kick")
+        self.search_twitch_cat.set_selected_category(twitch_name, self._twitch_cat_id, "twitch")
 
+    def clear_form(self):
         self.editing_schedule_id = None
         self._kick_cat_id = None
         self._twitch_cat_id = None
@@ -309,12 +252,8 @@ class ScheduleFormPanel(QWidget):
         self.time_edit.setTime(QTime.currentTime())
         self.txt_title.clear()
 
-        self.search_kick_cat.txt_input.blockSignals(True)
-        self.search_twitch_cat.txt_input.blockSignals(True)
         self.search_kick_cat.clear()
         self.search_twitch_cat.clear()
-        self.search_kick_cat.txt_input.blockSignals(False)
-        self.search_twitch_cat.txt_input.blockSignals(False)
 
         self.form_cleared.emit()
 

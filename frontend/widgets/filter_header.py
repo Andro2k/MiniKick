@@ -4,10 +4,10 @@ from PySide6.QtWidgets import QHeaderView, QMenu
 from PySide6.QtCore import Qt, Signal, QRect, QPoint
 from PySide6.QtGui import QPainter, QAction
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_500
-from frontend.common.utils import get_icon_colored
+from frontend.common.icons import get_icon_colored
 
 class FilterHeaderView(QHeaderView):
-    filter_changed = Signal(dict)
+    filter_changed = Signal(object)
     sort_requested = Signal(int, str)
 
     def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):
@@ -24,9 +24,9 @@ class FilterHeaderView(QHeaderView):
         col_idx: int,
         title: str,
         options: list[dict],
-        all_label: str = "Mostrar Todos",
-        sort_asc_label: str = "Ascendente (A-Z)",
-        sort_desc_label: str = "Descendente (Z-A)",
+        all_label: str = "",
+        sort_asc_label: str = "",
+        sort_desc_label: str = "",
         default_active: list[str] | None = None
     ):
         all_ids = {opt["id"] for opt in options}

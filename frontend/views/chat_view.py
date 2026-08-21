@@ -28,7 +28,7 @@ class ChatView(BaseView):
         self.body_layout.setSpacing(16)
 
         self.tabs = QTabWidget()
-        self.tabs.setMinimumWidth(440)
+        self.tabs.setMinimumWidth(320)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.tts_settings_panel = ChatTtsSettingsPanel(self.i18n)
@@ -52,7 +52,7 @@ class ChatView(BaseView):
         left_layout.setContentsMargins(0, 0, 0, 0)
         left_layout.setSpacing(0)
         left_layout.addWidget(self.tabs)
-        self.left_container.setMinimumWidth(440)
+        self.left_container.setMinimumWidth(320)
         self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
 
         self.chat_display_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)

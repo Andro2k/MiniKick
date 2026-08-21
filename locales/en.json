@@ -198,10 +198,8 @@
             "view_release_notes": "View Notes"
         },
         "status": {
-            "active": "Active",
             "connected": "Connected",
             "error": "Error",
-            "inactive": "Inactive",
             "no": "No",
             "offline": "Offline",
             "online": "Online",
@@ -247,7 +245,9 @@
             "autostart_desc": "Automatically connect MiniKick upon launching the application.",
             "autostart_title": "Auto Connect",
             "btn_active": "System Active",
+            "btn_active_twitch": "Twitch Active",
             "btn_connect": "Connect to Kick",
+            "btn_connect_twitch": "Connect Twitch",
             "btn_retry": "Retry",
             "status_auth": "Status: Authenticating...",
             "status_connected": "Status: Connected & Listening",
@@ -333,8 +333,12 @@
             "title": "Release Notes"
         },
         "unlink": {
-            "desc": "Are you sure you want to unlink your account? You will need to log in again next time you open MiniKick.",
-            "title": "Unlink Account"
+            "desc": "Do you want to disconnect your account? You will have to log in again the next time you open MiniKick.",
+            "title": "Disconnect Account"
+        },
+        "unlink_twitch": {
+            "desc": "Are you sure you want to disconnect your Twitch account? Chat and command features for Twitch will become inactive.",
+            "title": "Disconnect Twitch"
         },
         "update": {
             "btn_close": "Close",
@@ -637,6 +641,9 @@
             "service_disabled_chat": "❌ @{user}, music service is currently disabled."
         },
         "status": {
+            "disabled": "Disabled",
+            "enabled": "Enabled",
+            "updated": "Music Command Updated",
             "youtube_active": "YouTube Active"
         },
         "tabs": {
@@ -647,6 +654,7 @@
         "toast": {
             "chat_error_playing": "❌ @{user}, could not play '{title}': {error}",
             "chat_error_playing_no_user": "❌ Could not play '{title}': {error}",
+            "command_toggled": "Command {trigger} has been {status}.",
             "error_playing": "Could not play '{title}': {error}",
             "moved_in_queue": "Song position updated in queue",
             "removed_from_queue": "Song removed from queue"
@@ -1033,21 +1041,28 @@
             "categories_label": "Stream Categories (comma-separated):",
             "categories_placeholder": "Ex: Just Chatting, IRL",
             "chat_lines_desc": "Number of chat messages required in the last 5 minutes before triggering announcement.",
-            "chat_lines_label": "Minimum Chat Messages",
             "editor_title": "Edit Message",
+            "enable_chat_lines": "Enable minimum messages requirement",
             "help_desc": "Set optional conditions for your announcements. For example, trigger a message only when title contains 'giveaway' or category is 'IRL'.",
+            "help_title": "Filters & Conditions",
+            "intervals_label": "Sending Intervals",
             "keywords_desc": "Send announcement only if stream title contains any of these keywords.",
             "keywords_label": "Stream title keywords (comma-separated):",
             "keywords_placeholder": "Ex: giveaway, special",
             "name_label": "Timer Name:",
             "name_placeholder": "Ex: Social Networks",
-            "offline_interval_label": "Offline Interval (minutes)",
-            "online_interval_label": "Online Interval (minutes)",
-            "platforms_label": "Active platform(s):",
-            "response_label": "Response messages (one will be selected randomly):",
+            "offline_interval": "Offline Interval",
+            "online_interval": "Online Interval",
+            "platform_label": "Active platform(s):",
             "response_placeholder": "Enter response message here...",
-            "subtitle": "Schedule a recurring message to share your social links, rules, or announcements in chat.",
-            "title": "Configure Timer"
+            "responses_desc": "One message will be selected randomly each time the timer runs.",
+            "responses_title": "Response Messages",
+            "step_filters_subtitle": "Define filters by category or keywords in stream title.",
+            "step_filters_title": "Timer Filters",
+            "step_general_subtitle": "Configure timer name, intervals, and responses.",
+            "step_general_title": "Configure Timer",
+            "suffix_lines": "messages",
+            "suffix_min": "min"
         },
         "empty": {
             "btn": "Create Timer",

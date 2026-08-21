@@ -1,6 +1,9 @@
 # backend\controllers\settings_controller.py
 
+import logging
 from PySide6.QtCore import QObject, Signal, Slot
+
+logger = logging.getLogger("minikick.controllers.settings")
 
 class SettingsController(QObject):
     style_reload_requested = Signal(int)
@@ -62,18 +65,21 @@ class SettingsController(QObject):
 
     @Slot(str)
     def handle_music_audio_device(self, device_id: str):
+        logger.info("[User Action] Changed music output audio device to: '%s'", device_id)
         self.service.set_music_audio_device(device_id)
         if hasattr(self, 'music_provider') and self.music_provider and hasattr(self.music_provider, 'set_audio_device'):
             self.music_provider.set_audio_device(device_id)
 
     @Slot(str)
     def handle_tts_audio_device(self, device_id: str):
+        logger.info("[User Action] Changed TTS output audio device to: '%s'", device_id)
         self.service.set_tts_audio_device(device_id)
         if hasattr(self, 'tts_manager') and self.tts_manager and hasattr(self.tts_manager, 'set_audio_device'):
             self.tts_manager.set_audio_device(device_id)
 
     @Slot(bool)
     def handle_minimize_tray(self, enabled: bool):
+        logger.info("[User Action] Toggled minimize to tray setting: enabled=%s", enabled)
         self.service.set_minimize_tray_enabled(enabled)
         if self.toast:
             title_key = "settings.status.tray_enabled" if enabled else "settings.status.tray_disabled"
@@ -90,6 +96,7 @@ class SettingsController(QObject):
     def handle_export(self):
         filepath = self.view.ask_save_path()
         if filepath:
+            logger.info("[User Action] Exported app settings to: '%s'", filepath)
             if self.service.export_settings(filepath):
                 if self.toast:
                     self.toast.show_toast(
@@ -109,6 +116,7 @@ class SettingsController(QObject):
     def handle_import(self):
         filepath = self.view.ask_open_path()
         if filepath:
+            logger.info("[User Action] Imported app settings from: '%s'", filepath)
             if self.service.import_settings(filepath):
                 self.backup_restored.emit()
                 if self.toast:
@@ -127,6 +135,7 @@ class SettingsController(QObject):
 
     @Slot(str)
     def handle_language_change(self, lang_code: str):
+        logger.info("[User Action] Changed app language to: '%s'", lang_code)
         self.service.set_language(lang_code)
         
         if self.toast:
@@ -143,6 +152,7 @@ class SettingsController(QObject):
 
     @Slot(int)
     def handle_font_size(self, size: int):
+        logger.info("[User Action] Changed UI font size to: %d", size)
         self.service.set_font_size(size)
         self.style_reload_requested.emit(size)
         
@@ -153,8 +163,12 @@ class SettingsController(QObject):
 
     @Slot()
     def handle_feedback(self):
-        self.view.show_bug_report_dialog()
+        logger.info("[User Action] Opened Bug Report modal")
+        from backend.workers import BugReportWorker
+        self.view.show_bug_report_dialog(worker_class=BugReportWorker)
 
     @Slot()
     def handle_release_notes(self):
-        self.view.show_release_notes_dialog()
+        logger.info("[User Action] Opened Release Notes modal")
+        from backend.workers import ReleaseNotesWorker
+        self.view.show_release_notes_dialog(worker_class=ReleaseNotesWorker)

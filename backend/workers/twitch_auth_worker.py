@@ -4,7 +4,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.services.auth.oauth_service import TwitchAuthManager
 
 class TwitchAuthWorker(QThread):
-    auth_success = Signal(dict)
+    auth_success = Signal(object)
     auth_error = Signal(str)
 
     def __init__(self, twitch_auth_manager: TwitchAuthManager, force: bool = False, parent=None):

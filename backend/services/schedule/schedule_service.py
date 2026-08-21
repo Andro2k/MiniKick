@@ -99,21 +99,57 @@ class ScheduleService:
                         results[p] = cached_items
                         continue
 
-                if p == "kick" and self.kick_client:
-                    search_tasks["kick"] = executor.submit(self.kick_client.search_categories, query)
+                if p == "kick":
+                    client = self.kick_client
+                    if not client:
+                        from backend.providers.chat.kick_client import KickAPIClient
+                        client = KickAPIClient(None)
+                    search_tasks["kick"] = executor.submit(client.search_categories, query)
                 elif p == "twitch" and self.twitch_client:
                     search_tasks["twitch"] = executor.submit(self.twitch_client.search_categories, query)
 
             for p, future in search_tasks.items():
                 try:
                     items = future.result(timeout=8)
-                    results[p] = items
-                    self._category_cache[(p, query_clean)] = (now, items)
+                    ranked_items = self._rank_category_items(items, query_clean)
+                    results[p] = ranked_items
+                    self._category_cache[(p, query_clean)] = (now, ranked_items)
                 except Exception as e:
                     logger.warning("[ScheduleService] Error searching categories on %s: %s", p, e)
                     results[p] = []
 
         return results
+
+    @staticmethod
+    def _rank_category_items(items: list[dict], query_clean: str) -> list[dict]:
+        if not items or not query_clean:
+            return items or []
+        
+        seen = set()
+        deduped = []
+        for item in items:
+            name = item.get("name", "").strip()
+            if not name:
+                continue
+            cat_id = str(item.get("id", name))
+            if cat_id in seen:
+                continue
+            seen.add(cat_id)
+            deduped.append(item)
+
+        def _sort_key(item: dict) -> tuple[int, int, str]:
+            name_lower = item.get("name", "").strip().lower()
+            if name_lower == query_clean:
+                score = 0
+            elif name_lower.startswith(query_clean):
+                score = 1
+            elif query_clean in name_lower:
+                score = 2
+            else:
+                score = 3
+            return (score, len(name_lower), name_lower)
+
+        return sorted(deduped, key=_sort_key)
 
     def update_stream_info(self, title: str | None,
                            kick_category_id: int | None = None,

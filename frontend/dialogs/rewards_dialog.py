@@ -7,9 +7,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QColor
 
-from frontend.widgets import ModernButton, ModernSwitch, SliderRow
-from frontend.common.theme import COLOR_NEUTRAL_200, RADIUS_SM, RADIUS_MD, get_swatch_qss
-from frontend.common.utils import get_icon_colored, NoWheelComboBox, NoWheelSlider
+from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider
+from frontend.common.theme import RADIUS_SM, RADIUS_MD, get_swatch_qss
+from frontend.common.icons import get_icon_colored
 from .base_dialog import ModernWizardPanel
 from .visual_positioner_dialog import VisualPositionerDialog
 
@@ -32,8 +32,8 @@ class RewardsConfigWizard(ModernWizardPanel):
         super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=540, parent=parent)
         self._is_video = False
         
-        self._icon_refresh = get_icon_colored("refresh.svg", COLOR_NEUTRAL_200, 16)
-        self._icon_map_pin = get_icon_colored("map-pin.svg", COLOR_NEUTRAL_200, 16)
+        self._icon_refresh = get_icon_colored("refresh.svg")
+        self._icon_map_pin = get_icon_colored("map-pin.svg")
         
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()

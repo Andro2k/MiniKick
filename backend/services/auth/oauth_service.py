@@ -206,6 +206,10 @@ class TwitchAuthManager:
         return {}
 
     def login(self, force: bool = False) -> dict:
+        if not force:
+            tokens = self.get_tokens(force=False)
+            if tokens and tokens.get("access_token"):
+                return tokens
         return self._new_login(force=force)
 
     def is_authenticated(self) -> bool:

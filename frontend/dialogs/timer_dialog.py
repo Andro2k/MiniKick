@@ -2,19 +2,27 @@
 
 from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                                QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox)
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from .base_dialog import ModernWizardPanel, ModernModal
-from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit
+from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit, CategorySearchComboBox
 from frontend.common.theme import COLOR_RED, COLOR_GREEN
-from frontend.common.utils import get_icon_colored, NoWheelSlider, get_assets_path
+from frontend.common import get_icon_colored, get_assets_path
 
 class TimerConfigWizard(ModernWizardPanel):
+    search_category_requested = Signal(str, str)
+
     def __init__(self, i18n, parent=None, existing_config=None):
         self.i18n = i18n
-        title_steps = [self.i18n.get("timer.dialog.title"), self.i18n.get("timer.dialog.title")]
-        subtitle_steps = [self.i18n.get("timer.dialog.subtitle"), self.i18n.get("timer.dialog.categories_desc")]
-        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=750, parent=parent)        
+        title_steps = [
+            self.i18n.get("timer.dialog.step_general_title"),
+            self.i18n.get("timer.dialog.step_filters_title")
+        ]
+        subtitle_steps = [
+            self.i18n.get("timer.dialog.step_general_subtitle"),
+            self.i18n.get("timer.dialog.step_filters_subtitle")
+        ]
+        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=820, parent=parent)        
         self.existing_config = existing_config
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []       
@@ -29,153 +37,187 @@ class TimerConfigWizard(ModernWizardPanel):
             self._add_message_field()            
         self.start_wizard()
 
-    def _create_interval_controls(self, layout, min_val: int, max_val: int, default_val: int):
-        controls_layout = QHBoxLayout()
-        slider = NoWheelSlider(Qt.Orientation.Horizontal)
-        slider.setRange(min_val, max_val)
-        slider.setValue(default_val)
-        
-        spin = QSpinBox()
-        spin.setRange(min_val, max_val)
-        spin.setValue(default_val)
-        spin.setFixedWidth(100)
-        
-        slider.valueChanged.connect(spin.setValue)
-        spin.spin.valueChanged.connect(slider.setValue) if hasattr(spin, "spin") else spin.valueChanged.connect(slider.setValue)
-        
-        controls_layout.addWidget(slider, stretch=1)
-        controls_layout.addWidget(spin)
-        layout.addLayout(controls_layout)
-        return slider, spin
-
     def _setup_ui(self):
+        suffix_min = f" {self.i18n.get('timer.dialog.suffix_min')}"
+        suffix_lines = f" {self.i18n.get('timer.dialog.suffix_lines')}"
+
         self.tab_basic = QWidget()
-        basic_main_layout = QHBoxLayout(self.tab_basic)
+        basic_main_layout = QVBoxLayout(self.tab_basic)
         basic_main_layout.setContentsMargins(0, 0, 0, 0)
-        basic_main_layout.setSpacing(20)
+        basic_main_layout.setSpacing(12)
 
-        left_col = QWidget()
-        left_layout = QVBoxLayout(left_col)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(10)
+        top_card = QFrame()
+        top_card.setProperty("role", "card")
+        top_layout = QVBoxLayout(top_card)
+        top_layout.setContentsMargins(16, 14, 16, 14)
+        top_layout.setSpacing(10)
 
+        row_name_plat = QHBoxLayout()
+        row_name_plat.setSpacing(20)
+
+        name_box = QVBoxLayout()
+        name_box.setSpacing(4)
         lbl_name = QLabel(self.i18n.get("timer.dialog.name_label"))
         lbl_name.setProperty("role", "h3")
         self.txt_name = QLineEdit()
         self.txt_name.setPlaceholderText(self.i18n.get("timer.dialog.name_placeholder"))
         self.txt_name.textChanged.connect(self._update_btn_next_state)
-        left_layout.addWidget(lbl_name)
-        left_layout.addWidget(self.txt_name)
+        name_box.addWidget(lbl_name)
+        name_box.addWidget(self.txt_name)
+        row_name_plat.addLayout(name_box, stretch=3)
 
-        lbl_platforms = QLabel(self.i18n.get("timer.dialog.platforms_label"))
-        lbl_platforms.setProperty("role", "h3")
-        left_layout.addWidget(lbl_platforms)
+        plat_box = QVBoxLayout()
+        plat_box.setSpacing(4)
+        lbl_platform = QLabel(self.i18n.get("timer.dialog.platform_label"))
+        lbl_platform.setProperty("role", "h3")
+        
+        switches_row = QHBoxLayout()
+        switches_row.setSpacing(12)
 
-        platforms_row = QWidget()
-        platforms_layout = QHBoxLayout(platforms_row)
-        platforms_layout.setContentsMargins(0, 0, 0, 0)
-        platforms_layout.setSpacing(16)
-
-        kick_box = QHBoxLayout()
-        lbl_kick = QLabel(self.i18n.get("spam.card.platform_kick"))
-        lbl_kick.setProperty("role", "body")
+        kick_switch_box = QHBoxLayout()
+        kick_switch_box.setSpacing(6)
         self.switch_kick = ModernSwitch()
         self.switch_kick.setChecked(True)
-        self.switch_kick.toggled.connect(self._update_btn_next_state)
-        kick_box.addWidget(lbl_kick)
-        kick_box.addWidget(self.switch_kick)
+        lbl_kick = QLabel("Kick")
+        lbl_kick.setProperty("role", "body")
+        kick_switch_box.addWidget(self.switch_kick)
+        kick_switch_box.addWidget(lbl_kick)
+        switches_row.addLayout(kick_switch_box)
 
-        twitch_box = QHBoxLayout()
-        lbl_twitch = QLabel(self.i18n.get("spam.card.platform_twitch"))
-        lbl_twitch.setProperty("role", "body")
+        twitch_switch_box = QHBoxLayout()
+        twitch_switch_box.setSpacing(6)
         self.switch_twitch = ModernSwitch()
         self.switch_twitch.setChecked(True)
-        self.switch_twitch.toggled.connect(self._update_btn_next_state)
-        twitch_box.addWidget(lbl_twitch)
-        twitch_box.addWidget(self.switch_twitch)
+        lbl_twitch = QLabel("Twitch")
+        lbl_twitch.setProperty("role", "body")
+        twitch_switch_box.addWidget(self.switch_twitch)
+        twitch_switch_box.addWidget(lbl_twitch)
+        switches_row.addLayout(twitch_switch_box)
+        switches_row.addStretch()
 
-        platforms_layout.addLayout(kick_box)
-        platforms_layout.addLayout(twitch_box)
-        platforms_layout.addStretch()
-        left_layout.addWidget(platforms_row)
+        plat_box.addWidget(lbl_platform)
+        plat_box.addLayout(switches_row)
+        row_name_plat.addLayout(plat_box, stretch=2)
 
-        lbl_response = QLabel(self.i18n.get("timer.dialog.response_label"))
-        lbl_response.setProperty("role", "h3")
-        left_layout.addWidget(lbl_response)
+        top_layout.addLayout(row_name_plat)
 
-        self.scroll_messages = QScrollArea()
-        self.scroll_messages.setWidgetResizable(True)
-        self.scroll_messages.setMinimumHeight(150)
-        self.scroll_messages.setFrameShape(QFrame.Shape.NoFrame)
-        
-        self.scroll_messages_content = QWidget()
-        self.messages_layout = QVBoxLayout(self.scroll_messages_content)
-        self.messages_layout.setContentsMargins(0, 0, 0, 0)
-        self.messages_layout.setSpacing(8)
-        self.messages_layout.addStretch()
-        
-        self.scroll_messages.setWidget(self.scroll_messages_content)
-        left_layout.addWidget(self.scroll_messages)
+        lbl_intervals = QLabel(self.i18n.get("timer.dialog.intervals_label"))
+        lbl_intervals.setProperty("role", "h3")
+        top_layout.addWidget(lbl_intervals)
 
-        self.btn_add_msg = ModernButton(self.i18n.get("timer.dialog.btn_add_message"), role="action_accent_border")
-        self.btn_add_msg.clicked.connect(lambda: self._add_message_field())
-        left_layout.addWidget(self.btn_add_msg)
+        row_intervals = QHBoxLayout()
+        row_intervals.setSpacing(20)
 
-        basic_main_layout.addWidget(left_col, stretch=1)
-
-        right_col = QWidget()
-        right_layout = QVBoxLayout(right_col)
-        right_layout.setContentsMargins(0, 0, 0, 0)
-        right_layout.setSpacing(14)
-
-        self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval_label"))
+        self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval"))
         self.chk_online.setChecked(True)
-        right_layout.addWidget(self.chk_online)
-        self.slider_online, self.spin_online = self._create_interval_controls(right_layout, 1, 120, 5)
-        self.chk_online.toggled.connect(self.slider_online.setEnabled)
+        self.spin_online = QSpinBox()
+        self.spin_online.setRange(1, 1440)
+        self.spin_online.setValue(5)
+        self.spin_online.setSuffix(suffix_min)
+        self.spin_online.setMinimumWidth(100)
         self.chk_online.toggled.connect(self.spin_online.setEnabled)
         self.chk_online.toggled.connect(self._update_btn_next_state)
 
-        self.chk_offline = QCheckBox(self.i18n.get("timer.dialog.offline_interval_label"))
-        self.chk_offline.setChecked(True)
-        right_layout.addWidget(self.chk_offline)
-        self.slider_offline, self.spin_offline = self._create_interval_controls(right_layout, 1, 480, 30)
-        self.chk_offline.toggled.connect(self.slider_offline.setEnabled)
+        row_online = QHBoxLayout()
+        row_online.addWidget(self.chk_online, stretch=1)
+        row_online.addWidget(self.spin_online)
+        row_intervals.addLayout(row_online, stretch=1)
+
+        self.chk_offline = QCheckBox(self.i18n.get("timer.dialog.offline_interval"))
+        self.chk_offline.setChecked(False)
+        self.spin_offline = QSpinBox()
+        self.spin_offline.setRange(1, 1440)
+        self.spin_offline.setValue(15)
+        self.spin_offline.setSuffix(suffix_min)
+        self.spin_offline.setMinimumWidth(100)
+        self.spin_offline.setEnabled(False)
         self.chk_offline.toggled.connect(self.spin_offline.setEnabled)
         self.chk_offline.toggled.connect(self._update_btn_next_state)
 
-        self.chk_lines = QCheckBox(self.i18n.get("timer.dialog.chat_lines_label"))
-        self.chk_lines.setChecked(True)
-        right_layout.addWidget(self.chk_lines)
-        self.slider_lines, self.spin_lines = self._create_interval_controls(right_layout, 0, 100, 5)
-        self.chk_lines.toggled.connect(self.slider_lines.setEnabled)
+        row_offline = QHBoxLayout()
+        row_offline.addWidget(self.chk_offline, stretch=1)
+        row_offline.addWidget(self.spin_offline)
+        row_intervals.addLayout(row_offline, stretch=1)
+
+        top_layout.addLayout(row_intervals)
+
+        row_lines = QHBoxLayout()
+        row_lines.setSpacing(12)
+
+        self.chk_lines = QCheckBox(self.i18n.get("timer.dialog.enable_chat_lines"))
+        self.chk_lines.setChecked(False)
+        self.spin_lines = QSpinBox()
+        self.spin_lines.setRange(1, 500)
+        self.spin_lines.setValue(5)
+        self.spin_lines.setSuffix(suffix_lines)
+        self.spin_lines.setMinimumWidth(120)
+        self.spin_lines.setEnabled(False)
         self.chk_lines.toggled.connect(self.spin_lines.setEnabled)
-        
+
         lbl_lines_desc = QLabel(self.i18n.get("timer.dialog.chat_lines_desc"))
         lbl_lines_desc.setProperty("role", "caption")
         lbl_lines_desc.setWordWrap(True)
-        right_layout.addWidget(lbl_lines_desc)
 
-        right_layout.addStretch()
-        basic_main_layout.addWidget(right_col, stretch=1)
+        row_lines.addWidget(self.chk_lines)
+        row_lines.addWidget(self.spin_lines)
+        row_lines.addSpacing(10)
+        row_lines.addWidget(lbl_lines_desc, stretch=1)
+
+        top_layout.addLayout(row_lines)
+        basic_main_layout.addWidget(top_card)
+
+        bottom_card = QFrame()
+        bottom_card.setProperty("role", "card")
+        bottom_layout = QVBoxLayout(bottom_card)
+        bottom_layout.setContentsMargins(16, 14, 16, 14)
+        bottom_layout.setSpacing(8)
+
+        lbl_msgs_title = QLabel(self.i18n.get("timer.dialog.responses_title"))
+        lbl_msgs_title.setProperty("role", "h3")
+        bottom_layout.addWidget(lbl_msgs_title)
+
+        lbl_msgs_desc = QLabel(self.i18n.get("timer.dialog.responses_desc"))
+        lbl_msgs_desc.setProperty("role", "caption")
+        lbl_msgs_desc.setWordWrap(True)
+        bottom_layout.addWidget(lbl_msgs_desc)
+
+        self.scroll_msgs = QScrollArea()
+        self.scroll_msgs.setWidgetResizable(True)
+        self.scroll_msgs.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll_msgs.setMinimumHeight(120)
+        self.scroll_msgs_widget = QWidget()
+        self.msgs_container_layout = QVBoxLayout(self.scroll_msgs_widget)
+        self.msgs_container_layout.setContentsMargins(0, 0, 0, 0)
+        self.msgs_container_layout.setSpacing(6)
+        self.msgs_container_layout.addStretch()
+        self.scroll_msgs.setWidget(self.scroll_msgs_widget)
+        bottom_layout.addWidget(self.scroll_msgs, stretch=1)
+
+        self.btn_add_msg = ModernButton(self.i18n.get("timer.dialog.btn_add_message"), role="action_outlined")
+        self.btn_add_msg.clicked.connect(lambda: self._add_message_field())
+        bottom_layout.addWidget(self.btn_add_msg)
+
+        basic_main_layout.addWidget(bottom_card, stretch=1)
 
         self.tab_filters = QWidget()
         filters_main_layout = QHBoxLayout(self.tab_filters)
         filters_main_layout.setContentsMargins(0, 0, 0, 0)
-        filters_main_layout.setSpacing(20)
+        filters_main_layout.setSpacing(16)
 
-        left_filt_col = QWidget()
+        left_filt_col = QFrame()
+        left_filt_col.setProperty("role", "card")
         left_filt_layout = QVBoxLayout(left_filt_col)
-        left_filt_layout.setContentsMargins(0, 0, 0, 0)
-        left_filt_layout.setSpacing(12)
+        left_filt_layout.setContentsMargins(16, 16, 16, 16)
+        left_filt_layout.setSpacing(10)
 
         lbl_keywords = QLabel(self.i18n.get("timer.dialog.keywords_label"))
         lbl_keywords.setProperty("role", "h3")
+        left_filt_layout.addWidget(lbl_keywords)
+
         self.txt_keywords = QLineEdit()
         self.txt_keywords.setPlaceholderText(self.i18n.get("timer.dialog.keywords_placeholder"))
-        left_filt_layout.addWidget(lbl_keywords)
         left_filt_layout.addWidget(self.txt_keywords)
-        
+
         lbl_keywords_desc = QLabel(self.i18n.get("timer.dialog.keywords_desc"))
         lbl_keywords_desc.setProperty("role", "caption")
         lbl_keywords_desc.setWordWrap(True)
@@ -183,9 +225,20 @@ class TimerConfigWizard(ModernWizardPanel):
 
         lbl_categories = QLabel(self.i18n.get("timer.dialog.categories_label"))
         lbl_categories.setProperty("role", "h3")
+        left_filt_layout.addWidget(lbl_categories)
+
+        self.search_category = CategorySearchComboBox(
+            placeholder=self.i18n.get("stream_info.quick_change.category_placeholder"),
+            default_platform="both",
+            parent=self
+        )
+        self.search_category.category_selected.connect(self._on_category_selected)
+        self.search_category.search_requested.connect(self.search_category_requested.emit)
+        self.search_category.returnPressed.connect(self._on_category_search_return_pressed)
+        left_filt_layout.addWidget(self.search_category)
+
         self.txt_categories = QLineEdit()
         self.txt_categories.setPlaceholderText(self.i18n.get("timer.dialog.categories_placeholder"))
-        left_filt_layout.addWidget(lbl_categories)
         left_filt_layout.addWidget(self.txt_categories)
         
         lbl_cat_desc = QLabel(self.i18n.get("timer.dialog.categories_desc"))
@@ -199,9 +252,10 @@ class TimerConfigWizard(ModernWizardPanel):
         right_filt_col = QFrame()
         right_filt_col.setProperty("role", "card")
         right_filt_layout = QVBoxLayout(right_filt_col)
-        right_filt_layout.setContentsMargins(12, 12, 12, 12)
+        right_filt_layout.setContentsMargins(16, 16, 16, 16)
+        right_filt_layout.setSpacing(10)
         
-        lbl_help_title = QLabel(self.i18n.get("timer.dialog.title"))
+        lbl_help_title = QLabel(self.i18n.get("timer.dialog.help_title"))
         lbl_help_title.setProperty("role", "h3")
         lbl_help_desc = QLabel(self.i18n.get("timer.dialog.help_desc"))
         lbl_help_desc.setWordWrap(True)
@@ -216,6 +270,27 @@ class TimerConfigWizard(ModernWizardPanel):
         self.add_page(self.tab_basic)
         self.add_page(self.tab_filters)
 
+    def _on_category_search_return_pressed(self):
+        text = self.search_category.text().strip()
+        if text:
+            current_cats = [c.strip() for c in self.txt_categories.text().split(",") if c.strip()]
+            if text not in current_cats:
+                current_cats.append(text)
+            self.txt_categories.setText(", ".join(current_cats))
+            self.search_category.clear()
+
+    def set_category_search_results(self, platform: str, results: list[dict]):
+        self.search_category.set_results(platform, results)
+
+    def _on_category_selected(self, data: dict):
+        cat_name = data.get("name", "")
+        if cat_name:
+            current_cats = [c.strip() for c in self.txt_categories.text().split(",") if c.strip()]
+            if cat_name not in current_cats:
+                current_cats.append(cat_name)
+            self.txt_categories.setText(", ".join(current_cats))
+            self.search_category.clear()
+
     def _add_message_field(self, text=""):
         row = QWidget()
         row_layout = QHBoxLayout(row)
@@ -229,43 +304,44 @@ class TimerConfigWizard(ModernWizardPanel):
         row_layout.addWidget(txt)
         
         btn_edit = ModernButton("", role="action_accent_border")
-        btn_edit.setFixedSize(26, 26)
         btn_edit.setIcon(self._icon_edit)
-        btn_edit.setIconSize(QSize(14, 14))
-        btn_edit.clicked.connect(lambda checked=False, line_edit=txt: self._open_message_editor(line_edit))
+        btn_edit.setFixedSize(32, 32)
+        btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_edit.clicked.connect(lambda: self._open_message_editor(txt))
         row_layout.addWidget(btn_edit)
         
         btn_del = ModernButton("", role="action_danger_border")
-        btn_del.setFixedSize(26, 26)
         btn_del.setIcon(self._icon_trash)
-        btn_del.setIconSize(QSize(14, 14))
-        btn_del.clicked.connect(lambda: self._remove_message_row(row))
+        btn_del.setFixedSize(32, 32)
+        btn_del.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_del.clicked.connect(lambda: self._remove_message_field(row))
         row_layout.addWidget(btn_del)
         
-        self.messages_layout.insertWidget(self.messages_layout.count() - 1, row)
         self.message_rows.append((row, txt))
-
-    def _remove_message_row(self, row_widget):
-        if len(self.message_rows) <= 1:
-            return
-        for item in list(self.message_rows):
-            if item[0] == row_widget:
-                self.message_rows.remove(item)
-                self.messages_layout.removeWidget(row_widget)
-                row_widget.deleteLater()
-                break
+        self.msgs_container_layout.insertWidget(self.msgs_container_layout.count() - 1, row)
         self._update_btn_next_state()
 
     def _open_message_editor(self, line_edit: QLineEdit):
-        dialog = MessageEditorDialog(line_edit.text(), self.i18n, parent=self)
-        if dialog.exec():
-            line_edit.setText(dialog.get_text())
+        editor = MessageEditorDialog(line_edit.text(), self.i18n, parent=self)
+        if editor.exec():
+            line_edit.setText(editor.get_text())
+
+    def _remove_message_field(self, row_widget):
+        if len(self.message_rows) <= 1:
+            return
+        
+        for r, txt in self.message_rows:
+            if r == row_widget:
+                self.message_rows.remove((r, txt))
+                self.msgs_container_layout.removeWidget(r)
+                r.deleteLater()
+                break
+        self._update_btn_next_state()
 
     def validate_step(self, step_index: int) -> bool:
         if step_index == 0:
-            if not self.txt_name.text().strip():
-                return False
-            if not self.switch_kick.isChecked() and not self.switch_twitch.isChecked():
+            name = self.txt_name.text().strip()
+            if not name:
                 return False
             messages = [txt.text().strip() for row, txt in self.message_rows if txt.text().strip()]
             if not messages:
@@ -292,30 +368,24 @@ class TimerConfigWizard(ModernWizardPanel):
         has_online = online_min is not None and online_min > 0
         self.chk_online.setChecked(has_online)
         if has_online:
-            self.slider_online.setValue(online_min)
             self.spin_online.setValue(online_min)
         else:
-            self.slider_online.setEnabled(False)
             self.spin_online.setEnabled(False)
 
         offline_min = self.existing_config.get("interval_offline")
         has_offline = offline_min is not None and offline_min > 0
         self.chk_offline.setChecked(has_offline)
         if has_offline:
-            self.slider_offline.setValue(offline_min)
             self.spin_offline.setValue(offline_min)
         else:
-            self.slider_offline.setEnabled(False)
             self.spin_offline.setEnabled(False)
 
         lines = self.existing_config.get("chat_lines", 0)
         has_lines = lines is not None and lines > 0
         self.chk_lines.setChecked(has_lines)
         if has_lines:
-            self.slider_lines.setValue(lines)
             self.spin_lines.setValue(lines)
         else:
-            self.slider_lines.setEnabled(False)
             self.spin_lines.setEnabled(False)
 
         keywords = self.existing_config.get("keywords", [])
@@ -361,7 +431,6 @@ class TimerConfigWizard(ModernWizardPanel):
                 txt.setProperty("state", "error" if is_invalid else "normal")
                 txt.style().unpolish(txt)
                 txt.style().polish(txt)
-
 
 class MessageEditorDialog(ModernModal):
     def __init__(self, current_text: str, i18n, parent=None):

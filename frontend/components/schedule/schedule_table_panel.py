@@ -9,7 +9,7 @@ from frontend.common.theme import COLOR_GREEN, COLOR_RED
 
 class ScheduleTablePanel(QWidget):
     new_schedule_clicked = Signal()
-    edit_schedule_clicked = Signal(dict)
+    edit_schedule_clicked = Signal(object)
     delete_schedule_requested = Signal(int)
     toggle_schedule_requested = Signal(int, bool)
 

@@ -11,7 +11,7 @@ logger = logging.getLogger("minikick.controllers.widgets")
 class WidgetController(QObject):
     death_count_updated = Signal(int)
     score_updated = Signal(int, int)
-    widgets_reloaded = Signal(dict)
+    widgets_reloaded = Signal(object)
 
     PLUGIN_TAGS = {
         "shoutout": "[PLUGIN_WIDGET_SO]", "death": "[PLUGIN_WIDGET_DEATH]", "score": "[PLUGIN_WIDGET_SCORE]",
@@ -48,6 +48,7 @@ class WidgetController(QObject):
         self._save_timer.timeout.connect(self._flush_saves)
         self._pending_saves = set()
         self._is_syncing_db = False
+        self._needs_reload = False
 
         self.command_service.commands_changed.connect(self._sync_widgets_from_commands_db)
         if self.view is not None:
@@ -78,6 +79,14 @@ class WidgetController(QObject):
             self.view.death_count_changed.connect(self.handle_death_count_change)
             self.view.score_changed.connect(self.handle_score_change)
             self.death_count_updated.connect(self.view.update_death_count_display)
+            if hasattr(self.view, "view_shown"):
+                self.view.view_shown.connect(self._on_view_shown)
+
+    def _on_view_shown(self):
+        if self._needs_reload:
+            self._needs_reload = False
+            if self.view:
+                self.view.populate_widgets(self.widget_service.get_all_widgets())
             self.score_updated.connect(self.view.update_score_display)
 
     def load_initial_data(self):
@@ -142,7 +151,11 @@ class WidgetController(QObject):
                     changed = True
 
             if self.view:
-                self.view.populate_widgets(self.widget_service.get_all_widgets())
+                if self.view.isVisible():
+                    self._needs_reload = False
+                    self.view.populate_widgets(self.widget_service.get_all_widgets())
+                else:
+                    self._needs_reload = True
         finally:
             self._is_syncing_db = False
 
@@ -188,8 +201,10 @@ class WidgetController(QObject):
         finally:
             self._is_syncing_db = False
 
-    @Slot(str, bool, str, int, str, dict)
+    @Slot(str, bool, str, int, str, object)
     def handle_widget_save(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):
+        logger.info("[User Action] Updated widget '%s': is_active=%s, command='%s', cooldown=%d, perm='%s'",
+                    widget_id, is_active, command, cooldown, permission)
         previous = self.widget_service.get_widget(widget_id)
         was_active = previous.get("is_active", True) if previous else True
 
@@ -218,7 +233,6 @@ class WidgetController(QObject):
             message = self.i18n.get(msg_key).replace("{widget_name}", w_name) if self.i18n else ""
             state = "success" if is_active else "info"
 
-
             if self.toast:
                 self.toast.show_toast(
                     title=title,
@@ -235,6 +249,7 @@ class WidgetController(QObject):
 
     @Slot(int)
     def handle_death_count_change(self, new_val: int):
+        logger.info("[User Action] Manual death counter change: count=%d", new_val)
         final_val = self.widget_service.update_death_count(set_val=new_val, defer_disk=True)
         self.death_count_updated.emit(final_val)
         self._trigger_deferred_save("death")
@@ -249,6 +264,7 @@ class WidgetController(QObject):
 
     @Slot(int, int)
     def handle_score_change(self, wins: int, losses: int):
+        logger.info("[User Action] Manual score counter change: wins=%d, losses=%d", wins, losses)
         final_wins, final_losses = self.widget_service.update_score(set_wins=wins, set_losses=losses, defer_disk=True)
         self.score_updated.emit(final_wins, final_losses)
         self._trigger_deferred_save("score")
@@ -383,7 +399,7 @@ class WidgetController(QObject):
             })
         self.command_service.send_response(msg, platform=platform)
 
-    @Slot(str, str, str, list)
+    @Slot(str, str, str, object)
     def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None):
         if not content or not self.overlay_server:
             return

@@ -1,6 +1,9 @@
 # backend\controllers\network_controller.py
 
+import logging
 from PySide6.QtCore import QObject, Slot
+
+logger = logging.getLogger("minikick.controllers.network")
 
 class NetworkController(QObject):
     def __init__(self, view, service):
@@ -12,12 +15,17 @@ class NetworkController(QObject):
 
     def _connect_signals(self):
         if self.view:
-            self.view.check_requested.connect(self.service.run_network_check)
+            self.view.check_requested.connect(self._handle_manual_check)
             self.view.view_shown.connect(self.update_view_from_service)
             self.service.checking_started.connect(self.view.set_checking_state)
             self.service.results_updated.connect(self.view.update_status)
             self.service.history_updated.connect(self.view.graph.update_graph_data)
             self.update_view_from_service()
+
+    @Slot()
+    def _handle_manual_check(self):
+        logger.info("[User Action] Manual network connectivity check requested")
+        self.service.run_network_check()
 
     def attach_view(self, view) -> None:
         self.view = view

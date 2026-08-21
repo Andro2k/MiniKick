@@ -1,6 +1,6 @@
 # tests\unit\test_command_parser.py
 
-from frontend.common.utils import validate_trigger_prefix
+from frontend.common import validate_trigger_prefix
 
 def test_validate_trigger_prefix_valid():
     assert validate_trigger_prefix("!tts") is True
@@ -158,7 +158,86 @@ def test_release_notes_provider_and_dialog(monkeypatch):
     assert "Test Notes" in info["body"]
 
     dialog = ReleaseNotesDialog(i18n=i18n)
-    dialog._on_release_fetched(info)
+    if dialog._worker:
+        dialog._worker.wait(1000)
+    dialog._on_release_fetched(fake_release_json)
     assert dialog.title_lbl.text() == "MiniKick V1.4.9"
     assert dialog.lbl_tag_badge.text() == "v1.4.9"
     assert dialog.txt_content.toPlainText() != ""
+    dialog.close()
+
+def test_music_commands_panel_atomic_switch_blocking():
+    from PySide6.QtWidgets import QApplication
+    from backend.services.system.translation_service import TranslationService
+    from frontend.components.music.commands_panel import MusicCommandsPanel
+
+    _app = QApplication.instance() or QApplication([])
+    i18n = TranslationService(default_lang="es")
+
+    panel = MusicCommandsPanel(i18n=i18n)
+    toggled_signals = []
+    panel.command_toggled.connect(lambda cmd, val: toggled_signals.append((cmd, val)))
+
+    # Using set_switch_states should not trigger command_toggled signals
+    panel.set_switch_states({"!sr": True, "!skip": False, "!song": True})
+    assert panel.sw_sr.isChecked() is True
+    assert panel.sw_skip.isChecked() is False
+    assert panel.sw_song.isChecked() is True
+    assert len(toggled_signals) == 0
+
+def test_command_controller_lazy_rendering():
+    from backend.controllers.command_controller import CommandController
+    from unittest.mock import MagicMock
+
+    mock_view = MagicMock()
+    mock_view.isVisible.return_value = False
+    mock_service = MagicMock()
+    mock_service.get_all_commands.return_value = [{"trigger": "!test", "response": "test"}]
+
+    controller = CommandController(view=mock_view, service=mock_service)
+    controller.load_initial_data(force=False)
+
+    # Since view is not visible, it should defer and set _needs_reload
+    assert controller._needs_reload is True
+    assert mock_view.populate_table.call_count == 0
+
+    # When view becomes visible or force=True
+    controller.load_initial_data(force=True)
+    assert controller._needs_reload is False
+    assert mock_view.populate_table.call_count == 1
+
+def test_dashboard_twitch_connection_ui():
+    from PySide6.QtWidgets import QApplication
+    from backend.services.system.translation_service import TranslationService
+    from frontend.views.dashboard_view import DashboardView
+    from backend.controllers.dashboard_controller import DashboardController
+    from unittest.mock import MagicMock
+
+    _app = QApplication.instance() or QApplication([])
+    i18n = TranslationService(default_lang="es")
+
+    view = DashboardView(i18n=i18n)
+    avatar_service = MagicMock()
+    controller = DashboardController(view=view, avatar_service=avatar_service)
+
+    twitch_signals = []
+    controller.twitch_connect_requested.connect(lambda: twitch_signals.append(True))
+
+    # Initial state
+    assert view.btn_connect_twitch.text() == "Conectar Twitch"
+
+    # Emitting click on view button triggers controller signal
+    view.btn_connect_twitch.click()
+    assert len(twitch_signals) == 1
+
+    # Setting connected status updates button text and disables it
+    controller.set_twitch_status(connected=True, channel="sryunior64")
+    assert view.btn_connect_twitch.text() == "Twitch Activo"
+    assert view.btn_connect_twitch.isEnabled() is False
+
+    # Disconnecting reverts text and enables it
+    controller.set_twitch_status(connected=False)
+    assert view.btn_connect_twitch.text() == "Conectar Twitch"
+    assert view.btn_connect_twitch.isEnabled() is True
+
+

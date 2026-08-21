@@ -4,7 +4,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.services.auth.oauth_service import AuthManager
 
 class AuthWorker(QThread):
-    auth_success = Signal(dict)
+    auth_success = Signal(object)
     auth_error = Signal(str)
 
     def __init__(self, i18n, auth_manager: AuthManager):

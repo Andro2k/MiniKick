@@ -8,7 +8,7 @@ from backend.services.schedule.schedule_service import ScheduleService
 logger = logging.getLogger("minikick.schedule_worker")
 
 class ScheduleWorker(QThread):
-    schedule_triggered = Signal(dict, dict)
+    schedule_triggered = Signal(object, object)
 
     def __init__(self, service: ScheduleService, parent=None):
         super().__init__(parent)

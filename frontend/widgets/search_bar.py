@@ -2,8 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common.utils import get_icon_colored
-from frontend.common.theme import COLOR_NEUTRAL_200
+from frontend.common.icons import get_icon_colored
 
 class UnifiedSearchBar(QFrame):
     textChanged = Signal(str)
@@ -18,8 +17,8 @@ class UnifiedSearchBar(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        self._icon_search = get_icon_colored("search.svg", COLOR_NEUTRAL_200, 16)
-        self._icon_clear = get_icon_colored("x.svg", COLOR_NEUTRAL_200, 16)
+        self._icon_search = get_icon_colored("search.svg")
+        self._icon_clear = get_icon_colored("x.svg")
 
         self.txt_input = QLineEdit(self)
         self.txt_input.setPlaceholderText(placeholder)

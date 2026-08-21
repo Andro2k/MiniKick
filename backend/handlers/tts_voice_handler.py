@@ -50,7 +50,7 @@ class TTSVoiceHandler(QObject):
         self._voice_worker.error_occurred.connect(self._on_voices_error)
         self._voice_worker.start()
 
-    @Slot(list, str, bool)
+    @Slot(object, str, bool)
     def _on_voices_fetched(self, voices: list, provider: str, is_initial: bool) -> None:
         self._all_voices = voices
         self._available_voice_ids = {v["id"] for v in voices}
@@ -129,11 +129,13 @@ class TTSVoiceHandler(QObject):
 
     def handle_voice_change(self, voice_id: str) -> None:
         provider = "web" if self.view.is_web_provider else "local"
+        logger.info("[User Action] Selected TTS voice: voice_id='%s', provider='%s'", voice_id, provider)
         self.service.set_voice(provider, voice_id)
         self.controller.sync_settings_cache()
 
     def handle_provider_change(self, is_web: bool) -> None:
         provider = "web" if is_web else "local"
+        logger.info("[User Action] Changed TTS engine provider to: '%s'", provider)
         self.service.set_provider(provider)
         self.controller.sync_settings_cache()
         self.load_voices(provider)
@@ -150,6 +152,7 @@ class TTSVoiceHandler(QObject):
 
     def handle_voice_test(self, voice_id: str) -> None:
         if voice_id:
+            logger.info("[User Action] Testing TTS sample voice: voice_id='%s'", voice_id)
             sample_text = self.i18n.get("chat.status.voice_test_sample")
             self.service.speak(sample_text, voice_id=voice_id)
 

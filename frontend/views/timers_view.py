@@ -1,9 +1,9 @@
 # frontend\views\timers_view.py
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem, QFrame
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell
+from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
 from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_400
 
 class TimersView(BaseView):
@@ -12,6 +12,7 @@ class TimersView(BaseView):
     delete_requested = Signal(int)
     status_toggled = Signal(int, bool)
     search_text_changed = Signal(str)
+    search_category_requested = Signal(str, str)
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="timer.header.title", subtitle_key="timer.header.subtitle", parent=parent)
@@ -74,11 +75,7 @@ class TimersView(BaseView):
             self.table.setCellWidget(row, 6, self._create_actions_cell(timer))
         self.table.setUpdatesEnabled(True)
         self.table_card.set_empty(len(timers) == 0)
-
-        if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
-            title_base = self.i18n.get("timer.header.title")
-            total_count = len(timers)
-            self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
+        self.table_card.set_title_count(self.i18n.get("timer.header.title"), len(timers))
 
     def _create_table_item(self, text: str, align: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter) -> QTableWidgetItem:
         item = QTableWidgetItem(text)
@@ -110,44 +107,24 @@ class TimersView(BaseView):
         return item
 
     def _create_platforms_cell(self, timer_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setSpacing(6)
-        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        
         apply_kick = timer_data.get("apply_kick", True)
         apply_twitch = timer_data.get("apply_twitch", True)
         
         if not apply_kick and not apply_twitch:
+            container = QWidget()
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(8, 0, 8, 0)
             lbl_none = QLabel("-")
             lbl_none.setProperty("role", "body")
             layout.addWidget(lbl_none)
             return container
 
-        tag = QFrame()
-        tag.setFixedHeight(22)
-        tag.setProperty("role", "badge")
-        
         if apply_kick and apply_twitch:
-            tag.setProperty("state", "warning")
-            text = self.i18n.get("timer.table.platform_both")
+            return create_badge(self.i18n.get("timer.table.platform_both"), state="warning")
         elif apply_kick:
-            tag.setProperty("state", "everyone")
-            text = "Kick"
+            return create_badge("Kick", state="everyone")
         else:
-            tag.setProperty("state", "plugin")
-            text = "Twitch"
-
-        tag_layout = QHBoxLayout(tag)
-        tag_layout.setContentsMargins(8, 0, 8, 0)
-        tag_layout.setSpacing(0)
-        lbl_txt = QLabel(text)
-        lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        tag_layout.addWidget(lbl_txt)
-        layout.addWidget(tag)
-
-        return container
+            return create_badge("Twitch", state="plugin")
 
     def _create_online_item(self, timer_data: dict) -> QTableWidgetItem:
         online = timer_data.get("interval_online")
@@ -191,16 +168,30 @@ class TimersView(BaseView):
         
         return cell
 
+    def set_category_search_results(self, platform: str, results: list[dict]):
+        if hasattr(self, "_active_timer_dialog") and self._active_timer_dialog:
+            self._active_timer_dialog.set_category_search_results(platform, results)
+
     def show_add_dialog(self) -> dict | None:
         from frontend.dialogs.timer_dialog import TimerConfigWizard
         dialog = TimerConfigWizard(self.i18n, parent=self)
-        if dialog.exec():
-            return dialog.get_timer_data()
+        dialog.search_category_requested.connect(self.search_category_requested.emit)
+        self._active_timer_dialog = dialog
+        try:
+            if dialog.exec():
+                return dialog.get_timer_data()
+        finally:
+            self._active_timer_dialog = None
         return None
 
     def show_edit_dialog(self, existing_config: dict) -> dict | None:
         from frontend.dialogs.timer_dialog import TimerConfigWizard
         dialog = TimerConfigWizard(self.i18n, parent=self, existing_config=existing_config)
-        if dialog.exec():
-            return dialog.get_timer_data()
+        dialog.search_category_requested.connect(self.search_category_requested.emit)
+        self._active_timer_dialog = dialog
+        try:
+            if dialog.exec():
+                return dialog.get_timer_data()
+        finally:
+            self._active_timer_dialog = None
         return None

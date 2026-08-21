@@ -3,9 +3,8 @@
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
-from frontend.common.utils import NoWheelComboBox
 from frontend.common.theme import COLOR_RED
-from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch
+from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -99,7 +98,9 @@ class SettingsView(BaseView):
         audio_card = ModernCard(parent=self)
 
         self.combo_music_audio_device = NoWheelComboBox(self)
+        self.combo_music_audio_device.setMinimumWidth(160)
         self.combo_tts_audio_device = NoWheelComboBox(self)
+        self.combo_tts_audio_device.setMinimumWidth(160)
 
         try:
             from PySide6.QtMultimedia import QMediaDevices
@@ -249,14 +250,14 @@ class SettingsView(BaseView):
         size = self.combo_font.itemData(index)
         self.font_size_changed.emit(size)
 
-    def show_bug_report_dialog(self) -> None:
+    def show_bug_report_dialog(self, worker_class=None) -> None:
         from frontend.dialogs.bug_report_dialog import BugReportDialog
-        dialog = BugReportDialog(self.i18n, parent=self.window())
+        dialog = BugReportDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()
 
-    def show_release_notes_dialog(self) -> None:
+    def show_release_notes_dialog(self, worker_class=None) -> None:
         from frontend.dialogs.release_notes_dialog import ReleaseNotesDialog
-        dialog = ReleaseNotesDialog(self.i18n, parent=self.window())
+        dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()
 
     def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "") -> None:
