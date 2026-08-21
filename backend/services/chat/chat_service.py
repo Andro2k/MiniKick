@@ -72,6 +72,9 @@ class ChatService:
     def set_provider(self, provider: str):
         self.storage.save_string("tts_provider", provider)
         self.tts.set_provider(provider)
+        saved_voice = self.get_saved_voice_id(provider)
+        if saved_voice:
+            self.tts.set_voice(saved_voice)
 
     def get_available_voices(self, provider: str) -> list[dict]:
         return self.tts.get_available_voices(provider)

@@ -2,13 +2,13 @@
 
 Documento de referencia: `WT-1.5.3_04`  
 Versión: `v1.5.3`  
-Módulos modificados: `backend/core/app_logger_core.py`, `main.py`, `backend/providers/voices/tts_local.py`, `backend/providers/chat/kick_client.py`, `frontend/views/log_view.py`, `frontend/views/chat_view.py`, `frontend/views/settings_view.py`, `frontend/views/spam_view.py`, `frontend/components/chat/tts_settings.py`, `frontend/widgets/no_wheel.py`, `frontend/widgets/blocks.py`, `frontend/common/theme.py`, `frontend/navigation/sidebar_component.py`, `backend/workers/*`, `backend/controllers/*`, `backend/handlers/*`
+Módulos modificados: `backend/core/app_logger_core.py`, `main.py`, `backend/providers/voices/tts_local.py`, `backend/providers/voices/tts_online.py`, `backend/services/chat/chat_service.py`, `backend/providers/chat/kick_client.py`, `frontend/views/log_view.py`, `frontend/views/chat_view.py`, `frontend/views/settings_view.py`, `frontend/views/spam_view.py`, `frontend/components/chat/tts_settings.py`, `frontend/widgets/no_wheel.py`, `frontend/widgets/blocks.py`, `frontend/common/theme.py`, `frontend/navigation/sidebar_component.py`, `backend/workers/*`, `backend/controllers/*`, `backend/handlers/*`
 
 ---
 
 ## 📋 Resumen
 
-Se implementó un sistema integral para la captura y persistencia de fallos y diagnósticos en **MiniKick**, se completó la optimización de tipado de señales y slots en PySide6/Qt (`Signal(object)` / `@Slot(object)`), se silenciaron a nivel nativo C los volcados informativos de FFmpeg (`avutil.av_log_set_level`) en consola, se calibró el dimensionamiento responsivo de los ComboBoxes, se alinearon con precisión de cuadrícula (`QGridLayout`) todos los campos de las tarjetas de protección anti-spam, y se resolvieron los errores multiplataforma reportados en **Ubuntu / Linux** (TTS Local y CloudScraper).
+Se implementó un sistema integral para la captura y persistencia de fallos y diagnósticos en **MiniKick**, se completó la optimización de tipado de señales y slots en PySide6/Qt (`Signal(object)` / `@Slot(object)`), se silenciaron a nivel nativo C los volcados informativos de FFmpeg (`avutil.av_log_set_level`) en consola, se calibró el dimensionamiento responsivo de los ComboBoxes, se alinearon con precisión de cuadrícula (`QGridLayout`) todos los campos de las tarjetas de protección anti-spam, se resolvieron los errores multiplataforma reportados en **Ubuntu / Linux**, y se blindó la sincronización de voces al alternar entre motores TTS Local y Web/Neural.
 
 ---
 
@@ -54,8 +54,12 @@ Se implementó un sistema integral para la captura y persistencia de fallos y di
 - **Centrado Perfecto de Íconos**: En [theme.py](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py#L296), se actualizó el padding del botón colapsado a `10px 0px`.
 
 ### 10. Compatibilidad Multiplataforma para Linux / Ubuntu
-- **Blindaje de COM en TTS Local (`tts_local.py`)**: `pythoncom` es una librería exclusiva de la API Win32/COM de Windows. Se agregaron los métodos `_init_com()` y `_uninit_com()` condicionados a `sys.platform == "win32"`. En Ubuntu/Linux, `pyttsx3` opera de forma transparente con el driver nativo `espeak` sin lanzar `ModuleNotFoundError: No module named 'pythoncom'`.
-- **Cabeceras de Navegador en CloudScraper (`kick_client.py`)**: Se reforzó `ScraperFactory.create()` con emulación completa de cabeceras de cliente moderno (Sec-Ch-Ua, Accept-Language, Platform) para sortear bloqueos 403 automáticos de Cloudflare en entornos Linux.
+- **Blindaje de COM en TTS Local (`tts_local.py`)**: `pythoncom` condicionado a `sys.platform == "win32"`. En Ubuntu/Linux, `pyttsx3` opera con el driver `espeak`.
+- **Cabeceras de Navegador en CloudScraper (`kick_client.py`)**: Se reforzó `ScraperFactory.create()` con cabeceras completas de cliente moderno para evitar bloqueos 403 de Cloudflare en Linux.
+
+### 11. Sincronización y Validación de Voces entre Motores TTS
+- **Sincronización de Voz al Cambiar Proveedor (`chat_service.py:72`)**: Al cambiar entre `local` y `web`, `set_provider()` ahora restaura y sincroniza inmediatamente la voz correspondiente guardada para ese proveedor en `TTSManager`.
+- **Validador y Fallback de Voz en `WebTTSProvider` (`tts_online.py:50`)**: Se añadió `_resolve_valid_voice()` en el motor online para verificar que la voz sea una voz Neural válida de Edge TTS. Si contiene un ID local (como `jpx/ja` o `roa/es`), automáticamente recurre a la voz online por defecto (`es-ES-AlvaroNeural`) en lugar de arrojar error `Invalid voice`.
 
 ---
 
@@ -65,4 +69,4 @@ Se implementó un sistema integral para la captura y persistencia de fallos y di
 2. **Prueba de Auto-Flush**: Validación de persistencia inmediata en disco de mensajes `CRITICAL` y `ERROR`.
 3. **Prueba de Excepciones en Hilos**: Disparo de excepción no controlada en un hilo secundario y verificación del traceback completo en `minikick.log`.
 4. **Prueba de Compilación y Limpieza de Terminal**: Verificación de ejecución limpia sin advertencias de Shiboken ni texto verboso de FFmpeg.
-5. **Prueba Multiplataforma**: Validación de `tts_local.py` y `kick_client.py` con inicialización segura en Linux y Windows.
+5. **Prueba de Conmutación de Voces TTS**: Validación de alternancia bidireccional (`local` $\leftrightarrow$ `web`) asegurando que `WebTTSProvider` y `LocalTTSProvider` reciban siempre sus respectivos IDs válidos.
