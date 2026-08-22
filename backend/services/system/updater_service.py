@@ -1,7 +1,6 @@
 # backend\services\system\updater_service.py
 
 import os
-import requests
 import subprocess
 from backend.interfaces import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
 
@@ -11,6 +10,7 @@ class GithubUpdateProvider:
 
     def get_latest_version_info(self) -> dict | None:
         try:
+            import requests
             response = requests.get(self.api_url, timeout=10)
             response.raise_for_status()
             data = response.json()
@@ -31,6 +31,7 @@ class GithubUpdateProvider:
 
     def fetch_latest_release(self) -> dict | None:
         try:
+            import requests
             headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "MiniKick-App"}
             response = requests.get(self.api_url, headers=headers, timeout=10)
             response.raise_for_status()
@@ -53,6 +54,7 @@ class GithubUpdateProvider:
 
     def download_file(self, url: str, destination_path: str, progress_callback=None) -> bool:
         try:
+            import requests
             response = requests.get(url, stream=True, timeout=15)
             response.raise_for_status()
             total_size = int(response.headers.get('content-length', 0))

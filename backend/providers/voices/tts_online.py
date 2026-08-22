@@ -15,6 +15,7 @@ class WebTTSProvider:
     def __init__(self, voice: str = "es-ES-AlvaroNeural"):
         self.voice = voice
         self.volume_str = "+0%"
+        self.rate_str = "+0%"
         self.volume = 1.0
         self._audio_device_id = "default"
         self._cache = {}
@@ -49,12 +50,20 @@ class WebTTSProvider:
         percent = int((self.volume - 1.0) * 100)
         self.volume_str = f"{percent}%" if percent < 0 else f"+{percent}%"
 
+    def set_speed(self, speed: float) -> None:
+        factor = speed if speed <= 3.0 else (speed / 100.0)
+        percent = int((factor - 1.0) * 100)
+        self.rate_str = f"{percent}%" if percent < 0 else f"+{percent}%"
+
     def _resolve_valid_voice(self, voice_id: str | None) -> str:
         if voice_id and ("Neural" in voice_id or "-" in voice_id):
             return voice_id
         if self.voice and ("Neural" in self.voice or "-" in self.voice):
             return self.voice
         return "es-ES-AlvaroNeural"
+
+    def warm_up(self, voice_id: str = None) -> None:
+        pass
 
     def prepare(self, text: str, voice_id: str = None) -> None:
         if not self._is_speakable_text(text):
@@ -76,7 +85,7 @@ class WebTTSProvider:
         last_err = None
         for attempt in range(3):
             try:
-                communicate = edge_tts.Communicate(text, voice, volume=self.volume_str)
+                communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
                 await communicate.save(temp_path)
                 elapsed = time.perf_counter() - start_t
                 logging.debug(f"[Web TTS Benchmark] Pre-downloaded audio in {elapsed:.3f}s for: '{text[:25]}...' (voice: {voice})")
@@ -142,7 +151,7 @@ class WebTTSProvider:
         last_err = None
         for attempt in range(3):
             try:
-                communicate = edge_tts.Communicate(text, voice, volume=self.volume_str)
+                communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
                 await communicate.save(temp_path)
                 t_dl_end = time.perf_counter() - t_dl_start
                 logging.debug(f"[Web TTS Benchmark] On-the-fly download completed in {t_dl_end:.3f}s")

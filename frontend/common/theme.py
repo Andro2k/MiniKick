@@ -54,12 +54,12 @@ RADIUS_XL          = 16
 RADIUS_PILL        = 26
 
 PADDING_INPUT      = "5px"
-PADDING_BUTTON     = "6px 12px"
+PADDING_BUTTON     = "5px 10px"
 PADDING_SPINBOX    = "3px 18px 3px 8px"
 PADDING_ITEM       = "4px 8px"
 PADDING_BADGE      = "2px 6px"
 PADDING_CHIP       = "3px 10px"
-PADDING_TAB        = "8px 16px"
+PADDING_TAB        = "5px 15px"
 PADDING_MENU_ITEM  = "4px 12px 4px 18px"
 
 BORDER_DEFAULT     = f"1.5px solid {COLOR_NEUTRAL_800}"

@@ -66,6 +66,8 @@
         "settings": {
             "cmd_desc": "Lee únicamente los mensajes que comiencen con tu prefijo configurado.",
             "cmd_title": "Requerir Comando",
+            "manage_piper_btn": "Descargar voces",
+            "manage_piper_tooltip": "Gestionar y descargar voces locales Piper",
             "name_desc": "Lee en voz alta el nombre del usuario antes de decir su mensaje.",
             "name_title": "Leer Nombres",
             "obs_desc": "Copia esta URL y agrégala como fuente de navegador en tu programa de transmisión (OBS / Streamlabs).",
@@ -74,6 +76,8 @@
             "prefix_placeholder": "Ej. !tts",
             "prefix_title": "Prefijo de Comando",
             "provider_title": "Motor de Voz TTS",
+            "speed_desc": "Ajusta la velocidad y el ritmo de la locución.",
+            "speed_title": "Velocidad de Lectura",
             "tts_desc": "Activa o desactiva la lectura automática del chat en voz alta.",
             "tts_title": "Servicio de Voz (TTS)",
             "voice_general_title": "Voz de Seguidores",
@@ -83,10 +87,11 @@
         "status": {
             "disabled_upper": "DESACTIVADO",
             "enabled_upper": "ACTIVADO",
-            "loading_voices": "Obteniendo voces de la nube...",
+            "loading_voices": "Obteniendo voces...",
             "provider_active": "Modo activo: {mode}",
-            "provider_cloud": "Neural IA (Nube Edge)",
-            "provider_local": "SAPI5 / OS (Local)",
+            "provider_cloud": "Edge-TTS (Nube / Cloud)",
+            "provider_local": "Windows SAPI5 (Básico / Respaldo)",
+            "provider_piper": "Piper TTS (Neuronal Local)",
             "provider_title": "Motor de Voz",
             "read_name_active": "Lectura de nombres activada",
             "read_name_inactive": "Lectura de nombres desactivada",
@@ -731,6 +736,16 @@
             "col_status": "Estado",
             "title": "Estado de los Servicios"
         }
+    },
+    "piper_dialog": {
+        "btn_close": "Cerrar",
+        "btn_delete": "Eliminar",
+        "btn_download": "Descargar",
+        "status_downloading": "Descargando...",
+        "status_installed": "Instalada",
+        "status_not_installed": "Disponible",
+        "subtitle": "Descarga y administra voces neuronales locales para síntesis de voz sin conexión a internet ni consumo de APIs.",
+        "title": "Gestor de Voces Piper (TTS Local)"
     },
     "rewards": {
         "dialogs": {

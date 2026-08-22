@@ -66,6 +66,8 @@
         "settings": {
             "cmd_desc": "Only read messages starting with your configured prefix.",
             "cmd_title": "Require Command",
+            "manage_piper_btn": "Download voices",
+            "manage_piper_tooltip": "Manage and download local Piper voices",
             "name_desc": "Read the sender's name aloud before pronouncing their message.",
             "name_title": "Read Names",
             "obs_desc": "Copy this URL and add it as a browser source in your streaming software (OBS / Streamlabs).",
@@ -74,6 +76,8 @@
             "prefix_placeholder": "Ex. !tts",
             "prefix_title": "Command Prefix",
             "provider_title": "TTS Voice Engine",
+            "speed_desc": "Adjust voice speech speed and pacing.",
+            "speed_title": "Speech Speed",
             "tts_desc": "Enable or disable automated message reading out loud.",
             "tts_title": "Voice Service (TTS)",
             "voice_general_title": "Followers Voice",
@@ -83,10 +87,11 @@
         "status": {
             "disabled_upper": "DISABLED",
             "enabled_upper": "ENABLED",
-            "loading_voices": "Fetching cloud voices...",
+            "loading_voices": "Fetching voices...",
             "provider_active": "Active mode: {mode}",
-            "provider_cloud": "Neural AI (Edge Cloud)",
-            "provider_local": "SAPI5 / OS (Local)",
+            "provider_cloud": "Edge-TTS (Cloud)",
+            "provider_local": "Windows SAPI5 (Basic / Fallback)",
+            "provider_piper": "Piper TTS (Local Neural)",
             "provider_title": "Speech Engine",
             "read_name_active": "Reading sender names enabled",
             "read_name_inactive": "Reading sender names disabled",
@@ -731,6 +736,16 @@
             "col_status": "Status",
             "title": "Services Status"
         }
+    },
+    "piper_dialog": {
+        "btn_close": "Close",
+        "btn_delete": "Delete",
+        "btn_download": "Download",
+        "status_downloading": "Downloading...",
+        "status_installed": "Installed",
+        "status_not_installed": "Available",
+        "subtitle": "Download and manage local neural voices for offline speech synthesis without internet or API usage.",
+        "title": "Piper Voice Manager (Local TTS)"
     },
     "rewards": {
         "dialogs": {

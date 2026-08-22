@@ -17,9 +17,9 @@ MiniKick_Backup_*.json
 *.spec
 *.txt
 # Archivos de configuración de IDEs
-*build/
-*dist/
-*resources/
+build/
+dist/
+resources/models/
 .agents/
-tests/
+tests/logs/
 tools/

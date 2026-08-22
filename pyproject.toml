@@ -15,6 +15,7 @@ dependencies = [
     "edge-tts",
     "asyncio",
     "yt-dlp",
+    "piper-tts",
 ]
 
 [tool.pytest.ini_options]

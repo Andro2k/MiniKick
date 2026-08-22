@@ -51,6 +51,13 @@ def run_live_benchmark(extra_args=None):
         cmd.extend(extra_args)
     return subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
 
+def run_tts_benchmark(extra_args=None):
+    print("\n🎙️ [MiniKick] Iniciando Benchmark de Voces Locales (Piper vs Kokoro vs pyttsx3)...")
+    cmd = [sys.executable, os.path.join(PROJECT_ROOT, "tests", "live", "tts_benchmark_local.py")]
+    if extra_args:
+        cmd.extend(extra_args)
+    return subprocess.run(cmd, cwd=PROJECT_ROOT).returncode
+
 def run_i18n_toolkit():
     print("\n🛠️ [MiniKick] Abriendo i18n Manager Toolkit...")
     cmd = [sys.executable, os.path.join(PROJECT_ROOT, "tests", "tools", "i18n_manager.py")]
@@ -66,12 +73,13 @@ def interactive_menu():
         print("  3. Ejecutar Inspector en Vivo de Kick WebSocket")
         print("  4. Ejecutar Inspector en Vivo de Twitch WebSocket")
         print("  5. Ejecutar Benchmark Multi-Plataforma en Vivo (Kick vs Twitch)")
-        print("  6. Abrir Toolkit Interactivo de i18n (i18n Manager)")
-        print("  7. Salir")
+        print("  6. Ejecutar Benchmark de Voces Locales (Piper vs Kokoro vs pyttsx3)")
+        print("  7. Abrir Toolkit Interactivo de i18n (i18n Manager)")
+        print("  8. Salir")
         print("=" * 65)
 
         try:
-            choice = input("Selecciona una opción (1-7): ").strip()
+            choice = input("Selecciona una opción (1-8): ").strip()
         except (KeyboardInterrupt, EOFError):
             print("\n[!] Saliendo...")
             break
@@ -90,8 +98,10 @@ def interactive_menu():
             dur = input("Duración en segundos (0 para indefinido) [15]: ").strip() or "15"
             run_live_benchmark(["--duration", dur])
         elif choice == "6":
-            run_i18n_toolkit()
+            run_tts_benchmark()
         elif choice == "7":
+            run_i18n_toolkit()
+        elif choice == "8":
             print("\n👋 ¡Hasta luego!")
             break
         else:
@@ -104,6 +114,7 @@ def main():
     parser.add_argument("--live-kick", action="store_true", help="Ejecutar inspector de Kick WebSocket en vivo")
     parser.add_argument("--live-twitch", action="store_true", help="Ejecutar inspector de Twitch WebSocket en vivo")
     parser.add_argument("--benchmark", action="store_true", help="Ejecutar benchmark multi-plataforma en vivo")
+    parser.add_argument("--tts-benchmark", action="store_true", help="Ejecutar benchmark de voces locales TTS")
     parser.add_argument("--tool-i18n", action="store_true", help="Abrir toolkit interactivo de i18n")
 
     args, unknown = parser.parse_known_args()
@@ -118,6 +129,8 @@ def main():
         sys.exit(run_live_twitch(unknown))
     elif args.benchmark:
         sys.exit(run_live_benchmark(unknown))
+    elif args.tts_benchmark:
+        sys.exit(run_tts_benchmark(unknown))
     elif args.tool_i18n:
         sys.exit(run_i18n_toolkit())
     else:

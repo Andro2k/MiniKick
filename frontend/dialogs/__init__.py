@@ -6,6 +6,7 @@ from .release_notes_dialog import ReleaseNotesDialog
 from .rewards_dialog import RewardsConfigWizard
 from .visual_positioner_dialog import VisualPositionerDialog
 from .command_dialog import CommandConfigWizard
+from .piper_voices_dialog import PiperVoicesDialog
 
 __all__ = [
     "ModernFramelessShell",
@@ -16,5 +17,6 @@ __all__ = [
     "ReleaseNotesDialog",
     "VisualPositionerDialog",
     "RewardsConfigWizard",
-    "CommandConfigWizard"
+    "CommandConfigWizard",
+    "PiperVoicesDialog"
 ]

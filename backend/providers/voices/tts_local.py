@@ -33,6 +33,10 @@ class LocalTTSProvider:
     def set_volume(self, volume: float) -> None:
         self.volume = max(0.0, min(1.0, volume))
 
+    def set_speed(self, speed: float) -> None:
+        factor = speed if speed <= 3.0 else (speed / 100.0)
+        self.rate = max(50, min(400, int(150 * factor)))
+
     def prepare(self, text: str, voice_id: str = None) -> None:
         pass
 
@@ -70,6 +74,9 @@ class LocalTTSProvider:
                 _uninit_com()
 
     def stop(self) -> None:
+        pass
+
+    def warm_up(self, voice_id: str = None) -> None:
         pass
 
     def get_available_voices(self) -> list[dict]:
