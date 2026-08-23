@@ -1,17 +1,11 @@
 # frontend\common\theme.py
 
+import os
+import re
+import tempfile
 from functools import lru_cache
-from frontend.common.paths import get_assets_path
-
-def _get_qss_icon_url(relative_path: str) -> str:
-    return get_assets_path(relative_path).replace('\\', '/')
-
-PATH_ICON_HELP = _get_qss_icon_url("icons/help.svg")
-PATH_ICON_CHEVRON_DOWN = _get_qss_icon_url("icons/chevron-down.svg")
-PATH_ICON_CHEVRON_UP = _get_qss_icon_url("icons/chevron-up.svg")
-PATH_ICON_CHEVRON_LEFT = _get_qss_icon_url("icons/chevron-left.svg")
-PATH_ICON_CHEVRON_RIGHT = _get_qss_icon_url("icons/chevron-right.svg")
-PATH_ICON_CHECK = _get_qss_icon_url("icons/check.svg")
+from pathlib import Path
+from frontend.common.paths import get_assets_path, resolve_icon_path
 
 COLOR_NEUTRAL_950  = "#09090B"
 COLOR_NEUTRAL_900  = "#121214"
@@ -33,6 +27,48 @@ COLOR_BLUE         = "#3B82F6"
 COLOR_PURPLE       = "#C084FC"
 COLOR_TWITCH       = "#9146FF"
 COLOR_TWITCH_DARK  = "#772CE8"
+
+_QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
+
+def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = COLOR_NEUTRAL_400) -> str:
+    clean_name = os.path.basename(icon_name_or_rel_path)
+    orig_path = resolve_icon_path(clean_name)
+    if not orig_path or not os.path.exists(orig_path):
+        orig_path = get_assets_path(icon_name_or_rel_path)
+        if not os.path.exists(orig_path):
+            return ""
+
+    try:
+        _QSS_ICON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        clean_hex = color_hex.lstrip("#")
+        stem = Path(clean_name).stem
+        cached_file = _QSS_ICON_CACHE_DIR / f"{stem}_{clean_hex}.svg"
+
+        if not cached_file.exists():
+            with open(orig_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+
+            content = content.replace("currentColor", color_hex)
+            content = re.sub(r'fill=["\']#(?:000|000000)["\']', f'fill="{color_hex}"', content)
+            content = re.sub(r'stroke=["\']#(?:000|000000)["\']', f'stroke="{color_hex}"', content)
+
+            with open(cached_file, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        return str(cached_file).replace('\\', '/')
+    except Exception:
+        return get_assets_path(icon_name_or_rel_path).replace('\\', '/')
+
+def _get_qss_icon_url(relative_path: str) -> str:
+    return get_assets_path(relative_path).replace('\\', '/')
+
+PATH_ICON_HELP = get_qss_colored_icon("icons/help.svg", COLOR_WHITE)
+PATH_ICON_CHEVRON_DOWN = get_qss_colored_icon("icons/chevron-down.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_UP = get_qss_colored_icon("icons/chevron-up.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_LEFT = get_qss_colored_icon("icons/chevron-left.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_RIGHT = get_qss_colored_icon("icons/chevron-right.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHECK = _get_qss_icon_url("icons/check.svg")
+PATH_ICON_CALENDAR = get_qss_colored_icon("icons/calendar.svg", COLOR_NEUTRAL_400)
 
 COLOR_WHITE_GLOW   = "rgba(255, 255, 255, 0.1)"
 COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.12)"
@@ -129,7 +165,7 @@ QDateEdit::up-button, QDateEdit::down-button {{ width: 0px; height: 0px; border:
 QDateEdit::up-arrow, QDateEdit::down-arrow {{ image: none; width: 0px; height: 0px; }}
 QDateEdit::drop-down {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 4px; border: none; background-color: transparent; }}
 QDateEdit::drop-down:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
-QDateEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
+QDateEdit::down-arrow {{ image: url("{PATH_ICON_CALENDAR}"); width: 18px; height: 18px; }}
 
 /* ==============================================================================
    CALENDAR POPUP (QCalendarWidget)
