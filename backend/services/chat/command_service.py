@@ -224,12 +224,15 @@ class CommandService(QObject):
                     tw_worker.send_bot_message(response_text)
                 except Exception as e:
                     logging.error("[CommandService] Error sending message to Twitch: %s", e)
-        else:
+        elif platform == "kick":
             if self.api_client:
                 try:
                     self.api_client.post_chat_message(content=response_text, msg_type="bot")
                 except Exception as e:
                     logging.error("[CommandService] Error sending response to Kick: %s", e)
+        elif platform == "youtube":
+            logging.info("[CommandService] Command response for YouTube chat (Read-Only mode, message not posted): %s", response_text)
+            return
 
         self.response_generated.emit(response_text, platform)
 

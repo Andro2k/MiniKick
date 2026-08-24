@@ -136,7 +136,7 @@ class SettingsView(BaseView):
         self.btn_unlink = self.btn_kick_integration
 
         self.row_kick_integration = SettingRow(
-            icon_name="kick.svg",
+            icon_name="brand-kick.svg",
             title_text=self.i18n.get("settings.integrations.kick_title"),
             desc_text=self.i18n.get("settings.integrations.desc"),
             right_widget=self.btn_kick_integration
@@ -146,7 +146,7 @@ class SettingsView(BaseView):
         self.btn_twitch_integration.clicked.connect(self.twitch_integration_clicked.emit)
 
         self.row_twitch_integration = SettingRow(
-            icon_name="twitch.svg",
+            icon_name="brand-twitch.svg",
             title_text=self.i18n.get("settings.integrations.twitch_title"),
             desc_text=self.i18n.get("settings.integrations.desc"),
             right_widget=self.btn_twitch_integration
@@ -296,7 +296,8 @@ class SettingsView(BaseView):
         self.btn_twitch_integration.style().polish(self.btn_twitch_integration)
 
         if youtube_connected and youtube_channel:
-            text_yt = self.i18n.get("settings.integrations.btn_disconnect_youtube").replace("{channel}", youtube_channel)
+            short_channel = self._format_target_for_button(youtube_channel)
+            text_yt = self.i18n.get("settings.integrations.btn_disconnect_youtube").replace("{channel}", short_channel)
             desc_yt = self.i18n.get("settings.integrations.youtube_desc_connected").replace("{channel}", youtube_channel)
             self.btn_youtube_integration.setText(text_yt)
             self.btn_youtube_integration.setProperty("role", "action_danger_border")
@@ -312,6 +313,30 @@ class SettingsView(BaseView):
 
         self.btn_youtube_integration.style().unpolish(self.btn_youtube_integration)
         self.btn_youtube_integration.style().polish(self.btn_youtube_integration)
+
+    @staticmethod
+    def _format_target_for_button(target: str) -> str:
+        if not target:
+            return ""
+        clean = target.strip()
+        if "/@" in clean:
+            handle = clean.split("/@")[1].split("/")[0].split("?")[0]
+            return f"@{handle}"
+        if clean.startswith("@"):
+            return clean
+        import re
+        v_match = re.search(r'(?:v=|youtu\.be/|/live/|/embed/)([a-zA-Z0-9_-]{11})', clean)
+        if v_match:
+            return f"#{v_match.group(1)[:8]}"
+        ch_match = re.search(r'/channel/([a-zA-Z0-9_-]+)', clean)
+        if ch_match:
+            ch_id = ch_match.group(1)
+            return f"UC...{ch_id[-4:]}" if len(ch_id) > 8 else ch_id
+        if not clean.startswith("http"):
+            return f"@{clean}"
+        if len(clean) > 16:
+            return clean[:14] + "…"
+        return clean
 
     def populate_audio_devices(self):
         curr_music_dev = self.combo_music_audio_device.currentData() if hasattr(self, 'combo_music_audio_device') else "default"

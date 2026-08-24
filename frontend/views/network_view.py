@@ -459,7 +459,7 @@ class NetworkView(BaseView):
             ("internet", "network.services.internet", "network.services.internet_desc", "wifi.svg"),
             ("chat_websocket", "network.services.chat_websocket", "network.services.chat_websocket_desc", "message.svg"),
             ("overlay", "network.services.overlay", "network.services.overlay_desc", "plug.svg"),
-            ("kick", "network.services.kick", "network.services.kick_desc", "kick.svg"),
+            ("kick", "network.services.kick", "network.services.kick_desc", "brand-kick.svg"),
             ("youtube", "network.services.youtube", "network.services.youtube_desc", "brand-youtube.svg")
         ]
 

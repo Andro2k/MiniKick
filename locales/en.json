@@ -377,6 +377,7 @@
             "step_indicator": "Step {current}/{total}"
         },
         "youtube_connect": {
+            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter your channel handle (@channel), full live stream URL, or YouTube video ID:",
             "placeholder": "e.g. @lofigirl or https://youtube.com/watch?v=...",

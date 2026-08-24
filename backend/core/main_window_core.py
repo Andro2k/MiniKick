@@ -869,10 +869,16 @@ class MainWindowCore(QMainWindow):
             saved_target = self.settings_storage.load_string("youtube_target_channel", "")
             dialog = YouTubeConnectDialog(self.i18n, initial_target=saved_target, parent=self)
             if dialog.exec() == dialog.DialogCode.Accepted:
-                target = dialog.get_target()
-                if target:
-                    self.settings_storage.save_string("youtube_target_channel", target)
-                    self._handle_youtube_connect(target)
+                if hasattr(dialog, "is_cleared") and dialog.is_cleared():
+                    self.settings_storage.save_string("youtube_target_channel", "")
+                    self._handle_youtube_disconnect()
+                else:
+                    target = dialog.get_target()
+                    if target:
+                        self._handle_youtube_connect(target)
+                    else:
+                        self.settings_storage.save_string("youtube_target_channel", "")
+                        self._handle_youtube_disconnect()
 
     def _handle_youtube_connect(self, target: str):
         if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker and self.youtube_chat_worker.isRunning():
@@ -892,8 +898,11 @@ class MainWindowCore(QMainWindow):
 
     def _on_youtube_connected(self, stream_info: dict):
         self._youtube_connected = True
-        ch_name = stream_info.get("channel_name", "") or stream_info.get("title", "") or self.settings_storage.load_string("youtube_target_channel", "YouTube Live")
+        ch_name = stream_info.get("channel_name", "") or stream_info.get("title", "") or stream_info.get("channel", "") or "YouTube Live"
         self._youtube_channel = ch_name
+        target = stream_info.get("channel", "")
+        if target:
+            self.settings_storage.save_string("youtube_target_channel", target)
         self._update_integrations_status_ui()
         title = self.container.i18n.get("main.toast.youtube_connected_title")
         msg = self.container.i18n.get("main.toast.youtube_connected_msg").replace("{target}", ch_name)
@@ -905,6 +914,9 @@ class MainWindowCore(QMainWindow):
 
     def _on_youtube_error(self, error_msg: str):
         self._youtube_connected = False
+        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker:
+            self.youtube_chat_worker.stop()
+            self.youtube_chat_worker = None
         self._update_integrations_status_ui()
         self.toast.show_toast(
             title=self.container.i18n.get("common.status.error"),

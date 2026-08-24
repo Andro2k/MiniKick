@@ -8,6 +8,7 @@ logger = logging.getLogger("minikick.handlers.chat_filter")
 class ChatFilterHandler:
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
     _EMOTE_REGEX = re.compile(r"\[emote:(?:\d+:)?([^\]]+)\]")
+    _YT_EMOTE_REGEX = re.compile(r":[a-zA-Z0-9_\-]+:")
     _SPACES_REGEX = re.compile(r"\s+")
     _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
 
@@ -58,6 +59,7 @@ class ChatFilterHandler:
         cleaned = self._URL_REGEX.sub(web_link_label, text)
 
         cleaned = self._EMOTE_REGEX.sub("", cleaned)
+        cleaned = self._YT_EMOTE_REGEX.sub("", cleaned)
         if emotes_tag:
             from backend.providers.chat.twitch_websocket import TwitchSocketManager
             cleaned = TwitchSocketManager.strip_twitch_emotes(cleaned, emotes_tag)

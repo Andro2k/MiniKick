@@ -42,6 +42,11 @@ class TTSManager:
                 prov.set_volume(self._volume)
             if hasattr(prov, "set_speed"):
                 prov.set_speed(self._speed)
+            if self._main_voice_id:
+                if hasattr(prov, "voice_id"):
+                    prov.voice_id = self._main_voice_id
+                elif hasattr(prov, "voice"):
+                    prov.voice = self._main_voice_id
             self._providers[key] = prov
         return self._providers[key]
 
@@ -94,7 +99,8 @@ class TTSManager:
                 break
                 
         self.text_queue.put(None)
-        self._provider.stop()
+        if self._active_provider_key in self._providers:
+            self._providers[self._active_provider_key].stop()
 
     def _downloader_worker(self) -> None:
         import logging
@@ -158,16 +164,21 @@ class TTSManager:
                 self._voices_cache[k] = []
 
     def set_volume(self, volume: float) -> None:
-        self._provider.set_volume(volume)
+        self._volume = volume
+        if self._active_provider_key in self._providers:
+            self._providers[self._active_provider_key].set_volume(volume)
 
     def set_speed(self, speed: float) -> None:
+        self._speed = speed
         for prov in self._providers.values():
             if hasattr(prov, "set_speed"):
                 prov.set_speed(speed)
 
     def set_voice(self, voice_id: str) -> None:
         self._main_voice_id = voice_id
-        if hasattr(self._provider, 'voice_id'):
-            self._provider.voice_id = voice_id
-        elif hasattr(self._provider, 'voice'):
-            self._provider.voice = voice_id
+        if self._active_provider_key in self._providers:
+            provider = self._providers[self._active_provider_key]
+            if hasattr(provider, 'voice_id'):
+                provider.voice_id = voice_id
+            elif hasattr(provider, 'voice'):
+                provider.voice = voice_id

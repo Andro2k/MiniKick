@@ -377,6 +377,7 @@
             "step_indicator": "Paso {current}/{total}"
         },
         "youtube_connect": {
+            "btn_clear": "Limpiar",
             "btn_connect": "Conectar Chat",
             "desc": "Introduce el handle (@canal), el enlace completo del directo o el ID del video de YouTube:",
             "placeholder": "ej. @lofigirl o https://youtube.com/watch?v=...",

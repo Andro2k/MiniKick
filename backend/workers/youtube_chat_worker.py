@@ -22,19 +22,18 @@ class YouTubeChatWorker(QThread):
         self.i18n = i18n
         self.provider = provider or YouTubeChatProvider(i18n=self.i18n)
         self._is_stopped = False
+        self._has_connected_once = False
 
     def run(self):
         try:
             if not self.target_channel:
                 err_msg = self.i18n.get("logs.youtube.channel_empty") if self.i18n else "YouTube target stream or channel not specified."
-                raise ValueError(err_msg)
-
-            initial_notified = False
+                self.error_occurred.emit(err_msg)
+                return
 
             def _on_connected(conn_data: dict):
-                nonlocal initial_notified
-                if not initial_notified:
-                    initial_notified = True
+                if not self._has_connected_once:
+                    self._has_connected_once = True
                     self.connection_success.emit(conn_data)
                 else:
                     self.connection_restored.emit()
@@ -46,6 +45,8 @@ class YouTubeChatWorker(QThread):
             def _on_error(err_str: str):
                 if not self._is_stopped:
                     self.error_occurred.emit(err_str)
+                    if not self._has_connected_once:
+                        self._is_stopped = True
 
             while not self._is_stopped:
                 self.provider.start_chat(
@@ -55,8 +56,10 @@ class YouTubeChatWorker(QThread):
                     on_disconnected=_on_disconnected,
                     on_error=_on_error
                 )
+                if not self._has_connected_once or self._is_stopped:
+                    break
                 if not self._is_stopped:
-                    self.msleep(4000)
+                    self.msleep(10000)
 
         except Exception as e:
             if not self._is_stopped:
@@ -66,6 +69,10 @@ class YouTubeChatWorker(QThread):
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, extra_data: dict):
         if self._is_stopped:
             return
+
+        import json
+        emotes = extra_data.get("emotes", []) if isinstance(extra_data, dict) else []
+        emotes_tag = json.dumps(emotes) if emotes else ""
 
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
         dto = ChatMessageDTO(
@@ -77,7 +84,7 @@ class YouTubeChatWorker(QThread):
             sender_id=sender_id,
             timestamp=now_str,
             platform="youtube",
-            emotes_tag=""
+            emotes_tag=emotes_tag
         )
         self.message_received.emit(dto)
 

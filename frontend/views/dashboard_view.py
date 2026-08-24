@@ -144,12 +144,12 @@ class DashboardView(BaseView):
         self.status_label.setWordWrap(True)
 
         self.btn_connect = ModernButton(self.i18n.get("dashboard.connection.btn_connect"), role="action_kick")
-        self.btn_connect.setIcon(get_icon_colored("kick.svg", COLOR_BLACK, 16))
+        self.btn_connect.setIcon(get_icon_colored("brand-kick.svg", COLOR_BLACK, 16))
         self.btn_connect.setIconSize(QSize(16, 16))
         self.btn_connect.clicked.connect(self.connect_requested.emit)
 
         self.btn_connect_twitch = ModernButton(self.i18n.get("dashboard.connection.btn_connect_twitch"), role="action_twitch")
-        self.btn_connect_twitch.setIcon(get_icon_colored("twitch.svg", COLOR_WHITE, 16))
+        self.btn_connect_twitch.setIcon(get_icon_colored("brand-twitch.svg", COLOR_WHITE, 16))
         self.btn_connect_twitch.setIconSize(QSize(16, 16))
         self.btn_connect_twitch.clicked.connect(self.twitch_connect_requested.emit)
 
@@ -174,12 +174,12 @@ class DashboardView(BaseView):
     def set_twitch_status(self, connected: bool = False, channel: str = ""):
         if connected and channel:
             self.btn_connect_twitch.setText(self.i18n.get("dashboard.connection.btn_active_twitch"))
-            self.btn_connect_twitch.setIcon(get_icon_colored("twitch.svg", COLOR_PURPLE, 16))
+            self.btn_connect_twitch.setIcon(get_icon_colored("brand-twitch.svg", COLOR_PURPLE, 16))
             self.btn_connect_twitch.setEnabled(False)
             self.btn_connect_twitch.setProperty("role", "action_twitch")
         else:
             self.btn_connect_twitch.setText(self.i18n.get("dashboard.connection.btn_connect_twitch"))
-            self.btn_connect_twitch.setIcon(get_icon_colored("twitch.svg", COLOR_WHITE, 16))
+            self.btn_connect_twitch.setIcon(get_icon_colored("brand-twitch.svg", COLOR_WHITE, 16))
             self.btn_connect_twitch.setEnabled(True)
             self.btn_connect_twitch.setProperty("role", "action_twitch")
 

@@ -3,8 +3,7 @@
 import logging
 import re
 import time
-from typing import Callable
-import pytchat
+from typing import Callable, Any
 import requests
 
 logger = logging.getLogger("minikick.providers.chat.youtube")
@@ -61,7 +60,7 @@ class YouTubeChatProvider:
 
     def __init__(self, i18n=None) -> None:
         self.i18n = i18n
-        self._chat: pytchat.core.LiveChat | None = None
+        self._chat: Any | None = None
         self._is_running = False
         self._video_id: str = ""
         self._target_channel: str = ""
@@ -89,6 +88,7 @@ class YouTubeChatProvider:
         logger.info("[YouTubeChatProvider] Connecting to YouTube live video: %s (Target: %s)", video_id, target)
 
         try:
+            import pytchat
             self._chat = pytchat.create(video_id=video_id, interruptable=False)
             
             is_replay_func = getattr(self._chat, "is_replay", None)
@@ -125,11 +125,32 @@ class YouTubeChatProvider:
                         badges.append("verified")
 
                     amount_str = getattr(c, "amountString", "")
+                    message_ex = getattr(c, "messageEx", [])
+                    emotes = []
+                    seen_emote_names = set()
+                    if isinstance(message_ex, list):
+                        for item in message_ex:
+                            if isinstance(item, dict) and "url" in item:
+                                txt = item.get("txt")
+                                if not txt and item.get("id"):
+                                    txt = f":{item.get('id')}:"
+                                url = item.get("url", "")
+                                if url.startswith("//"):
+                                    url = f"https:{url}"
+                                if txt and url and txt not in seen_emote_names:
+                                    seen_emote_names.add(txt)
+                                    emotes.append({
+                                        "name": txt,
+                                        "url": url,
+                                        "id": str(item.get("id", ""))
+                                    })
+
                     extra_data = {
                         "is_superchat": bool(amount_str),
                         "amount": amount_str,
                         "datetime": getattr(c, "datetime", ""),
-                        "channel_id": getattr(c.author, "channelId", "")
+                        "channel_id": getattr(c.author, "channelId", ""),
+                        "emotes": emotes
                     }
 
                     color = "#FF0000" if "broadcaster" in badges else "#16a34a" if "moderator" in badges else "#2563eb" if "subscriber" in badges else self.DEFAULT_YOUTUBE_COLOR

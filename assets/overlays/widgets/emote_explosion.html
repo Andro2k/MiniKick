@@ -57,7 +57,6 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Image cache to avoid re-instantiating image objects
         const imageCache = new Map();
 
         function getCachedImage(src) {
@@ -77,7 +76,7 @@
                 this.type = emote.type || 'text';
                 this.src = emote.src || emote.name || '🔥';
                 this.name = emote.name || 'Emote';
-                
+
                 this.img = (this.type === 'image' && this.src) ? getCachedImage(this.src) : null;
 
                 this.size = 52 + Math.floor(Math.random() * 36);
@@ -161,12 +160,11 @@
                 ];
             }
 
-            // Cap count to prevent memory spikes
             const actualCount = Math.min(count, 150);
 
             for (let i = 0; i < actualCount; i++) {
                 if (particles.length >= MAX_ACTIVE_PARTICLES) {
-                    particles.shift(); // Remove oldest particle if max limit reached
+                    particles.shift();
                 }
                 const randomEmote = emotesList[Math.floor(Math.random() * emotesList.length)];
                 particles.push(new CanvasParticle(randomEmote));

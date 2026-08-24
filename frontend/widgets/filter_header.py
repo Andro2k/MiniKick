@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QHeaderView, QMenu
 from PySide6.QtCore import Qt, Signal, QRect, QPoint
 from PySide6.QtGui import QPainter, QAction
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_500
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400
 from frontend.common.icons import get_icon_colored
 
 class FilterHeaderView(QHeaderView):
@@ -13,8 +13,8 @@ class FilterHeaderView(QHeaderView):
     def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):
         super().__init__(orientation, parent)
         self._column_filters: dict[int, dict] = {}
-        self._icon_filtered = get_icon_colored("adjustments.svg", COLOR_GREEN, 16)
-        self._icon_unfiltered = get_icon_colored("adjustments.svg", COLOR_NEUTRAL_500, 16)
+        self._icon_filtered = get_icon_colored("filter-filled.svg", COLOR_GREEN, 16)
+        self._icon_unfiltered = get_icon_colored("filter-filled.svg", COLOR_NEUTRAL_500, 16)
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
         self.sectionClicked.connect(self._on_section_clicked)
@@ -74,12 +74,8 @@ class FilterHeaderView(QHeaderView):
         config = self._column_filters[logicalIndex]
         menu = QMenu(self)
 
-        header_action = menu.addAction(config["title"])
-        header_action.setEnabled(False)
-        menu.addSeparator()
-
-        action_sort_asc = menu.addAction(get_icon_colored("chevron-up.svg", COLOR_GREEN, 14), config["sort_asc_label"])
-        action_sort_desc = menu.addAction(get_icon_colored("chevron-down.svg", COLOR_GREEN, 14), config["sort_desc_label"])
+        action_sort_asc = menu.addAction(get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
+        action_sort_desc = menu.addAction(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
         menu.addSeparator()
 
         all_ids = {opt["id"] for opt in config["options"]}

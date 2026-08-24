@@ -21,7 +21,6 @@ except ImportError:
     TWITCH_CLIENT_SECRET = ""
     TWITCH_REDIRECT_URI = "http://localhost:8080/auth/callback"
 
-from backend.providers import YouTubeMusicProvider
 from backend.database import (
     DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
     SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
@@ -75,10 +74,17 @@ class AppContainer:
             success_html_path=html_path
         )
         
-        self.music_provider = YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=self.db_manager)
+        self._music_provider = None
         self.tts_manager = TTSManager()
         self.overlay_server = OverlayServerManager(port=8090, settings_storage=self.settings_storage)
         self.overlay_server.start()
+
+    @property
+    def music_provider(self):
+        if self._music_provider is None:
+            from backend.providers.music.youtube_client import YouTubeMusicProvider
+            self._music_provider = YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=self.db_manager)
+        return self._music_provider
 
     def _init_i18n(self) -> TranslationService:
         if getattr(sys, 'frozen', False):
@@ -103,6 +109,9 @@ class AppContainer:
         return ts
 
     def shutdown(self):
+        if hasattr(self, '_music_provider') and self._music_provider:
+            if hasattr(self._music_provider, "shutdown"):
+                self._music_provider.shutdown()
         if hasattr(self, 'tts_manager') and self.tts_manager:
             self.tts_manager.stop()
         if hasattr(self, 'overlay_server') and self.overlay_server:

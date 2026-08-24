@@ -53,8 +53,8 @@ def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = COLOR_NEUT
                 content = f.read()
 
             content = content.replace("currentColor", color_hex)
-            content = re.sub(r'fill=["\']#(?:000|000000)["\']', f'fill="{color_hex}"', content)
-            content = re.sub(r'stroke=["\']#(?:000|000000)["\']', f'stroke="{color_hex}"', content)
+            content = re.sub(r'stroke=["\'](?!none)[^"\']+["\']', f'stroke="{color_hex}"', content)
+            content = re.sub(r'fill=["\'](?!none)[^"\']+["\']', f'fill="{color_hex}"', content)
 
             with open(cached_file, "w", encoding="utf-8") as f:
                 f.write(content)
@@ -72,6 +72,7 @@ PATH_ICON_CHEVRON_UP = get_qss_colored_icon("icons/chevron-up.svg", COLOR_NEUTRA
 PATH_ICON_CHEVRON_LEFT = get_qss_colored_icon("icons/chevron-left.svg", COLOR_NEUTRAL_400)
 PATH_ICON_CHEVRON_RIGHT = get_qss_colored_icon("icons/chevron-right.svg", COLOR_NEUTRAL_400)
 PATH_ICON_CHECK = _get_qss_icon_url("icons/check.svg")
+PATH_ICON_CHECK_GREEN = get_qss_colored_icon("icons/check.svg", COLOR_GREEN)
 PATH_ICON_CALENDAR = get_qss_colored_icon("icons/calendar.svg", COLOR_NEUTRAL_400)
 
 COLOR_WHITE_GLOW   = "rgba(255, 255, 255, 0.1)"
@@ -142,13 +143,19 @@ QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_N
 QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_700}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
-QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 3px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
+QComboBox QAbstractItemView {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 3px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
 QComboBox QAbstractItemView::item {{ border-radius: {RADIUS_SM}px; padding: {PADDING_ITEM}; margin: 1px 2px; }}
-QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; border-color: {COLOR_NEUTRAL_700}; }}
-QMenu::item {{ padding: {PADDING_MENU_ITEM}; margin: 1px 2px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_2}px; }}
-QMenu::item:disabled {{ color: {COLOR_NEUTRAL_400}; font-weight: 600; padding: {PADDING_ITEM}; background-color: transparent; }}
+QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; border-color: {COLOR_NEUTRAL_700}; }}
+
+QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 4px 3px; }}
+QMenu::item {{ padding: 5px 10px; margin: 1px 2px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_2}px; font-weight: 500; }}
+QMenu::item:disabled {{ color: {COLOR_NEUTRAL_500}; background-color: transparent; }}
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
-QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 3px 6px; }}
+QMenu::icon {{ margin-left: 14px; }}
+QMenu::indicator {{ width: 14px; height: 14px; left: 8px; }}
+QMenu::indicator:checked {{ image: url("{PATH_ICON_CHECK_GREEN}"); }}
+QMenu::indicator:unchecked {{ image: none; }}
+QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 2px 4px; }}
 
 QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_400}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
