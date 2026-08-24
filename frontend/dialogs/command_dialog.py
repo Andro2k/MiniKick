@@ -106,6 +106,26 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addWidget(lbl_aliases)
         adv_layout.addWidget(self.txt_aliases)
 
+        adv_layout.addSpacing(6)
+
+        lbl_platforms = QLabel(self.i18n.get("command.dialog.platform_label"))
+        lbl_platforms.setProperty("role", "h3")
+        adv_layout.addWidget(lbl_platforms)
+
+        platforms_row = QHBoxLayout()
+        platforms_row.setSpacing(12)
+        self.chk_kick = QCheckBox(self.i18n.get("command.dialog.platform_kick"))
+        self.chk_kick.setChecked(True)
+        self.chk_twitch = QCheckBox(self.i18n.get("command.dialog.platform_twitch"))
+        self.chk_twitch.setChecked(True)
+        self.chk_youtube = QCheckBox(self.i18n.get("command.dialog.platform_youtube"))
+        self.chk_youtube.setChecked(True)
+        platforms_row.addWidget(self.chk_kick)
+        platforms_row.addWidget(self.chk_twitch)
+        platforms_row.addWidget(self.chk_youtube)
+        platforms_row.addStretch()
+        adv_layout.addLayout(platforms_row)
+
         adv_layout.addSpacing(10)
 
         self.chk_regex = QCheckBox(self.i18n.get("command.dialog.regex_checkbox"))
@@ -161,6 +181,9 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_response.setText(self.existing_config.get("response", ""))
         self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
         self.chk_active.setChecked(self.existing_config.get("is_active", True))
+        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True))
+        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True))
+        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True))
         
         permission = self.existing_config.get("permission", "everyone")
         index = self.combo_perm.findData(permission)
@@ -187,7 +210,10 @@ class CommandConfigWizard(ModernWizardPanel):
             "aliases": aliases_val,
             "is_regex": is_regex,
             "is_active": self.chk_active.isChecked(),
-            "permission": self.combo_perm.currentData()
+            "permission": self.combo_perm.currentData(),
+            "apply_kick": self.chk_kick.isChecked(),
+            "apply_twitch": self.chk_twitch.isChecked(),
+            "apply_youtube": self.chk_youtube.isChecked()
         }
 
 

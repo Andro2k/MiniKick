@@ -27,6 +27,10 @@ COLOR_BLUE         = "#3B82F6"
 COLOR_PURPLE       = "#C084FC"
 COLOR_TWITCH       = "#9146FF"
 COLOR_TWITCH_DARK  = "#772CE8"
+COLOR_TWITCH_GLOW  = "rgba(145, 70, 255, 0.15)"
+COLOR_YOUTUBE      = "#FF0000"
+COLOR_YOUTUBE_DARK = "#CC0000"
+COLOR_YOUTUBE_GLOW = "rgba(255, 0, 0, 0.15)"
 
 _QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
 
@@ -341,6 +345,10 @@ QPushButton[role="action_twitch"] {{ background-color: {COLOR_TWITCH}; color: {C
 QPushButton[role="action_twitch"]:hover {{ background-color: {COLOR_TWITCH_DARK}; }}
 QPushButton[role="action_twitch"]:focus {{ border-color: {COLOR_WHITE}; }}
 QPushButton[role="action_twitch"]:disabled {{ background-color: {COLOR_TWITCH_GLOW}; color: {COLOR_TWITCH}; border: 1.5px solid {COLOR_TWITCH}; }}
+QPushButton[role="action_youtube"] {{ background-color: {COLOR_YOUTUBE}; color: {COLOR_WHITE}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_youtube"]:hover {{ background-color: {COLOR_YOUTUBE_DARK}; }}
+QPushButton[role="action_youtube"]:focus {{ border-color: {COLOR_WHITE}; }}
+QPushButton[role="action_youtube"]:disabled {{ background-color: {COLOR_YOUTUBE_GLOW}; color: {COLOR_YOUTUBE}; border: 1.5px solid {COLOR_YOUTUBE}; }}
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="action_outlined"]:focus {{ border-color: {COLOR_GREEN}; }}

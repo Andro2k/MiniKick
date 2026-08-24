@@ -131,6 +131,10 @@
             "perm_subscriber": "Subscriber",
             "perm_vip": "VIP",
             "permission_label": "Minimum Permission:",
+            "platform_kick": "Kick",
+            "platform_label": "Platforms:",
+            "platform_twitch": "Twitch",
+            "platform_youtube": "YouTube",
             "plugin_tag": "PLUGIN COMMAND",
             "regex_checkbox": "Use RegEx (Ignores Prefixes and Aliases)",
             "regex_help": "When RegEx is enabled, the bot will trigger whenever this pattern is found in a message.",
@@ -198,7 +202,6 @@
             "report_bug": "Report Bug",
             "save": "Save",
             "understood": "Understood",
-            "unlink": "Unlink",
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
@@ -251,8 +254,10 @@
             "autostart_title": "Auto Connect",
             "btn_active": "System Active",
             "btn_active_twitch": "Twitch Active",
+            "btn_active_youtube": "YouTube Active",
             "btn_connect": "Connect to Kick",
             "btn_connect_twitch": "Connect Twitch",
+            "btn_connect_youtube": "Connect YouTube",
             "btn_retry": "Retry",
             "status_auth": "Status: Authenticating...",
             "status_connected": "Status: Connected & Listening",
@@ -346,6 +351,10 @@
             "desc": "Are you sure you want to disconnect your Twitch account? Chat and command features for Twitch will become inactive.",
             "title": "Disconnect Twitch"
         },
+        "unlink_youtube": {
+            "desc": "Are you sure you want to disconnect YouTube live chat? Moderation and TTS features for YouTube will stop processing.",
+            "title": "Disconnect YouTube"
+        },
         "update": {
             "btn_close": "Close",
             "btn_download": "Download now",
@@ -366,6 +375,12 @@
         },
         "wizard": {
             "step_indicator": "Step {current}/{total}"
+        },
+        "youtube_connect": {
+            "btn_connect": "Connect Chat",
+            "desc": "Enter your channel handle (@channel), full live stream URL, or YouTube video ID:",
+            "placeholder": "e.g. @lofigirl or https://youtube.com/watch?v=...",
+            "title": "Connect YouTube Live Chat"
         }
     },
     "log": {
@@ -434,6 +449,11 @@
         "twitch": {
             "channel_empty": "Twitch channel name cannot be empty.",
             "user_not_found": "No user data found in Twitch Helix API."
+        },
+        "youtube": {
+            "channel_empty": "YouTube target stream or channel cannot be empty.",
+            "stream_unavailable": "YouTube live stream is unavailable or chat is disabled.",
+            "video_not_found": "No active live stream found for: {target}"
         }
     },
     "main": {
@@ -500,7 +520,11 @@
             "twitch_connected_msg": "Successfully connected to Twitch chat: #{username}",
             "twitch_connected_title": "Twitch Connected",
             "twitch_disconnected_msg": "Twitch session unlinked.",
-            "twitch_disconnected_title": "Twitch Disconnected"
+            "twitch_disconnected_title": "Twitch Disconnected",
+            "youtube_connected_msg": "Connected to YouTube live chat: {target}",
+            "youtube_connected_title": "YouTube Connected",
+            "youtube_disconnected_msg": "YouTube Live chat connection disconnected.",
+            "youtube_disconnected_title": "YouTube Disconnected"
         },
         "toasts": {
             "reward_msg": "{user} redeemed: {reward_name}",
@@ -836,10 +860,6 @@
         }
     },
     "settings": {
-        "account": {
-            "desc": "Log out of the application. You will need to re-authorize your account to connect again.",
-            "title": "Unlink Account"
-        },
         "audio": {
             "default_device": "(System Default Device)",
             "music_desc": "Select the audio output device for channel music playback.",
@@ -864,11 +884,20 @@
             "title": "General Settings"
         },
         "integrations": {
+            "btn_connect_kick": "Connect Kick",
             "btn_connect_twitch": "Connect Twitch",
+            "btn_connect_youtube": "Connect YouTube",
+            "btn_disconnect_kick": "Disconnect @{channel}",
             "btn_disconnect_twitch": "Disconnect #{channel}",
+            "btn_disconnect_youtube": "Disconnect {channel}",
             "desc": "Real-time chat connection status for each platform.",
+            "kick_desc_connected": "Successfully connected to @{channel} channel.",
+            "kick_desc_disconnected": "No Kick account currently connected.",
+            "kick_title": "Kick Channel",
             "twitch_desc_connected": "Successfully connected to #{channel} chat.",
-            "twitch_title": "Twitch Channel"
+            "twitch_title": "Twitch Channel",
+            "youtube_desc_connected": "Successfully connected to {channel} live stream.",
+            "youtube_title": "YouTube Live Channel"
         },
         "status": {
             "error_title": "Backup Error",
@@ -926,6 +955,7 @@
             "max_symbols": "Symbol / weird character limit",
             "platform_kick": "Kick",
             "platform_twitch": "Twitch",
+            "platform_youtube": "YouTube",
             "platforms": "Applicable Platforms"
         },
         "filters": {

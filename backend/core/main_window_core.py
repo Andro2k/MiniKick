@@ -23,7 +23,7 @@ from backend.controllers import (
 )
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
-    AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker,
+    AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker, YouTubeChatWorker,
     FetchRewardsWorker, RewardWorker, TimerWorker, ScheduleWorker
 )
 from frontend.common.theme import COLOR_GREEN, get_global_qss
@@ -35,7 +35,7 @@ from frontend.views import (
     LogView, MusicView, SettingsView, SpamView, NetworkView, WidgetsView,
     ScheduleView
 )
-from frontend.dialogs import ModernConfirmDialog
+from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog
 
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
@@ -98,6 +98,9 @@ class MainWindowCore(QMainWindow):
         self.schedule_worker = None
         self.twitch_chat_worker = None
         self.twitch_auth_worker = None
+        self.youtube_chat_worker = None
+        self._youtube_connected = False
+        self._youtube_channel = ""
 
         self._cached_total_usages = None
         self._cached_active_timers = None
@@ -261,6 +264,7 @@ class MainWindowCore(QMainWindow):
         self.sidebar.view_selected.connect(self._handle_navigation)
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
         self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
+        self.dashboard_controller.youtube_connect_requested.connect(self._on_youtube_integration_button_clicked)
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
@@ -300,6 +304,9 @@ class MainWindowCore(QMainWindow):
             twitch_tokens = self.container.twitch_token_storage.load()
             if twitch_tokens and twitch_tokens.get("access_token"):
                 self._on_twitch_auth_success(twitch_tokens)
+            yt_target = self.settings_storage.load_string("youtube_target_channel", "")
+            if yt_target:
+                self._handle_youtube_connect(yt_target)
 
     def _handle_navigation(self, view_name: str):
         self.logger.info("[User Action] Navigated to view: '%s'", view_name)
@@ -366,6 +373,7 @@ class MainWindowCore(QMainWindow):
         elif view_name == "Settings":
             self.view_settings = SettingsView(self.i18n, parent=self)
             self.view_settings.twitch_integration_clicked.connect(self._on_twitch_integration_button_clicked)
+            self.view_settings.youtube_integration_clicked.connect(self._on_youtube_integration_button_clicked)
             self.settings_controller.attach_view(self.view_settings)
             self._update_integrations_status_ui()
             view_widget = self.view_settings
@@ -521,6 +529,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
             ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
+            ("Worker_YouTube_Chat", getattr(self, 'youtube_chat_worker', None)),
             ("Worker_Stream_Schedule", getattr(self, 'schedule_worker', None)),
         ]
         if hasattr(self, 'network_controller') and self.network_controller:
@@ -822,11 +831,17 @@ class MainWindowCore(QMainWindow):
         kick_user = getattr(self, "_kick_username", "")
         twitch_connected = getattr(self, "_twitch_connected", False)
         twitch_channel = getattr(self, "_twitch_channel", "")
+        youtube_connected = getattr(self, "_youtube_connected", False)
+        youtube_channel = getattr(self, "_youtube_channel", "")
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_twitch_status(
                 connected=twitch_connected,
                 channel=twitch_channel
+            )
+            self.dashboard_controller.set_youtube_status(
+                connected=youtube_connected,
+                channel=youtube_channel
             )
 
         if hasattr(self, "view_settings") and self.view_settings:
@@ -834,8 +849,82 @@ class MainWindowCore(QMainWindow):
                 kick_connected=kick_connected,
                 kick_channel=kick_user,
                 twitch_connected=twitch_connected,
-                twitch_channel=twitch_channel
+                twitch_channel=twitch_channel,
+                youtube_connected=youtube_connected,
+                youtube_channel=youtube_channel
             )
+
+    @Slot()
+    def _on_youtube_integration_button_clicked(self):
+        if getattr(self, "_youtube_connected", False):
+            dialog = ModernConfirmDialog(
+                self.i18n,
+                self,
+                title_text=self.i18n.get("dialogs.unlink_youtube.title"),
+                body_text=self.i18n.get("dialogs.unlink_youtube.desc")
+            )
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                self._handle_youtube_disconnect()
+        else:
+            saved_target = self.settings_storage.load_string("youtube_target_channel", "")
+            dialog = YouTubeConnectDialog(self.i18n, initial_target=saved_target, parent=self)
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                target = dialog.get_target()
+                if target:
+                    self.settings_storage.save_string("youtube_target_channel", target)
+                    self._handle_youtube_connect(target)
+
+    def _handle_youtube_connect(self, target: str):
+        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker and self.youtube_chat_worker.isRunning():
+            self.youtube_chat_worker.stop()
+            self.youtube_chat_worker.wait(1000)
+
+        self.youtube_chat_worker = YouTubeChatWorker(
+            target_channel=target,
+            i18n=self.container.i18n,
+            parent=self
+        )
+        self.youtube_chat_worker.connection_success.connect(self._on_youtube_connected)
+        self.youtube_chat_worker.connection_lost.connect(self._on_youtube_disconnected)
+        self.youtube_chat_worker.error_occurred.connect(self._on_youtube_error)
+        self.youtube_chat_worker.message_received.connect(self._route_incoming_message)
+        self.youtube_chat_worker.start()
+
+    def _on_youtube_connected(self, stream_info: dict):
+        self._youtube_connected = True
+        ch_name = stream_info.get("channel_name", "") or stream_info.get("title", "") or self.settings_storage.load_string("youtube_target_channel", "YouTube Live")
+        self._youtube_channel = ch_name
+        self._update_integrations_status_ui()
+        title = self.container.i18n.get("main.toast.youtube_connected_title")
+        msg = self.container.i18n.get("main.toast.youtube_connected_msg").replace("{target}", ch_name)
+        self.toast.show_toast(title=title, message=msg, state="success")
+
+    def _on_youtube_disconnected(self):
+        self._youtube_connected = False
+        self._update_integrations_status_ui()
+
+    def _on_youtube_error(self, error_msg: str):
+        self._youtube_connected = False
+        self._update_integrations_status_ui()
+        self.toast.show_toast(
+            title=self.container.i18n.get("common.status.error"),
+            message=error_msg,
+            state="danger"
+        )
+
+    @Slot()
+    def _handle_youtube_disconnect(self):
+        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker:
+            self.youtube_chat_worker.stop()
+            self.youtube_chat_worker.wait(1000)
+            self.youtube_chat_worker = None
+        self._youtube_connected = False
+        self._youtube_channel = ""
+        self.settings_storage.save_string("youtube_target_channel", "")
+        self._update_integrations_status_ui()
+        title_disc = self.container.i18n.get("main.toast.youtube_disconnected_title")
+        msg_disc = self.container.i18n.get("main.toast.youtube_disconnected_msg")
+        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
 
     @Slot()
     def _on_twitch_integration_button_clicked(self):
@@ -861,42 +950,45 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_unlink_account(self):
-        self.logger.info("[User Action] Requested unlinking Kick account")
-        dialog = ModernConfirmDialog(
-            self.i18n,
-            self, 
-            title_text=self.i18n.get("dialogs.unlink.title"), 
-            body_text=self.i18n.get("dialogs.unlink.desc")
-        )
-        
-        if dialog.exec() == dialog.DialogCode.Accepted:
-            self.logger.info("[User Action] Kick account unlinked successfully")
-            self.toast.show_toast(
-                title=self.i18n.get("settings.status.unlinked"),
-                message=self.i18n.get("settings.status.unlinked_msg"),
-                state="warning"
+        if getattr(self, "_kick_connected", False):
+            self.logger.info("[User Action] Requested unlinking Kick account")
+            dialog = ModernConfirmDialog(
+                self.i18n,
+                self, 
+                title_text=self.i18n.get("dialogs.unlink.title"), 
+                body_text=self.i18n.get("dialogs.unlink.desc")
             )
-            self._stop_kick_connection_workers()
-            self.chat_worker = None
-            self.reward_worker = None
-            self.timers_worker = None
-
-            self.auth_manager.logout()
-            self._kick_connected = False
-            self._kick_username = ""
-            self.dashboard_controller.reset_to_disconnected()
-            self.sidebar.reset_profile_info()
-            self._update_integrations_status_ui()
-
-            missing_scopes = self.container.twitch_auth_manager.get_missing_scopes()
-            self.dashboard_controller.evaluate_scopes(missing_scopes)
             
-            self._handle_navigation("Dashboard")
-            
-            for btn in self.sidebar.nav_buttons:
-                if btn.property("view_name") == "Dashboard":
-                    btn.setChecked(True)
-                    break
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                self.logger.info("[User Action] Kick account unlinked successfully")
+                self.toast.show_toast(
+                    title=self.i18n.get("settings.status.unlinked"),
+                    message=self.i18n.get("settings.status.unlinked_msg"),
+                    state="warning"
+                )
+                self._stop_kick_connection_workers()
+                self.chat_worker = None
+                self.reward_worker = None
+                self.timers_worker = None
+
+                self.auth_manager.logout()
+                self._kick_connected = False
+                self._kick_username = ""
+                self.dashboard_controller.reset_to_disconnected()
+                self.sidebar.reset_profile_info()
+                self._update_integrations_status_ui()
+
+                missing_scopes = self.container.twitch_auth_manager.get_missing_scopes()
+                self.dashboard_controller.evaluate_scopes(missing_scopes)
+                
+                self._handle_navigation("Dashboard")
+                
+                for btn in self.sidebar.nav_buttons:
+                    if btn.property("view_name") == "Dashboard":
+                        btn.setChecked(True)
+                        break
+        else:
+            self._handle_auth_process()
 
     def _start_schedule_worker(self):
         current_worker = getattr(self, "schedule_worker", None)

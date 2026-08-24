@@ -59,6 +59,8 @@ class SpamService:
                 continue
             if platform == "twitch" and not config.get("apply_twitch", True):
                 continue
+            if platform == "youtube" and not config.get("apply_youtube", True):
+                continue
 
             exclude_group = config.get("exclude_group", "none")
             if exclude_group == "moderator" and is_mod:

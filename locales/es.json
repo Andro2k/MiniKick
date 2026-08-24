@@ -131,6 +131,10 @@
             "perm_subscriber": "Suscriptor",
             "perm_vip": "VIP",
             "permission_label": "Permiso Mínimo:",
+            "platform_kick": "Kick",
+            "platform_label": "Plataformas:",
+            "platform_twitch": "Twitch",
+            "platform_youtube": "YouTube",
             "plugin_tag": "COMANDO PLUGIN",
             "regex_checkbox": "Usar RegEx (Ignora Prefijos y Alias)",
             "regex_help": "Al activar expresiones regulares, el bot responderá si encuentra este patrón en cualquier parte del mensaje.",
@@ -198,7 +202,6 @@
             "report_bug": "Reportar Bug",
             "save": "Guardar",
             "understood": "Entendido",
-            "unlink": "Desvincular",
             "update": "Buscar actualizaciones",
             "view_release_notes": "Ver Novedades"
         },
@@ -251,8 +254,10 @@
             "autostart_title": "Conexión Automática",
             "btn_active": "Sistema Activo",
             "btn_active_twitch": "Twitch Activo",
+            "btn_active_youtube": "YouTube Activo",
             "btn_connect": "Conectar a Kick",
             "btn_connect_twitch": "Conectar Twitch",
+            "btn_connect_youtube": "Conectar YouTube",
             "btn_retry": "Reintentar",
             "status_auth": "Estado: Autenticando...",
             "status_connected": "Estado: Conectado y Escuchando",
@@ -346,6 +351,10 @@
             "desc": "¿Estás seguro de que deseas desvincular tu cuenta de Twitch? Las funciones de chat y comandos para Twitch dejarán de estar activas.",
             "title": "Desvincular Twitch"
         },
+        "unlink_youtube": {
+            "desc": "¿Estás seguro de que deseas desconectar el chat en vivo de YouTube? Las funciones de moderación y lectura para YouTube dejarán de procesarse.",
+            "title": "Desconectar YouTube"
+        },
         "update": {
             "btn_close": "Cerrar",
             "btn_download": "Descargar ahora",
@@ -366,6 +375,12 @@
         },
         "wizard": {
             "step_indicator": "Paso {current}/{total}"
+        },
+        "youtube_connect": {
+            "btn_connect": "Conectar Chat",
+            "desc": "Introduce el handle (@canal), el enlace completo del directo o el ID del video de YouTube:",
+            "placeholder": "ej. @lofigirl o https://youtube.com/watch?v=...",
+            "title": "Conectar Chat de YouTube Live"
         }
     },
     "log": {
@@ -434,6 +449,11 @@
         "twitch": {
             "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",
             "user_not_found": "No se encontraron datos de usuario en Twitch Helix API."
+        },
+        "youtube": {
+            "channel_empty": "El canal o enlace del directo de YouTube no puede estar vacío.",
+            "stream_unavailable": "La transmisión en vivo de YouTube no está disponible o el chat está desactivado.",
+            "video_not_found": "No se encontró ninguna transmisión en vivo activa para: {target}"
         }
     },
     "main": {
@@ -500,7 +520,11 @@
             "twitch_connected_msg": "Conectado exitosamente al chat de Twitch: #{username}",
             "twitch_connected_title": "Twitch Conectado",
             "twitch_disconnected_msg": "Se ha desvinculado la sesión de Twitch.",
-            "twitch_disconnected_title": "Twitch Desconectado"
+            "twitch_disconnected_title": "Twitch Desconectado",
+            "youtube_connected_msg": "Conectado al chat en vivo de YouTube: {target}",
+            "youtube_connected_title": "YouTube Conectado",
+            "youtube_disconnected_msg": "Se ha detenido la conexión con YouTube Live.",
+            "youtube_disconnected_title": "YouTube Desconectado"
         },
         "toasts": {
             "reward_msg": "{user} canjeó: {reward_name}",
@@ -836,10 +860,6 @@
         }
     },
     "settings": {
-        "account": {
-            "desc": "Cierra tu sesión en la aplicación. Deberás volver a autorizar tu cuenta para conectarte de nuevo.",
-            "title": "Desvincular Cuenta"
-        },
         "audio": {
             "default_device": "(Predeterminado del sistema)",
             "music_desc": "Elige el dispositivo de sonido por donde se escuchará la música del canal.",
@@ -864,11 +884,20 @@
             "title": "Configuración General"
         },
         "integrations": {
+            "btn_connect_kick": "Conectar Kick",
             "btn_connect_twitch": "Conectar Twitch",
+            "btn_connect_youtube": "Conectar YouTube",
+            "btn_disconnect_kick": "Desconectar @{channel}",
             "btn_disconnect_twitch": "Desconectar #{channel}",
+            "btn_disconnect_youtube": "Desconectar {channel}",
             "desc": "Estado de la conexión del chat en tiempo real para cada plataforma.",
+            "kick_desc_connected": "Conectado exitosamente a la cuenta de @{channel}.",
+            "kick_desc_disconnected": "No hay una cuenta de Kick conectada actualmente.",
+            "kick_title": "Canal de Kick",
             "twitch_desc_connected": "Conectado exitosamente al chat de #{channel}.",
-            "twitch_title": "Canal de Twitch"
+            "twitch_title": "Canal de Twitch",
+            "youtube_desc_connected": "Conectado exitosamente al directo de {channel}.",
+            "youtube_title": "Canal de YouTube Live"
         },
         "status": {
             "error_title": "Error de Respaldo",
@@ -926,6 +955,7 @@
             "max_symbols": "Límite de símbolos/caracteres extraños",
             "platform_kick": "Kick",
             "platform_twitch": "Twitch",
+            "platform_youtube": "YouTube",
             "platforms": "Plataformas Aplicables"
         },
         "filters": {

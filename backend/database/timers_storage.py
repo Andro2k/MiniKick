@@ -19,7 +19,7 @@ class SQLiteTimersStorage:
     def load_all(self) -> list[dict]:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch FROM chat_timers")
+            cursor.execute("SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube FROM chat_timers")
             return [
                 {
                     "id": r[0],
@@ -32,7 +32,8 @@ class SQLiteTimersStorage:
                     "keywords": _parse_json_list(r[7]),
                     "categories": _parse_json_list(r[8]),
                     "apply_kick": bool(r[9]) if len(r) > 9 and r[9] is not None else True,
-                    "apply_twitch": bool(r[10]) if len(r) > 10 and r[10] is not None else True
+                    "apply_twitch": bool(r[10]) if len(r) > 10 and r[10] is not None else True,
+                    "apply_youtube": bool(r[11]) if len(r) > 11 and r[11] is not None else True
                 }
                 for r in cursor.fetchall()
             ]
@@ -41,7 +42,7 @@ class SQLiteTimersStorage:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch 
+                SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube 
                 FROM chat_timers WHERE id = ?
             """, (timer_id,))
             r = cursor.fetchone()
@@ -58,35 +59,39 @@ class SQLiteTimersStorage:
                 "keywords": _parse_json_list(r[7]),
                 "categories": _parse_json_list(r[8]),
                 "apply_kick": bool(r[9]) if len(r) > 9 and r[9] is not None else True,
-                "apply_twitch": bool(r[10]) if len(r) > 10 and r[10] is not None else True
+                "apply_twitch": bool(r[10]) if len(r) > 10 and r[10] is not None else True,
+                "apply_youtube": bool(r[11]) if len(r) > 11 and r[11] is not None else True
             }
 
-    def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], apply_kick: bool = True, apply_twitch: bool = True, timer_id: int = None) -> None:
+    def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True, timer_id: int = None) -> None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             messages_json = json.dumps(messages)
             keywords_json = json.dumps(keywords)
             categories_json = json.dumps(categories)
+            ak = int(bool(apply_kick if apply_kick is not None else True))
+            at = int(bool(apply_twitch if apply_twitch is not None else True))
+            ay = int(bool(apply_youtube if apply_youtube is not None else True))
             if timer_id is not None:
                 cursor.execute("""
-                    INSERT INTO chat_timers (id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO chat_timers (id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(id) DO UPDATE SET
                         name=excluded.name, messages=excluded.messages, is_active=excluded.is_active,
                         interval_online=excluded.interval_online, interval_offline=excluded.interval_offline,
                         chat_lines=excluded.chat_lines, keywords=excluded.keywords, categories=excluded.categories,
-                        apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch
-                """, (timer_id, name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, int(apply_kick), int(apply_twitch)))
+                        apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube
+                """, (timer_id, name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, ak, at, ay))
             else:
                 cursor.execute("""
-                    INSERT INTO chat_timers (name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO chat_timers (name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(name) DO UPDATE SET
                         messages=excluded.messages, is_active=excluded.is_active,
                         interval_online=excluded.interval_online, interval_offline=excluded.interval_offline,
                         chat_lines=excluded.chat_lines, keywords=excluded.keywords, categories=excluded.categories,
-                        apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch
-                """, (name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, int(apply_kick), int(apply_twitch)))
+                        apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube
+                """, (name, messages_json, int(is_active), interval_online, interval_offline, chat_lines, keywords_json, categories_json, ak, at, ay))
             conn.commit()
 
     def delete_timer(self, timer_id: int) -> None:
@@ -100,7 +105,7 @@ class SQLiteTimersStorage:
             cursor = conn.cursor()
             pattern = f"%{query.strip().lower()}%"
             cursor.execute("""
-                SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch 
+                SELECT id, name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube 
                 FROM chat_timers 
                 WHERE LOWER(name) LIKE ? OR LOWER(messages) LIKE ?
             """, (pattern, pattern))
@@ -116,7 +121,8 @@ class SQLiteTimersStorage:
                     "keywords": _parse_json_list(r[7]),
                     "categories": _parse_json_list(r[8]),
                     "apply_kick": bool(r[9]) if len(r) > 9 and r[9] is not None else True,
-                    "apply_twitch": bool(r[10]) if len(r) > 10 and r[10] is not None else True
+                    "apply_twitch": bool(r[10]) if len(r) > 10 and r[10] is not None else True,
+                    "apply_youtube": bool(r[11]) if len(r) > 11 and r[11] is not None else True
                 }
                 for r in cursor.fetchall()
             ]

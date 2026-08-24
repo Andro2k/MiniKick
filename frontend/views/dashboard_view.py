@@ -52,6 +52,7 @@ class SegmentedDistributionBar(QWidget):
 class DashboardView(BaseView):
     connect_requested = Signal()
     twitch_connect_requested = Signal()
+    youtube_connect_requested = Signal()
     autostart_toggled = Signal(bool)
     reauth_requested = Signal()
     
@@ -152,9 +153,15 @@ class DashboardView(BaseView):
         self.btn_connect_twitch.setIconSize(QSize(16, 16))
         self.btn_connect_twitch.clicked.connect(self.twitch_connect_requested.emit)
 
+        self.btn_connect_youtube = ModernButton(self.i18n.get("dashboard.connection.btn_connect_youtube"), role="action_youtube")
+        self.btn_connect_youtube.setIcon(get_icon_colored("brand-youtube.svg", COLOR_WHITE, 16))
+        self.btn_connect_youtube.setIconSize(QSize(16, 16))
+        self.btn_connect_youtube.clicked.connect(self.youtube_connect_requested.emit)
+
         status_layout.addWidget(self.status_label, stretch=1)
         status_layout.addWidget(self.btn_connect, alignment=Qt.AlignmentFlag.AlignVCenter)
         status_layout.addWidget(self.btn_connect_twitch, alignment=Qt.AlignmentFlag.AlignVCenter)
+        status_layout.addWidget(self.btn_connect_youtube, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         conn_card.addWidget(row_autostart)
         
@@ -178,6 +185,21 @@ class DashboardView(BaseView):
 
         self.btn_connect_twitch.style().unpolish(self.btn_connect_twitch)
         self.btn_connect_twitch.style().polish(self.btn_connect_twitch)
+
+    def set_youtube_status(self, connected: bool = False, channel: str = ""):
+        if connected and channel:
+            self.btn_connect_youtube.setText(self.i18n.get("dashboard.connection.btn_active_youtube"))
+            self.btn_connect_youtube.setIcon(get_icon_colored("brand-youtube.svg", COLOR_RED, 16))
+            self.btn_connect_youtube.setEnabled(False)
+            self.btn_connect_youtube.setProperty("role", "action_youtube")
+        else:
+            self.btn_connect_youtube.setText(self.i18n.get("dashboard.connection.btn_connect_youtube"))
+            self.btn_connect_youtube.setIcon(get_icon_colored("brand-youtube.svg", COLOR_WHITE, 16))
+            self.btn_connect_youtube.setEnabled(True)
+            self.btn_connect_youtube.setProperty("role", "action_youtube")
+
+        self.btn_connect_youtube.style().unpolish(self.btn_connect_youtube)
+        self.btn_connect_youtube.style().polish(self.btn_connect_youtube)
 
     def _setup_profile_section(self):
         self.profile_container = QWidget(self)

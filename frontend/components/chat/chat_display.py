@@ -40,6 +40,9 @@ class ChatDisplayPanel(ModernCard):
         "VIP": ("\uedeb", "#ca8a04", "#ffffff"),
         "Suscriptor": ("\udb83\ude44", "#9333ea", "#ffffff"),
         "Subscriber": ("\udb83\ude44", "#9333ea", "#ffffff"),
+        "Miembro": ("\udb83\ude44", "#065fd4", "#ffffff"),
+        "Member": ("\udb83\ude44", "#065fd4", "#ffffff"),
+        "Verified": ("\uf00c", "#606060", "#ffffff"),
         "Bot": ("\uee0d", "#2563eb", "#ffffff"),
         "Sistema": ("\uf113", "#059669", "#ffffff"),
         "System": ("\uf113", "#059669", "#ffffff"),
@@ -49,7 +52,8 @@ class ChatDisplayPanel(ModernCard):
 
     _PLATFORM_ICONS = {
         "twitch": ("\uf1e8", "#9146FF", "#ffffff", "Twitch"),
-        "kick": ("\uf2f3", "#53FC18", "#000000", "Kick")
+        "kick": ("\uf2f3", "#53FC18", "#000000", "Kick"),
+        "youtube": ("\uf16a", "#FF0000", "#ffffff", "YouTube")
     }
 
     def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = "", platform: str = "kick"):
