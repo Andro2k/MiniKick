@@ -16,6 +16,7 @@ dependencies = [
     "asyncio",
     "yt-dlp",
     "piper-tts",
+    "pytchat>=0.5.5",
 ]
 
 [tool.pytest.ini_options]

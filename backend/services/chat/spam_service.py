@@ -2,6 +2,7 @@
 
 import logging
 import re
+from collections import deque
 
 class SpamService:
     _LINK_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
@@ -18,7 +19,7 @@ class SpamService:
         self.broadcaster_id = 0
         self.filters = {}
         self.user_history = {}
-        self.user_insertion_order = []
+        self.user_insertion_order = deque()
         self.max_history_size = max_history_size
         self.reload_filters()
 
@@ -130,7 +131,7 @@ class SpamService:
     def _track_user_message(self, user: str, msg_lower: str):
         if user not in self.user_history:
             if len(self.user_history) >= self.max_history_size:
-                oldest_user = self.user_insertion_order.pop(0)
+                oldest_user = self.user_insertion_order.popleft()
                 self.user_history.pop(oldest_user, None)
                 
             self.user_history[user] = {"message": msg_lower, "count": 1}
