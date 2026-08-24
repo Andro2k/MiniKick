@@ -10,8 +10,9 @@ from backend.config.version import APP_VERSION
 class CrashReportWorker(QThread):
     finished = Signal(bool, str)
 
-    def __init__(self, traceback_text: str, contact: str, description: str, i18n):
-        super().__init__()
+    def __init__(self, traceback_text: str, contact: str, description: str, i18n, parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Crash_Report")
         self.traceback_text = traceback_text
         self.contact = contact
         self.description = description

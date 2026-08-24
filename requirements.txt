@@ -8,3 +8,5 @@ pyinstaller
 edge-tts
 asyncio
 yt-dlp
+msgspec
+orjson

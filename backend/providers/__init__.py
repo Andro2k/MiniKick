@@ -3,6 +3,8 @@
 _LAZY_PROVIDERS = {
     "KickAPIClient": (".chat.kick_client", "KickAPIClient"),
     "ChatSocketManager": (".chat.kick_websocket", "ChatSocketManager"),
+    "TwitchAPIClient": (".chat.twitch_client", "TwitchAPIClient"),
+    "TwitchSocketManager": (".chat.twitch_websocket", "TwitchSocketManager"),
     "YouTubeMusicProvider": (".music.youtube_client", "YouTubeMusicProvider"),
     "LocalTTSProvider": (".voices.tts_local", "LocalTTSProvider"),
     "WebTTSProvider": (".voices.tts_online", "WebTTSProvider"),

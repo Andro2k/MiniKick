@@ -34,7 +34,7 @@ from backend.services import (
 from frontend.common.paths import resource_path
 
 class AppContainer:
-    def __init__(self, parent_widget=None):
+    def __init__(self):
         self.db_manager = DatabaseManager()
         
         self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")

@@ -11,6 +11,7 @@ class NetworkWorker(QThread):
 
     def __init__(self, overlay_port=8090, parent=None):
         super().__init__(parent)
+        self.setObjectName("Worker_Network")
         self.overlay_port = overlay_port
 
     def check_service(self, name: str, host_or_url: str, is_url: bool = True, expected_port: int = 80) -> tuple[str, int]:

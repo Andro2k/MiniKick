@@ -21,8 +21,7 @@ from backend.controllers import (
     SpamController, UpdateController, NetworkController, WidgetController,
     ScheduleController
 )
-from backend.providers import KickAPIClient
-from backend.providers.chat.twitch_client import TwitchAPIClient
+from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
     AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker,
     FetchRewardsWorker, RewardWorker, TimerWorker, ScheduleWorker
@@ -76,7 +75,7 @@ class MainWindowCore(QMainWindow):
         self.updater_manager = updater_manager
         self.app_version = app_version
         
-        self.container = AppContainer(self)
+        self.container = AppContainer()
         self.settings_storage = self.container.settings_storage 
         self.rewards_storage = self.container.rewards_storage
         self.commands_storage = self.container.commands_storage
@@ -496,11 +495,6 @@ class MainWindowCore(QMainWindow):
             except RuntimeError:
                 pass
 
-    def _stop_worker_safely(self, worker_name: str, worker_instance):
-        if not worker_instance:
-            return
-        self._stop_workers_parallel([(worker_name, worker_instance)])
-
     def _stop_kick_connection_workers(self):
         worker_map = [
             ("Worker_Chat_Socket", getattr(self, 'chat_worker', None)),
@@ -672,7 +666,7 @@ class MainWindowCore(QMainWindow):
             self.chat_controller.process_message(dto)
 
     def _start_timers_worker(self, channel_slug: str):
-        self._stop_worker_safely("Worker_Timers", getattr(self, 'timers_worker', None))
+        self._stop_workers_parallel([("Worker_Timers", getattr(self, 'timers_worker', None))])
         
         api_client = KickAPIClient(auth_provider=self.auth_manager)
         self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug, parent=self)
@@ -858,13 +852,6 @@ class MainWindowCore(QMainWindow):
             self._handle_twitch_auth_process(force=False)
 
     @Slot()
-    def _on_kick_integration_button_clicked(self):
-        if getattr(self, "_kick_connected", False):
-            self._force_reauth()
-        else:
-            self._handle_auth_process()
-
-    @Slot()
     def _force_reauth(self):
         if self.container.twitch_auth_manager.has_missing_scopes():
             self._handle_twitch_auth_process(force=True)
@@ -942,12 +929,10 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.process_message(dto)
 
     def _on_poll_updated(self, poll_data: dict):
-        self._active_poll_data = poll_data
         if hasattr(self, 'overlay_server') and self.overlay_server:
             self.overlay_server.trigger_widget_event("poll_update", {"poll": poll_data})
 
     def _on_poll_deleted(self):
-        self._active_poll_data = None
         if hasattr(self, 'overlay_server') and self.overlay_server:
             self.overlay_server.trigger_widget_event("poll_delete", {})
 

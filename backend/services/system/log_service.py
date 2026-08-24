@@ -2,6 +2,7 @@
 
 import os
 import re
+from collections import deque
 from backend.database.system_log_storage import SQLiteSystemLogStorage
 
 class LogService:
@@ -16,7 +17,7 @@ class LogService:
         self.log_dir = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), ".Minikick", "logs")
         os.makedirs(self.log_dir, exist_ok=True)
         self.max_logs = 1000
-        self._live_history: list[tuple[str, str, str]] = []
+        self._live_history: deque[tuple[str, str, str]] = deque(maxlen=self.max_logs)
         self._last_log_id = None
 
     def _get_date_threshold(self, date_filter: str) -> str:
@@ -43,9 +44,6 @@ class LogService:
 
         if not is_grouped:
             self._live_history.append((level, time_str, message))
-            if len(self._live_history) > self.max_logs:
-                self._live_history.pop(0)
-                
             if self.storage:
                 self._last_log_id = self.storage.append_log(level, time_str, message)
 
@@ -62,7 +60,7 @@ class LogService:
             logs = self.storage.get_all_logs()
             if logs:
                 return logs
-        return self._live_history
+        return list(self._live_history)
 
     def get_filtered_history(self, filter_level: str, all_label: str, search_term: str, date_filter: str = "") -> list[tuple[str, str, str]]:
         if self.storage:

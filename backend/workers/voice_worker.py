@@ -8,6 +8,7 @@ class VoiceFetcherWorker(QThread):
 
     def __init__(self, tts_manager, provider_type: str, parent=None):
         super().__init__(parent)
+        self.setObjectName("Worker_Voice_Fetcher")
         self.tts_manager = tts_manager
         self.provider_type = provider_type
 

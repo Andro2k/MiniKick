@@ -311,6 +311,7 @@
             "placeholder_contact": "Tu nombre de usuario o contacto...",
             "placeholder_desc": "Describe brevemente qué estabas haciendo y qué error ocurrió...",
             "remove_image_tooltip": "Quitar imagen",
+            "severity_label": "**Prioridad / Severidad:**",
             "severity_low": "Baja",
             "severity_low_desc": "Detalle estético o sugerencia",
             "severity_medium": "Media",

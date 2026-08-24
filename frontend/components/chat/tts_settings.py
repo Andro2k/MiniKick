@@ -288,37 +288,49 @@ class ChatTtsSettingsPanel(ModernCard):
     def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str,
                         is_web_provider: bool = False, volume: int = 100, role_voices: dict = None,
                         role_enabled: dict = None, provider: str = None, speed: int = 100):
+        interactive_widgets = [
+            self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
+            self.combo_provider, self.slider_vol, self.slider_speed,
+            self.sw_role_everyone, self.sw_role_broadcaster,
+            self.sw_role_moderator, self.sw_role_vip, self.sw_role_subscriber
+        ]
+        for w in interactive_widgets:
+            w.blockSignals(True)
         self.blockSignals(True)
-        self.chk_tts.setChecked(enabled)
-        self.chk_name.setChecked(read_name)
-        self.chk_command.setChecked(use_command)
-        self.txt_command.setText(command)
-        self.txt_command.setEnabled(use_command)
 
-        if provider:
-            provider_val = provider
-        else:
-            provider_val = "web" if is_web_provider else "piper"
+        try:
+            self.chk_tts.setChecked(enabled)
+            self.chk_name.setChecked(read_name)
+            self.chk_command.setChecked(use_command)
+            self.txt_command.setText(command)
+            self.txt_command.setEnabled(use_command)
 
-        idx = self.combo_provider.findData(provider_val)
-        if idx >= 0:
-            self.combo_provider.setCurrentIndex(idx)
-        self.btn_manage_piper.setVisible(provider_val == "piper")
+            if provider:
+                provider_val = provider
+            else:
+                provider_val = "web" if is_web_provider else "piper"
 
-        self.slider_vol.setValue(volume)
-        self.lbl_vol_perc.setText(f"{volume}%")
-        self.slider_speed.setValue(speed)
-        self.lbl_speed_perc.setText(f"{speed}%")
-        self._pending_role_voices = role_voices or {}
+            idx = self.combo_provider.findData(provider_val)
+            if idx >= 0:
+                self.combo_provider.setCurrentIndex(idx)
+            self.btn_manage_piper.setVisible(provider_val == "piper")
 
-        if role_enabled:
-            self.sw_role_everyone.setChecked(role_enabled.get("everyone", True))
-            self.sw_role_broadcaster.setChecked(role_enabled.get("broadcaster", True))
-            self.sw_role_moderator.setChecked(role_enabled.get("moderator", True))
-            self.sw_role_vip.setChecked(role_enabled.get("vip", True))
-            self.sw_role_subscriber.setChecked(role_enabled.get("subscriber", True))
+            self.slider_vol.setValue(volume)
+            self.lbl_vol_perc.setText(f"{volume}%")
+            self.slider_speed.setValue(speed)
+            self.lbl_speed_perc.setText(f"{speed}%")
+            self._pending_role_voices = role_voices or {}
 
-        self.blockSignals(False)
+            if role_enabled:
+                self.sw_role_everyone.setChecked(role_enabled.get("everyone", True))
+                self.sw_role_broadcaster.setChecked(role_enabled.get("broadcaster", True))
+                self.sw_role_moderator.setChecked(role_enabled.get("moderator", True))
+                self.sw_role_vip.setChecked(role_enabled.get("vip", True))
+                self.sw_role_subscriber.setChecked(role_enabled.get("subscriber", True))
+        finally:
+            for w in interactive_widgets:
+                w.blockSignals(False)
+            self.blockSignals(False)
 
     def update_languages(self, langs: list[str], select_prefix: str = None):
         pass

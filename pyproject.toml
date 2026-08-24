@@ -17,6 +17,8 @@ dependencies = [
     "yt-dlp",
     "piper-tts",
     "pytchat>=0.5.5",
+    "msgspec>=0.21.1",
+    "orjson>=3.12.0",
 ]
 
 [tool.pytest.ini_options]

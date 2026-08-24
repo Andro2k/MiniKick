@@ -4,8 +4,7 @@ import time
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from backend.database.schedule_storage import SQLiteScheduleStorage
-from backend.providers.chat.kick_client import KickAPIClient
-from backend.providers.chat.twitch_client import TwitchAPIClient
+from backend.providers import KickAPIClient, TwitchAPIClient
 
 logger = logging.getLogger("minikick.schedule_service")
 

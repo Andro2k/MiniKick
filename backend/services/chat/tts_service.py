@@ -57,10 +57,16 @@ class TTSManager:
 
     def warm_up(self, provider_type: str = None, voice_id: str = None) -> None:
         prov_key = provider_type or self._active_provider_key
-        if prov_key == "piper" or prov_key in self._providers:
-            provider = self._get_provider(prov_key)
+        if prov_key in self._providers:
+            provider = self._providers[prov_key]
             if provider and hasattr(provider, "warm_up"):
                 provider.warm_up(voice_id)
+        elif prov_key == "piper":
+            def _async_init_and_warm():
+                prov = self._get_provider("piper")
+                if prov and hasattr(prov, "warm_up"):
+                    prov.warm_up(voice_id)
+            threading.Thread(target=_async_init_and_warm, daemon=True, name="PiperAsyncInitWarm").start()
 
     def set_audio_device(self, device_id: str) -> None:
         self._audio_device_id = device_id
@@ -139,7 +145,7 @@ class TTSManager:
         if provider_type in self._voices_cache and self._voices_cache[provider_type]:
             return self._voices_cache[provider_type]
             
-        target_provider = self._providers.get(provider_type, self._provider)
+        target_provider = self._get_provider(provider_type)
         voices = target_provider.get_available_voices()
         self._voices_cache[provider_type] = voices
         return voices

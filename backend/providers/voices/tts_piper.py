@@ -24,6 +24,7 @@ class PiperTTSProvider:
         self._cache_lock = threading.Lock()
         self._loaded_models: Dict[str, any] = {}
         self._models_lock = threading.Lock()
+        self._warming_up_voices: set[str] = set()
 
     def set_audio_device(self, device_id: str) -> None:
         self._audio_device_id = device_id
@@ -36,6 +37,13 @@ class PiperTTSProvider:
 
     def warm_up(self, voice_id: Optional[str] = None, async_mode: bool = True) -> None:
         target_id = voice_id or self.voice_id or DEFAULT_PIPER_VOICE_ID
+
+        with self._models_lock:
+            if target_id in self._loaded_models:
+                return
+            if target_id in self._warming_up_voices:
+                return
+            self._warming_up_voices.add(target_id)
 
         def _do_warm_up():
             try:
@@ -52,6 +60,9 @@ class PiperTTSProvider:
                     logger.debug("Piper voice '%s' pre-warmed successfully.", target_id)
             except Exception as e:
                 logger.debug("Piper warm-up exception for '%s': %s", target_id, e)
+            finally:
+                with self._models_lock:
+                    self._warming_up_voices.discard(target_id)
 
         if async_mode:
             thread = threading.Thread(target=_do_warm_up, daemon=True, name=f"PiperWarmup_{target_id}")
@@ -79,9 +90,8 @@ class PiperTTSProvider:
                 if installed:
                     target_voice_id = installed[0]["id"]
                 else:
-                    logger.warning("No Piper voices installed. Auto-downloading default: %s", DEFAULT_PIPER_VOICE_ID)
-                    self.manager.download_voice_sync(DEFAULT_PIPER_VOICE_ID)
-                    target_voice_id = DEFAULT_PIPER_VOICE_ID
+                    logger.warning("No Piper voices installed for voice request: %s", target_voice_id)
+                    return None
 
             onnx_path, json_path = self.manager.get_voice_file_paths(target_voice_id)
             if not os.path.exists(onnx_path) or not os.path.exists(json_path):
