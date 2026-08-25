@@ -1,48 +1,43 @@
+---
+description: El centro de control definitivo, modular y ligero para streamers en Kick.com
+---
+
 # MiniKick
 
-**El centro de control definitivo, modular y ligero para streamers en Kick, Twitch y YouTube**
+[![Latest Release](https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge\&logo=kick\&color=10BB10\&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Windows Support](https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge\&logo=windows\&logoColor=white\&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Python Version](https://img.shields.io/badge/Python-3.14.5-3776AB?style=for-the-badge\&logo=python\&logoColor=white\&labelColor=191919)](https://www.python.org/) [![PySide6](https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge\&logo=qt\&logoColor=white\&labelColor=191919)](https://doc.qt.io/qtforpython-6/) [![Clean Architecture](https://img.shields.io/badge/Arquitectura-Clean_Code-FFb900?style=for-the-badge\&logo=dataiku\&logoColor=white\&labelColor=191919)](./#arquitectura-e-ingenieria) [![License](https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge\&color=blue\&labelColor=191919)](https://github.com/Andro2k/MiniKick/blob/main/LICENSE/README.md)<br>
 
-[![Latest Release](https://img.shields.io/github/v/release/Andro2k/MiniKick?style=for-the-badge&logo=kick&color=10BB10&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Windows Support](https://img.shields.io/badge/Plataforma-Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&labelColor=191919)](https://github.com/Andro2k/MiniKick/releases/latest) [![Python Version](https://img.shields.io/badge/Python-3.14.5-3776AB?style=for-the-badge&logo=python&logoColor=white&labelColor=191919)](https://www.python.org/) [![PySide6](https://img.shields.io/badge/GUI-PySide6-41CD52?style=for-the-badge&logo=qt&logoColor=white&labelColor=191919)](https://doc.qt.io/qtforpython-6/) [![Clean Architecture](https://img.shields.io/badge/Arquitectura-Clean_Code-FFb900?style=for-the-badge&logo=dataiku&logoColor=white&labelColor=191919)](#arquitectura-e-ingenieria) [![License](https://img.shields.io/github/license/Andro2k/MiniKick?style=for-the-badge&color=blue&labelColor=191919)](https://github.com/Andro2k/MiniKick/blob/main/LICENSE/README.md)
+MiniKick es una aplicación de escritorio nativa diseñada para orquestar la interacción en directo sin sacrificar los FPS de tu transmisión. Operando por completo fuera del navegador, reduce drásticamente el consumo de memoria RAM y ciclos de CPU, integrando lectura de chat inteligente por voz (TTS), moderación automatizada, control multimedia en tiempo real y un potente sistema de overlays personalizables para OBS.<br>
 
-<br>
+[![Descargar Última Versión](https://img.shields.io/badge/DESCARGAR_ULTIMA_VERSION-10BB10?style=for-the-badge\&logo=windows\&logoColor=white)](https://github.com/Andro2k/MiniKick/releases/latest)
 
-MiniKick es una aplicación de escritorio nativa diseñada para orquestar transmisiones en vivo sin sacrificar el rendimiento de tus juegos ni los FPS de tu stream. Al operar completamente fuera del navegador web, reduce drásticamente el consumo de memoria RAM y ciclos de CPU, unificando en tiempo real la interacción simultánea de **Kick**, **Twitch** y **YouTube Live** con síntesis de voz neuronal local (**Piper TTS**), moderación automatizada sin falsos positivos, control multimedia y un potente servidor de overlays para OBS.
-
-<br>
-
-[![Descargar Última Versión](https://img.shields.io/badge/DESCARGAR_ULTIMA_VERSION-10BB10?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Andro2k/MiniKick/releases/latest)
-
----
+***
 
 ### Vista Previa de la Interfaz
 
-![MiniKick Dashboard - Panel General de Control](docs/screenshots/dashboard_preview.png)
+![MiniKick Dashboard - Panel General de Control](.gitbook/assets/dashboard_preview.png)
 
-![Ajustes de Voz, Roles y Moderacion de Chat](docs/screenshots/chat_settings_preview.png)
+![Ajustes de Voz, Roles y Moderacion de Chat](.gitbook/assets/chat_settings_preview.png)
 
-![Reproductor de Musica y Cola de Reproduccion](docs/screenshots/music_player_preview.png)
+![Reproductor de Musica y Cola de Reproduccion](.gitbook/assets/music_player_preview.png)
 
-![Lienzo de Overlay de Chat para OBS y Temas Visuales](docs/screenshots/chat_overlay_preview.png)
+![Lienzo de Overlay de Chat para OBS y Temas Visuales](.gitbook/assets/chat_overlay_preview.png)
 
----
+***
 
 ### Funcionalidades Principales
 
-| Módulo | Función | Descripción |
-| :--- | :--- | :--- |
-| **Ingestión Multi-Plataforma** | Kick + Twitch + YouTube | Captura simultánea de chat, eventos, SuperChats, suscripciones y roles en tiempo real sin cuotas de API. |
-| **Pipeline de Chat Unidireccional** | Procesamiento Seguro | Tubería desacoplada de interceptores puros (*Spam -> UI -> Comandos -> TTS*) con despacho en tiempo constante $\mathcal{O}(1)$. |
-| **Lienzo y Overlays Web** | OBS Studio (Puerto 8090) | Servidor local HTTP + WebSockets (RFC 6455) con 5 identidades visuales (*Glass, Neon, Card, Cyber, Minimal*), soporte de emotes de Kick, Twitch y YouTube, widgets de explosión y combos. |
-| **Voz Neuronal Local (TTS)** | Piper TTS ONNX | Síntesis de voz neuronal de alta calidad que corre 100% local en CPU (~19x velocidad real) con gestor de descarga de voces a demanda, control de velocidad (50%-150%) y precalentamiento sin pausas (*Zero-Latency Warm-Up*). |
-| **Reproductor Multimedia** | Control de Puntos & Comandos | Reproductor integrado con resolución rápida (`yt-dlp`), canje de canciones (`!sr`), saltos (`!skip`), caché inteligente en disco $\mathcal{O}(1)$ e indicador visual para reordenar pistas por Drag & Drop. |
-| **AutoMod y Moderación** | Filtros Inteligentes | Protección activa contra exceso de mayúsculas, repeticiones, enlaces y símbolos, con exclusión previa de emotes para eliminar falsos positivos. |
-| **Persistencia SQLite WAL** | Almacenamiento Seguro | Base de datos local transaccional en modo `WAL` con reintentos automáticos, migraciones automáticas y respaldo seguro en `%LOCALAPPDATA%\.Minikick`. |
-| **Diagnóstico y Reportes** | Estabilidad Continua | Captura global de excepciones con registro detallado de fallos, visor de logs en vivo e informes de incidentes automatizados. |
+| Módulo                     | Función                     | Descripción                                                                                                                                                      |
+| -------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Motor de Chat**          | Pipeline Unidireccional     | Procesamiento de mensajes mediante tubería de interceptores puros (_AutoMod -> Comandos -> UI -> TTS_) con visualización de comandos en el historial de sala.    |
+| **Lienzo y Overlays**      | OBS Widgets                 | Generación local de overlays de chat de alto rendimiento con soporte de emotes Kick y 7TV, auto-ocultación, marcas de tiempo y redimensionamiento dinámico.      |
+| **Voz Híbrida (TTS)**      | Narración Inteligente       | Voces personalizadas por roles (Streamer, Moderador, VIP, Suscriptor). Alternancia dinámica entre voces de Microsoft Edge-TTS y SAPI5 local.                     |
+| **Integración de Música**  | Control de Puntos           | Soporte de Spotify y YouTube Music. Canje de canciones (`!sr`), saltos (`!skip`) y consulta de pista (`!song`) con portadas dinámicas y progreso en tiempo real. |
+| **AutoMod Integrado**      | Filtros Anti-Spam           | Protección activa contra exceso de mayúsculas, símbolos, repeticiones, enlaces y párrafos masivos con bloqueo visual de controles en caso de fallos.             |
+| **Diagnóstico y Reportes** | Herramientas de Estabilidad | Captura global de excepciones con reporte de crashes automatizado a webhooks de Discord y separador de lógica visual en informes de bugs.                        |
 
-> [!NOTE]
-> Todas las preferencias de usuario, bases de datos locales (`SQLite`), modelos neuronales descargados y tokens cifrados de sesión persisten de forma aislada y segura en el directorio nativo del sistema: `%LOCALAPPDATA%\.Minikick`.
+> \[!NOTE] Todas las preferencias de usuario, bases de datos locales (`SQLite`) y tokens cifrados de sesión persisten de forma aislada en el directorio nativo del sistema: `AppData\Local\.Minikick`.
 
----
+***
 
 ### Arquitectura e Ingeniería
 
@@ -122,22 +117,20 @@ flowchart TD
 4. **Patrón Pipeline (Chain of Responsibility):** Desacoplamiento total del procesamiento de mensajes. Cada mensaje es un `ChatMessageDTO` inmutable que atraviesa etapas independientes de sanitización, filtrado y despacho.
 5. **Gestión Segura de Memoria y Concurrencia:** Hilos secundarios aislados en `QThread` con señales/ranuras Qt (`Signals/Slots`), bloqueos atómicos (`threading.Lock`) y limpieza determinista de recursos.
 
-> [!IMPORTANT]
-> **Normativa de Contribución:** Cualquier propuesta de cambio debe pasar auditoría de complejidad algorítmica, mantener la paridad total en internacionalización (`locales/es.json` y `locales/en.json`) y respetar el desacoplamiento de capas para ser integrada.
+> \[!IMPORTANT] **Normativa de Contribución:** Cualquier propuesta de cambio para el proyecto debe pasar auditoría de complejidad temporal y respetar el desacoplamiento de capas para ser integrada en la rama principal.
 
----
+***
 
 ### Stack Tecnológico
 
-- **Core & GUI:** Python 3.14.5 | PySide6 (Qt for Python) | Qt Style Sheets (QSS contextual y tokens HSL)
-- **Aceleración JSON:** `msgspec` (C) | `orjson` (Rust)
-- **Servicios de Red & WebSockets:** Servidor HTTP Local multihilo | WebSockets RFC 6455 nativo | Server-Sent Events (SSE) | Requests | Cloudscraper
-- **Motores de Voz (TTS):** Piper TTS (Modelos ONNX locales) | Edge-TTS (Nube) | SAPI5 (Windows Local)
-- **Audio & Multimedia:** YT-DLP | PySide6 QtMultimedia (`QMediaPlayer`, `QAudioOutput`)
-- **Base de Datos:** SQLite3 (Modo WAL con transacciones atómicas)
-- **Gestión de Paquetes & Build:** `uv` | PyInstaller
+* **Core & GUI:** Python 3.14.5 | PySide6 (Qt for Python) | Qt Style Sheets (QSS contextual)
+* **Servicios de Red:** HTTP Server Local | WebSockets | Requests | Cloudscraper (Bypass de Cloudflare)
+* **Motores de Voz:** Edge-TTS (Edge Cloud) | Pyttsx3 (SAPI5 local de Windows)
+* **Motores de Audio:** YT-DLP (YouTube resolve) | Spotify Web API
+* **Base de Datos y Almacenamiento:** SQLite3 | JSON File Storage
+* **Compilación y Empaquetado:** PyInstaller | Inno Setup
 
----
+***
 
 ### Guía de Despliegue
 
@@ -166,9 +159,6 @@ uv run python main.py
 uv run pyinstaller --clean --noconfirm MiniKick.spec
 ```
 
-> [!TIP]
-> Si experimentas algún comportamiento inesperado de red o desconexión, consulta la vista interna **Developer -> Logs** de la aplicación o revisa el registro en `%LOCALAPPDATA%\.Minikick\logs\minikick.log`.
-
-<br>
+> \[!TIP] Si experimentas algún comportamiento inesperado de red o cierre abrupto, revisa la pestaña interna **Developer -> Logs** de la aplicación o consulta el diálogo de reporte de fallos automatizado antes de abrir un ticket de soporte.
 
 <sub>Diseñado y desarrollado con estándares de arquitectura por</sub> [<sub>**TheAndro2K**</sub>](https://github.com/Andro2k) <sub>• Distribuido bajo la Licencia MIT</sub>
