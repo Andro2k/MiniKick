@@ -73,15 +73,33 @@ class PiperVoiceManager:
         self._initialized = True
         self._models_dir = self._resolve_models_directory()
         os.makedirs(self._models_dir, exist_ok=True)
+        self._migrate_legacy_models()
 
     def _resolve_models_directory(self) -> str:
-        try:
-            from frontend.common.paths import resource_path
-            base_dir = resource_path(os.path.join("resources", "models", "piper"))
-        except Exception:
-            base_dir = os.path.join(os.path.expanduser("~"), ".minikick", "models", "piper")
-        
+        app_data_dir = os.environ.get("LOCALAPPDATA", os.path.expanduser("~"))
+        base_dir = os.path.join(app_data_dir, ".Minikick", "models", "piper")
         return os.path.abspath(base_dir)
+
+    def _migrate_legacy_models(self) -> None:
+        legacy_dirs = [
+            os.path.join(os.path.expanduser("~"), ".minikick", "models", "piper"),
+            os.path.join(os.path.expanduser("~"), ".Minikick", "models", "piper"),
+            os.path.join(os.getcwd(), "resources", "models", "piper")
+        ]
+        import shutil
+        for old_dir in legacy_dirs:
+            if os.path.abspath(old_dir) == os.path.abspath(self._models_dir):
+                continue
+            if os.path.exists(old_dir) and os.path.isdir(old_dir):
+                try:
+                    for filename in os.listdir(old_dir):
+                        if filename.endswith(".onnx") or filename.endswith(".json"):
+                            src_file = os.path.join(old_dir, filename)
+                            dst_file = os.path.join(self._models_dir, filename)
+                            if not os.path.exists(dst_file) or os.path.getsize(dst_file) < os.path.getsize(src_file):
+                                shutil.copy2(src_file, dst_file)
+                except Exception as e:
+                    logger.debug("Could not migrate legacy models from %s: %s", old_dir, e)
 
     @property
     def models_dir(self) -> str:
