@@ -1,6 +1,7 @@
 # backend\workers\rewards_worker.py
 
 import logging
+from collections import deque
 from PySide6.QtCore import QThread, Signal
 from backend.providers import KickAPIClient
 
@@ -16,7 +17,7 @@ class RewardWorker(QThread):
         self.poll_interval = poll_interval_seconds
         self._running = False
         self._processed_ids = set() 
-        self._processed_order = [] 
+        self._processed_order = deque() 
 
     def run(self):
         self._running = True
@@ -74,7 +75,7 @@ class RewardWorker(QThread):
             username = user_names_map.get(user_id, str(user_id) if user_id else fallback_name)
             
             if len(self._processed_ids) >= 2000:
-                oldest_id = self._processed_order.pop(0)
+                oldest_id = self._processed_order.popleft()
                 self._processed_ids.discard(oldest_id)
                 
             self._processed_ids.add(red_id)

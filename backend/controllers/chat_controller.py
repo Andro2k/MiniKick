@@ -81,7 +81,13 @@ class ChatController(QObject):
 
     def _connect_signals(self) -> None:
         self.view.volume_changed.connect(self.service.set_volume)
-        self.view.provider_toggled.connect(self.voice_handler.handle_provider_change)
+        if hasattr(self.view, "speed_changed"):
+            self.view.speed_changed.connect(self.service.set_speed)
+        if hasattr(self.view, "provider_changed"):
+            self.view.provider_changed.connect(self.voice_handler.handle_provider_change)
+        if hasattr(self.view, "tts_settings_panel"):
+            if hasattr(self.view.tts_settings_panel, "manage_piper_voices_requested"):
+                self.view.tts_settings_panel.manage_piper_voices_requested.connect(self.voice_handler.open_piper_voices_dialog)
         self.view.voice_changed.connect(self.voice_handler.handle_voice_change)
         self.view.voice_test_requested.connect(self.voice_handler.handle_voice_test)
         self.view.settings_changed.connect(self._handle_settings_save)
@@ -97,7 +103,7 @@ class ChatController(QObject):
 
     def _load_initial_data(self) -> None:
         settings = self.service.get_settings()
-        provider = settings.get("provider", "local")
+        provider = settings.get("provider", "piper")
         self.service.set_provider(provider)
         
         saved_voice_id = self.service.get_saved_voice_id(provider)
@@ -132,10 +138,13 @@ class ChatController(QObject):
                 is_web_provider=(provider == "web"),
                 volume=settings.get("volume", 100),
                 role_voices=role_voices,
-                role_enabled=role_enabled
+                role_enabled=role_enabled,
+                provider=provider,
+                speed=settings.get("speed", 100)
             )
             self.filter_handler.initialize_from_settings(settings, self.view)
         self.service.set_volume(settings.get("volume", 100))
+        self.service.set_speed(settings.get("speed", 100))
 
         overlay_theme = self.service.storage.load_string("chat_overlay_theme", "glass")
         try:
@@ -368,7 +377,9 @@ class ChatController(QObject):
             "read_name": self.view.read_name_enabled,
             "use_command": self.view.use_command_enabled,
             "command": self.view.tts_command,
-            "provider": "web" if self.view.is_web_provider else "local",
+            "provider": self.view.tts_provider if hasattr(self.view, "tts_provider") else ("web" if self.view.is_web_provider else "piper"),
+            "volume": self.view.tts_volume,
+            "speed": self.view.tts_speed if hasattr(self.view, "tts_speed") else 100,
             "ignored_users": ",".join(self.filter_handler.muted_bots),
             "banned_words": ",".join(self.filter_handler.banned_words)
         }

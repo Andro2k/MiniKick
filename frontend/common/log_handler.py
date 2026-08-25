@@ -17,9 +17,10 @@ class QLogHandler(logging.Handler):
     def emit(self, record: logging.LogRecord):
         try:
             msg = self.format(record)
-            self.emitter.log_received.emit(record.levelname, msg)
+            if hasattr(self, "emitter") and self.emitter is not None:
+                self.emitter.log_received.emit(record.levelname, msg)
         except Exception:
-            self.handleError(record)
+            pass
 
 class StreamToLogger:
     def __init__(self, logger, log_level=logging.INFO):

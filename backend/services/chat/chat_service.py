@@ -6,7 +6,7 @@ class ChatService:
         self.storage = settings_storage
 
     def get_settings(self) -> dict:
-        provider = self.storage.load_string("tts_provider", "local")
+        provider = self.storage.load_string("tts_provider", "piper")
         return {
             "enabled": self.storage.load_bool("tts_enabled", True),
             "read_name": self.storage.load_bool("tts_read_name", True),
@@ -15,6 +15,7 @@ class ChatService:
             "provider": provider,
             "ignored_users": self.storage.load_string("tts_ignored_users", ""),
             "volume": int(self.storage.load_string("tts_volume", "100")),
+            "speed": int(self.storage.load_string("tts_speed", "100")),
             "banned_words": self.storage.load_string("tts_banned_words", ""),
             "role_voice_broadcaster": self.storage.load_string(f"tts_voice_{provider}_broadcaster", ""),
             "role_voice_moderator": self.storage.load_string(f"tts_voice_{provider}_moderator", ""),
@@ -35,7 +36,7 @@ class ChatService:
         self.storage.save_string("tts_ignored_users", settings.get("ignored_users", ""))
         self.storage.save_string("tts_banned_words", settings.get("banned_words", ""))
         
-        provider = settings.get("provider", "local")
+        provider = settings.get("provider", "piper")
         if "role_voice_broadcaster" in settings:
             self.storage.save_string(f"tts_voice_{provider}_broadcaster", settings["role_voice_broadcaster"])
         if "role_voice_moderator" in settings:
@@ -69,12 +70,18 @@ class ChatService:
         self.storage.save_string("tts_volume", str(volume))
         self.tts.set_volume(volume / 100.0)
 
+    def set_speed(self, speed: int):
+        self.storage.save_string("tts_speed", str(speed))
+        self.tts.set_speed(speed / 100.0)
+
     def set_provider(self, provider: str):
         self.storage.save_string("tts_provider", provider)
         self.tts.set_provider(provider)
         saved_voice = self.get_saved_voice_id(provider)
         if saved_voice:
             self.tts.set_voice(saved_voice)
+            if provider == "piper":
+                self.tts.warm_up("piper", saved_voice)
 
     def get_available_voices(self, provider: str) -> list[dict]:
         return self.tts.get_available_voices(provider)
@@ -85,6 +92,8 @@ class ChatService:
     def set_voice(self, provider: str, voice_id: str):
         self.storage.save_string(f"tts_voice_{provider}", voice_id)
         self.tts.set_voice(voice_id)
+        if provider == "piper":
+            self.tts.warm_up("piper", voice_id)
 
     def speak(self, text: str, voice_id: str = None):
         self.tts.say(text, voice_id=voice_id)

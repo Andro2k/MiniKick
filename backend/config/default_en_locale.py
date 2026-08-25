@@ -68,6 +68,8 @@ DEFAULT_DICTIONARY = {
         "settings": {
             "cmd_desc": "Only read messages starting with your configured prefix.",
             "cmd_title": "Require Command",
+            "manage_piper_btn": "Download voices",
+            "manage_piper_tooltip": "Manage and download local Piper voices",
             "name_desc": "Read the sender's name aloud before pronouncing their message.",
             "name_title": "Read Names",
             "obs_desc": "Copy this URL and add it as a browser source in your streaming software (OBS / Streamlabs).",
@@ -76,6 +78,8 @@ DEFAULT_DICTIONARY = {
             "prefix_placeholder": "Ex. !tts",
             "prefix_title": "Command Prefix",
             "provider_title": "TTS Voice Engine",
+            "speed_desc": "Adjust voice speech speed and pacing.",
+            "speed_title": "Speech Speed",
             "tts_desc": "Enable or disable automated message reading out loud.",
             "tts_title": "Voice Service (TTS)",
             "voice_general_title": "Followers Voice",
@@ -85,10 +89,11 @@ DEFAULT_DICTIONARY = {
         "status": {
             "disabled_upper": "DISABLED",
             "enabled_upper": "ENABLED",
-            "loading_voices": "Fetching cloud voices...",
+            "loading_voices": "Fetching voices...",
             "provider_active": "Active mode: {mode}",
-            "provider_cloud": "Neural AI (Edge Cloud)",
-            "provider_local": "SAPI5 / OS (Local)",
+            "provider_cloud": "Edge-TTS (Cloud)",
+            "provider_local": "Windows SAPI5 (Basic / Fallback)",
+            "provider_piper": "Piper TTS (Local Neural)",
             "provider_title": "Speech Engine",
             "read_name_active": "Reading sender names enabled",
             "read_name_inactive": "Reading sender names disabled",
@@ -128,6 +133,10 @@ DEFAULT_DICTIONARY = {
             "perm_subscriber": "Subscriber",
             "perm_vip": "VIP",
             "permission_label": "Minimum Permission:",
+            "platform_kick": "Kick",
+            "platform_label": "Platforms:",
+            "platform_twitch": "Twitch",
+            "platform_youtube": "YouTube",
             "plugin_tag": "PLUGIN COMMAND",
             "regex_checkbox": "Use RegEx (Ignores Prefixes and Aliases)",
             "regex_help": "When RegEx is enabled, the bot will trigger whenever this pattern is found in a message.",
@@ -195,7 +204,6 @@ DEFAULT_DICTIONARY = {
             "report_bug": "Report Bug",
             "save": "Save",
             "understood": "Understood",
-            "unlink": "Unlink",
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
@@ -248,8 +256,10 @@ DEFAULT_DICTIONARY = {
             "autostart_title": "Auto Connect",
             "btn_active": "System Active",
             "btn_active_twitch": "Twitch Active",
+            "btn_active_youtube": "YouTube Active",
             "btn_connect": "Connect to Kick",
             "btn_connect_twitch": "Connect Twitch",
+            "btn_connect_youtube": "Connect YouTube",
             "btn_retry": "Retry",
             "status_auth": "Status: Authenticating...",
             "status_connected": "Status: Connected & Listening",
@@ -308,6 +318,7 @@ DEFAULT_DICTIONARY = {
             "placeholder_contact": "Your username or contact info...",
             "placeholder_desc": "Briefly describe what you were doing and what error occurred...",
             "remove_image_tooltip": "Remove image",
+            "severity_label": "**Priority / Severity:**",
             "severity_low": "Low",
             "severity_low_desc": "Something's a little off",
             "severity_medium": "Medium",
@@ -342,6 +353,10 @@ DEFAULT_DICTIONARY = {
             "desc": "Are you sure you want to disconnect your Twitch account? Chat and command features for Twitch will become inactive.",
             "title": "Disconnect Twitch"
         },
+        "unlink_youtube": {
+            "desc": "Are you sure you want to disconnect YouTube live chat? Moderation and TTS features for YouTube will stop processing.",
+            "title": "Disconnect YouTube"
+        },
         "update": {
             "btn_close": "Close",
             "btn_download": "Download now",
@@ -362,6 +377,12 @@ DEFAULT_DICTIONARY = {
         },
         "wizard": {
             "step_indicator": "Step {current}/{total}"
+        },
+        "youtube_connect": {
+            "btn_connect": "Connect Chat",
+            "desc": "Enter your channel handle (@channel), full live stream URL, or YouTube video ID:",
+            "placeholder": "e.g. @lofigirl or https://youtube.com/watch?v=...",
+            "title": "Connect YouTube Live Chat"
         }
     },
     "log": {
@@ -430,6 +451,11 @@ DEFAULT_DICTIONARY = {
         "twitch": {
             "channel_empty": "Twitch channel name cannot be empty.",
             "user_not_found": "No user data found in Twitch Helix API."
+        },
+        "youtube": {
+            "channel_empty": "YouTube target stream or channel cannot be empty.",
+            "stream_unavailable": "YouTube live stream is unavailable or chat is disabled.",
+            "video_not_found": "No active live stream found for: {target}"
         }
     },
     "main": {
@@ -496,7 +522,11 @@ DEFAULT_DICTIONARY = {
             "twitch_connected_msg": "Successfully connected to Twitch chat: #{username}",
             "twitch_connected_title": "Twitch Connected",
             "twitch_disconnected_msg": "Twitch session unlinked.",
-            "twitch_disconnected_title": "Twitch Disconnected"
+            "twitch_disconnected_title": "Twitch Disconnected",
+            "youtube_connected_msg": "Connected to YouTube live chat: {target}",
+            "youtube_connected_title": "YouTube Connected",
+            "youtube_disconnected_msg": "YouTube Live chat connection disconnected.",
+            "youtube_disconnected_title": "YouTube Disconnected"
         },
         "toasts": {
             "reward_msg": "{user} redeemed: {reward_name}",
@@ -734,6 +764,16 @@ DEFAULT_DICTIONARY = {
             "title": "Services Status"
         }
     },
+    "piper_dialog": {
+        "btn_close": "Close",
+        "btn_delete": "Delete",
+        "btn_download": "Download",
+        "status_downloading": "Downloading...",
+        "status_installed": "Installed",
+        "status_not_installed": "Available",
+        "subtitle": "Download and manage local neural voices for offline speech synthesis without internet or API usage.",
+        "title": "Piper Voice Manager (Local TTS)"
+    },
     "rewards": {
         "dialogs": {
             "visual": {
@@ -822,10 +862,6 @@ DEFAULT_DICTIONARY = {
         }
     },
     "settings": {
-        "account": {
-            "desc": "Log out of the application. You will need to re-authorize your account to connect again.",
-            "title": "Unlink Account"
-        },
         "audio": {
             "default_device": "(System Default Device)",
             "music_desc": "Select the audio output device for channel music playback.",
@@ -850,11 +886,20 @@ DEFAULT_DICTIONARY = {
             "title": "General Settings"
         },
         "integrations": {
+            "btn_connect_kick": "Connect Kick",
             "btn_connect_twitch": "Connect Twitch",
+            "btn_connect_youtube": "Connect YouTube",
+            "btn_disconnect_kick": "Disconnect @{channel}",
             "btn_disconnect_twitch": "Disconnect #{channel}",
+            "btn_disconnect_youtube": "Disconnect {channel}",
             "desc": "Real-time chat connection status for each platform.",
+            "kick_desc_connected": "Successfully connected to @{channel} channel.",
+            "kick_desc_disconnected": "No Kick account currently connected.",
+            "kick_title": "Kick Channel",
             "twitch_desc_connected": "Successfully connected to #{channel} chat.",
-            "twitch_title": "Twitch Channel"
+            "twitch_title": "Twitch Channel",
+            "youtube_desc_connected": "Successfully connected to {channel} live stream.",
+            "youtube_title": "YouTube Live Channel"
         },
         "status": {
             "error_title": "Backup Error",
@@ -912,6 +957,7 @@ DEFAULT_DICTIONARY = {
             "max_symbols": "Symbol / weird character limit",
             "platform_kick": "Kick",
             "platform_twitch": "Twitch",
+            "platform_youtube": "YouTube",
             "platforms": "Applicable Platforms"
         },
         "filters": {

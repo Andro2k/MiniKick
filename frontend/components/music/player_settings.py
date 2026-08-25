@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication, QProgressBar
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
-from frontend.common.theme import COLOR_NEUTRAL_400
+from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_RED
 from frontend.common import get_icon_colored, get_pixmap
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
 
@@ -293,7 +293,12 @@ class MusicPlayerSettingsPanel(QWidget):
 
         if requester:
             platform = (song_data.get("platform") or "kick").lower()
-            color_hex = "#A970FF" if platform == "twitch" else "#53FC18"
+            if platform == "twitch":
+                color_hex = "#A970FF"
+            elif platform == "youtube":
+                color_hex = COLOR_RED
+            else:
+                color_hex = "#53FC18"
             user_styled = f"<span style='color:{color_hex}; font-weight:600;'>@{requester}</span>"
             req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)
         else:

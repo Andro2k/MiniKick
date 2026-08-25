@@ -10,8 +10,9 @@ from backend.config.version import APP_VERSION
 class BugReportWorker(QThread):
     finished = Signal(bool, str)
 
-    def __init__(self, username: str, description: str, include_logs: bool, image_path: str, i18n, severity: str = "Low"):
-        super().__init__()
+    def __init__(self, username: str, description: str, include_logs: bool, image_path: str, i18n, severity: str = "Low", parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Bug_Report")
         self.username = username
         self.description = description
         self.include_logs = include_logs
@@ -31,7 +32,8 @@ class BugReportWorker(QThread):
             u_label = self.i18n.get("dialogs.bug_report.user_label") if self.i18n else ""
             v_label = self.i18n.get("dialogs.bug_report.version_label") if self.i18n else ""
             d_label = self.i18n.get("dialogs.bug_report.description_label") if self.i18n else ""
-            s_label = f"**Priority / Severity:** {self.severity.upper()}"
+            sev_label = self.i18n.get("dialogs.bug_report.severity_label") if self.i18n else ""
+            s_label = f"{sev_label} {self.severity.upper()}"
             content = (
                 f"{header}\n"
                 f"{u_label} {user_text}\n"

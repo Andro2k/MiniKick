@@ -1,8 +1,8 @@
 # frontend\dialogs\command_dialog.py
 
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QCheckBox, QWidget, QSizePolicy
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
-from frontend.widgets import VariableTextEdit, NoWheelComboBox, create_badge
+from frontend.widgets import VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge
 from frontend.common import validate_trigger_prefix
 
 class CommandConfigWizard(ModernWizardPanel):
@@ -21,7 +21,8 @@ class CommandConfigWizard(ModernWizardPanel):
     def _setup_ui(self):
         self.tab_basic = QWidget()
         basic_layout = QVBoxLayout(self.tab_basic)
-        basic_layout.setSpacing(12)
+        basic_layout.setContentsMargins(0, 0, 0, 0)
+        basic_layout.setSpacing(10)
 
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
         lbl_trigger.setProperty("role", "h3")
@@ -45,30 +46,42 @@ class CommandConfigWizard(ModernWizardPanel):
 
         self.txt_response = VariableTextEdit()
         self.txt_response.textChanged.connect(self._update_btn_next_state)
-        self.txt_response.setMinimumHeight(80) 
+        self.txt_response.setMinimumHeight(90) 
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         basic_layout.addLayout(lbl_response_layout)
         basic_layout.addWidget(self.txt_response)
 
         row_configs = QHBoxLayout()
+        row_configs.setSpacing(12)
+
         col_cooldown = QVBoxLayout()
-        col_cooldown.addWidget(QLabel(self.i18n.get("command.dialog.cooldown_label")))
-        self.spin_cooldown = QSpinBox()
+        col_cooldown.setSpacing(4)
+        lbl_cooldown = QLabel(self.i18n.get("command.dialog.cooldown_label"))
+        lbl_cooldown.setProperty("role", "h3")
+        col_cooldown.addWidget(lbl_cooldown)
+
+        self.spin_cooldown = NoWheelSpinBox()
         self.spin_cooldown.setRange(0, 300)
         self.spin_cooldown.setValue(5)
+        self.spin_cooldown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         col_cooldown.addWidget(self.spin_cooldown)
-        row_configs.addLayout(col_cooldown)
+        row_configs.addLayout(col_cooldown, stretch=1)
         
         col_perm = QVBoxLayout()
-        col_perm.addWidget(QLabel(self.i18n.get("command.dialog.permission_label")))
+        col_perm.setSpacing(4)
+        lbl_perm = QLabel(self.i18n.get("command.dialog.permission_label"))
+        lbl_perm.setProperty("role", "h3")
+        col_perm.addWidget(lbl_perm)
+
         self.combo_perm = NoWheelComboBox()
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_everyone"), "everyone")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_subscriber"), "subscriber")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_vip"), "vip")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_moderator"), "moderator")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_broadcaster"), "broadcaster")
+        self.combo_perm.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         col_perm.addWidget(self.combo_perm)
-        row_configs.addLayout(col_perm)
+        row_configs.addLayout(col_perm, stretch=1)
         
         basic_layout.addLayout(row_configs)
 
@@ -92,6 +105,26 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_aliases.setPlaceholderText(self.i18n.get("command.dialog.aliases_placeholder"))
         adv_layout.addWidget(lbl_aliases)
         adv_layout.addWidget(self.txt_aliases)
+
+        adv_layout.addSpacing(6)
+
+        lbl_platforms = QLabel(self.i18n.get("command.dialog.platform_label"))
+        lbl_platforms.setProperty("role", "h3")
+        adv_layout.addWidget(lbl_platforms)
+
+        platforms_row = QHBoxLayout()
+        platforms_row.setSpacing(12)
+        self.chk_kick = QCheckBox(self.i18n.get("command.dialog.platform_kick"))
+        self.chk_kick.setChecked(True)
+        self.chk_twitch = QCheckBox(self.i18n.get("command.dialog.platform_twitch"))
+        self.chk_twitch.setChecked(True)
+        self.chk_youtube = QCheckBox(self.i18n.get("command.dialog.platform_youtube"))
+        self.chk_youtube.setChecked(True)
+        platforms_row.addWidget(self.chk_kick)
+        platforms_row.addWidget(self.chk_twitch)
+        platforms_row.addWidget(self.chk_youtube)
+        platforms_row.addStretch()
+        adv_layout.addLayout(platforms_row)
 
         adv_layout.addSpacing(10)
 
@@ -148,6 +181,9 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_response.setText(self.existing_config.get("response", ""))
         self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
         self.chk_active.setChecked(self.existing_config.get("is_active", True))
+        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True))
+        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True))
+        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True))
         
         permission = self.existing_config.get("permission", "everyone")
         index = self.combo_perm.findData(permission)
@@ -174,7 +210,10 @@ class CommandConfigWizard(ModernWizardPanel):
             "aliases": aliases_val,
             "is_regex": is_regex,
             "is_active": self.chk_active.isChecked(),
-            "permission": self.combo_perm.currentData()
+            "permission": self.combo_perm.currentData(),
+            "apply_kick": self.chk_kick.isChecked(),
+            "apply_twitch": self.chk_twitch.isChecked(),
+            "apply_youtube": self.chk_youtube.isChecked()
         }
 
 

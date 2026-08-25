@@ -29,7 +29,8 @@ except Exception:
 from backend.core.app_logger_core import setup_application_logging, flush_all_logs
 setup_application_logging()
 
-from backend.services import GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
+from backend.services.system.updater_service import GithubUpdateProvider, UpdateManager, WindowsInstaller
+from backend.services.system.instance_services import SocketInstanceProvider
 from backend.core.main_window_core import MainWindowCore
 from backend.config.version import APP_VERSION
 

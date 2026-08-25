@@ -93,6 +93,16 @@ class TimerConfigWizard(ModernWizardPanel):
         twitch_switch_box.addWidget(self.switch_twitch)
         twitch_switch_box.addWidget(lbl_twitch)
         switches_row.addLayout(twitch_switch_box)
+
+        youtube_switch_box = QHBoxLayout()
+        youtube_switch_box.setSpacing(6)
+        self.switch_youtube = ModernSwitch()
+        self.switch_youtube.setChecked(True)
+        lbl_youtube = QLabel("YouTube")
+        lbl_youtube.setProperty("role", "body")
+        youtube_switch_box.addWidget(self.switch_youtube)
+        youtube_switch_box.addWidget(lbl_youtube)
+        switches_row.addLayout(youtube_switch_box)
         switches_row.addStretch()
 
         plat_box.addWidget(lbl_platform)
@@ -363,6 +373,9 @@ class TimerConfigWizard(ModernWizardPanel):
         else:
             for m in messages:
                 self._add_message_field(m)
+        self.switch_kick.setChecked(self.existing_config.get("apply_kick", True))
+        self.switch_twitch.setChecked(self.existing_config.get("apply_twitch", True))
+        self.switch_youtube.setChecked(self.existing_config.get("apply_youtube", True))
             
         online_min = self.existing_config.get("interval_online")
         has_online = online_min is not None and online_min > 0
@@ -416,7 +429,8 @@ class TimerConfigWizard(ModernWizardPanel):
             "keywords": keywords,
             "categories": categories,
             "apply_kick": self.switch_kick.isChecked(),
-            "apply_twitch": self.switch_twitch.isChecked()
+            "apply_twitch": self.switch_twitch.isChecked(),
+            "apply_youtube": self.switch_youtube.isChecked()
         }
 
     def _update_step_ui(self):

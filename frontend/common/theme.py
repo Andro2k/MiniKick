@@ -1,17 +1,11 @@
 # frontend\common\theme.py
 
+import os
+import re
+import tempfile
 from functools import lru_cache
-from frontend.common.paths import get_assets_path
-
-def _get_qss_icon_url(relative_path: str) -> str:
-    return get_assets_path(relative_path).replace('\\', '/')
-
-PATH_ICON_HELP = _get_qss_icon_url("icons/help.svg")
-PATH_ICON_CHEVRON_DOWN = _get_qss_icon_url("icons/chevron-down.svg")
-PATH_ICON_CHEVRON_UP = _get_qss_icon_url("icons/chevron-up.svg")
-PATH_ICON_CHEVRON_LEFT = _get_qss_icon_url("icons/chevron-left.svg")
-PATH_ICON_CHEVRON_RIGHT = _get_qss_icon_url("icons/chevron-right.svg")
-PATH_ICON_CHECK = _get_qss_icon_url("icons/check.svg")
+from pathlib import Path
+from frontend.common.paths import get_assets_path, resolve_icon_path
 
 COLOR_NEUTRAL_950  = "#09090B"
 COLOR_NEUTRAL_900  = "#121214"
@@ -33,6 +27,53 @@ COLOR_BLUE         = "#3B82F6"
 COLOR_PURPLE       = "#C084FC"
 COLOR_TWITCH       = "#9146FF"
 COLOR_TWITCH_DARK  = "#772CE8"
+COLOR_TWITCH_GLOW  = "rgba(145, 70, 255, 0.15)"
+COLOR_YOUTUBE      = "#FF0000"
+COLOR_YOUTUBE_DARK = "#CC0000"
+COLOR_YOUTUBE_GLOW = "rgba(255, 0, 0, 0.15)"
+
+_QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
+
+def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = COLOR_NEUTRAL_400) -> str:
+    clean_name = os.path.basename(icon_name_or_rel_path)
+    orig_path = resolve_icon_path(clean_name)
+    if not orig_path or not os.path.exists(orig_path):
+        orig_path = get_assets_path(icon_name_or_rel_path)
+        if not os.path.exists(orig_path):
+            return ""
+
+    try:
+        _QSS_ICON_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        clean_hex = color_hex.lstrip("#")
+        stem = Path(clean_name).stem
+        cached_file = _QSS_ICON_CACHE_DIR / f"{stem}_{clean_hex}.svg"
+
+        if not cached_file.exists():
+            with open(orig_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+
+            content = content.replace("currentColor", color_hex)
+            content = re.sub(r'stroke=["\'](?!none)[^"\']+["\']', f'stroke="{color_hex}"', content)
+            content = re.sub(r'fill=["\'](?!none)[^"\']+["\']', f'fill="{color_hex}"', content)
+
+            with open(cached_file, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        return str(cached_file).replace('\\', '/')
+    except Exception:
+        return get_assets_path(icon_name_or_rel_path).replace('\\', '/')
+
+def _get_qss_icon_url(relative_path: str) -> str:
+    return get_assets_path(relative_path).replace('\\', '/')
+
+PATH_ICON_HELP = get_qss_colored_icon("icons/help.svg", COLOR_WHITE)
+PATH_ICON_CHEVRON_DOWN = get_qss_colored_icon("icons/chevron-down.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_UP = get_qss_colored_icon("icons/chevron-up.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_LEFT = get_qss_colored_icon("icons/chevron-left.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_RIGHT = get_qss_colored_icon("icons/chevron-right.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CHECK = _get_qss_icon_url("icons/check.svg")
+PATH_ICON_CHECK_GREEN = get_qss_colored_icon("icons/check.svg", COLOR_GREEN)
+PATH_ICON_CALENDAR = get_qss_colored_icon("icons/calendar.svg", COLOR_NEUTRAL_400)
 
 COLOR_WHITE_GLOW   = "rgba(255, 255, 255, 0.1)"
 COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.12)"
@@ -54,12 +95,12 @@ RADIUS_XL          = 16
 RADIUS_PILL        = 26
 
 PADDING_INPUT      = "5px"
-PADDING_BUTTON     = "6px 12px"
+PADDING_BUTTON     = "5px 10px"
 PADDING_SPINBOX    = "3px 18px 3px 8px"
 PADDING_ITEM       = "4px 8px"
 PADDING_BADGE      = "2px 6px"
 PADDING_CHIP       = "3px 10px"
-PADDING_TAB        = "8px 16px"
+PADDING_TAB        = "5px 15px"
 PADDING_MENU_ITEM  = "4px 12px 4px 18px"
 
 BORDER_DEFAULT     = f"1.5px solid {COLOR_NEUTRAL_800}"
@@ -102,13 +143,19 @@ QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_N
 QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_700}; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 15px; height: 15px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
-QComboBox QAbstractItemView, QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 3px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
+QComboBox QAbstractItemView {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 3px 2px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_GREEN}; }}
 QComboBox QAbstractItemView::item {{ border-radius: {RADIUS_SM}px; padding: {PADDING_ITEM}; margin: 1px 2px; }}
-QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover, QMenu::item:selected, QMenu::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; border-color: {COLOR_NEUTRAL_700}; }}
-QMenu::item {{ padding: {PADDING_MENU_ITEM}; margin: 1px 2px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_2}px; }}
-QMenu::item:disabled {{ color: {COLOR_NEUTRAL_400}; font-weight: 600; padding: {PADDING_ITEM}; background-color: transparent; }}
+QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; border-color: {COLOR_NEUTRAL_700}; }}
+
+QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 4px 3px; }}
+QMenu::item {{ padding: 5px 10px; margin: 1px 2px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_2}px; font-weight: 500; }}
+QMenu::item:disabled {{ color: {COLOR_NEUTRAL_500}; background-color: transparent; }}
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_GREEN}; }}
-QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 3px 6px; }}
+QMenu::icon {{ margin-left: 14px; }}
+QMenu::indicator {{ width: 14px; height: 14px; left: 8px; }}
+QMenu::indicator:checked {{ image: url("{PATH_ICON_CHECK_GREEN}"); }}
+QMenu::indicator:unchecked {{ image: none; }}
+QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_800}; margin: 2px 4px; }}
 
 QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_400}; }}
 QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus {{ border-color: {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_800}; }}
@@ -129,7 +176,7 @@ QDateEdit::up-button, QDateEdit::down-button {{ width: 0px; height: 0px; border:
 QDateEdit::up-arrow, QDateEdit::down-arrow {{ image: none; width: 0px; height: 0px; }}
 QDateEdit::drop-down {{ subcontrol-origin: border; subcontrol-position: center right; width: 24px; height: 24px; right: 4px; border: none; background-color: transparent; }}
 QDateEdit::drop-down:hover {{ background-color: {COLOR_NEUTRAL_700}; border-radius: {RADIUS_SM}px; }}
-QDateEdit::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 16px; height: 16px; }}
+QDateEdit::down-arrow {{ image: url("{PATH_ICON_CALENDAR}"); width: 18px; height: 18px; }}
 
 /* ==============================================================================
    CALENDAR POPUP (QCalendarWidget)
@@ -305,6 +352,10 @@ QPushButton[role="action_twitch"] {{ background-color: {COLOR_TWITCH}; color: {C
 QPushButton[role="action_twitch"]:hover {{ background-color: {COLOR_TWITCH_DARK}; }}
 QPushButton[role="action_twitch"]:focus {{ border-color: {COLOR_WHITE}; }}
 QPushButton[role="action_twitch"]:disabled {{ background-color: {COLOR_TWITCH_GLOW}; color: {COLOR_TWITCH}; border: 1.5px solid {COLOR_TWITCH}; }}
+QPushButton[role="action_youtube"] {{ background-color: {COLOR_YOUTUBE}; color: {COLOR_WHITE}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_youtube"]:hover {{ background-color: {COLOR_YOUTUBE_DARK}; }}
+QPushButton[role="action_youtube"]:focus {{ border-color: {COLOR_WHITE}; }}
+QPushButton[role="action_youtube"]:disabled {{ background-color: {COLOR_YOUTUBE_GLOW}; color: {COLOR_YOUTUBE}; border: 1.5px solid {COLOR_YOUTUBE}; }}
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="action_outlined"]:focus {{ border-color: {COLOR_GREEN}; }}

@@ -128,7 +128,8 @@ class DatabaseManager:
                     is_regex INTEGER DEFAULT 0,
                     permission TEXT DEFAULT 'everyone',
                     apply_kick INTEGER DEFAULT 1,
-                    apply_twitch INTEGER DEFAULT 1
+                    apply_twitch INTEGER DEFAULT 1,
+                    apply_youtube INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -141,7 +142,8 @@ class DatabaseManager:
                     max_amount INTEGER DEFAULT 0,
                     allowlist TEXT DEFAULT '',
                     apply_kick INTEGER DEFAULT 1,
-                    apply_twitch INTEGER DEFAULT 1
+                    apply_twitch INTEGER DEFAULT 1,
+                    apply_youtube INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -156,7 +158,8 @@ class DatabaseManager:
                     keywords TEXT DEFAULT '[]',
                     categories TEXT DEFAULT '[]',
                     apply_kick INTEGER DEFAULT 1,
-                    apply_twitch INTEGER DEFAULT 1
+                    apply_twitch INTEGER DEFAULT 1,
+                    apply_youtube INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -376,6 +379,7 @@ class DatabaseManager:
             "spam_filters": [
                 ("apply_kick", "INTEGER DEFAULT 1"),
                 ("apply_twitch", "INTEGER DEFAULT 1"),
+                ("apply_youtube", "INTEGER DEFAULT 1"),
                 ("allowlist", "TEXT DEFAULT ''"),
                 ("max_amount", "INTEGER DEFAULT 0"),
                 ("exclude_group", "TEXT DEFAULT 'none'"),
@@ -390,7 +394,8 @@ class DatabaseManager:
                 ("is_regex", "INTEGER DEFAULT 0"),
                 ("permission", "TEXT DEFAULT 'everyone'"),
                 ("apply_kick", "INTEGER DEFAULT 1"),
-                ("apply_twitch", "INTEGER DEFAULT 1")
+                ("apply_twitch", "INTEGER DEFAULT 1"),
+                ("apply_youtube", "INTEGER DEFAULT 1")
             ],
             "obs_rewards": [
                 ("volume", "REAL DEFAULT 1.0"),
@@ -412,6 +417,7 @@ class DatabaseManager:
             "chat_timers": [
                 ("apply_kick", "INTEGER DEFAULT 1"),
                 ("apply_twitch", "INTEGER DEFAULT 1"),
+                ("apply_youtube", "INTEGER DEFAULT 1"),
                 ("is_active", "INTEGER DEFAULT 1"),
                 ("interval_online", "INTEGER"),
                 ("interval_offline", "INTEGER"),

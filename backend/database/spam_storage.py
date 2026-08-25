@@ -9,7 +9,7 @@ class SQLiteSpamStorage:
     def load_all(self) -> dict:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT filter_id, is_active, penalty, duration, exclude_group, max_amount, allowlist, apply_kick, apply_twitch FROM spam_filters")
+            cursor.execute("SELECT filter_id, is_active, penalty, duration, exclude_group, max_amount, allowlist, apply_kick, apply_twitch, apply_youtube FROM spam_filters")
             filters = {}
             for row in cursor.fetchall():
                 filters[row[0]] = {
@@ -20,7 +20,8 @@ class SQLiteSpamStorage:
                     "max_amount": row[5],
                     "allowlist": row[6] if len(row) > 6 and row[6] is not None else "",
                     "apply_kick": bool(row[7]) if len(row) > 7 and row[7] is not None else True,
-                    "apply_twitch": bool(row[8]) if len(row) > 8 and row[8] is not None else True
+                    "apply_twitch": bool(row[8]) if len(row) > 8 and row[8] is not None else True,
+                    "apply_youtube": bool(row[9]) if len(row) > 9 and row[9] is not None else True
                 }
             return filters
 
@@ -28,15 +29,16 @@ class SQLiteSpamStorage:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO spam_filters (filter_id, is_active, penalty, duration, exclude_group, max_amount, allowlist, apply_kick, apply_twitch)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO spam_filters (filter_id, is_active, penalty, duration, exclude_group, max_amount, allowlist, apply_kick, apply_twitch, apply_youtube)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(filter_id) DO UPDATE SET
                     is_active=excluded.is_active, penalty=excluded.penalty, duration=excluded.duration,
                     exclude_group=excluded.exclude_group, max_amount=excluded.max_amount, allowlist=excluded.allowlist,
-                    apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch
+                    apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube
             """, (
                 filter_id, int(config.get("is_active", False)), config.get("penalty", "timeout"),
                 config.get("duration", 300), config.get("exclude_group", "none"), config.get("max_amount", 0),
-                config.get("allowlist", ""), int(config.get("apply_kick", True)), int(config.get("apply_twitch", True))
+                config.get("allowlist", ""), int(config.get("apply_kick", True)), int(config.get("apply_twitch", True)),
+                int(config.get("apply_youtube", True))
             ))
             conn.commit()

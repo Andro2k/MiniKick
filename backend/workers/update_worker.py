@@ -8,8 +8,9 @@ class UpdateCheckWorker(QThread):
     no_update = Signal()
     error = Signal(str)
 
-    def __init__(self, manager: UpdateManager):
-        super().__init__()
+    def __init__(self, manager: UpdateManager, parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Update_Check")
         self.manager = manager
 
     def run(self):
@@ -27,8 +28,9 @@ class UpdateDownloadWorker(QThread):
     error = Signal(str)
     progress = Signal(int)
 
-    def __init__(self, manager: UpdateManager, download_url: str):
-        super().__init__()
+    def __init__(self, manager: UpdateManager, download_url: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName("Worker_Update_Download")
         self.manager = manager
         self.download_url = download_url
 
@@ -46,8 +48,10 @@ class ReleaseNotesWorker(QThread):
     release_fetched = Signal(object)
     error_occurred = Signal(str)
 
-    def __init__(self, repo_owner: str = "Andro2k", repo_name: str = "MiniKick", parent=None):
+    def __init__(self, repo_owner: str = "Andro2k", repo_name: str = "MiniKick", i18n=None, parent=None):
         super().__init__(parent)
+        self.setObjectName("Worker_Release_Notes")
+        self.i18n = i18n
         from backend.services.system.updater_service import GithubUpdateProvider
         self.provider = GithubUpdateProvider(repo_owner, repo_name)
 
@@ -57,6 +61,7 @@ class ReleaseNotesWorker(QThread):
             if data and data.get("tag_name"):
                 self.release_fetched.emit(data)
             else:
-                self.error_occurred.emit("No release data found")
+                err_msg = self.i18n.get("dialogs.release_notes.error") if self.i18n else "No release data found"
+                self.error_occurred.emit(err_msg)
         except Exception as e:
             self.error_occurred.emit(str(e))

@@ -20,8 +20,8 @@ class TimerService:
     def get_active_timers(self) -> list[dict]:
         return [t for t in self.storage.load_all() if t.get("is_active", True)]
 
-    def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], apply_kick: bool = True, apply_twitch: bool = True, timer_id: int = None):
-        self.storage.save_timer(name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, timer_id)
+    def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True, timer_id: int = None):
+        self.storage.save_timer(name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube, timer_id)
 
     def delete_timer(self, timer_id: int):
         self.storage.delete_timer(timer_id)

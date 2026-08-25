@@ -1,6 +1,6 @@
 # backend\providers\chat\kick_websocket.py
 
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import websocket
 from typing import Callable
 from frontend.common.theme import COLOR_GREEN
@@ -50,8 +50,14 @@ class ChatSocketManager:
 
     def _parse_inner_data(self, outer: dict) -> dict:
         data_raw = outer.get("data", {})
-        if isinstance(data_raw, str):
-            return json.loads(data_raw) if data_raw else {}
+        if isinstance(data_raw, (str, bytes, bytearray)):
+            if not data_raw or data_raw == "{}" or data_raw == "[]":
+                return {}
+            try:
+                res = fast_loads(data_raw)
+                return res if isinstance(res, dict) else {}
+            except Exception:
+                return {}
         elif isinstance(data_raw, dict):
             return data_raw
         return {}
@@ -61,13 +67,15 @@ class ChatSocketManager:
             return
 
         try:
-            outer = json.loads(raw)
+            outer = fast_loads(raw)
+            if not isinstance(outer, dict):
+                return
             event = outer.get("event")
             handler = self._dispatch_table.get(event)
             if handler:
                 handler(outer, ws)
 
-        except (json.JSONDecodeError, KeyError, TypeError, AttributeError):
+        except Exception:
             pass
 
     def _handle_chat_message(self, outer: dict, ws: websocket.WebSocketApp) -> None:
@@ -148,7 +156,7 @@ class ChatSocketManager:
             self._on_pinned_deleted()
 
     def _handle_connection_established(self, outer: dict, ws: websocket.WebSocketApp) -> None:
-        payload = json.dumps({
+        payload = fast_dumps({
             "event": "pusher:subscribe",
             "data": {"channel": f"chatrooms.{self._room_id}.v2"}
         })

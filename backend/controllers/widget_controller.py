@@ -400,12 +400,12 @@ class WidgetController(QObject):
         self.command_service.send_response(msg, platform=platform)
 
     @Slot(str, str, str, object)
-    def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None):
+    @Slot(str, str, str, object, str, str)
+    def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick", emotes_tag: str = ""):
         if not content or not self.overlay_server:
             return
 
         emotes_list = []
-        
         for match in self._KICK_EMOTE_REGEX.finditer(content):
             e_id, e_name = match.groups()
             if e_id:
@@ -420,6 +420,31 @@ class WidgetController(QObject):
                     "src": e_name,
                     "name": e_name
                 })
+
+        if platform == "youtube" and emotes_tag:
+            try:
+                import json
+                yt_emotes = json.loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
+                for em in yt_emotes:
+                    if isinstance(em, dict) and em.get("url"):
+                        emotes_list.append({
+                            "type": "image",
+                            "src": em["url"],
+                            "name": em.get("name", "yt_emote")
+                        })
+            except Exception:
+                pass
+
+        if platform == "twitch" and emotes_tag and not emotes_tag.startswith("["):
+            for group in emotes_tag.split("/"):
+                if ":" in group:
+                    e_id = group.split(":")[0]
+                    if e_id:
+                        emotes_list.append({
+                            "type": "image",
+                            "src": f"https://static-cdn.jtvnw.net/emoticons/v2/{e_id}/default/dark/2.0",
+                            "name": f"twitch_{e_id}"
+                        })
 
         for emoji_char in self._EMOJI_REGEX.findall(content):
             emotes_list.append({

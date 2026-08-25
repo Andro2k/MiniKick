@@ -56,9 +56,9 @@ class TTSVoiceHandler(QObject):
         self._available_voice_ids = {v["id"] for v in voices}
         saved_voice_id = self.service.get_saved_voice_id(provider)
 
-        if provider == "local":
-            langs = ["Local"]
-            sel_prefix = "Local"
+        if provider in ("local", "piper"):
+            langs = [provider.capitalize()]
+            sel_prefix = provider.capitalize()
         else:
             langs = list(dict.fromkeys(
                 "-".join(v["id"].split("-")[:2]) if "-" in v["id"] else "Web Voice"
@@ -74,12 +74,18 @@ class TTSVoiceHandler(QObject):
             self._voice_worker.deleteLater()
             self._voice_worker = None
 
-    @Slot(str)
+    @Slot(str, str)
     def _on_voices_error(self, error_msg: str, provider: str) -> None:
-        fallback = [
-            {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Sin conexión)"},
-            {"id": "es-MX-JorgeNeural", "name": "Jorge (Sin conexión)"}
-        ]
+        if provider == "piper":
+            fallback = [{"id": "es_ES-sharvard-medium", "name": "Sharvard (Local)"}]
+        elif provider == "web":
+            fallback = [
+                {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Sin conexión)"},
+                {"id": "es-MX-JorgeNeural", "name": "Jorge (Sin conexión)"}
+            ]
+        else:
+            fallback = [{"id": "default", "name": "SAPI5 Voice"}]
+
         self._on_voices_fetched(fallback, provider, is_initial=True)
         
         if self.toast:
@@ -91,8 +97,7 @@ class TTSVoiceHandler(QObject):
 
     @Slot(str)
     def filter_voices_by_language(self, lang_prefix: str = "", select_id: str = None, play_test: bool = False) -> None:
-        is_web = self.view.is_web_provider if self.view is not None else False
-        provider = "web" if is_web else "local"
+        provider = self.view.tts_provider if hasattr(self.view, "tts_provider") else ("web" if self.view.is_web_provider else "piper")
         filtered = [(v["id"], v["name"]) for v in self._all_voices]
             
         final_select_id = select_id
@@ -120,6 +125,8 @@ class TTSVoiceHandler(QObject):
             if "-" in v_id and provider == "web":
                 region = "-".join(v_id.split("-")[:2])
                 display_name = f"[{region}] {v_name}"
+            elif provider == "piper":
+                display_name = f"[Piper] {v_name}"
             else:
                 display_name = f"[Local] {v_name}"
             all_voices_list.append((v_id, display_name))
@@ -128,27 +135,46 @@ class TTSVoiceHandler(QObject):
             self.view.update_voices(filtered, final_select_id, role_voices, all_voices_list)
 
     def handle_voice_change(self, voice_id: str) -> None:
-        provider = "web" if self.view.is_web_provider else "local"
+        provider = self.view.tts_provider if hasattr(self.view, "tts_provider") else ("web" if self.view.is_web_provider else "piper")
         logger.info("[User Action] Selected TTS voice: voice_id='%s', provider='%s'", voice_id, provider)
         self.service.set_voice(provider, voice_id)
         self.controller.sync_settings_cache()
 
-    def handle_provider_change(self, is_web: bool) -> None:
-        provider = "web" if is_web else "local"
+    def handle_provider_change(self, provider_val) -> None:
+        if isinstance(provider_val, str):
+            provider = provider_val
+        elif isinstance(provider_val, bool):
+            provider = "web" if provider_val else "piper"
+        else:
+            provider = "piper"
+
         logger.info("[User Action] Changed TTS engine provider to: '%s'", provider)
         self.service.set_provider(provider)
         self.controller.sync_settings_cache()
         self.load_voices(provider)
         
         if self.toast:
-            mode_name = self.i18n.get("chat.status.provider_cloud") if is_web else self.i18n.get("chat.status.provider_local")
-            state_color = "info" if is_web else "success"
+            if provider == "piper":
+                mode_name = self.i18n.get("chat.status.provider_piper")
+                state_color = "success"
+            elif provider == "web":
+                mode_name = self.i18n.get("chat.status.provider_cloud")
+                state_color = "info"
+            else:
+                mode_name = self.i18n.get("chat.status.provider_local")
+                state_color = "warning"
 
             self.toast.show_toast(
                 title=self.view.i18n.get("chat.status.provider_title"),
                 message=self.i18n.get("chat.status.provider_active").replace("{mode}", mode_name),
                 state=state_color
             )
+
+    def open_piper_voices_dialog(self) -> None:
+        from frontend.dialogs import PiperVoicesDialog
+        dialog = PiperVoicesDialog(self.i18n, self.service, parent=self.controller.view if hasattr(self.controller, "view") else None)
+        dialog.voices_updated.connect(lambda: self.load_voices("piper"))
+        dialog.exec()
 
     def handle_voice_test(self, voice_id: str) -> None:
         if voice_id:
@@ -165,7 +191,5 @@ class TTSVoiceHandler(QObject):
     def resolve_voice_for_badges(self, badges: list, settings: dict) -> str | None:
         for badge in self._ROLE_PRIORITIES:
             if badge in badges:
-                voice_id = settings.get(f"role_voice_{badge}", "")
-                if voice_id in self._available_voice_ids:
-                    return voice_id
+                return settings.get(f"role_voice_{badge}") or None
         return None

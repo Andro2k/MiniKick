@@ -70,7 +70,7 @@ class CommandService(QObject):
             self.storage.save_command(
                 cmd["trigger"], cmd["response"], cmd["is_active"],
                 cmd["cooldown"], cmd["aliases"], cmd["is_regex"], cmd["permission"],
-                cmd.get("apply_kick", True), cmd.get("apply_twitch", True)
+                cmd.get("apply_kick", True), cmd.get("apply_twitch", True), cmd.get("apply_youtube", True)
             )
         self._pending_saves.clear()
 
@@ -95,7 +95,7 @@ class CommandService(QObject):
             if clean_q in cmd["trigger"].lower() or clean_q in cmd.get("aliases", "").lower() or clean_q in cmd.get("response", "").lower()
         ]
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = True, apply_twitch: bool = True):
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True):
         trigger_clean = trigger.strip()
         cmd_dict = {
             "trigger": trigger_clean,
@@ -106,7 +106,8 @@ class CommandService(QObject):
             "is_regex": is_regex,
             "permission": permission,
             "apply_kick": apply_kick,
-            "apply_twitch": apply_twitch
+            "apply_twitch": apply_twitch,
+            "apply_youtube": apply_youtube
         }
         
         existing_idx = -1
@@ -180,6 +181,8 @@ class CommandService(QObject):
             return False, "", {}, ""
         if platform == "twitch" and not cmd.get("apply_twitch", True):
             return False, "", {}, ""
+        if platform == "youtube" and not cmd.get("apply_youtube", True):
+            return False, "", {}, ""
 
         if not self._has_permission(cmd.get("permission", "everyone"), badges):
             return False, "", {}, ""
@@ -221,12 +224,15 @@ class CommandService(QObject):
                     tw_worker.send_bot_message(response_text)
                 except Exception as e:
                     logging.error("[CommandService] Error sending message to Twitch: %s", e)
-        else:
+        elif platform == "kick":
             if self.api_client:
                 try:
                     self.api_client.post_chat_message(content=response_text, msg_type="bot")
                 except Exception as e:
                     logging.error("[CommandService] Error sending response to Kick: %s", e)
+        elif platform == "youtube":
+            logging.info("[CommandService] Command response for YouTube chat (Read-Only mode, message not posted): %s", response_text)
+            return
 
         self.response_generated.emit(response_text, platform)
 

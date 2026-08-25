@@ -3,7 +3,6 @@
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
-from frontend.common.theme import COLOR_RED
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
 
 class SettingsView(BaseView):
@@ -20,13 +19,14 @@ class SettingsView(BaseView):
     feedback_clicked = Signal()
     kick_integration_clicked = Signal()
     twitch_integration_clicked = Signal()
+    youtube_integration_clicked = Signal()
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="settings.header.title", subtitle_key="settings.header.subtitle", parent=parent)
         self._setup_ui()
 
     def _setup_ui(self):
-        sys_card = ModernCard(parent=self)
+        app_card = ModernCard(parent=self)
 
         self.combo_lang = NoWheelComboBox(self)
         self.combo_lang.addItem("Español", "es")
@@ -68,35 +68,6 @@ class SettingsView(BaseView):
             right_widget=self.sw_start_bg
         )
 
-        self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_accent")
-        self.btn_update.clicked.connect(self.update_clicked.emit)
-
-        row_update = SettingRow(
-            icon_name="cloud-download.svg", 
-            title_text=self.i18n.get("settings.system.update_title"), 
-            desc_text=self.i18n.get("settings.system.update_desc"), 
-            right_widget=self.btn_update
-        )
-
-        self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined")
-        self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
-
-        row_release_notes = SettingRow(
-            icon_name="file-text.svg",
-            title_text=self.i18n.get("settings.system.release_notes_title"),
-            desc_text=self.i18n.get("settings.system.release_notes_desc"),
-            right_widget=self.btn_release_notes
-        )
-
-        sys_card.addWidget(row_lang)
-        sys_card.addWidget(row_font)
-        sys_card.addWidget(row_tray)        
-        sys_card.addWidget(row_update)
-        sys_card.addWidget(row_release_notes)
-        self.main_layout.addWidget(sys_card)
-
-        audio_card = ModernCard(parent=self)
-
         self.combo_music_audio_device = NoWheelComboBox(self)
         self.combo_music_audio_device.setMinimumWidth(160)
         self.combo_tts_audio_device = NoWheelComboBox(self)
@@ -129,31 +100,10 @@ class SettingsView(BaseView):
             right_widget=self.combo_tts_audio_device
         )
 
-        audio_card.addWidget(row_music_audio)
-        audio_card.addWidget(row_tts_audio)
-        self.main_layout.addWidget(audio_card)
-
-        integrations_card = ModernCard(parent=self)
-
-        self.btn_twitch_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_twitch"), role="action_accent", parent=self)
-        self.btn_twitch_integration.clicked.connect(self.twitch_integration_clicked.emit)
-
-        self.row_twitch_integration = SettingRow(
-            icon_name="twitch.svg",
-            title_text=self.i18n.get("settings.integrations.twitch_title"),
-            desc_text=self.i18n.get("settings.integrations.desc"),
-            right_widget=self.btn_twitch_integration
-        )
-
-        integrations_card.addWidget(self.row_twitch_integration)
-        self.main_layout.addWidget(integrations_card)
-
-        backup_card = ModernCard(parent=self)
-
-        btn_container = QWidget()
-        btn_layout = QHBoxLayout(btn_container)
-        btn_layout.setContentsMargins(0, 0, 0, 0) 
-        btn_layout.setSpacing(8)
+        btn_backup_container = QWidget()
+        btn_backup_layout = QHBoxLayout(btn_backup_container)
+        btn_backup_layout.setContentsMargins(0, 0, 0, 0) 
+        btn_backup_layout.setSpacing(8)
         
         self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_neutral_border")
         self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_neutral_border")
@@ -161,37 +111,83 @@ class SettingsView(BaseView):
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
 
-        btn_layout.addWidget(self.btn_export)
-        btn_layout.addWidget(self.btn_import)
+        btn_backup_layout.addWidget(self.btn_export)
+        btn_backup_layout.addWidget(self.btn_import)
 
         row_backup = SettingRow(
             icon_name="restore.svg", 
             title_text=self.i18n.get("settings.backup.title"), 
             desc_text=self.i18n.get("settings.backup.desc"), 
-            right_widget=btn_container
+            right_widget=btn_backup_container
         )
 
-        backup_card.addWidget(row_backup)
-        self.main_layout.addWidget(backup_card)
+        app_card.addWidget(row_lang)
+        app_card.addWidget(row_font)
+        app_card.addWidget(row_tray)
+        app_card.addWidget(row_music_audio)
+        app_card.addWidget(row_tts_audio)
+        app_card.addWidget(row_backup)
+        self.main_layout.addWidget(app_card)
 
-        account_card = ModernCard(parent=self)
+        integrations_card = ModernCard(parent=self)
 
-        self.btn_unlink = ModernButton(self.i18n.get("common.buttons.unlink"), role="action_danger_border")
-        self.btn_unlink.clicked.connect(self.unlink_clicked.emit)
-        
-        row_unlink = SettingRow(
-            icon_name="user-x.svg", 
-            title_text=self.i18n.get("settings.account.title"), 
-            desc_text=self.i18n.get("settings.account.desc"), 
-            right_widget=self.btn_unlink,
-            title_color=COLOR_RED,
-            icon_color=COLOR_RED
+        self.btn_kick_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_kick"), role="action_accent", parent=self)
+        self.btn_kick_integration.clicked.connect(self.unlink_clicked.emit)
+        self.btn_unlink = self.btn_kick_integration
+
+        self.row_kick_integration = SettingRow(
+            icon_name="brand-kick.svg",
+            title_text=self.i18n.get("settings.integrations.kick_title"),
+            desc_text=self.i18n.get("settings.integrations.desc"),
+            right_widget=self.btn_kick_integration
         )
 
-        account_card.addWidget(row_unlink)
-        self.main_layout.addWidget(account_card)
+        self.btn_twitch_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_twitch"), role="action_accent", parent=self)
+        self.btn_twitch_integration.clicked.connect(self.twitch_integration_clicked.emit)
 
-        feedback_card = ModernCard(parent=self)
+        self.row_twitch_integration = SettingRow(
+            icon_name="brand-twitch.svg",
+            title_text=self.i18n.get("settings.integrations.twitch_title"),
+            desc_text=self.i18n.get("settings.integrations.desc"),
+            right_widget=self.btn_twitch_integration
+        )
+
+        self.btn_youtube_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_youtube"), role="action_accent", parent=self)
+        self.btn_youtube_integration.clicked.connect(self.youtube_integration_clicked.emit)
+
+        self.row_youtube_integration = SettingRow(
+            icon_name="brand-youtube.svg",
+            title_text=self.i18n.get("settings.integrations.youtube_title"),
+            desc_text=self.i18n.get("settings.integrations.desc"),
+            right_widget=self.btn_youtube_integration
+        )
+
+        integrations_card.addWidget(self.row_kick_integration)
+        integrations_card.addWidget(self.row_twitch_integration)
+        integrations_card.addWidget(self.row_youtube_integration)
+        self.main_layout.addWidget(integrations_card)
+
+        support_card = ModernCard(parent=self)
+
+        self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_accent")
+        self.btn_update.clicked.connect(self.update_clicked.emit)
+
+        row_update = SettingRow(
+            icon_name="cloud-download.svg", 
+            title_text=self.i18n.get("settings.system.update_title"), 
+            desc_text=self.i18n.get("settings.system.update_desc"), 
+            right_widget=self.btn_update
+        )
+
+        self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined")
+        self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
+
+        row_release_notes = SettingRow(
+            icon_name="file-text.svg",
+            title_text=self.i18n.get("settings.system.release_notes_title"),
+            desc_text=self.i18n.get("settings.system.release_notes_desc"),
+            right_widget=self.btn_release_notes
+        )
 
         self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_accent")
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
@@ -203,8 +199,10 @@ class SettingsView(BaseView):
             right_widget=self.btn_feedback
         )
 
-        feedback_card.addWidget(row_feedback)
-        self.main_layout.addWidget(feedback_card)
+        support_card.addWidget(row_update)
+        support_card.addWidget(row_release_notes)
+        support_card.addWidget(row_feedback)
+        self.main_layout.addWidget(support_card)
         
         self.main_layout.addStretch()
 
@@ -260,7 +258,25 @@ class SettingsView(BaseView):
         dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()
 
-    def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "") -> None:
+    def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "", youtube_connected: bool = False, youtube_channel: str = "") -> None:
+        if kick_connected and kick_channel:
+            text_kick = self.i18n.get("settings.integrations.btn_disconnect_kick").replace("{channel}", kick_channel)
+            desc_kick = self.i18n.get("settings.integrations.kick_desc_connected").replace("{channel}", kick_channel)
+            self.btn_kick_integration.setText(text_kick)
+            self.btn_kick_integration.setProperty("role", "action_danger_border")
+            if hasattr(self, 'row_kick_integration') and self.row_kick_integration:
+                self.row_kick_integration.set_description(desc_kick)
+        else:
+            text_kick = self.i18n.get("settings.integrations.btn_connect_kick")
+            desc_kick = self.i18n.get("settings.integrations.kick_desc_disconnected")
+            self.btn_kick_integration.setText(text_kick)
+            self.btn_kick_integration.setProperty("role", "action_accent")
+            if hasattr(self, 'row_kick_integration') and self.row_kick_integration:
+                self.row_kick_integration.set_description(desc_kick)
+
+        self.btn_kick_integration.style().unpolish(self.btn_kick_integration)
+        self.btn_kick_integration.style().polish(self.btn_kick_integration)
+
         if twitch_connected and twitch_channel:
             text = self.i18n.get("settings.integrations.btn_disconnect_twitch").replace("{channel}", twitch_channel)
             desc = self.i18n.get("settings.integrations.twitch_desc_connected").replace("{channel}", twitch_channel)
@@ -278,6 +294,49 @@ class SettingsView(BaseView):
 
         self.btn_twitch_integration.style().unpolish(self.btn_twitch_integration)
         self.btn_twitch_integration.style().polish(self.btn_twitch_integration)
+
+        if youtube_connected and youtube_channel:
+            short_channel = self._format_target_for_button(youtube_channel)
+            text_yt = self.i18n.get("settings.integrations.btn_disconnect_youtube").replace("{channel}", short_channel)
+            desc_yt = self.i18n.get("settings.integrations.youtube_desc_connected").replace("{channel}", youtube_channel)
+            self.btn_youtube_integration.setText(text_yt)
+            self.btn_youtube_integration.setProperty("role", "action_danger_border")
+            if hasattr(self, 'row_youtube_integration') and self.row_youtube_integration:
+                self.row_youtube_integration.set_description(desc_yt)
+        else:
+            text_yt = self.i18n.get("settings.integrations.btn_connect_youtube")
+            desc_yt = self.i18n.get("settings.integrations.desc")
+            self.btn_youtube_integration.setText(text_yt)
+            self.btn_youtube_integration.setProperty("role", "action_accent")
+            if hasattr(self, 'row_youtube_integration') and self.row_youtube_integration:
+                self.row_youtube_integration.set_description(desc_yt)
+
+        self.btn_youtube_integration.style().unpolish(self.btn_youtube_integration)
+        self.btn_youtube_integration.style().polish(self.btn_youtube_integration)
+
+    @staticmethod
+    def _format_target_for_button(target: str) -> str:
+        if not target:
+            return ""
+        clean = target.strip()
+        if "/@" in clean:
+            handle = clean.split("/@")[1].split("/")[0].split("?")[0]
+            return f"@{handle}"
+        if clean.startswith("@"):
+            return clean
+        import re
+        v_match = re.search(r'(?:v=|youtu\.be/|/live/|/embed/)([a-zA-Z0-9_-]{11})', clean)
+        if v_match:
+            return f"#{v_match.group(1)[:8]}"
+        ch_match = re.search(r'/channel/([a-zA-Z0-9_-]+)', clean)
+        if ch_match:
+            ch_id = ch_match.group(1)
+            return f"UC...{ch_id[-4:]}" if len(ch_id) > 8 else ch_id
+        if not clean.startswith("http"):
+            return f"@{clean}"
+        if len(clean) > 16:
+            return clean[:14] + "…"
+        return clean
 
     def populate_audio_devices(self):
         curr_music_dev = self.combo_music_audio_device.currentData() if hasattr(self, 'combo_music_audio_device') else "default"

@@ -311,6 +311,12 @@
             border: none;
         }
 
+        .badge-platform-youtube {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: #FFFFFF;
+            border: none;
+        }
+
         .username {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
@@ -342,6 +348,7 @@
         const ICONS = {
             twitch: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57V4.714zm4.715 0H18v5.143h-1.714V4.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0H6zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714v9.429z"/></svg>`,
             kick: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title xmlns="">kick</title><path fill="currentColor" d="M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z"/></svg>`,
+            youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path fill="currentColor" d="M18 3a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H6a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5zM9 9v6a1 1 0 0 0 1.514.857l5-3a1 1 0 0 0 0-1.714l-5-3A1 1 0 0 0 9 9"/></svg>`,
             broadcaster: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 18h14v2H5v-2zm0-2L3 6l5.5 4L12 3l3.5 7L21 6l-2 10H5z"/></svg>`,
             moderator: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title xmlns="">sword-filled</title><path fill="currentColor" d="m2.29 18.71l3 3c.2.2.45.29.71.29s.51-.1.71-.29L10 18.42l2.29 2.29l1.41-1.41l-2.29-2.29L7 12.6l-2.29-2.29l-1.41 1.41l2.29 2.29L2.3 17.3a.996.996 0 0 0 0 1.41ZM21 2h-3c-.27 0-.52.11-.71.29l-9.58 9.59l4.41 4.41l9.59-9.59a1 1 0 0 0 .29-.71v-3c0-.55-.45-1-1-1Z"/></svg>`,
             vip: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 9l10 13L22 9 12 2zm0 3.84L17.94 9 12 16.72 6.06 9 12 5.84z"/></svg>`,
@@ -501,7 +508,7 @@
             const platformSpan = document.createElement('span');
             platformSpan.className = `badge badge-platform-${platform}`;
             platformSpan.innerHTML = ICONS[platform] || ICONS.kick;
-            platformSpan.title = platform === 'twitch' ? 'Twitch' : 'Kick';
+            platformSpan.title = platform === 'twitch' ? 'Twitch' : platform === 'youtube' ? 'YouTube' : 'Kick';
             header.appendChild(platformSpan);
 
             if (data.badges && Array.isArray(data.badges)) {
@@ -542,7 +549,7 @@
 
             let safeMsg = escapeHtml(data.message);
 
-            if (data.emotes_tag && typeof data.emotes_tag === 'string') {
+            if (data.platform === 'twitch' && data.emotes_tag && typeof data.emotes_tag === 'string' && data.emotes_tag.includes(':') && !data.emotes_tag.startsWith('[')) {
                 const twitchEmoteRanges = [];
                 const groups = data.emotes_tag.split('/');
                 groups.forEach(group => {
@@ -572,12 +579,40 @@
                     });
                     safeMsg = chars.join('');
                 }
-            } else {
-                const emoteRegex = /\[emote:(\d+):([^\]]+)\]/g;
-                safeMsg = safeMsg.replace(emoteRegex, (match, id, name) => {
-                    return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" loading="lazy" decoding="async" />`;
-                });
             }
+
+            if (data.platform === 'youtube' && data.emotes_tag) {
+                try {
+                    let ytEmotes = [];
+                    if (typeof data.emotes_tag === 'string' && data.emotes_tag.trim().startsWith('[')) {
+                        ytEmotes = JSON.parse(data.emotes_tag);
+                    } else if (Array.isArray(data.emotes_tag)) {
+                        ytEmotes = data.emotes_tag;
+                    }
+                    if (Array.isArray(ytEmotes) && ytEmotes.length > 0) {
+                        const seenNames = new Set();
+                        ytEmotes.forEach(em => {
+                            if (em && em.name && em.url) {
+                                if (seenNames.has(em.name)) return;
+                                seenNames.add(em.name);
+
+                                const escName = escapeHtml(em.name);
+                                const cleanLabel = escapeHtml(em.name.replace(/^:+|:+$/g, ''));
+                                const escUrl = escapeHtml(em.url);
+                                const regex = new RegExp(escName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+                                safeMsg = safeMsg.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.warn("[Chat Overlay] Error parsing YouTube emotes:", e);
+                }
+            }
+
+            const kickEmoteRegex = /\[emote:(\d+):([^\]]+)\]/g;
+            safeMsg = safeMsg.replace(kickEmoteRegex, (match, id, name) => {
+                return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" loading="lazy" decoding="async" />`;
+            });
 
             const textSpan = document.createElement('span');
             textSpan.innerHTML = safeMsg;

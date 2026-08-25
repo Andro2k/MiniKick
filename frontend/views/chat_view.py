@@ -7,8 +7,9 @@ from frontend.widgets import BaseView, ModernCard, ModernScrollArea
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
+    speed_changed = Signal(int)
     voice_changed = Signal(str)
-    provider_toggled = Signal(bool)
+    provider_changed = Signal(str)
     settings_changed = Signal()
     bot_add_requested = Signal(str)
     bot_remove_requested = Signal(str)
@@ -73,9 +74,10 @@ class ChatView(BaseView):
         self.body_layout.setStretch(1, 1)
 
     def _connect_internal_signals(self):
-        self.tts_settings_panel.provider_toggled.connect(self.provider_toggled.emit)
+        self.tts_settings_panel.provider_changed.connect(self.provider_changed.emit)
         self.tts_settings_panel.volume_changed.connect(self.volume_changed.emit)
         self.tts_settings_panel.language_filter_changed.connect(self.language_filter_changed.emit)
+        self.tts_settings_panel.speed_changed.connect(self.speed_changed.emit)
         self.tts_settings_panel.voice_changed.connect(self.voice_changed.emit)
         self.tts_settings_panel.settings_changed.connect(self.settings_changed.emit)
         self.tts_settings_panel.voice_test_requested.connect(self.voice_test_requested.emit)
@@ -128,8 +130,12 @@ class ChatView(BaseView):
         self.tts_settings_panel.txt_command.blockSignals(False)
 
     @property
+    def tts_provider(self) -> str:
+        return self.tts_settings_panel.combo_provider.currentData() or "piper"
+
+    @property
     def is_web_provider(self) -> bool:
-        return self.tts_settings_panel.combo_provider.currentData() == "web"
+        return self.tts_provider == "web"
 
     @property
     def tts_volume(self) -> int:
@@ -140,6 +146,17 @@ class ChatView(BaseView):
         self.tts_settings_panel.slider_vol.blockSignals(True)
         self.tts_settings_panel.slider_vol.setValue(value)
         self.tts_settings_panel.slider_vol.blockSignals(False)
+
+    @property
+    def tts_speed(self) -> int:
+        return self.tts_settings_panel.slider_speed.value()
+
+    @tts_speed.setter
+    def tts_speed(self, value: int):
+        self.tts_settings_panel.slider_speed.blockSignals(True)
+        self.tts_settings_panel.slider_speed.setValue(value)
+        self.tts_settings_panel.lbl_speed_perc.setText(f"{value}%")
+        self.tts_settings_panel.slider_speed.blockSignals(False)
 
     @property
     def overlay_theme(self) -> str:
@@ -169,8 +186,12 @@ class ChatView(BaseView):
     def chat_overlay_url(self, value: str):
         self.overlay_settings_panel.chat_overlay_url = value
 
-    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str, is_web_provider: bool, volume: int, role_voices: dict = None, role_enabled: dict = None):
-        self.tts_settings_panel.set_settings_ui(enabled, read_name, use_command, command, is_web_provider, volume, role_voices, role_enabled)
+    def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str,
+                        is_web_provider: bool = False, volume: int = 100, role_voices: dict = None,
+                        role_enabled: dict = None, provider: str = None, speed: int = 100):
+        self.tts_settings_panel.set_settings_ui(
+            enabled, read_name, use_command, command, is_web_provider, volume, role_voices, role_enabled, provider, speed
+        )
 
     def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool):
         self.overlay_settings_panel.set_overlay_settings_ui(theme, size, fade, show_bots, show_time)

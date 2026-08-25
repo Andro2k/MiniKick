@@ -5,16 +5,18 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayo
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider,
                               NoWheelComboBox, NoWheelSlider)
 from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored
-from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400
+from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_GREEN
 
 class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
                  switch: ModernSwitch = None, test_signal=None, tooltip_text="",
+                 action_button: QPushButton = None,
                  icon_color=COLOR_NEUTRAL_200, parent=None):
         super().__init__(parent)
         self.switch = switch
         self.combo = combo
         self.btn_test = None
+        self.action_button = action_button
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(2, 2, 2, 2)
@@ -49,6 +51,9 @@ class VoiceSettingRow(QWidget):
         combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         controls_layout.addWidget(combo, stretch=1)
 
+        if self.action_button is not None:
+            controls_layout.addWidget(self.action_button)
+
         if test_signal is not None:
             self.btn_test = QPushButton()
             self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_400, size=14))
@@ -79,8 +84,10 @@ class VoiceSettingRow(QWidget):
 
 class ChatTtsSettingsPanel(ModernCard):
     volume_changed = Signal(int)
+    speed_changed = Signal(int)
     voice_changed = Signal(str)
-    provider_toggled = Signal(bool)
+    provider_changed = Signal(str)
+    manage_piper_voices_requested = Signal()
     settings_changed = Signal()
     language_filter_changed = Signal(str)
     voice_test_requested = Signal(str)
@@ -95,15 +102,30 @@ class ChatTtsSettingsPanel(ModernCard):
         self.chk_tts = ModernSwitch(self)
         self.chk_name = ModernSwitch(self)
         self.combo_provider = NoWheelComboBox(self)
-        self.combo_provider.addItem(self.i18n.get("chat.status.provider_local"), userData="local")
+        self.combo_provider.addItem(self.i18n.get("chat.status.provider_piper"), userData="piper")
         self.combo_provider.addItem(self.i18n.get("chat.status.provider_cloud"), userData="web")
+        self.combo_provider.addItem(self.i18n.get("chat.status.provider_local"), userData="local")
         self.chk_command = ModernSwitch(self)
+
+        self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
+        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download.svg", COLOR_GREEN, size=14))
+        self.btn_manage_piper.setIconSize(QSize(14, 14))
+        self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
+        self.btn_manage_piper.setProperty("role", "action_accent_border")
+        self.btn_manage_piper.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_manage_piper.clicked.connect(self.manage_piper_voices_requested.emit)
 
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%", parent=self)
         self.lbl_vol_perc.setProperty("role", "monospace")
+
+        self.slider_speed = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
+        self.slider_speed.setRange(50, 150)
+        self.slider_speed.setValue(100)
+        self.lbl_speed_perc = QLabel("100%", parent=self)
+        self.lbl_speed_perc.setProperty("role", "monospace")
 
         row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
         row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
@@ -115,12 +137,14 @@ class ChatTtsSettingsPanel(ModernCard):
         self.txt_command.setEnabled(self.chk_command.isChecked())
         row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
         row_volume = SliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
+        row_speed = SliderRow("dashboard.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc)
 
         self.addWidget(row_tts)
         self.addWidget(row_read_name)
         self.addWidget(row_cmd)
         self.addWidget(row_prefix)
         self.addWidget(row_volume)
+        self.addWidget(row_speed)
 
         divider = ModernDivider()
         self.addWidget(divider)
@@ -134,7 +158,8 @@ class ChatTtsSettingsPanel(ModernCard):
         row_provider = VoiceSettingRow(
             "world.svg",
             self.i18n.get("chat.settings.provider_title"),
-            self.combo_provider
+            self.combo_provider,
+            action_button=self.btn_manage_piper
         )
         voices_card.addWidget(row_provider)
 
@@ -208,13 +233,14 @@ class ChatTtsSettingsPanel(ModernCard):
     def _connect_signals(self):
         self.combo_provider.currentIndexChanged.connect(self._on_provider_combo_changed)
         self.slider_vol.valueChanged.connect(self._on_slider_vol_changed)
+        self.slider_speed.valueChanged.connect(self._on_slider_speed_changed)
         self.combo_voice.currentIndexChanged.connect(self._on_voice_selected)
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
         self.chk_command.toggled.connect(self.txt_command.setEnabled)
 
         controls = [
             self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
-            self.combo_provider,
+            self.combo_provider, self.slider_speed,
             self.combo_voice_broadcaster, self.combo_voice_moderator,
             self.combo_voice_vip, self.combo_voice_subscriber,
             self.sw_role_everyone, self.sw_role_broadcaster,
@@ -231,8 +257,9 @@ class ChatTtsSettingsPanel(ModernCard):
                 control.valueChanged.connect(self._on_setting_changed)
 
     def _on_provider_combo_changed(self, index: int):
-        is_web = (self.combo_provider.currentData() == "web")
-        self.provider_toggled.emit(is_web)
+        provider = self.combo_provider.currentData() or "piper"
+        self.btn_manage_piper.setVisible(provider == "piper")
+        self.provider_changed.emit(provider)
 
     def _on_setting_changed(self, *args):
         self.settings_changed.emit()
@@ -241,6 +268,11 @@ class ChatTtsSettingsPanel(ModernCard):
     def _on_slider_vol_changed(self, value: int):
         self.lbl_vol_perc.setText(f"{value}%")
         self.volume_changed.emit(value)
+
+    @Slot(int)
+    def _on_slider_speed_changed(self, value: int):
+        self.lbl_speed_perc.setText(f"{value}%")
+        self.speed_changed.emit(value)
 
     def _on_voice_selected(self, index: int):
         if index >= 0:
@@ -254,30 +286,51 @@ class ChatTtsSettingsPanel(ModernCard):
         self.txt_command.style().polish(self.txt_command)
 
     def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str,
-                        is_web_provider: bool, volume: int, role_voices: dict = None, role_enabled: dict = None):
+                        is_web_provider: bool = False, volume: int = 100, role_voices: dict = None,
+                        role_enabled: dict = None, provider: str = None, speed: int = 100):
+        interactive_widgets = [
+            self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
+            self.combo_provider, self.slider_vol, self.slider_speed,
+            self.sw_role_everyone, self.sw_role_broadcaster,
+            self.sw_role_moderator, self.sw_role_vip, self.sw_role_subscriber
+        ]
+        for w in interactive_widgets:
+            w.blockSignals(True)
         self.blockSignals(True)
-        self.chk_tts.setChecked(enabled)
-        self.chk_name.setChecked(read_name)
-        self.chk_command.setChecked(use_command)
-        self.txt_command.setText(command)
-        self.txt_command.setEnabled(use_command)
 
-        provider_val = "web" if is_web_provider else "local"
-        idx = self.combo_provider.findData(provider_val)
-        if idx >= 0:
-            self.combo_provider.setCurrentIndex(idx)
+        try:
+            self.chk_tts.setChecked(enabled)
+            self.chk_name.setChecked(read_name)
+            self.chk_command.setChecked(use_command)
+            self.txt_command.setText(command)
+            self.txt_command.setEnabled(use_command)
 
-        self.slider_vol.setValue(volume)
-        self._pending_role_voices = role_voices or {}
+            if provider:
+                provider_val = provider
+            else:
+                provider_val = "web" if is_web_provider else "piper"
 
-        if role_enabled:
-            self.sw_role_everyone.setChecked(role_enabled.get("everyone", True))
-            self.sw_role_broadcaster.setChecked(role_enabled.get("broadcaster", True))
-            self.sw_role_moderator.setChecked(role_enabled.get("moderator", True))
-            self.sw_role_vip.setChecked(role_enabled.get("vip", True))
-            self.sw_role_subscriber.setChecked(role_enabled.get("subscriber", True))
+            idx = self.combo_provider.findData(provider_val)
+            if idx >= 0:
+                self.combo_provider.setCurrentIndex(idx)
+            self.btn_manage_piper.setVisible(provider_val == "piper")
 
-        self.blockSignals(False)
+            self.slider_vol.setValue(volume)
+            self.lbl_vol_perc.setText(f"{volume}%")
+            self.slider_speed.setValue(speed)
+            self.lbl_speed_perc.setText(f"{speed}%")
+            self._pending_role_voices = role_voices or {}
+
+            if role_enabled:
+                self.sw_role_everyone.setChecked(role_enabled.get("everyone", True))
+                self.sw_role_broadcaster.setChecked(role_enabled.get("broadcaster", True))
+                self.sw_role_moderator.setChecked(role_enabled.get("moderator", True))
+                self.sw_role_vip.setChecked(role_enabled.get("vip", True))
+                self.sw_role_subscriber.setChecked(role_enabled.get("subscriber", True))
+        finally:
+            for w in interactive_widgets:
+                w.blockSignals(False)
+            self.blockSignals(False)
 
     def update_languages(self, langs: list[str], select_prefix: str = None):
         pass
@@ -306,8 +359,6 @@ class ChatTtsSettingsPanel(ModernCard):
             "vip": self.combo_voice_vip,
             "subscriber": self.combo_voice_subscriber
         }
-
-        role_voices_pool = all_voices if all_voices is not None else voices
 
         for role, combo in role_combos.items():
             combo.blockSignals(True)

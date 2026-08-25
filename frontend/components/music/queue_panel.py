@@ -264,6 +264,8 @@ class MusicQueuePanel(QWidget):
                     req_color = QColor("#A970FF")
                 elif platform == "kick":
                     req_color = QColor("#53FC18")
+                elif platform == "youtube":
+                    req_color = QColor(COLOR_RED)
                 elif requester:
                     req_color = QColor(COLOR_GREEN)
                 else:

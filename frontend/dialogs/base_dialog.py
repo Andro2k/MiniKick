@@ -38,7 +38,7 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell = QPushButton(self.container)
         self.btn_close_shell.setProperty("role", "btn_ghost")
         self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_close_shell.setFixedSize(26, 26)
+        self.btn_close_shell.setFixedSize(28, 28)
         self.btn_close_shell.setAutoDefault(False)
         self.btn_close_shell.setDefault(False)
         if ModernFramelessShell._icon_close is None:
@@ -46,12 +46,20 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
         self.btn_close_shell.setIconSize(QSize(14, 14))
         self.btn_close_shell.clicked.connect(self.reject)
-        self.btn_close_shell.move(width - 34, 8)
+        self.btn_close_shell.move(width - 36, 8)
+        self.btn_close_shell.raise_()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        if hasattr(self, 'btn_close_shell'):
+            self.btn_close_shell.move(self.container.width() - 36, 8)
+            self.btn_close_shell.raise_()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, 'btn_close_shell'):
-            self.btn_close_shell.move(self.container.width() - 34, 8)
+            self.btn_close_shell.move(self.container.width() - 36, 8)
+            self.btn_close_shell.raise_()
 
     def set_dialog_state(self, state: str, glow_color: QColor = None):
         self.container.setProperty("state", state)
@@ -66,6 +74,11 @@ class ModernFramelessShell(QDialog):
         super().keyPressEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent):
+        if hasattr(self, 'btn_close_shell') and self.btn_close_shell.isVisible():
+            local_pos = self.container.mapFrom(self, event.position().toPoint())
+            if self.btn_close_shell.geometry().contains(local_pos):
+                return super().mousePressEvent(event)
+
         if event.button() == Qt.MouseButton.LeftButton:
             self._old_drag_pos = event.globalPosition().toPoint()
             event.accept()
