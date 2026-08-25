@@ -2,9 +2,8 @@
 # COMPILACIÓN Y GESTIÓN DE BUILD DE MINIKICK
 # =======================================================
 # 1. Usando el script automatizado (Recomendado):
-.\build.bat
-# o directamente con python:
+
 uv run python tools/build_manager.py
 
 # 2. Compilación directa con PyInstaller:
-uv run pyinstaller --clean --noconfirm MiniKick.spec
+uv run pyinstaller --clean --noconfirm MiniKick.spec
