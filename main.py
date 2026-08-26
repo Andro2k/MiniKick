@@ -26,6 +26,13 @@ try:
 except Exception:
     pass
 
+if sys.platform == "win32":
+    try:
+        from asyncio.proactor_events import _ProactorBasePipeTransport
+        _ProactorBasePipeTransport.__del__ = lambda self, _warn=None: None
+    except Exception:
+        pass
+
 from backend.core.app_logger_core import setup_application_logging, flush_all_logs
 setup_application_logging()
 

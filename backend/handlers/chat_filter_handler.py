@@ -2,6 +2,7 @@
 
 import re
 import logging
+from backend.services.system.translation_service import TranslationService
 
 logger = logging.getLogger("minikick.handlers.chat_filter")
 
@@ -13,7 +14,7 @@ class ChatFilterHandler:
     _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
 
     def __init__(self, i18n, service):
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self.service = service
         self.muted_bots: set[str] = set()
         self.banned_words: set[str] = set()
@@ -55,7 +56,7 @@ class ChatFilterHandler:
         return bool(badges and "bot" in badges)
 
     def clean_message_for_tts(self, text: str, emotes_tag: str = "") -> str:
-        web_link_label = self.i18n.get("chat.status.web_link") if self.i18n else ""
+        web_link_label = self.i18n.get("chat.status.web_link")
         cleaned = self._URL_REGEX.sub(web_link_label, text)
 
         cleaned = self._EMOTE_REGEX.sub("", cleaned)

@@ -253,11 +253,16 @@
             "autostart_desc": "Conecta automáticamente MiniKick al iniciar la aplicación.",
             "autostart_title": "Conexión Automática",
             "btn_active": "Sistema Activo",
+            "btn_active_tiktok": "TikTok Activo",
             "btn_active_twitch": "Twitch Activo",
             "btn_active_youtube": "YouTube Activo",
             "btn_connect": "Conectar a Kick",
+            "btn_connect_tiktok": "Conectar TikTok",
             "btn_connect_twitch": "Conectar Twitch",
             "btn_connect_youtube": "Conectar YouTube",
+            "btn_connecting_tiktok": "Conectando TikTok...",
+            "btn_connecting_twitch": "Conectando Twitch...",
+            "btn_connecting_youtube": "Conectando YouTube...",
             "btn_retry": "Reintentar",
             "status_auth": "Estado: Autenticando...",
             "status_connected": "Estado: Conectado y Escuchando",
@@ -343,9 +348,20 @@
             "subtitle": "Notas de parche y cambios de la última versión publicada.",
             "title": "Novedades de la Versión"
         },
+        "tiktok_connect": {
+            "btn_clear": "Limpiar",
+            "btn_connect": "Conectar Chat",
+            "desc": "Introduce el nombre de usuario (@usuario) del canal de TikTok Live:",
+            "placeholder": "ej. @streamer o usuario",
+            "title": "Conectar Chat de TikTok Live"
+        },
         "unlink": {
             "desc": "¿Deseas desvincular tu cuenta? Tendrás que iniciar sesión nuevamente la próxima vez que habras MiniKick.",
             "title": "Desvincular Cuenta"
+        },
+        "unlink_tiktok": {
+            "desc": "¿Estás seguro de que deseas desconectar el chat en vivo de TikTok? Las funciones de lectura y moderación dejarán de procesarse.",
+            "title": "Desconectar TikTok"
         },
         "unlink_twitch": {
             "desc": "¿Estás seguro de que deseas desvincular tu cuenta de Twitch? Las funciones de chat y comandos para Twitch dejarán de estar activas.",
@@ -447,6 +463,12 @@
         "main_window": {
             "twitch_auth_error": "[TwitchAuth] Error de autenticación en Twitch: {error}"
         },
+        "tiktok": {
+            "age_restricted": "La transmisión de @{unique_id} tiene restricción de edad (+18).",
+            "empty_user": "El usuario de TikTok no puede estar vacío.",
+            "stream_offline": "@{unique_id} no está transmitiendo en vivo actualmente.",
+            "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok."
+        },
         "twitch": {
             "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",
             "user_not_found": "No se encontraron datos de usuario en Twitch Helix API."
@@ -515,6 +537,10 @@
             "version": "Versión {version}"
         },
         "toast": {
+            "tiktok_connected_msg": "Conectado al chat en vivo de TikTok: @{target}",
+            "tiktok_connected_title": "TikTok Conectado",
+            "tiktok_disconnected_msg": "Se ha detenido la conexión con TikTok Live.",
+            "tiktok_disconnected_title": "TikTok Desconectado",
             "twitch_auth_error_title": "Error Twitch Auth",
             "twitch_auth_opening": "Abriendo inicio de sesión en el navegador...",
             "twitch_auth_title": "Twitch OAuth",
@@ -886,15 +912,19 @@
         },
         "integrations": {
             "btn_connect_kick": "Conectar Kick",
+            "btn_connect_tiktok": "Conectar TikTok",
             "btn_connect_twitch": "Conectar Twitch",
             "btn_connect_youtube": "Conectar YouTube",
             "btn_disconnect_kick": "Desconectar @{channel}",
+            "btn_disconnect_tiktok": "Desconectar @{channel}",
             "btn_disconnect_twitch": "Desconectar #{channel}",
             "btn_disconnect_youtube": "Desconectar {channel}",
             "desc": "Estado de la conexión del chat en tiempo real para cada plataforma.",
             "kick_desc_connected": "Conectado exitosamente a la cuenta de @{channel}.",
             "kick_desc_disconnected": "No hay una cuenta de Kick conectada actualmente.",
             "kick_title": "Canal de Kick",
+            "tiktok_desc_connected": "Conectado exitosamente al directo de @{channel}.",
+            "tiktok_title": "Canal de TikTok Live",
             "twitch_desc_connected": "Conectado exitosamente al chat de #{channel}.",
             "twitch_title": "Canal de Twitch",
             "youtube_desc_connected": "Conectado exitosamente al directo de {channel}.",
@@ -956,7 +986,6 @@
             "max_symbols": "Límite de símbolos/caracteres extraños",
             "platform_kick": "Kick",
             "platform_twitch": "Twitch",
-            "platform_youtube": "YouTube",
             "platforms": "Plataformas Aplicables"
         },
         "filters": {

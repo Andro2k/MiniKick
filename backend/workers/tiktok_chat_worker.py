@@ -1,15 +1,15 @@
-# backend\workers\youtube_chat_worker.py
+# backend\workers\tiktok_chat_worker.py
 
 import datetime
 import logging
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.youtube_chat_provider import YouTubeChatProvider
+from backend.providers.chat.tiktok_chat_provider import TikTokChatProvider
 from backend.services.chat.pipeline import ChatMessageDTO
 from backend.services.system.translation_service import TranslationService
 
-logger = logging.getLogger("minikick.workers.youtube_chat")
+logger = logging.getLogger("minikick.workers.tiktok_chat")
 
-class YouTubeChatWorker(QThread):
+class TikTokChatWorker(QThread):
     message_received = Signal(object)
     error_occurred = Signal(str)
     connection_success = Signal(object)
@@ -18,17 +18,17 @@ class YouTubeChatWorker(QThread):
 
     def __init__(self, target_channel: str = "", provider=None, i18n=None, parent=None):
         super().__init__(parent)
-        self.setObjectName("Worker_YouTube_Chat_Socket")
-        self.target_channel = target_channel.strip()
+        self.setObjectName("Worker_TikTok_Chat_Socket")
+        self.target_channel = target_channel.strip().lstrip("@")
         self.i18n = i18n or TranslationService()
-        self.provider = provider or YouTubeChatProvider(i18n=self.i18n)
+        self.provider = provider or TikTokChatProvider(i18n=self.i18n)
         self._is_stopped = False
         self._has_connected_once = False
 
     def run(self):
         try:
             if not self.target_channel:
-                err_msg = self.i18n.get("logs.youtube.channel_empty")
+                err_msg = self.i18n.get("logs.tiktok.empty_user")
                 self.error_occurred.emit(err_msg)
                 return
 
@@ -51,7 +51,7 @@ class YouTubeChatWorker(QThread):
 
             while not self._is_stopped:
                 self.provider.start_chat(
-                    target=self.target_channel,
+                    unique_id=self.target_channel,
                     on_message=self._dispatch_message,
                     on_connected=_on_connected,
                     on_disconnected=_on_disconnected,
@@ -64,31 +64,24 @@ class YouTubeChatWorker(QThread):
 
         except Exception as e:
             if not self._is_stopped:
-                logger.error("[YouTubeChatWorker] Unhandled error: %s", e)
+                logger.error("[TikTokChatWorker] Error no controlado: %s", e)
                 self.error_occurred.emit(str(e))
 
-    def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, extra_data: dict):
+    def _dispatch_message(self, user: str, msg: str, badges: list, color: str, timestamp: str, msg_id: int, extra_data: dict):
         if self._is_stopped:
             return
 
-        import json
-        if isinstance(extra_data, dict) and "emotes_tag" in extra_data:
-            emotes_tag = extra_data.get("emotes_tag", "")
-        else:
-            emotes = extra_data.get("emotes", []) if isinstance(extra_data, dict) else []
-            emotes_tag = json.dumps(emotes) if emotes else ""
-
-        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = timestamp or datetime.datetime.now().strftime("%H:%M:%S")
         dto = ChatMessageDTO(
             user=user,
             content=msg,
             badges=badges,
             color=color,
-            msg_id=msg_id,
-            sender_id=sender_id,
+            msg_id=str(msg_id),
+            sender_id=0,
             timestamp=now_str,
-            platform="youtube",
-            emotes_tag=emotes_tag
+            platform="tiktok",
+            emotes_tag=""
         )
         self.message_received.emit(dto)
 

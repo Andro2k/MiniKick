@@ -5,6 +5,7 @@ import re
 import time
 from typing import Callable, Any
 import requests
+from backend.services.system.translation_service import TranslationService
 
 logger = logging.getLogger("minikick.providers.chat.youtube")
 
@@ -59,7 +60,7 @@ class YouTubeChatProvider:
         return None
 
     def __init__(self, i18n=None) -> None:
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self._chat: Any | None = None
         self._is_running = False
         self._video_id: str = ""
@@ -79,7 +80,7 @@ class YouTubeChatProvider:
 
         video_id = self.resolve_live_video_id(target)
         if not video_id:
-            err_msg = self.i18n.get("logs.youtube.video_not_found").replace("{target}", target) if self.i18n else f"No active live stream found for: {target}"
+            err_msg = self.i18n.get("logs.youtube.video_not_found").replace("{target}", target)
             if on_error:
                 on_error(err_msg)
             return
@@ -95,7 +96,7 @@ class YouTubeChatProvider:
             is_replay = is_replay_func() if callable(is_replay_func) else False
 
             if not self._chat.is_alive() or is_replay:
-                err_msg = self.i18n.get("logs.youtube.stream_unavailable") if self.i18n else "YouTube live stream is unavailable or chat is disabled."
+                err_msg = self.i18n.get("logs.youtube.stream_unavailable")
                 if on_error:
                     on_error(err_msg)
                 return

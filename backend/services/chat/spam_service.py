@@ -42,7 +42,7 @@ class SpamService:
         return clean_msg
 
     def is_spam(self, user: str, message: str, badges: list, msg_id: str, sender_id: int, emotes_tag: str = "", platform: str = "kick") -> bool:
-        if not message:
+        if not message or platform not in ("kick", "twitch"):
             return False
 
         if "bot" in badges or "broadcaster" in badges:
@@ -60,8 +60,6 @@ class SpamService:
             if platform == "kick" and not config.get("apply_kick", True):
                 continue
             if platform == "twitch" and not config.get("apply_twitch", True):
-                continue
-            if platform == "youtube" and not config.get("apply_youtube", True):
                 continue
 
             exclude_group = config.get("exclude_group", "none")

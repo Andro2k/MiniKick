@@ -3,6 +3,7 @@
 import logging
 import websocket
 from typing import Callable
+from backend.services.system.translation_service import TranslationService
 
 TWITCH_WS_URL = "wss://irc-ws.chat.twitch.tv:443"
 DEFAULT_TWITCH_COLOR = "#9146FF"
@@ -48,8 +49,8 @@ class TwitchSocketManager:
 
     def __init__(self, token: str = "", nick: str = "", i18n=None) -> None:
         self.token = token.replace("oauth:", "").strip() if token else ""
-        self.nick = nick.lower().strip() if nick else ""
-        self.i18n = i18n
+        self.nick = nick.strip() if nick else ""
+        self.i18n = i18n or TranslationService()
         self._running = False
         self.ws: websocket.WebSocketApp | None = None
         self._channel = ""
@@ -146,7 +147,7 @@ class TwitchSocketManager:
                 if prefix_and_cmd.startswith(":"):
                     user = prefix_and_cmd[1:].split("!", 1)[0]
                 else:
-                    user = self.i18n.get("common.anonymous") if self.i18n else ""
+                    user = self.i18n.get("common.anonymous")
 
 
             msg_id = tags.get("id", "")

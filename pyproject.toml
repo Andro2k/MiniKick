@@ -1,6 +1,6 @@
 [project]
 name = "MiniKick"
-version = "1.5.4"
+version = "1.5.5"
 description = "El centro de control definitivo, modular y ligero para streamers en Kick.com"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -19,9 +19,15 @@ dependencies = [
     "pytchat>=0.5.5",
     "msgspec>=0.21.1",
     "orjson>=3.12.0",
+    "tiktoklive>=7.0.0",
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests/unit"]
+testpaths = ["resources/tests/unit"]
 addopts = "-v -s"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
 

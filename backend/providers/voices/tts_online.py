@@ -39,7 +39,24 @@ class WebTTSProvider:
 
     def _run_event_loop(self):
         asyncio.set_event_loop(self._loop)
-        self._loop.run_forever()
+        try:
+            self._loop.run_forever()
+        except Exception:
+            pass
+        finally:
+            try:
+                pending = asyncio.all_tasks(self._loop)
+                for task in pending:
+                    task.cancel()
+                if pending and not self._loop.is_closed():
+                    self._loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            except Exception:
+                pass
+            try:
+                if not self._loop.is_closed():
+                    self._loop.close()
+            except Exception:
+                pass
 
     def _run_async(self, coro):
         future = asyncio.run_coroutine_threadsafe(coro, self._loop)
@@ -206,6 +223,9 @@ class WebTTSProvider:
             connection_state = player.playbackStateChanged.connect(handle_state)
             connection_status = player.mediaStatusChanged.connect(handle_status)
             
+            self._current_player = player
+            self._current_loop = loop
+
             player.play()
             
             t_play_ready = time.perf_counter() - play_start_t
@@ -223,6 +243,8 @@ class WebTTSProvider:
         except Exception as e:
             logging.error("[Web TTS] Error playing audio file: %s", e)
         finally:
+            self._current_player = None
+            self._current_loop = None
             if player:
                 try:
                     player.stop()
@@ -242,6 +264,21 @@ class WebTTSProvider:
                 pass
 
     def stop(self) -> None:
+        if hasattr(self, "_current_player") and self._current_player:
+            try:
+                self._current_player.stop()
+            except Exception:
+                pass
+        if hasattr(self, "_current_loop") and self._current_loop:
+            try:
+                self._current_loop.quit()
+            except Exception:
+                pass
+        if hasattr(self, "_loop") and self._loop and self._loop.is_running():
+            try:
+                self._loop.call_soon_threadsafe(self._loop.stop)
+            except Exception:
+                pass
         with self._cache_lock:
             for item in self._cache.values():
                 try:

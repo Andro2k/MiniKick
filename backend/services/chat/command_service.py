@@ -183,6 +183,8 @@ class CommandService(QObject):
             return False, "", {}, ""
         if platform == "youtube" and not cmd.get("apply_youtube", True):
             return False, "", {}, ""
+        if platform == "tiktok" and not cmd.get("apply_tiktok", True):
+            return False, "", {}, ""
 
         if not self._has_permission(cmd.get("permission", "everyone"), badges):
             return False, "", {}, ""
@@ -230,8 +232,8 @@ class CommandService(QObject):
                     self.api_client.post_chat_message(content=response_text, msg_type="bot")
                 except Exception as e:
                     logging.error("[CommandService] Error sending response to Kick: %s", e)
-        elif platform == "youtube":
-            logging.info("[CommandService] Command response for YouTube chat (Read-Only mode, message not posted): %s", response_text)
+        elif platform in ("youtube", "tiktok"):
+            logging.info("[CommandService] Command response for %s chat (Read-Only mode, message not posted): %s", platform, response_text)
             return
 
         self.response_generated.emit(response_text, platform)

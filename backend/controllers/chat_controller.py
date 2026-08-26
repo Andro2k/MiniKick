@@ -209,12 +209,15 @@ class ChatController(QObject):
     @Slot(object)
     def process_message(self, dto: ChatMessageDTO) -> None:
         self.pipeline.execute(dto)
-        if not dto.is_cancelled and self.timer_service:
+        platform = getattr(dto, "platform", "kick")
+        if not dto.is_cancelled and self.timer_service and platform in ("kick", "twitch"):
             self.timer_service.increment_chat_lines()
 
     def _step_spam(self, dto: ChatMessageDTO) -> None:
-        emotes_tag = getattr(dto, "emotes_tag", "")
         platform = getattr(dto, "platform", "kick")
+        if platform not in ("kick", "twitch"):
+            return
+        emotes_tag = getattr(dto, "emotes_tag", "")
         if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id, emotes_tag=emotes_tag, platform=platform):
             dto.is_cancelled = True
             self.spam_blocked.emit()

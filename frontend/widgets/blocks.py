@@ -267,19 +267,8 @@ class ExpandableSettingCard(QFrame):
         twitch_layout.addWidget(lbl_twitch)
         twitch_layout.addWidget(self.switch_twitch)
 
-        youtube_layout = QHBoxLayout()
-        youtube_layout.setSpacing(6)
-        lbl_youtube = QLabel(self.i18n.get("spam.card.platform_youtube"))
-        lbl_youtube.setProperty("role", "body")
-        self.switch_youtube = ModernSwitch()
-        self.switch_youtube.setChecked(True)
-        self.switch_youtube.toggled.connect(self._emit_update)
-        youtube_layout.addWidget(lbl_youtube)
-        youtube_layout.addWidget(self.switch_youtube)
-
         platforms_layout.addLayout(kick_layout)
         platforms_layout.addLayout(twitch_layout)
-        platforms_layout.addLayout(youtube_layout)
         platforms_layout.addStretch()
         b_layout.addLayout(platforms_layout)
         
@@ -377,7 +366,6 @@ class ExpandableSettingCard(QFrame):
             "is_active": self.switch.isChecked(),
             "apply_kick": self.switch_kick.isChecked() if hasattr(self, 'switch_kick') else True,
             "apply_twitch": self.switch_twitch.isChecked() if hasattr(self, 'switch_twitch') else True,
-            "apply_youtube": self.switch_youtube.isChecked() if hasattr(self, 'switch_youtube') else True,
             "penalty": self.combo_penalty.currentData(),
             "duration": self.spin_dur.value(),
             "exclude_group": self.combo_exclude.currentData(),
@@ -393,8 +381,6 @@ class ExpandableSettingCard(QFrame):
             self.switch_kick.setChecked(config.get("apply_kick", True))
         if hasattr(self, 'switch_twitch'):
             self.switch_twitch.setChecked(config.get("apply_twitch", True))
-        if hasattr(self, 'switch_youtube'):
-            self.switch_youtube.setChecked(config.get("apply_youtube", True))
         index_pen = self.combo_penalty.findData(config.get("penalty", "timeout"))
         if index_pen >= 0: self.combo_penalty.setCurrentIndex(index_pen)
         self.spin_dur.setValue(config.get("duration", 300))

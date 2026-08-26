@@ -11,7 +11,7 @@ class ModernFramelessShell(QDialog):
 
     def __init__(self, width: int = 420, parent=None):
         super().__init__(parent)
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.CustomizeWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
         self._old_drag_pos = None
@@ -51,6 +51,13 @@ class ModernFramelessShell(QDialog):
 
     def showEvent(self, event):
         super().showEvent(event)
+        parent_widget = self.parentWidget()
+        if parent_widget and hasattr(parent_widget, "rect"):
+            parent_rect = parent_widget.rect()
+            parent_global_pos = parent_widget.mapToGlobal(parent_rect.topLeft())
+            center_x = parent_global_pos.x() + (parent_rect.width() - self.width()) // 2
+            center_y = parent_global_pos.y() + (parent_rect.height() - self.height()) // 2
+            self.move(center_x, center_y)
         if hasattr(self, 'btn_close_shell'):
             self.btn_close_shell.move(self.container.width() - 36, 8)
             self.btn_close_shell.raise_()

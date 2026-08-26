@@ -51,7 +51,8 @@ class ReleaseNotesWorker(QThread):
     def __init__(self, repo_owner: str = "Andro2k", repo_name: str = "MiniKick", i18n=None, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_Release_Notes")
-        self.i18n = i18n
+        from backend.services.system.translation_service import TranslationService
+        self.i18n = i18n or TranslationService()
         from backend.services.system.updater_service import GithubUpdateProvider
         self.provider = GithubUpdateProvider(repo_owner, repo_name)
 
@@ -61,7 +62,7 @@ class ReleaseNotesWorker(QThread):
             if data and data.get("tag_name"):
                 self.release_fetched.emit(data)
             else:
-                err_msg = self.i18n.get("dialogs.release_notes.error") if self.i18n else "No release data found"
+                err_msg = self.i18n.get("dialogs.release_notes.error")
                 self.error_occurred.emit(err_msg)
         except Exception as e:
             self.error_occurred.emit(str(e))

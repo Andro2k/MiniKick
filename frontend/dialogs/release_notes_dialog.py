@@ -23,23 +23,24 @@ _RE_BOLD        = re.compile(r'\*\*([^\*]+)\*\*')
 _RE_ITALIC      = re.compile(r'(?<!\*)\*([^\*]+)\*(?!\*)')
 _RE_CALLOUT     = re.compile(r'^>\s*\[!(NOTE|IMPORTANT|WARNING|TIP|CAUTION)\]', re.IGNORECASE)
 _RE_TABLE_DIV   = re.compile(r'^[\s\-:]+$')
+_NERD_FONT_FAMILY = "'GoogleSansCode Nerd Font', 'GoogleSansCode NF', Consolas, monospace"
 _CALLOUT_STYLES = {
-    'NOTE': ('#3b82f6', '#60a5fa', '\udb80\udefc-Note', 'rgba(59, 130, 246, 0.08)'),
-    'IMPORTANT': ('#a855f7', '#c084fc', '\udb80\udf61-Important', 'rgba(168, 85, 247, 0.08)'),
-    'WARNING': ('#eab308', '#facc15', '\uf40c-Warning', 'rgba(234, 179, 8, 0.08)'),
-    'TIP': ('#22c55e', '#4ade80', '\udb81\udee8-Tip', 'rgba(34, 197, 94, 0.08)'),
-    'CAUTION': ('#ef4444', '#f87171', '\udb80\udc29-Caution', 'rgba(239, 68, 68, 0.08)')
+    'NOTE': ('#3b82f6', '#60a5fa', '\udb80\udefc', 'Note', 'rgba(59, 130, 246, 0.08)'),
+    'IMPORTANT': ('#a855f7', '#c084fc', '\udb80\udf61', 'Important', 'rgba(168, 85, 247, 0.08)'),
+    'WARNING': ('#eab308', '#facc15', '\uf40c', 'Warning', 'rgba(234, 179, 8, 0.08)'),
+    'TIP': ('#22c55e', '#4ade80', '\udb81\udee8', 'Tip', 'rgba(34, 197, 94, 0.08)'),
+    'CAUTION': ('#ef4444', '#f87171', '\udb80\udc29', 'Caution', 'rgba(239, 68, 68, 0.08)')
 }
-_CODE_SPAN = f'<code style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; background-color: {COLOR_NEUTRAL_800}; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
-_CODE_INLINE_SPAN = f'<code style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_800}; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
 
 @lru_cache(maxsize=16)
 def markdown_to_github_html(md: str) -> str:
     if not md:
         return ""
 
-    text = _RE_LATEX_O.sub(r'<span style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; color: #a5b4fc; font-weight: bold;">O(\1)</span>', md)
-    text = _RE_LATEX_MATH.sub(r'<span style="font-family: \'Google Sans Code Nerd Font\', Consolas, monospace; color: #a5b4fc;">\1</span>', text)
+    text = _RE_LATEX_O.sub(f'<span style="font-family: {_NERD_FONT_FAMILY}; color: #a5b4fc; font-weight: bold;">O(\\1)</span>', md)
+    text = _RE_LATEX_MATH.sub(f'<span style="font-family: {_NERD_FONT_FAMILY}; color: #a5b4fc;">\\1</span>', text)
     text = _RE_FILE_LINKS.sub(_CODE_SPAN, text)
     text = _RE_HTTP_LINKS.sub(r'<a href="\2" style="color: #38bdf8; text-decoration: underline;">\1</a>', text)
     text = _RE_INLINE_CODE.sub(_CODE_INLINE_SPAN, text)
@@ -59,11 +60,12 @@ def markdown_to_github_html(md: str) -> str:
     def flush_callout():
         nonlocal in_callout, callout_type, callout_lines
         if in_callout and callout_type in _CALLOUT_STYLES:
-            border_c, title_c, title_text, bg_c = _CALLOUT_STYLES[callout_type]
+            border_c, title_c, icon_glyph, label, bg_c = _CALLOUT_STYLES[callout_type]
             body_content = "<br/>".join(callout_lines)
+            icon_span = f'<span style="font-family: {_NERD_FONT_FAMILY}; font-size: 13px;">{icon_glyph}</span>'
             html_out.append(
                 f'<div style="border-left: 3px solid {border_c}; background-color: {bg_c}; padding: 10px 14px; margin: 12px 0; border-radius: 0 6px 6px 0;">'
-                f'<div style="color: {title_c}; font-weight: bold; margin-bottom: 6px; font-size: 13px;">{title_text}</div>'
+                f'<div style="color: {title_c}; font-weight: bold; margin-bottom: 6px; font-size: 13px;">{icon_span} {label}</div>'
                 f'<div style="color: {COLOR_NEUTRAL_200}; font-size: 13px; line-height: 1.5;">{body_content}</div>'
                 f'</div>'
             )
@@ -141,7 +143,7 @@ def markdown_to_github_html(md: str) -> str:
     return (
         f'<html><head><style>'
         f'body {{ font-family: "Google Sans", "Segoe UI", sans-serif; color: {COLOR_NEUTRAL_200}; font-size: 13px; }}'
-        f'code {{ font-family: "Google Sans Code Nerd Font", Consolas, monospace; }}'
+        f'code {{ font-family: {_NERD_FONT_FAMILY}; }}'
         f'</style></head>'
         f'<body style="font-family: \'Google Sans\', \'Segoe UI\', sans-serif; color: {COLOR_NEUTRAL_200}; background-color: transparent;">{body}</body></html>'
     )

@@ -25,7 +25,7 @@ class ChatDisplayPanel(ModernCard):
         self.chat_display = QTextEdit()
         self.chat_display.setReadOnly(True)
         self.chat_display.setProperty("role", "ConsoleDisplay")
-        chat_font = QFont("Google Sans Code Nerd Font", 10)
+        chat_font = QFont("GoogleSansCode Nerd Font", 10)
         chat_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
         self.chat_display.setFont(chat_font)
 
@@ -53,7 +53,8 @@ class ChatDisplayPanel(ModernCard):
     _PLATFORM_ICONS = {
         "twitch": ("\uf1e8", "#9146FF", "#ffffff", "Twitch"),
         "kick": ("\uf2f3", "#53FC18", "#000000", "Kick"),
-        "youtube": ("\uf16a", "#FF0000", "#ffffff", "YouTube")
+        "youtube": ("\uf16a", "#FF0000", "#ffffff", "YouTube"),
+        "tiktok": ("\udb80\udf8c", "#F72B52", "#ffffff", "TikTok")
     }
 
     def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = "", platform: str = "kick"):
@@ -77,7 +78,7 @@ class ChatDisplayPanel(ModernCard):
             
         segments.append(("#262626", safe_color, f"&nbsp;{safe_user}&nbsp;"))
 
-        font_fmt = "font-family: 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
+        font_fmt = "font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
         html_parts = []
         for i, (bg, fg, text) in enumerate(segments):
             if i == 0:

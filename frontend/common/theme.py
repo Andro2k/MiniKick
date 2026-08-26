@@ -31,6 +31,9 @@ COLOR_TWITCH_GLOW  = "rgba(145, 70, 255, 0.15)"
 COLOR_YOUTUBE      = "#FF0000"
 COLOR_YOUTUBE_DARK = "#CC0000"
 COLOR_YOUTUBE_GLOW = "rgba(255, 0, 0, 0.15)"
+COLOR_TIKTOK       = "#00F2FE"
+COLOR_TIKTOK_DARK  = "#00B8C4"
+COLOR_TIKTOK_GLOW  = "rgba(0, 242, 254, 0.15)"
 
 _QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
 
@@ -308,7 +311,7 @@ QFrame[role="badge"][state="plugin"] QLabel {{ color: {COLOR_PURPLE}; }}
 QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_3}px; }}
 QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_3}px; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.5px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: bold; background-color: {COLOR_NEUTRAL_900}; }}
-QTextEdit[role="ConsoleDisplay"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; }}
+QTextEdit[role="ConsoleDisplay"] {{ font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', Consolas, monospace; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; }}
 QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 12px; }}
 
 /* ==============================================================================
@@ -356,6 +359,10 @@ QPushButton[role="action_youtube"] {{ background-color: {COLOR_YOUTUBE}; color: 
 QPushButton[role="action_youtube"]:hover {{ background-color: {COLOR_YOUTUBE_DARK}; }}
 QPushButton[role="action_youtube"]:focus {{ border-color: {COLOR_WHITE}; }}
 QPushButton[role="action_youtube"]:disabled {{ background-color: {COLOR_YOUTUBE_GLOW}; color: {COLOR_YOUTUBE}; border: 1.5px solid {COLOR_YOUTUBE}; }}
+QPushButton[role="action_tiktok"] {{ background-color: {COLOR_TIKTOK}; color: {COLOR_BLACK}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_tiktok"]:hover {{ background-color: {COLOR_TIKTOK_DARK}; }}
+QPushButton[role="action_tiktok"]:focus {{ border-color: {COLOR_WHITE}; }}
+QPushButton[role="action_tiktok"]:disabled {{ background-color: {COLOR_TIKTOK_GLOW}; color: {COLOR_TIKTOK}; border: 1.5px solid {COLOR_TIKTOK}; }}
 QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_400}; font-size: {size_textline_1}px; font-weight: 700; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
 QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 QPushButton[role="action_outlined"]:focus {{ border-color: {COLOR_GREEN}; }}

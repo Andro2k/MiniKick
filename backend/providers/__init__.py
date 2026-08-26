@@ -5,6 +5,7 @@ from .chat.kick_websocket import ChatSocketManager
 from .chat.twitch_client import TwitchAPIClient
 from .chat.twitch_websocket import TwitchSocketManager
 from .chat.youtube_chat_provider import YouTubeChatProvider
+from .chat.tiktok_chat_provider import TikTokChatProvider
 from .music.youtube_client import YouTubeMusicProvider
 from .voices.tts_local import LocalTTSProvider
 from .voices.tts_online import WebTTSProvider
@@ -16,6 +17,7 @@ __all__ = [
     "TwitchAPIClient",
     "TwitchSocketManager",
     "YouTubeChatProvider",
+    "TikTokChatProvider",
     "YouTubeMusicProvider",
     "LocalTTSProvider",
     "WebTTSProvider",
