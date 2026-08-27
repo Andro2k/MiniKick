@@ -317,6 +317,26 @@
             border: none;
         }
 
+        .badge-platform-tiktok {
+            background: linear-gradient(135deg, #00F2FE 0%, #FF0050 100%);
+            color: #FFFFFF;
+            font-weight: 900;
+            border: none;
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.4);
+        }
+
+        .badge-super_fan {
+            background: linear-gradient(135deg, #FF6B00, #FFA800);
+            color: #FFFFFF;
+            border: none;
+        }
+
+        .badge-top_gifter {
+            background: linear-gradient(135deg, #FF007A, #9B00E8);
+            color: #FFFFFF;
+            border: none;
+        }
+
         .username {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
@@ -349,12 +369,97 @@
             twitch: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57V4.714zm4.715 0H18v5.143h-1.714V4.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0H6zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714v9.429z"/></svg>`,
             kick: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title xmlns="">kick</title><path fill="currentColor" d="M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z"/></svg>`,
             youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path fill="currentColor" d="M18 3a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H6a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5zM9 9v6a1 1 0 0 0 1.514.857l5-3a1 1 0 0 0 0-1.714l-5-3A1 1 0 0 0 9 9"/></svg>`,
+            tiktok: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74a2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>`,
+            super_fan: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            top_gifter: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76V14h2V8.76L15.38 12 17 10.83 14.92 8H20v6z"/></svg>`,
             broadcaster: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 18h14v2H5v-2zm0-2L3 6l5.5 4L12 3l3.5 7L21 6l-2 10H5z"/></svg>`,
             moderator: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title xmlns="">sword-filled</title><path fill="currentColor" d="m2.29 18.71l3 3c.2.2.45.29.71.29s.51-.1.71-.29L10 18.42l2.29 2.29l1.41-1.41l-2.29-2.29L7 12.6l-2.29-2.29l-1.41 1.41l2.29 2.29L2.3 17.3a.996.996 0 0 0 0 1.41ZM21 2h-3c-.27 0-.52.11-.71.29l-9.58 9.59l4.41 4.41l9.59-9.59a1 1 0 0 0 .29-.71v-3c0-.55-.45-1-1-1Z"/></svg>`,
             vip: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 9l10 13L22 9 12 2zm0 3.84L17.94 9 12 16.72 6.06 9 12 5.84z"/></svg>`,
             subscriber: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
             bot: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 012 2v1h4a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h4V4a2 2 0 012-2zm-3 8a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm6 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"/></svg>`,
             og: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title xmlns="">heart-filled</title><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>`
+        };
+
+        const TIKTOK_STICKERS = {
+            'wow': { svg: '1f62e', emoji: '😮' },
+            'laugh': { svg: '1f606', emoji: '😆' },
+            'thanks': { svg: '1f64f', emoji: '🙏' },
+            'laughcry': { svg: '1f602', emoji: '😂' },
+            'thumb': { svg: '1f44d', emoji: '👍' },
+            'hi': { svg: '1f44b', emoji: '👋' },
+            'heart': { svg: '2764', emoji: '❤️' },
+            'congrat': { svg: '1f389', emoji: '🎉' },
+            'rockyloveit': { svg: '1f60d', emoji: '😍' },
+            'rockyserious': { svg: '1f620', emoji: '😠' },
+            'rockyproud': { svg: '1f981', emoji: '🦁' },
+            'rockycool': { svg: '1f60e', emoji: '😎' },
+            'rockyhappy': { svg: '1f601', emoji: '😁' },
+            'rockyangry': { svg: '1f621', emoji: '😡' },
+            'rockywave': { svg: '1f44b', emoji: '👋' },
+            'rockyshock': { svg: '1f631', emoji: '😱' },
+            'rosiedislike': { svg: '1f44e', emoji: '👎' },
+            'rosieawkward': { svg: '1f605', emoji: '😅' },
+            'rosiekisskiss': { svg: '1f48b', emoji: '💋' },
+            'rosiecute': { svg: '1f970', emoji: '🥰' },
+            'rosielove': { svg: '2764', emoji: '❤️' },
+            'rosiecry': { svg: '1f62d', emoji: '😭' },
+            'rosieshy': { svg: '1f648', emoji: '🙈' },
+            'jolliekissingface': { svg: '1f618', emoji: '😘' },
+            'jolliewow': { svg: '1f929', emoji: '🤩' },
+            'jolliespeechless': { svg: '1f636', emoji: '😶' },
+            'jolliesatisfied': { svg: '1f60c', emoji: '😌' },
+            'jolliehappy': { svg: '1f973', emoji: '🥳' },
+            'jollielaugh': { svg: '1f923', emoji: '🤣' },
+            'sagethink': { svg: '1f914', emoji: '🤔' },
+            'sagefulfilled': { svg: '2728', emoji: '✨' },
+            'sageclever': { svg: '1f4a1', emoji: '💡' },
+            'sagemoney': { svg: '1f911', emoji: '🤑' },
+            'sagewow': { svg: '1f92f', emoji: '🤯' },
+            'sageproud': { svg: '1f393', emoji: '🎓' },
+            'smile': { svg: '1f60a', emoji: '😊' },
+            'happy': { svg: '1f970', emoji: '🥰' },
+            'angry': { svg: '1f621', emoji: '😡' },
+            'cry': { svg: '1f62d', emoji: '😭' },
+            'embarrassed': { svg: '1f633', emoji: '😳' },
+            'surprised': { svg: '1f62e', emoji: '😲' },
+            'wronged': { svg: '1f97a', emoji: '🥺' },
+            'shout': { svg: '1f4e2', emoji: '📢' },
+            'flushed': { svg: '1f633', emoji: '😳' },
+            'yummy': { svg: '1f60b', emoji: '😋' },
+            'complacent': { svg: '1f60f', emoji: '😏' },
+            'drool': { svg: '1f924', emoji: '🤤' },
+            'scream': { svg: '1f631', emoji: '😱' },
+            'weep': { svg: '1f622', emoji: '😢' },
+            'speechless': { svg: '1f636', emoji: '😶' },
+            'funnyface': { svg: '1f92a', emoji: '🤪' },
+            'laughwithtears': { svg: '1f602', emoji: '😂' },
+            'wicked': { svg: '1f608', emoji: '😈' },
+            'facewithrollingeyes': { svg: '1f644', emoji: '🙄' },
+            'sulk': { svg: '1f624', emoji: '😤' },
+            'thinking': { svg: '1f914', emoji: '🤔' },
+            'lovely': { svg: '1f60d', emoji: '😍' },
+            'greedy': { svg: '1f911', emoji: '🤑' },
+            'joyful': { svg: '1f604', emoji: '😄' },
+            'hehe': { svg: '1f92d', emoji: '🤭' },
+            'slap': { svg: '1f926', emoji: '🤦' },
+            'tears': { svg: '1f4a7', emoji: '💧' },
+            'stun': { svg: '1f635', emoji: '😵' },
+            'cute': { svg: '1f97a', emoji: '🥺' },
+            'blink': { svg: '1f609', emoji: '😉' },
+            'disdain': { svg: '1f612', emoji: '😒' },
+            'astonish': { svg: '1f632', emoji: '😯' },
+            'rage': { svg: '1f92c', emoji: '🤬' },
+            'cool': { svg: '1f60e', emoji: '😎' },
+            'excited': { svg: '1f929', emoji: '🤩' },
+            'proud': { svg: '1f60c', emoji: '😌' },
+            'smileface': { svg: '1f600', emoji: '😀' },
+            'evil': { svg: '1f47f', emoji: '👿' },
+            'angel': { svg: '1f607', emoji: '😇' },
+            'pride': { svg: '1f981', emoji: '🦁' },
+            'nap': { svg: '1f634', emoji: '😴' },
+            'loveface': { svg: '1f618', emoji: '😘' },
+            'awkward': { svg: '1f62c', emoji: '😬' },
+            'shock': { svg: '1f631', emoji: '😱' }
         };
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -508,7 +613,7 @@
             const platformSpan = document.createElement('span');
             platformSpan.className = `badge badge-platform-${platform}`;
             platformSpan.innerHTML = ICONS[platform] || ICONS.kick;
-            platformSpan.title = platform === 'twitch' ? 'Twitch' : platform === 'youtube' ? 'YouTube' : 'Kick';
+            platformSpan.title = platform === 'twitch' ? 'Twitch' : platform === 'youtube' ? 'YouTube' : platform === 'tiktok' ? 'TikTok' : 'Kick';
             header.appendChild(platformSpan);
 
             if (data.badges && Array.isArray(data.badges)) {
@@ -570,14 +675,21 @@
                 });
 
                 if (twitchEmoteRanges.length > 0) {
-                    twitchEmoteRanges.sort((a, b) => b.start - a.start);
+                    twitchEmoteRanges.sort((a, b) => a.start - b.start);
                     const chars = Array.from(data.message);
+                    let result = '';
+                    let lastIdx = 0;
                     twitchEmoteRanges.forEach(({ emoteId, start, end }) => {
-                        const emoteCode = chars.slice(start, end + 1).join('');
-                        const imgHtml = `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/2.0" alt="${escapeHtml(emoteCode)}" title="${escapeHtml(emoteCode)}" class="chat-emote" loading="lazy" decoding="async" />`;
-                        chars.splice(start, (end - start + 1), imgHtml);
+                        if (start >= lastIdx) {
+                            const beforeText = chars.slice(lastIdx, start).join('');
+                            const emoteCode = chars.slice(start, end + 1).join('');
+                            result += escapeHtml(beforeText);
+                            result += `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/2.0" alt="${escapeHtml(emoteCode)}" title="${escapeHtml(emoteCode)}" class="chat-emote" loading="lazy" decoding="async" />`;
+                            lastIdx = end + 1;
+                        }
                     });
-                    safeMsg = chars.join('');
+                    result += escapeHtml(chars.slice(lastIdx).join(''));
+                    safeMsg = result;
                 }
             }
 
@@ -596,10 +708,10 @@
                                 if (seenNames.has(em.name)) return;
                                 seenNames.add(em.name);
 
-                                const escName = escapeHtml(em.name);
                                 const cleanLabel = escapeHtml(em.name.replace(/^:+|:+$/g, ''));
                                 const escUrl = escapeHtml(em.url);
-                                const regex = new RegExp(escName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
+                                const escapedBase = em.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                                const regex = new RegExp(escapedBase, 'g');
                                 safeMsg = safeMsg.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
                             }
                         });
@@ -609,9 +721,50 @@
                 }
             }
 
+            if (data.platform === 'tiktok' && data.emotes_tag) {
+                try {
+                    let ttEmotes = [];
+                    if (typeof data.emotes_tag === 'string' && data.emotes_tag.trim().startsWith('[')) {
+                        ttEmotes = JSON.parse(data.emotes_tag);
+                    } else if (Array.isArray(data.emotes_tag)) {
+                        ttEmotes = data.emotes_tag;
+                    }
+                    if (Array.isArray(ttEmotes) && ttEmotes.length > 0) {
+                        const seenNames = new Set();
+                        ttEmotes.forEach(em => {
+                            if (em && em.name && em.url) {
+                                const rawName = String(em.name).trim();
+                                if (seenNames.has(rawName)) return;
+                                seenNames.add(rawName);
+
+                                const cleanName = rawName.replace(/^\[+|\]+$/g, '');
+                                const cleanLabel = escapeHtml(cleanName);
+                                const escUrl = escapeHtml(em.url);
+                                const escapedBase = cleanName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                                const regex = new RegExp(`\\[${escapedBase}\\]|\\b${escapedBase}\\b`, 'g');
+                                safeMsg = safeMsg.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.warn("[Chat Overlay] Error parsing TikTok emotes:", e);
+                }
+            }
+
             const kickEmoteRegex = /\[emote:(\d+):([^\]]+)\]/g;
             safeMsg = safeMsg.replace(kickEmoteRegex, (match, id, name) => {
                 return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${name}" title="${name}" class="chat-emote" loading="lazy" decoding="async" />`;
+            });
+
+            const ttStickerRegex = /\[([a-zA-Z0-9_\-]+)\]/g;
+            safeMsg = safeMsg.replace(ttStickerRegex, (match, code) => {
+                const key = code.toLowerCase();
+                if (TIKTOK_STICKERS[key]) {
+                    const item = TIKTOK_STICKERS[key];
+                    const label = escapeHtml(code);
+                    return `<img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${item.svg}.svg" alt="${label}" title="${label}" class="chat-emote" loading="lazy" decoding="async" onerror="this.outerHTML='${item.emoji}'" />`;
+                }
+                return match;
             });
 
             const textSpan = document.createElement('span');
@@ -621,11 +774,14 @@
 
             container.appendChild(msgBox);
 
-            const activeMessages = Array.from(container.children).filter(child => !child.classList.contains('fade-out'));
-            if (activeMessages.length > maxMessages) {
-                const toRemoveCount = activeMessages.length - maxMessages;
-                for (let i = 0; i < toRemoveCount; i++) {
-                    removeMessage(activeMessages[i]);
+            while (container.children.length > maxMessages) {
+                const firstChild = container.firstElementChild;
+                if (!firstChild) break;
+                if (firstChild.classList.contains('fade-out')) {
+                    container.removeChild(firstChild);
+                } else {
+                    removeMessage(firstChild);
+                    break;
                 }
             }
 
@@ -675,6 +831,8 @@
                 'moderator': 'Mod',
                 'vip': 'VIP',
                 'subscriber': 'Sub',
+                'super_fan': 'Super Fan',
+                'top_gifter': 'Top Gifter',
                 'bot': 'Bot'
             };
             return labels[badge] || badge;

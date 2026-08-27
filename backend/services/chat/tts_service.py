@@ -14,6 +14,9 @@ class TTSManager:
         self._audio_device_id = "default"
         self._volume = 1.0
         self._speed = 100
+        self._piper_length_scale = 1.0
+        self._piper_noise_scale = 0.667
+        self._piper_noise_w_scale = 0.8
         self.text_queue: queue.Queue[tuple[str, str | None] | None] = queue.Queue()
         self.play_queue: queue.Queue[tuple[str, str | None, str] | None] = queue.Queue()       
         self._downloader_thread = threading.Thread(target=self._downloader_worker, daemon=True)
@@ -26,6 +29,7 @@ class TTSManager:
             if key == "piper":
                 from backend.providers.voices.tts_piper import PiperTTSProvider
                 prov = PiperTTSProvider()
+                prov.set_synthesis_params(self._piper_length_scale, self._piper_noise_scale, self._piper_noise_w_scale)
             elif key == "local":
                 from backend.providers.voices.tts_local import LocalTTSProvider
                 prov = LocalTTSProvider()
@@ -35,6 +39,7 @@ class TTSManager:
             else:
                 from backend.providers.voices.tts_piper import PiperTTSProvider
                 prov = PiperTTSProvider()
+                prov.set_synthesis_params(self._piper_length_scale, self._piper_noise_scale, self._piper_noise_w_scale)
             
             if hasattr(prov, "set_audio_device"):
                 prov.set_audio_device(self._audio_device_id)
@@ -182,3 +187,15 @@ class TTSManager:
                 provider.voice_id = voice_id
             elif hasattr(provider, 'voice'):
                 provider.voice = voice_id
+
+    def set_piper_synthesis_params(self, length_scale: float = 1.0, noise_scale: float = 0.667, noise_w_scale: float = 0.8) -> None:
+        self._piper_length_scale = float(length_scale)
+        self._piper_noise_scale = float(noise_scale)
+        self._piper_noise_w_scale = float(noise_w_scale)
+        if "piper" in self._providers:
+            prov = self._providers["piper"]
+            if hasattr(prov, "set_synthesis_params"):
+                prov.set_synthesis_params(self._piper_length_scale, self._piper_noise_scale, self._piper_noise_w_scale)
+
+    def get_piper_synthesis_params(self) -> tuple[float, float, float]:
+        return (self._piper_length_scale, self._piper_noise_scale, self._piper_noise_w_scale)

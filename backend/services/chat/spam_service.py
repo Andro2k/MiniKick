@@ -8,6 +8,7 @@ class SpamService:
     _LINK_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
     _KICK_EMOTE_REGEX = re.compile(r'\[emote:\d+:[^\]]+\]', re.IGNORECASE)
     _YT_EMOTE_REGEX = re.compile(r':[a-zA-Z0-9_\-]+:')
+    _TIKTOK_EMOTE_REGEX = re.compile(r'\[[a-zA-Z0-9_\-]+\]')
     _ALLOWED_LATIN_PATTERN = re.compile(r'[a-zA-Z0-9\s\u00C0-\u024F\.\,\!\?\-\_\:\;\(\)\[\]\'\"\/\\\@\#\$\%\&\*\+\=\<\>]')
 
     def __init__(self, storage, api_client=None, max_history_size: int = 1000, i18n=None):
@@ -34,6 +35,7 @@ class SpamService:
     def _get_clean_text(self, message: str, emotes_tag: str = "", strip_urls: bool = False) -> str:
         clean_msg = self._KICK_EMOTE_REGEX.sub('', message)
         clean_msg = self._YT_EMOTE_REGEX.sub('', clean_msg)
+        clean_msg = self._TIKTOK_EMOTE_REGEX.sub('', clean_msg)
         if emotes_tag:
             from backend.providers.chat.twitch_websocket import TwitchSocketManager
             clean_msg = TwitchSocketManager.strip_twitch_emotes(clean_msg, emotes_tag)
@@ -80,7 +82,8 @@ class SpamService:
             elif f_id == "emote_protection":
                 kick_emotes = message.count("[emote:")
                 yt_emotes = len(self._YT_EMOTE_REGEX.findall(message))
-                total_emotes = kick_emotes + twitch_emotes + yt_emotes
+                tt_emotes = len(self._TIKTOK_EMOTE_REGEX.findall(message))
+                total_emotes = kick_emotes + twitch_emotes + yt_emotes + tt_emotes
                 if total_emotes > max_amount:
                     is_violation = True
                     

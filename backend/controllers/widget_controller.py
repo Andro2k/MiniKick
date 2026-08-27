@@ -422,16 +422,16 @@ class WidgetController(QObject):
                     "name": e_name
                 })
 
-        if platform == "youtube" and emotes_tag:
+        if platform in ("youtube", "tiktok") and emotes_tag:
             try:
                 import json
-                yt_emotes = json.loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
-                for em in yt_emotes:
+                custom_emotes = json.loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
+                for em in custom_emotes:
                     if isinstance(em, dict) and em.get("url"):
                         emotes_list.append({
                             "type": "image",
                             "src": em["url"],
-                            "name": em.get("name", "yt_emote")
+                            "name": em.get("name", f"{platform}_emote")
                         })
             except Exception:
                 pass

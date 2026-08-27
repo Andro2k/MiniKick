@@ -19,12 +19,21 @@ class PiperTTSProvider:
         self.voice_id = DEFAULT_PIPER_VOICE_ID
         self.volume = 1.0
         self.speed_percent = 100
+        self.length_scale = 1.0
+        self.noise_scale = 0.667
+        self.noise_w_scale = 0.8
         self._audio_device_id = "default"
         self._cache: Dict[tuple[str, str], str] = {}
         self._cache_lock = threading.Lock()
         self._loaded_models: Dict[str, any] = {}
         self._models_lock = threading.Lock()
         self._warming_up_voices: set[str] = set()
+
+    def set_synthesis_params(self, length_scale: float = 1.0, noise_scale: float = 0.667, noise_w_scale: float = 0.8) -> None:
+        self.length_scale = max(0.2, min(3.0, float(length_scale)))
+        self.noise_scale = max(0.0, min(2.0, float(noise_scale)))
+        self.noise_w_scale = max(0.0, min(2.0, float(noise_w_scale)))
+        self.clear_cache()
 
     def set_audio_device(self, device_id: str) -> None:
         self._audio_device_id = device_id
@@ -51,9 +60,9 @@ class PiperTTSProvider:
                 if voice is not None:
                     from piper.config import SynthesisConfig
                     syn_config = SynthesisConfig(
-                        length_scale=1.05,
-                        noise_scale=0.667,
-                        noise_w_scale=0.8
+                        length_scale=self.length_scale,
+                        noise_scale=self.noise_scale,
+                        noise_w_scale=self.noise_w_scale
                     )
                     for _ in voice.synthesize(".", syn_config=syn_config):
                         pass
@@ -79,6 +88,63 @@ class PiperTTSProvider:
             return False
         return any(c.isalnum() for c in cleaned)
 
+    @staticmethod
+    def _prepare_compatible_config(json_path: str) -> str:
+        import json
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                cfg = json.load(f)
+            
+            modified = False
+            if "num_symbols" not in cfg:
+                phone_map = cfg.get("phoneme_id_map", {})
+                if phone_map:
+                    all_ids = []
+                    for v in phone_map.values():
+                        if isinstance(v, list):
+                            all_ids.extend(v)
+                        elif isinstance(v, int):
+                            all_ids.append(v)
+                    cfg["num_symbols"] = max(all_ids, default=255) + 1
+                else:
+                    cfg["num_symbols"] = 256
+                modified = True
+
+            if "num_speakers" not in cfg:
+                cfg["num_speakers"] = len(cfg.get("speaker_id_map", {})) or 1
+                modified = True
+
+            if "audio" not in cfg or "sample_rate" not in cfg["audio"]:
+                cfg["audio"] = {"sample_rate": cfg.get("sample_rate", 22050)}
+                modified = True
+
+            if "espeak" not in cfg:
+                cfg["espeak"] = {"voice": cfg.get("language", {}).get("code", "es")}
+                modified = True
+            elif "voice" not in cfg["espeak"] or not cfg["espeak"]["voice"]:
+                cfg["espeak"]["voice"] = cfg.get("language", {}).get("code", "es")
+                modified = True
+            else:
+                v_str = str(cfg["espeak"]["voice"]).strip()
+                if len(v_str) > 8 and ("-" in v_str or "_" in v_str):
+                    cfg["espeak"]["voice"] = "es" if "es" in v_str else "es"
+                    modified = True
+
+            pt = str(cfg.get("phoneme_type", "espeak")).lower()
+            valid_types = {"espeak", "text", "pinyin", "hebrew", "japanese"}
+            if pt not in valid_types:
+                cfg["phoneme_type"] = "espeak"
+                modified = True
+
+            if modified:
+                temp_cfg = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w", encoding="utf-8")
+                json.dump(cfg, temp_cfg, ensure_ascii=False, indent=2)
+                temp_cfg.close()
+                return temp_cfg.name
+        except Exception as e:
+            logger.debug("Config compatibility normalization error for %s: %s", json_path, e)
+        return json_path
+
     def _get_or_load_voice(self, voice_id: str):
         target_voice_id = voice_id or self.voice_id or DEFAULT_PIPER_VOICE_ID
         with self._models_lock:
@@ -100,7 +166,15 @@ class PiperTTSProvider:
 
             try:
                 from piper.voice import PiperVoice
-                voice = PiperVoice.load(onnx_path, config_path=json_path)
+                compat_json_path = self._prepare_compatible_config(json_path)
+                try:
+                    voice = PiperVoice.load(onnx_path, config_path=compat_json_path)
+                finally:
+                    if compat_json_path != json_path and os.path.exists(compat_json_path):
+                        try:
+                            os.remove(compat_json_path)
+                        except Exception:
+                            pass
                 self._loaded_models[target_voice_id] = voice
                 logger.info("Loaded Piper voice model: %s", target_voice_id)
                 return voice
@@ -119,11 +193,11 @@ class PiperTTSProvider:
 
         try:
             from piper.config import SynthesisConfig
-            calc_length_scale = max(0.4, min(2.5, 1.05 * (100.0 / self.speed_percent)))
+            calc_length_scale = max(0.2, min(3.0, self.length_scale * (100.0 / self.speed_percent)))
             syn_config = SynthesisConfig(
                 length_scale=calc_length_scale,
-                noise_scale=0.667,
-                noise_w_scale=0.8
+                noise_scale=self.noise_scale,
+                noise_w_scale=self.noise_w_scale
             )
             with wave.open(temp_path, "wb") as wav_file:
                 wav_file.setnchannels(1)
@@ -241,7 +315,7 @@ class PiperTTSProvider:
                 except Exception:
                     pass
 
-    def stop(self) -> None:
+    def clear_cache(self) -> None:
         with self._cache_lock:
             for path in self._cache.values():
                 if os.path.exists(path):
@@ -250,6 +324,9 @@ class PiperTTSProvider:
                     except Exception:
                         pass
             self._cache.clear()
+
+    def stop(self) -> None:
+        self.clear_cache()
 
     def get_available_voices(self) -> List[Dict[str, str]]:
         installed = self.manager.get_installed_voices()

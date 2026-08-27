@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import re
 import time
 from collections import deque
 from typing import Callable, Any
@@ -140,11 +141,51 @@ class TikTokChatProvider:
             avatar_url = self._extract_avatar_url(user_obj)
             timestamp = time.strftime("%H:%M:%S")
 
+            emotes_list = []
+            raw_emotes = getattr(event, "emotes", None)
+            bracket_tokens = re.findall(r'\[[a-zA-Z0-9_\-]+\]', comment_text) if comment_text else []
+
+            if raw_emotes and isinstance(raw_emotes, (list, tuple)):
+                for idx, em in enumerate(raw_emotes):
+                    sub_em = getattr(em, "emote", None)
+                    name = (
+                        getattr(em, "place_in_comment", "")
+                        or (getattr(sub_em, "place_in_comment", "") if sub_em else "")
+                        or (getattr(sub_em, "emote_id", "") if sub_em else "")
+                        or getattr(em, "emote_id", "")
+                        or getattr(em, "name", "")
+                    )
+                    url = ""
+                    img = getattr(em, "image", None) or (getattr(sub_em, "image", None) if sub_em else None)
+                    if img:
+                        if hasattr(img, "url_list") and img.url_list and isinstance(img.url_list, list):
+                            url = img.url_list[0]
+                        elif isinstance(img, str) and img.startswith("http"):
+                            url = img
+                    elif hasattr(em, "url") and isinstance(getattr(em, "url"), str):
+                        url = getattr(em, "url")
+                    elif sub_em and hasattr(sub_em, "url") and isinstance(getattr(sub_em, "url"), str):
+                        url = getattr(sub_em, "url")
+
+                    if not name and hasattr(em, "emote_id"):
+                        name = str(getattr(em, "emote_id"))
+                    if not name and sub_em and hasattr(sub_em, "emote_id"):
+                        name = str(getattr(sub_em, "emote_id"))
+
+                    token_name = bracket_tokens[idx].strip("[]") if idx < len(bracket_tokens) else ""
+
+                    if url:
+                        if token_name:
+                            emotes_list.append({"name": str(token_name), "url": str(url)})
+                        if name and name != token_name:
+                            emotes_list.append({"name": str(name), "url": str(url)})
+
             raw_data = {
                 "platform": "tiktok",
                 "msg_id": msg_id_val or msg_seq,
                 "timestamp": timestamp,
                 "comment": comment_text,
+                "emotes": emotes_list,
                 "user": {
                     "unique_id": username,
                     "nickname": display_name,

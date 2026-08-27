@@ -72,6 +72,16 @@ class TikTokChatWorker(QThread):
             return
 
         now_str = timestamp or datetime.datetime.now().strftime("%H:%M:%S")
+        emotes_tag = ""
+        if extra_data and isinstance(extra_data, dict):
+            emotes_list = extra_data.get("emotes")
+            if emotes_list and isinstance(emotes_list, list):
+                import json
+                try:
+                    emotes_tag = json.dumps(emotes_list, ensure_ascii=False)
+                except Exception:
+                    emotes_tag = ""
+
         dto = ChatMessageDTO(
             user=user,
             content=msg,
@@ -81,7 +91,7 @@ class TikTokChatWorker(QThread):
             sender_id=0,
             timestamp=now_str,
             platform="tiktok",
-            emotes_tag=""
+            emotes_tag=emotes_tag
         )
         self.message_received.emit(dto)
 

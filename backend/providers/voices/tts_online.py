@@ -299,12 +299,22 @@ class WebTTSProvider:
     def get_available_voices(self) -> list[dict]:
         try:
             voices = asyncio.run(edge_tts.list_voices())
-            return [{"id": v["ShortName"], "name": v["FriendlyName"]} for v in voices if "es-" in v["Locale"]]
+            filtered = [
+                {"id": v["ShortName"], "name": v["FriendlyName"]}
+                for v in voices
+                if "es-" in v["Locale"] or "en-US" in v["Locale"] or "en-GB" in v["Locale"]
+            ]
+            if filtered:
+                return filtered
         except Exception as e:
             logging.error("[Web TTS] Error connecting to Microsoft Edge: %s", e)
-            return [
-                {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Spain) - Offline"},
-                {"id": "es-ES-ElviraNeural", "name": "Elvira (Spain) - Offline"},
-                {"id": "es-MX-JorgeNeural", "name": "Jorge (Mexico) - Offline"},
-                {"id": "es-MX-DaliaNeural", "name": "Dalia (Mexico) - Offline"}
-            ]
+        return [
+            {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Spain)"},
+            {"id": "es-ES-ElviraNeural", "name": "Elvira (Spain)"},
+            {"id": "es-MX-JorgeNeural", "name": "Jorge (Mexico)"},
+            {"id": "es-MX-DaliaNeural", "name": "Dalia (Mexico)"},
+            {"id": "es-AR-ElenaNeural", "name": "Elena (Argentina)"},
+            {"id": "es-CO-GonzaloNeural", "name": "Gonzalo (Colombia)"},
+            {"id": "en-US-JennyNeural", "name": "Jenny (US English)"},
+            {"id": "en-US-GuyNeural", "name": "Guy (US English)"}
+        ]

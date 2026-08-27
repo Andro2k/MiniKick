@@ -8,17 +8,35 @@ from PySide6.QtCore import QThread, Signal
 
 logger = logging.getLogger("minikick.services.piper_voice_manager")
 
-DEFAULT_PIPER_VOICE_ID = "es_ES-sharvard-medium"
+DEFAULT_PIPER_VOICE_ID = "es_MX-claude-high"
 
 PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
+    "es_MX-claude-high": {
+        "id": "es_MX-claude-high",
+        "name": "Claude (México - Recomendada)",
+        "lang": "es_MX",
+        "quality": "high",
+        "size_mb": "115.0 MB",
+        "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx",
+        "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx.json"
+    },
     "es_ES-sharvard-medium": {
         "id": "es_ES-sharvard-medium",
-        "name": "Sharvard (España - Natural • Recomendada)",
+        "name": "Sharvard (España - Natural)",
         "lang": "es_ES",
         "quality": "medium",
         "size_mb": "41.5 MB",
         "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx",
         "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx.json"
+    },
+    "es_ES-carlfm-high": {
+        "id": "es_ES-carlfm-high",
+        "name": "CarlFM (España - Alta Calidad)",
+        "lang": "es_ES",
+        "quality": "high",
+        "size_mb": "115.0 MB",
+        "onnx_url": "https://huggingface.co/friyin/vits-piper-es_ES-carlfm-high/resolve/main/es_ES-carlfm-high.onnx",
+        "json_url": "https://huggingface.co/friyin/vits-piper-es_ES-carlfm-high/resolve/main/es_ES-carlfm-high.onnx.json"
     },
     "es_ES-davefx-medium": {
         "id": "es_ES-davefx-medium",
@@ -29,15 +47,6 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
         "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx",
         "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx.json"
     },
-    "es_MX-claude-high": {
-        "id": "es_MX-claude-high",
-        "name": "Claude (México - Alta Calidad)",
-        "lang": "es_MX",
-        "quality": "high",
-        "size_mb": "115.0 MB",
-        "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx",
-        "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx.json"
-    },
     "es_AR-daniela-high": {
         "id": "es_AR-daniela-high",
         "name": "Daniela (Argentina - Alta Calidad)",
@@ -46,15 +55,6 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
         "size_mb": "108.9 MB",
         "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx",
         "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx.json"
-    },
-    "es_ES-carlfm-x_low": {
-        "id": "es_ES-carlfm-x_low",
-        "name": "CarlFM (España - Ultra Ligera)",
-        "lang": "es_ES",
-        "quality": "x_low",
-        "size_mb": "16.8 MB",
-        "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/carlfm/x_low/es_ES-carlfm-x_low.onnx",
-        "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/carlfm/x_low/es_ES-carlfm-x_low.onnx.json"
     }
 }
 
@@ -136,6 +136,7 @@ class PiperVoiceManager:
 
     def get_installed_voices(self) -> List[Dict[str, str]]:
         installed = []
+        known_ids = set()
         for voice_id, meta in PIPER_VOICE_CATALOG.items():
             if self.is_voice_installed(voice_id):
                 installed.append({
@@ -144,7 +145,52 @@ class PiperVoiceManager:
                     "lang": meta["lang"],
                     "quality": meta["quality"]
                 })
+                known_ids.add(voice_id)
+
+        if os.path.exists(self._models_dir):
+            try:
+                for file in os.listdir(self._models_dir):
+                    if file.endswith(".onnx"):
+                        vid = file[:-5]
+                        if vid not in known_ids and self.is_voice_installed(vid):
+                            installed.append({
+                                "id": vid,
+                                "name": f"{vid} (Personalizada)",
+                                "lang": "es",
+                                "quality": "custom"
+                            })
+                            known_ids.add(vid)
+            except Exception as e:
+                logger.debug("Error listing custom voices in %s: %s", self._models_dir, e)
         return installed
+
+    def import_local_voice(self, onnx_source: str, json_source: str) -> Optional[dict]:
+        import shutil
+        import json
+        if not os.path.exists(onnx_source) or not os.path.exists(json_source):
+            return None
+        base_name = os.path.splitext(os.path.basename(onnx_source))[0]
+        dest_onnx = os.path.join(self._models_dir, f"{base_name}.onnx")
+        dest_json = os.path.join(self._models_dir, f"{base_name}.onnx.json")
+        try:
+            shutil.copy2(onnx_source, dest_onnx)
+            shutil.copy2(json_source, dest_json)
+            lang = "es"
+            try:
+                with open(dest_json, "r", encoding="utf-8") as f:
+                    cfg = json.load(f)
+                    lang = cfg.get("language", {}).get("code", "es")
+            except Exception:
+                pass
+            return {
+                "id": base_name,
+                "name": f"{base_name} (Personalizada)",
+                "lang": lang,
+                "quality": "custom"
+            }
+        except Exception as e:
+            logger.error("Error importing custom voice %s: %s", base_name, e)
+            return None
 
     def download_voice_sync(
         self,
