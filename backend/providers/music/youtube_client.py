@@ -102,6 +102,19 @@ class YouTubeMusicProvider(QObject):
             return
         self.music_storage.save_search_cache(query, song_entry)
 
+    def _extract_thumbnail(self, song: dict) -> str:
+        if not song:
+            return ""
+        if song.get("thumbnail"):
+            return song["thumbnail"]
+        url = song.get("url", "")
+        if url:
+            import re
+            match = re.search(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})', url)
+            if match:
+                return f"https://i.ytimg.com/vi/{match.group(1)}/hqdefault.jpg"
+        return ""
+
     def get_current_song(self) -> dict | None:
         if not self.current_song:
             return None
@@ -128,7 +141,7 @@ class YouTubeMusicProvider(QObject):
             "is_playing": is_playing,
             "duration": duration,
             "progress": self.player.position(),
-            "thumbnail": self.current_song.get("thumbnail", ""),
+            "thumbnail": self._extract_thumbnail(self.current_song),
             "requester": self.current_song.get("requester", ""),
             "platform": self.current_song.get("platform", "kick")
         }

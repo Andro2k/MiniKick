@@ -639,18 +639,14 @@
             "title": "Music Player"
         },
         "overlay": {
-            "layout_banner": "Banner Header (Large Art)",
-            "layout_compact": "Compact Card",
             "layout_floating": "Vinyl Record Spin",
             "layout_label": "Overlay Layout:",
             "layout_pill": "Minimal Pill Bar",
-            "layout_standard": "Standard Bar",
-            "theme_card": "Solid Card",
-            "theme_cyber": "Retro Cyberpunk",
+            "layout_standard": "Standard Card",
+            "theme_card": "Satin Card",
             "theme_dynamic": "Dynamic (Album Auto-Color)",
-            "theme_glass": "Glassmorphism",
+            "theme_glass": "Glassmorphism (Frosted Glass)",
             "theme_label": "Visual Theme:",
-            "theme_minimal": "Minimalist",
             "theme_neon": "Neon Glow",
             "url_desc": "Copy this URL and add it as a browser source in OBS to show cover art and track details on stream.",
             "url_title": "Music Overlay (OBS)"

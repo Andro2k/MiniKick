@@ -63,3 +63,13 @@
     background: #2ECD70;
     box-shadow: 0 0 8px rgba(46, 205, 112, 0.9);
 }
+
+.soundwave-bars span {
+    background: #2ECD70;
+    box-shadow: 0 0 6px rgba(46, 205, 112, 0.9);
+}
+
+.card-play-icon {
+    color: #2ECD70 !important;
+    filter: drop-shadow(0 0 6px rgba(46, 205, 112, 0.8)) !important;
+}

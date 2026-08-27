@@ -639,18 +639,14 @@
             "title": "Reproductor de Música"
         },
         "overlay": {
-            "layout_banner": "Banner Header (Arte Grande)",
-            "layout_compact": "Tarjeta Compacta",
             "layout_floating": "Disco de Vinilo (Vinyl Spin)",
             "layout_label": "Diseño del Overlay:",
             "layout_pill": "Cápsula Minimal (Pill Bar)",
-            "layout_standard": "Barra Estándar",
-            "theme_card": "Tarjeta Sólida",
-            "theme_cyber": "Retro Cyberpunk",
+            "layout_standard": "Tarjeta Estándar (Card)",
+            "theme_card": "Tarjeta Satinada (Card)",
             "theme_dynamic": "Dinámico (Auto-Color de Álbum)",
-            "theme_glass": "Glassmorphism",
+            "theme_glass": "Glassmorphism (Frosted Glass)",
             "theme_label": "Tema Visual:",
-            "theme_minimal": "Minimalista",
             "theme_neon": "Brillo Neón",
             "url_desc": "Copia esta URL y agrégala como fuente de navegador en OBS para mostrar la portada y detalles del tema en pantalla.",
             "url_title": "Overlay de Música (OBS)"

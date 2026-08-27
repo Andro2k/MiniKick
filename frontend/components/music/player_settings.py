@@ -183,10 +183,8 @@ class MusicPlayerSettingsPanel(QWidget):
         lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
         lbl_layout.setProperty("role", "body")
         self.combo_music_layout = NoWheelComboBox(self)
-        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_banner"), "banner")
-        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_pill"), "pill")
         self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_floating"), "floating")
-        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_compact"), "compact")
+        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_pill"), "pill")
         self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_standard"), "standard")
 
         layout_setting_row.addWidget(lbl_layout)
@@ -198,9 +196,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.combo_music_theme = NoWheelComboBox(self)
         self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_dynamic"), "dynamic")
         self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_glass"), "glass")
-        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_minimal"), "minimal")
         self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_neon"), "neon")
-        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_cyber"), "cyber")
         self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_card"), "card")
         
         theme_layout.addWidget(lbl_theme)
