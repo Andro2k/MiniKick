@@ -113,9 +113,7 @@ class MainWindowCore(QMainWindow):
         self._setup_tray() 
         
         self.update_controller = UpdateController(self.updater_manager)
-        self.update_controller.update_found_silent.connect(
-            lambda: self.sidebar.set_update_available(True)
-        )
+        self.update_controller.update_found_silent.connect(self._on_silent_update_found)
         self.update_controller.check_updates_silently()
         
         self._connect_signals()     
@@ -274,6 +272,7 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
+        self.sidebar.update_requested.connect(self.handle_update_check)
         self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
         self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
         self.q_log_handler.emitter.log_received.connect(self.log_controller.process_incoming_log)
@@ -1219,6 +1218,15 @@ class MainWindowCore(QMainWindow):
         self._theme_timer.setSingleShot(True)
         self._theme_timer.timeout.connect(lambda: QApplication.instance().setStyleSheet(get_global_qss(base_size)))
         self._theme_timer.start(250)
+
+    @Slot(object)
+    def _on_silent_update_found(self, info):
+        version = ""
+        if isinstance(info, dict):
+            version = info.get("version", "")
+        elif isinstance(info, str):
+            version = info
+        self.sidebar.set_update_available(True, version=version)
 
     @Slot()
     def handle_update_check(self):

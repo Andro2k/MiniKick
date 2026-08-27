@@ -70,7 +70,7 @@ class CommandService(QObject):
             self.storage.save_command(
                 cmd["trigger"], cmd["response"], cmd["is_active"],
                 cmd["cooldown"], cmd["aliases"], cmd["is_regex"], cmd["permission"],
-                cmd.get("apply_kick", True), cmd.get("apply_twitch", True), cmd.get("apply_youtube", True)
+                cmd.get("apply_kick", True), cmd.get("apply_twitch", True), cmd.get("apply_youtube", True), cmd.get("apply_tiktok", True)
             )
         self._pending_saves.clear()
 
@@ -95,7 +95,7 @@ class CommandService(QObject):
             if clean_q in cmd["trigger"].lower() or clean_q in cmd.get("aliases", "").lower() or clean_q in cmd.get("response", "").lower()
         ]
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True):
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True, apply_tiktok: bool = True):
         trigger_clean = trigger.strip()
         cmd_dict = {
             "trigger": trigger_clean,
@@ -107,7 +107,8 @@ class CommandService(QObject):
             "permission": permission,
             "apply_kick": apply_kick,
             "apply_twitch": apply_twitch,
-            "apply_youtube": apply_youtube
+            "apply_youtube": apply_youtube,
+            "apply_tiktok": apply_tiktok
         }
         
         existing_idx = -1

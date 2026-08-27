@@ -3,7 +3,7 @@
 from PySide6.QtCore import QObject, Slot, Signal
 
 class UpdateController(QObject):
-    update_found_silent = Signal()
+    update_found_silent = Signal(object)
 
     update_check_started = Signal()
     update_found = Signal(object)
@@ -25,7 +25,7 @@ class UpdateController(QObject):
         from backend.workers import UpdateCheckWorker
         self.bg_update_worker = UpdateCheckWorker(self.updater_manager)
         self.bg_update_worker.update_found.connect(
-            lambda info: self.update_found_silent.emit()
+            lambda info: self.update_found_silent.emit(info)
         )
         self.bg_update_worker.start()
 

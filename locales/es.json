@@ -45,9 +45,10 @@
             "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_desc": "Elige el diseño visual que mejor combine con tu stream.",
             "theme_glass": "Glassmorphism",
-            "theme_minimal": "Minimalista",
+            "theme_minimal": "Minimalista (Floating Glow)",
             "theme_neon": "Brillo Neón (Neon)",
-            "theme_title": "Diseño del Overlay"
+            "theme_title": "Diseño del Overlay",
+            "recommended_dim": "Tamaño recomendado en OBS: {dim}"
         },
         "roles": {
             "broadcaster_title": "Voz del Streamer",
@@ -133,6 +134,7 @@
             "permission_label": "Permiso Mínimo:",
             "platform_kick": "Kick",
             "platform_label": "Plataformas:",
+            "platform_tiktok": "TikTok",
             "platform_twitch": "Twitch",
             "platform_youtube": "YouTube",
             "plugin_tag": "COMANDO PLUGIN",
@@ -172,6 +174,7 @@
             "col_aliases": "Alias / Regex",
             "col_command": "Comando",
             "col_permission": "Nivel de Acceso",
+            "col_platforms": "Plataformas",
             "col_type": "Tipo",
             "filter_all": "Mostrar Todos",
             "filter_sort_asc": "Ascendente (A-Z)",
@@ -374,9 +377,9 @@
             "btn_restart": "Reiniciar ahora",
             "lbl_progress": "Progreso",
             "msg_unexpected_error": "Fallo inesperado al descargar el archivo.",
+            "subtitle_available": "Una nueva versión está lista para descargar e instalar.",
             "subtitle_connecting": "Conectando al servidor...",
             "subtitle_downloading": "Descargando la nueva versión...",
-            "subtitle_installed": "Versión {version} instalada.",
             "subtitle_restart_req": "Se requiere reiniciar para completar la instalación.",
             "subtitle_up_to_date": "Tu sistema ya cuenta con la versión más reciente.",
             "title_completed": "Actualización completada",
@@ -508,7 +511,6 @@
             "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación..."
         },
         "sidebar": {
-            "new_version": "Nueva Versión",
             "profile": {
                 "offline_name": "Sin Conexión"
             },
@@ -528,6 +530,13 @@
                 "timers": "Temporizadores",
                 "triggers": "Recompensas",
                 "widgets": "Widgets"
+            },
+            "update_card": {
+                "btn": "Actualizar ahora",
+                "desc": "Versión {version} lista para instalar",
+                "title": "¡Nueva versión disponible!",
+                "tooltip_collapsed": "Actualización disponible: {version}",
+                "tooltip_dismiss": "Descartar aviso"
             },
             "version": "Versión {version}"
         },
@@ -643,6 +652,10 @@
             "layout_label": "Diseño del Overlay:",
             "layout_pill": "Cápsula Minimal (Pill Bar)",
             "layout_standard": "Tarjeta Estándar (Card)",
+            "preview_sample_artist": "Tame Impala",
+            "preview_sample_title": "Tame Impala - The Less I Know The Better",
+            "preview_title": "Vista Previa del Overlay",
+            "recommended_dim": "Tamaño recomendado en OBS: {dim}",
             "theme_card": "Tarjeta Satinada (Card)",
             "theme_dynamic": "Dinámico (Auto-Color de Álbum)",
             "theme_glass": "Glassmorphism (Frosted Glass)",

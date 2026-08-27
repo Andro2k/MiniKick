@@ -120,7 +120,6 @@ def get_global_qss(base: int = 13) -> str:
     size_headline_3 = base + 3
     size_textline_1 = base
     size_textline_2 = max(10, base - 1)
-    size_textline_3 = max(9, base - 2)
 
     return f"""
 /* ==============================================================================
@@ -264,6 +263,11 @@ QFrame[role="canvas_container"] {{ background-color: {COLOR_NEUTRAL_950}; border
 QFrame[role="sidebar"] {{ background-color: {COLOR_NEUTRAL_900}; border-right: {BORDER_DEFAULT}; }}
 QFrame[role="profile_card"] {{ background-color: transparent; border-radius: {RADIUS_MD}px; }}
 QFrame[role="profile_card"]:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_700}; }}
+QFrame[role="update_banner_card"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_800}; border-radius: {RADIUS_LG}px; }}
+QFrame[role="update_banner_card"]:hover {{ border-color: {COLOR_NEUTRAL_700}; }}
+QFrame[role="update_icon_box"] {{ background-color: {COLOR_GREEN_GLOW}; border: 1px solid {COLOR_GREEN}; border-radius: {RADIUS_MD}px; }}
+QPushButton[role="btn_dismiss"] {{ background-color: transparent; border: none; border-radius: {RADIUS_SM}px; padding: 2px; }}
+QPushButton[role="btn_dismiss"]:hover {{ background-color: {COLOR_NEUTRAL_800}; }}
 
 /* ==============================================================================
    4. ESTRUCTURAS Y ROLES DE COMPONENTES GENERALES (Con Role)
@@ -293,7 +297,7 @@ QFrame[role="toast"][state="warning"] {{ border-color: {COLOR_AMBER}; }}
 QFrame[role="toast"][state="info"] {{ border-color: {COLOR_BLUE}; }}
 
 QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_850}; border-radius: {RADIUS_MD}px; }}
-QFrame[role="badge"] QLabel {{ font-size: {size_textline_3}px; font-weight: 700; color: {COLOR_NEUTRAL_400}; background: transparent; }}
+QFrame[role="badge"] QLabel {{ font-size: {size_textline_2}px; font-weight: 700; color: {COLOR_NEUTRAL_400}; background: transparent; }}
 QFrame[role="badge"][state="everyone"] {{ background-color: {COLOR_GREEN_GLOW}; }}
 QFrame[role="badge"][state="everyone"] QLabel {{ color: {COLOR_GREEN}; }}
 QFrame[role="badge"][state="subscriber"] {{ background-color: {COLOR_BLUE_GLOW}; }}
@@ -308,8 +312,8 @@ QFrame[role="badge"][state="warning"] {{ background-color: {COLOR_AMBER_GLOW}; }
 QFrame[role="badge"][state="warning"] QLabel {{ color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="plugin"] {{ background-color: {COLOR_PURPLE_GLOW}; }}
 QFrame[role="badge"][state="plugin"] QLabel {{ color: {COLOR_PURPLE}; }}
-QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_3}px; }}
-QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_3}px; }}
+QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_2}px; }}
+QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_2}px; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.5px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: bold; background-color: {COLOR_NEUTRAL_900}; }}
 QTextEdit[role="ConsoleDisplay"] {{ font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', Consolas, monospace; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; }}
 QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 12px; }}
@@ -321,7 +325,7 @@ QLabel[role="h1"] {{ font-size: {size_headline_1}px; font-weight: 400; color: {C
 QLabel[role="h2"] {{ font-size: {size_headline_2}px; font-weight: 400; color: {COLOR_NEUTRAL_200}; }}
 QLabel[role="h3"] {{ font-size: {size_headline_3}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; }}
 QLabel[role="body"] {{ font-size: {size_textline_1}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; }}
-QLabel[role="caption"] {{ font-size: {size_textline_3}px; font-weight: 400; color: {COLOR_NEUTRAL_500}; }}
+QLabel[role="caption"] {{ font-size: {size_textline_2}px; font-weight: 400; color: {COLOR_NEUTRAL_500}; }}
 QLabel[role="monospace"] {{ font-size: {size_textline_2}px; color: {COLOR_NEUTRAL_400}; }}
 QLabel[state="normal"] {{ color: {COLOR_NEUTRAL_400}; }}
 QLabel[state="error"] {{ color: {COLOR_RED}; }}

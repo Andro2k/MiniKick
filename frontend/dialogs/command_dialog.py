@@ -120,9 +120,12 @@ class CommandConfigWizard(ModernWizardPanel):
         self.chk_twitch.setChecked(True)
         self.chk_youtube = QCheckBox(self.i18n.get("command.dialog.platform_youtube"))
         self.chk_youtube.setChecked(True)
+        self.chk_tiktok = QCheckBox(self.i18n.get("command.dialog.platform_tiktok"))
+        self.chk_tiktok.setChecked(True)
         platforms_row.addWidget(self.chk_kick)
         platforms_row.addWidget(self.chk_twitch)
         platforms_row.addWidget(self.chk_youtube)
+        platforms_row.addWidget(self.chk_tiktok)
         platforms_row.addStretch()
         adv_layout.addLayout(platforms_row)
 
@@ -184,6 +187,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.chk_kick.setChecked(self.existing_config.get("apply_kick", True))
         self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True))
         self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True))
+        self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True))
         
         permission = self.existing_config.get("permission", "everyone")
         index = self.combo_perm.findData(permission)
@@ -213,7 +217,8 @@ class CommandConfigWizard(ModernWizardPanel):
             "permission": self.combo_perm.currentData(),
             "apply_kick": self.chk_kick.isChecked(),
             "apply_twitch": self.chk_twitch.isChecked(),
-            "apply_youtube": self.chk_youtube.isChecked()
+            "apply_youtube": self.chk_youtube.isChecked(),
+            "apply_tiktok": self.chk_tiktok.isChecked()
         }
 
 

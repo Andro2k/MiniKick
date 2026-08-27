@@ -47,9 +47,10 @@ DEFAULT_DICTIONARY = {
             "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_desc": "Choose the visual design that best fits your stream.",
             "theme_glass": "Glassmorphism",
-            "theme_minimal": "Minimalist",
+            "theme_minimal": "Minimalist (Floating Glow)",
             "theme_neon": "Neon Glow (Neon)",
-            "theme_title": "Overlay Design"
+            "theme_title": "Overlay Design",
+            "recommended_dim": "Recommended OBS source size: {dim}"
         },
         "roles": {
             "broadcaster_title": "Streamer Voice",
@@ -135,6 +136,7 @@ DEFAULT_DICTIONARY = {
             "permission_label": "Minimum Permission:",
             "platform_kick": "Kick",
             "platform_label": "Platforms:",
+            "platform_tiktok": "TikTok",
             "platform_twitch": "Twitch",
             "platform_youtube": "YouTube",
             "plugin_tag": "PLUGIN COMMAND",
@@ -174,6 +176,7 @@ DEFAULT_DICTIONARY = {
             "col_aliases": "Aliases / Regex",
             "col_command": "Command",
             "col_permission": "Access Level",
+            "col_platforms": "Platforms",
             "col_type": "Type",
             "filter_all": "Show All",
             "filter_sort_asc": "Ascending (A-Z)",
@@ -376,9 +379,9 @@ DEFAULT_DICTIONARY = {
             "btn_restart": "Restart now",
             "lbl_progress": "Progress",
             "msg_unexpected_error": "Unexpected error downloading the file.",
+            "subtitle_available": "A new version is ready to download and install.",
             "subtitle_connecting": "Connecting to server...",
             "subtitle_downloading": "Downloading new version...",
-            "subtitle_installed": "Version {version} installed.",
             "subtitle_restart_req": "Restart required to complete installation.",
             "subtitle_up_to_date": "Your system is already running the latest version.",
             "title_completed": "Update Completed",
@@ -510,7 +513,6 @@ DEFAULT_DICTIONARY = {
             "worker_stuck": "{worker} stuck (possible network lock). Forcing termination..."
         },
         "sidebar": {
-            "new_version": "New Version",
             "profile": {
                 "offline_name": "Offline"
             },
@@ -524,13 +526,19 @@ DEFAULT_DICTIONARY = {
                 "dashboard": "Dashboard",
                 "developer": "Developer",
                 "music": "Music",
-                "network_status": "Network Status",
                 "settings": "Settings",
                 "spam_filters": "Anti-Spam Filters",
                 "stream_info": "Stream Info",
                 "timers": "Timers",
                 "triggers": "Rewards",
                 "widgets": "Widgets"
+            },
+            "update_card": {
+                "btn": "Update Now",
+                "desc": "Version {version} ready to install",
+                "title": "New Version Available!",
+                "tooltip_collapsed": "Update available: {version}",
+                "tooltip_dismiss": "Dismiss notification"
             },
             "version": "Version {version}"
         },
@@ -646,6 +654,10 @@ DEFAULT_DICTIONARY = {
             "layout_label": "Overlay Layout:",
             "layout_pill": "Minimal Pill Bar",
             "layout_standard": "Standard Card",
+            "preview_sample_artist": "Tame Impala",
+            "preview_sample_title": "Tame Impala - The Less I Know The Better",
+            "preview_title": "Overlay Live Preview",
+            "recommended_dim": "Recommended OBS source size: {dim}",
             "theme_card": "Satin Card",
             "theme_dynamic": "Dynamic (Album Auto-Color)",
             "theme_glass": "Glassmorphism (Frosted Glass)",
@@ -731,68 +743,29 @@ DEFAULT_DICTIONARY = {
             "user_cooldown_title": "Request Cooldown (sec)"
         }
     },
-    "network": {
-        "btn_check": "Check Network",
-        "graph": {
-            "avg": "Average",
-            "filter_all": "All Services",
-            "filter_chat_websocket": "WebSocket",
-            "filter_internet": "Internet",
-            "filter_kick": "Kick API",
-            "filter_overlay": "Overlay",
-            "filter_youtube": "YouTube",
-            "jitter": "Jitter",
-            "live": "Live",
-            "min": "Minimum",
-            "stability_fair": "Fair",
-            "stability_good": "Good",
-            "stability_optimal": "Optimal",
-            "stability_poor": "Poor",
-            "time_20s": "-20s",
-            "time_45s": "-45s",
-            "time_now": "Now",
-            "title": "Live Network Latency",
-            "tooltip_title": "Ping / Latency"
-        },
-        "header": {
-            "subtitle": "Monitor connection status and latency with Kick, Twitch, and YouTube.",
-            "title": "Network Status"
-        },
-        "services": {
-            "chat_websocket": "Chat WebSocket (Pusher)",
-            "chat_websocket_desc": "Checks real-time connection with Kick chat server.",
-            "internet": "Internet Connection",
-            "internet_desc": "Measures overall web connectivity.",
-            "kick": "Kick Serves",
-            "kick_desc": "Checks response speed of official Kick API.",
-            "overlay": "Local Overlay Server",
-            "overlay_desc": "Verifies local OBS widget server is operating correctly.",
-            "youtube": "YouTube Service",
-            "youtube_desc": "Measures latency with YouTube audio services."
-        },
-        "status": {
-            "checking": "Checking...",
-            "ms": "{latency} ms",
-            "offline": "Offline",
-            "online": "Online",
-            "warning": "High latency"
-        },
-        "table": {
-            "col_desc": "Description",
-            "col_latency": "Latency",
-            "col_service": "Service",
-            "col_status": "Status",
-            "title": "Services Status"
-        }
-    },
     "piper_dialog": {
         "btn_close": "Close",
         "btn_delete": "Delete",
         "btn_download": "Download",
+        "btn_import": "Import ONNX Model",
+        "btn_import_tooltip": "Import a local Piper model (.onnx and .onnx.json)",
+        "btn_reset_synthesis": "Reset",
+        "btn_reset_tooltip": "Reset acoustic parameters to defaults",
+        "import_filter": "Piper ONNX Models (*.onnx)",
+        "import_missing_json": "The corresponding .onnx.json configuration file was not found in the same folder.",
+        "import_title": "Select Piper ONNX Model",
+        "param_length_scale": "Base Duration Scale",
+        "param_length_scale_desc": "Base phoneme duration multiplier. Lower values increase speech rate.",
+        "param_noise_scale": "Expressiveness (Noise Scale)",
+        "param_noise_scale_desc": "Controls phoneme pitch and expressiveness variation (Recommended: 0.67).",
+        "param_noise_w_scale": "Pacing / Cadence (Noise W)",
+        "param_noise_w_scale_desc": "Controls rhythmic variation and pause duration between words (Recommended: 0.80).",
         "status_downloading": "Downloading...",
         "status_installed": "Installed",
         "status_not_installed": "Available",
         "subtitle": "Download and manage local neural voices for offline speech synthesis without internet or API usage.",
+        "synthesis_desc": "Fine-tune intonation, expressiveness, and cadence for the VITS neural acoustic generator.",
+        "synthesis_title": "Acoustic & Synthesis Settings",
         "title": "Piper Voice Manager (Local TTS)"
     },
     "rewards": {

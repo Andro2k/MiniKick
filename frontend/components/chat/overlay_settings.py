@@ -108,7 +108,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         )
         
         self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
-        row_copy_obs = SettingRow(
+        self.row_copy_obs = SettingRow(
             "link.svg",
             self.i18n.get("chat.settings.obs_title"),
             self.i18n.get("chat.settings.obs_desc"),
@@ -126,7 +126,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         
         divider = ModernDivider()
         self.addWidget(divider)
-        self.addWidget(row_copy_obs)
+        self.addWidget(self.row_copy_obs)
         self.addStretch()
 
     def _populate_flow_options(self, orientation: str):
@@ -196,6 +196,11 @@ class ChatOverlaySettingsPanel(ModernCard):
         fade = self.spin_overlay_fade.value()
         show_bots = "true" if self.sw_overlay_show_bots.isChecked() else "false"
         show_time = "true" if self.sw_overlay_show_time.isChecked() else "false"
+
+        dim = "1920 × 80 px" if orientation == "horizontal" else "384 × 680 px"
+        desc = f"{self.i18n.get('chat.settings.obs_desc')} ({self.i18n.get('chat.overlay.recommended_dim').replace('{dim}', dim)})"
+        if hasattr(self, 'row_copy_obs') and self.row_copy_obs:
+            self.row_copy_obs.set_description(desc)
         
         base_url = self._chat_overlay_url or ""
         params = f"theme={theme}&orientation={orientation}&flow={flow}&entry={entry}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"

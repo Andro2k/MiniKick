@@ -5,11 +5,13 @@ from .player_settings import MusicPlayerSettingsPanel
 from .music_settings_panel import MusicSettingsPanel
 from .commands_panel import MusicCommandsPanel
 from .queue_panel import MusicQueuePanel
+from .overlay_mockup import MusicOverlayMockupWidget
 
 __all__ = [
     "MusicStatsPanel",
     "MusicPlayerSettingsPanel",
     "MusicSettingsPanel",
     "MusicCommandsPanel",
-    "MusicQueuePanel"
+    "MusicQueuePanel",
+    "MusicOverlayMockupWidget"
 ]

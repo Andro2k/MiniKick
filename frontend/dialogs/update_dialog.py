@@ -65,6 +65,7 @@ class UpdateDialog(ModernModal):
 
         self.btn_primary = QPushButton(self.i18n.get("dialogs.update.btn_restart"))
         self.btn_primary.setProperty("role", "action_accent")
+        self.btn_primary.hide()
         
         self.btn_secondary = QPushButton(self.i18n.get("dialogs.update.btn_close"))
         self.btn_secondary.setProperty("role", "action_outlined")
@@ -79,7 +80,7 @@ class UpdateDialog(ModernModal):
             self.header_icon.setPixmap(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("dialogs.update.top_available").replace("{version}", version))
-        self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_restart_req"))
+        self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_available"))
         self.progress_container.hide()
         
         self.btn_primary.setText(self.i18n.get("dialogs.update.btn_download"))
@@ -103,6 +104,7 @@ class UpdateDialog(ModernModal):
         
         self.btn_primary.setText(self.i18n.get("dialogs.update.btn_downloading"))
         self.btn_primary.setEnabled(False)
+        self.btn_primary.show()
         self.btn_secondary.hide() 
 
     def update_progress(self, percentage: int):
@@ -115,7 +117,7 @@ class UpdateDialog(ModernModal):
             self.header_icon.setPixmap(get_icon_colored("cloud-check.svg", COLOR_NEUTRAL_950, 48).pixmap(48, 48))
             
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_completed"))
-        self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_installed").replace("{version}", self.version))
+        self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_restart_req"))
         
         self.progress_bar.setValue(100)
         self.lbl_prog_val.setText("100%")

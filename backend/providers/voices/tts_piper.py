@@ -20,8 +20,8 @@ class PiperTTSProvider:
         self.volume = 1.0
         self.speed_percent = 100
         self.length_scale = 1.0
-        self.noise_scale = 0.667
-        self.noise_w_scale = 0.8
+        self.noise_scale = 0.7
+        self.noise_w_scale = 0.35
         self._audio_device_id = "default"
         self._cache: Dict[tuple[str, str], str] = {}
         self._cache_lock = threading.Lock()

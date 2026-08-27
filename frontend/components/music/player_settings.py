@@ -5,6 +5,7 @@ from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK
 from frontend.common import get_icon_colored, get_pixmap
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
+from .overlay_mockup import MusicOverlayMockupWidget
 
 class MusicPlayerSettingsPanel(QWidget):
     volume_changed = Signal(int)
@@ -202,6 +203,28 @@ class MusicPlayerSettingsPanel(QWidget):
         theme_layout.addWidget(lbl_theme)
         theme_layout.addWidget(self.combo_music_theme)
 
+        preview_layout = QVBoxLayout()
+        preview_layout.setSpacing(6)
+        
+        preview_header = QHBoxLayout()
+        lbl_preview = QLabel(self.i18n.get("music.overlay.preview_title"), parent=self)
+        lbl_preview.setProperty("role", "body")
+        
+        self.lbl_recommended_dim = QLabel(parent=self)
+        self.lbl_recommended_dim.setProperty("role", "caption")
+        
+        preview_header.addWidget(lbl_preview)
+        preview_header.addStretch()
+        preview_header.addWidget(self.lbl_recommended_dim)
+
+        self.mockup_widget = MusicOverlayMockupWidget(self.i18n, parent=self)
+        preview_layout.addLayout(preview_header)
+        preview_layout.addWidget(self.mockup_widget)
+
+        self.combo_music_layout.currentIndexChanged.connect(self._update_mockup_preview)
+        self.combo_music_theme.currentIndexChanged.connect(self._update_mockup_preview)
+        self._update_mockup_preview()
+
         self.btn_copy_music_url = ModernButton(
             self.i18n.get("common.buttons.copy"),
             role="action_neutral_border"
@@ -211,8 +234,25 @@ class MusicPlayerSettingsPanel(QWidget):
         self.card_overlay_url.addLayout(url_info)
         self.card_overlay_url.addLayout(layout_setting_row)
         self.card_overlay_url.addLayout(theme_layout)
+        self.card_overlay_url.addLayout(preview_layout)
         self.card_overlay_url.addWidget(self.btn_copy_music_url)
         self.panel_layout.addWidget(self.card_overlay_url, alignment=Qt.AlignmentFlag.AlignTop)
+
+    _RECOMMENDED_DIMENSIONS = {
+        "floating": "580 × 280",
+        "vinyl": "580 × 280",
+        "standard": "580 × 180",
+        "pill": "580 × 80"
+    }
+
+    def _update_mockup_preview(self):
+        layout = self.combo_music_layout.currentData() or "floating"
+        theme = self.combo_music_theme.currentData() or "dynamic"
+        self.mockup_widget.set_configuration(layout, theme)
+        dim = self._RECOMMENDED_DIMENSIONS.get(layout, "580 × 180")
+        self.lbl_recommended_dim.setText(
+            self.i18n.get("music.overlay.recommended_dim").replace("{dim}", dim)
+        )
 
     def _copy_music_overlay_url(self):
         layout = self.combo_music_layout.currentData() or "standard"

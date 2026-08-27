@@ -129,7 +129,8 @@ class DatabaseManager:
                     permission TEXT DEFAULT 'everyone',
                     apply_kick INTEGER DEFAULT 1,
                     apply_twitch INTEGER DEFAULT 1,
-                    apply_youtube INTEGER DEFAULT 1
+                    apply_youtube INTEGER DEFAULT 1,
+                    apply_tiktok INTEGER DEFAULT 1
                 )
             """)
             cursor.execute("""
@@ -395,7 +396,8 @@ class DatabaseManager:
                 ("permission", "TEXT DEFAULT 'everyone'"),
                 ("apply_kick", "INTEGER DEFAULT 1"),
                 ("apply_twitch", "INTEGER DEFAULT 1"),
-                ("apply_youtube", "INTEGER DEFAULT 1")
+                ("apply_youtube", "INTEGER DEFAULT 1"),
+                ("apply_tiktok", "INTEGER DEFAULT 1")
             ],
             "obs_rewards": [
                 ("volume", "REAL DEFAULT 1.0"),

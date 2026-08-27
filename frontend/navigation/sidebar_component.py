@@ -9,12 +9,15 @@ from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GR
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
+    update_requested = Signal()
 
     def __init__(self, i18n, app_version: str = "", parent=None):
         super().__init__(parent)
         self.i18n = i18n
         self.app_version = app_version
         self.has_update = False  
+        self._update_dismissed = False
+        self._latest_version = ""
         self.setProperty("role", "sidebar")
         self.is_expanded = True
         self.expanded_width = 230
@@ -104,25 +107,87 @@ class Sidebar(QFrame):
         self.main_layout.addWidget(self.scroll_area, stretch=1)
         self.main_layout.addSpacing(6)
         
+        self._setup_update_card()
+        self.main_layout.addWidget(self.update_card)
+
+        self.btn_collapsed_update = QPushButton()
+        self.btn_collapsed_update.setProperty("role", "action_accent")
+        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 18))
+        self.btn_collapsed_update.setIconSize(QSize(18, 18))
+        self.btn_collapsed_update.setFixedSize(40, 40)
+        self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_collapsed_update.clicked.connect(self._on_update_action_clicked)
+        self.btn_collapsed_update.setVisible(False)
+        self.main_layout.addWidget(self.btn_collapsed_update, alignment=Qt.AlignmentFlag.AlignCenter)
+
         self._setup_profile_card()
         self.main_layout.addWidget(self.profile_card)
         self.main_layout.addSpacing(6)
-        
-        self.btn_update_rewards = QPushButton(self.i18n.get("main.sidebar.new_version"))
-        self.btn_update_rewards.setProperty("role", "action_accent")
-        self.btn_update_rewards.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_update_rewards.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 16))
-        self.btn_update_rewards.setIconSize(QSize(16, 16))
-        
-        self.btn_update_rewards.setVisible(False)
-        self.btn_update_rewards.clicked.connect(self._on_update_rewards_clicked)
-        self.main_layout.addWidget(self.btn_update_rewards)
 
         version_text = self.i18n.get("main.sidebar.version").replace("{version}", self.app_version)
         self.lbl_version = QLabel(version_text)
         self.lbl_version.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_version.setProperty("role", "caption")
         self.main_layout.addWidget(self.lbl_version)
+
+    def _setup_update_card(self):
+        self.update_card = QFrame()
+        self.update_card.setProperty("role", "update_banner_card")
+        
+        card_layout = QVBoxLayout(self.update_card)
+        card_layout.setContentsMargins(10, 10, 10, 10)
+        card_layout.setSpacing(8)
+
+        top_row = QHBoxLayout()
+        top_row.setContentsMargins(0, 0, 0, 0)
+        top_row.setSpacing(6)
+
+        icon_box = QFrame()
+        icon_box.setProperty("role", "update_icon_box")
+        icon_box.setFixedSize(28, 28)
+        icon_box_layout = QHBoxLayout(icon_box)
+        icon_box_layout.setContentsMargins(0, 0, 0, 0)
+        icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        lbl_card_icon = QLabel()
+        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download.svg", COLOR_GREEN, 16))
+        lbl_card_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_box_layout.addWidget(lbl_card_icon)
+
+        top_row.addWidget(icon_box)
+        top_row.addStretch()
+
+        self.btn_dismiss_update = QPushButton()
+        self.btn_dismiss_update.setProperty("role", "btn_dismiss")
+        self.btn_dismiss_update.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
+        self.btn_dismiss_update.setIconSize(QSize(14, 14))
+        self.btn_dismiss_update.setFixedSize(22, 22)
+        self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
+        self.btn_dismiss_update.clicked.connect(self._dismiss_update_card)
+        top_row.addWidget(self.btn_dismiss_update)
+
+        card_layout.addLayout(top_row)
+
+        self.lbl_update_title = QLabel(self.i18n.get("main.sidebar.update_card.title"))
+        self.lbl_update_title.setProperty("role", "h3")
+        self.lbl_update_title.setWordWrap(True)
+        card_layout.addWidget(self.lbl_update_title)
+
+        self.lbl_update_desc = QLabel(self.i18n.get("main.sidebar.update_card.desc").replace("{version}", ""))
+        self.lbl_update_desc.setProperty("role", "caption")
+        self.lbl_update_desc.setWordWrap(True)
+        card_layout.addWidget(self.lbl_update_desc)
+
+        self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
+        self.btn_update_action.setProperty("role", "action_accent")
+        self.btn_update_action.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 16))
+        self.btn_update_action.setIconSize(QSize(16, 16))
+        self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_update_action.clicked.connect(self._on_update_action_clicked)
+        card_layout.addWidget(self.btn_update_action)
+
+        self.update_card.setVisible(False)
 
     def _setup_profile_card(self):
         self.profile_card = QFrame()
@@ -222,17 +287,33 @@ class Sidebar(QFrame):
         self.profile_role_lbl.setText(offline_status)
         self.reset_profile_avatar()
 
-    def set_update_available(self, available: bool = True):
+    def set_update_available(self, available: bool = True, version: str = ""):
         self.has_update = available
-        if self.is_expanded:
-            self.btn_update_rewards.setVisible(available)
+        if version:
+            self._latest_version = version
+            self.lbl_update_desc.setText(self.i18n.get("main.sidebar.update_card.desc").replace("{version}", version))
+            collapsed_tooltip = self.i18n.get("main.sidebar.update_card.tooltip_collapsed").replace("{version}", version)
+            self.btn_collapsed_update.setToolTip(collapsed_tooltip)
+        self._update_notification_visibility()
 
-    def _on_update_rewards_clicked(self):
-        for btn in self.nav_buttons:
-            if btn.property("view_name") == "Settings":
-                btn.setChecked(True)
-                self._on_tab_clicked(btn)
-                break
+    def _dismiss_update_card(self):
+        self._update_dismissed = True
+        self._update_notification_visibility()
+
+    def _on_update_action_clicked(self):
+        self.update_requested.emit()
+
+    def _update_notification_visibility(self):
+        if self.has_update and not self._update_dismissed:
+            if self.is_expanded:
+                self.update_card.setVisible(True)
+                self.btn_collapsed_update.setVisible(False)
+            else:
+                self.update_card.setVisible(False)
+                self.btn_collapsed_update.setVisible(True)
+        else:
+            self.update_card.setVisible(False)
+            self.btn_collapsed_update.setVisible(False)
 
     def add_tab(self, name, icon_name, is_active=False, position="top"):
         key_name = name.lower().replace(" ", "_")
@@ -304,8 +385,7 @@ class Sidebar(QFrame):
         self.lbl_navigate_header.setVisible(show)
         self.lbl_more_header.setVisible(show)
         self.lbl_version.setVisible(show)
-        if self.has_update:
-            self.btn_update_rewards.setVisible(show)
+        self._update_notification_visibility()
             
         self.profile_text_widget.setVisible(show)
         if show:
