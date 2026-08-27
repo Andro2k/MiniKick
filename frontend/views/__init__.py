@@ -5,7 +5,6 @@ from .command_view import CommandView
 from .dashboard_view import DashboardView
 from .log_view import LogView
 from .music_view import MusicView
-from .network_view import NetworkView
 from .rewards_view import RewardsView
 from .settings_view import SettingsView
 from .spam_view import SpamView
@@ -19,7 +18,6 @@ __all__ = [
     "DashboardView",
     "LogView",
     "MusicView",
-    "NetworkView",
     "RewardsView",
     "SettingsView",
     "SpamView",

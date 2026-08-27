@@ -208,7 +208,6 @@ DEFAULT_DICTIONARY = {
             "view_release_notes": "View Notes"
         },
         "status": {
-            "connected": "Connected",
             "error": "Error",
             "no": "No",
             "offline": "Offline",
@@ -255,11 +254,16 @@ DEFAULT_DICTIONARY = {
             "autostart_desc": "Automatically connect MiniKick upon launching the application.",
             "autostart_title": "Auto Connect",
             "btn_active": "System Active",
+            "btn_active_tiktok": "TikTok Active",
             "btn_active_twitch": "Twitch Active",
             "btn_active_youtube": "YouTube Active",
             "btn_connect": "Connect to Kick",
+            "btn_connect_tiktok": "Connect TikTok",
             "btn_connect_twitch": "Connect Twitch",
             "btn_connect_youtube": "Connect YouTube",
+            "btn_connecting_tiktok": "Connecting TikTok...",
+            "btn_connecting_twitch": "Connecting Twitch...",
+            "btn_connecting_youtube": "Connecting YouTube...",
             "btn_retry": "Retry",
             "status_auth": "Status: Authenticating...",
             "status_connected": "Status: Connected & Listening",
@@ -287,9 +291,6 @@ DEFAULT_DICTIONARY = {
             "followers": "Followers",
             "room_id": "ChatRoom ID",
             "vods": "VODs"
-        },
-        "status": {
-            "connected_toast_msg": "Channel linked: {username}"
         }
     },
     "dialogs": {
@@ -345,9 +346,20 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Patch notes and changelog from the latest published version.",
             "title": "Release Notes"
         },
+        "tiktok_connect": {
+            "btn_clear": "Clear",
+            "btn_connect": "Connect Chat",
+            "desc": "Enter the username (@username) of the TikTok Live channel:",
+            "placeholder": "e.g. @streamer or username",
+            "title": "Connect TikTok Live Chat"
+        },
         "unlink": {
             "desc": "Do you want to disconnect your account? You will have to log in again the next time you open MiniKick.",
             "title": "Disconnect Account"
+        },
+        "unlink_tiktok": {
+            "desc": "Are you sure you want to disconnect TikTok live chat? Chat listening and moderation features will stop processing.",
+            "title": "Disconnect TikTok"
         },
         "unlink_twitch": {
             "desc": "Are you sure you want to disconnect your Twitch account? Chat and command features for Twitch will become inactive.",
@@ -379,6 +391,7 @@ DEFAULT_DICTIONARY = {
             "step_indicator": "Step {current}/{total}"
         },
         "youtube_connect": {
+            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter your channel handle (@channel), full live stream URL, or YouTube video ID:",
             "placeholder": "e.g. @lofigirl or https://youtube.com/watch?v=...",
@@ -448,6 +461,12 @@ DEFAULT_DICTIONARY = {
         "main_window": {
             "twitch_auth_error": "[TwitchAuth] Twitch authentication error: {error}"
         },
+        "tiktok": {
+            "age_restricted": "The live stream for @{unique_id} has an age restriction (+18).",
+            "empty_user": "TikTok username cannot be empty.",
+            "stream_offline": "@{unique_id} is not currently live on TikTok.",
+            "user_not_found": "User @{unique_id} does not exist or does not have Live enabled on TikTok."
+        },
         "twitch": {
             "channel_empty": "Twitch channel name cannot be empty.",
             "user_not_found": "No user data found in Twitch Helix API."
@@ -516,6 +535,12 @@ DEFAULT_DICTIONARY = {
             "version": "Version {version}"
         },
         "toast": {
+            "kick_connected_msg": "Successfully connected to Kick chat: @{username}",
+            "kick_connected_title": "Kick Connected",
+            "tiktok_connected_msg": "Connected to TikTok live chat: @{target}",
+            "tiktok_connected_title": "TikTok Connected",
+            "tiktok_disconnected_msg": "TikTok Live connection has been stopped.",
+            "tiktok_disconnected_title": "TikTok Disconnected",
             "twitch_auth_error_title": "Twitch Auth Error",
             "twitch_auth_opening": "Opening login browser window...",
             "twitch_auth_title": "Twitch OAuth",
@@ -887,15 +912,19 @@ DEFAULT_DICTIONARY = {
         },
         "integrations": {
             "btn_connect_kick": "Connect Kick",
+            "btn_connect_tiktok": "Connect TikTok",
             "btn_connect_twitch": "Connect Twitch",
             "btn_connect_youtube": "Connect YouTube",
             "btn_disconnect_kick": "Disconnect @{channel}",
+            "btn_disconnect_tiktok": "Disconnect @{channel}",
             "btn_disconnect_twitch": "Disconnect #{channel}",
             "btn_disconnect_youtube": "Disconnect {channel}",
             "desc": "Real-time chat connection status for each platform.",
             "kick_desc_connected": "Successfully connected to @{channel} channel.",
             "kick_desc_disconnected": "No Kick account currently connected.",
             "kick_title": "Kick Channel",
+            "tiktok_desc_connected": "Successfully connected to @{channel}'s live stream.",
+            "tiktok_title": "TikTok Live Channel",
             "twitch_desc_connected": "Successfully connected to #{channel} chat.",
             "twitch_title": "Twitch Channel",
             "youtube_desc_connected": "Successfully connected to {channel} live stream.",
@@ -957,7 +986,6 @@ DEFAULT_DICTIONARY = {
             "max_symbols": "Symbol / weird character limit",
             "platform_kick": "Kick",
             "platform_twitch": "Twitch",
-            "platform_youtube": "YouTube",
             "platforms": "Applicable Platforms"
         },
         "filters": {

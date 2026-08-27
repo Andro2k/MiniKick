@@ -50,7 +50,7 @@ class TwitchSocketManager:
     def __init__(self, token: str = "", nick: str = "", i18n=None) -> None:
         self.token = token.replace("oauth:", "").strip() if token else ""
         self.nick = nick.strip() if nick else ""
-        self.i18n = i18n or TranslationService()
+        self.i18n = TranslationService()
         self._running = False
         self.ws: websocket.WebSocketApp | None = None
         self._channel = ""
@@ -78,7 +78,7 @@ class TwitchSocketManager:
             on_error=self._on_error,
             on_close=self._on_close
         )
-        self.ws.run_forever(ping_interval=0)
+        self.ws.run_forever(ping_interval=30, ping_timeout=10)
 
     def _on_open(self, ws: websocket.WebSocketApp) -> None:
         logging.info("[TwitchWS] Connecting to Twitch channel: #%s", self._channel)

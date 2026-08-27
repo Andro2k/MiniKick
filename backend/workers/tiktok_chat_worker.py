@@ -20,7 +20,7 @@ class TikTokChatWorker(QThread):
         super().__init__(parent)
         self.setObjectName("Worker_TikTok_Chat_Socket")
         self.target_channel = target_channel.strip().lstrip("@")
-        self.i18n = i18n or TranslationService()
+        self.i18n = TranslationService()
         self.provider = provider or TikTokChatProvider(i18n=self.i18n)
         self._is_stopped = False
         self._has_connected_once = False

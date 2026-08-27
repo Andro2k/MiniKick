@@ -206,7 +206,6 @@
             "view_release_notes": "Ver Novedades"
         },
         "status": {
-            "connected": "Conectado",
             "error": "Error",
             "no": "No",
             "offline": "Desconectado",
@@ -290,9 +289,6 @@
             "followers": "Seguidores",
             "room_id": "ID de ChatRoom",
             "vods": "VODs"
-        },
-        "status": {
-            "connected_toast_msg": "Canal enlazado: {username}"
         }
     },
     "dialogs": {
@@ -356,7 +352,7 @@
             "title": "Conectar Chat de TikTok Live"
         },
         "unlink": {
-            "desc": "¿Deseas desvincular tu cuenta? Tendrás que iniciar sesión nuevamente la próxima vez que habras MiniKick.",
+            "desc": "¿Deseas desvincular tu cuenta? Tendrás que iniciar sesión nuevamente la próxima vez que abras MiniKick.",
             "title": "Desvincular Cuenta"
         },
         "unlink_tiktok": {
@@ -526,7 +522,6 @@
                 "dashboard": "Panel de Control",
                 "developer": "Desarrollador",
                 "music": "Música",
-                "network_status": "Estado de Red",
                 "settings": "Ajustes",
                 "spam_filters": "Filtros Anti-Spam",
                 "stream_info": "Información del Stream",
@@ -537,6 +532,8 @@
             "version": "Versión {version}"
         },
         "toast": {
+            "kick_connected_msg": "Conectado exitosamente al chat de Kick: @{username}",
+            "kick_connected_title": "Kick Conectado",
             "tiktok_connected_msg": "Conectado al chat en vivo de TikTok: @{target}",
             "tiktok_connected_title": "TikTok Conectado",
             "tiktok_disconnected_msg": "Se ha detenido la conexión con TikTok Live.",
@@ -733,60 +730,6 @@
             "max_user_songs_title": "Límite de canciones por usuario",
             "user_cooldown_desc": "Tiempo de espera obligatorio entre peticiones de un mismo espectador.",
             "user_cooldown_title": "Cooldown entre solicitudes (seg)"
-        }
-    },
-    "network": {
-        "btn_check": "Comprobar Red",
-        "graph": {
-            "avg": "Promedio",
-            "filter_all": "Todos los Servicios",
-            "filter_chat_websocket": "WebSocket",
-            "filter_internet": "Internet",
-            "filter_kick": "Kick API",
-            "filter_overlay": "Overlay",
-            "filter_youtube": "YouTube",
-            "jitter": "Jitter",
-            "live": "En Vivo",
-            "min": "Mínimo",
-            "stability_fair": "Regular",
-            "stability_good": "Buena",
-            "stability_optimal": "Óptima",
-            "stability_poor": "Deficiente",
-            "time_20s": "-20s",
-            "time_45s": "-45s",
-            "time_now": "Ahora",
-            "title": "Latencia de Red en Vivo",
-            "tooltip_title": "Ping / Latencia"
-        },
-        "header": {
-            "subtitle": "Monitorea el estado de tu conexión y la latencia con Kick, Twitch y YouTube.",
-            "title": "Estado de la Red"
-        },
-        "services": {
-            "chat_websocket": "Chat WebSocket (Pusher)",
-            "chat_websocket_desc": "Comprueba la conexión en tiempo real con el chat de Kick.",
-            "internet": "Conexión a Internet",
-            "internet_desc": "Mide tu conectividad general a internet.",
-            "kick": "Servidores de Kick",
-            "kick_desc": "Comprueba la velocidad de respuesta de la API oficial de Kick.",
-            "overlay": "Servidor de Overlay Local",
-            "overlay_desc": "Verifica que el servidor local de widgets para OBS esté funcionando correctamente.",
-            "youtube": "Servicio de YouTube",
-            "youtube_desc": "Mide la latencia con los servicios de audio de YouTube."
-        },
-        "status": {
-            "checking": "Comprobando...",
-            "ms": "{latency} ms",
-            "offline": "Desconectado",
-            "online": "Conectado",
-            "warning": "Latencia alta"
-        },
-        "table": {
-            "col_desc": "Descripción",
-            "col_latency": "Latencia",
-            "col_service": "Servicio",
-            "col_status": "Estado",
-            "title": "Estado de los Servicios"
         }
     },
     "piper_dialog": {

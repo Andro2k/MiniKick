@@ -5,7 +5,6 @@ from .command_controller import CommandController
 from .dashboard_controller import DashboardController
 from .log_controller import LogController
 from .music_controller import MusicController
-from .network_controller import NetworkController
 from .rewards_controller import RewardsController
 from .settings_controller import SettingsController
 from .spam_controller import SpamController
@@ -20,7 +19,6 @@ __all__ = [
     "DashboardController",
     "LogController",
     "MusicController",
-    "NetworkController",
     "RewardsController",
     "SettingsController",
     "SpamController",

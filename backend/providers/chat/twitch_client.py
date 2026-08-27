@@ -11,7 +11,7 @@ class TwitchAPIClient:
     def __init__(self, auth_provider: TokenProvider, client_id: str = "", i18n=None):
         self.auth_provider = auth_provider
         self.client_id = client_id
-        self.i18n = i18n or TranslationService()
+        self.i18n = TranslationService()
         self.session = requests.Session()
 
     def is_authenticated(self) -> bool:

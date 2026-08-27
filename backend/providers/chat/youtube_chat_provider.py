@@ -60,7 +60,7 @@ class YouTubeChatProvider:
         return None
 
     def __init__(self, i18n=None) -> None:
-        self.i18n = i18n or TranslationService()
+        self.i18n = TranslationService()
         self._chat: Any | None = None
         self._is_running = False
         self._video_id: str = ""

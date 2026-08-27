@@ -206,7 +206,6 @@
             "view_release_notes": "View Notes"
         },
         "status": {
-            "connected": "Connected",
             "error": "Error",
             "no": "No",
             "offline": "Offline",
@@ -290,9 +289,6 @@
             "followers": "Followers",
             "room_id": "ChatRoom ID",
             "vods": "VODs"
-        },
-        "status": {
-            "connected_toast_msg": "Channel linked: {username}"
         }
     },
     "dialogs": {
@@ -526,7 +522,6 @@
                 "dashboard": "Dashboard",
                 "developer": "Developer",
                 "music": "Music",
-                "network_status": "Network Status",
                 "settings": "Settings",
                 "spam_filters": "Anti-Spam Filters",
                 "stream_info": "Stream Info",
@@ -537,6 +532,8 @@
             "version": "Version {version}"
         },
         "toast": {
+            "kick_connected_msg": "Successfully connected to Kick chat: @{username}",
+            "kick_connected_title": "Kick Connected",
             "tiktok_connected_msg": "Connected to TikTok live chat: @{target}",
             "tiktok_connected_title": "TikTok Connected",
             "tiktok_disconnected_msg": "TikTok Live connection has been stopped.",
@@ -733,60 +730,6 @@
             "max_user_songs_title": "User Song Limit",
             "user_cooldown_desc": "Required cooldown time between requests from the same viewer.",
             "user_cooldown_title": "Request Cooldown (sec)"
-        }
-    },
-    "network": {
-        "btn_check": "Check Network",
-        "graph": {
-            "avg": "Average",
-            "filter_all": "All Services",
-            "filter_chat_websocket": "WebSocket",
-            "filter_internet": "Internet",
-            "filter_kick": "Kick API",
-            "filter_overlay": "Overlay",
-            "filter_youtube": "YouTube",
-            "jitter": "Jitter",
-            "live": "Live",
-            "min": "Minimum",
-            "stability_fair": "Fair",
-            "stability_good": "Good",
-            "stability_optimal": "Optimal",
-            "stability_poor": "Poor",
-            "time_20s": "-20s",
-            "time_45s": "-45s",
-            "time_now": "Now",
-            "title": "Live Network Latency",
-            "tooltip_title": "Ping / Latency"
-        },
-        "header": {
-            "subtitle": "Monitor connection status and latency with Kick, Twitch, and YouTube.",
-            "title": "Network Status"
-        },
-        "services": {
-            "chat_websocket": "Chat WebSocket (Pusher)",
-            "chat_websocket_desc": "Checks real-time connection with Kick chat server.",
-            "internet": "Internet Connection",
-            "internet_desc": "Measures overall web connectivity.",
-            "kick": "Kick Serves",
-            "kick_desc": "Checks response speed of official Kick API.",
-            "overlay": "Local Overlay Server",
-            "overlay_desc": "Verifies local OBS widget server is operating correctly.",
-            "youtube": "YouTube Service",
-            "youtube_desc": "Measures latency with YouTube audio services."
-        },
-        "status": {
-            "checking": "Checking...",
-            "ms": "{latency} ms",
-            "offline": "Offline",
-            "online": "Online",
-            "warning": "High latency"
-        },
-        "table": {
-            "col_desc": "Description",
-            "col_latency": "Latency",
-            "col_service": "Service",
-            "col_status": "Status",
-            "title": "Services Status"
         }
     },
     "piper_dialog": {

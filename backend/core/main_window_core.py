@@ -13,12 +13,12 @@ from backend.core.app_container_core import AppContainer
 from backend.core.app_logger_core import setup_application_logging
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
-    LogService, SettingsService, NetworkService, SpamService, TimerService
+    LogService, SettingsService, SpamService, TimerService
 )
 from backend.controllers import (
     RewardsController, ChatController, CommandController, DashboardController,
     TimerController, LogController, MusicController, SettingsController,
-    SpamController, UpdateController, NetworkController, WidgetController,
+    SpamController, UpdateController, WidgetController,
     ScheduleController
 )
 from backend.providers import KickAPIClient, TwitchAPIClient
@@ -32,7 +32,7 @@ from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
-    LogView, MusicView, SettingsView, SpamView, NetworkView, WidgetsView,
+    LogView, MusicView, SettingsView, SpamView, WidgetsView,
     ScheduleView
 )
 from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog
@@ -61,7 +61,6 @@ class MainWindowCore(QMainWindow):
         ("Widgets", "apps.svg", "top"),
         ("Triggers", "chart-bubble.svg", "top"),
 
-        ("Network Status", "access-point.svg", "bottom"),
         ("Settings", "settings.svg", "bottom"),
         ("Developer", "brand-tabler.svg", "bottom"),
     )
@@ -144,7 +143,6 @@ class MainWindowCore(QMainWindow):
         self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
         self.log_service = LogService(log_storage=self.container.log_storage)
-        self.network_service = NetworkService(overlay_port=self.overlay_server.port)
         self.schedule_service = self.container.schedule_service
 
         self.view_dashboard = DashboardView(self.i18n, parent=self)
@@ -158,7 +156,6 @@ class MainWindowCore(QMainWindow):
         self.view_timers = None
         self.view_settings = None
         self.view_logs = None
-        self.view_network = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
 
@@ -225,10 +222,6 @@ class MainWindowCore(QMainWindow):
             view=None, 
             service=self.log_service,
             toast_manager=self.toast
-        )
-        self.network_controller = NetworkController(
-            view=None, 
-            service=self.network_service
         )
         self.schedule_controller = ScheduleController(
             view=None,
@@ -389,10 +382,6 @@ class MainWindowCore(QMainWindow):
             self.view_logs = LogView(self.i18n, parent=self)
             self.log_controller.attach_view(self.view_logs)
             view_widget = self.view_logs
-        elif view_name == "Network Status":
-            self.view_network = NetworkView(self.i18n, parent=self)
-            self.network_controller.attach_view(self.view_network)
-            view_widget = self.view_network
 
         if view_widget:
             self._instantiated_views[view_name] = view_widget
@@ -541,8 +530,6 @@ class MainWindowCore(QMainWindow):
             ("Worker_TikTok_Chat", getattr(self, 'tiktok_chat_worker', None)),
             ("Worker_Stream_Schedule", getattr(self, 'schedule_worker', None)),
         ]
-        if hasattr(self, 'network_controller') and self.network_controller:
-            worker_map.append(("Worker_Network", getattr(self.network_controller, 'worker', None)))
 
         self._stop_workers_parallel(worker_map)
 
@@ -603,9 +590,10 @@ class MainWindowCore(QMainWindow):
         online_str = self.i18n.get("common.status.online")
         self.sidebar.update_profile_info(username, online_str)
 
-        msg = self.i18n.get("dashboard.status.connected_toast_msg").replace("{username}", user_data.get('username', 'Kick'))
+        title = self.i18n.get("main.toast.kick_connected_title")
+        msg = self.i18n.get("main.toast.kick_connected_msg").replace("{username}", username)
         self.toast.show_toast(
-            title=self.i18n.get("common.status.connected"),
+            title=title,
             message=msg,
             state="success"
         )

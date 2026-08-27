@@ -14,7 +14,7 @@ class TikTokChatProvider:
     _MAX_SEEN_IDS = 1000
 
     def __init__(self, i18n=None) -> None:
-        self.i18n = i18n or TranslationService()
+        self.i18n = TranslationService()
         self._client: Any | None = None
         self._is_running = False
         self._target_unique_id: str = ""

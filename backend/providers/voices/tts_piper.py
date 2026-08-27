@@ -178,17 +178,21 @@ class PiperTTSProvider:
         try:
             player = QMediaPlayer()
             audio_output = QAudioOutput()
-
-            if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
-                try:
-                    from PySide6.QtMultimedia import QMediaDevices
+            try:
+                from PySide6.QtMultimedia import QMediaDevices
+                target_dev = None
+                if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
                     for dev in QMediaDevices.audioOutputs():
                         dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
                         if dev_id_str == self._audio_device_id or dev.description() == self._audio_device_id:
-                            audio_output.setDevice(dev)
+                            target_dev = dev
                             break
-                except Exception as dev_err:
-                    logger.error("[Piper TTS] Error setting audio output device: %s", dev_err)
+                if not target_dev:
+                    target_dev = QMediaDevices.defaultAudioOutput()
+                if target_dev:
+                    audio_output.setDevice(target_dev)
+            except Exception as dev_err:
+                logger.error("[Piper TTS] Error setting audio output device: %s", dev_err)
 
             player.setAudioOutput(audio_output)
             audio_output.setVolume(self.volume)

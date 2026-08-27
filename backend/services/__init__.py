@@ -13,7 +13,6 @@ from .system.dashboard_service import AvatarService
 from .system.backup_service import BackupService
 from .system.instance_services import SocketInstanceProvider
 from .system.log_service import LogService
-from .system.network_service import NetworkService
 from .system.settings_service import SettingsService
 from .system.translation_service import TranslationService
 from .system.updater_service import GithubUpdateProvider, WindowsInstaller, UpdateManager
@@ -37,7 +36,6 @@ __all__ = [
     "BackupService",
     "SocketInstanceProvider",
     "LogService",
-    "NetworkService",
     "SettingsService",
     "TranslationService",
     "GithubUpdateProvider",
