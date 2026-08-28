@@ -27,7 +27,8 @@ class WidgetController(QObject):
         self.widget_service = widget_service
         self.command_service = command_service
         self.overlay_server = overlay_server
-        self.i18n = i18n
+        from backend.services.system.translation_service import TranslationService
+        self.i18n = i18n or TranslationService()
         self.toast = toast_manager
 
         self._last_combo_emote = ""
@@ -97,8 +98,8 @@ class WidgetController(QObject):
         if self.overlay_server:
             death_w = widgets.get("death", {})
             score_w = widgets.get("score", {})
-            title_death = self.i18n.get("widgets.death.overlay_title") if self.i18n else ""
-            title_score = self.i18n.get("widgets.score.overlay_title") if self.i18n else ""
+            title_death = self.i18n.get("widgets.death.overlay_title")
+            title_score = self.i18n.get("widgets.score.overlay_title")
 
             self.overlay_server.trigger_widget_event("death_update", {
                 "count": death_w.get("config", {}).get("count", 0),
@@ -189,6 +190,12 @@ class WidgetController(QObject):
                 elif w_id == "shoutout":
                     aliases = "!shoutout"
 
+                existing_cmd = self.command_service.get_command_by_trigger(cmd_name)
+                apply_k = existing_cmd.get("apply_kick", True) if existing_cmd else True
+                apply_tw = existing_cmd.get("apply_twitch", True) if existing_cmd else True
+                apply_yt = existing_cmd.get("apply_youtube", True) if existing_cmd else True
+                apply_tk = existing_cmd.get("apply_tiktok", True) if existing_cmd else True
+
                 self.command_service.save_command(
                     trigger=cmd_name,
                     response=tag,
@@ -196,7 +203,11 @@ class WidgetController(QObject):
                     cooldown=cooldown,
                     aliases=aliases,
                     is_regex=False,
-                    permission=perm
+                    permission=perm,
+                    apply_kick=apply_k,
+                    apply_twitch=apply_tw,
+                    apply_youtube=apply_yt,
+                    apply_tiktok=apply_tk
                 )
         finally:
             self._is_syncing_db = False
@@ -227,10 +238,10 @@ class WidgetController(QObject):
                 "score": "widgets.score.title"
             }
             title_k = widget_title_keys.get(widget_id)
-            w_name = self.i18n.get(title_k) if (self.i18n and title_k) else widget_id
+            w_name = self.i18n.get(title_k) if title_k else widget_id
             
-            title = self.i18n.get(title_key) if self.i18n else ""
-            message = self.i18n.get(msg_key).replace("{widget_name}", w_name) if self.i18n else ""
+            title = self.i18n.get(title_key)
+            message = self.i18n.get(msg_key).replace("{widget_name}", w_name)
             state = "success" if is_active else "info"
 
             if self.toast:
@@ -421,16 +432,16 @@ class WidgetController(QObject):
                     "name": e_name
                 })
 
-        if platform == "youtube" and emotes_tag:
+        if platform in ("youtube", "tiktok") and emotes_tag:
             try:
                 import json
-                yt_emotes = json.loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
-                for em in yt_emotes:
+                custom_emotes = json.loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
+                for em in custom_emotes:
                     if isinstance(em, dict) and em.get("url"):
                         emotes_list.append({
                             "type": "image",
                             "src": em["url"],
-                            "name": em.get("name", "yt_emote")
+                            "name": em.get("name", f"{platform}_emote")
                         })
             except Exception:
                 pass
@@ -505,7 +516,7 @@ class WidgetController(QObject):
                 "emotes": sample_emotes,
                 "count": 25
             })
-            msg = self.i18n.get("widgets.explosion.msg_explosion").replace("{user}", user) if self.i18n else ""
+            msg = self.i18n.get("widgets.explosion.msg_explosion").replace("{user}", user)
             self.command_service.send_response(msg, platform=platform)
 
     def _process_combo_command(self, user: str, args: str, platform: str = "kick"):
@@ -518,6 +529,6 @@ class WidgetController(QObject):
                 "count": 5,
                 "timeout_sec": 5.0
             })
-            msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote) if self.i18n else ""
+            msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote)
             self.command_service.send_response(msg, platform=platform)
 

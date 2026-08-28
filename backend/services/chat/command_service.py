@@ -70,7 +70,7 @@ class CommandService(QObject):
             self.storage.save_command(
                 cmd["trigger"], cmd["response"], cmd["is_active"],
                 cmd["cooldown"], cmd["aliases"], cmd["is_regex"], cmd["permission"],
-                cmd.get("apply_kick", True), cmd.get("apply_twitch", True), cmd.get("apply_youtube", True)
+                cmd.get("apply_kick", True), cmd.get("apply_twitch", True), cmd.get("apply_youtube", True), cmd.get("apply_tiktok", True)
             )
         self._pending_saves.clear()
 
@@ -95,8 +95,15 @@ class CommandService(QObject):
             if clean_q in cmd["trigger"].lower() or clean_q in cmd.get("aliases", "").lower() or clean_q in cmd.get("response", "").lower()
         ]
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True):
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = None, apply_twitch: bool = None, apply_youtube: bool = None, apply_tiktok: bool = None):
         trigger_clean = trigger.strip()
+        existing = self.get_command_by_trigger(trigger_clean)
+        
+        final_kick = apply_kick if apply_kick is not None else (existing.get("apply_kick", True) if existing else True)
+        final_twitch = apply_twitch if apply_twitch is not None else (existing.get("apply_twitch", True) if existing else True)
+        final_youtube = apply_youtube if apply_youtube is not None else (existing.get("apply_youtube", True) if existing else True)
+        final_tiktok = apply_tiktok if apply_tiktok is not None else (existing.get("apply_tiktok", True) if existing else True)
+
         cmd_dict = {
             "trigger": trigger_clean,
             "response": response,
@@ -105,9 +112,10 @@ class CommandService(QObject):
             "aliases": aliases,
             "is_regex": is_regex,
             "permission": permission,
-            "apply_kick": apply_kick,
-            "apply_twitch": apply_twitch,
-            "apply_youtube": apply_youtube
+            "apply_kick": final_kick,
+            "apply_twitch": final_twitch,
+            "apply_youtube": final_youtube,
+            "apply_tiktok": final_tiktok
         }
         
         existing_idx = -1
@@ -183,6 +191,8 @@ class CommandService(QObject):
             return False, "", {}, ""
         if platform == "youtube" and not cmd.get("apply_youtube", True):
             return False, "", {}, ""
+        if platform == "tiktok" and not cmd.get("apply_tiktok", True):
+            return False, "", {}, ""
 
         if not self._has_permission(cmd.get("permission", "everyone"), badges):
             return False, "", {}, ""
@@ -230,8 +240,8 @@ class CommandService(QObject):
                     self.api_client.post_chat_message(content=response_text, msg_type="bot")
                 except Exception as e:
                     logging.error("[CommandService] Error sending response to Kick: %s", e)
-        elif platform == "youtube":
-            logging.info("[CommandService] Command response for YouTube chat (Read-Only mode, message not posted): %s", response_text)
+        elif platform in ("youtube", "tiktok"):
+            logging.info("[CommandService] Command response for %s chat (Read-Only mode, message not posted): %s", platform, response_text)
             return
 
         self.response_generated.emit(response_text, platform)

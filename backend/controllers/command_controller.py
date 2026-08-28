@@ -110,7 +110,11 @@ class CommandController(QObject):
                     cooldown=existing["cooldown"],
                     aliases=existing["aliases"],
                     is_regex=existing["is_regex"],
-                    permission=existing.get("permission", "everyone")
+                    permission=existing.get("permission", "everyone"),
+                    apply_kick=existing.get("apply_kick", True),
+                    apply_twitch=existing.get("apply_twitch", True),
+                    apply_youtube=existing.get("apply_youtube", True),
+                    apply_tiktok=existing.get("apply_tiktok", True)
                 )
             finally:
                 self._is_internal_toggle = False

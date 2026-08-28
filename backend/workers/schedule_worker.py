@@ -17,6 +17,7 @@ class ScheduleWorker(QThread):
 
     def stop(self) -> None:
         self._is_running = False
+        self.quit()
 
     def run(self) -> None:
         logger.info("[ScheduleWorker] Worker started.")

@@ -3,6 +3,7 @@
 import logging
 import requests
 from backend.interfaces import TokenProvider
+from backend.services.system.translation_service import TranslationService
 
 TWITCH_HELIX_BASE = "https://api.twitch.tv/helix"
 
@@ -10,7 +11,7 @@ class TwitchAPIClient:
     def __init__(self, auth_provider: TokenProvider, client_id: str = "", i18n=None):
         self.auth_provider = auth_provider
         self.client_id = client_id
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self.session = requests.Session()
 
     def is_authenticated(self) -> bool:
@@ -69,7 +70,7 @@ class TwitchAPIClient:
             resp.raise_for_status()
             data = resp.json().get("data", [])
             if not data:
-                err_msg = self.i18n.get("logs.twitch.user_not_found") if self.i18n else "User not found"
+                err_msg = self.i18n.get("logs.twitch.user_not_found")
                 raise ValueError(err_msg)
             user_info = data[0]
             created_at_raw = user_info.get("created_at", "")
@@ -115,7 +116,7 @@ class TwitchAPIClient:
 
     def timeout_user(self, broadcaster_id: str, moderator_id: str, user_id: str, duration_seconds: int, reason: str = "") -> bool:
         url = f"{TWITCH_HELIX_BASE}/moderation/bans?broadcaster_id={broadcaster_id}&moderator_id={moderator_id}"
-        default_reason = self.i18n.get("moderation.reasons.timeout") if self.i18n else ""
+        default_reason = self.i18n.get("moderation.reasons.timeout")
         payload = {
             "data": {
                 "user_id": user_id,
@@ -132,7 +133,7 @@ class TwitchAPIClient:
 
     def ban_user(self, broadcaster_id: str, moderator_id: str, user_id: str, reason: str = "") -> bool:
         url = f"{TWITCH_HELIX_BASE}/moderation/bans?broadcaster_id={broadcaster_id}&moderator_id={moderator_id}"
-        default_reason = self.i18n.get("moderation.reasons.ban") if self.i18n else ""
+        default_reason = self.i18n.get("moderation.reasons.ban")
         payload = {
             "data": {
                 "user_id": user_id,

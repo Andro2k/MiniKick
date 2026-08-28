@@ -3,6 +3,7 @@
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.twitch_websocket import TwitchSocketManager
 from backend.services.chat.pipeline import ChatMessageDTO
+from backend.services.system.translation_service import TranslationService
 import datetime
 
 class TwitchChatWorker(QThread):
@@ -19,7 +20,7 @@ class TwitchChatWorker(QThread):
         self.oauth_token = oauth_token
         self.bot_nick = bot_nick
         self.api_client = api_client
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self.socket_manager = TwitchSocketManager(token=oauth_token, nick=self.bot_nick, i18n=self.i18n)
         self._is_stopped = False
 
@@ -41,7 +42,7 @@ class TwitchChatWorker(QThread):
                         self.oauth_token = fresh_tokens.get("access_token")
 
             if not self.channel_name:
-                err_msg = self.i18n.get("logs.twitch.channel_empty") if self.i18n else ""
+                err_msg = self.i18n.get("logs.twitch.channel_empty")
                 raise ValueError(err_msg)
 
             if not self.bot_nick:

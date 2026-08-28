@@ -38,7 +38,8 @@ class YouTubeResolveWorker(QThread):
         super().__init__()
         self.query_or_url = query_or_url
         self.expected_title = expected_title
-        self.i18n = i18n
+        from backend.services.system.translation_service import TranslationService
+        self.i18n = i18n or TranslationService()
 
     def run(self):
         try:
@@ -112,7 +113,7 @@ class YouTubeResolveWorker(QThread):
             if len(raw_id) > 64 or any(c in raw_id for c in ('?', '&', '=', '/', '\\')):
                 info['id'] = hashlib.md5(self.query_or_url.encode('utf-8')).hexdigest()
             
-            unknown_str = self.i18n.get("music.player.unknown_song") if self.i18n else ""
+            unknown_str = self.i18n.get("music.player.unknown_song")
             title = info.get('title') or self.expected_title or unknown_str
 
 

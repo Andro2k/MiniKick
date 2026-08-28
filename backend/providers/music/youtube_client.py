@@ -45,6 +45,13 @@ class YouTubeMusicProvider(QObject):
         self.player.mediaStatusChanged.connect(self._handle_media_status)
         self.player.errorOccurred.connect(self._handle_player_error)
 
+        try:
+            from PySide6.QtMultimedia import QMediaDevices
+            self._media_devices = QMediaDevices(self)
+            self._media_devices.audioOutputsChanged.connect(self._on_audio_outputs_changed)
+        except Exception as dev_err:
+            logging.error("[YouTubeMusicProvider] Error initializing audio device watcher: %s", dev_err)
+
         self.auto_resume = True
         self._start_playing_current = True
         self._volume_gain = 1.0
@@ -95,6 +102,19 @@ class YouTubeMusicProvider(QObject):
             return
         self.music_storage.save_search_cache(query, song_entry)
 
+    def _extract_thumbnail(self, song: dict) -> str:
+        if not song:
+            return ""
+        if song.get("thumbnail"):
+            return song["thumbnail"]
+        url = song.get("url", "")
+        if url:
+            import re
+            match = re.search(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})', url)
+            if match:
+                return f"https://i.ytimg.com/vi/{match.group(1)}/hqdefault.jpg"
+        return ""
+
     def get_current_song(self) -> dict | None:
         if not self.current_song:
             return None
@@ -121,7 +141,7 @@ class YouTubeMusicProvider(QObject):
             "is_playing": is_playing,
             "duration": duration,
             "progress": self.player.position(),
-            "thumbnail": self.current_song.get("thumbnail", ""),
+            "thumbnail": self._extract_thumbnail(self.current_song),
             "requester": self.current_song.get("requester", ""),
             "platform": self.current_song.get("platform", "kick")
         }
@@ -454,9 +474,41 @@ class YouTubeMusicProvider(QObject):
                 self.resolve_error_occurred.emit(title, _ERR_INVALID_MEDIA, requester)
             self._play_next()
 
+    @Slot()
+    def _on_audio_outputs_changed(self):
+        try:
+            from PySide6.QtMultimedia import QMediaDevices
+            outputs = QMediaDevices.audioOutputs()
+            
+            device_still_exists = False
+            if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
+                for dev in outputs:
+                    dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
+                    if dev_id_str == self._audio_device_id or dev.description() == self._audio_device_id:
+                        device_still_exists = True
+                        break
+            else:
+                device_still_exists = True
+
+            if not device_still_exists:
+                logging.info("[YouTubeMusicProvider] Configured audio device was disconnected. Falling back automatically to default audio output.")
+                self.set_audio_device("default")
+                if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                    curr_pos = self.player.position()
+                    self.player.pause()
+                    self.audio_output.setVolume(self._volume_gain)
+                    self.player.setPosition(curr_pos)
+                    self.player.play()
+        except Exception as e:
+            logging.error("[YouTubeMusicProvider] Error in audio outputs changed handler: %s", e)
+
     @Slot(QMediaPlayer.Error, str)
     def _handle_player_error(self, error, error_string):
         logging.error("[YouTubeMusicProvider] Player error: %s - %s", error, error_string)
+        if "AUDCLNT" in error_string or "audio" in error_string.lower() or "device" in error_string.lower():
+            logging.info("[YouTubeMusicProvider] Recovering from audio device error, switching to default output.")
+            self.set_audio_device("default")
+            return
         if self.current_song:
             title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
             requester = self.current_song.get("requester", "") or ""

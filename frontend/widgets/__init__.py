@@ -14,7 +14,10 @@ from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .pagination import SegmentedPagination
 from .segmented_control import ModernSegmentedControl
-from .no_wheel import NoWheelComboBox, NoWheelSlider, NoWheelDateEdit, NoWheelTimeEdit, NoWheelSpinBox
+from .no_wheel import (
+    NoWheelComboBox, NoWheelSlider, NoWheelDateEdit, NoWheelTimeEdit,
+    NoWheelSpinBox, NoWheelDoubleSpinBox
+)
 from .category_search import CategorySearchComboBox, CategorySuggestionsPopup
 
 __all__ = [
@@ -46,6 +49,7 @@ __all__ = [
     "NoWheelDateEdit",
     "NoWheelTimeEdit",
     "NoWheelSpinBox",
+    "NoWheelDoubleSpinBox",
     "CategorySearchComboBox",
     "CategorySuggestionsPopup"
 ]

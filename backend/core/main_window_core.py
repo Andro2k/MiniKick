@@ -13,17 +13,17 @@ from backend.core.app_container_core import AppContainer
 from backend.core.app_logger_core import setup_application_logging
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
-    LogService, SettingsService, NetworkService, SpamService, TimerService
+    LogService, SettingsService, SpamService, TimerService
 )
 from backend.controllers import (
     RewardsController, ChatController, CommandController, DashboardController,
     TimerController, LogController, MusicController, SettingsController,
-    SpamController, UpdateController, NetworkController, WidgetController,
+    SpamController, UpdateController, WidgetController,
     ScheduleController
 )
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
-    AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker, YouTubeChatWorker,
+    AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker, YouTubeChatWorker, TikTokChatWorker,
     FetchRewardsWorker, RewardWorker, TimerWorker, ScheduleWorker
 )
 from frontend.common.theme import COLOR_GREEN, get_global_qss
@@ -32,10 +32,10 @@ from frontend.navigation.toast_component import ToastManager
 from frontend.navigation.tray_menu_component import SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
-    LogView, MusicView, SettingsView, SpamView, NetworkView, WidgetsView,
+    LogView, MusicView, SettingsView, SpamView, WidgetsView,
     ScheduleView
 )
-from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog
+from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog
 
 try:
     from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
@@ -61,7 +61,6 @@ class MainWindowCore(QMainWindow):
         ("Widgets", "apps.svg", "top"),
         ("Triggers", "chart-bubble.svg", "top"),
 
-        ("Network Status", "access-point.svg", "bottom"),
         ("Settings", "settings.svg", "bottom"),
         ("Developer", "brand-tabler.svg", "bottom"),
     )
@@ -101,6 +100,9 @@ class MainWindowCore(QMainWindow):
         self.youtube_chat_worker = None
         self._youtube_connected = False
         self._youtube_channel = ""
+        self.tiktok_chat_worker = None
+        self._tiktok_connected = False
+        self._tiktok_channel = ""
 
         self._cached_total_usages = None
         self._cached_active_timers = None
@@ -111,9 +113,7 @@ class MainWindowCore(QMainWindow):
         self._setup_tray() 
         
         self.update_controller = UpdateController(self.updater_manager)
-        self.update_controller.update_found_silent.connect(
-            lambda: self.sidebar.set_update_available(True)
-        )
+        self.update_controller.update_found_silent.connect(self._on_silent_update_found)
         self.update_controller.check_updates_silently()
         
         self._connect_signals()     
@@ -141,7 +141,6 @@ class MainWindowCore(QMainWindow):
         self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
         self.log_service = LogService(log_storage=self.container.log_storage)
-        self.network_service = NetworkService(overlay_port=self.overlay_server.port)
         self.schedule_service = self.container.schedule_service
 
         self.view_dashboard = DashboardView(self.i18n, parent=self)
@@ -155,7 +154,6 @@ class MainWindowCore(QMainWindow):
         self.view_timers = None
         self.view_settings = None
         self.view_logs = None
-        self.view_network = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
 
@@ -223,10 +221,6 @@ class MainWindowCore(QMainWindow):
             service=self.log_service,
             toast_manager=self.toast
         )
-        self.network_controller = NetworkController(
-            view=None, 
-            service=self.network_service
-        )
         self.schedule_controller = ScheduleController(
             view=None,
             service=self.schedule_service,
@@ -265,6 +259,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
         self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
         self.dashboard_controller.youtube_connect_requested.connect(self._on_youtube_integration_button_clicked)
+        self.dashboard_controller.tiktok_connect_requested.connect(self._on_tiktok_integration_button_clicked)
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
@@ -277,6 +272,7 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
         self.settings_controller.check_update_requested.connect(self.handle_update_check)
+        self.sidebar.update_requested.connect(self.handle_update_check)
         self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
         self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
         self.q_log_handler.emitter.log_received.connect(self.log_controller.process_incoming_log)
@@ -307,6 +303,9 @@ class MainWindowCore(QMainWindow):
             yt_target = self.settings_storage.load_string("youtube_target_channel", "")
             if yt_target:
                 self._handle_youtube_connect(yt_target)
+            tk_target = self.settings_storage.load_string("tiktok_target_channel", "")
+            if tk_target:
+                self._handle_tiktok_connect(tk_target)
 
     def _handle_navigation(self, view_name: str):
         self.logger.info("[User Action] Navigated to view: '%s'", view_name)
@@ -374,6 +373,7 @@ class MainWindowCore(QMainWindow):
             self.view_settings = SettingsView(self.i18n, parent=self)
             self.view_settings.twitch_integration_clicked.connect(self._on_twitch_integration_button_clicked)
             self.view_settings.youtube_integration_clicked.connect(self._on_youtube_integration_button_clicked)
+            self.view_settings.tiktok_integration_clicked.connect(self._on_tiktok_integration_button_clicked)
             self.settings_controller.attach_view(self.view_settings)
             self._update_integrations_status_ui()
             view_widget = self.view_settings
@@ -381,10 +381,6 @@ class MainWindowCore(QMainWindow):
             self.view_logs = LogView(self.i18n, parent=self)
             self.log_controller.attach_view(self.view_logs)
             view_widget = self.view_logs
-        elif view_name == "Network Status":
-            self.view_network = NetworkView(self.i18n, parent=self)
-            self.network_controller.attach_view(self.view_network)
-            view_widget = self.view_network
 
         if view_widget:
             self._instantiated_views[view_name] = view_widget
@@ -530,10 +526,9 @@ class MainWindowCore(QMainWindow):
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
             ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
             ("Worker_YouTube_Chat", getattr(self, 'youtube_chat_worker', None)),
+            ("Worker_TikTok_Chat", getattr(self, 'tiktok_chat_worker', None)),
             ("Worker_Stream_Schedule", getattr(self, 'schedule_worker', None)),
         ]
-        if hasattr(self, 'network_controller') and self.network_controller:
-            worker_map.append(("Worker_Network", getattr(self.network_controller, 'worker', None)))
 
         self._stop_workers_parallel(worker_map)
 
@@ -594,9 +589,10 @@ class MainWindowCore(QMainWindow):
         online_str = self.i18n.get("common.status.online")
         self.sidebar.update_profile_info(username, online_str)
 
-        msg = self.i18n.get("dashboard.status.connected_toast_msg").replace("{username}", user_data.get('username', 'Kick'))
+        title = self.i18n.get("main.toast.kick_connected_title")
+        msg = self.i18n.get("main.toast.kick_connected_msg").replace("{username}", username)
         self.toast.show_toast(
-            title=self.i18n.get("common.status.connected"),
+            title=title,
             message=msg,
             state="success"
         )
@@ -833,6 +829,8 @@ class MainWindowCore(QMainWindow):
         twitch_channel = getattr(self, "_twitch_channel", "")
         youtube_connected = getattr(self, "_youtube_connected", False)
         youtube_channel = getattr(self, "_youtube_channel", "")
+        tiktok_connected = getattr(self, "_tiktok_connected", False)
+        tiktok_channel = getattr(self, "_tiktok_channel", "")
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_twitch_status(
@@ -843,6 +841,10 @@ class MainWindowCore(QMainWindow):
                 connected=youtube_connected,
                 channel=youtube_channel
             )
+            self.dashboard_controller.set_tiktok_status(
+                connected=tiktok_connected,
+                channel=tiktok_channel
+            )
 
         if hasattr(self, "view_settings") and self.view_settings:
             self.view_settings.set_integrations_status(
@@ -851,7 +853,9 @@ class MainWindowCore(QMainWindow):
                 twitch_connected=twitch_connected,
                 twitch_channel=twitch_channel,
                 youtube_connected=youtube_connected,
-                youtube_channel=youtube_channel
+                youtube_channel=youtube_channel,
+                tiktok_connected=tiktok_connected,
+                tiktok_channel=tiktok_channel
             )
 
     @Slot()
@@ -884,6 +888,9 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker and self.youtube_chat_worker.isRunning():
             self.youtube_chat_worker.stop()
             self.youtube_chat_worker.wait(1000)
+
+        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+            self.dashboard_controller.set_youtube_status(connected=False, connecting=True)
 
         self.youtube_chat_worker = YouTubeChatWorker(
             target_channel=target,
@@ -936,6 +943,96 @@ class MainWindowCore(QMainWindow):
         self._update_integrations_status_ui()
         title_disc = self.container.i18n.get("main.toast.youtube_disconnected_title")
         msg_disc = self.container.i18n.get("main.toast.youtube_disconnected_msg")
+        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
+
+    @Slot()
+    def _on_tiktok_integration_button_clicked(self):
+        if getattr(self, "_tiktok_connected", False):
+            dialog = ModernConfirmDialog(
+                self.i18n,
+                self,
+                title_text=self.i18n.get("dialogs.unlink_tiktok.title"),
+                body_text=self.i18n.get("dialogs.unlink_tiktok.desc")
+            )
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                self._handle_tiktok_disconnect()
+        else:
+            saved_target = self.settings_storage.load_string("tiktok_target_channel", "")
+            dialog = TikTokConnectDialog(self.i18n, initial_target=saved_target, parent=self)
+            if dialog.exec() == dialog.DialogCode.Accepted:
+                if hasattr(dialog, "is_cleared") and dialog.is_cleared():
+                    self.settings_storage.save_string("tiktok_target_channel", "")
+                    self._handle_tiktok_disconnect()
+                else:
+                    target = dialog.get_target()
+                    if target:
+                        self._handle_tiktok_connect(target)
+                    else:
+                        self.settings_storage.save_string("tiktok_target_channel", "")
+                        self._handle_tiktok_disconnect()
+
+    def _handle_tiktok_connect(self, target: str):
+        clean_target = target.strip().lstrip("@")
+        if not clean_target:
+            return
+
+        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker and self.tiktok_chat_worker.isRunning():
+            self.tiktok_chat_worker.stop()
+            self.tiktok_chat_worker.wait(1000)
+
+        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+            self.dashboard_controller.set_tiktok_status(connected=False, connecting=True)
+
+        self.tiktok_chat_worker = TikTokChatWorker(
+            target_channel=clean_target,
+            i18n=self.container.i18n,
+            parent=self
+        )
+        self.tiktok_chat_worker.connection_success.connect(self._on_tiktok_connected)
+        self.tiktok_chat_worker.connection_lost.connect(self._on_tiktok_disconnected)
+        self.tiktok_chat_worker.error_occurred.connect(self._on_tiktok_error)
+        self.tiktok_chat_worker.message_received.connect(self._route_incoming_message)
+        self.tiktok_chat_worker.start()
+
+    def _on_tiktok_connected(self, stream_info: dict):
+        self._tiktok_connected = True
+        unique_id = stream_info.get("unique_id", "") or stream_info.get("channel", "") or "TikTok Live"
+        self._tiktok_channel = unique_id
+        if unique_id:
+            self.settings_storage.save_string("tiktok_target_channel", unique_id)
+        self._update_integrations_status_ui()
+        title = self.container.i18n.get("main.toast.tiktok_connected_title")
+        msg = self.container.i18n.get("main.toast.tiktok_connected_msg").replace("{target}", unique_id)
+        self.toast.show_toast(title=title, message=msg, state="success")
+
+    def _on_tiktok_disconnected(self):
+        self._tiktok_connected = False
+        self._update_integrations_status_ui()
+
+    def _on_tiktok_error(self, error_msg: str):
+        self._tiktok_connected = False
+        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker:
+            self.tiktok_chat_worker.stop()
+            self.tiktok_chat_worker = None
+        self._update_integrations_status_ui()
+        self.toast.show_toast(
+            title=self.container.i18n.get("common.status.error"),
+            message=error_msg,
+            state="danger"
+        )
+
+    @Slot()
+    def _handle_tiktok_disconnect(self):
+        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker:
+            self.tiktok_chat_worker.stop()
+            self.tiktok_chat_worker.wait(1000)
+            self.tiktok_chat_worker = None
+        self._tiktok_connected = False
+        self._tiktok_channel = ""
+        self.settings_storage.save_string("tiktok_target_channel", "")
+        self._update_integrations_status_ui()
+        title_disc = self.container.i18n.get("main.toast.tiktok_disconnected_title")
+        msg_disc = self.container.i18n.get("main.toast.tiktok_disconnected_msg")
         self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
 
     @Slot()
@@ -1051,6 +1148,21 @@ class MainWindowCore(QMainWindow):
     @Slot(bool)
     def _handle_autostart_change(self, enabled: bool):
         self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
+        if enabled:
+            if not getattr(self, "_kick_connected", False):
+                self._handle_auth_process()
+            if not getattr(self, "_twitch_connected", False):
+                twitch_tokens = self.container.twitch_token_storage.load()
+                if twitch_tokens and twitch_tokens.get("access_token"):
+                    self._on_twitch_auth_success(twitch_tokens)
+            if not getattr(self, "_youtube_connected", False):
+                yt_target = self.settings_storage.load_string("youtube_target_channel", "")
+                if yt_target:
+                    self._handle_youtube_connect(yt_target)
+            if not getattr(self, "_tiktok_connected", False):
+                tk_target = self.settings_storage.load_string("tiktok_target_channel", "")
+                if tk_target:
+                    self._handle_tiktok_connect(tk_target)
 
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
@@ -1106,6 +1218,15 @@ class MainWindowCore(QMainWindow):
         self._theme_timer.setSingleShot(True)
         self._theme_timer.timeout.connect(lambda: QApplication.instance().setStyleSheet(get_global_qss(base_size)))
         self._theme_timer.start(250)
+
+    @Slot(object)
+    def _on_silent_update_found(self, info):
+        version = ""
+        if isinstance(info, dict):
+            version = info.get("version", "")
+        elif isinstance(info, str):
+            version = info
+        self.sidebar.set_update_available(True, version=version)
 
     @Slot()
     def handle_update_check(self):

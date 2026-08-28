@@ -20,6 +20,7 @@ class SettingsView(BaseView):
     kick_integration_clicked = Signal()
     twitch_integration_clicked = Signal()
     youtube_integration_clicked = Signal()
+    tiktok_integration_clicked = Signal()
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="settings.header.title", subtitle_key="settings.header.subtitle", parent=parent)
@@ -162,9 +163,20 @@ class SettingsView(BaseView):
             right_widget=self.btn_youtube_integration
         )
 
+        self.btn_tiktok_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_tiktok"), role="action_accent", parent=self)
+        self.btn_tiktok_integration.clicked.connect(self.tiktok_integration_clicked.emit)
+
+        self.row_tiktok_integration = SettingRow(
+            icon_name="brand-tiktok.svg",
+            title_text=self.i18n.get("settings.integrations.tiktok_title"),
+            desc_text=self.i18n.get("settings.integrations.desc"),
+            right_widget=self.btn_tiktok_integration
+        )
+
         integrations_card.addWidget(self.row_kick_integration)
         integrations_card.addWidget(self.row_twitch_integration)
         integrations_card.addWidget(self.row_youtube_integration)
+        integrations_card.addWidget(self.row_tiktok_integration)
         self.main_layout.addWidget(integrations_card)
 
         support_card = ModernCard(parent=self)
@@ -258,7 +270,7 @@ class SettingsView(BaseView):
         dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()
 
-    def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "", youtube_connected: bool = False, youtube_channel: str = "") -> None:
+    def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "", youtube_connected: bool = False, youtube_channel: str = "", tiktok_connected: bool = False, tiktok_channel: str = "") -> None:
         if kick_connected and kick_channel:
             text_kick = self.i18n.get("settings.integrations.btn_disconnect_kick").replace("{channel}", kick_channel)
             desc_kick = self.i18n.get("settings.integrations.kick_desc_connected").replace("{channel}", kick_channel)
@@ -313,6 +325,25 @@ class SettingsView(BaseView):
 
         self.btn_youtube_integration.style().unpolish(self.btn_youtube_integration)
         self.btn_youtube_integration.style().polish(self.btn_youtube_integration)
+
+        if tiktok_connected and tiktok_channel:
+            short_tk = tiktok_channel.lstrip("@")
+            text_tk = self.i18n.get("settings.integrations.btn_disconnect_tiktok").replace("{channel}", short_tk)
+            desc_tk = self.i18n.get("settings.integrations.tiktok_desc_connected").replace("{channel}", short_tk)
+            self.btn_tiktok_integration.setText(text_tk)
+            self.btn_tiktok_integration.setProperty("role", "action_danger_border")
+            if hasattr(self, 'row_tiktok_integration') and self.row_tiktok_integration:
+                self.row_tiktok_integration.set_description(desc_tk)
+        else:
+            text_tk = self.i18n.get("settings.integrations.btn_connect_tiktok")
+            desc_tk = self.i18n.get("settings.integrations.desc")
+            self.btn_tiktok_integration.setText(text_tk)
+            self.btn_tiktok_integration.setProperty("role", "action_accent")
+            if hasattr(self, 'row_tiktok_integration') and self.row_tiktok_integration:
+                self.row_tiktok_integration.set_description(desc_tk)
+
+        self.btn_tiktok_integration.style().unpolish(self.btn_tiktok_integration)
+        self.btn_tiktok_integration.style().polish(self.btn_tiktok_integration)
 
     @staticmethod
     def _format_target_for_button(target: str) -> str:

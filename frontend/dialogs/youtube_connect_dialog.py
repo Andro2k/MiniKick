@@ -57,8 +57,7 @@ class YouTubeConnectDialog(ModernModal):
     def _on_clear_clicked(self):
         self._is_cleared = True
         self.txt_target.clear()
-        self.btn_clear.setVisible(False)
-        self.btn_connect.setEnabled(False)
+        self.accept()
 
     def _validate_input(self, text: str):
         has_text = bool(text.strip())

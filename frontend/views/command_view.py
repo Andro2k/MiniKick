@@ -3,7 +3,8 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QHeaderView
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common.theme import COLOR_RED, COLOR_GREEN
+from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK
+from frontend.common.icons import get_pixmap_colored
 
 class CommandView(BaseView):
     add_requested = Signal()
@@ -43,12 +44,13 @@ class CommandView(BaseView):
         col_1 = self.i18n.get("command.table.col_command")
         col_2 = self.i18n.get("command.table.col_type")
         col_3 = self.i18n.get("command.table.col_permission")
-        col_4 = self.i18n.get("command.table.col_aliases")
-        col_5 = self.i18n.get("command.table.col_actions")
+        col_4 = self.i18n.get("command.table.col_platforms")
+        col_5 = self.i18n.get("command.table.col_aliases")
+        col_6 = self.i18n.get("command.table.col_actions")
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("command.table.title"),
-            headers=[col_1, col_2, col_3, col_4, col_5],
+            headers=[col_1, col_2, col_3, col_4, col_5, col_6],
             search_placeholder=self.i18n.get("command.table.search_placeholder"),
             add_button_text=self.i18n.get("command.table.btn_new"),
             add_button_icon="add.svg"
@@ -106,12 +108,13 @@ class CommandView(BaseView):
         self.filter_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self.filter_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.filter_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
-        self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.filter_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
         
-        self.table.setColumnWidth(1, 170)
-        self.table.setColumnWidth(2, 170)
-        self.table.setColumnWidth(4, 130)
+        self.table.setColumnWidth(1, 140)
+        self.table.setColumnWidth(2, 140)
+        self.table.setColumnWidth(5, 130)
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
@@ -162,6 +165,8 @@ class CommandView(BaseView):
                     p = c.get("permission", "everyone")
                     return self._PERM_RANKS.get(p, 0)
                 elif col_idx == 3:
+                    return int(c.get("apply_kick", True)) + int(c.get("apply_twitch", True)) + int(c.get("apply_youtube", True)) + int(c.get("apply_tiktok", True))
+                elif col_idx == 4:
                     return c.get("aliases", "").lower()
                 return 0
 
@@ -176,8 +181,9 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 0, self._create_command_cell(cmd))
             self.table.setCellWidget(row, 1, self._create_type_cell(cmd))
             self.table.setCellWidget(row, 2, self._create_permission_cell(cmd))
-            self.table.setCellWidget(row, 3, self._create_aliases_cell(cmd))
-            self.table.setCellWidget(row, 4, self._create_actions_cell(cmd))
+            self.table.setCellWidget(row, 3, self._create_platforms_cell(cmd))
+            self.table.setCellWidget(row, 4, self._create_aliases_cell(cmd))
+            self.table.setCellWidget(row, 5, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
         self.table_card.set_empty(len(commands) == 0 and len(self._raw_commands) == 0)
         self.table_card.set_title_count(self.i18n.get("command.table.title"), len(self._raw_commands))
@@ -202,6 +208,44 @@ class CommandView(BaseView):
         raw_perm = cmd_data.get("permission", "everyone")
         i18n_key = self._PERM_KEYS.get(raw_perm, "command.dialog.perm_everyone")
         return create_badge(self.i18n.get(i18n_key), state=raw_perm)
+
+    def _create_platforms_cell(self, cmd_data: dict) -> QWidget:
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 0, 8, 0)
+        layout.setSpacing(8)
+        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+
+        apply_kick = cmd_data.get("apply_kick", True)
+        apply_twitch = cmd_data.get("apply_twitch", True)
+        apply_youtube = cmd_data.get("apply_youtube", True)
+        apply_tiktok = cmd_data.get("apply_tiktok", True)
+
+        platforms = [
+            ("brand-kick.svg", COLOR_GREEN, "Kick", apply_kick),
+            ("brand-twitch.svg", COLOR_TWITCH, "Twitch", apply_twitch),
+            ("brand-youtube.svg", COLOR_YOUTUBE, "YouTube", apply_youtube),
+            ("brand-tiktok.svg", COLOR_TIKTOK, "TikTok", apply_tiktok)
+        ]
+
+        active_count = 0
+        for icon_name, color, name, is_active in platforms:
+            if is_active:
+                lbl_icon = QLabel()
+                lbl_icon.setPixmap(get_pixmap_colored(icon_name, color, 16))
+                lbl_icon.setToolTip(name)
+                lbl_icon.setFixedSize(18, 18)
+                lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(lbl_icon)
+                active_count += 1
+
+        if active_count == 0:
+            lbl_none = QLabel("-")
+            lbl_none.setProperty("role", "body")
+            layout.addWidget(lbl_none)
+
+        layout.addStretch()
+        return container
 
     def _create_aliases_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()

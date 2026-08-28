@@ -5,6 +5,7 @@ import logging
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.youtube_chat_provider import YouTubeChatProvider
 from backend.services.chat.pipeline import ChatMessageDTO
+from backend.services.system.translation_service import TranslationService
 
 logger = logging.getLogger("minikick.workers.youtube_chat")
 
@@ -19,7 +20,7 @@ class YouTubeChatWorker(QThread):
         super().__init__(parent)
         self.setObjectName("Worker_YouTube_Chat_Socket")
         self.target_channel = target_channel.strip()
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self.provider = provider or YouTubeChatProvider(i18n=self.i18n)
         self._is_stopped = False
         self._has_connected_once = False
@@ -27,7 +28,7 @@ class YouTubeChatWorker(QThread):
     def run(self):
         try:
             if not self.target_channel:
-                err_msg = self.i18n.get("logs.youtube.channel_empty") if self.i18n else "YouTube target stream or channel not specified."
+                err_msg = self.i18n.get("logs.youtube.channel_empty")
                 self.error_occurred.emit(err_msg)
                 return
 
@@ -71,8 +72,11 @@ class YouTubeChatWorker(QThread):
             return
 
         import json
-        emotes = extra_data.get("emotes", []) if isinstance(extra_data, dict) else []
-        emotes_tag = json.dumps(emotes) if emotes else ""
+        if isinstance(extra_data, dict) and "emotes_tag" in extra_data:
+            emotes_tag = extra_data.get("emotes_tag", "")
+        else:
+            emotes = extra_data.get("emotes", []) if isinstance(extra_data, dict) else []
+            emotes_tag = json.dumps(emotes) if emotes else ""
 
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
         dto = ChatMessageDTO(

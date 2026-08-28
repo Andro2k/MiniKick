@@ -12,6 +12,7 @@ from .visual_positioner_dialog import VisualPositionerDialog
 from .command_dialog import CommandConfigWizard
 from .piper_voices_dialog import PiperVoicesDialog
 from .youtube_connect_dialog import YouTubeConnectDialog
+from .tiktok_connect_dialog import TikTokConnectDialog
 
 __all__ = [
     "ModernFramelessShell",
@@ -28,5 +29,6 @@ __all__ = [
     "TimerConfigWizard",
     "CommandConfigWizard",
     "PiperVoicesDialog",
-    "YouTubeConnectDialog"
+    "YouTubeConnectDialog",
+    "TikTokConnectDialog"
 ]

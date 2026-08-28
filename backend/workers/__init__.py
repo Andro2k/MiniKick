@@ -7,8 +7,8 @@ from .crash_report_worker import CrashReportWorker
 from .chat_worker import ChatWorker
 from .twitch_chat_worker import TwitchChatWorker
 from .youtube_chat_worker import YouTubeChatWorker
+from .tiktok_chat_worker import TikTokChatWorker
 from .music_worker import YouTubeResolveWorker, YouTubeSearchWorker
-from .network_worker import NetworkWorker
 from .rewards_worker import RewardWorker, FetchRewardsWorker, CreateRewardWorker, UpdateRewardWorker
 from .timers_worker import TimerWorker
 from .update_worker import UpdateCheckWorker, UpdateDownloadWorker, ReleaseNotesWorker
@@ -23,9 +23,9 @@ __all__ = [
     "ChatWorker",
     "TwitchChatWorker",
     "YouTubeChatWorker",
+    "TikTokChatWorker",
     "YouTubeResolveWorker",
     "YouTubeSearchWorker",
-    "NetworkWorker",
     "RewardWorker",
     "FetchRewardsWorker",
     "CreateRewardWorker",

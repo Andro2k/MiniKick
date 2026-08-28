@@ -10,7 +10,7 @@ class SQLiteCommandsStorage:
     def load_all(self) -> list[dict]:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube FROM chat_commands")
+            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube, apply_tiktok FROM chat_commands")
             return [
                 {
                     "trigger": r[0],
@@ -22,7 +22,8 @@ class SQLiteCommandsStorage:
                     "permission": r[6],
                     "apply_kick": bool(r[7]) if len(r) > 7 and r[7] is not None else True,
                     "apply_twitch": bool(r[8]) if len(r) > 8 and r[8] is not None else True,
-                    "apply_youtube": bool(r[9]) if len(r) > 9 and r[9] is not None else True
+                    "apply_youtube": bool(r[9]) if len(r) > 9 and r[9] is not None else True,
+                    "apply_tiktok": bool(r[10]) if len(r) > 10 and r[10] is not None else True
                 }
                 for r in cursor.fetchall()
             ]
@@ -30,7 +31,7 @@ class SQLiteCommandsStorage:
     def get_command_by_trigger(self, trigger: str) -> dict | None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube FROM chat_commands WHERE trigger=?", (trigger,))
+            cursor.execute("SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube, apply_tiktok FROM chat_commands WHERE trigger=?", (trigger,))
             r = cursor.fetchone()
             if not r:
                 return None
@@ -44,20 +45,22 @@ class SQLiteCommandsStorage:
                 "permission": r[6],
                 "apply_kick": bool(r[7]) if len(r) > 7 and r[7] is not None else True,
                 "apply_twitch": bool(r[8]) if len(r) > 8 and r[8] is not None else True,
-                "apply_youtube": bool(r[9]) if len(r) > 9 and r[9] is not None else True
+                "apply_youtube": bool(r[9]) if len(r) > 9 and r[9] is not None else True,
+                "apply_tiktok": bool(r[10]) if len(r) > 10 and r[10] is not None else True
             }
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str = "everyone", apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True) -> None:
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str = "everyone", apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True, apply_tiktok: bool = True) -> None:
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-                INSERT INTO chat_commands (trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO chat_commands (trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube, apply_tiktok) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(trigger) DO UPDATE SET 
                     response=excluded.response, is_active=excluded.is_active, cooldown=excluded.cooldown,
                     aliases=excluded.aliases, is_regex=excluded.is_regex, permission=excluded.permission,
-                    apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube
-            """, (trigger, response, int(is_active), cooldown, aliases, int(is_regex), permission, int(apply_kick), int(apply_twitch), int(apply_youtube)))
+                    apply_kick=excluded.apply_kick, apply_twitch=excluded.apply_twitch, apply_youtube=excluded.apply_youtube,
+                    apply_tiktok=excluded.apply_tiktok
+            """, (trigger, response, int(is_active), cooldown, aliases, int(is_regex), permission, int(apply_kick), int(apply_twitch), int(apply_youtube), int(apply_tiktok)))
             conn.commit()
 
     def delete_command(self, trigger: str) -> None:
@@ -71,7 +74,7 @@ class SQLiteCommandsStorage:
             cursor = conn.cursor()
             pattern = f"%{query.strip().lower()}%"
             cursor.execute("""
-                SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube 
+                SELECT trigger, response, is_active, cooldown, aliases, is_regex, permission, apply_kick, apply_twitch, apply_youtube, apply_tiktok 
                 FROM chat_commands 
                 WHERE LOWER(trigger) LIKE ? OR LOWER(response) LIKE ? OR LOWER(aliases) LIKE ?
             """, (pattern, pattern, pattern))
@@ -86,7 +89,8 @@ class SQLiteCommandsStorage:
                     "permission": r[6],
                     "apply_kick": bool(r[7]) if len(r) > 7 and r[7] is not None else True,
                     "apply_twitch": bool(r[8]) if len(r) > 8 and r[8] is not None else True,
-                    "apply_youtube": bool(r[9]) if len(r) > 9 and r[9] is not None else True
+                    "apply_youtube": bool(r[9]) if len(r) > 9 and r[9] is not None else True,
+                    "apply_tiktok": bool(r[10]) if len(r) > 10 and r[10] is not None else True
                 }
                 for r in cursor.fetchall()
             ]

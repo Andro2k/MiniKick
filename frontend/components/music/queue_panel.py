@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt, QSize, QRect, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
-from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN
+from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_TIKTOK
 from frontend.common import get_icon_colored
 from frontend.widgets import ModernTable, ModernTableCard
 
@@ -105,6 +105,10 @@ class MusicQueuePanel(QWidget):
         
         self._icon_delete = get_icon_colored("trash.svg", COLOR_RED, 14)
         self._icon_grip = get_icon_colored("grip-vertical.svg", COLOR_NEUTRAL_400, 14)
+        self._icon_kick = get_icon_colored("brand-kick.svg", "#53FC18", 14)
+        self._icon_twitch = get_icon_colored("brand-twitch.svg", "#A970FF", 14)
+        self._icon_youtube = get_icon_colored("brand-youtube.svg", COLOR_RED, 14)
+        self._icon_tiktok = get_icon_colored("brand-tiktok.svg", COLOR_TIKTOK, 14)
         
         self._setup_ui()
 
@@ -258,20 +262,28 @@ class MusicQueuePanel(QWidget):
                 
                 requester = song.get("requester", "")
                 platform = (song.get("platform") or "kick").lower()
-                requester_text = f"@{requester}" if requester else "-"
+                requester_text = f" {requester}" if requester else "-"
                 
                 if platform == "twitch":
                     req_color = QColor("#A970FF")
-                elif platform == "kick":
-                    req_color = QColor("#53FC18")
+                    req_icon = self._icon_twitch
                 elif platform == "youtube":
                     req_color = QColor(COLOR_RED)
+                    req_icon = self._icon_youtube
+                elif platform == "tiktok":
+                    req_color = QColor(COLOR_TIKTOK)
+                    req_icon = self._icon_tiktok
                 elif requester:
-                    req_color = QColor(COLOR_GREEN)
+                    req_color = QColor("#53FC18")
+                    req_icon = self._icon_kick
                 else:
                     req_color = None
+                    req_icon = None
                     
-                self.queue_table.setItem(idx, 3, self._create_table_item(requester_text, color=req_color))
+                item_req = self._create_table_item(requester_text, color=req_color)
+                if req_icon and requester:
+                    item_req.setIcon(req_icon)
+                self.queue_table.setItem(idx, 3, item_req)
                 
                 duration = song.get("duration", "-")
                 self.queue_table.setItem(idx, 4, self._create_table_item(duration, Qt.AlignmentFlag.AlignCenter))

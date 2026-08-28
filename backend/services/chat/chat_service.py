@@ -4,15 +4,35 @@ class ChatService:
     def __init__(self, tts_manager, settings_storage):
         self.tts = tts_manager
         self.storage = settings_storage
+        self._init_tts_params()
+
+    def _init_tts_params(self):
+        try:
+            ls = float(self.storage.load_string("piper_length_scale", "1.0"))
+            ns = float(self.storage.load_string("piper_noise_scale", "0.667"))
+            nws = float(self.storage.load_string("piper_noise_w_scale", "0.8"))
+            if hasattr(self.tts, "set_piper_synthesis_params"):
+                self.tts.set_piper_synthesis_params(ls, ns, nws)
+        except Exception:
+            pass
 
     def get_settings(self) -> dict:
         provider = self.storage.load_string("tts_provider", "piper")
+        try:
+            ls = float(self.storage.load_string("piper_length_scale", "1.0"))
+            ns = float(self.storage.load_string("piper_noise_scale", "0.667"))
+            nws = float(self.storage.load_string("piper_noise_w_scale", "0.8"))
+        except Exception:
+            ls, ns, nws = 1.0, 0.667, 0.8
         return {
             "enabled": self.storage.load_bool("tts_enabled", True),
             "read_name": self.storage.load_bool("tts_read_name", True),
             "use_command": self.storage.load_bool("tts_use_command", False),
             "command": self.storage.load_string("tts_command", "!tts"),
             "provider": provider,
+            "piper_length_scale": ls,
+            "piper_noise_scale": ns,
+            "piper_noise_w_scale": nws,
             "ignored_users": self.storage.load_string("tts_ignored_users", ""),
             "volume": int(self.storage.load_string("tts_volume", "100")),
             "speed": int(self.storage.load_string("tts_speed", "100")),
@@ -61,10 +81,27 @@ class ChatService:
             self.storage.save_string("chat_overlay_size", settings["chat_overlay_size"])
         if "chat_overlay_fade" in settings:
             self.storage.save_string("chat_overlay_fade", settings["chat_overlay_fade"])
-        if "chat_overlay_show_bots" in settings:
-            self.storage.save_bool("chat_overlay_show_bots", settings["chat_overlay_show_bots"])
         if "chat_overlay_show_time" in settings:
             self.storage.save_bool("chat_overlay_show_time", settings["chat_overlay_show_time"])
+        if "piper_length_scale" in settings:
+            self.storage.save_string("piper_length_scale", str(settings["piper_length_scale"]))
+        if "piper_noise_scale" in settings:
+            self.storage.save_string("piper_noise_scale", str(settings["piper_noise_scale"]))
+        if "piper_noise_w_scale" in settings:
+            self.storage.save_string("piper_noise_w_scale", str(settings["piper_noise_w_scale"]))
+        if "piper_length_scale" in settings or "piper_noise_scale" in settings or "piper_noise_w_scale" in settings:
+            ls = float(settings.get("piper_length_scale", self.storage.load_string("piper_length_scale", "1.0")))
+            ns = float(settings.get("piper_noise_scale", self.storage.load_string("piper_noise_scale", "0.667")))
+            nws = float(settings.get("piper_noise_w_scale", self.storage.load_string("piper_noise_w_scale", "0.8")))
+            if hasattr(self.tts, "set_piper_synthesis_params"):
+                self.tts.set_piper_synthesis_params(ls, ns, nws)
+
+    def set_piper_synthesis_params(self, length_scale: float, noise_scale: float, noise_w_scale: float):
+        self.storage.save_string("piper_length_scale", f"{length_scale:.2f}")
+        self.storage.save_string("piper_noise_scale", f"{noise_scale:.2f}")
+        self.storage.save_string("piper_noise_w_scale", f"{noise_w_scale:.2f}")
+        if hasattr(self.tts, "set_piper_synthesis_params"):
+            self.tts.set_piper_synthesis_params(length_scale, noise_scale, noise_w_scale)
 
     def set_volume(self, volume: int):
         self.storage.save_string("tts_volume", str(volume))

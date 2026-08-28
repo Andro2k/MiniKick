@@ -209,12 +209,15 @@ class ChatController(QObject):
     @Slot(object)
     def process_message(self, dto: ChatMessageDTO) -> None:
         self.pipeline.execute(dto)
-        if not dto.is_cancelled and self.timer_service:
+        platform = getattr(dto, "platform", "kick")
+        if not dto.is_cancelled and self.timer_service and platform in ("kick", "twitch"):
             self.timer_service.increment_chat_lines()
 
     def _step_spam(self, dto: ChatMessageDTO) -> None:
-        emotes_tag = getattr(dto, "emotes_tag", "")
         platform = getattr(dto, "platform", "kick")
+        if platform not in ("kick", "twitch"):
+            return
+        emotes_tag = getattr(dto, "emotes_tag", "")
         if self.spam_service.is_spam(dto.user, dto.content, dto.badges, dto.msg_id, dto.sender_id, emotes_tag=emotes_tag, platform=platform):
             dto.is_cancelled = True
             self.spam_blocked.emit()
@@ -459,7 +462,11 @@ class ChatController(QObject):
                         cooldown=existing.get("cooldown", 1),
                         aliases=existing.get("aliases", ""),
                         is_regex=existing.get("is_regex", False),
-                        permission=existing.get("permission", "everyone")
+                        permission=existing.get("permission", "everyone"),
+                        apply_kick=existing.get("apply_kick", True),
+                        apply_twitch=existing.get("apply_twitch", True),
+                        apply_youtube=existing.get("apply_youtube", True),
+                        apply_tiktok=existing.get("apply_tiktok", True)
                     )
                 else:
                     self.command_service.save_command(
@@ -469,7 +476,11 @@ class ChatController(QObject):
                         cooldown=1,
                         aliases="",
                         is_regex=False,
-                        permission="everyone"
+                        permission="everyone",
+                        apply_kick=True,
+                        apply_twitch=True,
+                        apply_youtube=True,
+                        apply_tiktok=True
                     )
 
                 existing_systts = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_SYSTTS]"), None)

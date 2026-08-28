@@ -6,6 +6,7 @@ class DashboardController(QObject):
     request_connection = Signal()
     twitch_connect_requested = Signal()
     youtube_connect_requested = Signal()
+    tiktok_connect_requested = Signal()
     auto_start_toggled = Signal(bool)
     reauth_requested = Signal()
 
@@ -19,17 +20,22 @@ class DashboardController(QObject):
         self.view.connect_requested.connect(self.request_connection.emit)
         self.view.twitch_connect_requested.connect(self.twitch_connect_requested.emit)
         self.view.youtube_connect_requested.connect(self.youtube_connect_requested.emit)
+        self.view.tiktok_connect_requested.connect(self.tiktok_connect_requested.emit)
         self.view.autostart_toggled.connect(self.auto_start_toggled.emit)
         self.view.reauth_requested.connect(self.reauth_requested.emit)
         self.avatar_service.avatar_downloaded.connect(self.view.set_avatar_from_bytes)
 
-    def set_twitch_status(self, connected: bool = False, channel: str = ""):
+    def set_twitch_status(self, connected: bool = False, channel: str = "", connecting: bool = False):
         if self.view:
-            self.view.set_twitch_status(connected=connected, channel=channel)
+            self.view.set_twitch_status(connected=connected, channel=channel, connecting=connecting)
 
-    def set_youtube_status(self, connected: bool = False, channel: str = ""):
+    def set_youtube_status(self, connected: bool = False, channel: str = "", connecting: bool = False):
         if self.view:
-            self.view.set_youtube_status(connected=connected, channel=channel)
+            self.view.set_youtube_status(connected=connected, channel=channel, connecting=connecting)
+
+    def set_tiktok_status(self, connected: bool = False, channel: str = "", connecting: bool = False):
+        if self.view:
+            self.view.set_tiktok_status(connected=connected, channel=channel, connecting=connecting)
 
     @Slot(object)
     def handle_connection_success(self, user_data: dict):

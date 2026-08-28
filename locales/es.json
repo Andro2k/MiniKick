@@ -45,9 +45,10 @@
             "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_desc": "Elige el diseño visual que mejor combine con tu stream.",
             "theme_glass": "Glassmorphism",
-            "theme_minimal": "Minimalista",
+            "theme_minimal": "Minimalista (Floating Glow)",
             "theme_neon": "Brillo Neón (Neon)",
-            "theme_title": "Diseño del Overlay"
+            "theme_title": "Diseño del Overlay",
+            "recommended_dim": "Tamaño recomendado en OBS: {dim}"
         },
         "roles": {
             "broadcaster_title": "Voz del Streamer",
@@ -133,6 +134,7 @@
             "permission_label": "Permiso Mínimo:",
             "platform_kick": "Kick",
             "platform_label": "Plataformas:",
+            "platform_tiktok": "TikTok",
             "platform_twitch": "Twitch",
             "platform_youtube": "YouTube",
             "plugin_tag": "COMANDO PLUGIN",
@@ -172,6 +174,7 @@
             "col_aliases": "Alias / Regex",
             "col_command": "Comando",
             "col_permission": "Nivel de Acceso",
+            "col_platforms": "Plataformas",
             "col_type": "Tipo",
             "filter_all": "Mostrar Todos",
             "filter_sort_asc": "Ascendente (A-Z)",
@@ -206,7 +209,6 @@
             "view_release_notes": "Ver Novedades"
         },
         "status": {
-            "connected": "Conectado",
             "error": "Error",
             "no": "No",
             "offline": "Desconectado",
@@ -253,11 +255,16 @@
             "autostart_desc": "Conecta automáticamente MiniKick al iniciar la aplicación.",
             "autostart_title": "Conexión Automática",
             "btn_active": "Sistema Activo",
+            "btn_active_tiktok": "TikTok Activo",
             "btn_active_twitch": "Twitch Activo",
             "btn_active_youtube": "YouTube Activo",
             "btn_connect": "Conectar a Kick",
+            "btn_connect_tiktok": "Conectar TikTok",
             "btn_connect_twitch": "Conectar Twitch",
             "btn_connect_youtube": "Conectar YouTube",
+            "btn_connecting_tiktok": "Conectando TikTok...",
+            "btn_connecting_twitch": "Conectando Twitch...",
+            "btn_connecting_youtube": "Conectando YouTube...",
             "btn_retry": "Reintentar",
             "status_auth": "Estado: Autenticando...",
             "status_connected": "Estado: Conectado y Escuchando",
@@ -285,9 +292,6 @@
             "followers": "Seguidores",
             "room_id": "ID de ChatRoom",
             "vods": "VODs"
-        },
-        "status": {
-            "connected_toast_msg": "Canal enlazado: {username}"
         }
     },
     "dialogs": {
@@ -343,9 +347,20 @@
             "subtitle": "Notas de parche y cambios de la última versión publicada.",
             "title": "Novedades de la Versión"
         },
+        "tiktok_connect": {
+            "btn_clear": "Limpiar",
+            "btn_connect": "Conectar Chat",
+            "desc": "Introduce el nombre de usuario (@usuario) del canal de TikTok Live:",
+            "placeholder": "ej. @streamer o usuario",
+            "title": "Conectar Chat de TikTok Live"
+        },
         "unlink": {
-            "desc": "¿Deseas desvincular tu cuenta? Tendrás que iniciar sesión nuevamente la próxima vez que habras MiniKick.",
+            "desc": "¿Deseas desvincular tu cuenta? Tendrás que iniciar sesión nuevamente la próxima vez que abras MiniKick.",
             "title": "Desvincular Cuenta"
+        },
+        "unlink_tiktok": {
+            "desc": "¿Estás seguro de que deseas desconectar el chat en vivo de TikTok? Las funciones de lectura y moderación dejarán de procesarse.",
+            "title": "Desconectar TikTok"
         },
         "unlink_twitch": {
             "desc": "¿Estás seguro de que deseas desvincular tu cuenta de Twitch? Las funciones de chat y comandos para Twitch dejarán de estar activas.",
@@ -362,9 +377,9 @@
             "btn_restart": "Reiniciar ahora",
             "lbl_progress": "Progreso",
             "msg_unexpected_error": "Fallo inesperado al descargar el archivo.",
+            "subtitle_available": "Una nueva versión está lista para descargar e instalar.",
             "subtitle_connecting": "Conectando al servidor...",
             "subtitle_downloading": "Descargando la nueva versión...",
-            "subtitle_installed": "Versión {version} instalada.",
             "subtitle_restart_req": "Se requiere reiniciar para completar la instalación.",
             "subtitle_up_to_date": "Tu sistema ya cuenta con la versión más reciente.",
             "title_completed": "Actualización completada",
@@ -447,6 +462,12 @@
         "main_window": {
             "twitch_auth_error": "[TwitchAuth] Error de autenticación en Twitch: {error}"
         },
+        "tiktok": {
+            "age_restricted": "La transmisión de @{unique_id} tiene restricción de edad (+18).",
+            "empty_user": "El usuario de TikTok no puede estar vacío.",
+            "stream_offline": "@{unique_id} no está transmitiendo en vivo actualmente.",
+            "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok."
+        },
         "twitch": {
             "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",
             "user_not_found": "No se encontraron datos de usuario en Twitch Helix API."
@@ -490,7 +511,6 @@
             "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación..."
         },
         "sidebar": {
-            "new_version": "Nueva Versión",
             "profile": {
                 "offline_name": "Sin Conexión"
             },
@@ -504,7 +524,6 @@
                 "dashboard": "Panel de Control",
                 "developer": "Desarrollador",
                 "music": "Música",
-                "network_status": "Estado de Red",
                 "settings": "Ajustes",
                 "spam_filters": "Filtros Anti-Spam",
                 "stream_info": "Información del Stream",
@@ -512,9 +531,22 @@
                 "triggers": "Recompensas",
                 "widgets": "Widgets"
             },
+            "update_card": {
+                "btn": "Actualizar ahora",
+                "desc": "Versión {version} lista para instalar",
+                "title": "¡Nueva versión disponible!",
+                "tooltip_collapsed": "Actualización disponible: {version}",
+                "tooltip_dismiss": "Descartar aviso"
+            },
             "version": "Versión {version}"
         },
         "toast": {
+            "kick_connected_msg": "Conectado exitosamente al chat de Kick: @{username}",
+            "kick_connected_title": "Kick Conectado",
+            "tiktok_connected_msg": "Conectado al chat en vivo de TikTok: @{target}",
+            "tiktok_connected_title": "TikTok Conectado",
+            "tiktok_disconnected_msg": "Se ha detenido la conexión con TikTok Live.",
+            "tiktok_disconnected_title": "TikTok Desconectado",
             "twitch_auth_error_title": "Error Twitch Auth",
             "twitch_auth_opening": "Abriendo inicio de sesión en el navegador...",
             "twitch_auth_title": "Twitch OAuth",
@@ -616,18 +648,18 @@
             "title": "Reproductor de Música"
         },
         "overlay": {
-            "layout_banner": "Banner Header (Arte Grande)",
-            "layout_compact": "Tarjeta Compacta",
             "layout_floating": "Disco de Vinilo (Vinyl Spin)",
             "layout_label": "Diseño del Overlay:",
             "layout_pill": "Cápsula Minimal (Pill Bar)",
-            "layout_standard": "Barra Estándar",
-            "theme_card": "Tarjeta Sólida",
-            "theme_cyber": "Retro Cyberpunk",
+            "layout_standard": "Tarjeta Estándar (Card)",
+            "preview_sample_artist": "Tame Impala",
+            "preview_sample_title": "Tame Impala - The Less I Know The Better",
+            "preview_title": "Vista Previa del Overlay",
+            "recommended_dim": "Tamaño recomendado en OBS: {dim}",
+            "theme_card": "Tarjeta Satinada (Card)",
             "theme_dynamic": "Dinámico (Auto-Color de Álbum)",
-            "theme_glass": "Glassmorphism",
+            "theme_glass": "Glassmorphism (Frosted Glass)",
             "theme_label": "Tema Visual:",
-            "theme_minimal": "Minimalista",
             "theme_neon": "Brillo Neón",
             "url_desc": "Copia esta URL y agrégala como fuente de navegador en OBS para mostrar la portada y detalles del tema en pantalla.",
             "url_title": "Overlay de Música (OBS)"
@@ -709,68 +741,29 @@
             "user_cooldown_title": "Cooldown entre solicitudes (seg)"
         }
     },
-    "network": {
-        "btn_check": "Comprobar Red",
-        "graph": {
-            "avg": "Promedio",
-            "filter_all": "Todos los Servicios",
-            "filter_chat_websocket": "WebSocket",
-            "filter_internet": "Internet",
-            "filter_kick": "Kick API",
-            "filter_overlay": "Overlay",
-            "filter_youtube": "YouTube",
-            "jitter": "Jitter",
-            "live": "En Vivo",
-            "min": "Mínimo",
-            "stability_fair": "Regular",
-            "stability_good": "Buena",
-            "stability_optimal": "Óptima",
-            "stability_poor": "Deficiente",
-            "time_20s": "-20s",
-            "time_45s": "-45s",
-            "time_now": "Ahora",
-            "title": "Latencia de Red en Vivo",
-            "tooltip_title": "Ping / Latencia"
-        },
-        "header": {
-            "subtitle": "Monitorea el estado de tu conexión y la latencia con Kick, Twitch y YouTube.",
-            "title": "Estado de la Red"
-        },
-        "services": {
-            "chat_websocket": "Chat WebSocket (Pusher)",
-            "chat_websocket_desc": "Comprueba la conexión en tiempo real con el chat de Kick.",
-            "internet": "Conexión a Internet",
-            "internet_desc": "Mide tu conectividad general a internet.",
-            "kick": "Servidores de Kick",
-            "kick_desc": "Comprueba la velocidad de respuesta de la API oficial de Kick.",
-            "overlay": "Servidor de Overlay Local",
-            "overlay_desc": "Verifica que el servidor local de widgets para OBS esté funcionando correctamente.",
-            "youtube": "Servicio de YouTube",
-            "youtube_desc": "Mide la latencia con los servicios de audio de YouTube."
-        },
-        "status": {
-            "checking": "Comprobando...",
-            "ms": "{latency} ms",
-            "offline": "Desconectado",
-            "online": "Conectado",
-            "warning": "Latencia alta"
-        },
-        "table": {
-            "col_desc": "Descripción",
-            "col_latency": "Latencia",
-            "col_service": "Servicio",
-            "col_status": "Estado",
-            "title": "Estado de los Servicios"
-        }
-    },
     "piper_dialog": {
         "btn_close": "Cerrar",
         "btn_delete": "Eliminar",
         "btn_download": "Descargar",
+        "btn_import": "Importar Modelo ONNX",
+        "btn_import_tooltip": "Importar un modelo Piper local (.onnx y .onnx.json)",
+        "btn_reset_synthesis": "Restablecer",
+        "btn_reset_tooltip": "Restablecer los valores acústicos por defecto",
+        "import_filter": "Modelos Piper ONNX (*.onnx)",
+        "import_missing_json": "No se encontró el archivo de configuración .onnx.json correspondiente en la misma carpeta.",
+        "import_title": "Seleccionar Modelo ONNX Piper",
+        "param_length_scale": "Escala de Duración (Base)",
+        "param_length_scale_desc": "Multiplicador base de longitud fonética. Valores más bajos aumentan la velocidad de pronunciación.",
+        "param_noise_scale": "Expresividad (Noise Scale)",
+        "param_noise_scale_desc": "Controla la variación de entonación y expresividad fonética (Recomendado: 0.67).",
+        "param_noise_w_scale": "Cadencia / Pacing (Noise W)",
+        "param_noise_w_scale_desc": "Controla la variabilidad rítmica y duración de pausas entre palabras (Recomendado: 0.80).",
         "status_downloading": "Descargando...",
         "status_installed": "Instalada",
         "status_not_installed": "Disponible",
         "subtitle": "Descarga y administra voces neuronales locales para síntesis de voz sin conexión a internet ni consumo de APIs.",
+        "synthesis_desc": "Calibra la entonación, expresividad y cadencia del generador acústico neuronal VITS.",
+        "synthesis_title": "Ajustes de Síntesis y Acústica",
         "title": "Gestor de Voces Piper (TTS Local)"
     },
     "rewards": {
@@ -886,15 +879,19 @@
         },
         "integrations": {
             "btn_connect_kick": "Conectar Kick",
+            "btn_connect_tiktok": "Conectar TikTok",
             "btn_connect_twitch": "Conectar Twitch",
             "btn_connect_youtube": "Conectar YouTube",
             "btn_disconnect_kick": "Desconectar @{channel}",
+            "btn_disconnect_tiktok": "Desconectar @{channel}",
             "btn_disconnect_twitch": "Desconectar #{channel}",
             "btn_disconnect_youtube": "Desconectar {channel}",
             "desc": "Estado de la conexión del chat en tiempo real para cada plataforma.",
             "kick_desc_connected": "Conectado exitosamente a la cuenta de @{channel}.",
             "kick_desc_disconnected": "No hay una cuenta de Kick conectada actualmente.",
             "kick_title": "Canal de Kick",
+            "tiktok_desc_connected": "Conectado exitosamente al directo de @{channel}.",
+            "tiktok_title": "Canal de TikTok Live",
             "twitch_desc_connected": "Conectado exitosamente al chat de #{channel}.",
             "twitch_title": "Canal de Twitch",
             "youtube_desc_connected": "Conectado exitosamente al directo de {channel}.",
@@ -956,7 +953,6 @@
             "max_symbols": "Límite de símbolos/caracteres extraños",
             "platform_kick": "Kick",
             "platform_twitch": "Twitch",
-            "platform_youtube": "YouTube",
             "platforms": "Plataformas Aplicables"
         },
         "filters": {

@@ -39,7 +39,24 @@ class WebTTSProvider:
 
     def _run_event_loop(self):
         asyncio.set_event_loop(self._loop)
-        self._loop.run_forever()
+        try:
+            self._loop.run_forever()
+        except Exception:
+            pass
+        finally:
+            try:
+                pending = asyncio.all_tasks(self._loop)
+                for task in pending:
+                    task.cancel()
+                if pending and not self._loop.is_closed():
+                    self._loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+            except Exception:
+                pass
+            try:
+                if not self._loop.is_closed():
+                    self._loop.close()
+            except Exception:
+                pass
 
     def _run_async(self, coro):
         future = asyncio.run_coroutine_threadsafe(coro, self._loop)
@@ -179,16 +196,21 @@ class WebTTSProvider:
         try:
             player = QMediaPlayer()
             audio_output = QAudioOutput()
-            if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
-                try:
-                    from PySide6.QtMultimedia import QMediaDevices
+            try:
+                from PySide6.QtMultimedia import QMediaDevices
+                target_dev = None
+                if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
                     for dev in QMediaDevices.audioOutputs():
                         dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
                         if dev_id_str == self._audio_device_id or dev.description() == self._audio_device_id:
-                            audio_output.setDevice(dev)
+                            target_dev = dev
                             break
-                except Exception as dev_err:
-                    logging.error("[Web TTS] Error setting audio output device: %s", dev_err)
+                if not target_dev:
+                    target_dev = QMediaDevices.defaultAudioOutput()
+                if target_dev:
+                    audio_output.setDevice(target_dev)
+            except Exception as dev_err:
+                logging.error("[Web TTS] Error setting audio output device: %s", dev_err)
             player.setAudioOutput(audio_output)
             audio_output.setVolume(self.volume)
             player.setSource(QUrl.fromLocalFile(os.path.abspath(temp_path)))
@@ -206,6 +228,9 @@ class WebTTSProvider:
             connection_state = player.playbackStateChanged.connect(handle_state)
             connection_status = player.mediaStatusChanged.connect(handle_status)
             
+            self._current_player = player
+            self._current_loop = loop
+
             player.play()
             
             t_play_ready = time.perf_counter() - play_start_t
@@ -223,6 +248,8 @@ class WebTTSProvider:
         except Exception as e:
             logging.error("[Web TTS] Error playing audio file: %s", e)
         finally:
+            self._current_player = None
+            self._current_loop = None
             if player:
                 try:
                     player.stop()
@@ -242,6 +269,21 @@ class WebTTSProvider:
                 pass
 
     def stop(self) -> None:
+        if hasattr(self, "_current_player") and self._current_player:
+            try:
+                self._current_player.stop()
+            except Exception:
+                pass
+        if hasattr(self, "_current_loop") and self._current_loop:
+            try:
+                self._current_loop.quit()
+            except Exception:
+                pass
+        if hasattr(self, "_loop") and self._loop and self._loop.is_running():
+            try:
+                self._loop.call_soon_threadsafe(self._loop.stop)
+            except Exception:
+                pass
         with self._cache_lock:
             for item in self._cache.values():
                 try:
@@ -257,12 +299,22 @@ class WebTTSProvider:
     def get_available_voices(self) -> list[dict]:
         try:
             voices = asyncio.run(edge_tts.list_voices())
-            return [{"id": v["ShortName"], "name": v["FriendlyName"]} for v in voices if "es-" in v["Locale"]]
+            filtered = [
+                {"id": v["ShortName"], "name": v["FriendlyName"]}
+                for v in voices
+                if "es-" in v["Locale"] or "en-US" in v["Locale"] or "en-GB" in v["Locale"]
+            ]
+            if filtered:
+                return filtered
         except Exception as e:
             logging.error("[Web TTS] Error connecting to Microsoft Edge: %s", e)
-            return [
-                {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Spain) - Offline"},
-                {"id": "es-ES-ElviraNeural", "name": "Elvira (Spain) - Offline"},
-                {"id": "es-MX-JorgeNeural", "name": "Jorge (Mexico) - Offline"},
-                {"id": "es-MX-DaliaNeural", "name": "Dalia (Mexico) - Offline"}
-            ]
+        return [
+            {"id": "es-ES-AlvaroNeural", "name": "Álvaro (Spain)"},
+            {"id": "es-ES-ElviraNeural", "name": "Elvira (Spain)"},
+            {"id": "es-MX-JorgeNeural", "name": "Jorge (Mexico)"},
+            {"id": "es-MX-DaliaNeural", "name": "Dalia (Mexico)"},
+            {"id": "es-AR-ElenaNeural", "name": "Elena (Argentina)"},
+            {"id": "es-CO-GonzaloNeural", "name": "Gonzalo (Colombia)"},
+            {"id": "en-US-JennyNeural", "name": "Jenny (US English)"},
+            {"id": "en-US-GuyNeural", "name": "Guy (US English)"}
+        ]

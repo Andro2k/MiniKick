@@ -3,7 +3,7 @@
 # =======================================================
 # 1. Usando el script automatizado (Recomendado):
 
-uv run python tools/build_manager.py
+uv run python .\resources\tools\build_manager.py
 
 # 2. Compilación directa con PyInstaller:
 uv run pyinstaller --clean --noconfirm MiniKick.spec

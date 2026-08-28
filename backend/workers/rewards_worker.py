@@ -3,7 +3,7 @@
 import logging
 from collections import deque
 from PySide6.QtCore import QThread, Signal
-from backend.providers import KickAPIClient
+from backend.providers.chat.kick_client import KickAPIClient
 
 class RewardWorker(QThread):
     reward_redeemed = Signal(str, str, str)

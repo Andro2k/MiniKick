@@ -2,6 +2,7 @@
 
 import re
 import logging
+from backend.services.system.translation_service import TranslationService
 
 logger = logging.getLogger("minikick.handlers.chat_filter")
 
@@ -9,11 +10,12 @@ class ChatFilterHandler:
     _URL_REGEX = re.compile(r"https?://\S+|www\.\S+")
     _EMOTE_REGEX = re.compile(r"\[emote:(?:\d+:)?([^\]]+)\]")
     _YT_EMOTE_REGEX = re.compile(r":[a-zA-Z0-9_\-]+:")
+    _TIKTOK_EMOTE_REGEX = re.compile(r"\[[a-zA-Z0-9_\-]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
     _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
 
     def __init__(self, i18n, service):
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self.service = service
         self.muted_bots: set[str] = set()
         self.banned_words: set[str] = set()
@@ -55,14 +57,27 @@ class ChatFilterHandler:
         return bool(badges and "bot" in badges)
 
     def clean_message_for_tts(self, text: str, emotes_tag: str = "") -> str:
-        web_link_label = self.i18n.get("chat.status.web_link") if self.i18n else ""
+        web_link_label = self.i18n.get("chat.status.web_link")
         cleaned = self._URL_REGEX.sub(web_link_label, text)
 
         cleaned = self._EMOTE_REGEX.sub("", cleaned)
         cleaned = self._YT_EMOTE_REGEX.sub("", cleaned)
+        cleaned = self._TIKTOK_EMOTE_REGEX.sub("", cleaned)
         if emotes_tag:
             from backend.providers.chat.twitch_websocket import TwitchSocketManager
             cleaned = TwitchSocketManager.strip_twitch_emotes(cleaned, emotes_tag)
+            if emotes_tag.startswith("["):
+                try:
+                    import json
+                    em_list = json.loads(emotes_tag)
+                    if isinstance(em_list, list):
+                        for em in em_list:
+                            if isinstance(em, dict) and "name" in em:
+                                em_name = str(em["name"]).strip()
+                                clean_em = re.escape(em_name.strip("[]"))
+                                cleaned = re.sub(rf"\[{clean_em}\]|\b{clean_em}\b", "", cleaned)
+                except Exception:
+                    pass
         return self._SPACES_REGEX.sub(" ", cleaned).strip()
 
     def add_bot(self, bot_name: str, view) -> bool:

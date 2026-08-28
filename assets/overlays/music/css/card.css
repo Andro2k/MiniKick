@@ -1,66 +1,81 @@
 /* assets/overlays/music/css/card.css */
 #player {
-    background: #16161E;
-    border: 1.5px solid #2A2A38;
+    background: linear-gradient(90deg, rgba(42, 32, 54, 0.92) 0%, rgba(78, 54, 68, 0.88) 45%, rgba(48, 64, 60, 0.85) 100%);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-top: 1px solid rgba(255, 255, 255, 0.45);
     box-shadow: 
-        0 18px 42px rgba(0, 0, 0, 0.75), 
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        0 16px 40px rgba(0, 0, 0, 0.60), 
+        inset 0 1px 1px rgba(255, 255, 255, 0.25);
     border-radius: 18px;
-    padding: 16px 22px;
+    padding: 12px 18px;
 }
 
 .cover-art-wrap {
-    width: 88px;
-    height: 88px;
-    border-radius: 14px;
-    border: 1.5px solid #2A2A38;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    border: 1.2px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
 }
 
 .fallback-icon {
-    background: #22222E;
+    background: #2D2538;
 }
 
 .label-now-badge {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    color: #E4E4E7;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #FFFFFF;
     font-weight: 700;
     font-size: 10px;
     padding: 4px 12px;
-    border-radius: 14px;
+    border-radius: 12px;
     letter-spacing: 0.5px;
 }
 
 .artist {
-    color: #A1A1AA !important;
-    font-weight: 600 !important;
-    font-size: 13px;
+    color: rgba(255, 255, 255, 0.82) !important;
+    font-weight: 500 !important;
+    font-size: 13.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4) !important;
 }
 
 .title {
-    color: #FAFAFA !important;
+    color: #FFFFFF !important;
     font-weight: 700 !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7) !important;
+    font-size: 16px;
+    text-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.6) !important;
 }
 
 .progress-bar-wrap {
-    background: #22222E;
+    background: rgba(255, 255, 255, 0.15);
     height: 5px !important;
     border-radius: 3px;
 }
 
 .progress-bar-fill {
-    background: #6366F1;
-    box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
+    background: #FFFFFF;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
     border-radius: 3px;
 }
 
 .progress-time {
-    color: #A1A1AA !important;
+    color: rgba(255, 255, 255, 0.85) !important;
     font-weight: 600 !important;
 }
 
 .eq span {
-    background: #6366F1;
+    background: #FFFFFF;
+}
+
+.soundwave-bars span {
+    background: #FFFFFF;
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+}
+
+.card-play-icon {
+    color: rgba(255, 255, 255, 0.85) !important;
 }

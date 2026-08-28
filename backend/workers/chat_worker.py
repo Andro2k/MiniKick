@@ -2,7 +2,8 @@
 
 import datetime
 from PySide6.QtCore import QThread, Signal
-from backend.providers import KickAPIClient, ChatSocketManager
+from backend.providers.chat.kick_client import KickAPIClient
+from backend.providers.chat.kick_websocket import ChatSocketManager
 from backend.services.chat.pipeline import ChatMessageDTO
 
 class ChatWorker(QThread):

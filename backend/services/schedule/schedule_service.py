@@ -2,9 +2,14 @@
 
 import time
 import logging
+from typing import TYPE_CHECKING
 from concurrent.futures import ThreadPoolExecutor
 from backend.database.schedule_storage import SQLiteScheduleStorage
-from backend.providers import KickAPIClient, TwitchAPIClient
+from backend.services.system.translation_service import TranslationService
+
+if TYPE_CHECKING:
+    from backend.providers.chat.kick_client import KickAPIClient
+    from backend.providers.chat.twitch_client import TwitchAPIClient
 
 logger = logging.getLogger("minikick.schedule_service")
 
@@ -18,7 +23,7 @@ class ScheduleService:
         self.kick_client = kick_client
         self.twitch_client = twitch_client
         self.twitch_broadcaster_id = twitch_broadcaster_id
-        self.i18n = i18n
+        self.i18n = i18n or TranslationService()
         self._category_cache: dict[tuple[str, str], tuple[float, list[dict]]] = {}
         self._cache_ttl = 120.0
 
@@ -214,7 +219,7 @@ class ScheduleService:
                     outcome[p]["success"] = bool(ok)
                     if not ok:
                         err_key = "stream_info.errors.update_failed"
-                        outcome[p]["error"] = self.i18n.get(err_key) if self.i18n else "Update failed"
+                        outcome[p]["error"] = self.i18n.get(err_key)
                 except Exception as e:
                     logger.error("[ScheduleService] Exception updating %s: %s", p, e)
                     outcome[p]["success"] = False
