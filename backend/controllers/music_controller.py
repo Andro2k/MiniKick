@@ -319,7 +319,11 @@ class MusicController(QObject):
                 cooldown=existing.get("cooldown", 5),
                 aliases=existing.get("aliases", ""),
                 is_regex=False,
-                permission=existing.get("permission", "everyone")
+                permission=existing.get("permission", "everyone"),
+                apply_kick=existing.get("apply_kick", True),
+                apply_twitch=existing.get("apply_twitch", True),
+                apply_youtube=existing.get("apply_youtube", True),
+                apply_tiktok=existing.get("apply_tiktok", True)
             )
         else:
             self.command_service.save_command(
@@ -329,7 +333,11 @@ class MusicController(QObject):
                 cooldown=5,
                 aliases="",
                 is_regex=False,
-                permission="everyone"
+                permission="everyone",
+                apply_kick=True,
+                apply_twitch=True,
+                apply_youtube=True,
+                apply_tiktok=True
             )
 
         status_text = self.i18n.get("music.status.enabled") if is_active else self.i18n.get("music.status.disabled")

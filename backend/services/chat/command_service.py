@@ -95,8 +95,15 @@ class CommandService(QObject):
             if clean_q in cmd["trigger"].lower() or clean_q in cmd.get("aliases", "").lower() or clean_q in cmd.get("response", "").lower()
         ]
 
-    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True, apply_tiktok: bool = True):
+    def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = None, apply_twitch: bool = None, apply_youtube: bool = None, apply_tiktok: bool = None):
         trigger_clean = trigger.strip()
+        existing = self.get_command_by_trigger(trigger_clean)
+        
+        final_kick = apply_kick if apply_kick is not None else (existing.get("apply_kick", True) if existing else True)
+        final_twitch = apply_twitch if apply_twitch is not None else (existing.get("apply_twitch", True) if existing else True)
+        final_youtube = apply_youtube if apply_youtube is not None else (existing.get("apply_youtube", True) if existing else True)
+        final_tiktok = apply_tiktok if apply_tiktok is not None else (existing.get("apply_tiktok", True) if existing else True)
+
         cmd_dict = {
             "trigger": trigger_clean,
             "response": response,
@@ -105,10 +112,10 @@ class CommandService(QObject):
             "aliases": aliases,
             "is_regex": is_regex,
             "permission": permission,
-            "apply_kick": apply_kick,
-            "apply_twitch": apply_twitch,
-            "apply_youtube": apply_youtube,
-            "apply_tiktok": apply_tiktok
+            "apply_kick": final_kick,
+            "apply_twitch": final_twitch,
+            "apply_youtube": final_youtube,
+            "apply_tiktok": final_tiktok
         }
         
         existing_idx = -1

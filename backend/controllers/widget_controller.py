@@ -190,6 +190,12 @@ class WidgetController(QObject):
                 elif w_id == "shoutout":
                     aliases = "!shoutout"
 
+                existing_cmd = self.command_service.get_command_by_trigger(cmd_name)
+                apply_k = existing_cmd.get("apply_kick", True) if existing_cmd else True
+                apply_tw = existing_cmd.get("apply_twitch", True) if existing_cmd else True
+                apply_yt = existing_cmd.get("apply_youtube", True) if existing_cmd else True
+                apply_tk = existing_cmd.get("apply_tiktok", True) if existing_cmd else True
+
                 self.command_service.save_command(
                     trigger=cmd_name,
                     response=tag,
@@ -197,7 +203,11 @@ class WidgetController(QObject):
                     cooldown=cooldown,
                     aliases=aliases,
                     is_regex=False,
-                    permission=perm
+                    permission=perm,
+                    apply_kick=apply_k,
+                    apply_twitch=apply_tw,
+                    apply_youtube=apply_yt,
+                    apply_tiktok=apply_tk
                 )
         finally:
             self._is_syncing_db = False
