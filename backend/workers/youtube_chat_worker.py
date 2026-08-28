@@ -20,7 +20,7 @@ class YouTubeChatWorker(QThread):
         super().__init__(parent)
         self.setObjectName("Worker_YouTube_Chat_Socket")
         self.target_channel = target_channel.strip()
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         self.provider = provider or YouTubeChatProvider(i18n=self.i18n)
         self._is_stopped = False
         self._has_connected_once = False

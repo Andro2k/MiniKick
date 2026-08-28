@@ -23,7 +23,7 @@ class ScheduleService:
         self.kick_client = kick_client
         self.twitch_client = twitch_client
         self.twitch_broadcaster_id = twitch_broadcaster_id
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         self._category_cache: dict[tuple[str, str], tuple[float, list[dict]]] = {}
         self._cache_ttl = 120.0
 

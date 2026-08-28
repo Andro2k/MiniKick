@@ -15,7 +15,7 @@ class ChatFilterHandler:
     _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
 
     def __init__(self, i18n, service):
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         self.service = service
         self.muted_bots: set[str] = set()
         self.banned_words: set[str] = set()

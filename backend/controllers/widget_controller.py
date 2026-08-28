@@ -28,7 +28,7 @@ class WidgetController(QObject):
         self.command_service = command_service
         self.overlay_server = overlay_server
         from backend.services.system.translation_service import TranslationService
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         self.toast = toast_manager
 
         self._last_combo_emote = ""

@@ -18,7 +18,7 @@ class BugReportWorker(QThread):
         self.description = description
         self.include_logs = include_logs
         self.image_path = image_path
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         self.severity = severity
 
     def run(self):

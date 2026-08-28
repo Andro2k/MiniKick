@@ -20,7 +20,7 @@ class TwitchChatWorker(QThread):
         self.oauth_token = oauth_token
         self.bot_nick = bot_nick
         self.api_client = api_client
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         self.socket_manager = TwitchSocketManager(token=oauth_token, nick=self.bot_nick, i18n=self.i18n)
         self._is_stopped = False
 

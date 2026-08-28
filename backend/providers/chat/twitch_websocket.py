@@ -50,7 +50,7 @@ class TwitchSocketManager:
     def __init__(self, token: str = "", nick: str = "", i18n=None) -> None:
         self.token = token.replace("oauth:", "").strip() if token else ""
         self.nick = nick.strip() if nick else ""
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         self._running = False
         self.ws: websocket.WebSocketApp | None = None
         self._channel = ""

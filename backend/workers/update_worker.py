@@ -52,7 +52,7 @@ class ReleaseNotesWorker(QThread):
         super().__init__(parent)
         self.setObjectName("Worker_Release_Notes")
         from backend.services.system.translation_service import TranslationService
-        self.i18n = TranslationService()
+        self.i18n = i18n or TranslationService()
         from backend.services.system.updater_service import GithubUpdateProvider
         self.provider = GithubUpdateProvider(repo_owner, repo_name)
 
