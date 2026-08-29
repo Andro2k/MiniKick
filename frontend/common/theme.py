@@ -37,6 +37,7 @@ COLOR_TIKTOK_GLOW  = "rgba(0, 242, 254, 0.15)"
 
 _QSS_ICON_CACHE_DIR = Path(tempfile.gettempdir()) / "minikick_qss_icons"
 
+@lru_cache(maxsize=128)
 def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = COLOR_NEUTRAL_400) -> str:
     clean_name = os.path.basename(icon_name_or_rel_path)
     orig_path = resolve_icon_path(clean_name)
@@ -84,7 +85,6 @@ COLOR_RED_GLOW     = "rgba(239, 68, 68, 0.12)"
 COLOR_AMBER_GLOW   = "rgba(245, 158, 11, 0.12)"
 COLOR_BLUE_GLOW    = "rgba(59, 130, 246, 0.12)"
 COLOR_PURPLE_GLOW  = "rgba(192, 132, 252, 0.15)"
-COLOR_TWITCH_GLOW  = "rgba(145, 70, 255, 0.15)"
 
 FONT_FAMILY = "'Google Sans', '-apple-system', 'Segoe UI', sans-serif"
 

@@ -222,7 +222,7 @@ class ExpandableSettingCard(QFrame):
         h_layout.addWidget(self.switch)
         
         self.btn_expand = QPushButton()
-        self.btn_expand.setIcon(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 20))
+        self.btn_expand.setIcon(self._icon_down)
         self.btn_expand.setIconSize(QSize(20, 20))
         self.btn_expand.setFixedSize(30, 30)
         self.btn_expand.setProperty("role", "btn_ghost")

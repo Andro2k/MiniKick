@@ -17,12 +17,12 @@ ICON_SIZE_MD = 16
 ICON_SIZE_LG = 20
 ICON_SIZE_XL = 24
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def _load_svg_raw(full_path: str) -> str:
     with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
         return f.read()
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def get_icon(name: str) -> QIcon:
     full_path = resolve_icon_path(name)
     return QIcon(full_path) if full_path else QIcon()
@@ -56,7 +56,7 @@ def _get_icon_colored_impl(name: str, color_str: str, size: int, dpr: float) -> 
             
         return QIcon(colored_pixmap)
     except Exception as e:
-        logger.exception(f"Error renderizando icono coloreado {name}: {e}")
+        logger.exception("Error renderizando icono coloreado %s: %s", name, e)
         return QIcon()
 
 def _get_default_dpr() -> float:

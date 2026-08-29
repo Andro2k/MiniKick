@@ -337,8 +337,6 @@ class WidgetCard(QFrame):
 
         self.widget_changed.emit(self.widget_id, is_active, self._command, self._cooldown, self._permission, self._config_data)
 
-        self.widget_changed.emit(self.widget_id, is_active, self._command, self._cooldown, self._permission, self._config_data)
-
     def _on_death_counter_changed(self, val: int):
         if self._is_loading:
             return

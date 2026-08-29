@@ -1,5 +1,6 @@
 # backend\services\rewards\rewards_service.py
 
+import os
 from backend.services.rewards.thumbnail_service import generate_media_thumbnail
 
 class RewardsService:
@@ -28,8 +29,17 @@ class RewardsService:
                     config["thumbnail_bytes"] = generate_media_thumbnail(filepath)
         self.storage.save_all(mappings)
 
-    def trigger_preview(self, reward_name: str, config: dict):
+    def is_file_valid(self, config: dict | str) -> bool:
+        if not config:
+            return False
+        filepath = config.get("filepath", "") if isinstance(config, dict) else (config if isinstance(config, str) else "")
+        return bool(filepath) and os.path.exists(filepath) and os.path.isfile(filepath)
+
+    def trigger_preview(self, reward_name: str, config: dict) -> bool:
+        if not self.is_file_valid(config):
+            return False
         self.overlay.trigger_rewards(reward_name, config)
+        return True
 
     def log_redemption(self, reward_name: str, username: str, platform: str = "kick"):
         if hasattr(self.storage, "db_manager") and self.storage.db_manager:

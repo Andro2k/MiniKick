@@ -354,7 +354,10 @@ class Sidebar(QFrame):
         self.btn_toggle.setIcon(icon)
         self.btn_toggle.setIconSize(QSize(20, 20))
         
-        self.anim_group = QParallelAnimationGroup()
+        if hasattr(self, "anim_group") and self.anim_group.state() == QParallelAnimationGroup.State.Running:
+            self.anim_group.stop()
+            
+        self.anim_group = QParallelAnimationGroup(self)
         for prop in [b"minimumWidth", b"maximumWidth"]:
             anim = QPropertyAnimation(self, prop)
             anim.setDuration(250)
@@ -363,14 +366,14 @@ class Sidebar(QFrame):
             anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
             self.anim_group.addAnimation(anim)
         
+        self.anim_group.finished.connect(self._on_animation_finished)
+        
         if not self.is_expanded:
             self.logo_btn.hide()
             self.title_label.hide()
             self.expanded_spacer.hide()
             self.header_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._update_texts_and_styles(show=False)
-        else:
-            self.anim_group.finished.connect(self._on_expand_finished)
             
         self.anim_group.start()
 
@@ -397,17 +400,13 @@ class Sidebar(QFrame):
             self.profile_layout.setContentsMargins(0, 6, 0, 6)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    def _on_expand_finished(self):
+    def _on_animation_finished(self):
         if self.is_expanded:
             self.header_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
             self.logo_btn.show()
             self.title_label.show()
             self.expanded_spacer.show()
             self._update_texts_and_styles(show=True)
-            try:
-                self.anim_group.finished.disconnect(self._on_expand_finished)
-            except RuntimeError:
-                pass
 
     def _update_icons(self, btn=None, checked=None):
         for b in self.button_group.buttons():

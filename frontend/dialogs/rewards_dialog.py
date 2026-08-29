@@ -1,5 +1,6 @@
 # frontend\dialogs\rewards_dialog.py
 
+import os
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox,
     QFileDialog, QRadioButton, QButtonGroup, QPushButton, QColorDialog
@@ -413,6 +414,9 @@ class RewardsConfigWizard(ModernWizardPanel):
         file_path, _ = QFileDialog.getOpenFileName(self, title, "", filter_str)
         if file_path:
             self.txt_file_path.setText(file_path)
+            self.txt_file_path.setProperty("state", "normal")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip("")
             self._evaluate_media_type(file_path)
 
     def _evaluate_media_type(self, filepath):
@@ -429,7 +433,8 @@ class RewardsConfigWizard(ModernWizardPanel):
     def validate_step(self, step_index: int) -> bool:
         if step_index == 0:
             reward_valid = self._is_reward_valid()
-            file_valid = bool(self.txt_file_path.text().strip())
+            file_path = self.txt_file_path.text().strip()
+            file_valid = bool(file_path) and os.path.exists(file_path) and os.path.isfile(file_path)
             if not reward_valid or not file_valid:
                 return False
         return True
@@ -447,6 +452,14 @@ class RewardsConfigWizard(ModernWizardPanel):
     def _load_existing_data(self, config):
         filepath = config if isinstance(config, str) else config.get("filepath", "")
         self.txt_file_path.setText(filepath)
+        if filepath and (not os.path.exists(filepath) or not os.path.isfile(filepath)):
+            self.txt_file_path.setProperty("state", "error")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.file_missing_warning"))
+        else:
+            self.txt_file_path.setProperty("state", "normal")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip("")
         self._evaluate_media_type(filepath)
         if isinstance(config, dict):
             self.spin_x.setValue(config.get("pos_x", 0))
@@ -559,7 +572,8 @@ class RewardsConfigWizard(ModernWizardPanel):
     def _update_btn_next_state(self):
         if self.current_step == 0:
             reward_valid = self._is_reward_valid()
-            file_valid = bool(self.txt_file_path.text().strip())
+            file_path = self.txt_file_path.text().strip() if hasattr(self, 'txt_file_path') else ""
+            file_valid = bool(file_path) and os.path.exists(file_path) and os.path.isfile(file_path)
             self.btn_next.setEnabled(reward_valid and file_valid)
         else:
             self.btn_next.setEnabled(True)

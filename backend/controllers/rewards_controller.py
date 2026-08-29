@@ -318,4 +318,13 @@ class RewardsController(QObject):
         logger.info("[User Action] Preview triggered for reward: name='%s'", reward_name)
         mappings = self.service.get_mappings()
         if reward_name in mappings:
-            self.service.trigger_preview(reward_name, mappings[reward_name])
+            config = mappings[reward_name]
+            if not self.service.is_file_valid(config):
+                if self.toast and self.view:
+                    self.toast.show_toast(
+                        title=self.view.i18n.get("common.status.error"),
+                        message=self.view.i18n.get("rewards.status.file_not_found_action"),
+                        state="danger"
+                    )
+                return
+            self.service.trigger_preview(reward_name, config)

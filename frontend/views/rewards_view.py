@@ -6,15 +6,36 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED
-from frontend.common import get_pixmap_colored
+from frontend.common import get_pixmap_colored, get_icon_colored
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
 
-def _create_reward_icon(config: dict, filepath: str) -> QIcon:
+def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True) -> QIcon:
+    target_w, target_h = 48, 32
+    
+    if not is_valid_file:
+        pixmap = QPixmap(target_w, target_h)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        
+        rect = QRectF(0, 0, target_w, target_h)
+        path = QPainterPath()
+        path.addRoundedRect(rect, 6, 6)
+        painter.fillPath(path, QColor("#2d1215"))
+        painter.setPen(QColor(COLOR_RED))
+        painter.drawPath(path)
+        
+        icon_pixmap = get_pixmap_colored("alert-triangle.svg", COLOR_RED, 18)
+        if not icon_pixmap.isNull():
+            x = (target_w - 18) / 2
+            y = (target_h - 18) / 2
+            painter.drawPixmap(int(x), int(y), icon_pixmap)
+        painter.end()
+        return QIcon(pixmap)
+
     ext = os.path.splitext(filepath)[1].lower() if filepath else ""
     is_audio = ext in AUDIO_EXTENSIONS
-    
-    target_w, target_h = 48, 32
     
     if is_audio:
         pixmap = QPixmap(target_w, target_h)
@@ -150,6 +171,9 @@ class RewardsView(BaseView):
         self.table_rewards.setUpdatesEnabled(False)
         self.table_rewards.setRowCount(0)
         str_unknown = self.i18n.get("rewards.table.unknown_file")
+        missing_tag = self.i18n.get("rewards.table.file_not_found_tag")
+        missing_tooltip_base = self.i18n.get("rewards.table.file_not_found_tooltip")
+        missing_count = 0
         
         for reward, config in mappings.items():
             row = self.table_rewards.rowCount()
@@ -158,13 +182,26 @@ class RewardsView(BaseView):
             filepath = config if isinstance(config, str) else config.get("filepath", str_unknown)
             conf_dict = config if isinstance(config, dict) else {}
             
+            is_valid_file = bool(filepath) and filepath != str_unknown and os.path.exists(filepath) and os.path.isfile(filepath)
+            if not is_valid_file:
+                missing_count += 1
+            
             item_reward = QTableWidgetItem(reward)
-            item_reward.setIcon(_create_reward_icon(conf_dict, filepath))
+            item_reward.setIcon(_create_reward_icon(conf_dict, filepath, is_valid_file=is_valid_file))
             item_reward.setFlags(item_reward.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            if not is_valid_file:
+                item_reward.setToolTip(f"{reward}\n⚠️ {missing_tooltip_base}")
             self.table_rewards.setItem(row, 0, item_reward)
             
-            item_file = QTableWidgetItem(os.path.basename(filepath))
-            item_file.setToolTip(filepath)
+            file_basename = os.path.basename(filepath) if filepath else str_unknown
+            if not is_valid_file:
+                item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
+                item_file.setIcon(get_icon_colored("alert-triangle.svg", COLOR_RED, 16))
+                item_file.setForeground(QColor(COLOR_RED))
+                item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
+            else:
+                item_file = QTableWidgetItem(file_basename)
+                item_file.setToolTip(filepath)
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 1, item_file)
             
@@ -186,11 +223,12 @@ class RewardsView(BaseView):
             self.table_rewards.setItem(row, 3, item_vol)
             
             cell = TableActionCell()
+            play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
                 icon_name="player-play.svg", 
-                color=COLOR_NEUTRAL_200, 
-                role="action_neutral_border", 
-                tooltip=self.i18n.get("rewards.table.tooltip_play"), 
+                color=COLOR_NEUTRAL_200 if is_valid_file else COLOR_RED, 
+                role="action_neutral_border" if is_valid_file else "action_danger_border", 
+                tooltip=play_tooltip, 
                 callback=lambda checked=False, r=reward: self.preview_requested.emit(r)
             )
             cell.add_button(
@@ -216,7 +254,11 @@ class RewardsView(BaseView):
         if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
             title_base = self.i18n.get("rewards.table.title")
             total_count = len(mappings)
-            self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
+            if missing_count > 0:
+                warning_label = self.i18n.get("rewards.table.missing_files_warning")
+                self.table_card.lbl_title.setText(f"{title_base} ({total_count}) • {missing_count} {warning_label}")
+            else:
+                self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
 
     @Slot()
     def _copy_obs_url(self):

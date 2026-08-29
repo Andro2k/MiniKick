@@ -363,8 +363,6 @@ class TimerConfigWizard(ModernWizardPanel):
         else:
             for m in messages:
                 self._add_message_field(m)
-        self.switch_kick.setChecked(self.existing_config.get("apply_kick", True))
-        self.switch_twitch.setChecked(self.existing_config.get("apply_twitch", True))
             
         online_min = self.existing_config.get("interval_online")
         has_online = online_min is not None and online_min > 0

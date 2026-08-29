@@ -659,8 +659,19 @@ class MainWindowCore(QMainWindow):
         mappings = self.rewards_service.get_mappings()
         if reward_name in mappings:
             config = mappings[reward_name]
-            self.rewards_service.trigger_preview(reward_name, config)
-            self.rewards_service.log_redemption(reward_name, user)
+            if self.rewards_service.is_file_valid(config):
+                self.rewards_service.trigger_preview(reward_name, config)
+                self.rewards_service.log_redemption(reward_name, user)
+            else:
+                filepath = config.get("filepath", "") if isinstance(config, dict) else (config if isinstance(config, str) else "")
+                missing_log = self.i18n.get("main.logs.reward_file_missing").replace("{reward_name}", reward_name).replace("{filepath}", str(filepath))
+                self.logger.warning(missing_log)
+                if self.toast:
+                    self.toast.show_toast(
+                        title=self.i18n.get("common.status.warning"),
+                        message=self.i18n.get("rewards.status.redeem_file_missing").replace("{reward}", reward_name),
+                        state="danger"
+                    )
         else:
             no_rewards_template = self.i18n.get("main.logs.reward_no_rewards")
             self.logger.debug(no_rewards_template.replace("{reward_name}", reward_name))

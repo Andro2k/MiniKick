@@ -213,6 +213,7 @@
             "no": "No",
             "offline": "Offline",
             "online": "Online",
+            "warning": "Warning",
             "yes": "Yes"
         }
     },
@@ -503,6 +504,7 @@
             "api_fetching": "Rewards are already being fetched. Please wait.",
             "api_offline": "Attempted to update rewards while offline from Kick.",
             "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
+            "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
             "shutdown_complete": "Thread shutdown sequence complete.",
             "shutdown_init": "Initiating shutdown sequence...",
             "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
@@ -780,6 +782,7 @@
                     "desc": "Select the channel points reward that will trigger this visual or sound effect.",
                     "edit_title_label": "Reward Name",
                     "file_label": "Media File",
+                    "file_missing_warning": "The selected file does not exist on disk. Please choose a valid file.",
                     "file_placeholder": "Ex. my_reward.mp4 or sound.mp3",
                     "loading": "Loading rewards...",
                     "mode_create": "Create New Reward on Kick",
@@ -832,6 +835,8 @@
             "creating_api": "Creating Reward on Kick...",
             "deleted": "Reward Deleted",
             "deleted_msg": "Reward unlinked: {reward}",
+            "file_not_found_action": "Media file not found on disk. Please edit the reward to select a valid file.",
+            "redeem_file_missing": "The media file for reward '{reward}' does not exist or was moved.",
             "updated": "Reward Updated",
             "updated_api_error": "Error updating on Kick: {error}",
             "updated_api_success": "Reward '{reward}' updated successfully on Kick.",
@@ -845,11 +850,15 @@
             "col_pos": "Position",
             "col_reward": "Kick Reward",
             "col_volume": "Volume",
+            "file_not_found_tag": "Not found",
+            "file_not_found_tooltip": "Media file does not exist on disk or was moved",
+            "missing_files_warning": "file(s) not found",
             "pos_random": "Random",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Reward",
             "tooltip_edit": "Modify settings",
             "tooltip_play": "Test in OBS",
+            "tooltip_play_missing": "Cannot play: media file not found",
             "unknown_file": "Unknown"
         }
     },

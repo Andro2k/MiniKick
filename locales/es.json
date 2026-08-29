@@ -213,6 +213,7 @@
             "no": "No",
             "offline": "Desconectado",
             "online": "En Línea",
+            "warning": "Advertencia",
             "yes": "Sí"
         }
     },
@@ -503,6 +504,7 @@
             "api_fetching": "Las recompensas ya están siendo obtenidas. Por favor espera.",
             "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
             "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada.",
+            "reward_file_missing": "El archivo multimedia para la recompensa '{reward_name}' no fue encontrado en: {filepath}",
             "shutdown_complete": "Secuencia de apagado de hilos completada.",
             "shutdown_init": "Iniciando secuencia de apagado...",
             "shutdown_tts_overlay": "Apagando TTS y Overlay...",
@@ -780,6 +782,7 @@
                     "desc": "Selecciona la recompensa de puntos de canal que activará este efecto visual o de sonido.",
                     "edit_title_label": "Nombre de la Recompensa",
                     "file_label": "Archivo Multimedia",
+                    "file_missing_warning": "El archivo seleccionado no existe en el disco. Por favor selecciona un archivo válido.",
                     "file_placeholder": "Ej. mi_recompensa.mp4 o sonido.mp3",
                     "loading": "Cargando recompensas...",
                     "mode_create": "Crear Nueva Recompensa en Kick",
@@ -832,6 +835,8 @@
             "creating_api": "Creando Recompensa en Kick...",
             "deleted": "Recompensa Eliminada",
             "deleted_msg": "Recompensa desvinculada: {reward}",
+            "file_not_found_action": "El archivo multimedia no fue encontrado en el disco. Edita la recompensa para seleccionar el archivo.",
+            "redeem_file_missing": "El archivo multimedia de la recompensa '{reward}' no existe o fue movido de su ubicación.",
             "updated": "Recompensa Actualizada",
             "updated_api_error": "Error al actualizar en Kick: {error}",
             "updated_api_success": "Recompensa '{reward}' actualizada exitosamente en Kick.",
@@ -845,11 +850,15 @@
             "col_pos": "Posición",
             "col_reward": "Recompensa Kick",
             "col_volume": "Volumen",
+            "file_not_found_tag": "No encontrado",
+            "file_not_found_tooltip": "El archivo multimedia no existe en el disco o fue movido de ubicación",
+            "missing_files_warning": "archivo(s) no encontrado(s)",
             "pos_random": "Aleatorio",
             "title": "Recompensas Vinculadas",
             "tooltip_delete": "Eliminar Recompensa",
             "tooltip_edit": "Modificar ajustes",
             "tooltip_play": "Probar en OBS",
+            "tooltip_play_missing": "No se puede reproducir: archivo multimedia no encontrado",
             "unknown_file": "Desconocido"
         }
     },
