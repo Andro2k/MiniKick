@@ -270,3 +270,18 @@ class ScheduleService:
             platform=target_platform
         )
         return res
+
+    def get_next_schedule_text(self) -> str:
+        try:
+            schedules = self.get_all_schedules()
+            active_schedules = [s for s in schedules if s.get("is_active", True)]
+            if not active_schedules:
+                return "-"
+            active_schedules.sort(key=lambda s: s.get("time_str", "99:99"))
+            first = active_schedules[0]
+            name = first.get("name", "")
+            time_str = first.get("time_str", "")
+            return f"{name} ({time_str})" if name else time_str
+        except Exception as e:
+            logger.error("[ScheduleService] Error getting next schedule text: %s", e)
+            return "-"

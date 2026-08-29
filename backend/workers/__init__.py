@@ -9,7 +9,7 @@ from .twitch_chat_worker import TwitchChatWorker
 from .youtube_chat_worker import YouTubeChatWorker
 from .tiktok_chat_worker import TikTokChatWorker
 from .music_worker import YouTubeResolveWorker, YouTubeSearchWorker
-from .rewards_worker import RewardWorker, FetchRewardsWorker, CreateRewardWorker, UpdateRewardWorker
+from .rewards_worker import RewardWorker, TwitchRewardWorker, FetchRewardsWorker, CreateRewardWorker, UpdateRewardWorker
 from .timers_worker import TimerWorker
 from .update_worker import UpdateCheckWorker, UpdateDownloadWorker, ReleaseNotesWorker
 from .voice_worker import VoiceFetcherWorker
@@ -27,6 +27,7 @@ __all__ = [
     "YouTubeResolveWorker",
     "YouTubeSearchWorker",
     "RewardWorker",
+    "TwitchRewardWorker",
     "FetchRewardsWorker",
     "CreateRewardWorker",
     "UpdateRewardWorker",

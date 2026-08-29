@@ -1,7 +1,7 @@
 # frontend\widgets\filter_header.py
 
 from PySide6.QtWidgets import QHeaderView, QMenu
-from PySide6.QtCore import Qt, Signal, QRect, QPoint
+from PySide6.QtCore import Qt, Signal, QRect, QPoint, QSize
 from PySide6.QtGui import QPainter, QAction
 from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400
 from frontend.common.icons import get_icon_colored
@@ -23,18 +23,19 @@ class FilterHeaderView(QHeaderView):
         self,
         col_idx: int,
         title: str,
-        options: list[dict],
+        options: list[dict] | None = None,
         all_label: str = "",
         sort_asc_label: str = "",
         sort_desc_label: str = "",
         default_active: list[str] | None = None
     ):
-        all_ids = {opt["id"] for opt in options}
+        opts = options or []
+        all_ids = {opt["id"] for opt in opts}
         active_ids = set(default_active) if default_active is not None else set(all_ids)
 
         self._column_filters[col_idx] = {
             "title": title,
-            "options": options,
+            "options": opts,
             "all_label": all_label,
             "sort_asc_label": sort_asc_label,
             "sort_desc_label": sort_desc_label,
@@ -45,6 +46,12 @@ class FilterHeaderView(QHeaderView):
     def get_active_filters(self) -> dict[int, set[str]]:
         return {col: config["active"] for col, config in self._column_filters.items()}
 
+    def sectionSizeFromContents(self, logicalIndex: int) -> QSize:
+        base_size = super().sectionSizeFromContents(logicalIndex)
+        if logicalIndex in self._column_filters:
+            return QSize(base_size.width() + 30, base_size.height())
+        return base_size
+
     def paintSection(self, painter: QPainter, rect: QRect, logicalIndex: int):
         super().paintSection(painter, rect, logicalIndex)
 
@@ -54,8 +61,8 @@ class FilterHeaderView(QHeaderView):
             active_opts = len(config["active"])
             is_filtered = (active_opts < total_opts) and (total_opts > 0)
 
-            icon_size = 16
-            margin = 4
+            icon_size = 14
+            margin = 6
             icon_rect = QRect(
                 rect.right() - icon_size - margin,
                 rect.center().y() - icon_size // 2,
@@ -74,24 +81,38 @@ class FilterHeaderView(QHeaderView):
         config = self._column_filters[logicalIndex]
         menu = QMenu(self)
 
-        action_sort_asc = menu.addAction(get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
-        action_sort_desc = menu.addAction(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
-        menu.addSeparator()
+        action_sort_asc = None
+        action_sort_desc = None
+        has_sort = bool(config.get("sort_asc_label") or config.get("sort_desc_label"))
 
-        all_ids = {opt["id"] for opt in config["options"]}
-        is_all_active = config["active"] == all_ids
+        if config.get("sort_asc_label"):
+            action_sort_asc = menu.addAction(get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
+        if config.get("sort_desc_label"):
+            action_sort_desc = menu.addAction(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
 
-        action_all = menu.addAction(config["all_label"])
-        action_all.setCheckable(True)
-        action_all.setChecked(is_all_active)
-        menu.addSeparator()
-
+        action_all = None
         action_map: dict[QAction, str] = {}
-        for opt in config["options"]:
-            action = menu.addAction(opt["label"])
-            action.setCheckable(True)
-            action.setChecked(opt["id"] in config["active"])
-            action_map[action] = opt["id"]
+        all_ids = set()
+        is_all_active = True
+
+        if config.get("options"):
+            if has_sort:
+                menu.addSeparator()
+
+            all_ids = {opt["id"] for opt in config["options"]}
+            is_all_active = config["active"] == all_ids
+
+            if config.get("all_label"):
+                action_all = menu.addAction(config["all_label"])
+                action_all.setCheckable(True)
+                action_all.setChecked(is_all_active)
+                menu.addSeparator()
+
+            for opt in config["options"]:
+                action = menu.addAction(opt["label"])
+                action.setCheckable(True)
+                action.setChecked(opt["id"] in config["active"])
+                action_map[action] = opt["id"]
 
         section_x = self.sectionViewportPosition(logicalIndex)
         global_pos = self.mapToGlobal(QPoint(section_x, self.height()))
@@ -107,7 +128,7 @@ class FilterHeaderView(QHeaderView):
         elif selected_action == action_sort_desc:
             self.sort_requested.emit(logicalIndex, "desc")
             return
-        elif selected_action == action_all:
+        elif action_all and selected_action == action_all:
             config["active"] = set(all_ids)
         elif selected_action in action_map:
             opt_id = action_map[selected_action]

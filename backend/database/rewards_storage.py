@@ -11,7 +11,7 @@ class SQLiteRewardsStorage:
             cursor = conn.cursor()
             cursor.execute("""
                 SELECT reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes,
-                       reward_id, cost, description, background_color, is_user_input_required
+                       reward_id, cost, description, background_color, is_user_input_required, platform
                 FROM obs_rewards
             """)
             result = {}
@@ -23,7 +23,8 @@ class SQLiteRewardsStorage:
                     "pos_x": r[4],
                     "pos_y": r[5],
                     "is_random_pos": bool(r[6]),
-                    "thumbnail_bytes": r[7]
+                    "thumbnail_bytes": r[7],
+                    "platform": r[13] if len(r) > 13 and r[13] else "kick"
                 }
                 if r[8] is not None:
                     conf["id"] = r[8]
@@ -56,14 +57,15 @@ class SQLiteRewardsStorage:
                     conf.get("cost", 100),
                     conf.get("description", ""),
                     conf.get("background_color", "#00e701"),
-                    int(conf.get("is_user_input_required", False))
+                    int(conf.get("is_user_input_required", False)),
+                    conf.get("platform", "kick")
                 )
                 for reward, conf in mappings.items()
             ]
             cursor.executemany(
                 """INSERT INTO obs_rewards 
-                   (reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes, reward_id, cost, description, background_color, is_user_input_required) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes, reward_id, cost, description, background_color, is_user_input_required, platform) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 data
             )
             conn.commit()

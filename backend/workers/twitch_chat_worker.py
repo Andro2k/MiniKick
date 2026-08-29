@@ -29,7 +29,10 @@ class TwitchChatWorker(QThread):
             user_data = {}
             if self.api_client:
                 try:
-                    user_data = self.api_client.fetch_user_data()
+                    if hasattr(self.api_client, "fetch_full_channel_info"):
+                        user_data = self.api_client.fetch_full_channel_info()
+                    else:
+                        user_data = self.api_client.fetch_user_data()
                     fetched_username = user_data.get("username")
                     if fetched_username:
                         self.channel_name = fetched_username

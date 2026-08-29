@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
     QSystemTrayIcon, QApplication
 )
-from PySide6.QtCore import Slot, QEvent, QTimer
+from PySide6.QtCore import Slot, QEvent
 
 from backend.core.app_container_core import AppContainer
 from backend.core.app_logger_core import setup_application_logging
@@ -24,7 +24,7 @@ from backend.controllers import (
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
     AuthWorker, TwitchAuthWorker, ChatWorker, TwitchChatWorker, YouTubeChatWorker, TikTokChatWorker,
-    FetchRewardsWorker, RewardWorker, TimerWorker, ScheduleWorker
+    FetchRewardsWorker, RewardWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker
 )
 from frontend.common.theme import COLOR_GREEN, get_global_qss
 from frontend.navigation.sidebar_component import Sidebar
@@ -107,6 +107,17 @@ class MainWindowCore(QMainWindow):
         self._cached_total_usages = None
         self._cached_active_timers = None
 
+        self.session_metrics = {
+            "messages_processed": 0,
+            "spam_blocked": 0
+        }
+        self.session_platform_messages = {
+            "kick": 0,
+            "twitch": 0,
+            "youtube": 0,
+            "tiktok": 0
+        }
+
         self.logger, self.q_log_handler = setup_application_logging()  
         self.toast = ToastManager(self)
         self._setup_ui()
@@ -159,7 +170,8 @@ class MainWindowCore(QMainWindow):
 
         self.dashboard_controller = DashboardController(
             view=self.view_dashboard, 
-            avatar_service=self.avatar_service
+            avatar_service=self.avatar_service,
+            db_manager=self.container.db_manager
         )
         self.chat_controller = ChatController(
             view=None, 
@@ -262,6 +274,8 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.tiktok_connect_requested.connect(self._on_tiktok_integration_button_clicked)
         self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
+        self.dashboard_controller.reauth_kick_requested.connect(self._handle_reauth_kick)
+        self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
         self.chat_controller.message_received.connect(self.widget_controller.handle_chat_message)
@@ -295,8 +309,10 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.sync_settings_cache()
         self._apply_dynamic_theme(self.settings_service.get_font_size(), immediate=True)
         self._update_integrations_status_ui()
+        self._evaluate_all_scopes()
         if autostart_enabled:
-            self._handle_auth_process()
+            if self.auth_manager.is_authenticated():
+                self._handle_auth_process()
             twitch_tokens = self.container.twitch_token_storage.load()
             if twitch_tokens and twitch_tokens.get("access_token"):
                 self._on_twitch_auth_success(twitch_tokens)
@@ -513,6 +529,8 @@ class MainWindowCore(QMainWindow):
         worker_map = [
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
             ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
+            ("Worker_Twitch_Reward_EventSub", getattr(self, 'twitch_reward_worker', None)),
+            ("Worker_Fetch_Twitch_Rewards", getattr(self, 'fetch_twitch_rewards_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
 
@@ -525,6 +543,8 @@ class MainWindowCore(QMainWindow):
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
             ("Worker_Twitch_Auth", getattr(self, 'twitch_auth_worker', None)),
+            ("Worker_Twitch_Reward_EventSub", getattr(self, 'twitch_reward_worker', None)),
+            ("Worker_Fetch_Twitch_Rewards", getattr(self, 'fetch_twitch_rewards_worker', None)),
             ("Worker_YouTube_Chat", getattr(self, 'youtube_chat_worker', None)),
             ("Worker_TikTok_Chat", getattr(self, 'tiktok_chat_worker', None)),
             ("Worker_Stream_Schedule", getattr(self, 'schedule_worker', None)),
@@ -533,11 +553,11 @@ class MainWindowCore(QMainWindow):
         self._stop_workers_parallel(worker_map)
 
     @Slot()
-    def _handle_auth_process(self):
+    def _handle_auth_process(self, force: bool = False):
         self._stop_kick_connection_workers()
         self.dashboard_controller.handle_connecting_state()
 
-        self.auth_worker = AuthWorker(self.i18n, self.auth_manager)
+        self.auth_worker = AuthWorker(self.i18n, self.auth_manager, force=force)
         self.auth_worker.setParent(self)
         self.auth_worker.auth_success.connect(self._on_auth_success)
         self.auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
@@ -546,8 +566,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_auth_success(self, tokens):
         api_client = KickAPIClient(auth_provider=self.auth_manager)
-        missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
-        self.dashboard_controller.evaluate_scopes(missing_scopes)
+        self._evaluate_all_scopes()
         
         self.command_service.api_client = api_client
         self.spam_service.api_client = api_client
@@ -603,36 +622,36 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _fetch_api_rewards(self):
-        if not self.auth_manager.get_tokens():
-            self.logger.error(self.i18n.get("main.logs.api_offline"))
-            self.rewards_controller.update_rewards_list([])
-            return
+        if self.auth_manager.get_tokens():
+            worker = getattr(self, 'fetch_rewards_worker', None)
+            is_running = False
+            if worker is not None:
+                try:
+                    is_running = worker.isRunning()
+                except RuntimeError:
+                    self.fetch_rewards_worker = None
 
-        worker = getattr(self, 'fetch_rewards_worker', None)
-        if worker is not None:
-            try:
-                if worker.isRunning():
-                    self.logger.warning(self.i18n.get("main.logs.api_fetching"))
-                    return
-            except RuntimeError:
-                self.fetch_rewards_worker = None
+            if not is_running:
+                try:
+                    api_client = KickAPIClient(auth_provider=self.auth_manager)
+                    self.fetch_rewards_worker = FetchRewardsWorker(api_client, platform="kick", parent=self)
+                    self.fetch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
+                    self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
+                    self.fetch_rewards_worker.finished.connect(self.fetch_rewards_worker.deleteLater)
+                    self.fetch_rewards_worker.start()
+                except Exception as e:
+                    err_template = self.i18n.get("main.logs.api_error_setup")
+                    self.logger.error(err_template.replace("{error}", str(e)))
+        else:
+            self.logger.debug("Kick auth not active, skipping Kick rewards fetch")
 
-        try:
-            api_client = KickAPIClient(auth_provider=self.auth_manager)
-            self.fetch_rewards_worker = FetchRewardsWorker(api_client, parent=self)
-            self.fetch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
-            self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
-            self.fetch_rewards_worker.finished.connect(self.fetch_rewards_worker.deleteLater)
-            self.fetch_rewards_worker.start()
-        except Exception as e:
-            err_template = self.i18n.get("main.logs.api_error_setup")
-            self.logger.error(err_template.replace("{error}", str(e)))
+        if self.container.twitch_auth_manager.is_authenticated():
+            self._fetch_twitch_rewards()
 
     @Slot(str)
     def _handle_rewards_error(self, error_msg: str):
         err_template = self.i18n.get("main.logs.api_error")
         self.logger.error(err_template.replace("{error}", error_msg))
-        self.rewards_controller.update_rewards_list([])
 
     def _format_reward_message(self, reward_name: str) -> str:
         safe_reward_name = html.escape(reward_name)
@@ -694,25 +713,20 @@ class MainWindowCore(QMainWindow):
         if not message:
             return
         if apply_kick and hasattr(self, "command_service") and self.command_service:
+            self.command_service.post_chat_message(message, apply_kick=True, apply_twitch=False)
+        if apply_twitch and hasattr(self, "spam_service") and self.spam_service.twitch_api:
             try:
-                self.command_service.send_response(message, platform="kick")
-            except Exception as e:
-                self.logger.error(f"[Timer] Error posting Kick message: {e}")
-        elif apply_kick and self.timer_service.api_client:
-            try:
-                self.timer_service.api_client.post_chat_message(content=message, msg_type="bot")
-            except Exception as e:
-                self.logger.error(f"[Timer] Error posting Kick message: {e}")
-
-        if apply_twitch and hasattr(self, "command_service") and self.command_service:
-            try:
-                self.command_service.send_response(message, platform="twitch")
+                broadcaster_id = getattr(self.spam_service, "twitch_broadcaster_id", "")
+                if broadcaster_id:
+                    self.spam_service.twitch_api.send_chat_message(broadcaster_id, message)
             except Exception as e:
                 self.logger.error(f"[Timer] Error posting Twitch message: {e}")
 
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
         self._stop_twitch_connection_workers()
+        if not force and self.container.twitch_auth_manager.has_missing_scopes():
+            force = True
         needs_browser = force or not self.container.twitch_auth_manager.is_authenticated()
         if needs_browser:
             title = self.container.i18n.get("main.toast.twitch_auth_title")
@@ -740,23 +754,48 @@ class MainWindowCore(QMainWindow):
     def _on_twitch_auth_success(self, tokens):
         logger.info("[Twitch Auth] Success callback received.")
         twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID, i18n=self.container.i18n)
-        user_data = twitch_api.fetch_user_data()
+        user_data = twitch_api.fetch_full_channel_info()
         if not user_data:
             logger.error("[Twitch Auth] Failed to fetch user data after auth.")
             return
 
-        broadcaster_id = user_data.get("user_id", "")
-        broadcaster_login = user_data.get("user_login", "")
+        broadcaster_id = user_data.get("broadcaster_id", "") or user_data.get("user_id", "") or user_data.get("id", "")
+        broadcaster_login = user_data.get("username", "") or user_data.get("user_login", "") or user_data.get("login", "")
 
         self._twitch_connected = True
         self._twitch_channel = broadcaster_login
         self.spam_service.twitch_api = twitch_api
         self.spam_service.twitch_broadcaster_id = broadcaster_id
 
+        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+            self.dashboard_controller.set_channel_profile("twitch", user_data)
+
+        if hasattr(self, "rewards_controller") and self.rewards_controller:
+            self.rewards_controller.set_twitch_context(
+                self.container.twitch_auth_manager,
+                twitch_api,
+                broadcaster_id
+            )
+
+        if broadcaster_id and self.container.twitch_auth_manager.is_authenticated():
+            if hasattr(self, 'twitch_reward_worker') and self.twitch_reward_worker:
+                self.twitch_reward_worker.stop()
+                self.twitch_reward_worker = None
+
+            self.twitch_reward_worker = TwitchRewardWorker(
+                self.container.i18n,
+                self.container.twitch_auth_manager,
+                TWITCH_CLIENT_ID,
+                broadcaster_id,
+                parent=self
+            )
+            self.twitch_reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
+            self.twitch_reward_worker.start()
+            self._fetch_twitch_rewards(broadcaster_id)
+
         self._start_twitch_chat_worker(broadcaster_login)
         self._update_integrations_status_ui()
-        missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
-        self.dashboard_controller.evaluate_scopes(missing_scopes)
+        self._evaluate_all_scopes()
 
     def _start_twitch_chat_worker(self, channel: str):
         if hasattr(self, 'twitch_chat_worker') and self.twitch_chat_worker:
@@ -780,21 +819,59 @@ class MainWindowCore(QMainWindow):
         self.twitch_chat_worker.message_received.connect(self._route_incoming_message)
         self.twitch_chat_worker.start()
 
-    def _on_twitch_connected(self, user_data: dict):
-        username = user_data.get("username", "")
-        broadcaster_id = user_data.get("broadcaster_id", "")
+    def _on_twitch_connected(self, user_data=None):
+        if isinstance(user_data, dict):
+            username = user_data.get("username", "")
+            broadcaster_id = user_data.get("broadcaster_id", "")
+        elif isinstance(user_data, str):
+            username = user_data
+            broadcaster_id = getattr(self.spam_service, "twitch_broadcaster_id", "")
+        else:
+            username = getattr(self, "_twitch_channel", "")
+            broadcaster_id = getattr(self.spam_service, "twitch_broadcaster_id", "")
+
         if broadcaster_id:
             self.spam_service.twitch_broadcaster_id = broadcaster_id
         self._twitch_connected = True
-        self._twitch_channel = username
+        if username:
+            self._twitch_channel = username
         self._update_integrations_status_ui()
 
         self.schedule_service.set_twitch_client(self.spam_service.twitch_api, broadcaster_id)
         if hasattr(self, "schedule_controller") and self.schedule_controller:
             self.schedule_controller.fetch_current_info()
 
-        missing_scopes = self.auth_manager.get_missing_scopes() + self.container.twitch_auth_manager.get_missing_scopes()
-        self.dashboard_controller.evaluate_scopes(missing_scopes)
+        if hasattr(self, "rewards_controller") and self.rewards_controller:
+            self.rewards_controller.set_twitch_context(
+                self.container.twitch_auth_manager,
+                self.spam_service.twitch_api,
+                broadcaster_id
+            )
+
+        if broadcaster_id and self.container.twitch_auth_manager.is_authenticated():
+            if not getattr(self, 'twitch_reward_worker', None):
+                self.twitch_reward_worker = TwitchRewardWorker(
+                    self.container.i18n,
+                    self.container.twitch_auth_manager,
+                    TWITCH_CLIENT_ID,
+                    broadcaster_id,
+                    parent=self
+                )
+                self.twitch_reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
+                self.twitch_reward_worker.start()
+        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+            if isinstance(user_data, dict) and user_data.get("followers") is not None and user_data.get("followers") > 0:
+                self.dashboard_controller.set_channel_profile("twitch", user_data)
+            elif self.spam_service.twitch_api and broadcaster_id:
+                try:
+                    full_info = self.spam_service.twitch_api.fetch_full_channel_info(broadcaster_id)
+                    self.dashboard_controller.set_channel_profile("twitch", full_info)
+                except Exception as e:
+                    logger.warning("[Twitch] Could not refresh full channel info: %s", e)
+            elif isinstance(user_data, dict):
+                self.dashboard_controller.set_channel_profile("twitch", user_data)
+
+        self._evaluate_all_scopes()
 
         title = self.container.i18n.get("main.toast.twitch_connected_title")
         msg = self.container.i18n.get("main.toast.twitch_connected_msg").replace("{username}", username)
@@ -803,6 +880,20 @@ class MainWindowCore(QMainWindow):
             message=msg,
             state="success"
         )
+
+    @Slot()
+    def _fetch_twitch_rewards(self, broadcaster_id: str = ""):
+        b_id = broadcaster_id or getattr(self.spam_service, "twitch_broadcaster_id", "")
+        if not b_id or not self.container.twitch_auth_manager.is_authenticated():
+            return
+        try:
+            twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
+            self.fetch_twitch_rewards_worker = FetchRewardsWorker(twitch_api, broadcaster_id=b_id, platform="twitch", parent=self)
+            self.fetch_twitch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
+            self.fetch_twitch_rewards_worker.finished.connect(self.fetch_twitch_rewards_worker.deleteLater)
+            self.fetch_twitch_rewards_worker.start()
+        except Exception as e:
+            logger.error("[Main] Error launching Twitch rewards fetcher: %s", e)
 
     def _on_twitch_socket_lost(self):
         self._twitch_connected = False
@@ -817,6 +908,8 @@ class MainWindowCore(QMainWindow):
         self._stop_twitch_connection_workers()
         self.twitch_chat_worker = None
         self.twitch_auth_worker = None
+        self.twitch_reward_worker = None
+        self.fetch_twitch_rewards_worker = None
         self.command_service.twitch_worker = None
         self.spam_service.twitch_api = None
         self.spam_service.twitch_worker = None
@@ -824,6 +917,8 @@ class MainWindowCore(QMainWindow):
         self.container.twitch_auth_manager.logout()
         self._twitch_connected = False
         self._twitch_channel = ""
+        if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+            self.dashboard_controller.clear_channel_profile("twitch")
         self._update_integrations_status_ui()
         title_disc = self.container.i18n.get("main.toast.twitch_disconnected_title")
         msg_disc = self.container.i18n.get("main.toast.twitch_disconnected_msg")
@@ -832,6 +927,7 @@ class MainWindowCore(QMainWindow):
             message=msg_disc,
             state="info"
         )
+        self._evaluate_all_scopes()
 
     def _update_integrations_status_ui(self):
         kick_connected = getattr(self, "_kick_connected", False)
@@ -844,17 +940,25 @@ class MainWindowCore(QMainWindow):
         tiktok_channel = getattr(self, "_tiktok_channel", "")
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+            self.dashboard_controller.set_kick_status(
+                connected=kick_connected,
+                channel=kick_user,
+                msg_count=self.session_platform_messages.get("kick", 0)
+            )
             self.dashboard_controller.set_twitch_status(
                 connected=twitch_connected,
-                channel=twitch_channel
+                channel=twitch_channel,
+                msg_count=self.session_platform_messages.get("twitch", 0)
             )
             self.dashboard_controller.set_youtube_status(
                 connected=youtube_connected,
-                channel=youtube_channel
+                channel=youtube_channel,
+                msg_count=self.session_platform_messages.get("youtube", 0)
             )
             self.dashboard_controller.set_tiktok_status(
                 connected=tiktok_connected,
-                channel=tiktok_channel
+                channel=tiktok_channel,
+                msg_count=self.session_platform_messages.get("tiktok", 0)
             )
 
         if hasattr(self, "view_settings") and self.view_settings:
@@ -1061,12 +1165,33 @@ class MainWindowCore(QMainWindow):
             self._handle_twitch_auth_process(force=False)
 
     @Slot()
+    def _evaluate_all_scopes(self):
+        missing_scopes = {
+            "kick": self.auth_manager.get_missing_scopes() if self.auth_manager.is_authenticated() else [],
+            "twitch": self.container.twitch_auth_manager.get_missing_scopes() if self.container.twitch_auth_manager.is_authenticated() else []
+        }
+        self.dashboard_controller.evaluate_scopes(missing_scopes)
+
+    @Slot()
     def _force_reauth(self):
         if self.container.twitch_auth_manager.has_missing_scopes():
-            self._handle_twitch_auth_process(force=True)
-        if self.auth_manager.has_missing_scopes() or not self.container.twitch_auth_manager.has_missing_scopes():
-            self.auth_manager.logout()
-            self._handle_auth_process()
+            self._handle_reauth_twitch()
+        elif self.auth_manager.has_missing_scopes():
+            self._handle_reauth_kick()
+
+    @Slot()
+    def _handle_reauth_kick(self):
+        self.logger.info("[User Action] Requested renewal of Kick permissions")
+        self.auth_manager.logout()
+        self._kick_connected = False
+        self._kick_username = ""
+        self.dashboard_controller.reset_to_disconnected()
+        self._handle_auth_process(force=True)
+
+    @Slot()
+    def _handle_reauth_twitch(self):
+        self.logger.info("[User Action] Requested renewal of Twitch permissions")
+        self._handle_twitch_auth_process(force=True)
 
     @Slot()
     def _handle_unlink_account(self):
@@ -1094,19 +1219,11 @@ class MainWindowCore(QMainWindow):
                 self.auth_manager.logout()
                 self._kick_connected = False
                 self._kick_username = ""
-                self.dashboard_controller.reset_to_disconnected()
+                if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+                    self.dashboard_controller.clear_channel_profile("kick")
                 self.sidebar.reset_profile_info()
                 self._update_integrations_status_ui()
-
-                missing_scopes = self.container.twitch_auth_manager.get_missing_scopes()
-                self.dashboard_controller.evaluate_scopes(missing_scopes)
-                
-                self._handle_navigation("Dashboard")
-                
-                for btn in self.sidebar.nav_buttons:
-                    if btn.property("view_name") == "Dashboard":
-                        btn.setChecked(True)
-                        break
+                self._evaluate_all_scopes()
         else:
             self._handle_auth_process()
 
@@ -1136,8 +1253,22 @@ class MainWindowCore(QMainWindow):
             dto = user_or_dto
             if not dto.timestamp:
                 dto.timestamp = current_time
+            platform = getattr(dto, "platform", "kick") or "kick"
         else:
             dto = ChatMessageDTO(user_or_dto, msg, badges or [], color, msg_id, sender_id, timestamp=current_time)
+            platform = "kick"
+
+        if hasattr(self, "session_platform_messages") and platform in self.session_platform_messages:
+            self.session_platform_messages[platform] += 1
+            if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+                self.dashboard_controller.update_platform_messages(
+                    kick=self.session_platform_messages["kick"],
+                    twitch=self.session_platform_messages["twitch"],
+                    youtube=self.session_platform_messages["youtube"],
+                    tiktok=self.session_platform_messages["tiktok"]
+                )
+                self._update_integrations_status_ui()
+
         self.chat_controller.process_message(dto)
 
     def _on_poll_updated(self, poll_data: dict):
@@ -1217,18 +1348,10 @@ class MainWindowCore(QMainWindow):
         self.tray_manager.set_tts_voice_type_state(settings.get("provider", "local") == "web")
 
     @Slot(int)
-    def _apply_dynamic_theme(self, base_size: int, immediate: bool = False):
-        if hasattr(self, "_theme_timer") and self._theme_timer.isActive():
-            self._theme_timer.stop()
-        
-        if immediate:
-            QApplication.instance().setStyleSheet(get_global_qss(base_size))
-            return
-
-        self._theme_timer = QTimer(self)
-        self._theme_timer.setSingleShot(True)
-        self._theme_timer.timeout.connect(lambda: QApplication.instance().setStyleSheet(get_global_qss(base_size)))
-        self._theme_timer.start(250)
+    def _apply_dynamic_theme(self, base_size: int, immediate: bool = True):
+        app = QApplication.instance()
+        if app:
+            app.setStyleSheet(get_global_qss(base_size))
 
     @Slot(object)
     def _on_silent_update_found(self, info):
@@ -1252,11 +1375,13 @@ class MainWindowCore(QMainWindow):
     def _update_dashboard_metrics(self, force_db_query=False):
         if self._cached_total_usages is None or self._cached_active_timers is None or force_db_query:
             try:
-                summary = self.container.commands_storage.get_active_features_summary()
-                self._cached_total_usages = summary.get("total_command_usages", 0)
-                self._cached_active_timers = summary.get("active_timers", 0)
+                analytics = self.container.db_manager.get_dashboard_analytics_summary()
+                self._cached_total_usages = analytics.get("total_command_usages", 0)
+                self._cached_active_timers = analytics.get("active_timers", 0)
+                if hasattr(self, "dashboard_controller") and self.dashboard_controller:
+                    self.dashboard_controller.update_analytics_summary(analytics)
             except Exception as e:
-                self.logger.error(f"[Metrics] Error reading summary: {e}")
+                self.logger.error(f"[Metrics] Error reading analytics: {e}")
                 self._cached_total_usages = self._cached_total_usages or 0
                 self._cached_active_timers = self._cached_active_timers or 0
 
@@ -1266,3 +1391,7 @@ class MainWindowCore(QMainWindow):
             timer_count=self._cached_active_timers,
             spam_count=self.session_metrics["spam_blocked"]
         )
+
+        if hasattr(self, "schedule_service") and hasattr(self, "dashboard_controller"):
+            next_sched = self.schedule_service.get_next_schedule_text()
+            self.dashboard_controller.update_next_schedule(next_sched)

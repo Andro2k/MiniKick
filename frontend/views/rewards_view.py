@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH
 from frontend.common import get_pixmap_colored, get_icon_colored
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
@@ -106,6 +106,8 @@ class RewardsView(BaseView):
     def __init__(self, i18n, overlay_url="http://localhost:8090/overlay", parent=None):
         super().__init__(i18n=i18n, title_key="rewards.header.title", subtitle_key="rewards.header.subtitle", parent=parent)
         self.overlay_url = overlay_url
+        self._raw_mappings: dict = {}
+        self._current_sort: tuple[int, str] | None = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -129,15 +131,18 @@ class RewardsView(BaseView):
         self.main_layout.addWidget(obs_card)
 
     def _build_table_card(self):
-        col_1 = self.i18n.get("rewards.table.col_reward")
-        col_2 = self.i18n.get("rewards.table.col_file")
-        col_3 = self.i18n.get("rewards.table.col_pos")
-        col_4 = self.i18n.get("rewards.table.col_volume")
-        col_5 = self.i18n.get("rewards.table.col_actions")
+        col_0 = self.i18n.get("rewards.table.col_reward")
+        col_plat = self.i18n.get("rewards.table.col_platform")
+        col_cost = self.i18n.get("rewards.table.col_cost")
+        col_file = self.i18n.get("rewards.table.col_file")
+        col_pos = self.i18n.get("rewards.table.col_pos")
+        col_vol = self.i18n.get("rewards.table.col_volume")
+        col_actions = self.i18n.get("rewards.table.col_actions")
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("rewards.table.title"),
-            headers=[col_1, col_2, col_3, col_4, col_5],
+            headers=[col_0, col_plat, col_cost, col_file, col_pos, col_vol, col_actions],
+            search_placeholder=self.i18n.get("rewards.table.search_placeholder"),
             add_button_text=self.i18n.get("rewards.table.btn_new"),
             add_button_icon="add.svg"
         )
@@ -155,19 +160,128 @@ class RewardsView(BaseView):
         self.btn_new_rewards = self.table_card.btn_add
         self.btn_new_rewards.clicked.connect(self.add_requested.emit)
         
-        self.table_rewards.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self.table_rewards.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.table_rewards.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.table_rewards.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
-        self.table_rewards.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        self.txt_search = self.table_card.txt_search
+        if self.txt_search:
+            self.txt_search.textChanged.connect(self._apply_filters)
+
+        self.filter_header = self.table_card.enable_filter_header()
+        sort_asc_text = self.i18n.get("rewards.table.filter_sort_asc")
+        sort_desc_text = self.i18n.get("rewards.table.filter_sort_desc")
+        all_text = self.i18n.get("rewards.table.filter_all")
+
+        self.filter_header.set_column_filter(
+            col_idx=0,
+            title=col_0,
+            options=None,
+            sort_asc_label=sort_asc_text,
+            sort_desc_label=sort_desc_text
+        )
+
+        plat_options = [
+            {"id": "kick", "label": "Kick"},
+            {"id": "twitch", "label": "Twitch"}
+        ]
+        self.filter_header.set_column_filter(
+            col_idx=1,
+            title=col_plat,
+            options=plat_options,
+            all_label=all_text,
+            sort_asc_label=sort_asc_text,
+            sort_desc_label=sort_desc_text
+        )
+
+        self.filter_header.set_column_filter(
+            col_idx=2,
+            title=col_cost,
+            options=None,
+            sort_asc_label=self.i18n.get("rewards.table.filter_cost_asc"),
+            sort_desc_label=self.i18n.get("rewards.table.filter_cost_desc")
+        )
+
+        self.filter_header.filter_changed.connect(self._apply_filters)
+        self.filter_header.sort_requested.connect(self._on_sort_requested)
+
+        self.filter_header.setMinimumSectionSize(80)
+        self.filter_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        self.filter_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
+        self.filter_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
         
-        self.table_rewards.setColumnWidth(2, 130)
-        self.table_rewards.setColumnWidth(3, 90)
-        self.table_rewards.setColumnWidth(4, 140)
+        self.table_rewards.setColumnWidth(0, 180)
+        self.table_rewards.setColumnWidth(1, 115)
+        self.table_rewards.setColumnWidth(2, 95)
+        self.table_rewards.setColumnWidth(4, 115)
+        self.table_rewards.setColumnWidth(5, 85)
+        self.table_rewards.setColumnWidth(6, 140)
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
+    def _on_sort_requested(self, col_idx: int, order: str):
+        self._current_sort = (col_idx, order)
+        self._apply_filters()
+
     def populate_table(self, mappings: dict):
+        self._raw_mappings = mappings or {}
+        self._apply_filters()
+
+    def _apply_filters(self):
+        query = self.txt_search.text().strip().lower() if self.txt_search else ""
+        active_filters = self.filter_header.get_active_filters() if hasattr(self, 'filter_header') and self.filter_header else {}
+        plat_active = active_filters.get(1, set())
+
+        filtered: list[tuple[str, dict]] = []
+        for reward, config in self._raw_mappings.items():
+            conf_dict = config if isinstance(config, dict) else {}
+            plat = conf_dict.get("platform", "kick").lower()
+            if plat_active and plat not in plat_active:
+                continue
+
+            if query:
+                filepath = config if isinstance(config, str) else conf_dict.get("filepath", "")
+                cost_str = str(conf_dict.get("cost", 0))
+                if (query not in reward.lower() and 
+                    query not in filepath.lower() and 
+                    query not in plat and 
+                    query not in cost_str):
+                    continue
+
+            filtered.append((reward, conf_dict))
+
+        if self._current_sort:
+            col_idx, order = self._current_sort
+            reverse = (order == "desc")
+
+            def get_sort_key(item: tuple[str, dict]):
+                name, conf = item
+                if col_idx == 0:
+                    return name.lower()
+                elif col_idx == 1:
+                    return conf.get("platform", "kick").lower()
+                elif col_idx == 2:
+                    try:
+                        return int(conf.get("cost", 0))
+                    except (ValueError, TypeError):
+                        return 0
+                elif col_idx == 3:
+                    fp = conf.get("filepath", "")
+                    return os.path.basename(fp).lower()
+                elif col_idx == 4:
+                    return int(conf.get("is_random_pos", False))
+                elif col_idx == 5:
+                    try:
+                        return float(conf.get("volume", 1.0))
+                    except (ValueError, TypeError):
+                        return 1.0
+                return name.lower()
+
+            filtered.sort(key=get_sort_key, reverse=reverse)
+
+        self._render_rows(filtered)
+
+    def _render_rows(self, items: list[tuple[str, dict]]):
         self.table_rewards.setUpdatesEnabled(False)
         self.table_rewards.setRowCount(0)
         str_unknown = self.i18n.get("rewards.table.unknown_file")
@@ -175,12 +289,11 @@ class RewardsView(BaseView):
         missing_tooltip_base = self.i18n.get("rewards.table.file_not_found_tooltip")
         missing_count = 0
         
-        for reward, config in mappings.items():
+        for reward, conf_dict in items:
             row = self.table_rewards.rowCount()
             self.table_rewards.insertRow(row)
             
-            filepath = config if isinstance(config, str) else config.get("filepath", str_unknown)
-            conf_dict = config if isinstance(config, dict) else {}
+            filepath = conf_dict.get("filepath", str_unknown)
             
             is_valid_file = bool(filepath) and filepath != str_unknown and os.path.exists(filepath) and os.path.isfile(filepath)
             if not is_valid_file:
@@ -193,6 +306,29 @@ class RewardsView(BaseView):
                 item_reward.setToolTip(f"{reward}\n⚠️ {missing_tooltip_base}")
             self.table_rewards.setItem(row, 0, item_reward)
             
+            plat = conf_dict.get("platform", "kick")
+            is_twitch = plat.lower() == "twitch"
+            plat_name = "Twitch" if is_twitch else "Kick"
+            plat_color = COLOR_TWITCH if is_twitch else COLOR_GREEN
+            icon_name = "brand-twitch.svg" if is_twitch else "brand-kick.svg"
+            
+            item_plat = QTableWidgetItem(plat_name)
+            item_plat.setIcon(get_icon_colored(icon_name, plat_color, 16))
+            item_plat.setForeground(QColor(plat_color))
+            item_plat.setFlags(item_plat.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table_rewards.setItem(row, 1, item_plat)
+
+            cost_val = conf_dict.get("cost", 0)
+            try:
+                cost_num = int(cost_val)
+            except (ValueError, TypeError):
+                cost_num = 0
+            cost_str = self.i18n.get("rewards.table.pts_suffix").replace("{cost}", f"{cost_num:,}")
+            item_cost = QTableWidgetItem(cost_str)
+            item_cost.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            item_cost.setFlags(item_cost.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.table_rewards.setItem(row, 2, item_cost)
+
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
@@ -203,7 +339,7 @@ class RewardsView(BaseView):
                 item_file = QTableWidgetItem(file_basename)
                 item_file.setToolTip(filepath)
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table_rewards.setItem(row, 1, item_file)
+            self.table_rewards.setItem(row, 3, item_file)
             
             is_random = conf_dict.get("is_random_pos", False)
             if is_random:
@@ -214,13 +350,13 @@ class RewardsView(BaseView):
                 pos_str = f"X: {pos_x}, Y: {pos_y}"
             item_pos = QTableWidgetItem(pos_str)
             item_pos.setFlags(item_pos.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table_rewards.setItem(row, 2, item_pos)
+            self.table_rewards.setItem(row, 4, item_pos)
             
             vol = conf_dict.get("volume", 1.0)
             vol_pct = int(round(vol * 100)) if isinstance(vol, (int, float)) else 100
             item_vol = QTableWidgetItem(f"{vol_pct}%")
             item_vol.setFlags(item_vol.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.table_rewards.setItem(row, 3, item_vol)
+            self.table_rewards.setItem(row, 5, item_vol)
             
             cell = TableActionCell()
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
@@ -246,19 +382,19 @@ class RewardsView(BaseView):
                 callback=lambda checked=False, r=reward: self.delete_requested.emit(r)
             )
             
-            self.table_rewards.setCellWidget(row, 4, cell)
+            self.table_rewards.setCellWidget(row, 6, cell)
 
         self.table_rewards.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(mappings) == 0)
+        total_mappings_count = len(self._raw_mappings)
+        self.table_card.set_empty(len(items) == 0 and total_mappings_count == 0)
 
         if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
             title_base = self.i18n.get("rewards.table.title")
-            total_count = len(mappings)
             if missing_count > 0:
                 warning_label = self.i18n.get("rewards.table.missing_files_warning")
-                self.table_card.lbl_title.setText(f"{title_base} ({total_count}) • {missing_count} {warning_label}")
+                self.table_card.lbl_title.setText(f"{title_base} ({total_mappings_count}) • {missing_count} {warning_label}")
             else:
-                self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
+                self.table_card.lbl_title.setText(f"{title_base} ({total_mappings_count})")
 
     @Slot()
     def _copy_obs_url(self):

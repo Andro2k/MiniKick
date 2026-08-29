@@ -82,11 +82,49 @@ class TwitchAPIClient:
                 "bio": user_info.get("description", ""),
                 "avatar_url": user_info.get("profile_image_url", ""),
                 "created_at": created_at,
+                "broadcaster_type": user_info.get("broadcaster_type", ""),
                 "platform": "twitch"
             }
         except Exception as e:
             logging.error("[TwitchAPI] Error fetching user data: %s", e)
             raise e
+
+    def fetch_channel_followers(self, broadcaster_id: str) -> int:
+        if not broadcaster_id:
+            return 0
+        url = f"{TWITCH_HELIX_BASE}/channels/followers?broadcaster_id={broadcaster_id}&moderator_id={broadcaster_id}"
+        try:
+            resp = self._request("GET", url, timeout=8)
+            if resp.status_code == 200:
+                return resp.json().get("total", 0)
+            logging.warning("[TwitchAPI] Failed fetching followers HTTP %s: %s", resp.status_code, resp.text)
+            return 0
+        except Exception as e:
+            logging.error("[TwitchAPI] Error fetching channel followers: %s", e)
+            return 0
+
+    def fetch_full_channel_info(self, broadcaster_id: str = "") -> dict:
+        user_info = self.fetch_user_data()
+        b_id = broadcaster_id or user_info.get("broadcaster_id", "")
+        
+        followers = 0
+        category = "-"
+        if b_id:
+            try:
+                followers = self.fetch_channel_followers(b_id)
+            except Exception as e:
+                logging.warning("[TwitchAPI] Could not fetch followers: %s", e)
+            try:
+                meta = self.get_channel_metadata(b_id)
+                if meta and meta.get("game_name"):
+                    category = meta.get("game_name", "-")
+            except Exception as e:
+                logging.warning("[TwitchAPI] Could not fetch metadata: %s", e)
+
+        user_info["followers"] = followers
+        user_info["category"] = category
+        user_info["last_category"] = category
+        return user_info
 
     def post_chat_message(self, broadcaster_id: str, sender_id: str, message: str) -> bool:
         url = f"{TWITCH_HELIX_BASE}/chat/messages"
@@ -212,3 +250,122 @@ class TwitchAPIClient:
         except Exception as e:
             logging.error("[TwitchAPI] Error searching categories on Twitch: %s", e)
             return []
+
+    def fetch_channel_rewards(self, broadcaster_id: str) -> dict:
+        if not broadcaster_id:
+            return {"data": []}
+        url = f"{TWITCH_HELIX_BASE}/channel_points/custom_rewards?broadcaster_id={broadcaster_id}&only_manageable_rewards=false"
+        try:
+            resp = self._request("GET", url, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json().get("data", [])
+                normalized = []
+                for item in data:
+                    img = item.get("image", {}) or item.get("default_image", {})
+                    img_url = img.get("url_4x") or img.get("url_2x") or img.get("url_1x") or ""
+                    normalized.append({
+                        "id": item.get("id", ""),
+                        "title": item.get("title", ""),
+                        "cost": item.get("cost", 100),
+                        "description": item.get("prompt", ""),
+                        "background_color": item.get("background_color", "#9146FF"),
+                        "is_user_input_required": item.get("is_user_input_required", False),
+                        "is_enabled": item.get("is_enabled", True),
+                        "image_url": img_url,
+                        "platform": "twitch"
+                    })
+                return {"data": normalized}
+            logging.warning("[TwitchAPI] Failed fetching channel points rewards HTTP %s: %s", resp.status_code, resp.text)
+            return {"data": []}
+        except Exception as e:
+            logging.error("[TwitchAPI] Error fetching channel points rewards: %s", e)
+            return {"data": []}
+
+    def create_channel_reward(self, broadcaster_id: str, title: str, cost: int, description: str = "", background_color: str = "#9146FF", is_user_input_required: bool = False) -> dict:
+        if not broadcaster_id:
+            raise ValueError("Broadcaster ID es requerido para crear recompensas en Twitch")
+        url = f"{TWITCH_HELIX_BASE}/channel_points/custom_rewards?broadcaster_id={broadcaster_id}"
+        payload = {
+            "title": title,
+            "cost": int(cost),
+            "prompt": description or "",
+            "background_color": background_color if background_color.startswith("#") else f"#{background_color}",
+            "is_user_input_required": bool(is_user_input_required),
+            "is_enabled": True
+        }
+        try:
+            resp = self._request("POST", url, json=payload, timeout=10)
+            if resp.status_code in (200, 201):
+                data = resp.json().get("data", [])
+                item = data[0] if data else {}
+                return {
+                    "data": {
+                        "id": item.get("id", ""),
+                        "title": item.get("title", title),
+                        "cost": item.get("cost", cost),
+                        "description": item.get("prompt", description),
+                        "background_color": item.get("background_color", background_color),
+                        "is_user_input_required": item.get("is_user_input_required", is_user_input_required),
+                        "platform": "twitch"
+                    }
+                }
+            err_msg = resp.json().get("message", resp.text) if resp.text else f"HTTP {resp.status_code}"
+            raise ValueError(f"Error Twitch Helix ({resp.status_code}): {err_msg}")
+        except Exception as e:
+            logging.error("[TwitchAPI] Error creating reward on Twitch: %s", e)
+            raise e
+
+    def update_channel_reward(self, broadcaster_id: str, reward_id: str, payload: dict) -> dict:
+        if not broadcaster_id or not reward_id:
+            raise ValueError("Broadcaster ID y Reward ID son requeridos para actualizar recompensa")
+        url = f"{TWITCH_HELIX_BASE}/channel_points/custom_rewards?broadcaster_id={broadcaster_id}&id={reward_id}"
+        
+        helix_payload = {}
+        if "title" in payload:
+            helix_payload["title"] = payload["title"]
+        if "cost" in payload:
+            helix_payload["cost"] = int(payload["cost"])
+        if "description" in payload:
+            helix_payload["prompt"] = payload["description"]
+        elif "prompt" in payload:
+            helix_payload["prompt"] = payload["prompt"]
+        if "background_color" in payload:
+            bg = payload["background_color"]
+            helix_payload["background_color"] = bg if bg.startswith("#") else f"#{bg}"
+        if "is_user_input_required" in payload:
+            helix_payload["is_user_input_required"] = bool(payload["is_user_input_required"])
+        if "is_enabled" in payload:
+            helix_payload["is_enabled"] = bool(payload["is_enabled"])
+
+        try:
+            resp = self._request("PATCH", url, json=helix_payload, timeout=10)
+            if resp.status_code == 200:
+                data = resp.json().get("data", [])
+                item = data[0] if data else {}
+                return {
+                    "data": {
+                        "id": item.get("id", reward_id),
+                        "title": item.get("title", payload.get("title", "")),
+                        "cost": item.get("cost", payload.get("cost", 100)),
+                        "description": item.get("prompt", payload.get("description", "")),
+                        "background_color": item.get("background_color", payload.get("background_color", "#9146FF")),
+                        "is_user_input_required": item.get("is_user_input_required", payload.get("is_user_input_required", False)),
+                        "platform": "twitch"
+                    }
+                }
+            err_msg = resp.json().get("message", resp.text) if resp.text else f"HTTP {resp.status_code}"
+            raise ValueError(f"Error Twitch Helix ({resp.status_code}): {err_msg}")
+        except Exception as e:
+            logging.error("[TwitchAPI] Error updating reward on Twitch: %s", e)
+            raise e
+
+    def delete_channel_reward(self, broadcaster_id: str, reward_id: str) -> bool:
+        if not broadcaster_id or not reward_id:
+            return False
+        url = f"{TWITCH_HELIX_BASE}/channel_points/custom_rewards?broadcaster_id={broadcaster_id}&id={reward_id}"
+        try:
+            resp = self._request("DELETE", url, timeout=10)
+            return resp.status_code == 204
+        except Exception as e:
+            logging.error("[TwitchAPI] Error deleting reward on Twitch: %s", e)
+            return False

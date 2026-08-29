@@ -37,6 +37,7 @@ DEFAULT_DICTIONARY = {
             "orientation_horizontal": "Horizontal (Ticker)",
             "orientation_title": "Chat Orientation",
             "orientation_vertical": "Vertical (Column)",
+            "recommended_dim": "Recommended OBS source size: {dim}",
             "show_bots_desc": "Display messages from muted bots on the stream screen.",
             "show_bots_title": "Show Bots",
             "show_time_desc": "Show the message timestamp next to the username.",
@@ -49,8 +50,7 @@ DEFAULT_DICTIONARY = {
             "theme_glass": "Glassmorphism",
             "theme_minimal": "Minimalist (Floating Glow)",
             "theme_neon": "Neon Glow (Neon)",
-            "theme_title": "Overlay Design",
-            "recommended_dim": "Recommended OBS source size: {dim}"
+            "theme_title": "Overlay Design"
         },
         "roles": {
             "broadcaster_title": "Streamer Voice",
@@ -215,6 +215,7 @@ DEFAULT_DICTIONARY = {
             "no": "No",
             "offline": "Offline",
             "online": "Online",
+            "warning": "Warning",
             "yes": "Yes"
         }
     },
@@ -502,8 +503,8 @@ DEFAULT_DICTIONARY = {
         "logs": {
             "api_error": "Kick Rewards API failure: {error}",
             "api_error_setup": "Error preparing rewards query: {error}",
-            "api_fetching": "Rewards are already being fetched. Please wait.",
             "api_offline": "Attempted to update rewards while offline from Kick.",
+            "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
             "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
             "shutdown_complete": "Thread shutdown sequence complete.",
             "shutdown_init": "Initiating shutdown sequence...",
@@ -782,9 +783,10 @@ DEFAULT_DICTIONARY = {
                     "desc": "Select the channel points reward that will trigger this visual or sound effect.",
                     "edit_title_label": "Reward Name",
                     "file_label": "Media File",
+                    "file_missing_warning": "The selected file does not exist on disk. Please choose a valid file.",
                     "file_placeholder": "Ex. my_reward.mp4 or sound.mp3",
                     "loading": "Loading rewards...",
-                    "mode_create": "Create New Reward on Kick",
+                    "mode_create": "Create New Reward",
                     "mode_existing": "Use Existing Reward",
                     "mode_select": "Reward Origin",
                     "new_color_label": "Background Color (Hex)",
@@ -796,9 +798,12 @@ DEFAULT_DICTIONARY = {
                     "new_user_input_label": "Requires viewer text input",
                     "no_available": "No rewards available",
                     "no_rewards": "No rewards",
+                    "platform_kick": "Kick",
+                    "platform_label": "Reward Platform",
+                    "platform_twitch": "Twitch",
                     "reward_selection": "Reward Selection",
                     "title": "Reward & File",
-                    "tooltip_refresh": "Refresh Kick Rewards"
+                    "tooltip_refresh": "Refresh Rewards"
                 },
                 "step2": {
                     "btn_visual": "Position in OBS",
@@ -814,11 +819,11 @@ DEFAULT_DICTIONARY = {
         },
         "empty": {
             "btn": "Link Reward",
-            "desc": "Link your Kick channel points to interactive videos, animations, or sound effects on screen.",
+            "desc": "Link your Kick and Twitch channel points with interactive videos, animations or sounds on screen.",
             "title": "No linked rewards yet"
         },
         "header": {
-            "subtitle": "Connect your Kick rewards with custom stream alerts and media.",
+            "subtitle": "Connect your Kick and Twitch rewards with custom stream alerts and media.",
             "title": "Linked Rewards"
         },
         "obs": {
@@ -828,30 +833,46 @@ DEFAULT_DICTIONARY = {
         },
         "status": {
             "created": "Reward Created",
-            "created_api_error": "Error creating reward on Kick: {error}",
-            "created_api_success": "Reward '{reward}' created successfully on Kick.",
+            "created_api_error": "Error creating reward on {platform}: {error}",
+            "created_api_success": "Reward '{reward}' created successfully on {platform}.",
             "created_msg": "Linked to reward: {reward}",
-            "creating_api": "Creating Reward on Kick...",
+            "creating_api": "Creating Reward on {platform}...",
             "deleted": "Reward Deleted",
             "deleted_msg": "Reward unlinked: {reward}",
+            "file_not_found_action": "Media file not found on disk. Please edit the reward to select a valid file.",
+            "redeem_file_missing": "The media file for reward '{reward}' does not exist or was moved.",
             "updated": "Reward Updated",
-            "updated_api_error": "Error updating on Kick: {error}",
-            "updated_api_success": "Reward '{reward}' updated successfully on Kick.",
+            "updated_api_success": "Reward '{reward}' updated successfully on {platform}.",
+            "updated_local_only_twitch_unmanageable": "Local settings saved. (Note: Rewards created on Twitch dashboard must have their title/cost edited on Twitch).",
+            "updated_local_saved_api_failed": "Local settings saved in MiniKick. (Remote API update failed: {error})",
             "updated_msg": "Saved settings for: {reward}",
-            "updating_api": "Updating Reward on Kick..."
+            "updating_api": "Updating Reward on {platform}..."
         },
         "table": {
             "btn_new": "New Rewards",
             "col_actions": "Actions",
+            "col_cost": "Cost",
             "col_file": "File",
+            "col_platform": "Platform",
             "col_pos": "Position",
-            "col_reward": "Kick Reward",
+            "col_reward": "Reward",
             "col_volume": "Volume",
+            "file_not_found_tag": "Not found",
+            "file_not_found_tooltip": "Media file does not exist on disk or was moved",
+            "filter_all": "All",
+            "filter_cost_asc": "Lowest to highest cost",
+            "filter_cost_desc": "Highest to lowest cost",
+            "filter_sort_asc": "Sort A-Z",
+            "filter_sort_desc": "Sort Z-A",
+            "missing_files_warning": "file(s) not found",
             "pos_random": "Random",
+            "pts_suffix": "{cost} pts",
+            "search_placeholder": "Search by name, file...",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Reward",
             "tooltip_edit": "Modify settings",
             "tooltip_play": "Test in OBS",
+            "tooltip_play_missing": "Cannot play: media file not found",
             "unknown_file": "Unknown"
         }
     },

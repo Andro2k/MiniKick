@@ -38,6 +38,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
+        self.selected_platform = self.existing_config.get("platform", "kick")
         self._build_step1(rewards_list, existing_reward)
         self._build_step2()
         self.add_page(self.step1_widget)
@@ -127,7 +128,31 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(12)
         
+        lbl_plat = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.platform_label"))
+        lbl_plat.setProperty("role", "h3")
+        layout.addWidget(lbl_plat)
+
+        plat_row = QHBoxLayout()
+        self.rb_plat_kick = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.platform_kick"))
+        self.rb_plat_twitch = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.platform_twitch"))
+        if self.selected_platform == "twitch":
+            self.rb_plat_twitch.setChecked(True)
+        else:
+            self.rb_plat_kick.setChecked(True)
+
+        self.btn_group_plat = QButtonGroup(self)
+        self.btn_group_plat.addButton(self.rb_plat_kick, 0)
+        self.btn_group_plat.addButton(self.rb_plat_twitch, 1)
+
+        plat_row.addWidget(self.rb_plat_kick)
+        plat_row.addWidget(self.rb_plat_twitch)
+        plat_row.addStretch()
+        layout.addLayout(plat_row)
+        layout.addSpacing(4)
+
         if self.is_edit_mode:
+            self.rb_plat_kick.setEnabled(False)
+            self.rb_plat_twitch.setEnabled(False)
             row_title_cost = QHBoxLayout()
             
             col_t = QVBoxLayout()
@@ -172,6 +197,9 @@ class RewardsConfigWizard(ModernWizardPanel):
             
             layout.addWidget(self._build_user_input_row())
         else:
+            self.rb_plat_kick.toggled.connect(self._on_platform_changed)
+            self.rb_plat_twitch.toggled.connect(self._on_platform_changed)
+
             lbl_mode = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.mode_select"))
             lbl_mode.setProperty("role", "h3")
             layout.addWidget(lbl_mode)
@@ -202,14 +230,10 @@ class RewardsConfigWizard(ModernWizardPanel):
             
             row1 = QHBoxLayout()
             self.combo_rewards = NoWheelComboBox()
-            if rewards_list:
-                self.combo_rewards.addItems(rewards_list)
-            else:
-                self.combo_rewards.addItem(self.i18n.get("rewards.dialogs.wizard.step1.loading"))
+            self.rewards_list_raw = rewards_list
+            self._filter_rewards_by_platform()
                 
             if existing_reward:
-                if rewards_list and existing_reward not in rewards_list:
-                    self.combo_rewards.addItem(existing_reward)
                 self.combo_rewards.setCurrentText(existing_reward)
                 
             row1.addWidget(self.combo_rewards, stretch=1)
@@ -387,26 +411,60 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.addWidget(self.video_container)
         layout.addStretch()
 
+    def _on_platform_changed(self):
+        self.selected_platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
+        self._filter_rewards_by_platform()
+        if hasattr(self, 'rb_create') and self.rb_create.isChecked():
+            default_color = "#9146FF" if self.selected_platform == "twitch" else "#00e701"
+            self._set_color(default_color)
+
+    def _filter_rewards_by_platform(self):
+        if not hasattr(self, 'combo_rewards'):
+            return
+
+        plat = self.selected_platform
+        filtered = []
+        no_rewards_str = self.i18n.get("rewards.dialogs.wizard.step1.no_rewards")
+        no_avail_str = self.i18n.get("rewards.dialogs.wizard.step1.no_available")
+        loading_str = self.i18n.get("rewards.dialogs.wizard.step1.loading")
+        invalid_placeholders = {no_rewards_str, no_avail_str, loading_str, "No Rewards", "No rewards available"}
+
+        if isinstance(self.rewards_list_raw, dict):
+            filtered = [r for r in self.rewards_list_raw.get(plat, []) if r not in invalid_placeholders]
+        elif isinstance(self.rewards_list_raw, list):
+            for r_name in self.rewards_list_raw:
+                if r_name in invalid_placeholders:
+                    continue
+                details = self.rewards_details_map.get(r_name, {})
+                r_plat = details.get("platform", "kick")
+                if r_plat == plat and r_name not in filtered:
+                    filtered.append(r_name)
+
+        for r_name, details in self.rewards_details_map.items():
+            if r_name not in invalid_placeholders and r_name not in filtered:
+                if details.get("platform", "kick") == plat:
+                    filtered.append(r_name)
+
+        self.combo_rewards.blockSignals(True)
+        self.combo_rewards.clear()
+        if filtered:
+            self.combo_rewards.addItems(filtered)
+        else:
+            self.combo_rewards.addItem(self.i18n.get("rewards.dialogs.wizard.step1.no_available"))
+        self.combo_rewards.blockSignals(False)
+        self._on_combo_reward_changed(self.combo_rewards.currentText())
+        self._update_btn_next_state()
+
+    def update_rewards(self, rewards_list):
+        self.rewards_list_raw = rewards_list
+        self._filter_rewards_by_platform()
+        if hasattr(self, 'btn_refresh'):
+            self.btn_refresh.setEnabled(True)
+
     def _request_refresh(self):
         if self.parent():
             self.btn_refresh.setEnabled(False)
             self.parent().refresh_rewards_requested.emit()
-
-    def update_rewards(self, rewards_list):
-        if hasattr(self, 'combo_rewards'):
-            current = self.combo_rewards.currentText()
-            self.combo_rewards.clear()
-            if hasattr(self, 'existing_reward') and self.existing_reward:
-                if self.existing_reward not in rewards_list:
-                    rewards_list.insert(0, self.existing_reward)
-            self.combo_rewards.addItems(rewards_list)
-            if current in rewards_list:
-                self.combo_rewards.setCurrentText(current)
-            elif hasattr(self, 'existing_reward') and self.existing_reward in rewards_list:
-                self.combo_rewards.setCurrentText(self.existing_reward)
-                
-            if hasattr(self, 'btn_refresh'):
-                self.btn_refresh.setEnabled(True)
 
     def _browse_file(self):
         title = self.i18n.get("rewards.dialogs.wizard.file_dialog_title")
@@ -462,6 +520,13 @@ class RewardsConfigWizard(ModernWizardPanel):
             self.txt_file_path.setToolTip("")
         self._evaluate_media_type(filepath)
         if isinstance(config, dict):
+            plat = config.get("platform", "kick")
+            self.selected_platform = plat
+            if plat == "twitch" and hasattr(self, 'rb_plat_twitch'):
+                self.rb_plat_twitch.setChecked(True)
+            elif hasattr(self, 'rb_plat_kick'):
+                self.rb_plat_kick.setChecked(True)
+
             self.spin_x.setValue(config.get("pos_x", 0))
             self.spin_y.setValue(config.get("pos_y", 0))
             self.spin_scale.setValue(config.get("scale", 1.0))
@@ -473,8 +538,8 @@ class RewardsConfigWizard(ModernWizardPanel):
             self.chk_random_pos.setChecked(config.get("is_random_pos", False))
             
             details = self.rewards_details_map.get(self.existing_reward, {})
-            
-            color_val = config.get("background_color") or config.get("new_reward_data", {}).get("background_color") or details.get("background_color", "#00e701")
+            default_color = "#9146FF" if plat == "twitch" else "#00e701"
+            color_val = config.get("background_color") or config.get("new_reward_data", {}).get("background_color") or details.get("background_color", default_color)
             self._set_color(color_val)
             
             user_in = config.get("is_user_input_required")
@@ -494,6 +559,9 @@ class RewardsConfigWizard(ModernWizardPanel):
                 self.txt_edit_desc.setText(str(desc_val))
 
     def get_config_data(self):
+        platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
+        default_color = "#9146FF" if platform == "twitch" else "#00e701"
+
         if self.is_edit_mode:
             reward_title = self.txt_edit_title.text().strip()
             is_create_mode = False
@@ -511,9 +579,10 @@ class RewardsConfigWizard(ModernWizardPanel):
                     "title": reward_title,
                     "cost": cost_val,
                     "description": desc_val,
-                    "background_color": self.txt_new_color.text().strip() or "#00e701",
+                    "background_color": self.txt_new_color.text().strip() or default_color,
                     "is_user_input_required": self.chk_user_input.isChecked(),
-                    "should_redemptions_skip_request_queue": False
+                    "should_redemptions_skip_request_queue": False,
+                    "platform": platform
                 }
                 reward_id = None
             else:
@@ -526,11 +595,12 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         config = {
             "id": reward_id,
+            "platform": platform,
             "is_new_reward": is_create_mode,
             "new_reward_data": new_data,
             "cost": cost_val,
             "description": desc_val,
-            "background_color": self.txt_new_color.text().strip() or "#00e701",
+            "background_color": self.txt_new_color.text().strip() or default_color,
             "is_user_input_required": self.chk_user_input.isChecked() if hasattr(self, 'chk_user_input') else False,
             "filepath": self.txt_file_path.text().strip(),
             "volume": self.slider_vol.value() / 100.0,

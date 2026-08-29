@@ -89,7 +89,9 @@ class AuthManager:
         self.storage = storage
         self.success_html_path = success_html_path
 
-    def get_tokens(self) -> dict:
+    def get_tokens(self, force: bool = False) -> dict:
+        if force:
+            return self._new_login()
         tokens = self.storage.load()
         if tokens and "access_token" in tokens:
             return tokens
@@ -166,23 +168,38 @@ class AuthManager:
         response.raise_for_status()
         return response.json()
 
+    def is_authenticated(self) -> bool:
+        tokens = self.storage.load()
+        return bool(tokens and (tokens.get("access_token") or tokens.get("refresh_token")))
+
     def logout(self) -> None:
         self.storage.clear()
 
+    REQUIRED_SCOPES = {
+        "user:read": "dashboard.banner.scope.kick_user_read",
+        "channel:read": "dashboard.banner.scope.kick_channel_read",
+        "channel:write": "dashboard.banner.scope.kick_channel_write",
+        "channel:rewards:read": "dashboard.banner.scope.kick_channel_rewards_read",
+        "channel:rewards:write": "dashboard.banner.scope.kick_channel_rewards_write",
+        "chat:write": "dashboard.banner.scope.kick_chat_write",
+        "moderation:ban": "dashboard.banner.scope.kick_moderation_ban",
+        "moderation:chat_message:manage": "dashboard.banner.scope.kick_moderation_chat",
+    }
+
     def get_missing_scopes(self) -> list[str]:
         tokens = self.storage.load()
-        if not tokens:
+        if not tokens or not (tokens.get("access_token") or tokens.get("refresh_token")):
             return []
 
-        REQUIRED_SCOPES = {
-            "moderation:ban": "dashboard.banner.scope.moderation_ban",
-            "moderation:chat_message:manage": "dashboard.banner.scope.moderation_chat",
-        }
+        raw_scopes = tokens.get("scope", "")
+        if isinstance(raw_scopes, list):
+            current_scopes = set(raw_scopes)
+        else:
+            current_scopes = set(raw_scopes.split())
 
-        current_scopes = tokens.get("scope", "")
         return [
             i18n_key
-            for scope, i18n_key in REQUIRED_SCOPES.items()
+            for scope, i18n_key in self.REQUIRED_SCOPES.items()
             if scope not in current_scopes
         ]
 
@@ -214,7 +231,7 @@ class TwitchAuthManager:
 
     def is_authenticated(self) -> bool:
         tokens = self.storage.load()
-        return bool(tokens and tokens.get("access_token"))
+        return bool(tokens and (tokens.get("access_token") or tokens.get("refresh_token")))
 
     def refresh_token(self) -> dict:
         tokens = self.storage.load()
@@ -251,7 +268,7 @@ class TwitchAuthManager:
 
 
     def _new_login(self, force: bool = False) -> dict:
-        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast"
+        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers"
         force_param = "&force_verify=true" if force else ""
         auth_url = (
             f"{TWITCH_AUTH_URL}?response_type=code"
@@ -297,15 +314,24 @@ class TwitchAuthManager:
     def logout(self) -> None:
         self.storage.clear()
 
+    REQUIRED_TWITCH_SCOPES = {
+        "chat:read": "dashboard.banner.scope.twitch_chat_read",
+        "chat:edit": "dashboard.banner.scope.twitch_chat_edit",
+        "user:read:chat": "dashboard.banner.scope.twitch_user_read_chat",
+        "user:write:chat": "dashboard.banner.scope.twitch_user_write_chat",
+        "channel:moderate": "dashboard.banner.scope.twitch_channel_moderate",
+        "moderator:manage:chat_messages": "dashboard.banner.scope.twitch_moderation_chat",
+        "moderator:manage:banned_users": "dashboard.banner.scope.twitch_moderation_ban",
+        "channel:manage:broadcast": "dashboard.banner.scope.twitch_channel_manage_broadcast",
+        "channel:read:redemptions": "dashboard.banner.scope.twitch_channel_read_redemptions",
+        "channel:manage:redemptions": "dashboard.banner.scope.twitch_channel_manage_redemptions",
+        "moderator:read:followers": "dashboard.banner.scope.twitch_moderator_read_followers",
+    }
+
     def get_missing_scopes(self) -> list[str]:
         tokens = self.storage.load()
-        if not tokens:
+        if not tokens or not (tokens.get("access_token") or tokens.get("refresh_token")):
             return []
-
-        REQUIRED_TWITCH_SCOPES = {
-            "moderator:manage:chat_messages": "dashboard.banner.scope.twitch_moderation_chat",
-            "moderator:manage:banned_users": "dashboard.banner.scope.twitch_moderation_ban",
-        }
 
         raw_scopes = tokens.get("scope", "")
         if isinstance(raw_scopes, list):
@@ -315,7 +341,7 @@ class TwitchAuthManager:
 
         return [
             i18n_key
-            for scope, i18n_key in REQUIRED_TWITCH_SCOPES.items()
+            for scope, i18n_key in self.REQUIRED_TWITCH_SCOPES.items()
             if scope not in scopes_set
         ]
 

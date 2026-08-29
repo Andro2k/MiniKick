@@ -3,23 +3,33 @@
 import logging
 from PySide6.QtCore import QObject, Slot
 from backend.providers.chat.kick_client import KickAPIClient
+from backend.providers.chat.twitch_client import TwitchAPIClient
+from backend.config.api_keys import TWITCH_CLIENT_ID
 from backend.workers import CreateRewardWorker, UpdateRewardWorker
 
 logger = logging.getLogger("minikick.controllers.rewards")
 
 class RewardsController(QObject):
-    def __init__(self, view, service, toast_manager=None, auth_manager=None):
+    def __init__(self, view, service, toast_manager=None, auth_manager=None, twitch_auth_manager=None, twitch_api_client=None, twitch_broadcaster_id=""):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
         self.auth_manager = auth_manager
+        self.twitch_auth_manager = twitch_auth_manager
+        self.twitch_api_client = twitch_api_client
+        self.twitch_broadcaster_id = twitch_broadcaster_id
         self.create_reward_worker = None
         self.update_reward_worker = None
         self.rewards_details_map = {}
         self.current_rewards_list = [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")] if self.view else ["No Rewards"]
         if self.view is not None:
             self._connect_signals()
+
+    def set_twitch_context(self, twitch_auth_manager, twitch_api_client: TwitchAPIClient | None, broadcaster_id: str = ""):
+        self.twitch_auth_manager = twitch_auth_manager
+        self.twitch_api_client = twitch_api_client
+        self.twitch_broadcaster_id = broadcaster_id
 
     def attach_view(self, view) -> None:
         self.view = view
@@ -42,9 +52,26 @@ class RewardsController(QObject):
     @Slot(object, object)
     def update_rewards_list(self, rewards: list, rewards_map: dict = None):
         if self.view is not None:
-            self.current_rewards_list = rewards if rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards")]
+            placeholder_strings = {
+                self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards"),
+                self.view.i18n.get("rewards.dialogs.wizard.step1.no_available"),
+                self.view.i18n.get("rewards.dialogs.wizard.step1.loading"),
+                "No Rewards", "No rewards available"
+            }
+            if rewards:
+                for r in rewards:
+                    if r and r not in placeholder_strings and r not in self.current_rewards_list:
+                        if any(p in self.current_rewards_list for p in placeholder_strings):
+                            self.current_rewards_list = [item for item in self.current_rewards_list if item not in placeholder_strings]
+                        self.current_rewards_list.append(r)
+
             if isinstance(rewards_map, dict):
                 self.rewards_details_map.update(rewards_map)
+                for title in rewards_map.keys():
+                    if title and title not in placeholder_strings and title not in self.current_rewards_list:
+                        if any(p in self.current_rewards_list for p in placeholder_strings):
+                            self.current_rewards_list = [item for item in self.current_rewards_list if item not in placeholder_strings]
+                        self.current_rewards_list.append(title)
                 
                 mappings = self.service.get_mappings()
                 updated = False
@@ -66,6 +93,9 @@ class RewardsController(QObject):
                         if "is_user_input_required" in details and conf.get("is_user_input_required") != details["is_user_input_required"]:
                             conf["is_user_input_required"] = details["is_user_input_required"]
                             updated = True
+                        if "platform" in details and conf.get("platform") != details["platform"]:
+                            conf["platform"] = details["platform"]
+                            updated = True
                 if updated:
                     self.service.save_mappings(mappings)
 
@@ -73,8 +103,22 @@ class RewardsController(QObject):
 
     def _get_available_rewards(self, ignore_reward=None):
         mappings = self.service.get_mappings()
-        used_rewards = mappings.keys()
-        available = [r for r in self.current_rewards_list if r not in used_rewards or r == ignore_reward]
+        used_rewards = set(mappings.keys())
+        
+        all_rewards = []
+        placeholder_strings = {
+            self.view.i18n.get("rewards.dialogs.wizard.step1.no_rewards"),
+            self.view.i18n.get("rewards.dialogs.wizard.step1.no_available"),
+            self.view.i18n.get("rewards.dialogs.wizard.step1.loading"),
+            "No Rewards", "No rewards available"
+        } if self.view else set()
+
+        combined = list(self.rewards_details_map.keys()) + self.current_rewards_list
+        for r in combined:
+            if r and r not in placeholder_strings and r not in all_rewards:
+                all_rewards.append(r)
+
+        available = [r for r in all_rewards if r not in used_rewards or r == ignore_reward]
         return available if available else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")]
 
     @Slot()
@@ -89,52 +133,91 @@ class RewardsController(QObject):
         if not config.get("filepath"):
             return
 
-        logger.info("[User Action] Added custom reward trigger: name='%s', is_new=%s", reward, config.get("is_new_reward"))
+        target_platform = config.get("platform", "kick")
+        logger.info("[User Action] Added custom reward trigger: name='%s', platform=%s, is_new=%s", reward, target_platform, config.get("is_new_reward"))
+
         if config.get("is_new_reward") and config.get("new_reward_data"):
-            if not self.auth_manager or not self.auth_manager.get_tokens():
+            if target_platform == "twitch":
+                if not self.twitch_auth_manager or not self.twitch_auth_manager.is_authenticated():
+                    if self.toast:
+                        self.toast.show_toast(
+                            title=self.view.i18n.get("common.status.error"),
+                            message=self.view.i18n.get("main.logs.api_offline"),
+                            state="danger"
+                        )
+                    return
+
                 if self.toast:
                     self.toast.show_toast(
-                        title=self.view.i18n.get("common.status.error"),
-                        message=self.view.i18n.get("main.logs.api_offline"),
-                        state="danger"
+                        title=self.view.i18n.get("rewards.status.created"),
+                        message=self.view.i18n.get("rewards.status.creating_api").replace("{platform}", "Twitch"),
+                        state="info"
                     )
-                return
 
-            if self.toast:
-                self.toast.show_toast(
-                    title=self.view.i18n.get("rewards.status.created"),
-                    message=self.view.i18n.get("rewards.status.creating_api"),
-                    state="info"
+                api_client = self.twitch_api_client or TwitchAPIClient(self.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.view.i18n)
+                self.create_reward_worker = CreateRewardWorker(
+                    api_client=api_client,
+                    payload=config["new_reward_data"],
+                    broadcaster_id=self.twitch_broadcaster_id,
+                    platform="twitch",
+                    parent=self
                 )
+                self.create_reward_worker.reward_created.connect(
+                    lambda res_dict: self._on_reward_created_api(res_dict, config)
+                )
+                self.create_reward_worker.error_occurred.connect(self._on_reward_creation_error)
+                self.create_reward_worker.finished.connect(self.create_reward_worker.deleteLater)
+                self.create_reward_worker.start()
 
-            api_client = KickAPIClient(auth_provider=self.auth_manager)
-            self.create_reward_worker = CreateRewardWorker(
-                api_client=api_client,
-                payload=config["new_reward_data"],
-                parent=self
-            )
-            self.create_reward_worker.reward_created.connect(
-                lambda res_dict: self._on_reward_created_api(res_dict, config)
-            )
-            self.create_reward_worker.error_occurred.connect(self._on_reward_creation_error)
-            self.create_reward_worker.finished.connect(self.create_reward_worker.deleteLater)
-            self.create_reward_worker.start()
+            else:
+                if not self.auth_manager or not self.auth_manager.get_tokens():
+                    if self.toast:
+                        self.toast.show_toast(
+                            title=self.view.i18n.get("common.status.error"),
+                            message=self.view.i18n.get("main.logs.api_offline"),
+                            state="danger"
+                        )
+                    return
+
+                if self.toast:
+                    self.toast.show_toast(
+                        title=self.view.i18n.get("rewards.status.created"),
+                        message=self.view.i18n.get("rewards.status.creating_api").replace("{platform}", "Kick"),
+                        state="info"
+                    )
+
+                api_client = KickAPIClient(auth_provider=self.auth_manager)
+                self.create_reward_worker = CreateRewardWorker(
+                    api_client=api_client,
+                    payload=config["new_reward_data"],
+                    platform="kick",
+                    parent=self
+                )
+                self.create_reward_worker.reward_created.connect(
+                    lambda res_dict: self._on_reward_created_api(res_dict, config)
+                )
+                self.create_reward_worker.error_occurred.connect(self._on_reward_creation_error)
+                self.create_reward_worker.finished.connect(self.create_reward_worker.deleteLater)
+                self.create_reward_worker.start()
         else:
             self._save_reward_mapping(reward, config)
 
     def _on_reward_created_api(self, api_response: dict, config: dict):
         created_title = api_response.get("title", "")
         created_id = api_response.get("id", "")
+        platform = api_response.get("platform", config.get("platform", "kick"))
 
         config["id"] = created_id
+        config["platform"] = platform
         config["cost"] = api_response.get("cost", config.get("new_reward_data", {}).get("cost", 100))
         config["description"] = api_response.get("description", config.get("new_reward_data", {}).get("description", ""))
-        config["background_color"] = api_response.get("background_color", config.get("new_reward_data", {}).get("background_color", "#53FC18"))
+        config["background_color"] = api_response.get("background_color", config.get("new_reward_data", {}).get("background_color", "#00e701"))
         config["is_user_input_required"] = api_response.get("is_user_input_required", config.get("new_reward_data", {}).get("is_user_input_required", False))
 
         self.current_rewards_list.append(created_title)
         self.rewards_details_map[created_title] = {
             "id": created_id,
+            "platform": platform,
             "cost": config["cost"],
             "description": config["description"],
             "background_color": config["background_color"],
@@ -143,10 +226,11 @@ class RewardsController(QObject):
 
         self._save_reward_mapping(created_title, config)
         
+        plat_label = "Twitch" if platform == "twitch" else "Kick"
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get("rewards.status.created"),
-                message=self.view.i18n.get("rewards.status.created_api_success").replace("{reward}", created_title),
+                message=self.view.i18n.get("rewards.status.created_api_success").replace("{reward}", created_title).replace("{platform}", plat_label),
                 state="success"
             )
 
@@ -158,7 +242,7 @@ class RewardsController(QObject):
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get("common.status.error"),
-                message=self.view.i18n.get("rewards.status.created_api_error").replace("{error}", err_msg),
+                message=self.view.i18n.get("rewards.status.created_api_error").replace("{error}", err_msg).replace("{platform}", "API"),
                 state="danger"
             )
 
@@ -197,11 +281,48 @@ class RewardsController(QObject):
                 if reward_id:
                     updated_config["id"] = reward_id
 
-                if reward_id and self.auth_manager and self.auth_manager.get_tokens():
+                target_platform = updated_config.get("platform", mappings.get(reward_name, {}).get("platform", "kick"))
+                updated_config["platform"] = target_platform
+
+                if target_platform == "twitch" and reward_id and self.twitch_auth_manager and self.twitch_auth_manager.is_authenticated():
                     if self.toast:
                         self.toast.show_toast(
                             title=self.view.i18n.get("rewards.status.updated"),
-                            message=self.view.i18n.get("rewards.status.updating_api"),
+                            message=self.view.i18n.get("rewards.status.updating_api").replace("{platform}", "Twitch"),
+                            state="info"
+                        )
+
+                    payload = {
+                        "title": new_reward,
+                        "cost": updated_config.get("cost", 100),
+                        "description": updated_config.get("description", ""),
+                        "background_color": updated_config.get("background_color", "#9146FF"),
+                        "is_user_input_required": updated_config.get("is_user_input_required", False)
+                    }
+
+                    api_client = self.twitch_api_client or TwitchAPIClient(self.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.view.i18n)
+                    self.update_reward_worker = UpdateRewardWorker(
+                        api_client=api_client,
+                        reward_id=reward_id,
+                        payload=payload,
+                        broadcaster_id=self.twitch_broadcaster_id,
+                        platform="twitch",
+                        parent=self
+                    )
+                    self.update_reward_worker.reward_updated.connect(
+                        lambda res_dict, o=reward_name, n=new_reward, c=updated_config: self._on_reward_updated_api(res_dict, o, n, c)
+                    )
+                    self.update_reward_worker.error_occurred.connect(
+                        lambda err_msg, o=reward_name, n=new_reward, c=updated_config, p=target_platform: self._on_reward_update_error(err_msg, o, n, c, p)
+                    )
+                    self.update_reward_worker.finished.connect(self.update_reward_worker.deleteLater)
+                    self.update_reward_worker.start()
+
+                elif target_platform == "kick" and reward_id and self.auth_manager and self.auth_manager.get_tokens():
+                    if self.toast:
+                        self.toast.show_toast(
+                            title=self.view.i18n.get("rewards.status.updated"),
+                            message=self.view.i18n.get("rewards.status.updating_api").replace("{platform}", "Kick"),
                             state="info"
                         )
 
@@ -218,12 +339,15 @@ class RewardsController(QObject):
                         api_client=api_client,
                         reward_id=reward_id,
                         payload=payload,
+                        platform="kick",
                         parent=self
                     )
                     self.update_reward_worker.reward_updated.connect(
                         lambda res_dict, o=reward_name, n=new_reward, c=updated_config: self._on_reward_updated_api(res_dict, o, n, c)
                     )
-                    self.update_reward_worker.error_occurred.connect(self._on_reward_update_error)
+                    self.update_reward_worker.error_occurred.connect(
+                        lambda err_msg, o=reward_name, n=new_reward, c=updated_config, p=target_platform: self._on_reward_update_error(err_msg, o, n, c, p)
+                    )
                     self.update_reward_worker.finished.connect(self.update_reward_worker.deleteLater)
                     self.update_reward_worker.start()
                 else:
@@ -232,8 +356,10 @@ class RewardsController(QObject):
     def _on_reward_updated_api(self, api_response: dict, old_reward: str, new_reward: str, updated_config: dict):
         updated_title = api_response.get("title", new_reward)
         updated_id = api_response.get("id", updated_config.get("id"))
+        platform = api_response.get("platform", updated_config.get("platform", "kick"))
 
         updated_config["id"] = updated_id
+        updated_config["platform"] = platform
         updated_config["cost"] = api_response.get("cost", updated_config.get("cost", 100))
         updated_config["description"] = api_response.get("description", updated_config.get("description", ""))
         updated_config["background_color"] = api_response.get("background_color", updated_config.get("background_color", "#53FC18"))
@@ -247,6 +373,7 @@ class RewardsController(QObject):
             del self.rewards_details_map[old_reward]
         self.rewards_details_map[updated_title] = {
             "id": updated_id,
+            "platform": platform,
             "cost": updated_config["cost"],
             "description": updated_config["description"],
             "background_color": updated_config["background_color"],
@@ -255,24 +382,38 @@ class RewardsController(QObject):
 
         self._save_edited_mapping(old_reward, updated_title, updated_config)
 
+        plat_label = "Twitch" if platform == "twitch" else "Kick"
         if self.toast:
             self.toast.show_toast(
                 title=self.view.i18n.get("rewards.status.updated"),
-                message=self.view.i18n.get("rewards.status.updated_api_success").replace("{reward}", updated_title),
+                message=self.view.i18n.get("rewards.status.updated_api_success").replace("{reward}", updated_title).replace("{platform}", plat_label),
                 state="success"
             )
 
         if self.view and hasattr(self.view, "refresh_rewards_requested"):
             self.view.refresh_rewards_requested.emit()
 
-    def _on_reward_update_error(self, err_msg: str):
+    def _on_reward_update_error(self, err_msg: str, old_reward: str = "", new_reward: str = "", updated_config: dict = None, platform: str = "kick"):
         logger.error("[RewardsController] Error updating reward on API: %s", err_msg)
+        if old_reward and updated_config:
+            target_name = new_reward or old_reward
+            self._save_edited_mapping(old_reward, target_name, updated_config)
+
         if self.toast:
-            self.toast.show_toast(
-                title=self.view.i18n.get("common.status.error"),
-                message=self.view.i18n.get("rewards.status.updated_api_error").replace("{error}", err_msg),
-                state="danger"
-            )
+            is_twitch_unmanageable = "403" in err_msg or "Client-Id" in err_msg or "partner or affiliate" in err_msg
+            if platform == "twitch" and is_twitch_unmanageable:
+                self.toast.show_toast(
+                    title=self.view.i18n.get("rewards.status.updated"),
+                    message=self.view.i18n.get("rewards.status.updated_local_only_twitch_unmanageable"),
+                    state="warning"
+                )
+            else:
+                plat_label = "Twitch" if platform == "twitch" else "Kick"
+                self.toast.show_toast(
+                    title=self.view.i18n.get("rewards.status.updated"),
+                    message=self.view.i18n.get("rewards.status.updated_local_saved_api_failed").replace("{error}", err_msg).replace("{platform}", plat_label),
+                    state="warning"
+                )
 
     def _save_edited_mapping(self, old_reward: str, new_reward: str, updated_config: dict):
         logger.info("[User Action] Saved edited reward trigger mapping: old='%s', new='%s'", old_reward, new_reward)
