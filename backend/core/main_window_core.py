@@ -590,7 +590,7 @@ class MainWindowCore(QMainWindow):
         self.chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
         
         self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=10, parent=self)
-        self.reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
+        self.reward_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
         
         self.chat_worker.start()
         self.reward_worker.start()
@@ -659,8 +659,7 @@ class MainWindowCore(QMainWindow):
         texto_canje = canje_template.replace("{reward_name}", safe_reward_name)
         return f'<span style="color: #00e701;">{texto_canje}</span>'
 
-    @Slot(str, str, str)
-    def _on_reward_redeemed(self, user: str, reward_name: str, message: str):
+    def _on_reward_redeemed(self, user: str, reward_name: str, message: str, platform: str = "kick"):
         toast_template = self.i18n.get("main.toasts.reward_msg")
         self.toast.show_toast(
             title=self.i18n.get("main.toasts.reward_title"), 
@@ -673,14 +672,14 @@ class MainWindowCore(QMainWindow):
         msg_sistema = self._format_reward_message(reward_name)
         tag = self.i18n.get("main.chat.points_tag")
         if self.view_chat is not None:
-            self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True)
+            self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True, platform=platform)
         
         mappings = self.rewards_service.get_mappings()
-        if reward_name in mappings:
-            config = mappings[reward_name]
+        config = mappings.get(reward_name)
+        if config and config.get("platform", "kick") == platform:
             if self.rewards_service.is_file_valid(config):
                 self.rewards_service.trigger_preview(reward_name, config)
-                self.rewards_service.log_redemption(reward_name, user)
+                self.rewards_service.log_redemption(reward_name, user, platform=platform)
             else:
                 filepath = config.get("filepath", "") if isinstance(config, dict) else (config if isinstance(config, str) else "")
                 missing_log = self.i18n.get("main.logs.reward_file_missing").replace("{reward_name}", reward_name).replace("{filepath}", str(filepath))
@@ -697,7 +696,7 @@ class MainWindowCore(QMainWindow):
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:
-            dto = ChatMessageDTO(user, message, [], "", "", 0, timestamp=current_time)
+            dto = ChatMessageDTO(user, message, [], "", "", 0, timestamp=current_time, platform=platform)
             self.chat_controller.process_message(dto)
 
     def _start_timers_worker(self, channel_slug: str):
@@ -789,7 +788,7 @@ class MainWindowCore(QMainWindow):
                 broadcaster_id,
                 parent=self
             )
-            self.twitch_reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
+            self.twitch_reward_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="twitch"))
             self.twitch_reward_worker.start()
             self._fetch_twitch_rewards(broadcaster_id)
 
@@ -857,7 +856,7 @@ class MainWindowCore(QMainWindow):
                     broadcaster_id,
                     parent=self
                 )
-                self.twitch_reward_worker.reward_redeemed.connect(self._on_reward_redeemed)
+                self.twitch_reward_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="twitch"))
                 self.twitch_reward_worker.start()
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             if isinstance(user_data, dict) and user_data.get("followers") is not None and user_data.get("followers") > 0:

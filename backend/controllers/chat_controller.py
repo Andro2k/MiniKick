@@ -105,10 +105,6 @@ class ChatController(QObject):
         settings = self.service.get_settings()
         provider = settings.get("provider", "piper")
         self.service.set_provider(provider)
-        
-        saved_voice_id = self.service.get_saved_voice_id(provider)
-        if saved_voice_id:
-            self.service.set_voice(provider, saved_voice_id)
             
         self._tts_enabled = settings.get("enabled", True)
         self._read_name_enabled = settings.get("read_name", True)

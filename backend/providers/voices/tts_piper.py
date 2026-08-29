@@ -58,14 +58,6 @@ class PiperTTSProvider:
             try:
                 voice = self._get_or_load_voice(target_id)
                 if voice is not None:
-                    from piper.config import SynthesisConfig
-                    syn_config = SynthesisConfig(
-                        length_scale=self.length_scale,
-                        noise_scale=self.noise_scale,
-                        noise_w_scale=self.noise_w_scale
-                    )
-                    for _ in voice.synthesize(".", syn_config=syn_config):
-                        pass
                     logger.debug("Piper voice '%s' pre-warmed successfully.", target_id)
             except Exception as e:
                 logger.debug("Piper warm-up exception for '%s': %s", target_id, e)

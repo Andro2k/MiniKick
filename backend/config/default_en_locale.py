@@ -212,11 +212,9 @@ DEFAULT_DICTIONARY = {
         },
         "status": {
             "error": "Error",
-            "no": "No",
             "offline": "Offline",
             "online": "Online",
-            "warning": "Warning",
-            "yes": "Yes"
+            "warning": "Warning"
         }
     },
     "crash": {
@@ -244,57 +242,96 @@ DEFAULT_DICTIONARY = {
         "version_label": "**MiniKick Version:**"
     },
     "dashboard": {
+        "analytics": {
+            "active_commands": "Active Commands",
+            "active_rewards": "Linked Rewards",
+            "active_timers": "Running Timers",
+            "distribution_title": "Multi-Platform Distribution",
+            "modules_summary_title": "Active Modules & Services",
+            "no_commands_used": "No commands have been executed yet.",
+            "title": "Activity & Interactions",
+            "top_commands_title": "Top 5 Most Used Commands",
+            "usages": "uses"
+        },
         "banner": {
-            "btn_update": "Update Permissions",
+            "btn_update_kick": "Renew Kick Permissions",
+            "btn_update_twitch": "Renew Twitch Permissions",
             "scope": {
-                "moderation_ban": "Ban users on Kick",
-                "moderation_chat": "Manage chat messages on Kick",
-                "twitch_moderation_ban": "Ban/Timeout users on Twitch",
-                "twitch_moderation_chat": "Delete chat messages on Twitch"
+                "kick_channel_read": "Read channel details on Kick",
+                "kick_channel_rewards_read": "Read channel rewards on Kick",
+                "kick_channel_rewards_write": "Create and edit rewards on Kick",
+                "kick_channel_write": "Edit channel title and category on Kick",
+                "kick_chat_write": "Send messages to Kick chat",
+                "kick_moderation_ban": "Ban violating users on Kick",
+                "kick_moderation_chat": "Delete chat messages on Kick",
+                "kick_user_read": "Read user profile on Kick",
+                "twitch_channel_manage_broadcast": "Update stream title and category on Twitch",
+                "twitch_channel_manage_redemptions": "Create and manage rewards on Twitch",
+                "twitch_channel_moderate": "Channel moderation actions on Twitch",
+                "twitch_channel_read_redemptions": "Read channel point redemptions on Twitch",
+                "twitch_chat_edit": "Send messages to Twitch chat",
+                "twitch_chat_read": "Read Twitch chat messages",
+                "twitch_moderation_ban": "Ban/Timeout violating users on Twitch",
+                "twitch_moderation_chat": "Delete chat messages on Twitch",
+                "twitch_moderator_read_followers": "Read channel followers on Twitch",
+                "twitch_user_read_chat": "Read Twitch chat",
+                "twitch_user_write_chat": "Write to Twitch chat"
             },
-            "text_prefix": "<b>Action required:</b> Your account is missing required permissions:"
+            "text_prefix_kick": "<b>Action required on Kick:</b> Your Kick account needs to renew permissions to:",
+            "text_prefix_twitch": "<b>Action required on Twitch:</b> Your Twitch account needs to renew permissions to:"
         },
         "connection": {
             "autostart_desc": "Automatically connect MiniKick upon launching the application.",
             "autostart_title": "Auto Connect",
-            "btn_active": "System Active",
+            "btn_active_kick": "Kick Active",
             "btn_active_tiktok": "TikTok Active",
             "btn_active_twitch": "Twitch Active",
             "btn_active_youtube": "YouTube Active",
-            "btn_connect": "Connect to Kick",
+            "btn_connect_kick": "Connect to Kick",
             "btn_connect_tiktok": "Connect TikTok",
             "btn_connect_twitch": "Connect Twitch",
             "btn_connect_youtube": "Connect YouTube",
+            "btn_connecting_kick": "Connecting Kick...",
             "btn_connecting_tiktok": "Connecting TikTok...",
             "btn_connecting_twitch": "Connecting Twitch...",
             "btn_connecting_youtube": "Connecting YouTube...",
-            "btn_retry": "Retry",
-            "status_auth": "Status: Authenticating...",
-            "status_connected": "Status: Connected & Listening",
             "status_waiting": "Status: Waiting for connection..."
-        },
-        "empty": {
-            "desc": "Connect your Kick account to sync the bot, monitor your live stream, and manage your chat effortlessly.",
-            "title": "Let's get started!"
         },
         "header": {
             "subtitle": "Monitor bot connectivity, review live stats, and manage your streaming session.",
             "title": "Control Panel"
         },
+        "platforms": {
+            "channel_prefix": "Channel:",
+            "connecting": "Connecting...",
+            "disconnected": "Disconnected",
+            "kick_title": "Kick",
+            "messages_session": "{count} msgs",
+            "tiktok_title": "TikTok",
+            "twitch_title": "Twitch",
+            "youtube_title": "YouTube"
+        },
+        "profile": {
+            "followers_count": "{count} followers",
+            "no_channel_desc": "Connect your Kick or Twitch account in the top panel to view your channel details.",
+            "no_channel_title": "No streaming channels linked",
+            "open_channel": "Open Channel",
+            "streaming_channel": "Streaming Channel",
+            "tab_kick": "Kick Channel",
+            "tab_twitch": "Twitch Channel"
+        },
         "session": {
             "commands": "Executed Commands",
             "messages": "Session Messages",
             "spam": "Filtered Spam",
-            "timers": "Active Timers",
-            "title": "Session Statistics"
+            "timers": "Active Timers"
         },
         "stats": {
-            "affiliate": "Affiliate Status",
+            "broadcaster_id": "Broadcaster ID",
             "category": "Last Category",
             "created_at": "Creation Date",
-            "followers": "Followers",
-            "room_id": "ChatRoom ID",
-            "vods": "VODs"
+            "next_schedule": "Next Schedule",
+            "room_id": "ChatRoom ID"
         }
     },
     "dialogs": {
@@ -489,10 +526,7 @@ DEFAULT_DICTIONARY = {
         "controllers": {
             "dashboard": {
                 "affiliate": "Affiliate",
-                "no_bio": "No bio",
-                "none": "None",
-                "not_affiliate": "Not Affiliate",
-                "unknown_user": "Unknown"
+                "not_affiliate": "Not Affiliate"
             },
             "log": {
                 "error_title": "Log Recording Error",

@@ -148,7 +148,22 @@ Al configurar recompensas de puntos de canal vinculadas a archivos multimedia (v
 
 ### 4.10. Optimización de Respuesta Instantánea en Escalado de UI (Font Size)
 - **Eliminación del Debounce Innecesario**: Se removió el temporizador de retardo de 250 ms en `_apply_dynamic_theme`, aplicando el cambio de estilo de forma síncrona e instantánea $\mathcal{O}(1)$ al seleccionar una opción en el `QComboBox`.
-- **Rendimiento Máximo**: Aprovechando el caché `@lru_cache(maxsize=16)` de `get_global_qss`, el cambio de tamaño de texto se ejecuta en $< 15\text{ ms}$ sin pausas ni fricción.
+### 4.12. Corrección de Distintivo de Plataforma en Canjes de Puntos
+- **Enrutamiento Preciso Multi-Plataforma**: `_on_reward_redeemed` ahora recibe y propaga explícitamente el parámetro `platform` (`"twitch"` o `"kick"`), garantizando que el distintivo de plataforma en `ChatDisplayPanel` renderice el icono y color oficial correspondiente (**Twitch** `#9146FF` o **Kick** `#53FC18`).
+- **Integración con TTS y Pipeline**: Se asegura que el `ChatMessageDTO` originado por el mensaje de entrada del usuario en el canje preserve la plataforma de procedencia.
+
+### 4.14. Tarjeta Unificada de Perfil de Canal (SaaS / Fintech Aesthetic)
+- **Consolidación en un Único Card**: Se refactorizó la visualización del perfil del canal en `DashboardView`, integrando en una sola tarjeta (`card_channel_profile`):
+  - **Fila Superior (Hero)**: Avatar circular de 68x68 px, subtítulo de categoría (`CANAL DE STREAMING`) y columna de identidad estructurada verticalmente:
+    1. **Línea 1**: `Nombre del Streamer` (`role="h1"`) junto al `[badge de kick o twitch]` (`role="badge_kick"` / `role="badge_twitch"`).
+    2. **Línea 2**: `# de seguidores` formateado en su propia línea (`role="body"`).
+    3. **Línea 3**: `Descripción / Biografía` con ajuste de línea multilínea (`role="body"`).
+    - Botón de acción rápida: `[ Abrir Canal ↗ ]` que enlaza directamente a la transmisión del streamer.
+  - **Integración de Badges en Theme**: Las insignias `badge_kick` y `badge_twitch` se alinearon formalmente con la familia de componentes `QFrame[role="badge"]` / `QLabel[role="badge_*"]` usando `border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-weight: 700;`.
+  - **Divisor Horizontal Sutil**: Separador visual tenue `ModernDivider`.
+  - **Fila Inferior (Metadatos)**: 4 columnas organizadas con encabezado en mayúsculas gris tenue y valor destacado: `FECHA CREACIÓN`, `ÚLTIMA CATEGORÍA`, `ID DE CANAL / SALA` y `PRÓXIMO HORARIO`.
+- **Adaptabilidad Responsiva**: La cuadrícula de metadatos se reorganiza fluidamente a 2x2 en pantallas estrechas ($< 600\text{px}$) y 1x4 en pantallas estándar.
+- **Eliminación de Warnings de Layout en Qt**: Cada columna de metadatos se encapsula como un `QWidget` individual en `self.metadata_grid`, previniendo advertencias de re-asignación de layout (`QLayout::addChildLayout`) durante el redimensionamiento o renderizado inicial.
 
 ---
 
@@ -156,9 +171,9 @@ Al configurar recompensas de puntos de canal vinculadas a archivos multimedia (v
 
 ### Pruebas Automatizadas
 - Suite completa de pruebas unitarias (`uv run pytest resources/tests/unit/`):
-  - **128/128 pruebas superadas al 100%** (`128 passed in 5.80s`).
-  - Suites `test_dashboard_analytics.py`, `test_twitch_auth.py`, `test_twitch_rewards.py` y `test_rewards_file_validation.py` validando persistencia SQLite, CRUD Helix, Workers, Badges de Vista, Asistente, Resiliencia 403, Búsqueda, Filtros, Costo, Scopes, Analítica de Dashboard, Alternancia de Perfiles de Canal Multi-Plataforma, Persistencia `channel_profiles`, Caché de Avatares `SQLiteAvatarStorage` y `fetch_full_channel_info`.
+  - **132/132 pruebas superadas al 100%** (`132 passed in 6.50s`).
+  - Suites `test_dashboard_analytics.py`, `test_roles_integrity.py`, `test_twitch_auth.py`, `test_twitch_rewards.py`, `test_tts_piper_provider.py` y `test_rewards_file_validation.py` validando persistencia SQLite, CRUD Helix, Workers, Badges de Vista, Asistente, Resiliencia 403, Búsqueda, Filtros, Costo, Scopes, Analítica de Dashboard, Tarjeta Unificada de Perfil de Canal, Alternancia de Perfiles Multi-Plataforma, Persistencia `channel_profiles`, Caché de Avatares `SQLiteAvatarStorage`, `fetch_full_channel_info`, carga optimizada de Piper TTS y aislamiento estricto de recompensas por plataforma.
 - Auditoría de paridad e integridad i18n (`uv run python resources/tests/run_tests.py --i18n`):
-  - **3/3 pruebas superadas al 100%** (`3 passed in 0.66s`).
+  - **3/3 pruebas superadas al 100%** (`3 passed in 0.74s`).
 - Verificación de ejecución del Runner interactivo (`resources/tests/run_tests.py --unit`):
-  - **128 pruebas ejecutadas exitosamente**.
+  - **132 pruebas ejecutadas exitosamente**.

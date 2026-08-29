@@ -210,11 +210,9 @@
         },
         "status": {
             "error": "Error",
-            "no": "No",
             "offline": "Desconectado",
             "online": "En Línea",
-            "warning": "Advertencia",
-            "yes": "Sí"
+            "warning": "Advertencia"
         }
     },
     "crash": {
@@ -297,17 +295,12 @@
             "btn_connecting_youtube": "Conectando YouTube...",
             "status_waiting": "Estado: Esperando conexión..."
         },
-        "empty": {
-            "desc": "Vincula tu cuenta de Kick para activar el bot, monitorear tu stream en vivo y gestionar tu chat sin esfuerzo.",
-            "title": "¡Comencemos!"
-        },
         "header": {
             "subtitle": "Monitorea la conexión del bot, revisa tus estadísticas en vivo y gestiona tu sesión.",
             "title": "Panel de Control"
         },
         "platforms": {
             "channel_prefix": "Canal:",
-            "connected": "Conectado",
             "connecting": "Conectando...",
             "disconnected": "Desconectado",
             "kick_title": "Kick",
@@ -316,28 +309,27 @@
             "twitch_title": "Twitch",
             "youtube_title": "YouTube"
         },
+        "profile": {
+            "followers_count": "{count} seguidores",
+            "no_channel_desc": "Conecta tu cuenta de Kick o Twitch en el panel superior para visualizar los detalles de tu canal.",
+            "no_channel_title": "Sin canales de transmisión vinculados",
+            "open_channel": "Abrir Canal",
+            "streaming_channel": "Canal de Streaming",
+            "tab_kick": "Canal Kick",
+            "tab_twitch": "Canal Twitch"
+        },
         "session": {
             "commands": "Ejecuciones Comandos",
             "messages": "Mensajes Sesión",
             "spam": "Spam Filtrado",
             "timers": "Timers Activos"
         },
-        "profile": {
-            "no_channel_desc": "Conecta tu cuenta de Kick o Twitch en el panel superior para visualizar los detalles de tu canal.",
-            "no_channel_title": "Sin canales de transmisión vinculados",
-            "tab_kick": "Canal Kick",
-            "tab_twitch": "Canal Twitch"
-        },
         "stats": {
-            "account_type": "Tipo de Cuenta",
-            "affiliate": "Estado de Afiliado",
             "broadcaster_id": "ID de Emisor",
             "category": "Última Categoría",
             "created_at": "Fecha de Creación",
-            "followers": "Seguidores",
             "next_schedule": "Próximo Horario",
-            "room_id": "ID de ChatRoom",
-            "vods": "VODs"
+            "room_id": "ID de ChatRoom"
         }
     },
     "dialogs": {
@@ -532,10 +524,7 @@
         "controllers": {
             "dashboard": {
                 "affiliate": "Afiliado",
-                "no_bio": "Sin descripción",
-                "none": "Ninguno",
-                "not_affiliate": "No Afiliado",
-                "unknown_user": "Desconocido"
+                "not_affiliate": "No Afiliado"
             },
             "log": {
                 "error_title": "Error de Registro de Logs",

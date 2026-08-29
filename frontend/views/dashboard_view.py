@@ -7,8 +7,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 from frontend.common.theme import (
-    COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_800, COLOR_NEUTRAL_700,
-    COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
+    COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_800,
+    COLOR_NEUTRAL_500, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE
 )
 from frontend.common import create_circular_pixmap, get_icon_colored, get_pixmap_colored
@@ -103,7 +103,6 @@ class PlatformStatusCard(QFrame):
 
         self.lbl_msgs = QLabel("0 msgs", self)
         self.lbl_msgs.setProperty("role", "caption")
-        self.lbl_msgs.setStyleSheet(f"color: {COLOR_NEUTRAL_400}; font-weight: 500;")
 
         header_layout.addWidget(self.lbl_icon)
         header_layout.addWidget(self.lbl_brand)
@@ -113,8 +112,8 @@ class PlatformStatusCard(QFrame):
 
         self.lbl_status = QLabel(self.i18n.get("dashboard.platforms.disconnected"), self)
         self.lbl_status.setProperty("role", "body")
+        self.lbl_status.setProperty("state", "normal")
         self.lbl_status.setWordWrap(True)
-        self.lbl_status.setStyleSheet(f"color: {COLOR_NEUTRAL_400};")
         layout.addWidget(self.lbl_status)
 
         btn_key = self._BTN_CONNECT_KEYS.get(self.platform_id, "dashboard.connection.btn_connect_kick")
@@ -128,24 +127,26 @@ class PlatformStatusCard(QFrame):
 
         if connecting:
             self.lbl_status.setText(self.i18n.get("dashboard.platforms.connecting"))
-            self.lbl_status.setStyleSheet(f"color: {COLOR_BLUE};")
+            self.lbl_status.setProperty("state", "info")
             self.btn_action.setEnabled(False)
             btn_key = self._BTN_CONNECTING_KEYS.get(self.platform_id, "dashboard.connection.btn_connecting_kick")
             self.btn_action.setText(self.i18n.get(btn_key))
         elif connected and channel:
             prefix = self.i18n.get("dashboard.platforms.channel_prefix")
             self.lbl_status.setText(f"{prefix} <b>@{channel}</b>")
-            self.lbl_status.setStyleSheet(f"color: {COLOR_WHITE};")
+            self.lbl_status.setProperty("state", "white")
             self.btn_action.setEnabled(False)
             btn_key = self._BTN_ACTIVE_KEYS.get(self.platform_id, "dashboard.connection.btn_active_kick")
             self.btn_action.setText(self.i18n.get(btn_key))
         else:
             self.lbl_status.setText(self.i18n.get("dashboard.platforms.disconnected"))
-            self.lbl_status.setStyleSheet(f"color: {COLOR_NEUTRAL_400};")
+            self.lbl_status.setProperty("state", "normal")
             self.btn_action.setEnabled(True)
             btn_key = self._BTN_CONNECT_KEYS.get(self.platform_id, "dashboard.connection.btn_connect_kick")
             self.btn_action.setText(self.i18n.get(btn_key))
 
+        self.lbl_status.style().unpolish(self.lbl_status)
+        self.lbl_status.style().polish(self.lbl_status)
 
 class DashboardView(BaseView):
     connect_requested = Signal()
@@ -167,6 +168,7 @@ class DashboardView(BaseView):
         self._stats_cols = -1
         self._session_cols = -1
         self._platform_cols = -1
+        self._metadata_cols = -1
         self._last_top_row_dir = None
         self._current_profile_platform = "kick"
         self._setup_ui()
@@ -304,60 +306,133 @@ class DashboardView(BaseView):
         self.profile_container = QWidget(self)
         profile_layout = QVBoxLayout(self.profile_container)
         profile_layout.setContentsMargins(0, 0, 0, 0)
-        profile_layout.setSpacing(10)
+        profile_layout.setSpacing(0)
 
-        self.top_row_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.top_row_layout.setSpacing(12) 
+        self.card_channel_profile = ModernCard(parent=self, margin=14, spacing=12)
+        self.card_channel_profile.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
-        avatar_card = ModernCard(parent=self)
-        avatar_card.card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        avatar_card.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        top_hero_layout = QHBoxLayout()
+        top_hero_layout.setSpacing(14)
+        top_hero_layout.setContentsMargins(0, 0, 0, 0)
 
         self.lbl_avatar = QLabel()
-        self.lbl_avatar.setFixedSize(110, 110)
-        self.lbl_avatar.setScaledContents(True) 
+        self.lbl_avatar.setFixedSize(96, 96)
+        self.lbl_avatar.setScaledContents(True)
         self.lbl_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_avatar.setText("?")
-        avatar_card.addWidget(self.lbl_avatar)
+        self.lbl_avatar.setProperty("role", "channel_avatar")
+        top_hero_layout.addWidget(self.lbl_avatar, alignment=Qt.AlignmentFlag.AlignTop)
 
-        info_card = ModernCard(parent=self)
-        info_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        identity_col = QVBoxLayout()
+        identity_col.setSpacing(4)
+
+        self.lbl_profile_caption = QLabel(self.i18n.get("dashboard.profile.streaming_channel").upper())
+        self.lbl_profile_caption.setProperty("role", "caption")
+        identity_col.addWidget(self.lbl_profile_caption)
+
+        name_row = QHBoxLayout()
+        name_row.setSpacing(8)
 
         self.lbl_username = QLabel("-")
         self.lbl_username.setProperty("role", "h1")
-        self.lbl_username.setWordWrap(True)
+        name_row.addWidget(self.lbl_username)
+
+        self.lbl_platform_badge = QLabel("Kick")
+        self.lbl_platform_badge.setFixedHeight(22)
+        self.lbl_platform_badge.setProperty("role", "badge_kick")
+        name_row.addWidget(self.lbl_platform_badge)
+        name_row.addStretch(1)
+
+        identity_col.addLayout(name_row)
+
+        self.lbl_followers_hero = QLabel(self.i18n.get("dashboard.profile.followers_count").replace("{count}", "0"))
+        self.lbl_followers_hero.setProperty("role", "body")
+        identity_col.addWidget(self.lbl_followers_hero)
 
         self.lbl_bio = QLabel("-")
         self.lbl_bio.setProperty("role", "body")
         self.lbl_bio.setWordWrap(True)
+        identity_col.addWidget(self.lbl_bio)
 
-        info_card.addWidget(self.lbl_username)
-        info_card.addWidget(self.lbl_bio)
-        
-        self.top_row_layout.addWidget(avatar_card)
-        self.top_row_layout.addWidget(info_card, stretch=1)
-        profile_layout.addLayout(self.top_row_layout)
+        top_hero_layout.addLayout(identity_col, stretch=1)
 
-        stats_container = QWidget(self)
-        self.stats_grid = QGridLayout(stats_container)
-        self.stats_grid.setContentsMargins(0, 0, 0, 0)
-        self.stats_grid.setSpacing(10)
-        
-        self.card_followers = StatCard(self.i18n.get("dashboard.stats.followers"), "users.svg")
-        self.card_room = StatCard(self.i18n.get("dashboard.stats.room_id"), "hash.svg")
-        self.card_category = StatCard(self.i18n.get("dashboard.stats.category"), "category.svg") 
-        self.card_affiliate = StatCard(self.i18n.get("dashboard.stats.affiliate"), "star.svg")
-        self.card_created = StatCard(self.i18n.get("dashboard.stats.created_at"), "calendar.svg")
-        self.card_next_schedule = StatCard(self.i18n.get("dashboard.stats.next_schedule"), "clock.svg")
+        action_col = QVBoxLayout()
+        action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
-        self.creator_stats_cards = [
-            self.card_followers, self.card_room, self.card_category,
-            self.card_affiliate, self.card_created, self.card_next_schedule
-        ]
-        for i, card in enumerate(self.creator_stats_cards):
-            self.stats_grid.addWidget(card, i // 3, i % 3)
+        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_neutral_border")
+        self.btn_open_channel.setFixedHeight(30)
+        self.btn_open_channel.setIcon(get_icon_colored("link.svg", COLOR_WHITE, 14))
+        self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
+        action_col.addWidget(self.btn_open_channel)
 
-        profile_layout.addWidget(stats_container)
+        top_hero_layout.addLayout(action_col)
+        self.card_channel_profile.addLayout(top_hero_layout)
+
+        self.card_channel_profile.addWidget(ModernDivider())
+
+        self.metadata_grid = QGridLayout()
+        self.metadata_grid.setContentsMargins(2, 2, 2, 2)
+        self.metadata_grid.setSpacing(12)
+
+        self.lbl_meta_created_title = QLabel(self.i18n.get("dashboard.stats.created_at").upper())
+        self.lbl_meta_created_title.setProperty("role", "caption")
+        self.lbl_meta_created_val = QLabel("-")
+        self.lbl_meta_created_val.setProperty("role", "body")
+        self.lbl_meta_created_val.setProperty("state", "white")
+
+        self.lbl_meta_category_title = QLabel(self.i18n.get("dashboard.stats.category").upper())
+        self.lbl_meta_category_title.setProperty("role", "caption")
+        self.lbl_meta_category_val = QLabel("-")
+        self.lbl_meta_category_val.setProperty("role", "body")
+        self.lbl_meta_category_val.setProperty("state", "white")
+
+        self.lbl_meta_id_title = QLabel(self.i18n.get("dashboard.stats.room_id").upper())
+        self.lbl_meta_id_title.setProperty("role", "caption")
+        self.lbl_meta_id_val = QLabel("-")
+        self.lbl_meta_id_val.setProperty("role", "body")
+        self.lbl_meta_id_val.setProperty("state", "white")
+
+        self.lbl_meta_schedule_title = QLabel(self.i18n.get("dashboard.stats.next_schedule").upper())
+        self.lbl_meta_schedule_title.setProperty("role", "caption")
+        self.lbl_meta_schedule_val = QLabel("-")
+        self.lbl_meta_schedule_val.setProperty("role", "body")
+        self.lbl_meta_schedule_val.setProperty("state", "white")
+
+        def _create_meta_col(title_lbl, val_lbl):
+            col_widget = QWidget(self)
+            col_layout = QVBoxLayout(col_widget)
+            col_layout.setContentsMargins(0, 0, 0, 0)
+            col_layout.setSpacing(2)
+            col_layout.addWidget(title_lbl)
+            col_layout.addWidget(val_lbl)
+            return col_widget
+
+        self.col_created = _create_meta_col(self.lbl_meta_created_title, self.lbl_meta_created_val)
+        self.col_category = _create_meta_col(self.lbl_meta_category_title, self.lbl_meta_category_val)
+        self.col_id = _create_meta_col(self.lbl_meta_id_title, self.lbl_meta_id_val)
+        self.col_schedule = _create_meta_col(self.lbl_meta_schedule_title, self.lbl_meta_schedule_val)
+
+        self.metadata_cols_list = [self.col_created, self.col_category, self.col_id, self.col_schedule]
+        for i, col_widget in enumerate(self.metadata_cols_list):
+            self.metadata_grid.addWidget(col_widget, 0, i)
+
+        self.card_channel_profile.addLayout(self.metadata_grid)
+        profile_layout.addWidget(self.card_channel_profile)
+
+        class _StatCardAdapter:
+            def __init__(self, lbl_val, lbl_title=None):
+                self.lbl_value = lbl_val
+                self.lbl_title = lbl_title or lbl_val
+            def set_value(self, val):
+                self.lbl_value.setText(str(val))
+
+        self.card_followers = _StatCardAdapter(self.lbl_followers_hero)
+        self.card_room = _StatCardAdapter(self.lbl_meta_id_val, self.lbl_meta_id_title)
+        self.card_category = _StatCardAdapter(self.lbl_meta_category_val, self.lbl_meta_category_title)
+        self.card_affiliate = _StatCardAdapter(self.lbl_platform_badge)
+        self.card_created = _StatCardAdapter(self.lbl_meta_created_val, self.lbl_meta_created_title)
+        self.card_next_schedule = _StatCardAdapter(self.lbl_meta_schedule_val, self.lbl_meta_schedule_title)
+
         self.profile_container.setVisible(False)
         self.profile_wrapper_layout.addWidget(self.profile_container)
 
@@ -379,7 +454,6 @@ class DashboardView(BaseView):
 
         self.lbl_empty_desc = QLabel(self.i18n.get("dashboard.profile.no_channel_desc"), self)
         self.lbl_empty_desc.setProperty("role", "body")
-        self.lbl_empty_desc.setStyleSheet(f"color: {COLOR_NEUTRAL_400};")
         self.lbl_empty_desc.setWordWrap(True)
 
         empty_text_layout.addWidget(self.lbl_empty_title)
@@ -410,7 +484,6 @@ class DashboardView(BaseView):
         bar_card = ModernCard(parent=self, margin=10, spacing=6)
         lbl_dist_title = QLabel(self.i18n.get("dashboard.analytics.distribution_title"))
         lbl_dist_title.setProperty("role", "caption")
-        lbl_dist_title.setStyleSheet(f"color: {COLOR_NEUTRAL_400}; font-weight: 600;")
         bar_card.addWidget(lbl_dist_title)
 
         self.session_bar = SegmentedDistributionBar()
@@ -449,7 +522,6 @@ class DashboardView(BaseView):
         self.top_commands_container.setSpacing(6)
         self.lbl_no_commands = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
         self.lbl_no_commands.setProperty("role", "body")
-        self.lbl_no_commands.setStyleSheet(f"color: {COLOR_NEUTRAL_500};")
         self.top_commands_container.addWidget(self.lbl_no_commands)
         self.top_commands_card.addLayout(self.top_commands_container)
 
@@ -536,35 +608,45 @@ class DashboardView(BaseView):
         self.disconnected_container.setVisible(False)
         self.profile_container.setVisible(True)
 
-        username = profile_data.get("display_name") or profile_data.get("username", "-")
+        raw_user = profile_data.get("username", "-")
+        self._current_channel_username = raw_user
+        username = profile_data.get("display_name") or raw_user
         if profile_data.get("is_verified", False):
             username += " ✓"
         bio = profile_data.get("bio", "-") or "-"
         self.lbl_username.setText(username)
         self.lbl_bio.setText(bio)
 
-        followers_str = f"{profile_data.get('followers', 0):,}"
+        followers_num = profile_data.get("followers", 0)
+        followers_tpl = self.i18n.get("dashboard.profile.followers_count")
+        followers_str = followers_tpl.replace("{count}", f"{followers_num:,}")
+        self.lbl_followers_hero.setText(followers_str)
+
         room_str = str(profile_data.get("room_id") or profile_data.get("broadcaster_id") or "-")
         category = profile_data.get("last_category") or profile_data.get("category") or "-"
+        created_str = profile_data.get("created_at", "-") or "-"
+        next_schedule = profile_data.get("next_schedule", "-") or "-"
 
         if platform == "twitch":
-            self.card_room.lbl_title.setText(self.i18n.get("dashboard.stats.broadcaster_id"))
-            self.card_affiliate.lbl_title.setText(self.i18n.get("dashboard.stats.account_type"))
+            self.lbl_meta_id_title.setText(self.i18n.get("dashboard.stats.broadcaster_id").upper())
             broadcaster_type = profile_data.get("broadcaster_type", "")
-            affiliate_text = broadcaster_type.capitalize() if broadcaster_type else self.i18n.get("dashboard.platforms.connected")
+            badge_text = f"Twitch {broadcaster_type.capitalize()}" if broadcaster_type else "Twitch"
+            self.lbl_platform_badge.setText(badge_text)
+            self.lbl_platform_badge.setProperty("role", "badge_twitch")
         else:
-            self.card_room.lbl_title.setText(self.i18n.get("dashboard.stats.room_id"))
-            self.card_affiliate.lbl_title.setText(self.i18n.get("dashboard.stats.affiliate"))
+            self.lbl_meta_id_title.setText(self.i18n.get("dashboard.stats.room_id").upper())
             is_affiliate = profile_data.get("is_affiliate", False)
             affiliate_text = self.i18n.get("main.controllers.dashboard.affiliate") if is_affiliate else self.i18n.get("main.controllers.dashboard.not_affiliate")
+            self.lbl_platform_badge.setText(f"Kick {affiliate_text}")
+            self.lbl_platform_badge.setProperty("role", "badge_kick")
 
-        created_str = profile_data.get("created_at", "-") or "-"
+        self.lbl_platform_badge.style().unpolish(self.lbl_platform_badge)
+        self.lbl_platform_badge.style().polish(self.lbl_platform_badge)
 
-        self.card_followers.set_value(followers_str)
-        self.card_room.set_value(room_str)
-        self.card_category.set_value(category)
-        self.card_affiliate.set_value(affiliate_text)
-        self.card_created.set_value(created_str)
+        self.lbl_meta_created_val.setText(created_str)
+        self.lbl_meta_category_val.setText(category)
+        self.lbl_meta_id_val.setText(room_str)
+        self.lbl_meta_schedule_val.setText(next_schedule)
 
         if avatar_bytes:
             self.set_avatar_from_bytes(avatar_bytes)
@@ -590,7 +672,6 @@ class DashboardView(BaseView):
         if not top_commands:
             lbl_none = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
             lbl_none.setProperty("role", "body")
-            lbl_none.setStyleSheet(f"color: {COLOR_NEUTRAL_500};")
             self.top_commands_container.addWidget(lbl_none)
         else:
             max_cnt = max((cmd.get("count", 1) for cmd in top_commands), default=1)
@@ -600,22 +681,19 @@ class DashboardView(BaseView):
                 row.setSpacing(8)
                 
                 lbl_rank = QLabel(f"#{idx + 1}")
-                lbl_rank.setStyleSheet(f"color: {COLOR_GREEN}; font-weight: bold; min-width: 20px;")
+                lbl_rank.setProperty("role", "rank_number")
                 
                 lbl_trigger = QLabel(cmd.get("trigger", ""))
                 lbl_trigger.setProperty("role", "body")
-                lbl_trigger.setStyleSheet("font-weight: 600; min-width: 90px;")
                 
                 pbar = QProgressBar()
-                pbar.setFixedHeight(8)
+                pbar.setProperty("role", "top_command_progress")
                 pbar.setTextVisible(False)
                 pbar.setRange(0, max_cnt)
                 pbar.setValue(cmd.get("count", 0))
-                pbar.setStyleSheet(f"QProgressBar {{ background-color: {COLOR_NEUTRAL_700}; border-radius: 4px; }} QProgressBar::chunk {{ background-color: {COLOR_BLUE}; border-radius: 4px; }}")
                 
                 lbl_cnt = QLabel(f"{cmd.get('count', 0)} {usages_str}")
                 lbl_cnt.setProperty("role", "caption")
-                lbl_cnt.setStyleSheet(f"color: {COLOR_NEUTRAL_400}; min-width: 55px;")
                 
                 row.addWidget(lbl_rank)
                 row.addWidget(lbl_trigger)
@@ -628,6 +706,8 @@ class DashboardView(BaseView):
         self.lbl_active_rewards_val.setText(str(analytics.get("total_rewards", 0)))
 
     def update_next_schedule(self, schedule_text: str):
+        if hasattr(self, "lbl_meta_schedule_val"):
+            self.lbl_meta_schedule_val.setText(schedule_text or "-")
         if hasattr(self, "card_next_schedule"):
             self.card_next_schedule.set_value(schedule_text or "-")
 
@@ -662,7 +742,7 @@ class DashboardView(BaseView):
         self.card_room.set_value(room_id)
         self.card_category.set_value(category)
         self.card_affiliate.set_value(affiliate_text)
-        self.card_vods.set_value(vods_text)
+        self.card_created.set_value(created_at)
         self.card_next_schedule.set_value(next_schedule)
 
     def update_session_metrics(self, msg_count: int, cmd_count: int, timer_count: int, spam_count: int):
@@ -693,6 +773,15 @@ class DashboardView(BaseView):
 
     def _on_reauth_twitch_clicked(self):
         self.reauth_twitch_requested.emit()
+
+    def _on_open_channel_clicked(self):
+        username = getattr(self, "_current_channel_username", "")
+        platform = getattr(self, "_current_profile_platform", "kick")
+        if username and username != "-":
+            from PySide6.QtGui import QDesktopServices
+            from PySide6.QtCore import QUrl
+            url = f"https://twitch.tv/{username}" if platform == "twitch" else f"https://kick.com/{username}"
+            QDesktopServices.openUrl(QUrl(url))
 
     def show_scope_warning(self, missing_scopes: dict | list):
         if not missing_scopes:
@@ -744,19 +833,13 @@ class DashboardView(BaseView):
             plat_cols = 1 if width < 550 else (2 if width < 900 else 4)
             self._relayout_grid(self.platforms_grid, self.platform_cards, plat_cols, self._PLATFORM_CARDS_ATTR)
         
-        if hasattr(self, 'stats_grid') and hasattr(self, 'creator_stats_cards'):
-            stats_cols = 1 if width < 650 else (2 if width < 950 else 3)
-            self._relayout_grid(self.stats_grid, self.creator_stats_cards, stats_cols, self._STATS_CARDS_ATTR)
-        
         if hasattr(self, 'session_grid') and hasattr(self, 'session_cards'):
             session_cols = 1 if width < 650 else (2 if width < 950 else 4)
             self._relayout_grid(self.session_grid, self.session_cards, session_cols, self._SESSION_CARDS_ATTR)
 
-        if hasattr(self, 'top_row_layout'):
-            top_row_dir = QBoxLayout.Direction.TopToBottom if width < 600 else QBoxLayout.Direction.LeftToRight
-            if self._last_top_row_dir != top_row_dir:
-                self._last_top_row_dir = top_row_dir
-                self.top_row_layout.setDirection(top_row_dir)
+        if hasattr(self, 'metadata_grid') and hasattr(self, 'metadata_cols_list'):
+            meta_cols = 2 if width < 600 else 4
+            self._relayout_grid(self.metadata_grid, self.metadata_cols_list, meta_cols, "_metadata_cols")
 
         if hasattr(self, 'bottom_analytics_layout'):
             bottom_dir = QBoxLayout.Direction.TopToBottom if width < 750 else QBoxLayout.Direction.LeftToRight

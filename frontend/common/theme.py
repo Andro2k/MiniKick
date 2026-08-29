@@ -238,6 +238,8 @@ QProgressBar[role="update_progress"] {{ background-color: {COLOR_NEUTRAL_900}; b
 QProgressBar[role="update_progress"]::chunk {{ background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 {COLOR_GREEN}, stop:1 {COLOR_GREEN}); border-radius: {RADIUS_SM}px; }}
 QProgressBar[role="wizard_progress"] {{ background-color: {COLOR_NEUTRAL_700}; border: none; border-radius: {RADIUS_2XS}px; }}
 QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_GREEN}; border-radius: {RADIUS_2XS}px; }}
+QProgressBar[role="top_command_progress"] {{ background-color: {COLOR_NEUTRAL_700}; border: none; border-radius: 4px; height: 8px; }}
+QProgressBar[role="top_command_progress"]::chunk {{ background-color: {COLOR_BLUE}; border-radius: 4px; }}
 
 QListWidget[role="transparent_list"] {{ background: transparent; border: none; }}
 QListWidget[role="transparent_list"]::item {{ background: transparent; }}
@@ -309,11 +311,16 @@ QFrame[role="badge"][state="moderator"] QLabel {{ color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="broadcaster"] {{ background-color: {COLOR_RED_GLOW}; }}
 QFrame[role="badge"][state="broadcaster"] QLabel {{ color: {COLOR_RED}; }}
 QFrame[role="badge"][state="warning"] {{ background-color: {COLOR_AMBER_GLOW}; }}
-QFrame[role="badge"][state="warning"] QLabel {{ color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="plugin"] {{ background-color: {COLOR_PURPLE_GLOW}; }}
 QFrame[role="badge"][state="plugin"] QLabel {{ color: {COLOR_PURPLE}; }}
-QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_2}px; }}
-QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: bold; border-radius: {RADIUS_SM}px; padding: {PADDING_BADGE}; font-size: {size_textline_2}px; }}
+QFrame[role="badge"][state="kick"] {{ background-color: {COLOR_GREEN_GLOW}; }}
+QFrame[role="badge"][state="kick"] QLabel {{ color: {COLOR_GREEN}; }}
+QFrame[role="badge"][state="twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; }}
+QFrame[role="badge"][state="twitch"] QLabel {{ color: {COLOR_PURPLE}; }}
+QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 700; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {size_textline_2}px; }}
+QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 700; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {size_textline_2}px; }}
+QLabel[role="channel_avatar"] {{ border-radius: 48px; background-color: {COLOR_NEUTRAL_800}; border: 2px solid {COLOR_NEUTRAL_700}; }}
+QLabel[role="rank_number"] {{ color: {COLOR_GREEN}; font-weight: bold; min-width: 20px; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.5px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: bold; background-color: {COLOR_NEUTRAL_900}; }}
 QTextEdit[role="ConsoleDisplay"] {{ font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', Consolas, monospace; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; }}
 QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 12px; }}
@@ -328,6 +335,7 @@ QLabel[role="body"] {{ font-size: {size_textline_1}px; font-weight: 400; color: 
 QLabel[role="caption"] {{ font-size: {size_textline_2}px; font-weight: 400; color: {COLOR_NEUTRAL_500}; }}
 QLabel[role="monospace"] {{ font-size: {size_textline_2}px; color: {COLOR_NEUTRAL_400}; }}
 QLabel[state="normal"] {{ color: {COLOR_NEUTRAL_400}; }}
+QLabel[state="white"] {{ color: {COLOR_WHITE}; }}
 QLabel[state="error"] {{ color: {COLOR_RED}; }}
 QLabel[state="danger"] {{ color: {COLOR_RED}; }}
 QLabel[state="success"] {{ color: {COLOR_GREEN}; }}

@@ -62,8 +62,6 @@ class TTSManager:
     def set_provider(self, provider_type: str) -> None:
         if provider_type in ("piper", "local", "web"):
             self._active_provider_key = provider_type
-            if provider_type == "piper":
-                self.warm_up("piper")
 
     def warm_up(self, provider_type: str = None, voice_id: str = None) -> None:
         prov_key = provider_type or self._active_provider_key
