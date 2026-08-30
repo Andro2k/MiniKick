@@ -751,6 +751,31 @@ class DatabaseManager:
         except Exception as e:
             logger.error("[DatabaseManager] Error deleting channel profile for %s: %s", platform, e)
 
+    def get_primary_identity(self) -> str:
+        try:
+            profiles = self.load_all_channel_profiles()
+            for plat in ("kick", "twitch", "tiktok", "youtube"):
+                if plat in profiles and profiles[plat]:
+                    uname = profiles[plat].get("username") or profiles[plat].get("login") or ""
+                    if uname and uname.strip():
+                        return uname.strip().lstrip("@")
+
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT key, value FROM settings WHERE key IN ('tiktok_target_channel', 'youtube_target_channel')")
+                settings_map = {k: v for k, v in cursor.fetchall()}
+
+                tt_target = settings_map.get("tiktok_target_channel", "")
+                if tt_target and tt_target.strip():
+                    return tt_target.strip().lstrip("@")
+
+                yt_target = settings_map.get("youtube_target_channel", "")
+                if yt_target and yt_target.strip():
+                    return yt_target.strip()
+        except Exception as e:
+            logger.error("[DatabaseManager] Error obteniendo identidad primaria: %s", e)
+        return ""
+
     def cleanup(self) -> None:
         try:
             with self.get_connection() as conn:

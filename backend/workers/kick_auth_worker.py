@@ -1,9 +1,9 @@
-# backend\workers\auth_worker.py
+# backend\workers\kick_auth_worker.py
 
 from PySide6.QtCore import QThread, Signal
 from backend.services.auth.oauth_service import AuthManager
 
-class AuthWorker(QThread):
+class KickAuthWorker(QThread):
     auth_success = Signal(object)
     auth_error = Signal(str)
 

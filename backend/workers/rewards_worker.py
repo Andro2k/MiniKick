@@ -5,6 +5,8 @@ from collections import deque
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.kick_client import KickAPIClient
 
+logger = logging.getLogger("minikick.workers.rewards")
+
 class RewardWorker(QThread):
     reward_redeemed = Signal(str, str, str)
     error_occurred = Signal(str)
@@ -67,7 +69,7 @@ class RewardWorker(QThread):
                 for user_data in users_response.get("data", []):
                     user_names_map[user_data.get("user_id")] = user_data.get("name")
             except Exception as e:
-                logging.error("[RewardWorker] Error hydrating reward users: %s", e)
+                logger.error("[RewardWorker] Error hydrating reward users: %s", e)
         for red in redemptions:
             red_id = red["red_id"]
             user_id = red["user_id"]
@@ -81,15 +83,17 @@ class RewardWorker(QThread):
             self._processed_ids.add(red_id)
             self._processed_order.append(red_id)
             new_ids_to_accept.append(red_id)
+            logger.info("[RewardWorker] Canje detectado (Kick): usuario='%s', recompensa='%s'", username, red["reward_title"])
             self.reward_redeemed.emit(username, red["reward_title"], red["user_input"])
         if new_ids_to_accept:
             for i in range(0, len(new_ids_to_accept), 25):
                 batch = new_ids_to_accept[i:i+25]
                 try:
                     self.api_client.accept_redemptions(batch)
-                    logging.info("[RewardWorker] Successfully accepted batch of %d redemptions", len(batch))
+                    logger.info("[RewardWorker] Lote de %d canjes aceptado exitosamente", len(batch))
                 except Exception as api_err:
-                    logging.error("[RewardWorker] Error accepting redemptions batch: %s", api_err)
+                    logger.error("[RewardWorker] Error accepting redemptions batch: %s", api_err)
+
 
     def stop(self):
         self._running = False
@@ -249,7 +253,7 @@ class TwitchRewardWorker(QThread):
                     try:
                         requests.post("https://api.twitch.tv/helix/eventsub/subscriptions", headers=headers, json=body, timeout=6)
                     except Exception as sub_err:
-                        logging.warning("[TwitchRewardWorker] Error subscribing EventSub: %s", sub_err)
+                        logger.warning("[TwitchRewardWorker] Error subscribing EventSub: %s", sub_err)
 
             elif msg_type == "notification":
                 sub_type = metadata.get("subscription_type", "")
@@ -259,11 +263,12 @@ class TwitchRewardWorker(QThread):
                     reward_title = event.get("reward", {}).get("title", "")
                     user_input = event.get("user_input", "")
                     if reward_title:
+                        logger.info("[TwitchRewardWorker] Canje detectado (Twitch): usuario='%s', recompensa='%s'", user_name, reward_title)
                         self.reward_redeemed.emit(user_name, reward_title, user_input)
 
         def on_error(ws, error):
             if self._running:
-                logging.debug("[TwitchRewardWorker] EventSub WebSocket error: %s", error)
+                logger.debug("[TwitchRewardWorker] EventSub WebSocket error: %s", error)
 
         def on_close(ws, close_code, close_msg):
             pass
@@ -292,4 +297,3 @@ class TwitchRewardWorker(QThread):
                 self._ws.close()
             except Exception:
                 pass
-

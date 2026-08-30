@@ -4,6 +4,8 @@ import logging
 import re
 from collections import deque
 
+logger = logging.getLogger("minikick.services.chat.spam")
+
 class SpamService:
     _LINK_REGEX = re.compile(r"https?://\S+|www\.\S+", re.IGNORECASE)
     _KICK_EMOTE_REGEX = re.compile(r'\[emote:\d+:[^\]]+\]', re.IGNORECASE)
@@ -180,7 +182,7 @@ class SpamService:
                         warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
                         self.api_client.post_chat_message(warn_msg, msg_type="bot")
             except Exception as e:
-                logging.error("[SpamService] Error attempting to penalize Kick user %s: %s", user, e)
+                logger.error("[SpamService] Error attempting to penalize Kick user %s: %s", user, e)
 
         elif platform == "twitch":
             try:
@@ -211,4 +213,4 @@ class SpamService:
                         warn_msg = self.i18n.get("spam.status.warn_msg").replace("{user}", user)
                         self.twitch_worker.send_bot_message(warn_msg)
             except Exception as e:
-                logging.error("[SpamService] Error attempting to penalize Twitch user %s: %s", user, e)
+                logger.error("[SpamService] Error attempting to penalize Twitch user %s: %s", user, e)

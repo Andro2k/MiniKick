@@ -436,13 +436,8 @@ class RewardsConfigWizard(ModernWizardPanel):
                 if r_name in invalid_placeholders:
                     continue
                 details = self.rewards_details_map.get(r_name, {})
-                r_plat = details.get("platform", "kick")
+                r_plat = details.get("platform", "kick") if isinstance(details, dict) else "kick"
                 if r_plat == plat and r_name not in filtered:
-                    filtered.append(r_name)
-
-        for r_name, details in self.rewards_details_map.items():
-            if r_name not in invalid_placeholders and r_name not in filtered:
-                if details.get("platform", "kick") == plat:
                     filtered.append(r_name)
 
         self.combo_rewards.blockSignals(True)
@@ -455,8 +450,10 @@ class RewardsConfigWizard(ModernWizardPanel):
         self._on_combo_reward_changed(self.combo_rewards.currentText())
         self._update_btn_next_state()
 
-    def update_rewards(self, rewards_list):
+    def update_rewards(self, rewards_list, rewards_details_map=None):
         self.rewards_list_raw = rewards_list
+        if isinstance(rewards_details_map, dict):
+            self.rewards_details_map = rewards_details_map
         self._filter_rewards_by_platform()
         if hasattr(self, 'btn_refresh'):
             self.btn_refresh.setEnabled(True)

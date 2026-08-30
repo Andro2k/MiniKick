@@ -6,7 +6,6 @@ from .settings_interfaces import SettingsStorage
 from .tts_interfaces import ITTSProvider
 from .updater_interfaces import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
 from .music_provider import IMusicProvider
-from .storage_repository import IStorageRepository
 from .chat_service import IChatService
 from .chat_provider import IChatProvider
 
@@ -20,7 +19,6 @@ __all__ = [
     "IUpdateDownloader",
     "IUpdateInstaller",
     "IMusicProvider",
-    "IStorageRepository",
     "IChatService",
     "IChatProvider",
 ]

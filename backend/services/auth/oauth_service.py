@@ -2,6 +2,7 @@
 
 import base64
 import hashlib
+import logging
 import os
 import time
 import webbrowser
@@ -9,6 +10,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
 from backend.interfaces import TokenStorage
+
+logger = logging.getLogger("minikick.services.auth")
 
 KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
 KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
@@ -28,33 +31,34 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
                 self.server.auth_code = ""
                 
             self.send_response(200)
-            self.send_header("Content-type", "text/html")
+            self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
             
             html_path = getattr(self.server, "success_html_path", "")
             provider = getattr(self.server, "provider", "kick")
+            status = "success" if code else "error"
+            error_msg = query.get("error_description", [error])[0] if error else ""
             
+            content = None
+            if html_path and os.path.exists(html_path):
+                try:
+                    with open(html_path, "r", encoding="utf-8") as f:
+                        template = f.read()
+                    content = template.replace("{{PROVIDER}}", provider)
+                    content = content.replace("{{STATUS}}", status)
+                    content = content.replace("{{ERROR_MSG}}", error_msg)
+                except Exception as e:
+                    logger.warning("[OAuthCallback] Error reading auth template '%s': %s", html_path, e)
+
+            if not content:
+                status_text = "exitosa" if code else "fallida"
+                status_en = "successful" if code else "failed"
+                content = f"<h1>Autenticación {status_text} / Authentication {status_en}.</h1>"
+                if error_msg:
+                    content += f"<p>Error: {error_msg}</p>"
+
             try:
-                with open(html_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-                
-                status = "success" if code else "error"
-                error_msg = ""
-                if error:
-                    error_msg = query.get("error_description", [error])[0]
-                
-                content = content.replace("{{PROVIDER}}", provider)
-                content = content.replace("{{STATUS}}", status)
-                content = content.replace("{{ERROR_MSG}}", error_msg)
-                
                 self.wfile.write(content.encode("utf-8"))
-            except FileNotFoundError:
-                status_text = "exitoso" if code else "fallido"
-                html_msg = f"<h1>Autenticación {status_text} / Authentication {status}.</h1>"
-                if error:
-                    error_desc = query.get("error_description", [error])[0]
-                    html_msg += f"<p>Error: {error_desc}</p>"
-                self.wfile.write(html_msg.encode("utf-8"))
             except (BrokenPipeError, ConnectionResetError):
                 pass
 
@@ -261,11 +265,9 @@ class TwitchAuthManager:
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException as e:
-            import logging
-            logging.warning("[TwitchAuth] Fallo al refrescar token de Twitch: %s", e)
+            logger.warning("[TwitchAuth] Fallo al refrescar token de Twitch: %s", e)
             self.logout()
             raise e
-
 
     def _new_login(self, force: bool = False) -> dict:
         scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers"

@@ -58,20 +58,22 @@ class RewardsController(QObject):
                 self.view.i18n.get("rewards.dialogs.wizard.step1.loading"),
                 "No Rewards", "No rewards available"
             }
-            if rewards:
-                for r in rewards:
-                    if r and r not in placeholder_strings and r not in self.current_rewards_list:
-                        if any(p in self.current_rewards_list for p in placeholder_strings):
-                            self.current_rewards_list = [item for item in self.current_rewards_list if item not in placeholder_strings]
-                        self.current_rewards_list.append(r)
 
             if isinstance(rewards_map, dict):
+                target_platform = "kick"
+                for item in rewards_map.values():
+                    if isinstance(item, dict) and "platform" in item:
+                        target_platform = item["platform"]
+                        break
+
+                keys_to_remove = [
+                    k for k, v in self.rewards_details_map.items()
+                    if isinstance(v, dict) and v.get("platform", "kick") == target_platform
+                ]
+                for k in keys_to_remove:
+                    del self.rewards_details_map[k]
+
                 self.rewards_details_map.update(rewards_map)
-                for title in rewards_map.keys():
-                    if title and title not in placeholder_strings and title not in self.current_rewards_list:
-                        if any(p in self.current_rewards_list for p in placeholder_strings):
-                            self.current_rewards_list = [item for item in self.current_rewards_list if item not in placeholder_strings]
-                        self.current_rewards_list.append(title)
                 
                 mappings = self.service.get_mappings()
                 updated = False
@@ -99,7 +101,16 @@ class RewardsController(QObject):
                 if updated:
                     self.service.save_mappings(mappings)
 
-            self.view.update_active_dialog_rewards(self._get_available_rewards())
+            self.current_rewards_list = [
+                title for title in self.rewards_details_map.keys()
+                if title and title not in placeholder_strings
+            ]
+            if rewards:
+                for r in rewards:
+                    if r and r not in placeholder_strings and r not in self.current_rewards_list:
+                        self.current_rewards_list.append(r)
+
+            self.view.update_active_dialog_rewards(self._get_available_rewards(), self.rewards_details_map)
 
     def _get_available_rewards(self, ignore_reward=None):
         mappings = self.service.get_mappings()

@@ -37,7 +37,7 @@
 
         function connectWS() {
             if (ws) {
-                try { ws.close(); } catch (e) {}
+                try { ws.close(); } catch (e) { }
                 ws = null;
             }
 
@@ -110,42 +110,90 @@
             playAlert(currentAlert);
         }
 
+        function isImageFile(ext) {
+            return ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.avif'].includes(ext);
+        }
+
+        function isAudioFile(ext) {
+            return ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma'].includes(ext);
+        }
+
         function playAlert(data) {
-            const mediaEl = document.createElement('video');
-            mediaEl.src = data.file_url;
-            mediaEl.className = 'media-layer';
-            mediaEl.autoplay = true;
-
-            mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
-
-            const scale = data.scale || 1.0;
-            mediaEl.style.transform = `scale(${scale})`;
-            mediaEl.style.transformOrigin = "top left";
-
-            if (data.is_random_pos) {
-                const randX = Math.floor(Math.random() * 75);
-                const randY = Math.floor(Math.random() * 75);
-                mediaEl.style.left = randX + "%";
-                mediaEl.style.top = randY + "%";
-            } else {
-                const px = data.pos_x || 0;
-                const py = data.pos_y || 0;
-                mediaEl.style.left = px + "px";
-                mediaEl.style.top = py + "px";
-            }
+            const ext = (data.file_ext || '').toLowerCase();
+            let mediaEl;
+            let timerId = null;
 
             const onMediaFinished = () => {
-                mediaEl.remove();
+                if (timerId) {
+                    clearTimeout(timerId);
+                    timerId = null;
+                }
+                if (mediaEl && mediaEl.parentNode) {
+                    mediaEl.remove();
+                }
                 isPlaying = false;
                 processQueue();
             };
 
-            mediaEl.onended = onMediaFinished;
+            if (isImageFile(ext)) {
+                mediaEl = document.createElement('img');
+                mediaEl.src = data.file_url;
+                mediaEl.className = 'media-layer';
 
-            mediaEl.onerror = (e) => {
-                console.error("Error reproduciendo media:", e);
-                onMediaFinished();
-            };
+                const displaySeconds = data.duration || 5.0;
+                mediaEl.onload = () => {
+                    timerId = setTimeout(onMediaFinished, displaySeconds * 1000);
+                };
+                mediaEl.onerror = (e) => {
+                    console.error("[Rewards Overlay] Error cargando imagen:", e);
+                    onMediaFinished();
+                };
+            } else if (isAudioFile(ext)) {
+                mediaEl = document.createElement('audio');
+                mediaEl.src = data.file_url;
+                mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
+                mediaEl.onended = onMediaFinished;
+                mediaEl.onerror = (e) => {
+                    console.error("[Rewards Overlay] Error reproduciendo audio:", e);
+                    onMediaFinished();
+                };
+                mediaEl.play().catch(e => {
+                    console.warn("[Rewards Overlay] Autoplay de audio bloqueado:", e);
+                    onMediaFinished();
+                });
+            } else {
+                mediaEl = document.createElement('video');
+                mediaEl.src = data.file_url;
+                mediaEl.className = 'media-layer';
+                mediaEl.autoplay = true;
+                mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
+                mediaEl.onended = onMediaFinished;
+                mediaEl.onerror = (e) => {
+                    console.error("[Rewards Overlay] Error reproduciendo video:", e);
+                    onMediaFinished();
+                };
+                mediaEl.play().catch(e => {
+                    console.warn("[Rewards Overlay] Autoplay de video bloqueado:", e);
+                });
+            }
+
+            if (mediaEl.tagName !== 'AUDIO') {
+                const scale = data.scale || 1.0;
+                mediaEl.style.transform = `scale(${scale})`;
+                mediaEl.style.transformOrigin = "top left";
+
+                if (data.is_random_pos) {
+                    const randX = Math.floor(Math.random() * 75);
+                    const randY = Math.floor(Math.random() * 75);
+                    mediaEl.style.left = randX + "%";
+                    mediaEl.style.top = randY + "%";
+                } else {
+                    const px = data.pos_x || 0;
+                    const py = data.pos_y || 0;
+                    mediaEl.style.left = px + "px";
+                    mediaEl.style.top = py + "px";
+                }
+            }
 
             container.appendChild(mediaEl);
         }

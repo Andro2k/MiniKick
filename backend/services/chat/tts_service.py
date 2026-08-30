@@ -1,9 +1,12 @@
 # backend\services\chat\tts_service.py
 
+import logging
 import queue
 import threading
 from typing import Dict
 from backend.interfaces import ITTSProvider
+
+logger = logging.getLogger("minikick.services.chat.tts")
 
 class TTSManager:
     def __init__(self):
@@ -123,12 +126,11 @@ class TTSManager:
                 
                 self.play_queue.put((text, voice_id, target_voice))
             except Exception as e:
-                logging.error(f"[TTS Manager] Downloader worker error: {e}")
+                logger.error("[TTS Manager] Downloader worker error: %s", e)
             finally:
                 self.text_queue.task_done()
 
     def _worker(self) -> None:
-        import logging
         while True:
             item = self.play_queue.get()
             try:
@@ -146,7 +148,7 @@ class TTSManager:
                 active_provider.speak(text, voice_id=target_voice)
                 
             except Exception as e:
-                logging.error(f"[TTS Manager] Critical engine failure avoided: {e}")
+                logger.error("[TTS Manager] Critical engine failure avoided: %s", e)
             finally:
                 self.play_queue.task_done()
 

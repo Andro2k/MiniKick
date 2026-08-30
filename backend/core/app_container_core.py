@@ -21,6 +21,8 @@ except ImportError:
     TWITCH_CLIENT_SECRET = ""
     TWITCH_REDIRECT_URI = "http://localhost:8080/auth/callback"
 
+logger = logging.getLogger("minikick.core.app_container")
+
 from backend.database import (
     DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
     SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
@@ -28,63 +30,76 @@ from backend.database import (
 )
 from backend.services import (
     BackupService, TranslationService, AuthManager, TwitchAuthManager, 
-    OverlayServerManager, TTSManager, WidgetService, ScheduleService
+    SettingsService, AvatarService, WidgetService, ScheduleService,
+    TTSManager, OverlayServerManager
 )
 from frontend.common.paths import resource_path
 
-class AppContainer:
+class AppContainerCore:
     def __init__(self):
         self.db_manager = DatabaseManager()
-        
+        self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
         self.twitch_token_storage = SQLiteTokenStorage(self.db_manager, provider="twitch")
-        self.settings_storage = SQLiteSettingsStorage(self.db_manager) 
+        self.settings_storage = SQLiteSettingsStorage(self.db_manager)
         self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
-        self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)
         self.timers_storage = SQLiteTimersStorage(self.db_manager)
         self.widgets_storage = SQLiteWidgetsStorage(self.db_manager)
         self.avatar_storage = SQLiteAvatarStorage(self.db_manager)
-        self.log_storage = SQLiteSystemLogStorage(self.db_manager)
+        self.system_log_storage = SQLiteSystemLogStorage(self.db_manager)
+        self.log_storage = self.system_log_storage
         self.music_storage = SQLiteMusicStorage(self.db_manager)
         self.schedule_storage = SQLiteScheduleStorage(self.db_manager)
 
-        self.widget_service = WidgetService(self.widgets_storage)
         self.backup_service = BackupService(
-            self.settings_storage, self.rewards_storage, 
-            self.commands_storage, self.spam_storage,
-            self.timers_storage, self.schedule_storage
+            settings_storage=self.settings_storage,
+            rewards_storage=self.rewards_storage,
+            commands_storage=self.commands_storage,
+            spam_storage=self.spam_storage,
+            timers_storage=self.timers_storage,
+            schedule_storage=self.schedule_storage
         )
+        self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.i18n = self._init_i18n()
-        self.schedule_service = ScheduleService(self.schedule_storage, i18n=self.i18n)
+        self.avatar_service = AvatarService(avatar_storage=self.avatar_storage, db_manager=self.db_manager)
+        self.widget_service = WidgetService(self.widgets_storage)
+        self.schedule_service = ScheduleService(self.schedule_storage)
 
-        html_path = resource_path(os.path.join("assets", "web", "auth.html"))
+        auth_html_path = resource_path(os.path.join("assets", "web", "auth.html"))
+
         self.auth_manager = AuthManager(
             client_id=KICK_CLIENT_ID,
             client_secret=KICK_CLIENT_SECRET,
             redirect_uri=KICK_REDIRECT_URI,
             storage=self.kick_token_storage,
-            success_html_path=html_path
+            success_html_path=auth_html_path
         )
+
         self.twitch_auth_manager = TwitchAuthManager(
             client_id=TWITCH_CLIENT_ID,
             client_secret=TWITCH_CLIENT_SECRET,
             redirect_uri=TWITCH_REDIRECT_URI,
             storage=self.twitch_token_storage,
-            success_html_path=html_path
+            success_html_path=auth_html_path
         )
-        
-        self._music_provider = None
+
+
         self.tts_manager = TTSManager()
-        self.overlay_server = OverlayServerManager(port=8090, settings_storage=self.settings_storage)
+        self.overlay_server = OverlayServerManager(settings_storage=self.settings_storage)
         self.overlay_server.start()
+        self._music_provider = None
 
     @property
     def music_provider(self):
+        return self.get_music_provider()
+
+    def get_music_provider(self):
         if self._music_provider is None:
             from backend.providers.music.youtube_client import YouTubeMusicProvider
             self._music_provider = YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=self.db_manager)
         return self._music_provider
+
 
     def _init_i18n(self) -> TranslationService:
         if getattr(sys, 'frozen', False):
@@ -101,11 +116,18 @@ class AppContainer:
                     install_lang = f.read().strip()
                 if install_lang in ("es", "en"):
                     self.settings_storage.save_string("app_language", install_lang)
-                os.remove(install_lang_path)
+                    if install_lang != saved_lang:
+                        saved_lang = install_lang
+                        ts.set_language(saved_lang)
+                try:
+                    os.remove(install_lang_path)
+                except OSError:
+                    pass
             except Exception as e:
-                logging.error(ts.get("logs.app_container.install_lang_error").replace("{error}", str(e)))
+                logger.debug("[AppContainer] Notice reading .install_lang: %s", e)
+
         if getattr(sys, "_api_keys_missing", False):
-            logging.warning(ts.get("logs.app_container.api_keys_not_found"))
+            logger.warning(ts.get("logs.app_container.api_keys_not_found"))
         return ts
 
     def shutdown(self):
@@ -113,6 +135,8 @@ class AppContainer:
             if hasattr(self._music_provider, "shutdown"):
                 self._music_provider.shutdown()
         if hasattr(self, 'tts_manager') and self.tts_manager:
-            self.tts_manager.stop()
+            if hasattr(self.tts_manager, "stop"):
+                self.tts_manager.stop()
         if hasattr(self, 'overlay_server') and self.overlay_server:
-            self.overlay_server.stop()
+            if hasattr(self.overlay_server, "stop"):
+                self.overlay_server.stop()

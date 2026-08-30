@@ -81,7 +81,7 @@ class ScheduleController(QObject):
     def search_categories(self, query: str, platform: str = "both") -> None:
         if not self.service or not query.strip():
             return
-        logger.info("[User Action] Searching stream categories: query='%s', platform='%s'", query, platform)
+        logger.debug("[User Action] Searching stream categories: query='%s', platform='%s'", query, platform)
 
         def _worker():
             try:

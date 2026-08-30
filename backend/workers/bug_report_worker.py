@@ -8,6 +8,8 @@ from backend.config.api_keys import DISCORD_WEBHOOK_URL
 from backend.config.version import APP_VERSION
 from backend.services.system.translation_service import TranslationService
 
+logger = logging.getLogger("minikick.workers.bug_report")
+
 class BugReportWorker(QThread):
     finished = Signal(bool, str)
 
@@ -58,7 +60,7 @@ class BugReportWorker(QThread):
                         with open(log_file_path, "rb") as f:
                             files["file"] = ("minikick.log", f.read(), "text/plain")
                     except Exception as e:
-                        logging.error("[BugReportWorker] Error reading log file: %s", e)
+                        logger.error("[BugReportWorker] Error reading log file: %s", e)
 
             if self.image_path and os.path.exists(self.image_path):
                 try:
@@ -74,7 +76,7 @@ class BugReportWorker(QThread):
                     with open(self.image_path, "rb") as f:
                         files["image"] = (filename, f.read(), mime_type)
                 except Exception as e:
-                    logging.error("[BugReportWorker] Error reading image file: %s", e)
+                    logger.error("[BugReportWorker] Error reading image file: %s", e)
 
             if files:
                 resp = requests.post(DISCORD_WEBHOOK_URL, data=data, files=files, timeout=15)

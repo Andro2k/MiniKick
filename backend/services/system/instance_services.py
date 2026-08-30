@@ -3,6 +3,8 @@
 import socket
 import logging
 
+logger = logging.getLogger("minikick.services.system.instance")
+
 class SocketInstanceProvider:
     def __init__(self, port: int = 45678):
         self.port = port
@@ -19,5 +21,4 @@ class SocketInstanceProvider:
         try:
             self.sock.close()
         except Exception as e:
-            logging.error("[SocketInstance] Error cleaning up instance socket: %s", e)
-
+            logger.error("[SocketInstance] Error cleaning up instance socket: %s", e)

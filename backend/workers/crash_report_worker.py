@@ -7,6 +7,8 @@ from PySide6.QtCore import QThread, Signal
 from backend.config.api_keys import DISCORD_WEBHOOK_URL
 from backend.config.version import APP_VERSION
 
+logger = logging.getLogger("minikick.workers.crash_report")
+
 class CrashReportWorker(QThread):
     finished = Signal(bool, str)
 
@@ -60,7 +62,7 @@ class CrashReportWorker(QThread):
                     with open(log_file_path, "rb") as f:
                         files["file"] = ("minikick.log", f.read(), "text/plain")
                 except Exception as e:
-                    logging.error("[CrashReportWorker] Error reading log: %s", e)
+                    logger.error("[CrashReportWorker] Error reading log: %s", e)
 
             if files:
                 resp = requests.post(DISCORD_WEBHOOK_URL, data=payload, files=files, timeout=15)
@@ -80,4 +82,3 @@ class CrashReportWorker(QThread):
         if self.i18n:
             return self.i18n.get(key)
         return key
-

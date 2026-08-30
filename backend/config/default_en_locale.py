@@ -220,7 +220,6 @@ DEFAULT_DICTIONARY = {
     "crash": {
         "action_label": "**What was the user doing?:**",
         "anonymous": "Anonymous",
-        "btn_close": "Close without Sending",
         "btn_copy_traceback": "Copy Details",
         "btn_send": "Send Report & Close",
         "btn_sending": "Sending...",
@@ -580,6 +579,8 @@ DEFAULT_DICTIONARY = {
         "toast": {
             "kick_connected_msg": "Successfully connected to Kick chat: @{username}",
             "kick_connected_title": "Kick Connected",
+            "kick_disconnected_msg": "Kick session unlinked.",
+            "kick_disconnected_title": "Kick Disconnected",
             "tiktok_connected_msg": "Connected to TikTok live chat: @{target}",
             "tiktok_connected_title": "TikTok Connected",
             "tiktok_disconnected_msg": "TikTok Live connection has been stopped.",
@@ -969,9 +970,7 @@ DEFAULT_DICTIONARY = {
             "tray_disabled": "Background Inactive",
             "tray_disabled_msg": "Application will close completely.",
             "tray_enabled": "Background Active",
-            "tray_enabled_msg": "MiniKick will minimize to tray on close.",
-            "unlinked": "Account Unlinked",
-            "unlinked_msg": "Your local Kick session has been closed."
+            "tray_enabled_msg": "MiniKick will minimize to tray on close."
         },
         "system": {
             "font_desc": "Adjust application text size according to your visual preference.",

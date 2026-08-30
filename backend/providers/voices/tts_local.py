@@ -5,6 +5,8 @@ import sys
 import pyttsx3
 import threading
 
+logger = logging.getLogger("minikick.providers.tts_local")
+
 def _init_com():
     if sys.platform == "win32":
         try:
@@ -55,12 +57,12 @@ class LocalTTSProvider:
                     try:
                         engine.setProperty("voice", target_voice)
                     except Exception as ve:
-                        logging.warning("[Local TTS] Could not set voice %s: %s", target_voice, ve)
+                        logger.warning("[Local TTS] Could not set voice %s: %s", target_voice, ve)
                     
                 engine.say(text)
                 engine.runAndWait()
             except Exception as e:
-                logging.error("[Local TTS] Speech error: %s", e)
+                logger.error("[Local TTS] Speech error: %s", e)
             finally:
                 if engine is not None:
                     try:
@@ -88,7 +90,7 @@ class LocalTTSProvider:
                 voices = [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
                 return voices
             except Exception as e:
-                logging.error("[Local TTS] Error fetching local voices: %s", e)
+                logger.error("[Local TTS] Error fetching local voices: %s", e)
                 return [{"id": "default", "name": "System Voice (Default)"}]
             finally:
                 if engine is not None:

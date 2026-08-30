@@ -440,6 +440,6 @@ class RewardsView(BaseView):
             self._active_dialog = None
         return None
 
-    def update_active_dialog_rewards(self, available_rewards: list):
+    def update_active_dialog_rewards(self, available_rewards: list, rewards_details_map: dict = None):
         if hasattr(self, '_active_dialog') and self._active_dialog:
-            self._active_dialog.update_rewards(available_rewards)
+            self._active_dialog.update_rewards(available_rewards, rewards_details_map)

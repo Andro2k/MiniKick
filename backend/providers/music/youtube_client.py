@@ -6,6 +6,8 @@ from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from backend.workers.music_worker import YouTubeResolveWorker, YouTubeSearchWorker
 
+logger = logging.getLogger("minikick.providers.youtube_client")
+
 _ERR_INVALID_MEDIA = "INVALID_MEDIA"
 _ERR_PLAYER_ERROR = "PLAYER_ERROR"
 
@@ -50,7 +52,7 @@ class YouTubeMusicProvider(QObject):
             self._media_devices = QMediaDevices(self)
             self._media_devices.audioOutputsChanged.connect(self._on_audio_outputs_changed)
         except Exception as dev_err:
-            logging.error("[YouTubeMusicProvider] Error initializing audio device watcher: %s", dev_err)
+            logger.error("[YouTubeMusicProvider] Error initializing audio device watcher: %s", dev_err)
 
         self.auto_resume = True
         self._start_playing_current = True
@@ -66,7 +68,7 @@ class YouTubeMusicProvider(QObject):
                 saved_device = settings.load_string("youtube_audio_device", "default")
                 self.set_audio_device(saved_device)
             except Exception as e:
-                logging.error("[YouTubeMusicProvider] Error loading settings: %s", e)
+                logger.error("[YouTubeMusicProvider] Error loading settings: %s", e)
 
         self.audio_output.setVolume(self._volume_gain)
 
@@ -268,9 +270,9 @@ class YouTubeMusicProvider(QObject):
                 target_device = QMediaDevices.defaultAudioOutput()
             if target_device:
                 self.audio_output.setDevice(target_device)
-                logging.info("[YouTubeMusicProvider] Audio output device set to: %s", target_device.description())
+                logger.info("[YouTubeMusicProvider] Audio output device set to: %s", target_device.description())
         except Exception as e:
-            logging.error("[YouTubeMusicProvider] Error setting audio device: %s", e)
+            logger.error("[YouTubeMusicProvider] Error setting audio device: %s", e)
 
     def get_queue(self) -> list[dict]:
         return list(self.queue)
@@ -344,7 +346,7 @@ class YouTubeMusicProvider(QObject):
             self.preload_song_url = None
 
         def on_preload_error(error_msg):
-            logging.error("[YouTubeMusicProvider] Preload error: %s", error_msg)
+            logger.error("[YouTubeMusicProvider] Preload error: %s", error_msg)
             if self.preload_worker:
                 self.preload_worker.deleteLater()
                 self.preload_worker = None
@@ -432,13 +434,13 @@ class YouTubeMusicProvider(QObject):
                     fsize_mb = os.path.getsize(path_or_url) / (1024 * 1024)
                     self.music_storage.update_file_size(self.current_song["url"], fsize_mb)
                 except Exception as sz_err:
-                    logging.debug("[YouTubeMusicProvider] Could not update file size: %s", sz_err)
+                    logger.debug("[YouTubeMusicProvider] Could not update file size: %s", sz_err)
 
         if self.cache_manager:
             try:
                 self.cache_manager.check_and_clean_cache(max_size_mb=5000)
             except Exception as cache_err:
-                logging.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
+                logger.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
 
         
         if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
@@ -458,7 +460,7 @@ class YouTubeMusicProvider(QObject):
 
     @Slot(str)
     def _on_resolve_error(self, error_msg: str):
-        logging.error("[YouTubeMusicProvider] Error resolving audio stream: %s", error_msg)
+        logger.error("[YouTubeMusicProvider] Error resolving audio stream: %s", error_msg)
         if self.current_song:
             title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
             requester = self.current_song.get("requester", "") or ""
@@ -491,7 +493,7 @@ class YouTubeMusicProvider(QObject):
                 device_still_exists = True
 
             if not device_still_exists:
-                logging.info("[YouTubeMusicProvider] Configured audio device was disconnected. Falling back automatically to default audio output.")
+                logger.info("[YouTubeMusicProvider] Configured audio device was disconnected. Falling back automatically to default audio output.")
                 self.set_audio_device("default")
                 if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
                     curr_pos = self.player.position()
@@ -500,13 +502,13 @@ class YouTubeMusicProvider(QObject):
                     self.player.setPosition(curr_pos)
                     self.player.play()
         except Exception as e:
-            logging.error("[YouTubeMusicProvider] Error in audio outputs changed handler: %s", e)
+            logger.error("[YouTubeMusicProvider] Error in audio outputs changed handler: %s", e)
 
     @Slot(QMediaPlayer.Error, str)
     def _handle_player_error(self, error, error_string):
-        logging.error("[YouTubeMusicProvider] Player error: %s - %s", error, error_string)
+        logger.error("[YouTubeMusicProvider] Player error: %s - %s", error, error_string)
         if "AUDCLNT" in error_string or "audio" in error_string.lower() or "device" in error_string.lower():
-            logging.info("[YouTubeMusicProvider] Recovering from audio device error, switching to default output.")
+            logger.info("[YouTubeMusicProvider] Recovering from audio device error, switching to default output.")
             self.set_audio_device("default")
             return
         if self.current_song:
@@ -523,4 +525,3 @@ class YouTubeMusicProvider(QObject):
         self.audio_output.setVolume(self._volume_gain)
         self.player.play()
         return True
-

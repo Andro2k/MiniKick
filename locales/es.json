@@ -218,7 +218,6 @@
     "crash": {
         "action_label": "**¿Qué hacía el usuario?:**",
         "anonymous": "Anónimo",
-        "btn_close": "Cerrar sin Enviar",
         "btn_copy_traceback": "Copiar Detalles",
         "btn_send": "Enviar Reporte y Cerrar",
         "btn_sending": "Enviando...",
@@ -578,6 +577,8 @@
         "toast": {
             "kick_connected_msg": "Conectado exitosamente al chat de Kick: @{username}",
             "kick_connected_title": "Kick Conectado",
+            "kick_disconnected_msg": "Se ha desvinculado la sesión de Kick.",
+            "kick_disconnected_title": "Kick Desconectado",
             "tiktok_connected_msg": "Conectado al chat en vivo de TikTok: @{target}",
             "tiktok_connected_title": "TikTok Conectado",
             "tiktok_disconnected_msg": "Se ha detenido la conexión con TikTok Live.",
@@ -967,9 +968,7 @@
             "tray_disabled": "Segundo Plano Inactivo",
             "tray_disabled_msg": "La aplicación se cerrará por completo.",
             "tray_enabled": "Segundo Plano Activo",
-            "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar.",
-            "unlinked": "Cuenta Desvinculada",
-            "unlinked_msg": "Se ha cerrado tu sesión de Kick local."
+            "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar."
         },
         "system": {
             "font_desc": "Ajusta el tamaño del texto de la aplicación según tu preferencia visual.",

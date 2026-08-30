@@ -19,6 +19,8 @@ class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
         if record.levelno >= logging.WARNING:
             self.flush()
 
+logger = logging.getLogger("minikick.core.app_logger")
+
 def _qt_message_handler(mode: QtMsgType, context, message: str):
     if not message or not message.strip():
         return
@@ -38,7 +40,7 @@ def _qt_message_handler(mode: QtMsgType, context, message: str):
 def _threading_excepthook(args):
     tb_text = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
     thread_name = getattr(args.thread, 'name', 'UnknownThread')
-    logging.critical("[Thread Crash] Excepción no controlada en hilo '%s':\n%s", thread_name, tb_text)
+    logger.critical("[Thread Crash] Excepción no controlada en hilo '%s':\n%s", thread_name, tb_text)
     flush_all_logs()
 
 def flush_all_logs():

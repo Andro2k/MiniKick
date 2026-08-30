@@ -67,7 +67,7 @@ class SQLiteMusicStorage:
                         best_match = row
 
                 if best_ratio >= 0.85 and best_match:
-                    logger.info("[SQLiteMusicStorage] Fuzzy match '%s' -> '%s' (ratio: %.2f)", query, best_match[0], best_ratio)
+                    logger.debug("[SQLiteMusicStorage] Fuzzy match '%s' -> '%s' (ratio: %.2f)", query, best_match[0], best_ratio)
                     self._increment_play_count(conn, best_match[0])
                     return {"title": best_match[1], "artist": best_match[2], "url": best_match[3], "duration": best_match[4] or "-"}
 

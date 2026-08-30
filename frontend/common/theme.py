@@ -311,6 +311,7 @@ QFrame[role="badge"][state="moderator"] QLabel {{ color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="broadcaster"] {{ background-color: {COLOR_RED_GLOW}; }}
 QFrame[role="badge"][state="broadcaster"] QLabel {{ color: {COLOR_RED}; }}
 QFrame[role="badge"][state="warning"] {{ background-color: {COLOR_AMBER_GLOW}; }}
+QFrame[role="badge"][state="warning"] QLabel {{ color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="plugin"] {{ background-color: {COLOR_PURPLE_GLOW}; }}
 QFrame[role="badge"][state="plugin"] QLabel {{ color: {COLOR_PURPLE}; }}
 QFrame[role="badge"][state="kick"] {{ background-color: {COLOR_GREEN_GLOW}; }}

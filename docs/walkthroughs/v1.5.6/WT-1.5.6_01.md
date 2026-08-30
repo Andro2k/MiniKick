@@ -165,15 +165,35 @@ Al configurar recompensas de puntos de canal vinculadas a archivos multimedia (v
 - **Adaptabilidad Responsiva**: La cuadrícula de metadatos se reorganiza fluidamente a 2x2 en pantallas estrechas ($< 600\text{px}$) y 1x4 en pantallas estándar.
 - **Eliminación de Warnings de Layout en Qt**: Cada columna de metadatos se encapsula como un `QWidget` individual en `self.metadata_grid`, previniendo advertencias de re-asignación de layout (`QLayout::addChildLayout`) durante el redimensionamiento o renderizado inicial.
 
+### 4.15. Estandarización y Renombrado de Workers Multi-Plataforma
+- **Simetría en la Capa de Workers**: Se crearon [`kick_auth_worker.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/kick_auth_worker.py) y [`kick_chat_worker.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/kick_chat_worker.py) definiendo explícitamente `KickAuthWorker` y `KickChatWorker`.
+- **Compatibilidad hacia atrás**: Se mantuvieron shims en `auth_worker.py` y `chat_worker.py` con alias `AuthWorker` y `ChatWorker` para salvaguardar cualquier import legacy.
+- **Exportación Limpia**: Se actualizó [`backend/workers/__init__.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/__init__.py) y [`main_window_core.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/core/main_window_core.py) para que toda la suite de workers utilice nomenclatura unificada y coherente con `twitch_auth_worker`, `twitch_chat_worker`, `youtube_chat_worker` y `tiktok_chat_worker`.
+
+### 4.18. Filtrado Estricto de Recompensas Disponibles en el Asistente de Configuración
+- **Corrección en `RewardsConfigWizard` (`rewards_dialog.py`)**: Se eliminó un bucle secundario redundante en `_filter_rewards_by_platform()` que volvía a inyectar todas las recompensas remotas de `rewards_details_map` a pesar de que ya estuviesen vinculadas en la base de datos local.
+- **Aislamiento Multi-Plataforma**: El menú desplegable muestra exclusivamente los puntos de canal sin vincular pertenecientes a la plataforma seleccionada (Kick o Twitch).
+- **Prueba Unitaria de Validación**: Se añadió `test_rewards_config_wizard_excludes_already_linked_rewards` en [`resources/tests/unit/test_twitch_rewards.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/unit/test_twitch_rewards.py).
+
+### 4.19. Purga Dinámica de Puntos de Canal Eliminados al Recargar
+- **Sincronización en `RewardsController.update_rewards_list` (`rewards_controller.py`)**: Se eliminó la acumulación infinita de claves en `rewards_details_map` y `current_rewards_list`. Al presionar el botón de recargar o al sincronizar con la API, se purgan las recompensas obsoletas de la plataforma correspondiente antes de incorporar el conjunto actualizado.
+- **Propagación en Tiempo Real al Asistente**: `update_active_dialog_rewards` propaga el nuevo mapa limpio hacia `RewardsConfigWizard.update_rewards` para que cualquier recompensa eliminada en Twitch o Kick desaparezca de inmediato del diálogo abierto.
+- **Prueba Unitaria de Validación**: Se añadió `test_rewards_controller_update_rewards_list_purges_deleted_rewards` en [`resources/tests/unit/test_twitch_rewards.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/unit/test_twitch_rewards.py).
+
+### 4.20. Eliminación del Congelamiento UI al Navegar a Settings
+- **Eliminación de Recálculo Redundante de QSS**: En `SettingsController._load_initial_state()`, se eliminó la emisión de `style_reload_requested(current_font)`. Esta señal forzaba a Qt a re-parsear y re-evaluar los estilos CSS de todo el árbol de widgets de la aplicación cada vez que se abría la vista de ajustes.
+- **Apertura Instantánea**: Los estilos solo se recargan cuando el usuario realmente modifica el tamaño de fuente (`handle_font_size`), reduciendo el tiempo de apertura de la vista de ajustes de ~2.0s a ~0.02s.
+- **Prueba Unitaria de Validación**: Se añadió [`resources/tests/unit/test_settings_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/unit/test_settings_controller.py) validando que la inicialización no dispare recargas globales de CSS.
+
 ---
 
 ## 5. Verificación Final
 
 ### Pruebas Automatizadas
 - Suite completa de pruebas unitarias (`uv run pytest resources/tests/unit/`):
-  - **132/132 pruebas superadas al 100%** (`132 passed in 6.50s`).
-  - Suites `test_dashboard_analytics.py`, `test_roles_integrity.py`, `test_twitch_auth.py`, `test_twitch_rewards.py`, `test_tts_piper_provider.py` y `test_rewards_file_validation.py` validando persistencia SQLite, CRUD Helix, Workers, Badges de Vista, Asistente, Resiliencia 403, Búsqueda, Filtros, Costo, Scopes, Analítica de Dashboard, Tarjeta Unificada de Perfil de Canal, Alternancia de Perfiles Multi-Plataforma, Persistencia `channel_profiles`, Caché de Avatares `SQLiteAvatarStorage`, `fetch_full_channel_info`, carga optimizada de Piper TTS y aislamiento estricto de recompensas por plataforma.
+  - **141/141 pruebas superadas al 100%** (`141 passed in 7.01s`).
+  - Suites `test_settings_controller.py`, `test_twitch_rewards.py`, `test_tts_online.py`, `test_dashboard_analytics.py`, `test_roles_integrity.py`, `test_twitch_auth.py`, `test_tts_piper_provider.py` y `test_rewards_file_validation.py`.
 - Auditoría de paridad e integridad i18n (`uv run python resources/tests/run_tests.py --i18n`):
   - **3/3 pruebas superadas al 100%** (`3 passed in 0.74s`).
 - Verificación de ejecución del Runner interactivo (`resources/tests/run_tests.py --unit`):
-  - **132 pruebas ejecutadas exitosamente**.
+  - **141 pruebas ejecutadas exitosamente**.

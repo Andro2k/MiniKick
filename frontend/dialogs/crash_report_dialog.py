@@ -12,12 +12,21 @@ from frontend.common import get_assets_path, get_icon_colored
 from frontend.common.theme import COLOR_RED
 
 class CrashReportDialog(ModernModal):
-    def __init__(self, traceback_text: str, i18n, webhook_url: str = "", worker_class=None, parent=None):
+    def __init__(self, traceback_text: str, i18n, webhook_url: str = "", worker_class=None, initial_contact: str = "", parent=None):
         self.traceback_text = traceback_text
         self.i18n = i18n
         self.webhook_url = webhook_url
         self.worker_class = worker_class
         self.worker = None
+
+        if not initial_contact:
+            try:
+                from backend.database.manager import DatabaseManager
+                initial_contact = DatabaseManager().get_primary_identity()
+            except Exception:
+                initial_contact = ""
+        self.initial_contact = initial_contact
+
         self.title_text = self.i18n.get("crash.title")
         self.lbl_contact_text = self.i18n.get("crash.lbl_contact")
         self.placeholder_contact_text = self.i18n.get("crash.placeholder_contact")
@@ -25,7 +34,6 @@ class CrashReportDialog(ModernModal):
         self.placeholder_desc_text = self.i18n.get("crash.placeholder_desc")
         self.lbl_traceback_text = self.i18n.get("crash.lbl_traceback")
         self.btn_send_text = self.i18n.get("crash.btn_send")
-        self.btn_close_text = self.i18n.get("crash.btn_close")
         self.btn_copy_text = self.i18n.get("crash.btn_copy_traceback")
         self.copied_toast_text = self.i18n.get("crash.traceback_copied")
         self.err_send_text = self.i18n.get("crash.err_send")
@@ -56,6 +64,8 @@ class CrashReportDialog(ModernModal):
         self.txt_contact = QLineEdit()
         self.txt_contact.setPlaceholderText(self.placeholder_contact_text)
         self.txt_contact.setFixedHeight(34)
+        if self.initial_contact:
+            self.txt_contact.setText(self.initial_contact)
 
         lbl_desc = QLabel(self.lbl_desc_text)
         lbl_desc.setProperty("role", "body")
@@ -102,19 +112,13 @@ class CrashReportDialog(ModernModal):
         self.content_layout.addWidget(self.txt_traceback)
         self.content_layout.addWidget(self.lbl_error)
 
-        self.btn_cancel = QPushButton(self.btn_close_text)
-        self.btn_cancel.setProperty("role", "action_outlined")
-        self.btn_cancel.setFixedHeight(38)
-        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_cancel.clicked.connect(self.reject)
-
         self.btn_send = QPushButton(self.btn_send_text)
         self.btn_send.setProperty("role", "action_danger_border")
         self.btn_send.setFixedHeight(38)
         self.btn_send.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_send.clicked.connect(self._send_and_close)
 
-        self.add_action_buttons(self.btn_cancel, self.btn_send)
+        self.add_action_buttons(None, self.btn_send)
 
     def _copy_traceback(self):
         clipboard = QApplication.clipboard()
@@ -136,7 +140,6 @@ class CrashReportDialog(ModernModal):
             return
 
         self.btn_send.setEnabled(False)
-        self.btn_cancel.setEnabled(False)
         self.btn_send.setText(self.i18n.get("crash.btn_sending"))
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
 
@@ -157,7 +160,6 @@ class CrashReportDialog(ModernModal):
     def _on_worker_finished(self, success: bool, message: str):
         QApplication.restoreOverrideCursor()
         self.btn_send.setEnabled(True)
-        self.btn_cancel.setEnabled(True)
         self.btn_send.setText(self.btn_send_text)
 
         if success:

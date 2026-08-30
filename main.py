@@ -45,6 +45,8 @@ from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
 from frontend.common.theme import GLOBAL_QSS
 from frontend.common.paths import resource_path
 
+logger = logging.getLogger("minikick.main")
+
 def _get_safe_i18n():
     try:
         from backend.database.manager import DatabaseManager
@@ -55,7 +57,7 @@ def _get_safe_i18n():
         saved_lang = settings.load_string("app_language", "es")
         return TranslationService(default_lang=saved_lang)
     except Exception as e:
-        logging.warning("[Bootstrap] Pre-boot i18n hydration failed: %s", e)
+        logger.warning("[Bootstrap] Pre-boot i18n hydration failed: %s", e)
         return None
 
 
@@ -63,7 +65,7 @@ def global_crash_handler(exctype, value, tb):
     tb_text = "".join(traceback.format_exception(exctype, value, tb))
     
     try:
-        logging.critical("[FATAL CRASH] Unhandled exception caught by global excepthook:\n%s", tb_text)
+        logger.critical("[FATAL CRASH] Unhandled exception caught by global excepthook:\n%s", tb_text)
         flush_all_logs()
     except Exception:
         pass
@@ -101,9 +103,10 @@ def global_crash_handler(exctype, value, tb):
 
 
 def bootstrap():
-    logging.info("==================================================================")
-    logging.info("MiniKick Starting | Version: %s | Platform: %s | Python: %s", APP_VERSION, sys.platform, sys.version.split()[0])
-    logging.info("==================================================================")
+    logger.info("==================================================================")
+    logger.info("MiniKick Starting | Version: %s | Platform: %s | Python: %s", APP_VERSION, sys.platform, sys.version.split()[0])
+    logger.info("==================================================================")
+
 
     if sys.platform == "win32":
         try:
