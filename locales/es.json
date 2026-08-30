@@ -490,8 +490,7 @@
     },
     "logs": {
         "app_container": {
-            "api_keys_not_found": "Archivo backend/config/api_keys.py no encontrado. Usando credenciales vacías.",
-            "install_lang_error": "[AppContainer] Error procesando .install_lang: {error}"
+            "api_keys_not_found": "Archivo backend/config/api_keys.py no encontrado. Usando credenciales vacías."
         },
         "bootstrap": {
             "crash_dialog_failed": "[Bootstrap] Falló la visualización del diálogo de crash: {error}"

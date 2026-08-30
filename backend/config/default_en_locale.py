@@ -492,8 +492,7 @@ DEFAULT_DICTIONARY = {
     },
     "logs": {
         "app_container": {
-            "api_keys_not_found": "backend/config/api_keys.py file not found. Using empty credentials.",
-            "install_lang_error": "[AppContainer] Error processing .install_lang: {error}"
+            "api_keys_not_found": "backend/config/api_keys.py file not found. Using empty credentials."
         },
         "bootstrap": {
             "crash_dialog_failed": "[Bootstrap] Failed to display crash dialog: {error}"
