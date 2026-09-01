@@ -1,5 +1,9 @@
 # backend\services\chat\chat_service.py
 
+import logging
+
+logger = logging.getLogger("minikick.services.chat")
+
 class ChatService:
     def __init__(self, tts_manager, settings_storage):
         self.tts = tts_manager
@@ -13,8 +17,8 @@ class ChatService:
             nws = float(self.storage.load_string("piper_noise_w_scale", "0.8"))
             if hasattr(self.tts, "set_piper_synthesis_params"):
                 self.tts.set_piper_synthesis_params(ls, ns, nws)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("[ChatService] Notice initializing TTS params: %s", e)
 
     def get_settings(self) -> dict:
         provider = self.storage.load_string("tts_provider", "piper")
@@ -95,6 +99,7 @@ class ChatService:
             nws = float(settings.get("piper_noise_w_scale", self.storage.load_string("piper_noise_w_scale", "0.8")))
             if hasattr(self.tts, "set_piper_synthesis_params"):
                 self.tts.set_piper_synthesis_params(ls, ns, nws)
+        logger.debug("[ChatService] Chat and TTS settings updated.")
 
     def set_piper_synthesis_params(self, length_scale: float, noise_scale: float, noise_w_scale: float):
         self.storage.save_string("piper_length_scale", f"{length_scale:.2f}")
@@ -119,6 +124,7 @@ class ChatService:
             self.tts.set_voice(saved_voice)
             if provider == "piper":
                 self.tts.warm_up("piper", saved_voice)
+        logger.info("[ChatService] TTS provider set to: %s", provider)
 
     def get_available_voices(self, provider: str) -> list[dict]:
         return self.tts.get_available_voices(provider)
@@ -131,6 +137,7 @@ class ChatService:
         self.tts.set_voice(voice_id)
         if provider == "piper":
             self.tts.warm_up("piper", voice_id)
+        logger.debug("[ChatService] Set voice for %s: %s", provider, voice_id)
 
     def speak(self, text: str, voice_id: str = None):
         self.tts.say(text, voice_id=voice_id)

@@ -107,7 +107,12 @@ class TwitchAPIClient:
             return 0
 
     def fetch_full_channel_info(self, broadcaster_id: str = "") -> dict:
-        user_info = self.fetch_user_data()
+        try:
+            user_info = self.fetch_user_data()
+        except Exception as e:
+            logger.warning("[TwitchAPI] Could not fetch user data: %s", e)
+            return {}
+
         b_id = broadcaster_id or user_info.get("broadcaster_id", "")
         
         followers = 0

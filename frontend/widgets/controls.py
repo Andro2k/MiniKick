@@ -4,18 +4,53 @@ import re
 from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy, 
                                QTextEdit, QListWidget, QSpinBox)
 from PySide6.QtCore import QRectF, Qt, QSize
-from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QSyntaxHighlighter, 
-                           QTextCharFormat, QFont, QKeyEvent)
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_850, COLOR_NEUTRAL_750, COLOR_WHITE
+from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QLinearGradient, 
+                           QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon)
+from frontend.common.icons import get_icon_colored
+from frontend.common.theme import (
+    COLOR_GREEN, COLOR_RED, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_BLACK
+)
 
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
 class ModernButton(QPushButton):
-    def __init__(self, text: str, role: str = "action_accent", parent=None):
+    def __init__(self, text: str = "", role: str = "action_accent", icon_name: str = "", 
+                 icon_color: str | None = None, icon_size: int = 16, parent=None):
         super().__init__(text, parent)
+        self._role = role
         self.setProperty("role", role)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
+        if icon_name:
+            self.set_icon(icon_name, color=icon_color, size=icon_size)
+
+    @staticmethod
+    def _resolve_role_color(role: str) -> str:
+        role_map = {
+            "action_accent": COLOR_WHITE,
+            "action_kick": COLOR_WHITE,
+            "action_twitch": COLOR_WHITE,
+            "action_youtube": COLOR_WHITE,
+            "action_tiktok": COLOR_BLACK,
+            "action_outlined": COLOR_WHITE,
+            "action_neutral_border": COLOR_WHITE,
+            "action_danger_border": COLOR_RED,
+            "action_accent_border": COLOR_GREEN,
+            "btn_ghost": COLOR_NEUTRAL_400,
+            "nav_button": COLOR_NEUTRAL_400,
+            "filter_chip": COLOR_NEUTRAL_400,
+        }
+        return role_map.get(role, COLOR_WHITE)
+
+    def set_icon(self, icon_name: str, color: str | None = None, size: int = 16):
+        if not icon_name:
+            self.setIcon(QIcon())
+            return
+        if color is None:
+            current_role = self.property("role") or self._role
+            color = self._resolve_role_color(current_role)
+        self.setIcon(get_icon_colored(icon_name, color, size))
+        self.setIconSize(QSize(size, size))
 
 class ModernSwitch(QAbstractButton):
     def __init__(self, parent=None):
@@ -25,14 +60,7 @@ class ModernSwitch(QAbstractButton):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.toggled.connect(self.update)
-        
-        self._bg_color_checked = QColor(COLOR_GREEN)
-        self._bg_color_unchecked = QColor(COLOR_NEUTRAL_850)
-        self._border_color_checked = QColor(COLOR_GREEN)
-        self._border_color_unchecked = QColor(COLOR_NEUTRAL_750)
-        self._border_color_focus = QColor(COLOR_GREEN)
-        self._border_color_focus_checked = QColor(COLOR_WHITE)
-        self._handle_color = QColor(COLOR_WHITE)
+        self._padding = 3.0
 
     def sizeHint(self) -> QSize:
         return QSize(44, 22)
@@ -46,7 +74,7 @@ class ModernSwitch(QAbstractButton):
         self.update()
 
     def keyPressEvent(self, event: QKeyEvent):
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Space):
             self.toggle()
             event.accept()
             return
@@ -58,36 +86,62 @@ class ModernSwitch(QAbstractButton):
         
         has_focus = self.hasFocus()
         is_checked = self.isChecked()
-        pen_width = 1.5
-        rect = QRectF(pen_width / 2, pen_width / 2, self.width() - pen_width, self.height() - pen_width)
-        radius = rect.height() / 1.8
-
-        bg_color = self._bg_color_checked if is_checked else self._bg_color_unchecked
+        is_enabled = self.isEnabled()
         
-        if has_focus:
-            border_color = self._border_color_focus_checked if is_checked else self._border_color_focus
+        w = float(self.width())
+        h = float(self.height())
+        pen_width = 1.2
+        rect = QRectF(pen_width / 2.0, pen_width / 2.0, w - pen_width, h - pen_width)
+        radius = rect.height() / 2.0
+
+        track_grad = QLinearGradient(0, 0, 0, h)
+        if not is_enabled:
+            track_grad.setColorAt(0.0, QColor("#18171C"))
+            track_grad.setColorAt(1.0, QColor("#121115"))
+            border_color = QColor("#27262D")
+        elif is_checked:
+            track_grad.setColorAt(0.0, QColor("#1E8E4D"))
+            track_grad.setColorAt(1.0, QColor("#15733C"))
+            border_color = QColor("#2ECD70") if has_focus else QColor("#1A7A42")
         else:
-            border_color = self._border_color_checked if is_checked else self._border_color_unchecked
+            track_grad.setColorAt(0.0, QColor("#201E25"))
+            track_grad.setColorAt(1.0, QColor("#2A2830"))
+            border_color = QColor("#5E5C66") if has_focus else QColor("#38363E")
 
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)
-        painter.fillPath(path, bg_color)
+        painter.fillPath(path, track_grad)
 
         pen = QPen(border_color, pen_width)
         painter.setPen(pen)
         painter.drawPath(path)
 
-        padding = 3
-        handle_size = self.height() - (padding * 2)
-        handle_x = self.width() - handle_size - padding if is_checked else padding
-        
-        handle_rect = QRectF(handle_x, padding, handle_size, handle_size)
-        handle_radius = handle_size / 2.0
+        handle_size = h - (self._padding * 2.0)
+        handle_x = (w - handle_size - self._padding) if is_checked else self._padding
+        handle_y = self._padding
+        handle_rect = QRectF(handle_x, handle_y, handle_size, handle_size)
 
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(self._handle_color)
-        painter.drawRoundedRect(handle_rect, handle_radius, handle_radius)
-        
+        if is_enabled:
+            shadow_rect = QRectF(handle_x, handle_y + 1.0, handle_size, handle_size)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QColor(0, 0, 0, 60))
+            painter.drawEllipse(shadow_rect)
+
+        thumb_grad = QLinearGradient(handle_x, handle_y, handle_x, handle_y + handle_size)
+        if not is_enabled:
+            thumb_grad.setColorAt(0.0, QColor("#6E6C78"))
+            thumb_grad.setColorAt(1.0, QColor("#504E58"))
+        elif is_checked:
+            thumb_grad.setColorAt(0.0, QColor("#FFFFFF"))
+            thumb_grad.setColorAt(1.0, QColor("#E4E3EA"))
+        else:
+            thumb_grad.setColorAt(0.0, QColor("#D4D2DC"))
+            thumb_grad.setColorAt(1.0, QColor("#9D9AA8"))
+
+        painter.setBrush(thumb_grad)
+        painter.setPen(QPen(QColor(0, 0, 0, 30), 0.8))
+        painter.drawEllipse(handle_rect)
+
         painter.end()
 
 class CompactSpinBox(QSpinBox):

@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from frontend.widgets import (BaseView, ModernTable, ScalableIllustration, ModernButton, 
                               UnifiedSearchBar, SegmentedPagination, NoWheelComboBox)
-from frontend.common.theme import COLOR_BLACK, COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED
+from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED
 from frontend.common import get_assets_path, get_icon_colored
 
 class LogControlsPanel(QFrame):
@@ -18,6 +18,7 @@ class LogControlsPanel(QFrame):
     date_changed = Signal(str)
     folder_requested = Signal()
     load_requested = Signal()
+    crashes_requested = Signal()
     live_requested = Signal()
     clear_requested = Signal()
     report_requested = Signal()
@@ -61,6 +62,8 @@ class LogControlsPanel(QFrame):
              "folder-open.svg", COLOR_NEUTRAL_400, self.folder_requested.emit, True),
             ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_neutral_border",
              "file-text.svg", COLOR_NEUTRAL_400, self.load_requested.emit, True),
+            ("btn_view_crashes", self.i18n.get("log.controls.btn_crashes"), "action_neutral_border",
+             "bomb.svg", COLOR_RED, self.crashes_requested.emit, True),
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_neutral_border",
              "eye.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_neutral_border",
@@ -84,6 +87,8 @@ class LogControlsPanel(QFrame):
             self._buttons.append(btn)
             if name == "btn_open_folder":
                 btn.setToolTip(self.i18n.get("log.controls.tooltip_folder"))
+            elif name == "btn_view_crashes":
+                btn.setToolTip(self.i18n.get("log.controls.tooltip_crashes"))
 
         self._reflow_buttons()
 
@@ -139,14 +144,22 @@ _LEVEL_COLORS = {
     "INFO": COLOR_BLUE,
     "WARNING": COLOR_AMBER,
     "ERROR": COLOR_RED,
-    "CRITICAL": COLOR_RED
+    "CRITICAL": COLOR_RED,
+    "CRASH": COLOR_RED,
+    "FATAL_CRASH": COLOR_RED,
+    "THREAD_CRASH": COLOR_RED,
+    "BOOTSTRAP": COLOR_BLUE
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code.svg",
     "INFO": "info-circle.svg",
     "WARNING": "alert-triangle.svg",
     "ERROR": "bug.svg",
-    "CRITICAL": "alert-circle.svg"
+    "CRITICAL": "alert-circle.svg",
+    "CRASH": "bomb.svg",
+    "FATAL_CRASH": "bomb.svg",
+    "THREAD_CRASH": "bomb.svg",
+    "BOOTSTRAP": "info-circle.svg"
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}
 
@@ -163,6 +176,7 @@ class LogView(BaseView):
     date_changed = Signal(str)
     open_folder_requested = Signal()
     load_requested = Signal()
+    crashes_requested = Signal()
     live_requested = Signal()
     clear_requested = Signal()
     report_requested = Signal()
@@ -194,6 +208,7 @@ class LogView(BaseView):
         self.controls_panel.date_changed.connect(self.date_changed.emit)
         self.controls_panel.folder_requested.connect(self.open_folder_requested.emit)
         self.controls_panel.load_requested.connect(self.load_requested.emit)
+        self.controls_panel.crashes_requested.connect(self.crashes_requested.emit)
         self.controls_panel.live_requested.connect(self.live_requested.emit)
         self.controls_panel.clear_requested.connect(self.clear_requested.emit)
         self.controls_panel.report_requested.connect(self.report_requested.emit)
@@ -353,8 +368,7 @@ class LogView(BaseView):
         lbl_desc.setMaximumWidth(450)
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
-        self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_BLACK, 16))
-        self.btn_show_logs.setIconSize(QSize(16, 16))
+        self.btn_show_logs.set_icon("eye.svg", size=16)
         self.btn_show_logs.setFixedWidth(200)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 

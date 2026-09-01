@@ -46,6 +46,7 @@ class LogController(QObject):
         self.view.date_changed.connect(self.handle_date_changed)
         self.view.open_folder_requested.connect(self.open_log_folder)
         self.view.load_requested.connect(self.handle_load_requested)
+        self.view.crashes_requested.connect(self.handle_view_crashes_requested)
         self.view.live_requested.connect(self.handle_live_requested)
         self.view.clear_requested.connect(self.handle_clear_requested)
         self.view.report_requested.connect(self.open_github_issues)
@@ -181,6 +182,27 @@ class LogController(QObject):
         if file_path:
             logger.info("[User Action] Loaded historical log file: '%s'", file_path)
             self.read_file(file_path)
+
+    @Slot()
+    def handle_view_crashes_requested(self):
+        logger.info("[User Action] Requested view of crash logs (minikick_crash.log)")
+        crash_path = self.service.get_crash_log_path()
+        if not os.path.exists(crash_path) or os.path.getsize(crash_path) == 0:
+            if self.toast:
+                self.toast.show_toast(
+                    title=self.view.i18n.get("log.status.crashes_empty_title"),
+                    message=self.view.i18n.get("log.status.crashes_empty_msg"),
+                    state="info",
+                )
+            return
+
+        self.read_file(crash_path)
+        if self.toast:
+            self.toast.show_toast(
+                title=self.view.i18n.get("log.status.crashes_loaded_title"),
+                message=self.view.i18n.get("log.status.crashes_loaded_msg").replace("{count}", str(len(self._historical_logs))),
+                state="danger",
+            )
 
     def read_file(self, file_path: str):
         try:

@@ -1,9 +1,12 @@
 # backend\providers\chat\kick_websocket.py
 
+import logging
 from backend.utils.json_utils import fast_loads, fast_dumps
 import websocket
 from typing import Callable
 from frontend.common.theme import COLOR_GREEN
+
+logger = logging.getLogger("minikick.providers.kick_websocket")
 
 class ChatSocketManager:
     def __init__(self, cluster: str, key: str) -> None:
@@ -45,7 +48,13 @@ class ChatSocketManager:
         self._running = True
         
         url = f"wss://ws-{self.cluster}.pusher.com/app/{self.key}?protocol=7&client=js&version=7.6.0"
-        self.ws = websocket.WebSocketApp(url, on_message=self._on_raw_frame)
+        logger.info("[KickWebSocket] Connecting to Pusher WebSocket for room_id=%s...", room_id)
+        self.ws = websocket.WebSocketApp(
+            url,
+            on_message=self._on_raw_frame,
+            on_error=lambda ws, err: logger.error("[KickWebSocket] WebSocket error: %s", err),
+            on_close=lambda ws, status, msg: logger.info("[KickWebSocket] WebSocket closed: status=%s msg=%s", status, msg)
+        )
         self.ws.run_forever(ping_interval=30, ping_timeout=10)
 
     def _parse_inner_data(self, outer: dict) -> dict:
@@ -75,8 +84,8 @@ class ChatSocketManager:
             if handler:
                 handler(outer, ws)
 
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("[KickWebSocket] Notice processing frame: %s", e)
 
     def _handle_chat_message(self, outer: dict, ws: websocket.WebSocketApp) -> None:
         inner = self._parse_inner_data(outer)
@@ -117,7 +126,6 @@ class ChatSocketManager:
         if self._callback:
             self._callback(user, msg, badges, color, msg_id, sender_id)
 
-
     def _handle_poll_update(self, outer: dict, ws: websocket.WebSocketApp) -> None:
         inner = self._parse_inner_data(outer)
         poll_data = inner.get("poll") or inner
@@ -156,6 +164,7 @@ class ChatSocketManager:
             self._on_pinned_deleted()
 
     def _handle_connection_established(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+        logger.info("[KickWebSocket] Pusher connection established. Subscribing to chatrooms.%s.v2", self._room_id)
         payload = fast_dumps({
             "event": "pusher:subscribe",
             "data": {"channel": f"chatrooms.{self._room_id}.v2"}
@@ -167,8 +176,8 @@ class ChatSocketManager:
 
     def stop_socket(self) -> None:
         self._running = False
+        logger.info("[KickWebSocket] Stopping Pusher socket...")
         if self.ws:
             self.ws.keep_running = False
             if self.ws.sock and self.ws.sock.connected:
                 self.ws.sock.close()
-

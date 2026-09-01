@@ -47,7 +47,7 @@ class Sidebar(QFrame):
         
         self.logo_btn = QPushButton()
         self.logo_btn.setIcon(get_icon("logo.svg")) 
-        self.logo_btn.setIconSize(QSize(30, 30))
+        self.logo_btn.setIconSize(QSize(32, 32))
         self.logo_btn.setProperty("role", "btn_ghost")
         
         self.title_label = QLabel("MiniKick")
@@ -59,7 +59,7 @@ class Sidebar(QFrame):
         self.btn_toggle = QPushButton()
         self.btn_toggle.setProperty("role", "btn_ghost")
         self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_400, 20)) 
-        self.btn_toggle.setIconSize(QSize(20, 20))
+        self.btn_toggle.setIconSize(QSize(24, 24))
         self.btn_toggle.setFixedSize(36, 36)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)

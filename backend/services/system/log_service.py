@@ -2,8 +2,11 @@
 
 import os
 import re
+import logging
 from collections import deque
 from backend.database.system_log_storage import SQLiteSystemLogStorage
+
+logger = logging.getLogger("minikick.services.logs")
 
 class LogService:
     def __init__(self, log_storage: SQLiteSystemLogStorage = None, db_manager=None):
@@ -40,12 +43,18 @@ class LogService:
                 is_grouped = True
                 
                 if self.storage:
-                    self.storage.update_last_log(message, self._last_log_id)
+                    try:
+                        self.storage.update_last_log(message, self._last_log_id)
+                    except Exception as e:
+                        logger.debug("[LogService] Error updating last log: %s", e)
 
         if not is_grouped:
             self._live_history.append((level, time_str, message))
             if self.storage:
-                self._last_log_id = self.storage.append_log(level, time_str, message)
+                try:
+                    self._last_log_id = self.storage.append_log(level, time_str, message)
+                except Exception as e:
+                    logger.debug("[LogService] Error appending log: %s", e)
 
         return is_grouped
 
@@ -53,7 +62,10 @@ class LogService:
         self._live_history.clear()
         self._last_log_id = None
         if self.storage:
-            self.storage.clear_logs()
+            try:
+                self.storage.clear_logs()
+            except Exception as e:
+                logger.error("[LogService] Error clearing log storage: %s", e)
 
     def get_history(self) -> list[tuple[str, str, str]]:
         if self.storage:
@@ -80,17 +92,38 @@ class LogService:
                         filtered.append((lvl, t_str, txt))
         return filtered
 
+    def get_crash_log_path(self) -> str:
+        return os.path.join(self.log_dir, "minikick_crash.log")
+
+    def load_crash_history(self) -> list[tuple[str, str, str]]:
+        crash_path = self.get_crash_log_path()
+        if not os.path.exists(crash_path):
+            return []
+        return self.parse_log_file(crash_path, fallback_level="CRASH")
+
     def parse_log_file(self, file_path: str, fallback_level: str) -> list[tuple[str, str, str]]:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        parsed_history = []
-        for line in content.strip().split("\n"):
-            if not line.strip():
-                continue
-            match = re.match(r"\[(.*?)\] \[(.*?)\] (.*)", line, re.DOTALL)
-            if match:
-                parsed_history.append((match.group(2), match.group(1), match.group(3)))
-            else:
-                parsed_history.append((fallback_level, "-", line))
-        return parsed_history
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+                content = f.read()
+            
+            parsed_history = []
+            current_entry = None
+            for line in content.strip().split("\n"):
+                if not line.strip():
+                    continue
+                match = re.match(r"^\[(.*?)\] \[(.*?)\] (.*)", line)
+                if match:
+                    if current_entry:
+                        parsed_history.append(current_entry)
+                    current_entry = (match.group(2), match.group(1), match.group(3))
+                else:
+                    if current_entry:
+                        current_entry = (current_entry[0], current_entry[1], f"{current_entry[2]}\n{line}")
+                    else:
+                        current_entry = (fallback_level, "-", line)
+            if current_entry:
+                parsed_history.append(current_entry)
+            return parsed_history
+        except Exception as e:
+            logger.error("[LogService] Error parsing log file '%s': %s", file_path, e)
+            return []

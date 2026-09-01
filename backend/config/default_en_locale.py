@@ -441,6 +441,7 @@ DEFAULT_DICTIONARY = {
     "log": {
         "controls": {
             "btn_clear": "Clear",
+            "btn_crashes": "View Crashes",
             "btn_folder": "Folder",
             "btn_hide_logs": "Hide Logs",
             "btn_live": "Live View",
@@ -453,6 +454,7 @@ DEFAULT_DICTIONARY = {
             "date_all": "All time",
             "filter_all": "ALL",
             "search_placeholder": "Search logs...",
+            "tooltip_crashes": "Load critical crash history (minikick_crash.log)",
             "tooltip_folder": "Open folder location in Windows"
         },
         "dialogs": {
@@ -477,6 +479,10 @@ DEFAULT_DICTIONARY = {
         "status": {
             "cleared_msg": "Log view cleared successfully.",
             "cleared_title": "Console Cleared",
+            "crashes_empty_msg": "No crash logs found or the file is empty.",
+            "crashes_empty_title": "No Crashes Recorded",
+            "crashes_loaded_msg": "Loaded critical crash history ({count} entries).",
+            "crashes_loaded_title": "Crash Log Loaded",
             "historical_msg": "Inspecting: {file}",
             "historical_title": "Log File Loaded",
             "live_msg": "Displaying real-time event diagnostics.",

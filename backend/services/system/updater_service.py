@@ -1,8 +1,11 @@
 # backend\services\system\updater_service.py
 
 import os
+import logging
 import subprocess
 from backend.interfaces import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
+
+logger = logging.getLogger("minikick.services.updater")
 
 class GithubUpdateProvider:
     def __init__(self, repo_owner: str, repo_name: str):
@@ -26,7 +29,8 @@ class GithubUpdateProvider:
                 "version": version,
                 "download_url": download_url
             }
-        except Exception:
+        except Exception as e:
+            logger.debug("[GithubUpdateProvider] Error checking latest release: %s", e)
             return None
 
     def fetch_latest_release(self) -> dict | None:
@@ -49,7 +53,8 @@ class GithubUpdateProvider:
                 "author": author_login,
                 "assets": data.get("assets", [])
             }
-        except Exception:
+        except Exception as e:
+            logger.error("[GithubUpdateProvider] Error fetching release notes: %s", e)
             return None
 
     def download_file(self, url: str, destination_path: str, progress_callback=None) -> bool:
@@ -68,13 +73,15 @@ class GithubUpdateProvider:
                         if progress_callback and total_size > 0:
                             progress_callback(int((downloaded / total_size) * 100))
             return True
-        except Exception:
+        except Exception as e:
+            logger.error("[GithubUpdateProvider] Error downloading update binary: %s", e)
             return False
 
 class WindowsInstaller:
     def install_and_restart(self, installer_path: str) -> None:
         CREATE_NO_WINDOW = 0x08000000        
         cmd = f'ping 127.0.0.1 -n 2 > nul && start "" "{installer_path}" /SILENT'
+        logger.info("[WindowsInstaller] Launching installer: %s", installer_path)
         subprocess.Popen(
             cmd,
             shell=True,
@@ -98,6 +105,7 @@ class UpdateManager:
     def check_for_updates(self) -> dict | None:
         info = self.checker.get_latest_version_info()
         if info and info["version"] > self.current_version:
+            logger.info("[UpdateManager] Found newer version: %s (current: %s)", info["version"], self.current_version)
             return info
         return None
 
@@ -106,11 +114,15 @@ class UpdateManager:
         if os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("[UpdateManager] Could not remove old installer: %s", e)
+        logger.info("[UpdateManager] Downloading update to temp: %s", temp_path)
         return self.downloader.download_file(download_url, temp_path, progress_callback)
 
     def install_update(self) -> None:
         temp_path = os.path.join(os.getenv('TEMP'), "minikick_update.exe")
         if os.path.exists(temp_path):
+            logger.info("[UpdateManager] Executing installer: %s", temp_path)
             self.installer.install_and_restart(temp_path)
+        else:
+            logger.error("[UpdateManager] Installer binary not found at %s", temp_path)

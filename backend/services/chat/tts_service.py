@@ -109,7 +109,6 @@ class TTSManager:
             self._providers[self._active_provider_key].stop()
 
     def _downloader_worker(self) -> None:
-        import logging
         while True:
             item = self.text_queue.get()
             try:

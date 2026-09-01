@@ -4,7 +4,11 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushB
                                QStackedWidget, QProgressBar, QWidget)
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
-from frontend.common.theme import COLOR_RED, PATH_ICON_HELP
+from frontend.common.theme import (
+    COLOR_RED, COLOR_AMBER, COLOR_BLUE, COLOR_GREEN,
+    COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
+    COLOR_WHITE, PATH_ICON_HELP
+)
 
 class ModernFramelessShell(QDialog):
     _icon_close = None
@@ -102,7 +106,7 @@ class ModernFramelessShell(QDialog):
         event.accept()
 
 class ModernModal(ModernFramelessShell):
-    def __init__(self, title: str = "", icon_path: str = "", icon_bg_color: str = "", width: int = 420, parent=None):
+    def __init__(self, title: str = "", icon_path: str = "", icon_bg_color: str = "", icon_role: str = "", icon_color: str = "", width: int = 420, parent=None):
         super().__init__(width=width, parent=parent)
         
         self.content_layout = QVBoxLayout(self.container)
@@ -110,7 +114,7 @@ class ModernModal(ModernFramelessShell):
         self.content_layout.setSpacing(12)
 
         if icon_path:
-            self._setup_header(icon_path, icon_bg_color)
+            self._setup_header(icon_path, icon_bg_color, icon_role=icon_role, icon_color=icon_color)
         
         if title:
             self.title_lbl = QLabel(title)
@@ -119,22 +123,41 @@ class ModernModal(ModernFramelessShell):
             self.title_lbl.setWordWrap(True)
             self.content_layout.addWidget(self.title_lbl)
 
-    def _setup_header(self, icon_path: str, bg_color: str):
+    def _setup_header(self, icon_path: str, bg_color: str, icon_role: str = "", icon_color: str = ""):
         icon_wrapper = QHBoxLayout()
         icon_wrapper.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_container = QFrame()
         icon_container.setFixedSize(52, 52)
-        role = "danger_icon" if bg_color == COLOR_RED else "accent_icon"
-        icon_container.setProperty("role", role)
+        
+        role_dispatch = {
+            COLOR_RED: ("danger_icon", COLOR_WHITE),
+            COLOR_AMBER: ("warning_icon", COLOR_BLACK),
+            COLOR_BLUE: ("info_icon", COLOR_WHITE),
+            COLOR_GREEN: ("accent_icon", COLOR_BLACK),
+            COLOR_TWITCH: ("twitch_icon", COLOR_WHITE),
+            COLOR_YOUTUBE: ("youtube_icon", COLOR_WHITE),
+            COLOR_TIKTOK: ("tiktok_icon", COLOR_BLACK),
+            COLOR_BLACK: ("black_icon", COLOR_WHITE),
+        }
+        
+        resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", COLOR_BLACK))
+        final_role = icon_role or resolved_role
+        final_fg = icon_color or default_fg
+        
+        icon_container.setProperty("role", final_role)
         
         icon_inner_layout = QVBoxLayout(icon_container)
         icon_inner_layout.setContentsMargins(0, 0, 0, 0)
         icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_lbl = QLabel()
+        from frontend.common.icons import get_pixmap_colored
         dpr = self.devicePixelRatio()
-        icon_lbl.setPixmap(QIcon(icon_path).pixmap(QSize(48, 48), dpr))
+        pixmap = get_pixmap_colored(icon_path, color_str=final_fg, size=36, dpr=dpr)
+        if pixmap.isNull():
+            pixmap = QIcon(icon_path).pixmap(QSize(36, 36), dpr)
+        icon_lbl.setPixmap(pixmap)
         icon_inner_layout.addWidget(icon_lbl)
 
         icon_wrapper.addWidget(icon_container)

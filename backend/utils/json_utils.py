@@ -1,6 +1,9 @@
 # backend\utils\json_utils.py
 
+import logging
 from typing import Any
+
+logger = logging.getLogger("minikick.utils.json")
 
 BACKEND_ENGINE: str = "json"
 try:
@@ -43,6 +46,7 @@ except ImportError:
 
         BACKEND_ENGINE = "json"
 
+logger.debug("[JsonUtils] Fast JSON parser initialized with engine: %s", BACKEND_ENGINE)
 
 def parse_kick_payload(raw: str | bytes | bytearray) -> tuple[str, dict]:
     if not raw:

@@ -1,6 +1,9 @@
 # backend\controllers\dashboard_controller.py
 
+import logging
 from PySide6.QtCore import QObject, Signal, Slot
+
+logger = logging.getLogger("minikick.controllers.dashboard")
 
 class DashboardController(QObject):
     request_connection = Signal()
@@ -60,8 +63,9 @@ class DashboardController(QObject):
             if connected:
                 self._current_tab = connected[0]
                 self._sync_view_profile()
+            logger.debug("[DashboardController] Loaded cached channel profiles: %s", list(cached.keys()))
         except Exception as e:
-            pass
+            logger.error("[DashboardController] Error loading cached channel profiles from db: %s", e)
 
     def set_kick_status(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
         if self.view and hasattr(self.view, "set_kick_status"):
@@ -100,7 +104,10 @@ class DashboardController(QObject):
         self._profiles[plat] = profile_data
         
         if save_db and self.db_manager:
-            self.db_manager.save_channel_profile(plat, profile_data)
+            try:
+                self.db_manager.save_channel_profile(plat, profile_data)
+            except Exception as e:
+                logger.error("[DashboardController] Error saving profile for platform '%s': %s", plat, e)
 
         connected_platforms = [p for p, data in self._profiles.items() if data is not None]
         if not self._profiles.get(self._current_tab) or len(connected_platforms) == 1:
@@ -111,13 +118,17 @@ class DashboardController(QObject):
             self.avatar_service.fetch_avatar(avatar_url, tag=plat)
 
         self._sync_view_profile()
+        logger.debug("[DashboardController] Updated channel profile for platform: %s", plat)
 
     def clear_channel_profile(self, platform: str):
         plat = platform.lower().strip()
         self._profiles[plat] = None
         self._avatars[plat] = None
         if self.db_manager:
-            self.db_manager.delete_channel_profile(plat)
+            try:
+                self.db_manager.delete_channel_profile(plat)
+            except Exception as e:
+                logger.error("[DashboardController] Error deleting profile for platform '%s': %s", plat, e)
         connected_platforms = [p for p, data in self._profiles.items() if data is not None]
         if connected_platforms:
             if not self._profiles.get(self._current_tab):
@@ -125,12 +136,14 @@ class DashboardController(QObject):
         else:
             self._current_tab = "kick"
         self._sync_view_profile()
+        logger.debug("[DashboardController] Cleared channel profile for platform: %s", plat)
 
     def _on_channel_tab_changed(self, platform: str):
         plat = platform.lower().strip()
         if plat in self._profiles and self._profiles[plat]:
             self._current_tab = plat
             self._sync_view_profile()
+            logger.debug("[DashboardController] Channel tab switched to: %s", plat)
 
     def _sync_view_profile(self):
         connected_platforms = [p for p, data in self._profiles.items() if data is not None]
@@ -160,22 +173,34 @@ class DashboardController(QObject):
 
     @Slot(object)
     def handle_connection_success(self, user_data: dict):
+        logger.info("[DashboardController] Connection successful. Updating view status.")
         self.view.update_connection_status(is_connecting=False)
         self.set_channel_profile("kick", user_data)
 
     @Slot()
     def handle_connecting_state(self):
+        logger.debug("[DashboardController] Entering connecting state.")
         self.view.update_connection_status(is_connecting=True)
 
     @Slot(str)
     def handle_error_state(self, error_msg: str):
+        logger.error("[DashboardController] Connection error: %s", error_msg)
         self.view.update_connection_status(is_connecting=False, has_error=True, error_msg=error_msg)
 
     @Slot()
     def reset_to_disconnected(self):
+        logger.info("[DashboardController] Resetting to disconnected state.")
         self.clear_channel_profile("kick")
         self.view.reset_to_disconnected()
 
     @Slot(object)
-    def evaluate_scopes(self, missing_scope_keys: list):
+    def evaluate_scopes(self, missing_scope_keys: object):
+        has_missing = False
+        if isinstance(missing_scope_keys, dict):
+            has_missing = any(bool(v) for v in missing_scope_keys.values())
+        elif isinstance(missing_scope_keys, (list, set)):
+            has_missing = bool(missing_scope_keys)
+
+        if has_missing:
+            logger.warning("[DashboardController] Missing OAuth scopes detected: %s", missing_scope_keys)
         self.view.show_scope_warning(missing_scope_keys)

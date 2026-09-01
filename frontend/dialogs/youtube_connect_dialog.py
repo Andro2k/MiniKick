@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QWidget
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton
 from frontend.common import get_assets_path
-from frontend.common.theme import COLOR_RED
+from frontend.common.theme import COLOR_YOUTUBE
 
 class YouTubeConnectDialog(ModernModal):
     def __init__(self, i18n, initial_target: str = "", parent=None):
@@ -13,7 +13,7 @@ class YouTubeConnectDialog(ModernModal):
         super().__init__(
             title=self.i18n.get("dialogs.youtube_connect.title"),
             icon_path=get_assets_path("icons/brand-youtube.svg"),
-            icon_bg_color=COLOR_RED,
+            icon_bg_color=COLOR_YOUTUBE,
             width=480,
             parent=parent
         )

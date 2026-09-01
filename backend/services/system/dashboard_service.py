@@ -1,8 +1,11 @@
 # backend\services\system\dashboard_service.py
 
+import logging
 from PySide6.QtCore import QObject, Signal, QUrl
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 from backend.database.avatar_storage import SQLiteAvatarStorage
+
+logger = logging.getLogger("minikick.services.dashboard")
 
 class AvatarService(QObject):
     avatar_downloaded = Signal(bytes)
@@ -42,6 +45,7 @@ class AvatarService(QObject):
 
         if tag:
             self._pending_tags[url_str] = tag
+        logger.debug("[AvatarService] Downloading avatar from network: %s", url_str)
         request = QNetworkRequest(QUrl(url_str))
         self.manager.get(request)
 
@@ -53,4 +57,7 @@ class AvatarService(QObject):
             tag = self._pending_tags.pop(url_str, "")
             self.avatar_downloaded.emit(data)
             self.avatar_ready.emit(tag or url_str, data)
+            logger.debug("[AvatarService] Downloaded and cached avatar (%s bytes) for tag: %s", len(data), tag or url_str)
+        else:
+            logger.error("[AvatarService] Network error downloading avatar: %s", reply.errorString())
         reply.deleteLater()

@@ -37,6 +37,7 @@ from frontend.common.paths import resource_path
 
 class AppContainerCore:
     def __init__(self):
+        logger.debug("[AppContainer] Initializing database manager and SQLite storage layers...")
         self.db_manager = DatabaseManager()
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
         self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
@@ -52,6 +53,7 @@ class AppContainerCore:
         self.music_storage = SQLiteMusicStorage(self.db_manager)
         self.schedule_storage = SQLiteScheduleStorage(self.db_manager)
 
+        logger.debug("[AppContainer] Initializing core services (Backup, Settings, Avatar, Widget, Schedule)...")
         self.backup_service = BackupService(
             settings_storage=self.settings_storage,
             rewards_storage=self.rewards_storage,
@@ -68,6 +70,7 @@ class AppContainerCore:
 
         auth_html_path = resource_path(os.path.join("assets", "web", "auth.html"))
 
+        logger.debug("[AppContainer] Initializing Kick and Twitch OAuth managers...")
         self.auth_manager = AuthManager(
             client_id=KICK_CLIENT_ID,
             client_secret=KICK_CLIENT_SECRET,
@@ -84,10 +87,11 @@ class AppContainerCore:
             success_html_path=auth_html_path
         )
 
-
+        logger.debug("[AppContainer] Initializing TTS Manager and Overlay Server...")
         self.tts_manager = TTSManager()
         self.overlay_server = OverlayServerManager(settings_storage=self.settings_storage)
         self.overlay_server.start()
+        logger.info("[AppContainer] Core dependency container initialized successfully.")
         self._music_provider = None
 
     @property

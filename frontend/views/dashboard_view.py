@@ -7,8 +7,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
 from frontend.common.theme import (
-    COLOR_BLACK, COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_800,
-    COLOR_NEUTRAL_500, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
+    COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_800,
+    COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE
 )
 from frontend.common import create_circular_pixmap, get_icon_colored, get_pixmap_colored
@@ -289,12 +289,12 @@ class DashboardView(BaseView):
 
         self.btn_tab_kick = ModernButton(self.i18n.get("dashboard.profile.tab_kick"), role="action_kick")
         self.btn_tab_kick.setFixedHeight(30)
-        self.btn_tab_kick.setIcon(get_icon_colored("brand-kick.svg", COLOR_BLACK, 14))
+        self.btn_tab_kick.set_icon("brand-kick.svg", size=14)
         self.btn_tab_kick.clicked.connect(lambda: self.channel_tab_changed.emit("kick"))
 
         self.btn_tab_twitch = ModernButton(self.i18n.get("dashboard.profile.tab_twitch"), role="action_twitch")
         self.btn_tab_twitch.setFixedHeight(30)
-        self.btn_tab_twitch.setIcon(get_icon_colored("brand-twitch.svg", COLOR_WHITE, 14))
+        self.btn_tab_twitch.set_icon("brand-twitch.svg", size=14)
         self.btn_tab_twitch.clicked.connect(lambda: self.channel_tab_changed.emit("twitch"))
 
         self.tabs_layout.addWidget(self.btn_tab_kick)
@@ -595,8 +595,19 @@ class DashboardView(BaseView):
             self.tabs_container.setVisible(True)
             self.btn_tab_kick.setVisible("kick" in connected_platforms)
             self.btn_tab_twitch.setVisible("twitch" in connected_platforms)
-            self.btn_tab_kick.setEnabled(platform != "kick")
-            self.btn_tab_twitch.setEnabled(platform != "twitch")
+            
+            is_kick = (platform == "kick")
+            is_twitch = (platform == "twitch")
+
+            self.btn_tab_kick.setProperty("role", "action_kick" if is_kick else "action_outlined")
+            self.btn_tab_kick.set_icon("brand-kick.svg", color=COLOR_WHITE if is_kick else COLOR_NEUTRAL_400, size=14)
+            self.btn_tab_kick.style().unpolish(self.btn_tab_kick)
+            self.btn_tab_kick.style().polish(self.btn_tab_kick)
+
+            self.btn_tab_twitch.setProperty("role", "action_twitch" if is_twitch else "action_outlined")
+            self.btn_tab_twitch.set_icon("brand-twitch.svg", color=COLOR_WHITE if is_twitch else COLOR_NEUTRAL_400, size=14)
+            self.btn_tab_twitch.style().unpolish(self.btn_tab_twitch)
+            self.btn_tab_twitch.style().polish(self.btn_tab_twitch)
         else:
             self.tabs_container.setVisible(False)
 
