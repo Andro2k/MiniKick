@@ -17,6 +17,7 @@ class ScheduleWorker(QThread):
 
     def stop(self) -> None:
         self._is_running = False
+        self.requestInterruption()
         self.quit()
 
     def run(self) -> None:
@@ -27,10 +28,10 @@ class ScheduleWorker(QThread):
             except Exception as e:
                 logger.error("[ScheduleWorker] Error checking schedules: %s", e)
 
-            for _ in range(100):
-                if not self._is_running:
+            for _ in range(200):
+                if not self._is_running or self.isInterruptionRequested():
                     break
-                self.msleep(100)
+                self.msleep(50)
 
         logger.info("[ScheduleWorker] Worker stopped.")
 

@@ -170,8 +170,7 @@ class RewardsController(QObject):
                     api_client=api_client,
                     payload=config["new_reward_data"],
                     broadcaster_id=self.twitch_broadcaster_id,
-                    platform="twitch",
-                    parent=self
+                    platform="twitch"
                 )
                 self.create_reward_worker.reward_created.connect(
                     lambda res_dict: self._on_reward_created_api(res_dict, config)
@@ -201,8 +200,7 @@ class RewardsController(QObject):
                 self.create_reward_worker = CreateRewardWorker(
                     api_client=api_client,
                     payload=config["new_reward_data"],
-                    platform="kick",
-                    parent=self
+                    platform="kick"
                 )
                 self.create_reward_worker.reward_created.connect(
                     lambda res_dict: self._on_reward_created_api(res_dict, config)
@@ -317,8 +315,7 @@ class RewardsController(QObject):
                         reward_id=reward_id,
                         payload=payload,
                         broadcaster_id=self.twitch_broadcaster_id,
-                        platform="twitch",
-                        parent=self
+                        platform="twitch"
                     )
                     self.update_reward_worker.reward_updated.connect(
                         lambda res_dict, o=reward_name, n=new_reward, c=updated_config: self._on_reward_updated_api(res_dict, o, n, c)
@@ -350,8 +347,7 @@ class RewardsController(QObject):
                         api_client=api_client,
                         reward_id=reward_id,
                         payload=payload,
-                        platform="kick",
-                        parent=self
+                        platform="kick"
                     )
                     self.update_reward_worker.reward_updated.connect(
                         lambda res_dict, o=reward_name, n=new_reward, c=updated_config: self._on_reward_updated_api(res_dict, o, n, c)

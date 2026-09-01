@@ -299,14 +299,24 @@ class YouTubeMusicProvider(QObject):
             return True
         return False
 
+    def _cancel_worker(self, worker_attr: str):
+        worker = getattr(self, worker_attr, None)
+        if worker:
+            try:
+                if worker.isRunning():
+                    worker.requestInterruption()
+                    worker.quit()
+                    worker.wait(300)
+                worker.deleteLater()
+            except RuntimeError:
+                pass
+            setattr(self, worker_attr, None)
+
     def shutdown(self):
         self.player.stop()
         self.player.setSource(QUrl())
         self.current_local_file = None
-        if self.preload_worker and self.preload_worker.isRunning():
-            self.preload_worker.terminate()
-            self.preload_worker.wait()
-        self.preload_worker = None
+        self._cancel_worker("preload_worker")
         self.preload_song_url = None
 
     def _preload_next_song(self):
@@ -320,9 +330,7 @@ class YouTubeMusicProvider(QObject):
         if self.preload_worker and self.preload_worker.isRunning():
             if self.preload_song_url == next_song["url"]:
                 return
-            self.preload_worker.terminate()
-            self.preload_worker.wait()
-            self.preload_worker = None
+            self._cancel_worker("preload_worker")
             self.preload_song_url = None
 
         self.preload_song_url = next_song["url"]
@@ -357,9 +365,7 @@ class YouTubeMusicProvider(QObject):
         self.preload_worker.start()
 
     def _play_next(self, start_playing: bool = True):
-        if self.resolve_worker and self.resolve_worker.isRunning():
-            self.resolve_worker.terminate()
-            self.resolve_worker.wait()
+        self._cancel_worker("resolve_worker")
 
         self.player.stop()
         self.player.setSource(QUrl())
@@ -372,10 +378,7 @@ class YouTubeMusicProvider(QObject):
 
         if not self.queue:
             self.current_song = None
-            if self.preload_worker and self.preload_worker.isRunning():
-                self.preload_worker.terminate()
-                self.preload_worker.wait()
-            self.preload_worker = None
+            self._cancel_worker("preload_worker")
             self.preload_song_url = None
             return
 
@@ -401,10 +404,7 @@ class YouTubeMusicProvider(QObject):
             self.resolve_worker.error.connect(self._on_resolve_error)
             self._start_playing_current = start_playing
         else:
-            if self.preload_worker and self.preload_worker.isRunning():
-                self.preload_worker.terminate()
-                self.preload_worker.wait()
-            self.preload_worker = None
+            self._cancel_worker("preload_worker")
             self.preload_song_url = None
 
             self.resolve_worker = YouTubeResolveWorker(self.current_song["url"], expected_title=self.current_song.get("title", ""), i18n=self.i18n)

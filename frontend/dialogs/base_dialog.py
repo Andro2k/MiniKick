@@ -27,7 +27,7 @@ class ModernFramelessShell(QDialog):
         self.container = QFrame(self)
         self.container.setProperty("role", "dialog")
         self.container.setFixedWidth(width)
-        self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
         
         self.glow = QGraphicsDropShadowEffect(self)
         self.glow.setBlurRadius(30)
@@ -54,6 +54,7 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.raise_()
 
     def showEvent(self, event):
+        self.adjustSize()
         super().showEvent(event)
         parent_widget = self.parentWidget()
         if parent_widget and hasattr(parent_widget, "rect"):
@@ -264,6 +265,8 @@ class ModernWizardPanel(ModernFramelessShell):
             self.btn_next.setText(self.i18n.get("common.buttons.save"))
         else:
             self.btn_next.setText(self.i18n.get("common.buttons.next"))
+
+        self.adjustSize()
 
     def _go_back(self):
         if self.current_step == 0:

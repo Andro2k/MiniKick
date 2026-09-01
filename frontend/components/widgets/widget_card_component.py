@@ -41,8 +41,8 @@ class WidgetCard(QFrame):
         self.header_widget = QWidget()
         self.header_widget.setCursor(Qt.CursorShape.PointingHandCursor)
         h_layout = QHBoxLayout(self.header_widget)
-        h_layout.setContentsMargins(14, 14, 14, 14)
-        h_layout.setSpacing(10)
+        h_layout.setContentsMargins(8, 8, 8, 8)
+        h_layout.setSpacing(6)
 
         lbl_icon = QLabel()
         lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, 24))
@@ -95,8 +95,8 @@ class WidgetCard(QFrame):
     def _build_body(self):
         self.body_widget = QWidget()
         b_layout = QVBoxLayout(self.body_widget)
-        b_layout.setContentsMargins(14, 10, 14, 14)
-        b_layout.setSpacing(12)
+        b_layout.setContentsMargins(12, 10, 12, 12)
+        b_layout.setSpacing(8)
 
         b_layout.addWidget(ModernDivider())
 

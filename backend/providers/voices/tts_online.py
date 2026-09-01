@@ -78,6 +78,13 @@ class WebTTSProvider:
         return any(c.isalnum() for c in cleaned)
 
     def _run_event_loop(self):
+        import sys
+        if sys.platform == "win32":
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pass
         asyncio.set_event_loop(self._loop)
         try:
             self._loop.run_forever()
@@ -300,11 +307,6 @@ class WebTTSProvider:
                 self._current_loop.quit()
             except Exception:
                 pass
-        if hasattr(self, "_loop") and self._loop and self._loop.is_running():
-            try:
-                self._loop.call_soon_threadsafe(self._loop.stop)
-            except Exception:
-                pass
         with self._cache_lock:
             for item in self._cache.values():
                 try:
@@ -316,6 +318,14 @@ class WebTTSProvider:
                 except Exception as e:
                     logger.error("[Web TTS] Error cleaning up cached file: %s", e)
             self._cache.clear()
+
+    def shutdown(self) -> None:
+        self.stop()
+        if hasattr(self, "_loop") and self._loop and self._loop.is_running():
+            try:
+                self._loop.call_soon_threadsafe(self._loop.stop)
+            except Exception:
+                pass
 
     def get_available_voices(self) -> list[dict]:
         try:

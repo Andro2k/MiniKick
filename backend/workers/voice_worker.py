@@ -1,5 +1,6 @@
 # backend\workers\voice_worker.py
 
+import sys
 import logging
 from PySide6.QtCore import QThread, Signal
 
@@ -16,6 +17,12 @@ class VoiceFetcherWorker(QThread):
         self.provider_type = provider_type
 
     def run(self):
+        if sys.platform == "win32":
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pass
         logger.debug("[VoiceFetcherWorker] Fetching available voices for provider: %s...", self.provider_type)
         try:
             voices = self.tts_manager.get_available_voices(self.provider_type)

@@ -175,33 +175,41 @@ class DashboardView(BaseView):
 
     def _setup_ui(self):
         self.banner_scopes_kick = QFrame()
-        self.banner_scopes_kick.setProperty("role", "banner_danger")
-        self.banner_layout_kick = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.banner_scopes_kick)
+        self.banner_scopes_kick.setProperty("role", "banner_scope_card")
+        self.banner_scopes_kick.setProperty("state", "kick")
+        self.banner_layout_kick = QHBoxLayout(self.banner_scopes_kick)
+        self.banner_layout_kick.setContentsMargins(16, 14, 16, 14)
+        self.banner_layout_kick.setSpacing(14)
         self.banner_scopes_kick.setVisible(False)
         self.lbl_warn_text_kick = QLabel()
         self.lbl_warn_text_kick.setWordWrap(True)
-        self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_danger_border")
+        self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_kick")
         self.btn_reauth_kick.clicked.connect(self._on_reauth_kick_clicked)
         lbl_kick_icon = QLabel()
-        lbl_kick_icon.setPixmap(get_pixmap_colored("brand-kick.svg", COLOR_GREEN, 24))
-        self.banner_layout_kick.addWidget(lbl_kick_icon)
-        self.banner_layout_kick.addWidget(self.lbl_warn_text_kick, stretch=1)
-        self.banner_layout_kick.addWidget(self.btn_reauth_kick)
+        lbl_kick_icon.setPixmap(get_pixmap_colored("brand-kick.svg", COLOR_GREEN, 26))
+        lbl_kick_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        self.banner_layout_kick.addWidget(lbl_kick_icon, 0, Qt.AlignmentFlag.AlignTop)
+        self.banner_layout_kick.addWidget(self.lbl_warn_text_kick, 1)
+        self.banner_layout_kick.addWidget(self.btn_reauth_kick, 0, Qt.AlignmentFlag.AlignVCenter)
         self.main_layout.addWidget(self.banner_scopes_kick)
 
         self.banner_scopes_twitch = QFrame()
-        self.banner_scopes_twitch.setProperty("role", "banner_danger")
-        self.banner_layout_twitch = QBoxLayout(QBoxLayout.Direction.LeftToRight, self.banner_scopes_twitch)
+        self.banner_scopes_twitch.setProperty("role", "banner_scope_card")
+        self.banner_scopes_twitch.setProperty("state", "twitch")
+        self.banner_layout_twitch = QHBoxLayout(self.banner_scopes_twitch)
+        self.banner_layout_twitch.setContentsMargins(16, 14, 16, 14)
+        self.banner_layout_twitch.setSpacing(14)
         self.banner_scopes_twitch.setVisible(False)
         self.lbl_warn_text_twitch = QLabel()
         self.lbl_warn_text_twitch.setWordWrap(True)
-        self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_danger_border")
+        self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_twitch")
         self.btn_reauth_twitch.clicked.connect(self._on_reauth_twitch_clicked)
         lbl_twitch_icon = QLabel()
-        lbl_twitch_icon.setPixmap(get_pixmap_colored("brand-twitch.svg", COLOR_TWITCH, 24))
-        self.banner_layout_twitch.addWidget(lbl_twitch_icon)
-        self.banner_layout_twitch.addWidget(self.lbl_warn_text_twitch, stretch=1)
-        self.banner_layout_twitch.addWidget(self.btn_reauth_twitch)
+        lbl_twitch_icon.setPixmap(get_pixmap_colored("brand-twitch.svg", COLOR_TWITCH, 26))
+        lbl_twitch_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        self.banner_layout_twitch.addWidget(lbl_twitch_icon, 0, Qt.AlignmentFlag.AlignTop)
+        self.banner_layout_twitch.addWidget(self.lbl_warn_text_twitch, 1)
+        self.banner_layout_twitch.addWidget(self.btn_reauth_twitch, 0, Qt.AlignmentFlag.AlignVCenter)
         self.main_layout.addWidget(self.banner_scopes_twitch)
 
         self.banner_scopes = self.banner_scopes_kick
@@ -810,17 +818,35 @@ class DashboardView(BaseView):
             kick_keys, twitch_keys = [], []
 
         if kick_keys:
-            scope_names = ", ".join(f"<b>{self.i18n.get(key)}</b>" for key in kick_keys)
-            prefix = self.i18n.get("dashboard.banner.text_prefix_kick")
-            self.lbl_warn_text_kick.setText(f"{prefix} {scope_names}.")
+            items_html = "".join(f"<li style='margin-bottom: 3px;'>{self.i18n.get(key)}</li>" for key in kick_keys)
+            title = self.i18n.get("dashboard.banner.title_kick")
+            desc = self.i18n.get("dashboard.banner.desc_kick")
+            self.lbl_warn_text_kick.setText(
+                f"<div style='line-height: 135%;'>"
+                f"<div style='font-size: 13px; font-weight: 700; color: #FAFAFA; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 12px; color: #9D9AA8; margin-bottom: 5px;'>{desc}</div>"
+                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: #E4E3EA;'>"
+                f"{items_html}"
+                f"</ul>"
+                f"</div>"
+            )
             self.banner_scopes_kick.setVisible(True)
         else:
             self.banner_scopes_kick.setVisible(False)
 
         if twitch_keys:
-            scope_names = ", ".join(f"<b>{self.i18n.get(key)}</b>" for key in twitch_keys)
-            prefix = self.i18n.get("dashboard.banner.text_prefix_twitch")
-            self.lbl_warn_text_twitch.setText(f"{prefix} {scope_names}.")
+            items_html = "".join(f"<li style='margin-bottom: 3px;'>{self.i18n.get(key)}</li>" for key in twitch_keys)
+            title = self.i18n.get("dashboard.banner.title_twitch")
+            desc = self.i18n.get("dashboard.banner.desc_twitch")
+            self.lbl_warn_text_twitch.setText(
+                f"<div style='line-height: 135%;'>"
+                f"<div style='font-size: 13px; font-weight: 700; color: #FAFAFA; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 12px; color: #9D9AA8; margin-bottom: 5px;'>{desc}</div>"
+                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: #E4E3EA;'>"
+                f"{items_html}"
+                f"</ul>"
+                f"</div>"
+            )
             self.banner_scopes_twitch.setVisible(True)
         else:
             self.banner_scopes_twitch.setVisible(False)

@@ -144,3 +144,6 @@ class ChatService:
 
     def stop_tts(self):
         self.tts.stop()
+
+    def shutdown(self):
+        self.tts.shutdown()

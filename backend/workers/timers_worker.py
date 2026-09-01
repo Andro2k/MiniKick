@@ -49,10 +49,12 @@ class TimerWorker(QThread):
             except Exception as e:
                 logger.error("[TimerWorker] Error in run loop: %s", e)
 
-            for _ in range(self.check_interval * 10):
-                if not self._running:
+            for _ in range(self.check_interval * 20):
+                if not self._running or self.isInterruptionRequested():
                     break
-                self.msleep(100)
+                self.msleep(50)
 
     def stop(self):
         self._running = False
+        self.requestInterruption()
+        self.quit()

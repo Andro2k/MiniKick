@@ -253,6 +253,8 @@
         "banner": {
             "btn_update_kick": "Renovar Permisos de Kick",
             "btn_update_twitch": "Renovar Permisos de Twitch",
+            "desc_kick": "Tu cuenta necesita renovar los siguientes permisos para desbloquear todas las funciones:",
+            "desc_twitch": "Tu cuenta necesita renovar los siguientes permisos para desbloquear todas las funciones:",
             "scope": {
                 "kick_channel_read": "Leer datos del canal en Kick",
                 "kick_channel_rewards_read": "Leer recompensas de canal en Kick",
@@ -274,8 +276,8 @@
                 "twitch_user_read_chat": "Lectura de chat en Twitch",
                 "twitch_user_write_chat": "Escritura en chat de Twitch"
             },
-            "text_prefix_kick": "<b>Actualización requerida en Kick:</b> Tu cuenta de Kick necesita renovar permisos para:",
-            "text_prefix_twitch": "<b>Actualización requerida en Twitch:</b> Tu cuenta de Twitch necesita renovar permisos para:"
+            "title_kick": "Permisos pendientes en Kick",
+            "title_twitch": "Permisos pendientes en Twitch"
         },
         "connection": {
             "autostart_desc": "Conecta automáticamente MiniKick al iniciar la aplicación.",

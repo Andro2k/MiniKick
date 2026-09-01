@@ -55,10 +55,10 @@ class RewardWorker(QThread):
                     
             except Exception as e:
                 self.error_occurred.emit(self.i18n.get("main.workers.reward.poll_error").replace("{error}", str(e)))
-            for _ in range(self.poll_interval * 10):
-                if not self._running:
+            for _ in range(self.poll_interval * 20):
+                if not self._running or self.isInterruptionRequested():
                     break
-                self.msleep(100)
+                self.msleep(50)
 
     def _process_and_emit_redemptions(self, redemptions: list, user_ids: list):
         user_names_map = {}
@@ -71,6 +71,8 @@ class RewardWorker(QThread):
             except Exception as e:
                 logger.error("[RewardWorker] Error hydrating reward users: %s", e)
         for red in redemptions:
+            if not self._running or self.isInterruptionRequested():
+                break
             red_id = red["red_id"]
             user_id = red["user_id"]
             fallback_name = self.i18n.get("main.workers.reward.someone")
@@ -85,7 +87,7 @@ class RewardWorker(QThread):
             new_ids_to_accept.append(red_id)
             logger.info("[RewardWorker] Canje detectado (Kick): usuario='%s', recompensa='%s'", username, red["reward_title"])
             self.reward_redeemed.emit(username, red["reward_title"], red["user_input"])
-        if new_ids_to_accept:
+        if new_ids_to_accept and self._running and not self.isInterruptionRequested():
             for i in range(0, len(new_ids_to_accept), 25):
                 batch = new_ids_to_accept[i:i+25]
                 try:
@@ -97,6 +99,8 @@ class RewardWorker(QThread):
 
     def stop(self):
         self._running = False
+        self.requestInterruption()
+        self.quit()
 
 class FetchRewardsWorker(QThread):
     rewards_fetched = Signal(object, object)

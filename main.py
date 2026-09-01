@@ -86,7 +86,8 @@ def global_crash_handler(exctype, value, tb):
             app.setStyleSheet(GLOBAL_QSS)
             
             font_family = "Google Sans"
-            app_font = QFont(font_family)
+            app_font = QFont(font_family, 10)
+            app_font.setPointSize(10)
             app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
             app.setFont(app_font)
 
@@ -135,7 +136,8 @@ def bootstrap():
                     loaded_fonts_count += 1
     logger.debug("[Bootstrap] Loaded %d application fonts from %s", loaded_fonts_count, fonts_dir)
 
-    app_font = QFont(font_family)
+    app_font = QFont(font_family, 10)
+    app_font.setPointSize(10)
     app_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     app.setFont(app_font)
     app.setStyleSheet(GLOBAL_QSS)

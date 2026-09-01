@@ -511,6 +511,11 @@ class MainWindowCore(QMainWindow):
                 try:
                     if instance.isRunning():
                         active_workers.append((name, instance))
+                    else:
+                        try:
+                            instance.deleteLater()
+                        except RuntimeError:
+                            pass
                 except RuntimeError:
                     pass
 
@@ -523,7 +528,9 @@ class MainWindowCore(QMainWindow):
                 self.logger.info(stop_template.replace("{worker}", name))
                 if hasattr(instance, 'stop'):
                     instance.stop()
-                elif hasattr(instance, 'quit'):
+                if hasattr(instance, 'requestInterruption'):
+                    instance.requestInterruption()
+                if hasattr(instance, 'quit'):
                     instance.quit()
             except RuntimeError:
                 pass
@@ -532,12 +539,11 @@ class MainWindowCore(QMainWindow):
         stopped_template = self.i18n.get("main.logs.worker_stopped")
         for name, instance in active_workers:
             try:
-                if not instance.wait(1000):
-                    self.logger.warning(stuck_template.replace("{worker}", name))
-                    instance.terminate()
-                    instance.wait(300)
-                else:
+                if instance.wait(2000):
                     self.logger.info(stopped_template.replace("{worker}", name))
+                else:
+                    self.logger.warning("[Shutdown] Worker '%s' wait timed out", name)
+                instance.deleteLater()
             except RuntimeError:
                 pass
 
@@ -550,6 +556,11 @@ class MainWindowCore(QMainWindow):
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
+        self.chat_worker = None
+        self.reward_worker = None
+        self.auth_worker = None
+        self.fetch_rewards_worker = None
+        self.timers_worker = None
 
     def _stop_twitch_connection_workers(self):
         worker_map = [
@@ -559,6 +570,10 @@ class MainWindowCore(QMainWindow):
             ("Worker_Fetch_Twitch_Rewards", getattr(self, 'fetch_twitch_rewards_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
+        self.twitch_chat_worker = None
+        self.twitch_auth_worker = None
+        self.twitch_reward_worker = None
+        self.fetch_twitch_rewards_worker = None
 
     def _stop_all_workers(self):
         worker_map = [
@@ -577,6 +592,22 @@ class MainWindowCore(QMainWindow):
         ]
 
         self._stop_workers_parallel(worker_map)
+        self.chat_worker = None
+        self.reward_worker = None
+        self.auth_worker = None
+        self.fetch_rewards_worker = None
+        self.timers_worker = None
+        self.twitch_chat_worker = None
+        self.twitch_auth_worker = None
+        self.twitch_reward_worker = None
+        self.youtube_chat_worker = None
+        self.tiktok_chat_worker = None
+        self.schedule_worker = None
+        if hasattr(self, "chat_service") and self.chat_service and hasattr(self.chat_service, "shutdown"):
+            try:
+                self.chat_service.shutdown()
+            except Exception:
+                pass
 
     @Slot()
     def _handle_auth_process(self, force: bool = False):
@@ -584,7 +615,6 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.handle_connecting_state()
 
         self.auth_worker = KickAuthWorker(self.i18n, self.auth_manager, force=force)
-        self.auth_worker.setParent(self)
         self.auth_worker.auth_success.connect(self._on_auth_success)
         self.auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
         self.auth_worker.finished.connect(self.auth_worker.deleteLater)
@@ -606,7 +636,7 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "schedule_controller") and self.schedule_controller:
             self.schedule_controller.fetch_current_info()
 
-        self.chat_worker = KickChatWorker(self.i18n, api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, parent=self)
+        self.chat_worker = KickChatWorker(self.i18n, api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY)
         self.chat_worker.connection_success.connect(self._on_web_socket_connected)
         self.chat_worker.message_received.connect(self._route_incoming_message)
         self.chat_worker.poll_updated.connect(self._on_poll_updated)
@@ -615,7 +645,7 @@ class MainWindowCore(QMainWindow):
         self.chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
         self.chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
         
-        self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=10, parent=self)
+        self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=10)
         self.reward_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
         
         self.chat_worker.start()
@@ -658,7 +688,7 @@ class MainWindowCore(QMainWindow):
             if not is_running:
                 try:
                     api_client = KickAPIClient(auth_provider=self.auth_manager)
-                    self.fetch_rewards_worker = FetchRewardsWorker(api_client, platform="kick", parent=self)
+                    self.fetch_rewards_worker = FetchRewardsWorker(api_client, platform="kick")
                     self.fetch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
                     self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
                     self.fetch_rewards_worker.finished.connect(self.fetch_rewards_worker.deleteLater)
@@ -728,7 +758,7 @@ class MainWindowCore(QMainWindow):
         self._stop_workers_parallel([("Worker_Timers", getattr(self, 'timers_worker', None))])
         
         api_client = KickAPIClient(auth_provider=self.auth_manager)
-        self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug, parent=self)
+        self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug)
         self.timers_worker.post_message_requested.connect(self._send_timer_message)
         self.timers_worker.start()
 
@@ -756,7 +786,7 @@ class MainWindowCore(QMainWindow):
                 message=msg,
                 state="info"
             )
-        self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, force=force, parent=self)
+        self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, force=force)
         self.twitch_auth_worker.auth_success.connect(self._on_twitch_auth_success)
         self.twitch_auth_worker.auth_error.connect(self._on_twitch_auth_error)
         self.twitch_auth_worker.finished.connect(self.twitch_auth_worker.deleteLater)
@@ -797,8 +827,7 @@ class MainWindowCore(QMainWindow):
             oauth_token="",
             bot_nick="",
             api_client=self.spam_service.twitch_api,
-            i18n=self.container.i18n,
-            parent=self
+            i18n=self.container.i18n
         )
 
         self.command_service.twitch_worker = self.twitch_chat_worker
@@ -862,8 +891,7 @@ class MainWindowCore(QMainWindow):
                 self.container.i18n,
                 self.container.twitch_auth_manager,
                 TWITCH_CLIENT_ID,
-                broadcaster_id,
-                parent=self
+                broadcaster_id
             )
             self.twitch_reward_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="twitch"))
             self.twitch_reward_worker.start()
@@ -895,9 +923,20 @@ class MainWindowCore(QMainWindow):
         b_id = broadcaster_id or getattr(self.spam_service, "twitch_broadcaster_id", "")
         if not b_id or not self.container.twitch_auth_manager.is_authenticated():
             return
+
+        is_running = False
+        if hasattr(self, 'fetch_twitch_rewards_worker') and self.fetch_twitch_rewards_worker is not None:
+            try:
+                is_running = self.fetch_twitch_rewards_worker.isRunning()
+            except RuntimeError:
+                self.fetch_twitch_rewards_worker = None
+
+        if is_running:
+            return
+
         try:
             twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
-            self.fetch_twitch_rewards_worker = FetchRewardsWorker(twitch_api, broadcaster_id=b_id, platform="twitch", parent=self)
+            self.fetch_twitch_rewards_worker = FetchRewardsWorker(twitch_api, broadcaster_id=b_id, platform="twitch")
             self.fetch_twitch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
             self.fetch_twitch_rewards_worker.finished.connect(self.fetch_twitch_rewards_worker.deleteLater)
             self.fetch_twitch_rewards_worker.start()
@@ -1030,8 +1069,7 @@ class MainWindowCore(QMainWindow):
 
         self.youtube_chat_worker = YouTubeChatWorker(
             target_channel=target,
-            i18n=self.container.i18n,
-            parent=self
+            i18n=self.container.i18n
         )
         self.youtube_chat_worker.connection_success.connect(self._on_youtube_connected)
         self.youtube_chat_worker.connection_lost.connect(self._on_youtube_disconnected)
@@ -1123,8 +1161,7 @@ class MainWindowCore(QMainWindow):
 
         self.tiktok_chat_worker = TikTokChatWorker(
             target_channel=clean_target,
-            i18n=self.container.i18n,
-            parent=self
+            i18n=self.container.i18n
         )
         self.tiktok_chat_worker.connection_success.connect(self._on_tiktok_connected)
         self.tiktok_chat_worker.connection_lost.connect(self._on_tiktok_disconnected)
@@ -1255,7 +1292,7 @@ class MainWindowCore(QMainWindow):
     def _start_schedule_worker(self):
         current_worker = getattr(self, "schedule_worker", None)
         if current_worker is None or not current_worker.isRunning():
-            self.schedule_worker = ScheduleWorker(self.schedule_service, parent=self)
+            self.schedule_worker = ScheduleWorker(self.schedule_service)
             self.schedule_worker.schedule_triggered.connect(self._on_schedule_triggered)
             self.schedule_worker.start()
 

@@ -104,9 +104,18 @@ class TTSManager:
             except queue.Empty:
                 break
                 
-        self.text_queue.put(None)
         if self._active_provider_key in self._providers:
             self._providers[self._active_provider_key].stop()
+
+    def shutdown(self) -> None:
+        self.stop()
+        self.text_queue.put(None)
+        for prov in self._providers.values():
+            if hasattr(prov, "shutdown"):
+                try:
+                    prov.shutdown()
+                except Exception:
+                    pass
 
     def _downloader_worker(self) -> None:
         while True:
@@ -130,6 +139,13 @@ class TTSManager:
                 self.text_queue.task_done()
 
     def _worker(self) -> None:
+        import sys
+        if sys.platform == "win32":
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pass
         while True:
             item = self.play_queue.get()
             try:

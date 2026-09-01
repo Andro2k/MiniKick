@@ -15,14 +15,6 @@ def _init_com():
         except Exception:
             pass
 
-def _uninit_com():
-    if sys.platform == "win32":
-        try:
-            import pythoncom
-            pythoncom.CoUninitialize()
-        except Exception:
-            pass
-
 class LocalTTSProvider:
     _lock = threading.Lock()
 
@@ -73,7 +65,6 @@ class LocalTTSProvider:
                         del engine
                     except Exception:
                         pass
-                _uninit_com()
 
     def stop(self) -> None:
         pass
@@ -98,4 +89,3 @@ class LocalTTSProvider:
                         del engine
                     except Exception:
                         pass
-                _uninit_com()
