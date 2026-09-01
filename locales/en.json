@@ -780,6 +780,8 @@
             "max_song_duration_title": "Max Duration Per Song (min)",
             "max_user_songs_desc": "Maximum number of pending songs a single viewer can have queued at once.",
             "max_user_songs_title": "User Song Limit",
+            "media_keys_desc": "Control playback (Play/Pause, Skip) using keyboard media buttons globally.",
+            "media_keys_title": "Global Media Keys",
             "user_cooldown_desc": "Required cooldown time between requests from the same viewer.",
             "user_cooldown_title": "Request Cooldown (sec)"
         }

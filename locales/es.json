@@ -780,6 +780,8 @@
             "max_song_duration_title": "Duración máxima por canción (min)",
             "max_user_songs_desc": "Cantidad máxima de canciones en espera que puede tener un mismo espectador.",
             "max_user_songs_title": "Límite de canciones por usuario",
+            "media_keys_desc": "Controla la reproducción (Play/Pause, Saltar) con los botones multimedia del teclado globalmente.",
+            "media_keys_title": "Teclas Multimedia Globales",
             "user_cooldown_desc": "Tiempo de espera obligatorio entre peticiones de un mismo espectador.",
             "user_cooldown_title": "Cooldown entre solicitudes (seg)"
         }

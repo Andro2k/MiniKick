@@ -1,4 +1,4 @@
-# frontend\common\log_handler.py
+# backend\handlers\log_handler.py
 
 import logging
 import sys

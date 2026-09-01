@@ -9,20 +9,21 @@ class ModernToast(QFrame):
     expired = Signal(object)
     _pixmap_cache = {}
 
-    def __init__(self, title: str, message: str, state: str = "success", duration_ms: int = 4000, parent=None):
+    def __init__(self, title: str, message: str, state: str = "success", duration_ms: int = 3500, parent=None):
         super().__init__(parent)
-        self.setWindowFlags(Qt.WindowType.SubWindow)
-        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, False)
+        self.title_text = title
+        self.message_text = message
+        self.state_str = state
 
         self.setFixedWidth(330)
-        self.setMinimumHeight(60)
+        self.setMinimumHeight(56)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
 
         self.setProperty("role", "toast")
         self.setProperty("state", state)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(8)
         
         if state not in ModernToast._pixmap_cache:
@@ -33,23 +34,23 @@ class ModernToast(QFrame):
                 "info": ("info-circle.svg", COLOR_BLUE)
             }
             icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
-            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 22)
+            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
 
-        icon_lbl = QLabel()
+        icon_lbl = QLabel(self)
         icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
         icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.addWidget(icon_lbl)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(3)
+        text_layout.setSpacing(2)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        lbl_title = QLabel(title)
+        lbl_title = QLabel(title, self)
         lbl_title.setProperty("role", "h3")
         text_layout.addWidget(lbl_title)
 
         if message:
-            lbl_msg = QLabel(message)
+            lbl_msg = QLabel(message, self)
             lbl_msg.setProperty("role", "body")
             lbl_msg.setWordWrap(True)
             text_layout.addWidget(lbl_msg)
@@ -59,7 +60,7 @@ class ModernToast(QFrame):
         if "close" not in ModernToast._pixmap_cache:
             ModernToast._pixmap_cache["close"] = get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14)
 
-        btn_close = QPushButton()
+        btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")
         btn_close.setIcon(ModernToast._pixmap_cache["close"])
         btn_close.setIconSize(QSize(14, 14))
@@ -69,7 +70,9 @@ class ModernToast(QFrame):
         
         layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignTop)
 
+        self._is_dismissing = False
         self.anim = QPropertyAnimation(self, b"pos")
+        self.anim.finished.connect(self._on_anim_finished)
 
         self.timer = QTimer(self)
         self.timer.setInterval(duration_ms)
@@ -77,29 +80,37 @@ class ModernToast(QFrame):
         self.timer.timeout.connect(self.dismiss)
         self.timer.start()
 
+    def _on_anim_finished(self):
+        if self._is_dismissing:
+            self.expired.emit(self)
+
     def move_to_target(self, target_pos: QPoint):
-        if self.pos() == QPoint(0, 0):
+        if not self.isVisible() or self.pos() == QPoint(0, 0):
             self.move(QPoint(target_pos.x() + self.width() + 20, target_pos.y()))
+        if self.pos() == target_pos:
+            return
         self.anim.stop()
-        self.anim.setDuration(300)
-        self.anim.setEasingCurve(QEasingCurve.Type.OutExpo)
+        self.anim.setDuration(180)
+        self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
         self.anim.setStartValue(self.pos())
         self.anim.setEndValue(target_pos)
         self.anim.start()
 
     def dismiss(self):
+        if self._is_dismissing:
+            return
+        self._is_dismissing = True
         self.timer.stop()
         self.anim.stop()
-        self.anim.setDuration(200)
-        self.anim.setEasingCurve(QEasingCurve.Type.InExpo)
+        self.anim.setDuration(140)
+        self.anim.setEasingCurve(QEasingCurve.Type.InCubic)
         self.anim.setStartValue(self.pos())
         self.anim.setEndValue(QPoint(self.pos().x() + self.width() + 20, self.pos().y()))
-        self.anim.finished.connect(lambda: self.expired.emit(self))
         self.anim.start()
 
 
 class ToastManager(QObject):
-    MAX_VISIBLE = 4
+    MAX_VISIBLE = 3
 
     def __init__(self, main_window):
         super().__init__(main_window)
@@ -107,10 +118,19 @@ class ToastManager(QObject):
         self._stack = []
         self.main_window.installEventFilter(self)
 
-    def show_toast(self, title: str, message: str, state: str = "success", duration: int = 4000):
-        if len(self._stack) >= self.MAX_VISIBLE:
+    def show_toast(self, title: str, message: str, state: str = "success", duration: int = 3500):
+        if self._stack:
+            last_toast = self._stack[-1]
+            if getattr(last_toast, "title_text", None) == title and getattr(last_toast, "message_text", None) == message and getattr(last_toast, "state_str", None) == state:
+                last_toast.timer.stop()
+                last_toast.timer.start()
+                return
+
+        while len(self._stack) >= self.MAX_VISIBLE:
             oldest_toast = self._stack.pop(0)
-            oldest_toast.dismiss()
+            oldest_toast.hide()
+            oldest_toast.deleteLater()
+
         toast = ModernToast(title, message, state, duration, parent=self.main_window)
         self._stack.append(toast)
         toast.expired.connect(self._on_toast_expired)
@@ -130,7 +150,7 @@ class ToastManager(QObject):
     def _calculate_positions(self):
         margin_x = 24
         margin_y = 24
-        spacing = 12
+        spacing = 10
         current_bottom = self.main_window.height() - margin_y
         target_x = self.main_window.width() - 330 - margin_x
         for toast in reversed(self._stack):
