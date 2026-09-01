@@ -1,5 +1,6 @@
 # backend\core\main_window_core.py
 
+import sys
 import html
 import logging
 from datetime import datetime
@@ -7,7 +8,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
     QSystemTrayIcon, QApplication
 )
-from PySide6.QtCore import Slot, QEvent
+from PySide6.QtCore import Qt, Slot, QEvent
 
 from backend.core.app_container_core import AppContainerCore
 from backend.core.app_logger_core import setup_application_logging
@@ -24,7 +25,7 @@ from backend.controllers import (
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
     KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, YouTubeChatWorker, TikTokChatWorker,
-    FetchRewardsWorker, RewardWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker
+    FetchRewardsWorker, RewardWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
 )
 from frontend.common.theme import COLOR_GREEN, get_global_qss
 from frontend.navigation.sidebar_component import Sidebar
@@ -95,6 +96,7 @@ class MainWindowCore(QMainWindow):
         self.fetch_rewards_worker = None
         self.timers_worker = None
         self.schedule_worker = None
+        self.global_media_worker = None
         self.twitch_chat_worker = None
         self.twitch_auth_worker = None
         self.youtube_chat_worker = None
@@ -246,6 +248,7 @@ class MainWindowCore(QMainWindow):
             i18n=self.i18n
         )
         self._start_schedule_worker()
+        self._setup_global_media_keys()
         self.session_metrics = {
             "messages_processed": 0,
             "commands_executed": 0,
@@ -471,6 +474,80 @@ class MainWindowCore(QMainWindow):
                 self.logger.info("[User Action] App exit cancelled by user")
                 event.ignore()
 
+    def nativeEvent(self, event_type, message):
+        if sys.platform == "win32" and (event_type == b"windows_generic_MSG" or event_type == "windows_generic_MSG"):
+            try:
+                from ctypes import wintypes
+                msg = wintypes.MSG.from_address(int(message))
+                if msg.message == 0x0319:
+                    app_cmd = (msg.lParam >> 16) & ~0xF000
+                    if app_cmd in (14, 46, 47):
+                        if hasattr(self, "music_controller") and self.music_controller:
+                            self.music_controller.handle_play_pause()
+                        return True, 1
+                    elif app_cmd == 11:
+                        if hasattr(self, "music_controller") and self.music_controller:
+                            self.music_controller.handle_skip()
+                        return True, 1
+                    elif app_cmd == 13:
+                        if hasattr(self, "music_controller") and self.music_controller:
+                            self.music_controller.handle_play_pause()
+                        return True, 1
+            except Exception:
+                pass
+        return super().nativeEvent(event_type, message)
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key in (Qt.Key.Key_MediaTogglePlayPause, Qt.Key.Key_MediaPlay, Qt.Key.Key_MediaPause, Qt.Key.Key_Play, Qt.Key.Key_Pause):
+            if hasattr(self, "music_controller") and self.music_controller:
+                self.music_controller.handle_play_pause()
+            event.accept()
+            return
+        elif key == Qt.Key.Key_MediaNext:
+            if hasattr(self, "music_controller") and self.music_controller:
+                self.music_controller.handle_skip()
+            event.accept()
+            return
+        elif key == Qt.Key.Key_MediaStop:
+            if hasattr(self, "music_controller") and self.music_controller:
+                self.music_controller.handle_play_pause()
+            event.accept()
+            return
+        super().keyPressEvent(event)
+
+    def _setup_global_media_keys(self):
+        if sys.platform != "win32":
+            return
+        enabled = self.settings_storage.load_bool("music_global_media_keys", True)
+        if enabled:
+            self._start_global_media_worker()
+        if hasattr(self, "music_controller") and self.music_controller:
+            self.music_controller.media_keys_state_changed.connect(self._on_media_keys_state_changed)
+
+    def _start_global_media_worker(self):
+        if sys.platform != "win32":
+            return
+        if self.global_media_worker and self.global_media_worker.isRunning():
+            return
+        self.global_media_worker = GlobalMediaWorker()
+        self.global_media_worker.play_pause_pressed.connect(self.music_controller.handle_play_pause)
+        self.global_media_worker.skip_pressed.connect(self.music_controller.handle_skip)
+        self.global_media_worker.stop_pressed.connect(self.music_controller.handle_play_pause)
+        self.global_media_worker.start()
+
+    def _stop_global_media_worker(self):
+        if self.global_media_worker and self.global_media_worker.isRunning():
+            self.global_media_worker.stop()
+            self.global_media_worker.wait(2000)
+            self.global_media_worker = None
+
+    def _on_media_keys_state_changed(self, enabled: bool):
+        if enabled:
+            self._start_global_media_worker()
+        else:
+            self._stop_global_media_worker()
+
     def _notify_background(self):
         self.tray_manager.showMessage(
             self.i18n.get("main.tray.bg_title"),
@@ -589,6 +666,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_YouTube_Chat", getattr(self, 'youtube_chat_worker', None)),
             ("Worker_TikTok_Chat", getattr(self, 'tiktok_chat_worker', None)),
             ("Worker_Stream_Schedule", getattr(self, 'schedule_worker', None)),
+            ("Worker_Global_Media_Keys", getattr(self, 'global_media_worker', None)),
         ]
 
         self._stop_workers_parallel(worker_map)
@@ -603,6 +681,7 @@ class MainWindowCore(QMainWindow):
         self.youtube_chat_worker = None
         self.tiktok_chat_worker = None
         self.schedule_worker = None
+        self.global_media_worker = None
         if hasattr(self, "chat_service") and self.chat_service and hasattr(self.chat_service, "shutdown"):
             try:
                 self.chat_service.shutdown()

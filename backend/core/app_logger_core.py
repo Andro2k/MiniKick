@@ -8,7 +8,7 @@ import threading
 import traceback
 from logging.handlers import TimedRotatingFileHandler
 from PySide6.QtCore import qInstallMessageHandler, QtMsgType
-from frontend.common.log_handler import QLogHandler, StreamToLogger
+from backend.handlers import QLogHandler, StreamToLogger
 
 _fault_file_handle = None
 _q_log_handler_instance = None

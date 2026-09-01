@@ -6,6 +6,7 @@ from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow, No
 
 class MusicSettingsPanel(QWidget):
     youtube_auto_resume_toggled = Signal(bool)
+    media_keys_toggled = Signal(bool)
     max_user_songs_changed = Signal(int)
     user_cooldown_changed = Signal(int)
     max_queue_size_changed = Signal(int)
@@ -36,6 +37,17 @@ class MusicSettingsPanel(QWidget):
             right_widget=self.sw_auto_resume
         )
         self.card_settings.addWidget(self.row_auto_resume)
+
+        self.sw_media_keys = ModernSwitch()
+        self.sw_media_keys.setChecked(True)
+        self.sw_media_keys.toggled.connect(self.media_keys_toggled.emit)
+        self.row_media_keys = SettingRow(
+            icon_name="player-play.svg",
+            title_text=self.i18n.get("music.youtube.media_keys_title"),
+            desc_text=self.i18n.get("music.youtube.media_keys_desc"),
+            right_widget=self.sw_media_keys
+        )
+        self.card_settings.addWidget(self.row_media_keys)
 
         self.slider_max_user_songs = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_max_user_songs.setRange(1, 10)

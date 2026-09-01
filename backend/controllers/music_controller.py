@@ -9,6 +9,7 @@ logger = logging.getLogger("minikick.controllers.music")
 
 class MusicController(QObject):
     song_changed = Signal(object)
+    media_keys_state_changed = Signal(bool)
 
     def __init__(self, view, command_service, toast_manager, i18n, settings_storage=None, music_storage=None, provider_factory=None, music_provider: IMusicProvider | None = None):
         super().__init__()
@@ -68,6 +69,8 @@ class MusicController(QObject):
         self.view.play_pause_requested.connect(self.handle_play_pause)
         self.view.skip_requested.connect(self.handle_skip)
         self.view.youtube_auto_resume_toggled.connect(self.handle_youtube_auto_resume_toggle)
+        if hasattr(self.view, "media_keys_toggled"):
+            self.view.media_keys_toggled.connect(self.handle_media_keys_toggle)
         self.view.service_toggled.connect(self.handle_service_toggle)
         self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
         self.view.view_shown.connect(self._poll_now_playing)
@@ -160,6 +163,9 @@ class MusicController(QObject):
             if self.view is not None:
                 self.view.blockSignals(True)
                 self.view.sw_auto_resume.setChecked(auto_resume)
+                if hasattr(self.view, "sw_media_keys"):
+                    media_keys = self.settings_storage.load_bool("music_global_media_keys", True)
+                    self.view.sw_media_keys.setChecked(media_keys)
                 self.view.set_service_state(self.music_service_enabled)
                 if hasattr(self.view, "set_rate_limit_values"):
                     self.view.set_rate_limit_values(
@@ -412,6 +418,13 @@ class MusicController(QObject):
 
         if self.music_provider:
             self.music_provider.auto_resume = enabled
+
+    @Slot(bool)
+    def handle_media_keys_toggle(self, enabled: bool):
+        logger.info("[User Action] Toggled global media keys: %s", enabled)
+        if self.settings_storage:
+            self.settings_storage.save_bool("music_global_media_keys", enabled)
+        self.media_keys_state_changed.emit(enabled)
 
     @Slot(bool)
     def handle_service_toggle(self, enabled: bool):

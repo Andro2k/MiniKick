@@ -14,6 +14,7 @@ from .timers_worker import TimerWorker
 from .update_worker import UpdateCheckWorker, UpdateDownloadWorker, ReleaseNotesWorker
 from .voice_worker import VoiceFetcherWorker
 from .schedule_worker import ScheduleWorker
+from .global_media_worker import GlobalMediaWorker
 
 __all__ = [
     "KickAuthWorker",
@@ -36,5 +37,6 @@ __all__ = [
     "UpdateDownloadWorker",
     "ReleaseNotesWorker",
     "VoiceFetcherWorker",
-    "ScheduleWorker"
+    "ScheduleWorker",
+    "GlobalMediaWorker"
 ]
