@@ -122,7 +122,8 @@ def setup_application_logging():
     
     for lib_name in (
         "urllib3", "cloudscraper", "comtypes", "piper", "onnxruntime",
-        "websocket", "httpx", "httpcore", "h2", "hpack", "pytchat", "asyncio"
+        "websocket", "httpx", "httpcore", "h2", "hpack", "pytchat", "asyncio",
+        "tiktoklive", "yt_dlp", "PIL"
     ):
         logging.getLogger(lib_name).setLevel(logging.WARNING)
 

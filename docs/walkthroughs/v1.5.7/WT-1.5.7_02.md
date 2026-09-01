@@ -36,9 +36,13 @@
 ### D. Reubicación de `log_handler.py` a la Capa Backend Handlers
 - Reubicación arquitectónica de `LogEmitter`, `QLogHandler` y `StreamToLogger` desde `frontend/common/` hacia `backend/handlers/log_handler.py`, asegurando la estricta separación de responsabilidades (*SoR*).
 
+### E. Identificación de Usuario y Versión en Logs de Reportes
+- En `BugReportWorker` y `CrashReportWorker`, el archivo `.log` adjunto enviado por webhook a Discord ahora se nombra dinámicamente como `minikick_{user}_{version}.log` o `minikick_crash_{user}_{version}.log` con sanitización de caracteres especiales.
+- Se inserta un encabezado al inicio del `.log` con el usuario/contacto, versión, plataforma y severidad, combinando los volcados nativos de `minikick_crash.log` con la traza de ejecución de `minikick.log`.
+
 ---
 
 ## 2. Verificación
-- Pruebas unitarias de integridad de logging en `resources/tests/unit/core/test_logging.py` pasando al 100%.
+- Pruebas unitarias de integridad de logging y reportes en `resources/tests/unit/core/test_logging.py` y `resources/tests/unit/workers/test_report_workers.py` pasando al 100%.
 - Verificación del archivo de logs con formato estándar:
   `[YYYY-MM-DD HH:MM:SS] [LEVEL] Mensaje`

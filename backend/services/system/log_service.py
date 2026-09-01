@@ -8,6 +8,8 @@ from backend.database.system_log_storage import SQLiteSystemLogStorage
 
 logger = logging.getLogger("minikick.services.logs")
 
+_LOG_FILE_LINE_RE = re.compile(r"^\[(.*?)\] \[(.*?)\] (.*)")
+
 class LogService:
     def __init__(self, log_storage: SQLiteSystemLogStorage = None, db_manager=None):
         if log_storage:
@@ -111,7 +113,7 @@ class LogService:
             for line in content.strip().split("\n"):
                 if not line.strip():
                     continue
-                match = re.match(r"^\[(.*?)\] \[(.*?)\] (.*)", line)
+                match = _LOG_FILE_LINE_RE.match(line)
                 if match:
                     if current_entry:
                         parsed_history.append(current_entry)

@@ -2,6 +2,7 @@
 
 import logging
 import sys
+import threading
 from PySide6.QtCore import QObject, Signal
 
 class LogEmitter(QObject):
@@ -26,23 +27,28 @@ class StreamToLogger:
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
+        self._lock = threading.RLock()
         self._in_write = False
 
     def write(self, buf):
-        if self._in_write:
-            if sys.__stderr__ is not None:
-                try:
-                    sys.__stderr__.write(buf)
-                except Exception:
-                    pass
+        if not buf:
             return
-        self._in_write = True
-        try:
-            for line in buf.rstrip().splitlines():
-                if line.strip():
-                    self.logger.log(self.log_level, line.rstrip())
-        finally:
-            self._in_write = False
+        with self._lock:
+            if self._in_write:
+                if sys.__stderr__ is not None:
+                    try:
+                        sys.__stderr__.write(buf)
+                    except Exception:
+                        pass
+                return
+            self._in_write = True
+            try:
+                for line in buf.rstrip().splitlines():
+                    cleaned = line.strip()
+                    if cleaned:
+                        self.logger.log(self.log_level, line.rstrip())
+            finally:
+                self._in_write = False
 
     def flush(self):
         pass

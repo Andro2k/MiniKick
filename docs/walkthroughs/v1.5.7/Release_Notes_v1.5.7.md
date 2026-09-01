@@ -23,8 +23,8 @@
 - **[IMPROVEMENT] [UI] Ajuste de Geometría y Alineación de Diálogos Modales:** Sincronización precisa de dimensiones en diálogos (`ModernFramelessShell`, `ModernConfirmDialog`) antes del centrado en pantalla, eliminando advertencias nativas de Windows (`QWindowsWindow::setGeometry`).
 - **[IMPROVEMENT] [UI] Eliminación de Advertencias de Fuentes en ComboBoxes:** Inicialización explícita de tamaño en puntos y hojas de estilo para selectores desplegables, suprimiendo advertencias `QFont::setPointSize`.
 - **[IMPROVEMENT] [DASHBOARD] Rediseño de Permisos y Switches Táctiles:** Formateo moderno en lista para la visualización de permisos de canal en Kick y Twitch con switches táctiles de respuesta inmediata.
-- **[IMPROVEMENT] [CARDS] Estandarización Visual de Tarjetas:** Alturas y proporciones unificadas en los paneles de Spam y Widgets para óptima visualización en diferentes escalas de resolución y DPI.
-- **[IMPROVEMENT] [TESTS] Suite de Pruebas Unitarias al 100%:** 149 pruebas unitarias automatizadas cubriendo todas las capas arquitectónicas del sistema.
+- **[IMPROVEMENT] [REPORTS] Identificación de Usuario y Versión en Logs de Reportes:** Los archivos de log adjuntos en los reportes de bugs y crashes enviados a Discord ahora llevan el nombre de usuario y versión en su nombre de archivo (ej. `minikick_TheAndro2k_v1.5.7.log` o `minikick_crash_TheAndro2k_v1.5.7.log`) junto a un encabezado identificativo con el sistema operativo y severidad.
+- **[IMPROVEMENT] [TESTS] Suite de Pruebas Unitarias al 100%:** 152 pruebas unitarias automatizadas cubriendo todas las capas arquitectónicas del sistema.
 
 ---
 

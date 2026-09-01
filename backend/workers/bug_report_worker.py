@@ -2,6 +2,8 @@
 
 import logging
 import os
+import re
+import sys
 import requests
 from PySide6.QtCore import QThread, Signal
 from backend.config.api_keys import DISCORD_WEBHOOK_URL
@@ -9,6 +11,13 @@ from backend.config.version import APP_VERSION
 from backend.services.system.translation_service import TranslationService
 
 logger = logging.getLogger("minikick.workers.bug_report")
+
+def _sanitize_filename_component(text: str, default: str = "anonymous") -> str:
+    if not text:
+        return default
+    cleaned = re.sub(r'[^\w\-.]+', '_', text.strip())
+    cleaned = re.sub(r'_+', '_', cleaned).strip('_')
+    return cleaned or default
 
 class BugReportWorker(QThread):
     finished = Signal(bool, str)
@@ -49,16 +58,29 @@ class BugReportWorker(QThread):
                 "content": content
             }
 
-
-            
             files = {}
             if self.include_logs:
                 app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
                 log_file_path = os.path.join(app_data_dir, '.Minikick', 'logs', 'minikick.log')
                 if os.path.exists(log_file_path):
                     try:
+                        safe_user = _sanitize_filename_component(self.username, default="anonymous")
+                        safe_ver = _sanitize_filename_component(APP_VERSION, default="unknown")
+                        log_filename = f"minikick_{safe_user}_{safe_ver}.log"
+
+                        log_header = (
+                            f"================================================================================\n"
+                            f"MINIKICK BUG REPORT LOG\n"
+                            f"User / Contact : {self.username.strip() or 'Anonymous'}\n"
+                            f"App Version    : {APP_VERSION}\n"
+                            f"Platform       : {sys.platform}\n"
+                            f"Severity       : {self.severity}\n"
+                            f"================================================================================\n\n"
+                        ).encode("utf-8")
+
                         with open(log_file_path, "rb") as f:
-                            files["file"] = ("minikick.log", f.read(), "text/plain")
+                            log_content = log_header + f.read()
+                        files["file"] = (log_filename, log_content, "text/plain; charset=utf-8")
                     except Exception as e:
                         logger.error("[BugReportWorker] Error reading log file: %s", e)
 

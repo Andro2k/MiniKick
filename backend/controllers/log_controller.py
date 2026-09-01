@@ -8,6 +8,8 @@ from PySide6.QtGui import QDesktopServices
 
 logger = logging.getLogger("minikick.controllers.logs")
 
+_LOG_LINE_RE = re.compile(r"^\[(.*?)\] \[(.*?)\] (.*)", re.DOTALL)
+
 class LogController(QObject):
     log_processed = Signal(bool, str, str, str)
 
@@ -233,7 +235,7 @@ class LogController(QObject):
 
     @Slot(str, str)
     def process_incoming_log(self, level: str, message: str):
-        match = re.match(r"\[(.*?)\] \[(.*?)\] (.*)", message, re.DOTALL)
+        match = _LOG_LINE_RE.match(message)
         if match:
             time_str, real_level, text_str = match.groups()
         else:
