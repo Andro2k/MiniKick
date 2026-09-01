@@ -1,42 +1,32 @@
-# Walkthrough: Soporte de Colores de Plataforma e Iconos Tintados en `ModernModal`
+# Walkthrough: Motor de Notificaciones Toast de Alto Rendimiento sin Latencia y Corrección libpyside
 
 **Versión:** `v1.5.7`  
 **Documento:** `WT-1.5.7_04.md`  
-**Módulos Modificados:**
-- [`frontend/common/paths.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/paths.py)
-- [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py)
-- [`frontend/dialogs/base_dialog.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/base_dialog.py)
-- [`frontend/dialogs/tiktok_connect_dialog.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/tiktok_connect_dialog.py)
-- [`frontend/dialogs/youtube_connect_dialog.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/youtube_connect_dialog.py)
-- [`resources/tests/unit/ui/test_dialogs.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/unit/ui/test_dialogs.py)
+**Módulos Involucrados:**
+- `frontend/navigation/toast_component.py`
+- `frontend/views/chat_view.py`
+- `frontend/components/chat/tts_settings.py`
 
 ---
 
-## 1. Resumen de Cambios
+## 1. Resumen de Objetivos y Cambios
 
-1. **Resolución de Rutas de Iconos (`paths.py`)**:
-   - `resolve_icon_path` ahora soporta nombres base (`"brand-tiktok.svg"`), rutas relativas con carpeta (`"icons/brand-tiktok.svg"`) y rutas absolutas devueltas por `get_assets_path`.
+### A. Eliminación de Latencia en Notificaciones Toast
+- **Problema:** Al activar y desactivar switches rápidamente (como en los ajustes de TTS en `ChatView`), la aparición de notificaciones Toast generaba congelamientos perceptibles de 50 a 100 ms en la interfaz.
+- **Causa Raíz:** Cada notificación utilizaba `self.setWindowFlags(Qt.WindowType.SubWindow | Qt.WindowType.FramelessWindowHint)`, lo que forzaba al Desktop Window Manager (DWM) de Windows a crear y registrar una ventana nativa de sistema operativo en cada invocación.
+- **Solución:**
+  - Se transformó `ModernToast` en un widget hijo ligero renderizado directamente sobre la jerarquía visual de `MainWindow`.
+  - Se optimizó la animación de entrada/salida a una duración de 180 ms con aceleración cúbica (`QEasingCurve.Type.OutCubic`).
+  - Se implementó deduplicación por ráfaga en `ToastManager.show_toast()`, actualizando el toast activo en lugar de recrear la pila de animación.
 
-2. **Roles de Superficie para Plataformas en `theme.py`**:
-   - Se agregaron roles específicos para contenedores circulares de iconos:
-     - `QFrame[role="tiktok_icon"]`: `COLOR_TIKTOK` (`#00F2FE`).
-     - `QFrame[role="youtube_icon"]`: `COLOR_YOUTUBE` (`#FF0000`).
-     - `QFrame[role="twitch_icon"]`: `COLOR_TWITCH` (`#9146FF`).
-     - `QFrame[role="black_icon"]`: `COLOR_BLACK` (`#000000`).
-
-3. **Despacho Dinámico y Tintado en `ModernModal` (`base_dialog.py`)**:
-   - Se implementó `role_dispatch` para mapear automáticamente colores (`COLOR_TIKTOK`, `COLOR_YOUTUBE`, `COLOR_TWITCH`, `COLOR_RED`, `COLOR_GREEN`, `COLOR_AMBER`, `COLOR_BLUE`, `COLOR_BLACK`) a su rol de QSS y color de primer plano contrastante (ej. icono negro sobre cian de TikTok, blanco sobre rojo de YouTube).
-   - Se integró `get_pixmap_colored` para rasterizar los SVGs en su escala y color exacto.
-
-4. **Actualización de Diálogos**:
-   - `TikTokConnectDialog` configurado con `icon_bg_color=COLOR_TIKTOK`.
-   - `YouTubeConnectDialog` configurado con `icon_bg_color=COLOR_YOUTUBE`.
+### B. Corrección de `RuntimeWarning: libpyside` en Desconexión de Señales
+- **Problema:** El log registraba advertencias `RuntimeWarning: libpyside: Failed to disconnect (None) from signal 'finished()' on 'QPropertyAnimation'`.
+- **Causa Raíz:** Desconexión dinámica de callbacks anónimos o ya ejecutados en la animación.
+- **Solución:**
+  - Se reemplazó el patrón dinámico por una conexión fija permanente `self.anim.finished.connect(self._on_anim_finished)` y un flag de estado booleano atómico `self._is_dismissing`.
 
 ---
 
-## 2. Verificación y Resultados
-
-```powershell
-uv run pytest resources/tests/unit/ui/test_dialogs.py
-```
-- **4/4 tests aprobados (100% PASSED)**.
+## 2. Verificación
+- Pruebas unitarias de toasts y componentes de interfaz en `resources/tests/unit/ui/` aprobadas.
+- Respuesta instantánea al interactuar continuamente con switches y controles visuales.

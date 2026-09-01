@@ -1,38 +1,40 @@
-# Walkthrough: Telemetría y Registro Exhaustivo de Inicio (Startup Logs)
+# Walkthrough: Control Multimedia Global de Música mediante Teclado y Hook Win32 de 64 Bits
 
 **Versión:** `v1.5.7`  
 **Documento:** `WT-1.5.7_05.md`  
-**Módulos Modificados:**
-- [`main.py`](file:///c:/Users/TheAn/Desktop/python/Kick/main.py)
-- [`backend/core/app_container_core.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/core/app_container_core.py)
-- [`backend/core/main_window_core.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/core/main_window_core.py)
+**Módulos Involucrados:**
+- `backend/workers/global_media_worker.py`
+- `backend/workers/__init__.py`
+- `backend/controllers/music_controller.py`
+- `backend/core/main_window_core.py`
+- `frontend/components/music/music_settings_panel.py`
+- `frontend/views/music_view.py`
+- `locales/en.json`
+- `locales/es.json`
+- `resources/tests/unit/workers/test_global_media_worker.py`
 
 ---
 
-## 1. Resumen de Cambios
+## 1. Resumen de Objetivos y Cambios
 
-1. **Telemetría de Bootstrap en `main.py`**:
-   - Registro de AppUserModelID en Windows.
-   - Conteo de fuentes cargadas desde `assets/fonts/`.
-   - Estado de la verificación de bloqueo de instancia única por socket (`port 45678`).
-   - Inicialización del gestor de actualizaciones (`UpdateManager`) y de la ventana principal (`MainWindowCore`).
-   - Entrada explícita al bucle de eventos de Qt (`app.exec()`).
+### A. Intercepción Global de Teclas Multimedia (`GlobalMediaWorker`)
+- **Objetivo:** Permitir controlar la música (Play, Pause, Skip) usando los botones multimedia físicos del teclado incluso mientras se juega a pantalla completa, se transmite en OBS o con MiniKick minimizado en la bandeja del sistema.
+- **Implementación:**
+  - `QThread` dedicado (`Worker_Global_Media_Keys`) en `backend/workers/global_media_worker.py`.
+  - Instalación de hook nativo de Windows `WH_KEYBOARD_LL` (13) con ciclo de mensajes Win32 no bloqueante (`GetMessageW`).
+  - Configuración estricta de tipos ctypes compatibles con 64 bits (`HMODULE`, `DWORD`, `LPARAM`, `c_ssize_t`) en `kernel32.GetModuleHandleW` y `user32.SetWindowsHookExW`.
+  - Captura de `VK_MEDIA_PLAY_PAUSE` (0xB3), `VK_MEDIA_NEXT_TRACK` (0xB0) y `VK_MEDIA_STOP` (0xB2).
+  - Desmontaje limpio mediante `PostThreadMessageW(WM_QUIT)` y `UnhookWindowsHookEx`.
 
-2. **Diagnóstico del Contenedor de Dependencias en `app_container_core.py`**:
-   - Registro cronológico de inicialización de los almacenes SQLite y servicios base (`BackupService`, `SettingsService`, `AvatarService`, `WidgetService`, `ScheduleService`).
-   - Registro de la creación de los gestores de autenticación OAuth (Kick y Twitch) y servicios de TTS / Overlay.
+### B. Doble Cobertura con `WM_APPCOMMAND` y Atajos Qt
+- En `MainWindowCore`, se implementó `nativeEvent` para capturar comandos de teclado/auriculares Bluetooth (`WM_APPCOMMAND`) y `keyPressEvent` para eventos locales de Qt.
 
-3. **Trazado Detallado del Ciclo de Vida en `main_window_core.py`**:
-   - Registro en `__init__` de la creación de la UI, sidebar, tray del sistema, controladores y conexión de señales.
-   - En `_load_settings_into_ui`, trazado explícito de la hidratación de datos iniciales en los controladores.
-   - En `autostart`, registro de qué integraciones se disparan (Kick, Twitch, YouTube, TikTok) con sus parámetros o nombres de canal de destino.
+### C. Control de Usuario e Internacionalización
+- Interruptor interactivo **Teclas Multimedia Globales** incorporado en la pestaña de configuración del reproductor de música.
+- Traducciones completas en español e inglés en `locales/es.json` y `locales/en.json`.
 
 ---
 
-## 2. Verificación y Resultados
-
-```powershell
-uv run pytest resources/tests/unit/core/
-```
-- **9/9 tests aprobados (100% PASSED)**.
-- Todos los módulos utilizan loggers dedicados respetando las políticas de arquitectura y clean logging.
+## 2. Verificación
+- Pruebas unitarias en `resources/tests/unit/workers/test_global_media_worker.py` aprobadas con éxito en arranque, señales y ciclo de vida en vivo.
+- Suite completa de 149 pruebas unitarias aprobadas al 100%.

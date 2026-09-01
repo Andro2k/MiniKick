@@ -1,39 +1,42 @@
-# Walkthrough: Modernización Visual, Switches Táctiles y Corrección de Pestañas de Plataforma en Dashboard
+# Walkthrough: Modernización Visual, Geometría de Diálogos y Corrección de Fuentes en ComboBoxes
 
 **Versión:** `v1.5.7`  
 **Documento:** `WT-1.5.7_01.md`  
-**Módulos Afectados:**
-- [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py)
-- [`frontend/widgets/controls.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/controls.py)
-- [`frontend/widgets/table.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table.py)
-- [`frontend/views/dashboard_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/dashboard_view.py)
-- [`frontend/components/chat/bot_mute.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/bot_mute.py)
-- [`frontend/views/log_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/log_view.py)
+**Módulos Involucrados:**
+- `frontend/views/dashboard_view.py`
+- `frontend/dialogs/base_dialog.py`
+- `frontend/dialogs/modern_modal.py`
+- `frontend/views/spam_view.py`
+- `frontend/views/widgets_view.py`
+- `frontend/common/theme.py`
+- `main.py`
 
 ---
 
-## 1. Resumen de Cambios
+## 1. Resumen de Objetivos y Cambios
 
-1. **Corrección de Pestañas de Plataforma en Dashboard (`dashboard_view.py`)**:
-   - **Corrección de Inversión Visual**: Anteriormente se utilizaba `setEnabled(False)` en la pestaña seleccionada, lo que provocaba que la pestaña inactiva se viera resaltada y la activa se viera apagada/deshabilitada.
-   - **Estilo Dinámico por Rol**: Ahora la plataforma activa recibe dinámicamente su rol de marca (`action_kick` o `action_twitch`) con icono blanco `#FAFAFA`, mientras que la plataforma inactiva adopta un rol neutral (`action_outlined`) con icono `#9D9AA8`.
-   - **Corrección del Icono de Kick**: Se eliminó el tintado en negro forzado (`COLOR_BLACK`) en la pestaña de Kick, usando resolución automática.
+### A. Modernización del Dashboard y Switches Táctiles
+- Se integraron switches interactivos `ModernSwitch` con retroalimentación háptica/visual inmediata para la activación de bots de Kick y Twitch.
+- Formateo moderno para la visualización de permisos requeridos en Kick/Twitch en formato de lista estructurada con insignias de estado.
 
-2. **Auto-Resolución de Color de Iconos en `ModernButton` (`controls.py`)**:
-   - `ModernButton` implementa `set_icon(icon_name, color=None, size=16)` para auto-tintar el SVG según el rol (`action_accent` $\rightarrow$ `#FAFAFA`, `action_danger_border` $\rightarrow$ `#EF4444`, `action_accent_border` $\rightarrow$ `#2ECD70`, etc.).
-   - Se eliminaron las referencias a `COLOR_BLACK` en botones de tablas, logs y mute de bots.
+### B. Corrección de Sincronización de Geometría en Diálogos Modales
+- **Problema:** En Windows, la apertura de diálogos (`ModernFramelessShell`, `ModernConfirmDialog`, `ModernWizardPanel`) emitía advertencias `QWindowsWindow::setGeometry` y desalineación al calcular el centro de la pantalla antes de computar el layout de Qt.
+- **Solución:**
+  - Invocación explícita de `self.adjustSize()` previa a la ecuación de centrado `(parent.width() - self.width()) // 2`.
+  - Configuración de políticas de tamaño restrictivas (`QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred`) en el contenedor interno del diálogo.
+  - Eliminación total de advertencias de geometría nativa de Windows.
 
-3. **Modernización Táctil de `ModernSwitch` (`controls.py`)**:
-   - Track con gradiente oscuro en reposo y esmeralda en activo, con trazo de realce superior sutil.
-   - Tirador (thumb) con sombra proyectada inferior y volumen táctil moderno.
+### C. Unificación de Alturas y Proporciones en Tarjetas (`SpamView` y `WidgetsView`)
+- Estandarización de `minimumHeight` y layouts de `ModernCard` en los paneles de filtros de spam y configuración de widgets para evitar deformaciones visuales en resoluciones altas o escaladas por DPI.
+
+### D. Eliminación de Advertencias `QFont::setPointSize` en ComboBoxes
+- **Problema:** Los menús desplegables (`QComboBox`) generaban la advertencia `QFont::setPointSize: Point size <= 0 (-1), must be greater than 0` al abrirse en Windows.
+- **Solución:**
+  - Inicialización de la tipografía global con tamaño explícito en puntos (`app_font.setPointSize(10)`) en `main.py`.
+  - Declaración explícita de `font-size: {text1}px;` en los selectores QSS `QComboBox`, `QComboBox QAbstractItemView` y `QComboBox QAbstractItemView::item` en `frontend/common/theme.py`.
 
 ---
 
-## 2. Verificación y Resultados
-
-### Tests Automatizados
-```powershell
-uv run pytest resources/tests/unit/ui/
-```
-- **29/29 tests aprobados (100% PASSED)**.
-- Se verificó la alternancia de pestañas de plataforma en `test_dashboard_multiplatform_profile_switching`.
+## 2. Verificación
+- Diálogos y ComboBoxes probados en ejecuciones con resolución 1080p y 1440p (escala 100% y 125%).
+- Registro de log completamente limpio de advertencias `QWindowsWindow::setGeometry` y `QFont::setPointSize`.

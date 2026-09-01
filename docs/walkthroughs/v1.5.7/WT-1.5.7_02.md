@@ -1,45 +1,44 @@
-# Walkthrough: Corrección de Crash en Inicio por Sesión/Token de Twitch Expirado
+# Walkthrough: Arquitectura de Logging Dedicado, Telemetría de Inicio y Visor de Crashes con Faulthandler
 
 **Versión:** `v1.5.7`  
 **Documento:** `WT-1.5.7_02.md`  
-**Módulos Modificados:**
-- [`backend/providers/chat/twitch_client.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/twitch_client.py)
-- [`backend/core/main_window_core.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/core/main_window_core.py)
-- [`resources/tests/unit/providers/test_twitch_websocket.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/unit/providers/test_twitch_websocket.py)
+**Módulos Involucrados:**
+- `backend/core/app_logger_core.py`
+- `backend/services/system/log_service.py`
+- `backend/controllers/log_controller.py`
+- `backend/database/` (todos los módulos de storage)
+- `backend/workers/` (todos los workers)
+- `backend/handlers/log_handler.py`
+- `frontend/views/log_view.py`
+- `frontend/dialogs/crash_report_dialog.py`
 
 ---
 
-## 1. Resumen del Problema y Causa Raíz
+## 1. Resumen de Objetivos y Cambios
 
-Cuando un usuario tenía configurado el inicio automático (`autostart_enabled = True`) y su sesión previa de Twitch caducaba o era revocada por Twitch:
-1. `_load_settings_into_ui` invocaba `_on_twitch_auth_success(twitch_tokens)` directamente dentro del constructor `__init__`.
-2. La API Helix de Twitch respondía `HTTP 401 Unauthorized`.
-3. Al intentar refrescar el token contra `https://id.twitch.tv/oauth2/token`, Twitch devolvía `HTTP 400 Bad Request` debido a la caducidad del refresh token.
-4. `TwitchAPIClient.fetch_user_data` ejecutaba `raise_for_status()`, arrojando una excepción `requests.exceptions.HTTPError`.
-5. Al no existir captura de excepciones en `fetch_full_channel_info`, `_on_twitch_auth_success` ni en `_load_settings_into_ui`, la excepción abortaba la inicialización del programa provocando un crash fatal.
+### A. Estandarización de Loggers Jerárquicos Dedicados
+- **Principio:** Reemplazo de todas las llamadas directas `logging.info(...)` o `logging.getLogger()` por instancias jerárquicas con nombres de módulo canónicos (`minikick.controllers.*`, `minikick.services.*`, `minikick.workers.*`, `minikick.storage.*`).
+- Eliminación de interferencias de librerías externas mediante el filtrado de niveles de log (`urllib3`, `cloudscraper`, `httpx`, `asyncio` a `WARNING`).
 
----
+### B. Telemetría Exhaustiva de Arranque (Bootstrap Logging)
+- Registro detallado en `DEBUG`/`INFO` de cada fase de inicialización:
+  1. Configuración de `AppUserModelID` en Windows.
+  2. Carga y verificación de fuentes tipográficas TTF/OTF.
+  3. Adquisición del socket lock de instancia única.
+  4. Inicialización de contenedor de dependencias `AppContainerCore`.
+  5. Carga de tokens y perfiles en caché.
+  6. Conexión de señales y arranque de sockets en segundo plano.
 
-## 2. Cambios Implementados
+### C. Captura y Visualización Integral de Crashes Nativos (`Faulthandler`)
+- Integración de `faulthandler` en `backend/core/app_logger_core.py` escribiendo directamente a `minikick_crash.log` con volcados de memoria de todos los hilos (`all_threads=True`).
+- Incorporación del botón y visor **Ver Crashes** en `LogView` con soporte para analizar marcas de tiempo, trazas de excepción de Python y fallos de segmentación C/C++ (`Access Violation`).
 
-1. **Blindaje en `TwitchAPIClient.fetch_full_channel_info` (`twitch_client.py`)**:
-   - Se envolvió la llamada a `self.fetch_user_data()` en un bloque `try...except Exception`. Si la solicitud falla o no está autorizado, se registra una advertencia en log y retorna un diccionario `{}` sin propagar excepciones no controladas.
-
-2. **Control Seguro en `MainWindowCore._on_twitch_auth_success` (`main_window_core.py`)**:
-   - Se protegió todo el bloque de conexión e inicialización de workers de Twitch en un `try...except Exception`.
-   - En caso de fallo o datos vacíos, restablece `_twitch_connected = False`, actualiza el estado de las integraciones en la interfaz y muestra un toast de error no bloqueante.
-
-3. **Protección Integral en Autoinicio (`_load_settings_into_ui`)**:
-   - Cada inicialización de integración en el arranque (Kick, Twitch, YouTube, TikTok) ahora cuenta con captura de errores individualizada. Si una plataforma falla, las demás continúan iniciando normalmente y la aplicación se abre con éxito.
-
-4. **Pruebas Automatizadas de Resiliencia (`test_twitch_websocket.py`)**:
-   - Se añadió `test_twitch_api_client_fetch_full_channel_info_resilience_on_401` para certificar que respuestas 401 con fallo en el refresco retornan `{}` limpiamente sin excepciones no controladas.
+### D. Reubicación de `log_handler.py` a la Capa Backend Handlers
+- Reubicación arquitectónica de `LogEmitter`, `QLogHandler` y `StreamToLogger` desde `frontend/common/` hacia `backend/handlers/log_handler.py`, asegurando la estricta separación de responsabilidades (*SoR*).
 
 ---
 
-## 3. Verificación y Resultados
-
-```powershell
-uv run pytest resources/tests/unit/providers/test_twitch_websocket.py
-```
-- **11/11 tests aprobados (100% PASSED)** incluyendo la prueba de resiliencia frente a tokens expirados 401/400.
+## 2. Verificación
+- Pruebas unitarias de integridad de logging en `resources/tests/unit/core/test_logging.py` pasando al 100%.
+- Verificación del archivo de logs con formato estándar:
+  `[YYYY-MM-DD HH:MM:SS] [LEVEL] Mensaje`
