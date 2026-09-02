@@ -441,7 +441,6 @@
     "log": {
         "controls": {
             "btn_clear": "Limpiar",
-            "btn_crashes": "Ver Fallos",
             "btn_folder": "Carpeta",
             "btn_hide_logs": "Ocultar Logs",
             "btn_live": "Vista en Vivo",
@@ -454,7 +453,6 @@
             "date_all": "Todo el tiempo",
             "filter_all": "TODOS",
             "search_placeholder": "Buscar logs...",
-            "tooltip_crashes": "Cargar historial de fallos críticos (minikick_crash.log)",
             "tooltip_folder": "Abrir ubicación en Windows"
         },
         "dialogs": {
@@ -479,10 +477,6 @@
         "status": {
             "cleared_msg": "La vista de registros se ha limpiado correctamente.",
             "cleared_title": "Consola Limpiada",
-            "crashes_empty_msg": "No se encontraron registros de fallos o el archivo está vacío.",
-            "crashes_empty_title": "Sin Fallos Registrados",
-            "crashes_loaded_msg": "Se cargó el historial de fallos críticos ({count} entradas).",
-            "crashes_loaded_title": "Registro de Fallos Cargado",
             "historical_msg": "Inspeccionando: {file}",
             "historical_title": "Archivo de Log Cargado",
             "live_msg": "Mostrando diagnósticos de eventos en tiempo real.",

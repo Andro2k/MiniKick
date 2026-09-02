@@ -4,6 +4,7 @@ import logging
 from collections import deque
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.kick_client import KickAPIClient
+from backend.utils.json_utils import fast_loads
 
 logger = logging.getLogger("minikick.workers.rewards")
 
@@ -219,7 +220,6 @@ class TwitchRewardWorker(QThread):
         self._ws = None
 
     def run(self):
-        import json
         import websocket
         import requests
 
@@ -227,7 +227,7 @@ class TwitchRewardWorker(QThread):
 
         def on_message(ws, msg_str):
             try:
-                msg = json.loads(msg_str)
+                msg = fast_loads(msg_str)
             except Exception:
                 return
 

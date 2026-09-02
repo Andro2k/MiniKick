@@ -1,7 +1,6 @@
 # frontend\dialogs\piper_voices_dialog.py
 
 import os
-import logging
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QProgressBar, QScrollArea, QFrame, QFileDialog, QMessageBox
@@ -14,8 +13,6 @@ from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_GREEN
 from backend.services.chat.piper_voice_manager import (
     PiperVoiceManager, PiperVoiceDownloadWorker, DEFAULT_PIPER_VOICE_ID
 )
-
-logger = logging.getLogger("minikick.dialogs.piper_voices")
 
 class PiperVoiceItemWidget(QFrame):
     download_requested = Signal(str)
@@ -436,8 +433,6 @@ class PiperVoicesDialog(ModernFramelessShell):
             if hasattr(self.tts_service, "tts") and hasattr(self.tts_service.tts, "invalidate_voices_cache"):
                 self.tts_service.tts.invalidate_voices_cache("piper")
             self.voices_updated.emit()
-        else:
-            logger.error("Download failed for %s: %s", voice_id, err_msg)
 
     @Slot(str)
     def _delete_voice(self, voice_id: str):

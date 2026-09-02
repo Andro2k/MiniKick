@@ -12,7 +12,7 @@
 ### Novedades (2)
 
 - **[FEATURE] [MUSIC] Control Multimedia Global por Teclado:** Ahora puedes pausar, reanudar y saltar canciones de YouTube utilizando los botones multimedia de tu teclado (Play/Pause, Next Track, Stop) de forma global, incluso mientras juegas a pantalla completa, transmites en OBS o tienes MiniKick minimizado en la bandeja del sistema. Incluye switch de activación en la configuración de música.
-- **[FEATURE] [SYSTEM] Visor y Registro Avanzado de Crashes con Faulthandler:** Integración de volcado de memoria multi-hilo en tiempo real (`minikick_crash.log`) y visor dedicado en la sección de Logs para diagnosticar anomalías del sistema con marcas de tiempo y trazas completas.
+- **[FEATURE] [SYSTEM] Captura y Diagnóstico Automatizado de Crashes con Faulthandler:** Integración de volcado de memoria multi-hilo en tiempo real (`minikick_crash.log`) capturando fallos nativos C/C++ y adjuntándolos automáticamente con el nombre de usuario y versión en los reportes de crash enviados por webhook.
 
 ---
 
@@ -24,6 +24,7 @@
 - **[IMPROVEMENT] [UI] Eliminación de Advertencias de Fuentes en ComboBoxes:** Inicialización explícita de tamaño en puntos y hojas de estilo para selectores desplegables, suprimiendo advertencias `QFont::setPointSize`.
 - **[IMPROVEMENT] [DASHBOARD] Rediseño de Permisos y Switches Táctiles:** Formateo moderno en lista para la visualización de permisos de canal en Kick y Twitch con switches táctiles de respuesta inmediata.
 - **[IMPROVEMENT] [REPORTS] Identificación de Usuario y Versión en Logs de Reportes:** Los archivos de log adjuntos en los reportes de bugs y crashes enviados a Discord ahora llevan el nombre de usuario y versión en su nombre de archivo (ej. `minikick_TheAndro2k_v1.5.7.log` o `minikick_crash_TheAndro2k_v1.5.7.log`) junto a un encabezado identificativo con el sistema operativo y severidad.
+- **[IMPROVEMENT] [MUSIC] Optimización y Memoización de Cola y Reproductor:** Deduplicación de firmas de cola en $\mathcal{O}(1)$, cálculo instantáneo de áreas de arrastre en la tabla, memoización del temporizador de progreso y sanitización HTML en nombres de usuario.
 - **[IMPROVEMENT] [TESTS] Suite de Pruebas Unitarias al 100%:** 152 pruebas unitarias automatizadas cubriendo todas las capas arquitectónicas del sistema.
 
 ---

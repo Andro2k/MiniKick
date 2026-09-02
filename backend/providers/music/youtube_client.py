@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from backend.workers.music_worker import YouTubeResolveWorker, YouTubeSearchWorker
@@ -10,6 +11,8 @@ logger = logging.getLogger("minikick.providers.youtube_client")
 
 _ERR_INVALID_MEDIA = "INVALID_MEDIA"
 _ERR_PLAYER_ERROR = "PLAYER_ERROR"
+
+_YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 from backend.database.music_storage import SQLiteMusicStorage
 
@@ -111,8 +114,7 @@ class YouTubeMusicProvider(QObject):
             return song["thumbnail"]
         url = song.get("url", "")
         if url:
-            import re
-            match = re.search(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})', url)
+            match = _YT_ID_RE.search(url)
             if match:
                 return f"https://i.ytimg.com/vi/{match.group(1)}/hqdefault.jpg"
         return ""

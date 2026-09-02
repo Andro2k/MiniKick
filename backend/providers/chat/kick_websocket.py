@@ -1,7 +1,7 @@
 # backend\providers\chat\kick_websocket.py
 
 import logging
-from backend.utils.json_utils import fast_loads, fast_dumps
+from backend.utils.json_utils import parse_kick_payload, fast_dumps
 import websocket
 from typing import Callable
 from frontend.common.theme import COLOR_GREEN
@@ -57,38 +57,22 @@ class ChatSocketManager:
         )
         self.ws.run_forever(ping_interval=30, ping_timeout=10)
 
-    def _parse_inner_data(self, outer: dict) -> dict:
-        data_raw = outer.get("data", {})
-        if isinstance(data_raw, (str, bytes, bytearray)):
-            if not data_raw or data_raw == "{}" or data_raw == "[]":
-                return {}
-            try:
-                res = fast_loads(data_raw)
-                return res if isinstance(res, dict) else {}
-            except Exception:
-                return {}
-        elif isinstance(data_raw, dict):
-            return data_raw
-        return {}
-
     def _on_raw_frame(self, ws: websocket.WebSocketApp, raw: str) -> None:
         if not self._running:
             return
 
         try:
-            outer = fast_loads(raw)
-            if not isinstance(outer, dict):
+            event, inner = parse_kick_payload(raw)
+            if not event:
                 return
-            event = outer.get("event")
             handler = self._dispatch_table.get(event)
             if handler:
-                handler(outer, ws)
+                handler(inner, ws)
 
         except Exception as e:
             logger.debug("[KickWebSocket] Notice processing frame: %s", e)
 
-    def _handle_chat_message(self, outer: dict, ws: websocket.WebSocketApp) -> None:
-        inner = self._parse_inner_data(outer)
+    def _handle_chat_message(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         sender = inner.get("sender")
         if not isinstance(sender, dict):
             return
@@ -126,18 +110,16 @@ class ChatSocketManager:
         if self._callback:
             self._callback(user, msg, badges, color, msg_id, sender_id)
 
-    def _handle_poll_update(self, outer: dict, ws: websocket.WebSocketApp) -> None:
-        inner = self._parse_inner_data(outer)
+    def _handle_poll_update(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         poll_data = inner.get("poll") or inner
         if poll_data and self._on_poll_update:
             self._on_poll_update(poll_data)
 
-    def _handle_poll_delete(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_poll_delete(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         if self._on_poll_delete:
             self._on_poll_delete()
 
-    def _handle_pinned_created(self, outer: dict, ws: websocket.WebSocketApp) -> None:
-        inner = self._parse_inner_data(outer)
+    def _handle_pinned_created(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         pinned = inner.get("pinned_message") or inner
         if isinstance(pinned, dict):
             msg_obj = pinned.get("message")
@@ -159,20 +141,22 @@ class ChatSocketManager:
             if self._on_pinned_created:
                 self._on_pinned_created(normalized)
 
-    def _handle_pinned_deleted(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_pinned_deleted(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         if self._on_pinned_deleted:
             self._on_pinned_deleted()
 
-    def _handle_connection_established(self, outer: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_connection_established(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         logger.info("[KickWebSocket] Pusher connection established. Subscribing to chatrooms.%s.v2", self._room_id)
         payload = fast_dumps({
             "event": "pusher:subscribe",
             "data": {"channel": f"chatrooms.{self._room_id}.v2"}
         })
-        ws.send(payload)
+        if ws:
+            ws.send(payload)
 
-    def _handle_ping(self, outer: dict, ws: websocket.WebSocketApp) -> None:
-        ws.send('{"event":"pusher:pong"}')
+    def _handle_ping(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+        if ws:
+            ws.send('{"event":"pusher:pong"}')
 
     def stop_socket(self) -> None:
         self._running = False

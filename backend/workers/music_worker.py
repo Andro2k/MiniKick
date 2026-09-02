@@ -1,11 +1,14 @@
 # backend\workers\music_worker.py
 
 import os
+import re
 import hashlib
 import logging
 from PySide6.QtCore import QThread, Signal
 
 logger = logging.getLogger("minikick.workers.music")
+
+_YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 def _extract_best_audio_url(info: dict) -> str | None:
     if not info:
@@ -46,13 +49,12 @@ class YouTubeResolveWorker(QThread):
     def run(self):
         try:
             import yt_dlp
-            import re
             
             app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
             cache_dir = os.path.join(app_data_dir, '.Minikick', 'cache')
             os.makedirs(cache_dir, exist_ok=True)
 
-            url_match = re.search(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})', self.query_or_url)
+            url_match = _YT_ID_RE.search(self.query_or_url)
             if url_match:
                 direct_id = url_match.group(1)
                 matching_files = [

@@ -29,9 +29,9 @@
   5. Carga de tokens y perfiles en caché.
   6. Conexión de señales y arranque de sockets en segundo plano.
 
-### C. Captura y Visualización Integral de Crashes Nativos (`Faulthandler`)
+### C. Captura y Diagnóstico Integral de Crashes Nativos (`Faulthandler`)
 - Integración de `faulthandler` en `backend/core/app_logger_core.py` escribiendo directamente a `minikick_crash.log` con volcados de memoria de todos los hilos (`all_threads=True`).
-- Incorporación del botón y visor **Ver Crashes** en `LogView` con soporte para analizar marcas de tiempo, trazas de excepción de Python y fallos de segmentación C/C++ (`Access Violation`).
+- El volcado de crash se combina e incrusta de forma automática en los reportes de crash enviados por webhook al equipo de desarrollo, manteniendo la interfaz de usuario de logs limpia y enfocada en el flujo en vivo y archivos históricos.
 
 ### D. Reubicación de `log_handler.py` a la Capa Backend Handlers
 - Reubicación arquitectónica de `LogEmitter`, `QLogHandler` y `StreamToLogger` desde `frontend/common/` hacia `backend/handlers/log_handler.py`, asegurando la estricta separación de responsabilidades (*SoR*).

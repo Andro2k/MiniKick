@@ -6,6 +6,7 @@ import time
 from typing import Callable, Any
 import requests
 from backend.services.system.translation_service import TranslationService
+from backend.utils.json_utils import fast_loads
 
 logger = logging.getLogger("minikick.providers.chat.youtube")
 
@@ -46,9 +47,8 @@ class YouTubeChatProvider:
 
             player_match = re.search(r'ytInitialPlayerResponse\s*=\s*({.+?});(?:var|\s*</script>)', r.text)
             if player_match:
-                import json
                 try:
-                    p_data = json.loads(player_match.group(1))
+                    p_data = fast_loads(player_match.group(1))
                     v_details = p_data.get("videoDetails", {})
                     if (v_details.get("isLive") or v_details.get("isLiveContent")) and v_details.get("videoId"):
                         return v_details.get("videoId")

@@ -1,12 +1,9 @@
 # frontend\views\settings_view.py
 
-import logging
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
-
-logger = logging.getLogger("minikick.views.settings")
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -81,8 +78,8 @@ class SettingsView(BaseView):
             from PySide6.QtMultimedia import QMediaDevices
             self._media_devices = QMediaDevices(self)
             self._media_devices.audioOutputsChanged.connect(self.populate_audio_devices)
-        except Exception as dev_err:
-            logger.error("[SettingsView] Error connecting audioOutputsChanged: %s", dev_err)
+        except Exception:
+            pass
 
         self.populate_audio_devices()
 
@@ -392,8 +389,8 @@ class SettingsView(BaseView):
                     name = dev.description()
                     self.combo_music_audio_device.addItem(name, dev_id)
                     self.combo_tts_audio_device.addItem(name, dev_id)
-            except Exception as e:
-                logger.error("[SettingsView] Error populating audio devices: %s", e)
+            except Exception:
+                pass
 
             if curr_music_dev:
                 idx = self.combo_music_audio_device.findData(curr_music_dev)
