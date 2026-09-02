@@ -232,17 +232,21 @@ class CommandService(QObject):
 
         if platform == "twitch":
             tw_worker = getattr(self, "twitch_worker", None)
-            if tw_worker and hasattr(tw_worker, "send_bot_message"):
+            if tw_worker and hasattr(tw_worker, "send_bot_message") and (not hasattr(tw_worker, "isRunning") or tw_worker.isRunning()):
                 try:
                     tw_worker.send_bot_message(response_text)
                 except Exception as e:
                     logger.error("[CommandService] Error sending message to Twitch: %s", e)
+            else:
+                logger.debug("[CommandService] Twitch worker not active, skipping Twitch chat message dispatch.")
         elif platform == "kick":
-            if self.api_client:
+            if self.api_client and (not hasattr(self.api_client, "is_authenticated") or self.api_client.is_authenticated()):
                 try:
                     self.api_client.post_chat_message(content=response_text, msg_type="bot")
                 except Exception as e:
                     logger.error("[CommandService] Error sending response to Kick: %s", e)
+            else:
+                logger.debug("[CommandService] Kick not authenticated, skipping Kick chat message dispatch.")
         elif platform in ("youtube", "tiktok"):
             logger.info("[CommandService] Command response for %s chat (Read-Only mode, message not posted): %s", platform, response_text)
             return

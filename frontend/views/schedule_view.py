@@ -128,3 +128,9 @@ class ScheduleView(BaseView):
 
     def set_schedules(self, schedules: list[dict]):
         self.table_panel.set_schedules(schedules)
+
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        if hasattr(self, "quick_change_panel"):
+            self.quick_change_panel.set_connected_platforms(connected_platforms)
+        if hasattr(self, "schedule_form_panel"):
+            self.schedule_form_panel.set_connected_platforms(connected_platforms)

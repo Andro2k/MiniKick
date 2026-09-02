@@ -211,23 +211,27 @@ class MainWindowCore(QMainWindow):
             view=None, 
             service=self.rewards_service,
             toast_manager=self.toast,
-            auth_manager=self.auth_manager
+            auth_manager=self.auth_manager,
+            twitch_auth_manager=getattr(self.container, "twitch_auth_manager", None)
         )
         self.command_controller = CommandController(
             None, 
             self.command_service,
-            toast_manager=self.toast
+            toast_manager=self.toast,
+            connected_platforms_provider=self.get_connected_platforms
         )
         self.spam_controller = SpamController(
             None, 
             self.spam_service,
-            toast_manager=self.toast
+            toast_manager=self.toast,
+            connected_platforms_provider=self.get_connected_platforms
         )
         self.timer_controller = TimerController(
             None,
             self.timer_service,
             toast_manager=self.toast,
-            schedule_service=self.schedule_service
+            schedule_service=self.schedule_service,
+            connected_platforms_provider=self.get_connected_platforms
         )
         self.settings_controller = SettingsController(
             view=None, 
@@ -245,7 +249,8 @@ class MainWindowCore(QMainWindow):
             view=None,
             service=self.schedule_service,
             toast_manager=self.toast,
-            i18n=self.i18n
+            i18n=self.i18n,
+            connected_platforms_provider=self.get_connected_platforms
         )
         self._start_schedule_worker()
         self._setup_global_media_keys()
@@ -755,7 +760,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _fetch_api_rewards(self):
-        if self.auth_manager.get_tokens():
+        if self.auth_manager.is_authenticated():
             worker = getattr(self, 'fetch_rewards_worker', None)
             is_running = False
             if worker is not None:
@@ -1000,6 +1005,16 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _fetch_twitch_rewards(self, broadcaster_id: str = ""):
         b_id = broadcaster_id or getattr(self.spam_service, "twitch_broadcaster_id", "")
+        if not b_id and self.container.twitch_auth_manager.is_authenticated():
+            try:
+                twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
+                user_info = twitch_api.fetch_user_data()
+                b_id = user_info.get("broadcaster_id", "")
+                if b_id:
+                    self.spam_service.twitch_broadcaster_id = b_id
+            except Exception as e:
+                logger.error("[Main] Error resolving broadcaster_id for Twitch rewards: %s", e)
+
         if not b_id or not self.container.twitch_auth_manager.is_authenticated():
             return
 
@@ -1056,6 +1071,8 @@ class MainWindowCore(QMainWindow):
         self._twitch_channel = ""
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.clear_channel_profile("twitch")
+        if hasattr(self, "rewards_controller") and self.rewards_controller:
+            self.rewards_controller.clear_platform_rewards("twitch")
         self._refresh_sidebar_profile()
         self._update_integrations_status_ui()
         title_disc = self.container.i18n.get("main.toast.twitch_disconnected_title")
@@ -1110,6 +1127,28 @@ class MainWindowCore(QMainWindow):
                 tiktok_connected=tiktok_connected,
                 tiktok_channel=tiktok_channel
             )
+
+        conn_dict = self.get_connected_platforms()
+        if hasattr(self, "view_commands") and self.view_commands and hasattr(self.view_commands, "set_connected_platforms"):
+            self.view_commands.set_connected_platforms(conn_dict)
+        if hasattr(self, "view_schedule") and self.view_schedule and hasattr(self.view_schedule, "set_connected_platforms"):
+            self.view_schedule.set_connected_platforms(conn_dict)
+        if hasattr(self, "view_spam") and self.view_spam and hasattr(self.view_spam, "set_connected_platforms"):
+            self.view_spam.set_connected_platforms(conn_dict)
+        if hasattr(self, "view_rewards") and self.view_rewards and hasattr(self.view_rewards, "set_connected_platforms"):
+            self.view_rewards.set_connected_platforms(conn_dict)
+        if hasattr(self, "view_timers") and self.view_timers and hasattr(self.view_timers, "set_connected_platforms"):
+            self.view_timers.set_connected_platforms(conn_dict)
+
+    def get_connected_platforms(self) -> dict[str, bool]:
+        kick_auth = self.auth_manager.is_authenticated() if hasattr(self, "auth_manager") and self.auth_manager else False
+        twitch_auth = self.container.twitch_auth_manager.is_authenticated() if hasattr(self.container, "twitch_auth_manager") and self.container.twitch_auth_manager else False
+        return {
+            "kick": kick_auth or getattr(self, "_kick_connected", False),
+            "twitch": twitch_auth or getattr(self, "_twitch_connected", False),
+            "youtube": getattr(self, "_youtube_connected", False),
+            "tiktok": getattr(self, "_tiktok_connected", False),
+        }
 
     @Slot()
     def _on_youtube_integration_button_clicked(self):
@@ -1362,6 +1401,8 @@ class MainWindowCore(QMainWindow):
                 self._kick_username = ""
                 if hasattr(self, "dashboard_controller") and self.dashboard_controller:
                     self.dashboard_controller.clear_channel_profile("kick")
+                if hasattr(self, "rewards_controller") and self.rewards_controller:
+                    self.rewards_controller.clear_platform_rewards("kick")
                 self._refresh_sidebar_profile()
                 self._update_integrations_status_ui()
                 self._evaluate_all_scopes()

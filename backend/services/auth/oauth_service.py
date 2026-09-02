@@ -95,10 +95,17 @@ class AuthManager:
 
     def get_tokens(self, force: bool = False) -> dict:
         if force:
-            return self._new_login()
+            return self.login(force=True)
         tokens = self.storage.load()
         if tokens and "access_token" in tokens:
             return tokens
+        return {}
+
+    def login(self, force: bool = False) -> dict:
+        if not force:
+            tokens = self.get_tokens(force=False)
+            if tokens and tokens.get("access_token"):
+                return tokens
         return self._new_login()
 
     def refresh_token(self) -> dict:
@@ -106,7 +113,7 @@ class AuthManager:
         refresh_token = tokens.get("refresh_token") if tokens else None
 
         if not refresh_token:
-            return self._new_login()
+            return {}
 
         try:
             response = requests.post(
@@ -123,7 +130,7 @@ class AuthManager:
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException:
-            return self._new_login()
+            return {}
 
     def _new_login(self) -> dict:
         verifier, challenge = self._pkce_pair()

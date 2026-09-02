@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH
+from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER
 from frontend.common import get_pixmap_colored, get_icon_colored
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
@@ -108,6 +108,9 @@ class RewardsView(BaseView):
         self.overlay_url = overlay_url
         self._raw_mappings: dict = {}
         self._current_sort: tuple[int, str] | None = None
+        self.connected_platforms: dict[str, bool] = {"kick": True, "twitch": True}
+        self.remote_rewards_map: dict = {}
+        self.remote_loaded: dict[str, bool] = {"kick": False, "twitch": False}
         self._setup_ui()
 
     def _setup_ui(self):
@@ -223,8 +226,18 @@ class RewardsView(BaseView):
         self._current_sort = (col_idx, order)
         self._apply_filters()
 
-    def populate_table(self, mappings: dict):
+    def populate_table(self, mappings: dict, remote_rewards_map: dict = None, connected_platforms: dict = None, remote_loaded: dict = None):
         self._raw_mappings = mappings or {}
+        if remote_rewards_map is not None:
+            self.remote_rewards_map = remote_rewards_map
+        if connected_platforms is not None:
+            self.connected_platforms = connected_platforms
+        if remote_loaded is not None:
+            self.remote_loaded = remote_loaded
+        self._apply_filters()
+
+    def set_connected_platforms(self, connected_platforms: dict):
+        self.connected_platforms = connected_platforms or {}
         self._apply_filters()
 
     def _apply_filters(self):
@@ -311,10 +324,29 @@ class RewardsView(BaseView):
             plat_name = "Twitch" if is_twitch else "Kick"
             plat_color = COLOR_TWITCH if is_twitch else COLOR_GREEN
             icon_name = "brand-twitch.svg" if is_twitch else "brand-kick.svg"
+
+            is_plat_connected = self.connected_platforms.get(plat.lower(), False)
+            is_remote_loaded = self.remote_loaded.get(plat.lower(), False)
+            has_remote_id = bool(conf_dict.get("id"))
+            exists_remotely = (reward in self.remote_rewards_map and self.remote_rewards_map[reward].get("platform", "").lower() == plat.lower())
+
+            if not is_plat_connected:
+                offline_tag = self.i18n.get("rewards.table.status_offline_tag")
+                item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
+                item_plat.setIcon(get_icon_colored(icon_name, "#6E7681", 16))
+                item_plat.setForeground(QColor("#6E7681"))
+                item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
+            elif is_remote_loaded and not exists_remotely and has_remote_id:
+                unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
+                item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
+                item_plat.setIcon(get_icon_colored("alert-triangle.svg", COLOR_AMBER, 16))
+                item_plat.setForeground(QColor(COLOR_AMBER))
+                item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
+            else:
+                item_plat = QTableWidgetItem(plat_name)
+                item_plat.setIcon(get_icon_colored(icon_name, plat_color, 16))
+                item_plat.setForeground(QColor(plat_color))
             
-            item_plat = QTableWidgetItem(plat_name)
-            item_plat.setIcon(get_icon_colored(icon_name, plat_color, 16))
-            item_plat.setForeground(QColor(plat_color))
             item_plat.setFlags(item_plat.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 1, item_plat)
 
@@ -408,13 +440,15 @@ class RewardsView(BaseView):
         self.btn_copy_url.setText(original_text)
         self.btn_copy_url.setEnabled(True)
 
-    def show_add_dialog(self, available_rewards: list, rewards_details_map: dict = None) -> tuple[str, dict] | None:
+    def show_add_dialog(self, available_rewards: list, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
         from frontend.dialogs.rewards_dialog import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
             parent=self, 
             rewards_list=available_rewards,
-            rewards_details_map=rewards_details_map
+            rewards_details_map=rewards_details_map,
+            kick_authenticated=kick_authenticated,
+            twitch_authenticated=twitch_authenticated
         )
         try:
             if self._active_dialog.exec():
@@ -423,7 +457,7 @@ class RewardsView(BaseView):
             self._active_dialog = None
         return None
 
-    def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str, rewards_details_map: dict = None) -> tuple[str, dict] | None:
+    def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
         from frontend.dialogs.rewards_dialog import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
@@ -431,7 +465,9 @@ class RewardsView(BaseView):
             rewards_list=available_rewards, 
             rewards_details_map=rewards_details_map,
             existing_config=existing_config, 
-            existing_reward=existing_reward
+            existing_reward=existing_reward,
+            kick_authenticated=kick_authenticated,
+            twitch_authenticated=twitch_authenticated
         )
         try:
             if self._active_dialog.exec():

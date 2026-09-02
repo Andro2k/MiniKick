@@ -136,6 +136,7 @@ DEFAULT_DICTIONARY = {
             "permission_label": "Minimum Permission:",
             "platform_kick": "Kick",
             "platform_label": "Platforms:",
+            "platform_offline": "Platform not linked",
             "platform_tiktok": "TikTok",
             "platform_twitch": "Twitch",
             "platform_youtube": "YouTube",
@@ -255,6 +256,8 @@ DEFAULT_DICTIONARY = {
         "banner": {
             "btn_update_kick": "Renew Kick Permissions",
             "btn_update_twitch": "Renew Twitch Permissions",
+            "desc_kick": "Your account needs to renew the following permissions to unlock all features:",
+            "desc_twitch": "Your account needs to renew the following permissions to unlock all features:",
             "scope": {
                 "kick_channel_read": "Read channel details on Kick",
                 "kick_channel_rewards_read": "Read channel rewards on Kick",
@@ -276,8 +279,8 @@ DEFAULT_DICTIONARY = {
                 "twitch_user_read_chat": "Read Twitch chat",
                 "twitch_user_write_chat": "Write to Twitch chat"
             },
-            "text_prefix_kick": "<b>Action required on Kick:</b> Your Kick account needs to renew permissions to:",
-            "text_prefix_twitch": "<b>Action required on Twitch:</b> Your Twitch account needs to renew permissions to:"
+            "title_kick": "Pending permissions on Kick",
+            "title_twitch": "Pending permissions on Twitch"
         },
         "connection": {
             "autostart_desc": "Automatically connect MiniKick upon launching the application.",
@@ -441,7 +444,6 @@ DEFAULT_DICTIONARY = {
     "log": {
         "controls": {
             "btn_clear": "Clear",
-            "btn_crashes": "View Crashes",
             "btn_folder": "Folder",
             "btn_hide_logs": "Hide Logs",
             "btn_live": "Live View",
@@ -454,7 +456,6 @@ DEFAULT_DICTIONARY = {
             "date_all": "All time",
             "filter_all": "ALL",
             "search_placeholder": "Search logs...",
-            "tooltip_crashes": "Load critical crash history (minikick_crash.log)",
             "tooltip_folder": "Open folder location in Windows"
         },
         "dialogs": {
@@ -479,10 +480,6 @@ DEFAULT_DICTIONARY = {
         "status": {
             "cleared_msg": "Log view cleared successfully.",
             "cleared_title": "Console Cleared",
-            "crashes_empty_msg": "No crash logs found or the file is empty.",
-            "crashes_empty_title": "No Crashes Recorded",
-            "crashes_loaded_msg": "Loaded critical crash history ({count} entries).",
-            "crashes_loaded_title": "Crash Log Loaded",
             "historical_msg": "Inspecting: {file}",
             "historical_title": "Log File Loaded",
             "live_msg": "Displaying real-time event diagnostics.",
@@ -780,6 +777,8 @@ DEFAULT_DICTIONARY = {
             "max_song_duration_title": "Max Duration Per Song (min)",
             "max_user_songs_desc": "Maximum number of pending songs a single viewer can have queued at once.",
             "max_user_songs_title": "User Song Limit",
+            "media_keys_desc": "Control playback (Play/Pause, Skip) using keyboard media buttons globally.",
+            "media_keys_title": "Global Media Keys",
             "user_cooldown_desc": "Required cooldown time between requests from the same viewer.",
             "user_cooldown_title": "Request Cooldown (sec)"
         }
@@ -821,6 +820,7 @@ DEFAULT_DICTIONARY = {
                 "step1": {
                     "color_pick_tooltip": "Select background color",
                     "desc": "Select the channel points reward that will trigger this visual or sound effect.",
+                    "edit_offline_warning": "This platform is not connected. Changes will only apply to the local alert.",
                     "edit_title_label": "Reward Name",
                     "file_label": "Media File",
                     "file_missing_warning": "The selected file does not exist on disk. Please choose a valid file.",
@@ -837,10 +837,13 @@ DEFAULT_DICTIONARY = {
                     "new_title_placeholder": "Ex. Explosive Alert (Max 50 char.)",
                     "new_user_input_label": "Requires viewer text input",
                     "no_available": "No rewards available",
+                    "no_platforms_connected": "You must connect your Kick or Twitch account in the Dashboard to create or link channel points.",
                     "no_rewards": "No rewards",
                     "platform_kick": "Kick",
+                    "platform_kick_offline": "Kick is not connected. Link it in the Dashboard.",
                     "platform_label": "Reward Platform",
                     "platform_twitch": "Twitch",
+                    "platform_twitch_offline": "Twitch is not connected. Link it in the Dashboard.",
                     "reward_selection": "Reward Selection",
                     "title": "Reward & File",
                     "tooltip_refresh": "Refresh Rewards"
@@ -881,6 +884,7 @@ DEFAULT_DICTIONARY = {
             "deleted_msg": "Reward unlinked: {reward}",
             "file_not_found_action": "Media file not found on disk. Please edit the reward to select a valid file.",
             "redeem_file_missing": "The media file for reward '{reward}' does not exist or was moved.",
+            "reward_not_found_on_platform": "The reward '{reward}' no longer exists on {platform}. Local media settings were saved.",
             "updated": "Reward Updated",
             "updated_api_success": "Reward '{reward}' updated successfully on {platform}.",
             "updated_local_only_twitch_unmanageable": "Local settings saved. (Note: Rewards created on Twitch dashboard must have their title/cost edited on Twitch).",
@@ -899,6 +903,10 @@ DEFAULT_DICTIONARY = {
             "col_volume": "Volume",
             "file_not_found_tag": "Not found",
             "file_not_found_tooltip": "Media file does not exist on disk or was moved",
+            "status_unlinked_tag": "Unlinked",
+            "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
+            "status_offline_tag": "Offline",
+            "status_offline_tooltip": "{platform} is not connected",
             "filter_all": "All",
             "filter_cost_asc": "Lowest to highest cost",
             "filter_cost_desc": "Highest to lowest cost",
@@ -1013,6 +1021,7 @@ DEFAULT_DICTIONARY = {
             "max_characters": "Character limit per message",
             "max_symbols": "Symbol / weird character limit",
             "platform_kick": "Kick",
+            "platform_offline": "Platform not linked",
             "platform_twitch": "Twitch",
             "platforms": "Applicable Platforms"
         },
@@ -1078,6 +1087,7 @@ DEFAULT_DICTIONARY = {
             "btn_update": "Update Stream",
             "category": "Category / Game:",
             "category_placeholder": "Search category or game...",
+            "platform_offline": "Platform not linked",
             "stream_title": "Stream Title:",
             "target_platform": "Target Platform(s):",
             "title": "Quick Stream Info Update",
@@ -1158,6 +1168,7 @@ DEFAULT_DICTIONARY = {
             "offline_interval": "Offline Interval",
             "online_interval": "Online Interval",
             "platform_label": "Active platform(s):",
+            "platform_offline": "Platform not linked",
             "response_placeholder": "Enter response message here...",
             "responses_desc": "One message will be selected randomly each time the timer runs.",
             "responses_title": "Response Messages",

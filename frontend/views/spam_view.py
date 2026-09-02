@@ -53,6 +53,8 @@ class SpamView(BaseView):
 
     def _add_card(self, f_id, title, desc, icon, has_amount=True, column=1):
         card = ExpandableSettingCard(f_id, title, desc, icon, has_amount, self.i18n)
+        if hasattr(self, "connected_platforms") and self.connected_platforms:
+            card.set_connected_platforms(self.connected_platforms)
         card.updated.connect(self.filter_updated.emit)
         self.cards[f_id] = card
         
@@ -60,6 +62,11 @@ class SpamView(BaseView):
             self.col1_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
         else:
             self.col2_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
+
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        for card in self.cards.values():
+            card.set_connected_platforms(self.connected_platforms)
 
     def populate_filters(self, filters_data: dict):
         self.setUpdatesEnabled(False)

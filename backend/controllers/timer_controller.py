@@ -10,12 +10,13 @@ class TimerController(QObject):
     metrics_update_requested = Signal()
     categories_found = Signal(str, object)
 
-    def __init__(self, view, service, toast_manager=None, schedule_service=None):
+    def __init__(self, view, service, toast_manager=None, schedule_service=None, connected_platforms_provider=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
         self.schedule_service = schedule_service
+        self.connected_platforms_provider = connected_platforms_provider
         if self.view is not None:
             self._connect_signals()
 
@@ -63,13 +64,16 @@ class TimerController(QObject):
 
     def load_initial_data(self):
         if self.view is not None:
+            if hasattr(self.view, "set_connected_platforms") and callable(self.connected_platforms_provider):
+                self.view.set_connected_platforms(self.connected_platforms_provider())
             timers = self.service.get_all_timers()
             self.view.populate_table(timers)
 
     @Slot()
     def _handle_add(self):
         logger.info("[User Action] Opened Add Timer dialog")
-        data = self.view.show_add_dialog()
+        connected_plats = self.connected_platforms_provider() if callable(self.connected_platforms_provider) else None
+        data = self.view.show_add_dialog(connected_platforms=connected_plats)
         if data:
             data.pop("timer_id", None)
             if data.get("name") and data.get("messages"):
@@ -86,8 +90,8 @@ class TimerController(QObject):
         if not existing:
             return
         logger.info("[User Action] Opened Edit Timer dialog: id=%d, name='%s'", timer_id, existing.get("name"))
-        
-        data = self.view.show_edit_dialog(existing)
+        connected_plats = self.connected_platforms_provider() if callable(self.connected_platforms_provider) else None
+        data = self.view.show_edit_dialog(existing, connected_platforms=connected_plats)
         if data:
             if data.get("name") and data.get("messages"):
                 logger.info("[User Action] Updated timer: id=%d, name='%s'", timer_id, data.get("name"))

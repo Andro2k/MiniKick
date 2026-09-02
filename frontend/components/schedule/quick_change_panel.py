@@ -328,5 +328,29 @@ class ScheduleQuickChangePanel(QWidget):
             self.lbl_twitch_cat.setText(twitch_info.get("game_name") or self.i18n.get("stream_info.status.no_category"))
 
     def set_loading(self, is_loading: bool):
-        self.btn_apply.setEnabled(not is_loading)
+        has_active_plat = (self.switch_kick.isChecked() or self.switch_twitch.isChecked()) if hasattr(self, "switch_kick") else True
+        self.btn_apply.setEnabled(not is_loading and has_active_plat)
         self.btn_refresh.setEnabled(not is_loading)
+
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        kick_on = self.connected_platforms.get("kick", False)
+        twitch_on = self.connected_platforms.get("twitch", False)
+        off_tip = self.i18n.get("stream_info.quick_change.platform_offline") if self.i18n else ""
+
+        self.switch_kick.setEnabled(kick_on)
+        self.switch_kick.setChecked(kick_on)
+        if not kick_on:
+            self.switch_kick.setToolTip(off_tip)
+        else:
+            self.switch_kick.setToolTip("")
+
+        self.switch_twitch.setEnabled(twitch_on)
+        self.switch_twitch.setChecked(twitch_on)
+        if not twitch_on:
+            self.switch_twitch.setToolTip(off_tip)
+        else:
+            self.switch_twitch.setToolTip("")
+
+        if hasattr(self, "btn_apply"):
+            self.btn_apply.setEnabled(kick_on or twitch_on)

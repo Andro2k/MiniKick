@@ -15,12 +15,14 @@ from .base_dialog import ModernWizardPanel
 from .visual_positioner_dialog import VisualPositionerDialog
 
 class RewardsConfigWizard(ModernWizardPanel):
-    def __init__(self, i18n, parent=None, rewards_list=None, rewards_details_map=None, existing_config=None, existing_reward=None):
+    def __init__(self, i18n, parent=None, rewards_list=None, rewards_details_map=None, existing_config=None, existing_reward=None, kick_authenticated: bool = True, twitch_authenticated: bool = True):
         self.i18n = i18n
         self.is_edit_mode = existing_config is not None
         self.existing_reward = existing_reward
         self.existing_config = existing_config or {}
         self.rewards_details_map = rewards_details_map or {}
+        self.kick_authenticated = bool(kick_authenticated)
+        self.twitch_authenticated = bool(twitch_authenticated)
         
         title_steps = [
             self.i18n.get("rewards.dialogs.wizard.step1.title"), 
@@ -38,7 +40,12 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
-        self.selected_platform = self.existing_config.get("platform", "kick")
+        if self.is_edit_mode:
+            self.selected_platform = self.existing_config.get("platform", "kick")
+        elif self.twitch_authenticated and not self.kick_authenticated:
+            self.selected_platform = "twitch"
+        else:
+            self.selected_platform = "kick"
         self._build_step1(rewards_list, existing_reward)
         self._build_step2()
         self.add_page(self.step1_widget)
@@ -128,6 +135,18 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(12)
         
+        if not self.is_edit_mode and not self.kick_authenticated and not self.twitch_authenticated:
+            no_plat_box = QWidget()
+            no_plat_box.setProperty("role", "card")
+            np_layout = QHBoxLayout(no_plat_box)
+            np_layout.setContentsMargins(12, 10, 12, 10)
+            lbl_no_p = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.no_platforms_connected"))
+            lbl_no_p.setWordWrap(True)
+            lbl_no_p.setProperty("role", "caption")
+            lbl_no_p.setStyleSheet("color: #FF4655;")
+            np_layout.addWidget(lbl_no_p)
+            layout.addWidget(no_plat_box)
+
         lbl_plat = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.platform_label"))
         lbl_plat.setProperty("role", "h3")
         layout.addWidget(lbl_plat)
@@ -135,14 +154,37 @@ class RewardsConfigWizard(ModernWizardPanel):
         plat_row = QHBoxLayout()
         self.rb_plat_kick = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.platform_kick"))
         self.rb_plat_twitch = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.platform_twitch"))
-        if self.selected_platform == "twitch":
-            self.rb_plat_twitch.setChecked(True)
-        else:
-            self.rb_plat_kick.setChecked(True)
 
         self.btn_group_plat = QButtonGroup(self)
         self.btn_group_plat.addButton(self.rb_plat_kick, 0)
         self.btn_group_plat.addButton(self.rb_plat_twitch, 1)
+
+        self.rb_plat_kick.toggled.connect(self._on_platform_changed)
+        self.rb_plat_twitch.toggled.connect(self._on_platform_changed)
+        
+        if not self.is_edit_mode:
+            self.rb_plat_kick.setEnabled(self.kick_authenticated)
+            self.rb_plat_twitch.setEnabled(self.twitch_authenticated)
+            if not self.kick_authenticated:
+                self.rb_plat_kick.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.platform_kick_offline"))
+            if not self.twitch_authenticated:
+                self.rb_plat_twitch.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.platform_twitch_offline"))
+
+            if self.selected_platform == "twitch" and self.twitch_authenticated:
+                self.rb_plat_twitch.setChecked(True)
+            elif self.kick_authenticated:
+                self.rb_plat_kick.setChecked(True)
+            elif self.twitch_authenticated:
+                self.rb_plat_twitch.setChecked(True)
+            else:
+                self.rb_plat_kick.setChecked(True)
+        else:
+            self.rb_plat_kick.setEnabled(False)
+            self.rb_plat_twitch.setEnabled(False)
+            if self.selected_platform == "twitch":
+                self.rb_plat_twitch.setChecked(True)
+            else:
+                self.rb_plat_kick.setChecked(True)
 
         plat_row.addWidget(self.rb_plat_kick)
         plat_row.addWidget(self.rb_plat_twitch)
@@ -151,8 +193,19 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.addSpacing(4)
 
         if self.is_edit_mode:
-            self.rb_plat_kick.setEnabled(False)
-            self.rb_plat_twitch.setEnabled(False)
+            is_platform_offline = (self.selected_platform == "kick" and not self.kick_authenticated) or (self.selected_platform == "twitch" and not self.twitch_authenticated)
+            if is_platform_offline:
+                off_box = QWidget()
+                off_box.setProperty("role", "card")
+                off_layout = QHBoxLayout(off_box)
+                off_layout.setContentsMargins(12, 8, 12, 8)
+                lbl_off = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.edit_offline_warning"))
+                lbl_off.setWordWrap(True)
+                lbl_off.setProperty("role", "caption")
+                lbl_off.setStyleSheet("color: #FFB800;")
+                off_layout.addWidget(lbl_off)
+                layout.addWidget(off_box)
+
             row_title_cost = QHBoxLayout()
             
             col_t = QVBoxLayout()
@@ -196,10 +249,14 @@ class RewardsConfigWizard(ModernWizardPanel):
             layout.addLayout(col_col)
             
             layout.addWidget(self._build_user_input_row())
+            
+            if is_platform_offline:
+                self.txt_edit_title.setEnabled(False)
+                self.spin_edit_cost.setEnabled(False)
+                self.txt_edit_desc.setEnabled(False)
+                self.btn_color_swatch.setEnabled(False)
+                self.chk_user_input.setEnabled(False)
         else:
-            self.rb_plat_kick.toggled.connect(self._on_platform_changed)
-            self.rb_plat_twitch.toggled.connect(self._on_platform_changed)
-
             lbl_mode = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.mode_select"))
             lbl_mode.setProperty("role", "h3")
             layout.addWidget(lbl_mode)
@@ -556,7 +613,10 @@ class RewardsConfigWizard(ModernWizardPanel):
                 self.txt_edit_desc.setText(str(desc_val))
 
     def get_config_data(self):
-        platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
+        if self.is_edit_mode:
+            platform = self.existing_config.get("platform") or self.selected_platform or "kick"
+        else:
+            platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
         default_color = "#9146FF" if platform == "twitch" else "#00e701"
 
         if self.is_edit_mode:
@@ -613,6 +673,12 @@ class RewardsConfigWizard(ModernWizardPanel):
             title = self.txt_edit_title.text().strip() if hasattr(self, 'txt_edit_title') else ""
             cost = self.spin_edit_cost.value() if hasattr(self, 'spin_edit_cost') else 1
             return bool(title) and cost >= 1
+
+        selected_plat = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
+        if selected_plat == "kick" and not self.kick_authenticated:
+            return False
+        if selected_plat == "twitch" and not self.twitch_authenticated:
+            return False
 
         if hasattr(self, 'rb_create') and self.rb_create.isChecked():
             title = self.txt_new_title.text().strip()
