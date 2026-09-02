@@ -6,6 +6,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.tiktok_chat_provider import TikTokChatProvider
 from backend.services.chat.pipeline import ChatMessageDTO
 from backend.services.system.translation_service import TranslationService
+from backend.utils.json_utils import fast_dumps
 
 logger = logging.getLogger("minikick.workers.tiktok_chat")
 
@@ -76,9 +77,8 @@ class TikTokChatWorker(QThread):
         if extra_data and isinstance(extra_data, dict):
             emotes_list = extra_data.get("emotes")
             if emotes_list and isinstance(emotes_list, list):
-                import json
                 try:
-                    emotes_tag = json.dumps(emotes_list, ensure_ascii=False)
+                    emotes_tag = fast_dumps(emotes_list)
                 except Exception:
                     emotes_tag = ""
 

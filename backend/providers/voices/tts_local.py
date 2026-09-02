@@ -5,19 +5,13 @@ import sys
 import pyttsx3
 import threading
 
+logger = logging.getLogger("minikick.providers.tts_local")
+
 def _init_com():
     if sys.platform == "win32":
         try:
             import pythoncom
             pythoncom.CoInitialize()
-        except Exception:
-            pass
-
-def _uninit_com():
-    if sys.platform == "win32":
-        try:
-            import pythoncom
-            pythoncom.CoUninitialize()
         except Exception:
             pass
 
@@ -55,12 +49,12 @@ class LocalTTSProvider:
                     try:
                         engine.setProperty("voice", target_voice)
                     except Exception as ve:
-                        logging.warning("[Local TTS] Could not set voice %s: %s", target_voice, ve)
+                        logger.warning("[Local TTS] Could not set voice %s: %s", target_voice, ve)
                     
                 engine.say(text)
                 engine.runAndWait()
             except Exception as e:
-                logging.error("[Local TTS] Speech error: %s", e)
+                logger.error("[Local TTS] Speech error: %s", e)
             finally:
                 if engine is not None:
                     try:
@@ -71,7 +65,6 @@ class LocalTTSProvider:
                         del engine
                     except Exception:
                         pass
-                _uninit_com()
 
     def stop(self) -> None:
         pass
@@ -88,7 +81,7 @@ class LocalTTSProvider:
                 voices = [{"id": v.id, "name": v.name.split(" - ")[0]} for v in engine.getProperty('voices')]
                 return voices
             except Exception as e:
-                logging.error("[Local TTS] Error fetching local voices: %s", e)
+                logger.error("[Local TTS] Error fetching local voices: %s", e)
                 return [{"id": "default", "name": "System Voice (Default)"}]
             finally:
                 if engine is not None:
@@ -96,4 +89,3 @@ class LocalTTSProvider:
                         del engine
                     except Exception:
                         pass
-                _uninit_com()

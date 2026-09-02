@@ -6,6 +6,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.youtube_chat_provider import YouTubeChatProvider
 from backend.services.chat.pipeline import ChatMessageDTO
 from backend.services.system.translation_service import TranslationService
+from backend.utils.json_utils import fast_dumps
 
 logger = logging.getLogger("minikick.workers.youtube_chat")
 
@@ -71,12 +72,14 @@ class YouTubeChatWorker(QThread):
         if self._is_stopped:
             return
 
-        import json
         if isinstance(extra_data, dict) and "emotes_tag" in extra_data:
             emotes_tag = extra_data.get("emotes_tag", "")
         else:
             emotes = extra_data.get("emotes", []) if isinstance(extra_data, dict) else []
-            emotes_tag = json.dumps(emotes) if emotes else ""
+            try:
+                emotes_tag = fast_dumps(emotes) if emotes else ""
+            except Exception:
+                emotes_tag = ""
 
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
         dto = ChatMessageDTO(

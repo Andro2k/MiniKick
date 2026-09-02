@@ -61,8 +61,6 @@ class SettingsController(QObject):
         if hasattr(self, 'tts_manager') and self.tts_manager and hasattr(self.tts_manager, 'set_audio_device'):
             self.tts_manager.set_audio_device(tts_device)
 
-        self.style_reload_requested.emit(current_font)
-
     @Slot(str)
     def handle_music_audio_device(self, device_id: str):
         logger.info("[User Action] Changed music output audio device to: '%s'", device_id)
@@ -152,6 +150,8 @@ class SettingsController(QObject):
 
     @Slot(int)
     def handle_font_size(self, size: int):
+        if size is None:
+            return
         logger.info("[User Action] Changed UI font size to: %d", size)
         self.service.set_font_size(size)
         self.style_reload_requested.emit(size)

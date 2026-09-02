@@ -1,7 +1,7 @@
 # frontend\components\music\queue_panel.py
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
-from PySide6.QtCore import Signal, Qt, QSize, QRect, QRectF
+from PySide6.QtCore import Signal, Qt, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_TIKTOK
 from frontend.common import get_icon_colored
@@ -72,15 +72,11 @@ class DragDropQueueTable(ModernTable):
     def paintEvent(self, event):
         super().paintEvent(event)
         
-        if self._drop_target_row != -1 and self.rowCount() > 0:
+        if self._drop_target_row != -1 and self.rowCount() > 0 and self.columnCount() > 0:
             row = min(max(0, self._drop_target_row), self.rowCount() - 1)
-            row_rect = QRect()
-            for col in range(self.columnCount()):
-                rect = self.visualRect(self.model().index(row, col))
-                if row_rect.isEmpty():
-                    row_rect = rect
-                else:
-                    row_rect = row_rect.united(rect)
+            rect0 = self.visualRect(self.model().index(row, 0))
+            rect_last = self.visualRect(self.model().index(row, self.columnCount() - 1))
+            row_rect = rect0.united(rect_last)
                     
             if not row_rect.isEmpty():
                 painter = QPainter(self.viewport())
@@ -101,7 +97,7 @@ class MusicQueuePanel(QWidget):
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
         self.i18n = i18n
-        self._current_queue_urls = []
+        self._current_queue_signature = None
         
         self._icon_delete = get_icon_colored("trash.svg", COLOR_RED, 14)
         self._icon_grip = get_icon_colored("grip-vertical.svg", COLOR_NEUTRAL_400, 14)
@@ -225,8 +221,17 @@ class MusicQueuePanel(QWidget):
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     def update_queue(self, queue_items: list[dict]):
-        new_signature = [(song.get("url") or song.get("title"), song.get("artist"), song.get("duration")) for song in queue_items]
-        if getattr(self, "_current_queue_signature", None) == new_signature:
+        new_signature = [
+            (
+                song.get("url") or song.get("title"),
+                song.get("artist"),
+                song.get("duration"),
+                song.get("requester"),
+                song.get("platform")
+            )
+            for song in queue_items
+        ]
+        if self._current_queue_signature == new_signature:
             return
         self._current_queue_signature = new_signature
 

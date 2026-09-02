@@ -1,5 +1,6 @@
 # frontend\dialogs\rewards_dialog.py
 
+import os
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox,
     QFileDialog, QRadioButton, QButtonGroup, QPushButton, QColorDialog
@@ -14,12 +15,14 @@ from .base_dialog import ModernWizardPanel
 from .visual_positioner_dialog import VisualPositionerDialog
 
 class RewardsConfigWizard(ModernWizardPanel):
-    def __init__(self, i18n, parent=None, rewards_list=None, rewards_details_map=None, existing_config=None, existing_reward=None):
+    def __init__(self, i18n, parent=None, rewards_list=None, rewards_details_map=None, existing_config=None, existing_reward=None, kick_authenticated: bool = True, twitch_authenticated: bool = True):
         self.i18n = i18n
         self.is_edit_mode = existing_config is not None
         self.existing_reward = existing_reward
         self.existing_config = existing_config or {}
         self.rewards_details_map = rewards_details_map or {}
+        self.kick_authenticated = bool(kick_authenticated)
+        self.twitch_authenticated = bool(twitch_authenticated)
         
         title_steps = [
             self.i18n.get("rewards.dialogs.wizard.step1.title"), 
@@ -37,6 +40,12 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
+        if self.is_edit_mode:
+            self.selected_platform = self.existing_config.get("platform", "kick")
+        elif self.twitch_authenticated and not self.kick_authenticated:
+            self.selected_platform = "twitch"
+        else:
+            self.selected_platform = "kick"
         self._build_step1(rewards_list, existing_reward)
         self._build_step2()
         self.add_page(self.step1_widget)
@@ -126,7 +135,77 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(12)
         
+        if not self.is_edit_mode and not self.kick_authenticated and not self.twitch_authenticated:
+            no_plat_box = QWidget()
+            no_plat_box.setProperty("role", "card")
+            np_layout = QHBoxLayout(no_plat_box)
+            np_layout.setContentsMargins(12, 10, 12, 10)
+            lbl_no_p = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.no_platforms_connected"))
+            lbl_no_p.setWordWrap(True)
+            lbl_no_p.setProperty("role", "caption")
+            lbl_no_p.setStyleSheet("color: #FF4655;")
+            np_layout.addWidget(lbl_no_p)
+            layout.addWidget(no_plat_box)
+
+        lbl_plat = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.platform_label"))
+        lbl_plat.setProperty("role", "h3")
+        layout.addWidget(lbl_plat)
+
+        plat_row = QHBoxLayout()
+        self.rb_plat_kick = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.platform_kick"))
+        self.rb_plat_twitch = QRadioButton(self.i18n.get("rewards.dialogs.wizard.step1.platform_twitch"))
+
+        self.btn_group_plat = QButtonGroup(self)
+        self.btn_group_plat.addButton(self.rb_plat_kick, 0)
+        self.btn_group_plat.addButton(self.rb_plat_twitch, 1)
+
+        self.rb_plat_kick.toggled.connect(self._on_platform_changed)
+        self.rb_plat_twitch.toggled.connect(self._on_platform_changed)
+        
+        if not self.is_edit_mode:
+            self.rb_plat_kick.setEnabled(self.kick_authenticated)
+            self.rb_plat_twitch.setEnabled(self.twitch_authenticated)
+            if not self.kick_authenticated:
+                self.rb_plat_kick.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.platform_kick_offline"))
+            if not self.twitch_authenticated:
+                self.rb_plat_twitch.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.platform_twitch_offline"))
+
+            if self.selected_platform == "twitch" and self.twitch_authenticated:
+                self.rb_plat_twitch.setChecked(True)
+            elif self.kick_authenticated:
+                self.rb_plat_kick.setChecked(True)
+            elif self.twitch_authenticated:
+                self.rb_plat_twitch.setChecked(True)
+            else:
+                self.rb_plat_kick.setChecked(True)
+        else:
+            self.rb_plat_kick.setEnabled(False)
+            self.rb_plat_twitch.setEnabled(False)
+            if self.selected_platform == "twitch":
+                self.rb_plat_twitch.setChecked(True)
+            else:
+                self.rb_plat_kick.setChecked(True)
+
+        plat_row.addWidget(self.rb_plat_kick)
+        plat_row.addWidget(self.rb_plat_twitch)
+        plat_row.addStretch()
+        layout.addLayout(plat_row)
+        layout.addSpacing(4)
+
         if self.is_edit_mode:
+            is_platform_offline = (self.selected_platform == "kick" and not self.kick_authenticated) or (self.selected_platform == "twitch" and not self.twitch_authenticated)
+            if is_platform_offline:
+                off_box = QWidget()
+                off_box.setProperty("role", "card")
+                off_layout = QHBoxLayout(off_box)
+                off_layout.setContentsMargins(12, 8, 12, 8)
+                lbl_off = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.edit_offline_warning"))
+                lbl_off.setWordWrap(True)
+                lbl_off.setProperty("role", "caption")
+                lbl_off.setStyleSheet("color: #FFB800;")
+                off_layout.addWidget(lbl_off)
+                layout.addWidget(off_box)
+
             row_title_cost = QHBoxLayout()
             
             col_t = QVBoxLayout()
@@ -170,6 +249,13 @@ class RewardsConfigWizard(ModernWizardPanel):
             layout.addLayout(col_col)
             
             layout.addWidget(self._build_user_input_row())
+            
+            if is_platform_offline:
+                self.txt_edit_title.setEnabled(False)
+                self.spin_edit_cost.setEnabled(False)
+                self.txt_edit_desc.setEnabled(False)
+                self.btn_color_swatch.setEnabled(False)
+                self.chk_user_input.setEnabled(False)
         else:
             lbl_mode = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.mode_select"))
             lbl_mode.setProperty("role", "h3")
@@ -201,14 +287,10 @@ class RewardsConfigWizard(ModernWizardPanel):
             
             row1 = QHBoxLayout()
             self.combo_rewards = NoWheelComboBox()
-            if rewards_list:
-                self.combo_rewards.addItems(rewards_list)
-            else:
-                self.combo_rewards.addItem(self.i18n.get("rewards.dialogs.wizard.step1.loading"))
+            self.rewards_list_raw = rewards_list
+            self._filter_rewards_by_platform()
                 
             if existing_reward:
-                if rewards_list and existing_reward not in rewards_list:
-                    self.combo_rewards.addItem(existing_reward)
                 self.combo_rewards.setCurrentText(existing_reward)
                 
             row1.addWidget(self.combo_rewards, stretch=1)
@@ -386,26 +468,57 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.addWidget(self.video_container)
         layout.addStretch()
 
+    def _on_platform_changed(self):
+        self.selected_platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
+        self._filter_rewards_by_platform()
+        if hasattr(self, 'rb_create') and self.rb_create.isChecked():
+            default_color = "#9146FF" if self.selected_platform == "twitch" else "#00e701"
+            self._set_color(default_color)
+
+    def _filter_rewards_by_platform(self):
+        if not hasattr(self, 'combo_rewards'):
+            return
+
+        plat = self.selected_platform
+        filtered = []
+        no_rewards_str = self.i18n.get("rewards.dialogs.wizard.step1.no_rewards")
+        no_avail_str = self.i18n.get("rewards.dialogs.wizard.step1.no_available")
+        loading_str = self.i18n.get("rewards.dialogs.wizard.step1.loading")
+        invalid_placeholders = {no_rewards_str, no_avail_str, loading_str, "No Rewards", "No rewards available"}
+
+        if isinstance(self.rewards_list_raw, dict):
+            filtered = [r for r in self.rewards_list_raw.get(plat, []) if r not in invalid_placeholders]
+        elif isinstance(self.rewards_list_raw, list):
+            for r_name in self.rewards_list_raw:
+                if r_name in invalid_placeholders:
+                    continue
+                details = self.rewards_details_map.get(r_name, {})
+                r_plat = details.get("platform", "kick") if isinstance(details, dict) else "kick"
+                if r_plat == plat and r_name not in filtered:
+                    filtered.append(r_name)
+
+        self.combo_rewards.blockSignals(True)
+        self.combo_rewards.clear()
+        if filtered:
+            self.combo_rewards.addItems(filtered)
+        else:
+            self.combo_rewards.addItem(self.i18n.get("rewards.dialogs.wizard.step1.no_available"))
+        self.combo_rewards.blockSignals(False)
+        self._on_combo_reward_changed(self.combo_rewards.currentText())
+        self._update_btn_next_state()
+
+    def update_rewards(self, rewards_list, rewards_details_map=None):
+        self.rewards_list_raw = rewards_list
+        if isinstance(rewards_details_map, dict):
+            self.rewards_details_map = rewards_details_map
+        self._filter_rewards_by_platform()
+        if hasattr(self, 'btn_refresh'):
+            self.btn_refresh.setEnabled(True)
+
     def _request_refresh(self):
         if self.parent():
             self.btn_refresh.setEnabled(False)
             self.parent().refresh_rewards_requested.emit()
-
-    def update_rewards(self, rewards_list):
-        if hasattr(self, 'combo_rewards'):
-            current = self.combo_rewards.currentText()
-            self.combo_rewards.clear()
-            if hasattr(self, 'existing_reward') and self.existing_reward:
-                if self.existing_reward not in rewards_list:
-                    rewards_list.insert(0, self.existing_reward)
-            self.combo_rewards.addItems(rewards_list)
-            if current in rewards_list:
-                self.combo_rewards.setCurrentText(current)
-            elif hasattr(self, 'existing_reward') and self.existing_reward in rewards_list:
-                self.combo_rewards.setCurrentText(self.existing_reward)
-                
-            if hasattr(self, 'btn_refresh'):
-                self.btn_refresh.setEnabled(True)
 
     def _browse_file(self):
         title = self.i18n.get("rewards.dialogs.wizard.file_dialog_title")
@@ -413,6 +526,9 @@ class RewardsConfigWizard(ModernWizardPanel):
         file_path, _ = QFileDialog.getOpenFileName(self, title, "", filter_str)
         if file_path:
             self.txt_file_path.setText(file_path)
+            self.txt_file_path.setProperty("state", "normal")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip("")
             self._evaluate_media_type(file_path)
 
     def _evaluate_media_type(self, filepath):
@@ -429,7 +545,8 @@ class RewardsConfigWizard(ModernWizardPanel):
     def validate_step(self, step_index: int) -> bool:
         if step_index == 0:
             reward_valid = self._is_reward_valid()
-            file_valid = bool(self.txt_file_path.text().strip())
+            file_path = self.txt_file_path.text().strip()
+            file_valid = bool(file_path) and os.path.exists(file_path) and os.path.isfile(file_path)
             if not reward_valid or not file_valid:
                 return False
         return True
@@ -447,8 +564,23 @@ class RewardsConfigWizard(ModernWizardPanel):
     def _load_existing_data(self, config):
         filepath = config if isinstance(config, str) else config.get("filepath", "")
         self.txt_file_path.setText(filepath)
+        if filepath and (not os.path.exists(filepath) or not os.path.isfile(filepath)):
+            self.txt_file_path.setProperty("state", "error")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.file_missing_warning"))
+        else:
+            self.txt_file_path.setProperty("state", "normal")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip("")
         self._evaluate_media_type(filepath)
         if isinstance(config, dict):
+            plat = config.get("platform", "kick")
+            self.selected_platform = plat
+            if plat == "twitch" and hasattr(self, 'rb_plat_twitch'):
+                self.rb_plat_twitch.setChecked(True)
+            elif hasattr(self, 'rb_plat_kick'):
+                self.rb_plat_kick.setChecked(True)
+
             self.spin_x.setValue(config.get("pos_x", 0))
             self.spin_y.setValue(config.get("pos_y", 0))
             self.spin_scale.setValue(config.get("scale", 1.0))
@@ -460,8 +592,8 @@ class RewardsConfigWizard(ModernWizardPanel):
             self.chk_random_pos.setChecked(config.get("is_random_pos", False))
             
             details = self.rewards_details_map.get(self.existing_reward, {})
-            
-            color_val = config.get("background_color") or config.get("new_reward_data", {}).get("background_color") or details.get("background_color", "#00e701")
+            default_color = "#9146FF" if plat == "twitch" else "#00e701"
+            color_val = config.get("background_color") or config.get("new_reward_data", {}).get("background_color") or details.get("background_color", default_color)
             self._set_color(color_val)
             
             user_in = config.get("is_user_input_required")
@@ -482,6 +614,12 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def get_config_data(self):
         if self.is_edit_mode:
+            platform = self.existing_config.get("platform") or self.selected_platform or "kick"
+        else:
+            platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
+        default_color = "#9146FF" if platform == "twitch" else "#00e701"
+
+        if self.is_edit_mode:
             reward_title = self.txt_edit_title.text().strip()
             is_create_mode = False
             new_data = None
@@ -498,9 +636,10 @@ class RewardsConfigWizard(ModernWizardPanel):
                     "title": reward_title,
                     "cost": cost_val,
                     "description": desc_val,
-                    "background_color": self.txt_new_color.text().strip() or "#00e701",
+                    "background_color": self.txt_new_color.text().strip() or default_color,
                     "is_user_input_required": self.chk_user_input.isChecked(),
-                    "should_redemptions_skip_request_queue": False
+                    "should_redemptions_skip_request_queue": False,
+                    "platform": platform
                 }
                 reward_id = None
             else:
@@ -513,11 +652,12 @@ class RewardsConfigWizard(ModernWizardPanel):
 
         config = {
             "id": reward_id,
+            "platform": platform,
             "is_new_reward": is_create_mode,
             "new_reward_data": new_data,
             "cost": cost_val,
             "description": desc_val,
-            "background_color": self.txt_new_color.text().strip() or "#00e701",
+            "background_color": self.txt_new_color.text().strip() or default_color,
             "is_user_input_required": self.chk_user_input.isChecked() if hasattr(self, 'chk_user_input') else False,
             "filepath": self.txt_file_path.text().strip(),
             "volume": self.slider_vol.value() / 100.0,
@@ -533,6 +673,12 @@ class RewardsConfigWizard(ModernWizardPanel):
             title = self.txt_edit_title.text().strip() if hasattr(self, 'txt_edit_title') else ""
             cost = self.spin_edit_cost.value() if hasattr(self, 'spin_edit_cost') else 1
             return bool(title) and cost >= 1
+
+        selected_plat = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
+        if selected_plat == "kick" and not self.kick_authenticated:
+            return False
+        if selected_plat == "twitch" and not self.twitch_authenticated:
+            return False
 
         if hasattr(self, 'rb_create') and self.rb_create.isChecked():
             title = self.txt_new_title.text().strip()
@@ -559,7 +705,8 @@ class RewardsConfigWizard(ModernWizardPanel):
     def _update_btn_next_state(self):
         if self.current_step == 0:
             reward_valid = self._is_reward_valid()
-            file_valid = bool(self.txt_file_path.text().strip())
+            file_path = self.txt_file_path.text().strip() if hasattr(self, 'txt_file_path') else ""
+            file_valid = bool(file_path) and os.path.exists(file_path) and os.path.isfile(file_path)
             self.btn_next.setEnabled(reward_valid and file_valid)
         else:
             self.btn_next.setEnabled(True)

@@ -1,5 +1,6 @@
 # frontend\components\music\player_settings.py
 
+import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication, QProgressBar
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK
@@ -23,6 +24,9 @@ class MusicPlayerSettingsPanel(QWidget):
         self._current_progress_ms = 0
         self._duration_ms = 0
         self._is_playing = False
+        self._last_rendered_pct = -1
+        self._last_rendered_elapsed = ""
+        self._last_rendered_total = ""
 
         self._volume_timer = QTimer(self)
         self._volume_timer.setSingleShot(True)
@@ -295,13 +299,29 @@ class MusicPlayerSettingsPanel(QWidget):
     def _update_progress_ui(self):
         if self._duration_ms > 0:
             percentage = int((self._current_progress_ms / self._duration_ms) * 100)
-            self.progress_bar.setValue(min(100, max(0, percentage)))
-            self.lbl_time_elapsed.setText(self._format_time(self._current_progress_ms))
-            self.lbl_time_total.setText(self._format_time(self._duration_ms))
+            if percentage != self._last_rendered_pct:
+                self._last_rendered_pct = percentage
+                self.progress_bar.setValue(min(100, max(0, percentage)))
+            
+            elapsed_str = self._format_time(self._current_progress_ms)
+            if elapsed_str != self._last_rendered_elapsed:
+                self._last_rendered_elapsed = elapsed_str
+                self.lbl_time_elapsed.setText(elapsed_str)
+                
+            total_str = self._format_time(self._duration_ms)
+            if total_str != self._last_rendered_total:
+                self._last_rendered_total = total_str
+                self.lbl_time_total.setText(total_str)
         else:
-            self.progress_bar.setValue(0)
-            self.lbl_time_elapsed.setText("00:00")
-            self.lbl_time_total.setText("00:00")
+            if self._last_rendered_pct != 0:
+                self._last_rendered_pct = 0
+                self.progress_bar.setValue(0)
+            if self._last_rendered_elapsed != "00:00":
+                self._last_rendered_elapsed = "00:00"
+                self.lbl_time_elapsed.setText("00:00")
+            if self._last_rendered_total != "00:00":
+                self._last_rendered_total = "00:00"
+                self.lbl_time_total.setText("00:00")
 
     def update_current_song(self, song_data: dict | None):
         self._cached_song_state = song_data
@@ -337,7 +357,8 @@ class MusicPlayerSettingsPanel(QWidget):
                 color_hex = COLOR_TIKTOK
             else:
                 color_hex = "#53FC18"
-            user_styled = f"<span style='color:{color_hex}; font-weight:600;'>@{requester}</span>"
+            safe_requester = html.escape(requester)
+            user_styled = f"<span style='color:{color_hex}; font-weight:600;'>@{safe_requester}</span>"
             req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)
         else:
             req_text = self.i18n.get("music.player.requested_by_streamer")
@@ -357,4 +378,3 @@ class MusicPlayerSettingsPanel(QWidget):
                 self._progress_timer.start()
         else:
             self._progress_timer.stop()
-

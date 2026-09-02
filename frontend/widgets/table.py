@@ -7,7 +7,6 @@ from .controls import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
-from frontend.common.theme import COLOR_BLACK
 from frontend.common.icons import get_icon_colored
 from frontend.common.paths import get_assets_path
 
@@ -61,8 +60,7 @@ class ModernTableCard(QFrame):
             if add_button_text:
                 self.btn_add = ModernButton(add_button_text, role="action_accent", parent=self)
                 if add_button_icon:
-                    self.btn_add.setIcon(get_icon_colored(add_button_icon, COLOR_BLACK, 16))
-                    self.btn_add.setIconSize(QSize(16, 16))
+                    self.btn_add.set_icon(add_button_icon, size=16)
                 self.header_layout.addWidget(self.btn_add)
                 
             self.card_layout.addLayout(self.header_layout)
@@ -105,8 +103,7 @@ class ModernTableCard(QFrame):
         lbl_desc.setMaximumWidth(450)
         
         self.btn_empty_action = ModernButton(button_text, role="action_accent")
-        self.btn_empty_action.setIcon(get_icon_colored("add.svg", COLOR_BLACK, 16))
-        self.btn_empty_action.setIconSize(QSize(16, 16))
+        self.btn_empty_action.set_icon("add.svg", size=16)
         self.btn_empty_action.setFixedWidth(200)
         self.btn_empty_action.clicked.connect(on_button_clicked)
         
@@ -150,7 +147,7 @@ class TableActionCell(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 4, 0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(6)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -164,7 +161,7 @@ class TableActionCell(QWidget):
         
     def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role, parent=self)
-        btn.setFixedSize(28, 28)
+        btn.setFixedSize(24, 24)
         btn.setIcon(get_icon_colored(icon_name, color, size=16))
         btn.setIconSize(QSize(16, 16))
         btn.setToolTip(tooltip)

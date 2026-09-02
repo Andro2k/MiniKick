@@ -209,6 +209,11 @@ class CommandView(BaseView):
         i18n_key = self._PERM_KEYS.get(raw_perm, "command.dialog.perm_everyone")
         return create_badge(self.i18n.get(i18n_key), state=raw_perm)
 
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        if self._raw_commands:
+            self.populate_table(self._raw_commands)
+
     def _create_platforms_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
@@ -216,10 +221,13 @@ class CommandView(BaseView):
         layout.setSpacing(8)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-        apply_kick = cmd_data.get("apply_kick", True)
-        apply_twitch = cmd_data.get("apply_twitch", True)
-        apply_youtube = cmd_data.get("apply_youtube", True)
-        apply_tiktok = cmd_data.get("apply_tiktok", True)
+        connected = getattr(self, "connected_platforms", {})
+        has_conn_filter = isinstance(connected, dict) and bool(connected)
+
+        apply_kick = cmd_data.get("apply_kick", True) and (connected.get("kick", False) if has_conn_filter else True)
+        apply_twitch = cmd_data.get("apply_twitch", True) and (connected.get("twitch", False) if has_conn_filter else True)
+        apply_youtube = cmd_data.get("apply_youtube", True) and (connected.get("youtube", False) if has_conn_filter else True)
+        apply_tiktok = cmd_data.get("apply_tiktok", True) and (connected.get("tiktok", False) if has_conn_filter else True)
 
         platforms = [
             ("brand-kick.svg", COLOR_GREEN, "Kick", apply_kick),
@@ -317,16 +325,16 @@ class CommandView(BaseView):
         
         return cell
 
-    def show_add_dialog(self) -> dict | None:
+    def show_add_dialog(self, connected_platforms: dict[str, bool] = None) -> dict | None:
         from frontend.dialogs import CommandConfigWizard
-        dialog = CommandConfigWizard(self.i18n, parent=self)
+        dialog = CommandConfigWizard(self.i18n, parent=self, connected_platforms=connected_platforms)
         if dialog.exec():
             return dialog.get_command_data()
         return None
 
-    def show_edit_dialog(self, existing_config: dict) -> dict | None:
+    def show_edit_dialog(self, existing_config: dict, connected_platforms: dict[str, bool] = None) -> dict | None:
         from frontend.dialogs import CommandConfigWizard
-        dialog = CommandConfigWizard(self.i18n, parent=self, existing_config=existing_config)
+        dialog = CommandConfigWizard(self.i18n, parent=self, existing_config=existing_config, connected_platforms=connected_platforms)
         if dialog.exec():
             return dialog.get_command_data()
         return None

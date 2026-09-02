@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QWidget
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton
 from frontend.common import get_assets_path
-from frontend.common.theme import COLOR_BLACK
+from frontend.common.theme import COLOR_TIKTOK
 
 class TikTokConnectDialog(ModernModal):
     def __init__(self, i18n, initial_target: str = "", parent=None):
@@ -13,7 +13,7 @@ class TikTokConnectDialog(ModernModal):
         super().__init__(
             title=self.i18n.get("dialogs.tiktok_connect.title"),
             icon_path=get_assets_path("icons/brand-tiktok.svg"),
-            icon_bg_color=COLOR_BLACK,
+            icon_bg_color=COLOR_TIKTOK,
             width=480,
             parent=parent
         )

@@ -1,10 +1,13 @@
 # backend\workers\twitch_chat_worker.py
 
+import logging
+import datetime
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.twitch_websocket import TwitchSocketManager
 from backend.services.chat.pipeline import ChatMessageDTO
 from backend.services.system.translation_service import TranslationService
-import datetime
+
+logger = logging.getLogger("minikick.workers.twitch_chat")
 
 class TwitchChatWorker(QThread):
     message_received = Signal(object)
@@ -25,16 +28,20 @@ class TwitchChatWorker(QThread):
         self._is_stopped = False
 
     def run(self):
+        logger.info("[TwitchChatWorker] Starting Twitch chat worker thread...")
         try:
             user_data = {}
             if self.api_client:
                 try:
-                    user_data = self.api_client.fetch_user_data()
+                    if hasattr(self.api_client, "fetch_full_channel_info"):
+                        user_data = self.api_client.fetch_full_channel_info()
+                    else:
+                        user_data = self.api_client.fetch_user_data()
                     fetched_username = user_data.get("username")
                     if fetched_username:
                         self.channel_name = fetched_username
                 except Exception as api_err:
-                    pass
+                    logger.debug("[TwitchChatWorker] Notice fetching initial user data: %s", api_err)
 
                 if hasattr(self.api_client, "auth_provider") and self.api_client.auth_provider:
                     fresh_tokens = self.api_client.auth_provider.get_tokens() if hasattr(self.api_client.auth_provider, "get_tokens") else {}
@@ -60,12 +67,15 @@ class TwitchChatWorker(QThread):
                 nonlocal initial_notified
                 if not initial_notified:
                     initial_notified = True
+                    logger.info("[TwitchChatWorker] Connected to Twitch IRC channel: #%s", self.channel_name)
                     self.connection_success.emit(user_data)
                 else:
+                    logger.info("[TwitchChatWorker] Reconnected to Twitch IRC channel: #%s", self.channel_name)
                     self.connection_restored.emit()
 
             def _on_disconnected():
                 if not self._is_stopped:
+                    logger.warning("[TwitchChatWorker] Connection lost with Twitch IRC.")
                     self.connection_lost.emit()
 
             while not self._is_stopped:
@@ -76,9 +86,11 @@ class TwitchChatWorker(QThread):
                     on_disconnected=_on_disconnected
                 )
                 if not self._is_stopped:
+                    logger.debug("[TwitchChatWorker] Socket loop finished. Retrying in 5s...")
                     self.msleep(5000)
 
         except Exception as e:
+            logger.error("[TwitchChatWorker] Unhandled error in Twitch chat worker: %s", e)
             if not self._is_stopped:
                 self.error_occurred.emit(str(e))
 
@@ -107,6 +119,7 @@ class TwitchChatWorker(QThread):
         return self.socket_manager.send_privmsg(text)
 
     def stop(self):
+        logger.info("[TwitchChatWorker] Stopping Twitch chat worker...")
         self._is_stopped = True
         self.socket_manager.stop_socket()
         self.quit()

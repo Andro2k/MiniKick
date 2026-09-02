@@ -18,6 +18,7 @@ class MusicView(BaseView):
     play_pause_requested = Signal()
     skip_requested = Signal()
     youtube_auto_resume_toggled = Signal(bool)
+    media_keys_toggled = Signal(bool)
     max_user_songs_changed = Signal(int)
     user_cooldown_changed = Signal(int)
     max_queue_size_changed = Signal(int)
@@ -90,6 +91,7 @@ class MusicView(BaseView):
         self.player_panel.skip_requested.connect(self.skip_requested.emit)
 
         self.settings_panel.youtube_auto_resume_toggled.connect(self.youtube_auto_resume_toggled.emit)
+        self.settings_panel.media_keys_toggled.connect(self.media_keys_toggled.emit)
         self.settings_panel.max_user_songs_changed.connect(self.max_user_songs_changed.emit)
         self.settings_panel.user_cooldown_changed.connect(self.user_cooldown_changed.emit)
         self.settings_panel.max_queue_size_changed.connect(self.max_queue_size_changed.emit)
@@ -116,6 +118,10 @@ class MusicView(BaseView):
     @property
     def sw_auto_resume(self):
         return self.settings_panel.sw_auto_resume
+
+    @property
+    def sw_media_keys(self):
+        return self.settings_panel.sw_media_keys
 
     @property
     def sw_sr(self):

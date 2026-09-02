@@ -2,6 +2,7 @@
 
 import base64
 import hashlib
+import logging
 import os
 import time
 import webbrowser
@@ -9,6 +10,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
 from backend.interfaces import TokenStorage
+
+logger = logging.getLogger("minikick.services.auth")
 
 KICK_AUTH_URL = "https://id.kick.com/oauth/authorize"
 KICK_TOKEN_URL = "https://id.kick.com/oauth/token"
@@ -28,33 +31,34 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
                 self.server.auth_code = ""
                 
             self.send_response(200)
-            self.send_header("Content-type", "text/html")
+            self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
             
             html_path = getattr(self.server, "success_html_path", "")
             provider = getattr(self.server, "provider", "kick")
+            status = "success" if code else "error"
+            error_msg = query.get("error_description", [error])[0] if error else ""
             
+            content = None
+            if html_path and os.path.exists(html_path):
+                try:
+                    with open(html_path, "r", encoding="utf-8") as f:
+                        template = f.read()
+                    content = template.replace("{{PROVIDER}}", provider)
+                    content = content.replace("{{STATUS}}", status)
+                    content = content.replace("{{ERROR_MSG}}", error_msg)
+                except Exception as e:
+                    logger.warning("[OAuthCallback] Error reading auth template '%s': %s", html_path, e)
+
+            if not content:
+                status_text = "exitosa" if code else "fallida"
+                status_en = "successful" if code else "failed"
+                content = f"<h1>Autenticación {status_text} / Authentication {status_en}.</h1>"
+                if error_msg:
+                    content += f"<p>Error: {error_msg}</p>"
+
             try:
-                with open(html_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-                
-                status = "success" if code else "error"
-                error_msg = ""
-                if error:
-                    error_msg = query.get("error_description", [error])[0]
-                
-                content = content.replace("{{PROVIDER}}", provider)
-                content = content.replace("{{STATUS}}", status)
-                content = content.replace("{{ERROR_MSG}}", error_msg)
-                
                 self.wfile.write(content.encode("utf-8"))
-            except FileNotFoundError:
-                status_text = "exitoso" if code else "fallido"
-                html_msg = f"<h1>Autenticación {status_text} / Authentication {status}.</h1>"
-                if error:
-                    error_desc = query.get("error_description", [error])[0]
-                    html_msg += f"<p>Error: {error_desc}</p>"
-                self.wfile.write(html_msg.encode("utf-8"))
             except (BrokenPipeError, ConnectionResetError):
                 pass
 
@@ -89,10 +93,19 @@ class AuthManager:
         self.storage = storage
         self.success_html_path = success_html_path
 
-    def get_tokens(self) -> dict:
+    def get_tokens(self, force: bool = False) -> dict:
+        if force:
+            return self.login(force=True)
         tokens = self.storage.load()
         if tokens and "access_token" in tokens:
             return tokens
+        return {}
+
+    def login(self, force: bool = False) -> dict:
+        if not force:
+            tokens = self.get_tokens(force=False)
+            if tokens and tokens.get("access_token"):
+                return tokens
         return self._new_login()
 
     def refresh_token(self) -> dict:
@@ -100,7 +113,7 @@ class AuthManager:
         refresh_token = tokens.get("refresh_token") if tokens else None
 
         if not refresh_token:
-            return self._new_login()
+            return {}
 
         try:
             response = requests.post(
@@ -117,7 +130,7 @@ class AuthManager:
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException:
-            return self._new_login()
+            return {}
 
     def _new_login(self) -> dict:
         verifier, challenge = self._pkce_pair()
@@ -166,23 +179,38 @@ class AuthManager:
         response.raise_for_status()
         return response.json()
 
+    def is_authenticated(self) -> bool:
+        tokens = self.storage.load()
+        return bool(tokens and (tokens.get("access_token") or tokens.get("refresh_token")))
+
     def logout(self) -> None:
         self.storage.clear()
 
+    REQUIRED_SCOPES = {
+        "user:read": "dashboard.banner.scope.kick_user_read",
+        "channel:read": "dashboard.banner.scope.kick_channel_read",
+        "channel:write": "dashboard.banner.scope.kick_channel_write",
+        "channel:rewards:read": "dashboard.banner.scope.kick_channel_rewards_read",
+        "channel:rewards:write": "dashboard.banner.scope.kick_channel_rewards_write",
+        "chat:write": "dashboard.banner.scope.kick_chat_write",
+        "moderation:ban": "dashboard.banner.scope.kick_moderation_ban",
+        "moderation:chat_message:manage": "dashboard.banner.scope.kick_moderation_chat",
+    }
+
     def get_missing_scopes(self) -> list[str]:
         tokens = self.storage.load()
-        if not tokens:
+        if not tokens or not (tokens.get("access_token") or tokens.get("refresh_token")):
             return []
 
-        REQUIRED_SCOPES = {
-            "moderation:ban": "dashboard.banner.scope.moderation_ban",
-            "moderation:chat_message:manage": "dashboard.banner.scope.moderation_chat",
-        }
+        raw_scopes = tokens.get("scope", "")
+        if isinstance(raw_scopes, list):
+            current_scopes = set(raw_scopes)
+        else:
+            current_scopes = set(raw_scopes.split())
 
-        current_scopes = tokens.get("scope", "")
         return [
             i18n_key
-            for scope, i18n_key in REQUIRED_SCOPES.items()
+            for scope, i18n_key in self.REQUIRED_SCOPES.items()
             if scope not in current_scopes
         ]
 
@@ -214,7 +242,7 @@ class TwitchAuthManager:
 
     def is_authenticated(self) -> bool:
         tokens = self.storage.load()
-        return bool(tokens and tokens.get("access_token"))
+        return bool(tokens and (tokens.get("access_token") or tokens.get("refresh_token")))
 
     def refresh_token(self) -> dict:
         tokens = self.storage.load()
@@ -244,14 +272,12 @@ class TwitchAuthManager:
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException as e:
-            import logging
-            logging.warning("[TwitchAuth] Fallo al refrescar token de Twitch: %s", e)
+            logger.warning("[TwitchAuth] Fallo al refrescar token de Twitch: %s", e)
             self.logout()
             raise e
 
-
     def _new_login(self, force: bool = False) -> dict:
-        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast"
+        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers"
         force_param = "&force_verify=true" if force else ""
         auth_url = (
             f"{TWITCH_AUTH_URL}?response_type=code"
@@ -297,15 +323,24 @@ class TwitchAuthManager:
     def logout(self) -> None:
         self.storage.clear()
 
+    REQUIRED_TWITCH_SCOPES = {
+        "chat:read": "dashboard.banner.scope.twitch_chat_read",
+        "chat:edit": "dashboard.banner.scope.twitch_chat_edit",
+        "user:read:chat": "dashboard.banner.scope.twitch_user_read_chat",
+        "user:write:chat": "dashboard.banner.scope.twitch_user_write_chat",
+        "channel:moderate": "dashboard.banner.scope.twitch_channel_moderate",
+        "moderator:manage:chat_messages": "dashboard.banner.scope.twitch_moderation_chat",
+        "moderator:manage:banned_users": "dashboard.banner.scope.twitch_moderation_ban",
+        "channel:manage:broadcast": "dashboard.banner.scope.twitch_channel_manage_broadcast",
+        "channel:read:redemptions": "dashboard.banner.scope.twitch_channel_read_redemptions",
+        "channel:manage:redemptions": "dashboard.banner.scope.twitch_channel_manage_redemptions",
+        "moderator:read:followers": "dashboard.banner.scope.twitch_moderator_read_followers",
+    }
+
     def get_missing_scopes(self) -> list[str]:
         tokens = self.storage.load()
-        if not tokens:
+        if not tokens or not (tokens.get("access_token") or tokens.get("refresh_token")):
             return []
-
-        REQUIRED_TWITCH_SCOPES = {
-            "moderator:manage:chat_messages": "dashboard.banner.scope.twitch_moderation_chat",
-            "moderator:manage:banned_users": "dashboard.banner.scope.twitch_moderation_ban",
-        }
 
         raw_scopes = tokens.get("scope", "")
         if isinstance(raw_scopes, list):
@@ -315,7 +350,7 @@ class TwitchAuthManager:
 
         return [
             i18n_key
-            for scope, i18n_key in REQUIRED_TWITCH_SCOPES.items()
+            for scope, i18n_key in self.REQUIRED_TWITCH_SCOPES.items()
             if scope not in scopes_set
         ]
 

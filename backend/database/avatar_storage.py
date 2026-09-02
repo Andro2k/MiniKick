@@ -3,6 +3,8 @@
 import logging
 from backend.database.manager import DatabaseManager
 
+logger = logging.getLogger("minikick.database.avatar_storage")
+
 class SQLiteAvatarStorage:
     def __init__(self, db_manager: DatabaseManager):
         self.db_manager = db_manager
@@ -18,7 +20,7 @@ class SQLiteAvatarStorage:
                 if r:
                     return r[0]
         except Exception as e:
-            logging.error("[SQLiteAvatarStorage] Error reading from cache: %s", e)
+            logger.error("[SQLiteAvatarStorage] Error reading from cache: %s", e)
         return None
 
     def save_to_cache(self, url: str, data: bytes) -> None:
@@ -33,4 +35,4 @@ class SQLiteAvatarStorage:
                 """, (url.strip(), data))
                 conn.commit()
         except Exception as e:
-            logging.error("[SQLiteAvatarStorage] Error saving to cache: %s", e)
+            logger.error("[SQLiteAvatarStorage] Error saving to cache: %s", e)

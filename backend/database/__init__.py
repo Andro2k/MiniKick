@@ -1,4 +1,4 @@
-# backend\storage\__init__.py
+# backend\database\__init__.py
 
 from backend.database.manager import DatabaseManager
 from backend.database.token_storage import SQLiteTokenStorage

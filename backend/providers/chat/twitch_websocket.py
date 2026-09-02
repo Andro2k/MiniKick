@@ -5,6 +5,8 @@ import websocket
 from typing import Callable
 from backend.services.system.translation_service import TranslationService
 
+logger = logging.getLogger("minikick.providers.twitch_websocket")
+
 TWITCH_WS_URL = "wss://irc-ws.chat.twitch.tv:443"
 DEFAULT_TWITCH_COLOR = "#9146FF"
 
@@ -81,7 +83,7 @@ class TwitchSocketManager:
         self.ws.run_forever(ping_interval=30, ping_timeout=10)
 
     def _on_open(self, ws: websocket.WebSocketApp) -> None:
-        logging.info("[TwitchWS] Connecting to Twitch channel: #%s", self._channel)
+        logger.info("[TwitchWS] Connecting to Twitch channel: #%s", self._channel)
         ws.send("CAP REQ :twitch.tv/tags twitch.tv/commands\r\n")
         
         pass_str = f"oauth:{self.token}" if self.token else "SCHMOOPIIE"
@@ -112,7 +114,7 @@ class TwitchSocketManager:
                 continue
 
             if "NOTICE" in line and "authentication failed" in line.lower():
-                logging.error("[TwitchWS] Twitch IRC login failed: %s", line)
+                logger.error("[TwitchWS] Twitch IRC login failed: %s", line)
 
             if "PRIVMSG" in line:
                 self._parse_privmsg(line)
@@ -174,7 +176,7 @@ class TwitchSocketManager:
                     self._callback(user, msg_text, badges, color, msg_id, sender_id)
 
         except Exception as e:
-            logging.debug("[TwitchWS] Error parsing PRIVMSG line: %s", e)
+            logger.debug("[TwitchWS] Error parsing PRIVMSG line: %s", e)
 
     def send_privmsg(self, text: str) -> bool:
         if self.ws and self.ws.sock and self.ws.sock.connected and self._channel:
@@ -182,14 +184,14 @@ class TwitchSocketManager:
                 self.ws.send(f"PRIVMSG #{self._channel} :{text}\r\n")
                 return True
             except Exception as e:
-                logging.error("[TwitchWS] Error sending IRC message: %s", e)
+                logger.error("[TwitchWS] Error sending IRC message: %s", e)
         return False
 
     def _on_error(self, ws: websocket.WebSocketApp, error: Exception) -> None:
-        logging.warning("[TwitchWS] Error in WebSocket connection: %s", error)
+        logger.warning("[TwitchWS] Error in WebSocket connection: %s", error)
 
     def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:
-        logging.info("[TwitchWS] Connection closed. Status: %s Msg: %s", close_status_code, close_msg)
+        logger.info("[TwitchWS] Connection closed. Status: %s Msg: %s", close_status_code, close_msg)
         if self._on_disconnected:
             try:
                 self._on_disconnected()
@@ -202,4 +204,3 @@ class TwitchSocketManager:
             self.ws.keep_running = False
             if self.ws.sock and self.ws.sock.connected:
                 self.ws.sock.close()
-

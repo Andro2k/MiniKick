@@ -16,6 +16,8 @@ class TimersView(BaseView):
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="timer.header.title", subtitle_key="timer.header.subtitle", parent=parent)
+        self.connected_platforms: dict[str, bool] = {"kick": True, "twitch": True}
+        self._raw_timers: list[dict] = []
         self._setup_ui()
 
     def _setup_ui(self):
@@ -62,10 +64,16 @@ class TimersView(BaseView):
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        if hasattr(self, "_raw_timers") and self._raw_timers is not None:
+            self.populate_table(self._raw_timers)
+
     def populate_table(self, timers: list[dict]):
+        self._raw_timers = timers or []
         self.table.setUpdatesEnabled(False)
-        self.table.setRowCount(len(timers))
-        for row, timer in enumerate(timers):
+        self.table.setRowCount(len(self._raw_timers))
+        for row, timer in enumerate(self._raw_timers):
             self.table.setItem(row, 0, self._create_name_item(timer))
             self.table.setItem(row, 1, self._create_message_item(timer))
             self.table.setCellWidget(row, 2, self._create_platforms_cell(timer))
@@ -74,8 +82,8 @@ class TimersView(BaseView):
             self.table.setItem(row, 5, self._create_lines_item(timer))
             self.table.setCellWidget(row, 6, self._create_actions_cell(timer))
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(timers) == 0)
-        self.table_card.set_title_count(self.i18n.get("timer.header.title"), len(timers))
+        self.table_card.set_empty(len(self._raw_timers) == 0)
+        self.table_card.set_title_count(self.i18n.get("timer.header.title"), len(self._raw_timers))
 
     def _create_table_item(self, text: str, align: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter) -> QTableWidgetItem:
         item = QTableWidgetItem(text)
@@ -107,8 +115,11 @@ class TimersView(BaseView):
         return item
 
     def _create_platforms_cell(self, timer_data: dict) -> QWidget:
-        apply_kick = timer_data.get("apply_kick", True)
-        apply_twitch = timer_data.get("apply_twitch", True)
+        connected = getattr(self, "connected_platforms", {})
+        has_conn_filter = isinstance(connected, dict) and bool(connected)
+
+        apply_kick = timer_data.get("apply_kick", True) and (connected.get("kick", False) if has_conn_filter else True)
+        apply_twitch = timer_data.get("apply_twitch", True) and (connected.get("twitch", False) if has_conn_filter else True)
         
         if not apply_kick and not apply_twitch:
             container = QWidget()
@@ -172,9 +183,9 @@ class TimersView(BaseView):
         if hasattr(self, "_active_timer_dialog") and self._active_timer_dialog:
             self._active_timer_dialog.set_category_search_results(platform, results)
 
-    def show_add_dialog(self) -> dict | None:
+    def show_add_dialog(self, connected_platforms: dict[str, bool] = None) -> dict | None:
         from frontend.dialogs.timer_dialog import TimerConfigWizard
-        dialog = TimerConfigWizard(self.i18n, parent=self)
+        dialog = TimerConfigWizard(self.i18n, parent=self, connected_platforms=connected_platforms)
         dialog.search_category_requested.connect(self.search_category_requested.emit)
         self._active_timer_dialog = dialog
         try:
@@ -184,9 +195,9 @@ class TimersView(BaseView):
             self._active_timer_dialog = None
         return None
 
-    def show_edit_dialog(self, existing_config: dict) -> dict | None:
+    def show_edit_dialog(self, existing_config: dict, connected_platforms: dict[str, bool] = None) -> dict | None:
         from frontend.dialogs.timer_dialog import TimerConfigWizard
-        dialog = TimerConfigWizard(self.i18n, parent=self, existing_config=existing_config)
+        dialog = TimerConfigWizard(self.i18n, parent=self, existing_config=existing_config, connected_platforms=connected_platforms)
         dialog.search_category_requested.connect(self.search_category_requested.emit)
         self._active_timer_dialog = dialog
         try:

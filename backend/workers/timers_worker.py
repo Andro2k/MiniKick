@@ -5,6 +5,8 @@ import time
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.kick_client import KickAPIClient
 
+logger = logging.getLogger("minikick.workers.timers")
+
 class TimerWorker(QThread):
     post_message_requested = Signal(str, bool, bool)
 
@@ -27,7 +29,7 @@ class TimerWorker(QThread):
                 stream_status = self.api_client.fetch_stream_status(self.channel_slug)
                 last_status_fetch_time = time.time()
             except Exception as e:
-                logging.error("[TimerWorker] Initial stream status fetch failed: %s", e)
+                logger.error("[TimerWorker] Initial stream status fetch failed: %s", e)
 
         while self._running:
             try:
@@ -45,12 +47,14 @@ class TimerWorker(QThread):
                         self.post_message_requested.emit(str(item), True, True)
 
             except Exception as e:
-                logging.error("[TimerWorker] Error in run loop: %s", e)
+                logger.error("[TimerWorker] Error in run loop: %s", e)
 
-            for _ in range(self.check_interval * 10):
-                if not self._running:
+            for _ in range(self.check_interval * 20):
+                if not self._running or self.isInterruptionRequested():
                     break
-                self.msleep(100)
+                self.msleep(50)
 
     def stop(self):
         self._running = False
+        self.requestInterruption()
+        self.quit()

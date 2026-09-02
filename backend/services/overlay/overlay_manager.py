@@ -122,18 +122,24 @@ class OverlayServerManager:
         if isinstance(config, str):
             config = {"filepath": config, "volume": 1.0, "scale": 1.0, "pos_x": 0, "pos_y": 0}
 
-        safe_path = urllib.parse.quote(config.get("filepath", ""))
+        filepath = config.get("filepath", "")
+        safe_path = urllib.parse.quote(filepath)
+        import os
+        _, ext = os.path.splitext(filepath.lower())
 
         payload = {
             "reward": reward_name,
             "file_url": f"http://localhost:{self.port}/media?path={safe_path}&token={self.session_token}",
+            "file_ext": ext,
             "volume": config.get("volume", 1.0),
             "scale": config.get("scale", 1.0),
             "pos_x": config.get("pos_x", 0),
             "pos_y": config.get("pos_y", 0),
-            "is_random_pos": config.get("is_random_pos", False)
+            "is_random_pos": config.get("is_random_pos", False),
+            "duration": config.get("duration", 5.0)
         }
 
+        logger.info("[Overlay] Emitiendo alerta multimedia de recompensa: '%s' (%s)", reward_name, os.path.basename(filepath))
         self._broadcast("clients", "rewards", payload)
 
     def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = ""):

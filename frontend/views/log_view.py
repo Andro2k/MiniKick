@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from frontend.widgets import (BaseView, ModernTable, ScalableIllustration, ModernButton, 
                               UnifiedSearchBar, SegmentedPagination, NoWheelComboBox)
-from frontend.common.theme import COLOR_BLACK, COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED
+from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED
 from frontend.common import get_assets_path, get_icon_colored
 
 class LogControlsPanel(QFrame):
@@ -139,14 +139,22 @@ _LEVEL_COLORS = {
     "INFO": COLOR_BLUE,
     "WARNING": COLOR_AMBER,
     "ERROR": COLOR_RED,
-    "CRITICAL": COLOR_RED
+    "CRITICAL": COLOR_RED,
+    "CRASH": COLOR_RED,
+    "FATAL_CRASH": COLOR_RED,
+    "THREAD_CRASH": COLOR_RED,
+    "BOOTSTRAP": COLOR_BLUE
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code.svg",
     "INFO": "info-circle.svg",
     "WARNING": "alert-triangle.svg",
     "ERROR": "bug.svg",
-    "CRITICAL": "alert-circle.svg"
+    "CRITICAL": "alert-circle.svg",
+    "CRASH": "bomb.svg",
+    "FATAL_CRASH": "bomb.svg",
+    "THREAD_CRASH": "bomb.svg",
+    "BOOTSTRAP": "info-circle.svg"
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}
 
@@ -353,8 +361,7 @@ class LogView(BaseView):
         lbl_desc.setMaximumWidth(450)
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
-        self.btn_show_logs.setIcon(get_icon_colored("eye.svg", COLOR_BLACK, 16))
-        self.btn_show_logs.setIconSize(QSize(16, 16))
+        self.btn_show_logs.set_icon("eye.svg", size=16)
         self.btn_show_logs.setFixedWidth(200)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 

@@ -1,6 +1,9 @@
 # backend\services\chat\timer_service.py
 
 import time
+import logging
+
+logger = logging.getLogger("minikick.services.timers")
 
 class TimerService:
     def __init__(self, timers_storage, api_client=None):
@@ -22,10 +25,12 @@ class TimerService:
 
     def save_timer(self, name: str, messages: list[str], is_active: bool, interval_online: int, interval_offline: int, chat_lines: int, keywords: list[str], categories: list[str], apply_kick: bool = True, apply_twitch: bool = True, apply_youtube: bool = True, timer_id: int = None):
         self.storage.save_timer(name, messages, is_active, interval_online, interval_offline, chat_lines, keywords, categories, apply_kick, apply_twitch, apply_youtube, timer_id)
+        logger.debug("[TimerService] Saved timer '%s' (active=%s)", name, is_active)
 
     def delete_timer(self, timer_id: int):
         self.storage.delete_timer(timer_id)
         self.tracking_state.pop(timer_id, None)
+        logger.debug("[TimerService] Deleted timer id=%s", timer_id)
 
     def increment_chat_lines(self):
         for timer_id in list(self.tracking_state.keys()):
@@ -85,9 +90,13 @@ class TimerService:
                 apply_kick = timer.get("apply_kick", True)
                 apply_twitch = timer.get("apply_twitch", True)
                 messages_to_send.append((msg, apply_kick, apply_twitch))
+                logger.info("[TimerService] Triggering timer '%s' message dispatch.", timer.get("name", timer_id))
                 if hasattr(self.storage, "db_manager") and self.storage.db_manager:
                     target_plat = "all" if (apply_kick and apply_twitch) else ("kick" if apply_kick else ("twitch" if apply_twitch else "none"))
-                    self.storage.db_manager.log_timer_execution(timer_id, msg, platform=target_plat)
+                    try:
+                        self.storage.db_manager.log_timer_execution(timer_id, msg, platform=target_plat)
+                    except Exception as e:
+                        logger.error("[TimerService] Error logging timer execution: %s", e)
 
                 state["message_index"] = (state["message_index"] + 1) % len(msgs)
                 state["last_posted_time"] = now

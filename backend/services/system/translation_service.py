@@ -6,6 +6,8 @@ import os
 import sys
 from backend.config.default_en_locale import DEFAULT_DICTIONARY
 
+logger = logging.getLogger("minikick.services.system.i18n")
+
 class TranslationService:    
     def __init__(self, locales_dir: str = "locales", default_lang: str = "en"):
         if getattr(sys, 'frozen', False):
@@ -27,7 +29,7 @@ class TranslationService:
             self.current_lang = lang_code
             return True
         except FileNotFoundError:
-            logging.warning("[i18n] File %s.json not found. Auto-repairing...", lang_code)
+            logger.warning("[i18n] File %s.json not found. Auto-repairing...", lang_code)
             fallback_data = DEFAULT_DICTIONARY if lang_code == "en" else {}          
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(fallback_data, f, indent=4, ensure_ascii=False)

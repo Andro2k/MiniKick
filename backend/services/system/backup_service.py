@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from backend.interfaces import SettingsStorage
 from backend.config.version import APP_VERSION
 
+logger = logging.getLogger("minikick.services.system.backup")
+
 class BackupService:
     SENSITIVE_KEYS = {"overlay_session_token"}
 
@@ -19,7 +21,7 @@ class BackupService:
         self.spam_storage = spam_storage
         self.timers_storage = timers_storage
         self.schedule_storage = schedule_storage
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
 
     @staticmethod
     def _sanitize_for_json(obj):

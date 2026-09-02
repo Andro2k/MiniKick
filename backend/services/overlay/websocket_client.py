@@ -1,4 +1,4 @@
-# backend\services\rewards\overlay\websocket_client.py
+# backend\services\overlay\websocket_client.py
 
 import json
 import logging

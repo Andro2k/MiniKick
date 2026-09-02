@@ -6,6 +6,8 @@ import cloudscraper
 import requests
 from backend.interfaces import TokenProvider
 
+logger = logging.getLogger("minikick.providers.kick_client")
+
 KICK_API_URL = "https://api.kick.com/public/v1/users"
 KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
 KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
@@ -186,7 +188,7 @@ class KickAPIClient:
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
-            logging.warning("[KickAPI] Error fetching public v2 rewards for %s: %s", slug, e)
+            logger.warning("[KickAPI] Error fetching public v2 rewards for %s: %s", slug, e)
         return []
 
     def fetch_public_avatar(self, channel_slug: str) -> str:
@@ -197,7 +199,7 @@ class KickAPIClient:
             channel_data = self._fetch_channel_details(slug)
             return channel_data.get("user", {}).get("profile_pic", "")
         except Exception as e:
-            logging.warning("[KickAPI] Could not fetch public avatar for %s: %s", slug, e)
+            logger.warning("[KickAPI] Could not fetch public avatar for %s: %s", slug, e)
             return ""
 
 
@@ -218,7 +220,7 @@ class KickAPIClient:
         try:
             return self._request("POST", url, json=payload, timeout=10).json()
         except Exception as e:
-            logging.error("[KickAPI] Error posting chat message: %s", e)
+            logger.error("[KickAPI] Error posting chat message: %s", e)
             return {}
     
     def delete_chat_message(self, message_id: str) -> bool:
@@ -227,7 +229,7 @@ class KickAPIClient:
             resp = self._request("DELETE", url, timeout=10)
             return resp.status_code == 204
         except Exception as e:
-            logging.error("[KickAPI] Error deleting message: %s", e)
+            logger.error("[KickAPI] Error deleting message: %s", e)
             return False
 
     def timeout_user(self, broadcaster_id: int, user_id: int, duration_minutes: int) -> bool:
@@ -241,7 +243,7 @@ class KickAPIClient:
             resp = self._request("POST", url, json=payload, timeout=10)
             return resp.status_code == 200
         except Exception as e:
-            logging.error("[KickAPI] Error applying timeout: %s", e)
+            logger.error("[KickAPI] Error applying timeout: %s", e)
             return False
 
     def ban_user(self, broadcaster_id: int, user_id: int) -> bool:
@@ -254,7 +256,7 @@ class KickAPIClient:
             resp = self._request("POST", url, json=payload, timeout=10)
             return resp.status_code == 200
         except Exception as e:
-            logging.error("[KickAPI] Error applying ban: %s", e)
+            logger.error("[KickAPI] Error applying ban: %s", e)
             return False
         
     def get_users_by_ids(self, user_ids: list) -> dict:
@@ -288,7 +290,7 @@ class KickAPIClient:
                 "category": category
             }
         except Exception as e:
-            logging.error("[KickAPIClient] Error fetching stream status for %s: %s", slug, e)
+            logger.error("[KickAPIClient] Error fetching stream status for %s: %s", slug, e)
             return {
                 "is_live": False,
                 "title": "",
@@ -317,7 +319,7 @@ class KickAPIClient:
             resp = self._request("PATCH", url, json=payload, timeout=10)
             return resp.status_code in (200, 204)
         except Exception as e:
-            logging.error("[KickAPI] Error updating channel metadata: %s", e)
+            logger.error("[KickAPI] Error updating channel metadata: %s", e)
             return False
 
     def get_channel_metadata(self) -> dict:
@@ -349,7 +351,7 @@ class KickAPIClient:
                             "category_name": cat_name
                         }
         except Exception as e:
-            logging.debug("[KickAPI] Official channel metadata failed, trying fallback: %s", e)
+            logger.debug("[KickAPI] Official channel metadata failed, trying fallback: %s", e)
 
         try:
             slug = getattr(self, "_cached_slug", None)
@@ -392,7 +394,7 @@ class KickAPIClient:
                     "category_name": cat_name
                 }
         except Exception as e:
-            logging.error("[KickAPI] Error in fallback channel metadata: %s", e)
+            logger.error("[KickAPI] Error in fallback channel metadata: %s", e)
 
         return {}
 
@@ -419,7 +421,7 @@ class KickAPIClient:
                         for item in items if item.get("name")
                     ]
         except Exception as e:
-            logging.debug("[KickAPI] Error in public v1 category search: %s", e)
+            logger.debug("[KickAPI] Error in public v1 category search: %s", e)
 
         try:
             url = f"https://api.kick.com/public/v2/categories?name={encoded_q}&limit=50"
@@ -437,7 +439,7 @@ class KickAPIClient:
                         for item in items if item.get("name")
                     ]
         except Exception as e:
-            logging.debug("[KickAPI] Error in public v2 category search: %s", e)
+            logger.debug("[KickAPI] Error in public v2 category search: %s", e)
 
         try:
             if not getattr(self, "_cached_subcategories", None):
@@ -462,6 +464,6 @@ class KickAPIClient:
             if results:
                 return results
         except Exception as e:
-            logging.debug("[KickAPI] Error in fallback subcategories search: %s", e)
+            logger.debug("[KickAPI] Error in fallback subcategories search: %s", e)
 
         return []

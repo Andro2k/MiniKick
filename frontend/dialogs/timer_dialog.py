@@ -12,8 +12,9 @@ from frontend.common import get_icon_colored, get_assets_path
 class TimerConfigWizard(ModernWizardPanel):
     search_category_requested = Signal(str, str)
 
-    def __init__(self, i18n, parent=None, existing_config=None):
+    def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):
         self.i18n = i18n
+        self.connected_platforms = connected_platforms if isinstance(connected_platforms, dict) else {"kick": True, "twitch": True}
         title_steps = [
             self.i18n.get("timer.dialog.step_general_title"),
             self.i18n.get("timer.dialog.step_filters_title")
@@ -74,10 +75,17 @@ class TimerConfigWizard(ModernWizardPanel):
         switches_row = QHBoxLayout()
         switches_row.setSpacing(12)
 
+        kick_on = self.connected_platforms.get("kick", False)
+        twitch_on = self.connected_platforms.get("twitch", False)
+        off_tip = self.i18n.get("timer.dialog.platform_offline")
+
         kick_switch_box = QHBoxLayout()
         kick_switch_box.setSpacing(6)
         self.switch_kick = ModernSwitch()
-        self.switch_kick.setChecked(True)
+        self.switch_kick.setEnabled(kick_on)
+        self.switch_kick.setChecked(kick_on)
+        if not kick_on:
+            self.switch_kick.setToolTip(off_tip)
         lbl_kick = QLabel("Kick")
         lbl_kick.setProperty("role", "body")
         kick_switch_box.addWidget(self.switch_kick)
@@ -87,7 +95,10 @@ class TimerConfigWizard(ModernWizardPanel):
         twitch_switch_box = QHBoxLayout()
         twitch_switch_box.setSpacing(6)
         self.switch_twitch = ModernSwitch()
-        self.switch_twitch.setChecked(True)
+        self.switch_twitch.setEnabled(twitch_on)
+        self.switch_twitch.setChecked(twitch_on)
+        if not twitch_on:
+            self.switch_twitch.setToolTip(off_tip)
         lbl_twitch = QLabel("Twitch")
         lbl_twitch.setProperty("role", "body")
         twitch_switch_box.addWidget(self.switch_twitch)
@@ -354,8 +365,10 @@ class TimerConfigWizard(ModernWizardPanel):
 
     def _load_existing(self):
         self.txt_name.setText(self.existing_config.get("name", ""))
-        self.switch_kick.setChecked(self.existing_config.get("apply_kick", True))
-        self.switch_twitch.setChecked(self.existing_config.get("apply_twitch", True))
+        kick_on = self.connected_platforms.get("kick", False)
+        twitch_on = self.connected_platforms.get("twitch", False)
+        self.switch_kick.setChecked(self.existing_config.get("apply_kick", True) if kick_on else False)
+        self.switch_twitch.setChecked(self.existing_config.get("apply_twitch", True) if twitch_on else False)
         
         messages = self.existing_config.get("messages", [])
         if not messages:
@@ -363,8 +376,6 @@ class TimerConfigWizard(ModernWizardPanel):
         else:
             for m in messages:
                 self._add_message_field(m)
-        self.switch_kick.setChecked(self.existing_config.get("apply_kick", True))
-        self.switch_twitch.setChecked(self.existing_config.get("apply_twitch", True))
             
         online_min = self.existing_config.get("interval_online")
         has_online = online_min is not None and online_min > 0

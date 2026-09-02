@@ -1,7 +1,10 @@
 # backend\services\chat\pipeline.py
 
+import logging
 from dataclasses import dataclass
 from typing import Callable
+
+logger = logging.getLogger("minikick.services.chat.pipeline")
 
 @dataclass
 class ChatMessageDTO:
@@ -29,4 +32,7 @@ class MessagePipeline:
         for middleware in self._middlewares:
             if dto.is_cancelled:
                 break
-            middleware(dto)
+            try:
+                middleware(dto)
+            except Exception as e:
+                logger.error("[MessagePipeline] Error in middleware '%s': %s", getattr(middleware, "__name__", str(middleware)), e)

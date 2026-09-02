@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineE
                                QFrame, QPushButton, QListWidgetItem)
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
 from frontend.widgets import ModernButton, ModernDivider
-from frontend.common.theme import COLOR_BLACK, COLOR_RED
+from frontend.common.theme import COLOR_RED
 from frontend.common import get_icon_colored
 
 class BotMutePanel(QWidget):
@@ -36,8 +36,7 @@ class BotMutePanel(QWidget):
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
         
         self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
-        self.btn_add_bot.setIcon(get_icon_colored("add.svg", COLOR_BLACK, size=16))
-        self.btn_add_bot.setIconSize(QSize(16, 16))
+        self.btn_add_bot.set_icon("add.svg", size=16)
             
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
@@ -69,8 +68,7 @@ class BotMutePanel(QWidget):
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
         
         self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
-        self.btn_add_word.setIcon(get_icon_colored("add.svg", COLOR_BLACK, size=16))
-        self.btn_add_word.setIconSize(QSize(16, 16))
+        self.btn_add_word.set_icon("add.svg", size=16)
             
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)

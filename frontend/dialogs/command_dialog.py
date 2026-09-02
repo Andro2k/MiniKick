@@ -6,8 +6,9 @@ from frontend.widgets import VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, 
 from frontend.common import validate_trigger_prefix
 
 class CommandConfigWizard(ModernWizardPanel):
-    def __init__(self, i18n, parent=None, existing_config=None):
+    def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):
         self.i18n = i18n
+        self.connected_platforms = connected_platforms if isinstance(connected_platforms, dict) else {"kick": True, "twitch": True, "youtube": True, "tiktok": True}
         title_steps = [self.i18n.get("command.dialog.title"), self.i18n.get("command.dialog.tab_advanced")]
         subtitle_steps = [self.i18n.get("command.dialog.subtitle"), self.i18n.get("command.dialog.regex_help")]       
         super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=520, parent=parent)       
@@ -112,16 +113,38 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_platforms.setProperty("role", "h3")
         adv_layout.addWidget(lbl_platforms)
 
+        kick_on = self.connected_platforms.get("kick", False)
+        twitch_on = self.connected_platforms.get("twitch", False)
+        youtube_on = self.connected_platforms.get("youtube", False)
+        tiktok_on = self.connected_platforms.get("tiktok", False)
+        off_tip = self.i18n.get("command.dialog.platform_offline")
+
         platforms_row = QHBoxLayout()
         platforms_row.setSpacing(12)
         self.chk_kick = QCheckBox(self.i18n.get("command.dialog.platform_kick"))
-        self.chk_kick.setChecked(True)
+        self.chk_kick.setEnabled(kick_on)
+        self.chk_kick.setChecked(kick_on)
+        if not kick_on:
+            self.chk_kick.setToolTip(off_tip)
+
         self.chk_twitch = QCheckBox(self.i18n.get("command.dialog.platform_twitch"))
-        self.chk_twitch.setChecked(True)
+        self.chk_twitch.setEnabled(twitch_on)
+        self.chk_twitch.setChecked(twitch_on)
+        if not twitch_on:
+            self.chk_twitch.setToolTip(off_tip)
+
         self.chk_youtube = QCheckBox(self.i18n.get("command.dialog.platform_youtube"))
-        self.chk_youtube.setChecked(True)
+        self.chk_youtube.setEnabled(youtube_on)
+        self.chk_youtube.setChecked(youtube_on)
+        if not youtube_on:
+            self.chk_youtube.setToolTip(off_tip)
+
         self.chk_tiktok = QCheckBox(self.i18n.get("command.dialog.platform_tiktok"))
-        self.chk_tiktok.setChecked(True)
+        self.chk_tiktok.setEnabled(tiktok_on)
+        self.chk_tiktok.setChecked(tiktok_on)
+        if not tiktok_on:
+            self.chk_tiktok.setToolTip(off_tip)
+
         platforms_row.addWidget(self.chk_kick)
         platforms_row.addWidget(self.chk_twitch)
         platforms_row.addWidget(self.chk_youtube)
@@ -184,10 +207,16 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_response.setText(self.existing_config.get("response", ""))
         self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
         self.chk_active.setChecked(self.existing_config.get("is_active", True))
-        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True))
-        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True))
-        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True))
-        self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True))
+        
+        kick_on = self.connected_platforms.get("kick", False)
+        twitch_on = self.connected_platforms.get("twitch", False)
+        youtube_on = self.connected_platforms.get("youtube", False)
+        tiktok_on = self.connected_platforms.get("tiktok", False)
+        
+        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True) if kick_on else False)
+        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True) if twitch_on else False)
+        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True) if youtube_on else False)
+        self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True) if tiktok_on else False)
         
         permission = self.existing_config.get("permission", "everyone")
         index = self.combo_perm.findData(permission)

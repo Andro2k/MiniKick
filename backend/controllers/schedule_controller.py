@@ -15,12 +15,13 @@ class ScheduleController(QObject):
     loading_changed = Signal(bool)
     toast_requested = Signal(str, str)
 
-    def __init__(self, view=None, service: ScheduleService = None, toast_manager=None, i18n=None):
+    def __init__(self, view=None, service: ScheduleService = None, toast_manager=None, i18n=None, connected_platforms_provider=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
         self.i18n = i18n
+        self.connected_platforms_provider = connected_platforms_provider
         self.is_loading = False
 
         self.toast_requested.connect(self._handle_toast_request)
@@ -58,6 +59,8 @@ class ScheduleController(QObject):
         self.schedules_updated.emit(schedules)
 
     def load_initial_data(self) -> None:
+        if self.view and hasattr(self.view, "set_connected_platforms") and callable(self.connected_platforms_provider):
+            self.view.set_connected_platforms(self.connected_platforms_provider())
         self.reload_schedules()
         self.fetch_current_info()
 
@@ -81,7 +84,7 @@ class ScheduleController(QObject):
     def search_categories(self, query: str, platform: str = "both") -> None:
         if not self.service or not query.strip():
             return
-        logger.info("[User Action] Searching stream categories: query='%s', platform='%s'", query, platform)
+        logger.debug("[User Action] Searching stream categories: query='%s', platform='%s'", query, platform)
 
         def _worker():
             try:

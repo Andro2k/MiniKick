@@ -8,7 +8,7 @@ import threading
 import traceback
 from logging.handlers import TimedRotatingFileHandler
 from PySide6.QtCore import qInstallMessageHandler, QtMsgType
-from frontend.common.log_handler import QLogHandler, StreamToLogger
+from backend.handlers import QLogHandler, StreamToLogger
 
 _fault_file_handle = None
 _q_log_handler_instance = None
@@ -18,6 +18,8 @@ class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
         super().emit(record)
         if record.levelno >= logging.WARNING:
             self.flush()
+
+logger = logging.getLogger("minikick.core.app_logger")
 
 def _qt_message_handler(mode: QtMsgType, context, message: str):
     if not message or not message.strip():
@@ -35,10 +37,19 @@ def _qt_message_handler(mode: QtMsgType, context, message: str):
 
     logging.getLogger("minikick.qt").log(lvl, "[Qt] %s", message)
 
+from datetime import datetime
+
 def _threading_excepthook(args):
     tb_text = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
     thread_name = getattr(args.thread, 'name', 'UnknownThread')
-    logging.critical("[Thread Crash] Excepción no controlada en hilo '%s':\n%s", thread_name, tb_text)
+    now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    logger.critical("[Thread Crash] Excepción no controlada en hilo '%s':\n%s", thread_name, tb_text)
+    if _fault_file_handle:
+        try:
+            _fault_file_handle.write(f"\n[{now_str}] [THREAD_CRASH] Unhandled exception in thread '{thread_name}':\n{tb_text}\n")
+            _fault_file_handle.flush()
+        except Exception:
+            pass
     flush_all_logs()
 
 def flush_all_logs():
@@ -111,7 +122,8 @@ def setup_application_logging():
     
     for lib_name in (
         "urllib3", "cloudscraper", "comtypes", "piper", "onnxruntime",
-        "websocket", "httpx", "httpcore", "h2", "hpack", "pytchat", "asyncio"
+        "websocket", "httpx", "httpcore", "h2", "hpack", "pytchat", "asyncio",
+        "tiktoklive", "yt_dlp", "PIL"
     ):
         logging.getLogger(lib_name).setLevel(logging.WARNING)
 
@@ -123,6 +135,13 @@ def setup_application_logging():
     try:
         crash_log_path = os.path.join(log_dir, 'minikick_crash.log')
         _fault_file_handle = open(crash_log_path, 'a', encoding='utf-8', buffering=1)
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        _fault_file_handle.write(
+            f"\n================================================================================\n"
+            f"[{now_str}] [BOOTSTRAP] --- MiniKick Session Started (Faulthandler active) ---\n"
+            f"================================================================================\n"
+        )
+        _fault_file_handle.flush()
         faulthandler.enable(file=_fault_file_handle, all_threads=True)
     except Exception as fh_err:
         logger.warning("[Bootstrap] No se pudo habilitar faulthandler: %s", fh_err)

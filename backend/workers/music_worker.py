@@ -1,9 +1,14 @@
 # backend\workers\music_worker.py
 
 import os
+import re
 import hashlib
 import logging
 from PySide6.QtCore import QThread, Signal
+
+logger = logging.getLogger("minikick.workers.music")
+
+_YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
 def _extract_best_audio_url(info: dict) -> str | None:
     if not info:
@@ -44,13 +49,12 @@ class YouTubeResolveWorker(QThread):
     def run(self):
         try:
             import yt_dlp
-            import re
             
             app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
             cache_dir = os.path.join(app_data_dir, '.Minikick', 'cache')
             os.makedirs(cache_dir, exist_ok=True)
 
-            url_match = re.search(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})', self.query_or_url)
+            url_match = _YT_ID_RE.search(self.query_or_url)
             if url_match:
                 direct_id = url_match.group(1)
                 matching_files = [
@@ -60,7 +64,7 @@ class YouTubeResolveWorker(QThread):
                 for fpath in matching_files:
                     if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
                         cache_title = self.expected_title or f"Track {direct_id}"
-                        logging.info("[YouTubeResolveWorker] Instant disk cache hit for '%s' (ID %s): %s", cache_title, direct_id, fpath)
+                        logger.debug("[YouTubeResolveWorker] Instant disk cache hit for '%s' (ID %s): %s", cache_title, direct_id, fpath)
                         self.resolved.emit(cache_title, fpath)
                         return
 
@@ -99,7 +103,7 @@ class YouTubeResolveWorker(QThread):
                             break
                 except Exception as e:
                     last_err = e
-                    logging.debug("[YouTubeResolveWorker] Strategy %s failed: %s", clients, e)
+                    logger.debug("[YouTubeResolveWorker] Strategy %s failed: %s", clients, e)
                     continue
             
             if not info:
@@ -125,13 +129,13 @@ class YouTubeResolveWorker(QThread):
                 ]
                 for fpath in matching_files:
                     if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
-                        logging.info("[YouTubeResolveWorker] Disk cache hit for '%s' (ID %s): %s", title, raw_id, fpath)
+                        logger.debug("[YouTubeResolveWorker] Disk cache hit for '%s' (ID %s): %s", title, raw_id, fpath)
                         self.resolved.emit(title, fpath)
                         return
 
             best_stream_url = _extract_best_audio_url(info)
 
-            logging.info("[YouTubeResolveWorker] Downloading audio stream for '%s' (ID %s)...", title, raw_id)
+            logger.info("[YouTubeResolveWorker] Downloading audio stream for '%s' (ID %s)...", title, raw_id)
 
             download_opts = dict(ydl_opts)
             download_opts['format'] = 'bestaudio/best'
@@ -204,7 +208,7 @@ class YouTubeSearchWorker(QThread):
                     if res and res.get('entries') and [e for e in res['entries'] if e]:
                         info = res
             except Exception as e:
-                logging.debug("[YouTubeSearchWorker] Search failed: %s", e)
+                logger.debug("[YouTubeSearchWorker] Search failed: %s", e)
 
             if not info and self.search_query.startswith("ytsearch1:"):
                 raw_term = self.search_query[10:]
@@ -217,7 +221,7 @@ class YouTubeSearchWorker(QThread):
                         if res and res.get('entries') and [e for e in res['entries'] if e]:
                             info = res
                 except Exception as e:
-                    logging.debug("[YouTubeSearchWorker] YouTube Music search failed: %s", e)
+                    logger.debug("[YouTubeSearchWorker] YouTube Music search failed: %s", e)
 
             if not info:
                 msg = self.i18n.get("music.queue.not_found").replace("{query}", self.query_raw)
@@ -296,4 +300,3 @@ class YouTubeSearchWorker(QThread):
         except Exception as e:
             msg = self.i18n.get("music.queue.error").replace("{error}", str(e))
             self.finished.emit(False, msg)
-

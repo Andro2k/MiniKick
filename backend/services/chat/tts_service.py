@@ -1,9 +1,12 @@
 # backend\services\chat\tts_service.py
 
+import logging
 import queue
 import threading
 from typing import Dict
 from backend.interfaces import ITTSProvider
+
+logger = logging.getLogger("minikick.services.chat.tts")
 
 class TTSManager:
     def __init__(self):
@@ -62,8 +65,6 @@ class TTSManager:
     def set_provider(self, provider_type: str) -> None:
         if provider_type in ("piper", "local", "web"):
             self._active_provider_key = provider_type
-            if provider_type == "piper":
-                self.warm_up("piper")
 
     def warm_up(self, provider_type: str = None, voice_id: str = None) -> None:
         prov_key = provider_type or self._active_provider_key
@@ -103,12 +104,20 @@ class TTSManager:
             except queue.Empty:
                 break
                 
-        self.text_queue.put(None)
         if self._active_provider_key in self._providers:
             self._providers[self._active_provider_key].stop()
 
+    def shutdown(self) -> None:
+        self.stop()
+        self.text_queue.put(None)
+        for prov in self._providers.values():
+            if hasattr(prov, "shutdown"):
+                try:
+                    prov.shutdown()
+                except Exception:
+                    pass
+
     def _downloader_worker(self) -> None:
-        import logging
         while True:
             item = self.text_queue.get()
             try:
@@ -125,12 +134,18 @@ class TTSManager:
                 
                 self.play_queue.put((text, voice_id, target_voice))
             except Exception as e:
-                logging.error(f"[TTS Manager] Downloader worker error: {e}")
+                logger.error("[TTS Manager] Downloader worker error: %s", e)
             finally:
                 self.text_queue.task_done()
 
     def _worker(self) -> None:
-        import logging
+        import sys
+        if sys.platform == "win32":
+            try:
+                import pythoncom
+                pythoncom.CoInitialize()
+            except Exception:
+                pass
         while True:
             item = self.play_queue.get()
             try:
@@ -148,7 +163,7 @@ class TTSManager:
                 active_provider.speak(text, voice_id=target_voice)
                 
             except Exception as e:
-                logging.error(f"[TTS Manager] Critical engine failure avoided: {e}")
+                logger.error("[TTS Manager] Critical engine failure avoided: %s", e)
             finally:
                 self.play_queue.task_done()
 

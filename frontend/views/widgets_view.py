@@ -126,7 +126,7 @@ class WidgetsView(BaseView):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if hasattr(self, 'columns_layout'):
-            is_compact = self.width() < 900
+            is_compact = self.width() < 920
             if self._is_compact_layout != is_compact:
                 self._is_compact_layout = is_compact
                 if is_compact:

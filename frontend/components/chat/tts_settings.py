@@ -336,6 +336,8 @@ class ChatTtsSettingsPanel(ModernCard):
         pass
 
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):
+        is_loading = (len(voices) == 1 and voices[0][0] == "loading")
+        
         self.combo_voice.blockSignals(True)
         self.combo_voice.clear()
 
@@ -348,6 +350,7 @@ class ChatTtsSettingsPanel(ModernCard):
                 index_to_select = i
         if self.combo_voice.count() > 0:
             self.combo_voice.setCurrentIndex(index_to_select)
+        self.combo_voice.setEnabled(not is_loading)
         self.combo_voice.blockSignals(False)
 
         if role_voices is None and hasattr(self, '_pending_role_voices'):
@@ -377,6 +380,7 @@ class ChatTtsSettingsPanel(ModernCard):
 
             if combo.count() > 0:
                 combo.setCurrentIndex(select_idx)
+            combo.setEnabled(not is_loading)
             combo.blockSignals(False)
 
     def get_role_voices(self) -> dict:

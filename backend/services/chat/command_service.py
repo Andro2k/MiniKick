@@ -6,6 +6,8 @@ import time
 
 from PySide6.QtCore import QObject, Signal
 
+logger = logging.getLogger("minikick.services.chat.commands")
+
 class CommandService(QObject):
     commands_changed = Signal()
     response_generated = Signal(str, str)
@@ -52,12 +54,13 @@ class CommandService(QObject):
                         cmd["_compiled_regex"] = re.compile(pattern, re.IGNORECASE)
                         self._regex_commands.append(cmd)
                     except re.error as e:
-                        logging.error("[CommandService] Error compiling regex pattern '%s' for trigger '%s': %s", pattern, cmd['trigger'], e)
+                        logger.error("[CommandService] Error compiling regex pattern '%s' for trigger '%s': %s", pattern, cmd['trigger'], e)
             else:
                 trigger = cmd["trigger"].strip().lower()
                 self._dispatch_table[trigger] = cmd
                 
                 aliases = cmd.get("aliases", "")
+
                 if aliases:
                     for alias in aliases.split(","):
                         clean_alias = alias.strip().lower()
@@ -212,7 +215,7 @@ class CommandService(QObject):
         try:
             self.storage.log_command_execution(trigger, user, platform=platform)
         except Exception as e:
-            logging.error("[CommandService] Error logging command execution: %s", e)
+            logger.error("[CommandService] Error logging command execution: %s", e)
 
         if final_response.startswith("[PLUGIN_") or final_response.startswith("__PLUGIN:"):
             clean_tag = final_response
@@ -229,20 +232,31 @@ class CommandService(QObject):
 
         if platform == "twitch":
             tw_worker = getattr(self, "twitch_worker", None)
-            if tw_worker and hasattr(tw_worker, "send_bot_message"):
+            if tw_worker and hasattr(tw_worker, "send_bot_message") and (not hasattr(tw_worker, "isRunning") or tw_worker.isRunning()):
                 try:
                     tw_worker.send_bot_message(response_text)
                 except Exception as e:
-                    logging.error("[CommandService] Error sending message to Twitch: %s", e)
+                    logger.error("[CommandService] Error sending message to Twitch: %s", e)
+            else:
+                logger.debug("[CommandService] Twitch worker not active, skipping Twitch chat message dispatch.")
         elif platform == "kick":
-            if self.api_client:
+            if self.api_client and (not hasattr(self.api_client, "is_authenticated") or self.api_client.is_authenticated()):
                 try:
                     self.api_client.post_chat_message(content=response_text, msg_type="bot")
                 except Exception as e:
-                    logging.error("[CommandService] Error sending response to Kick: %s", e)
+                    logger.error("[CommandService] Error sending response to Kick: %s", e)
+            else:
+                logger.debug("[CommandService] Kick not authenticated, skipping Kick chat message dispatch.")
         elif platform in ("youtube", "tiktok"):
-            logging.info("[CommandService] Command response for %s chat (Read-Only mode, message not posted): %s", platform, response_text)
+            logger.info("[CommandService] Command response for %s chat (Read-Only mode, message not posted): %s", platform, response_text)
             return
 
         self.response_generated.emit(response_text, platform)
 
+    def post_chat_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True):
+        if not message:
+            return
+        if apply_kick:
+            self.send_response(message, platform="kick")
+        if apply_twitch:
+            self.send_response(message, platform="twitch")

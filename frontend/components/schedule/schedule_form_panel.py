@@ -184,15 +184,42 @@ class ScheduleFormPanel(QWidget):
         return "all"
 
     def _set_target_platform(self, platform_str: str):
+        kick_allowed = getattr(self, "connected_platforms", {}).get("kick", True)
+        twitch_allowed = getattr(self, "connected_platforms", {}).get("twitch", True)
         if platform_str == "kick":
-            self.switch_kick.setChecked(True)
+            self.switch_kick.setChecked(kick_allowed)
             self.switch_twitch.setChecked(False)
         elif platform_str == "twitch":
             self.switch_kick.setChecked(False)
-            self.switch_twitch.setChecked(True)
+            self.switch_twitch.setChecked(twitch_allowed)
         else:
-            self.switch_kick.setChecked(True)
-            self.switch_twitch.setChecked(True)
+            self.switch_kick.setChecked(kick_allowed)
+            self.switch_twitch.setChecked(twitch_allowed)
+
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        kick_on = self.connected_platforms.get("kick", False)
+        twitch_on = self.connected_platforms.get("twitch", False)
+        off_tip = self.i18n.get("stream_info.quick_change.platform_offline") if self.i18n else ""
+
+        self.switch_kick.setEnabled(kick_on)
+        if not kick_on:
+            self.switch_kick.setChecked(False)
+            self.switch_kick.setToolTip(off_tip)
+        else:
+            self.switch_kick.setToolTip("")
+
+        self.switch_twitch.setEnabled(twitch_on)
+        if not twitch_on:
+            self.switch_twitch.setChecked(False)
+            self.switch_twitch.setToolTip(off_tip)
+        else:
+            self.switch_twitch.setToolTip("")
+
+        if hasattr(self, "search_kick_cat"):
+            self.search_kick_cat.setEnabled(kick_on)
+        if hasattr(self, "search_twitch_cat"):
+            self.search_twitch_cat.setEnabled(twitch_on)
 
     def _trigger_category_search(self, platform: str, query: str):
         if query.strip():

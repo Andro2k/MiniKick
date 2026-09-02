@@ -222,7 +222,7 @@ class ExpandableSettingCard(QFrame):
         h_layout.addWidget(self.switch)
         
         self.btn_expand = QPushButton()
-        self.btn_expand.setIcon(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 20))
+        self.btn_expand.setIcon(self._icon_down)
         self.btn_expand.setIconSize(QSize(20, 20))
         self.btn_expand.setFixedSize(30, 30)
         self.btn_expand.setProperty("role", "btn_ghost")
@@ -374,13 +374,37 @@ class ExpandableSettingCard(QFrame):
         }
         self.updated.emit(self.card_id, config)
 
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        kick_on = self.connected_platforms.get("kick", False)
+        twitch_on = self.connected_platforms.get("twitch", False)
+        off_tip = self.i18n.get("spam.card.platform_offline") if self.i18n else ""
+
+        if hasattr(self, "switch_kick"):
+            self.switch_kick.setEnabled(kick_on)
+            if not kick_on:
+                self.switch_kick.setChecked(False)
+                self.switch_kick.setToolTip(off_tip)
+            else:
+                self.switch_kick.setToolTip("")
+
+        if hasattr(self, "switch_twitch"):
+            self.switch_twitch.setEnabled(twitch_on)
+            if not twitch_on:
+                self.switch_twitch.setChecked(False)
+                self.switch_twitch.setToolTip(off_tip)
+            else:
+                self.switch_twitch.setToolTip("")
+
     def set_data(self, config: dict):
         self._is_loading = True
         self.switch.setChecked(config.get("is_active", False))
+        kick_on = getattr(self, "connected_platforms", {}).get("kick", True)
+        twitch_on = getattr(self, "connected_platforms", {}).get("twitch", True)
         if hasattr(self, 'switch_kick'):
-            self.switch_kick.setChecked(config.get("apply_kick", True))
+            self.switch_kick.setChecked(config.get("apply_kick", True) if kick_on else False)
         if hasattr(self, 'switch_twitch'):
-            self.switch_twitch.setChecked(config.get("apply_twitch", True))
+            self.switch_twitch.setChecked(config.get("apply_twitch", True) if twitch_on else False)
         index_pen = self.combo_penalty.findData(config.get("penalty", "timeout"))
         if index_pen >= 0: self.combo_penalty.setCurrentIndex(index_pen)
         self.spin_dur.setValue(config.get("duration", 300))

@@ -171,13 +171,22 @@ class ImageDropzone(QFrame):
                 self.set_image(file_path)
 
 class BugReportDialog(ModernModal):
-    def __init__(self, i18n, worker_class=None, parent=None):
+    def __init__(self, i18n, worker_class=None, initial_contact: str = "", parent=None):
         title = i18n.get("settings.feedback.title")
         icon_path = get_assets_path("icons/bug.svg")
         super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=720, parent=parent)
         self.i18n = i18n
         self.worker_class = worker_class
         self.worker = None
+
+        if not initial_contact:
+            try:
+                from backend.database.manager import DatabaseManager
+                initial_contact = DatabaseManager().get_primary_identity()
+            except Exception:
+                initial_contact = ""
+        self.initial_contact = initial_contact
+
         self.selected_severity = "Low"
         self.severity_cards = {}
         self._setup_form()
@@ -215,6 +224,8 @@ class BugReportDialog(ModernModal):
         self.txt_username = QLineEdit()
         self.txt_username.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_contact"))
         self.txt_username.setFixedHeight(34)
+        if self.initial_contact:
+            self.txt_username.setText(self.initial_contact)
 
         lbl_desc = QLabel(self.i18n.get("dialogs.bug_report.lbl_description"))
         lbl_desc.setProperty("role", "body")

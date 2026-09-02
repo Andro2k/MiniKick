@@ -6,13 +6,15 @@ from PySide6.QtCore import QObject, Slot
 logger = logging.getLogger("minikick.controllers.spam")
 
 class SpamController(QObject):
-    def __init__(self, view, service, toast_manager=None):
+    def __init__(self, view, service, toast_manager=None, connected_platforms_provider=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
+        self.connected_platforms_provider = connected_platforms_provider
         if self.view is not None:
             self._connect_signals()
+            self.load_initial_data()
 
     def attach_view(self, view) -> None:
         self.view = view
@@ -26,6 +28,8 @@ class SpamController(QObject):
     def load_initial_data(self):
         self.service.reload_filters()
         if self.view is not None:
+            if callable(self.connected_platforms_provider) and hasattr(self.view, "set_connected_platforms"):
+                self.view.set_connected_platforms(self.connected_platforms_provider())
             filters = self.service.filters
             self.view.populate_filters(filters)
 

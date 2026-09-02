@@ -53,6 +53,8 @@ class SpamView(BaseView):
 
     def _add_card(self, f_id, title, desc, icon, has_amount=True, column=1):
         card = ExpandableSettingCard(f_id, title, desc, icon, has_amount, self.i18n)
+        if hasattr(self, "connected_platforms") and self.connected_platforms:
+            card.set_connected_platforms(self.connected_platforms)
         card.updated.connect(self.filter_updated.emit)
         self.cards[f_id] = card
         
@@ -61,15 +63,24 @@ class SpamView(BaseView):
         else:
             self.col2_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        for card in self.cards.values():
+            card.set_connected_platforms(self.connected_platforms)
+
     def populate_filters(self, filters_data: dict):
-        for f_id, card in self.cards.items():
-            if f_id in filters_data:
-                card.set_data(filters_data[f_id])
+        self.setUpdatesEnabled(False)
+        try:
+            for f_id, card in self.cards.items():
+                if f_id in filters_data:
+                    card.set_data(filters_data[f_id])
+        finally:
+            self.setUpdatesEnabled(True)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
-        direction = QBoxLayout.Direction.TopToBottom if width < 950 else QBoxLayout.Direction.LeftToRight
+        direction = QBoxLayout.Direction.TopToBottom if width < 920 else QBoxLayout.Direction.LeftToRight
         if direction != self._last_direction:
             self._last_direction = direction
             if hasattr(self, 'columns_layout'):

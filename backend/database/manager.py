@@ -1,6 +1,7 @@
 # backend\database\manager.py
 
 import os
+import json
 import sqlite3
 import logging
 from datetime import datetime
@@ -115,7 +116,8 @@ class DatabaseManager:
                     cost INTEGER DEFAULT 100,
                     description TEXT DEFAULT '',
                     background_color TEXT DEFAULT '#00e701',
-                    is_user_input_required INTEGER DEFAULT 0
+                    is_user_input_required INTEGER DEFAULT 0,
+                    platform TEXT DEFAULT 'kick'
                 )
             """)
             cursor.execute("""
@@ -274,6 +276,22 @@ class DatabaseManager:
                     FOREIGN KEY(reward_name) REFERENCES obs_rewards(reward_name) ON DELETE CASCADE
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS channel_profiles (
+                    platform TEXT PRIMARY KEY,
+                    username TEXT,
+                    bio TEXT,
+                    avatar_url TEXT,
+                    followers INTEGER DEFAULT 0,
+                    room_id TEXT,
+                    category TEXT,
+                    affiliate_status TEXT,
+                    vods_enabled INTEGER DEFAULT 0,
+                    created_at TEXT,
+                    raw_json TEXT,
+                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
             conn.commit()
 
     def _create_indexes_and_views(self) -> None:
@@ -410,7 +428,8 @@ class DatabaseManager:
                 ("cost", "INTEGER DEFAULT 100"),
                 ("description", "TEXT DEFAULT ''"),
                 ("background_color", "TEXT DEFAULT '#00e701'"),
-                ("is_user_input_required", "INTEGER DEFAULT 0")
+                ("is_user_input_required", "INTEGER DEFAULT 0"),
+                ("platform", "TEXT DEFAULT 'kick'")
             ],
             "stream_schedules": [
                 ("date_str", "TEXT DEFAULT ''"),
@@ -573,6 +592,189 @@ class DatabaseManager:
         except Exception as e:
             logger.error("[DatabaseManager] Error loading pending songs: %s", e)
         return []
+
+    def get_dashboard_analytics_summary(self) -> dict:
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                
+                cursor.execute("""
+                    SELECT command_trigger, COUNT(id) as cnt
+                    FROM command_execution_logs
+                    GROUP BY command_trigger
+                    ORDER BY cnt DESC
+                    LIMIT 5
+                """)
+                top_commands = [{"trigger": r[0], "count": r[1]} for r in cursor.fetchall()]
+                
+                cursor.execute("""
+                    SELECT platform, COUNT(id) as cnt
+                    FROM command_execution_logs
+                    GROUP BY platform
+                """)
+                platform_cmds = {r[0]: r[1] for r in cursor.fetchall()}
+                
+                cursor.execute("""
+                    SELECT platform, COUNT(id) as cnt
+                    FROM reward_redemptions
+                    GROUP BY platform
+                """)
+                platform_redemptions = {r[0]: r[1] for r in cursor.fetchall()}
+                total_redemptions = sum(platform_redemptions.values())
+                
+                cursor.execute("""
+                    SELECT platform, COUNT(id) as cnt
+                    FROM spam_violations
+                    GROUP BY platform
+                """)
+                platform_spam = {r[0]: r[1] for r in cursor.fetchall()}
+                total_spam = sum(platform_spam.values())
+                
+                cursor.execute("SELECT COUNT(*) FROM chat_commands WHERE is_active = 1")
+                active_commands = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(*) FROM chat_timers WHERE is_active = 1")
+                active_timers = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(*) FROM obs_rewards")
+                total_rewards = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(*) FROM command_execution_logs")
+                total_command_usages = cursor.fetchone()[0]
+
+                return {
+                    "top_commands": top_commands,
+                    "platform_cmds": platform_cmds,
+                    "platform_redemptions": platform_redemptions,
+                    "total_redemptions": total_redemptions,
+                    "platform_spam": platform_spam,
+                    "total_spam": total_spam,
+                    "active_commands": active_commands,
+                    "active_timers": active_timers,
+                    "total_rewards": total_rewards,
+                    "total_command_usages": total_command_usages,
+                }
+        except Exception as e:
+            logger.error("[DatabaseManager] Error fetching dashboard analytics: %s", e)
+            return {
+                "top_commands": [],
+                "platform_cmds": {},
+                "platform_redemptions": {},
+                "total_redemptions": 0,
+                "platform_spam": {},
+                "total_spam": 0,
+                "active_commands": 0,
+                "active_timers": 0,
+                "total_rewards": 0,
+                "total_command_usages": 0,
+            }
+
+    def save_channel_profile(self, platform: str, profile_data: dict) -> None:
+        if not platform or not profile_data:
+            return
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO channel_profiles (
+                        platform, username, bio, avatar_url, followers,
+                        room_id, category, affiliate_status, vods_enabled,
+                        created_at, raw_json, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    ON CONFLICT(platform) DO UPDATE SET
+                        username=excluded.username,
+                        bio=excluded.bio,
+                        avatar_url=excluded.avatar_url,
+                        followers=excluded.followers,
+                        room_id=excluded.room_id,
+                        category=excluded.category,
+                        affiliate_status=excluded.affiliate_status,
+                        vods_enabled=excluded.vods_enabled,
+                        created_at=excluded.created_at,
+                        raw_json=excluded.raw_json,
+                        updated_at=CURRENT_TIMESTAMP
+                """, (
+                    platform.lower().strip(),
+                    profile_data.get("username", ""),
+                    profile_data.get("bio", ""),
+                    profile_data.get("avatar_url", ""),
+                    int(profile_data.get("followers", 0) or 0),
+                    str(profile_data.get("room_id") or profile_data.get("broadcaster_id") or ""),
+                    profile_data.get("category") or profile_data.get("last_category") or "",
+                    str(profile_data.get("broadcaster_type") or ("affiliate" if profile_data.get("is_affiliate") else "")),
+                    1 if profile_data.get("vod_enabled") else 0,
+                    profile_data.get("created_at", "-"),
+                    json.dumps(profile_data)
+                ))
+                conn.commit()
+        except Exception as e:
+            logger.error("[DatabaseManager] Error saving channel profile for %s: %s", platform, e)
+
+    def load_channel_profile(self, platform: str) -> dict | None:
+        if not platform:
+            return None
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT raw_json FROM channel_profiles WHERE platform = ?", (platform.lower().strip(),))
+                row = cursor.fetchone()
+                if row and row[0]:
+                    return json.loads(row[0])
+        except Exception as e:
+            logger.error("[DatabaseManager] Error loading channel profile for %s: %s", platform, e)
+        return None
+
+    def load_all_channel_profiles(self) -> dict[str, dict]:
+        results = {}
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT platform, raw_json FROM channel_profiles")
+                for plat, raw in cursor.fetchall():
+                    if raw:
+                        try:
+                            results[plat] = json.loads(raw)
+                        except Exception:
+                            pass
+        except Exception as e:
+            logger.error("[DatabaseManager] Error loading all channel profiles: %s", e)
+        return results
+
+    def delete_channel_profile(self, platform: str) -> None:
+        if not platform:
+            return
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM channel_profiles WHERE platform = ?", (platform.lower().strip(),))
+                conn.commit()
+        except Exception as e:
+            logger.error("[DatabaseManager] Error deleting channel profile for %s: %s", platform, e)
+
+    def get_primary_identity(self) -> str:
+        try:
+            profiles = self.load_all_channel_profiles()
+            for plat in ("kick", "twitch", "tiktok", "youtube"):
+                if plat in profiles and profiles[plat]:
+                    uname = profiles[plat].get("username") or profiles[plat].get("login") or ""
+                    if uname and uname.strip():
+                        return uname.strip().lstrip("@")
+
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT key, value FROM settings WHERE key IN ('tiktok_target_channel', 'youtube_target_channel')")
+                settings_map = {k: v for k, v in cursor.fetchall()}
+
+                tt_target = settings_map.get("tiktok_target_channel", "")
+                if tt_target and tt_target.strip():
+                    return tt_target.strip().lstrip("@")
+
+                yt_target = settings_map.get("youtube_target_channel", "")
+                if yt_target and yt_target.strip():
+                    return yt_target.strip()
+        except Exception as e:
+            logger.error("[DatabaseManager] Error obteniendo identidad primaria: %s", e)
+        return ""
 
     def cleanup(self) -> None:
         try:

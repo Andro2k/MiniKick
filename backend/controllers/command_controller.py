@@ -6,11 +6,12 @@ from PySide6.QtCore import QObject, Slot
 logger = logging.getLogger("minikick.controllers.commands")
 
 class CommandController(QObject):
-    def __init__(self, view, service, toast_manager=None):
+    def __init__(self, view, service, toast_manager=None, connected_platforms_provider=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
+        self.connected_platforms_provider = connected_platforms_provider
         self._needs_reload = False
         if self.view is not None:
             self._connect_signals()
@@ -42,6 +43,8 @@ class CommandController(QObject):
 
     def load_initial_data(self, force: bool = False):
         if self.view is not None:
+            if callable(self.connected_platforms_provider) and hasattr(self.view, "set_connected_platforms"):
+                self.view.connected_platforms = self.connected_platforms_provider()
             if force or self.view.isVisible():
                 self._needs_reload = False
                 commands = self.service.get_all_commands()
@@ -52,7 +55,8 @@ class CommandController(QObject):
     @Slot()
     def _handle_add(self):
         logger.info("[User Action] Opened Add Command dialog")
-        data = self.view.show_add_dialog()
+        connected_plats = self.connected_platforms_provider() if callable(self.connected_platforms_provider) else None
+        data = self.view.show_add_dialog(connected_platforms=connected_plats)
         if data:
             data.pop("original_trigger", None)
             if data.get("trigger") and data.get("response"):
@@ -67,8 +71,8 @@ class CommandController(QObject):
         if not existing:
             return
         logger.info("[User Action] Opened Edit Command dialog: trigger='%s'", trigger)
-        
-        data = self.view.show_edit_dialog(existing)
+        connected_plats = self.connected_platforms_provider() if callable(self.connected_platforms_provider) else None
+        data = self.view.show_edit_dialog(existing, connected_platforms=connected_plats)
         if data:
             original_trigger = data.pop("original_trigger", None)
             if data.get("response") and data.get("trigger"):

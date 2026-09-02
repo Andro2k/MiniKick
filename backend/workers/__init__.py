@@ -1,32 +1,34 @@
 # backend\workers\__init__.py
 
-from .auth_worker import AuthWorker
+from .kick_auth_worker import KickAuthWorker
 from .twitch_auth_worker import TwitchAuthWorker
 from .bug_report_worker import BugReportWorker
 from .crash_report_worker import CrashReportWorker
-from .chat_worker import ChatWorker
+from .kick_chat_worker import KickChatWorker
 from .twitch_chat_worker import TwitchChatWorker
 from .youtube_chat_worker import YouTubeChatWorker
 from .tiktok_chat_worker import TikTokChatWorker
 from .music_worker import YouTubeResolveWorker, YouTubeSearchWorker
-from .rewards_worker import RewardWorker, FetchRewardsWorker, CreateRewardWorker, UpdateRewardWorker
+from .rewards_worker import RewardWorker, TwitchRewardWorker, FetchRewardsWorker, CreateRewardWorker, UpdateRewardWorker
 from .timers_worker import TimerWorker
 from .update_worker import UpdateCheckWorker, UpdateDownloadWorker, ReleaseNotesWorker
 from .voice_worker import VoiceFetcherWorker
 from .schedule_worker import ScheduleWorker
+from .global_media_worker import GlobalMediaWorker
 
 __all__ = [
-    "AuthWorker",
+    "KickAuthWorker",
     "TwitchAuthWorker",
     "BugReportWorker",
     "CrashReportWorker",
-    "ChatWorker",
+    "KickChatWorker",
     "TwitchChatWorker",
     "YouTubeChatWorker",
     "TikTokChatWorker",
     "YouTubeResolveWorker",
     "YouTubeSearchWorker",
     "RewardWorker",
+    "TwitchRewardWorker",
     "FetchRewardsWorker",
     "CreateRewardWorker",
     "UpdateRewardWorker",
@@ -35,5 +37,6 @@ __all__ = [
     "UpdateDownloadWorker",
     "ReleaseNotesWorker",
     "VoiceFetcherWorker",
-    "ScheduleWorker"
+    "ScheduleWorker",
+    "GlobalMediaWorker"
 ]

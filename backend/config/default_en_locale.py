@@ -37,6 +37,7 @@ DEFAULT_DICTIONARY = {
             "orientation_horizontal": "Horizontal (Ticker)",
             "orientation_title": "Chat Orientation",
             "orientation_vertical": "Vertical (Column)",
+            "recommended_dim": "Recommended OBS source size: {dim}",
             "show_bots_desc": "Display messages from muted bots on the stream screen.",
             "show_bots_title": "Show Bots",
             "show_time_desc": "Show the message timestamp next to the username.",
@@ -49,8 +50,7 @@ DEFAULT_DICTIONARY = {
             "theme_glass": "Glassmorphism",
             "theme_minimal": "Minimalist (Floating Glow)",
             "theme_neon": "Neon Glow (Neon)",
-            "theme_title": "Overlay Design",
-            "recommended_dim": "Recommended OBS source size: {dim}"
+            "theme_title": "Overlay Design"
         },
         "roles": {
             "broadcaster_title": "Streamer Voice",
@@ -136,6 +136,7 @@ DEFAULT_DICTIONARY = {
             "permission_label": "Minimum Permission:",
             "platform_kick": "Kick",
             "platform_label": "Platforms:",
+            "platform_offline": "Platform not linked",
             "platform_tiktok": "TikTok",
             "platform_twitch": "Twitch",
             "platform_youtube": "YouTube",
@@ -212,16 +213,14 @@ DEFAULT_DICTIONARY = {
         },
         "status": {
             "error": "Error",
-            "no": "No",
             "offline": "Offline",
             "online": "Online",
-            "yes": "Yes"
+            "warning": "Warning"
         }
     },
     "crash": {
         "action_label": "**What was the user doing?:**",
         "anonymous": "Anonymous",
-        "btn_close": "Close without Sending",
         "btn_copy_traceback": "Copy Details",
         "btn_send": "Send Report & Close",
         "btn_sending": "Sending...",
@@ -243,57 +242,98 @@ DEFAULT_DICTIONARY = {
         "version_label": "**MiniKick Version:**"
     },
     "dashboard": {
+        "analytics": {
+            "active_commands": "Active Commands",
+            "active_rewards": "Linked Rewards",
+            "active_timers": "Running Timers",
+            "distribution_title": "Multi-Platform Distribution",
+            "modules_summary_title": "Active Modules & Services",
+            "no_commands_used": "No commands have been executed yet.",
+            "title": "Activity & Interactions",
+            "top_commands_title": "Top 5 Most Used Commands",
+            "usages": "uses"
+        },
         "banner": {
-            "btn_update": "Update Permissions",
+            "btn_update_kick": "Renew Kick Permissions",
+            "btn_update_twitch": "Renew Twitch Permissions",
+            "desc_kick": "Your account needs to renew the following permissions to unlock all features:",
+            "desc_twitch": "Your account needs to renew the following permissions to unlock all features:",
             "scope": {
-                "moderation_ban": "Ban users on Kick",
-                "moderation_chat": "Manage chat messages on Kick",
-                "twitch_moderation_ban": "Ban/Timeout users on Twitch",
-                "twitch_moderation_chat": "Delete chat messages on Twitch"
+                "kick_channel_read": "Read channel details on Kick",
+                "kick_channel_rewards_read": "Read channel rewards on Kick",
+                "kick_channel_rewards_write": "Create and edit rewards on Kick",
+                "kick_channel_write": "Edit channel title and category on Kick",
+                "kick_chat_write": "Send messages to Kick chat",
+                "kick_moderation_ban": "Ban violating users on Kick",
+                "kick_moderation_chat": "Delete chat messages on Kick",
+                "kick_user_read": "Read user profile on Kick",
+                "twitch_channel_manage_broadcast": "Update stream title and category on Twitch",
+                "twitch_channel_manage_redemptions": "Create and manage rewards on Twitch",
+                "twitch_channel_moderate": "Channel moderation actions on Twitch",
+                "twitch_channel_read_redemptions": "Read channel point redemptions on Twitch",
+                "twitch_chat_edit": "Send messages to Twitch chat",
+                "twitch_chat_read": "Read Twitch chat messages",
+                "twitch_moderation_ban": "Ban/Timeout violating users on Twitch",
+                "twitch_moderation_chat": "Delete chat messages on Twitch",
+                "twitch_moderator_read_followers": "Read channel followers on Twitch",
+                "twitch_user_read_chat": "Read Twitch chat",
+                "twitch_user_write_chat": "Write to Twitch chat"
             },
-            "text_prefix": "<b>Action required:</b> Your account is missing required permissions:"
+            "title_kick": "Pending permissions on Kick",
+            "title_twitch": "Pending permissions on Twitch"
         },
         "connection": {
             "autostart_desc": "Automatically connect MiniKick upon launching the application.",
             "autostart_title": "Auto Connect",
-            "btn_active": "System Active",
+            "btn_active_kick": "Kick Active",
             "btn_active_tiktok": "TikTok Active",
             "btn_active_twitch": "Twitch Active",
             "btn_active_youtube": "YouTube Active",
-            "btn_connect": "Connect to Kick",
+            "btn_connect_kick": "Connect to Kick",
             "btn_connect_tiktok": "Connect TikTok",
             "btn_connect_twitch": "Connect Twitch",
             "btn_connect_youtube": "Connect YouTube",
+            "btn_connecting_kick": "Connecting Kick...",
             "btn_connecting_tiktok": "Connecting TikTok...",
             "btn_connecting_twitch": "Connecting Twitch...",
             "btn_connecting_youtube": "Connecting YouTube...",
-            "btn_retry": "Retry",
-            "status_auth": "Status: Authenticating...",
-            "status_connected": "Status: Connected & Listening",
             "status_waiting": "Status: Waiting for connection..."
-        },
-        "empty": {
-            "desc": "Connect your Kick account to sync the bot, monitor your live stream, and manage your chat effortlessly.",
-            "title": "Let's get started!"
         },
         "header": {
             "subtitle": "Monitor bot connectivity, review live stats, and manage your streaming session.",
             "title": "Control Panel"
         },
+        "platforms": {
+            "channel_prefix": "Channel:",
+            "connecting": "Connecting...",
+            "disconnected": "Disconnected",
+            "kick_title": "Kick",
+            "messages_session": "{count} msgs",
+            "tiktok_title": "TikTok",
+            "twitch_title": "Twitch",
+            "youtube_title": "YouTube"
+        },
+        "profile": {
+            "followers_count": "{count} followers",
+            "no_channel_desc": "Connect your Kick or Twitch account in the top panel to view your channel details.",
+            "no_channel_title": "No streaming channels linked",
+            "open_channel": "Open Channel",
+            "streaming_channel": "Streaming Channel",
+            "tab_kick": "Kick Channel",
+            "tab_twitch": "Twitch Channel"
+        },
         "session": {
             "commands": "Executed Commands",
             "messages": "Session Messages",
             "spam": "Filtered Spam",
-            "timers": "Active Timers",
-            "title": "Session Statistics"
+            "timers": "Active Timers"
         },
         "stats": {
-            "affiliate": "Affiliate Status",
+            "broadcaster_id": "Broadcaster ID",
             "category": "Last Category",
             "created_at": "Creation Date",
-            "followers": "Followers",
-            "room_id": "ChatRoom ID",
-            "vods": "VODs"
+            "next_schedule": "Next Schedule",
+            "room_id": "ChatRoom ID"
         }
     },
     "dialogs": {
@@ -455,8 +495,7 @@ DEFAULT_DICTIONARY = {
     },
     "logs": {
         "app_container": {
-            "api_keys_not_found": "backend/config/api_keys.py file not found. Using empty credentials.",
-            "install_lang_error": "[AppContainer] Error processing .install_lang: {error}"
+            "api_keys_not_found": "backend/config/api_keys.py file not found. Using empty credentials."
         },
         "bootstrap": {
             "crash_dialog_failed": "[Bootstrap] Failed to display crash dialog: {error}"
@@ -488,10 +527,7 @@ DEFAULT_DICTIONARY = {
         "controllers": {
             "dashboard": {
                 "affiliate": "Affiliate",
-                "no_bio": "No bio",
-                "none": "None",
-                "not_affiliate": "Not Affiliate",
-                "unknown_user": "Unknown"
+                "not_affiliate": "Not Affiliate"
             },
             "log": {
                 "error_title": "Log Recording Error",
@@ -502,8 +538,8 @@ DEFAULT_DICTIONARY = {
         "logs": {
             "api_error": "Kick Rewards API failure: {error}",
             "api_error_setup": "Error preparing rewards query: {error}",
-            "api_fetching": "Rewards are already being fetched. Please wait.",
             "api_offline": "Attempted to update rewards while offline from Kick.",
+            "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
             "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
             "shutdown_complete": "Thread shutdown sequence complete.",
             "shutdown_init": "Initiating shutdown sequence...",
@@ -545,6 +581,8 @@ DEFAULT_DICTIONARY = {
         "toast": {
             "kick_connected_msg": "Successfully connected to Kick chat: @{username}",
             "kick_connected_title": "Kick Connected",
+            "kick_disconnected_msg": "Kick session unlinked.",
+            "kick_disconnected_title": "Kick Disconnected",
             "tiktok_connected_msg": "Connected to TikTok live chat: @{target}",
             "tiktok_connected_title": "TikTok Connected",
             "tiktok_disconnected_msg": "TikTok Live connection has been stopped.",
@@ -739,6 +777,8 @@ DEFAULT_DICTIONARY = {
             "max_song_duration_title": "Max Duration Per Song (min)",
             "max_user_songs_desc": "Maximum number of pending songs a single viewer can have queued at once.",
             "max_user_songs_title": "User Song Limit",
+            "media_keys_desc": "Control playback (Play/Pause, Skip) using keyboard media buttons globally.",
+            "media_keys_title": "Global Media Keys",
             "user_cooldown_desc": "Required cooldown time between requests from the same viewer.",
             "user_cooldown_title": "Request Cooldown (sec)"
         }
@@ -780,11 +820,13 @@ DEFAULT_DICTIONARY = {
                 "step1": {
                     "color_pick_tooltip": "Select background color",
                     "desc": "Select the channel points reward that will trigger this visual or sound effect.",
+                    "edit_offline_warning": "This platform is not connected. Changes will only apply to the local alert.",
                     "edit_title_label": "Reward Name",
                     "file_label": "Media File",
+                    "file_missing_warning": "The selected file does not exist on disk. Please choose a valid file.",
                     "file_placeholder": "Ex. my_reward.mp4 or sound.mp3",
                     "loading": "Loading rewards...",
-                    "mode_create": "Create New Reward on Kick",
+                    "mode_create": "Create New Reward",
                     "mode_existing": "Use Existing Reward",
                     "mode_select": "Reward Origin",
                     "new_color_label": "Background Color (Hex)",
@@ -795,10 +837,16 @@ DEFAULT_DICTIONARY = {
                     "new_title_placeholder": "Ex. Explosive Alert (Max 50 char.)",
                     "new_user_input_label": "Requires viewer text input",
                     "no_available": "No rewards available",
+                    "no_platforms_connected": "You must connect your Kick or Twitch account in the Dashboard to create or link channel points.",
                     "no_rewards": "No rewards",
+                    "platform_kick": "Kick",
+                    "platform_kick_offline": "Kick is not connected. Link it in the Dashboard.",
+                    "platform_label": "Reward Platform",
+                    "platform_twitch": "Twitch",
+                    "platform_twitch_offline": "Twitch is not connected. Link it in the Dashboard.",
                     "reward_selection": "Reward Selection",
                     "title": "Reward & File",
-                    "tooltip_refresh": "Refresh Kick Rewards"
+                    "tooltip_refresh": "Refresh Rewards"
                 },
                 "step2": {
                     "btn_visual": "Position in OBS",
@@ -814,11 +862,11 @@ DEFAULT_DICTIONARY = {
         },
         "empty": {
             "btn": "Link Reward",
-            "desc": "Link your Kick channel points to interactive videos, animations, or sound effects on screen.",
+            "desc": "Link your Kick and Twitch channel points with interactive videos, animations or sounds on screen.",
             "title": "No linked rewards yet"
         },
         "header": {
-            "subtitle": "Connect your Kick rewards with custom stream alerts and media.",
+            "subtitle": "Connect your Kick and Twitch rewards with custom stream alerts and media.",
             "title": "Linked Rewards"
         },
         "obs": {
@@ -828,30 +876,51 @@ DEFAULT_DICTIONARY = {
         },
         "status": {
             "created": "Reward Created",
-            "created_api_error": "Error creating reward on Kick: {error}",
-            "created_api_success": "Reward '{reward}' created successfully on Kick.",
+            "created_api_error": "Error creating reward on {platform}: {error}",
+            "created_api_success": "Reward '{reward}' created successfully on {platform}.",
             "created_msg": "Linked to reward: {reward}",
-            "creating_api": "Creating Reward on Kick...",
+            "creating_api": "Creating Reward on {platform}...",
             "deleted": "Reward Deleted",
             "deleted_msg": "Reward unlinked: {reward}",
+            "file_not_found_action": "Media file not found on disk. Please edit the reward to select a valid file.",
+            "redeem_file_missing": "The media file for reward '{reward}' does not exist or was moved.",
+            "reward_not_found_on_platform": "The reward '{reward}' no longer exists on {platform}. Local media settings were saved.",
             "updated": "Reward Updated",
-            "updated_api_error": "Error updating on Kick: {error}",
-            "updated_api_success": "Reward '{reward}' updated successfully on Kick.",
+            "updated_api_success": "Reward '{reward}' updated successfully on {platform}.",
+            "updated_local_only_twitch_unmanageable": "Local settings saved. (Note: Rewards created on Twitch dashboard must have their title/cost edited on Twitch).",
+            "updated_local_saved_api_failed": "Local settings saved in MiniKick. (Remote API update failed: {error})",
             "updated_msg": "Saved settings for: {reward}",
-            "updating_api": "Updating Reward on Kick..."
+            "updating_api": "Updating Reward on {platform}..."
         },
         "table": {
             "btn_new": "New Rewards",
             "col_actions": "Actions",
+            "col_cost": "Cost",
             "col_file": "File",
+            "col_platform": "Platform",
             "col_pos": "Position",
-            "col_reward": "Kick Reward",
+            "col_reward": "Reward",
             "col_volume": "Volume",
+            "file_not_found_tag": "Not found",
+            "file_not_found_tooltip": "Media file does not exist on disk or was moved",
+            "status_unlinked_tag": "Unlinked",
+            "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
+            "status_offline_tag": "Offline",
+            "status_offline_tooltip": "{platform} is not connected",
+            "filter_all": "All",
+            "filter_cost_asc": "Lowest to highest cost",
+            "filter_cost_desc": "Highest to lowest cost",
+            "filter_sort_asc": "Sort A-Z",
+            "filter_sort_desc": "Sort Z-A",
+            "missing_files_warning": "file(s) not found",
             "pos_random": "Random",
+            "pts_suffix": "{cost} pts",
+            "search_placeholder": "Search by name, file...",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Reward",
             "tooltip_edit": "Modify settings",
             "tooltip_play": "Test in OBS",
+            "tooltip_play_missing": "Cannot play: media file not found",
             "unknown_file": "Unknown"
         }
     },
@@ -914,9 +983,7 @@ DEFAULT_DICTIONARY = {
             "tray_disabled": "Background Inactive",
             "tray_disabled_msg": "Application will close completely.",
             "tray_enabled": "Background Active",
-            "tray_enabled_msg": "MiniKick will minimize to tray on close.",
-            "unlinked": "Account Unlinked",
-            "unlinked_msg": "Your local Kick session has been closed."
+            "tray_enabled_msg": "MiniKick will minimize to tray on close."
         },
         "system": {
             "font_desc": "Adjust application text size according to your visual preference.",
@@ -954,6 +1021,7 @@ DEFAULT_DICTIONARY = {
             "max_characters": "Character limit per message",
             "max_symbols": "Symbol / weird character limit",
             "platform_kick": "Kick",
+            "platform_offline": "Platform not linked",
             "platform_twitch": "Twitch",
             "platforms": "Applicable Platforms"
         },
@@ -1019,6 +1087,7 @@ DEFAULT_DICTIONARY = {
             "btn_update": "Update Stream",
             "category": "Category / Game:",
             "category_placeholder": "Search category or game...",
+            "platform_offline": "Platform not linked",
             "stream_title": "Stream Title:",
             "target_platform": "Target Platform(s):",
             "title": "Quick Stream Info Update",
@@ -1099,6 +1168,7 @@ DEFAULT_DICTIONARY = {
             "offline_interval": "Offline Interval",
             "online_interval": "Online Interval",
             "platform_label": "Active platform(s):",
+            "platform_offline": "Platform not linked",
             "response_placeholder": "Enter response message here...",
             "responses_desc": "One message will be selected randomly each time the timer runs.",
             "responses_title": "Response Messages",
