@@ -1,6 +1,6 @@
 # Release Notes - MiniKick Version 1.5.7
 
-**01 de Septiembre, 2026**
+**02 de Septiembre, 2026**
 
 ## Control Multimedia Global por Teclado, Rendimiento Extremo de Notificaciones, Arquitectura de Logging y Blindaje de Concurrencia
 
@@ -18,7 +18,7 @@
 
 ### Mejoras (8)
 
-- **[IMPROVEMENT] [PLATFORMS] Control Reactivo de Conexión en Rewards, Comandos, Timers, Filtros Anti-Spam e Información del Stream:** Los asistentes y vistas de creación/edición (`RewardsConfigWizard`, `CommandConfigWizard`, `CommandView`, `TimerConfigWizard`, `SpamView`, `ExpandableSettingCard`, `ScheduleView`, `QuickChangePanel`, `ScheduleFormPanel`) ahora detectan y reflejan el estado de vinculación en tiempo real. Se ocultan o desactivan las plataformas desconectadas en la tabla de comandos y se bloquea el envío o edición desincronizada.
+- **[IMPROVEMENT] [PLATFORMS] Control Reactivo de Conexión en Rewards, Comandos, Timers, Filtros Anti-Spam e Información del Stream:** Los asistentes y vistas de creación/edición (`RewardsConfigWizard`, `CommandConfigWizard`, `CommandView`, `TimerConfigWizard`, `TimersView`, `SpamView`, `ExpandableSettingCard`, `ScheduleView`, `QuickChangePanel`, `ScheduleFormPanel`) ahora detectan y reflejan el estado de vinculación en tiempo real. Se ocultan o desactivan las plataformas desconectadas en las tablas y se bloquea el envío o edición desincronizada.
 - **[IMPROVEMENT] [TOAST] Motor de Notificaciones Toast de Alto Rendimiento:** Notificaciones Toast transformadas en widgets ligeros sobre la ventana principal, reduciendo a 0 ms el impacto en el hilo de interfaz, optimizando animaciones a 180 ms e incorporando deduplicación inteligente ante cambios rápidos de switches.
 - **[IMPROVEMENT] [LOGGING] Loggers Jerárquicos Modulares Dedicados:** Estandarización de logging profesional con nombres de módulo canónicos (`minikick.*`), telemetría de arranque detallada y filtrado de librerías externas para mantener los registros limpios y legibles.
 - **[IMPROVEMENT] [UI] Ajuste de Geometría y Alineación de Diálogos Modales:** Sincronización precisa de dimensiones en diálogos (`ModernFramelessShell`, `ModernConfirmDialog`) antes del centrado en pantalla, eliminando advertencias nativas de Windows (`QWindowsWindow::setGeometry`).
@@ -30,10 +30,11 @@
 
 ---
 
-### Correcciones (8)
+### Correcciones (9)
 
 - **[FIX] [REWARDS] Aislamiento de Plataformas y Prevención de Mutación de Recompensas:** Se corrigió la lógica de actualización en `RewardsController` y `RewardsConfigWizard` para evitar que recompensas creadas en Kick muten a Twitch (o viceversa), preservando inmutable la plataforma en modo edición.
 - **[FIX] [REWARDS] Manejo de Recompensas Eliminadas en Web (404 Not Found) e Indicador de Desvinculación:** Al actualizar una recompensa eliminada en la web de Kick o Twitch, se limpia el ID remoto obsoleto para evitar fallos continuos, se guardan los cambios locales multimedia y se muestra el estado `(Desvinculada)` o `(Desconectado)` con icono y tooltip explicativo en la tabla.
+- **[FIX] [TIMERS] Renderizado Reactivo de Plataformas en Tabla de Temporizadores:** En `TimersView`, el badge de plataformas de cada timer ahora evalúa dinámicamente las plataformas conectadas en vivo en lugar de mostrar siempre "Ambas".
 - **[FIX] [AUTH] Prevención de Ventanas Emergentes Inesperadas de Kick OAuth:** Desacoplamiento de `get_tokens()` para consultas pasivas de token sin abrir el navegador ni abrir puertos locales de servidor HTTP, delegando el flujo de login únicamente al método explícito `login()`.
 - **[FIX] [THREADS] Blindaje de QThreads y Prevención de Access Violation (0xC0000005):** Secuencia de apagado paralelo coordinado con desconexión preventiva de señales para evitar condiciones de carrera al cerrar la app o reiniciar conexiones.
 - **[FIX] [AUDIO] Resolución del Error COM 0x8001010d (RPC_E_WRONG_THREAD):** Inicialización y liberación explícita del modelo de apartamentos COM en hilos de síntesis de voz (TTS) y controladores de audio.
