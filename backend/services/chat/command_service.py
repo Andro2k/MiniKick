@@ -78,7 +78,7 @@ class CommandService(QObject):
         self._pending_saves.clear()
 
     def get_all_commands(self) -> list[dict]:
-        return list(self._all_commands_cache)
+        return [dict(c) for c in self._all_commands_cache]
 
     def get_command_by_trigger(self, trigger: str) -> dict | None:
         clean = trigger.strip().lower()
@@ -158,15 +158,19 @@ class CommandService(QObject):
         return user_level >= req_level
 
     def process_incoming_message(self, user: str, message: str, badges: list, platform: str = "kick") -> tuple[bool, str, dict, str]:
-        if not message:
+        if not message or not message.strip():
             return False, "", {}, ""
 
-        parts = message.split(maxsplit=1)
+        parts = message.strip().split(maxsplit=1)
+        if not parts:
+            return False, "", {}, ""
+
         first_word = parts[0].lower()
         raw_first_word = parts[0]
 
         args = parts[1] if len(parts) > 1 else ""
-        touser = args.strip().split()[0] if args.strip() else user
+        args_words = args.strip().split()
+        touser = args_words[0] if args_words else user
         if touser.startswith("@"):
             touser = touser[1:]
 
@@ -180,7 +184,8 @@ class CommandService(QObject):
                 match = compiled.search(message)
                 if match:
                     remaining = message[match.end():].strip()
-                    reg_touser = remaining.split()[0] if remaining else user
+                    rem_words = remaining.split()
+                    reg_touser = rem_words[0] if rem_words else user
                     if reg_touser.startswith("@"):
                         reg_touser = reg_touser[1:]
                     return self._try_execute(regex_cmd, user, reg_touser, badges, match.group(0), platform=platform)

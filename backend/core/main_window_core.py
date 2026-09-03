@@ -387,26 +387,31 @@ class MainWindowCore(QMainWindow):
 
         view_widget = None
         if view_name == "Stream Info":
-            self.view_schedule = ScheduleView(self.i18n, parent=self)
+            self.view_schedule = ScheduleView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_schedule)
             self.schedule_controller.attach_view(self.view_schedule)
             view_widget = self.view_schedule
         elif view_name == "Chat":
-            self.view_chat = ChatView(self.i18n, parent=self)
+            self.view_chat = ChatView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_chat)
             self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
             self.chat_controller.attach_view(self.view_chat)
             view_widget = self.view_chat
         elif view_name == "Music":
-            self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self)
+            self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self.content_stack)
+            self.content_stack.addWidget(self.view_music)
             self.music_controller.attach_view(self.view_music)
             view_widget = self.view_music
         elif view_name == "Triggers":
-            self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self)
+            self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self.content_stack)
+            self.content_stack.addWidget(self.view_rewards)
             self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
             self.rewards_controller.attach_view(self.view_rewards)
             self._fetch_api_rewards()
             view_widget = self.view_rewards
         elif view_name == "Comandos":
-            self.view_commands = CommandView(self.i18n, parent=self)
+            self.view_commands = CommandView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_commands)
             self.command_controller.attach_view(self.view_commands)
             view_widget = self.view_commands
         elif view_name == "Widgets":
@@ -419,20 +424,24 @@ class MainWindowCore(QMainWindow):
                 combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
                 poll_overlay_url=self.overlay_server.get_poll_overlay_url(),
                 pinned_overlay_url=self.overlay_server.get_pinned_overlay_url(),
-                parent=self
+                parent=self.content_stack
             )
+            self.content_stack.addWidget(self.view_widgets)
             self.widget_controller.attach_view(self.view_widgets)
             view_widget = self.view_widgets
         elif view_name == "Spam Filters":
-            self.view_spam = SpamView(self.i18n, parent=self)
+            self.view_spam = SpamView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_spam)
             self.spam_controller.attach_view(self.view_spam)
             view_widget = self.view_spam
         elif view_name == "Timers":
-            self.view_timers = TimersView(self.i18n, parent=self)
+            self.view_timers = TimersView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_timers)
             self.timer_controller.attach_view(self.view_timers)
             view_widget = self.view_timers
         elif view_name == "Settings":
-            self.view_settings = SettingsView(self.i18n, parent=self)
+            self.view_settings = SettingsView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_settings)
             self.view_settings.twitch_integration_clicked.connect(self._on_twitch_integration_button_clicked)
             self.view_settings.youtube_integration_clicked.connect(self._on_youtube_integration_button_clicked)
             self.view_settings.tiktok_integration_clicked.connect(self._on_tiktok_integration_button_clicked)
@@ -440,21 +449,24 @@ class MainWindowCore(QMainWindow):
             self._update_integrations_status_ui()
             view_widget = self.view_settings
         elif view_name == "Developer":
-            self.view_logs = LogView(self.i18n, parent=self)
+            self.view_logs = LogView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_logs)
             self.log_controller.attach_view(self.view_logs)
             view_widget = self.view_logs
         elif view_name == "Alerts":
             self.view_alerts = AlertsView(
                 self.i18n,
                 alerts_overlay_url=self.overlay_server.get_alerts_overlay_url(),
-                parent=self
+                parent=self.content_stack
             )
+            self.content_stack.addWidget(self.view_alerts)
             self.alerts_controller.attach_view(self.view_alerts)
             view_widget = self.view_alerts
 
         if view_widget:
             self._instantiated_views[view_name] = view_widget
-            self.content_stack.addWidget(view_widget)
+            if self.content_stack.indexOf(view_widget) == -1:
+                self.content_stack.addWidget(view_widget)
 
         return view_widget
 

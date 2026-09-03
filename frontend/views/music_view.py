@@ -51,27 +51,27 @@ class MusicView(BaseView):
         self.columns_layout.setContentsMargins(0, 0, 0, 0)
         self.columns_layout.setSpacing(16)
 
-        col1 = QWidget()
+        col1 = QWidget(self.body_container)
         self.col1_layout = QVBoxLayout(col1)
         self.col1_layout.setContentsMargins(0, 0, 0, 0)
         self.col1_layout.setSpacing(0)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.tabs = QTabWidget()
+        self.tabs = QTabWidget(col1)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.player_panel = MusicPlayerSettingsPanel(self.i18n, music_overlay_url=self._music_overlay_url)
-        self.commands_panel = MusicCommandsPanel(self.i18n)
-        self.settings_panel = MusicSettingsPanel(self.i18n)
-        self.queue_panel = MusicQueuePanel(self.i18n)
+        self.player_panel = MusicPlayerSettingsPanel(self.i18n, music_overlay_url=self._music_overlay_url, parent=self.tabs)
+        self.commands_panel = MusicCommandsPanel(self.i18n, parent=self.tabs)
+        self.settings_panel = MusicSettingsPanel(self.i18n, parent=self.tabs)
+        self.queue_panel = MusicQueuePanel(self.i18n, parent=self.body_container)
 
-        self.tabs.addTab(ModernScrollArea(self.player_panel), self.i18n.get("music.tabs.player"))
-        self.tabs.addTab(ModernScrollArea(self.commands_panel), self.i18n.get("music.tabs.commands"))
-        self.tabs.addTab(ModernScrollArea(self.settings_panel), self.i18n.get("music.tabs.settings"))
+        self.tabs.addTab(ModernScrollArea(self.player_panel, parent=self.tabs), self.i18n.get("music.tabs.player"))
+        self.tabs.addTab(ModernScrollArea(self.commands_panel, parent=self.tabs), self.i18n.get("music.tabs.commands"))
+        self.tabs.addTab(ModernScrollArea(self.settings_panel, parent=self.tabs), self.i18n.get("music.tabs.settings"))
 
         self.col1_layout.addWidget(self.tabs)
 
-        col2 = QWidget()
+        col2 = QWidget(self.body_container)
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(0, 0, 0, 0)
         self.col2_layout.setSpacing(0)

@@ -96,6 +96,9 @@ class AlertService:
     def get_config(self, platform: str, alert_type: str) -> AlertConfig:
         return self.storage.get_config(platform, alert_type)
 
+    def load_all_configs(self) -> list[AlertConfig]:
+        return self.storage.load_all()
+
     def save_config(self, config: AlertConfig) -> bool:
         return self.storage.save_config(config)
 

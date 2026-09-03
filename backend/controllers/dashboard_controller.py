@@ -5,6 +5,8 @@ from PySide6.QtCore import QObject, Signal, Slot
 
 logger = logging.getLogger("minikick.controllers.dashboard")
 
+SUPPORTED_PLATFORMS: tuple[str, ...] = ("kick", "twitch", "youtube", "tiktok")
+
 class DashboardController(QObject):
     request_connection = Signal()
     twitch_connect_requested = Signal()
@@ -19,18 +21,40 @@ class DashboardController(QObject):
         super().__init__()
         self.view = view
         self.avatar_service = avatar_service
-        self.db_manager = db_manager or (
-            avatar_service.storage.db_manager
-            if avatar_service and hasattr(avatar_service, "storage") and avatar_service.storage
-            else None
-        )
-        self._profiles = {"kick": None, "twitch": None}
-        self._avatars = {"kick": None, "twitch": None}
+        self.db_manager = db_manager
+        if self.db_manager is None and avatar_service and hasattr(avatar_service, "storage"):
+            self.db_manager = getattr(avatar_service.storage, "db_manager", None)
+
+        self._profiles: dict[str, dict | None] = {plat: None for plat in SUPPORTED_PLATFORMS}
+        self._avatars: dict[str, bytes | None] = {plat: None for plat in SUPPORTED_PLATFORMS}
         self._current_tab = "kick"
-        self._connect_signals()
+        self._view_connected = False
+        self._service_connected = False
+
+        self._connect_service_signals()
+        if self.view is not None:
+            self._connect_signals()
         self._load_cached_profiles_from_db()
 
+    def attach_view(self, view) -> None:
+        self.view = view
+        if self.view is not None:
+            self._connect_signals()
+            self._sync_view_profile()
+
+    def _connect_service_signals(self):
+        if self._service_connected or not self.avatar_service:
+            return
+        self._service_connected = True
+        if hasattr(self.avatar_service, "avatar_ready"):
+            self.avatar_service.avatar_ready.connect(self._on_avatar_ready)
+        if hasattr(self.avatar_service, "avatar_downloaded"):
+            self.avatar_service.avatar_downloaded.connect(self._on_avatar_downloaded)
+
     def _connect_signals(self):
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         self.view.connect_requested.connect(self.request_connection.emit)
         self.view.twitch_connect_requested.connect(self.twitch_connect_requested.emit)
         self.view.youtube_connect_requested.connect(self.youtube_connect_requested.emit)
@@ -43,9 +67,6 @@ class DashboardController(QObject):
             self.view.reauth_twitch_requested.connect(self.reauth_twitch_requested.emit)
         if hasattr(self.view, "channel_tab_changed"):
             self.view.channel_tab_changed.connect(self._on_channel_tab_changed)
-        if hasattr(self.avatar_service, "avatar_ready"):
-            self.avatar_service.avatar_ready.connect(self._on_avatar_ready)
-        self.avatar_service.avatar_downloaded.connect(self._on_avatar_downloaded)
 
     def _load_cached_profiles_from_db(self):
         if not self.db_manager:
@@ -82,10 +103,14 @@ class DashboardController(QObject):
     def set_youtube_status(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
         if self.view and hasattr(self.view, "set_youtube_status"):
             self.view.set_youtube_status(connected=connected, channel=channel, connecting=connecting, msg_count=msg_count)
+        if not connected and not connecting and not self.db_manager:
+            self.clear_channel_profile("youtube")
 
     def set_tiktok_status(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
         if self.view and hasattr(self.view, "set_tiktok_status"):
             self.view.set_tiktok_status(connected=connected, channel=channel, connecting=connecting, msg_count=msg_count)
+        if not connected and not connecting and not self.db_manager:
+            self.clear_channel_profile("tiktok")
 
     def update_platform_messages(self, kick: int, twitch: int, youtube: int, tiktok: int):
         if self.view and hasattr(self.view, "update_platform_messages"):

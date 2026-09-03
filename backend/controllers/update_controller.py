@@ -2,6 +2,8 @@
 
 import logging
 from PySide6.QtCore import QObject, Slot, Signal
+from backend.workers import UpdateCheckWorker, UpdateDownloadWorker
+from frontend.dialogs import UpdateDialog
 
 logger = logging.getLogger("minikick.controllers.update")
 
@@ -25,7 +27,8 @@ class UpdateController(QObject):
         self.download_worker = None
 
     def check_updates_silently(self):
-        from backend.workers import UpdateCheckWorker
+        if self.bg_update_worker and self.bg_update_worker.isRunning():
+            return
         logger.debug("[UpdateController] Starting silent background update check...")
         self.bg_update_worker = UpdateCheckWorker(self.updater_manager)
         self.bg_update_worker.update_found.connect(self._on_silent_update_found)
@@ -38,7 +41,8 @@ class UpdateController(QObject):
 
     @Slot()
     def start_update_check(self):
-        from backend.workers import UpdateCheckWorker
+        if self.check_worker and self.check_worker.isRunning():
+            return
         logger.info("[UpdateController] Manual update check initiated.")
         self.update_check_started.emit()
         self.check_worker = UpdateCheckWorker(self.updater_manager)
@@ -62,7 +66,8 @@ class UpdateController(QObject):
 
     @Slot(str)
     def start_download(self, url: str):
-        from backend.workers import UpdateDownloadWorker
+        if self.download_worker and self.download_worker.isRunning():
+            return
         logger.info("[UpdateController] Starting download from URL: %s", url)
         self.download_started.emit()
         self.download_worker = UpdateDownloadWorker(self.updater_manager, url)
@@ -91,8 +96,6 @@ class UpdateController(QObject):
             logger.error("[UpdateController] Failed to launch update installer: %s", e)
 
     def show_update_dialog(self, parent_window, i18n, on_restart_callback=None):
-        from frontend.dialogs import UpdateDialog
-
         logger.debug("[UpdateController] Presenting UpdateDialog modal to user.")
         dialog = UpdateDialog(i18n, parent=parent_window)
         update_info = {"url": ""}
@@ -128,13 +131,14 @@ class UpdateController(QObject):
         dialog.restart_requested.connect(on_restart_requested)
 
         self.start_update_check()
-        dialog.exec()
-
         try:
-            self.update_found.disconnect(on_update_found)
-            self.no_update.disconnect(dialog.show_no_update)
-            self.error.disconnect(dialog.show_error)
-            self.download_progress.disconnect(dialog.update_progress)
-            self.download_finished.disconnect(on_download_finished)
-        except Exception as e:
-            logger.debug("[UpdateController] Dialog signals disconnect notice: %s", e)
+            dialog.exec()
+        finally:
+            try:
+                self.update_found.disconnect(on_update_found)
+                self.no_update.disconnect(dialog.show_no_update)
+                self.error.disconnect(dialog.show_error)
+                self.download_progress.disconnect(dialog.update_progress)
+                self.download_finished.disconnect(on_download_finished)
+            except Exception as e:
+                logger.debug("[UpdateController] Dialog signals disconnect notice: %s", e)

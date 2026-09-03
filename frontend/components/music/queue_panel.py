@@ -124,11 +124,12 @@ class MusicQueuePanel(QWidget):
 
         self.card_queue = ModernTableCard(
             title_text=self.i18n.get("music.queue.title"),
-            headers=headers
+            headers=headers,
+            parent=self
         )
-        self.card_queue.setVisible(False)
         
         old_table = self.card_queue.table
+        old_table.hide()
         self.card_queue.stack.removeWidget(old_table)
         old_table.deleteLater()
 
@@ -171,6 +172,7 @@ class MusicQueuePanel(QWidget):
             self.card_queue.btn_empty_action.setVisible(False)
             
         panel_layout.addWidget(self.card_queue)
+        self.card_queue.setVisible(True)
 
     def _create_table_item(self, text: str, alignment: Qt.AlignmentFlag = None, color: Qt.GlobalColor = None) -> QTableWidgetItem:
         item = QTableWidgetItem(text)

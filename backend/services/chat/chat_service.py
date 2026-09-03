@@ -59,6 +59,30 @@ class ChatService:
             "role_enabled_subscriber": self.storage.load_bool("tts_role_enabled_subscriber", True)
         }
 
+    def get_overlay_settings(self) -> dict:
+        overlay_theme = self.storage.load_string("chat_overlay_theme", "glass")
+        try:
+            overlay_size = int(self.storage.load_string("chat_overlay_size", "14"))
+        except ValueError:
+            overlay_size = 14
+        try:
+            overlay_fade = int(self.storage.load_string("chat_overlay_fade", "15"))
+        except ValueError:
+            overlay_fade = 15
+        overlay_show_bots = self.storage.load_bool("chat_overlay_show_bots", False)
+        overlay_show_time = self.storage.load_bool("chat_overlay_show_time", False)
+
+        return {
+            "theme": overlay_theme,
+            "size": overlay_size,
+            "fade": overlay_fade,
+            "show_bots": overlay_show_bots,
+            "show_time": overlay_show_time
+        }
+
+    def set_tts_enabled(self, enabled: bool) -> None:
+        self.storage.save_bool("tts_enabled", enabled)
+
     def save_settings(self, settings: dict):
         batch = {
             "tts_enabled": settings.get("enabled", True),

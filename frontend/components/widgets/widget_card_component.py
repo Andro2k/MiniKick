@@ -1,7 +1,7 @@
 # frontend\components\widgets\widget_card_component.py
 
 from frontend.widgets import ModernDivider, FlowLayout
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from PySide6.QtWidgets import (QFrame, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QSpinBox, QPushButton, QApplication)
 from frontend.common import get_pixmap_colored, get_icon_colored
@@ -22,6 +22,11 @@ class WidgetCard(QFrame):
         self._command = ""
         self._cooldown = 3
         self._permission = "everyone"
+
+        self._change_timer = QTimer(self)
+        self._change_timer.setSingleShot(True)
+        self._change_timer.setInterval(300)
+        self._change_timer.timeout.connect(self._on_changed)
 
         self.setProperty("role", "card")
         self.main_layout = QVBoxLayout(self)
@@ -64,7 +69,7 @@ class WidgetCard(QFrame):
         h_layout.addLayout(text_layout, stretch=1)
 
         self.switch_enable = ModernSwitch()
-        self.switch_enable.toggled.connect(self._on_changed)
+        self.switch_enable.toggled.connect(self._on_switch_toggled)
         h_layout.addWidget(self.switch_enable, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         self.btn_expand = QPushButton()
@@ -109,7 +114,7 @@ class WidgetCard(QFrame):
             lbl_tpl = QLabel(self.i18n.get("widgets.so.template_label"))
             lbl_tpl.setProperty("role", "body")
             self.txt_template = QLineEdit()
-            self.txt_template.textChanged.connect(self._on_changed)
+            self.txt_template.textChanged.connect(self._on_input_changed)
             self.specific_layout.addWidget(lbl_tpl)
             self.specific_layout.addWidget(self.txt_template)
 
@@ -185,7 +190,7 @@ class WidgetCard(QFrame):
             lbl_min.setProperty("role", "body")
             self.spn_min_emotes = QSpinBox()
             self.spn_min_emotes.setRange(1, 30)
-            self.spn_min_emotes.valueChanged.connect(self._on_changed)
+            self.spn_min_emotes.valueChanged.connect(self._on_input_changed)
             gm_layout.addWidget(lbl_min)
             gm_layout.addWidget(self.spn_min_emotes)
 
@@ -197,7 +202,7 @@ class WidgetCard(QFrame):
             lbl_parts.setProperty("role", "body")
             self.spn_particle_count = QSpinBox()
             self.spn_particle_count.setRange(5, 100)
-            self.spn_particle_count.valueChanged.connect(self._on_changed)
+            self.spn_particle_count.valueChanged.connect(self._on_input_changed)
             gp_layout.addWidget(lbl_parts)
             gp_layout.addWidget(self.spn_particle_count)
 
@@ -216,7 +221,7 @@ class WidgetCard(QFrame):
             lbl_min_c.setProperty("role", "body")
             self.spn_min_combo = QSpinBox()
             self.spn_min_combo.setRange(2, 50)
-            self.spn_min_combo.valueChanged.connect(self._on_changed)
+            self.spn_min_combo.valueChanged.connect(self._on_input_changed)
             gmc_layout.addWidget(lbl_min_c)
             gmc_layout.addWidget(self.spn_min_combo)
 
@@ -228,7 +233,7 @@ class WidgetCard(QFrame):
             lbl_tout.setProperty("role", "body")
             self.spn_timeout_sec = QSpinBox()
             self.spn_timeout_sec.setRange(1, 30)
-            self.spn_timeout_sec.valueChanged.connect(self._on_changed)
+            self.spn_timeout_sec.valueChanged.connect(self._on_input_changed)
             gt_layout.addWidget(lbl_tout)
             gt_layout.addWidget(self.spn_timeout_sec)
 
@@ -320,6 +325,17 @@ class WidgetCard(QFrame):
             self._config_data["losses"] = losses
             self._is_loading = False
 
+    def _on_switch_toggled(self, checked: bool):
+        if self._is_loading:
+            return
+        self._change_timer.stop()
+        self._on_changed()
+
+    def _on_input_changed(self):
+        if self._is_loading:
+            return
+        self._change_timer.start()
+
     def _on_changed(self):
         if self._is_loading:
             return
@@ -342,7 +358,6 @@ class WidgetCard(QFrame):
             return
         self._config_data["count"] = val
         self.counter_action_triggered.emit(self.widget_id, "set_death", {"count": val})
-        self._on_changed()
 
     def _on_score_counter_changed(self):
         if self._is_loading:
@@ -352,7 +367,6 @@ class WidgetCard(QFrame):
         self._config_data["wins"] = w_val
         self._config_data["losses"] = l_val
         self.counter_action_triggered.emit(self.widget_id, "set_score", {"wins": w_val, "losses": l_val})
-        self._on_changed()
 
     def _reset_score_counters(self):
         self.spn_wins.setValue(0)

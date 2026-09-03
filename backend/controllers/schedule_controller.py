@@ -23,6 +23,7 @@ class ScheduleController(QObject):
         self.i18n = i18n
         self.connected_platforms_provider = connected_platforms_provider
         self.is_loading = False
+        self._view_connected = False
 
         self.toast_requested.connect(self._handle_toast_request)
 
@@ -31,6 +32,9 @@ class ScheduleController(QObject):
 
     def attach_view(self, view) -> None:
         self.view = view
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         if hasattr(self.view, "refresh_info_requested"):
             self.view.refresh_info_requested.connect(self.fetch_current_info)
         if hasattr(self.view, "update_stream_requested"):
@@ -51,6 +55,14 @@ class ScheduleController(QObject):
         self.loading_changed.connect(self.view.set_loading)
 
         self.load_initial_data()
+
+    def _get_i18n(self):
+        if self.i18n:
+            return self.i18n
+        if self.view and hasattr(self.view, "i18n") and self.view.i18n:
+            return self.view.i18n
+        from backend.services.system.translation_service import TranslationService
+        return TranslationService()
 
     def reload_schedules(self) -> None:
         if not self.service:
@@ -187,8 +199,9 @@ class ScheduleController(QObject):
         self._show_toast(msg_key, state)
 
     def _show_toast(self, msg_key: str, state: str = "success") -> None:
-        if not self.toast or not self.i18n:
+        if not self.toast:
             return
-        title = self.i18n.get("stream_info.header.title")
-        msg = self.i18n.get(msg_key)
-        self.toast.show_toast(title=title, message=msg, state=state)
+        i18n = self._get_i18n()
+        title = i18n.get("stream_info.header.title")
+        msg = i18n.get(msg_key)
+        self.toast.show_toast(title=title, message=msg, state=state, tag="schedule_action")

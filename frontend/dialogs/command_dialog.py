@@ -226,6 +226,8 @@ class CommandConfigWizard(ModernWizardPanel):
         is_regex = self.existing_config.get("is_regex", False)
         self.chk_regex.setChecked(is_regex)
         
+        self.chk_active.setChecked(self.existing_config.get("is_active", True))
+
         if is_regex:
             self.txt_regex.setText(self.existing_config.get("aliases", ""))
         else:

@@ -1,12 +1,38 @@
 # backend\controllers\widget_controller.py
 
+import json
 import logging
 import re
+import threading
 import time
 from PySide6.QtCore import QObject, Slot, Signal, QTimer
 from backend.services import WidgetService, CommandService
 
 logger = logging.getLogger("minikick.controllers.widgets")
+
+_WIDGET_DEFAULT_ALIASES: dict[str, str] = {
+    "score": "!win, !loss, !lose, !victoria, !derrota",
+    "death": "!muerte, !death, !deaths, !muertes",
+    "shoutout": "!shoutout",
+}
+
+_WIDGET_TITLE_KEYS: dict[str, str] = {
+    "shoutout": "widgets.so.title",
+    "death": "widgets.death.title",
+    "score": "widgets.score.title",
+}
+
+_RESET_COMMANDS: frozenset[str] = frozenset({"reset", "0", "reiniciar", "clear"})
+_SCORE_WIN_WORDS: frozenset[str] = frozenset({"win", "w", "victoria"})
+_SCORE_LOSS_WORDS: frozenset[str] = frozenset({"loss", "lose", "l", "derrota"})
+_DELTA_DECREMENT: frozenset[str] = frozenset({"-1", "-", "sub", "restar"})
+_SCORE_PLUS_WORDS: frozenset[str] = frozenset({"+1", "+", "win", "w", "victoria"})
+_SCORE_MINUS_WORDS: frozenset[str] = frozenset({"-1", "-", "loss", "lose", "l", "derrota"})
+
+_DEATH_SUB_WORDS: frozenset[str] = frozenset({"-", "sub", "restar", "-1"})
+_DEATH_ADD_WORDS: frozenset[str] = frozenset({"+", "add", "sumar", "1", "muerte", "+1", ""})
+_DEATH_CHECK_WORDS: frozenset[str] = frozenset({"check", "status", "ver"})
+
 
 class WidgetController(QObject):
     death_count_updated = Signal(int)
@@ -34,6 +60,7 @@ class WidgetController(QObject):
         self._last_combo_emote = ""
         self._last_combo_time = 0.0
         self._combo_count = 0
+        self._view_connected = False
 
         self._widget_handlers = {
             self.PLUGIN_TAGS["shoutout"]: lambda user, args, first_word, prefix, platform: self._process_shoutout(user, args, prefix, platform=platform),
@@ -72,24 +99,34 @@ class WidgetController(QObject):
         for w_id in saved_ids:
             w = self.widget_service.get_widget(w_id)
             if w:
-                self.widget_service.storage.save_widget(w_id, w.get("is_active", True), w.get("command", ""), w.get("cooldown", 3), w.get("permission", "everyone"), w.get("config", {}))
+                self.widget_service.save_widget(
+                    widget_id=w_id,
+                    is_active=w.get("is_active", True),
+                    command=w.get("command", ""),
+                    cooldown=w.get("cooldown", 3),
+                    permission=w.get("permission", "everyone"),
+                    config=w.get("config", {}),
+                    defer_disk=False
+                )
                 self._sync_single_widget_command(w_id, w)
 
     def _connect_signals(self):
-        if self.view:
-            self.view.widget_saved.connect(self.handle_widget_save)
-            self.view.death_count_changed.connect(self.handle_death_count_change)
-            self.view.score_changed.connect(self.handle_score_change)
-            self.death_count_updated.connect(self.view.update_death_count_display)
-            if hasattr(self.view, "view_shown"):
-                self.view.view_shown.connect(self._on_view_shown)
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
+        self.view.widget_saved.connect(self.handle_widget_save)
+        self.view.death_count_changed.connect(self.handle_death_count_change)
+        self.view.score_changed.connect(self.handle_score_change)
+        self.death_count_updated.connect(self.view.update_death_count_display)
+        self.score_updated.connect(self.view.update_score_display)
+        if hasattr(self.view, "view_shown"):
+            self.view.view_shown.connect(self._on_view_shown)
 
     def _on_view_shown(self):
         if self._needs_reload:
             self._needs_reload = False
             if self.view:
                 self.view.populate_widgets(self.widget_service.get_all_widgets())
-            self.score_updated.connect(self.view.update_score_display)
 
     def load_initial_data(self):
         widgets = self.widget_service.get_all_widgets()
@@ -182,13 +219,7 @@ class WidgetController(QObject):
         cooldown = data.get("cooldown", 3)
         perm = data.get("permission", "everyone")
 
-        aliases = ""
-        if w_id == "score":
-            aliases = "!win, !loss, !lose, !victoria, !derrota"
-        elif w_id == "death":
-            aliases = "!muerte, !death, !deaths, !muertes"
-        elif w_id == "shoutout":
-            aliases = "!shoutout"
+        aliases = _WIDGET_DEFAULT_ALIASES.get(w_id, "")
 
         existing_cmd = self.command_service.get_command_by_trigger(cmd_name)
         if existing_cmd:
@@ -231,30 +262,37 @@ class WidgetController(QObject):
 
     @Slot(str, bool, str, int, str, object)
     def handle_widget_save(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict):
-        logger.info("[User Action] Updated widget '%s': is_active=%s, command='%s', cooldown=%d, perm='%s'",
-                    widget_id, is_active, command, cooldown, permission)
         previous = self.widget_service.get_widget(widget_id)
         was_active = previous.get("is_active", True) if previous else True
+        config_dict = dict(config)
 
-        self.widget_service._cache[widget_id] = {
-            "widget_id": widget_id,
-            "is_active": is_active,
-            "command": command,
-            "cooldown": cooldown,
-            "permission": permission,
-            "config": dict(config)
-        }
+        if previous and (
+            previous.get("is_active") == is_active and
+            previous.get("command") == command and
+            previous.get("cooldown") == cooldown and
+            previous.get("permission") == permission and
+            previous.get("config") == config_dict
+        ):
+            return
+
+        logger.info("[User Action] Updated widget '%s': is_active=%s, command='%s', cooldown=%d, perm='%s', config=%s",
+                    widget_id, is_active, command, cooldown, permission, config_dict)
+
+        self.widget_service.save_widget(
+            widget_id=widget_id,
+            is_active=is_active,
+            command=command,
+            cooldown=cooldown,
+            permission=permission,
+            config=config_dict,
+            defer_disk=True
+        )
 
         if was_active != is_active:
             title_key = "widgets.status.activated" if is_active else "widgets.status.deactivated"
             msg_key = "widgets.status.activated_msg" if is_active else "widgets.status.deactivated_msg"
             
-            widget_title_keys = {
-                "shoutout": "widgets.so.title",
-                "death": "widgets.death.title",
-                "score": "widgets.score.title"
-            }
-            title_k = widget_title_keys.get(widget_id)
+            title_k = _WIDGET_TITLE_KEYS.get(widget_id)
             w_name = self.i18n.get(title_k) if title_k else widget_id
             
             title = self.i18n.get(title_key)
@@ -269,12 +307,13 @@ class WidgetController(QObject):
                     tag=f"widget_{widget_id}"
                 )
 
+            if self.overlay_server:
+                self.overlay_server.trigger_widget_event("widget_toggle", {
+                    "widget_id": widget_id,
+                    "is_active": is_active
+                })
+
         self._trigger_deferred_save(widget_id)
-        if self.overlay_server:
-            self.overlay_server.trigger_widget_event("widget_toggle", {
-                "widget_id": widget_id,
-                "is_active": is_active
-            })
 
     @Slot(int)
     def handle_death_count_change(self, new_val: int):
@@ -310,34 +349,30 @@ class WidgetController(QObject):
     def _dispatch_score_command(self, user: str, args: str, first_word: str, prefix: str, platform: str = "kick") -> None:
         arg_clean = args.strip().lower()
 
-        if arg_clean in ("reset", "0", "reiniciar", "clear"):
+        if arg_clean in _RESET_COMMANDS:
             wins, losses = self.widget_service.update_score(reset=True)
             msg = self.i18n.get("widgets.score.msg_reset").replace("{user}", user)
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
-        if first_word in ("win", "w", "victoria"):
-            if arg_clean in ("-1", "-", "sub", "restar"):
-                wins, losses = self.widget_service.update_score(delta_wins=-1)
-            else:
-                wins, losses = self.widget_service.update_score(delta_wins=1)
+        if first_word in _SCORE_WIN_WORDS:
+            delta = -1 if arg_clean in _DELTA_DECREMENT else 1
+            wins, losses = self.widget_service.update_score(delta_wins=delta)
             msg = self.i18n.get("widgets.score.msg_win").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
-        if first_word in ("loss", "lose", "l", "derrota"):
-            if arg_clean in ("-1", "-", "sub", "restar"):
-                wins, losses = self.widget_service.update_score(delta_losses=-1)
-            else:
-                wins, losses = self.widget_service.update_score(delta_losses=1)
+        if first_word in _SCORE_LOSS_WORDS:
+            delta = -1 if arg_clean in _DELTA_DECREMENT else 1
+            wins, losses = self.widget_service.update_score(delta_losses=delta)
             msg = self.i18n.get("widgets.score.msg_loss").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
-        if arg_clean in ("+1", "+", "win", "w", "victoria"):
+        if arg_clean in _SCORE_PLUS_WORDS:
             wins, losses = self.widget_service.update_score(delta_wins=1)
             msg = self.i18n.get("widgets.score.msg_win").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
-        elif arg_clean in ("-1", "-", "loss", "lose", "l", "derrota"):
+        elif arg_clean in _SCORE_MINUS_WORDS:
             wins, losses = self.widget_service.update_score(delta_losses=1)
             msg = self.i18n.get("widgets.score.msg_loss").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
         else:
@@ -370,17 +405,17 @@ class WidgetController(QObject):
             handler(user, args, first_word, prefix, platform)
 
     def _process_shoutout(self, user: str, args: str, prefix: str, platform: str = "kick"):
-        if not args:
+        arg_words = args.strip().split() if args else []
+        if not arg_words:
             err_msg = self.i18n.get("widgets.so.usage_error").replace("{user}", user).replace("{trigger}", prefix)
             self.command_service.send_response(err_msg, platform=platform)
             return
 
-        target_user = args.split()[0].lstrip("@").strip()
+        target_user = arg_words[0].lstrip("@").strip()
         reply = self.widget_service.format_shoutout(target_user)
         self.command_service.send_response(reply, platform=platform)
 
         if self.overlay_server:
-            import threading
             def _fetch_and_trigger():
                 avatar_url = self.widget_service.fetch_streamer_avatar(target_user)
                 header_text = self.i18n.get("widgets.so.overlay_header")
@@ -392,30 +427,29 @@ class WidgetController(QObject):
                     "header_text": header_text
                 })
 
-            threading.Thread(target=_fetch_and_trigger, daemon=True).start()
+            threading.Thread(target=_fetch_and_trigger, daemon=True, name=f"ShoutoutAvatar-{target_user}").start()
 
     def _process_death(self, user: str, args: str, platform: str = "kick"):
         arg_clean = args.strip().lower()
-        if arg_clean in ("reset", "0", "reiniciar", "clear"):
+        if arg_clean in _RESET_COMMANDS:
             new_count = self.widget_service.update_death_count(set_val=0)
             msg = self.i18n.get("widgets.death.msg_reset").replace("{user}", user).replace("{count}", str(new_count))
-        elif arg_clean in ("-", "sub", "restar", "-1"):
+        elif arg_clean in _DEATH_SUB_WORDS:
             new_count = self.widget_service.update_death_count(delta=-1)
             msg = self.i18n.get("widgets.death.msg_sub").replace("{user}", user).replace("{count}", str(new_count))
-        elif arg_clean in ("+", "add", "sumar", "1", "muerte", "+1", ""):
+        elif arg_clean in _DEATH_ADD_WORDS:
             new_count = self.widget_service.update_death_count(delta=1)
             msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
-        elif arg_clean in ("check", "status", "ver"):
+        elif arg_clean in _DEATH_CHECK_WORDS:
             new_count = self.widget_service.get_death_count()
             msg = self.i18n.get("widgets.death.msg_check").replace("{user}", user).replace("{count}", str(new_count))
         else:
             try:
                 val = int(arg_clean)
                 new_count = self.widget_service.update_death_count(set_val=max(0, val))
-                msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
             except ValueError:
                 new_count = self.widget_service.update_death_count(delta=1)
-                msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
+            msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
 
         self.death_count_updated.emit(new_count)
         if self.overlay_server:
@@ -452,7 +486,6 @@ class WidgetController(QObject):
 
         if platform in ("youtube", "tiktok") and emotes_tag:
             try:
-                import json
                 custom_emotes = json.loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
                 for em in custom_emotes:
                     if isinstance(em, dict) and em.get("url"):
@@ -549,4 +582,3 @@ class WidgetController(QObject):
             })
             msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote)
             self.command_service.send_response(msg, platform=platform)
-

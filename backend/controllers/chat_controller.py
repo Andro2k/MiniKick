@@ -1,13 +1,22 @@
 # backend\controllers\chat_controller.py
 
-from PySide6.QtCore import QTimer
 from collections import deque
+import datetime
 import logging
-from PySide6.QtCore import QObject, Slot, Signal
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from backend.handlers import TTSVoiceHandler, ChatFilterHandler
 from backend.services import MessagePipeline, ChatMessageDTO
 
 logger = logging.getLogger("minikick.controllers.chat")
+
+_SYSTTS_ON_KEYWORDS = frozenset({"on", "1", "enable", "activar", "encender"})
+_SYSTTS_OFF_KEYWORDS = frozenset({"off", "0", "disable", "desactivar", "apagar"})
+
+def _find_command_by_response(commands: list[dict], response_tag: str) -> dict | None:
+    for cmd in commands:
+        if cmd.get("response") == response_tag:
+            return cmd
+    return None
 
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
@@ -142,29 +151,18 @@ class ChatController(QObject):
         self.service.set_volume(settings.get("volume", 100))
         self.service.set_speed(settings.get("speed", 100))
 
-        overlay_theme = self.service.storage.load_string("chat_overlay_theme", "glass")
-        try:
-            overlay_size = int(self.service.storage.load_string("chat_overlay_size", "14"))
-        except ValueError:
-            overlay_size = 14
-        try:
-            overlay_fade = int(self.service.storage.load_string("chat_overlay_fade", "15"))
-        except ValueError:
-            overlay_fade = 15
-        overlay_show_bots = self.service.storage.load_bool("chat_overlay_show_bots", False)
-        overlay_show_time = self.service.storage.load_bool("chat_overlay_show_time", False)
-
+        overlay_settings = self.service.get_overlay_settings()
         if self.view is not None:
             self.view.set_overlay_settings_ui(
-                theme=overlay_theme,
-                size=overlay_size,
-                fade=overlay_fade,
-                show_bots=overlay_show_bots,
-                show_time=overlay_show_time
+                theme=overlay_settings["theme"],
+                size=overlay_settings["size"],
+                fade=overlay_settings["fade"],
+                show_bots=overlay_settings["show_bots"],
+                show_time=overlay_settings["show_time"]
             )
 
         commands = self.command_service.get_all_commands()
-        existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
+        existing = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
         if not existing:
             self.command_service.blockSignals(True)
             try:
@@ -180,7 +178,7 @@ class ChatController(QObject):
             finally:
                 self.command_service.blockSignals(False)
 
-        existing_systts = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_SYSTTS]"), None)
+        existing_systts = _find_command_by_response(commands, "[PLUGIN_CHAT_SYSTTS]")
         if not existing_systts:
             self.command_service.blockSignals(True)
             try:
@@ -260,9 +258,9 @@ class ChatController(QObject):
 
     def _handle_systts_command(self, user: str, arg: str, platform: str = "kick") -> None:
         arg_clean = arg.strip().lower()
-        if arg_clean in ("on", "1", "enable", "activar", "encender"):
+        if arg_clean in _SYSTTS_ON_KEYWORDS:
             new_state = True
-        elif arg_clean in ("off", "0", "disable", "desactivar", "apagar"):
+        elif arg_clean in _SYSTTS_OFF_KEYWORDS:
             new_state = False
         elif not arg_clean or arg_clean == "status":
             state_str = self.i18n.get("chat.status.enabled_upper") if self._tts_enabled else self.i18n.get("chat.status.disabled_upper")
@@ -275,7 +273,7 @@ class ChatController(QObject):
             return
 
         self._tts_enabled = new_state
-        self.service.storage.save_bool("tts_enabled", new_state)
+        self.service.set_tts_enabled(new_state)
         self._tts_settings_cache["enabled"] = new_state
         self.tts_state_changed.emit(new_state)
 
@@ -288,23 +286,17 @@ class ChatController(QObject):
         resp_msg = resp_template.replace("{user}", user)
         self.command_service.send_response(resp_msg, platform=platform)
 
-    @Slot(object)
-    def handle_incoming_message(self, dto: ChatMessageDTO) -> None:
-        self._step_chat_filter(dto)
-        self._step_ui_render(dto)
-        self._step_plugins(dto)
-        self._step_tts(dto)
-
     def _resolve_user_role(self, badges: list, user: str) -> str:
-        if "broadcaster" in badges:
+        badge_set = set(badges) if badges else set()
+        if "broadcaster" in badge_set:
             return self.i18n.get("chat.roles.name_broadcaster")
-        elif "moderator" in badges:
+        if "moderator" in badge_set:
             return self.i18n.get("chat.roles.name_moderator")
-        elif "vip" in badges:
+        if "vip" in badge_set:
             return self.i18n.get("chat.roles.name_vip")
-        elif "subscriber" in badges:
+        if "subscriber" in badge_set:
             return self.i18n.get("chat.roles.name_subscriber")
-        elif self.filter_handler.is_bot(user, badges):
+        if self.filter_handler.is_bot(user, badges):
             return self.i18n.get("chat.roles.name_bot")
         return self.i18n.get("chat.roles.name_user")
 
@@ -327,7 +319,6 @@ class ChatController(QObject):
     def _handle_bot_response(self, text: str, platform: str = "kick") -> None:
         if not text or platform != "twitch":
             return
-        import datetime
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
         bot_user = "MiniKick"
         if hasattr(self.command_service, "twitch_worker") and self.command_service.twitch_worker:
@@ -397,36 +388,27 @@ class ChatController(QObject):
         self._save_timer.start()
 
         new_tts_state = settings["enabled"]
-        if hasattr(self, '_tts_enabled') and self._tts_enabled != new_tts_state:
+        if self._tts_enabled != new_tts_state:
             self._tts_enabled = new_tts_state
-            if self.toast:
-                status_title = self.view.i18n.get("chat.status.tts_title")
-                status_msg = self.view.i18n.get("chat.status.tts_active") if new_tts_state else self.view.i18n.get("chat.status.tts_muted")
-                state_color = "success" if new_tts_state else "warning"
-                self.toast.show_toast(
-                    title=status_title,
-                    message=status_msg,
-                    state=state_color,
-                    tag="tts_enabled"
-                )
+            self._notify_setting_change("chat.status.tts_title", "chat.status.tts_active", "chat.status.tts_muted", new_tts_state, "tts_enabled")
 
         new_read_name_state = settings["read_name"]
-        if hasattr(self, '_read_name_enabled') and self._read_name_enabled != new_read_name_state:
+        if self._read_name_enabled != new_read_name_state:
             self._read_name_enabled = new_read_name_state
-            if self.toast:
-                title = self.i18n.get("chat.status.read_name_title")
-                msg = self.i18n.get("chat.status.read_name_active") if new_read_name_state else self.i18n.get("chat.status.read_name_inactive")
-                color = "success" if new_read_name_state else "warning"
-                self.toast.show_toast(title=title, message=msg, state=color, tag="tts_read_name")
+            self._notify_setting_change("chat.status.read_name_title", "chat.status.read_name_active", "chat.status.read_name_inactive", new_read_name_state, "tts_read_name")
 
         new_use_cmd_state = settings["use_command"]
-        if hasattr(self, '_use_command_enabled') and self._use_command_enabled != new_use_cmd_state:
+        if self._use_command_enabled != new_use_cmd_state:
             self._use_command_enabled = new_use_cmd_state
-            if self.toast:
-                title = self.i18n.get("chat.status.use_command_title")
-                msg = self.i18n.get("chat.status.use_command_active") if new_use_cmd_state else self.i18n.get("chat.status.use_command_inactive")
-                color = "success" if new_use_cmd_state else "warning"
-                self.toast.show_toast(title=title, message=msg, state=color, tag="tts_use_command")
+            self._notify_setting_change("chat.status.use_command_title", "chat.status.use_command_active", "chat.status.use_command_inactive", new_use_cmd_state, "tts_use_command")
+
+    def _notify_setting_change(self, title_key: str, active_key: str, inactive_key: str, is_active: bool, tag: str) -> None:
+        if not self.toast:
+            return
+        title = self.i18n.get(title_key)
+        msg = self.i18n.get(active_key) if is_active else self.i18n.get(inactive_key)
+        color = "success" if is_active else "warning"
+        self.toast.show_toast(title=title, message=msg, state=color, tag=tag)
 
     def _flush_settings_save(self) -> None:
         if not self._tts_settings_cache:
@@ -435,7 +417,7 @@ class ChatController(QObject):
         self.service.save_settings(settings)
 
         commands = self.command_service.get_all_commands()
-        existing = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
+        existing = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
         target_trigger = settings.get("command", "!tts").strip()
         target_use_cmd = settings.get("use_command", False)
         
@@ -480,7 +462,7 @@ class ChatController(QObject):
                         apply_tiktok=True
                     )
 
-                existing_systts = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_SYSTTS]"), None)
+                existing_systts = _find_command_by_response(commands, "[PLUGIN_CHAT_SYSTTS]")
                 if not existing_systts:
                     self.command_service.save_command(
                         trigger="!systts",
@@ -494,12 +476,11 @@ class ChatController(QObject):
             finally:
                 self.command_service.blockSignals(False)
 
-            from PySide6.QtCore import QTimer
             QTimer.singleShot(0, self.command_service.commands_changed.emit)
 
     def _sync_tts_command_from_db(self) -> None:
         commands = self.command_service.get_all_commands()
-        tts_cmd = next((c for c in commands if c["response"] == "[PLUGIN_CHAT_TTS]"), None)
+        tts_cmd = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
         
         settings = self.service.get_settings()
         

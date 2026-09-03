@@ -10,13 +10,15 @@ class TimerController(QObject):
     metrics_update_requested = Signal()
     categories_found = Signal(str, object)
 
-    def __init__(self, view, service, toast_manager=None, schedule_service=None, connected_platforms_provider=None):
+    def __init__(self, view, service, toast_manager=None, schedule_service=None, connected_platforms_provider=None, i18n=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
         self.schedule_service = schedule_service
         self.connected_platforms_provider = connected_platforms_provider
+        self.i18n = i18n
+        self._view_connected = False
         if self.view is not None:
             self._connect_signals()
 
@@ -26,7 +28,18 @@ class TimerController(QObject):
             self._connect_signals()
             self.load_initial_data()
 
+    def _get_i18n(self):
+        if self.i18n:
+            return self.i18n
+        if self.view and hasattr(self.view, "i18n") and self.view.i18n:
+            return self.view.i18n
+        from backend.services.system.translation_service import TranslationService
+        return TranslationService()
+
     def _connect_signals(self):
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         self.view.add_requested.connect(self._handle_add)
         self.view.edit_requested.connect(self._handle_edit)
         self.view.delete_requested.connect(self._handle_delete)
@@ -117,7 +130,9 @@ class TimerController(QObject):
         existing = self.service.get_timer_by_id(timer_id)
         if not existing:
             return
-            
+        if existing.get("is_active") == is_active:
+            return
+
         logger.info("[User Action] Toggled timer status: id=%d, name='%s', is_active=%s", timer_id, existing.get("name"), is_active)
         self.service.save_timer(
             timer_id=timer_id,
@@ -130,14 +145,22 @@ class TimerController(QObject):
             keywords=existing["keywords"],
             categories=existing["categories"],
             apply_kick=existing.get("apply_kick", True),
-            apply_twitch=existing.get("apply_twitch", True)
+            apply_twitch=existing.get("apply_twitch", True),
+            apply_youtube=existing.get("apply_youtube", True)
         )
         self.load_initial_data()
         self.metrics_update_requested.emit()
-        
-        status_text = self.view.i18n.get("timer.status.enabled") if is_active else self.view.i18n.get("timer.status.disabled")
-        msg = self.view.i18n.get("timer.status.toggled_msg").replace("{name}", existing['name']).replace("{status}", status_text.lower())
-        self._show_toast("timer.status.updated", msg, "", "success")
+
+        i18n = self._get_i18n()
+        status_text = i18n.get("timer.status.enabled") if is_active else i18n.get("timer.status.disabled")
+        msg = i18n.get("timer.status.toggled_msg").replace("{name}", existing['name']).replace("{status}", status_text.lower())
+        if self.toast:
+            self.toast.show_toast(
+                title=i18n.get("timer.status.updated"),
+                message=msg,
+                state="success",
+                tag=f"timer_{timer_id}"
+            )
 
     @Slot(str)
     def _handle_search(self, search_term: str):
@@ -155,8 +178,9 @@ class TimerController(QObject):
 
     def _show_toast(self, title_key: str, msg_key: str, val: str, state: str):
         if self.toast:
+            i18n = self._get_i18n()
             self.toast.show_toast(
-                title=self.view.i18n.get(title_key),
-                message=(self.view.i18n.get(msg_key)).replace("{name}", val),
+                title=i18n.get(title_key),
+                message=(i18n.get(msg_key)).replace("{name}", val),
                 state=state
             )

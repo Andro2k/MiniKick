@@ -2,6 +2,7 @@
 
 import logging
 from PySide6.QtCore import QObject, Signal, Slot
+from backend.workers import BugReportWorker, ReleaseNotesWorker
 
 logger = logging.getLogger("minikick.controllers.settings")
 
@@ -12,13 +13,15 @@ class SettingsController(QObject):
     backup_restored = Signal()
     notification_requested = Signal(str, str)
 
-    def __init__(self, view, service, toast_manager=None, music_provider=None, tts_manager=None):
+    def __init__(self, view, service, toast_manager=None, music_provider=None, tts_manager=None, i18n=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
         self.music_provider = music_provider
         self.tts_manager = tts_manager
+        self.i18n = i18n
+        self._view_connected = False
         if self.view is not None:
             self._connect_signals()
             self._load_initial_state()
@@ -29,7 +32,18 @@ class SettingsController(QObject):
             self._connect_signals()
             self._load_initial_state()
 
+    def _get_i18n(self):
+        if self.i18n:
+            return self.i18n
+        if self.view and hasattr(self.view, "i18n") and self.view.i18n:
+            return self.view.i18n
+        from backend.services.system.translation_service import TranslationService
+        return TranslationService()
+
     def _connect_signals(self):
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         self.view.font_size_changed.connect(self.handle_font_size)
         self.view.minimize_tray_toggled.connect(self.handle_minimize_tray)
         self.view.export_clicked.connect(self.handle_export)
@@ -77,16 +91,19 @@ class SettingsController(QObject):
 
     @Slot(bool)
     def handle_minimize_tray(self, enabled: bool):
+        if self.service.is_minimize_tray_enabled() == enabled:
+            return
         logger.info("[User Action] Toggled minimize to tray setting: enabled=%s", enabled)
         self.service.set_minimize_tray_enabled(enabled)
         if self.toast:
+            i18n = self._get_i18n()
             title_key = "settings.status.tray_enabled" if enabled else "settings.status.tray_disabled"
             msg_key = "settings.status.tray_enabled_msg" if enabled else "settings.status.tray_disabled_msg"
             state_color = "success" if enabled else "info"
 
             self.toast.show_toast(
-                title=self.view.i18n.get(title_key),
-                message=self.view.i18n.get(msg_key),
+                title=i18n.get(title_key),
+                message=i18n.get(msg_key),
                 state=state_color,
                 tag="minimize_tray"
             )
@@ -96,18 +113,19 @@ class SettingsController(QObject):
         filepath = self.view.ask_save_path()
         if filepath:
             logger.info("[User Action] Exported app settings to: '%s'", filepath)
+            i18n = self._get_i18n()
             if self.service.export_settings(filepath):
                 if self.toast:
                     self.toast.show_toast(
-                        title=self.view.i18n.get("settings.status.exported"),
-                        message=self.view.i18n.get("settings.status.exported_msg"),
+                        title=i18n.get("settings.status.exported"),
+                        message=i18n.get("settings.status.exported_msg"),
                         state="success"
                     )
             else:
                 if self.toast:
                     self.toast.show_toast(
-                        title=self.view.i18n.get("settings.status.error_title"),
-                        message=self.view.i18n.get("settings.status.export_error"),
+                        title=i18n.get("settings.status.error_title"),
+                        message=i18n.get("settings.status.export_error"),
                         state="danger"
                     )
 
@@ -116,60 +134,63 @@ class SettingsController(QObject):
         filepath = self.view.ask_open_path()
         if filepath:
             logger.info("[User Action] Imported app settings from: '%s'", filepath)
+            i18n = self._get_i18n()
             if self.service.import_settings(filepath):
                 self.backup_restored.emit()
                 if self.toast:
                     self.toast.show_toast(
-                        title=self.view.i18n.get("settings.status.imported"),
-                        message=self.view.i18n.get("settings.status.imported_msg"),
+                        title=i18n.get("settings.status.imported"),
+                        message=i18n.get("settings.status.imported_msg"),
                         state="success"
                     )
             else:
                 if self.toast:
                     self.toast.show_toast(
-                        title=self.view.i18n.get("settings.status.error_title"),
-                        message=self.view.i18n.get("settings.status.import_error"),
+                        title=i18n.get("settings.status.error_title"),
+                        message=i18n.get("settings.status.import_error"),
                         state="danger"
                     )
 
     @Slot(str)
     def handle_language_change(self, lang_code: str):
+        if self.service.get_language() == lang_code:
+            return
         logger.info("[User Action] Changed app language to: '%s'", lang_code)
         self.service.set_language(lang_code)
+        i18n = self._get_i18n()
         
         if self.toast:
             self.toast.show_toast(
-                title=self.view.i18n.get("settings.status.lang_changed"),
-                message=self.view.i18n.get("settings.status.lang_changed_msg"),
+                title=i18n.get("settings.status.lang_changed"),
+                message=i18n.get("settings.status.lang_changed_msg"),
                 state="info"
             )
             
         self.notification_requested.emit(
-            self.view.i18n.get("settings.status.lang_changed"), 
-            self.view.i18n.get("settings.status.lang_changed_msg")
+            i18n.get("settings.status.lang_changed"), 
+            i18n.get("settings.status.lang_changed_msg")
         )
 
     @Slot(int)
     def handle_font_size(self, size: int):
-        if size is None:
+        if size is None or size <= 0 or self.service.get_font_size() == size:
             return
         logger.info("[User Action] Changed UI font size to: %d", size)
         self.service.set_font_size(size)
         self.style_reload_requested.emit(size)
         
         if self.toast:
-            title = self.view.i18n.get("settings.status.font_size_changed")
-            msg = self.view.i18n.get("settings.status.font_size_changed_msg").replace("{size}", str(size))
+            i18n = self._get_i18n()
+            title = i18n.get("settings.status.font_size_changed")
+            msg = i18n.get("settings.status.font_size_changed_msg").replace("{size}", str(size))
             self.toast.show_toast(title, msg, "success")
 
     @Slot()
     def handle_feedback(self):
         logger.info("[User Action] Opened Bug Report modal")
-        from backend.workers import BugReportWorker
         self.view.show_bug_report_dialog(worker_class=BugReportWorker)
 
     @Slot()
     def handle_release_notes(self):
         logger.info("[User Action] Opened Release Notes modal")
-        from backend.workers import ReleaseNotesWorker
         self.view.show_release_notes_dialog(worker_class=ReleaseNotesWorker)

@@ -3,6 +3,7 @@
 import os
 import re
 import logging
+from datetime import datetime, timedelta
 from PySide6.QtCore import QObject, Slot, Signal, QUrl
 from PySide6.QtGui import QDesktopServices
 
@@ -22,9 +23,12 @@ class LogController(QObject):
         self._search_term_lower = ""
         self._current_filter = self.view.str_all if self.view else "ALL"
         self._date_filter = ""
+        self._date_threshold = ""
         self._is_historical = False
         self._logs_streaming_visible = False
         self._historical_logs = []
+        self._view_connected = False
+
         if self.view is not None:
             self._connect_signals()
             self.view.update_display_state(
@@ -43,6 +47,9 @@ class LogController(QObject):
             )
 
     def _connect_signals(self):
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         self.view.search_changed.connect(self.handle_search_changed)
         self.view.filter_changed.connect(self.handle_filter_changed)
         self.view.date_changed.connect(self.handle_date_changed)
@@ -54,16 +61,20 @@ class LogController(QObject):
         self.view.view_toggle_requested.connect(self.handle_view_toggle_requested)
         self.view.view_shown.connect(self.handle_view_shown)
 
-    def _get_date_threshold(self, date_filter: str) -> str:
+    def _compute_date_threshold(self, date_filter: str) -> str:
         if not date_filter:
             return ""
         try:
             days = int(date_filter[:-1])
         except ValueError:
             return ""
-        from datetime import datetime, timedelta
         dt = datetime.now() - timedelta(days=days)
         return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+    def _get_date_threshold(self, date_filter: str = "") -> str:
+        if not date_filter or date_filter == self._date_filter:
+            return self._date_threshold
+        return self._compute_date_threshold(date_filter)
 
     def _matches_search(self, level: str, time_str: str, text: str) -> bool:
         if not self._search_term_lower:
@@ -73,22 +84,24 @@ class LogController(QObject):
                 self._search_term_lower in text.lower())
 
     def _filter_and_get_logs(self) -> list[tuple[str, str, str]]:
-        if self._is_historical:
-            filtered = []
-            is_all = (self._current_filter == self.view.str_all)
-            threshold = self._get_date_threshold(self._date_filter) if self._date_filter else ""
-            for lvl, t_str, txt in self._historical_logs:
-                if is_all or lvl == self._current_filter:
-                    if not threshold or t_str >= threshold:
-                        if not self._search_term_lower or (self._search_term_lower in lvl.lower() or 
-                                                           self._search_term_lower in t_str.lower() or 
-                                                           self._search_term_lower in txt.lower()):
-                            filtered.append((lvl, t_str, txt))
-            if len(filtered) > 500:
-                filtered = filtered[-500:]
-            return filtered
-        else:
+        if not self._is_historical:
             return self.service.get_filtered_history(self._current_filter, self.view.str_all, self._search_term, self._date_filter)
+
+        filtered = []
+        is_all = (self._current_filter == self.view.str_all)
+        threshold = self._date_threshold
+        for lvl, t_str, txt in self._historical_logs:
+            if not is_all and lvl != self._current_filter:
+                continue
+            if threshold and t_str < threshold:
+                continue
+            if not self._matches_search(lvl, t_str, txt):
+                continue
+            filtered.append((lvl, t_str, txt))
+
+        if len(filtered) > 500:
+            filtered = filtered[-500:]
+        return filtered
 
     def _refresh_view_logs(self):
         if self._logs_streaming_visible or self._is_historical:
@@ -114,6 +127,7 @@ class LogController(QObject):
     def handle_date_changed(self, date_str: str):
         logger.info("[User Action] Filtered logs viewer by date: '%s'", date_str)
         self._date_filter = date_str
+        self._date_threshold = self._compute_date_threshold(date_str)
         self._refresh_view_logs()
 
     @Slot()
@@ -225,7 +239,7 @@ class LogController(QObject):
         if not self._is_historical and self._logs_streaming_visible:
             is_all = (self._current_filter == self.view.str_all)
             if (is_all or real_level == self._current_filter) and self._matches_search(real_level, time_str, text_str):
-                threshold = self._get_date_threshold(self._date_filter) if self._date_filter else ""
+                threshold = self._date_threshold
                 if not threshold or time_str >= threshold:
                     self.view.append_log(is_grouped, real_level, time_str, text_str)
 

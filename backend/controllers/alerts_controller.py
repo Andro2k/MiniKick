@@ -1,8 +1,8 @@
 # backend\controllers\alerts_controller.py
 
 import logging
-from PySide6.QtCore import QObject, Slot
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtCore import QObject, Slot, QUrl
+from PySide6.QtGui import QGuiApplication, QDesktopServices
 from backend.models.alert_models import AlertConfig
 
 logger = logging.getLogger("minikick.controllers.alerts")
@@ -14,6 +14,7 @@ class AlertsController(QObject):
         self.service = service
         self.toast = toast_manager
         self.i18n = i18n
+        self._view_connected = False
         if self.view is not None:
             self._connect_signals()
             self.load_initial_data()
@@ -25,6 +26,9 @@ class AlertsController(QObject):
             self.load_initial_data()
 
     def _connect_signals(self):
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         self.view.config_changed.connect(self._handle_config_changed)
         self.view.test_alert_requested.connect(self._handle_test_alert)
         self.view.copy_url_requested.connect(self._handle_copy_url)
@@ -34,8 +38,18 @@ class AlertsController(QObject):
     def load_initial_data(self):
         if not self.service or not self.view:
             return
-        configs = self.service.storage.load_all()
-        self.view.populate_configs(configs)
+        configs = None
+        if hasattr(self.service, "load_all_configs"):
+            try:
+                res = self.service.load_all_configs()
+                if isinstance(res, (dict, list)):
+                    configs = res
+            except Exception:
+                pass
+        if configs is None and hasattr(self.service, "storage") and hasattr(self.service.storage, "load_all"):
+            configs = self.service.storage.load_all()
+        if configs:
+            self.view.populate_configs(configs)
 
     @Slot(object)
     def _handle_config_changed(self, config: AlertConfig):
@@ -45,7 +59,7 @@ class AlertsController(QObject):
             "[User Action] Updated alert config: platform='%s', type='%s', enabled=%s, duration=%sms",
             config.platform, config.alert_type, config.enabled, config.duration_ms
         )
-        self.service.storage.save_config(config)
+        self.service.save_config(config)
         if self.toast and self.i18n:
             self.toast.show_toast(
                 title=self.i18n.get("alerts.status.saved_title"),
@@ -91,7 +105,5 @@ class AlertsController(QObject):
             return
         url = self.view.alerts_overlay_url
         if url:
-            from PySide6.QtGui import QDesktopServices
-            from PySide6.QtCore import QUrl
             logger.info("[User Action] Opening alerts overlay in default browser: %s", url)
             QDesktopServices.openUrl(QUrl(url))
