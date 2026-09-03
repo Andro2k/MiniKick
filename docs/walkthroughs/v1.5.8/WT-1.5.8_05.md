@@ -45,14 +45,24 @@ Siguiendo la auditoría de modernización de Kick (0 ms WebSocket) y el desacopl
   - Se erradicaron por completo las dobles asignaciones (`self.auth_worker = self.kick_auth_worker` o `self.chat_worker = self.kick_chat_worker`).
   - Ahora se utilizan única y directamente los atributos canónicos: `self.kick_chat_worker`, `self.kick_api_client` y `self.kick_auth_manager`, simétricos con `self.twitch_chat_worker`, `self.twitch_api_client`, etc.
 
+### E. Watchdog Auto-Advance en AlertQueue y Previsualización de Alertas
+- **Causa del bloqueo de previsualización**: En [`AlertQueue`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/alerts/alert_queue.py), la primera alerta quedaba como activa indefinidamente si ningún cliente WebSocket enviaba el ACK `alert_finished` (por ejemplo, si el usuario probaba sin tener el overlay abierto en OBS). Esto congelaba la cola impidiendo probar más alertas (acumulándose en cola).
+- **Watchdog Timer**: Se implementó un temporizador de seguridad automático en `AlertQueue` basado en `duration_ms` + margen que libera automáticamente `_active_alert` y despacha la siguiente alerta sin bloquearse jamás.
+- **Botón Previsualizar Overlay**: En [`AlertsView`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/alerts_view.py) y [`AlertsController`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/alerts_controller.py), se añadió un botón directo para abrir el overlay en el navegador predeterminado del sistema con un clic, permitiendo ver las alertas animadas en tiempo real.
+
+### F. Resolución de Fallo Crítico en Cierre (QThread Destroyed)
+- **Causa**: Al cambiar `self.chat_worker` a `self.kick_chat_worker`, el método `_stop_all_workers()` en [`main_window_core.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/core/main_window_core.py) consultaba el atributo inexistente `chat_worker` (obteniendo `None`), por lo que nunca ordenaba la detención del socket de Kick. Al cerrarse la app, Qt lanzaba `QThread: Destroyed while thread 'Worker_Chat_Socket' is still running`.
+- **Solución**: Se corrigió el mapeo en `_stop_all_workers()` para apuntar a `self.kick_chat_worker` y `self.kick_auth_worker`, y se renombró el `objectName` a `Worker_Kick_Chat_Socket`. El hilo ahora se detiene y cierra limpiamente.
+
 ---
 
 ## 4. Verificación y Resultados
 
 ```bash
 .venv\Scripts\python -m pytest resources/tests/
-============================ 195 passed in 11.41s =============================
+============================ 196 passed in 11.87s =============================
 ```
 
-- **195 pruebas unitarias pasando al 100%**.
-- Cero regresiones en la inicialización de vistas, inyección de dependencias o flujo de chat.
+- **196 pruebas unitarias pasando al 100%**.
+- Nuevo test unitario `test_alert_queue_watchdog_auto_advance` validando el avance desatendido sin bloqueos.
+- Cero advertencias ni hilos huérfanos en el apagado.

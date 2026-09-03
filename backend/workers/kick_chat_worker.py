@@ -23,7 +23,7 @@ class KickChatWorker(QThread):
     def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):
         super().__init__(parent)
         self.i18n = i18n
-        self.setObjectName("Worker_Chat_Socket")
+        self.setObjectName("Worker_Kick_Chat_Socket")
         self.api_client = api_client 
         self.cluster = cluster
         self.key = key

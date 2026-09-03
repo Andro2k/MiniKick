@@ -1,4 +1,4 @@
-# 🎵 MiniKick - Hoja de Ruta y Mejoras Futuras: Sistema de Música
+# MiniKick - Hoja de Ruta y Mejoras Futuras: Sistema de Música
 
 **Módulo**: Sistema de Música (`backend/providers/music/`, `backend/database/music_storage.py`, `backend/database/cache_manager.py`, `frontend/views/music_view.py`)  
 **Fecha de Creación**: 02 de Septiembre, 2026  
@@ -6,7 +6,7 @@
 
 ---
 
-## 📑 Resumen Ejecutivo
+## Resumen Ejecutivo
 
 El sistema de música actual de MiniKick cuenta con una base sólida: persistencia en SQLite con modo WAL, caché inteligente con matching difuso en $\mathcal{O}(1)$, algoritmo de evicción ponderada multicriterio (frecuencia, recencia y peso en MB), pre-descarga asíncrona y controles multimedia globales de teclado.
 
@@ -14,7 +14,7 @@ Este documento recopila las especificaciones técnicas y requerimientos arquitec
 
 ---
 
-## 🚀 Propuestas de Actualización
+## Propuestas de Actualización
 
 ```
 docs/future_updates/
@@ -23,12 +23,12 @@ docs/future_updates/
 
 ---
 
-### 1. 📂 Playlists y Listas de Reproducción Personalizadas (Local & Streamer Presets)
+### 1. Playlists y Listas de Reproducción Personalizadas (Local & Streamer Presets)
 
-#### 🎯 Objetivo
+#### Objetivo
 Permitir al streamer crear, guardar, exportar y reproducir listas temáticas locales (ej. *"Música Chill"*, *"Gaming / Hype"*, *"Lofi Hip Hop"*, *"Rock Clásico"*) que sirvan como lista de respaldo automática cuando la cola de peticiones de los espectadores esté vacía.
 
-#### 🏗️ Diseño de Base de Datos (SQLite)
+#### Diseño de Base de Datos (SQLite)
 ```sql
 -- Tabla de Playlists
 CREATE TABLE IF NOT EXISTS music_playlists (
@@ -60,12 +60,12 @@ CREATE INDEX IF NOT EXISTS idx_playlist_tracks_order ON music_playlist_tracks(pl
 
 ---
 
-### 2. 🔊 Normalización Automática de Volumen (Loudness Normalization / ReplayGain)
+### 2. Normalización Automática de Volumen (Loudness Normalization / ReplayGain)
 
-#### 🎯 Objetivo
+#### Objetivo
 Eliminar variaciones drásticas de volumen entre diferentes videos y canciones de YouTube para proteger los oídos del streamer y de los espectadores.
 
-#### 🏗️ Enfoque Técnico
+#### Enfoque Técnico
 1. **Extracción de Ganancia con `yt-dlp`**:
    - Analizar metadatos de volumen integrados (`volume` / `loudness` / `loudness_db`) proporcionados por los metadatos de YouTube.
 2. **Ajuste Dinámico de Ganancia en `QAudioOutput`**:
@@ -78,12 +78,12 @@ Eliminar variaciones drásticas de volumen entre diferentes videos y canciones d
 
 ---
 
-### 3. 🔍 Búsqueda Difusa a Gran Escala con SQLite FTS5 / Trigramas
+### 3. Búsqueda Difusa a Gran Escala con SQLite FTS5 / Trigramas
 
-#### 🎯 Objetivo
+#### Objetivo
 Escalar el motor de búsqueda en caché cuando la base de datos local contenga miles de pistas consultadas, reduciendo el tiempo de coincidencia difusa de $\mathcal{O}(N)$ en Python a $\mathcal{O}(\log N)$ directamente en el motor C nativo de SQLite.
 
-#### 🏗️ Enfoque Técnico
+#### Enfoque Técnico
 - Activar la tabla virtual `fts5` con tokenizador `trigram`:
 ```sql
 CREATE VIRTUAL TABLE IF NOT EXISTS youtube_cache_fts USING fts5(
@@ -97,12 +97,12 @@ CREATE VIRTUAL TABLE IF NOT EXISTS youtube_cache_fts USING fts5(
 
 ---
 
-### 4. 🌐 Cola de Descargas Resiliente con Reintentos Exponenciales
+### 4. Cola de Descargas Resiliente con Reintentos Exponenciales
 
-#### 🎯 Objetivo
+#### Objetivo
 Mejorar la estabilidad del preloading en conexiones con alta latencia o pérdida de paquetes mediante reintentos con *Exponential Backoff*.
 
-#### 🏗️ Enfoque Técnico
+#### Enfoque Técnico
 - Si la descarga asíncrona de `yt-dlp` falla por un `HTTP 429 (Too Many Requests)` o timeout de socket:
   - Intento 1: Reintento inmediato tras 1s.
   - Intento 2: Reintento tras 3s.
@@ -110,13 +110,13 @@ Mejorar la estabilidad del preloading en conexiones con alta latencia o pérdida
 
 ---
 
-### 5. 🎚️ Overlays Web para OBS con Barra de Progreso Fluida
+### 5. Overlays Web para OBS con Barra de Progreso Fluida
 
-#### 🎯 Objetivo
+#### Objetivo
 Mejorar el overlay web del navegador (`/overlay/music`) para mostrar portadas animadas en alta definición, ecualizador visual dinámico CSS y barras de tiempo sincronizadas mediante WebSockets / SSE.
 
 ---
 
-## 📌 Historial de Versiones y Referencias
+## Historial de Versiones y Referencias
 - **MiniKick Core**: `v1.5.7`
 - **Autor**: Equipo de Arquitectura MiniKick

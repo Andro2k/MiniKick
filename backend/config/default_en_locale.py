@@ -1,6 +1,59 @@
 # backend\config\default_en_locale.py
 
 DEFAULT_DICTIONARY = {
+    "alerts": {
+        "buttons": {
+            "browse": "Browse...",
+            "test": "Test Alert",
+            "test_sent": "Test alert sent to OBS."
+        },
+        "events": {
+            "cheer": "Bits / Cheers (Twitch)",
+            "cheer_desc": "Alert when a viewer sends Bits on Twitch.",
+            "follow": "New Follower",
+            "follow_desc": "Alert when a user follows your channel.",
+            "raid": "Raid / Host",
+            "raid_desc": "Alert when another streamer raids your stream with viewers.",
+            "resub": "Subscription Renewal",
+            "resub_desc": "Alert when a subscriber renews their subscription.",
+            "sub_gift": "Gifted Subscriptions",
+            "sub_gift_desc": "Alert when a user gifts subscriptions to the community.",
+            "subscription": "New Subscription",
+            "subscription_desc": "Alert when a user subscribes for the first time."
+        },
+        "fields": {
+            "active": "Alert Enabled",
+            "duration": "Duration (seconds)",
+            "media": "Image or Video",
+            "media_placeholder": "Path to .png, .gif, .mp4, or .webm file",
+            "sound": "Alert Sound",
+            "sound_placeholder": "Path to .mp3, .wav, or .ogg file",
+            "template": "Text Template",
+            "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
+            "tts": "Read alert with TTS voice",
+            "volume": "Volume"
+        },
+        "header": {
+            "subtitle": "Configure and customize your stream alerts for OBS on Kick and Twitch.",
+            "title": "Live Alerts"
+        },
+        "overlay_card": {
+            "copied_msg": "The alerts overlay URL was copied to the clipboard.",
+            "copied_title": "URL Copied",
+            "copy_btn": "Copy URL",
+            "desc": "Add this URL as a 'Browser Source' in OBS (1920x1080 with transparent background).",
+            "open_btn": "Preview Overlay",
+            "title": "OBS Overlay URL"
+        },
+        "platforms": {
+            "kick": "Kick",
+            "twitch": "Twitch"
+        },
+        "status": {
+            "saved_msg": "The alert configuration was saved successfully.",
+            "saved_title": "Alert Saved"
+        }
+    },
     "chat": {
         "banned_words": {
             "input_placeholder": "ex. insult or banned word",
@@ -557,6 +610,7 @@ DEFAULT_DICTIONARY = {
                 "navigate": "Navigate"
             },
             "tabs": {
+                "alerts": "Alerts",
                 "chat": "Chat",
                 "comandos": "Commands",
                 "dashboard": "Dashboard",
@@ -626,11 +680,6 @@ DEFAULT_DICTIONARY = {
             },
             "chat": {
                 "error_room_id": "Could not retrieve ChatRoom ID from API."
-            },
-            "reward": {
-                "poll_error": "Error querying rewards: {error}",
-                "someone": "Someone",
-                "unknown_reward": "Unknown Reward"
             }
         }
     },
@@ -903,10 +952,6 @@ DEFAULT_DICTIONARY = {
             "col_volume": "Volume",
             "file_not_found_tag": "Not found",
             "file_not_found_tooltip": "Media file does not exist on disk or was moved",
-            "status_unlinked_tag": "Unlinked",
-            "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
-            "status_offline_tag": "Offline",
-            "status_offline_tooltip": "{platform} is not connected",
             "filter_all": "All",
             "filter_cost_asc": "Lowest to highest cost",
             "filter_cost_desc": "Highest to lowest cost",
@@ -916,6 +961,10 @@ DEFAULT_DICTIONARY = {
             "pos_random": "Random",
             "pts_suffix": "{cost} pts",
             "search_placeholder": "Search by name, file...",
+            "status_offline_tag": "Offline",
+            "status_offline_tooltip": "{platform} is not connected",
+            "status_unlinked_tag": "Unlinked",
+            "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Reward",
             "tooltip_edit": "Modify settings",

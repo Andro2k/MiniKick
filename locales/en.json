@@ -40,6 +40,7 @@
             "copied_title": "URL Copied",
             "copy_btn": "Copy URL",
             "desc": "Add this URL as a 'Browser Source' in OBS (1920x1080 with transparent background).",
+            "open_btn": "Preview Overlay",
             "title": "OBS Overlay URL"
         },
         "platforms": {
@@ -677,11 +678,6 @@
             },
             "chat": {
                 "error_room_id": "Could not retrieve ChatRoom ID from API."
-            },
-            "reward": {
-                "poll_error": "Error querying rewards: {error}",
-                "someone": "Someone",
-                "unknown_reward": "Unknown Reward"
             }
         }
     },

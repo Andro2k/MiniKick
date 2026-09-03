@@ -40,6 +40,7 @@
             "copied_title": "URL Copiada",
             "copy_btn": "Copiar URL",
             "desc": "Agrega esta URL como 'Fuente de Navegador' en OBS (1920x1080 con fondo transparente).",
+            "open_btn": "Previsualizar Overlay",
             "title": "URL del Overlay para OBS"
         },
         "platforms": {
@@ -677,11 +678,6 @@
             },
             "chat": {
                 "error_room_id": "No se pudo obtener el ID de la sala de chat desde la API."
-            },
-            "reward": {
-                "poll_error": "Error al consultar recompensas: {error}",
-                "someone": "Alguien",
-                "unknown_reward": "Recompensa Desconocida"
             }
         }
     },

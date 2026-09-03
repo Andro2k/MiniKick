@@ -263,6 +263,7 @@ class AlertsView(BaseView):
     config_changed = Signal(object)
     test_alert_requested = Signal(str, str)
     copy_url_requested = Signal()
+    open_browser_requested = Signal()
     view_shown = Signal()
 
     def __init__(self, i18n, alerts_overlay_url: str = "", parent=None):
@@ -316,8 +317,18 @@ class AlertsView(BaseView):
         )
         self.btn_copy_url.clicked.connect(self.copy_url_requested.emit)
 
+        self.btn_open_browser = ModernButton(
+            text=self.i18n.get("alerts.overlay_card.open_btn"),
+            role="action_outlined",
+            icon_name="eye.svg",
+            icon_size=15,
+            parent=self
+        )
+        self.btn_open_browser.clicked.connect(self.open_browser_requested.emit)
+
         url_row.addWidget(self.edit_overlay_url, stretch=1)
         url_row.addWidget(self.btn_copy_url)
+        url_row.addWidget(self.btn_open_browser)
         overlay_card.addLayout(url_row)
 
         self.main_layout.addWidget(overlay_card)

@@ -28,6 +28,7 @@ class AlertsController(QObject):
         self.view.config_changed.connect(self._handle_config_changed)
         self.view.test_alert_requested.connect(self._handle_test_alert)
         self.view.copy_url_requested.connect(self._handle_copy_url)
+        self.view.open_browser_requested.connect(self._handle_open_browser)
         self.view.view_shown.connect(self.load_initial_data)
 
     def load_initial_data(self):
@@ -83,3 +84,14 @@ class AlertsController(QObject):
                     state="success",
                     tag="alert_overlay_copy"
                 )
+
+    @Slot()
+    def _handle_open_browser(self):
+        if not self.view:
+            return
+        url = self.view.alerts_overlay_url
+        if url:
+            from PySide6.QtGui import QDesktopServices
+            from PySide6.QtCore import QUrl
+            logger.info("[User Action] Opening alerts overlay in default browser: %s", url)
+            QDesktopServices.openUrl(QUrl(url))

@@ -677,9 +677,8 @@ class MainWindowCore(QMainWindow):
 
     def _stop_all_workers(self):
         worker_map = [
-            ("Worker_Chat_Socket", getattr(self, 'chat_worker', None)),
-            ("Worker_Reward_Polling", getattr(self, 'reward_worker', None)),
-            ("Worker_Auth", getattr(self, 'auth_worker', None)),
+            ("Worker_Kick_Chat_Socket", getattr(self, 'kick_chat_worker', None)),
+            ("Worker_Kick_Auth", getattr(self, 'kick_auth_worker', None)),
             ("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None)),
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
