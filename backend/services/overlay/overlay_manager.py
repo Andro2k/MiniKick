@@ -21,12 +21,15 @@ class OverlayServerManager:
         self.chat_clients = []
         self.music_clients = []
         self.widget_clients = []
+        self.alert_clients = []
+        self.on_alert_finished = None
 
         self.ws_clients = {
             "rewards": set(),
             "chat": set(),
             "music": set(),
-            "widgets": set()
+            "widgets": set(),
+            "alerts": set()
         }
         self.ws_lock = threading.Lock()
 
@@ -95,6 +98,9 @@ class OverlayServerManager:
     def get_widgets_overlay_url(self) -> str:
         return self.get_shoutout_overlay_url()
 
+    def get_alerts_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/alerts?token={self.session_token}"
+
     def start(self):
         try:
             self.server = ThreadingHTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
@@ -141,6 +147,32 @@ class OverlayServerManager:
 
         logger.info("[Overlay] Emitiendo alerta multimedia de recompensa: '%s' (%s)", reward_name, os.path.basename(filepath))
         self._broadcast("clients", "rewards", payload)
+
+    def trigger_alert(self, payload: dict):
+        import os
+        sound_path = payload.get("sound_path", "")
+        media_path = payload.get("media_path", "")
+
+        sound_url = ""
+        if sound_path and os.path.exists(sound_path):
+            safe_sound = urllib.parse.quote(sound_path)
+            sound_url = f"http://localhost:{self.port}/media?path={safe_sound}&token={self.session_token}"
+
+        media_url = ""
+        media_ext = ""
+        if media_path and os.path.exists(media_path):
+            _, ext = os.path.splitext(media_path.lower())
+            media_ext = ext
+            safe_media = urllib.parse.quote(media_path)
+            media_url = f"http://localhost:{self.port}/media?path={safe_media}&token={self.session_token}"
+
+        broadcast_payload = dict(payload)
+        broadcast_payload["sound_url"] = sound_url
+        broadcast_payload["media_url"] = media_url
+        broadcast_payload["media_ext"] = media_ext
+
+        logger.info("[Overlay] Emitiendo alerta en vivo: '%s' (%s)", payload.get("formatted_text"), payload.get("id"))
+        self._broadcast("alert_clients", "alerts", broadcast_payload)
 
     def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = ""):
         payload = {

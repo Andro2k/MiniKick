@@ -12,6 +12,7 @@ from .timer_controller import TimerController
 from .update_controller import UpdateController
 from .widget_controller import WidgetController
 from .schedule_controller import ScheduleController
+from .alerts_controller import AlertsController
 
 __all__ = [
     "ChatController",
@@ -25,5 +26,6 @@ __all__ = [
     "TimerController",
     "UpdateController",
     "WidgetController",
-    "ScheduleController"
+    "ScheduleController",
+    "AlertsController"
 ]

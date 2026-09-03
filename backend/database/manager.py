@@ -292,6 +292,20 @@ class DatabaseManager:
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS alert_configs (
+                    platform TEXT NOT NULL,
+                    alert_type TEXT NOT NULL,
+                    enabled INTEGER NOT NULL DEFAULT 1,
+                    sound_path TEXT DEFAULT '',
+                    media_path TEXT DEFAULT '',
+                    text_template TEXT DEFAULT '{user}',
+                    duration_ms INTEGER NOT NULL DEFAULT 5000,
+                    sound_volume REAL NOT NULL DEFAULT 0.8,
+                    tts_read INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (platform, alert_type)
+                )
+            """)
             conn.commit()
 
     def _create_indexes_and_views(self) -> None:

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick Alerts Overlay</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-font: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --secondary-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --kick-color: #53fc18;
+            --twitch-color: #9146ff;
+            --default-color: #00d2ff;
+            --bg-glass: rgba(18, 19, 23, 0.88);
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --text-main: #ffffff;
+            --text-sub: #b3b9c5;
+            --card-radius: 20px;
+            --glow-spread: 25px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: transparent;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--secondary-font);
+        }
+
+        #alert-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 380px;
+            max-width: 620px;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.85) translateY(30px);
+            transition: opacity 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                        transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #alert-container.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        #alert-container.dismissing {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+            transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+        }
+
+        .media-box {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: -15px;
+            z-index: 2;
+        }
+
+        .media-box img, .media-box video {
+            max-width: 240px;
+            max-height: 200px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+        }
+
+        .alert-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--card-radius);
+            padding: 24px 32px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .alert-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-color, var(--default-color)), transparent);
+            box-shadow: 0 0 var(--glow-spread) var(--accent-color, var(--default-color));
+        }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .platform-badge.kick {
+            color: #000;
+            background: var(--kick-color);
+            border-color: var(--kick-color);
+            box-shadow: 0 0 12px rgba(83, 252, 24, 0.4);
+        }
+
+        .platform-badge.twitch {
+            color: #fff;
+            background: var(--twitch-color);
+            border-color: var(--twitch-color);
+            box-shadow: 0 0 12px rgba(145, 70, 255, 0.4);
+        }
+
+        .alert-title {
+            font-family: var(--primary-font);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.25;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .alert-title span.highlight {
+            color: var(--accent-color, var(--default-color));
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .alert-message {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-top: 8px;
+            font-style: italic;
+            word-break: break-word;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 100%;
+            background: var(--accent-color, var(--default-color));
+            box-shadow: 0 0 10px var(--accent-color, var(--default-color));
+            transform-origin: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="alert-container">
+        <div class="media-box" id="media-box"></div>
+        <div class="alert-card" id="alert-card">
+            <div class="platform-badge" id="platform-badge">KICK</div>
+            <div class="alert-title" id="alert-title">¡Nuevo Seguidor!</div>
+            <div class="alert-message" id="alert-message" style="display: none;"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden audio element -->
+    <audio id="alert-audio" preload="auto"></audio>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        const container = document.getElementById('alert-container');
+        const mediaBox = document.getElementById('media-box');
+        const platformBadge = document.getElementById('platform-badge');
+        const alertTitle = document.getElementById('alert-title');
+        const alertMsg = document.getElementById('alert-message');
+        const progressFill = document.getElementById('progress-fill');
+        const alertAudio = document.getElementById('alert-audio');
+
+        let ws = null;
+        let activeAlertTimer = null;
+        let isPlaying = false;
+        const localQueue = [];
+
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) {}
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=alerts&token=${encodeURIComponent(token)}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Alerts Overlay] WebSocket conectado.");
+            };
+
+            ws.onmessage = function (event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data && data.id) {
+                        localQueue.push(data);
+                        processNextAlert();
+                    }
+                } catch (e) {
+                    console.error("[Alerts Overlay] Error al procesar mensaje:", e);
+                }
+            };
+
+            ws.onclose = function () {
+                console.warn("[Alerts Overlay] Conexión cerrada. Reconectando en 3s...");
+                setTimeout(connectWS, 3000);
+            };
+
+            ws.onerror = function (err) {
+                console.error("[Alerts Overlay] Error de WebSocket:", err);
+            };
+        }
+
+        function processNextAlert() {
+            if (isPlaying || localQueue.length === 0) return;
+            isPlaying = true;
+            const alertData = localQueue.shift();
+            showAlert(alertData);
+        }
+
+        function showAlert(data) {
+            const platform = (data.platform || 'kick').toLowerCase();
+            const accentColor = platform === 'twitch' ? 'var(--twitch-color)' : 'var(--kick-color)';
+            document.documentElement.style.setProperty('--accent-color', accentColor);
+
+            platformBadge.textContent = platform.toUpperCase();
+            platformBadge.className = `platform-badge ${platform}`;
+
+            alertTitle.innerHTML = data.formatted_text || `¡${data.username || 'Alguien'} te sigue!`;
+
+            if (data.message) {
+                alertMsg.textContent = `"${data.message}"`;
+                alertMsg.style.display = 'block';
+            } else {
+                alertMsg.style.display = 'none';
+            }
+
+            mediaBox.innerHTML = '';
+            if (data.media_url) {
+                const ext = (data.media_ext || '').toLowerCase();
+                if (ext === '.mp4' || ext === '.webm') {
+                    const video = document.createElement('video');
+                    video.src = data.media_url;
+                    video.autoplay = true;
+                    video.loop = true;
+                    video.muted = true;
+                    mediaBox.appendChild(video);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = data.media_url;
+                    mediaBox.appendChild(img);
+                }
+            }
+
+            if (data.sound_url) {
+                alertAudio.src = data.sound_url;
+                alertAudio.volume = Math.max(0.0, Math.min(1.0, data.sound_volume ?? 0.8));
+                alertAudio.play().catch(e => console.warn("[Alerts Audio] Play blocked:", e));
+            }
+
+            const duration = data.duration_ms || 5000;
+            progressFill.style.transition = 'none';
+            progressFill.style.transform = 'scaleX(1)';
+
+            container.classList.remove('dismissing');
+            container.classList.add('active');
+
+            requestAnimationFrame(() => {
+                progressFill.style.transition = `transform ${duration}ms linear`;
+                progressFill.style.transform = 'scaleX(0)';
+            });
+
+            activeAlertTimer = setTimeout(() => {
+                container.classList.remove('active');
+                container.classList.add('dismissing');
+
+                setTimeout(() => {
+                    mediaBox.innerHTML = '';
+                    try { alertAudio.pause(); alertAudio.currentTime = 0; } catch (e) {}
+                    isPlaying = false;
+
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'alert_finished', id: data.id }));
+                    }
+
+                    processNextAlert();
+                }, 350);
+
+            }, duration);
+        }
+
+        connectWS();
+    </script>
+</body>
+</html>

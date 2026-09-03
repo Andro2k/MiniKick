@@ -1,6 +1,6 @@
 # backend\services\__init__.py
 
-from .auth.oauth_service import AuthManager, TwitchAuthManager, OAuthCallbackServer
+from .auth.oauth_service import KickAuthManager, TwitchAuthManager, OAuthCallbackServer
 from .chat.chat_service import ChatService
 from .chat.command_service import CommandService
 from .chat.pipeline import ChatMessageDTO, MessagePipeline
@@ -18,9 +18,10 @@ from .system.translation_service import TranslationService
 from .system.updater_service import GithubUpdateProvider, WindowsInstaller, UpdateManager
 from .system.widget_service import WidgetService
 from .schedule.schedule_service import ScheduleService
+from .alerts.alert_service import AlertService
 
 __all__ = [
-    "AuthManager",
+    "KickAuthManager",
     "TwitchAuthManager",
     "OAuthCallbackServer",
     "ChatService",
@@ -42,5 +43,6 @@ __all__ = [
     "WindowsInstaller",
     "UpdateManager",
     "WidgetService",
-    "ScheduleService"
+    "ScheduleService",
+    "AlertService"
 ]

@@ -67,12 +67,13 @@ class WidgetController(QObject):
         self._save_timer.start()
 
     def _flush_saves(self):
-        for w_id in self._pending_saves:
+        saved_ids = list(self._pending_saves)
+        self._pending_saves.clear()
+        for w_id in saved_ids:
             w = self.widget_service.get_widget(w_id)
             if w:
                 self.widget_service.storage.save_widget(w_id, w.get("is_active", True), w.get("command", ""), w.get("cooldown", 3), w.get("permission", "everyone"), w.get("config", {}))
-        self._pending_saves.clear()
-        self.sync_commands_with_db()
+                self._sync_single_widget_command(w_id, w)
 
     def _connect_signals(self):
         if self.view:
@@ -160,6 +161,63 @@ class WidgetController(QObject):
         finally:
             self._is_syncing_db = False
 
+    def _sync_single_widget_command(self, w_id: str, data: dict | None = None) -> None:
+        tag = self.PLUGIN_TAGS.get(w_id)
+        if not tag:
+            return
+
+        if data is None:
+            data = self.widget_service.get_widget(w_id)
+        if not data:
+            return
+
+        cmd_name = data.get("command", "").strip()
+        if not cmd_name:
+            return
+
+        if not cmd_name.startswith("!"):
+            cmd_name = "!" + cmd_name
+
+        is_active = data.get("is_active", True)
+        cooldown = data.get("cooldown", 3)
+        perm = data.get("permission", "everyone")
+
+        aliases = ""
+        if w_id == "score":
+            aliases = "!win, !loss, !lose, !victoria, !derrota"
+        elif w_id == "death":
+            aliases = "!muerte, !death, !deaths, !muertes"
+        elif w_id == "shoutout":
+            aliases = "!shoutout"
+
+        existing_cmd = self.command_service.get_command_by_trigger(cmd_name)
+        if existing_cmd:
+            if (existing_cmd.get("response") == tag and
+                existing_cmd.get("is_active") == is_active and
+                existing_cmd.get("cooldown") == cooldown and
+                existing_cmd.get("permission") == perm and
+                existing_cmd.get("aliases") == aliases):
+                return
+
+        apply_k = existing_cmd.get("apply_kick", True) if existing_cmd else True
+        apply_tw = existing_cmd.get("apply_twitch", True) if existing_cmd else True
+        apply_yt = existing_cmd.get("apply_youtube", True) if existing_cmd else True
+        apply_tk = existing_cmd.get("apply_tiktok", True) if existing_cmd else True
+
+        self.command_service.save_command(
+            trigger=cmd_name,
+            response=tag,
+            is_active=is_active,
+            cooldown=cooldown,
+            aliases=aliases,
+            is_regex=False,
+            permission=perm,
+            apply_kick=apply_k,
+            apply_twitch=apply_tw,
+            apply_youtube=apply_yt,
+            apply_tiktok=apply_tk
+        )
+
     def sync_commands_with_db(self):
         if getattr(self, "_is_syncing_db", False):
             return
@@ -167,48 +225,7 @@ class WidgetController(QObject):
         try:
             widgets = self.widget_service.get_all_widgets()
             for w_id, data in widgets.items():
-                tag = self.PLUGIN_TAGS.get(w_id)
-                if not tag:
-                    continue
-                
-                cmd_name = data.get("command", "").strip()
-                if not cmd_name:
-                    continue
-
-                if not cmd_name.startswith("!"):
-                    cmd_name = "!" + cmd_name
-
-                is_active = data.get("is_active", True)
-                cooldown = data.get("cooldown", 3)
-                perm = data.get("permission", "everyone")
-
-                aliases = ""
-                if w_id == "score":
-                    aliases = "!win, !loss, !lose, !victoria, !derrota"
-                elif w_id == "death":
-                    aliases = "!muerte, !death, !deaths, !muertes"
-                elif w_id == "shoutout":
-                    aliases = "!shoutout"
-
-                existing_cmd = self.command_service.get_command_by_trigger(cmd_name)
-                apply_k = existing_cmd.get("apply_kick", True) if existing_cmd else True
-                apply_tw = existing_cmd.get("apply_twitch", True) if existing_cmd else True
-                apply_yt = existing_cmd.get("apply_youtube", True) if existing_cmd else True
-                apply_tk = existing_cmd.get("apply_tiktok", True) if existing_cmd else True
-
-                self.command_service.save_command(
-                    trigger=cmd_name,
-                    response=tag,
-                    is_active=is_active,
-                    cooldown=cooldown,
-                    aliases=aliases,
-                    is_regex=False,
-                    permission=perm,
-                    apply_kick=apply_k,
-                    apply_twitch=apply_tw,
-                    apply_youtube=apply_yt,
-                    apply_tiktok=apply_tk
-                )
+                self._sync_single_widget_command(w_id, data)
         finally:
             self._is_syncing_db = False
 
@@ -248,7 +265,8 @@ class WidgetController(QObject):
                 self.toast.show_toast(
                     title=title,
                     message=message,
-                    state=state
+                    state=state,
+                    tag=f"widget_{widget_id}"
                 )
 
         self._trigger_deferred_save(widget_id)

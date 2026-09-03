@@ -1,7 +1,7 @@
 # backend\providers\__init__.py
 
 from .chat.kick_client import KickAPIClient
-from .chat.kick_websocket import ChatSocketManager
+from .chat.kick_websocket import KickWebSocketManager
 from .chat.twitch_client import TwitchAPIClient
 from .chat.twitch_websocket import TwitchSocketManager
 from .chat.youtube_chat_provider import YouTubeChatProvider
@@ -13,7 +13,7 @@ from .voices.tts_piper import PiperTTSProvider
 
 __all__ = [
     "KickAPIClient",
-    "ChatSocketManager",
+    "KickWebSocketManager",
     "TwitchAPIClient",
     "TwitchSocketManager",
     "YouTubeChatProvider",

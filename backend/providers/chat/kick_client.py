@@ -121,6 +121,7 @@ class KickAPIClient:
 
         return {
             "broadcaster_id": user_data.get("id", 0),
+            "channel_id": channel_data.get("id") or chatroom_data.get("channel_id") or user_data.get("id", 0),
             "username": user_data.get("username", username),
             "bio": clean_bio,
             "room_id": chatroom_data.get("id", "-"),

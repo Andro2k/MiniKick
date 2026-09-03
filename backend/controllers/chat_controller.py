@@ -406,7 +406,8 @@ class ChatController(QObject):
                 self.toast.show_toast(
                     title=status_title,
                     message=status_msg,
-                    state=state_color
+                    state=state_color,
+                    tag="tts_enabled"
                 )
 
         new_read_name_state = settings["read_name"]
@@ -416,7 +417,7 @@ class ChatController(QObject):
                 title = self.i18n.get("chat.status.read_name_title")
                 msg = self.i18n.get("chat.status.read_name_active") if new_read_name_state else self.i18n.get("chat.status.read_name_inactive")
                 color = "success" if new_read_name_state else "warning"
-                self.toast.show_toast(title=title, message=msg, state=color)
+                self.toast.show_toast(title=title, message=msg, state=color, tag="tts_read_name")
 
         new_use_cmd_state = settings["use_command"]
         if hasattr(self, '_use_command_enabled') and self._use_command_enabled != new_use_cmd_state:
@@ -425,7 +426,7 @@ class ChatController(QObject):
                 title = self.i18n.get("chat.status.use_command_title")
                 msg = self.i18n.get("chat.status.use_command_active") if new_use_cmd_state else self.i18n.get("chat.status.use_command_inactive")
                 color = "success" if new_use_cmd_state else "warning"
-                self.toast.show_toast(title=title, message=msg, state=color)
+                self.toast.show_toast(title=title, message=msg, state=color, tag="tts_use_command")
 
     def _flush_settings_save(self) -> None:
         if not self._tts_settings_cache:

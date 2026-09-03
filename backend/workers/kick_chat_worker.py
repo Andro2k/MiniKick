@@ -4,7 +4,7 @@ import logging
 import datetime
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat.kick_client import KickAPIClient
-from backend.providers.chat.kick_websocket import ChatSocketManager
+from backend.providers.chat.kick_websocket import KickWebSocketManager
 from backend.services.chat.pipeline import ChatMessageDTO
 
 logger = logging.getLogger("minikick.workers.kick_chat")
@@ -17,6 +17,8 @@ class KickChatWorker(QThread):
     poll_deleted = Signal()
     pinned_created = Signal(object)
     pinned_deleted = Signal()
+    alert_received = Signal(object)
+    reward_redeemed = Signal(str, str, str)
     
     def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):
         super().__init__(parent)
@@ -25,7 +27,7 @@ class KickChatWorker(QThread):
         self.api_client = api_client 
         self.cluster = cluster
         self.key = key
-        self.chat_manager = ChatSocketManager(cluster, key)
+        self.chat_manager = KickWebSocketManager(cluster, key)
         self._is_stopped = False
 
     def run(self):
@@ -36,20 +38,26 @@ class KickChatWorker(QThread):
                 return 
 
             room_id = user_data.get("room_id")
+            channel_id = int(user_data.get("channel_id") or user_data.get("broadcaster_id") or 0)
+            followers_count = int(user_data.get("followers") or 0)
             if not room_id:
                 raise ValueError(self.i18n.get("main.workers.chat.error_room_id"))
 
-            logger.info("[KickChatWorker] User data fetched successfully. Room ID: %s", room_id)
+            logger.info("[KickChatWorker] User data fetched successfully. Room ID: %s, Channel ID: %s, Followers: %s", room_id, channel_id, followers_count)
             self.connection_success.emit(user_data)
 
             while not self._is_stopped:
                 self.chat_manager.start_socket(
                     room_id,
+                    channel_id=channel_id,
+                    initial_followers=followers_count,
                     on_message=self._dispatch_message,
                     on_poll_update=self._dispatch_poll_update,
                     on_poll_delete=self._dispatch_poll_delete,
                     on_pinned_created=self._dispatch_pinned_created,
                     on_pinned_deleted=self._dispatch_pinned_deleted,
+                    on_alert=self._dispatch_alert,
+                    on_reward_redeemed=self._dispatch_reward,
                 )
                 if not self._is_stopped:
                     logger.debug("[KickChatWorker] Socket disconnected. Reconnecting in 5s...")
@@ -90,6 +98,14 @@ class KickChatWorker(QThread):
     def _dispatch_pinned_deleted(self):
         if not self._is_stopped:
             self.pinned_deleted.emit()
+
+    def _dispatch_alert(self, alert_event):
+        if not self._is_stopped:
+            self.alert_received.emit(alert_event)
+
+    def _dispatch_reward(self, username: str, reward_title: str, user_input: str):
+        if not self._is_stopped:
+            self.reward_redeemed.emit(username, reward_title, user_input)
 
     def stop(self):
         logger.info("[KickChatWorker] Stopping Kick chat worker...")

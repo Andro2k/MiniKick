@@ -1,4 +1,56 @@
 {
+    "alerts": {
+        "buttons": {
+            "browse": "Examinar...",
+            "test": "Probar Alerta",
+            "test_sent": "Alerta de prueba enviada a OBS."
+        },
+        "events": {
+            "cheer": "Bits / Cheers (Twitch)",
+            "cheer_desc": "Alerta cuando un espectador envía Bits en Twitch.",
+            "follow": "Nuevo Seguidor",
+            "follow_desc": "Alerta cuando un usuario sigue tu canal.",
+            "raid": "Raid / Host",
+            "raid_desc": "Alerta cuando otro streamer te envía una raid con espectadores.",
+            "resub": "Renovación de Suscripción",
+            "resub_desc": "Alerta cuando un suscriptor renueva su suscripción.",
+            "sub_gift": "Suscripciones de Regalo",
+            "sub_gift_desc": "Alerta cuando un usuario regala suscripciones a la comunidad.",
+            "subscription": "Nueva Suscripción",
+            "subscription_desc": "Alerta cuando un usuario se suscribe por primera vez."
+        },
+        "fields": {
+            "active": "Alerta Activa",
+            "duration": "Duración (segundos)",
+            "media": "Imagen o Video",
+            "media_placeholder": "Ruta a archivo .png, .gif, .mp4 o .webm",
+            "sound": "Sonido de Alerta",
+            "sound_placeholder": "Ruta a archivo .mp3, .wav u .ogg",
+            "template": "Plantilla de Texto",
+            "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
+            "tts": "Leer alerta con voz (TTS)",
+            "volume": "Volumen"
+        },
+        "header": {
+            "subtitle": "Configura y personaliza las alertas de tu stream en OBS para Kick y Twitch.",
+            "title": "Alertas en Vivo"
+        },
+        "overlay_card": {
+            "copied_msg": "La URL del overlay de alertas se copió al portapapeles.",
+            "copied_title": "URL Copiada",
+            "copy_btn": "Copiar URL",
+            "desc": "Agrega esta URL como 'Fuente de Navegador' en OBS (1920x1080 con fondo transparente).",
+            "title": "URL del Overlay para OBS"
+        },
+        "platforms": {
+            "kick": "Kick",
+            "twitch": "Twitch"
+        },
+        "status": {
+            "saved_msg": "La configuración de la alerta se guardó correctamente.",
+            "saved_title": "Alerta Guardada"
+        }
+    },
     "chat": {
         "banned_words": {
             "input_placeholder": "ej. insulto o palabra prohibida",
@@ -555,6 +607,7 @@
                 "navigate": "Navegar"
             },
             "tabs": {
+                "alerts": "Alertas",
                 "chat": "Chat",
                 "comandos": "Comandos",
                 "dashboard": "Panel de Control",
@@ -901,10 +954,6 @@
             "col_volume": "Volumen",
             "file_not_found_tag": "No encontrado",
             "file_not_found_tooltip": "El archivo multimedia no existe en el disco o fue movido de ubicación",
-            "status_unlinked_tag": "Desvinculada",
-            "status_unlinked_tooltip": "Esta recompensa fue eliminada o no existe en {platform}",
-            "status_offline_tag": "Desconectado",
-            "status_offline_tooltip": "{platform} no está conectado",
             "filter_all": "Todos",
             "filter_cost_asc": "Menor a mayor costo",
             "filter_cost_desc": "Mayor a menor costo",
@@ -914,6 +963,10 @@
             "pos_random": "Aleatorio",
             "pts_suffix": "{cost} pts",
             "search_placeholder": "Buscar por nombre, archivo...",
+            "status_offline_tag": "Desconectado",
+            "status_offline_tooltip": "{platform} no está conectado",
+            "status_unlinked_tag": "Desvinculada",
+            "status_unlinked_tooltip": "Esta recompensa fue eliminada o no existe en {platform}",
             "title": "Recompensas Vinculadas",
             "tooltip_delete": "Eliminar Recompensa",
             "tooltip_edit": "Modificar ajustes",

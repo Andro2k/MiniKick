@@ -87,7 +87,8 @@ class SettingsController(QObject):
             self.toast.show_toast(
                 title=self.view.i18n.get(title_key),
                 message=self.view.i18n.get(msg_key),
-                state=state_color
+                state=state_color,
+                tag="minimize_tray"
             )
 
     @Slot()

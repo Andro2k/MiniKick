@@ -10,12 +10,12 @@ from backend.workers import CreateRewardWorker, UpdateRewardWorker
 logger = logging.getLogger("minikick.controllers.rewards")
 
 class RewardsController(QObject):
-    def __init__(self, view, service, toast_manager=None, auth_manager=None, twitch_auth_manager=None, twitch_api_client=None, twitch_broadcaster_id=""):
+    def __init__(self, view, service, toast_manager=None, kick_auth_manager=None, twitch_auth_manager=None, twitch_api_client=None, twitch_broadcaster_id=""):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
-        self.auth_manager = auth_manager
+        self.kick_auth_manager = kick_auth_manager
         self.twitch_auth_manager = twitch_auth_manager
         self.twitch_api_client = twitch_api_client
         self.twitch_broadcaster_id = twitch_broadcaster_id
@@ -33,7 +33,7 @@ class RewardsController(QObject):
         self.twitch_broadcaster_id = broadcaster_id
 
     def _get_connected_platforms(self) -> dict[str, bool]:
-        kick_auth = self.auth_manager.is_authenticated() if self.auth_manager else False
+        kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False
         twitch_auth = self.twitch_auth_manager.is_authenticated() if self.twitch_auth_manager else False
         return {"kick": kick_auth, "twitch": twitch_auth}
 
@@ -176,7 +176,7 @@ class RewardsController(QObject):
     def _handle_add(self):
         logger.info("[User Action] Opened Add Reward dialog")
         available_rewards = self._get_available_rewards()
-        kick_auth = self.auth_manager.is_authenticated() if self.auth_manager else False
+        kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False
         twitch_auth = self.twitch_auth_manager.is_authenticated() if self.twitch_auth_manager else False
         res = self.view.show_add_dialog(available_rewards, self.rewards_details_map, kick_authenticated=kick_auth, twitch_authenticated=twitch_auth)
         if not res:
@@ -222,7 +222,7 @@ class RewardsController(QObject):
                 self.create_reward_worker.start()
 
             else:
-                if not self.auth_manager or not self.auth_manager.is_authenticated():
+                if not self.kick_auth_manager or not self.kick_auth_manager.is_authenticated():
                     if self.toast:
                         self.toast.show_toast(
                             title=self.view.i18n.get("common.status.error"),
@@ -238,7 +238,7 @@ class RewardsController(QObject):
                         state="info"
                     )
 
-                api_client = KickAPIClient(auth_provider=self.auth_manager)
+                api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
                 self.create_reward_worker = CreateRewardWorker(
                     api_client=api_client,
                     payload=config["new_reward_data"],
@@ -313,7 +313,7 @@ class RewardsController(QObject):
             
         logger.info("[User Action] Opened Edit Reward dialog: name='%s'", reward_name)
         available_rewards = self._get_available_rewards(ignore_reward=reward_name)
-        kick_auth = self.auth_manager.is_authenticated() if self.auth_manager else False
+        kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False
         twitch_auth = self.twitch_auth_manager.is_authenticated() if self.twitch_auth_manager else False
         res = self.view.show_edit_dialog(available_rewards, mappings[reward_name], reward_name, self.rewards_details_map, kick_authenticated=kick_auth, twitch_authenticated=twitch_auth)
         if res:
@@ -363,7 +363,7 @@ class RewardsController(QObject):
                     self.update_reward_worker.finished.connect(self.update_reward_worker.deleteLater)
                     self.update_reward_worker.start()
 
-                elif target_platform == "kick" and reward_id and self.auth_manager and self.auth_manager.is_authenticated():
+                elif target_platform == "kick" and reward_id and self.kick_auth_manager and self.kick_auth_manager.is_authenticated():
                     if self.toast:
                         self.toast.show_toast(
                             title=self.view.i18n.get("rewards.status.updated"),
@@ -379,7 +379,7 @@ class RewardsController(QObject):
                         "is_user_input_required": updated_config.get("is_user_input_required", False)
                     }
 
-                    api_client = KickAPIClient(auth_provider=self.auth_manager)
+                    api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
                     self.update_reward_worker = UpdateRewardWorker(
                         api_client=api_client,
                         reward_id=reward_id,

@@ -1,6 +1,7 @@
 # backend\services\chat\chat_service.py
 
 import logging
+from PySide6.QtCore import QTimer
 
 logger = logging.getLogger("minikick.services.chat")
 
@@ -8,6 +9,12 @@ class ChatService:
     def __init__(self, tts_manager, settings_storage):
         self.tts = tts_manager
         self.storage = settings_storage
+        self._pending_volume: int | None = None
+        self._pending_speed: int | None = None
+        self._audio_timer = QTimer()
+        self._audio_timer.setSingleShot(True)
+        self._audio_timer.setInterval(300)
+        self._audio_timer.timeout.connect(self._flush_audio_params)
         self._init_tts_params()
 
     def _init_tts_params(self):
@@ -53,46 +60,57 @@ class ChatService:
         }
 
     def save_settings(self, settings: dict):
-        self.storage.save_bool("tts_enabled", settings.get("enabled", True))
-        self.storage.save_bool("tts_read_name", settings.get("read_name", True))
-        self.storage.save_bool("tts_use_command", settings.get("use_command", False))
-        self.storage.save_string("tts_command", settings.get("command", "!tts"))
-        self.storage.save_string("tts_ignored_users", settings.get("ignored_users", ""))
-        self.storage.save_string("tts_banned_words", settings.get("banned_words", ""))
-        
+        batch = {
+            "tts_enabled": settings.get("enabled", True),
+            "tts_read_name": settings.get("read_name", True),
+            "tts_use_command": settings.get("use_command", False),
+            "tts_command": settings.get("command", "!tts"),
+            "tts_ignored_users": settings.get("ignored_users", ""),
+            "tts_banned_words": settings.get("banned_words", ""),
+        }
         provider = settings.get("provider", "piper")
         if "role_voice_broadcaster" in settings:
-            self.storage.save_string(f"tts_voice_{provider}_broadcaster", settings["role_voice_broadcaster"])
+            batch[f"tts_voice_{provider}_broadcaster"] = settings["role_voice_broadcaster"]
         if "role_voice_moderator" in settings:
-            self.storage.save_string(f"tts_voice_{provider}_moderator", settings["role_voice_moderator"])
+            batch[f"tts_voice_{provider}_moderator"] = settings["role_voice_moderator"]
         if "role_voice_vip" in settings:
-            self.storage.save_string(f"tts_voice_{provider}_vip", settings["role_voice_vip"])
+            batch[f"tts_voice_{provider}_vip"] = settings["role_voice_vip"]
         if "role_voice_subscriber" in settings:
-            self.storage.save_string(f"tts_voice_{provider}_subscriber", settings["role_voice_subscriber"])
+            batch[f"tts_voice_{provider}_subscriber"] = settings["role_voice_subscriber"]
         if "role_enabled_everyone" in settings:
-            self.storage.save_bool("tts_role_enabled_everyone", settings["role_enabled_everyone"])
+            batch["tts_role_enabled_everyone"] = settings["role_enabled_everyone"]
         if "role_enabled_broadcaster" in settings:
-            self.storage.save_bool("tts_role_enabled_broadcaster", settings["role_enabled_broadcaster"])
+            batch["tts_role_enabled_broadcaster"] = settings["role_enabled_broadcaster"]
         if "role_enabled_moderator" in settings:
-            self.storage.save_bool("tts_role_enabled_moderator", settings["role_enabled_moderator"])
+            batch["tts_role_enabled_moderator"] = settings["role_enabled_moderator"]
         if "role_enabled_vip" in settings:
-            self.storage.save_bool("tts_role_enabled_vip", settings["role_enabled_vip"])
+            batch["tts_role_enabled_vip"] = settings["role_enabled_vip"]
         if "role_enabled_subscriber" in settings:
-            self.storage.save_bool("tts_role_enabled_subscriber", settings["role_enabled_subscriber"])
+            batch["tts_role_enabled_subscriber"] = settings["role_enabled_subscriber"]
         if "chat_overlay_theme" in settings:
-            self.storage.save_string("chat_overlay_theme", settings["chat_overlay_theme"])
+            batch["chat_overlay_theme"] = settings["chat_overlay_theme"]
         if "chat_overlay_size" in settings:
-            self.storage.save_string("chat_overlay_size", settings["chat_overlay_size"])
+            batch["chat_overlay_size"] = settings["chat_overlay_size"]
         if "chat_overlay_fade" in settings:
-            self.storage.save_string("chat_overlay_fade", settings["chat_overlay_fade"])
+            batch["chat_overlay_fade"] = settings["chat_overlay_fade"]
         if "chat_overlay_show_time" in settings:
-            self.storage.save_bool("chat_overlay_show_time", settings["chat_overlay_show_time"])
+            batch["chat_overlay_show_time"] = settings["chat_overlay_show_time"]
         if "piper_length_scale" in settings:
-            self.storage.save_string("piper_length_scale", str(settings["piper_length_scale"]))
+            batch["piper_length_scale"] = str(settings["piper_length_scale"])
         if "piper_noise_scale" in settings:
-            self.storage.save_string("piper_noise_scale", str(settings["piper_noise_scale"]))
+            batch["piper_noise_scale"] = str(settings["piper_noise_scale"])
         if "piper_noise_w_scale" in settings:
-            self.storage.save_string("piper_noise_w_scale", str(settings["piper_noise_w_scale"]))
+            batch["piper_noise_w_scale"] = str(settings["piper_noise_w_scale"])
+
+        if hasattr(self.storage, "save_all"):
+            self.storage.save_all(batch)
+        else:
+            for k, v in batch.items():
+                if isinstance(v, bool):
+                    self.storage.save_bool(k, v)
+                else:
+                    self.storage.save_string(k, str(v))
+
         if "piper_length_scale" in settings or "piper_noise_scale" in settings or "piper_noise_w_scale" in settings:
             ls = float(settings.get("piper_length_scale", self.storage.load_string("piper_length_scale", "1.0")))
             ns = float(settings.get("piper_noise_scale", self.storage.load_string("piper_noise_scale", "0.667")))
@@ -109,12 +127,29 @@ class ChatService:
             self.tts.set_piper_synthesis_params(length_scale, noise_scale, noise_w_scale)
 
     def set_volume(self, volume: int):
-        self.storage.save_string("tts_volume", str(volume))
         self.tts.set_volume(volume / 100.0)
+        self._pending_volume = volume
+        self._audio_timer.start()
 
     def set_speed(self, speed: int):
-        self.storage.save_string("tts_speed", str(speed))
         self.tts.set_speed(speed / 100.0)
+        self._pending_speed = speed
+        self._audio_timer.start()
+
+    def _flush_audio_params(self):
+        batch = {}
+        if self._pending_volume is not None:
+            batch["tts_volume"] = str(self._pending_volume)
+            self._pending_volume = None
+        if self._pending_speed is not None:
+            batch["tts_speed"] = str(self._pending_speed)
+            self._pending_speed = None
+        if batch:
+            if hasattr(self.storage, "save_all"):
+                self.storage.save_all(batch)
+            else:
+                for k, v in batch.items():
+                    self.storage.save_string(k, v)
 
     def set_provider(self, provider: str):
         self.storage.save_string("tts_provider", provider)

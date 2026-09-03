@@ -41,7 +41,6 @@ class MusicController(QObject):
         self.polling_timer = QTimer(self)
         self.polling_timer.setInterval(5000)
         self.polling_timer.timeout.connect(self._poll_now_playing)
-        self.command_service.commands_changed.connect(self._sync_switches_from_db)
 
         self._init_youtube_provider()
         self._load_initial_state()
@@ -62,6 +61,9 @@ class MusicController(QObject):
     def _connect_signals(self):
         if self.view is None:
             return
+        if getattr(self, "_signals_connected", False):
+            return
+        self._signals_connected = True
         self.view.command_toggled.connect(self.handle_command_toggle)
         self.view.volume_changed.connect(self.set_volume)
         self.view.remove_queue_item_requested.connect(self.handle_remove_queue_item)

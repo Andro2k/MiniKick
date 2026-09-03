@@ -89,6 +89,9 @@ class TTSManager:
         if text and text.strip():
             self.text_queue.put((text.strip(), voice_id))
 
+    def speak(self, text: str, voice_id: str = None) -> None:
+        self.say(text, voice_id=voice_id)
+
     def stop(self) -> None:
         while not self.text_queue.empty():
             try:

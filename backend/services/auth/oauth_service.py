@@ -85,7 +85,7 @@ class OAuthCallbackServer:
         httpd.server_close()
         return httpd.auth_code
 
-class AuthManager:
+class KickAuthManager:
     def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage, success_html_path: str = "") -> None:
         self.client_id = client_id
         self.client_secret = client_secret

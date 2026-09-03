@@ -2,7 +2,7 @@
 
 import logging
 from PySide6.QtCore import QThread, Signal
-from backend.services.auth.oauth_service import AuthManager
+from backend.services.auth.oauth_service import KickAuthManager
 
 logger = logging.getLogger("minikick.workers.kick_auth")
 
@@ -10,7 +10,7 @@ class KickAuthWorker(QThread):
     auth_success = Signal(object)
     auth_error = Signal(str)
 
-    def __init__(self, i18n, auth_manager: AuthManager, force: bool = False, parent=None):
+    def __init__(self, i18n, auth_manager: KickAuthManager, force: bool = False, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_Auth")
         self.i18n = i18n

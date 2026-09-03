@@ -48,6 +48,9 @@ STATIC_ENDPOINTS_MAP: dict[str, tuple[str, str]] = {
     "/widgets/pinned": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
     "/widgets/pinned_message": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
     "/pinned": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
+    "/alerts": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
+    "/alerts/": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
+    "/alert": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
 }
 
 _ASSET_CACHE: dict[str, bytes] = {}
@@ -198,6 +201,15 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 msg = ws_client.read_frame()
                 if msg is None and ws_client.closed:
                     break
+                if msg and isinstance(msg, str):
+                    try:
+                        data = json.loads(msg)
+                        if data.get("type") == "alert_finished":
+                            cb = getattr(self.server.manager, "on_alert_finished", None)
+                            if cb:
+                                cb(data.get("id"))
+                    except Exception:
+                        pass
         finally:
             self.server.manager.unregister_ws_client(ws_client)
 

@@ -143,7 +143,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             lbl_no_p = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.no_platforms_connected"))
             lbl_no_p.setWordWrap(True)
             lbl_no_p.setProperty("role", "caption")
-            lbl_no_p.setStyleSheet("color: #FF4655;")
+            lbl_no_p.setProperty("state", "danger")
             np_layout.addWidget(lbl_no_p)
             layout.addWidget(no_plat_box)
 
@@ -202,7 +202,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                 lbl_off = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.edit_offline_warning"))
                 lbl_off.setWordWrap(True)
                 lbl_off.setProperty("role", "caption")
-                lbl_off.setStyleSheet("color: #FFB800;")
+                lbl_off.setProperty("state", "warning")
                 off_layout.addWidget(lbl_off)
                 layout.addWidget(off_box)
 

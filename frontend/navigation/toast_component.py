@@ -9,11 +9,12 @@ class ModernToast(QFrame):
     expired = Signal(object)
     _pixmap_cache = {}
 
-    def __init__(self, title: str, message: str, state: str = "success", duration_ms: int = 3500, parent=None):
+    def __init__(self, title: str, message: str, state: str = "success", duration_ms: int = 3500, tag: str = "", parent=None):
         super().__init__(parent)
         self.title_text = title
         self.message_text = message
         self.state_str = state
+        self.tag = tag
 
         self.setFixedWidth(330)
         self.setMinimumHeight(56)
@@ -26,34 +27,24 @@ class ModernToast(QFrame):
         layout.setContentsMargins(12, 10, 12, 10)
         layout.setSpacing(8)
         
-        if state not in ModernToast._pixmap_cache:
-            icon_map = {
-                "success": ("circle-check.svg", COLOR_GREEN),
-                "danger": ("alert-circle.svg", COLOR_RED),
-                "warning": ("alert-triangle.svg", COLOR_AMBER),
-                "info": ("info-circle.svg", COLOR_BLUE)
-            }
-            icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
-            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
-
-        icon_lbl = QLabel(self)
-        icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
-        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(icon_lbl)
+        self.icon_lbl = QLabel(self)
+        self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._update_icon(state)
+        layout.addWidget(self.icon_lbl)
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        lbl_title = QLabel(title, self)
-        lbl_title.setProperty("role", "h3")
-        text_layout.addWidget(lbl_title)
+        self.lbl_title = QLabel(title, self)
+        self.lbl_title.setProperty("role", "h3")
+        text_layout.addWidget(self.lbl_title)
 
-        if message:
-            lbl_msg = QLabel(message, self)
-            lbl_msg.setProperty("role", "body")
-            lbl_msg.setWordWrap(True)
-            text_layout.addWidget(lbl_msg)
+        self.lbl_msg = QLabel(message or "", self)
+        self.lbl_msg.setProperty("role", "body")
+        self.lbl_msg.setWordWrap(True)
+        self.lbl_msg.setVisible(bool(message))
+        text_layout.addWidget(self.lbl_msg)
 
         layout.addLayout(text_layout, stretch=1)
 
@@ -79,6 +70,41 @@ class ModernToast(QFrame):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.dismiss)
         self.timer.start()
+
+    def _update_icon(self, state: str):
+        if state not in ModernToast._pixmap_cache:
+            icon_map = {
+                "success": ("circle-check.svg", COLOR_GREEN),
+                "danger": ("alert-circle.svg", COLOR_RED),
+                "warning": ("alert-triangle.svg", COLOR_AMBER),
+                "info": ("info-circle.svg", COLOR_BLUE)
+            }
+            icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
+            ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
+        self.icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
+
+    def update_content(self, title: str, message: str, state: str = "success", duration_ms: int = 3500):
+        self.title_text = title
+        self.message_text = message
+        self.state_str = state
+        self.lbl_title.setText(title)
+        self.lbl_msg.setText(message or "")
+        self.lbl_msg.setVisible(bool(message))
+        self._update_icon(state)
+        
+        if self.property("state") != state:
+            self.setProperty("state", state)
+            self.style().unpolish(self)
+            self.style().polish(self)
+
+        if self._is_dismissing:
+            self._is_dismissing = False
+            self.anim.stop()
+
+        self.timer.stop()
+        self.timer.setInterval(duration_ms)
+        self.timer.start()
+        self.adjustSize()
 
     def _on_anim_finished(self):
         if self._is_dismissing:
@@ -118,7 +144,7 @@ class ToastManager(QObject):
         self._stack = []
         self.main_window.installEventFilter(self)
 
-    def show_toast(self, title: str, message: str, state: str = "success", duration: int = 3500):
+    def show_toast(self, title: str, message: str, state: str = "success", duration: int = 3500, tag: str = ""):
         if self._stack:
             last_toast = self._stack[-1]
             if getattr(last_toast, "title_text", None) == title and getattr(last_toast, "message_text", None) == message and getattr(last_toast, "state_str", None) == state:
@@ -126,12 +152,18 @@ class ToastManager(QObject):
                 last_toast.timer.start()
                 return
 
+            last_tag = getattr(last_toast, "tag", "")
+            if tag and last_tag and tag == last_tag:
+                last_toast.update_content(title, message, state, duration)
+                self._calculate_positions()
+                return
+
         while len(self._stack) >= self.MAX_VISIBLE:
             oldest_toast = self._stack.pop(0)
             oldest_toast.hide()
             oldest_toast.deleteLater()
 
-        toast = ModernToast(title, message, state, duration, parent=self.main_window)
+        toast = ModernToast(title, message, state, duration, tag=tag, parent=self.main_window)
         self._stack.append(toast)
         toast.expired.connect(self._on_toast_expired)
         toast.show()
