@@ -2,6 +2,8 @@
     "alerts": {
         "buttons": {
             "browse": "Browse...",
+            "discard": "Discard",
+            "save": "Save Changes",
             "test": "Test Alert",
             "test_sent": "Test alert sent to OBS."
         },
@@ -47,9 +49,17 @@
             "kick": "Kick",
             "twitch": "Twitch"
         },
+        "sections": {
+            "general": "General Settings",
+            "media": "Media & Audio"
+        },
+        "sidebar": {
+            "title": "Alert Variants"
+        },
         "status": {
             "saved_msg": "The alert configuration was saved successfully.",
-            "saved_title": "Alert Saved"
+            "saved_title": "Alert Saved",
+            "unsaved": "Unsaved changes"
         }
     },
     "chat": {
@@ -631,6 +641,8 @@
             "version": "Version {version}"
         },
         "toast": {
+            "auth_in_progress_msg": "An authentication process is already running in your browser. Please complete or close that window before starting another.",
+            "auth_in_progress_title": "Authentication in Progress",
             "kick_connected_msg": "Successfully connected to Kick chat: @{username}",
             "kick_connected_title": "Kick Connected",
             "kick_disconnected_msg": "Kick session unlinked.",
@@ -639,8 +651,6 @@
             "tiktok_connected_title": "TikTok Connected",
             "tiktok_disconnected_msg": "TikTok Live connection has been stopped.",
             "tiktok_disconnected_title": "TikTok Disconnected",
-            "auth_in_progress_msg": "An authentication process is already running in your browser. Please complete or close that window before starting another.",
-            "auth_in_progress_title": "Authentication in Progress",
             "twitch_auth_error_title": "Twitch Auth Error",
             "twitch_auth_opening": "Opening login browser window...",
             "twitch_auth_title": "Twitch OAuth",

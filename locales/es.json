@@ -2,6 +2,8 @@
     "alerts": {
         "buttons": {
             "browse": "Examinar...",
+            "discard": "Descartar",
+            "save": "Guardar Cambios",
             "test": "Probar Alerta",
             "test_sent": "Alerta de prueba enviada a OBS."
         },
@@ -47,9 +49,17 @@
             "kick": "Kick",
             "twitch": "Twitch"
         },
+        "sections": {
+            "general": "Ajustes Generales",
+            "media": "Multimedia y Audio"
+        },
+        "sidebar": {
+            "title": "Variantes de Alerta"
+        },
         "status": {
             "saved_msg": "La configuración de la alerta se guardó correctamente.",
-            "saved_title": "Alerta Guardada"
+            "saved_title": "Alerta Guardada",
+            "unsaved": "Cambios sin guardar"
         }
     },
     "chat": {
@@ -631,6 +641,8 @@
             "version": "Versión {version}"
         },
         "toast": {
+            "auth_in_progress_msg": "Ya hay una autenticación en curso en tu navegador. Por favor completa o cierra esa ventana antes de iniciar otra.",
+            "auth_in_progress_title": "Autenticación en curso",
             "kick_connected_msg": "Conectado exitosamente al chat de Kick: @{username}",
             "kick_connected_title": "Kick Conectado",
             "kick_disconnected_msg": "Se ha desvinculado la sesión de Kick.",
@@ -639,8 +651,6 @@
             "tiktok_connected_title": "TikTok Conectado",
             "tiktok_disconnected_msg": "Se ha detenido la conexión con TikTok Live.",
             "tiktok_disconnected_title": "TikTok Desconectado",
-            "auth_in_progress_msg": "Ya hay una autenticación en curso en tu navegador. Por favor completa o cierra esa ventana antes de iniciar otra.",
-            "auth_in_progress_title": "Autenticación en curso",
             "twitch_auth_error_title": "Error Twitch Auth",
             "twitch_auth_opening": "Abriendo inicio de sesión en el navegador...",
             "twitch_auth_title": "Twitch OAuth",
