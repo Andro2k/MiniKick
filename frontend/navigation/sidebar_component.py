@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton, 
                                QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea)
-from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
+from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import (
     COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800,
@@ -116,7 +116,7 @@ class Sidebar(QFrame):
         self.btn_collapsed_update.setProperty("role", "action_accent")
         self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 18))
         self.btn_collapsed_update.setIconSize(QSize(18, 18))
-        self.btn_collapsed_update.setFixedSize(40, 40)
+        self.btn_collapsed_update.setFixedSize(36, 36)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_collapsed_update.clicked.connect(self._on_update_action_clicked)
         self.btn_collapsed_update.setVisible(False)
@@ -334,7 +334,8 @@ class Sidebar(QFrame):
         btn.setProperty("icon_inactive", icon_inactive)
         
         btn.setIcon(icon_active if is_active else icon_inactive)
-        btn.setIconSize(QSize(21, 21))
+        btn.setIconSize(QSize(20, 20))
+        btn.setFixedHeight(36)
         btn.setToolTip("" if self.is_expanded else display_name)
         
         if is_active:
@@ -348,6 +349,14 @@ class Sidebar(QFrame):
         else:
             self.top_nav_layout.addWidget(btn)
 
+    def _get_sidebar_width(self) -> int:
+        return self.width()
+
+    def _set_sidebar_width(self, w: int) -> None:
+        self.setFixedWidth(w)
+
+    sidebar_width = Property(int, _get_sidebar_width, _set_sidebar_width)
+
     def toggle_sidebar(self):
         self.is_expanded = not self.is_expanded
         target_width = self.expanded_width if self.is_expanded else self.collapsed_width
@@ -356,19 +365,15 @@ class Sidebar(QFrame):
         self.btn_toggle.setIcon(icon)
         self.btn_toggle.setIconSize(QSize(20, 20))
         
-        if hasattr(self, "anim_group") and self.anim_group.state() == QParallelAnimationGroup.State.Running:
-            self.anim_group.stop()
+        if hasattr(self, "anim") and self.anim.state() == QPropertyAnimation.State.Running:
+            self.anim.stop()
             
-        self.anim_group = QParallelAnimationGroup(self)
-        for prop in [b"minimumWidth", b"maximumWidth"]:
-            anim = QPropertyAnimation(self, prop)
-            anim.setDuration(250)
-            anim.setStartValue(self.width())
-            anim.setEndValue(target_width)
-            anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
-            self.anim_group.addAnimation(anim)
-        
-        self.anim_group.finished.connect(self._on_animation_finished)
+        self.anim = QPropertyAnimation(self, b"sidebar_width")
+        self.anim.setDuration(220)
+        self.anim.setStartValue(self.width())
+        self.anim.setEndValue(target_width)
+        self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.anim.finished.connect(self._on_animation_finished)
         
         if not self.is_expanded:
             self.logo_btn.hide()
@@ -377,15 +382,29 @@ class Sidebar(QFrame):
             self.header_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._update_texts_and_styles(show=False)
             
-        self.anim_group.start()
+        self.anim.start()
 
     def _update_texts_and_styles(self, show: bool):
+        collapsed_btn_style = "text-align: center; padding: 0px;"
         for btn in self.nav_buttons:
             btn.setText(btn.property("original_text") if show else "")
             btn.setToolTip("" if show else btn.property("original_text"))
             btn.setProperty("collapsed", not show)
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+            if show:
+                btn.setMinimumWidth(0)
+                btn.setMaximumWidth(16777215)
+                btn.setFixedHeight(36)
+                btn.setStyleSheet("")
+            else:
+                btn.setFixedSize(36, 36)
+                btn.setStyleSheet(collapsed_btn_style)
+
+        if show:
+            self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            self.bottom_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        else:
+            self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            self.bottom_nav_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         
         self.lbl_navigate_header.setVisible(show)
         self.lbl_more_header.setVisible(show)

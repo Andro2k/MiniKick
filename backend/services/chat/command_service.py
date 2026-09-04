@@ -228,7 +228,7 @@ class CommandService(QObject):
         self.send_response(final_response, platform=platform)
         return True, "", cmd, matched_prefix
 
-    def send_response(self, response_text: str, platform: str = "kick"):
+    def send_response(self, response_text: str, platform: str = "kick", async_kick: bool = True):
         if not response_text:
             return
 
@@ -243,10 +243,19 @@ class CommandService(QObject):
                 logger.debug("[CommandService] Twitch worker not active, skipping Twitch chat message dispatch.")
         elif platform == "kick":
             if self.api_client and (not hasattr(self.api_client, "is_authenticated") or self.api_client.is_authenticated()):
-                try:
-                    self.api_client.post_chat_message(content=response_text, msg_type="bot")
-                except Exception as e:
-                    logger.error("[CommandService] Error sending response to Kick: %s", e)
+                def _do_post():
+                    try:
+                        self.api_client.post_chat_message(content=response_text, msg_type="bot")
+                    except Exception as e:
+                        logger.error("[CommandService] Error sending response to Kick: %s", e)
+
+                if async_kick:
+                    import threading
+                    t = threading.Thread(target=_do_post, daemon=True, name="KickChatSendResponse")
+                    t.start()
+                    self._last_kick_thread = t
+                else:
+                    _do_post()
             else:
                 logger.debug("[CommandService] Kick not authenticated, skipping Kick chat message dispatch.")
         elif platform in ("youtube", "tiktok"):
@@ -255,10 +264,10 @@ class CommandService(QObject):
 
         self.response_generated.emit(response_text, platform)
 
-    def post_chat_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True):
+    def post_chat_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True, async_kick: bool = True):
         if not message:
             return
         if apply_kick:
-            self.send_response(message, platform="kick")
+            self.send_response(message, platform="kick", async_kick=async_kick)
         if apply_twitch:
             self.send_response(message, platform="twitch")

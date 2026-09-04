@@ -32,8 +32,6 @@ class ScheduleView(BaseView):
             self._last_direction = direction
             if hasattr(self, "columns_layout"):
                 self.columns_layout.setDirection(direction)
-        if hasattr(self, "quick_change_panel"):
-            self.quick_change_panel.relayout(self.quick_change_panel.width())
 
     def showEvent(self, event):
         super().showEvent(event)

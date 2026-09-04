@@ -70,8 +70,8 @@ class ChatView(BaseView):
         if self._last_body_dir != direction:
             self._last_body_dir = direction
             self.body_layout.setDirection(direction)
-        self.body_layout.setStretch(0, 1)
-        self.body_layout.setStretch(1, 1)
+            self.body_layout.setStretch(0, 1)
+            self.body_layout.setStretch(1, 1)
 
     def _connect_internal_signals(self):
         self.tts_settings_panel.provider_changed.connect(self.provider_changed.emit)

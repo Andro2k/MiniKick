@@ -17,6 +17,26 @@ __all__ = [
     "AlertsView","AlertEventCard","AlertVariantListItem","AlertsSidebarPanel","AlertsOverlayCard","ResponsiveStackedWidget"
 ]
 
+class LazyAlertCardsDict(dict):
+    def __init__(self, view):
+        super().__init__()
+        self._view = view
+
+    def __contains__(self, key):
+        if dict.__contains__(self, key):
+            return True
+        if isinstance(key, tuple) and len(key) == 2:
+            plat, at = key
+            return plat in self._view._event_meta and at in self._view._event_meta[plat]
+        return False
+
+    def __getitem__(self, key):
+        if dict.__contains__(self, key):
+            return dict.__getitem__(self, key)
+        if isinstance(key, tuple) and len(key) == 2 and self.__contains__(key):
+            return self._view._get_or_create_card(key[0], key[1])
+        return dict.__getitem__(self, key)
+
 class AlertsView(BaseView):
     config_changed = Signal(object)
     test_alert_requested = Signal(str, str)
@@ -35,7 +55,9 @@ class AlertsView(BaseView):
             parent=parent
         )
         self.alerts_overlay_url = alerts_overlay_url
-        self.cards: Dict[Tuple[str, str], AlertEventCard] = {}
+        self._configs_cache: Dict[Tuple[str, str], AlertConfig] = {}
+        self._event_meta: Dict[str, Dict[str, str]] = {}
+        self.cards: Dict[Tuple[str, str], AlertEventCard] = LazyAlertCardsDict(self)
         self.sidebar_items: Dict[Tuple[str, str], AlertVariantListItem] = {}
         self.sidebars: Dict[str, AlertsSidebarPanel] = {}
         self.active_variant: Dict[str, str] = {"kick": "follow", "twitch": "follow"}
@@ -105,13 +127,14 @@ class AlertsView(BaseView):
         self.main_layout.addWidget(self.stack)
 
         self._select_variant("kick", "follow")
-        self._select_variant("twitch", "follow")
 
     def _build_master_detail_page(self, platform: str, events: list[tuple[str, str]]) -> tuple[QWidget, AlertsSidebarPanel, ResponsiveStackedWidget, QBoxLayout]:
         page = QWidget()
         page_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, page)
         page_layout.setContentsMargins(0, 0, 0, 0)
         page_layout.setSpacing(12)
+
+        self._event_meta[platform] = dict(events)
 
         sidebar_panel = AlertsSidebarPanel(platform, events, self.i18n, parent=page)
         sidebar_panel.variant_selected.connect(lambda at, p=platform: self._select_variant(p, at))
@@ -122,19 +145,32 @@ class AlertsView(BaseView):
         editor_stack = ResponsiveStackedWidget(parent=page)
         editor_stack.setMinimumWidth(0)
 
-        for alert_type, icon_name in events:
-            card = AlertEventCard(platform, alert_type, icon_name, self.i18n, parent=editor_stack)
-            card.save_requested.connect(self.config_changed.emit)
-            card.test_requested.connect(self.test_alert_requested.emit)
-            card.config_changed.connect(lambda cfg, at=alert_type, sb=sidebar_panel: sb.set_item_enabled_state(at, cfg.enabled))
-
-            editor_stack.addWidget(card)
-            self.cards[(platform, alert_type)] = card
-
         page_layout.addWidget(sidebar_panel, 0)
         page_layout.addWidget(editor_stack, 1)
 
         return page, sidebar_panel, editor_stack, page_layout
+
+    def _get_or_create_card(self, platform: str, alert_type: str) -> AlertEventCard:
+        key = (platform, alert_type)
+        if dict.__contains__(self.cards, key):
+            return dict.__getitem__(self.cards, key)
+
+        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-check.svg")
+        editor_stack = self.kick_editor_stack if platform == "kick" else self.twitch_editor_stack
+        sidebar_panel = self.sidebars.get(platform)
+
+        card = AlertEventCard(platform, alert_type, icon_name, self.i18n, parent=editor_stack)
+        card.save_requested.connect(self.config_changed.emit)
+        card.test_requested.connect(self.test_alert_requested.emit)
+        if sidebar_panel:
+            card.config_changed.connect(lambda cfg, at=alert_type, sb=sidebar_panel: sb.set_item_enabled_state(at, cfg.enabled))
+
+        if key in self._configs_cache:
+            card.load_config(self._configs_cache[key])
+
+        editor_stack.addWidget(card)
+        dict.__setitem__(self.cards, key, card)
+        return card
 
     def _select_variant(self, platform: str, alert_type: str):
         self.active_variant[platform] = alert_type
@@ -143,20 +179,23 @@ class AlertsView(BaseView):
         if sidebar:
             sidebar.select_variant(alert_type)
 
-        target_card = self.cards.get((platform, alert_type))
-        if target_card is not None:
-            editor_stack = self.kick_editor_stack if platform == "kick" else self.twitch_editor_stack
-            editor_stack.setCurrentWidget(target_card)
+        target_card = self._get_or_create_card(platform, alert_type)
+        editor_stack = self.kick_editor_stack if platform == "kick" else self.twitch_editor_stack
+        editor_stack.setCurrentWidget(target_card)
 
     def _switch_platform(self, platform: str):
         if platform == "kick":
             self.btn_tab_kick.setProperty("role", "action_kick")
             self.btn_tab_twitch.setProperty("role", "action_outlined")
             self.stack.setCurrentIndex(0)
+            kick_active = self.active_variant.get("kick", "follow")
+            self._select_variant("kick", kick_active)
         else:
             self.btn_tab_kick.setProperty("role", "action_outlined")
             self.btn_tab_twitch.setProperty("role", "action_twitch")
             self.stack.setCurrentIndex(1)
+            twitch_active = self.active_variant.get("twitch", "follow")
+            self._select_variant("twitch", twitch_active)
 
         for btn in (self.btn_tab_kick, self.btn_tab_twitch):
             btn.style().unpolish(btn)
@@ -167,23 +206,24 @@ class AlertsView(BaseView):
         self.overlay_card.set_overlay_url(url)
 
     def populate_configs(self, configs: dict[tuple[str, str], AlertConfig]):
-        for (plat, a_type), card in self.cards.items():
-            if (plat, a_type) in configs:
-                cfg = configs[(plat, a_type)]
+        self._configs_cache.update(configs)
+        for (plat, a_type), cfg in configs.items():
+            item = self.sidebar_items.get((plat, a_type))
+            if item:
+                item.set_enabled_state(cfg.enabled)
+            card = self.cards.get((plat, a_type))
+            if card:
                 card.load_config(cfg)
-                item = self.sidebar_items.get((plat, a_type))
-                if item:
-                    item.set_enabled_state(cfg.enabled)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
         width = self.width()
 
         if hasattr(self, 'overlay_card'):
-            url_dir = QBoxLayout.Direction.TopToBottom if width < 760 else QBoxLayout.Direction.LeftToRight
+            url_dir = QBoxLayout.Direction.TopToBottom if width < 800 else QBoxLayout.Direction.LeftToRight
             self.overlay_card.set_responsive_direction(url_dir)
 
-        target_direction = QBoxLayout.Direction.TopToBottom if width < 760 else QBoxLayout.Direction.LeftToRight
+        target_direction = QBoxLayout.Direction.TopToBottom if width < 800 else QBoxLayout.Direction.LeftToRight
         if target_direction != self._last_direction:
             self._last_direction = target_direction
             is_horizontal = (target_direction == QBoxLayout.Direction.LeftToRight)
@@ -201,9 +241,3 @@ class AlertsView(BaseView):
                     else:
                         page_layout.setStretch(0, 0)
                         page_layout.setStretch(1, 0)
-
-            if hasattr(self, 'stack'):
-                self.stack.updateGeometry()
-                cur = self.stack.currentWidget()
-                if cur is not None:
-                    cur.updateGeometry()

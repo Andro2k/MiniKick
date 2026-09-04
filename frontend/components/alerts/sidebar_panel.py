@@ -8,6 +8,7 @@ from .variant_item import AlertVariantListItem
 
 class AlertsSidebarPanel(ModernCard):
     variant_selected = Signal(str)
+    SIDEBAR_WIDTH = 320
 
     def __init__(self, platform: str, events: List[Tuple[str, str]], i18n, parent=None):
         super().__init__(parent=parent, margin=10, spacing=8)
@@ -16,7 +17,7 @@ class AlertsSidebarPanel(ModernCard):
         self.i18n = i18n
         self.items: Dict[str, AlertVariantListItem] = {}
 
-        self.setFixedWidth(240)
+        self.setFixedWidth(self.SIDEBAR_WIDTH)
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         self._setup_ui()
 
@@ -53,4 +54,7 @@ class AlertsSidebarPanel(ModernCard):
         self.setMinimumHeight(0)
         self.setMaximumHeight(16777215)
         if is_horizontal:
-            self.setFixedWidth(240)
+            self.setFixedWidth(self.SIDEBAR_WIDTH)
+            self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        else:
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)

@@ -1,7 +1,7 @@
 # frontend\components\alerts\overlay_card.py
 
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QBoxLayout
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QSize
 from frontend.widgets import ModernCard, ModernButton
 from frontend.common import get_pixmap_colored, COLOR_GREEN
 
@@ -80,3 +80,7 @@ class AlertsOverlayCard(ModernCard):
     def set_responsive_direction(self, direction: QBoxLayout.Direction):
         if self.url_box.direction() != direction:
             self.url_box.setDirection(direction)
+            self.url_box.invalidate()
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(0, super().minimumSizeHint().height())

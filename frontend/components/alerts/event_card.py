@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QLineEdit, QFileDialog
 )
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QSize
 from backend.models import AlertConfig
 from frontend.widgets import (
     ModernCard, ModernButton, ModernSwitch,
@@ -16,6 +16,9 @@ class AlertEventCard(QWidget):
     config_changed = Signal(object)
     save_requested = Signal(object)
     test_requested = Signal(str, str)
+
+    def minimumSizeHint(self) -> QSize:
+        return QSize(0, super().minimumSizeHint().height())
 
     def __init__(self, platform: str, alert_type: str, icon_name: str, i18n, parent=None):
         super().__init__(parent=parent)
@@ -51,7 +54,6 @@ class AlertEventCard(QWidget):
 
         lbl_header_title = QLabel(f"{platform_name} • {event_name}", parent=self)
         lbl_header_title.setProperty("role", "h3")
-        lbl_header_title.setWordWrap(True)
 
         top_info_row.addWidget(self.icon_lbl)
         top_info_row.addWidget(lbl_header_title, stretch=1)
@@ -77,7 +79,6 @@ class AlertEventCard(QWidget):
         self.lbl_dirty = QLabel(self.i18n.get("alerts.status.unsaved"), parent=self)
         self.lbl_dirty.setProperty("role", "caption")
         self.lbl_dirty.setProperty("state", "warning")
-        self.lbl_dirty.setWordWrap(True)
         self.lbl_dirty.setVisible(False)
 
         self.btn_discard = ModernButton(
@@ -129,7 +130,6 @@ class AlertEventCard(QWidget):
         sw_row.setSpacing(10)
         lbl_sw_active = QLabel(self.i18n.get("alerts.fields.active"), parent=self)
         lbl_sw_active.setProperty("role", "body")
-        lbl_sw_active.setWordWrap(True)
         self.sw_enabled = ModernSwitch(parent=self)
         self.sw_enabled.toggled.connect(self._on_field_changed)
         sw_row.addWidget(lbl_sw_active, stretch=1)
@@ -140,7 +140,6 @@ class AlertEventCard(QWidget):
         template_col.setSpacing(4)
         lbl_template = QLabel(self.i18n.get("alerts.fields.template"), parent=self)
         lbl_template.setProperty("role", "caption")
-        lbl_template.setWordWrap(True)
 
         self.edit_template = QLineEdit(parent=self)
         self.edit_template.setToolTip(self.i18n.get("alerts.fields.template_hint"))
@@ -162,7 +161,6 @@ class AlertEventCard(QWidget):
         dur_col.setSpacing(4)
         lbl_duration = QLabel(self.i18n.get("alerts.fields.duration"), parent=self)
         lbl_duration.setProperty("role", "caption")
-        lbl_duration.setWordWrap(True)
         self.spin_duration = NoWheelSpinBox(parent=self)
         self.spin_duration.setRange(1, 60)
         self.spin_duration.setSuffix(" s")
@@ -175,7 +173,6 @@ class AlertEventCard(QWidget):
         tts_col.setSpacing(4)
         lbl_tts_title = QLabel(self.i18n.get("alerts.fields.tts"), parent=self)
         lbl_tts_title.setProperty("role", "caption")
-        lbl_tts_title.setWordWrap(True)
         self.sw_tts = ModernSwitch(parent=self)
         self.sw_tts.toggled.connect(self._on_field_changed)
         tts_col.addWidget(lbl_tts_title)
@@ -207,7 +204,6 @@ class AlertEventCard(QWidget):
         sound_layout.setSpacing(4)
         lbl_sound = QLabel(self.i18n.get("alerts.fields.sound"), parent=self)
         lbl_sound.setProperty("role", "caption")
-        lbl_sound.setWordWrap(True)
 
         sound_input_row = QHBoxLayout()
         sound_input_row.setSpacing(8)
@@ -236,7 +232,6 @@ class AlertEventCard(QWidget):
         vol_col.setSpacing(4)
         lbl_vol_title = QLabel(self.i18n.get("alerts.fields.volume"), parent=self)
         lbl_vol_title.setProperty("role", "caption")
-        lbl_vol_title.setWordWrap(True)
         self.lbl_volume_val = QLabel("80%", parent=self)
         self.lbl_volume_val.setProperty("role", "caption")
 
@@ -258,7 +253,6 @@ class AlertEventCard(QWidget):
         media_layout.setSpacing(4)
         lbl_media = QLabel(self.i18n.get("alerts.fields.media"), parent=self)
         lbl_media.setProperty("role", "caption")
-        lbl_media.setWordWrap(True)
 
         media_input_row = QHBoxLayout()
         media_input_row.setSpacing(8)

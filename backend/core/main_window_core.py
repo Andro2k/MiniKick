@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
     QSystemTrayIcon, QApplication
 )
-from PySide6.QtCore import Qt, Slot, QEvent
+from PySide6.QtCore import Qt, Slot, QEvent, QTimer
 
 from .app_container_core import AppContainerCore
 from .app_logger_core import setup_application_logging
@@ -141,6 +141,7 @@ class MainWindowCore(QMainWindow):
         self._load_settings_into_ui()
         self.setUpdatesEnabled(True)
         self.logger.info("[MainWindow] Main window initialization complete.")
+        self._schedule_view_prewarming()
 
     def _setup_ui(self):
         self.central_widget = QWidget()
@@ -467,6 +468,29 @@ class MainWindowCore(QMainWindow):
                 self.content_stack.addWidget(view_widget)
 
         return view_widget
+
+    def _schedule_view_prewarming(self):
+        views_to_warm = [
+            "Chat", "Alerts", "Widgets", "Settings", "Triggers",
+            "Stream Info", "Comandos", "Timers", "Spam Filters",
+            "Music", "Developer"
+        ]
+        self._prewarm_queue = deque(views_to_warm)
+        QTimer.singleShot(750, self._prewarm_next_view)
+
+    def _prewarm_next_view(self):
+        if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:
+            return
+        view_name = self._prewarm_queue.popleft()
+        if view_name not in self._instantiated_views:
+            try:
+                self.logger.debug("[Prewarm] Background warming view: '%s'", view_name)
+                self._get_or_create_view(view_name)
+            except Exception as e:
+                self.logger.warning("[Prewarm] Error pre-warming view '%s': %s", view_name, e)
+
+        if self._prewarm_queue and not self._is_shutting_down:
+            QTimer.singleShot(150, self._prewarm_next_view)
 
     @Slot()
     def _restore_from_tray(self):

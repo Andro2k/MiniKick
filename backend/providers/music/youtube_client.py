@@ -18,6 +18,7 @@ from backend.database import SQLiteMusicStorage
 
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
+    queue_updated = Signal()
 
     def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None):
         super().__init__()
@@ -192,6 +193,7 @@ class YouTubeMusicProvider(QObject):
                     )
                     song_entry["db_id"] = db_id
                 self.queue.append(song_entry)
+                self.queue_updated.emit()
                 if not self.current_song:
                     if self.auto_resume:
                         QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
@@ -227,6 +229,7 @@ class YouTubeMusicProvider(QObject):
                     )
                     worker.song_entry["db_id"] = db_id
                 self.queue.append(worker.song_entry)
+                self.queue_updated.emit()
                 if is_search:
                     self._save_search_to_cache(query, worker.song_entry)
                 if not self.current_song:
@@ -285,6 +288,7 @@ class YouTubeMusicProvider(QObject):
                 self.music_storage.update_song_status(db_id, 2)
             if index == 0:
                 self._preload_next_song()
+            self.queue_updated.emit()
             return True
         return False
 
@@ -296,6 +300,7 @@ class YouTubeMusicProvider(QObject):
             self.queue.insert(to_index, item)
             if from_index == 0 or to_index == 0:
                 self._preload_next_song()
+            self.queue_updated.emit()
             return True
         return False
 
@@ -380,9 +385,11 @@ class YouTubeMusicProvider(QObject):
             self.current_song = None
             self._cancel_worker("preload_worker")
             self.preload_song_url = None
+            self.queue_updated.emit()
             return
 
         self.current_song = self.queue.pop(0)
+        self.queue_updated.emit()
         
         db_id = self.current_song.get("db_id")
         if db_id is not None and self.music_storage:

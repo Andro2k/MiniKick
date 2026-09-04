@@ -180,6 +180,8 @@ class MusicController(QObject):
             self.music_provider = self.provider_factory["youtube"](db_mgr)
         if not self._provider_connected:
             self.music_provider.resolve_error_occurred.connect(self.handle_resolve_error)
+            if hasattr(self.music_provider, "queue_updated"):
+                self.music_provider.queue_updated.connect(self._poll_now_playing)
             self._provider_connected = True
 
         vol = 100
