@@ -3,8 +3,9 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QHeaderView
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK
-from frontend.common.icons import get_pixmap_colored
+from frontend.common import (
+    COLOR_RED, COLOR_GREEN, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, get_pixmap_colored
+)
 
 class CommandView(BaseView):
     add_requested = Signal()

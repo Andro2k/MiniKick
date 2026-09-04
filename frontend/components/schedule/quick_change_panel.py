@@ -4,8 +4,13 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, Q
                                QLineEdit, QPushButton, QFrame)
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernCard, ModernButton, ModernSwitch, CategorySearchComboBox
-from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_PURPLE
-from frontend.common import get_icon_colored, get_pixmap_colored
+from frontend.common import (
+    COLOR_NEUTRAL_400,
+    COLOR_GREEN,
+    COLOR_PURPLE,
+    get_icon_colored,
+    get_pixmap_colored,
+)
 
 class ScheduleQuickChangePanel(QWidget):
     refresh_info_requested = Signal()

@@ -6,11 +6,10 @@ from PySide6.QtWidgets import (
     QProgressBar, QScrollArea, QFrame, QFileDialog, QMessageBox
 )
 from PySide6.QtCore import Qt, QSize, Signal, Slot
-from frontend.dialogs.base_dialog import ModernFramelessShell
+from .base_dialog import ModernFramelessShell
 from frontend.widgets import NoWheelDoubleSpinBox
-from frontend.common import get_icon_colored, get_pixmap_colored
-from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_GREEN
-from backend.services.chat.piper_voice_manager import (
+from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_200, COLOR_GREEN
+from backend.services.chat import (
     PiperVoiceManager, PiperVoiceDownloadWorker, DEFAULT_PIPER_VOICE_ID
 )
 

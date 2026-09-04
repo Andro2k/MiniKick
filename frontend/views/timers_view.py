@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableW
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common.theme import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_400
+from frontend.common import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_400
 
 class TimersView(BaseView):
     add_requested = Signal()
@@ -184,7 +184,7 @@ class TimersView(BaseView):
             self._active_timer_dialog.set_category_search_results(platform, results)
 
     def show_add_dialog(self, connected_platforms: dict[str, bool] = None) -> dict | None:
-        from frontend.dialogs.timer_dialog import TimerConfigWizard
+        from frontend.dialogs import TimerConfigWizard
         dialog = TimerConfigWizard(self.i18n, parent=self, connected_platforms=connected_platforms)
         dialog.search_category_requested.connect(self.search_category_requested.emit)
         self._active_timer_dialog = dialog
@@ -196,7 +196,7 @@ class TimersView(BaseView):
         return None
 
     def show_edit_dialog(self, existing_config: dict, connected_platforms: dict[str, bool] = None) -> dict | None:
-        from frontend.dialogs.timer_dialog import TimerConfigWizard
+        from frontend.dialogs import TimerConfigWizard
         dialog = TimerConfigWizard(self.i18n, parent=self, existing_config=existing_config, connected_platforms=connected_platforms)
         dialog.search_category_requested.connect(self.search_category_requested.emit)
         self._active_timer_dialog = dialog

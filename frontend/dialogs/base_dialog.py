@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushB
                                QStackedWidget, QProgressBar, QWidget)
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
-from frontend.common.theme import (
+from frontend.common import (
     COLOR_RED, COLOR_AMBER, COLOR_BLUE, COLOR_GREEN,
     COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
     COLOR_WHITE, PATH_ICON_HELP
@@ -153,7 +153,7 @@ class ModernModal(ModernFramelessShell):
         icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_lbl = QLabel()
-        from frontend.common.icons import get_pixmap_colored
+        from frontend.common import get_pixmap_colored
         dpr = self.devicePixelRatio()
         pixmap = get_pixmap_colored(icon_path, color_str=final_fg, size=36, dpr=dpr)
         if pixmap.isNull():

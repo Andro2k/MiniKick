@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal, QDate, QTime
 from PySide6.QtGui import QTextCharFormat, QColor
 from frontend.widgets import (ModernCard, ModernButton, ModernSwitch,
                               NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox)
-from frontend.common.theme import COLOR_NEUTRAL_200
+from frontend.common import COLOR_NEUTRAL_200
 
 class ScheduleFormPanel(QWidget):
     schedule_saved = Signal(object)

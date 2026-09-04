@@ -6,9 +6,8 @@ from PySide6.QtWidgets import (QPushButton, QAbstractButton, QSizePolicy,
 from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QLinearGradient, 
                            QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon)
-from frontend.common.icons import get_icon_colored
-from frontend.common.theme import (
-    COLOR_GREEN, COLOR_RED, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_BLACK
+from frontend.common import (
+    get_icon_colored, COLOR_GREEN, COLOR_RED, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_BLACK
 )
 
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")

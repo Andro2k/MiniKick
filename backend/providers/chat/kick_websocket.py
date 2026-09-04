@@ -7,10 +7,11 @@ from backend.utils.json_utils import parse_kick_payload, fast_dumps
 from collections import deque
 import websocket
 from typing import Callable
-from frontend.common.theme import COLOR_GREEN
 from backend.models import AlertEvent, AlertType
 
 logger = logging.getLogger("minikick.providers.kick_websocket")
+
+DEFAULT_KICK_COLOR = "#2ECD70"
 
 class KickWebSocketManager:
     def __init__(self, cluster: str, key: str) -> None:
@@ -139,10 +140,10 @@ class KickWebSocketManager:
 
         identity = sender.get("identity")
         badges = []
-        color = COLOR_GREEN
+        color = DEFAULT_KICK_COLOR
 
         if isinstance(identity, dict):
-            color = identity.get("color") or COLOR_GREEN
+            color = identity.get("color") or DEFAULT_KICK_COLOR
             raw_badges = identity.get("badges")
             if isinstance(raw_badges, list):
                 for b in raw_badges:

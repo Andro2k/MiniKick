@@ -41,9 +41,8 @@ from backend.services.system import (
 )
 from backend.config import APP_VERSION
 
-from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
-from frontend.common.theme import GLOBAL_QSS
-from frontend.common.paths import resource_path
+from frontend.dialogs import AlreadyRunningDialog, CrashReportDialog
+from frontend.common import GLOBAL_QSS, resource_path
 
 logger = logging.getLogger("minikick.main")
 
@@ -93,7 +92,6 @@ def global_crash_handler(exctype, value, tb):
         i18n = _get_safe_i18n()
         from backend.config import DISCORD_WEBHOOK_URL
         from backend.workers import CrashReportWorker
-        from frontend.dialogs.crash_report_dialog import CrashReportDialog
         dialog = CrashReportDialog(
             traceback_text=tb_text,
             i18n=i18n,

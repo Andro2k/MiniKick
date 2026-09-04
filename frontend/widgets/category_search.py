@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, 
                                QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy)
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent, QSize
-from frontend.common.icons import get_icon_colored
-from frontend.common.theme import COLOR_NEUTRAL_400
+from frontend.common import get_icon_colored, COLOR_NEUTRAL_400
 
 class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, cat_id=None, parent=None):

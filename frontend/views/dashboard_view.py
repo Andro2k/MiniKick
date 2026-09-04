@@ -6,12 +6,12 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Signal, QRectF
 from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
-from frontend.common.theme import (
+from frontend.common import (
     COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_800,
     COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
-    COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE
+    COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE,
+    create_circular_pixmap, get_icon_colored, get_pixmap_colored
 )
-from frontend.common import create_circular_pixmap, get_icon_colored, get_pixmap_colored
 from frontend.widgets import (
     BaseView, StatCard, SettingRow, ModernCard,
     ModernButton, ModernSwitch, ModernDivider

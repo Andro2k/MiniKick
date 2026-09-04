@@ -4,8 +4,14 @@ from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider,
                               NoWheelComboBox, NoWheelSlider)
-from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored
-from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_GREEN
+from frontend.common import (
+    validate_trigger_prefix,
+    get_icon_colored,
+    get_pixmap_colored,
+    COLOR_NEUTRAL_200,
+    COLOR_NEUTRAL_400,
+    COLOR_GREEN,
+)
 
 class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,

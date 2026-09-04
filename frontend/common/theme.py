@@ -5,7 +5,7 @@ import re
 import tempfile
 from functools import lru_cache
 from pathlib import Path
-from frontend.common.paths import get_assets_path, resolve_icon_path
+from .paths import get_assets_path, resolve_icon_path
 
 COLOR_NEUTRAL_950  = "#0C0B0E"
 COLOR_NEUTRAL_900  = "#121115"

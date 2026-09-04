@@ -6,8 +6,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from .base_dialog import ModernWizardPanel, ModernModal
 from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit, CategorySearchComboBox
-from frontend.common.theme import COLOR_RED, COLOR_GREEN
-from frontend.common import get_icon_colored, get_assets_path
+from frontend.common import COLOR_RED, COLOR_GREEN, get_icon_colored, get_assets_path
 
 class TimerConfigWizard(ModernWizardPanel):
     search_category_requested = Signal(str, str)

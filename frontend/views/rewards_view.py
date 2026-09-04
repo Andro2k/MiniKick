@@ -5,8 +5,10 @@ from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER
-from frontend.common import get_pixmap_colored, get_icon_colored
+from frontend.common import (
+    COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER,
+    get_pixmap_colored, get_icon_colored
+)
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
 
@@ -441,7 +443,7 @@ class RewardsView(BaseView):
         self.btn_copy_url.setEnabled(True)
 
     def show_add_dialog(self, available_rewards: list, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
-        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
+        from frontend.dialogs import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
             parent=self, 
@@ -458,7 +460,7 @@ class RewardsView(BaseView):
         return None
 
     def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
-        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
+        from frontend.dialogs import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
             parent=self, 

@@ -7,8 +7,7 @@ from .controls import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
-from frontend.common.icons import get_icon_colored
-from frontend.common.paths import get_assets_path
+from frontend.common import get_icon_colored, get_assets_path
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):

@@ -3,8 +3,13 @@
 import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication, QProgressBar
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
-from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK
-from frontend.common import get_icon_colored, get_pixmap
+from frontend.common import (
+    COLOR_NEUTRAL_400,
+    COLOR_RED,
+    COLOR_TIKTOK,
+    get_icon_colored,
+    get_pixmap,
+)
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
 from .overlay_mockup import MusicOverlayMockupWidget
 

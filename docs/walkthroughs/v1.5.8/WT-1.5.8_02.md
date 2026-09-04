@@ -1,4 +1,4 @@
-# Walkthrough - WT-1.5.8_02: Arquitectura Backend de Alertas Multiplataforma (Kick y Twitch) y Plantilla Base de Overlays
+# Walkthrough - WT-1.5.8_02: Sistema Integral de Alertas Multiplataforma (Kick & Twitch) y Overlays
 
 **Versión:** `v1.5.8`  
 **Documento:** `WT-1.5.8_02.md`  
@@ -6,68 +6,72 @@
 
 ---
 
-## Resumen Ejecutivo
+## 1. Resumen Ejecutivo
 
-Se implementó la **Fase 1 (Backend)** del sistema de alertas en vivo de MiniKick para Kick y Twitch. La arquitectura permite detectar, normalizar, encolar y emitir eventos de streaming en tiempo real (Follows, Suscripciones, Resuscripciones, Regalos de Subs, Raids y Cheers/Bits) hacia el overlay de OBS mediante WebSockets dedicados, con soporte para personalización multimedia, cola $\mathcal{O}(1)$ con agrupación inteligente de sub bombs y lectura opcional por voz (TTS).
-
----
-
-## Componentes y Cambios Implementados
-
-### 1. Capa de Dominio (`backend/models/alert_models.py`)
-- **`AlertType(str, Enum)`**: Tipos de alertas canónicos (`follow`, `subscription`, `resub`, `sub_gift`, `raid`, `cheer`).
-- **`AlertEvent`**: Dataclass inmutable con `slots=True` y `frozen=True` que desacopla la lógica interna del formato de payloads de Twitch y Kick.
-- **`AlertConfig`**: Dataclass mutable que define el comportamiento de cada alerta (archivo de sonido, imagen/video, plantilla de texto, duración en ms, volumen y lectura por TTS).
-
-### 2. Capa de Persistencia (`backend/database/alert_storage.py`)
-- **Tabla SQLite `alert_configs`**: Clave primaria compuesta `(platform, alert_type)`, almacenando de forma atómica la configuración de cada evento.
-- **Cache en Memoria $\mathcal{O}(1)$**: Acceso instantáneo por tupla `(platform, alert_type)` sin lecturas repetidas a disco durante eventos intensos de stream.
-- **Plantillas Predeterminadas**: Generación automática de mensajes por defecto en caso de no existir configuración guardada.
-
-### 3. Capa de Lógica de Negocio y Cola $\mathcal{O}(1)$ (`backend/services/alerts/`)
-- **`AlertQueue` (`alert_queue.py`)**:
-  - Estructura FIFO implementada con `collections.deque` garantizando inserción y desencolado en $\mathcal{O}(1)$.
-  - **Agrupamiento de Regalos Masivos (Sub Bomb Consolidation)**: Si un usuario regala múltiples suscripciones en una ventana de tiempo (ej. 3 segundos), la cola consolida los eventos en una sola alerta combinada (`amount = total`), evitando saturar OBS con decenas de alertas repetitivas.
-  - **Flujo de Confirmación Asíncrono (ACK)**: El overlay envía un mensaje `{"type": "alert_finished", "id": "..."}` por WebSocket al terminar la animación para solicitar la siguiente alerta.
-- **`AlertService` (`alert_service.py`)**:
-  - Filtra alertas desactivadas según la base de datos.
-  - Interpola variables dinámicas en el texto (`{user}`, `{amount}`, `{tier}`, `{platform}`, `{message}`).
-  - Despacha hacia el servidor de overlay y, opcionalmente, envía el texto al motor de TTS si la alerta tiene activada la lectura de voz.
-  - Deduplicación en $\mathcal{O}(1)$ de IDs de eventos para prevenir falsos disparos por reconexión de sockets.
-
-### 4. Servidor de Overlay (`backend/services/overlay/`)
-- **Canal WebSocket `"alerts"`**: Añadido a `OverlayServerManager` para distribución dirigida únicamente a clientes de alertas.
-- **Rutas HTTP Registradas**: Mapeo de `/alerts`, `/alerts/` y `/alert` en `STATIC_ENDPOINTS_MAP` apuntando a `assets/overlays/alerts/alerts.html`.
-- **Procesamiento de ACKs**: `OverlayRequestHandler` captura mensajes entrantes de clientes WebSocket y notifica al callback `on_alert_finished` de `AlertService`.
-
-### 5. Proveedores de Red y Workers
-- **Kick (`backend/providers/chat/kick_websocket.py` & `kick_chat_worker.py`)**:
-  - Escucha eventos de Pusher: `App\Events\SubscriptionEvent`, `App\Events\GiftedSubscriptionsEvent`, `App\Events\StreamHostEvent` y `App\Events\FollowersUpdated`.
-  - Normaliza a `AlertEvent` y emite la señal `alert_received(AlertEvent)`.
-- **Twitch (`backend/workers/rewards_worker.py`)**:
-  - Suscribe automáticamente temas de EventSub vía WebSocket (`channel.follow`, `channel.subscribe`, `channel.subscription.message`, `channel.subscription.gift`, `channel.cheer`, `channel.raid`).
-  - Emite la señal `alert_received(AlertEvent)`.
-- **`MainWindowCore`**: Conexión reactiva de las señales de ambos workers al procesador central `self.container.alert_service.process_event`.
-
-### 6. Plantilla Base de Overlay (`assets/overlays/alerts/alerts.html`)
-- Archivo HTML5, CSS y JavaScript moderno sin dependencias externas:
-  - Estilizado premium con Glassmorphism, Google Fonts (`Outfit` e `Inter`) y bordes neón acordes a la plataforma (Kick `#53FC18`, Twitch `#9146FF`).
-  - Soporte de audio HTML5 con control de volumen.
-  - Soporte multimedia mixto (imágenes PNG/GIF y videos transparentes MP4/WebM).
-  - Barra de progreso temporal sincronizada y animaciones CSS de entrada y salida con curvas cúbicas.
+Este documento consolida la arquitectura completa (Backend, Frontend, WebSocket y Overlays) del nuevo sistema de alertas en tiempo real de MiniKick para Kick y Twitch.
+La solución permite detectar, encolar en $\mathcal{O}(1)$, personalizar visual y sonoramente, y proyectar hacia OBS eventos de:
+- **Seguimientos (Follows)**: Detección instantánea en Kick mediante WebSocket Pusher (`GoalProgressUpdateEvent` + regex de bots de chat) y EventSub en Twitch (`channel.follow`).
+- **Suscripciones y Resuscripciones**: Con niveles de suscripción e interpolación de variables.
+- **Regalos de Suscripciones (Sub Bombs)**: Agrupamiento inteligente en cola para evitar saturación de pantalla.
+- **Raids y Cheers/Bits**: Notificaciones dinámicas con lectura por voz (TTS).
+- **Canjes de Puntos de Canal en Kick (0 ms)**: Migración de sondeo HTTP a eventos de WebSocket Pusher `RewardRedeemedEvent` en `chatroom_{chatroom_id}`.
 
 ---
 
-## Verificación y Pruebas Automatizadas
+## 2. Arquitectura de Datos y Backend (`backend/models/`, `backend/database/`, `backend/services/`)
 
-Se crearon 4 nuevas suites de pruebas unitarias automatizadas cubriendo el 100% de la nueva arquitectura:
-- `resources/tests/unit/services/test_alert_models.py` (3 tests)
-- `resources/tests/unit/services/test_alert_storage.py` (2 tests)
-- `resources/tests/unit/services/test_alert_queue.py` (2 tests)
-- `resources/tests/unit/services/test_alert_service.py` (4 tests)
+### A. Capa de Dominio
+- **`AlertType(str, Enum)`**: Tipos canónicos (`follow`, `subscription`, `resub`, `sub_gift`, `raid`, `cheer`).
+- **`AlertEvent`**: Dataclass inmutable (`slots=True`, `frozen=True`) desacoplada de los esquemas específicos de Twitch y Kick.
+- **`AlertConfig`**: Dataclass mutable que encapsula sonido, archivo multimedia (imagen o video transparente), plantilla de texto, duración en ms, volumen y lectura por TTS.
 
-**Resultado de la Suite Completa**:
-```text
-============================ 187 passed in 10.67s =============================
-```
-187 pruebas pasando exitosamente sin advertencias ni regresiones.
+### B. Persistencia y Almacenamiento SQLite
+- **Tabla `alert_configs`**: Clave primaria compuesta `(platform, alert_type)`.
+- **Caché en Memoria $\mathcal{O}(1)$**: Acceso instantáneo en memoria sin consultas a disco durante transmisiones intensas.
+
+### C. Cola $\mathcal{O}(1)$ y Agrupamiento de Regalos Masivos
+- **`AlertQueue`**: Estructura FIFO basada en `collections.deque`.
+- **Sub Bomb Consolidation**: Si un usuario regala varias suscripciones en una ventana corta de tiempo, la cola consolida los eventos en una sola alerta agregada (`amount = total`), impidiendo que OBS se bloquee con decenas de alertas redundantes.
+- **Flujo de Confirmación Asíncrono (ACK)**: El overlay notifica `{"type": "alert_finished", "id": "..."}` al terminar la animación para solicitar el siguiente evento.
+
+---
+
+## 3. Protocolo WebSocket Pusher de Kick en Tiempo Real
+
+Se analizaron e integraron los 4 tópicos en vivo de Kick:
+1. `chatrooms.{chatroom_id}.v2`: Mensajes, encuestas y fijados.
+2. `chatroom_{chatroom_id}`: Canjes de puntos de canal (`RewardRedeemedEvent`).
+3. `channel_{channel_id}`: Eventos de canal (`GoalProgressUpdateEvent`, `FollowersUpdated`).
+4. `channel.{channel_id}`: Tópico complementario.
+
+Se erradicó por completo el antiguo hilo de sondeo HTTP (`RewardWorker`), reduciendo la latencia de 10 segundos a **0 ms** y ahorrando ~360 peticiones HTTP por hora.
+
+---
+
+## 4. Frontend: Interfaz de Configuración de Alertas (`frontend/views/alerts_view.py`)
+
+- **`AlertEventCard`**:
+  - Hereda de `ModernCard` con adherencia estricta al sistema de diseño sin estilos inline.
+  - Botones temáticos con acento nativo: verde Kick (`role="action_kick"`) y púrpura Twitch (`role="action_twitch"`).
+  - Distribución anti-cramping: Filas de sonido y video con anchos completos y explorador de archivos nativo.
+  - Controles desacoplados: Duración (`NoWheelSpinBox`), Slider de Volumen (`NoWheelSlider`), switch TTS y botón de prueba.
+- **`AlertsView`**:
+  - Layout responsive de 2 columnas (`LeftToRight`) con cambio fluido a 1 columna vertical en ventanas estrechas (< 920px).
+  - Selector de plataforma superior con chips de filtro temáticos.
+  - Tarjeta de integración OBS con URL directa y botón de copiado en un clic (`QGuiApplication.clipboard`).
+
+---
+
+## 5. Plantilla de Overlay Web (`assets/overlays/alerts/alerts.html`)
+
+- Estilizado Glassmorphism moderno con fuentes Google (`Outfit` e `Inter`).
+- Soporte multimedia mixto (imágenes PNG/GIF y videos transparentes MP4/WebM).
+- Reproductor de audio HTML5 con volumen calibrado.
+- Barra de progreso temporal sincronizada y animaciones CSS fluidas con curvas cúbicas.
+
+---
+
+## 6. Verificación y Pruebas
+
+- Pruebas dedicadas en `resources/tests/unit/ui/test_alerts_ui.py`, `test_alert_service.py`, `test_alert_storage.py` y `test_alert_models.py`.
+- Cobertura 100% en simulación de eventos masivos, persistencia y despacho WebSocket.

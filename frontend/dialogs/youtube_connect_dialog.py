@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import QLabel, QLineEdit, QHBoxLayout, QWidget
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton
-from frontend.common import get_assets_path
-from frontend.common.theme import COLOR_YOUTUBE
+from frontend.common import get_assets_path, COLOR_YOUTUBE
 
 class YouTubeConnectDialog(ModernModal):
     def __init__(self, i18n, initial_target: str = "", parent=None):

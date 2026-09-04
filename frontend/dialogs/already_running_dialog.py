@@ -4,8 +4,7 @@ from PySide6.QtWidgets import QLabel, QPushButton
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path
-from frontend.common.theme import COLOR_GREEN
+from frontend.common import get_assets_path, COLOR_GREEN
 
 class AlreadyRunningDialog(ModernModal):
     def __init__(self, i18n, parent=None):

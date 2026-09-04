@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, 
                                QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit)
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common.icons import get_icon_colored, get_pixmap_colored
-from frontend.common.theme import COLOR_NEUTRAL_400
+from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls import ModernSwitch
 

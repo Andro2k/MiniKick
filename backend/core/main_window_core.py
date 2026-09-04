@@ -29,10 +29,8 @@ from backend.workers import (
     KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, YouTubeChatWorker, TikTokChatWorker,
     FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
 )
-from frontend.common.theme import COLOR_GREEN, get_global_qss
-from frontend.navigation.sidebar_component import Sidebar
-from frontend.navigation.toast_component import ToastManager
-from frontend.navigation.tray_menu_component import SystemTrayManager
+from frontend.common import COLOR_GREEN, get_global_qss
+from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
     LogView, MusicView, SettingsView, SpamView, WidgetsView,

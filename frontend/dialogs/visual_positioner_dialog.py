@@ -7,7 +7,7 @@ from PySide6.QtGui import QRegion, QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from frontend.widgets import ModernButton
-from frontend.common.theme import COLOR_GREEN, PATH_ICON_HELP
+from frontend.common import COLOR_GREEN, PATH_ICON_HELP
 from .base_dialog import ModernModal
 
 class DraggableBox(QFrame):

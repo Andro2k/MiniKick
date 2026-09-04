@@ -9,8 +9,7 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QColor
 
 from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider
-from frontend.common.theme import RADIUS_SM, RADIUS_MD, get_swatch_qss
-from frontend.common.icons import get_icon_colored
+from frontend.common import RADIUS_SM, RADIUS_MD, get_swatch_qss, get_icon_colored
 from .base_dialog import ModernWizardPanel
 from .visual_positioner_dialog import VisualPositionerDialog
 

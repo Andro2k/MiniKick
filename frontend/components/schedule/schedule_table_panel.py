@@ -2,10 +2,9 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import ModernTableCard
-from frontend.widgets.table import TableActionCell
-from frontend.dialogs.base_dialog import ModernConfirmDialog
-from frontend.common.theme import COLOR_GREEN, COLOR_RED
+from frontend.widgets import ModernTableCard, TableActionCell
+from frontend.dialogs import ModernConfirmDialog
+from frontend.common import COLOR_GREEN, COLOR_RED
 
 class ScheduleTablePanel(QWidget):
     new_schedule_clicked = Signal()

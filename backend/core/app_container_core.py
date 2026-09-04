@@ -34,7 +34,7 @@ from backend.services import (
     SettingsService, AvatarService, WidgetService, ScheduleService,
     TTSManager, OverlayServerManager, AlertService
 )
-from frontend.common.paths import resource_path
+from frontend.common import resource_path
 
 class AppContainerCore:
     def __init__(self):

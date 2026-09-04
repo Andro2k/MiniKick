@@ -1,12 +1,10 @@
 # frontend\components\widgets\widget_card_component.py
 
-from frontend.widgets import ModernDivider, FlowLayout
+from frontend.widgets import ModernDivider, FlowLayout, ModernSwitch
 from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from PySide6.QtWidgets import (QFrame, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QSpinBox, QPushButton, QApplication)
-from frontend.common import get_pixmap_colored, get_icon_colored
-from frontend.common.theme import COLOR_NEUTRAL_400
-from frontend.widgets.controls import ModernSwitch
+from frontend.common import get_pixmap_colored, get_icon_colored, COLOR_NEUTRAL_400
 
 class WidgetCard(QFrame):
     widget_changed = Signal(str, bool, str, int, str, object)

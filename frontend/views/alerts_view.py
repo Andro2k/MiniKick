@@ -5,13 +5,12 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QFileDialog, QStackedWidget, QBoxLayout
 )
-from backend.models.alert_models import AlertConfig
+from backend.models import AlertConfig
 from frontend.widgets import (
     BaseView, ModernCard, ModernButton, ModernSwitch,
     NoWheelSlider, NoWheelSpinBox, ModernDivider
 )
-from frontend.common.icons import get_pixmap_colored
-from frontend.common.theme import COLOR_GREEN, COLOR_PURPLE
+from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE
 
 class AlertEventCard(ModernCard):
     config_changed = Signal(object)

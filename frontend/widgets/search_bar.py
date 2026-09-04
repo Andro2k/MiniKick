@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common.icons import get_icon_colored
+from frontend.common import get_icon_colored
 
 class UnifiedSearchBar(QFrame):
     textChanged = Signal(str)

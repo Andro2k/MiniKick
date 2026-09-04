@@ -8,8 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path, get_icon_colored
-from frontend.common.theme import COLOR_RED, COLOR_GREEN
+from frontend.common import get_assets_path, get_icon_colored, COLOR_RED, COLOR_GREEN
 
 class SeverityCard(QFrame):
     clicked = Signal(str)
@@ -181,7 +180,7 @@ class BugReportDialog(ModernModal):
 
         if not initial_contact:
             try:
-                from backend.database.manager import DatabaseManager
+                from backend.database import DatabaseManager
                 initial_contact = DatabaseManager().get_primary_identity()
             except Exception:
                 initial_contact = ""

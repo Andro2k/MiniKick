@@ -6,7 +6,7 @@ from .blocks import (
     ModernCard, ModernScrollArea, ExpandableSettingCard, ModernDivider,
     create_badge
 )
-from .controls import ModernButton, ModernSwitch, CompactSpinBox, VariableTextEdit
+from .controls import ModernButton, ModernSwitch, CompactSpinBox, VariableHighlighter, VariableTextEdit
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table import ModernTable, ModernTableCard, TableActionCell
@@ -18,7 +18,7 @@ from .no_wheel import (
     NoWheelComboBox, NoWheelSlider, NoWheelDateEdit, NoWheelTimeEdit,
     NoWheelSpinBox, NoWheelDoubleSpinBox
 )
-from .category_search import CategorySearchComboBox, CategorySuggestionsPopup
+from .category_search import CategorySearchComboBox, CategorySuggestionsPopup, CategoryItemWidget
 
 __all__ = [
     "BaseView",
@@ -34,6 +34,7 @@ __all__ = [
     "ModernButton",
     "ModernSwitch",
     "CompactSpinBox",
+    "VariableHighlighter",
     "VariableTextEdit",
     "FlowLayout",
     "ScalableIllustration",
@@ -51,6 +52,7 @@ __all__ = [
     "NoWheelSpinBox",
     "NoWheelDoubleSpinBox",
     "CategorySearchComboBox",
-    "CategorySuggestionsPopup"
+    "CategorySuggestionsPopup",
+    "CategoryItemWidget"
 ]
 

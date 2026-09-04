@@ -9,9 +9,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QColor, QDesktopServices, QFont
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path
-from frontend.common.theme import (
-    COLOR_GREEN, COLOR_NEUTRAL_900, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800, COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_WHITE, COLOR_RED
+from frontend.common import (
+    get_assets_path, COLOR_GREEN, COLOR_NEUTRAL_900, COLOR_NEUTRAL_850,
+    COLOR_NEUTRAL_800, COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_WHITE, COLOR_RED
 )
 
 _RE_LATEX_O     = re.compile(r'\$\\mathcal\{O\}\((.*?)\)\$')

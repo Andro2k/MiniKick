@@ -9,8 +9,10 @@ from PySide6.QtWidgets import (
 )
 from frontend.widgets import (BaseView, ModernTable, ScalableIllustration, ModernButton, 
                               UnifiedSearchBar, SegmentedPagination, NoWheelComboBox)
-from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED
-from frontend.common import get_assets_path, get_icon_colored
+from frontend.common import (
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED,
+    get_assets_path, get_icon_colored
+)
 
 class LogControlsPanel(QFrame):
     search_changed = Signal(str)
@@ -548,6 +550,6 @@ class LogView(BaseView):
         msg_box.exec()
 
     def show_bug_report_dialog(self, worker_class=None):
-        from frontend.dialogs.bug_report_dialog import BugReportDialog
+        from frontend.dialogs import BugReportDialog
         dialog = BugReportDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()

@@ -2,8 +2,10 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
-from frontend.common.theme import COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_AMBER
-from frontend.common import get_icon_colored, get_pixmap_colored
+from frontend.common import (
+    COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_AMBER,
+    get_icon_colored, get_pixmap_colored
+)
 
 class ModernToast(QFrame):
     expired = Signal(object)
@@ -133,7 +135,6 @@ class ModernToast(QFrame):
         self.anim.setStartValue(self.pos())
         self.anim.setEndValue(QPoint(self.pos().x() + self.width() + 20, self.pos().y()))
         self.anim.start()
-
 
 class ToastManager(QObject):
     MAX_VISIBLE = 3

@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import QHeaderView, QMenu
 from PySide6.QtCore import Qt, Signal, QRect, QPoint, QSize
 from PySide6.QtGui import QPainter, QAction
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400
-from frontend.common.icons import get_icon_colored
+from frontend.common import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, get_icon_colored
 
 class FilterHeaderView(QHeaderView):
     filter_changed = Signal(object)

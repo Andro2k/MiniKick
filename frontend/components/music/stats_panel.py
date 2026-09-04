@@ -2,8 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QFrame
 from PySide6.QtCore import Signal
-from frontend.common.theme import COLOR_NEUTRAL_400
-from frontend.common import get_pixmap_colored
+from frontend.common import COLOR_NEUTRAL_400, get_pixmap_colored
 from frontend.widgets import ModernCard, ModernSwitch
 
 class MusicStatsPanel(QWidget):

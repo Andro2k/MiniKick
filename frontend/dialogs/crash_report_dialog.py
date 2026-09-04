@@ -8,8 +8,7 @@ from PySide6.QtCore import Qt, Slot, QSize
 from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path, get_icon_colored
-from frontend.common.theme import COLOR_RED
+from frontend.common import get_assets_path, get_icon_colored, COLOR_RED
 
 class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n, webhook_url: str = "", worker_class=None, initial_contact: str = "", parent=None):
@@ -21,7 +20,7 @@ class CrashReportDialog(ModernModal):
 
         if not initial_contact:
             try:
-                from backend.database.manager import DatabaseManager
+                from backend.database import DatabaseManager
                 initial_contact = DatabaseManager().get_primary_identity()
             except Exception:
                 initial_contact = ""
@@ -131,7 +130,7 @@ class CrashReportDialog(ModernModal):
     def _send_and_close(self):
         webhook_url = self.webhook_url
         if not webhook_url:
-            from backend.config.api_keys import DISCORD_WEBHOOK_URL
+            from backend.config import DISCORD_WEBHOOK_URL
             webhook_url = DISCORD_WEBHOOK_URL
 
         if not webhook_url:

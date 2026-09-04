@@ -1,41 +1,62 @@
-# Walkthrough WT-1.5.8_07: Auditoría y Refactorización de `RewardsController`
+# Walkthrough - WT-1.5.8_07: Estandarización de Fachadas y Desacoplamiento de la Capa Frontend
+
+**Versión:** `v1.5.8`  
+**Documento:** `WT-1.5.8_07.md`  
+**Fecha:** 02 de Septiembre, 2026  
+
+---
 
 ## 1. Resumen Ejecutivo
-Se auditó y refactorizó [`RewardsController`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/rewards_controller.py), el componente encargado de los canjes de puntos de canal (Channel Point Rewards) para Kick y Twitch. Se eliminaron bucles $\mathcal{O}(N^2)$ al deduplicar recompensas, se unificó la lógica de instanciación y despacho de workers de plataformas (DRY/SRP) y se eliminó el acoplamiento directo e innecesario con utilidades de miniaturas (SoR).
+
+Este documento consolida la auditoría, modernización y estandarización de importaciones en toda la capa de interfaz de usuario ([WT-1.5.8_31] al [WT-1.5.8_38]). Se erradicaron al 100% las importaciones hacia submódulos internos (`frontend.common.theme`, `frontend.common.paths`, `frontend.widgets.controls`, `frontend.dialogs.base_dialog`), unificando el consumo de componentes bajo fachadas limpias de primer nivel.
 
 ---
 
-## 2. Cambios Implementados
+## 2. Subsistemas Frontend Auditados y Certificados
 
-### A. Reducción de Complejidad Algorítmica a $\mathcal{O}(N)$
-- En `_get_available_rewards()` y `update_rewards_list()`:
-  - Se sustituyeron las comprobaciones lineales sobre listas (`if r not in all_rewards`, `if r not in self.current_rewards_list`) por un conjunto de seguimiento (`seen = set(...)`).
-  - La verificación de existencia ahora opera en tiempo constante $\mathcal{O}(1)$, reduciendo el tiempo total de deduplicación de $\mathcal{O}(N^2)$ a $\mathcal{O}(N)$ estricto manteniendo el orden de inserción.
-
-### B. Unificación DRY del Despacho de Workers
-- Se extrajeron métodos especializados:
-  - `_create_api_client(platform)`: Fábrica centralizada de clientes API para Kick y Twitch.
-  - `_dispatch_create_reward_worker(platform, payload, config)`: Unifica la validación de credenciales, emisión de toasts, orquestación e inicio de `CreateRewardWorker`.
-  - `_dispatch_update_reward_worker(platform, reward_id, payload, old_reward, new_reward, updated_config)`: Unifica la orquestación e inicio de `UpdateRewardWorker`.
-  - `_purge_platform_details(platform)`: Centraliza la purga de claves por plataforma en `rewards_details_map`.
-- Se redujo drásticamente el tamaño y la complejidad ciclomática de `_handle_add` y `_handle_edit`.
-
-### C. Desacoplamiento de SoR (Thumbnails)
-- Se eliminaron las importaciones locales y ejecución directa de `generate_media_thumbnail` en el controlador.
-- Ahora el controlador delega transparentemente la generación y cacheo de miniaturas al método `save_mappings()` de [`RewardsService`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/rewards/rewards_service.py).
-
-### D. Centralización de Etiquetas y Placeholders
-- `_get_placeholder_strings()`: Centraliza los textos transitorios evitando sets redundantes repetidos.
-- `_get_platform_label(platform)`: Resuelve etiquetas i18n para nombres de plataformas en lugar de strings fijos.
+| Paquete Frontend | Componentes | Estado | Exportaciones Clave |
+| :--- | :---: | :---: | :--- |
+| **`frontend/common`** | 5 | **Certificado** | **78 símbolos**: Paleta de colores (`COLOR_*`), radios (`RADIUS_*`), márgenes (`PADDING_*`), utilidades de iconos (`get_icon`, `get_pixmap`), validadores y hojas de estilo QSS globales. |
+| **`frontend/widgets`** | 12 | **Certificado** | **32 controles**: `BaseView`, `ModernCard`, `ModernButton`, `ModernSwitch`, `ModernTable`, `CompactSpinBox`, `FlowLayout`, `UnifiedSearchBar`, `SegmentedPagination`, etc. |
+| **`frontend/views`** | 12 | **Certificado** | **12 vistas principales**: Desacopladas de rutas internas, consumiendo `frontend.common`, `frontend.dialogs` y `backend.models`. |
+| **`frontend/navigation`** | 3 | **Certificado** | `Sidebar`, `ToastManager`, `SystemTrayManager` y `ModernToast`. |
+| **`frontend/dialogs`** | 13 | **Certificado** | **13 modales**: `ModernConfirmDialog`, `UpdateDialog`, `CrashReportDialog`, `PiperVoicesDialog`, `RewardsConfigWizard`, `VisualPositionerDialog`, etc. |
+| **`frontend/components`** | 14 | **Certificado** | **20 subpaneles**: Arquitectura *Two-Tier* cubriendo subdominios de `chat`, `music`, `schedule` y `widgets`. |
 
 ---
 
-## 3. Verificación y Resultados
+## 3. Jerarquía y Flujo de Dependencias Limpias
 
-```bash
-.venv\Scripts\python -m pytest resources/tests/
-============================ 201 passed in 13.50s =============================
+```mermaid
+graph TD
+    Views["Vistas Principales (frontend.views)"] --> Common["frontend.common (Tokens, Iconos, Paths)"]
+    Views --> Widgets["frontend.widgets (Componentes UI Reutilizables)"]
+    Views --> Dialogs["frontend.dialogs (Modales y Asistentes)"]
+    Views --> Components["frontend.components (Subpaneles de Chat, Música, Agenda, Widgets)"]
+    Components --> Common
+    Components --> Widgets
+    Components --> Dialogs
+    Navigation["frontend.navigation (Sidebar, Toast, Tray)"] --> Common
 ```
 
-- **201 pruebas unitarias pasando al 100%**.
-- Se validó el aislamiento de plataformas, persistencia de IDs remotos y manejo de errores 404/403 de Twitch y Kick sin regresiones.
+### Reglas Cumplidas
+1. **Separación Estricta de Responsabilidades (SoR)**:
+   - Los componentes de presentación jamás manipulan queries SQL ni estructuras privadas de proveedores de datos.
+2. **Cero Hardcoded UI Text**:
+   - Todas las cadenas visibles al usuario se gestionan mediante `TranslationService` (`self.i18n.get(...)`).
+3. **Rendimiento $\mathcal{O}(1)$**:
+   - Búsqueda directa de atributos en `__all__` y tablas `sys.modules`, sin resolución recursiva en disco.
+
+---
+
+## 4. Verificación Automatizada
+
+```bash
+# Verificación de carga limpia de todas las fachadas frontend
+uv run python -c "import frontend.common, frontend.components, frontend.dialogs, frontend.navigation, frontend.views, frontend.widgets; print('ALL frontend packages imported successfully!')"
+
+# Verificación de integridad de 78 símbolos exportados
+uv run python -c "import frontend.common as fc; assert len(fc.__all__) == 78; print('frontend.common verified: 78 exports, 0 missing')"
+```
+
+- **Suite de Pruebas Unitarias**: 239/239 pruebas pasando limpiamente (100% de éxito).

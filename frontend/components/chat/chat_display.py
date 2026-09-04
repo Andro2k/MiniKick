@@ -4,7 +4,7 @@ import html
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy
 from frontend.widgets import ModernCard
-from frontend.common.theme import COLOR_NEUTRAL_200
+from frontend.common import COLOR_NEUTRAL_200
 
 class ChatDisplayPanel(ModernCard):
     _MAX_CHAT_BLOCKS = 400
