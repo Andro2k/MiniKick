@@ -12,6 +12,19 @@ from frontend.widgets import (
 )
 from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE
 
+class ResponsiveStackedWidget(QStackedWidget):
+    def minimumSizeHint(self):
+        cur = self.currentWidget()
+        if cur is not None:
+            return cur.minimumSizeHint()
+        return super().minimumSizeHint()
+
+    def sizeHint(self):
+        cur = self.currentWidget()
+        if cur is not None:
+            return cur.sizeHint()
+        return super().sizeHint()
+
 class AlertEventCard(ModernCard):
     config_changed = Signal(object)
     test_requested = Signal(str, str)
@@ -81,6 +94,7 @@ class AlertEventCard(ModernCard):
         sound_input_row = QHBoxLayout()
         sound_input_row.setSpacing(8)
         self.edit_sound = QLineEdit(parent=self)
+        self.edit_sound.setMinimumWidth(80)
         self.edit_sound.setPlaceholderText(self.i18n.get("alerts.fields.sound_placeholder"))
         self.edit_sound.textChanged.connect(self._on_field_changed)
 
@@ -109,6 +123,7 @@ class AlertEventCard(ModernCard):
         media_input_row = QHBoxLayout()
         media_input_row.setSpacing(8)
         self.edit_media = QLineEdit(parent=self)
+        self.edit_media.setMinimumWidth(80)
         self.edit_media.setPlaceholderText(self.i18n.get("alerts.fields.media_placeholder"))
         self.edit_media.textChanged.connect(self._on_field_changed)
 
@@ -257,7 +272,6 @@ class AlertEventCard(ModernCard):
     def _on_test_clicked(self):
         self.test_requested.emit(self.platform, self.alert_type)
 
-
 class AlertsView(BaseView):
     config_changed = Signal(object)
     test_alert_requested = Signal(str, str)
@@ -301,11 +315,17 @@ class AlertsView(BaseView):
         lbl_obs_desc.setProperty("role", "body")
         overlay_card.addWidget(lbl_obs_desc)
 
-        url_row = QHBoxLayout()
-        url_row.setSpacing(8)
+        self.url_box = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.url_box.setContentsMargins(0, 0, 0, 0)
+        self.url_box.setSpacing(8)
 
         self.edit_overlay_url = QLineEdit(self.alerts_overlay_url, parent=self)
         self.edit_overlay_url.setReadOnly(True)
+        self.edit_overlay_url.setMinimumWidth(100)
+
+        self.url_actions_layout = QHBoxLayout()
+        self.url_actions_layout.setContentsMargins(0, 0, 0, 0)
+        self.url_actions_layout.setSpacing(8)
 
         self.btn_copy_url = ModernButton(
             text=self.i18n.get("alerts.overlay_card.copy_btn"),
@@ -325,10 +345,12 @@ class AlertsView(BaseView):
         )
         self.btn_open_browser.clicked.connect(self.open_browser_requested.emit)
 
-        url_row.addWidget(self.edit_overlay_url, stretch=1)
-        url_row.addWidget(self.btn_copy_url)
-        url_row.addWidget(self.btn_open_browser)
-        overlay_card.addLayout(url_row)
+        self.url_actions_layout.addWidget(self.btn_copy_url)
+        self.url_actions_layout.addWidget(self.btn_open_browser)
+
+        self.url_box.addWidget(self.edit_overlay_url, stretch=1)
+        self.url_box.addLayout(self.url_actions_layout)
+        overlay_card.addLayout(self.url_box)
 
         self.main_layout.addWidget(overlay_card)
         self.main_layout.addSpacing(8)
@@ -363,24 +385,29 @@ class AlertsView(BaseView):
         self.main_layout.addLayout(platform_row)
         self.main_layout.addSpacing(8)
 
-        self.stack = QStackedWidget(parent=self)
+        self.stack = ResponsiveStackedWidget(parent=self)
+        self.stack.setMinimumWidth(0)
 
         kick_page = QWidget()
+        kick_page.setMinimumWidth(0)
         kick_page_layout = QVBoxLayout(kick_page)
         kick_page_layout.setContentsMargins(0, 0, 0, 0)
         kick_page_layout.setSpacing(16)
 
-        self.kick_columns = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        initial_direction = QBoxLayout.Direction.TopToBottom if self.width() < 920 else QBoxLayout.Direction.LeftToRight
+        self.kick_columns = QBoxLayout(initial_direction)
         self.kick_columns.setContentsMargins(0, 0, 0, 0)
         self.kick_columns.setSpacing(16)
 
         kick_col1 = QWidget()
+        kick_col1.setMinimumWidth(0)
         self.kick_col1_layout = QVBoxLayout(kick_col1)
         self.kick_col1_layout.setContentsMargins(0, 0, 0, 0)
         self.kick_col1_layout.setSpacing(16)
         self.kick_col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         kick_col2 = QWidget()
+        kick_col2.setMinimumWidth(0)
         self.kick_col2_layout = QVBoxLayout(kick_col2)
         self.kick_col2_layout.setContentsMargins(0, 0, 0, 0)
         self.kick_col2_layout.setSpacing(16)
@@ -416,21 +443,24 @@ class AlertsView(BaseView):
         self.stack.addWidget(kick_page)
 
         twitch_page = QWidget()
+        twitch_page.setMinimumWidth(0)
         twitch_page_layout = QVBoxLayout(twitch_page)
         twitch_page_layout.setContentsMargins(0, 0, 0, 0)
         twitch_page_layout.setSpacing(16)
 
-        self.twitch_columns = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.twitch_columns = QBoxLayout(initial_direction)
         self.twitch_columns.setContentsMargins(0, 0, 0, 0)
         self.twitch_columns.setSpacing(16)
 
         twitch_col1 = QWidget()
+        twitch_col1.setMinimumWidth(0)
         self.twitch_col1_layout = QVBoxLayout(twitch_col1)
         self.twitch_col1_layout.setContentsMargins(0, 0, 0, 0)
         self.twitch_col1_layout.setSpacing(16)
         self.twitch_col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         twitch_col2 = QWidget()
+        twitch_col2.setMinimumWidth(0)
         self.twitch_col2_layout = QVBoxLayout(twitch_col2)
         self.twitch_col2_layout.setContentsMargins(0, 0, 0, 0)
         self.twitch_col2_layout.setSpacing(16)
@@ -497,6 +527,19 @@ class AlertsView(BaseView):
                     else:
                         col_layout.setStretch(0, 1)
                         col_layout.setStretch(1, 1)
+
+            if hasattr(self, 'stack'):
+                self.stack.updateGeometry()
+                cur = self.stack.currentWidget()
+                if cur is not None:
+                    cur.updateGeometry()
+            if hasattr(self, 'scroll_content'):
+                self.scroll_content.updateGeometry()
+
+        if hasattr(self, 'url_box'):
+            url_direction = QBoxLayout.Direction.TopToBottom if width < 920 else QBoxLayout.Direction.LeftToRight
+            if self.url_box.direction() != url_direction:
+                self.url_box.setDirection(url_direction)
 
     def set_overlay_url(self, url: str):
         self.alerts_overlay_url = url

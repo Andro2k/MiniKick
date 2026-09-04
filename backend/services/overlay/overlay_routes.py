@@ -219,25 +219,58 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             return
 
         filepath = query["path"][0]
-        if not os.path.exists(filepath):
+        if not os.path.isfile(filepath):
             self.send_error(404, "Media file not found")
             return
 
+        file_size = os.path.getsize(filepath)
         mime_type, _ = mimetypes.guess_type(filepath)
+        content_type = mime_type or "application/octet-stream"
+
+        range_header = self.headers.get("Range")
+        start = 0
+        end = file_size - 1 if file_size > 0 else 0
+
+        if range_header and range_header.startswith("bytes="):
+            range_val = range_header.replace("bytes=", "").strip()
+            parts = range_val.split("-")
+            try:
+                if parts[0]:
+                    start = int(parts[0])
+                if len(parts) > 1 and parts[1]:
+                    end = int(parts[1])
+            except ValueError:
+                pass
+            start = max(0, min(start, file_size - 1)) if file_size > 0 else 0
+            end = max(start, min(end, file_size - 1)) if file_size > 0 else 0
+            status_code = 206
+        else:
+            status_code = 200
+
+        content_length = (end - start + 1) if file_size > 0 else 0
 
         try:
-            self.send_response(200)
-            self.send_header("Content-Type", mime_type or "application/octet-stream")
+            self.send_response(status_code)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Content-Length", str(content_length))
             self.send_header("Access-Control-Allow-Origin", "*")
+            if status_code == 206 and file_size > 0:
+                self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
             self.end_headers()
 
-            with open(filepath, "rb") as f:
-                chunk_size = 1024 * 64
-                while True:
-                    chunk = f.read(chunk_size)
-                    if not chunk:
-                        break
-                    self.wfile.write(chunk)
+            if file_size > 0 and content_length > 0:
+                with open(filepath, "rb") as f:
+                    f.seek(start)
+                    remaining = content_length
+                    chunk_size = 1024 * 64
+                    while remaining > 0:
+                        read_len = min(chunk_size, remaining)
+                        chunk = f.read(read_len)
+                        if not chunk:
+                            break
+                        self.wfile.write(chunk)
+                        remaining -= len(chunk)
 
         except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
             pass

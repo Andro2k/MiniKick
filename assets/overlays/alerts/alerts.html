@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniKick Alerts Overlay</title>
-    <!-- Google Fonts: Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Inter:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary-font: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -52,7 +54,7 @@
             pointer-events: none;
             transform: scale(0.85) translateY(30px);
             transition: opacity 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                        transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         #alert-container.active {
@@ -75,7 +77,8 @@
             z-index: 2;
         }
 
-        .media-box img, .media-box video {
+        .media-box img,
+        .media-box video {
             max-width: 240px;
             max-height: 200px;
             object-fit: contain;
@@ -179,6 +182,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div id="alert-container">
@@ -193,7 +197,6 @@
         </div>
     </div>
 
-    <!-- Hidden audio element -->
     <audio id="alert-audio" preload="auto"></audio>
 
     <script>
@@ -212,9 +215,18 @@
         let isPlaying = false;
         const localQueue = [];
 
+        document.addEventListener('click', () => {
+            if (alertAudio) {
+                alertAudio.play().then(() => {
+                    alertAudio.pause();
+                    alertAudio.currentTime = 0;
+                }).catch(() => { });
+            }
+        }, { once: true });
+
         function connectWS() {
             if (ws) {
-                try { ws.close(); } catch (e) {}
+                try { ws.close(); } catch (e) { }
                 ws = null;
             }
 
@@ -273,15 +285,16 @@
             }
 
             mediaBox.innerHTML = '';
+            let videoElement = null;
             if (data.media_url) {
                 const ext = (data.media_ext || '').toLowerCase();
                 if (ext === '.mp4' || ext === '.webm') {
-                    const video = document.createElement('video');
-                    video.src = data.media_url;
-                    video.autoplay = true;
-                    video.loop = true;
-                    video.muted = true;
-                    mediaBox.appendChild(video);
+                    videoElement = document.createElement('video');
+                    videoElement.src = data.media_url;
+                    videoElement.autoplay = true;
+                    videoElement.loop = true;
+                    videoElement.playsInline = true;
+                    mediaBox.appendChild(videoElement);
                 } else {
                     const img = document.createElement('img');
                     img.src = data.media_url;
@@ -289,10 +302,23 @@
                 }
             }
 
+            const targetVolume = Math.max(0.0, Math.min(1.0, data.sound_volume ?? 0.8));
+
             if (data.sound_url) {
+                if (videoElement) {
+                    videoElement.muted = true;
+                }
                 alertAudio.src = data.sound_url;
-                alertAudio.volume = Math.max(0.0, Math.min(1.0, data.sound_volume ?? 0.8));
+                alertAudio.volume = targetVolume;
                 alertAudio.play().catch(e => console.warn("[Alerts Audio] Play blocked:", e));
+            } else if (videoElement) {
+                videoElement.muted = false;
+                videoElement.volume = targetVolume;
+                videoElement.play().catch(e => {
+                    console.warn("[Alerts Video Audio] Unmuted play blocked by browser policy, falling back to muted:", e);
+                    videoElement.muted = true;
+                    videoElement.play().catch(err => console.warn("[Alerts Video] Play blocked:", err));
+                });
             }
 
             const duration = data.duration_ms || 5000;
@@ -312,8 +338,15 @@
                 container.classList.add('dismissing');
 
                 setTimeout(() => {
+                    if (videoElement) {
+                        try {
+                            videoElement.pause();
+                            videoElement.src = '';
+                            videoElement.load();
+                        } catch (e) { }
+                    }
                     mediaBox.innerHTML = '';
-                    try { alertAudio.pause(); alertAudio.currentTime = 0; } catch (e) {}
+                    try { alertAudio.pause(); alertAudio.currentTime = 0; } catch (e) { }
                     isPlaying = false;
 
                     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -329,4 +362,5 @@
         connectWS();
     </script>
 </body>
+
 </html>
