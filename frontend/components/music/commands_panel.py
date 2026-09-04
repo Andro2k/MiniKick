@@ -51,9 +51,8 @@ class MusicCommandsPanel(QWidget):
 
     def set_switch_states(self, states: dict[str, bool]) -> None:
         for cmd, sw in self.switches.items():
-            if cmd in states:
-                val = bool(states[cmd])
-                if sw.isChecked() != val:
-                    sw.blockSignals(True)
-                    sw.setChecked(val)
-                    sw.blockSignals(False)
+            val = bool(states.get(cmd, False))
+            if sw.isChecked() != val:
+                sw.blockSignals(True)
+                sw.setChecked(val)
+                sw.blockSignals(False)

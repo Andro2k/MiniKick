@@ -8,6 +8,7 @@ from .updater_interfaces import IUpdateChecker, IUpdateDownloader, IUpdateInstal
 from .music_provider import IMusicProvider
 from .chat_service import IChatService
 from .chat_provider import IChatProvider
+from .alert_interfaces import AlertStorageProtocol
 
 __all__ = [
     "TokenStorage",
@@ -21,4 +22,5 @@ __all__ = [
     "IMusicProvider",
     "IChatService",
     "IChatProvider",
+    "AlertStorageProtocol",
 ]

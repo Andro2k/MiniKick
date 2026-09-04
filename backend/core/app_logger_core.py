@@ -6,6 +6,7 @@ import os
 import sys
 import threading
 import traceback
+from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 from PySide6.QtCore import qInstallMessageHandler, QtMsgType
 from backend.handlers import QLogHandler, StreamToLogger
@@ -36,8 +37,6 @@ def _qt_message_handler(mode: QtMsgType, context, message: str):
         lvl = logging.INFO
 
     logging.getLogger("minikick.qt").log(lvl, "[Qt] %s", message)
-
-from datetime import datetime
 
 def _threading_excepthook(args):
     tb_text = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))

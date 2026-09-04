@@ -3,7 +3,7 @@
 import os
 import re
 import logging
-from backend.database.music_storage import SQLiteMusicStorage
+from .music_storage import SQLiteMusicStorage
 
 logger = logging.getLogger("minikick.database.cache_manager")
 

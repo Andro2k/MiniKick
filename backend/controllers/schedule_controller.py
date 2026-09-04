@@ -3,7 +3,7 @@
 import threading
 import logging
 from PySide6.QtCore import QObject, Signal, Slot
-from backend.services.schedule.schedule_service import ScheduleService
+from backend.services.schedule import ScheduleService
 
 logger = logging.getLogger("minikick.schedule_controller")
 
@@ -61,7 +61,7 @@ class ScheduleController(QObject):
             return self.i18n
         if self.view and hasattr(self.view, "i18n") and self.view.i18n:
             return self.view.i18n
-        from backend.services.system.translation_service import TranslationService
+        from backend.services.system import TranslationService
         return TranslationService()
 
     def reload_schedules(self) -> None:

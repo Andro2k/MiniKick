@@ -5,7 +5,7 @@ import re
 import time
 from typing import Callable, Any
 import requests
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_loads
 
 logger = logging.getLogger("minikick.providers.chat.youtube")

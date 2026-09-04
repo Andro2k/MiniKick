@@ -2,7 +2,7 @@
 
 import logging
 from PySide6.QtCore import QThread, Signal
-from backend.services.auth.oauth_service import KickAuthManager
+from backend.services.auth import KickAuthManager
 
 logger = logging.getLogger("minikick.workers.kick_auth")
 

@@ -639,6 +639,8 @@
             "tiktok_connected_title": "TikTok Conectado",
             "tiktok_disconnected_msg": "Se ha detenido la conexión con TikTok Live.",
             "tiktok_disconnected_title": "TikTok Desconectado",
+            "auth_in_progress_msg": "Ya hay una autenticación en curso en tu navegador. Por favor completa o cierra esa ventana antes de iniciar otra.",
+            "auth_in_progress_title": "Autenticación en curso",
             "twitch_auth_error_title": "Error Twitch Auth",
             "twitch_auth_opening": "Abriendo inicio de sesión en el navegador...",
             "twitch_auth_title": "Twitch OAuth",

@@ -4,7 +4,7 @@ import logging
 import time
 from PySide6.QtCore import QThread, Signal
 from backend.utils.json_utils import fast_loads
-from backend.models.alert_models import AlertEvent, AlertType
+from backend.models import AlertEvent, AlertType
 
 logger = logging.getLogger("minikick.workers.twitch_rewards")
 

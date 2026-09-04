@@ -11,7 +11,6 @@ class CommandView(BaseView):
     edit_requested = Signal(str)
     delete_requested = Signal(str)
     status_toggled = Signal(str, bool)
-    search_text_changed = Signal(str)
     view_shown = Signal()
 
     _PERM_KEYS: dict[str, str] = {

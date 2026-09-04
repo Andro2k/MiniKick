@@ -3,7 +3,7 @@
 import logging
 import websocket
 from typing import Callable
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.providers.twitch_websocket")
 

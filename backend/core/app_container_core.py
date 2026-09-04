@@ -5,7 +5,7 @@ import sys
 import logging
 
 try:
-    import backend.config.api_keys as _api_keys
+    import backend.config as _api_keys
     KICK_CLIENT_ID = getattr(_api_keys, "KICK_CLIENT_ID", "")
     KICK_CLIENT_SECRET = getattr(_api_keys, "KICK_CLIENT_SECRET", "")
     KICK_REDIRECT_URI = getattr(_api_keys, "KICK_REDIRECT_URI", "http://localhost:8080/auth/callback")
@@ -107,7 +107,7 @@ class AppContainerCore:
 
     def get_music_provider(self):
         if self._music_provider is None:
-            from backend.providers.music.youtube_client import YouTubeMusicProvider
+            from backend.providers.music import YouTubeMusicProvider
             self._music_provider = YouTubeMusicProvider(self.i18n, music_storage=self.music_storage, db_manager=self.db_manager)
         return self._music_provider
 

@@ -3,7 +3,7 @@
 import logging
 import requests
 from backend.interfaces import TokenProvider
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.providers.twitch_client")
 

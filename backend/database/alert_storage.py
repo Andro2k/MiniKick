@@ -1,8 +1,8 @@
 # backend\database\alert_storage.py
 
 import logging
-from backend.database.manager import DatabaseManager
-from backend.models.alert_models import AlertConfig, AlertType
+from .manager import DatabaseManager
+from backend.models import AlertConfig, AlertType
 
 logger = logging.getLogger("minikick.database.alert_storage")
 

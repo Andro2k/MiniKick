@@ -43,7 +43,7 @@ class YouTubeResolveWorker(QThread):
         super().__init__()
         self.query_or_url = query_or_url
         self.expected_title = expected_title
-        from backend.services.system.translation_service import TranslationService
+        from backend.services.system import TranslationService
         self.i18n = i18n or TranslationService()
 
     def run(self):

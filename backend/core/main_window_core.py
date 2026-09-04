@@ -12,8 +12,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Slot, QEvent
 
-from backend.core.app_container_core import AppContainerCore
-from backend.core.app_logger_core import setup_application_logging
+from .app_container_core import AppContainerCore
+from .app_logger_core import setup_application_logging
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
     LogService, SettingsService, SpamService, TimerService
@@ -41,7 +41,7 @@ from frontend.views import (
 from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog
 
 try:
-    from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
+    from backend.config import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
 except ImportError:
     KICK_PUSHER_CLUSTER = "us2"
     KICK_PUSHER_KEY = "32cbd69e4b950bf97679"
@@ -721,14 +721,32 @@ class MainWindowCore(QMainWindow):
             except Exception:
                 pass
 
+    @staticmethod
+    def _is_worker_running(worker) -> bool:
+        if worker is None:
+            return False
+        try:
+            return bool(worker.isRunning())
+        except (RuntimeError, AttributeError):
+            return False
+
     @Slot()
     def _handle_auth_process(self, force: bool = False):
+        if self._is_worker_running(getattr(self, "twitch_auth_worker", None)):
+            self.toast.show_toast(
+                title=self.container.i18n.get("main.toast.auth_in_progress_title"),
+                message=self.container.i18n.get("main.toast.auth_in_progress_msg"),
+                state="warning"
+            )
+            return
+
         self._stop_kick_connection_workers()
         self.dashboard_controller.handle_connecting_state()
 
         self.kick_auth_worker = KickAuthWorker(self.i18n, self.kick_auth_manager, force=force)
         self.kick_auth_worker.auth_success.connect(self._on_auth_success)
         self.kick_auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
+        self.kick_auth_worker.finished.connect(lambda: setattr(self, 'kick_auth_worker', None))
         self.kick_auth_worker.finished.connect(self.kick_auth_worker.deleteLater)
         self.kick_auth_worker.start()
 
@@ -787,20 +805,13 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _fetch_api_rewards(self):
         if self.kick_auth_manager.is_authenticated():
-            worker = getattr(self, 'fetch_rewards_worker', None)
-            is_running = False
-            if worker is not None:
-                try:
-                    is_running = worker.isRunning()
-                except RuntimeError:
-                    self.fetch_rewards_worker = None
-
-            if not is_running:
+            if not self._is_worker_running(getattr(self, 'fetch_rewards_worker', None)):
                 try:
                     api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
                     self.fetch_rewards_worker = FetchRewardsWorker(api_client, platform="kick")
                     self.fetch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
                     self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
+                    self.fetch_rewards_worker.finished.connect(lambda: setattr(self, 'fetch_rewards_worker', None))
                     self.fetch_rewards_worker.finished.connect(self.fetch_rewards_worker.deleteLater)
                     self.fetch_rewards_worker.start()
                 except Exception as e:
@@ -896,6 +907,14 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
+        if self._is_worker_running(getattr(self, "kick_auth_worker", None)):
+            self.toast.show_toast(
+                title=self.container.i18n.get("main.toast.auth_in_progress_title"),
+                message=self.container.i18n.get("main.toast.auth_in_progress_msg"),
+                state="warning"
+            )
+            return
+
         self._stop_twitch_connection_workers()
         if not force and self.container.twitch_auth_manager.has_missing_scopes():
             force = True
@@ -911,19 +930,24 @@ class MainWindowCore(QMainWindow):
         self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, force=force)
         self.twitch_auth_worker.auth_success.connect(self._on_twitch_auth_success)
         self.twitch_auth_worker.auth_error.connect(self._on_twitch_auth_error)
+        self.twitch_auth_worker.finished.connect(lambda: setattr(self, 'twitch_auth_worker', None))
         self.twitch_auth_worker.finished.connect(self.twitch_auth_worker.deleteLater)
         self.twitch_auth_worker.start()
 
     def _on_twitch_auth_error(self, err: str):
-        logger.error(f"[Twitch Auth Error] {err}")
+        self.twitch_auth_worker = None
+        self._twitch_connected = False
+        self._twitch_channel = ""
+        self._update_integrations_status_ui()
         log_msg = self.container.i18n.get("logs.main_window.twitch_auth_error").replace("{error}", str(err))
-        self.q_log_handler.emitter.log_received.emit(log_msg)
+        logger.error(f"[Twitch Auth Error] {log_msg}")
         if getattr(self, "_is_window_closing", False):
             return
         err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
         self.toast.show_toast(title=err_title, message=str(err), state="danger")
 
     def _on_twitch_auth_success(self, tokens):
+        self.twitch_auth_worker = None
         logger.info("[Twitch Auth] Success callback received.")
         try:
             twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID, i18n=self.container.i18n)
@@ -1057,20 +1081,14 @@ class MainWindowCore(QMainWindow):
         if not b_id or not self.container.twitch_auth_manager.is_authenticated():
             return
 
-        is_running = False
-        if hasattr(self, 'fetch_twitch_rewards_worker') and self.fetch_twitch_rewards_worker is not None:
-            try:
-                is_running = self.fetch_twitch_rewards_worker.isRunning()
-            except RuntimeError:
-                self.fetch_twitch_rewards_worker = None
-
-        if is_running:
+        if self._is_worker_running(getattr(self, 'fetch_twitch_rewards_worker', None)):
             return
 
         try:
             twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
             self.fetch_twitch_rewards_worker = FetchRewardsWorker(twitch_api, broadcaster_id=b_id, platform="twitch")
             self.fetch_twitch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
+            self.fetch_twitch_rewards_worker.finished.connect(lambda: setattr(self, 'fetch_twitch_rewards_worker', None))
             self.fetch_twitch_rewards_worker.finished.connect(self.fetch_twitch_rewards_worker.deleteLater)
             self.fetch_twitch_rewards_worker.start()
         except Exception as e:
@@ -1487,7 +1505,6 @@ class MainWindowCore(QMainWindow):
                     youtube=self.session_platform_messages["youtube"],
                     tiktok=self.session_platform_messages["tiktok"]
                 )
-                self._update_integrations_status_ui()
 
         self.chat_controller.process_message(dto)
 

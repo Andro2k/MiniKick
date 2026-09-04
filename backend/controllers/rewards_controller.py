@@ -2,9 +2,8 @@
 
 import logging
 from PySide6.QtCore import QObject, Slot
-from backend.providers.chat.kick_client import KickAPIClient
-from backend.providers.chat.twitch_client import TwitchAPIClient
-from backend.config.api_keys import TWITCH_CLIENT_ID
+from backend.providers.chat import KickAPIClient, TwitchAPIClient
+from backend.config import TWITCH_CLIENT_ID
 from backend.workers import CreateRewardWorker, UpdateRewardWorker
 
 logger = logging.getLogger("minikick.controllers.rewards")

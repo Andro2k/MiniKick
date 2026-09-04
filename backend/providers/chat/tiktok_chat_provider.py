@@ -6,7 +6,7 @@ import re
 import time
 from collections import deque
 from typing import Callable, Any
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.providers.chat.tiktok")
 

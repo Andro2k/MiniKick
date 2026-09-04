@@ -238,12 +238,20 @@ class ChatController(QObject):
             self.widget_plugin_triggered.emit(plugin_tag, dto.user, dto.content, prefix, platform)
 
     def _handle_plugin_tts(self, dto: ChatMessageDTO, prefix: str) -> None:
+        settings = self._tts_settings_cache
+        if not self._tts_enabled or not settings.get("enabled", True):
+            return
+        if self.filter_handler.is_bot(dto.user):
+            return
+
         msg_content = dto.content[len(prefix):].strip()
         if not msg_content:
             return
-        settings = self._tts_settings_cache
         if not self.voice_handler.is_role_enabled(dto.badges, settings):
             return
+        if self.filter_handler.is_message_banned(msg_content):
+            return
+
         emotes_tag = getattr(dto, "emotes_tag", "")
         cleaned = self.filter_handler.clean_message_for_tts(msg_content, emotes_tag=emotes_tag)
         if cleaned:
@@ -341,14 +349,11 @@ class ChatController(QObject):
         if not self.voice_handler.is_role_enabled(dto.badges, settings):
             return
 
-        msg = dto.content.strip()
         if settings.get("use_command", False):
-            cmd = settings.get("command", "!tts")
-            if not msg.lower().startswith(cmd):
-                return
-            msg = msg[len(cmd):].strip()
+            return
 
-        if self.filter_handler.is_message_banned(msg):
+        msg = dto.content.strip()
+        if not msg or self.filter_handler.is_message_banned(msg):
             return
 
         emotes_tag = getattr(dto, "emotes_tag", "")

@@ -152,7 +152,7 @@ class WebTTSProvider:
         for attempt in range(3):
             try:
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
-                await communicate.save(temp_path)
+                await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 elapsed = time.perf_counter() - start_t
                 logger.debug(f"[Web TTS Benchmark] Pre-downloaded audio in {elapsed:.3f}s for: '{text[:25]}...' (voice: {voice})")
                 return temp_path
@@ -218,7 +218,7 @@ class WebTTSProvider:
         for attempt in range(3):
             try:
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
-                await communicate.save(temp_path)
+                await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 t_dl_end = time.perf_counter() - t_dl_start
                 logger.debug(f"[Web TTS Benchmark] On-the-fly download completed in {t_dl_end:.3f}s")
                 await self._play_audio_file(temp_path, start_t)

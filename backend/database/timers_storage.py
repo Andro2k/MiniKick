@@ -2,7 +2,7 @@
 
 import json
 import logging
-from backend.database.manager import DatabaseManager
+from .manager import DatabaseManager
 
 logger = logging.getLogger("minikick.database.timers_storage")
 

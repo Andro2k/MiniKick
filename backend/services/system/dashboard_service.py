@@ -3,7 +3,7 @@
 import logging
 from PySide6.QtCore import QObject, Signal, QUrl
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
-from backend.database.avatar_storage import SQLiteAvatarStorage
+from backend.database import SQLiteAvatarStorage
 
 logger = logging.getLogger("minikick.services.dashboard")
 

@@ -7,15 +7,17 @@ from backend.handlers import MusicCommandHandler
 
 logger = logging.getLogger("minikick.controllers.music")
 
-_MUSIC_PLUGIN_TAGS = {
-    "!sr": "[PLUGIN_MUSIC_SR]",
-    "!skip": "[PLUGIN_MUSIC_SKIP]",
-    "!song": "[PLUGIN_MUSIC_SONG]",
-    "!pause": "[PLUGIN_MUSIC_PAUSE]",
-    "!resume": "[PLUGIN_MUSIC_RESUME]",
-    "!playlist": "[PLUGIN_MUSIC_PLAYLIST]",
-    "!vol": "[PLUGIN_MUSIC_VOLUME]"
+_DEFAULT_MUSIC_COMMANDS: dict[str, tuple[str, int, str, bool, str]] = {
+    "!sr": ("[PLUGIN_MUSIC_SR]", 5, "!songrequest", False, "everyone"),
+    "!skip": ("[PLUGIN_MUSIC_SKIP]", 3, "!next", False, "moderator"),
+    "!song": ("[PLUGIN_MUSIC_SONG]", 3, "!current,!np", False, "everyone"),
+    "!pause": ("[PLUGIN_MUSIC_PAUSE]", 3, "", False, "moderator"),
+    "!resume": ("[PLUGIN_MUSIC_RESUME]", 3, "!play", False, "moderator"),
+    "!playlist": ("[PLUGIN_MUSIC_PLAYLIST]", 5, "!queue,!pl", False, "everyone"),
+    "!vol": ("[PLUGIN_MUSIC_VOLUME]", 3, "!volume", False, "moderator"),
 }
+
+_MUSIC_PLUGIN_TAGS = {k: v[0] for k, v in _DEFAULT_MUSIC_COMMANDS.items()}
 
 _ERROR_KEYWORD_MAP = (
     ("age", "music.youtube.age_restricted"),
@@ -96,6 +98,7 @@ class MusicController(QObject):
         self.view.service_toggled.connect(self.handle_service_toggle)
         self.view.move_queue_item_requested.connect(self.handle_move_queue_item)
         self.view.view_shown.connect(self._poll_now_playing)
+        self.view.view_shown.connect(self._sync_switches_from_db)
 
         if hasattr(self.view, "max_user_songs_changed"):
             self.view.max_user_songs_changed.connect(self.set_max_user_songs)
@@ -129,14 +132,7 @@ class MusicController(QObject):
         commands = self.command_service.get_all_commands()
         existing_responses = {c.get("response") for c in commands if isinstance(c, dict)}
 
-        default_commands = (
-            ("!pause", "[PLUGIN_MUSIC_PAUSE]", 3, "", False, "moderator"),
-            ("!resume", "[PLUGIN_MUSIC_RESUME]", 3, "!play", False, "moderator"),
-            ("!playlist", "[PLUGIN_MUSIC_PLAYLIST]", 5, "!queue,!pl", False, "everyone"),
-            ("!vol", "[PLUGIN_MUSIC_VOLUME]", 3, "!volume", False, "moderator")
-        )
-
-        for trigger, response, cooldown, aliases, is_regex, permission in default_commands:
+        for trigger, (response, cooldown, aliases, is_regex, permission) in _DEFAULT_MUSIC_COMMANDS.items():
             if response not in existing_responses:
                 self.command_service.save_command(
                     trigger=trigger,
@@ -308,7 +304,10 @@ class MusicController(QObject):
         all_cmds = self.command_service.get_all_commands()
         existing = next((c for c in all_cmds if c["trigger"] == trigger), None)
 
-        tag = _MUSIC_PLUGIN_TAGS.get(trigger, "[PLUGIN_MUSIC_CUSTOM]")
+        tag = _MUSIC_PLUGIN_TAGS.get(trigger)
+        if not tag:
+            logger.warning("[MusicController] Unknown music command trigger '%s', ignoring toggle", trigger)
+            return
         if existing:
             self.command_service.save_command(
                 trigger=trigger,
@@ -324,14 +323,16 @@ class MusicController(QObject):
                 apply_tiktok=existing.get("apply_tiktok", True)
             )
         else:
+            def_meta = _DEFAULT_MUSIC_COMMANDS.get(trigger, (tag, 5, "", False, "everyone"))
+            _, def_cd, def_aliases, def_rx, def_perm = def_meta
             self.command_service.save_command(
                 trigger=trigger,
                 response=tag,
                 is_active=is_active,
-                cooldown=5,
-                aliases="",
-                is_regex=False,
-                permission="everyone",
+                cooldown=def_cd,
+                aliases=def_aliases,
+                is_regex=def_rx,
+                permission=def_perm,
                 apply_kick=True,
                 apply_twitch=True,
                 apply_youtube=True,

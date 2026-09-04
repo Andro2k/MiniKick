@@ -53,7 +53,7 @@ class WidgetController(QObject):
         self.widget_service = widget_service
         self.command_service = command_service
         self.overlay_server = overlay_server
-        from backend.services.system.translation_service import TranslationService
+        from backend.services.system import TranslationService
         self.i18n = i18n or TranslationService()
         self.toast = toast_manager
 
@@ -63,11 +63,11 @@ class WidgetController(QObject):
         self._view_connected = False
 
         self._widget_handlers = {
-            self.PLUGIN_TAGS["shoutout"]: lambda user, args, first_word, prefix, platform: self._process_shoutout(user, args, prefix, platform=platform),
-            self.PLUGIN_TAGS["death"]: lambda user, args, first_word, prefix, platform: self._process_death(user, args or first_word, platform=platform),
-            self.PLUGIN_TAGS["score"]: lambda user, args, first_word, prefix, platform: self._dispatch_score_command(user, args, first_word, prefix, platform=platform),
-            self.PLUGIN_TAGS["explosion"]: lambda user, args, first_word, prefix, platform: self._process_explosion_command(user, args, platform=platform),
-            self.PLUGIN_TAGS["combo"]: lambda user, args, first_word, prefix, platform: self._process_combo_command(user, args, platform=platform),
+            self.PLUGIN_TAGS["shoutout"]: lambda user, args, action_word, prefix, platform: self._process_shoutout(user, args, prefix, platform=platform),
+            self.PLUGIN_TAGS["death"]: lambda user, args, action_word, prefix, platform: self._process_death(user, args, action_word, platform=platform),
+            self.PLUGIN_TAGS["score"]: lambda user, args, action_word, prefix, platform: self._dispatch_score_command(user, args, action_word, prefix, platform=platform),
+            self.PLUGIN_TAGS["explosion"]: lambda user, args, action_word, prefix, platform: self._process_explosion_command(user, args, platform=platform),
+            self.PLUGIN_TAGS["combo"]: lambda user, args, action_word, prefix, platform: self._process_combo_command(user, args, platform=platform),
         }
 
         self._save_timer = QTimer(self)
@@ -346,33 +346,33 @@ class WidgetController(QObject):
                 "title_text": title_text
             })
 
-    def _dispatch_score_command(self, user: str, args: str, first_word: str, prefix: str, platform: str = "kick") -> None:
+    def _dispatch_score_command(self, user: str, args: str, action_word: str, prefix: str, platform: str = "kick") -> None:
         arg_clean = args.strip().lower()
 
-        if arg_clean in _RESET_COMMANDS:
+        if arg_clean in _RESET_COMMANDS or action_word in _RESET_COMMANDS:
             wins, losses = self.widget_service.update_score(reset=True)
             msg = self.i18n.get("widgets.score.msg_reset").replace("{user}", user)
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
-        if first_word in _SCORE_WIN_WORDS:
+        if action_word in _SCORE_WIN_WORDS or (action_word == "score" and arg_clean in _SCORE_WIN_WORDS):
             delta = -1 if arg_clean in _DELTA_DECREMENT else 1
             wins, losses = self.widget_service.update_score(delta_wins=delta)
             msg = self.i18n.get("widgets.score.msg_win").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
-        if first_word in _SCORE_LOSS_WORDS:
+        if action_word in _SCORE_LOSS_WORDS or (action_word == "score" and arg_clean in _SCORE_LOSS_WORDS):
             delta = -1 if arg_clean in _DELTA_DECREMENT else 1
             wins, losses = self.widget_service.update_score(delta_losses=delta)
             msg = self.i18n.get("widgets.score.msg_loss").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
             self._notify_score_change(wins, losses, msg, platform=platform)
             return
 
-        if arg_clean in _SCORE_PLUS_WORDS:
+        if arg_clean in _SCORE_PLUS_WORDS or action_word.endswith("+"):
             wins, losses = self.widget_service.update_score(delta_wins=1)
             msg = self.i18n.get("widgets.score.msg_win").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
-        elif arg_clean in _SCORE_MINUS_WORDS:
+        elif arg_clean in _SCORE_MINUS_WORDS or action_word.endswith("-"):
             wins, losses = self.widget_service.update_score(delta_losses=1)
             msg = self.i18n.get("widgets.score.msg_loss").replace("{user}", user).replace("{wins}", str(wins)).replace("{losses}", str(losses))
         else:
@@ -397,12 +397,14 @@ class WidgetController(QObject):
     @Slot(str, str, str, str, str)
     def handle_widget_command(self, plugin_tag: str, user: str, content: str, prefix: str, platform: str = "kick"):
         parts = content.strip().split()
-        first_word = parts[0][len(prefix):].lower() if parts else ""
+        cmd_trigger = prefix.lstrip("!").lower()
+        suffix = parts[0][len(prefix):].lower() if parts else ""
+        action_word = cmd_trigger or suffix
         args = " ".join(parts[1:]).strip() if len(parts) > 1 else ""
 
         handler = self._widget_handlers.get(plugin_tag)
         if handler:
-            handler(user, args, first_word, prefix, platform)
+            handler(user, args, action_word, prefix, platform)
 
     def _process_shoutout(self, user: str, args: str, prefix: str, platform: str = "kick"):
         arg_words = args.strip().split() if args else []
@@ -429,23 +431,25 @@ class WidgetController(QObject):
 
             threading.Thread(target=_fetch_and_trigger, daemon=True, name=f"ShoutoutAvatar-{target_user}").start()
 
-    def _process_death(self, user: str, args: str, platform: str = "kick"):
+    def _process_death(self, user: str, args: str, action_word: str = "", platform: str = "kick"):
         arg_clean = args.strip().lower()
-        if arg_clean in _RESET_COMMANDS:
+        check_target = arg_clean if arg_clean else action_word
+
+        if check_target in _RESET_COMMANDS or action_word in _RESET_COMMANDS:
             new_count = self.widget_service.update_death_count(set_val=0)
             msg = self.i18n.get("widgets.death.msg_reset").replace("{user}", user).replace("{count}", str(new_count))
-        elif arg_clean in _DEATH_SUB_WORDS:
+        elif check_target in _DEATH_SUB_WORDS or action_word.endswith("-") or action_word.endswith("sub"):
             new_count = self.widget_service.update_death_count(delta=-1)
             msg = self.i18n.get("widgets.death.msg_sub").replace("{user}", user).replace("{count}", str(new_count))
-        elif arg_clean in _DEATH_ADD_WORDS:
-            new_count = self.widget_service.update_death_count(delta=1)
-            msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
-        elif arg_clean in _DEATH_CHECK_WORDS:
+        elif check_target in _DEATH_CHECK_WORDS or action_word in _DEATH_CHECK_WORDS:
             new_count = self.widget_service.get_death_count()
             msg = self.i18n.get("widgets.death.msg_check").replace("{user}", user).replace("{count}", str(new_count))
+        elif check_target in _DEATH_ADD_WORDS or action_word.endswith("+") or action_word.endswith("add"):
+            new_count = self.widget_service.update_death_count(delta=1)
+            msg = self.i18n.get("widgets.death.msg_add").replace("{user}", user).replace("{count}", str(new_count))
         else:
             try:
-                val = int(arg_clean)
+                val = int(check_target)
                 new_count = self.widget_service.update_death_count(set_val=max(0, val))
             except ValueError:
                 new_count = self.widget_service.update_death_count(delta=1)

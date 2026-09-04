@@ -1,21 +1,23 @@
 # backend\database\__init__.py
 
-from backend.database.manager import DatabaseManager
-from backend.database.token_storage import SQLiteTokenStorage
-from backend.database.settings_storage import SQLiteSettingsStorage
-from backend.database.rewards_storage import SQLiteRewardsStorage
-from backend.database.commands_storage import SQLiteCommandsStorage
-from backend.database.spam_storage import SQLiteSpamStorage
-from backend.database.timers_storage import SQLiteTimersStorage
-from backend.database.widgets_storage import SQLiteWidgetsStorage
-from backend.database.avatar_storage import SQLiteAvatarStorage
-from backend.database.system_log_storage import SQLiteSystemLogStorage
-from backend.database.music_storage import SQLiteMusicStorage
-from backend.database.schedule_storage import SQLiteScheduleStorage
-from backend.database.alert_storage import SQLiteAlertStorage
+from .manager import DatabaseManager
+from .cache_manager import MusicCacheManager
+from .token_storage import SQLiteTokenStorage
+from .settings_storage import SQLiteSettingsStorage
+from .rewards_storage import SQLiteRewardsStorage
+from .commands_storage import SQLiteCommandsStorage
+from .spam_storage import SQLiteSpamStorage
+from .timers_storage import SQLiteTimersStorage
+from .widgets_storage import SQLiteWidgetsStorage
+from .avatar_storage import SQLiteAvatarStorage
+from .system_log_storage import SQLiteSystemLogStorage
+from .music_storage import SQLiteMusicStorage
+from .schedule_storage import SQLiteScheduleStorage
+from .alert_storage import SQLiteAlertStorage
 
 __all__ = [
     "DatabaseManager",
+    "MusicCacheManager",
     "SQLiteTokenStorage",
     "SQLiteSettingsStorage",
     "SQLiteRewardsStorage",
@@ -27,5 +29,5 @@ __all__ = [
     "SQLiteSystemLogStorage",
     "SQLiteMusicStorage",
     "SQLiteScheduleStorage",
-    "SQLiteAlertStorage"
+    "SQLiteAlertStorage",
 ]

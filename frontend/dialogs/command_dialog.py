@@ -122,26 +122,22 @@ class CommandConfigWizard(ModernWizardPanel):
         platforms_row = QHBoxLayout()
         platforms_row.setSpacing(12)
         self.chk_kick = QCheckBox(self.i18n.get("command.dialog.platform_kick"))
-        self.chk_kick.setEnabled(kick_on)
-        self.chk_kick.setChecked(kick_on)
+        self.chk_kick.setChecked(True)
         if not kick_on:
             self.chk_kick.setToolTip(off_tip)
 
         self.chk_twitch = QCheckBox(self.i18n.get("command.dialog.platform_twitch"))
-        self.chk_twitch.setEnabled(twitch_on)
-        self.chk_twitch.setChecked(twitch_on)
+        self.chk_twitch.setChecked(True)
         if not twitch_on:
             self.chk_twitch.setToolTip(off_tip)
 
         self.chk_youtube = QCheckBox(self.i18n.get("command.dialog.platform_youtube"))
-        self.chk_youtube.setEnabled(youtube_on)
-        self.chk_youtube.setChecked(youtube_on)
+        self.chk_youtube.setChecked(True)
         if not youtube_on:
             self.chk_youtube.setToolTip(off_tip)
 
         self.chk_tiktok = QCheckBox(self.i18n.get("command.dialog.platform_tiktok"))
-        self.chk_tiktok.setEnabled(tiktok_on)
-        self.chk_tiktok.setChecked(tiktok_on)
+        self.chk_tiktok.setChecked(True)
         if not tiktok_on:
             self.chk_tiktok.setToolTip(off_tip)
 
@@ -203,20 +199,20 @@ class CommandConfigWizard(ModernWizardPanel):
         return True
 
     def _load_existing(self):
+        resp = self.existing_config.get("response", "")
         self.txt_trigger.setText(self.existing_config.get("trigger", ""))
-        self.txt_response.setText(self.existing_config.get("response", ""))
+        self.txt_response.setText(resp)
         self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
         self.chk_active.setChecked(self.existing_config.get("is_active", True))
+
+        is_plugin = "[PLUGIN_" in resp
+        self.badge_plugin.setVisible(is_plugin)
+        self.txt_response.setReadOnly(is_plugin)
         
-        kick_on = self.connected_platforms.get("kick", False)
-        twitch_on = self.connected_platforms.get("twitch", False)
-        youtube_on = self.connected_platforms.get("youtube", False)
-        tiktok_on = self.connected_platforms.get("tiktok", False)
-        
-        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True) if kick_on else False)
-        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True) if twitch_on else False)
-        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True) if youtube_on else False)
-        self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True) if tiktok_on else False)
+        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True))
+        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True))
+        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True))
+        self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True))
         
         permission = self.existing_config.get("permission", "everyone")
         index = self.combo_perm.findData(permission)

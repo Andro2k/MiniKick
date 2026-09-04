@@ -3,7 +3,7 @@
 import logging
 from PySide6.QtCore import QObject, Slot, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
-from backend.models.alert_models import AlertConfig
+from backend.models import AlertConfig
 
 logger = logging.getLogger("minikick.controllers.alerts")
 

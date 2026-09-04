@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime
 from PySide6.QtCore import QThread, Signal
-from backend.services.schedule.schedule_service import ScheduleService
+from backend.services.schedule import ScheduleService
 
 logger = logging.getLogger("minikick.schedule_worker")
 

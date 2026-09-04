@@ -3,9 +3,9 @@
 import logging
 import datetime
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.twitch_websocket import TwitchSocketManager
-from backend.services.chat.pipeline import ChatMessageDTO
-from backend.services.system.translation_service import TranslationService
+from backend.providers.chat import TwitchSocketManager
+from backend.services.chat import ChatMessageDTO
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.workers.twitch_chat")
 

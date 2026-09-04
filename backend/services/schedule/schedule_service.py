@@ -4,12 +4,11 @@ import time
 import logging
 from typing import TYPE_CHECKING
 from concurrent.futures import ThreadPoolExecutor
-from backend.database.schedule_storage import SQLiteScheduleStorage
-from backend.services.system.translation_service import TranslationService
+from backend.database import SQLiteScheduleStorage
+from backend.services.system import TranslationService
 
 if TYPE_CHECKING:
-    from backend.providers.chat.kick_client import KickAPIClient
-    from backend.providers.chat.twitch_client import TwitchAPIClient
+    from backend.providers.chat import KickAPIClient, TwitchAPIClient
 
 logger = logging.getLogger("minikick.schedule_service")
 
@@ -106,7 +105,7 @@ class ScheduleService:
                 if p == "kick":
                     client = self.kick_client
                     if not client:
-                        from backend.providers.chat.kick_client import KickAPIClient
+                        from backend.providers.chat import KickAPIClient
                         client = KickAPIClient(None)
                     search_tasks["kick"] = executor.submit(client.search_categories, query)
                 elif p == "twitch" and self.twitch_client:

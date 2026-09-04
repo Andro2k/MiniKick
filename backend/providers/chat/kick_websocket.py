@@ -1,21 +1,16 @@
 # backend\providers\chat\kick_websocket.py
 
-import re
 import logging
 import time
 import uuid
 from backend.utils.json_utils import parse_kick_payload, fast_dumps
+from collections import deque
 import websocket
 from typing import Callable
 from frontend.common.theme import COLOR_GREEN
-from backend.models.alert_models import AlertEvent, AlertType
+from backend.models import AlertEvent, AlertType
 
 logger = logging.getLogger("minikick.providers.kick_websocket")
-
-FOLLOW_BOT_REGEX = re.compile(
-    r"(?:gracias\s+por\s+segu(?:ir|irme)|thanks\s+(?:you\s+)?for\s+following|thank\s+you\s+for\s+following|gracias\s+por\s+el\s+follow)[,\s:]+@?([a-zA-Z0-9_]+)",
-    re.IGNORECASE
-)
 
 class KickWebSocketManager:
     def __init__(self, cluster: str, key: str) -> None:
@@ -26,8 +21,8 @@ class KickWebSocketManager:
         self._room_id = 0
         self._channel_id = 0
         self._last_followers_count: int | None = None
-        self._pending_follower_name: str | None = None
-        self._pending_follower_time: float = 0.0
+        self._seen_message_ids = deque(maxlen=1000)
+        self._seen_message_ids_set = set()
         self._callback: Callable | None = None
         self._on_poll_update: Callable[[dict], None] | None = None
         self._on_poll_delete: Callable[[], None] | None = None
@@ -132,6 +127,16 @@ class KickWebSocketManager:
         if not user or not msg:
             return
 
+        msg_id = inner.get("id", "")
+        if msg_id:
+            if msg_id in self._seen_message_ids_set:
+                return
+            if len(self._seen_message_ids) == self._seen_message_ids.maxlen:
+                oldest = self._seen_message_ids.popleft()
+                self._seen_message_ids_set.discard(oldest)
+            self._seen_message_ids.append(msg_id)
+            self._seen_message_ids_set.add(msg_id)
+
         identity = sender.get("identity")
         badges = []
         color = COLOR_GREEN
@@ -154,30 +159,10 @@ class KickWebSocketManager:
                             if lvl is not None:
                                 badges.append(f"level_{lvl}")
 
-        msg_id = inner.get("id", "")
         sender_id = sender.get("id", 0)
 
         if self._callback:
             self._callback(user, msg, badges, color, msg_id, sender_id)
-
-        match = FOLLOW_BOT_REGEX.search(msg)
-        if match:
-            new_follower = match.group(1).strip()
-            if new_follower and new_follower.lower() != user.lower():
-                logger.info("[KickWebSocket] Detected follow greeting in chat for user: %s", new_follower)
-                self._pending_follower_name = new_follower
-                self._pending_follower_time = time.time()
-                if self._on_alert:
-                    event = AlertEvent(
-                        event_id=f"kick_follow_{new_follower.lower()}_{int(time.time() / 15)}",
-                        platform="kick",
-                        alert_type=AlertType.FOLLOW,
-                        username=new_follower,
-                        display_name=new_follower,
-                        amount=1,
-                        timestamp=time.time()
-                    )
-                    self._on_alert(event)
 
     def _handle_poll_update(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         poll_data = inner.get("poll") or inner
@@ -296,17 +281,13 @@ class KickWebSocketManager:
         current_count = int(current_val)
         if self._last_followers_count is not None and current_count > self._last_followers_count:
             logger.info("[KickWebSocket] Follower count increase detected: %d -> %d", self._last_followers_count, current_count)
-            follower_name = "Nuevo Seguidor"
-            if self._pending_follower_name and (time.time() - self._pending_follower_time < 6.0):
-                follower_name = self._pending_follower_name
-            
             if self._on_alert:
                 event = AlertEvent(
-                    event_id=f"kick_follow_{follower_name.lower()}_{int(time.time() / 15)}",
+                    event_id=f"kick_follow_{int(time.time())}",
                     platform="kick",
                     alert_type=AlertType.FOLLOW,
-                    username=follower_name,
-                    display_name=follower_name,
+                    username="Nuevo Seguidor",
+                    display_name="Nuevo Seguidor",
                     amount=1,
                     timestamp=time.time()
                 )

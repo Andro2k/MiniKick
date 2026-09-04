@@ -2,7 +2,7 @@
 
 import logging
 from PySide6.QtCore import QThread, Signal
-from backend.services.auth.oauth_service import TwitchAuthManager
+from backend.services.auth import TwitchAuthManager
 
 logger = logging.getLogger("minikick.workers.twitch_auth")
 

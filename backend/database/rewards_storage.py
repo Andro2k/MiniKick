@@ -1,7 +1,7 @@
 # backend\database\rewards_storage.py
 
 import logging
-from backend.database.manager import DatabaseManager
+from .manager import DatabaseManager
 
 logger = logging.getLogger("minikick.database.rewards_storage")
 

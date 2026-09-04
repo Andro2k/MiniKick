@@ -11,8 +11,6 @@ logger = logging.getLogger("minikick.providers.kick_client")
 KICK_API_URL = "https://api.kick.com/public/v1/users"
 KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"
 KICK_REWARDS_URL = "https://api.kick.com/public/v1/channels/rewards"
-KICK_REDEMPTIONS_URL = "https://api.kick.com/public/v1/channels/rewards/redemptions"
-KICK_PUBLIC_V2_REWARDS_URL = "https://kick.com/api/v2/channels/{slug}/rewards"
 
 class ScraperFactory:
     @staticmethod
@@ -43,6 +41,10 @@ class KickAPIClient:
         self.auth_provider = auth_provider
         self.scraper = ScraperFactory.create()
         self._cached_subcategories = []
+
+    def is_authenticated(self) -> bool:
+        tokens = self._get_tokens()
+        return bool(tokens and tokens.get("access_token"))
 
     def _get_tokens(self) -> dict:
         if not self.auth_provider:
@@ -135,12 +137,6 @@ class KickAPIClient:
             "created_at": created_at
         }
 
-    def fetch_pending_redemptions(self, cursor: str = "") -> dict:
-        url = f"{KICK_REDEMPTIONS_URL}?status=pending"
-        if cursor:
-            url += f"&cursor={cursor}"         
-        return self._request("GET", url, timeout=10).json()
-
     def fetch_channel_rewards(self) -> dict:
         return self._request("GET", KICK_REWARDS_URL, timeout=10).json()
 
@@ -178,40 +174,8 @@ class KickAPIClient:
         url = f"{KICK_REWARDS_URL}/{reward_id}"
         resp = self._request("DELETE", url, timeout=10)
         return resp.status_code == 204
-
-    def fetch_public_channel_rewards(self, channel_slug: str) -> list[dict]:
-        slug = channel_slug.lstrip("@").strip().lower()
-        if not slug:
-            return []
-        url = f"{KICK_PUBLIC_V2_REWARDS_URL.format(slug=slug)}?is_enabled=true"
-        try:
-            resp = self.scraper.get(url, timeout=5)
-            if resp.status_code == 200:
-                return resp.json()
-        except Exception as e:
-            logger.warning("[KickAPI] Error fetching public v2 rewards for %s: %s", slug, e)
-        return []
-
-    def fetch_public_avatar(self, channel_slug: str) -> str:
-        slug = channel_slug.lstrip("@").strip().lower()
-        if not slug:
-            return ""
-        try:
-            channel_data = self._fetch_channel_details(slug)
-            return channel_data.get("user", {}).get("profile_pic", "")
-        except Exception as e:
-            logger.warning("[KickAPI] Could not fetch public avatar for %s: %s", slug, e)
-            return ""
-
-
-    def accept_redemptions(self, redemption_ids: list[str]) -> dict:
-        if not redemption_ids:
-            return {}    
-        url = f"{KICK_REDEMPTIONS_URL}/accept"
-        payload = {"ids": redemption_ids}
-        return self._request("POST", url, json=payload, timeout=10).json()
     
-    def post_chat_message(self, content: str, msg_type: str = "bot", broadcaster_id: int = None) -> dict:
+    def post_chat_message(self, content: str, msg_type: str = "bot", broadcaster_id: int | None = None) -> dict:
         url = "https://api.kick.com/public/v1/chat"
         payload = {"content": content, "type": msg_type}
         
@@ -259,14 +223,6 @@ class KickAPIClient:
         except Exception as e:
             logger.error("[KickAPI] Error applying ban: %s", e)
             return False
-        
-    def get_users_by_ids(self, user_ids: list) -> dict:
-        if not user_ids:
-            return {"data": []}
-            
-        url = "https://api.kick.com/public/v1/users"
-        params = [("id", uid) for uid in user_ids]
-        return self._request("GET", url, params=params, timeout=10).json()
 
     def fetch_stream_status(self, slug: str) -> dict:
         try:

@@ -1,0 +1,27 @@
+# backend\config\__init__.py
+
+from .version import APP_VERSION
+from .api_keys import (
+    KICK_CLIENT_ID,
+    KICK_CLIENT_SECRET,
+    KICK_REDIRECT_URI,
+    KICK_PUSHER_CLUSTER,
+    KICK_PUSHER_KEY,
+    DISCORD_WEBHOOK_URL,
+    TWITCH_CLIENT_ID,
+    TWITCH_CLIENT_SECRET,
+)
+from .default_en_locale import DEFAULT_DICTIONARY
+
+__all__ = [
+    "APP_VERSION",
+    "KICK_CLIENT_ID",
+    "KICK_CLIENT_SECRET",
+    "KICK_REDIRECT_URI",
+    "KICK_PUSHER_CLUSTER",
+    "KICK_PUSHER_KEY",
+    "DISCORD_WEBHOOK_URL",
+    "TWITCH_CLIENT_ID",
+    "TWITCH_CLIENT_SECRET",
+    "DEFAULT_DICTIONARY",
+]

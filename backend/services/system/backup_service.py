@@ -6,7 +6,7 @@ import logging
 import os
 from datetime import datetime, timezone
 from backend.interfaces import SettingsStorage
-from backend.config.version import APP_VERSION
+from backend.config import APP_VERSION
 
 logger = logging.getLogger("minikick.services.system.backup")
 

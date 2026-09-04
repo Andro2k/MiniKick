@@ -30,17 +30,17 @@ class TTSManager:
     def _get_provider(self, key: str) -> ITTSProvider:
         if key not in self._providers:
             if key == "piper":
-                from backend.providers.voices.tts_piper import PiperTTSProvider
+                from backend.providers.voices import PiperTTSProvider
                 prov = PiperTTSProvider()
                 prov.set_synthesis_params(self._piper_length_scale, self._piper_noise_scale, self._piper_noise_w_scale)
             elif key == "local":
-                from backend.providers.voices.tts_local import LocalTTSProvider
+                from backend.providers.voices import LocalTTSProvider
                 prov = LocalTTSProvider()
             elif key == "web":
-                from backend.providers.voices.tts_online import WebTTSProvider
+                from backend.providers.voices import WebTTSProvider
                 prov = WebTTSProvider()
             else:
-                from backend.providers.voices.tts_piper import PiperTTSProvider
+                from backend.providers.voices import PiperTTSProvider
                 prov = PiperTTSProvider()
                 prov.set_synthesis_params(self._piper_length_scale, self._piper_noise_scale, self._piper_noise_w_scale)
             

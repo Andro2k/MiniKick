@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import sys
-from backend.config.default_en_locale import DEFAULT_DICTIONARY
+from backend.config import DEFAULT_DICTIONARY
 
 logger = logging.getLogger("minikick.services.system.i18n")
 

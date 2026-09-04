@@ -5,7 +5,7 @@ import os
 import re
 from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from backend.workers.music_worker import YouTubeResolveWorker, YouTubeSearchWorker
+from backend.workers import YouTubeResolveWorker, YouTubeSearchWorker
 
 logger = logging.getLogger("minikick.providers.youtube_client")
 
@@ -14,7 +14,7 @@ _ERR_PLAYER_ERROR = "PLAYER_ERROR"
 
 _YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
-from backend.database.music_storage import SQLiteMusicStorage
+from backend.database import SQLiteMusicStorage
 
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
@@ -30,10 +30,8 @@ class YouTubeMusicProvider(QObject):
         else:
             self.music_storage = None
 
-        from backend.database.cache_manager import MusicCacheManager
+        from backend.database import MusicCacheManager
         self.cache_manager = MusicCacheManager(self.music_storage)
-
-
         self.queue: list[dict] = []
         self.current_song: dict | None = None
         self.current_local_file: str | None = None

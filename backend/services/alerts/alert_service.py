@@ -3,9 +3,9 @@
 import logging
 import uuid
 import time
-from backend.interfaces.alert_interfaces import AlertStorageProtocol
-from backend.models.alert_models import AlertEvent, AlertType, AlertConfig
-from backend.services.alerts.alert_queue import AlertQueue
+from backend.interfaces import AlertStorageProtocol
+from backend.models import AlertEvent, AlertType, AlertConfig
+from .alert_queue import AlertQueue
 
 logger = logging.getLogger("minikick.services.alerts.service")
 

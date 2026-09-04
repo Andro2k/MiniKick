@@ -1,7 +1,7 @@
 # backend\interfaces\alert_interfaces.py
 
 from typing import Protocol
-from backend.models.alert_models import AlertConfig
+from backend.models import AlertConfig
 
 class AlertStorageProtocol(Protocol):
     def load_all(self) -> dict[tuple[str, str], AlertConfig]:

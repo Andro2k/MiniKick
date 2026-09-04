@@ -3,9 +3,8 @@
 import logging
 import datetime
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.kick_client import KickAPIClient
-from backend.providers.chat.kick_websocket import KickWebSocketManager
-from backend.services.chat.pipeline import ChatMessageDTO
+from backend.providers.chat import KickAPIClient, KickWebSocketManager
+from backend.services.chat import ChatMessageDTO
 
 logger = logging.getLogger("minikick.workers.kick_chat")
 

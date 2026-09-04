@@ -34,7 +34,7 @@ class CommandController(QObject):
             return self.i18n
         if self.view and hasattr(self.view, "i18n") and self.view.i18n:
             return self.view.i18n
-        from backend.services.system.translation_service import TranslationService
+        from backend.services.system import TranslationService
         return TranslationService()
 
     def _connect_signals(self):
@@ -45,7 +45,6 @@ class CommandController(QObject):
         self.view.edit_requested.connect(self._handle_edit)
         self.view.delete_requested.connect(self._handle_delete)
         self.view.status_toggled.connect(self._handle_status_change)
-        self.view.search_text_changed.connect(self._handle_search)
         if hasattr(self.view, "view_shown"):
             self.view.view_shown.connect(self._on_view_shown)
 
@@ -145,16 +144,6 @@ class CommandController(QObject):
             )
         finally:
             self._is_internal_toggle = False
-
-    @Slot(str)
-    def _handle_search(self, text: str):
-        logger.debug("[User Action] Filtered commands by search term: '%s'", text)
-        if not text.strip():
-            self.load_initial_data()
-            return
-            
-        filtered_commands = self.service.search_commands(text)
-        self.view.populate_table(filtered_commands)
 
     def _show_toast(self, title_key: str, msg_key: str, val: str, state: str):
         if self.toast:

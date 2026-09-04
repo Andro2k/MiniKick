@@ -3,9 +3,9 @@
 import datetime
 import logging
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.tiktok_chat_provider import TikTokChatProvider
-from backend.services.chat.pipeline import ChatMessageDTO
-from backend.services.system.translation_service import TranslationService
+from backend.providers.chat import TikTokChatProvider
+from backend.services.chat import ChatMessageDTO
+from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_dumps
 
 logger = logging.getLogger("minikick.workers.tiktok_chat")

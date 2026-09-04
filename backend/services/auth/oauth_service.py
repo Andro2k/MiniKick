@@ -68,7 +68,11 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
 class OAuthCallbackServer:
     @staticmethod
     def capture_auth_code(url: str, port: int, success_html_path: str, timeout_seconds: int = 120, provider: str = "kick") -> str | None:
-        httpd = HTTPServer(("", port), _OAuthCallbackHandler)
+        try:
+            httpd = HTTPServer(("", port), _OAuthCallbackHandler)
+        except OSError as e:
+            logger.error("[OAuthCallbackServer] Cannot bind port %d for %s auth: %s", port, provider, e)
+            raise OSError(f"Port {port} is already in use by another authentication process.") from e
         httpd.timeout = 1 
         httpd.auth_code = None
         httpd.success_html_path = success_html_path
