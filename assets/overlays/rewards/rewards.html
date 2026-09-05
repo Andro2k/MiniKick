@@ -3,8 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>MiniKick Overlay</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick Rewards Overlay</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -15,8 +20,42 @@
             position: relative;
         }
 
+        #container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            pointer-events: none;
+        }
+
         .media-layer {
             position: absolute;
+            will-change: opacity, transform;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .media-layer.is-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .media-layer.is-exiting {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+        }
+
+        img.media-layer {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+        }
+
+        video.media-layer {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
         }
     </style>
 </head>
@@ -25,178 +64,321 @@
     <div id="container"></div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token') || '';
-        const container = document.getElementById('container');
+        (function () {
+            'use strict';
 
-        const alertQueue = [];
-        let isPlaying = false;
-        let ws = null;
-        let reconnectTimer = null;
-        let heartbeatTimer = null;
+            // --- 1. CONSTANTS & DISPATCH SETS (O(1) lookups) ---
+            const IMAGE_EXTENSIONS = new Set([
+                '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.avif'
+            ]);
 
-        function connectWS() {
-            if (ws) {
-                try { ws.close(); } catch (e) { }
-                ws = null;
+            const AUDIO_EXTENSIONS = new Set([
+                '.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma'
+            ]);
+
+            const MAX_QUEUE_SIZE = 50;
+            const FADE_OUT_DURATION_MS = 300;
+            const DEFAULT_DISPLAY_DURATION_SEC = 5.0;
+            const RECONNECT_DELAY_MS = 3000;
+            const HEARTBEAT_INTERVAL_MS = 15000;
+
+            // --- 2. CONFIGURATION & DOM REFERENCES ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token') || '';
+            const container = document.getElementById('container');
+
+            // --- 3. QUEUE & PLAYBACK STATE ---
+            const alertQueue = [];
+            let isPlaying = false;
+            let currentMediaCleanup = null;
+
+            // --- 4. MEDIA CLASSIFIER (O(1)) ---
+            function getMediaType(ext) {
+                if (IMAGE_EXTENSIONS.has(ext)) return 'image';
+                if (AUDIO_EXTENSIONS.has(ext)) return 'audio';
+                return 'video';
             }
 
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws?topic=rewards&token=${encodeURIComponent(token)}`;
-            ws = new WebSocket(wsUrl);
+            // --- 5. POSITION CALCULATOR ---
+            function applyPosition(mediaEl, data) {
+                const scale = typeof data.scale === 'number' ? data.scale : 1.0;
+                mediaEl.style.transformOrigin = 'top left';
 
-            ws.onopen = function () {
-                console.log("[Rewards Overlay] WebSocket conectado exitosamente.");
-                if (reconnectTimer) {
-                    clearInterval(reconnectTimer);
-                    reconnectTimer = null;
+                if (data.is_random_pos) {
+                    // Safe boundaries so media doesn't overflow off-screen
+                    const randX = Math.floor(Math.random() * 70);
+                    const randY = Math.floor(Math.random() * 70);
+                    mediaEl.style.left = `${randX}%`;
+                    mediaEl.style.top = `${randY}%`;
+                } else {
+                    const px = data.pos_x || 0;
+                    const py = data.pos_y || 0;
+                    mediaEl.style.left = `${px}px`;
+                    mediaEl.style.top = `${py}px`;
                 }
+
+                mediaEl.dataset.scale = scale;
+            }
+
+            // --- 6. ALERT PLAYBACK ENGINE ---
+            function processQueue() {
+                if (isPlaying || alertQueue.length === 0) {
+                    return;
+                }
+
+                isPlaying = true;
+                const currentAlert = alertQueue.shift();
+                playAlert(currentAlert);
+            }
+
+            function playAlert(data) {
+                const ext = (data.file_ext || '').toLowerCase();
+                const mediaType = getMediaType(ext);
+                let isFinished = false;
+                let watchdogTimer = null;
+                let displayTimer = null;
+                let mediaEl = null;
+
+                const finishPlayback = () => {
+                    if (isFinished) return;
+                    isFinished = true;
+
+                    if (watchdogTimer) {
+                        clearTimeout(watchdogTimer);
+                        watchdogTimer = null;
+                    }
+                    if (displayTimer) {
+                        clearTimeout(displayTimer);
+                        displayTimer = null;
+                    }
+
+                    if (mediaEl) {
+                        // Visual fade-out transition
+                        if (mediaEl.classList && mediaEl.classList.contains('is-visible')) {
+                            mediaEl.classList.remove('is-visible');
+                            mediaEl.classList.add('is-exiting');
+                        }
+
+                        setTimeout(() => {
+                            cleanupMedia(mediaEl);
+                            isPlaying = false;
+                            currentMediaCleanup = null;
+                            processQueue();
+                        }, FADE_OUT_DURATION_MS);
+                    } else {
+                        isPlaying = false;
+                        currentMediaCleanup = null;
+                        processQueue();
+                    }
+                };
+
+                currentMediaCleanup = finishPlayback;
+
+                // Watchdog: Guarantees queue progression even if media freezes, stalls, or hangs
+                const durationSec = typeof data.duration === 'number' && data.duration > 0
+                    ? data.duration
+                    : DEFAULT_DISPLAY_DURATION_SEC;
+                const maxWatchdogMs = Math.max(durationSec + 3, 15) * 1000;
+                watchdogTimer = setTimeout(() => {
+                    console.warn('[Rewards Overlay] Watchdog activado para alerta:', data.reward || ext);
+                    finishPlayback();
+                }, maxWatchdogMs);
+
+                // --- Media Factory Dispatch ---
+                if (mediaType === 'image') {
+                    mediaEl = document.createElement('img');
+                    mediaEl.className = 'media-layer';
+                    applyPosition(mediaEl, data);
+
+                    mediaEl.onload = () => {
+                        requestAnimationFrame(() => {
+                            const scale = mediaEl.dataset.scale || '1';
+                            mediaEl.style.transform = `scale(${scale})`;
+                            mediaEl.classList.add('is-visible');
+                        });
+                        displayTimer = setTimeout(finishPlayback, durationSec * 1000);
+                    };
+
+                    mediaEl.onerror = (e) => {
+                        console.error('[Rewards Overlay] Error cargando imagen:', e);
+                        finishPlayback();
+                    };
+
+                    mediaEl.src = data.file_url;
+                    container.appendChild(mediaEl);
+
+                } else if (mediaType === 'audio') {
+                    mediaEl = document.createElement('audio');
+                    mediaEl.src = data.file_url;
+                    mediaEl.volume = Math.min(Math.max(data.volume !== undefined ? data.volume : 1.0, 0.0), 1.0);
+
+                    mediaEl.onended = finishPlayback;
+                    mediaEl.onerror = (e) => {
+                        console.error('[Rewards Overlay] Error reproduciendo audio:', e);
+                        finishPlayback();
+                    };
+
+                    mediaEl.play().catch((e) => {
+                        console.warn('[Rewards Overlay] Autoplay de audio bloqueado:', e);
+                        finishPlayback();
+                    });
+
+                } else {
+                    // Video Layer
+                    mediaEl = document.createElement('video');
+                    mediaEl.className = 'media-layer';
+                    mediaEl.autoplay = true;
+                    mediaEl.playsInline = true;
+                    mediaEl.volume = Math.min(Math.max(data.volume !== undefined ? data.volume : 1.0, 0.0), 1.0);
+                    applyPosition(mediaEl, data);
+
+                    mediaEl.onloadedmetadata = () => {
+                        requestAnimationFrame(() => {
+                            const scale = mediaEl.dataset.scale || '1';
+                            mediaEl.style.transform = `scale(${scale})`;
+                            mediaEl.classList.add('is-visible');
+                        });
+                    };
+
+                    mediaEl.onended = finishPlayback;
+                    mediaEl.onerror = (e) => {
+                        console.error('[Rewards Overlay] Error reproduciendo video:', e);
+                        finishPlayback();
+                    };
+
+                    mediaEl.src = data.file_url;
+                    container.appendChild(mediaEl);
+
+                    mediaEl.play().catch((e) => {
+                        console.warn('[Rewards Overlay] Autoplay de video bloqueado:', e);
+                        // Safe recovery: Never leave the queue deadlocked
+                        finishPlayback();
+                    });
+                }
+            }
+
+            // Explicit hardware resource disposal (avoids VRAM & buffer leaks in OBS)
+            function cleanupMedia(el) {
+                if (!el) return;
+                try {
+                    if (el.tagName === 'VIDEO' || el.tagName === 'AUDIO') {
+                        el.pause();
+                        el.removeAttribute('src');
+                        el.load();
+                    }
+                    if (el.parentNode) {
+                        el.parentNode.removeChild(el);
+                    }
+                } catch (e) {
+                    console.error('[Rewards Overlay] Error durante cleanup de media:', e);
+                }
+            }
+
+            // --- 7. WEBSOCKET CONNECTION MANAGER ---
+            let ws = null;
+            let reconnectTimer = null;
+            let heartbeatTimer = null;
+            let isReconnecting = false;
+
+            function connectWS() {
+                cleanupSocket();
+
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const host = window.location.host || 'localhost:6868';
+                const wsUrl = `${protocol}//${host}/ws?topic=rewards&token=${encodeURIComponent(token)}`;
+
+                try {
+                    ws = new WebSocket(wsUrl);
+                } catch (err) {
+                    console.error('[Rewards Overlay] Error instanciando WebSocket:', err);
+                    scheduleReconnect();
+                    return;
+                }
+
+                ws.onopen = function () {
+                    console.log('[Rewards Overlay] WebSocket conectado exitosamente.');
+                    isReconnecting = false;
+                    if (reconnectTimer) {
+                        clearTimeout(reconnectTimer);
+                        reconnectTimer = null;
+                    }
+                    startHeartbeat();
+                };
+
+                ws.onmessage = function (event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'pong') return;
+
+                        // Bounded FIFO Queue Guard
+                        if (alertQueue.length >= MAX_QUEUE_SIZE) {
+                            console.warn('[Rewards Overlay] Cola saturada; descartando alerta antigua.');
+                            alertQueue.shift();
+                        }
+
+                        alertQueue.push(data);
+                        processQueue();
+                    } catch (e) {
+                        console.error('[Rewards Overlay] Error parseando mensaje:', e);
+                    }
+                };
+
+                ws.onerror = function (err) {
+                    console.warn('[Rewards Overlay] Error en WebSocket.');
+                    scheduleReconnect();
+                };
+
+                ws.onclose = function () {
+                    console.warn('[Rewards Overlay] WebSocket desconectado.');
+                    scheduleReconnect();
+                };
+            }
+
+            function startHeartbeat() {
+                stopHeartbeat();
                 heartbeatTimer = setInterval(() => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
                         ws.send(JSON.stringify({ type: 'ping' }));
                     }
-                }, 15000);
-            };
-
-            ws.onmessage = function (event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'pong') return;
-                    alertQueue.push(data);
-                    processQueue();
-                } catch (e) {
-                    console.error("Error parseando evento WebSocket:", e);
-                }
-            };
-
-            ws.onerror = function (err) {
-                console.warn("[Rewards Overlay] Error en WebSocket. Reintentando...");
-                cleanup();
-                scheduleReconnect();
-            };
-
-            ws.onclose = function () {
-                console.warn("[Rewards Overlay] WebSocket cerrado. Reintentando...");
-                cleanup();
-                scheduleReconnect();
-            };
-        }
-
-        function cleanup() {
-            if (heartbeatTimer) {
-                clearInterval(heartbeatTimer);
-                heartbeatTimer = null;
+                }, HEARTBEAT_INTERVAL_MS);
             }
-        }
 
-        function scheduleReconnect() {
-            if (!reconnectTimer) {
-                reconnectTimer = setInterval(() => {
-                    console.log("[Rewards Overlay] Intentando reconectar WebSocket...");
+            function stopHeartbeat() {
+                if (heartbeatTimer) {
+                    clearInterval(heartbeatTimer);
+                    heartbeatTimer = null;
+                }
+            }
+
+            function cleanupSocket() {
+                stopHeartbeat();
+                if (ws) {
+                    ws.onopen = null;
+                    ws.onmessage = null;
+                    ws.onerror = null;
+                    ws.onclose = null;
+                    try {
+                        ws.close();
+                    } catch (e) { }
+                    ws = null;
+                }
+            }
+
+            function scheduleReconnect() {
+                cleanupSocket();
+                if (isReconnecting || reconnectTimer) return;
+
+                isReconnecting = true;
+                reconnectTimer = setTimeout(() => {
+                    reconnectTimer = null;
+                    console.log('[Rewards Overlay] Intentando reconectar WebSocket...');
                     connectWS();
-                }, 3000);
-            }
-        }
-
-        connectWS();
-
-        function processQueue() {
-            if (isPlaying || alertQueue.length === 0) {
-                return;
+                }, RECONNECT_DELAY_MS);
             }
 
-            isPlaying = true;
-            const currentAlert = alertQueue.shift();
-            playAlert(currentAlert);
-        }
-
-        function isImageFile(ext) {
-            return ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp', '.avif'].includes(ext);
-        }
-
-        function isAudioFile(ext) {
-            return ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma'].includes(ext);
-        }
-
-        function playAlert(data) {
-            const ext = (data.file_ext || '').toLowerCase();
-            let mediaEl;
-            let timerId = null;
-
-            const onMediaFinished = () => {
-                if (timerId) {
-                    clearTimeout(timerId);
-                    timerId = null;
-                }
-                if (mediaEl && mediaEl.parentNode) {
-                    mediaEl.remove();
-                }
-                isPlaying = false;
-                processQueue();
-            };
-
-            if (isImageFile(ext)) {
-                mediaEl = document.createElement('img');
-                mediaEl.src = data.file_url;
-                mediaEl.className = 'media-layer';
-
-                const displaySeconds = data.duration || 5.0;
-                mediaEl.onload = () => {
-                    timerId = setTimeout(onMediaFinished, displaySeconds * 1000);
-                };
-                mediaEl.onerror = (e) => {
-                    console.error("[Rewards Overlay] Error cargando imagen:", e);
-                    onMediaFinished();
-                };
-            } else if (isAudioFile(ext)) {
-                mediaEl = document.createElement('audio');
-                mediaEl.src = data.file_url;
-                mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
-                mediaEl.onended = onMediaFinished;
-                mediaEl.onerror = (e) => {
-                    console.error("[Rewards Overlay] Error reproduciendo audio:", e);
-                    onMediaFinished();
-                };
-                mediaEl.play().catch(e => {
-                    console.warn("[Rewards Overlay] Autoplay de audio bloqueado:", e);
-                    onMediaFinished();
-                });
-            } else {
-                mediaEl = document.createElement('video');
-                mediaEl.src = data.file_url;
-                mediaEl.className = 'media-layer';
-                mediaEl.autoplay = true;
-                mediaEl.volume = data.volume !== undefined ? data.volume : 1.0;
-                mediaEl.onended = onMediaFinished;
-                mediaEl.onerror = (e) => {
-                    console.error("[Rewards Overlay] Error reproduciendo video:", e);
-                    onMediaFinished();
-                };
-                mediaEl.play().catch(e => {
-                    console.warn("[Rewards Overlay] Autoplay de video bloqueado:", e);
-                });
-            }
-
-            if (mediaEl.tagName !== 'AUDIO') {
-                const scale = data.scale || 1.0;
-                mediaEl.style.transform = `scale(${scale})`;
-                mediaEl.style.transformOrigin = "top left";
-
-                if (data.is_random_pos) {
-                    const randX = Math.floor(Math.random() * 75);
-                    const randY = Math.floor(Math.random() * 75);
-                    mediaEl.style.left = randX + "%";
-                    mediaEl.style.top = randY + "%";
-                } else {
-                    const px = data.pos_x || 0;
-                    const py = data.pos_y || 0;
-                    mediaEl.style.left = px + "px";
-                    mediaEl.style.top = py + "px";
-                }
-            }
-
-            container.appendChild(mediaEl);
-        }
+            // Boot
+            connectWS();
+        })();
     </script>
 </body>
 
