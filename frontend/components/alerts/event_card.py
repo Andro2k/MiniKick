@@ -8,7 +8,8 @@ from PySide6.QtCore import Qt, Signal, QSize
 from backend.models import AlertConfig
 from frontend.widgets import (
     ModernCard, ModernButton, ModernSwitch,
-    NoWheelSlider, NoWheelSpinBox, ModernDivider
+    NoWheelSlider, NoWheelSpinBox, ModernDivider,
+    create_badge
 )
 from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE
 
@@ -30,19 +31,23 @@ class AlertEventCard(QWidget):
         self._current_config = AlertConfig(platform=platform, alert_type=alert_type)
         self._is_loading = True
         self._is_dirty = False
+        self._platform_connected = True
 
         self._setup_ui()
+        self._is_loading = False
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(12)
 
-        header_card = ModernCard(parent=self, margin=12, spacing=10)
+        header_card = ModernCard(parent=self, margin=12, spacing=8)
         header_vbox = QVBoxLayout()
-        header_vbox.setSpacing(10)
+        header_vbox.setContentsMargins(0, 0, 0, 0)
+        header_vbox.setSpacing(8)
 
         top_info_row = QHBoxLayout()
+        top_info_row.setContentsMargins(0, 0, 0, 0)
         top_info_row.setSpacing(10)
 
         accent_color = COLOR_GREEN if self.platform == "kick" else COLOR_PURPLE
@@ -55,8 +60,13 @@ class AlertEventCard(QWidget):
         lbl_header_title = QLabel(f"{platform_name} • {event_name}", parent=self)
         lbl_header_title.setProperty("role", "h3")
 
+        self.badge_offline = create_badge(self.i18n.get("alerts.status.disconnected"), state="warning")
+        self.badge_offline.setVisible(False)
+
         top_info_row.addWidget(self.icon_lbl)
-        top_info_row.addWidget(lbl_header_title, stretch=1)
+        top_info_row.addWidget(lbl_header_title)
+        top_info_row.addWidget(self.badge_offline)
+        top_info_row.addStretch(1)
 
         btn_role = "action_kick" if self.platform == "kick" else "action_twitch"
         self.btn_test = ModernButton(
@@ -222,8 +232,20 @@ class AlertEventCard(QWidget):
         btn_browse_sound.setFixedHeight(32)
         btn_browse_sound.clicked.connect(self._browse_sound)
 
+        self.btn_clear_sound = ModernButton(
+            role="action_danger_border",
+            icon_name="trash.svg",
+            icon_size=14,
+            parent=self
+        )
+        self.btn_clear_sound.setFixedSize(32, 32)
+        self.btn_clear_sound.setToolTip(self.i18n.get("alerts.buttons.clear_sound"))
+        self.btn_clear_sound.clicked.connect(self._clear_sound)
+        self.btn_clear_sound.setEnabled(False)
+
         sound_input_row.addWidget(self.edit_sound, stretch=1)
         sound_input_row.addWidget(btn_browse_sound)
+        sound_input_row.addWidget(self.btn_clear_sound)
         sound_layout.addWidget(lbl_sound)
         sound_layout.addLayout(sound_input_row)
         card_media.addLayout(sound_layout)
@@ -271,8 +293,20 @@ class AlertEventCard(QWidget):
         btn_browse_media.setFixedHeight(32)
         btn_browse_media.clicked.connect(self._browse_media)
 
+        self.btn_clear_media = ModernButton(
+            role="action_danger_border",
+            icon_name="trash.svg",
+            icon_size=14,
+            parent=self
+        )
+        self.btn_clear_media.setFixedSize(32, 32)
+        self.btn_clear_media.setToolTip(self.i18n.get("alerts.buttons.clear_media"))
+        self.btn_clear_media.clicked.connect(self._clear_media)
+        self.btn_clear_media.setEnabled(False)
+
         media_input_row.addWidget(self.edit_media, stretch=1)
         media_input_row.addWidget(btn_browse_media)
+        media_input_row.addWidget(self.btn_clear_media)
         media_layout.addWidget(lbl_media)
         media_layout.addLayout(media_input_row)
         card_media.addLayout(media_layout)
@@ -300,6 +334,8 @@ class AlertEventCard(QWidget):
         self.edit_template.setText(cfg.text_template)
         self.edit_sound.setText(cfg.sound_path)
         self.edit_media.setText(cfg.media_path)
+        self.btn_clear_sound.setEnabled(bool(cfg.sound_path))
+        self.btn_clear_media.setEnabled(bool(cfg.media_path))
         self.spin_duration.setValue(max(1, cfg.duration_ms // 1000))
         vol_pct = int(cfg.sound_volume * 100)
         self.slider_volume.setValue(vol_pct)
@@ -315,6 +351,12 @@ class AlertEventCard(QWidget):
     def _on_volume_changed(self, val: int):
         self.lbl_volume_val.setText(f"{val}%")
         self._on_field_changed()
+
+    def _clear_sound(self):
+        self.edit_sound.clear()
+
+    def _clear_media(self):
+        self.edit_media.clear()
 
     def _browse_sound(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -369,6 +411,10 @@ class AlertEventCard(QWidget):
         self.btn_save.setEnabled(dirty)
         self.btn_discard.setEnabled(dirty)
         self.lbl_dirty.setVisible(dirty)
+        if hasattr(self, 'btn_clear_sound'):
+            self.btn_clear_sound.setEnabled(bool(self.edit_sound.text().strip()))
+        if hasattr(self, 'btn_clear_media'):
+            self.btn_clear_media.setEnabled(bool(self.edit_media.text().strip()))
 
         self.config_changed.emit(cfg)
 
@@ -395,4 +441,15 @@ class AlertEventCard(QWidget):
             self.load_config(self._saved_config)
 
     def _on_test_clicked(self):
+        if self._is_dirty:
+            self._save_changes()
         self.test_requested.emit(self.platform, self.alert_type)
+
+    def set_platform_connected(self, connected: bool):
+        self._platform_connected = connected
+        if hasattr(self, "badge_offline"):
+            self.badge_offline.setVisible(not connected)
+        if hasattr(self, "sw_enabled"):
+            tip = "" if connected else self.i18n.get("alerts.status.platform_offline")
+            self.sw_enabled.setToolTip(tip)
+

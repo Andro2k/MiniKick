@@ -218,7 +218,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.send_error(400, "Path not specified")
             return
 
-        filepath = query["path"][0]
+        filepath = os.path.normpath(query["path"][0])
         if not os.path.isfile(filepath):
             self.send_error(404, "Media file not found")
             return

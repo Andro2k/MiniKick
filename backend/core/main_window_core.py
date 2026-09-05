@@ -458,6 +458,8 @@ class MainWindowCore(QMainWindow):
                 alerts_overlay_url=self.overlay_server.get_alerts_overlay_url(),
                 parent=self.content_stack
             )
+            self.view_alerts.set_connected_platforms(self.get_connected_platforms())
+            self.view_alerts.connect_platform_requested.connect(self._handle_alert_platform_connect)
             self.content_stack.addWidget(self.view_alerts)
             self.alerts_controller.attach_view(self.view_alerts)
             view_widget = self.view_alerts
@@ -1218,6 +1220,8 @@ class MainWindowCore(QMainWindow):
             self.view_rewards.set_connected_platforms(conn_dict)
         if hasattr(self, "view_timers") and self.view_timers and hasattr(self.view_timers, "set_connected_platforms"):
             self.view_timers.set_connected_platforms(conn_dict)
+        if hasattr(self, "view_alerts") and self.view_alerts and hasattr(self.view_alerts, "set_connected_platforms"):
+            self.view_alerts.set_connected_platforms(conn_dict)
 
     def get_connected_platforms(self) -> dict[str, bool]:
         kick_auth = self.kick_auth_manager.is_authenticated() if hasattr(self, "kick_auth_manager") and self.kick_auth_manager else False
@@ -1486,6 +1490,13 @@ class MainWindowCore(QMainWindow):
                 self._evaluate_all_scopes()
         else:
             self._handle_auth_process()
+
+    @Slot(str)
+    def _handle_alert_platform_connect(self, platform: str):
+        if platform == "kick":
+            self._handle_auth_process()
+        elif platform == "twitch":
+            self._handle_twitch_auth_process(force=False)
 
     def _start_schedule_worker(self):
         current_worker = getattr(self, "schedule_worker", None)

@@ -410,14 +410,15 @@ QHeaderView::section {{ color: {COLOR_NEUTRAL_400}; font-weight: 600; padding: {
 
 /* Scrollbars */
 QScrollBar:vertical {{ border: none; background: transparent; width: 12px; margin: 4px 2px 4px 2px; }}
-QScrollBar::handle:vertical {{ background-color: {COLOR_NEUTRAL_750}; border-radius: {RADIUS_XS}px; min-height: 28px; }}
-QScrollBar::handle:vertical:hover {{ background-color: {COLOR_NEUTRAL_500}; }}
-QScrollBar::handle:vertical:pressed {{ background-color: {COLOR_NEUTRAL_400}; }}
+QScrollBar::handle:vertical {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {RADIUS_XS}px; min-height: 28px; }}
+QScrollBar::handle:vertical:hover {{ background-color: rgba(255, 255, 255, 0.32); }}
+QScrollBar::handle:vertical:pressed {{ background-color: rgba(255, 255, 255, 0.48); }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ height: 0px; background: none; }}
+
 QScrollBar:horizontal {{ border: none; background: transparent; height: 10px; margin: 2px 4px 2px 4px; }}
-QScrollBar::handle:horizontal {{ background-color: {COLOR_NEUTRAL_750}; border-radius: {RADIUS_XS}px; min-width: 28px; }}
-QScrollBar::handle:horizontal:hover {{ background-color: {COLOR_NEUTRAL_500}; }}
-QScrollBar::handle:horizontal:pressed {{ background-color: {COLOR_NEUTRAL_400}; }}
+QScrollBar::handle:horizontal {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {RADIUS_XS}px; min-width: 28px; }}
+QScrollBar::handle:horizontal:hover {{ background-color: rgba(255, 255, 255, 0.32); }}
+QScrollBar::handle:horizontal:pressed {{ background-color: rgba(255, 255, 255, 0.48); }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ width: 0px; background: none; }}
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 

@@ -3,7 +3,7 @@
 from .base_view import BaseView
 from .blocks import (
     ViewHeader, SettingRow, SliderRow, StatCard, 
-    ModernCard, ModernScrollArea, ExpandableSettingCard, ModernDivider,
+    ModernCard, ModernScrollArea, FadingScrollArea, ExpandableSettingCard, ModernDivider,
     create_badge
 )
 from .controls import ModernButton, ModernSwitch, CompactSpinBox, VariableHighlighter, VariableTextEdit
@@ -28,6 +28,7 @@ __all__ = [
     "StatCard",
     "ModernCard",
     "ModernScrollArea",
+    "FadingScrollArea",
     "ExpandableSettingCard",
     "ModernDivider",
     "create_badge",

@@ -1,10 +1,11 @@
 # frontend\views\alerts_view.py
 
 from typing import Dict, Tuple
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QBoxLayout
-from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QBoxLayout
+from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
-from frontend.widgets import BaseView, ModernButton
+from frontend.widgets import BaseView, ModernButton, ModernCard
+from frontend.common import get_pixmap_colored, COLOR_AMBER
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
     AlertVariantListItem,
@@ -42,6 +43,7 @@ class AlertsView(BaseView):
     test_alert_requested = Signal(str, str)
     copy_url_requested = Signal()
     open_browser_requested = Signal()
+    connect_platform_requested = Signal(str)
     view_shown = Signal()
 
     _KICK_EVENTS = [("follow", "user-check.svg"),("subscription", "crown.svg"),("resub", "star.svg"),("sub_gift", "box-multiple-2.svg"),("raid", "users.svg"),]
@@ -61,6 +63,7 @@ class AlertsView(BaseView):
         self.sidebar_items: Dict[Tuple[str, str], AlertVariantListItem] = {}
         self.sidebars: Dict[str, AlertsSidebarPanel] = {}
         self.active_variant: Dict[str, str] = {"kick": "follow", "twitch": "follow"}
+        self.connected_platforms: Dict[str, bool] = {}
         self._last_direction = None
 
         self._setup_ui()
@@ -112,6 +115,50 @@ class AlertsView(BaseView):
         self.main_layout.addLayout(platform_row)
         self.main_layout.addSpacing(6)
 
+        # Disconnection Notice Banner
+        self.notice_banner = ModernCard(parent=self, margin=10, spacing=8)
+        self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.notice_layout.setContentsMargins(0, 0, 0, 0)
+        self.notice_layout.setSpacing(10)
+
+        self.lbl_notice_icon = QLabel(parent=self)
+        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle.svg", COLOR_AMBER, size=20))
+
+        notice_text_col = QVBoxLayout()
+        notice_text_col.setContentsMargins(0, 0, 0, 0)
+        notice_text_col.setSpacing(2)
+
+        self.lbl_notice_title = QLabel(self.i18n.get("alerts.notice.disconnected_title"), parent=self)
+        self.lbl_notice_title.setProperty("role", "h3")
+        self.lbl_notice_title.setProperty("state", "warning")
+
+        self.lbl_notice_msg = QLabel(parent=self)
+        self.lbl_notice_msg.setProperty("role", "body")
+        self.lbl_notice_msg.setWordWrap(True)
+
+        notice_text_col.addWidget(self.lbl_notice_title)
+        notice_text_col.addWidget(self.lbl_notice_msg)
+
+        self.btn_notice_connect = ModernButton(
+            text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Kick"),
+            role="action_outlined",
+            icon_name="plug.svg",
+            icon_size=15,
+            parent=self
+        )
+        self.btn_notice_connect.setFixedHeight(32)
+        self.btn_notice_connect.clicked.connect(self._on_notice_connect_clicked)
+
+        self.notice_layout.addWidget(self.lbl_notice_icon, alignment=Qt.AlignmentFlag.AlignTop)
+        self.notice_layout.addLayout(notice_text_col, stretch=1)
+        self.notice_layout.addWidget(self.btn_notice_connect, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+        self.notice_banner.addLayout(self.notice_layout)
+        self.notice_banner.setVisible(False)
+
+        self.main_layout.addWidget(self.notice_banner)
+        self.main_layout.addSpacing(6)
+
         self.stack = ResponsiveStackedWidget(parent=self)
         self.stack.setMinimumWidth(0)
 
@@ -127,6 +174,7 @@ class AlertsView(BaseView):
         self.main_layout.addWidget(self.stack)
 
         self._select_variant("kick", "follow")
+        self._update_platform_connection_ui()
 
     def _build_master_detail_page(self, platform: str, events: list[tuple[str, str]]) -> tuple[QWidget, AlertsSidebarPanel, ResponsiveStackedWidget, QBoxLayout]:
         page = QWidget()
@@ -160,6 +208,7 @@ class AlertsView(BaseView):
         sidebar_panel = self.sidebars.get(platform)
 
         card = AlertEventCard(platform, alert_type, icon_name, self.i18n, parent=editor_stack)
+        card.set_platform_connected(bool(self.connected_platforms.get(platform, False)))
         card.save_requested.connect(self.config_changed.emit)
         card.test_requested.connect(self.test_alert_requested.emit)
         if sidebar_panel:
@@ -201,6 +250,45 @@ class AlertsView(BaseView):
             btn.style().unpolish(btn)
             btn.style().polish(btn)
 
+        self._update_platform_connection_ui()
+
+    def _on_notice_connect_clicked(self):
+        curr_plat = "kick" if self.stack.currentIndex() == 0 else "twitch"
+        self.connect_platform_requested.emit(curr_plat)
+
+    def set_connected_platforms(self, connected_platforms: Dict[str, bool]):
+        self.connected_platforms = connected_platforms or {}
+        self._update_platform_connection_ui()
+
+    def _update_platform_connection_ui(self):
+        curr_plat = "kick" if self.stack.currentIndex() == 0 else "twitch"
+        is_connected = bool(self.connected_platforms.get(curr_plat, False))
+
+        if not is_connected:
+            plat_name = "Kick" if curr_plat == "kick" else "Twitch"
+            msg_template = self.i18n.get("alerts.notice.disconnected_msg")
+            self.lbl_notice_msg.setText(msg_template.replace("{platform}", plat_name))
+            btn_template = self.i18n.get("alerts.notice.connect_btn")
+            self.btn_notice_connect.setText(btn_template.replace("{platform}", plat_name))
+            self.notice_banner.setVisible(True)
+        else:
+            self.notice_banner.setVisible(False)
+
+        kick_connected = bool(self.connected_platforms.get("kick", False))
+        twitch_connected = bool(self.connected_platforms.get("twitch", False))
+
+        self.btn_tab_kick.setText(self.i18n.get("alerts.platforms.kick"))
+        self.btn_tab_twitch.setText(self.i18n.get("alerts.platforms.twitch"))
+
+        kick_tip = self.i18n.get("alerts.platforms.kick") if kick_connected else f"{self.i18n.get('alerts.platforms.kick')} - {self.i18n.get('alerts.status.platform_offline')}"
+        twitch_tip = self.i18n.get("alerts.platforms.twitch") if twitch_connected else f"{self.i18n.get('alerts.platforms.twitch')} - {self.i18n.get('alerts.status.platform_offline')}"
+
+        self.btn_tab_kick.setToolTip(kick_tip)
+        self.btn_tab_twitch.setToolTip(twitch_tip)
+
+        for (plat, _), card in self.cards.items():
+            card.set_platform_connected(bool(self.connected_platforms.get(plat, False)))
+
     def set_overlay_url(self, url: str):
         self.alerts_overlay_url = url
         self.overlay_card.set_overlay_url(url)
@@ -222,6 +310,17 @@ class AlertsView(BaseView):
         if hasattr(self, 'overlay_card'):
             url_dir = QBoxLayout.Direction.TopToBottom if width < 800 else QBoxLayout.Direction.LeftToRight
             self.overlay_card.set_responsive_direction(url_dir)
+
+        if hasattr(self, 'notice_layout'):
+            notice_dir = QBoxLayout.Direction.TopToBottom if width < 680 else QBoxLayout.Direction.LeftToRight
+            if notice_dir != self.notice_layout.direction():
+                self.notice_layout.setDirection(notice_dir)
+                if hasattr(self, 'notice_banner'):
+                    self.notice_banner.card_layout.invalidate()
+                    self.notice_banner.updateGeometry()
+                if hasattr(self, 'scroll_content'):
+                    self.scroll_content.layout().invalidate()
+                    self.scroll_content.updateGeometry()
 
         target_direction = QBoxLayout.Direction.TopToBottom if width < 800 else QBoxLayout.Direction.LeftToRight
         if target_direction != self._last_direction:

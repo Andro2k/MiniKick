@@ -2,6 +2,8 @@
     "alerts": {
         "buttons": {
             "browse": "Examinar...",
+            "clear_media": "Quitar multimedia",
+            "clear_sound": "Quitar sonido",
             "discard": "Descartar",
             "save": "Guardar Cambios",
             "test": "Probar Alerta",
@@ -37,6 +39,11 @@
             "subtitle": "Configura y personaliza las alertas de tu stream en OBS para Kick y Twitch.",
             "title": "Alertas en Vivo"
         },
+        "notice": {
+            "connect_btn": "Vincular {platform}",
+            "disconnected_msg": "{platform} no está conectado. Las alertas no se activarán en vivo hasta que vincules tu cuenta.",
+            "disconnected_title": "Cuenta no vinculada"
+        },
         "overlay_card": {
             "copied_msg": "La URL del overlay de alertas se copió al portapapeles.",
             "copied_title": "URL Copiada",
@@ -57,6 +64,8 @@
             "title": "Variantes de Alerta"
         },
         "status": {
+            "disconnected": "Desconectado",
+            "platform_offline": "Plataforma no conectada: las alertas no se emitirán en directo hasta vincular tu cuenta",
             "saved_msg": "La configuración de la alerta se guardó correctamente.",
             "saved_title": "Alerta Guardada",
             "unsaved": "Cambios sin guardar"

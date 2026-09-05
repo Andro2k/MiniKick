@@ -1,8 +1,8 @@
 # frontend\widgets\base_view.py
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QFrame
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt
-from .blocks import ViewHeader
+from .blocks import ViewHeader, FadingScrollArea
 
 class BaseView(QWidget):
     def __init__(self, i18n, title_key: str, subtitle_key: str, parent=None):
@@ -12,7 +12,7 @@ class BaseView(QWidget):
         base_layout = QVBoxLayout(self)
         base_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.scroll_area = QScrollArea()
+        self.scroll_area = FadingScrollArea(parent=self)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

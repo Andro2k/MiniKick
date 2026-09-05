@@ -2,6 +2,8 @@
     "alerts": {
         "buttons": {
             "browse": "Browse...",
+            "clear_media": "Remove media",
+            "clear_sound": "Remove sound",
             "discard": "Discard",
             "save": "Save Changes",
             "test": "Test Alert",
@@ -37,6 +39,11 @@
             "subtitle": "Configure and customize your stream alerts for OBS on Kick and Twitch.",
             "title": "Live Alerts"
         },
+        "notice": {
+            "connect_btn": "Link {platform}",
+            "disconnected_msg": "{platform} is not connected. Alerts will not trigger live until you link your account.",
+            "disconnected_title": "Account Not Linked"
+        },
         "overlay_card": {
             "copied_msg": "The alerts overlay URL was copied to the clipboard.",
             "copied_title": "URL Copied",
@@ -57,6 +64,8 @@
             "title": "Alert Variants"
         },
         "status": {
+            "disconnected": "Disconnected",
+            "platform_offline": "Platform not connected: alerts will not trigger live until your account is linked",
             "saved_msg": "The alert configuration was saved successfully.",
             "saved_title": "Alert Saved",
             "unsaved": "Unsaved changes"

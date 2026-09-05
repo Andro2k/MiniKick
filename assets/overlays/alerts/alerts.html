@@ -180,10 +180,48 @@
             box-shadow: 0 0 10px var(--accent-color, var(--default-color));
             transform-origin: left;
         }
+
+        .audio-unlock-banner {
+            position: fixed;
+            top: 20px;
+            background: rgba(18, 19, 23, 0.94);
+            border: 1.5px solid rgba(83, 252, 24, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            animation: pulse-unlock 2s infinite ease-in-out;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            user-select: none;
+        }
+
+        .audio-unlock-banner:hover {
+            transform: scale(1.03);
+            border-color: #53fc18;
+        }
+
+        @keyframes pulse-unlock {
+            0% { box-shadow: 0 0 10px rgba(83, 252, 24, 0.2); }
+            50% { box-shadow: 0 0 22px rgba(83, 252, 24, 0.5); }
+            100% { box-shadow: 0 0 10px rgba(83, 252, 24, 0.2); }
+        }
     </style>
 </head>
 
 <body>
+
+    <div id="audio-unlock-banner" class="audio-unlock-banner" style="display: none;" onclick="unlockAudio()">
+        <span>🔊 Haz clic aquí para activar el audio de las alertas</span>
+    </div>
 
     <div id="alert-container">
         <div class="media-box" id="media-box"></div>
@@ -197,8 +235,6 @@
         </div>
     </div>
 
-    <audio id="alert-audio" preload="auto"></audio>
-
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || '';
@@ -208,21 +244,48 @@
         const alertTitle = document.getElementById('alert-title');
         const alertMsg = document.getElementById('alert-message');
         const progressFill = document.getElementById('progress-fill');
-        const alertAudio = document.getElementById('alert-audio');
 
         let ws = null;
         let activeAlertTimer = null;
         let isPlaying = false;
+        let isAudioUnlocked = false;
+        let pendingAudioToPlay = null;
+        let activeAudioElement = null;
         const localQueue = [];
 
-        document.addEventListener('click', () => {
-            if (alertAudio) {
-                alertAudio.play().then(() => {
-                    alertAudio.pause();
-                    alertAudio.currentTime = 0;
-                }).catch(() => { });
+        function unlockAudio() {
+            if (isAudioUnlocked) return;
+            isAudioUnlocked = true;
+
+            const banner = document.getElementById('audio-unlock-banner');
+            if (banner) banner.style.display = 'none';
+
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    const ctx = new AudioContextClass();
+                    if (ctx.state === 'suspended') {
+                        ctx.resume();
+                    }
+                    const buffer = ctx.createBuffer(1, 1, 22050);
+                    const source = ctx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(ctx.destination);
+                    source.start(0);
+                }
+            } catch (e) { }
+
+            if (pendingAudioToPlay) {
+                try {
+                    pendingAudioToPlay.play().catch(() => {});
+                } catch (e) { }
+                pendingAudioToPlay = null;
             }
-        }, { once: true });
+        }
+
+        window.addEventListener('click', unlockAudio);
+        window.addEventListener('keydown', unlockAudio);
+        window.addEventListener('pointerdown', unlockAudio);
 
         function connectWS() {
             if (ws) {
@@ -286,15 +349,27 @@
 
             mediaBox.innerHTML = '';
             let videoElement = null;
+            const targetVolume = Math.max(0.0, Math.min(1.0, data.sound_volume ?? 0.8));
+
             if (data.media_url) {
                 const ext = (data.media_ext || '').toLowerCase();
                 if (ext === '.mp4' || ext === '.webm') {
                     videoElement = document.createElement('video');
-                    videoElement.src = data.media_url;
-                    videoElement.autoplay = true;
-                    videoElement.loop = true;
                     videoElement.playsInline = true;
+                    videoElement.loop = true;
+                    if (data.sound_url) {
+                        videoElement.muted = true;
+                    } else {
+                        videoElement.muted = false;
+                        videoElement.volume = targetVolume;
+                    }
+                    videoElement.src = data.media_url;
                     mediaBox.appendChild(videoElement);
+                    videoElement.play().catch(e => {
+                        console.warn("[Alerts Video] Unmuted play blocked, falling back to muted:", e);
+                        videoElement.muted = true;
+                        videoElement.play().catch(err => console.warn("[Alerts Video] Muted play blocked:", err));
+                    });
                 } else {
                     const img = document.createElement('img');
                     img.src = data.media_url;
@@ -302,23 +377,26 @@
                 }
             }
 
-            const targetVolume = Math.max(0.0, Math.min(1.0, data.sound_volume ?? 0.8));
-
             if (data.sound_url) {
-                if (videoElement) {
-                    videoElement.muted = true;
+                if (activeAudioElement) {
+                    try { activeAudioElement.pause(); activeAudioElement.src = ''; } catch (e) { }
+                    activeAudioElement = null;
                 }
-                alertAudio.src = data.sound_url;
-                alertAudio.volume = targetVolume;
-                alertAudio.play().catch(e => console.warn("[Alerts Audio] Play blocked:", e));
-            } else if (videoElement) {
-                videoElement.muted = false;
-                videoElement.volume = targetVolume;
-                videoElement.play().catch(e => {
-                    console.warn("[Alerts Video Audio] Unmuted play blocked by browser policy, falling back to muted:", e);
-                    videoElement.muted = true;
-                    videoElement.play().catch(err => console.warn("[Alerts Video] Play blocked:", err));
-                });
+                const audio = new Audio();
+                audio.src = data.sound_url;
+                audio.volume = targetVolume;
+                audio.load();
+                activeAudioElement = audio;
+
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.warn("[Alerts Audio] Play blocked by browser policy:", e);
+                        pendingAudioToPlay = audio;
+                        const banner = document.getElementById('audio-unlock-banner');
+                        if (banner) banner.style.display = 'flex';
+                    });
+                }
             }
 
             const duration = data.duration_ms || 5000;
@@ -344,9 +422,18 @@
                             videoElement.src = '';
                             videoElement.load();
                         } catch (e) { }
+                        videoElement = null;
                     }
                     mediaBox.innerHTML = '';
-                    try { alertAudio.pause(); alertAudio.currentTime = 0; } catch (e) { }
+
+                    if (activeAudioElement) {
+                        try {
+                            activeAudioElement.pause();
+                            activeAudioElement.src = '';
+                        } catch (e) { }
+                        activeAudioElement = null;
+                    }
+                    pendingAudioToPlay = null;
                     isPlaying = false;
 
                     if (ws && ws.readyState === WebSocket.OPEN) {

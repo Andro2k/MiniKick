@@ -2,8 +2,9 @@
 
 from PySide6.QtWidgets import (QSizePolicy, QWidget, QVBoxLayout, QHBoxLayout, 
                                QGridLayout, QLabel, QFrame, QScrollArea, QPushButton, QLineEdit)
-from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400
+from PySide6.QtCore import Qt, Signal, QSize, QEvent
+from PySide6.QtGui import QPainter, QLinearGradient, QColor
+from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_950
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls import ModernSwitch
 
@@ -159,14 +160,68 @@ class ModernCard(QFrame):
     def addStretch(self, stretch: int = 0):
         self.card_layout.addStretch(stretch)
 
-class ModernScrollArea(QScrollArea):
-    def __init__(self, widget: QWidget, parent=None):
+class FadingScrollArea(QScrollArea):
+    def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
         super().__init__(parent)
+        self.fade_height = fade_height
+        self._fade_color = QColor(fade_color) if isinstance(fade_color, str) else fade_color
         self.setWidgetResizable(True)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setWidget(widget)
+        if widget:
+            self.setWidget(widget)
+        self.verticalScrollBar().valueChanged.connect(lambda _: self.viewport().update())
+
+    @property
+    def fade_size(self) -> int:
+        return self.fade_height
+
+    def set_fade_size(self, size: int):
+        self.fade_height = size
+        if self.viewport():
+            self.viewport().update()
+
+    def viewportEvent(self, event):
+        res = super().viewportEvent(event)
+        if event.type() == QEvent.Type.Paint:
+            self._paint_fade()
+        return res
+
+    def _paint_fade(self):
+        v_bar = self.verticalScrollBar()
+        if not v_bar or v_bar.maximum() == 0:
+            return
+
+        w = self.viewport().width()
+        h = self.viewport().height()
+        if w <= 0 or h <= 0:
+            return
+
+        painter = QPainter(self.viewport())
+        fade_h = min(self.fade_height, h // 4)
+
+        if v_bar.value() > 0:
+            top_grad = QLinearGradient(0, 0, 0, fade_h)
+            top_grad.setColorAt(0.0, self._fade_color)
+            transparent_color = QColor(self._fade_color)
+            transparent_color.setAlpha(0)
+            top_grad.setColorAt(1.0, transparent_color)
+            painter.fillRect(0, 0, w, fade_h, top_grad)
+
+        if v_bar.value() < v_bar.maximum():
+            bottom_grad = QLinearGradient(0, h - fade_h, 0, h)
+            transparent_color = QColor(self._fade_color)
+            transparent_color.setAlpha(0)
+            bottom_grad.setColorAt(0.0, transparent_color)
+            bottom_grad.setColorAt(1.0, self._fade_color)
+            painter.fillRect(0, h - fade_h, w, fade_h, bottom_grad)
+
+        painter.end()
+
+class ModernScrollArea(FadingScrollArea):
+    def __init__(self, widget: QWidget, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
+        super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
 
 class ExpandableSettingCard(QFrame):
     updated = Signal(str, object)
