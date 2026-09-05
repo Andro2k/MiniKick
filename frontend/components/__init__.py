@@ -5,20 +5,13 @@ from . import music
 from . import schedule
 from . import widgets
 
-from .chat import (
-    BotMutePanel,
-    ChatDisplayPanel,
-    ChatOverlaySettingsPanel,
-    ChatTtsSettingsPanel,
-    VoiceSettingRow,
+from .chat import (BotMutePanel, ChatDisplayPanel,
+    ChatOverlaySettingsPanel, ChatOverlayMockupWidget,
+    ChatTtsSettingsPanel, VoiceSettingRow,
 )
-from .music import (
-    MusicStatsPanel,
-    MusicPlayerSettingsPanel,
-    MusicSettingsPanel,
-    MusicCommandsPanel,
-    MusicQueuePanel,
-    DragDropQueueTable,
+from .music import (MusicStatsPanel,MusicPlayerSettingsPanel,
+    MusicSettingsPanel,MusicCommandsPanel,
+    MusicQueuePanel,DragDropQueueTable,
     MusicOverlayMockupWidget,
 )
 from .schedule import (
@@ -38,6 +31,7 @@ __all__ = [
     "BotMutePanel",
     "ChatDisplayPanel",
     "ChatOverlaySettingsPanel",
+    "ChatOverlayMockupWidget",
     "ChatTtsSettingsPanel",
     "VoiceSettingRow",
     "MusicStatsPanel",

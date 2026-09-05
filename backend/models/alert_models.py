@@ -40,6 +40,8 @@ class AlertConfig:
     duration_ms: int = 5000
     sound_volume: float = 0.8
     tts_read: bool = False
+    layout: str = "above"
+    style: str = "compact"
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -55,5 +57,7 @@ class AlertConfig:
             text_template=str(data.get("text_template", "{user}")),
             duration_ms=int(data.get("duration_ms", 5000)),
             sound_volume=float(data.get("sound_volume", 0.8)),
-            tts_read=bool(data.get("tts_read", False))
+            tts_read=bool(data.get("tts_read", False)),
+            layout=str(data.get("layout", "above")),
+            style=str(data.get("style", "compact"))
         )

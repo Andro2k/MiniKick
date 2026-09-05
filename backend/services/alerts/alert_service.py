@@ -57,6 +57,8 @@ class AlertService:
             "duration_ms": config.duration_ms,
             "sound_volume": config.sound_volume,
             "tts_read": config.tts_read,
+            "layout": getattr(config, "layout", "above") or "above",
+            "style": getattr(config, "style", "compact") or "compact",
             "timestamp": event.timestamp
         }
 

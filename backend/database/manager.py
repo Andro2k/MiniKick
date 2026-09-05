@@ -303,6 +303,8 @@ class DatabaseManager:
                     duration_ms INTEGER NOT NULL DEFAULT 5000,
                     sound_volume REAL NOT NULL DEFAULT 0.8,
                     tts_read INTEGER NOT NULL DEFAULT 0,
+                    layout TEXT DEFAULT 'above',
+                    style TEXT DEFAULT 'compact',
                     PRIMARY KEY (platform, alert_type)
                 )
             """)
@@ -520,6 +522,10 @@ class DatabaseManager:
             ],
             "reward_redemptions": [
                 ("platform", "TEXT DEFAULT 'kick'")
+            ],
+            "alert_configs": [
+                ("layout", "TEXT DEFAULT 'above'"),
+                ("style", "TEXT DEFAULT 'compact'")
             ]
         }
 

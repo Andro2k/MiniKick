@@ -374,27 +374,27 @@ QFrame[role="toast"][state="info"] {{ border-color: {COLOR_BLUE}; }}
 /* Badges & Tags */
 QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_850}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="badge"] QLabel {{ font-size: {text2}px; font-weight: 600; color: {COLOR_NEUTRAL_400}; background: transparent; }}
-QFrame[role="badge"][state="everyone"] {{ background-color: {COLOR_GREEN_GLOW}; border-color: rgba(46, 205, 112, 0.2); }}
+QFrame[role="badge"][state="everyone"] {{ background-color: {COLOR_GREEN_GLOW}; border-color: {COLOR_GREEN}; }}
 QFrame[role="badge"][state="everyone"] QLabel {{ color: {COLOR_GREEN}; }}
-QFrame[role="badge"][state="subscriber"] {{ background-color: {COLOR_BLUE_GLOW}; border-color: rgba(59, 130, 246, 0.2); }}
+QFrame[role="badge"][state="subscriber"] {{ background-color: {COLOR_BLUE_GLOW}; border-color: {COLOR_BLUE}; }}
 QFrame[role="badge"][state="subscriber"] QLabel {{ color: {COLOR_BLUE}; }}
-QFrame[role="badge"][state="vip"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: rgba(168, 85, 247, 0.2); }}
+QFrame[role="badge"][state="vip"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: {COLOR_PURPLE}; }}
 QFrame[role="badge"][state="vip"] QLabel {{ color: {COLOR_PURPLE}; }}
-QFrame[role="badge"][state="moderator"] {{ background-color: {COLOR_AMBER_GLOW}; border-color: rgba(245, 158, 11, 0.2); }}
+QFrame[role="badge"][state="moderator"] {{ background-color: {COLOR_AMBER_GLOW}; border-color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="moderator"] QLabel {{ color: {COLOR_AMBER}; }}
-QFrame[role="badge"][state="broadcaster"] {{ background-color: {COLOR_RED_GLOW}; border-color: rgba(239, 68, 68, 0.2); }}
+QFrame[role="badge"][state="broadcaster"] {{ background-color: {COLOR_RED_GLOW}; border-color: {COLOR_RED}; }}
 QFrame[role="badge"][state="broadcaster"] QLabel {{ color: {COLOR_RED}; }}
-QFrame[role="badge"][state="warning"] {{ background-color: {COLOR_AMBER_GLOW}; border-color: rgba(245, 158, 11, 0.2); }}
+QFrame[role="badge"][state="warning"] {{ background-color: {COLOR_AMBER_GLOW}; border-color: {COLOR_AMBER}; }}
 QFrame[role="badge"][state="warning"] QLabel {{ color: {COLOR_AMBER}; }}
-QFrame[role="badge"][state="plugin"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: rgba(168, 85, 247, 0.2); }}
+QFrame[role="badge"][state="plugin"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: {COLOR_PURPLE}; }}
 QFrame[role="badge"][state="plugin"] QLabel {{ color: {COLOR_PURPLE}; }}
-QFrame[role="badge"][state="kick"] {{ background-color: {COLOR_GREEN_GLOW}; border-color: rgba(46, 205, 112, 0.2); }}
+QFrame[role="badge"][state="kick"] {{ background-color: {COLOR_GREEN_GLOW}; border-color: {COLOR_GREEN}; }}
 QFrame[role="badge"][state="kick"] QLabel {{ color: {COLOR_GREEN}; }}
-QFrame[role="badge"][state="twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: rgba(168, 85, 247, 0.2); }}
+QFrame[role="badge"][state="twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: {COLOR_PURPLE}; }}
 QFrame[role="badge"][state="twitch"] QLabel {{ color: {COLOR_PURPLE}; }}
 
-QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.2px solid rgba(46, 205, 112, 0.2); }}
-QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.2px solid rgba(168, 85, 247, 0.2); }}
+QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.2px solid {COLOR_GREEN}; }}
+QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.2px solid {COLOR_PURPLE}; }}
 QLabel[role="channel_avatar"] {{ border-radius: 48px; background-color: {COLOR_NEUTRAL_800}; border: 2px solid {COLOR_NEUTRAL_700}; }}
 QLabel[role="rank_number"] {{ color: {COLOR_GREEN}; font-weight: 600; min-width: 20px; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.2px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: 600; background-color: {COLOR_NEUTRAL_900}; }}

@@ -5,11 +5,13 @@ from .variant_item import AlertVariantListItem
 from .sidebar_panel import AlertsSidebarPanel
 from .event_card import AlertEventCard
 from .overlay_card import AlertsOverlayCard
+from .alert_mockup import AlertOverlayMockupWidget
 
 __all__ = [
     "ResponsiveStackedWidget",
     "AlertVariantListItem",
     "AlertsSidebarPanel",
     "AlertEventCard",
-    "AlertsOverlayCard"
+    "AlertsOverlayCard",
+    "AlertOverlayMockupWidget"
 ]

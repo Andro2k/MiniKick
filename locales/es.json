@@ -39,6 +39,13 @@
             "subtitle": "Configura y personaliza las alertas de tu stream en OBS para Kick y Twitch.",
             "title": "Alertas en Vivo"
         },
+        "layout": {
+            "above": "Arriba / Abajo",
+            "desc": "Elige la distribución visual entre imagen y texto.",
+            "overlay": "Superpuesto / Banner",
+            "side": "Al Lado / Compacto",
+            "title": "Disposición"
+        },
         "notice": {
             "connect_btn": "Vincular {platform}",
             "disconnected_msg": "{platform} no está conectado. Las alertas no se activarán en vivo hasta que vincules tu cuenta.",
@@ -56,7 +63,14 @@
             "kick": "Kick",
             "twitch": "Twitch"
         },
+        "preview": {
+            "sample_amount": "500",
+            "sample_tier": "1",
+            "sample_user": "TheAndro2K",
+            "title": "Vista Previa de la Alerta"
+        },
         "sections": {
+            "appearance": "Diseño y Apariencia",
             "general": "Ajustes Generales",
             "media": "Multimedia y Audio"
         },
@@ -69,6 +83,13 @@
             "saved_msg": "La configuración de la alerta se guardó correctamente.",
             "saved_title": "Alerta Guardada",
             "unsaved": "Cambios sin guardar"
+        },
+        "style": {
+            "compact": "Compacto (Neón)",
+            "desc": "Tema visual del marco y resplandor de la alerta.",
+            "glass": "Glassmorphism",
+            "minimal": "Minimalista",
+            "title": "Estilo"
         }
     },
     "chat": {
@@ -107,6 +128,11 @@
             "orientation_horizontal": "Horizontal (Marquesina)",
             "orientation_title": "Orientación del Chat",
             "orientation_vertical": "Vertical (Columna)",
+            "preview_sample_bot_msg": "¡Qué onda @TheAndro2K! Bienvenido al stream, ponte cómodo. 👾",
+            "preview_sample_bot_user": "theandro2k",
+            "preview_sample_msg_1": "hola xd",
+            "preview_sample_user": "TheAndro2K",
+            "preview_title": "Vista Previa del Overlay",
             "recommended_dim": "Tamaño recomendado en OBS: {dim}",
             "show_bots_desc": "Muestra los mensajes de bots silenciados en la pantalla del stream.",
             "show_bots_title": "Mostrar Bots",
@@ -1163,6 +1189,8 @@
         },
         "schedule_dialog": {
             "btn_clear": "Limpiar Formulario",
+            "btn_now": "Ahora",
+            "btn_now_tooltip": "Establecer la fecha y hora actual",
             "btn_save": "Guardar Horario",
             "category_placeholder": "ej. Just Chatting",
             "date_label": "Fecha de ejecución:",

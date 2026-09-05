@@ -22,13 +22,16 @@ class ScheduleWorker(QThread):
 
     def run(self) -> None:
         logger.info("[ScheduleWorker] Worker started.")
-        while self._is_running:
+        while self._is_running and not self.isInterruptionRequested():
             try:
                 self._check_and_execute_schedules()
             except Exception as e:
                 logger.error("[ScheduleWorker] Error checking schedules: %s", e)
 
-            for _ in range(200):
+            now = datetime.now()
+            ms_to_next_sec = max(50, 1000 - int(now.microsecond / 1000))
+            slices = max(1, ms_to_next_sec // 50)
+            for _ in range(slices):
                 if not self._is_running or self.isInterruptionRequested():
                     break
                 self.msleep(50)

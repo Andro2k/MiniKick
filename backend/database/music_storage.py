@@ -56,8 +56,6 @@ class SQLiteMusicStorage:
                 if r:
                     self._increment_play_count(conn, r[4])
                     return {"title": r[0], "artist": r[1], "url": r[2], "duration": r[3] or "-"}
-
-                # 2. Fast Fuzzy Match via SQLite FTS5 Trigram Index (O(log N))
                 try:
                     clean_term = re.sub(r'["\*\^\:\(\)]', '', norm_q).strip()
                     if len(clean_term) >= 3:
@@ -77,7 +75,6 @@ class SQLiteMusicStorage:
                 except Exception as fts_err:
                     logger.debug("[SQLiteMusicStorage] FTS5 search bypassed: %s", fts_err)
 
-                # 3. Fallback: in-Python SequenceMatcher (O(N))
                 cursor.execute("SELECT query_raw, title, artist, url, duration FROM youtube_search_cache ORDER BY play_count DESC LIMIT 150")
                 rows = cursor.fetchall()
                 best_match = None

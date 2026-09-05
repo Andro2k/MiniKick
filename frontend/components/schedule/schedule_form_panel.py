@@ -117,6 +117,21 @@ class ScheduleFormPanel(QWidget):
         time_box.addWidget(lbl_time)
         time_box.addWidget(self.time_edit)
         datetime_row.addLayout(time_box)
+
+        now_box = QVBoxLayout()
+        now_box.setSpacing(6)
+        lbl_now_spacer = QLabel("")
+        lbl_now_spacer.setProperty("role", "h3")
+        self.btn_now = ModernButton(
+            self.i18n.get("stream_info.schedule_dialog.btn_now"),
+            role="action_neutral_border",
+            icon_name="clock.svg"
+        )
+        self.btn_now.setToolTip(self.i18n.get("stream_info.schedule_dialog.btn_now_tooltip"))
+        self.btn_now.clicked.connect(self._set_current_datetime)
+        now_box.addWidget(lbl_now_spacer)
+        now_box.addWidget(self.btn_now)
+        datetime_row.addLayout(now_box)
         datetime_row.addStretch()
 
         form_layout.addLayout(datetime_row)
@@ -267,6 +282,10 @@ class ScheduleFormPanel(QWidget):
 
         self.search_kick_cat.set_selected_category(kick_name, self._kick_cat_id, "kick")
         self.search_twitch_cat.set_selected_category(twitch_name, self._twitch_cat_id, "twitch")
+
+    def _set_current_datetime(self):
+        self.date_edit.setDate(QDate.currentDate())
+        self.time_edit.setTime(QTime.currentTime())
 
     def clear_form(self):
         self.editing_schedule_id = None

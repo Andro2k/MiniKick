@@ -39,6 +39,13 @@
             "subtitle": "Configure and customize your stream alerts for OBS on Kick and Twitch.",
             "title": "Live Alerts"
         },
+        "layout": {
+            "above": "Above / Below",
+            "desc": "Choose the visual arrangement between media and text.",
+            "overlay": "Overlay / Banner",
+            "side": "Beside / Compact",
+            "title": "Layout"
+        },
         "notice": {
             "connect_btn": "Link {platform}",
             "disconnected_msg": "{platform} is not connected. Alerts will not trigger live until you link your account.",
@@ -56,7 +63,14 @@
             "kick": "Kick",
             "twitch": "Twitch"
         },
+        "preview": {
+            "sample_amount": "500",
+            "sample_tier": "1",
+            "sample_user": "TheAndro2K",
+            "title": "Alert Preview"
+        },
         "sections": {
+            "appearance": "Layout & Appearance",
             "general": "General Settings",
             "media": "Media & Audio"
         },
@@ -69,6 +83,13 @@
             "saved_msg": "The alert configuration was saved successfully.",
             "saved_title": "Alert Saved",
             "unsaved": "Unsaved changes"
+        },
+        "style": {
+            "compact": "Compact (Neon)",
+            "desc": "Visual theme of the border and alert glow.",
+            "glass": "Glassmorphism",
+            "minimal": "Minimalist",
+            "title": "Style"
         }
     },
     "chat": {
@@ -107,6 +128,11 @@
             "orientation_horizontal": "Horizontal (Ticker)",
             "orientation_title": "Chat Orientation",
             "orientation_vertical": "Vertical (Column)",
+            "preview_sample_bot_msg": "What's up @TheAndro2K! Welcome to the stream, make yourself comfortable. 👾",
+            "preview_sample_bot_user": "theandro2k",
+            "preview_sample_msg_1": "hola xd",
+            "preview_sample_user": "TheAndro2K",
+            "preview_title": "Overlay Preview",
             "recommended_dim": "Recommended OBS source size: {dim}",
             "show_bots_desc": "Display messages from muted bots on the stream screen.",
             "show_bots_title": "Show Bots",
@@ -1163,6 +1189,8 @@
         },
         "schedule_dialog": {
             "btn_clear": "Clear Form",
+            "btn_now": "Now",
+            "btn_now_tooltip": "Set to current date and time",
             "btn_save": "Save Schedule",
             "category_placeholder": "e.g. Just Chatting",
             "date_label": "Execution Date:",

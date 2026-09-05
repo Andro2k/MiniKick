@@ -9,9 +9,11 @@ from backend.models import AlertConfig
 from frontend.widgets import (
     ModernCard, ModernButton, ModernSwitch,
     NoWheelSlider, NoWheelSpinBox, ModernDivider,
+    ModernSegmentedControl, NoWheelComboBox, SettingRow,
     create_badge
 )
 from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE
+from .alert_mockup import AlertOverlayMockupWidget
 
 class AlertEventCard(QWidget):
     config_changed = Signal(object)
@@ -120,6 +122,83 @@ class AlertEventCard(QWidget):
         header_vbox.addLayout(actions_row)
         header_card.addLayout(header_vbox)
         main_layout.addWidget(header_card)
+
+        card_appearance = ModernCard(parent=self, margin=12, spacing=10)
+
+        sec_app_header = QHBoxLayout()
+        sec_app_header.setSpacing(8)
+        lbl_sec_app_icon = QLabel(parent=self)
+        lbl_sec_app_icon.setPixmap(get_pixmap_colored("palette.svg", accent_color, size=18))
+        lbl_sec_app_title = QLabel(self.i18n.get("alerts.sections.appearance"), parent=self)
+        lbl_sec_app_title.setProperty("role", "h3")
+        sec_app_header.addWidget(lbl_sec_app_icon)
+        sec_app_header.addWidget(lbl_sec_app_title)
+        sec_app_header.addStretch()
+
+        card_appearance.addLayout(sec_app_header)
+        card_appearance.addWidget(ModernDivider(self))
+
+        body_row = QHBoxLayout()
+        body_row.setContentsMargins(0, 0, 0, 0)
+        body_row.setSpacing(16)
+
+        col_controls = QVBoxLayout()
+        col_controls.setContentsMargins(0, 0, 0, 0)
+        col_controls.setSpacing(10)
+
+        self.seg_layout = ModernSegmentedControl(self)
+        self.seg_layout.add_option("above", "arrows-vertical.svg", self.i18n.get("alerts.layout.above"))
+        self.seg_layout.add_option("side", "arrows-horizontal.svg", self.i18n.get("alerts.layout.side"))
+        self.seg_layout.add_option("overlay", "box-multiple-2.svg", self.i18n.get("alerts.layout.overlay"))
+        self.seg_layout.value_changed.connect(lambda _: self._on_field_changed())
+
+        row_layout = SettingRow(
+            "arrows-sort.svg",
+            self.i18n.get("alerts.layout.title"),
+            self.i18n.get("alerts.layout.desc"),
+            self.seg_layout,
+            parent=self
+        )
+        col_controls.addWidget(row_layout)
+
+        self.combo_style = NoWheelComboBox(self)
+        self.combo_style.addItem(self.i18n.get("alerts.style.compact"), "compact")
+        self.combo_style.addItem(self.i18n.get("alerts.style.glass"), "glass")
+        self.combo_style.addItem(self.i18n.get("alerts.style.minimal"), "minimal")
+        self.combo_style.currentIndexChanged.connect(lambda _: self._on_field_changed())
+
+        row_style = SettingRow(
+            "adjustments.svg",
+            self.i18n.get("alerts.style.title"),
+            self.i18n.get("alerts.style.desc"),
+            self.combo_style,
+            parent=self
+        )
+        col_controls.addWidget(row_style)
+        col_controls.addStretch()
+
+        col_preview = QVBoxLayout()
+        col_preview.setContentsMargins(0, 0, 0, 0)
+        col_preview.setSpacing(6)
+
+        preview_header = QHBoxLayout()
+        lbl_preview = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
+        lbl_preview.setProperty("role", "caption")
+        preview_header.addWidget(lbl_preview)
+        preview_header.addStretch()
+
+        self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
+
+        col_preview.addLayout(preview_header)
+        col_preview.addWidget(self.mockup_widget)
+        col_preview.addStretch()
+
+        body_row.addLayout(col_controls, stretch=1)
+        body_row.addLayout(col_preview, stretch=1)
+
+        card_appearance.addLayout(body_row)
+
+        main_layout.addWidget(card_appearance)
 
         card_general = ModernCard(parent=self, margin=12, spacing=10)
 
@@ -316,6 +395,19 @@ class AlertEventCard(QWidget):
 
         self._is_loading = False
 
+    def _update_mockup(self):
+        if hasattr(self, "mockup_widget") and hasattr(self, "seg_layout") and hasattr(self, "combo_style"):
+            layout_val = self.seg_layout.current_value() or "above"
+            style_val = self.combo_style.currentData() or "compact"
+            self.mockup_widget.set_configuration(
+                platform=self.platform,
+                alert_type=self.alert_type,
+                layout=layout_val,
+                style=style_val,
+                text_template=self.edit_template.text().strip(),
+                media_path=self.edit_media.text().strip()
+            )
+
     def load_config(self, cfg: AlertConfig):
         self._is_loading = True
         self._saved_config = cfg
@@ -329,6 +421,8 @@ class AlertEventCard(QWidget):
             duration_ms=cfg.duration_ms,
             sound_volume=cfg.sound_volume,
             tts_read=cfg.tts_read,
+            layout=getattr(cfg, "layout", "above") or "above",
+            style=getattr(cfg, "style", "compact") or "compact",
         )
         self.sw_enabled.setChecked(cfg.enabled)
         self.edit_template.setText(cfg.text_template)
@@ -341,6 +435,16 @@ class AlertEventCard(QWidget):
         self.slider_volume.setValue(vol_pct)
         self.lbl_volume_val.setText(f"{vol_pct}%")
         self.sw_tts.setChecked(cfg.tts_read)
+
+        layout_val = getattr(cfg, "layout", "above") or "above"
+        self.seg_layout.set_current_value(layout_val)
+
+        style_val = getattr(cfg, "style", "compact") or "compact"
+        idx = self.combo_style.findData(style_val)
+        if idx >= 0:
+            self.combo_style.setCurrentIndex(idx)
+
+        self._update_mockup()
 
         self._is_dirty = False
         self.btn_save.setEnabled(False)
@@ -382,6 +486,9 @@ class AlertEventCard(QWidget):
         if self._is_loading:
             return
 
+        layout_val = self.seg_layout.current_value() or "above"
+        style_val = self.combo_style.currentData() or "compact"
+
         cfg = AlertConfig(
             platform=self.platform,
             alert_type=self.alert_type,
@@ -391,9 +498,13 @@ class AlertEventCard(QWidget):
             text_template=self.edit_template.text().strip(),
             duration_ms=self.spin_duration.value() * 1000,
             sound_volume=round(self.slider_volume.value() / 100.0, 2),
-            tts_read=self.sw_tts.isChecked()
+            tts_read=self.sw_tts.isChecked(),
+            layout=layout_val,
+            style=style_val
         )
         self._current_config = cfg
+
+        self._update_mockup()
 
         dirty = False
         if self._saved_config:
@@ -404,7 +515,9 @@ class AlertEventCard(QWidget):
                 cfg.text_template != self._saved_config.text_template or
                 cfg.duration_ms != self._saved_config.duration_ms or
                 cfg.sound_volume != self._saved_config.sound_volume or
-                cfg.tts_read != self._saved_config.tts_read
+                cfg.tts_read != self._saved_config.tts_read or
+                cfg.layout != getattr(self._saved_config, "layout", "above") or
+                cfg.style != getattr(self._saved_config, "style", "compact")
             )
 
         self._is_dirty = dirty
@@ -429,6 +542,8 @@ class AlertEventCard(QWidget):
             duration_ms=self._current_config.duration_ms,
             sound_volume=self._current_config.sound_volume,
             tts_read=self._current_config.tts_read,
+            layout=self._current_config.layout,
+            style=self._current_config.style,
         )
         self._is_dirty = False
         self.btn_save.setEnabled(False)

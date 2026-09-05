@@ -27,7 +27,8 @@ class SQLiteAlertStorage:
                 cursor = conn.cursor()
                 cursor.execute("""
                     SELECT platform, alert_type, enabled, sound_path, media_path,
-                           text_template, duration_ms, sound_volume, tts_read
+                           text_template, duration_ms, sound_volume, tts_read,
+                           layout, style
                     FROM alert_configs
                 """)
                 rows = cursor.fetchall()
@@ -42,7 +43,9 @@ class SQLiteAlertStorage:
                         text_template=str(row[5] or "{user}"),
                         duration_ms=int(row[6] or 5000),
                         sound_volume=float(row[7] if row[7] is not None else 0.8),
-                        tts_read=bool(row[8])
+                        tts_read=bool(row[8]),
+                        layout=str(row[9] or "above"),
+                        style=str(row[10] or "compact")
                     )
                     configs[(cfg.platform, cfg.alert_type)] = cfg
 
@@ -71,7 +74,9 @@ class SQLiteAlertStorage:
             text_template=template,
             duration_ms=5000,
             sound_volume=0.8,
-            tts_read=False
+            tts_read=False,
+            layout="above",
+            style="compact"
         )
         self._cache[key] = default_cfg
         return default_cfg
@@ -95,15 +100,18 @@ class SQLiteAlertStorage:
                         c.text_template,
                         c.duration_ms,
                         c.sound_volume,
-                        1 if c.tts_read else 0
+                        1 if c.tts_read else 0,
+                        c.layout,
+                        c.style
                     )
                     for c in configs
                 ]
                 cursor.executemany("""
                     INSERT INTO alert_configs (
                         platform, alert_type, enabled, sound_path, media_path,
-                        text_template, duration_ms, sound_volume, tts_read
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        text_template, duration_ms, sound_volume, tts_read,
+                        layout, style
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(platform, alert_type) DO UPDATE SET
                         enabled=excluded.enabled,
                         sound_path=excluded.sound_path,
@@ -111,7 +119,9 @@ class SQLiteAlertStorage:
                         text_template=excluded.text_template,
                         duration_ms=excluded.duration_ms,
                         sound_volume=excluded.sound_volume,
-                        tts_read=excluded.tts_read
+                        tts_read=excluded.tts_read,
+                        layout=excluded.layout,
+                        style=excluded.style
                 """, data)
                 conn.commit()
 

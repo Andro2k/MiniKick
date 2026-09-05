@@ -115,7 +115,6 @@ class AlertsView(BaseView):
         self.main_layout.addLayout(platform_row)
         self.main_layout.addSpacing(6)
 
-        # Disconnection Notice Banner
         self.notice_banner = ModernCard(parent=self, margin=10, spacing=8)
         self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.notice_layout.setContentsMargins(0, 0, 0, 0)
