@@ -25,10 +25,11 @@
 
 ---
 
-### Correcciones (2)
+### Correcciones (3)
 
 - **[FIX] [MUSIC] Eliminación de Conexión Redundante a `commands_changed`:** Se suprimió la suscripción duplicada en el constructor de `MusicController` y se implementó protección de idempotencia en `_connect_signals()`, evitando que los slots de sincronización de switches se ejecuten por duplicado ante cada evento de comandos.
 - **[FIX] [ALERTS] Audio de Video, Streaming HTTP 206 y Layout Flex Responsivo:** Se corrigió el atributo `video.muted = true` incondicional en el overlay de alertas permitiendo que los videos con pista de audio suenen correctamente a menos que se configure un sonido dedicado. Se implementó soporte de solicitudes parciales `Range` con HTTP `206 Partial Content` en el servidor de overlays erradicando el retardo de 1-2s por buffering de medios en Chromium/OBS. Se rediseñó la card de URL OBS en `AlertsView` con un `QBoxLayout` responsivo que se adapta dinámicamente en anchos estrechos (< 760px).
+- **[FIX] [PLATFORM] Compatibilidad Multiplataforma y Corrección de Inicio en Ubuntu/Linux:** Se aisló la importación y definición de estructuras Win32 (`ctypes.wintypes`, `ctypes.WINFUNCTYPE`, `KBDLLHOOKSTRUCT`) en `GlobalMediaWorker` tras una barrera condicional `sys.platform == 'win32'`, resolviendo el fallo de arranque por `AttributeError: module 'ctypes' has no attribute 'WINFUNCTYPE'`. Se añadió fallback seguro a `tempfile.gettempdir()` en `UpdaterService` y detección de librerías `.so` para silenciamiento de logs nativos de FFmpeg en Linux.
 
 ---
 

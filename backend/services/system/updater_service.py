@@ -1,6 +1,7 @@
 # backend\services\system\updater_service.py
 
 import os
+import tempfile
 import logging
 import subprocess
 from backend.interfaces import IUpdateChecker, IUpdateDownloader, IUpdateInstaller
@@ -110,7 +111,8 @@ class UpdateManager:
         return None
 
     def perform_update(self, download_url: str, progress_callback=None) -> bool:
-        temp_path = os.path.join(os.getenv('TEMP'), "minikick_update.exe")
+        temp_dir = os.getenv('TEMP') or tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, "minikick_update.exe")
         if os.path.exists(temp_path):
             try:
                 os.remove(temp_path)
@@ -120,7 +122,8 @@ class UpdateManager:
         return self.downloader.download_file(download_url, temp_path, progress_callback)
 
     def install_update(self) -> None:
-        temp_path = os.path.join(os.getenv('TEMP'), "minikick_update.exe")
+        temp_dir = os.getenv('TEMP') or tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, "minikick_update.exe")
         if os.path.exists(temp_path):
             logger.info("[UpdateManager] Executing installer: %s", temp_path)
             self.installer.install_and_restart(temp_path)
