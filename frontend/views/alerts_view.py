@@ -1,7 +1,7 @@
 # frontend\views\alerts_view.py
 
 from typing import Dict, Tuple
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QBoxLayout
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QBoxLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
@@ -82,7 +82,7 @@ class AlertsView(BaseView):
         self.btn_open_browser = self.overlay_card.btn_open_browser
         self.url_box = self.overlay_card.url_box
 
-        self.main_layout.addWidget(self.overlay_card)
+        self.main_layout.addWidget(self.overlay_card, 0)
         self.main_layout.addSpacing(6)
 
         platform_row = QHBoxLayout()
@@ -116,6 +116,7 @@ class AlertsView(BaseView):
         self.main_layout.addSpacing(6)
 
         self.notice_banner = ModernCard(parent=self, margin=10, spacing=8)
+        self.notice_banner.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.notice_layout.setContentsMargins(0, 0, 0, 0)
         self.notice_layout.setSpacing(10)
@@ -155,7 +156,7 @@ class AlertsView(BaseView):
         self.notice_banner.addLayout(self.notice_layout)
         self.notice_banner.setVisible(False)
 
-        self.main_layout.addWidget(self.notice_banner)
+        self.main_layout.addWidget(self.notice_banner, 0)
         self.main_layout.addSpacing(6)
 
         self.stack = ResponsiveStackedWidget(parent=self)
@@ -170,7 +171,8 @@ class AlertsView(BaseView):
         self.stack.addWidget(kick_page)
         self.stack.addWidget(twitch_page)
 
-        self.main_layout.addWidget(self.stack)
+        self.main_layout.addWidget(self.stack, 0)
+        self.main_layout.addStretch(1)
 
         self._select_variant("kick", "follow")
         self._update_platform_connection_ui()
@@ -307,11 +309,11 @@ class AlertsView(BaseView):
         width = self.width()
 
         if hasattr(self, 'overlay_card'):
-            url_dir = QBoxLayout.Direction.TopToBottom if width < 800 else QBoxLayout.Direction.LeftToRight
+            url_dir = QBoxLayout.Direction.TopToBottom if width < 900 else QBoxLayout.Direction.LeftToRight
             self.overlay_card.set_responsive_direction(url_dir)
 
         if hasattr(self, 'notice_layout'):
-            notice_dir = QBoxLayout.Direction.TopToBottom if width < 680 else QBoxLayout.Direction.LeftToRight
+            notice_dir = QBoxLayout.Direction.TopToBottom if width < 720 else QBoxLayout.Direction.LeftToRight
             if notice_dir != self.notice_layout.direction():
                 self.notice_layout.setDirection(notice_dir)
                 if hasattr(self, 'notice_banner'):
@@ -321,7 +323,7 @@ class AlertsView(BaseView):
                     self.scroll_content.layout().invalidate()
                     self.scroll_content.updateGeometry()
 
-        target_direction = QBoxLayout.Direction.TopToBottom if width < 800 else QBoxLayout.Direction.LeftToRight
+        target_direction = QBoxLayout.Direction.TopToBottom if width < 900 else QBoxLayout.Direction.LeftToRight
         if target_direction != self._last_direction:
             self._last_direction = target_direction
             is_horizontal = (target_direction == QBoxLayout.Direction.LeftToRight)

@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt, Signal
-from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE
+from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400
 
 class AlertVariantListItem(QFrame):
     clicked = Signal(str)
@@ -26,9 +26,8 @@ class AlertVariantListItem(QFrame):
         layout.setContentsMargins(10, 8, 10, 8)
         layout.setSpacing(10)
 
-        accent = COLOR_GREEN if self.platform == "kick" else COLOR_PURPLE
         self.icon_lbl = QLabel(parent=self)
-        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent, size=20))
+        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, COLOR_NEUTRAL_400, size=20))
         self.icon_lbl.setFixedSize(22, 22)
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -67,6 +66,9 @@ class AlertVariantListItem(QFrame):
         self.setProperty("state", target_state)
         self.style().unpolish(self)
         self.style().polish(self)
+
+        accent = (COLOR_GREEN if self.platform == "kick" else COLOR_PURPLE) if selected else COLOR_NEUTRAL_400
+        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent, size=20))
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:

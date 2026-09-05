@@ -85,8 +85,8 @@
             "unsaved": "Unsaved changes"
         },
         "style": {
-            "compact": "Compact (Neon)",
-            "desc": "Visual theme of the border and alert glow.",
+            "compact": "Compact",
+            "desc": "Visual style of the alert container and frame.",
             "glass": "Glassmorphism",
             "minimal": "Minimalist",
             "title": "Style"

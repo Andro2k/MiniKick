@@ -12,7 +12,9 @@ from frontend.widgets import (
     ModernSegmentedControl, NoWheelComboBox, SettingRow,
     create_badge
 )
-from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE
+from frontend.common import (
+    get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400
+)
 from .alert_mockup import AlertOverlayMockupWidget
 
 class AlertEventCard(QWidget):
@@ -41,20 +43,18 @@ class AlertEventCard(QWidget):
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(12)
-
-        header_card = ModernCard(parent=self, margin=12, spacing=8)
-        header_vbox = QVBoxLayout()
-        header_vbox.setContentsMargins(0, 0, 0, 0)
-        header_vbox.setSpacing(8)
-
-        top_info_row = QHBoxLayout()
-        top_info_row.setContentsMargins(0, 0, 0, 0)
-        top_info_row.setSpacing(10)
+        main_layout.setSpacing(10)
 
         accent_color = COLOR_GREEN if self.platform == "kick" else COLOR_PURPLE
+        btn_role = "action_kick" if self.platform == "kick" else "action_twitch"
+
+        header_card = ModernCard(parent=self, margin=10, spacing=6)
+        header_row = QHBoxLayout()
+        header_row.setContentsMargins(0, 0, 0, 0)
+        header_row.setSpacing(10)
+
         self.icon_lbl = QLabel(parent=self)
-        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=24))
+        self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent_color, size=20))
 
         platform_name = self.i18n.get(f"alerts.platforms.{self.platform}")
         event_name = self.i18n.get(f"alerts.events.{self.alert_type}")
@@ -65,42 +65,25 @@ class AlertEventCard(QWidget):
         self.badge_offline = create_badge(self.i18n.get("alerts.status.disconnected"), state="warning")
         self.badge_offline.setVisible(False)
 
-        top_info_row.addWidget(self.icon_lbl)
-        top_info_row.addWidget(lbl_header_title)
-        top_info_row.addWidget(self.badge_offline)
-        top_info_row.addStretch(1)
-
-        btn_role = "action_kick" if self.platform == "kick" else "action_twitch"
-        self.btn_test = ModernButton(
-            text=self.i18n.get("alerts.buttons.test"),
-            role="action_outlined",
-            icon_name="player-play.svg",
-            icon_size=15,
-            parent=self
-        )
-        self.btn_test.setFixedHeight(32)
-        self.btn_test.clicked.connect(self._on_test_clicked)
-        top_info_row.addWidget(self.btn_test)
-
-        header_vbox.addLayout(top_info_row)
-
-        actions_row = QHBoxLayout()
-        actions_row.setContentsMargins(0, 0, 0, 0)
-        actions_row.setSpacing(8)
-
         self.lbl_dirty = QLabel(self.i18n.get("alerts.status.unsaved"), parent=self)
         self.lbl_dirty.setProperty("role", "caption")
         self.lbl_dirty.setProperty("state", "warning")
         self.lbl_dirty.setVisible(False)
 
+        header_row.addWidget(self.icon_lbl)
+        header_row.addWidget(lbl_header_title)
+        header_row.addWidget(self.badge_offline)
+        header_row.addWidget(self.lbl_dirty)
+        header_row.addStretch(1)
+
         self.btn_discard = ModernButton(
             text=self.i18n.get("alerts.buttons.discard"),
             role="action_outlined",
             icon_name="x.svg",
-            icon_size=14,
+            icon_size=13,
             parent=self
         )
-        self.btn_discard.setFixedHeight(32)
+        self.btn_discard.setFixedHeight(30)
         self.btn_discard.setEnabled(False)
         self.btn_discard.clicked.connect(self._discard_changes)
 
@@ -108,27 +91,36 @@ class AlertEventCard(QWidget):
             text=self.i18n.get("alerts.buttons.save"),
             role=btn_role,
             icon_name="check.svg",
-            icon_size=15,
+            icon_size=14,
             parent=self
         )
-        self.btn_save.setFixedHeight(32)
+        self.btn_save.setFixedHeight(30)
         self.btn_save.setEnabled(False)
         self.btn_save.clicked.connect(self._save_changes)
 
-        actions_row.addWidget(self.lbl_dirty, stretch=1)
-        actions_row.addWidget(self.btn_discard)
-        actions_row.addWidget(self.btn_save)
+        self.btn_test = ModernButton(
+            text=self.i18n.get("alerts.buttons.test"),
+            role="action_outlined",
+            icon_name="player-play.svg",
+            icon_size=14,
+            parent=self
+        )
+        self.btn_test.setFixedHeight(30)
+        self.btn_test.clicked.connect(self._on_test_clicked)
 
-        header_vbox.addLayout(actions_row)
-        header_card.addLayout(header_vbox)
+        header_row.addWidget(self.btn_discard)
+        header_row.addWidget(self.btn_save)
+        header_row.addWidget(self.btn_test)
+
+        header_card.addLayout(header_row)
         main_layout.addWidget(header_card)
 
-        card_appearance = ModernCard(parent=self, margin=12, spacing=10)
+        card_appearance = ModernCard(parent=self, margin=10, spacing=8)
 
         sec_app_header = QHBoxLayout()
         sec_app_header.setSpacing(8)
         lbl_sec_app_icon = QLabel(parent=self)
-        lbl_sec_app_icon.setPixmap(get_pixmap_colored("palette.svg", accent_color, size=18))
+        lbl_sec_app_icon.setPixmap(get_pixmap_colored("palette.svg", COLOR_NEUTRAL_400, size=16))
         lbl_sec_app_title = QLabel(self.i18n.get("alerts.sections.appearance"), parent=self)
         lbl_sec_app_title.setProperty("role", "h3")
         sec_app_header.addWidget(lbl_sec_app_icon)
@@ -140,11 +132,11 @@ class AlertEventCard(QWidget):
 
         body_row = QHBoxLayout()
         body_row.setContentsMargins(0, 0, 0, 0)
-        body_row.setSpacing(16)
+        body_row.setSpacing(14)
 
         col_controls = QVBoxLayout()
         col_controls.setContentsMargins(0, 0, 0, 0)
-        col_controls.setSpacing(10)
+        col_controls.setSpacing(6)
 
         self.seg_layout = ModernSegmentedControl(self)
         self.seg_layout.add_option("above", "arrows-vertical.svg", self.i18n.get("alerts.layout.above"))
@@ -157,6 +149,7 @@ class AlertEventCard(QWidget):
             self.i18n.get("alerts.layout.title"),
             self.i18n.get("alerts.layout.desc"),
             self.seg_layout,
+            icon_color=COLOR_NEUTRAL_400,
             parent=self
         )
         col_controls.addWidget(row_layout)
@@ -172,6 +165,7 @@ class AlertEventCard(QWidget):
             self.i18n.get("alerts.style.title"),
             self.i18n.get("alerts.style.desc"),
             self.combo_style,
+            icon_color=COLOR_NEUTRAL_400,
             parent=self
         )
         col_controls.addWidget(row_style)
@@ -179,17 +173,13 @@ class AlertEventCard(QWidget):
 
         col_preview = QVBoxLayout()
         col_preview.setContentsMargins(0, 0, 0, 0)
-        col_preview.setSpacing(6)
+        col_preview.setSpacing(4)
 
-        preview_header = QHBoxLayout()
         lbl_preview = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_preview.setProperty("role", "caption")
-        preview_header.addWidget(lbl_preview)
-        preview_header.addStretch()
+        col_preview.addWidget(lbl_preview)
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
-
-        col_preview.addLayout(preview_header)
         col_preview.addWidget(self.mockup_widget)
         col_preview.addStretch()
 
@@ -197,36 +187,68 @@ class AlertEventCard(QWidget):
         body_row.addLayout(col_preview, stretch=1)
 
         card_appearance.addLayout(body_row)
-
         main_layout.addWidget(card_appearance)
 
-        card_general = ModernCard(parent=self, margin=12, spacing=10)
+        card_config = ModernCard(parent=self, margin=10, spacing=8)
 
-        sec_gen_header = QHBoxLayout()
-        sec_gen_header.setSpacing(8)
-        lbl_sec_gen_icon = QLabel(parent=self)
-        lbl_sec_gen_icon.setPixmap(get_pixmap_colored("settings.svg", accent_color, size=18))
-        lbl_sec_gen_title = QLabel(self.i18n.get("alerts.sections.general"), parent=self)
-        lbl_sec_gen_title.setProperty("role", "h3")
-        sec_gen_header.addWidget(lbl_sec_gen_icon)
-        sec_gen_header.addWidget(lbl_sec_gen_title)
-        sec_gen_header.addStretch()
+        sec_cfg_header = QHBoxLayout()
+        sec_cfg_header.setSpacing(8)
+        lbl_sec_cfg_icon = QLabel(parent=self)
+        lbl_sec_cfg_icon.setPixmap(get_pixmap_colored("settings.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_cfg_title = QLabel(self.i18n.get("alerts.sections.general"), parent=self)
+        lbl_sec_cfg_title.setProperty("role", "h3")
+        sec_cfg_header.addWidget(lbl_sec_cfg_icon)
+        sec_cfg_header.addWidget(lbl_sec_cfg_title)
+        sec_cfg_header.addStretch()
 
-        card_general.addLayout(sec_gen_header)
-        card_general.addWidget(ModernDivider(self))
+        card_config.addLayout(sec_cfg_header)
+        card_config.addWidget(ModernDivider(self))
 
-        sw_row = QHBoxLayout()
-        sw_row.setSpacing(10)
+        quick_strip = QHBoxLayout()
+        quick_strip.setContentsMargins(4, 2, 4, 2)
+        quick_strip.setSpacing(16)
+
+        active_box = QHBoxLayout()
+        active_box.setSpacing(8)
         lbl_sw_active = QLabel(self.i18n.get("alerts.fields.active"), parent=self)
         lbl_sw_active.setProperty("role", "body")
         self.sw_enabled = ModernSwitch(parent=self)
         self.sw_enabled.toggled.connect(self._on_field_changed)
-        sw_row.addWidget(lbl_sw_active, stretch=1)
-        sw_row.addWidget(self.sw_enabled)
-        card_general.addLayout(sw_row)
+        active_box.addWidget(lbl_sw_active)
+        active_box.addWidget(self.sw_enabled)
+        quick_strip.addLayout(active_box)
+
+        dur_box = QHBoxLayout()
+        dur_box.setSpacing(8)
+        lbl_duration = QLabel(self.i18n.get("alerts.fields.duration"), parent=self)
+        lbl_duration.setProperty("role", "caption")
+        self.spin_duration = NoWheelSpinBox(parent=self)
+        self.spin_duration.setRange(1, 60)
+        self.spin_duration.setSuffix(" s")
+        self.spin_duration.setFixedWidth(100)
+        self.spin_duration.valueChanged.connect(self._on_field_changed)
+        dur_box.addWidget(lbl_duration)
+        dur_box.addWidget(self.spin_duration)
+        quick_strip.addLayout(dur_box)
+
+        tts_box = QHBoxLayout()
+        tts_box.setSpacing(8)
+        lbl_tts_title = QLabel(self.i18n.get("alerts.fields.tts"), parent=self)
+        lbl_tts_title.setProperty("role", "caption")
+        self.sw_tts = ModernSwitch(parent=self)
+        self.sw_tts.toggled.connect(self._on_field_changed)
+        tts_box.addWidget(lbl_tts_title)
+        tts_box.addWidget(self.sw_tts)
+        quick_strip.addLayout(tts_box)
+
+        quick_strip.addStretch(1)
+        card_config.addLayout(quick_strip)
+        card_config.addWidget(ModernDivider(self))
 
         template_col = QVBoxLayout()
+        template_col.setContentsMargins(4, 0, 4, 0)
         template_col.setSpacing(4)
+
         lbl_template = QLabel(self.i18n.get("alerts.fields.template"), parent=self)
         lbl_template.setProperty("role", "caption")
 
@@ -241,122 +263,21 @@ class AlertEventCard(QWidget):
         template_col.addWidget(lbl_template)
         template_col.addWidget(self.edit_template)
         template_col.addWidget(lbl_template_hint)
-        card_general.addLayout(template_col)
+        card_config.addLayout(template_col)
+        card_config.addWidget(ModernDivider(self))
 
-        params_row = QHBoxLayout()
-        params_row.setSpacing(16)
+        media_row = QHBoxLayout()
+        media_row.setContentsMargins(4, 0, 4, 0)
+        media_row.setSpacing(18)
 
-        dur_col = QVBoxLayout()
-        dur_col.setSpacing(4)
-        lbl_duration = QLabel(self.i18n.get("alerts.fields.duration"), parent=self)
-        lbl_duration.setProperty("role", "caption")
-        self.spin_duration = NoWheelSpinBox(parent=self)
-        self.spin_duration.setRange(1, 60)
-        self.spin_duration.setSuffix(" s")
-        self.spin_duration.setFixedWidth(80)
-        self.spin_duration.valueChanged.connect(self._on_field_changed)
-        dur_col.addWidget(lbl_duration)
-        dur_col.addWidget(self.spin_duration)
+        col_video = QVBoxLayout()
+        col_video.setSpacing(6)
 
-        tts_col = QVBoxLayout()
-        tts_col.setSpacing(4)
-        lbl_tts_title = QLabel(self.i18n.get("alerts.fields.tts"), parent=self)
-        lbl_tts_title.setProperty("role", "caption")
-        self.sw_tts = ModernSwitch(parent=self)
-        self.sw_tts.toggled.connect(self._on_field_changed)
-        tts_col.addWidget(lbl_tts_title)
-        tts_col.addWidget(self.sw_tts)
-
-        params_row.addLayout(dur_col)
-        params_row.addLayout(tts_col)
-        params_row.addStretch(1)
-        card_general.addLayout(params_row)
-
-        main_layout.addWidget(card_general)
-
-        card_media = ModernCard(parent=self, margin=12, spacing=10)
-
-        sec_media_header = QHBoxLayout()
-        sec_media_header.setSpacing(8)
-        lbl_sec_media_icon = QLabel(parent=self)
-        lbl_sec_media_icon.setPixmap(get_pixmap_colored("volume.svg", accent_color, size=18))
-        lbl_sec_media_title = QLabel(self.i18n.get("alerts.sections.media"), parent=self)
-        lbl_sec_media_title.setProperty("role", "h3")
-        sec_media_header.addWidget(lbl_sec_media_icon)
-        sec_media_header.addWidget(lbl_sec_media_title)
-        sec_media_header.addStretch()
-
-        card_media.addLayout(sec_media_header)
-        card_media.addWidget(ModernDivider(self))
-
-        sound_layout = QVBoxLayout()
-        sound_layout.setSpacing(4)
-        lbl_sound = QLabel(self.i18n.get("alerts.fields.sound"), parent=self)
-        lbl_sound.setProperty("role", "caption")
-
-        sound_input_row = QHBoxLayout()
-        sound_input_row.setSpacing(8)
-        self.edit_sound = QLineEdit(parent=self)
-        self.edit_sound.setMinimumWidth(0)
-        self.edit_sound.setPlaceholderText(self.i18n.get("alerts.fields.sound_placeholder"))
-        self.edit_sound.textChanged.connect(self._on_field_changed)
-
-        btn_browse_sound = ModernButton(
-            text=self.i18n.get("alerts.buttons.browse"),
-            role="action_outlined",
-            icon_name="folder-open.svg",
-            icon_size=14,
-            parent=self
-        )
-        btn_browse_sound.setFixedHeight(32)
-        btn_browse_sound.clicked.connect(self._browse_sound)
-
-        self.btn_clear_sound = ModernButton(
-            role="action_danger_border",
-            icon_name="trash.svg",
-            icon_size=14,
-            parent=self
-        )
-        self.btn_clear_sound.setFixedSize(32, 32)
-        self.btn_clear_sound.setToolTip(self.i18n.get("alerts.buttons.clear_sound"))
-        self.btn_clear_sound.clicked.connect(self._clear_sound)
-        self.btn_clear_sound.setEnabled(False)
-
-        sound_input_row.addWidget(self.edit_sound, stretch=1)
-        sound_input_row.addWidget(btn_browse_sound)
-        sound_input_row.addWidget(self.btn_clear_sound)
-        sound_layout.addWidget(lbl_sound)
-        sound_layout.addLayout(sound_input_row)
-        card_media.addLayout(sound_layout)
-
-        vol_col = QVBoxLayout()
-        vol_col.setSpacing(4)
-        lbl_vol_title = QLabel(self.i18n.get("alerts.fields.volume"), parent=self)
-        lbl_vol_title.setProperty("role", "caption")
-        self.lbl_volume_val = QLabel("80%", parent=self)
-        self.lbl_volume_val.setProperty("role", "caption")
-
-        vol_header = QHBoxLayout()
-        vol_header.addWidget(lbl_vol_title)
-        vol_header.addStretch()
-        vol_header.addWidget(self.lbl_volume_val)
-
-        self.slider_volume = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
-        self.slider_volume.setRange(0, 100)
-        self.slider_volume.setValue(80)
-        self.slider_volume.valueChanged.connect(self._on_volume_changed)
-
-        vol_col.addLayout(vol_header)
-        vol_col.addWidget(self.slider_volume)
-        card_media.addLayout(vol_col)
-
-        media_layout = QVBoxLayout()
-        media_layout.setSpacing(4)
         lbl_media = QLabel(self.i18n.get("alerts.fields.media"), parent=self)
         lbl_media.setProperty("role", "caption")
 
         media_input_row = QHBoxLayout()
-        media_input_row.setSpacing(8)
+        media_input_row.setSpacing(6)
         self.edit_media = QLineEdit(parent=self)
         self.edit_media.setMinimumWidth(0)
         self.edit_media.setPlaceholderText(self.i18n.get("alerts.fields.media_placeholder"))
@@ -369,16 +290,16 @@ class AlertEventCard(QWidget):
             icon_size=14,
             parent=self
         )
-        btn_browse_media.setFixedHeight(32)
+        btn_browse_media.setFixedHeight(30)
         btn_browse_media.clicked.connect(self._browse_media)
 
         self.btn_clear_media = ModernButton(
             role="action_danger_border",
             icon_name="trash.svg",
-            icon_size=14,
+            icon_size=13,
             parent=self
         )
-        self.btn_clear_media.setFixedSize(32, 32)
+        self.btn_clear_media.setFixedSize(30, 30)
         self.btn_clear_media.setToolTip(self.i18n.get("alerts.buttons.clear_media"))
         self.btn_clear_media.clicked.connect(self._clear_media)
         self.btn_clear_media.setEnabled(False)
@@ -386,11 +307,76 @@ class AlertEventCard(QWidget):
         media_input_row.addWidget(self.edit_media, stretch=1)
         media_input_row.addWidget(btn_browse_media)
         media_input_row.addWidget(self.btn_clear_media)
-        media_layout.addWidget(lbl_media)
-        media_layout.addLayout(media_input_row)
-        card_media.addLayout(media_layout)
 
-        main_layout.addWidget(card_media)
+        col_video.addWidget(lbl_media)
+        col_video.addLayout(media_input_row)
+        col_video.addStretch()
+
+        col_audio = QVBoxLayout()
+        col_audio.setSpacing(6)
+
+        lbl_sound = QLabel(self.i18n.get("alerts.fields.sound"), parent=self)
+        lbl_sound.setProperty("role", "caption")
+
+        sound_input_row = QHBoxLayout()
+        sound_input_row.setSpacing(6)
+        self.edit_sound = QLineEdit(parent=self)
+        self.edit_sound.setMinimumWidth(0)
+        self.edit_sound.setPlaceholderText(self.i18n.get("alerts.fields.sound_placeholder"))
+        self.edit_sound.textChanged.connect(self._on_field_changed)
+
+        btn_browse_sound = ModernButton(
+            text=self.i18n.get("alerts.buttons.browse"),
+            role="action_outlined",
+            icon_name="folder-open.svg",
+            icon_size=14,
+            parent=self
+        )
+        btn_browse_sound.setFixedHeight(30)
+        btn_browse_sound.clicked.connect(self._browse_sound)
+
+        self.btn_clear_sound = ModernButton(
+            role="action_danger_border",
+            icon_name="trash.svg",
+            icon_size=13,
+            parent=self
+        )
+        self.btn_clear_sound.setFixedSize(30, 30)
+        self.btn_clear_sound.setToolTip(self.i18n.get("alerts.buttons.clear_sound"))
+        self.btn_clear_sound.clicked.connect(self._clear_sound)
+        self.btn_clear_sound.setEnabled(False)
+
+        sound_input_row.addWidget(self.edit_sound, stretch=1)
+        sound_input_row.addWidget(btn_browse_sound)
+        sound_input_row.addWidget(self.btn_clear_sound)
+
+        col_audio.addWidget(lbl_sound)
+        col_audio.addLayout(sound_input_row)
+
+        vol_header = QHBoxLayout()
+        vol_header.setSpacing(6)
+        lbl_vol_title = QLabel(self.i18n.get("alerts.fields.volume"), parent=self)
+        lbl_vol_title.setProperty("role", "caption")
+        self.lbl_volume_val = QLabel("80%", parent=self)
+        self.lbl_volume_val.setProperty("role", "caption")
+
+        self.slider_volume = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
+        self.slider_volume.setRange(0, 100)
+        self.slider_volume.setValue(80)
+        self.slider_volume.valueChanged.connect(self._on_volume_changed)
+
+        vol_header.addWidget(lbl_vol_title)
+        vol_header.addWidget(self.slider_volume, stretch=1)
+        vol_header.addWidget(self.lbl_volume_val)
+
+        col_audio.addLayout(vol_header)
+        col_audio.addStretch()
+
+        media_row.addLayout(col_video, stretch=1)
+        media_row.addLayout(col_audio, stretch=1)
+        card_config.addLayout(media_row)
+
+        main_layout.addWidget(card_config)
         main_layout.addStretch()
 
         self._is_loading = False
@@ -567,4 +553,3 @@ class AlertEventCard(QWidget):
         if hasattr(self, "sw_enabled"):
             tip = "" if connected else self.i18n.get("alerts.status.platform_offline")
             self.sw_enabled.setToolTip(tip)
-

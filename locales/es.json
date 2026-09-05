@@ -85,8 +85,8 @@
             "unsaved": "Cambios sin guardar"
         },
         "style": {
-            "compact": "Compacto (Neón)",
-            "desc": "Tema visual del marco y resplandor de la alerta.",
+            "compact": "Compacto",
+            "desc": "Estilo visual del contenedor y marco de la alerta.",
             "glass": "Glassmorphism",
             "minimal": "Minimalista",
             "title": "Estilo"

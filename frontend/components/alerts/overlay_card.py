@@ -1,18 +1,19 @@
 # frontend\components\alerts\overlay_card.py
 
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QBoxLayout
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QBoxLayout, QSizePolicy
 from PySide6.QtCore import Signal, QSize
 from frontend.widgets import ModernCard, ModernButton
-from frontend.common import get_pixmap_colored, COLOR_GREEN
+from frontend.common import get_pixmap_colored, COLOR_NEUTRAL_400
 
 class AlertsOverlayCard(ModernCard):
     copy_url_requested = Signal()
     open_browser_requested = Signal()
 
     def __init__(self, alerts_overlay_url: str, i18n, parent=None):
-        super().__init__(parent=parent, margin=12, spacing=8)
+        super().__init__(parent=parent, margin=10, spacing=6)
         self.alerts_overlay_url = alerts_overlay_url
         self.i18n = i18n
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -20,7 +21,7 @@ class AlertsOverlayCard(ModernCard):
         card_header.setSpacing(8)
 
         icon_link = QLabel(parent=self)
-        icon_link.setPixmap(get_pixmap_colored("link.svg", COLOR_GREEN, size=20))
+        icon_link.setPixmap(get_pixmap_colored("link.svg", COLOR_NEUTRAL_400, size=18))
 
         lbl_obs_title = QLabel(self.i18n.get("alerts.overlay_card.title"), parent=self)
         lbl_obs_title.setProperty("role", "h3")
@@ -72,6 +73,7 @@ class AlertsOverlayCard(ModernCard):
         self.url_box.addWidget(self.edit_overlay_url, stretch=1)
         self.url_box.addLayout(self.url_actions_layout)
         self.addLayout(self.url_box)
+        self.addStretch(0)
 
     def set_overlay_url(self, url: str):
         self.alerts_overlay_url = url
@@ -84,3 +86,6 @@ class AlertsOverlayCard(ModernCard):
 
     def minimumSizeHint(self) -> QSize:
         return QSize(0, super().minimumSizeHint().height())
+
+    def sizeHint(self) -> QSize:
+        return QSize(super().sizeHint().width(), self.minimumSizeHint().height())

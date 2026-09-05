@@ -14,7 +14,7 @@ class ChatOverlayMockupWidget(QWidget):
         self.orientation = "vertical"
         self.show_time = False
         self.show_bots = False
-        self.setFixedHeight(155)
+        self.setFixedHeight(180)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
     def set_configuration(self, theme: str, orientation: str, show_time: bool = False, show_bots: bool = False):

@@ -12,7 +12,7 @@ class MusicOverlayMockupWidget(QWidget):
         self.i18n = i18n
         self.layout_mode = "floating"
         self.theme_mode = "dynamic"
-        self.setFixedHeight(120)
+        self.setFixedHeight(180)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
     def set_configuration(self, layout: str, theme: str):
