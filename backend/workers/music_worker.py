@@ -4,6 +4,8 @@ import os
 import re
 import hashlib
 import logging
+import time
+import random
 from PySide6.QtCore import QThread, Signal
 
 logger = logging.getLogger("minikick.workers.music")
@@ -43,6 +45,7 @@ class YouTubeResolveWorker(QThread):
         super().__init__()
         self.query_or_url = query_or_url
         self.expected_title = expected_title
+        self.loudness: float | None = None
         from backend.services.system import TranslationService
         self.i18n = i18n or TranslationService()
 
@@ -85,27 +88,42 @@ class YouTubeResolveWorker(QThread):
             }
             
             info = None
+            last_err = None
             client_strategies = [
                 ['ios', 'android'],
                 ['web', 'mweb'],
                 ['tv_embedded'],
             ]
 
-            for clients in client_strategies:
-                try:
-                    attempt_opts = dict(ydl_opts)
-                    attempt_opts['extractor_args'] = {'youtube': {'player_client': clients}}
-                    with yt_dlp.YoutubeDL(attempt_opts) as ydl:
-                        info = ydl.extract_info(self.query_or_url, download=False)
-                        if info:
-                            ydl_opts = attempt_opts
-                            last_err = None
-                            break
-                except Exception as e:
-                    last_err = e
-                    logger.debug("[YouTubeResolveWorker] Strategy %s failed: %s", clients, e)
-                    continue
-            
+            max_retries = 3
+            for attempt in range(max_retries):
+                for clients in client_strategies:
+                    try:
+                        attempt_opts = dict(ydl_opts)
+                        attempt_opts['extractor_args'] = {'youtube': {'player_client': clients}}
+                        with yt_dlp.YoutubeDL(attempt_opts) as ydl:
+                            info = ydl.extract_info(self.query_or_url, download=False)
+                            if info:
+                                ydl_opts = attempt_opts
+                                last_err = None
+                                break
+                    except Exception as e:
+                        last_err = e
+                        logger.debug("[YouTubeResolveWorker] Strategy %s failed on attempt %d: %s", clients, attempt + 1, e)
+                        continue
+
+                if info:
+                    break
+
+                if attempt < max_retries - 1:
+                    backoff_sec = (1.5 ** attempt) + random.uniform(0.1, 0.4)
+                    logger.warning(
+                        "[YouTubeResolveWorker] Extraction attempt %d failed (%s). Retrying in %.2fs with backoff...",
+                        attempt + 1, last_err, backoff_sec
+                    )
+                    time.sleep(backoff_sec)
+                    client_strategies.append(client_strategies.pop(0))
+
             if not info:
                 if last_err:
                     raise last_err
@@ -119,6 +137,14 @@ class YouTubeResolveWorker(QThread):
             
             unknown_str = self.i18n.get("music.player.unknown_song")
             title = info.get('title') or self.expected_title or unknown_str
+
+            raw_loudness = info.get('loudness')
+            if raw_loudness is None and 'loudness_db' in info:
+                raw_loudness = info.get('loudness_db')
+            try:
+                self.loudness = float(raw_loudness) if raw_loudness is not None else None
+            except (ValueError, TypeError):
+                self.loudness = None
 
 
 
@@ -202,13 +228,17 @@ class YouTubeSearchWorker(QThread):
 
             info = None
 
-            try:
-                with yt_dlp.YoutubeDL(base_opts) as ydl:
-                    res = ydl.extract_info(self.search_query, download=False)
-                    if res and res.get('entries') and [e for e in res['entries'] if e]:
-                        info = res
-            except Exception as e:
-                logger.debug("[YouTubeSearchWorker] Search failed: %s", e)
+            for attempt in range(2):
+                try:
+                    with yt_dlp.YoutubeDL(base_opts) as ydl:
+                        res = ydl.extract_info(self.search_query, download=False)
+                        if res and res.get('entries') and [e for e in res['entries'] if e]:
+                            info = res
+                            break
+                except Exception as e:
+                    logger.debug("[YouTubeSearchWorker] Search attempt %d failed: %s", attempt + 1, e)
+                    if attempt == 0:
+                        time.sleep(1.0)
 
             if not info and self.search_query.startswith("ytsearch1:"):
                 raw_term = self.search_query[10:]

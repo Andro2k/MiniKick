@@ -329,6 +329,45 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_platform ON reward_redemptions(platform)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name_ts ON reward_redemptions(reward_name, timestamp DESC)")
 
+            try:
+                cursor.execute("""
+                    CREATE VIRTUAL TABLE IF NOT EXISTS youtube_search_cache_fts USING fts5(
+                        query_raw,
+                        title,
+                        artist,
+                        tokenize='trigram'
+                    )
+                """)
+                cursor.execute("DROP TRIGGER IF EXISTS trg_yt_cache_delete")
+                cursor.execute("DROP TRIGGER IF EXISTS trg_yt_cache_update")
+                cursor.execute("DROP TRIGGER IF EXISTS trg_yt_cache_insert")
+
+                cursor.execute("""
+                    CREATE TRIGGER IF NOT EXISTS trg_yt_cache_insert AFTER INSERT ON youtube_search_cache BEGIN
+                        INSERT INTO youtube_search_cache_fts(rowid, query_raw, title, artist)
+                        VALUES (new.rowid, new.query_raw, new.title, new.artist);
+                    END;
+                """)
+                cursor.execute("""
+                    CREATE TRIGGER IF NOT EXISTS trg_yt_cache_delete AFTER DELETE ON youtube_search_cache BEGIN
+                        DELETE FROM youtube_search_cache_fts WHERE rowid = old.rowid;
+                    END;
+                """)
+                cursor.execute("""
+                    CREATE TRIGGER IF NOT EXISTS trg_yt_cache_update AFTER UPDATE OF query_raw, title, artist ON youtube_search_cache BEGIN
+                        DELETE FROM youtube_search_cache_fts WHERE rowid = old.rowid;
+                        INSERT INTO youtube_search_cache_fts(rowid, query_raw, title, artist)
+                        VALUES (new.rowid, new.query_raw, new.title, new.artist);
+                    END;
+                """)
+                cursor.execute("""
+                    INSERT INTO youtube_search_cache_fts(rowid, query_raw, title, artist)
+                    SELECT rowid, query_raw, title, artist FROM youtube_search_cache
+                    WHERE rowid NOT IN (SELECT rowid FROM youtube_search_cache_fts)
+                """)
+            except Exception as fts_init_err:
+                logger.debug("[DatabaseManager] FTS5 trigram initialization note: %s", fts_init_err)
+
             cursor.execute("""
                 CREATE VIEW IF NOT EXISTS command_analytics AS
                 SELECT 

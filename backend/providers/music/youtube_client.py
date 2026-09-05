@@ -59,12 +59,14 @@ class YouTubeMusicProvider(QObject):
         self.auto_resume = True
         self._start_playing_current = True
         self._volume_gain = 1.0
+        self.loudness_normalization_enabled = True
 
         if self.db_manager:
             try:
                 from backend.database import SQLiteSettingsStorage
                 settings = SQLiteSettingsStorage(self.db_manager)
                 self.auto_resume = settings.load_bool("youtube_auto_resume", True)
+                self.loudness_normalization_enabled = settings.load_bool("music_loudness_normalization", True)
                 saved_vol = int(settings.load_string("music_volume", "100"))
                 self._volume_gain = max(0.0, min(1.0, saved_vol / 100.0))
                 saved_device = settings.load_string("youtube_audio_device", "default")
@@ -72,7 +74,7 @@ class YouTubeMusicProvider(QObject):
             except Exception as e:
                 logger.error("[YouTubeMusicProvider] Error loading settings: %s", e)
 
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
 
         if self.music_storage:
             pending = self.music_storage.load_pending_songs("youtube")
@@ -253,9 +255,39 @@ class YouTubeMusicProvider(QObject):
         self._play_next()
         return True
 
+    def _calculate_effective_volume(self) -> float:
+        base_vol = self._volume_gain
+        if not getattr(self, "loudness_normalization_enabled", True):
+            return base_vol
+
+        loudness = None
+        if self.current_song:
+            loudness = self.current_song.get("loudness")
+
+        if loudness is None:
+            return base_vol
+
+        try:
+            gain_factor = 10.0 ** (-float(loudness) / 20.0)
+            gain_factor = max(0.2, min(1.5, gain_factor))
+            return max(0.0, min(1.0, base_vol * gain_factor))
+        except Exception as e:
+            logger.debug("[YouTubeMusicProvider] Error calculating loudness gain: %s", e)
+            return base_vol
+
+    def set_loudness_normalization(self, enabled: bool) -> None:
+        self.loudness_normalization_enabled = enabled
+        self.audio_output.setVolume(self._calculate_effective_volume())
+        if self.db_manager:
+            try:
+                from backend.database import SQLiteSettingsStorage
+                SQLiteSettingsStorage(self.db_manager).save_bool("music_loudness_normalization", enabled)
+            except Exception as e:
+                logger.debug("[YouTubeMusicProvider] Could not persist loudness normalization: %s", e)
+
     def set_volume(self, volume: int) -> None:
         self._volume_gain = max(0.0, min(1.0, volume / 100.0))
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
 
     def set_audio_device(self, device_id: str) -> None:
         self._audio_device_id = device_id
@@ -450,6 +482,11 @@ class YouTubeMusicProvider(QObject):
                 logger.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
 
         
+        if hasattr(self, "resolve_worker") and self.resolve_worker:
+            worker_loudness = getattr(self.resolve_worker, "loudness", None)
+            if worker_loudness is not None:
+                self.current_song["loudness"] = worker_loudness
+
         if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
             self.current_local_file = None
             self.player.setSource(QUrl(path_or_url))
@@ -457,7 +494,7 @@ class YouTubeMusicProvider(QObject):
             self.current_local_file = path_or_url
             self.player.setSource(QUrl.fromLocalFile(path_or_url))
             
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
 
         if self._start_playing_current:
             self.player.play()
@@ -529,6 +566,6 @@ class YouTubeMusicProvider(QObject):
         return True
 
     def resume_playback(self) -> bool:
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
         self.player.play()
         return True

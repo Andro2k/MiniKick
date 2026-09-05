@@ -771,7 +771,7 @@
             height: 100%;
             width: 0%;
             border-radius: 3px;
-            transition: width 0.3s ease;
+            transition: width 0.05s linear;
             background: #FFFFFF;
         }
 
@@ -989,7 +989,8 @@
         let currentProgress = 0;
         let totalDuration = 0;
         let isPlaying = false;
-        let progressTimer = null;
+        let animFrameId = null;
+        let lastTimestamp = null;
 
         function extractDynamicColors(imgElement) {
             if (theme !== 'dynamic') return;
@@ -1071,18 +1072,30 @@
             stopProgressTicker();
             if (!isPlaying) return;
 
-            progressTimer = setInterval(() => {
-                if (currentProgress < totalDuration) {
-                    currentProgress += 1000;
+            lastTimestamp = performance.now();
+
+            function tick(now) {
+                if (!isPlaying) return;
+                const delta = now - lastTimestamp;
+                lastTimestamp = now;
+
+                if (totalDuration > 0 && currentProgress < totalDuration) {
+                    currentProgress = Math.min(totalDuration, currentProgress + delta);
                     updateProgressUI();
+                    animFrameId = requestAnimationFrame(tick);
                 } else {
                     stopProgressTicker();
                 }
-            }, 1000);
+            }
+
+            animFrameId = requestAnimationFrame(tick);
         }
 
         function stopProgressTicker() {
-            clearInterval(progressTimer);
+            if (animFrameId) {
+                cancelAnimationFrame(animFrameId);
+                animFrameId = null;
+            }
         }
 
         function updateThumb(imgEl, fallbackEl, url) {

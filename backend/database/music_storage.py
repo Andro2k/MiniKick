@@ -31,6 +31,10 @@ class SQLiteMusicStorage:
             )
             conn.commit()
         except Exception as e:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
             logger.error("[SQLiteMusicStorage] Error incrementing play count: %s", e)
 
     def get_cached_search(self, query: str) -> dict | None:
@@ -53,6 +57,27 @@ class SQLiteMusicStorage:
                     self._increment_play_count(conn, r[4])
                     return {"title": r[0], "artist": r[1], "url": r[2], "duration": r[3] or "-"}
 
+                # 2. Fast Fuzzy Match via SQLite FTS5 Trigram Index (O(log N))
+                try:
+                    clean_term = re.sub(r'["\*\^\:\(\)]', '', norm_q).strip()
+                    if len(clean_term) >= 3:
+                        cursor.execute("""
+                            SELECT c.title, c.artist, c.url, c.duration, c.query_raw, rank
+                            FROM youtube_search_cache_fts f
+                            JOIN youtube_search_cache c ON c.rowid = f.rowid
+                            WHERE youtube_search_cache_fts MATCH ?
+                            ORDER BY rank
+                            LIMIT 1
+                        """, (f'"{clean_term}"',))
+                        fts_row = cursor.fetchone()
+                        if fts_row:
+                            logger.debug("[SQLiteMusicStorage] FTS5 trigram match for '%s' -> '%s'", query, fts_row[4])
+                            self._increment_play_count(conn, fts_row[4])
+                            return {"title": fts_row[0], "artist": fts_row[1], "url": fts_row[2], "duration": fts_row[3] or "-"}
+                except Exception as fts_err:
+                    logger.debug("[SQLiteMusicStorage] FTS5 search bypassed: %s", fts_err)
+
+                # 3. Fallback: in-Python SequenceMatcher (O(N))
                 cursor.execute("SELECT query_raw, title, artist, url, duration FROM youtube_search_cache ORDER BY play_count DESC LIMIT 150")
                 rows = cursor.fetchall()
                 best_match = None
@@ -116,6 +141,10 @@ class SQLiteMusicStorage:
                 )
                 conn.commit()
         except Exception as e:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
             logger.error("[SQLiteMusicStorage] Error updating file size: %s", e)
 
     def get_least_popular_cached_songs(self) -> list[dict]:
