@@ -1,4 +1,4 @@
-# frontend\components\music\overlay_mockup.py
+# frontend\components\music\music_mockup.py
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF

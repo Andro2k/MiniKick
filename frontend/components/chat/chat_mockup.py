@@ -1,4 +1,4 @@
-# frontend\components\chat\overlay_mockup.py
+# frontend\components\chat\chat_mockup.py
 
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import Qt, QRectF, QPointF
@@ -31,7 +31,7 @@ class ChatOverlayMockupWidget(QWidget):
             self.orientation = new_orientation
             self.show_time = show_time
             self.show_bots = show_bots
-            self.setFixedHeight(105 if self.orientation == "horizontal" else 155)
+            self.setFixedHeight(105 if self.orientation == "horizontal" else 180)
             self.update()
 
     def paintEvent(self, event):

@@ -11,7 +11,7 @@ from frontend.common import (
     get_pixmap,
 )
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
-from .overlay_mockup import MusicOverlayMockupWidget
+from .music_mockup import MusicOverlayMockupWidget
 
 class MusicPlayerSettingsPanel(QWidget):
     volume_changed = Signal(int)

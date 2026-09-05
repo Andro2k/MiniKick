@@ -6,7 +6,7 @@ from frontend.widgets import (
     ModernCard, SettingRow, ModernSwitch, ModernButton, 
     CompactSpinBox, ModernDivider, ModernSegmentedControl, NoWheelComboBox
 )
-from .overlay_mockup import ChatOverlayMockupWidget
+from .chat_mockup import ChatOverlayMockupWidget
 
 class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
