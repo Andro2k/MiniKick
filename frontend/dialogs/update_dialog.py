@@ -47,7 +47,6 @@ class UpdateDialog(ModernModal):
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
-        self.progress_bar.setFixedHeight(10)
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setProperty("role", "update_progress")
         progress_layout.addWidget(self.progress_bar)

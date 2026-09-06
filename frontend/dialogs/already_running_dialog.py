@@ -32,14 +32,12 @@ class AlreadyRunningDialog(ModernModal):
         exit_str = self.i18n.get("common.buttons.exit")
         btn_close = QPushButton(exit_str)
         btn_close.setProperty("role", "action_outlined")
-        btn_close.setFixedHeight(36)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.reject)
 
         ok_str = self.i18n.get("common.buttons.understood")
         btn_ok = QPushButton(ok_str)
         btn_ok.setProperty("role", "action_accent")
-        btn_ok.setFixedHeight(36)
         btn_ok.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_ok.clicked.connect(self.accept)
 

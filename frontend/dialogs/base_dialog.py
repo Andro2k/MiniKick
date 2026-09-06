@@ -3,7 +3,7 @@
 import logging
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
                                QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication)
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QSettings, QEvent
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
 from frontend.common import (
     COLOR_RED, COLOR_AMBER, COLOR_BLUE, COLOR_GREEN,
@@ -15,13 +15,37 @@ logger = logging.getLogger("minikick.dialogs.base_dialog")
 
 class ModernFramelessShell(QDialog):
     _icon_close = None
+    RESIZE_MARGIN = 8
 
-    def __init__(self, width: int = 420, parent=None):
+    def __init__(
+        self,
+        width: int = 420,
+        height: int | None = None,
+        resizable: bool = False,
+        min_width: int = 380,
+        min_height: int = 320,
+        dialog_key: str | None = None,
+        parent=None
+    ):
         super().__init__(parent)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.CustomizeWindowHint | Qt.WindowType.Dialog)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         
         self._old_drag_pos = None
+        self._resizable = resizable
+        self._base_width = width
+        self._base_height = height
+        self._min_width = min_width
+        self._min_height = min_height
+        self._dialog_key = dialog_key
+        self._has_custom_size = False
+        self._active_resize_edge = None
+        self._resize_start_mouse_pos = None
+        self._resize_start_window_geo = None
+        self._resize_start_container_size = None
+
+        if self._resizable:
+            self.setMouseTracking(True)
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(16, 16, 16, 16)
@@ -29,8 +53,41 @@ class ModernFramelessShell(QDialog):
 
         self.container = QFrame(self)
         self.container.setProperty("role", "dialog")
-        self.container.setFixedWidth(width)
-        self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        if self._resizable:
+            self.container.setMouseTracking(True)
+            self.container.installEventFilter(self)
+
+        init_w = width
+        init_h = height
+        if dialog_key:
+            try:
+                settings = QSettings("MiniKick", "MiniKick")
+                saved_w = settings.value(f"dialog_size/{dialog_key}/width", None, type=int)
+                saved_h = settings.value(f"dialog_size/{dialog_key}/height", None, type=int)
+                if saved_w and saved_w >= min_width:
+                    init_w = saved_w
+                    self._has_custom_size = True
+                if saved_h and saved_h >= min_height:
+                    init_h = saved_h
+                    self._has_custom_size = True
+            except Exception as e:
+                logger.debug("Failed to load saved dialog size for %s: %s", dialog_key, e)
+
+        if height is not None:
+            self._has_custom_size = True
+
+        if self._resizable:
+            self.container.setMinimumSize(min_width, min_height)
+            if init_h is not None:
+                self.container.setFixedSize(init_w, init_h)
+            else:
+                self.container.setFixedWidth(init_w)
+                self.container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        else:
+            self.container.setFixedWidth(init_w)
+            if init_h is not None:
+                self.container.setFixedHeight(init_h)
+            self.container.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
         
         self.glow = QGraphicsDropShadowEffect(self)
         self.glow.setBlurRadius(30)
@@ -53,20 +110,36 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
         self.btn_close_shell.setIconSize(QSize(14, 14))
         self.btn_close_shell.clicked.connect(self.reject)
-        self.btn_close_shell.move(width - 36, 8)
+        self.btn_close_shell.move(init_w - 36, 8)
         self.btn_close_shell.raise_()
+
+    def set_dialog_dimensions(self, width: int, height: int):
+        self._has_custom_size = True
+        self.container.setFixedSize(width, height)
+        self.resize(width + 32, height + 32)
+        if hasattr(self, 'btn_close_shell'):
+            self.btn_close_shell.move(width - 36, 8)
+            self.btn_close_shell.raise_()
 
     def _apply_screen_constraints(self):
         screen = self.screen() or QApplication.primaryScreen()
         if screen:
             avail = screen.availableGeometry()
-            max_h = max(400, int(avail.height() * 0.90))
-            self.container.setMaximumHeight(max_h)
-            self.setMaximumHeight(max_h + 32)
+            max_h = max(400, int(avail.height() * 0.92))
+            max_w = max(400, int(avail.width() * 0.95))
+            if not self._resizable:
+                self.container.setMaximumHeight(max_h)
+                self.setMaximumHeight(max_h + 32)
+            else:
+                self.container.setMaximumSize(max_w, max_h)
+                self.setMaximumSize(max_w + 32, max_h + 32)
 
     def showEvent(self, event):
         self._apply_screen_constraints()
-        self.adjustSize()
+        if not self._resizable or not self._has_custom_size:
+            self.adjustSize()
+        else:
+            self.resize(self.container.width() + 32, self.container.height() + 32)
         super().showEvent(event)
         parent_widget = self.parentWidget()
         if parent_widget and hasattr(parent_widget, "rect"):
@@ -112,6 +185,70 @@ class ModernFramelessShell(QDialog):
             return
         super().keyPressEvent(event)
 
+    def _detect_resize_edge(self, pos_in_container) -> tuple[str | None, Qt.CursorShape | None]:
+        if not self._resizable:
+            return None, None
+
+        w = self.container.width()
+        h = self.container.height()
+        x = pos_in_container.x()
+        y = pos_in_container.y()
+
+        m = self.RESIZE_MARGIN
+        outer_pad = 16
+
+        if not (-outer_pad <= x <= w + outer_pad and -outer_pad <= y <= h + outer_pad):
+            return None, None
+
+        on_left = (-outer_pad <= x <= m)
+        on_right = (w - m <= x <= w + outer_pad)
+        on_top = (-outer_pad <= y <= m)
+        on_bottom = (h - m <= y <= h + outer_pad)
+
+        if on_top and on_left:
+            return "top_left", Qt.CursorShape.SizeFDiagCursor
+        if on_top and on_right:
+            return "top_right", Qt.CursorShape.SizeBDiagCursor
+        if on_bottom and on_left:
+            return "bottom_left", Qt.CursorShape.SizeBDiagCursor
+        if on_bottom and on_right:
+            return "bottom_right", Qt.CursorShape.SizeFDiagCursor
+        if on_left:
+            return "left", Qt.CursorShape.SizeHorCursor
+        if on_right:
+            return "right", Qt.CursorShape.SizeHorCursor
+        if on_top:
+            return "top", Qt.CursorShape.SizeVerCursor
+        if on_bottom:
+            return "bottom", Qt.CursorShape.SizeVerCursor
+
+        return None, None
+
+    def eventFilter(self, watched, event):
+        if self._resizable and watched == self.container:
+            etype = event.type()
+            if etype == QEvent.Type.MouseMove:
+                if not self._active_resize_edge:
+                    edge, cursor = self._detect_resize_edge(event.position().toPoint())
+                    if cursor:
+                        self.container.setCursor(cursor)
+                    else:
+                        self.container.unsetCursor()
+            elif etype == QEvent.Type.MouseButtonPress:
+                if event.button() == Qt.MouseButton.LeftButton:
+                    edge, cursor = self._detect_resize_edge(event.position().toPoint())
+                    if edge:
+                        self._active_resize_edge = edge
+                        self._resize_start_mouse_pos = event.globalPosition().toPoint()
+                        self._resize_start_window_geo = self.geometry()
+                        self._resize_start_container_size = self.container.size()
+                        return True
+            elif etype == QEvent.Type.MouseButtonRelease:
+                if self._active_resize_edge:
+                    self._finish_resizing()
+                    return True
+        return super().eventFilter(watched, event)
+
     def mousePressEvent(self, event: QMouseEvent):
         if hasattr(self, 'btn_close_shell') and self.btn_close_shell.isVisible():
             local_pos = self.container.mapFrom(self, event.position().toPoint())
@@ -119,23 +256,135 @@ class ModernFramelessShell(QDialog):
                 return super().mousePressEvent(event)
 
         if event.button() == Qt.MouseButton.LeftButton:
+            pos_in_container = self.container.mapFrom(self, event.position().toPoint())
+            edge, _ = self._detect_resize_edge(pos_in_container)
+            if edge and self._resizable:
+                self._active_resize_edge = edge
+                self._resize_start_mouse_pos = event.globalPosition().toPoint()
+                self._resize_start_window_geo = self.geometry()
+                self._resize_start_container_size = self.container.size()
+                event.accept()
+                return
+
             self._old_drag_pos = event.globalPosition().toPoint()
             event.accept()
 
     def mouseMoveEvent(self, event: QMouseEvent):
+        if self._active_resize_edge:
+            self._handle_resize_drag(event.globalPosition().toPoint())
+            event.accept()
+            return
+
         if self._old_drag_pos:
             delta = event.globalPosition().toPoint() - self._old_drag_pos
             self.move(self.pos() + delta)
             self._old_drag_pos = event.globalPosition().toPoint()
             event.accept()
+            return
+
+        if self._resizable:
+            pos_in_container = self.container.mapFrom(self, event.position().toPoint())
+            edge, cursor = self._detect_resize_edge(pos_in_container)
+            if cursor:
+                self.setCursor(cursor)
+            else:
+                self.unsetCursor()
 
     def mouseReleaseEvent(self, event: QMouseEvent):
+        if self._active_resize_edge:
+            self._finish_resizing()
+            event.accept()
+            return
         self._old_drag_pos = None
+        self.unsetCursor()
+        if hasattr(self, 'container'):
+            self.container.unsetCursor()
         event.accept()
 
+    def _handle_resize_drag(self, cur_mouse_pos):
+        if not self._active_resize_edge or not self._resize_start_mouse_pos:
+            return
+
+        delta = cur_mouse_pos - self._resize_start_mouse_pos
+        start_w = self._resize_start_container_size.width()
+        start_h = self._resize_start_container_size.height()
+        start_x = self._resize_start_window_geo.x()
+        start_y = self._resize_start_window_geo.y()
+
+        screen = self.screen() or QApplication.primaryScreen()
+        avail = screen.availableGeometry() if screen else None
+        max_w = int(avail.width() * 0.95) if avail else 1920
+        max_h = int(avail.height() * 0.92) if avail else 1080
+
+        min_w = self._min_width
+        min_h = self._min_height
+
+        edge = self._active_resize_edge
+
+        new_w = start_w
+        new_h = start_h
+        new_x = start_x
+        new_y = start_y
+
+        if "right" in edge:
+            new_w = max(min_w, min(max_w, start_w + delta.x()))
+        elif "left" in edge:
+            target_w = max(min_w, min(max_w, start_w - delta.x()))
+            new_x = start_x + (start_w - target_w)
+            new_w = target_w
+
+        if "bottom" in edge:
+            new_h = max(min_h, min(max_h, start_h + delta.y()))
+        elif "top" in edge:
+            target_h = max(min_h, min(max_h, start_h - delta.y()))
+            new_y = start_y + (start_h - target_h)
+            new_h = target_h
+
+        self._has_custom_size = True
+        self.container.setFixedSize(new_w, new_h)
+        self.setGeometry(new_x, new_y, new_w + 32, new_h + 32)
+        if hasattr(self, 'btn_close_shell'):
+            self.btn_close_shell.move(new_w - 36, 8)
+            self.btn_close_shell.raise_()
+
+    def _finish_resizing(self):
+        if self._dialog_key and self.container:
+            try:
+                settings = QSettings("MiniKick", "MiniKick")
+                settings.setValue(f"dialog_size/{self._dialog_key}/width", int(self.container.width()))
+                settings.setValue(f"dialog_size/{self._dialog_key}/height", int(self.container.height()))
+            except Exception as e:
+                logger.debug("Failed to persist dialog size: %s", e)
+        self._active_resize_edge = None
+        self.unsetCursor()
+        if hasattr(self, 'container'):
+            self.container.unsetCursor()
+
 class ModernModal(ModernFramelessShell):
-    def __init__(self, title: str = "", icon_path: str = "", icon_bg_color: str = "", icon_role: str = "", icon_color: str = "", width: int = 420, parent=None):
-        super().__init__(width=width, parent=parent)
+    def __init__(
+        self,
+        title: str = "",
+        icon_path: str = "",
+        icon_bg_color: str = "",
+        icon_role: str = "",
+        icon_color: str = "",
+        width: int = 420,
+        height: int | None = None,
+        resizable: bool = False,
+        min_width: int = 380,
+        min_height: int = 320,
+        dialog_key: str | None = None,
+        parent=None
+    ):
+        super().__init__(
+            width=width,
+            height=height,
+            resizable=resizable,
+            min_width=min_width,
+            min_height=min_height,
+            dialog_key=dialog_key,
+            parent=parent
+        )
         
         self.content_layout = QVBoxLayout(self.container)
         self.content_layout.setContentsMargins(20, 20, 20, 20)
@@ -210,8 +459,28 @@ class ModernModal(ModernFramelessShell):
         self.content_layout.addLayout(btn_layout)
 
 class ModernWizardPanel(ModernFramelessShell):
-    def __init__(self, title_steps: list[str], subtitle_steps: list[str], i18n, width: int = 520, parent=None):
-        super().__init__(width=width, parent=parent)
+    def __init__(
+        self,
+        title_steps: list[str],
+        subtitle_steps: list[str],
+        i18n,
+        width: int = 500,
+        height: int | None = None,
+        resizable: bool = True,
+        min_width: int = 440,
+        min_height: int = 380,
+        dialog_key: str | None = None,
+        parent=None
+    ):
+        super().__init__(
+            width=width,
+            height=height,
+            resizable=resizable,
+            min_width=min_width,
+            min_height=min_height,
+            dialog_key=dialog_key,
+            parent=parent
+        )
         self.title_steps = title_steps
         self.subtitle_steps = subtitle_steps
         self.i18n = i18n
@@ -305,7 +574,10 @@ class ModernWizardPanel(ModernFramelessShell):
                 self.btn_next.setText(self.i18n.get("common.buttons.next"))
 
             self._apply_screen_constraints()
-            self.adjustSize()
+            if not self._resizable or not self._has_custom_size:
+                self.adjustSize()
+            else:
+                self.resize(self.container.width() + 32, self.container.height() + 32)
         except Exception as e:
             logger.exception("[ModernWizardPanel] Error in _update_step_ui: %s", e)
 

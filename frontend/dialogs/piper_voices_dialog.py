@@ -1,147 +1,39 @@
 # frontend\dialogs\piper_voices_dialog.py
 
+
 import os
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QProgressBar, QScrollArea, QFrame, QFileDialog, QMessageBox
+    QScrollArea, QFrame, QFileDialog, QMessageBox
 )
-from PySide6.QtCore import Qt, QSize, Signal, Slot
+from PySide6.QtCore import Qt, Signal, Slot
 from .base_dialog import ModernFramelessShell
+from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import NoWheelDoubleSpinBox
 from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_GREEN
-from backend.services.chat import (
-    PiperVoiceManager, PiperVoiceDownloadWorker, DEFAULT_PIPER_VOICE_ID
-)
-
-class PiperVoiceItemWidget(QFrame):
-    download_requested = Signal(str)
-    delete_requested = Signal(str)
-    test_requested = Signal(str)
-
-    def __init__(self, voice_meta: dict, is_installed: bool, i18n, parent=None):
-        super().__init__(parent)
-        self.voice_meta = voice_meta
-        self.voice_id = voice_meta["id"]
-        self.is_installed = is_installed
-        self.i18n = i18n
-        self.setProperty("role", "card")
-        self._setup_ui()
-
-    def _setup_ui(self):
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(6)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(8)
-
-        lang_str = self.voice_meta.get("lang", "es_ES")
-        badge_lbl = QLabel(lang_str.upper(), self)
-        badge_lbl.setProperty("role", "code")
-        badge_lbl.setFixedWidth(54)
-        badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
-
-        self.lbl_name = QLabel(self.voice_meta.get("name", self.voice_id), self)
-        self.lbl_name.setProperty("role", "body")
-        self.lbl_name.setProperty("state", "bold")
-
-        size_text = self.voice_meta.get("size_mb", "")
-        quality_text = self.voice_meta.get("quality", "medium")
-        self.lbl_sub = QLabel(f"{size_text} • {quality_text.capitalize()}", self)
-        self.lbl_sub.setProperty("role", "caption")
-
-        info_layout.addWidget(self.lbl_name)
-        info_layout.addWidget(self.lbl_sub)
-
-        header_layout.addWidget(badge_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
-        header_layout.addLayout(info_layout, stretch=1)
-
-        self.lbl_status = QLabel(self)
-        self.lbl_status.setProperty("role", "caption")
-        self.update_status(self.is_installed)
-        header_layout.addWidget(self.lbl_status, alignment=Qt.AlignmentFlag.AlignVCenter)
-        self.btn_test = QPushButton(self)
-        self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_400, size=14))
-        self.btn_test.setIconSize(QSize(14, 14))
-        self.btn_test.setFixedSize(28, 28)
-        self.btn_test.setProperty("role", "action_neutral_border")
-        self.btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
-        self.btn_test.clicked.connect(lambda: self.test_requested.emit(self.voice_id))
-        self.btn_test.setVisible(self.is_installed)
-        header_layout.addWidget(self.btn_test)
-
-        self.btn_action = QPushButton(self)
-        self.btn_action.setFixedHeight(28)
-        self.btn_action.clicked.connect(self._on_action_clicked)
-        self._update_action_button()
-        header_layout.addWidget(self.btn_action)
-
-        main_layout.addLayout(header_layout)
-
-        self.progress_bar = QProgressBar(self)
-        self.progress_bar.setFixedHeight(6)
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        self.progress_bar.setTextVisible(False)
-        self.progress_bar.setVisible(False)
-        main_layout.addWidget(self.progress_bar)
-
-    def _update_action_button(self):
-        if self.is_installed:
-            self.btn_action.setText(self.i18n.get("piper_dialog.btn_delete"))
-            self.btn_action.setProperty("role", "action_danger_border")
-            self.btn_action.setEnabled(self.voice_id != DEFAULT_PIPER_VOICE_ID)
-        else:
-            self.btn_action.setText(self.i18n.get("piper_dialog.btn_download"))
-            self.btn_action.setProperty("role", "action_accent")
-            self.btn_action.setEnabled(True)
-        self.btn_action.style().unpolish(self.btn_action)
-        self.btn_action.style().polish(self.btn_action)
-
-    def update_status(self, is_installed: bool):
-        self.is_installed = is_installed
-        if is_installed:
-            self.lbl_status.setText(self.i18n.get("piper_dialog.status_installed"))
-            self.lbl_status.setProperty("state", "success")
-        else:
-            self.lbl_status.setText(self.i18n.get("piper_dialog.status_not_installed"))
-            self.lbl_status.setProperty("state", "neutral")
-        self.lbl_status.style().unpolish(self.lbl_status)
-        self.lbl_status.style().polish(self.lbl_status)
-        if hasattr(self, "btn_test"):
-            self.btn_test.setVisible(is_installed)
-        if hasattr(self, "btn_action"):
-            self._update_action_button()
-
-    def set_downloading(self, downloading: bool, percent: int = 0):
-        self.progress_bar.setVisible(downloading)
-        self.progress_bar.setValue(percent)
-        self.btn_action.setEnabled(not downloading)
-        if downloading:
-            self.btn_action.setText(f"{percent}%")
-            self.lbl_status.setText(self.i18n.get("piper_dialog.status_downloading"))
-            self.lbl_status.setProperty("state", "info")
-            self.lbl_status.style().unpolish(self.lbl_status)
-            self.lbl_status.style().polish(self.lbl_status)
-
-    def _on_action_clicked(self):
-        if self.is_installed:
-            self.delete_requested.emit(self.voice_id)
-        else:
-            self.download_requested.emit(self.voice_id)
+from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
     voices_updated = Signal()
 
-    def __init__(self, i18n, tts_service, parent=None):
+    def __init__(self, i18n, tts_service, parent=None, manager=None, worker_class=None):
         super().__init__(width=660, parent=parent)
         self.i18n = i18n
         self.tts_service = tts_service
-        self.manager = PiperVoiceManager()
-        self._active_workers: dict[str, PiperVoiceDownloadWorker] = {}
+        if manager is None:
+            if hasattr(tts_service, "voice_manager"):
+                manager = tts_service.voice_manager
+            elif hasattr(tts_service, "tts") and hasattr(tts_service.tts, "_providers") and "piper" in tts_service.tts._providers:
+                manager = getattr(tts_service.tts._providers["piper"], "manager", None)
+            if manager is None:
+                try:
+                    manager = PiperVoiceManager()
+                    worker_class = worker_class or PiperVoiceDownloadWorker
+                except ImportError:
+                    pass
+        self.manager = manager
+        self.worker_class = worker_class
+        self._active_workers: dict = {}
         self._item_widgets: dict[str, PiperVoiceItemWidget] = {}
         self._setup_ui()
         self._load_synthesis_params()
@@ -177,7 +69,6 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
-        scroll.setFixedHeight(390)
 
         scroll_content = QWidget()
         self.scroll_layout = QVBoxLayout(scroll_content)
@@ -213,7 +104,6 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.btn_reset_synthesis = QPushButton(self.i18n.get("piper_dialog.btn_reset_synthesis"), synthesis_card)
         self.btn_reset_synthesis.setProperty("role", "action_neutral_border")
         self.btn_reset_synthesis.setToolTip(self.i18n.get("piper_dialog.btn_reset_tooltip"))
-        self.btn_reset_synthesis.setFixedHeight(26)
         self.btn_reset_synthesis.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_reset_synthesis.clicked.connect(self._reset_synthesis_defaults)
         card_header.addWidget(self.btn_reset_synthesis)
@@ -284,7 +174,6 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         btn_close = QPushButton(self.i18n.get("piper_dialog.btn_close"), self)
         btn_close.setProperty("role", "action_accent")
-        btn_close.setFixedWidth(120)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.accept)
         btn_layout.addWidget(btn_close)
@@ -329,13 +218,17 @@ class PiperVoicesDialog(ModernFramelessShell):
         self._on_synthesis_params_changed()
 
     def _populate_catalog(self):
+        if not self.manager:
+            return
         catalog = self.manager.get_catalog()
         catalog_ids = set()
+        default_voice_id = getattr(self.manager, "DEFAULT_VOICE_ID", getattr(self.manager, "default_voice_id", "es_MX-claude-high"))
         for meta in catalog:
             voice_id = meta["id"]
             catalog_ids.add(voice_id)
             is_inst = self.manager.is_voice_installed(voice_id)
-            item = PiperVoiceItemWidget(meta, is_inst, self.i18n, parent=self)
+            is_default = (voice_id == default_voice_id)
+            item = PiperVoiceItemWidget(meta, is_inst, self.i18n, is_default=is_default, parent=self)
             item.download_requested.connect(self._start_download)
             item.delete_requested.connect(self._delete_voice)
             item.test_requested.connect(self._test_voice)
@@ -353,7 +246,8 @@ class PiperVoicesDialog(ModernFramelessShell):
                     "quality": inst_meta.get("quality", "custom"),
                     "size_mb": "Local"
                 }
-                item = PiperVoiceItemWidget(meta, True, self.i18n, parent=self)
+                is_default = (vid == default_voice_id)
+                item = PiperVoiceItemWidget(meta, True, self.i18n, is_default=is_default, parent=self)
                 item.delete_requested.connect(self._delete_voice)
                 item.test_requested.connect(self._test_voice)
                 self._item_widgets[vid] = item
@@ -398,14 +292,21 @@ class PiperVoicesDialog(ModernFramelessShell):
 
     @Slot(str)
     def _start_download(self, voice_id: str):
-        if voice_id in self._active_workers:
+        if voice_id in self._active_workers or not self.manager:
             return
+
+        worker_cls = self.worker_class
+        if not worker_cls:
+            try:
+                worker_cls = PiperVoiceDownloadWorker
+            except ImportError:
+                return
 
         item = self._item_widgets.get(voice_id)
         if item:
             item.set_downloading(True, 0)
 
-        worker = PiperVoiceDownloadWorker(voice_id, self.manager, parent=self)
+        worker = worker_cls(voice_id, self.manager, parent=self)
         worker.progress.connect(self._on_download_progress)
         worker.finished.connect(self._on_download_finished)
         self._active_workers[voice_id] = worker

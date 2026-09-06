@@ -65,11 +65,87 @@ class SettingRow(QWidget):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
             self.lbl_desc.setText(text)
 
+class FormField(QWidget):
+    def __init__(
+        self,
+        label_text: str,
+        control_widget: QWidget,
+        hint_text: str = "",
+        is_horizontal: bool = False,
+        parent: QWidget | None = None
+    ):
+        super().__init__(parent)
+        self.control_widget = control_widget
+        self._initial_hint = hint_text
+
+        if is_horizontal:
+            self.layout = QHBoxLayout(self)
+            self.layout.setContentsMargins(0, 0, 0, 0)
+            self.layout.setSpacing(12)
+
+            self.lbl_title = QLabel(label_text, parent=self)
+            self.lbl_title.setProperty("role", "h3")
+            self.layout.addWidget(self.lbl_title)
+            self.layout.addWidget(control_widget, stretch=1)
+            self.lbl_hint = None
+        else:
+            self.layout = QVBoxLayout(self)
+            self.layout.setContentsMargins(0, 0, 0, 0)
+            self.layout.setSpacing(4)
+
+            self.lbl_title = QLabel(label_text, parent=self)
+            self.lbl_title.setProperty("role", "h3")
+            self.layout.addWidget(self.lbl_title)
+            self.layout.addWidget(control_widget)
+
+            self.lbl_hint = QLabel(hint_text, parent=self) if hint_text else None
+            if self.lbl_hint:
+                self.lbl_hint.setProperty("role", "caption")
+                self.lbl_hint.setWordWrap(True)
+                self.layout.addWidget(self.lbl_hint)
+
+    def set_label(self, text: str):
+        self.lbl_title.setText(text)
+
+    def set_hint(self, text: str):
+        if not self.lbl_hint and text:
+            self.lbl_hint = QLabel(text, parent=self)
+            self.lbl_hint.setProperty("role", "caption")
+            self.lbl_hint.setWordWrap(True)
+            self.layout.addWidget(self.lbl_hint)
+        elif self.lbl_hint:
+            self.lbl_hint.setText(text)
+            self.lbl_hint.setVisible(bool(text))
+
+    def set_error(self, error_text: str):
+        if not self.lbl_hint:
+            self.lbl_hint = QLabel(parent=self)
+            self.lbl_hint.setWordWrap(True)
+            self.layout.addWidget(self.lbl_hint)
+        self.lbl_hint.setText(error_text)
+        self.lbl_hint.setProperty("role", "caption")
+        self.lbl_hint.setProperty("state", "danger")
+        self.lbl_hint.style().unpolish(self.lbl_hint)
+        self.lbl_hint.style().polish(self.lbl_hint)
+        self.lbl_hint.setVisible(bool(error_text))
+
+    def clear_error(self):
+        if self.lbl_hint:
+            if self._initial_hint:
+                self.lbl_hint.setText(self._initial_hint)
+                self.lbl_hint.setProperty("role", "caption")
+                self.lbl_hint.setProperty("state", "normal")
+                self.lbl_hint.style().unpolish(self.lbl_hint)
+                self.lbl_hint.style().polish(self.lbl_hint)
+                self.lbl_hint.setVisible(True)
+            else:
+                self.lbl_hint.setText("")
+                self.lbl_hint.setVisible(False)
+
 class ModernDivider(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setProperty("role", "divider")
-        self.setFixedHeight(2.5)
 
 class SliderRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, desc_text: str, slider_widget: QWidget, value_label: QLabel, icon_color: str = COLOR_NEUTRAL_400, parent=None):
@@ -278,8 +354,7 @@ class ExpandableSettingCard(QFrame):
         self.btn_expand = QPushButton()
         self.btn_expand.setIcon(self._icon_down)
         self.btn_expand.setIconSize(QSize(20, 20))
-        self.btn_expand.setFixedSize(30, 30)
-        self.btn_expand.setProperty("role", "btn_ghost")
+        self.btn_expand.setProperty("role", "btn_icon_sm")
         self.btn_expand.clicked.connect(self.toggle_expand)
         h_layout.addWidget(self.btn_expand)
         
@@ -480,7 +555,6 @@ def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
     layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
     tag = QFrame(container)
-    tag.setFixedHeight(22)
     tag.setProperty("role", "badge")
     tag.setProperty("state", state)
 

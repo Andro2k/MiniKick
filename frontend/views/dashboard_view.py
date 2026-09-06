@@ -4,11 +4,11 @@ from PySide6.QtWidgets import (
     QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QGridLayout, QSizePolicy, QProgressBar
 )
-from PySide6.QtCore import Qt, Signal, QRectF
-from PySide6.QtGui import QPixmap, QPainter, QColor, QPainterPath
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QPixmap
 from frontend.common import (
-    COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_800,
-    COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
+    COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_500,
+    COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE,
     create_circular_pixmap, get_icon_colored, get_pixmap_colored
 )
@@ -16,137 +16,10 @@ from frontend.widgets import (
     BaseView, StatCard, SettingRow, ModernCard,
     ModernButton, ModernSwitch, ModernDivider
 )
-
-class SegmentedDistributionBar(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setFixedHeight(18)
-        self._segments = []
-        self._cached_clip_path = None
-        self._cached_rect = None
-
-    def set_data(self, data: list[tuple[float, str]]):
-        self._segments = data
-        self.update()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
-        rect = self.rect()
-        if self._cached_rect != rect:
-            self._cached_rect = rect
-            self._cached_clip_path = QPainterPath()
-            self._cached_clip_path.addRoundedRect(QRectF(rect), 8, 8)
-            
-        painter.setClipPath(self._cached_clip_path)
-        
-        total_p = sum(p for p, _ in self._segments)
-        if total_p <= 0:
-            painter.fillRect(rect, QColor(COLOR_NEUTRAL_800))
-            return
-            
-        current_x = 0.0
-        w = float(self.width())
-        h = float(self.height())
-        for p, color in self._segments:
-            seg_width = (p / total_p) * w
-            painter.fillRect(QRectF(current_x, 0, seg_width, h), QColor(color))
-            current_x += seg_width
-
-
-class PlatformStatusCard(QFrame):
-    _BTN_CONNECT_KEYS = {
-        "kick": "dashboard.connection.btn_connect_kick",
-        "twitch": "dashboard.connection.btn_connect_twitch",
-        "youtube": "dashboard.connection.btn_connect_youtube",
-        "tiktok": "dashboard.connection.btn_connect_tiktok",
-    }
-    _BTN_ACTIVE_KEYS = {
-        "kick": "dashboard.connection.btn_active_kick",
-        "twitch": "dashboard.connection.btn_active_twitch",
-        "youtube": "dashboard.connection.btn_active_youtube",
-        "tiktok": "dashboard.connection.btn_active_tiktok",
-    }
-    _BTN_CONNECTING_KEYS = {
-        "kick": "dashboard.connection.btn_connecting_kick",
-        "twitch": "dashboard.connection.btn_connecting_twitch",
-        "youtube": "dashboard.connection.btn_connecting_youtube",
-        "tiktok": "dashboard.connection.btn_connecting_tiktok",
-    }
-
-    def __init__(self, i18n, platform_id: str, brand_name: str, icon_file: str, brand_color: str, button_role: str, parent=None):
-        super().__init__(parent)
-        self.i18n = i18n
-        self.platform_id = platform_id
-        self.brand_color = brand_color
-        self.button_role = button_role
-        self.setProperty("role", "card")
-        self.setFrameShape(QFrame.Shape.StyledPanel)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self._setup_ui(brand_name, icon_file)
-
-    def _setup_ui(self, brand_name: str, icon_file: str):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(12, 12, 12, 12)
-        layout.setSpacing(8)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(8)
-
-        self.lbl_icon = QLabel(self)
-        self.lbl_icon.setPixmap(get_pixmap_colored(icon_file, self.brand_color, 20))
-        self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.lbl_brand = QLabel(brand_name, self)
-        self.lbl_brand.setProperty("role", "h3")
-
-        self.lbl_msgs = QLabel("0 msgs", self)
-        self.lbl_msgs.setProperty("role", "caption")
-
-        header_layout.addWidget(self.lbl_icon)
-        header_layout.addWidget(self.lbl_brand)
-        header_layout.addStretch(1)
-        header_layout.addWidget(self.lbl_msgs)
-        layout.addLayout(header_layout)
-
-        self.lbl_status = QLabel(self.i18n.get("dashboard.platforms.disconnected"), self)
-        self.lbl_status.setProperty("role", "body")
-        self.lbl_status.setProperty("state", "normal")
-        self.lbl_status.setWordWrap(True)
-        layout.addWidget(self.lbl_status)
-
-        btn_key = self._BTN_CONNECT_KEYS.get(self.platform_id, "dashboard.connection.btn_connect_kick")
-        self.btn_action = ModernButton(self.i18n.get(btn_key), role=self.button_role)
-        self.btn_action.setFixedHeight(30)
-        layout.addWidget(self.btn_action)
-
-    def update_state(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
-        tpl = self.i18n.get("dashboard.platforms.messages_session")
-        self.lbl_msgs.setText(tpl.replace("{count}", str(msg_count)))
-
-        if connecting:
-            self.lbl_status.setText(self.i18n.get("dashboard.platforms.connecting"))
-            self.lbl_status.setProperty("state", "info")
-            self.btn_action.setEnabled(False)
-            btn_key = self._BTN_CONNECTING_KEYS.get(self.platform_id, "dashboard.connection.btn_connecting_kick")
-            self.btn_action.setText(self.i18n.get(btn_key))
-        elif connected and channel:
-            prefix = self.i18n.get("dashboard.platforms.channel_prefix")
-            self.lbl_status.setText(f"{prefix} <b>@{channel}</b>")
-            self.lbl_status.setProperty("state", "white")
-            self.btn_action.setEnabled(False)
-            btn_key = self._BTN_ACTIVE_KEYS.get(self.platform_id, "dashboard.connection.btn_active_kick")
-            self.btn_action.setText(self.i18n.get(btn_key))
-        else:
-            self.lbl_status.setText(self.i18n.get("dashboard.platforms.disconnected"))
-            self.lbl_status.setProperty("state", "normal")
-            self.btn_action.setEnabled(True)
-            btn_key = self._BTN_CONNECT_KEYS.get(self.platform_id, "dashboard.connection.btn_connect_kick")
-            self.btn_action.setText(self.i18n.get(btn_key))
-
-        self.lbl_status.style().unpolish(self.lbl_status)
-        self.lbl_status.style().polish(self.lbl_status)
+from frontend.components.dashboard import (
+    SegmentedDistributionBar,
+    PlatformStatusCard,
+)
 
 class DashboardView(BaseView):
     connect_requested = Signal()
@@ -296,12 +169,10 @@ class DashboardView(BaseView):
         self.tabs_layout.setSpacing(8)
 
         self.btn_tab_kick = ModernButton(self.i18n.get("dashboard.profile.tab_kick"), role="action_kick")
-        self.btn_tab_kick.setFixedHeight(30)
         self.btn_tab_kick.set_icon("brand-kick.svg", size=14)
         self.btn_tab_kick.clicked.connect(lambda: self.channel_tab_changed.emit("kick"))
 
         self.btn_tab_twitch = ModernButton(self.i18n.get("dashboard.profile.tab_twitch"), role="action_twitch")
-        self.btn_tab_twitch.setFixedHeight(30)
         self.btn_tab_twitch.set_icon("brand-twitch.svg", size=14)
         self.btn_tab_twitch.clicked.connect(lambda: self.channel_tab_changed.emit("twitch"))
 
@@ -346,7 +217,6 @@ class DashboardView(BaseView):
         name_row.addWidget(self.lbl_username)
 
         self.lbl_platform_badge = QLabel("Kick")
-        self.lbl_platform_badge.setFixedHeight(22)
         self.lbl_platform_badge.setProperty("role", "badge_kick")
         name_row.addWidget(self.lbl_platform_badge)
         name_row.addStretch(1)
@@ -368,7 +238,6 @@ class DashboardView(BaseView):
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
         self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_neutral_border")
-        self.btn_open_channel.setFixedHeight(30)
         self.btn_open_channel.setIcon(get_icon_colored("link.svg", COLOR_WHITE, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)

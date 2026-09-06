@@ -65,14 +65,14 @@
         },
         "preview": {
             "sample_amount": "500",
+            "sample_template": "{user} te acaba de seguir!",
             "sample_tier": "1",
             "sample_user": "TheAndro2K",
             "title": "Vista Previa de la Alerta"
         },
         "sections": {
             "appearance": "Diseño y Apariencia",
-            "general": "Ajustes Generales",
-            "media": "Multimedia y Audio"
+            "general": "Ajustes Generales"
         },
         "sidebar": {
             "title": "Variantes de Alerta"
@@ -825,8 +825,6 @@
             "title": "Cola de Reproducción"
         },
         "stats": {
-            "badge_active": "O ACTIVADO",
-            "badge_disabled": "O DESACTIVADO",
             "cmd_desc": "Permite a tus espectadores solicitar canciones con el comando !sr",
             "cmd_title": "Comando del chat",
             "duration_desc": "Duración acumulada de todas las canciones en espera",
@@ -1272,7 +1270,7 @@
             "step_filters_title": "Filtros del Temporizador",
             "step_general_subtitle": "Configura el nombre, intervalos y respuestas del anuncio.",
             "step_general_title": "Configurar Temporizador",
-            "suffix_lines": "mensajes",
+            "suffix_lines": "lineas",
             "suffix_min": "min"
         },
         "empty": {

@@ -11,7 +11,18 @@ class CommandConfigWizard(ModernWizardPanel):
         self.connected_platforms = connected_platforms if isinstance(connected_platforms, dict) else {"kick": True, "twitch": True, "youtube": True, "tiktok": True}
         title_steps = [self.i18n.get("command.dialog.title"), self.i18n.get("command.dialog.tab_advanced")]
         subtitle_steps = [self.i18n.get("command.dialog.subtitle"), self.i18n.get("command.dialog.regex_help")]       
-        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=520, parent=parent)       
+        super().__init__(
+            title_steps=title_steps,
+            subtitle_steps=subtitle_steps,
+            i18n=i18n,
+            width=600,
+            height=700,
+            resizable=True,
+            min_width=600,
+            min_height=700,
+            dialog_key="command_config_wizard",
+            parent=parent
+        )       
         self.existing_config = existing_config
         self.original_trigger = existing_config.get("trigger", "") if existing_config else None       
         self._setup_ui()
@@ -50,7 +61,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_response.setMinimumHeight(90) 
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         basic_layout.addLayout(lbl_response_layout)
-        basic_layout.addWidget(self.txt_response)
+        basic_layout.addWidget(self.txt_response, stretch=1)
 
         row_configs = QHBoxLayout()
         row_configs.setSpacing(12)

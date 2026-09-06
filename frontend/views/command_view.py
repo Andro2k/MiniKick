@@ -1,11 +1,11 @@
 # frontend\views\command_view.py
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QFrame, QHeaderView
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common import (
-    COLOR_RED, COLOR_GREEN, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, get_pixmap_colored
+from frontend.widgets import (
+    BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
 )
+from frontend.common import COLOR_RED, COLOR_GREEN
 
 class CommandView(BaseView):
     add_requested = Signal()
@@ -215,45 +215,20 @@ class CommandView(BaseView):
             self.populate_table(self._raw_commands)
 
     def _create_platforms_cell(self, cmd_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setSpacing(8)
-        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-
         connected = getattr(self, "connected_platforms", {})
         has_conn_filter = isinstance(connected, dict) and bool(connected)
 
-        apply_kick = cmd_data.get("apply_kick", True) and (connected.get("kick", False) if has_conn_filter else True)
-        apply_twitch = cmd_data.get("apply_twitch", True) and (connected.get("twitch", False) if has_conn_filter else True)
-        apply_youtube = cmd_data.get("apply_youtube", True) and (connected.get("youtube", False) if has_conn_filter else True)
-        apply_tiktok = cmd_data.get("apply_tiktok", True) and (connected.get("tiktok", False) if has_conn_filter else True)
+        active_plats = []
+        if cmd_data.get("apply_kick", True) and (connected.get("kick", False) if has_conn_filter else True):
+            active_plats.append("kick")
+        if cmd_data.get("apply_twitch", True) and (connected.get("twitch", False) if has_conn_filter else True):
+            active_plats.append("twitch")
+        if cmd_data.get("apply_youtube", True) and (connected.get("youtube", False) if has_conn_filter else True):
+            active_plats.append("youtube")
+        if cmd_data.get("apply_tiktok", True) and (connected.get("tiktok", False) if has_conn_filter else True):
+            active_plats.append("tiktok")
 
-        platforms = [
-            ("brand-kick.svg", COLOR_GREEN, "Kick", apply_kick),
-            ("brand-twitch.svg", COLOR_TWITCH, "Twitch", apply_twitch),
-            ("brand-youtube.svg", COLOR_YOUTUBE, "YouTube", apply_youtube),
-            ("brand-tiktok.svg", COLOR_TIKTOK, "TikTok", apply_tiktok)
-        ]
-
-        active_count = 0
-        for icon_name, color, name, is_active in platforms:
-            if is_active:
-                lbl_icon = QLabel()
-                lbl_icon.setPixmap(get_pixmap_colored(icon_name, color, 16))
-                lbl_icon.setToolTip(name)
-                lbl_icon.setFixedSize(18, 18)
-                lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                layout.addWidget(lbl_icon)
-                active_count += 1
-
-        if active_count == 0:
-            lbl_none = QLabel("-")
-            lbl_none.setProperty("role", "body")
-            layout.addWidget(lbl_none)
-
-        layout.addStretch()
-        return container
+        return PlatformBadgeCell(active_plats)
 
     def _create_aliases_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
@@ -271,15 +246,8 @@ class CommandView(BaseView):
             return container
 
         if is_regex:
-            badge_text = (self.i18n.get("command.table.regex_prefix"))
-            badge = QFrame()
-            badge.setFixedHeight(20)
-            badge.setProperty("role", "badge")
-            badge.setProperty("state", "warning")
-            b_layout = QHBoxLayout(badge)
-            b_layout.setContentsMargins(4, 2, 4, 2)
-            lbl_b = QLabel(badge_text)
-            b_layout.addWidget(lbl_b)
+            badge_text = self.i18n.get("command.table.regex_prefix")
+            badge = create_badge(badge_text, state="warning")
             layout.addWidget(badge)
             lbl_text = QLabel(raw_aliases)
             lbl_text.setProperty("role", "monospace")

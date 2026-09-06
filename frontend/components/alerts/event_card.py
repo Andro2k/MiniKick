@@ -1,11 +1,28 @@
 # frontend\components\alerts\event_card.py
 
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Any
+
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
     QLineEdit, QFileDialog
 )
 from PySide6.QtCore import Qt, Signal, QSize
-from backend.models import AlertConfig
+
+@dataclass
+class AlertConfigData:
+    platform: str
+    alert_type: str
+    enabled: bool = True
+    sound_path: str = ""
+    media_path: str = ""
+    text_template: str = "{user}"
+    duration_ms: int = 5000
+    sound_volume: float = 0.8
+    tts_read: bool = False
+    layout: str = "above"
+    style: str = "compact"
 from frontend.widgets import (
     ModernCard, ModernButton, ModernSwitch,
     NoWheelSlider, NoWheelSpinBox, ModernDivider,
@@ -31,8 +48,9 @@ class AlertEventCard(QWidget):
         self.alert_type = alert_type
         self.icon_name = icon_name
         self.i18n = i18n
-        self._saved_config = AlertConfig(platform=platform, alert_type=alert_type)
-        self._current_config = AlertConfig(platform=platform, alert_type=alert_type)
+        self._config_cls = AlertConfigData
+        self._saved_config = self._config_cls(platform=platform, alert_type=alert_type)
+        self._current_config = self._config_cls(platform=platform, alert_type=alert_type)
         self._is_loading = True
         self._is_dirty = False
         self._platform_connected = True
@@ -83,7 +101,6 @@ class AlertEventCard(QWidget):
             icon_size=13,
             parent=self
         )
-        self.btn_discard.setFixedHeight(30)
         self.btn_discard.setEnabled(False)
         self.btn_discard.clicked.connect(self._discard_changes)
 
@@ -94,7 +111,6 @@ class AlertEventCard(QWidget):
             icon_size=14,
             parent=self
         )
-        self.btn_save.setFixedHeight(30)
         self.btn_save.setEnabled(False)
         self.btn_save.clicked.connect(self._save_changes)
 
@@ -105,7 +121,6 @@ class AlertEventCard(QWidget):
             icon_size=14,
             parent=self
         )
-        self.btn_test.setFixedHeight(30)
         self.btn_test.clicked.connect(self._on_test_clicked)
 
         header_row.addWidget(self.btn_discard)
@@ -225,7 +240,6 @@ class AlertEventCard(QWidget):
         self.spin_duration = NoWheelSpinBox(parent=self)
         self.spin_duration.setRange(1, 60)
         self.spin_duration.setSuffix(" s")
-        self.spin_duration.setFixedWidth(100)
         self.spin_duration.valueChanged.connect(self._on_field_changed)
         dur_box.addWidget(lbl_duration)
         dur_box.addWidget(self.spin_duration)
@@ -290,7 +304,6 @@ class AlertEventCard(QWidget):
             icon_size=14,
             parent=self
         )
-        btn_browse_media.setFixedHeight(30)
         btn_browse_media.clicked.connect(self._browse_media)
 
         self.btn_clear_media = ModernButton(
@@ -299,7 +312,6 @@ class AlertEventCard(QWidget):
             icon_size=13,
             parent=self
         )
-        self.btn_clear_media.setFixedSize(30, 30)
         self.btn_clear_media.setToolTip(self.i18n.get("alerts.buttons.clear_media"))
         self.btn_clear_media.clicked.connect(self._clear_media)
         self.btn_clear_media.setEnabled(False)
@@ -332,7 +344,6 @@ class AlertEventCard(QWidget):
             icon_size=14,
             parent=self
         )
-        btn_browse_sound.setFixedHeight(30)
         btn_browse_sound.clicked.connect(self._browse_sound)
 
         self.btn_clear_sound = ModernButton(
@@ -341,7 +352,6 @@ class AlertEventCard(QWidget):
             icon_size=13,
             parent=self
         )
-        self.btn_clear_sound.setFixedSize(30, 30)
         self.btn_clear_sound.setToolTip(self.i18n.get("alerts.buttons.clear_sound"))
         self.btn_clear_sound.clicked.connect(self._clear_sound)
         self.btn_clear_sound.setEnabled(False)
@@ -394,10 +404,18 @@ class AlertEventCard(QWidget):
                 media_path=self.edit_media.text().strip()
             )
 
-    def load_config(self, cfg: AlertConfig):
+    def _create_config(self, **kwargs):
+        cls = self._config_cls or AlertConfigData
+        try:
+            return cls(**kwargs)
+        except TypeError:
+            return AlertConfigData(**kwargs)
+
+    def load_config(self, cfg: Any):
         self._is_loading = True
+        self._config_cls = cfg.__class__
         self._saved_config = cfg
-        self._current_config = AlertConfig(
+        self._current_config = self._create_config(
             platform=cfg.platform,
             alert_type=cfg.alert_type,
             enabled=cfg.enabled,
@@ -475,7 +493,7 @@ class AlertEventCard(QWidget):
         layout_val = self.seg_layout.current_value() or "above"
         style_val = self.combo_style.currentData() or "compact"
 
-        cfg = AlertConfig(
+        cfg = self._create_config(
             platform=self.platform,
             alert_type=self.alert_type,
             enabled=self.sw_enabled.isChecked(),
@@ -518,7 +536,7 @@ class AlertEventCard(QWidget):
         self.config_changed.emit(cfg)
 
     def _save_changes(self):
-        self._saved_config = AlertConfig(
+        self._saved_config = self._create_config(
             platform=self._current_config.platform,
             alert_type=self._current_config.alert_type,
             enabled=self._current_config.enabled,

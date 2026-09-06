@@ -37,12 +37,15 @@ from .theme import (
     get_qss_colored_icon, get_global_qss, GLOBAL_QSS, get_swatch_qss,
 )
 
+from .markdown import markdown_to_github_html
+
 __all__ = [
     "resource_path", "get_assets_path", "resolve_icon_path",
     "ICON_SIZE_XS", "ICON_SIZE_SM", "ICON_SIZE_MD", "ICON_SIZE_LG", "ICON_SIZE_XL",
     "get_icon", "get_icon_colored", "get_pixmap_colored", "get_pixmap",
     "create_circular_pixmap",
     "validate_trigger_prefix",
+    "markdown_to_github_html",
     "COLOR_NEUTRAL_950", "COLOR_NEUTRAL_900", "COLOR_NEUTRAL_850",
     "COLOR_NEUTRAL_800", "COLOR_NEUTRAL_750", "COLOR_NEUTRAL_700",
     "COLOR_NEUTRAL_500", "COLOR_NEUTRAL_400", "COLOR_NEUTRAL_200",

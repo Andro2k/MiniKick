@@ -59,6 +59,7 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
 }
 
 class PiperVoiceManager:
+    DEFAULT_VOICE_ID: str = DEFAULT_PIPER_VOICE_ID
     _instance: Optional['PiperVoiceManager'] = None
 
     def __new__(cls):

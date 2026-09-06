@@ -23,7 +23,7 @@ class AlertOverlayMockupWidget(QWidget):
         self.alert_type = "follow"
         self.layout_mode = "above"
         self.style_mode = "compact"
-        self.template_text = "{user} te acaba de seguir!"
+        self.template_text = self.i18n.get("alerts.preview.sample_template")
         self.media_path = ""
         self.setFixedHeight(180)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)

@@ -163,7 +163,6 @@ class Sidebar(QFrame):
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
         self.btn_dismiss_update.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
         self.btn_dismiss_update.setIconSize(QSize(14, 14))
-        self.btn_dismiss_update.setFixedSize(22, 22)
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
         self.btn_dismiss_update.clicked.connect(self._dismiss_update_card)

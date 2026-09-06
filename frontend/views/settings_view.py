@@ -259,9 +259,9 @@ class SettingsView(BaseView):
         size = self.combo_font.itemData(index)
         self.font_size_changed.emit(size)
 
-    def show_bug_report_dialog(self, worker_class=None) -> None:
+    def show_bug_report_dialog(self, worker_class=None, initial_contact: str = "") -> None:
         from frontend.dialogs import BugReportDialog
-        dialog = BugReportDialog(self.i18n, worker_class=worker_class, parent=self.window())
+        dialog = BugReportDialog(self.i18n, worker_class=worker_class, initial_contact=initial_contact, parent=self.window())
         dialog.exec()
 
     def show_release_notes_dialog(self, worker_class=None) -> None:

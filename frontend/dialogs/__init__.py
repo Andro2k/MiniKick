@@ -1,13 +1,15 @@
 # frontend\dialogs\__init__.py
 
 from .base_dialog import ModernFramelessShell, ModernModal, ModernWizardPanel, ModernConfirmDialog
+from .platform_connect_dialog import PlatformConnectDialog
 from .already_running_dialog import AlreadyRunningDialog
 from .bug_report_dialog import BugReportDialog
 from .crash_report_dialog import CrashReportDialog
 from .update_dialog import UpdateDialog
 from .release_notes_dialog import ReleaseNotesDialog
 from .rewards_dialog import RewardsConfigWizard
-from .timer_dialog import TimerConfigWizard, MessageEditorDialog
+from .timer_dialog import TimerConfigWizard
+from .message_editor_dialog import MessageEditorDialog
 from .visual_positioner_dialog import VisualPositionerDialog
 from .command_dialog import CommandConfigWizard
 from .piper_voices_dialog import PiperVoicesDialog
@@ -19,6 +21,7 @@ __all__ = [
     "ModernModal",
     "ModernWizardPanel",
     "ModernConfirmDialog",
+    "PlatformConnectDialog",
     "AlreadyRunningDialog",
     "BugReportDialog",
     "CrashReportDialog",

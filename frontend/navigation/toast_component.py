@@ -57,7 +57,6 @@ class ModernToast(QFrame):
         btn_close.setProperty("role", "btn_ghost")
         btn_close.setIcon(ModernToast._pixmap_cache["close"])
         btn_close.setIconSize(QSize(14, 14))
-        btn_close.setFixedSize(20, 20)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.dismiss)
         

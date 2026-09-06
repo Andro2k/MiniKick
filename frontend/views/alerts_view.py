@@ -95,7 +95,6 @@ class AlertsView(BaseView):
             icon_size=16,
             parent=self
         )
-        self.btn_tab_kick.setFixedHeight(32)
         self.btn_tab_kick.clicked.connect(lambda: self._switch_platform("kick"))
 
         self.btn_tab_twitch = ModernButton(
@@ -105,7 +104,6 @@ class AlertsView(BaseView):
             icon_size=16,
             parent=self
         )
-        self.btn_tab_twitch.setFixedHeight(32)
         self.btn_tab_twitch.clicked.connect(lambda: self._switch_platform("twitch"))
 
         platform_row.addWidget(self.btn_tab_kick)
@@ -146,7 +144,6 @@ class AlertsView(BaseView):
             icon_size=15,
             parent=self
         )
-        self.btn_notice_connect.setFixedHeight(32)
         self.btn_notice_connect.clicked.connect(self._on_notice_connect_clicked)
 
         self.notice_layout.addWidget(self.lbl_notice_icon, alignment=Qt.AlignmentFlag.AlignTop)

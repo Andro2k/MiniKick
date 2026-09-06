@@ -90,7 +90,6 @@ class ScheduleFormPanel(QWidget):
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         self.date_edit.setDate(QDate.currentDate())
-        self.date_edit.setFixedWidth(160)
         
         cal = self.date_edit.calendarWidget()
         if cal:
@@ -113,7 +112,6 @@ class ScheduleFormPanel(QWidget):
         self.time_edit = NoWheelTimeEdit()
         self.time_edit.setDisplayFormat("HH:mm")
         self.time_edit.setTime(QTime.currentTime())
-        self.time_edit.setFixedWidth(150)
         time_box.addWidget(lbl_time)
         time_box.addWidget(self.time_edit)
         datetime_row.addLayout(time_box)

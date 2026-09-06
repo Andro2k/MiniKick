@@ -1,14 +1,15 @@
 # frontend\dialogs\crash_report_dialog.py
 
 from PySide6.QtWidgets import (
-    QLabel, QLineEdit, QTextEdit, QPushButton, QApplication,
+    QLabel, QLineEdit, QTextEdit, QApplication,
     QHBoxLayout, QVBoxLayout, QFrame
 )
-from PySide6.QtCore import Qt, Slot, QSize
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path, get_icon_colored, COLOR_RED
+from frontend.widgets import ModernButton
+from frontend.common import get_assets_path, COLOR_RED
 
 class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n, webhook_url: str = "", worker_class=None, initial_contact: str = "", parent=None):
@@ -18,13 +19,7 @@ class CrashReportDialog(ModernModal):
         self.worker_class = worker_class
         self.worker = None
 
-        if not initial_contact:
-            try:
-                from backend.database import DatabaseManager
-                initial_contact = DatabaseManager().get_primary_identity()
-            except Exception:
-                initial_contact = ""
-        self.initial_contact = initial_contact
+        self.initial_contact = initial_contact or ""
 
         self.title_text = self.i18n.get("crash.title")
         self.lbl_contact_text = self.i18n.get("crash.lbl_contact")
@@ -62,7 +57,6 @@ class CrashReportDialog(ModernModal):
         lbl_contact.setProperty("role", "body")
         self.txt_contact = QLineEdit()
         self.txt_contact.setPlaceholderText(self.placeholder_contact_text)
-        self.txt_contact.setFixedHeight(34)
         if self.initial_contact:
             self.txt_contact.setText(self.initial_contact)
 
@@ -70,7 +64,6 @@ class CrashReportDialog(ModernModal):
         lbl_desc.setProperty("role", "body")
         self.txt_desc = QTextEdit()
         self.txt_desc.setPlaceholderText(self.placeholder_desc_text)
-        self.txt_desc.setFixedHeight(60)
 
         form_layout.addWidget(lbl_contact)
         form_layout.addWidget(self.txt_contact)
@@ -81,12 +74,7 @@ class CrashReportDialog(ModernModal):
         lbl_traceback = QLabel(self.lbl_traceback_text)
         lbl_traceback.setProperty("role", "body")
 
-        self.btn_copy_tb = QPushButton(self.btn_copy_text)
-        self.btn_copy_tb.setIcon(get_icon_colored("clipboard-text.svg", "#FFFFFF", size=14))
-        self.btn_copy_tb.setIconSize(QSize(14, 14))
-        self.btn_copy_tb.setProperty("role", "action_outlined")
-        self.btn_copy_tb.setFixedHeight(26)
-        self.btn_copy_tb.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="clipboard-text.svg", icon_color="#FFFFFF", icon_size=14)
         self.btn_copy_tb.clicked.connect(self._copy_traceback)
 
         tb_header_layout.addWidget(lbl_traceback)
@@ -96,7 +84,6 @@ class CrashReportDialog(ModernModal):
         self.txt_traceback = QTextEdit()
         self.txt_traceback.setReadOnly(True)
         self.txt_traceback.setPlainText(self.traceback_text)
-        self.txt_traceback.setFixedHeight(120)
 
         self.lbl_error = QLabel()
         self.lbl_error.setProperty("state", "error")
@@ -111,10 +98,7 @@ class CrashReportDialog(ModernModal):
         self.content_layout.addWidget(self.txt_traceback)
         self.content_layout.addWidget(self.lbl_error)
 
-        self.btn_send = QPushButton(self.btn_send_text)
-        self.btn_send.setProperty("role", "action_danger_border")
-        self.btn_send.setFixedHeight(38)
-        self.btn_send.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_send = ModernButton(self.btn_send_text, role="action_danger_border")
         self.btn_send.clicked.connect(self._send_and_close)
 
         self.add_action_buttons(None, self.btn_send)
@@ -129,11 +113,9 @@ class CrashReportDialog(ModernModal):
     @Slot()
     def _send_and_close(self):
         webhook_url = self.webhook_url
-        if not webhook_url:
-            from backend.config import DISCORD_WEBHOOK_URL
-            webhook_url = DISCORD_WEBHOOK_URL
+        worker_cls = self.worker_class
 
-        if not webhook_url:
+        if not webhook_url or not worker_cls:
             self.lbl_error.setText(self.err_no_webhook_text)
             self.lbl_error.show()
             return
@@ -141,11 +123,6 @@ class CrashReportDialog(ModernModal):
         self.btn_send.setEnabled(False)
         self.btn_send.setText(self.i18n.get("crash.btn_sending"))
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-
-        worker_cls = self.worker_class
-        if not worker_cls:
-            from backend.workers import CrashReportWorker
-            worker_cls = CrashReportWorker
 
         self.worker = worker_cls(
             traceback_text=self.traceback_text,

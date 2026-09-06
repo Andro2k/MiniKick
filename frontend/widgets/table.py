@@ -103,7 +103,6 @@ class ModernTableCard(QFrame):
         
         self.btn_empty_action = ModernButton(button_text, role="action_accent")
         self.btn_empty_action.set_icon("add.svg", size=16)
-        self.btn_empty_action.setFixedWidth(200)
         self.btn_empty_action.clicked.connect(on_button_clicked)
         
         layout.addStretch(1)
@@ -167,3 +166,45 @@ class TableActionCell(QWidget):
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)
         return btn
+
+class PlatformBadgeCell(QWidget):
+    def __init__(self, platforms: list[str] | None = None, parent=None):
+        super().__init__(parent)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(6, 0, 6, 0)
+        self.layout.setSpacing(6)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        if platforms is not None:
+            self.set_platforms(platforms)
+
+    def set_platforms(self, platforms: list[str]):
+        while self.layout.count() > 0:
+            item = self.layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        if not platforms:
+            lbl_empty = QLabel("-", self)
+            lbl_empty.setProperty("role", "body")
+            self.layout.addWidget(lbl_empty)
+            return
+
+        from frontend.common import COLOR_GREEN, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, get_pixmap_colored
+        plat_configs = {
+            "kick": ("brand-kick.svg", COLOR_GREEN, "Kick"),
+            "twitch": ("brand-twitch.svg", COLOR_TWITCH, "Twitch"),
+            "youtube": ("brand-youtube.svg", COLOR_YOUTUBE, "YouTube"),
+            "tiktok": ("brand-tiktok.svg", COLOR_TIKTOK, "TikTok"),
+        }
+
+        for p in platforms:
+            p_key = p.lower()
+            if p_key in plat_configs:
+                icon_file, color, name = plat_configs[p_key]
+                lbl_icon = QLabel(self)
+                lbl_icon.setPixmap(get_pixmap_colored(icon_file, color, 16))
+                lbl_icon.setToolTip(name)
+                self.layout.addWidget(lbl_icon)
+
+        self.layout.addStretch()
+

@@ -188,7 +188,13 @@ class SettingsController(QObject):
     @Slot()
     def handle_feedback(self):
         logger.info("[User Action] Opened Bug Report modal")
-        self.view.show_bug_report_dialog(worker_class=BugReportWorker)
+        initial_contact = ""
+        try:
+            from backend.database import DatabaseManager
+            initial_contact = DatabaseManager().get_primary_identity()
+        except Exception:
+            pass
+        self.view.show_bug_report_dialog(worker_class=BugReportWorker, initial_contact=initial_contact)
 
     @Slot()
     def handle_release_notes(self):

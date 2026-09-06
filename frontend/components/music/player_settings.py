@@ -129,7 +129,6 @@ class MusicPlayerSettingsPanel(QWidget):
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setFixedHeight(6)
 
         time_layout = QHBoxLayout()
         self.lbl_time_elapsed = QLabel("00:00")

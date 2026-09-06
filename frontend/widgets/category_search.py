@@ -15,7 +15,6 @@ class CategoryItemWidget(QWidget):
 
         plat_upper = platform.upper()
         self.badge = QLabel(plat_upper)
-        self.badge.setFixedHeight(20)
         self.badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         if plat_upper == "KICK":

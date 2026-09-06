@@ -780,8 +780,6 @@ DEFAULT_DICTIONARY = {
             "title": "Playback Queue"
         },
         "stats": {
-            "badge_active": "O ENABLED",
-            "badge_disabled": "O DISABLED",
             "cmd_desc": "Allows viewers to request songs using the !sr command",
             "cmd_title": "Chat command",
             "duration_desc": "Total accumulated duration of all queued songs",

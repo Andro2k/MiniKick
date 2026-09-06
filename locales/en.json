@@ -65,14 +65,14 @@
         },
         "preview": {
             "sample_amount": "500",
+            "sample_template": "{user} just followed!",
             "sample_tier": "1",
             "sample_user": "TheAndro2K",
             "title": "Alert Preview"
         },
         "sections": {
             "appearance": "Layout & Appearance",
-            "general": "General Settings",
-            "media": "Media & Audio"
+            "general": "General Settings"
         },
         "sidebar": {
             "title": "Alert Variants"
@@ -825,8 +825,6 @@
             "title": "Playback Queue"
         },
         "stats": {
-            "badge_active": "O ENABLED",
-            "badge_disabled": "O DISABLED",
             "cmd_desc": "Allows viewers to request songs using the !sr command",
             "cmd_title": "Chat command",
             "duration_desc": "Total accumulated duration of all queued songs",
@@ -1272,7 +1270,7 @@
             "step_filters_title": "Timer Filters",
             "step_general_subtitle": "Configure timer name, intervals, and responses.",
             "step_general_title": "Configure Timer",
-            "suffix_lines": "messages",
+            "suffix_lines": "lines",
             "suffix_min": "min"
         },
         "empty": {

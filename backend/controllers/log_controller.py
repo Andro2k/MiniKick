@@ -245,7 +245,14 @@ class LogController(QObject):
 
     @Slot()
     def open_github_issues(self):
-        self.view.show_bug_report_dialog()
+        from backend.workers import BugReportWorker
+        initial_contact = ""
+        try:
+            from backend.database import DatabaseManager
+            initial_contact = DatabaseManager().get_primary_identity()
+        except Exception:
+            pass
+        self.view.show_bug_report_dialog(worker_class=BugReportWorker, initial_contact=initial_contact)
         
     @Slot()
     def open_log_folder(self):

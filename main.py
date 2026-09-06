@@ -92,11 +92,18 @@ def global_crash_handler(exctype, value, tb):
         i18n = _get_safe_i18n()
         from backend.config import DISCORD_WEBHOOK_URL
         from backend.workers import CrashReportWorker
+        initial_contact = ""
+        try:
+            from backend.database import DatabaseManager
+            initial_contact = DatabaseManager().get_primary_identity()
+        except Exception:
+            pass
         dialog = CrashReportDialog(
             traceback_text=tb_text,
             i18n=i18n,
             webhook_url=DISCORD_WEBHOOK_URL,
-            worker_class=CrashReportWorker
+            worker_class=CrashReportWorker,
+            initial_contact=initial_contact
         )
         dialog.exec()
     except Exception as dialog_err:
