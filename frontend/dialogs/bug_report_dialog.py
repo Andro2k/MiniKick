@@ -1,6 +1,7 @@
 # frontend\dialogs\bug_report_dialog.py
 
 from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QCheckBox, QHBoxLayout, QVBoxLayout
+from PySide6.QtCore import Qt
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton
@@ -11,13 +12,11 @@ class BugReportDialog(ModernModal):
     def __init__(self, i18n, worker_class=None, initial_contact: str = "", parent=None):
         title = i18n.get("settings.feedback.title")
         icon_path = get_assets_path("icons/bug.svg")
-        super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=720, parent=parent)
+        super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=660, parent=parent)
         self.i18n = i18n
         self.worker_class = worker_class
         self.worker = None
-
         self.initial_contact = initial_contact or ""
-
         self.selected_severity = "Low"
         self.severity_cards = {}
         self._setup_form()
@@ -44,47 +43,62 @@ class BugReportDialog(ModernModal):
 
         self.severity_cards["Low"].set_selected(True)
 
-        cols_layout = QHBoxLayout()
-        cols_layout.setSpacing(16)
+        row1_layout = QHBoxLayout()
+        row1_layout.setSpacing(16)
 
-        left_col = QVBoxLayout()
-        left_col.setSpacing(10)
-
+        contact_col = QVBoxLayout()
+        contact_col.setSpacing(6)
         lbl_username = QLabel(self.i18n.get("dialogs.bug_report.lbl_contact"))
         lbl_username.setProperty("role", "body")
         self.txt_username = QLineEdit()
         self.txt_username.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_contact"))
         if self.initial_contact:
             self.txt_username.setText(self.initial_contact)
+        contact_col.addWidget(lbl_username)
+        contact_col.addWidget(self.txt_username)
 
+        logs_col = QVBoxLayout()
+        logs_col.setSpacing(6)
+        lbl_logs = QLabel(self.i18n.get("dialogs.bug_report.lbl_diagnostics"))
+        lbl_logs.setProperty("role", "body")
+        self.chk_logs = QCheckBox(self.i18n.get("dialogs.bug_report.chk_include_logs"))
+        self.chk_logs.setChecked(True)
+        self.chk_logs.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        chk_wrapper = QHBoxLayout()
+        chk_wrapper.setContentsMargins(0, 4, 0, 4)
+        chk_wrapper.addWidget(self.chk_logs)
+        chk_wrapper.addStretch()
+
+        logs_col.addWidget(lbl_logs)
+        logs_col.addLayout(chk_wrapper)
+
+        row1_layout.addLayout(contact_col, 1)
+        row1_layout.addLayout(logs_col, 1)
+
+        row2_layout = QHBoxLayout()
+        row2_layout.setSpacing(16)
+
+        desc_col = QVBoxLayout()
+        desc_col.setSpacing(6)
         lbl_desc = QLabel(self.i18n.get("dialogs.bug_report.lbl_description"))
         lbl_desc.setProperty("role", "body")
         self.txt_desc = QTextEdit()
         self.txt_desc.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_desc"))
+        self.txt_desc.setFixedHeight(140)
+        desc_col.addWidget(lbl_desc)
+        desc_col.addWidget(self.txt_desc)
 
-        left_col.addWidget(lbl_username)
-        left_col.addWidget(self.txt_username)
-        left_col.addWidget(lbl_desc)
-        left_col.addWidget(self.txt_desc)
-
-        right_col = QVBoxLayout()
-        right_col.setSpacing(10)
-
+        image_col = QVBoxLayout()
+        image_col.setSpacing(6)
         lbl_image = QLabel(self.i18n.get("dialogs.bug_report.lbl_image"))
         lbl_image.setProperty("role", "body")
-
         self.dropzone = ImageDropzone(self.i18n)
+        image_col.addWidget(lbl_image)
+        image_col.addWidget(self.dropzone)
 
-        self.chk_logs = QCheckBox(self.i18n.get("dialogs.bug_report.chk_include_logs"))
-        self.chk_logs.setChecked(True)
-
-        right_col.addWidget(lbl_image)
-        right_col.addWidget(self.dropzone)
-        right_col.addWidget(self.chk_logs)
-        right_col.addStretch()
-
-        cols_layout.addLayout(left_col, 3)
-        cols_layout.addLayout(right_col, 2)
+        row2_layout.addLayout(desc_col, 1)
+        row2_layout.addLayout(image_col, 1)
 
         self.lbl_error = QLabel()
         self.lbl_error.setProperty("state", "error")
@@ -94,7 +108,9 @@ class BugReportDialog(ModernModal):
         self.content_layout.addWidget(lbl_sev_header)
         self.content_layout.addLayout(sev_layout)
         self.content_layout.addSpacing(6)
-        self.content_layout.addLayout(cols_layout)
+        self.content_layout.addLayout(row1_layout)
+        self.content_layout.addSpacing(6)
+        self.content_layout.addLayout(row2_layout)
         self.content_layout.addWidget(self.lbl_error)
 
         self.btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel"), role="action_outlined")

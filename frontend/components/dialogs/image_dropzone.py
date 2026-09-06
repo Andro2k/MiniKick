@@ -19,7 +19,7 @@ class ImageDropzone(QFrame):
         self.setProperty("role", "card")
         self.setAcceptDrops(True)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(180)
+        self.setFixedHeight(140)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -83,7 +83,7 @@ class ImageDropzone(QFrame):
 
             pixmap = QPixmap(self.image_path)
             if not pixmap.isNull():
-                scaled = pixmap.scaled(QSize(160, 160), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                scaled = pixmap.scaled(QSize(120, 120), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
                 self.img_lbl.setPixmap(scaled)
         else:
             self.empty_container.show()

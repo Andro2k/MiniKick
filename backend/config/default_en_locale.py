@@ -411,6 +411,7 @@ DEFAULT_DICTIONARY = {
             "header": "**BUG REPORT**",
             "lbl_contact": "Contact / Discord (Optional):",
             "lbl_description": "Problem Description (Required):",
+            "lbl_diagnostics": "System Diagnostics (Optional):",
             "lbl_image": "Attach Screenshot / Image (Optional):",
             "placeholder_contact": "Your username or contact info...",
             "placeholder_desc": "Briefly describe what you were doing and what error occurred...",

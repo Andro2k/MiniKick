@@ -454,6 +454,7 @@
             "header": "**BUG REPORT**",
             "lbl_contact": "Contact / Discord (Optional):",
             "lbl_description": "Problem Description (Required):",
+            "lbl_diagnostics": "System Diagnostics (Optional):",
             "lbl_image": "Attach Screenshot / Image (Optional):",
             "placeholder_contact": "Your username or contact info...",
             "placeholder_desc": "Briefly describe what you were doing and what error occurred...",
@@ -486,7 +487,6 @@
             "title": "Release Notes"
         },
         "tiktok_connect": {
-            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter the username (@username) of the TikTok Live channel:",
             "placeholder": "e.g. @streamer or username",
@@ -530,7 +530,6 @@
             "step_indicator": "Step {current}/{total}"
         },
         "youtube_connect": {
-            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter your channel handle (@channel), full live stream URL, or YouTube video ID:",
             "placeholder": "e.g. @lofigirl or https://youtube.com/watch?v=...",
