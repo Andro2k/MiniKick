@@ -4,7 +4,11 @@ from frontend.widgets import ModernDivider, FlowLayout, ModernSwitch
 from PySide6.QtCore import Qt, Signal, QSize, QTimer
 from PySide6.QtWidgets import (QFrame, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                                QLineEdit, QSpinBox, QPushButton, QApplication)
-from frontend.common import get_pixmap_colored, get_icon_colored, COLOR_NEUTRAL_400
+from frontend.common import (
+    get_pixmap_colored, get_icon_colored, COLOR_NEUTRAL_400,
+    MARGIN_NONE, MARGIN_MD, MARGIN_LG,
+    SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD, SPACING_LG
+)
 
 class WidgetCard(QFrame):
     widget_changed = Signal(str, bool, str, int, str, object)
@@ -28,8 +32,8 @@ class WidgetCard(QFrame):
 
         self.setProperty("role", "card")
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.main_layout.setSpacing(0)
+        self.main_layout.setContentsMargins(*MARGIN_NONE)
+        self.main_layout.setSpacing(SPACING_NONE)
 
         self._icon_up = get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 20)
         self._icon_down = get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 20)
@@ -44,15 +48,15 @@ class WidgetCard(QFrame):
         self.header_widget = QWidget()
         self.header_widget.setCursor(Qt.CursorShape.PointingHandCursor)
         h_layout = QHBoxLayout(self.header_widget)
-        h_layout.setContentsMargins(8, 8, 8, 8)
-        h_layout.setSpacing(6)
+        h_layout.setContentsMargins(*MARGIN_MD)
+        h_layout.setSpacing(SPACING_SM)
 
         lbl_icon = QLabel()
         lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, 24))
         h_layout.addWidget(lbl_icon, alignment=Qt.AlignmentFlag.AlignTop)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
+        text_layout.setSpacing(SPACING_2XS)
 
         lbl_title = QLabel(title)
         lbl_title.setProperty("role", "h3")
@@ -98,15 +102,15 @@ class WidgetCard(QFrame):
     def _build_body(self):
         self.body_widget = QWidget()
         b_layout = QVBoxLayout(self.body_widget)
-        b_layout.setContentsMargins(12, 10, 12, 12)
-        b_layout.setSpacing(8)
+        b_layout.setContentsMargins(*MARGIN_LG)
+        b_layout.setSpacing(SPACING_MD)
 
         b_layout.addWidget(ModernDivider())
 
         self.specific_container = QWidget()
         self.specific_layout = QVBoxLayout(self.specific_container)
-        self.specific_layout.setContentsMargins(0, 0, 0, 0)
-        self.specific_layout.setSpacing(10)
+        self.specific_layout.setContentsMargins(*MARGIN_NONE)
+        self.specific_layout.setSpacing(SPACING_MD)
 
         if self.widget_id == "shoutout":
             lbl_tpl = QLabel(self.i18n.get("widgets.so.template_label"))
@@ -117,12 +121,12 @@ class WidgetCard(QFrame):
             self.specific_layout.addWidget(self.txt_template)
 
         elif self.widget_id == "death":
-            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+            flow = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
 
             group_count = QWidget()
             g_layout = QHBoxLayout(group_count)
-            g_layout.setContentsMargins(0, 0, 0, 0)
-            g_layout.setSpacing(8)
+            g_layout.setContentsMargins(*MARGIN_NONE)
+            g_layout.setSpacing(SPACING_MD)
             lbl_count = QLabel(self.i18n.get("widgets.death.count_label"))
             lbl_count.setProperty("role", "body")
             self.spn_deaths = QSpinBox()
@@ -141,12 +145,12 @@ class WidgetCard(QFrame):
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "score":
-            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+            flow = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
 
             group_w = QWidget()
             gw_layout = QHBoxLayout(group_w)
-            gw_layout.setContentsMargins(0, 0, 0, 0)
-            gw_layout.setSpacing(8)
+            gw_layout.setContentsMargins(*MARGIN_NONE)
+            gw_layout.setSpacing(SPACING_MD)
             lbl_w = QLabel(self.i18n.get("widgets.score.wins_label"))
             lbl_w.setProperty("role", "body")
             self.spn_wins = QSpinBox()
@@ -157,8 +161,8 @@ class WidgetCard(QFrame):
 
             group_l = QWidget()
             gl_layout = QHBoxLayout(group_l)
-            gl_layout.setContentsMargins(0, 0, 0, 0)
-            gl_layout.setSpacing(8)
+            gl_layout.setContentsMargins(*MARGIN_NONE)
+            gl_layout.setSpacing(SPACING_MD)
             lbl_l = QLabel(self.i18n.get("widgets.score.losses_label"))
             lbl_l.setProperty("role", "body")
             self.spn_losses = QSpinBox()
@@ -178,12 +182,12 @@ class WidgetCard(QFrame):
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "explosion":
-            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+            flow = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
 
             group_min = QWidget()
             gm_layout = QHBoxLayout(group_min)
-            gm_layout.setContentsMargins(0, 0, 0, 0)
-            gm_layout.setSpacing(8)
+            gm_layout.setContentsMargins(*MARGIN_NONE)
+            gm_layout.setSpacing(SPACING_MD)
             lbl_min = QLabel(self.i18n.get("widgets.explosion.min_emotes_label"))
             lbl_min.setProperty("role", "body")
             self.spn_min_emotes = QSpinBox()
@@ -194,8 +198,8 @@ class WidgetCard(QFrame):
 
             group_parts = QWidget()
             gp_layout = QHBoxLayout(group_parts)
-            gp_layout.setContentsMargins(0, 0, 0, 0)
-            gp_layout.setSpacing(8)
+            gp_layout.setContentsMargins(*MARGIN_NONE)
+            gp_layout.setSpacing(SPACING_MD)
             lbl_parts = QLabel(self.i18n.get("widgets.explosion.particle_count_label"))
             lbl_parts.setProperty("role", "body")
             self.spn_particle_count = QSpinBox()
@@ -209,12 +213,12 @@ class WidgetCard(QFrame):
             self.specific_layout.addLayout(flow)
 
         elif self.widget_id == "combo":
-            flow = FlowLayout(margin=0, hspacing=12, vspacing=10)
+            flow = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
 
             group_min_c = QWidget()
             gmc_layout = QHBoxLayout(group_min_c)
-            gmc_layout.setContentsMargins(0, 0, 0, 0)
-            gmc_layout.setSpacing(8)
+            gmc_layout.setContentsMargins(*MARGIN_NONE)
+            gmc_layout.setSpacing(SPACING_MD)
             lbl_min_c = QLabel(self.i18n.get("widgets.combo.min_combo_label"))
             lbl_min_c.setProperty("role", "body")
             self.spn_min_combo = QSpinBox()
@@ -225,8 +229,8 @@ class WidgetCard(QFrame):
 
             group_tout = QWidget()
             gt_layout = QHBoxLayout(group_tout)
-            gt_layout.setContentsMargins(0, 0, 0, 0)
-            gt_layout.setSpacing(8)
+            gt_layout.setContentsMargins(*MARGIN_NONE)
+            gt_layout.setSpacing(SPACING_MD)
             lbl_tout = QLabel(self.i18n.get("widgets.combo.timeout_label"))
             lbl_tout.setProperty("role", "body")
             self.spn_timeout_sec = QSpinBox()
@@ -240,7 +244,7 @@ class WidgetCard(QFrame):
             self.specific_layout.addLayout(flow)
 
         if self.obs_overlay_url:
-            flow_obs = FlowLayout(margin=0, hspacing=12, vspacing=10)
+            flow_obs = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
             lbl_obs = QLabel(self.i18n.get("widgets.obs_label"))
             lbl_obs.setProperty("role", "body")
 

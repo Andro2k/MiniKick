@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
 from frontend.widgets import VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge
-from frontend.common import validate_trigger_prefix
+from frontend.common import validate_trigger_prefix, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):
@@ -33,8 +33,8 @@ class CommandConfigWizard(ModernWizardPanel):
     def _setup_ui(self):
         self.tab_basic = QWidget()
         basic_layout = QVBoxLayout(self.tab_basic)
-        basic_layout.setContentsMargins(0, 0, 0, 0)
-        basic_layout.setSpacing(10)
+        basic_layout.setContentsMargins(*MARGIN_NONE)
+        basic_layout.setSpacing(SPACING_LG)
 
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
         lbl_trigger.setProperty("role", "h3")
@@ -52,7 +52,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.badge_plugin.setVisible(False)
         
         lbl_response_layout.addWidget(lbl_response)
-        lbl_response_layout.addSpacing(6)
+        lbl_response_layout.addSpacing(SPACING_SM)
         lbl_response_layout.addWidget(self.badge_plugin)
         lbl_response_layout.addStretch()
 
@@ -64,10 +64,10 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.addWidget(self.txt_response, stretch=1)
 
         row_configs = QHBoxLayout()
-        row_configs.setSpacing(12)
+        row_configs.setSpacing(SPACING_LG)
 
         col_cooldown = QVBoxLayout()
-        col_cooldown.setSpacing(4)
+        col_cooldown.setSpacing(SPACING_XS)
         lbl_cooldown = QLabel(self.i18n.get("command.dialog.cooldown_label"))
         lbl_cooldown.setProperty("role", "h3")
         col_cooldown.addWidget(lbl_cooldown)
@@ -80,7 +80,7 @@ class CommandConfigWizard(ModernWizardPanel):
         row_configs.addLayout(col_cooldown, stretch=1)
         
         col_perm = QVBoxLayout()
-        col_perm.setSpacing(4)
+        col_perm.setSpacing(SPACING_XS)
         lbl_perm = QLabel(self.i18n.get("command.dialog.permission_label"))
         lbl_perm.setProperty("role", "h3")
         col_perm.addWidget(lbl_perm)
@@ -103,13 +103,13 @@ class CommandConfigWizard(ModernWizardPanel):
 
         self.tab_adv = QWidget()
         adv_main_layout = QHBoxLayout(self.tab_adv)
-        adv_main_layout.setContentsMargins(0, 0, 0, 0)
-        adv_main_layout.setSpacing(12)
+        adv_main_layout.setContentsMargins(*MARGIN_NONE)
+        adv_main_layout.setSpacing(SPACING_LG)
 
         left_col = QWidget()
         adv_layout = QVBoxLayout(left_col)
-        adv_layout.setContentsMargins(0, 0, 0, 0)
-        adv_layout.setSpacing(12)
+        adv_layout.setContentsMargins(*MARGIN_NONE)
+        adv_layout.setSpacing(SPACING_LG)
 
         lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
         lbl_aliases.setProperty("role", "h3")
@@ -118,7 +118,7 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addWidget(lbl_aliases)
         adv_layout.addWidget(self.txt_aliases)
 
-        adv_layout.addSpacing(6)
+        adv_layout.addSpacing(SPACING_SM)
 
         lbl_platforms = QLabel(self.i18n.get("command.dialog.platform_label"))
         lbl_platforms.setProperty("role", "h3")
@@ -131,7 +131,7 @@ class CommandConfigWizard(ModernWizardPanel):
         off_tip = self.i18n.get("command.dialog.platform_offline")
 
         platforms_row = QHBoxLayout()
-        platforms_row.setSpacing(12)
+        platforms_row.setSpacing(SPACING_LG)
         self.chk_kick = QCheckBox(self.i18n.get("command.dialog.platform_kick"))
         self.chk_kick.setChecked(True)
         if not kick_on:
@@ -159,7 +159,7 @@ class CommandConfigWizard(ModernWizardPanel):
         platforms_row.addStretch()
         adv_layout.addLayout(platforms_row)
 
-        adv_layout.addSpacing(10)
+        adv_layout.addSpacing(SPACING_MD)
 
         self.chk_regex = QCheckBox(self.i18n.get("command.dialog.regex_checkbox"))
         self.chk_regex.toggled.connect(self._on_regex_toggled)

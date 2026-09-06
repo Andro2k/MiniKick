@@ -6,6 +6,7 @@ from PySide6.QtCore import Qt, Signal, QPoint, QUrl
 from PySide6.QtGui import QMouseEvent, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
+from frontend.common import MARGIN_2XS
 
 class DraggableBox(QFrame):
     position_updated = Signal(int, int)
@@ -25,7 +26,7 @@ class DraggableBox(QFrame):
         self._drag_offset = QPoint()
 
         self.media_layout = QVBoxLayout(self)
-        self.media_layout.setContentsMargins(2, 2, 2, 2)
+        self.media_layout.setContentsMargins(*MARGIN_2XS)
         
         if filepath and os.path.exists(filepath):
             ext = filepath.lower()

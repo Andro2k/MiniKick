@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem, QHeaderVie
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernTableCard, TableActionCell
 from frontend.dialogs import ModernConfirmDialog
-from frontend.common import COLOR_GREEN, COLOR_RED
+from frontend.common import COLOR_GREEN, COLOR_RED, MARGIN_NONE, SPACING_NONE
 
 class ScheduleTablePanel(QWidget):
     new_schedule_clicked = Signal()
@@ -20,8 +20,8 @@ class ScheduleTablePanel(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
+        main_layout.setContentsMargins(*MARGIN_NONE)
+        main_layout.setSpacing(SPACING_NONE)
 
         col_1 = self.i18n.get("stream_info.table.col_name")
         col_2 = self.i18n.get("stream_info.table.col_date")

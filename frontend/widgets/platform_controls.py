@@ -2,6 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
+from frontend.common import MARGIN_NONE, SPACING_XL, SPACING_SM
 from .controls import ModernSwitch
 
 class PlatformSwitchGroup(QWidget):
@@ -34,12 +35,12 @@ class PlatformSwitchGroup(QWidget):
 
     def _setup_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(16)
+        layout.setContentsMargins(*MARGIN_NONE)
+        layout.setSpacing(SPACING_XL)
 
         for plat in self.platforms:
             box = QHBoxLayout()
-            box.setSpacing(6)
+            box.setSpacing(SPACING_SM)
 
             sw = ModernSwitch(self)
             is_connected = self.connected_platforms.get(plat, False)

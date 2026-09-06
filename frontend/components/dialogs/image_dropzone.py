@@ -6,7 +6,10 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
-from frontend.common import get_icon_colored, COLOR_RED, COLOR_GREEN
+from frontend.common import (
+    get_icon_colored, COLOR_RED, COLOR_GREEN,
+    MARGIN_MD, MARGIN_NONE, MARGIN_XS, SPACING_XS
+)
 
 class ImageDropzone(QFrame):
     image_selected = Signal(str)
@@ -24,13 +27,13 @@ class ImageDropzone(QFrame):
 
     def _setup_ui(self):
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(8, 8, 8, 8)
+        self.layout.setContentsMargins(*MARGIN_MD)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.empty_container = QWidget()
         empty_layout = QVBoxLayout(self.empty_container)
-        empty_layout.setContentsMargins(0, 0, 0, 0)
-        empty_layout.setSpacing(4)
+        empty_layout.setContentsMargins(*MARGIN_NONE)
+        empty_layout.setSpacing(SPACING_XS)
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.icon_lbl = QLabel()
@@ -53,8 +56,8 @@ class ImageDropzone(QFrame):
 
         self.preview_container = QWidget()
         preview_layout = QHBoxLayout(self.preview_container)
-        preview_layout.setContentsMargins(4, 4, 4, 4)
-        preview_layout.setSpacing(4)
+        preview_layout.setContentsMargins(*MARGIN_XS)
+        preview_layout.setSpacing(SPACING_XS)
 
         self.img_lbl = QLabel()
         self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)

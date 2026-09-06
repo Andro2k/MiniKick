@@ -4,6 +4,7 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
+from frontend.common import MARGIN_NONE, SPACING_MD
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -102,8 +103,8 @@ class SettingsView(BaseView):
 
         btn_backup_container = QWidget()
         btn_backup_layout = QHBoxLayout(btn_backup_container)
-        btn_backup_layout.setContentsMargins(0, 0, 0, 0) 
-        btn_backup_layout.setSpacing(8)
+        btn_backup_layout.setContentsMargins(*MARGIN_NONE) 
+        btn_backup_layout.setSpacing(SPACING_MD)
         
         self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_neutral_border")
         self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_neutral_border")

@@ -8,7 +8,9 @@ from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
 from frontend.common import (
     COLOR_RED, COLOR_AMBER, COLOR_BLUE, COLOR_GREEN,
     COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
-    COLOR_WHITE, PATH_ICON_HELP
+    COLOR_WHITE, PATH_ICON_HELP,
+    SPACING_2XS, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_XL, MARGIN_2XL
 )
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
@@ -48,7 +50,7 @@ class ModernFramelessShell(QDialog):
             self.setMouseTracking(True)
 
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
+        self.main_layout.setContentsMargins(*MARGIN_XL)
         self.main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.container = QFrame(self)
@@ -387,8 +389,8 @@ class ModernModal(ModernFramelessShell):
         )
         
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(20, 20, 20, 20)
-        self.content_layout.setSpacing(12)
+        self.content_layout.setContentsMargins(*MARGIN_2XL)
+        self.content_layout.setSpacing(SPACING_LG)
 
         if icon_path:
             self._setup_header(icon_path, icon_bg_color, icon_role=icon_role, icon_color=icon_color)
@@ -425,7 +427,7 @@ class ModernModal(ModernFramelessShell):
         icon_container.setProperty("role", final_role)
         
         icon_inner_layout = QVBoxLayout(icon_container)
-        icon_inner_layout.setContentsMargins(0, 0, 0, 0)
+        icon_inner_layout.setContentsMargins(*MARGIN_NONE)
         icon_inner_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         icon_lbl = QLabel()
@@ -442,7 +444,7 @@ class ModernModal(ModernFramelessShell):
 
     def add_action_buttons(self, btn_left: QPushButton, btn_right: QPushButton, stretch_center: bool = False):
         btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(12)
+        btn_layout.setSpacing(SPACING_LG)
         
         if btn_left:
             btn_left.setAutoDefault(False)
@@ -455,7 +457,7 @@ class ModernModal(ModernFramelessShell):
             btn_right.setDefault(False)
             btn_layout.addWidget(btn_right)
         
-        self.content_layout.addSpacing(8)
+        self.content_layout.addSpacing(SPACING_MD)
         self.content_layout.addLayout(btn_layout)
 
 class ModernWizardPanel(ModernFramelessShell):
@@ -488,8 +490,8 @@ class ModernWizardPanel(ModernFramelessShell):
         self.total_steps = len(title_steps)
         
         self.panel_layout = QVBoxLayout(self.container)
-        self.panel_layout.setContentsMargins(16, 16, 16, 16)
-        self.panel_layout.setSpacing(14)
+        self.panel_layout.setContentsMargins(*MARGIN_XL)
+        self.panel_layout.setSpacing(SPACING_LG)
         
         self.lbl_step_num = QLabel()
         self.lbl_step_num.setProperty("role", "caption")
@@ -502,7 +504,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.progress_bar.setValue(0)
         self.progress_bar.setProperty("role", "wizard_progress")
         self.panel_layout.addWidget(self.progress_bar)
-        self.panel_layout.addSpacing(2)
+        self.panel_layout.addSpacing(SPACING_2XS)
         
         self.lbl_title = QLabel()
         self.lbl_title.setProperty("role", "h2")
@@ -524,6 +526,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.panel_layout.addWidget(self.scroll_content, stretch=1)
         
         self.btn_layout = QHBoxLayout()
+        self.btn_layout.setSpacing(SPACING_MD)
         self.btn_layout.addStretch()
         
         self.btn_back = QPushButton()

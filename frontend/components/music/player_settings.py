@@ -4,11 +4,9 @@ import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication, QProgressBar
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
-    COLOR_NEUTRAL_400,
-    COLOR_RED,
-    COLOR_TIKTOK,
-    get_icon_colored,
-    get_pixmap,
+    COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK,
+    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_LG,
+    SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
 from .music_mockup import MusicOverlayMockupWidget
@@ -46,8 +44,8 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(0, 0, 0, 0)
-        self.panel_layout.setSpacing(16)
+        self.panel_layout.setContentsMargins(*MARGIN_LG)
+        self.panel_layout.setSpacing(SPACING_LG)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_status_card()
@@ -56,14 +54,17 @@ class MusicPlayerSettingsPanel(QWidget):
         self._setup_overlay_url_card()
 
     def _setup_status_card(self):
-        card = ModernCard(parent=self, margin=12, spacing=8)
+        card = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
 
         status_layout = QHBoxLayout()
+        status_layout.setContentsMargins(*MARGIN_NONE)
+        status_layout.setSpacing(SPACING_MD)
         
         self.lbl_auth_status = QLabel(self.i18n.get("music.status.youtube_active"))
         self.lbl_auth_status.setProperty("role", "h3")
         
         provider_info = QVBoxLayout()
+        provider_info.setContentsMargins(*MARGIN_NONE)
         provider_info.addWidget(self.lbl_auth_status)
 
         status_layout.addLayout(provider_info, stretch=1)
@@ -71,17 +72,19 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
-        self.card_player = ModernCard(parent=self, margin=12, spacing=8, orientation="vertical")
+        self.card_player = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
         self.card_player.setVisible(True)
 
         top_layout = QHBoxLayout()
-        top_layout.setSpacing(12)
+        top_layout.setContentsMargins(*MARGIN_NONE)
+        top_layout.setSpacing(SPACING_LG)
 
         self.icon_music = QLabel()
         self.icon_music.setPixmap(get_pixmap("youtube.svg", 56))
         
         info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
+        info_layout.setContentsMargins(*MARGIN_NONE)
+        info_layout.setSpacing(SPACING_2XS)
 
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
         self.lbl_song_title.setProperty("role", "h3")
@@ -100,7 +103,8 @@ class MusicPlayerSettingsPanel(QWidget):
         info_layout.addWidget(self.lbl_song_requester)
 
         controls_layout = QHBoxLayout()
-        controls_layout.setSpacing(6)
+        controls_layout.setContentsMargins(*MARGIN_NONE)
+        controls_layout.setSpacing(SPACING_SM)
         
         self.btn_play_pause = ModernButton("", role="action_neutral_border")
         self.btn_play_pause.setFixedSize(36, 36)
@@ -123,7 +127,8 @@ class MusicPlayerSettingsPanel(QWidget):
         top_layout.addLayout(controls_layout)
 
         progress_layout = QVBoxLayout()
-        progress_layout.setSpacing(4)
+        progress_layout.setContentsMargins(*MARGIN_NONE)
+        progress_layout.setSpacing(SPACING_XS)
 
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setRange(0, 100)
@@ -131,6 +136,8 @@ class MusicPlayerSettingsPanel(QWidget):
         self.progress_bar.setTextVisible(False)
 
         time_layout = QHBoxLayout()
+        time_layout.setContentsMargins(*MARGIN_NONE)
+        time_layout.setSpacing(SPACING_MD)
         self.lbl_time_elapsed = QLabel("00:00")
         self.lbl_time_elapsed.setProperty("role", "caption")
 
@@ -149,7 +156,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_volume_card(self):
-        self.card_volume = ModernCard(parent=self, margin=12, spacing=8)
+        self.card_volume = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
 
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
@@ -177,9 +184,11 @@ class MusicPlayerSettingsPanel(QWidget):
         self.volume_changed.emit(self._pending_volume)
 
     def _setup_overlay_url_card(self):
-        self.card_overlay_url = ModernCard(parent=self, margin=12, spacing=8)
+        self.card_overlay_url = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
 
         url_info = QVBoxLayout()
+        url_info.setContentsMargins(*MARGIN_NONE)
+        url_info.setSpacing(SPACING_2XS)
         lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
         lbl_title.setProperty("role", "h3")
         lbl_desc = QLabel(self.i18n.get("music.overlay.url_desc"))
@@ -189,6 +198,8 @@ class MusicPlayerSettingsPanel(QWidget):
         url_info.addWidget(lbl_desc)
 
         layout_setting_row = QHBoxLayout()
+        layout_setting_row.setContentsMargins(*MARGIN_NONE)
+        layout_setting_row.setSpacing(SPACING_MD)
         lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
         lbl_layout.setProperty("role", "body")
         self.combo_music_layout = NoWheelComboBox(self)
@@ -200,6 +211,8 @@ class MusicPlayerSettingsPanel(QWidget):
         layout_setting_row.addWidget(self.combo_music_layout)
 
         theme_layout = QHBoxLayout()
+        theme_layout.setContentsMargins(*MARGIN_NONE)
+        theme_layout.setSpacing(SPACING_MD)
         lbl_theme = QLabel(self.i18n.get("music.overlay.theme_label"), parent=self)
         lbl_theme.setProperty("role", "body")
         self.combo_music_theme = NoWheelComboBox(self)
@@ -212,9 +225,12 @@ class MusicPlayerSettingsPanel(QWidget):
         theme_layout.addWidget(self.combo_music_theme)
 
         preview_layout = QVBoxLayout()
-        preview_layout.setSpacing(6)
+        preview_layout.setContentsMargins(*MARGIN_NONE)
+        preview_layout.setSpacing(SPACING_SM)
         
         preview_header = QHBoxLayout()
+        preview_header.setContentsMargins(*MARGIN_NONE)
+        preview_header.setSpacing(SPACING_MD)
         lbl_preview = QLabel(self.i18n.get("music.overlay.preview_title"), parent=self)
         lbl_preview.setProperty("role", "body")
         

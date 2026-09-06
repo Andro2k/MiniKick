@@ -11,6 +11,9 @@ from frontend.common import (
     COLOR_GREEN,
     get_icon_colored,
     get_assets_path,
+    SPACING_XL,
+    SPACING_MD,
+    MARGIN_NONE,
 )
 
 class UpdateDialog(ModernModal):
@@ -37,12 +40,12 @@ class UpdateDialog(ModernModal):
         self.lbl_subtitle.setProperty("role", "body")
         self.content_layout.addWidget(self.lbl_subtitle)
 
-        self.content_layout.addSpacing(15)
+        self.content_layout.addSpacing(SPACING_XL)
 
         self.progress_container = QWidget()
         progress_layout = QVBoxLayout(self.progress_container)
-        progress_layout.setContentsMargins(0, 0, 0, 0)
-        progress_layout.setSpacing(8)
+        progress_layout.setContentsMargins(*MARGIN_NONE)
+        progress_layout.setSpacing(SPACING_MD)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)

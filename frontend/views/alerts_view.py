@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QBoxLay
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
-from frontend.common import get_pixmap_colored, COLOR_AMBER
+from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
     AlertVariantListItem,
@@ -83,10 +83,10 @@ class AlertsView(BaseView):
         self.url_box = self.overlay_card.url_box
 
         self.main_layout.addWidget(self.overlay_card, 0)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
 
         platform_row = QHBoxLayout()
-        platform_row.setSpacing(8)
+        platform_row.setSpacing(SPACING_MD)
 
         self.btn_tab_kick = ModernButton(
             text=self.i18n.get("alerts.platforms.kick"),
@@ -111,20 +111,20 @@ class AlertsView(BaseView):
         platform_row.addStretch()
 
         self.main_layout.addLayout(platform_row)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
 
-        self.notice_banner = ModernCard(parent=self, margin=10, spacing=8)
+        self.notice_banner = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
         self.notice_banner.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.notice_layout.setContentsMargins(0, 0, 0, 0)
-        self.notice_layout.setSpacing(10)
+        self.notice_layout.setContentsMargins(*MARGIN_NONE)
+        self.notice_layout.setSpacing(SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
         self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle.svg", COLOR_AMBER, size=20))
 
         notice_text_col = QVBoxLayout()
-        notice_text_col.setContentsMargins(0, 0, 0, 0)
-        notice_text_col.setSpacing(2)
+        notice_text_col.setContentsMargins(*MARGIN_NONE)
+        notice_text_col.setSpacing(SPACING_2XS)
 
         self.lbl_notice_title = QLabel(self.i18n.get("alerts.notice.disconnected_title"), parent=self)
         self.lbl_notice_title.setProperty("role", "h3")
@@ -154,7 +154,7 @@ class AlertsView(BaseView):
         self.notice_banner.setVisible(False)
 
         self.main_layout.addWidget(self.notice_banner, 0)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
 
         self.stack = ResponsiveStackedWidget(parent=self)
         self.stack.setMinimumWidth(0)
@@ -177,8 +177,8 @@ class AlertsView(BaseView):
     def _build_master_detail_page(self, platform: str, events: list[tuple[str, str]]) -> tuple[QWidget, AlertsSidebarPanel, ResponsiveStackedWidget, QBoxLayout]:
         page = QWidget()
         page_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, page)
-        page_layout.setContentsMargins(0, 0, 0, 0)
-        page_layout.setSpacing(12)
+        page_layout.setContentsMargins(*MARGIN_NONE)
+        page_layout.setSpacing(SPACING_LG)
 
         self._event_meta[platform] = dict(events)
 

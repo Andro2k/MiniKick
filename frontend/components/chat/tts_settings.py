@@ -5,12 +5,8 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayo
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider,
                               NoWheelComboBox, NoWheelSlider)
 from frontend.common import (
-    validate_trigger_prefix,
-    get_icon_colored,
-    get_pixmap_colored,
-    COLOR_NEUTRAL_400,
-    COLOR_GREEN,
-)
+    validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
+    COLOR_NEUTRAL_400, COLOR_GREEN, MARGIN_2XS, SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_LG)
 
 class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
@@ -24,11 +20,11 @@ class VoiceSettingRow(QWidget):
         self.action_button = action_button
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout.setContentsMargins(*MARGIN_2XS)
+        main_layout.setSpacing(SPACING_2XS)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(6)
+        header_layout.setSpacing(SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
@@ -43,7 +39,7 @@ class VoiceSettingRow(QWidget):
         main_layout.addLayout(header_layout)
 
         controls_layout = QHBoxLayout()
-        controls_layout.setSpacing(6)
+        controls_layout.setSpacing(SPACING_SM)
 
         if self.switch is not None:
             controls_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -98,7 +94,7 @@ class ChatTtsSettingsPanel(ModernCard):
     voice_test_requested = Signal(str)
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=8, spacing=4, orientation="vertical")
+        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_XS, orientation="vertical")
         self.i18n = i18n
         self._setup_ui()
         self._connect_signals()
@@ -158,7 +154,7 @@ class ChatTtsSettingsPanel(ModernCard):
         category_lbl.setProperty("role", "category")
         self.addWidget(category_lbl)
 
-        voices_card = ModernCard(parent=self, margin=4, spacing=4, orientation="vertical")
+        voices_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_XS, orientation="vertical")
 
         row_provider = VoiceSettingRow(
             "world.svg",

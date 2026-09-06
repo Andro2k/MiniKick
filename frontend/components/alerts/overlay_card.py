@@ -3,14 +3,17 @@
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QBoxLayout, QSizePolicy
 from PySide6.QtCore import Signal, QSize
 from frontend.widgets import ModernCard, ModernButton
-from frontend.common import get_pixmap_colored, COLOR_NEUTRAL_400
+from frontend.common import (
+    get_pixmap_colored, COLOR_NEUTRAL_400,
+    MARGIN_NONE, SPACING_SM, SPACING_MD
+)
 
 class AlertsOverlayCard(ModernCard):
     copy_url_requested = Signal()
     open_browser_requested = Signal()
 
     def __init__(self, alerts_overlay_url: str, i18n, parent=None):
-        super().__init__(parent=parent, margin=10, spacing=6)
+        super().__init__(parent=parent, margin=SPACING_MD, spacing=SPACING_SM)
         self.alerts_overlay_url = alerts_overlay_url
         self.i18n = i18n
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
@@ -18,7 +21,7 @@ class AlertsOverlayCard(ModernCard):
 
     def _setup_ui(self):
         card_header = QHBoxLayout()
-        card_header.setSpacing(8)
+        card_header.setSpacing(SPACING_MD)
 
         icon_link = QLabel(parent=self)
         icon_link.setPixmap(get_pixmap_colored("link.svg", COLOR_NEUTRAL_400, size=18))
@@ -37,16 +40,16 @@ class AlertsOverlayCard(ModernCard):
         self.addWidget(lbl_obs_desc)
 
         self.url_box = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.url_box.setContentsMargins(0, 0, 0, 0)
-        self.url_box.setSpacing(8)
+        self.url_box.setContentsMargins(*MARGIN_NONE)
+        self.url_box.setSpacing(SPACING_MD)
 
         self.edit_overlay_url = QLineEdit(self.alerts_overlay_url, parent=self)
         self.edit_overlay_url.setReadOnly(True)
         self.edit_overlay_url.setMinimumWidth(0)
 
         self.url_actions_layout = QHBoxLayout()
-        self.url_actions_layout.setContentsMargins(0, 0, 0, 0)
-        self.url_actions_layout.setSpacing(8)
+        self.url_actions_layout.setContentsMargins(*MARGIN_NONE)
+        self.url_actions_layout.setSpacing(SPACING_MD)
 
         self.btn_copy_url = ModernButton(
             text=self.i18n.get("alerts.overlay_card.copy_btn"),

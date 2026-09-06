@@ -2,7 +2,10 @@
 
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
-from frontend.common import COLOR_NEUTRAL_400, get_pixmap_colored
+from frontend.common import (
+    COLOR_NEUTRAL_400, get_pixmap_colored,
+    MARGIN_NONE, SPACING_SM, SPACING_MD, SPACING_LG
+)
 from frontend.widgets import ModernCard, ModernSwitch
 
 class MusicStatsPanel(QWidget):
@@ -19,12 +22,13 @@ class MusicStatsPanel(QWidget):
 
     def _setup_ui(self):
         self.stats_grid = QGridLayout(self)
-        self.stats_grid.setContentsMargins(0, 0, 0, 0)
-        self.stats_grid.setSpacing(12)
+        self.stats_grid.setContentsMargins(*MARGIN_NONE)
+        self.stats_grid.setSpacing(SPACING_LG)
 
-        self.card_stat_queue = ModernCard(parent=self, margin=12, spacing=6)
+        self.card_stat_queue = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_SM)
         
         queue_header = QHBoxLayout()
+        queue_header.setSpacing(SPACING_MD)
         icon_queue = QLabel()
         icon_queue.setPixmap(get_pixmap_colored("music.svg", COLOR_NEUTRAL_400, 18))
         lbl_queue_title = QLabel(self.i18n.get("music.stats.queue_title"))
@@ -44,9 +48,10 @@ class MusicStatsPanel(QWidget):
         self.card_stat_queue.addWidget(self.lbl_stat_queue_count)
         self.card_stat_queue.addWidget(lbl_queue_desc)
 
-        self.card_stat_duration = ModernCard(parent=self, margin=12, spacing=6)
+        self.card_stat_duration = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_SM)
 
         dur_header = QHBoxLayout()
+        dur_header.setSpacing(SPACING_MD)
         icon_dur = QLabel()
         icon_dur.setPixmap(get_pixmap_colored("clock.svg", COLOR_NEUTRAL_400, 18))
         lbl_dur_title = QLabel(self.i18n.get("music.stats.duration_title"))
@@ -66,9 +71,10 @@ class MusicStatsPanel(QWidget):
         self.card_stat_duration.addWidget(self.lbl_stat_duration_sum)
         self.card_stat_duration.addWidget(lbl_dur_desc)
 
-        self.card_stat_service = ModernCard(parent=self, margin=12, spacing=6)
+        self.card_stat_service = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_SM)
 
         service_header = QHBoxLayout()
+        service_header.setSpacing(SPACING_MD)
         icon_cmd = QLabel()
         icon_cmd.setPixmap(get_pixmap_colored("code.svg", COLOR_NEUTRAL_400, 18))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))

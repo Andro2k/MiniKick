@@ -8,7 +8,8 @@ from frontend.widgets import (
     ModernButton, UnifiedSearchBar, NoWheelComboBox
 )
 from frontend.common import (
-    COLOR_NEUTRAL_400, get_icon_colored
+    COLOR_NEUTRAL_400, get_icon_colored,
+    MARGIN_MD, SPACING_MD, SPACING_SM
 )
 
 class LogControlsPanel(QFrame):
@@ -30,11 +31,11 @@ class LogControlsPanel(QFrame):
 
     def _setup_ui(self):
         root = QVBoxLayout(self)
-        root.setContentsMargins(8, 8, 8, 8)
-        root.setSpacing(8)
+        root.setContentsMargins(*MARGIN_MD)
+        root.setSpacing(SPACING_MD)
 
         self._search = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self._search.setSpacing(6)
+        self._search.setSpacing(SPACING_SM)
 
         self.txt_search = UnifiedSearchBar(placeholder=self.i18n.get("log.controls.search_placeholder"))
         self.txt_search.textChanged.connect(self.search_changed.emit)
@@ -52,7 +53,7 @@ class LogControlsPanel(QFrame):
         root.addLayout(self._search)
 
         self._actions = QGridLayout()
-        self._actions.setSpacing(6)
+        self._actions.setSpacing(SPACING_SM)
         root.addLayout(self._actions)
 
         specs = [

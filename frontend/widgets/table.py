@@ -7,7 +7,11 @@ from .controls import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
-from frontend.common import get_icon_colored, get_assets_path
+from frontend.common import (
+    get_icon_colored, get_assets_path,
+    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_MD, MARGIN_XL, MARGIN_H_SM
+)
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -34,8 +38,8 @@ class ModernTableCard(QFrame):
         self.setProperty("role", "card")
         
         self.card_layout = QVBoxLayout(self)
-        self.card_layout.setContentsMargins(8, 8, 8, 8)
-        self.card_layout.setSpacing(6)
+        self.card_layout.setContentsMargins(*MARGIN_MD)
+        self.card_layout.setSpacing(SPACING_SM)
         
         self.header_layout = None
         self.lbl_title = None
@@ -77,8 +81,8 @@ class ModernTableCard(QFrame):
     def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked):
         self.empty_widget = QWidget(self)
         layout = QVBoxLayout(self.empty_widget)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(12)
+        layout.setContentsMargins(*MARGIN_XL)
+        layout.setSpacing(SPACING_LG)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         illustration_path = get_assets_path(os.path.join("icons", icon_name))
@@ -109,7 +113,7 @@ class ModernTableCard(QFrame):
         layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
         layout.addWidget(lbl_desc)
-        layout.addSpacing(8)
+        layout.addSpacing(SPACING_MD)
         layout.addWidget(self.btn_empty_action, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(2)
         
@@ -145,8 +149,8 @@ class TableActionCell(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(6)
+        self.layout.setContentsMargins(*MARGIN_NONE)
+        self.layout.setSpacing(SPACING_SM)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
     def add_switch(self, checked: bool, callback) -> ModernSwitch:
@@ -154,7 +158,7 @@ class TableActionCell(QWidget):
         sw.setChecked(checked)
         sw.toggled.connect(callback)
         self.layout.addWidget(sw)
-        self.layout.addSpacing(4)
+        self.layout.addSpacing(SPACING_XS)
         return sw
         
     def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
@@ -171,8 +175,8 @@ class PlatformBadgeCell(QWidget):
     def __init__(self, platforms: list[str] | None = None, parent=None):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(6, 0, 6, 0)
-        self.layout.setSpacing(6)
+        self.layout.setContentsMargins(*MARGIN_H_SM)
+        self.layout.setSpacing(SPACING_SM)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         if platforms is not None:
             self.set_platforms(platforms)

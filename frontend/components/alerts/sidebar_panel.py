@@ -3,6 +3,7 @@
 from typing import Dict, List, Tuple
 from PySide6.QtWidgets import QLabel, QSizePolicy
 from PySide6.QtCore import Signal
+from frontend.common import SPACING_MD
 from frontend.widgets import ModernCard, ModernDivider
 from .variant_item import AlertVariantListItem
 
@@ -11,7 +12,7 @@ class AlertsSidebarPanel(ModernCard):
     SIDEBAR_WIDTH = 320
 
     def __init__(self, platform: str, events: List[Tuple[str, str]], i18n, parent=None):
-        super().__init__(parent=parent, margin=10, spacing=8)
+        super().__init__(parent=parent, margin=SPACING_MD, spacing=SPACING_MD)
         self.platform = platform
         self.events = events
         self.i18n = i18n

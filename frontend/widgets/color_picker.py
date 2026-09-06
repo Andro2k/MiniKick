@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLineEdit, QColorDialog
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.common import RADIUS_SM, get_swatch_qss
+from frontend.common import RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_MD, SPACING_XS
 
 DEFAULT_PRESET_COLORS = [
     "#00E701", "#00F0FF", "#9146FF", "#FF4655", "#FFB800", "#FFFFFF"
@@ -27,8 +27,8 @@ class ModernColorPicker(QWidget):
 
     def _setup_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
+        layout.setContentsMargins(*MARGIN_NONE)
+        layout.setSpacing(SPACING_MD)
 
         self.btn_swatch = QPushButton(self)
         self.btn_swatch.setFixedSize(32, 32)
@@ -46,7 +46,7 @@ class ModernColorPicker(QWidget):
 
         if self._presets:
             presets_layout = QHBoxLayout()
-            presets_layout.setSpacing(4)
+            presets_layout.setSpacing(SPACING_XS)
             for hex_code in self._presets:
                 btn_p = QPushButton(self)
                 btn_p.setFixedSize(22, 22)

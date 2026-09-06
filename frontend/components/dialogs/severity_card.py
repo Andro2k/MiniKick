@@ -2,6 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt, Signal
+from frontend.common import MARGIN_MD, MARGIN_NONE, SPACING_MD, SPACING_2XS
 
 class SeverityCard(QFrame):
     clicked = Signal(str)
@@ -13,12 +14,12 @@ class SeverityCard(QFrame):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 10, 8, 10)
-        layout.setSpacing(8)
+        layout.setContentsMargins(*MARGIN_MD)
+        layout.setSpacing(SPACING_MD)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
-        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setContentsMargins(*MARGIN_NONE)
 
         self.lbl_title = QLabel(title)
         self.lbl_title.setProperty("role", "body")

@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize
 
 from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker
-from frontend.common import get_icon_colored
+from frontend.common import get_icon_colored, SPACING_XS, SPACING_MD, MARGIN_NONE, MARGIN_LG
 from .base_dialog import ModernWizardPanel
 from .visual_positioner_dialog import VisualPositionerDialog
 
@@ -84,8 +84,8 @@ class RewardsConfigWizard(ModernWizardPanel):
     def _build_user_input_row(self) -> QWidget:
         container = QWidget()
         row = QHBoxLayout(container)
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(8)
+        row.setContentsMargins(*MARGIN_NONE)
+        row.setSpacing(SPACING_MD)
         
         lbl_sw = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_user_input_label"))
         lbl_sw.setProperty("role", "h3")
@@ -146,14 +146,14 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_step1(self, rewards_list, existing_reward):
         layout = QVBoxLayout(self.step1_widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
+        layout.setContentsMargins(*MARGIN_NONE)
+        layout.setSpacing(SPACING_MD)
         
         if not self.is_edit_mode and not self.kick_authenticated and not self.twitch_authenticated:
             no_plat_box = QWidget()
             no_plat_box.setProperty("role", "card")
             np_layout = QHBoxLayout(no_plat_box)
-            np_layout.setContentsMargins(12, 10, 12, 10)
+            np_layout.setContentsMargins(*MARGIN_LG)
             lbl_no_p = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.no_platforms_connected"))
             lbl_no_p.setWordWrap(True)
             lbl_no_p.setProperty("role", "caption")
@@ -204,7 +204,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         plat_row.addWidget(self.rb_plat_twitch)
         plat_row.addStretch()
         layout.addLayout(plat_row)
-        layout.addSpacing(4)
+        layout.addSpacing(SPACING_XS)
 
         if self.is_edit_mode:
             is_platform_offline = (self.selected_platform == "kick" and not self.kick_authenticated) or (self.selected_platform == "twitch" and not self.twitch_authenticated)
@@ -212,7 +212,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                 off_box = QWidget()
                 off_box.setProperty("role", "card")
                 off_layout = QHBoxLayout(off_box)
-                off_layout.setContentsMargins(12, 8, 12, 8)
+                off_layout.setContentsMargins(*MARGIN_LG)
                 lbl_off = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.edit_offline_warning"))
                 lbl_off.setWordWrap(True)
                 lbl_off.setProperty("role", "caption")
@@ -242,12 +242,12 @@ class RewardsConfigWizard(ModernWizardPanel):
             mode_row.addWidget(self.rb_create)
             mode_row.addStretch()
             layout.addLayout(mode_row)
-            layout.addSpacing(4)
+            layout.addSpacing(SPACING_XS)
         
             self.container_existing = QWidget()
             v_existing = QVBoxLayout(self.container_existing)
-            v_existing.setContentsMargins(0, 0, 0, 0)
-            v_existing.setSpacing(8)
+            v_existing.setContentsMargins(*MARGIN_NONE)
+            v_existing.setSpacing(SPACING_MD)
             
             lbl_ex = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.reward_selection"))
             lbl_ex.setProperty("role", "h3")
@@ -275,8 +275,8 @@ class RewardsConfigWizard(ModernWizardPanel):
             
             self.container_create = QWidget()
             v_create = QVBoxLayout(self.container_create)
-            v_create.setContentsMargins(0, 0, 0, 0)
-            v_create.setSpacing(8)
+            v_create.setContentsMargins(*MARGIN_NONE)
+            v_create.setSpacing(SPACING_MD)
             
             self._setup_reward_form_rows(v_create, is_edit=False)
             
@@ -287,7 +287,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             self.rb_create.toggled.connect(self._on_mode_changed)
             self.combo_rewards.currentTextChanged.connect(self._on_combo_reward_changed)
 
-        layout.addSpacing(4)
+        layout.addSpacing(SPACING_XS)
         lbl2 = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.file_label"))
         lbl2.setProperty("role", "h3")
         layout.addWidget(lbl2)
@@ -330,8 +330,8 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_step2(self):
         layout = QVBoxLayout(self.step2_widget)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
+        layout.setContentsMargins(*MARGIN_NONE)
+        layout.setSpacing(SPACING_MD)
         
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_vol.setRange(0, 100)
@@ -352,8 +352,8 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         self.video_container = QWidget()
         v_layout = QVBoxLayout(self.video_container)
-        v_layout.setContentsMargins(0, 8, 0, 0)
-        v_layout.setSpacing(8)
+        v_layout.setContentsMargins(*MARGIN_NONE)
+        v_layout.setSpacing(SPACING_MD)
         
         row_rnd = QHBoxLayout()
         lbl_rnd = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.random_pos"))
@@ -372,10 +372,10 @@ class RewardsConfigWizard(ModernWizardPanel):
         v_layout.addWidget(self.btn_visual)
         
         row_xy = QHBoxLayout()
-        row_xy.setSpacing(8)
+        row_xy.setSpacing(SPACING_MD)
 
         col_x = QVBoxLayout()
-        col_x.setSpacing(4)
+        col_x.setSpacing(SPACING_XS)
         lbl_x = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.coord_x"))
         lbl_x.setProperty("role", "h3")
         self.spin_x = QSpinBox()
@@ -385,7 +385,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row_xy.addLayout(col_x, stretch=1)
 
         col_y = QVBoxLayout()
-        col_y.setSpacing(4)
+        col_y.setSpacing(SPACING_XS)
         lbl_y = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.coord_y"))
         lbl_y.setProperty("role", "h3")
         self.spin_y = QSpinBox()

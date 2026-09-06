@@ -2,7 +2,10 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QButtonGroup, QSizePolicy
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common import get_icon_colored, COLOR_WHITE, COLOR_NEUTRAL_400
+from frontend.common import (
+    get_icon_colored, COLOR_WHITE, COLOR_NEUTRAL_400,
+    SPACING_2XS, MARGIN_2XS
+)
 
 class ModernSegmentedControl(QFrame):
     value_changed = Signal(str)
@@ -18,8 +21,8 @@ class ModernSegmentedControl(QFrame):
         self._current_value = ""
 
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(2, 2, 2, 2)
-        self._layout.setSpacing(2)
+        self._layout.setContentsMargins(*MARGIN_2XS)
+        self._layout.setSpacing(SPACING_2XS)
 
         self._btn_group = QButtonGroup(self)
         self._btn_group.setExclusive(True)

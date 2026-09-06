@@ -9,7 +9,7 @@ from PySide6.QtGui import QColor, QDesktopServices, QFont
 from .base_dialog import ModernModal
 from frontend.common import (
     get_assets_path, COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED,
-    markdown_to_github_html
+    markdown_to_github_html, SPACING_MD, MARGIN_V_XS
 )
 
 class ReleaseNotesDialog(ModernModal):
@@ -39,8 +39,8 @@ class ReleaseNotesDialog(ModernModal):
 
         self.meta_container = QWidget(self.container)
         meta_layout = QHBoxLayout(self.meta_container)
-        meta_layout.setContentsMargins(0, 4, 0, 4)
-        meta_layout.setSpacing(8)
+        meta_layout.setContentsMargins(*MARGIN_V_XS)
+        meta_layout.setSpacing(SPACING_MD)
         meta_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_tag_badge = QLabel("", parent=self.meta_container)

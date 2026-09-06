@@ -5,7 +5,10 @@ from PySide6.QtCore import Qt, Signal
 from frontend.widgets import (
     BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
 )
-from frontend.common import COLOR_RED, COLOR_GREEN
+from frontend.common import (
+    COLOR_RED, COLOR_GREEN,
+    MARGIN_MD, MARGIN_H_MD, SPACING_MD
+)
 
 class CommandView(BaseView):
     add_requested = Signal()
@@ -191,7 +194,7 @@ class CommandView(BaseView):
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(12, 0, 8, 0)
+        layout.setContentsMargins(*MARGIN_MD)
         lbl_trigger = QLabel(cmd_data["trigger"])
         lbl_trigger.setProperty("role", "body")
         layout.addWidget(lbl_trigger)
@@ -233,8 +236,8 @@ class CommandView(BaseView):
     def _create_aliases_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(8, 0, 8, 0)
-        layout.setSpacing(8)
+        layout.setContentsMargins(*MARGIN_H_MD)
+        layout.setSpacing(SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         raw_aliases = cmd_data.get("aliases", "").strip()
         is_regex = cmd_data.get("is_regex", False)

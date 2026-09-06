@@ -9,6 +9,9 @@ from frontend.common import (
     COLOR_GREEN,
     COLOR_TIKTOK,
     get_icon_colored,
+    MARGIN_NONE,
+    SPACING_NONE,
+    SPACING_XS,
 )
 from frontend.widgets import ModernTable, ModernTableCard
 
@@ -115,8 +118,8 @@ class MusicQueuePanel(QWidget):
 
     def _setup_ui(self):
         panel_layout = QVBoxLayout(self)
-        panel_layout.setContentsMargins(0, 0, 0, 0)
-        panel_layout.setSpacing(0)
+        panel_layout.setContentsMargins(*MARGIN_NONE)
+        panel_layout.setSpacing(SPACING_NONE)
 
         headers = [
             self.i18n.get("music.queue.col_num"),
@@ -190,8 +193,8 @@ class MusicQueuePanel(QWidget):
     def _create_action_buttons(self, index: int) -> QWidget:
         cell_widget = QWidget()
         cell_layout = QHBoxLayout(cell_widget)
-        cell_layout.setContentsMargins(0, 0, 0, 0)
-        cell_layout.setSpacing(4)
+        cell_layout.setContentsMargins(*MARGIN_NONE)
+        cell_layout.setSpacing(SPACING_XS)
         cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         btn_delete = QPushButton()

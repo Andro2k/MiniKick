@@ -4,7 +4,7 @@ from PySide6.QtGui import QRegion
 from PySide6.QtWidgets import QLabel, QFrame
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernButton
-from frontend.common import COLOR_GREEN, PATH_ICON_HELP
+from frontend.common import COLOR_GREEN, PATH_ICON_HELP, SPACING_SM
 from .base_dialog import ModernModal
 from frontend.components.dialogs import DraggableBox
 
@@ -20,7 +20,7 @@ class VisualPositionerDialog(ModernModal):
         desc_lbl.setProperty("role", "body")
         desc_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.content_layout.addWidget(desc_lbl)
-        self.content_layout.addSpacing(5)
+        self.content_layout.addSpacing(SPACING_SM)
         
         self.canvas_w = 640
         self.canvas_h = 360

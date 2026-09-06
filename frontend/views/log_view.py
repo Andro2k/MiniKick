@@ -11,7 +11,9 @@ from frontend.widgets import (BaseView, ModernTable, ScalableIllustration, Moder
                               SegmentedPagination)
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED,
-    get_assets_path, get_icon_colored
+    get_assets_path, get_icon_colored,
+    SPACING_NONE, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_XS, MARGIN_MD, MARGIN_2XL
 )
 from frontend.components.log import LogControlsPanel
 
@@ -93,15 +95,16 @@ class LogView(BaseView):
         self.table_card = QFrame()
         self.table_card.setProperty("role", "card")
         table_layout = QVBoxLayout(self.table_card)
-        table_layout.setContentsMargins(0, 0, 0, 0)
+        table_layout.setContentsMargins(*MARGIN_NONE)
+        table_layout.setSpacing(SPACING_NONE)
         
         self.content_stack = QStackedWidget(self)
         self.empty_state = self._build_empty_state()
         self.content_stack.addWidget(self.empty_state)
 
-        table_page = QWidget()
-        table_page_layout = QVBoxLayout(table_page)
-        table_page_layout.setContentsMargins(4, 4, 4, 4)
+        self.table_page = QWidget()
+        table_page_layout = QVBoxLayout(self.table_page)
+        table_page_layout.setContentsMargins(*MARGIN_XS)
 
         col_1 = self.i18n.get("log.table.col_level")
         col_2 = self.i18n.get("log.table.col_time")
@@ -155,8 +158,8 @@ class LogView(BaseView):
         
         self.pagination_bar = QWidget()
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
-        self.pagination_layout.setContentsMargins(8, 8, 8, 8)
-        self.pagination_layout.setSpacing(6)
+        self.pagination_layout.setContentsMargins(*MARGIN_MD)
+        self.pagination_layout.setSpacing(SPACING_SM)
 
         self.segmented_pagination = SegmentedPagination(self)
         self.segmented_pagination.first_requested.connect(self.first_page)
@@ -173,7 +176,7 @@ class LogView(BaseView):
 
         table_page_layout.addWidget(self.pagination_bar)
 
-        self.content_stack.addWidget(table_page)
+        self.content_stack.addWidget(self.table_page)
         table_layout.addWidget(self.content_stack)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
@@ -218,8 +221,8 @@ class LogView(BaseView):
     def _build_empty_state(self) -> QWidget:
         container = QWidget()
         layout = QVBoxLayout(container)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(12)
+        layout.setContentsMargins(*MARGIN_2XL)
+        layout.setSpacing(SPACING_LG)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         illustration_path = get_assets_path(os.path.join("icons", LOG_ILLUSTRATION_FILE))
@@ -250,7 +253,7 @@ class LogView(BaseView):
         layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
         layout.addWidget(lbl_desc)
-        layout.addSpacing(8)
+        layout.addSpacing(SPACING_MD)
         layout.addWidget(self.btn_show_logs, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(2)
 

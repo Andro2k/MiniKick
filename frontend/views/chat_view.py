@@ -3,7 +3,8 @@
 from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBoxLayout
 from PySide6.QtCore import Signal
-from frontend.widgets import BaseView, ModernCard, ModernScrollArea
+from frontend.widgets import BaseView, ModernScrollArea
+from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_XL
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -26,7 +27,7 @@ class ChatView(BaseView):
 
     def _setup_ui(self):
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_layout.setSpacing(16)
+        self.body_layout.setSpacing(SPACING_XL)
 
         self.tabs = QTabWidget()
         self.tabs.setMinimumWidth(320)
@@ -41,17 +42,13 @@ class ChatView(BaseView):
         self.txt_command = self.tts_settings_panel.txt_command
         self.chat_display = self.chat_display_panel.chat_display
         self.tabs.addTab(ModernScrollArea(self.tts_settings_panel), self.i18n.get("chat.tabs.settings"))
-        
-        bot_card = ModernCard()
-        bot_card.addWidget(self.bot_panel)
-        self.tabs.addTab(bot_card, self.i18n.get("chat.tabs.muted"))
-        
+        self.tabs.addTab(ModernScrollArea(self.bot_panel), self.i18n.get("chat.tabs.muted"))
         self.tabs.addTab(ModernScrollArea(self.overlay_settings_panel), self.i18n.get("chat.tabs.overlay"))
 
         self.left_container = QWidget()
         left_layout = QVBoxLayout(self.left_container)
-        left_layout.setContentsMargins(0, 0, 0, 0)
-        left_layout.setSpacing(0)
+        left_layout.setContentsMargins(*MARGIN_NONE)
+        left_layout.setSpacing(SPACING_NONE)
         left_layout.addWidget(self.tabs)
         self.left_container.setMinimumWidth(320)
         self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)

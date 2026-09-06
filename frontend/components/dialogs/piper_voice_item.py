@@ -4,7 +4,10 @@ from PySide6.QtWidgets import (
     QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QProgressBar
 )
 from PySide6.QtCore import Qt, QSize, Signal
-from frontend.common import get_icon_colored, COLOR_NEUTRAL_400
+from frontend.common import (
+    get_icon_colored, COLOR_NEUTRAL_400,
+    MARGIN_MD, SPACING_SM, SPACING_MD, SPACING_2XS
+)
 
 class PiperVoiceItemWidget(QFrame):
     download_requested = Signal(str)
@@ -23,11 +26,11 @@ class PiperVoiceItemWidget(QFrame):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(6)
+        main_layout.setContentsMargins(*MARGIN_MD)
+        main_layout.setSpacing(SPACING_SM)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(8)
+        header_layout.setSpacing(SPACING_MD)
 
         lang_str = self.voice_meta.get("lang", "es_ES")
         badge_lbl = QLabel(lang_str.upper(), self)
@@ -36,7 +39,7 @@ class PiperVoiceItemWidget(QFrame):
         badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         info_layout = QVBoxLayout()
-        info_layout.setSpacing(2)
+        info_layout.setSpacing(SPACING_2XS)
 
         self.lbl_name = QLabel(self.voice_meta.get("name", self.voice_id), self)
         self.lbl_name.setProperty("role", "body")

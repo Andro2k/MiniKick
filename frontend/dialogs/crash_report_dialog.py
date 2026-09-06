@@ -9,7 +9,7 @@ from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton
-from frontend.common import get_assets_path, COLOR_RED
+from frontend.common import get_assets_path, COLOR_RED, MARGIN_LG, SPACING_MD, SPACING_XS
 
 class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n, webhook_url: str = "", worker_class=None, initial_contact: str = "", parent=None):
@@ -43,7 +43,7 @@ class CrashReportDialog(ModernModal):
         header_card = QFrame()
         header_card.setProperty("role", "banner_danger")
         card_layout = QVBoxLayout(header_card)
-        card_layout.setContentsMargins(12, 10, 12, 10)
+        card_layout.setContentsMargins(*MARGIN_LG)
 
         lbl_subtitle = QLabel(self.subtitle_text)
         lbl_subtitle.setProperty("role", "body")
@@ -51,7 +51,7 @@ class CrashReportDialog(ModernModal):
         card_layout.addWidget(lbl_subtitle)
 
         form_layout = QVBoxLayout()
-        form_layout.setSpacing(8)
+        form_layout.setSpacing(SPACING_MD)
 
         lbl_contact = QLabel(self.lbl_contact_text)
         lbl_contact.setProperty("role", "body")
@@ -91,9 +91,9 @@ class CrashReportDialog(ModernModal):
         self.lbl_error.hide()
 
         self.content_layout.addWidget(header_card)
-        self.content_layout.addSpacing(4)
+        self.content_layout.addSpacing(SPACING_XS)
         self.content_layout.addLayout(form_layout)
-        self.content_layout.addSpacing(4)
+        self.content_layout.addSpacing(SPACING_XS)
         self.content_layout.addLayout(tb_header_layout)
         self.content_layout.addWidget(self.txt_traceback)
         self.content_layout.addWidget(self.lbl_error)

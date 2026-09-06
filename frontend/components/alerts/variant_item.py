@@ -2,7 +2,10 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt, Signal
-from frontend.common import get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400
+from frontend.common import (
+    get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
+    MARGIN_MD, MARGIN_NONE, SPACING_MD, SPACING_2XS
+)
 
 class AlertVariantListItem(QFrame):
     clicked = Signal(str)
@@ -23,8 +26,8 @@ class AlertVariantListItem(QFrame):
 
     def _setup_ui(self):
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(10)
+        layout.setContentsMargins(*MARGIN_MD)
+        layout.setSpacing(SPACING_MD)
 
         self.icon_lbl = QLabel(parent=self)
         self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, COLOR_NEUTRAL_400, size=20))
@@ -32,8 +35,8 @@ class AlertVariantListItem(QFrame):
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
-        text_layout.setContentsMargins(0, 0, 0, 0)
+        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setContentsMargins(*MARGIN_NONE)
 
         self.lbl_title = QLabel(self.i18n.get(f"alerts.events.{self.alert_type}"), parent=self)
         self.lbl_title.setProperty("role", "body")

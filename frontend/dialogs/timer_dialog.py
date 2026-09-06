@@ -8,7 +8,10 @@ from PySide6.QtCore import Qt, Signal
 from .base_dialog import ModernWizardPanel
 from .message_editor_dialog import MessageEditorDialog
 from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox
-from frontend.common import COLOR_RED, COLOR_GREEN, get_icon_colored
+from frontend.common import (
+    COLOR_RED, COLOR_GREEN, get_icon_colored,
+    SPACING_MD, MARGIN_NONE, MARGIN_LG
+)
 
 logger = logging.getLogger("minikick.dialogs.timer_dialog")
 
@@ -60,14 +63,14 @@ class TimerConfigWizard(ModernWizardPanel):
 
     def _build_platform_switches_row(self) -> QHBoxLayout:
         switches_row = QHBoxLayout()
-        switches_row.setSpacing(8)
+        switches_row.setSpacing(SPACING_MD)
 
         kick_on = self.connected_platforms.get("kick", False)
         twitch_on = self.connected_platforms.get("twitch", False)
         off_tip = self.i18n.get("timer.dialog.platform_offline")
 
         kick_switch_box = QHBoxLayout()
-        kick_switch_box.setSpacing(8)
+        kick_switch_box.setSpacing(SPACING_MD)
         self.switch_kick = ModernSwitch()
         self.switch_kick.setEnabled(kick_on)
         self.switch_kick.setChecked(kick_on)
@@ -80,7 +83,7 @@ class TimerConfigWizard(ModernWizardPanel):
         switches_row.addLayout(kick_switch_box)
 
         twitch_switch_box = QHBoxLayout()
-        twitch_switch_box.setSpacing(8)
+        twitch_switch_box.setSpacing(SPACING_MD)
         self.switch_twitch = ModernSwitch()
         self.switch_twitch.setEnabled(twitch_on)
         self.switch_twitch.setChecked(twitch_on)
@@ -100,14 +103,14 @@ class TimerConfigWizard(ModernWizardPanel):
 
         self.tab_basic = QWidget()
         basic_main_layout = QVBoxLayout(self.tab_basic)
-        basic_main_layout.setContentsMargins(0, 0, 0, 0)
-        basic_main_layout.setSpacing(8)
+        basic_main_layout.setContentsMargins(*MARGIN_NONE)
+        basic_main_layout.setSpacing(SPACING_MD)
 
         top_card = QFrame()
         top_card.setProperty("role", "card")
         top_layout = QVBoxLayout(top_card)
-        top_layout.setContentsMargins(12, 12, 12, 12)
-        top_layout.setSpacing(8)
+        top_layout.setContentsMargins(*MARGIN_LG)
+        top_layout.setSpacing(SPACING_MD)
 
         lbl_name = QLabel(self.i18n.get("timer.dialog.name_label"))
         lbl_name.setProperty("role", "h3")
@@ -182,8 +185,8 @@ class TimerConfigWizard(ModernWizardPanel):
         bottom_card = QFrame()
         bottom_card.setProperty("role", "card")
         bottom_layout = QVBoxLayout(bottom_card)
-        bottom_layout.setContentsMargins(12, 12, 12, 12)
-        bottom_layout.setSpacing(8)
+        bottom_layout.setContentsMargins(*MARGIN_LG)
+        bottom_layout.setSpacing(SPACING_MD)
 
         lbl_msgs_title = QLabel(self.i18n.get("timer.dialog.responses_title"))
         lbl_msgs_title.setProperty("role", "h3")
@@ -200,8 +203,8 @@ class TimerConfigWizard(ModernWizardPanel):
         self.scroll_msgs.setMinimumHeight(120)
         self.scroll_msgs_widget = QWidget()
         self.msgs_container_layout = QVBoxLayout(self.scroll_msgs_widget)
-        self.msgs_container_layout.setContentsMargins(0, 0, 0, 0)
-        self.msgs_container_layout.setSpacing(8)
+        self.msgs_container_layout.setContentsMargins(*MARGIN_NONE)
+        self.msgs_container_layout.setSpacing(SPACING_MD)
         self.msgs_container_layout.addStretch()
         self.scroll_msgs.setWidget(self.scroll_msgs_widget)
         bottom_layout.addWidget(self.scroll_msgs, stretch=1)
@@ -216,14 +219,14 @@ class TimerConfigWizard(ModernWizardPanel):
         self.tab_filters = QWidget()
         self.tab_filters.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         filters_main_layout = QVBoxLayout(self.tab_filters)
-        filters_main_layout.setContentsMargins(0, 0, 0, 0)
-        filters_main_layout.setSpacing(8)
+        filters_main_layout.setContentsMargins(*MARGIN_NONE)
+        filters_main_layout.setSpacing(SPACING_MD)
 
         help_card = QFrame()
         help_card.setProperty("role", "card")
         help_layout = QVBoxLayout(help_card)
-        help_layout.setContentsMargins(12, 12, 12, 12)
-        help_layout.setSpacing(8)
+        help_layout.setContentsMargins(*MARGIN_LG)
+        help_layout.setSpacing(SPACING_MD)
 
         lbl_help_title = QLabel(self.i18n.get("timer.dialog.help_title"))
         lbl_help_title.setProperty("role", "h3")
@@ -238,8 +241,8 @@ class TimerConfigWizard(ModernWizardPanel):
         filt_card = QFrame()
         filt_card.setProperty("role", "card")
         filt_layout = QVBoxLayout(filt_card)
-        filt_layout.setContentsMargins(12, 12, 12, 12)
-        filt_layout.setSpacing(8)
+        filt_layout.setContentsMargins(*MARGIN_LG)
+        filt_layout.setSpacing(SPACING_MD)
 
         lbl_keywords = QLabel(self.i18n.get("timer.dialog.keywords_label"))
         lbl_keywords.setProperty("role", "h3")
@@ -254,7 +257,7 @@ class TimerConfigWizard(ModernWizardPanel):
         lbl_keywords_desc.setWordWrap(True)
         filt_layout.addWidget(lbl_keywords_desc)
 
-        filt_layout.addSpacing(10)
+        filt_layout.addSpacing(SPACING_MD)
 
         lbl_categories = QLabel(self.i18n.get("timer.dialog.categories_label"))
         lbl_categories.setProperty("role", "h3")
@@ -306,8 +309,8 @@ class TimerConfigWizard(ModernWizardPanel):
     def _add_message_field(self, text=""):
         row = QWidget()
         row_layout = QHBoxLayout(row)
-        row_layout.setContentsMargins(0, 0, 0, 0)
-        row_layout.setSpacing(8)
+        row_layout.setContentsMargins(*MARGIN_NONE)
+        row_layout.setSpacing(SPACING_MD)
 
         txt = QLineEdit()
         txt.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))

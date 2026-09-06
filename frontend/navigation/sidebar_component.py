@@ -6,7 +6,9 @@ from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, 
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import (
     COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800,
-    get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored
+    get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored,
+    MARGIN_NONE, MARGIN_SM, MARGIN_MD, MARGIN_V_SM,
+    SPACING_2XS, SPACING_SM, SPACING_MD
 )
 
 class Sidebar(QFrame):
@@ -39,12 +41,12 @@ class Sidebar(QFrame):
 
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(6, 6, 6, 6)
-        self.main_layout.setSpacing(6)
+        self.main_layout.setContentsMargins(*MARGIN_SM)
+        self.main_layout.setSpacing(SPACING_SM)
 
         self.header_container = QWidget()
         self.header_layout = QHBoxLayout(self.header_container)
-        self.header_layout.setContentsMargins(0, 0, 0, 0) 
+        self.header_layout.setContentsMargins(*MARGIN_NONE) 
         self.header_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         
         self.logo_btn = QPushButton()
@@ -71,7 +73,7 @@ class Sidebar(QFrame):
         self.header_layout.addWidget(self.expanded_spacer) 
         self.header_layout.addWidget(self.btn_toggle)
         self.main_layout.addWidget(self.header_container)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
         
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidgetResizable(True)
@@ -81,8 +83,8 @@ class Sidebar(QFrame):
 
         scroll_content = QWidget()
         scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 0, 0, 0)
-        scroll_layout.setSpacing(6)
+        scroll_layout.setContentsMargins(*MARGIN_NONE)
+        scroll_layout.setSpacing(SPACING_SM)
 
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
         self.lbl_navigate_header = QLabel(navigate_text)
@@ -90,8 +92,8 @@ class Sidebar(QFrame):
         scroll_layout.addWidget(self.lbl_navigate_header)
         
         self.top_nav_layout = QVBoxLayout()
-        self.top_nav_layout.setContentsMargins(0, 0, 0, 0)
-        self.top_nav_layout.setSpacing(6)
+        self.top_nav_layout.setContentsMargins(*MARGIN_NONE)
+        self.top_nav_layout.setSpacing(SPACING_SM)
         scroll_layout.addLayout(self.top_nav_layout)
         scroll_layout.addStretch(1)
 
@@ -101,13 +103,13 @@ class Sidebar(QFrame):
         scroll_layout.addWidget(self.lbl_more_header)
 
         self.bottom_nav_layout = QVBoxLayout()
-        self.bottom_nav_layout.setContentsMargins(0, 0, 0, 0)
-        self.bottom_nav_layout.setSpacing(6)
+        self.bottom_nav_layout.setContentsMargins(*MARGIN_NONE)
+        self.bottom_nav_layout.setSpacing(SPACING_SM)
         scroll_layout.addLayout(self.bottom_nav_layout)
 
         self.scroll_area.setWidget(scroll_content)
         self.main_layout.addWidget(self.scroll_area, stretch=1)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
         
         self._setup_update_card()
         self.main_layout.addWidget(self.update_card)
@@ -124,7 +126,7 @@ class Sidebar(QFrame):
 
         self._setup_profile_card()
         self.main_layout.addWidget(self.profile_card)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
 
         version_text = self.i18n.get("main.sidebar.version").replace("{version}", self.app_version)
         self.lbl_version = QLabel(version_text)
@@ -137,18 +139,18 @@ class Sidebar(QFrame):
         self.update_card.setProperty("role", "update_banner_card")
         
         card_layout = QVBoxLayout(self.update_card)
-        card_layout.setContentsMargins(10, 10, 10, 10)
-        card_layout.setSpacing(8)
+        card_layout.setContentsMargins(*MARGIN_MD)
+        card_layout.setSpacing(SPACING_MD)
 
         top_row = QHBoxLayout()
-        top_row.setContentsMargins(0, 0, 0, 0)
-        top_row.setSpacing(6)
+        top_row.setContentsMargins(*MARGIN_NONE)
+        top_row.setSpacing(SPACING_SM)
 
         icon_box = QFrame()
         icon_box.setProperty("role", "update_icon_box")
         icon_box.setFixedSize(28, 28)
         icon_box_layout = QHBoxLayout(icon_box)
-        icon_box_layout.setContentsMargins(0, 0, 0, 0)
+        icon_box_layout.setContentsMargins(*MARGIN_NONE)
         icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         lbl_card_icon = QLabel()
@@ -195,8 +197,8 @@ class Sidebar(QFrame):
         self.profile_card.setProperty("role", "profile_card")
         
         self.profile_layout = QHBoxLayout(self.profile_card)
-        self.profile_layout.setContentsMargins(8, 8, 8, 8)
-        self.profile_layout.setSpacing(6)
+        self.profile_layout.setContentsMargins(*MARGIN_MD)
+        self.profile_layout.setSpacing(SPACING_SM)
         self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         
         self.profile_avatar = QLabel()
@@ -206,8 +208,8 @@ class Sidebar(QFrame):
         
         self.profile_text_widget = QWidget()
         self.profile_text_layout = QVBoxLayout(self.profile_text_widget)
-        self.profile_text_layout.setContentsMargins(0, 0, 0, 0)
-        self.profile_text_layout.setSpacing(2)
+        self.profile_text_layout.setContentsMargins(*MARGIN_NONE)
+        self.profile_text_layout.setSpacing(SPACING_2XS)
         
         self.profile_name_lbl = QLabel()
         self.profile_name_lbl.setObjectName("caption")
@@ -413,11 +415,11 @@ class Sidebar(QFrame):
         self.profile_text_widget.setVisible(show)
         if show:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-            self.profile_layout.setContentsMargins(6, 6, 6, 6)
+            self.profile_layout.setContentsMargins(*MARGIN_SM)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         else:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-            self.profile_layout.setContentsMargins(0, 6, 0, 6)
+            self.profile_layout.setContentsMargins(*MARGIN_V_SM)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def _on_animation_finished(self):

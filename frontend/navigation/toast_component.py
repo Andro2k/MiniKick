@@ -4,7 +4,8 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushBut
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
 from frontend.common import (
     COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_400, COLOR_AMBER,
-    get_icon_colored, get_pixmap_colored
+    get_icon_colored, get_pixmap_colored,
+    MARGIN_LG, SPACING_MD, SPACING_2XS
 )
 
 class ModernToast(QFrame):
@@ -26,8 +27,8 @@ class ModernToast(QFrame):
         self.setProperty("state", state)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 10, 12, 10)
-        layout.setSpacing(8)
+        layout.setContentsMargins(*MARGIN_LG)
+        layout.setSpacing(SPACING_MD)
         
         self.icon_lbl = QLabel(self)
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -35,7 +36,7 @@ class ModernToast(QFrame):
         layout.addWidget(self.icon_lbl)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
+        text_layout.setSpacing(SPACING_2XS)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.lbl_title = QLabel(title, self)

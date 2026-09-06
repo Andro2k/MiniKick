@@ -2,6 +2,7 @@
 
 from PySide6.QtCore import Signal, Slot, QTimer
 from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QHBoxLayout
+from frontend.common import MARGIN_NONE, SPACING_SM, SPACING_MD, SPACING_LG
 from frontend.widgets import (
     ModernCard, SettingRow, ModernSwitch, ModernButton, 
     CompactSpinBox, ModernDivider, ModernSegmentedControl, NoWheelComboBox
@@ -12,7 +13,7 @@ class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=12, spacing=8, orientation="vertical")
+        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
         self.i18n = i18n
         self._chat_overlay_url = ""
         self.chat_overlay_full_url = ""
@@ -117,9 +118,12 @@ class ChatOverlaySettingsPanel(ModernCard):
         )
         
         preview_layout = QVBoxLayout()
-        preview_layout.setSpacing(6)
+        preview_layout.setContentsMargins(*MARGIN_NONE)
+        preview_layout.setSpacing(SPACING_SM)
         
         preview_header = QHBoxLayout()
+        preview_header.setContentsMargins(*MARGIN_NONE)
+        preview_header.setSpacing(SPACING_SM)
         lbl_preview = QLabel(self.i18n.get("chat.overlay.preview_title"))
         lbl_preview.setProperty("role", "body")
         preview_header.addWidget(lbl_preview)

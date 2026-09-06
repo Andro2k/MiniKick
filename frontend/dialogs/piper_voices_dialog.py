@@ -10,7 +10,11 @@ from PySide6.QtCore import Qt, Signal, Slot
 from .base_dialog import ModernFramelessShell
 from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import NoWheelDoubleSpinBox
-from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_GREEN
+from frontend.common import (
+    get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_GREEN,
+    SPACING_2XS, SPACING_XS, SPACING_MD, SPACING_LG, SPACING_2XL,
+    MARGIN_LG, MARGIN_XL
+)
 from frontend.components.dialogs import PiperVoiceItemWidget
 
 class PiperVoicesDialog(ModernFramelessShell):
@@ -40,18 +44,18 @@ class PiperVoicesDialog(ModernFramelessShell):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self.container)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(8)
+        layout.setContentsMargins(*MARGIN_XL)
+        layout.setSpacing(SPACING_MD)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(10)
+        header_layout.setSpacing(SPACING_MD)
 
         icon_lbl = QLabel(self)
         icon_lbl.setPixmap(get_pixmap_colored("microphone.svg", COLOR_GREEN, size=24))
         header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         title_layout = QVBoxLayout()
-        title_layout.setSpacing(2)
+        title_layout.setSpacing(SPACING_2XS)
 
         lbl_title = QLabel(self.i18n.get("piper_dialog.title"), self)
         lbl_title.setProperty("role", "h2")
@@ -63,7 +67,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         title_layout.addWidget(lbl_title)
         title_layout.addWidget(lbl_subtitle)
         header_layout.addLayout(title_layout, stretch=1)
-        header_layout.addSpacing(28)
+        header_layout.addSpacing(SPACING_2XL)
 
         layout.addLayout(header_layout)
 
@@ -72,8 +76,8 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         scroll_content = QWidget()
         self.scroll_layout = QVBoxLayout(scroll_content)
-        self.scroll_layout.setContentsMargins(2, 2, 8, 2)
-        self.scroll_layout.setSpacing(8)
+        self.scroll_layout.setContentsMargins(SPACING_2XS, SPACING_2XS, SPACING_MD, SPACING_2XS)
+        self.scroll_layout.setSpacing(SPACING_MD)
 
         self._populate_catalog()
 
@@ -83,12 +87,12 @@ class PiperVoicesDialog(ModernFramelessShell):
         synthesis_card = QFrame(self)
         synthesis_card.setProperty("role", "card")
         card_layout = QVBoxLayout(synthesis_card)
-        card_layout.setContentsMargins(10, 10, 10, 10)
-        card_layout.setSpacing(8)
+        card_layout.setContentsMargins(*MARGIN_LG)
+        card_layout.setSpacing(SPACING_MD)
 
         card_header = QHBoxLayout()
         card_title_layout = QVBoxLayout()
-        card_title_layout.setSpacing(2)
+        card_title_layout.setSpacing(SPACING_2XS)
 
         lbl_syn_title = QLabel(self.i18n.get("piper_dialog.synthesis_title"), synthesis_card)
         lbl_syn_title.setProperty("role", "body")
@@ -111,10 +115,10 @@ class PiperVoicesDialog(ModernFramelessShell):
         card_layout.addLayout(card_header)
 
         params_layout = QHBoxLayout()
-        params_layout.setSpacing(12)
+        params_layout.setSpacing(SPACING_LG)
 
         col_length = QVBoxLayout()
-        col_length.setSpacing(3)
+        col_length.setSpacing(SPACING_XS)
         lbl_length = QLabel(self.i18n.get("piper_dialog.param_length_scale"), synthesis_card)
         lbl_length.setProperty("role", "caption")
         lbl_length.setToolTip(self.i18n.get("piper_dialog.param_length_scale_desc"))
@@ -129,7 +133,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         params_layout.addLayout(col_length)
 
         col_noise = QVBoxLayout()
-        col_noise.setSpacing(3)
+        col_noise.setSpacing(SPACING_XS)
         lbl_noise = QLabel(self.i18n.get("piper_dialog.param_noise_scale"), synthesis_card)
         lbl_noise.setProperty("role", "caption")
         lbl_noise.setToolTip(self.i18n.get("piper_dialog.param_noise_scale_desc"))
@@ -144,7 +148,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         params_layout.addLayout(col_noise)
 
         col_noise_w = QVBoxLayout()
-        col_noise_w.setSpacing(3)
+        col_noise_w.setSpacing(SPACING_XS)
         lbl_noise_w = QLabel(self.i18n.get("piper_dialog.param_noise_w_scale"), synthesis_card)
         lbl_noise_w.setProperty("role", "caption")
         lbl_noise_w.setToolTip(self.i18n.get("piper_dialog.param_noise_w_scale_desc"))

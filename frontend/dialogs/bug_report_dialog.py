@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton
-from frontend.common import get_assets_path
+from frontend.common import get_assets_path, SPACING_SM, SPACING_MD, SPACING_XL, MARGIN_V_XS
 from frontend.components.dialogs import SeverityCard, ImageDropzone
 
 class BugReportDialog(ModernModal):
@@ -27,7 +27,7 @@ class BugReportDialog(ModernModal):
         lbl_sev_header.setProperty("state", "bold")
 
         sev_layout = QHBoxLayout()
-        sev_layout.setSpacing(10)
+        sev_layout.setSpacing(SPACING_MD)
 
         card_configs = [
             ("Low", self.i18n.get("dialogs.bug_report.severity_low"), self.i18n.get("dialogs.bug_report.severity_low_desc")),
@@ -44,10 +44,10 @@ class BugReportDialog(ModernModal):
         self.severity_cards["Low"].set_selected(True)
 
         row1_layout = QHBoxLayout()
-        row1_layout.setSpacing(16)
+        row1_layout.setSpacing(SPACING_XL)
 
         contact_col = QVBoxLayout()
-        contact_col.setSpacing(6)
+        contact_col.setSpacing(SPACING_SM)
         lbl_username = QLabel(self.i18n.get("dialogs.bug_report.lbl_contact"))
         lbl_username.setProperty("role", "body")
         self.txt_username = QLineEdit()
@@ -58,7 +58,7 @@ class BugReportDialog(ModernModal):
         contact_col.addWidget(self.txt_username)
 
         logs_col = QVBoxLayout()
-        logs_col.setSpacing(6)
+        logs_col.setSpacing(SPACING_SM)
         lbl_logs = QLabel(self.i18n.get("dialogs.bug_report.lbl_diagnostics"))
         lbl_logs.setProperty("role", "body")
         self.chk_logs = QCheckBox(self.i18n.get("dialogs.bug_report.chk_include_logs"))
@@ -66,7 +66,7 @@ class BugReportDialog(ModernModal):
         self.chk_logs.setCursor(Qt.CursorShape.PointingHandCursor)
         
         chk_wrapper = QHBoxLayout()
-        chk_wrapper.setContentsMargins(0, 4, 0, 4)
+        chk_wrapper.setContentsMargins(*MARGIN_V_XS)
         chk_wrapper.addWidget(self.chk_logs)
         chk_wrapper.addStretch()
 
@@ -77,10 +77,10 @@ class BugReportDialog(ModernModal):
         row1_layout.addLayout(logs_col, 1)
 
         row2_layout = QHBoxLayout()
-        row2_layout.setSpacing(16)
+        row2_layout.setSpacing(SPACING_XL)
 
         desc_col = QVBoxLayout()
-        desc_col.setSpacing(6)
+        desc_col.setSpacing(SPACING_SM)
         lbl_desc = QLabel(self.i18n.get("dialogs.bug_report.lbl_description"))
         lbl_desc.setProperty("role", "body")
         self.txt_desc = QTextEdit()
@@ -90,7 +90,7 @@ class BugReportDialog(ModernModal):
         desc_col.addWidget(self.txt_desc)
 
         image_col = QVBoxLayout()
-        image_col.setSpacing(6)
+        image_col.setSpacing(SPACING_SM)
         lbl_image = QLabel(self.i18n.get("dialogs.bug_report.lbl_image"))
         lbl_image.setProperty("role", "body")
         self.dropzone = ImageDropzone(self.i18n)
@@ -107,9 +107,9 @@ class BugReportDialog(ModernModal):
 
         self.content_layout.addWidget(lbl_sev_header)
         self.content_layout.addLayout(sev_layout)
-        self.content_layout.addSpacing(6)
+        self.content_layout.addSpacing(SPACING_SM)
         self.content_layout.addLayout(row1_layout)
-        self.content_layout.addSpacing(6)
+        self.content_layout.addSpacing(SPACING_SM)
         self.content_layout.addLayout(row2_layout)
         self.content_layout.addWidget(self.lbl_error)
 

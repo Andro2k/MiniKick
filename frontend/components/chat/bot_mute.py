@@ -1,35 +1,35 @@
 # frontend\components\chat\bot_mute.py
 
-from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, 
+from PySide6.QtWidgets import (QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, 
                                QFrame, QPushButton, QListWidgetItem)
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
-from frontend.widgets import ModernButton, ModernDivider
-from frontend.common import COLOR_RED, get_icon_colored
+from frontend.widgets import ModernButton, ModernDivider, ModernCard
+from frontend.common import (
+    COLOR_RED, get_icon_colored,
+    MARGIN_NONE, MARGIN_XS, MARGIN_MD,
+    SPACING_2XS, SPACING_SM, SPACING_MD, SPACING_LG
+)
 
-class BotMutePanel(QWidget):
+class BotMutePanel(ModernCard):
     bot_add_requested = Signal(str)
     bot_remove_requested = Signal(str)
     word_add_requested = Signal(str)
     word_remove_requested = Signal(str)
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent)
+        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
         self.i18n = i18n
         self._trash_icon_cache = {}
         self._setup_ui()
 
     def _setup_ui(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
-
         title = QLabel(self.i18n.get("chat.bots.title"))
         title.setProperty("role", "h3")
-        layout.addWidget(title)
+        self.addWidget(title)
 
         input_row = QHBoxLayout()
-        input_row.setContentsMargins(0, 0, 0, 0)
-        input_row.setSpacing(6)
+        input_row.setContentsMargins(*MARGIN_NONE)
+        input_row.setSpacing(SPACING_SM)
         
         self.txt_bot_input = QLineEdit()
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
@@ -39,7 +39,7 @@ class BotMutePanel(QWidget):
             
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
-        layout.addLayout(input_row)
+        self.addLayout(input_row)
 
         self.list_bots = QListWidget()
         self.list_bots.setFlow(QListView.Flow.LeftToRight) 
@@ -47,21 +47,21 @@ class BotMutePanel(QWidget):
         self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_bots.setProperty("role", "transparent_list")
         self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_bots.setSpacing(2)
-        layout.addWidget(self.list_bots)
+        self.list_bots.setSpacing(SPACING_2XS)
+        self.addWidget(self.list_bots)
 
         self.btn_add_bot.clicked.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
         self.txt_bot_input.returnPressed.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
 
         divider = ModernDivider()
-        layout.addWidget(divider)
+        self.addWidget(divider)
         title_words = QLabel(self.i18n.get("chat.banned_words.title"))
         title_words.setProperty("role", "h3")
-        layout.addWidget(title_words)
+        self.addWidget(title_words)
 
         input_row_words = QHBoxLayout()
-        input_row_words.setContentsMargins(0, 0, 0, 0)
-        input_row_words.setSpacing(6)
+        input_row_words.setContentsMargins(*MARGIN_NONE)
+        input_row_words.setSpacing(SPACING_SM)
         
         self.txt_word_input = QLineEdit()
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
@@ -71,7 +71,7 @@ class BotMutePanel(QWidget):
             
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
-        layout.addLayout(input_row_words)
+        self.addLayout(input_row_words)
 
         self.list_words = QListWidget()
         self.list_words.setFlow(QListView.Flow.LeftToRight) 
@@ -79,11 +79,13 @@ class BotMutePanel(QWidget):
         self.list_words.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_words.setProperty("role", "transparent_list")
         self.list_words.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_words.setSpacing(2)
-        layout.addWidget(self.list_words)
+        self.list_words.setSpacing(SPACING_2XS)
+        self.addWidget(self.list_words)
 
         self.btn_add_word.clicked.connect(lambda: self.word_add_requested.emit(self.txt_word_input.text()))
         self.txt_word_input.returnPressed.connect(lambda: self.word_add_requested.emit(self.txt_word_input.text()))
+
+        self.addStretch()
 
     def clear_input(self):
         self.txt_bot_input.clear()
@@ -136,8 +138,8 @@ class BotMutePanel(QWidget):
         tag_widget = QFrame()
         tag_widget.setProperty("role", "bot_tag")
         layout = QHBoxLayout(tag_widget)
-        layout.setContentsMargins(4, 4, 8, 4) 
-        layout.setSpacing(2)
+        layout.setContentsMargins(MARGIN_XS[0], MARGIN_XS[1], MARGIN_MD[2], MARGIN_XS[3]) 
+        layout.setSpacing(SPACING_2XS)
         layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
         
         lbl_name = QLabel(text)

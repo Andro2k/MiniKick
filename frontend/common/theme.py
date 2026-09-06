@@ -58,6 +58,30 @@ RADIUS_LG          = 12
 RADIUS_XL          = 16
 RADIUS_PILL        = 26
 
+SPACING_NONE       = 0
+SPACING_2XS        = 2
+SPACING_XS         = 4
+SPACING_SM         = 6
+SPACING_MD         = 8
+SPACING_LG         = 12
+SPACING_XL         = 16
+SPACING_2XL        = 20
+
+MARGIN_NONE        = (0, 0, 0, 0)
+MARGIN_2XS         = (2, 2, 2, 2)
+MARGIN_XS          = (4, 4, 4, 4)
+MARGIN_SM          = (6, 6, 6, 6)
+MARGIN_MD          = (8, 8, 8, 8)
+MARGIN_LG          = (12, 12, 12, 12)
+MARGIN_XL          = (16, 16, 16, 16)
+MARGIN_2XL         = (20, 20, 20, 20)
+
+MARGIN_H_XS        = (4, 0, 4, 0)
+MARGIN_H_SM        = (6, 0, 6, 0)
+MARGIN_H_MD        = (8, 0, 8, 0)
+MARGIN_V_XS        = (0, 4, 0, 4)
+MARGIN_V_SM        = (0, 6, 0, 6)
+
 PADDING_INPUT      = "6px 10px"
 PADDING_BUTTON     = "6px 14px"
 PADDING_SPINBOX    = "4px 20px 4px 10px"

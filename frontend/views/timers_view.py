@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableW
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_400
+from frontend.common import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_400, MARGIN_H_MD
 
 class TimersView(BaseView):
     add_requested = Signal()
@@ -124,7 +124,7 @@ class TimersView(BaseView):
         if not apply_kick and not apply_twitch:
             container = QWidget()
             layout = QHBoxLayout(container)
-            layout.setContentsMargins(8, 0, 8, 0)
+            layout.setContentsMargins(*MARGIN_H_MD)
             lbl_none = QLabel("-")
             lbl_none.setProperty("role", "body")
             layout.addWidget(lbl_none)
