@@ -6,7 +6,7 @@ from typing import Any
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QLineEdit, QFileDialog
+    QFileDialog
 )
 from PySide6.QtCore import Qt, Signal, QSize
 
@@ -27,7 +27,7 @@ from frontend.widgets import (
     ModernCard, ModernButton, ModernSwitch,
     NoWheelSlider, NoWheelSpinBox, ModernDivider,
     ModernSegmentedControl, NoWheelComboBox, SettingRow,
-    create_badge
+    create_badge, ClearableLineEdit
 )
 from frontend.common import (
     get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
@@ -268,7 +268,7 @@ class AlertEventCard(QWidget):
         lbl_template = QLabel(self.i18n.get("alerts.fields.template"), parent=self)
         lbl_template.setProperty("role", "caption")
 
-        self.edit_template = QLineEdit(parent=self)
+        self.edit_template = ClearableLineEdit(parent=self)
         self.edit_template.setToolTip(self.i18n.get("alerts.fields.template_hint"))
         self.edit_template.textChanged.connect(self._on_field_changed)
 
@@ -294,9 +294,8 @@ class AlertEventCard(QWidget):
 
         media_input_row = QHBoxLayout()
         media_input_row.setSpacing(SPACING_SM)
-        self.edit_media = QLineEdit(parent=self)
+        self.edit_media = ClearableLineEdit(placeholder=self.i18n.get("alerts.fields.media_placeholder"), parent=self)
         self.edit_media.setMinimumWidth(0)
-        self.edit_media.setPlaceholderText(self.i18n.get("alerts.fields.media_placeholder"))
         self.edit_media.textChanged.connect(self._on_field_changed)
 
         btn_browse_media = ModernButton(
@@ -308,19 +307,8 @@ class AlertEventCard(QWidget):
         )
         btn_browse_media.clicked.connect(self._browse_media)
 
-        self.btn_clear_media = ModernButton(
-            role="action_danger_border",
-            icon_name="trash.svg",
-            icon_size=13,
-            parent=self
-        )
-        self.btn_clear_media.setToolTip(self.i18n.get("alerts.buttons.clear_media"))
-        self.btn_clear_media.clicked.connect(self._clear_media)
-        self.btn_clear_media.setEnabled(False)
-
         media_input_row.addWidget(self.edit_media, stretch=1)
         media_input_row.addWidget(btn_browse_media)
-        media_input_row.addWidget(self.btn_clear_media)
 
         col_video.addWidget(lbl_media)
         col_video.addLayout(media_input_row)
@@ -334,9 +322,8 @@ class AlertEventCard(QWidget):
 
         sound_input_row = QHBoxLayout()
         sound_input_row.setSpacing(SPACING_SM)
-        self.edit_sound = QLineEdit(parent=self)
+        self.edit_sound = ClearableLineEdit(placeholder=self.i18n.get("alerts.fields.sound_placeholder"), parent=self)
         self.edit_sound.setMinimumWidth(0)
-        self.edit_sound.setPlaceholderText(self.i18n.get("alerts.fields.sound_placeholder"))
         self.edit_sound.textChanged.connect(self._on_field_changed)
 
         btn_browse_sound = ModernButton(
@@ -348,19 +335,8 @@ class AlertEventCard(QWidget):
         )
         btn_browse_sound.clicked.connect(self._browse_sound)
 
-        self.btn_clear_sound = ModernButton(
-            role="action_danger_border",
-            icon_name="trash.svg",
-            icon_size=13,
-            parent=self
-        )
-        self.btn_clear_sound.setToolTip(self.i18n.get("alerts.buttons.clear_sound"))
-        self.btn_clear_sound.clicked.connect(self._clear_sound)
-        self.btn_clear_sound.setEnabled(False)
-
         sound_input_row.addWidget(self.edit_sound, stretch=1)
         sound_input_row.addWidget(btn_browse_sound)
-        sound_input_row.addWidget(self.btn_clear_sound)
 
         col_audio.addWidget(lbl_sound)
         col_audio.addLayout(sound_input_row)
@@ -573,3 +549,11 @@ class AlertEventCard(QWidget):
         if hasattr(self, "sw_enabled"):
             tip = "" if connected else self.i18n.get("alerts.status.platform_offline")
             self.sw_enabled.setToolTip(tip)
+
+    @property
+    def btn_clear_sound(self):
+        return self.edit_sound.btn_clear
+
+    @property
+    def btn_clear_media(self):
+        return self.edit_media.btn_clear

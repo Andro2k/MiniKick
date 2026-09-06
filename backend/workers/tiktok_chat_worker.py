@@ -50,7 +50,7 @@ class TikTokChatWorker(QThread):
                     if not self._has_connected_once:
                         self._is_stopped = True
 
-            while not self._is_stopped:
+            while not self._is_stopped and not self.isInterruptionRequested():
                 self.provider.start_chat(
                     unique_id=self.target_channel,
                     on_message=self._dispatch_message,
@@ -58,18 +58,20 @@ class TikTokChatWorker(QThread):
                     on_disconnected=_on_disconnected,
                     on_error=_on_error
                 )
-                if not self._has_connected_once or self._is_stopped:
+                if not self._has_connected_once or self._is_stopped or self.isInterruptionRequested():
                     break
-                if not self._is_stopped:
-                    self.msleep(10000)
+                for _ in range(100):
+                    if self._is_stopped or self.isInterruptionRequested():
+                        break
+                    self.msleep(100)
 
         except Exception as e:
-            if not self._is_stopped:
+            if not self._is_stopped and not self.isInterruptionRequested():
                 logger.error("[TikTokChatWorker] Error no controlado: %s", e)
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, timestamp: str, msg_id: int, extra_data: dict):
-        if self._is_stopped:
+        if self._is_stopped or self.isInterruptionRequested():
             return
 
         now_str = timestamp or datetime.datetime.now().strftime("%H:%M:%S")
@@ -97,5 +99,6 @@ class TikTokChatWorker(QThread):
 
     def stop(self):
         self._is_stopped = True
+        self.requestInterruption()
         self.provider.stop_chat()
         self.quit()

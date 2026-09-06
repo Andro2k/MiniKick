@@ -4,6 +4,7 @@ import sys
 import html
 import time
 import logging
+import warnings
 from collections import deque
 from datetime import datetime
 from PySide6.QtWidgets import (
@@ -107,6 +108,7 @@ class MainWindowCore(QMainWindow):
         self.tiktok_chat_worker = None
         self._tiktok_connected = False
         self._tiktok_channel = ""
+        self._retiring_workers: set = set()
 
         self._cached_total_usages = None
         self._cached_active_timers = None
@@ -597,11 +599,68 @@ class MainWindowCore(QMainWindow):
         self.global_media_worker.stop_pressed.connect(self.music_controller.handle_play_pause)
         self.global_media_worker.start()
 
+    def _safe_stop_worker(self, worker_attr_name: str, timeout_ms: int = 1500) -> None:
+        """Safely stops a QThread worker and retains reference until exit to prevent Qt runtime aborts."""
+        worker = getattr(self, worker_attr_name, None)
+        if not worker:
+            return
+
+        setattr(self, worker_attr_name, None)
+
+        for sig_name in (
+            "connection_success",
+            "connection_lost",
+            "connection_restored",
+            "error_occurred",
+            "message_received",
+            "play_pause_pressed",
+            "skip_pressed",
+            "stop_pressed",
+        ):
+            sig = getattr(worker, sig_name, None)
+            if sig:
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", category=RuntimeWarning)
+                        sig.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+
+        try:
+            if hasattr(worker, 'stop'):
+                worker.stop()
+            if hasattr(worker, 'requestInterruption'):
+                worker.requestInterruption()
+            if hasattr(worker, 'quit'):
+                worker.quit()
+        except RuntimeError:
+            pass
+
+        try:
+            if worker.isRunning():
+                if worker.wait(timeout_ms):
+                    worker.deleteLater()
+                else:
+                    self.logger.warning(
+                        "[Worker] Worker '%s' still active after %d ms. Retaining in retirement registry.",
+                        worker_attr_name,
+                        timeout_ms
+                    )
+                    self._retiring_workers.add(worker)
+                    def _on_retired(w=worker):
+                        self._retiring_workers.discard(w)
+                        try:
+                            w.deleteLater()
+                        except RuntimeError:
+                            pass
+                    worker.finished.connect(_on_retired)
+            else:
+                worker.deleteLater()
+        except RuntimeError:
+            pass
+
     def _stop_global_media_worker(self):
-        if self.global_media_worker and self.global_media_worker.isRunning():
-            self.global_media_worker.stop()
-            self.global_media_worker.wait(2000)
-            self.global_media_worker = None
+        self._safe_stop_worker("global_media_worker", timeout_ms=1500)
 
     def _on_media_keys_state_changed(self, enabled: bool):
         if enabled:
@@ -679,9 +738,17 @@ class MainWindowCore(QMainWindow):
             try:
                 if instance.wait(2000):
                     self.logger.info(stopped_template.replace("{worker}", name))
+                    instance.deleteLater()
                 else:
                     self.logger.warning("[Shutdown] Worker '%s' wait timed out", name)
-                instance.deleteLater()
+                    self._retiring_workers.add(instance)
+                    def _on_retired(inst=instance):
+                        self._retiring_workers.discard(inst)
+                        try:
+                            inst.deleteLater()
+                        except RuntimeError:
+                            pass
+                    instance.finished.connect(_on_retired)
             except RuntimeError:
                 pass
 
@@ -1261,9 +1328,7 @@ class MainWindowCore(QMainWindow):
                         self._handle_youtube_disconnect()
 
     def _handle_youtube_connect(self, target: str):
-        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker and self.youtube_chat_worker.isRunning():
-            self.youtube_chat_worker.stop()
-            self.youtube_chat_worker.wait(1000)
+        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1500)
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_youtube_status(connected=False, connecting=True)
@@ -1296,9 +1361,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_youtube_error(self, error_msg: str):
         self._youtube_connected = False
-        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker:
-            self.youtube_chat_worker.stop()
-            self.youtube_chat_worker = None
+        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
             title=self.container.i18n.get("common.status.error"),
@@ -1309,10 +1372,7 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _handle_youtube_disconnect(self):
         self.logger.info("[User Action] YouTube Live disconnected successfully")
-        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker:
-            self.youtube_chat_worker.stop()
-            self.youtube_chat_worker.wait(1000)
-            self.youtube_chat_worker = None
+        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1500)
         self._youtube_connected = False
         self._youtube_channel = ""
         self.settings_storage.save_string("youtube_target_channel", "")
@@ -1353,9 +1413,7 @@ class MainWindowCore(QMainWindow):
         if not clean_target:
             return
 
-        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker and self.tiktok_chat_worker.isRunning():
-            self.tiktok_chat_worker.stop()
-            self.tiktok_chat_worker.wait(1000)
+        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1500)
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_tiktok_status(connected=False, connecting=True)
@@ -1387,9 +1445,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_tiktok_error(self, error_msg: str):
         self._tiktok_connected = False
-        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker:
-            self.tiktok_chat_worker.stop()
-            self.tiktok_chat_worker = None
+        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
             title=self.container.i18n.get("common.status.error"),
@@ -1400,10 +1456,7 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _handle_tiktok_disconnect(self):
         self.logger.info("[User Action] TikTok Live disconnected successfully")
-        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker:
-            self.tiktok_chat_worker.stop()
-            self.tiktok_chat_worker.wait(1000)
-            self.tiktok_chat_worker = None
+        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1500)
         self._tiktok_connected = False
         self._tiktok_channel = ""
         self.settings_storage.save_string("tiktok_target_channel", "")

@@ -105,8 +105,17 @@ class YouTubeChatProvider:
                 on_connected({"platform": "youtube", "video_id": video_id, "channel": target})
 
             msg_seq = 0
-            while self._is_running and self._chat.is_alive():
-                sync_items = self._chat.get().sync_items()
+            while self._is_running:
+                chat = self._chat
+                if not chat or not chat.is_alive():
+                    break
+                try:
+                    sync_items = chat.get().sync_items()
+                except Exception:
+                    if not self._is_running:
+                        break
+                    raise
+
                 for c in sync_items:
                     if not self._is_running:
                         break
@@ -176,17 +185,25 @@ class YouTubeChatProvider:
                 on_disconnected()
 
         except Exception as e:
-            logger.error("[YouTubeChatProvider] Exception during live chat polling: %s", e)
-            if on_error and self._is_running:
-                on_error(str(e))
+            if self._is_running:
+                logger.error("[YouTubeChatProvider] Exception during live chat polling: %s", e)
+                if on_error:
+                    on_error(str(e))
         finally:
             self.stop_chat()
 
     def stop_chat(self) -> None:
         self._is_running = False
-        if self._chat:
+        chat = self._chat
+        if chat:
             try:
-                self._chat.terminate()
+                chat.terminate()
             except Exception:
                 pass
+            client = getattr(chat, "_client", None)
+            if client and hasattr(client, "close"):
+                try:
+                    client.close()
+                except Exception:
+                    pass
             self._chat = None

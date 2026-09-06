@@ -31,16 +31,21 @@ class ClearableLineEdit(QFrame):
         self.btn_clear.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clear.clicked.connect(self._on_clear_clicked)
         self.btn_clear.setVisible(False)
+        self.btn_clear.setEnabled(False)
 
         layout.addWidget(self.txt_input, stretch=1)
         layout.addWidget(self.btn_clear)
 
     def _on_text_changed(self, text: str):
-        self.btn_clear.setVisible(bool(text.strip()))
+        has_text = bool(text.strip())
+        self.btn_clear.setVisible(has_text)
+        self.btn_clear.setEnabled(has_text)
         self.textChanged.emit(text)
 
     def _on_clear_clicked(self):
         self.txt_input.clear()
+        self.btn_clear.setVisible(False)
+        self.btn_clear.setEnabled(False)
         self.txt_input.setFocus()
         self.textCleared.emit()
 
@@ -49,10 +54,14 @@ class ClearableLineEdit(QFrame):
 
     def setText(self, text: str):
         self.txt_input.setText(text)
-        self.btn_clear.setVisible(bool(text.strip()))
+        has_text = bool(text.strip())
+        self.btn_clear.setVisible(has_text)
+        self.btn_clear.setEnabled(has_text)
 
     def clear(self):
         self.txt_input.clear()
+        self.btn_clear.setVisible(False)
+        self.btn_clear.setEnabled(False)
 
     def setPlaceholderText(self, text: str):
         self.txt_input.setPlaceholderText(text)
@@ -63,14 +72,27 @@ class ClearableLineEdit(QFrame):
     def setFocus(self):
         self.txt_input.setFocus()
 
+    def setToolTip(self, text: str):
+        super().setToolTip(text)
+        self.txt_input.setToolTip(text)
+
+    def toolTip(self) -> str:
+        return self.txt_input.toolTip()
+
+    def setMinimumWidth(self, width: int):
+        super().setMinimumWidth(width)
+        self.txt_input.setMinimumWidth(width)
+
     def setEnabled(self, enabled: bool):
         super().setEnabled(enabled)
         self.txt_input.setEnabled(enabled)
-        self.btn_clear.setEnabled(enabled)
+        self.btn_clear.setEnabled(enabled and bool(self.txt_input.text().strip()))
 
     def setReadOnly(self, ro: bool):
         self.txt_input.setReadOnly(ro)
-        self.btn_clear.setVisible(not ro and bool(self.txt_input.text().strip()))
+        has_text = not ro and bool(self.txt_input.text().strip())
+        self.btn_clear.setVisible(has_text)
+        self.btn_clear.setEnabled(has_text)
 
     def isReadOnly(self) -> bool:
         return self.txt_input.isReadOnly()
