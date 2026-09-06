@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
 from frontend.common import (
-    COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_AMBER,
+    COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_400, COLOR_AMBER,
     get_icon_colored, get_pixmap_colored
 )
 
@@ -81,7 +81,7 @@ class ModernToast(QFrame):
                 "warning": ("alert-triangle.svg", COLOR_AMBER),
                 "info": ("info-circle.svg", COLOR_BLUE)
             }
-            icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_200))
+            icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_400))
             ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
         self.icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
 

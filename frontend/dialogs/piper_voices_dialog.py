@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize, Signal, Slot
 from .base_dialog import ModernFramelessShell
 from frontend.widgets import NoWheelDoubleSpinBox
-from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_200, COLOR_GREEN
+from frontend.common import get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_GREEN
 from backend.services.chat import (
     PiperVoiceManager, PiperVoiceDownloadWorker, DEFAULT_PIPER_VOICE_ID
 )
@@ -64,7 +64,7 @@ class PiperVoiceItemWidget(QFrame):
         self.update_status(self.is_installed)
         header_layout.addWidget(self.lbl_status, alignment=Qt.AlignmentFlag.AlignVCenter)
         self.btn_test = QPushButton(self)
-        self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_200, size=14))
+        self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_400, size=14))
         self.btn_test.setIconSize(QSize(14, 14))
         self.btn_test.setFixedSize(28, 28)
         self.btn_test.setProperty("role", "action_neutral_border")
@@ -275,7 +275,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), self)
         self.btn_import.setProperty("role", "action_neutral_border")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
-        self.btn_import.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_200, size=14))
+        self.btn_import.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_400, size=14))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_import.clicked.connect(self._on_import_model_clicked)
         btn_layout.addWidget(self.btn_import)

@@ -1,12 +1,15 @@
 # frontend\dialogs\timer_dialog.py
 
-from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
-                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox)
+import logging
+from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
+                               QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy)
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from .base_dialog import ModernWizardPanel, ModernModal
 from frontend.widgets import ModernButton, ModernSwitch, VariableTextEdit, CategorySearchComboBox
 from frontend.common import COLOR_RED, COLOR_GREEN, get_icon_colored, get_assets_path
+
+logger = logging.getLogger("minikick.dialogs.timer_dialog")
 
 class TimerConfigWizard(ModernWizardPanel):
     search_category_requested = Signal(str, str)
@@ -22,19 +25,19 @@ class TimerConfigWizard(ModernWizardPanel):
             self.i18n.get("timer.dialog.step_general_subtitle"),
             self.i18n.get("timer.dialog.step_filters_subtitle")
         ]
-        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=820, parent=parent)        
+        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=820, parent=parent)
         self.existing_config = existing_config
         self.timer_id = existing_config.get("id") if existing_config else None
-        self.message_rows = []       
-        
+        self.message_rows = []
+
         self._icon_edit = get_icon_colored("edit.svg", COLOR_GREEN, 14)
         self._icon_trash = get_icon_colored("trash.svg", COLOR_RED, 14)
-        
+
         self._setup_ui()
         if self.existing_config:
             self._load_existing()
         else:
-            self._add_message_field()            
+            self._add_message_field()
         self.start_wizard()
 
     def _setup_ui(self):
@@ -70,7 +73,7 @@ class TimerConfigWizard(ModernWizardPanel):
         plat_box.setSpacing(4)
         lbl_platform = QLabel(self.i18n.get("timer.dialog.platform_label"))
         lbl_platform.setProperty("role", "h3")
-        
+
         switches_row = QHBoxLayout()
         switches_row.setSpacing(12)
 
@@ -210,6 +213,7 @@ class TimerConfigWizard(ModernWizardPanel):
         basic_main_layout.addWidget(bottom_card, stretch=1)
 
         self.tab_filters = QWidget()
+        self.tab_filters.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         filters_main_layout = QHBoxLayout(self.tab_filters)
         filters_main_layout.setContentsMargins(0, 0, 0, 0)
         filters_main_layout.setSpacing(16)
@@ -240,7 +244,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.search_category = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.quick_change.category_placeholder"),
             default_platform="both",
-            parent=self
+            parent=None
         )
         self.search_category.category_selected.connect(self._on_category_selected)
         self.search_category.search_requested.connect(self.search_category_requested.emit)
@@ -250,7 +254,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.txt_categories = QLineEdit()
         self.txt_categories.setPlaceholderText(self.i18n.get("timer.dialog.categories_placeholder"))
         left_filt_layout.addWidget(self.txt_categories)
-        
+
         lbl_cat_desc = QLabel(self.i18n.get("timer.dialog.categories_desc"))
         lbl_cat_desc.setProperty("role", "caption")
         lbl_cat_desc.setWordWrap(True)
@@ -264,17 +268,17 @@ class TimerConfigWizard(ModernWizardPanel):
         right_filt_layout = QVBoxLayout(right_filt_col)
         right_filt_layout.setContentsMargins(16, 16, 16, 16)
         right_filt_layout.setSpacing(10)
-        
+
         lbl_help_title = QLabel(self.i18n.get("timer.dialog.help_title"))
         lbl_help_title.setProperty("role", "h3")
         lbl_help_desc = QLabel(self.i18n.get("timer.dialog.help_desc"))
         lbl_help_desc.setWordWrap(True)
         lbl_help_desc.setProperty("role", "body")
-        
+
         right_filt_layout.addWidget(lbl_help_title)
         right_filt_layout.addWidget(lbl_help_desc)
         right_filt_layout.addStretch()
-        
+
         filters_main_layout.addWidget(right_filt_col, stretch=1)
 
         self.add_page(self.tab_basic)
@@ -306,27 +310,27 @@ class TimerConfigWizard(ModernWizardPanel):
         row_layout = QHBoxLayout(row)
         row_layout.setContentsMargins(0, 0, 0, 0)
         row_layout.setSpacing(6)
-        
+
         txt = QLineEdit()
         txt.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))
         txt.setText(text)
         txt.textChanged.connect(self._update_btn_next_state)
         row_layout.addWidget(txt)
-        
+
         btn_edit = ModernButton("", role="action_accent_border")
         btn_edit.setIcon(self._icon_edit)
         btn_edit.setFixedSize(32, 32)
         btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_edit.clicked.connect(lambda: self._open_message_editor(txt))
         row_layout.addWidget(btn_edit)
-        
+
         btn_del = ModernButton("", role="action_danger_border")
         btn_del.setIcon(self._icon_trash)
         btn_del.setFixedSize(32, 32)
         btn_del.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_del.clicked.connect(lambda: self._remove_message_field(row))
         row_layout.addWidget(btn_del)
-        
+
         self.message_rows.append((row, txt))
         self.msgs_container_layout.insertWidget(self.msgs_container_layout.count() - 1, row)
         self._update_btn_next_state()
@@ -339,7 +343,7 @@ class TimerConfigWizard(ModernWizardPanel):
     def _remove_message_field(self, row_widget):
         if len(self.message_rows) <= 1:
             return
-        
+
         for r, txt in self.message_rows:
             if r == row_widget:
                 self.message_rows.remove((r, txt))
@@ -368,14 +372,14 @@ class TimerConfigWizard(ModernWizardPanel):
         twitch_on = self.connected_platforms.get("twitch", False)
         self.switch_kick.setChecked(self.existing_config.get("apply_kick", True) if kick_on else False)
         self.switch_twitch.setChecked(self.existing_config.get("apply_twitch", True) if twitch_on else False)
-        
+
         messages = self.existing_config.get("messages", [])
         if not messages:
             self._add_message_field()
         else:
             for m in messages:
                 self._add_message_field(m)
-            
+
         online_min = self.existing_config.get("interval_online")
         has_online = online_min is not None and online_min > 0
         self.chk_online.setChecked(has_online)
@@ -402,7 +406,7 @@ class TimerConfigWizard(ModernWizardPanel):
 
         keywords = self.existing_config.get("keywords", [])
         self.txt_keywords.setText(", ".join(keywords))
-        
+
         categories = self.existing_config.get("categories", [])
         self.txt_categories.setText(", ".join(categories))
 
@@ -410,11 +414,11 @@ class TimerConfigWizard(ModernWizardPanel):
         messages = [txt.text().strip() for row, txt in self.message_rows if txt.text().strip()]
         keywords = [kw.strip() for kw in self.txt_keywords.text().split(",") if kw.strip()]
         categories = [cat.strip() for cat in self.txt_categories.text().split(",") if cat.strip()]
-        
+
         interval_online = self.spin_online.value() if self.chk_online.isChecked() else None
         interval_offline = self.spin_offline.value() if self.chk_offline.isChecked() else None
         chat_lines = self.spin_lines.value() if self.chk_lines.isChecked() else 0
-        
+
         is_active = self.existing_config.get("is_active", True) if self.existing_config else True
 
         return {
@@ -432,17 +436,25 @@ class TimerConfigWizard(ModernWizardPanel):
         }
 
     def _update_step_ui(self):
-        super()._update_step_ui()
-        self._update_btn_next_state()
+        try:
+            super()._update_step_ui()
+            self._update_btn_next_state()
+        except Exception as e:
+            logger.exception("[TimerConfigWizard] Error updating step UI: %s", e)
 
     def _update_btn_next_state(self):
-        self.btn_next.setEnabled(self.validate_step(self.current_step))
-        if self.current_step == 0:
-            for row, txt in self.message_rows:
-                is_invalid = len(txt.text().strip()) > 492
-                txt.setProperty("state", "error" if is_invalid else "normal")
-                txt.style().unpolish(txt)
-                txt.style().polish(txt)
+        try:
+            if self.current_step == 0:
+                self.btn_next.setEnabled(self.validate_step(0))
+                for row, txt in self.message_rows:
+                    is_invalid = len(txt.text().strip()) > 492
+                    txt.setProperty("state", "error" if is_invalid else "normal")
+                    txt.style().unpolish(txt)
+                    txt.style().polish(txt)
+            else:
+                self.btn_next.setEnabled(True)
+        except Exception as e:
+            logger.exception("[TimerConfigWizard] Error updating btn_next state: %s", e)
 
 class MessageEditorDialog(ModernModal):
     def __init__(self, current_text: str, i18n, parent=None):
@@ -455,25 +467,25 @@ class MessageEditorDialog(ModernModal):
         )
         self.i18n = i18n
         self.set_dialog_state("accent", QColor(46, 205, 112, 60))
-        
+
         self.text_edit = VariableTextEdit()
         self.text_edit.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))
         self.text_edit.setPlainText(current_text)
         self.text_edit.setMinimumHeight(150)
         self.text_edit.setAcceptRichText(False)
         self.content_layout.addWidget(self.text_edit)
-        
+
         btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel"), role="action_outlined")
         btn_cancel.clicked.connect(self.reject)
-        
+
         self.btn_save = ModernButton(self.i18n.get("common.buttons.save"), role="action_accent")
         self.btn_save.clicked.connect(self.accept)
-        
+
         self.add_action_buttons(btn_cancel, self.btn_save)
-        
+
         self.text_edit.textChanged.connect(self._validate_text_length)
         self._validate_text_length()
-        
+
     def _validate_text_length(self):
         text = self.text_edit.toPlainText()
         is_invalid = len(text) > 492
@@ -481,6 +493,6 @@ class MessageEditorDialog(ModernModal):
         self.text_edit.style().unpolish(self.text_edit)
         self.text_edit.style().polish(self.text_edit)
         self.btn_save.setEnabled(not is_invalid)
-        
+
     def get_text(self) -> str:
         return self.text_edit.toPlainText().replace("\n", " ").strip()

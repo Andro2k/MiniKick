@@ -8,7 +8,6 @@ from frontend.common import (
     validate_trigger_prefix,
     get_icon_colored,
     get_pixmap_colored,
-    COLOR_NEUTRAL_200,
     COLOR_NEUTRAL_400,
     COLOR_GREEN,
 )
@@ -17,7 +16,7 @@ class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
                  switch: ModernSwitch = None, test_signal=None, tooltip_text="",
                  action_button: QPushButton = None,
-                 icon_color=COLOR_NEUTRAL_200, parent=None):
+                 icon_color=COLOR_NEUTRAL_400, parent=None):
         super().__init__(parent)
         self.switch = switch
         self.combo = combo

@@ -363,7 +363,7 @@ class MusicPlayerSettingsPanel(QWidget):
             else:
                 color_hex = "#53FC18"
             safe_requester = html.escape(requester)
-            user_styled = f"<span style='color:{color_hex}; font-weight:600;'>@{safe_requester}</span>"
+            user_styled = f"<span style='color:{color_hex}; font-weight:500;'>@{safe_requester}</span>"
             req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)
         else:
             req_text = self.i18n.get("music.player.requested_by_streamer")

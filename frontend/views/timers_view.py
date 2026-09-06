@@ -43,7 +43,7 @@ class TimersView(BaseView):
             button_text=self.i18n.get("timer.empty.btn"),
             on_button_clicked=self.add_requested.emit
         )
-        
+
         self.table = self.table_card.table
         self.txt_search = self.table_card.txt_search
         self.btn_new_add = self.table_card.btn_add
@@ -59,10 +59,10 @@ class TimersView(BaseView):
         h_header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         h_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
-        
+
         self.table.setColumnWidth(6, 130)
-        
-        self.main_layout.addWidget(self.table_card, stretch=1) 
+
+        self.main_layout.addWidget(self.table_card, stretch=1)
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
         self.connected_platforms = connected_platforms or {}
@@ -108,7 +108,7 @@ class TimersView(BaseView):
             else:
                 preview_text = first_msg
                 tooltip_text = first_msg
-                
+
         item = self._create_table_item(preview_text)
         if tooltip_text:
             item.setToolTip(tooltip_text)
@@ -120,7 +120,7 @@ class TimersView(BaseView):
 
         apply_kick = timer_data.get("apply_kick", True) and (connected.get("kick", False) if has_conn_filter else True)
         apply_twitch = timer_data.get("apply_twitch", True) and (connected.get("twitch", False) if has_conn_filter else True)
-        
+
         if not apply_kick and not apply_twitch:
             container = QWidget()
             layout = QHBoxLayout(container)
@@ -155,28 +155,28 @@ class TimersView(BaseView):
     def _create_actions_cell(self, timer_data: dict) -> QWidget:
         timer_id = timer_data["id"]
         cell = TableActionCell()
-        
+
         cell.add_switch(
             checked=timer_data.get("is_active", True),
             callback=lambda checked, tid=timer_id: self.status_toggled.emit(tid, checked)
         )
-        
+
         cell.add_button(
-            icon_name="edit.svg", 
-            color=COLOR_GREEN, 
-            role="action_accent_border", 
+            icon_name="edit.svg",
+            color=COLOR_GREEN,
+            role="action_accent_border",
             tooltip=self.i18n.get("timer.table.tooltip_edit"),
             callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
         )
-        
+
         cell.add_button(
-            icon_name="trash.svg", 
-            color=COLOR_RED, 
-            role="action_danger_border", 
+            icon_name="trash.svg",
+            color=COLOR_RED,
+            role="action_danger_border",
             tooltip=self.i18n.get("timer.table.tooltip_delete"),
             callback=lambda checked=False, tid=timer_id: self.delete_requested.emit(tid)
         )
-        
+
         return cell
 
     def set_category_search_results(self, platform: str, results: list[dict]):
@@ -206,3 +206,4 @@ class TimersView(BaseView):
         finally:
             self._active_timer_dialog = None
         return None
+        

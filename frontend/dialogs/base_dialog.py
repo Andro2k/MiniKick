@@ -1,7 +1,8 @@
 # frontend\dialogs\base_dialog.py
 
+import logging
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFrame, QSizePolicy, QGraphicsDropShadowEffect,
-                               QStackedWidget, QProgressBar, QWidget)
+                               QStackedWidget, QProgressBar, QWidget, QScrollArea, QApplication)
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
 from frontend.common import (
@@ -9,6 +10,8 @@ from frontend.common import (
     COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
     COLOR_WHITE, PATH_ICON_HELP
 )
+
+logger = logging.getLogger("minikick.dialogs.base_dialog")
 
 class ModernFramelessShell(QDialog):
     _icon_close = None
@@ -53,7 +56,16 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.move(width - 36, 8)
         self.btn_close_shell.raise_()
 
+    def _apply_screen_constraints(self):
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            avail = screen.availableGeometry()
+            max_h = max(400, int(avail.height() * 0.90))
+            self.container.setMaximumHeight(max_h)
+            self.setMaximumHeight(max_h + 32)
+
     def showEvent(self, event):
+        self._apply_screen_constraints()
         self.adjustSize()
         super().showEvent(event)
         parent_widget = self.parentWidget()
@@ -62,7 +74,22 @@ class ModernFramelessShell(QDialog):
             parent_global_pos = parent_widget.mapToGlobal(parent_rect.topLeft())
             center_x = parent_global_pos.x() + (parent_rect.width() - self.width()) // 2
             center_y = parent_global_pos.y() + (parent_rect.height() - self.height()) // 2
-            self.move(center_x, center_y)
+        else:
+            screen = self.screen() or QApplication.primaryScreen()
+            if screen:
+                avail = screen.availableGeometry()
+                center_x = avail.left() + (avail.width() - self.width()) // 2
+                center_y = avail.top() + (avail.height() - self.height()) // 2
+            else:
+                center_x, center_y = self.x(), self.y()
+
+        screen = self.screen() or QApplication.primaryScreen()
+        if screen:
+            avail = screen.availableGeometry()
+            center_x = max(avail.left(), min(center_x, avail.right() - self.width()))
+            center_y = max(avail.top(), min(center_y, avail.bottom() - self.height()))
+
+        self.move(center_x, center_y)
         if hasattr(self, 'btn_close_shell'):
             self.btn_close_shell.move(self.container.width() - 36, 8)
             self.btn_close_shell.raise_()
@@ -218,8 +245,14 @@ class ModernWizardPanel(ModernFramelessShell):
         self.lbl_subtitle.setWordWrap(True)
         self.panel_layout.addWidget(self.lbl_subtitle)
         
-        self.main_content = QStackedWidget(self)
-        self.panel_layout.addWidget(self.main_content)
+        self.main_content = QStackedWidget()
+        self.scroll_content = QScrollArea(self)
+        self.scroll_content.setWidgetResizable(True)
+        self.scroll_content.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll_content.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll_content.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scroll_content.setWidget(self.main_content)
+        self.panel_layout.addWidget(self.scroll_content, stretch=1)
         
         self.btn_layout = QHBoxLayout()
         self.btn_layout.addStretch()
@@ -249,40 +282,54 @@ class ModernWizardPanel(ModernFramelessShell):
         self._update_step_ui()
         
     def _update_step_ui(self):
-        step_tmpl = self.i18n.get("dialogs.wizard.step_indicator")
-        self.lbl_step_num.setText(step_tmpl.replace("{current}", str(self.current_step + 1)).replace("{total}", str(self.total_steps)))
-        self.progress_bar.setValue(self.current_step + 1)
-        self.lbl_title.setText(self.title_steps[self.current_step])
-        self.lbl_subtitle.setText(self.subtitle_steps[self.current_step])
-        self.main_content.setCurrentIndex(self.current_step)
-        
-        if self.current_step == 0:
-            self.btn_back.setText(self.i18n.get("common.buttons.cancel"))
-        else:
-            self.btn_back.setText(self.i18n.get("common.buttons.back"))
+        try:
+            step_tmpl = self.i18n.get("dialogs.wizard.step_indicator")
+            self.lbl_step_num.setText(step_tmpl.replace("{current}", str(self.current_step + 1)).replace("{total}", str(self.total_steps)))
+            self.progress_bar.setValue(self.current_step + 1)
             
-        if self.current_step == self.total_steps - 1:
-            self.btn_next.setText(self.i18n.get("common.buttons.save"))
-        else:
-            self.btn_next.setText(self.i18n.get("common.buttons.next"))
+            if 0 <= self.current_step < len(self.title_steps):
+                self.lbl_title.setText(str(self.title_steps[self.current_step]))
+            if 0 <= self.current_step < len(self.subtitle_steps):
+                self.lbl_subtitle.setText(str(self.subtitle_steps[self.current_step]))
+            if 0 <= self.current_step < self.main_content.count():
+                self.main_content.setCurrentIndex(self.current_step)
+            
+            if self.current_step == 0:
+                self.btn_back.setText(self.i18n.get("common.buttons.cancel"))
+            else:
+                self.btn_back.setText(self.i18n.get("common.buttons.back"))
+                
+            if self.current_step == self.total_steps - 1:
+                self.btn_next.setText(self.i18n.get("common.buttons.save"))
+            else:
+                self.btn_next.setText(self.i18n.get("common.buttons.next"))
 
-        self.adjustSize()
+            self._apply_screen_constraints()
+            self.adjustSize()
+        except Exception as e:
+            logger.exception("[ModernWizardPanel] Error in _update_step_ui: %s", e)
 
     def _go_back(self):
-        if self.current_step == 0:
-            self.reject()
-        else:
-            self.current_step -= 1
-            self._update_step_ui()
+        try:
+            if self.current_step == 0:
+                self.reject()
+            else:
+                self.current_step -= 1
+                self._update_step_ui()
+        except Exception as e:
+            logger.exception("[ModernWizardPanel] Error in _go_back: %s", e)
             
     def _go_next(self):
-        if not self.validate_step(self.current_step):
-            return
-        if self.current_step == self.total_steps - 1:
-            self.accept()
-        else:
-            self.current_step += 1
-            self._update_step_ui()
+        try:
+            if not self.validate_step(self.current_step):
+                return
+            if self.current_step == self.total_steps - 1:
+                self.accept()
+            else:
+                self.current_step += 1
+                self._update_step_ui()
+        except Exception as e:
+            logger.exception("[ModernWizardPanel] Error in _go_next: %s", e)
 
     def validate_step(self, step_index: int) -> bool:
         return True

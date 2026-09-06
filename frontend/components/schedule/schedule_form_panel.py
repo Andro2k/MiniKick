@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Signal, QDate, QTime
 from PySide6.QtGui import QTextCharFormat, QColor
 from frontend.widgets import (ModernCard, ModernButton, ModernSwitch,
                               NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox)
-from frontend.common import COLOR_NEUTRAL_200
+from frontend.common import COLOR_NEUTRAL_400
 
 class ScheduleFormPanel(QWidget):
     schedule_saved = Signal(object)
@@ -97,7 +97,7 @@ class ScheduleFormPanel(QWidget):
             cal.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
             cal.setHorizontalHeaderFormat(QCalendarWidget.HorizontalHeaderFormat.ShortDayNames)
             neutral_fmt = QTextCharFormat()
-            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_200))
+            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_400))
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, neutral_fmt)
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, neutral_fmt)
             cal.setHeaderTextFormat(neutral_fmt)

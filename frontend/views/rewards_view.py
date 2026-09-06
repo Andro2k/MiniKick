@@ -6,7 +6,7 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common import (
-    COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER,
+    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER,
     get_pixmap_colored, get_icon_colored
 )
 
@@ -396,7 +396,7 @@ class RewardsView(BaseView):
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
                 icon_name="player-play.svg", 
-                color=COLOR_NEUTRAL_200 if is_valid_file else COLOR_RED, 
+                color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
                 role="action_neutral_border" if is_valid_file else "action_danger_border", 
                 tooltip=play_tooltip, 
                 callback=lambda checked=False, r=reward: self.preview_requested.emit(r)

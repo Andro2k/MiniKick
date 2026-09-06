@@ -171,7 +171,7 @@ class TimerController(QObject):
             timers = self.service.get_all_timers()
             term_lower = search_term.lower()
             filtered = [
-                t for t in timers 
+                t for t in timers
                 if term_lower in t["name"].lower() or any(term_lower in m.lower() for m in t["messages"])
             ]
             self.view.populate_table(filtered)
