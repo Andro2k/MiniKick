@@ -459,7 +459,7 @@ class AlertEventCard(QWidget):
             self,
             self.i18n.get("alerts.fields.media"),
             "",
-            "Media (*.png *.gif *.webp *.mp4 *.webm);;All Files (*.*)"
+            self.i18n.get("alerts.fields.media_filter")
         )
         if file_path:
             self.edit_media.setText(file_path)

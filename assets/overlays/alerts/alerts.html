@@ -78,11 +78,31 @@
         }
 
         .media-box img,
-        .media-box video {
-            max-width: 240px;
-            max-height: 200px;
+        .media-box video,
+        .media-box iframe {
+            max-width: 320px;
+            max-height: 240px;
             object-fit: contain;
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+        }
+
+        .media-box iframe {
+            width: 320px;
+            height: 220px;
+            border: none;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        #alert-container.custom-html-active .media-box {
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        #alert-container.custom-html-active .media-box iframe {
+            max-width: 100%;
+            width: 520px;
+            height: 280px;
         }
 
         .alert-card {
@@ -495,6 +515,28 @@
                         videoElement.muted = true;
                         videoElement.play().catch(err => console.warn("[Alerts Video] Muted play blocked:", err));
                     });
+                } else if (ext === '.html' || ext === '.htm') {
+                    container.classList.add('custom-html-active');
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'alert-custom-frame';
+                    iframe.setAttribute('allow', 'autoplay');
+                    iframe.src = data.media_url;
+
+                    iframe.onload = function () {
+                        try {
+                            const eventPayload = {
+                                type: 'onEventReceived',
+                                detail: {
+                                    listener: data.alert_type || 'alert',
+                                    event: data
+                                }
+                            };
+                            iframe.contentWindow.postMessage(eventPayload, '*');
+                        } catch (err) {
+                            console.warn("[Alerts Custom HTML] Error al enviar postMessage a iframe:", err);
+                        }
+                    };
+                    mediaBox.appendChild(iframe);
                 } else {
                     const img = document.createElement('img');
                     img.src = data.media_url;
@@ -539,7 +581,14 @@
                 progressFill.style.transform = 'scaleX(0)';
             });
 
-            activeAlertTimer = setTimeout(() => {
+            function dismissAlert() {
+                if (!isPlaying) return;
+                if (activeAlertTimer) {
+                    clearTimeout(activeAlertTimer);
+                    activeAlertTimer = null;
+                }
+                window.removeEventListener('message', onCustomAlertMessage);
+
                 container.classList.remove('active');
                 container.classList.add('dismissing');
 
@@ -553,6 +602,7 @@
                         videoElement = null;
                     }
                     mediaBox.innerHTML = '';
+                    container.classList.remove('custom-html-active');
 
                     if (activeAudioElement) {
                         try {
@@ -570,8 +620,16 @@
 
                     processNextAlert();
                 }, 350);
+            }
 
-            }, duration);
+            function onCustomAlertMessage(event) {
+                if (event.data && (event.data.type === 'minikick:finish_alert' || event.data.type === 'finish_alert')) {
+                    dismissAlert();
+                }
+            }
+            window.addEventListener('message', onCustomAlertMessage);
+
+            activeAlertTimer = setTimeout(dismissAlert, duration);
         }
 
         connectWS();

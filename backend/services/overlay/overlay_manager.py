@@ -163,8 +163,17 @@ class OverlayServerManager:
         if media_path and os.path.exists(media_path):
             _, ext = os.path.splitext(media_path.lower())
             media_ext = ext
-            safe_media = urllib.parse.quote(media_path)
-            media_url = f"http://localhost:{self.port}/media?path={safe_media}&token={self.session_token}"
+            if ext in (".html", ".htm"):
+                import base64
+                norm_media = os.path.normpath(media_path)
+                root_dir = os.path.dirname(norm_media)
+                file_name = os.path.basename(norm_media)
+                b64_dir = base64.urlsafe_b64encode(root_dir.encode("utf-8")).decode("ascii")
+                safe_file = urllib.parse.quote(file_name)
+                media_url = f"http://localhost:{self.port}/user_media/{self.session_token}/{b64_dir}/{safe_file}"
+            else:
+                safe_media = urllib.parse.quote(media_path)
+                media_url = f"http://localhost:{self.port}/media?path={safe_media}&token={self.session_token}"
 
         broadcast_payload = dict(payload)
         broadcast_payload["sound_url"] = sound_url

@@ -295,14 +295,31 @@ QLineEdit:disabled, QTextEdit:disabled, QComboBox:disabled {{ background-color: 
 /* ComboBox */
 QComboBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_NEUTRAL_200}; font-size: {text1}px; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: {BORDER_DEFAULT}; border-top: 1.2px solid #38363E; combobox-popup: 0; min-width: 120px; }}
 QComboBox:focus, QComboBox:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_700}; color: {COLOR_WHITE}; }}
-QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 24px; border-left: {BORDER_SUBTLE}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
-QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: {COLOR_NEUTRAL_700}; }}
-QComboBox::drop-down:hover {{ background-color: {COLOR_NEUTRAL_800}; border-color: {COLOR_NEUTRAL_700}; }}
+QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 24px; border-left: none; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
+QComboBox:focus::drop-down, QComboBox:hover::drop-down {{ border-color: transparent; }}
+QComboBox::drop-down:hover {{ background-color: transparent; border-color: transparent; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 14px; height: 14px; }}
 QComboBox::down-arrow:on {{ top: 1px; left: 1px; }}
+QComboBox[state="active"], QComboBox[state="active"]:hover, QComboBox[state="active"]:focus {{ background-color: {COLOR_NEUTRAL_800}; border: 1.5px solid {COLOR_BLUE}; border-top: 1.5px solid {COLOR_BLUE}; color: {COLOR_WHITE}; }}
+QComboBox[state="active"]::down-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); }}
 QComboBox QAbstractItemView {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; font-size: {text1}px; border: 1.2px solid #38363E; border-radius: {RADIUS_MD}px; selection-background-color: {COLOR_NEUTRAL_800}; selection-color: {COLOR_WHITE}; }}
 QComboBox QAbstractItemView::item {{ font-size: {text1}px; border-radius: {RADIUS_SM}px; padding: {PADDING_ITEM}; margin: 1px 2px; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; border: 1.2px solid #313036; }}
+
+/* Searchable ComboBox Popup */
+QFrame[role="searchable_combo_popup"] {{ background-color: {COLOR_NEUTRAL_850}; border: 1.2px solid #38363E; border-radius: {RADIUS_MD}px; }}
+QFrame[role="searchable_combo_search_bar"] {{ background-color: {COLOR_NEUTRAL_850}; border: {BORDER_DEFAULT}; border-top: 1.2px solid #38363E; border-radius: {RADIUS_MD}px; }}
+QLineEdit[role="searchable_combo_input"] {{ background-color: transparent; border: none; color: {COLOR_WHITE}; font-size: {text1}px; font-weight: 400; padding: 0px 4px; }}
+QLineEdit[role="searchable_combo_input"]:focus {{ border: none; background-color: transparent; }}
+QFrame[role="searchable_combo_divider"] {{ background-color: {COLOR_NEUTRAL_750}; max-height: 1px; min-height: 1px; border: none; margin: 4px 0px 2px 0px; }}
+QListWidget[role="searchable_combo_list"] {{ background-color: {COLOR_NEUTRAL_850}; border: none; outline: none; }}
+QListWidget[role="searchable_combo_list"]::item {{ color: {COLOR_NEUTRAL_200}; font-size: {text1}px; font-weight: 400; padding: 6px 10px; border-radius: {RADIUS_SM}px; border: none; outline: none; }}
+QListWidget[role="searchable_combo_list"]::item:hover, QListWidget[role="searchable_combo_list"]::item:selected {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_WHITE}; border: none; outline: none; }}
+QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: transparent; width: 5px; margin: 4px 2px 4px 0px; border-radius: 2px; }}
+QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical {{ background: {COLOR_NEUTRAL_700}; min-height: 20px; border-radius: 2px; }}
+QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical:hover {{ background: {COLOR_NEUTRAL_800}; }}
+QListWidget[role="searchable_combo_list"] QScrollBar::add-line:vertical, QListWidget[role="searchable_combo_list"] QScrollBar::sub-line:vertical {{ height: 0px; background: none; }}
+QLabel[role="searchable_combo_empty"] {{ color: {COLOR_NEUTRAL_500}; font-size: {text2}px; padding: 16px 8px; }}
 
 /* Context Menus */
 QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.2px solid #38363E; border-radius: {RADIUS_MD}px; padding: 4px; }}

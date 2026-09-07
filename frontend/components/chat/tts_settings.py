@@ -3,7 +3,7 @@
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider,
-                              NoWheelComboBox, NoWheelSlider)
+                              NoWheelComboBox, NoWheelSlider, SearchableComboBox)
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
     COLOR_NEUTRAL_400, COLOR_GREEN, MARGIN_2XS, SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_LG)
@@ -164,11 +164,13 @@ class ChatTtsSettingsPanel(ModernCard):
         )
         voices_card.addWidget(row_provider)
 
-        self.combo_voice = NoWheelComboBox(self)
-        self.combo_voice_broadcaster = NoWheelComboBox(self)
-        self.combo_voice_moderator = NoWheelComboBox(self)
-        self.combo_voice_vip = NoWheelComboBox(self)
-        self.combo_voice_subscriber = NoWheelComboBox(self)
+        voice_placeholder = self.i18n.get("chat.settings.search_voice_placeholder")
+        empty_text = self.i18n.get("common.no_results")
+        self.combo_voice = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_broadcaster = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_moderator = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_vip = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_subscriber = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
 
         self.sw_role_everyone = ModernSwitch(self)
         self.sw_role_everyone.setChecked(True)

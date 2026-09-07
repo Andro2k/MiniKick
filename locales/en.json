@@ -2,8 +2,6 @@
     "alerts": {
         "buttons": {
             "browse": "Browse...",
-            "clear_media": "Remove media",
-            "clear_sound": "Remove sound",
             "discard": "Discard",
             "save": "Save Changes",
             "test": "Test Alert",
@@ -26,8 +24,9 @@
         "fields": {
             "active": "Alert Enabled",
             "duration": "Duration (seconds)",
-            "media": "Image or Video",
-            "media_placeholder": "Path to .png, .gif, .mp4, or .webm file",
+            "media": "Media or HTML",
+            "media_filter": "Media & Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Media Files (*.png *.gif *.webp *.mp4 *.webm);;All Files (*.*)",
+            "media_placeholder": "Path to .png, .gif, .mp4, .webm, or .html file",
             "sound": "Alert Sound",
             "sound_placeholder": "Path to .mp3, .wav, or .ogg file",
             "template": "Text Template",
@@ -175,6 +174,7 @@
             "prefix_placeholder": "Ex. !tts",
             "prefix_title": "Command Prefix",
             "provider_title": "TTS Voice Engine",
+            "search_voice_placeholder": "Search voice...",
             "speed_desc": "Adjust voice speech speed and pacing.",
             "speed_title": "Speech Speed",
             "tts_desc": "Enable or disable automated message reading out loud.",
@@ -307,6 +307,7 @@
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
+        "no_results": "No results found",
         "status": {
             "error": "Error",
             "offline": "Offline",

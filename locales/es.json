@@ -2,8 +2,6 @@
     "alerts": {
         "buttons": {
             "browse": "Examinar...",
-            "clear_media": "Quitar multimedia",
-            "clear_sound": "Quitar sonido",
             "discard": "Descartar",
             "save": "Guardar Cambios",
             "test": "Probar Alerta",
@@ -26,8 +24,9 @@
         "fields": {
             "active": "Alerta Activa",
             "duration": "Duración (segundos)",
-            "media": "Imagen o Video",
-            "media_placeholder": "Ruta a archivo .png, .gif, .mp4 o .webm",
+            "media": "Multimedia o HTML",
+            "media_filter": "Multimedia y Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Archivos Multimedia (*.png *.gif *.webp *.mp4 *.webm);;Todos los Archivos (*.*)",
+            "media_placeholder": "Ruta a archivo .png, .gif, .mp4, .webm o .html",
             "sound": "Sonido de Alerta",
             "sound_placeholder": "Ruta a archivo .mp3, .wav u .ogg",
             "template": "Plantilla de Texto",
@@ -175,6 +174,7 @@
             "prefix_placeholder": "Ej. !tts",
             "prefix_title": "Prefijo de Comando",
             "provider_title": "Motor de Voz TTS",
+            "search_voice_placeholder": "Buscar voz...",
             "speed_desc": "Ajusta la velocidad y el ritmo de la locución.",
             "speed_title": "Velocidad de Lectura",
             "tts_desc": "Activa o desactiva la lectura automática del chat en voz alta.",
@@ -307,6 +307,7 @@
             "update": "Buscar actualizaciones",
             "view_release_notes": "Ver Novedades"
         },
+        "no_results": "No se encontraron resultados",
         "status": {
             "error": "Error",
             "offline": "Desconectado",

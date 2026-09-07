@@ -22,6 +22,7 @@ from .no_wheel import (
     NoWheelSpinBox, NoWheelDoubleSpinBox
 )
 from .category_search import CategorySearchComboBox, CategorySuggestionsPopup, CategoryItemWidget
+from .searchable_combo_box import SearchableComboBox, SearchableComboPopup
 
 __all__ = [
     "BaseView",
@@ -62,6 +63,8 @@ __all__ = [
     "NoWheelDoubleSpinBox",
     "CategorySearchComboBox",
     "CategorySuggestionsPopup",
-    "CategoryItemWidget"
+    "CategoryItemWidget",
+    "SearchableComboBox",
+    "SearchableComboPopup"
 ]
 

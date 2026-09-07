@@ -600,7 +600,6 @@ class MainWindowCore(QMainWindow):
         self.global_media_worker.start()
 
     def _safe_stop_worker(self, worker_attr_name: str, timeout_ms: int = 1500) -> None:
-        """Safely stops a QThread worker and retains reference until exit to prevent Qt runtime aborts."""
         worker = getattr(self, worker_attr_name, None)
         if not worker:
             return

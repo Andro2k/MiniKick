@@ -10,7 +10,7 @@ import queue
 import sys
 import time
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, unquote
 from .websocket_client import WebSocketClient
 
 logger = logging.getLogger("minikick.services.overlay.routes")
@@ -73,8 +73,9 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         token = query.get("token", [None])[0]
 
         expected_token = getattr(self.server.manager, "session_token", None)
+        is_user_media = path.startswith("/user_media/")
         is_css_request = path.endswith(".css") or "/css/" in path
-        if expected_token and not is_css_request and token != expected_token:
+        if expected_token and not is_css_request and not is_user_media and token != expected_token:
             self.send_error(403, "Forbidden: Invalid session token")
             return
 
@@ -112,6 +113,9 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
 
         if path == "/media":
             self._handle_media_request(query)
+            return
+        if path.startswith("/user_media/"):
+            self._handle_user_media_request(path)
             return
         if path == "/events":
             self._handle_sse_stream("clients")
@@ -213,19 +217,16 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         finally:
             self.server.manager.unregister_ws_client(ws_client)
 
-    def _handle_media_request(self, query: dict):
-        if "path" not in query:
-            self.send_error(400, "Path not specified")
-            return
-
-        filepath = os.path.normpath(query["path"][0])
-        if not os.path.isfile(filepath):
-            self.send_error(404, "Media file not found")
-            return
-
+    def _serve_file(self, filepath: str):
         file_size = os.path.getsize(filepath)
         mime_type, _ = mimetypes.guess_type(filepath)
         content_type = mime_type or "application/octet-stream"
+        if filepath.endswith(".html") or filepath.endswith(".htm"):
+            content_type = "text/html; charset=utf-8"
+        elif filepath.endswith(".js"):
+            content_type = "application/javascript; charset=utf-8"
+        elif filepath.endswith(".css"):
+            content_type = "text/css; charset=utf-8"
 
         range_header = self.headers.get("Range")
         start = 0
@@ -255,6 +256,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Accept-Ranges", "bytes")
             self.send_header("Content-Length", str(content_length))
             self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
             if status_code == 206 and file_size > 0:
                 self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
             self.end_headers()
@@ -279,6 +281,59 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 self.send_error(500, f"Internal error: {e}")
             except Exception:
                 pass
+
+    def _handle_media_request(self, query: dict):
+        if "path" not in query:
+            self.send_error(400, "Path not specified")
+            return
+
+        filepath = os.path.normpath(query["path"][0])
+        if not os.path.isfile(filepath):
+            self.send_error(404, "Media file not found")
+            return
+
+        self._serve_file(filepath)
+
+    def _handle_user_media_request(self, path: str):
+        parts = path.split("/", 4)
+        if len(parts) < 5 or not parts[2] or not parts[3] or not parts[4]:
+            self.send_error(400, "Invalid user media URL format")
+            return
+
+        token = parts[2]
+        b64_dir = parts[3]
+        rel_path = unquote(parts[4])
+
+        expected_token = getattr(self.server.manager, "session_token", "")
+        if not expected_token or token != expected_token:
+            self.send_error(403, "Invalid or missing token")
+            return
+
+        import base64
+        try:
+            root_dir_bytes = base64.urlsafe_b64decode(b64_dir.encode("ascii"))
+            root_dir = root_dir_bytes.decode("utf-8")
+        except Exception:
+            self.send_error(400, "Invalid directory encoding")
+            return
+
+        abs_root = os.path.abspath(root_dir)
+        target_path = os.path.normpath(os.path.join(abs_root, rel_path))
+        abs_target = os.path.abspath(target_path)
+
+        try:
+            if os.path.commonpath([abs_root, abs_target]) != abs_root:
+                self.send_error(403, "Access denied")
+                return
+        except ValueError:
+            self.send_error(403, "Access denied")
+            return
+
+        if not os.path.isfile(abs_target):
+            self.send_error(404, "File not found")
+            return
+
+        self._serve_file(abs_target)
 
     def _handle_sse_stream(self, client_attr: str, initial_payloads: list = None):
         self.send_response(200)
