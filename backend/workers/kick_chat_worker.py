@@ -70,6 +70,7 @@ class KickChatWorker(QThread):
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
         if not self._is_stopped:
             now_str = datetime.datetime.now().strftime("%H:%M:%S")
+            logger.info("[KickChatWorker] [%s] Message dispatched from '%s': %s (id=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a")
             dto = ChatMessageDTO(
                 user=user,
                 content=msg,

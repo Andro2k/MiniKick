@@ -99,6 +99,7 @@ class TwitchChatWorker(QThread):
             return
 
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        logger.info("[TwitchChatWorker] [%s] Message dispatched from '%s': %s (id=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a")
         dto = ChatMessageDTO(
             user=user,
             content=msg,

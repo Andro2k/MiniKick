@@ -319,6 +319,7 @@ class ChatController(QObject):
             "role": role_name, "platform": platform
         }
         self._message_buffer.append(item)
+        logger.info("[Chat] [%s] [%s] %s: %s", platform.upper(), dto.timestamp, dto.user, dto.content)
         if self.view is not None:
             self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
         emotes_tag = getattr(dto, "emotes_tag", "")

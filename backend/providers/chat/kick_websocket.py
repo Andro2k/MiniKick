@@ -3,6 +3,8 @@
 import logging
 import time
 import uuid
+import socket
+from datetime import datetime, timezone
 from backend.utils.json_utils import parse_kick_payload, fast_dumps
 from collections import deque
 import websocket
@@ -99,7 +101,11 @@ class KickWebSocketManager:
             on_error=lambda ws, err: logger.error("[KickWebSocket] WebSocket error: %s", err),
             on_close=lambda ws, status, msg: logger.info("[KickWebSocket] WebSocket closed: status=%s msg=%s", status, msg)
         )
-        self.ws.run_forever(ping_interval=30, ping_timeout=10)
+        self.ws.run_forever(
+            sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),),
+            ping_interval=30,
+            ping_timeout=10
+        )
 
     def _on_raw_frame(self, ws: websocket.WebSocketApp, raw: str) -> None:
         if not self._running:
@@ -137,6 +143,19 @@ class KickWebSocketManager:
                 self._seen_message_ids_set.discard(oldest)
             self._seen_message_ids.append(msg_id)
             self._seen_message_ids_set.add(msg_id)
+
+        created_at = inner.get("created_at", "")
+        latency_info = ""
+        if created_at:
+            try:
+                created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                now_utc = datetime.now(timezone.utc)
+                latency = (now_utc - created_dt).total_seconds()
+                latency_info = f" (server latency: {latency:.3f}s)"
+            except Exception:
+                pass
+
+        logger.info("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
 
         identity = sender.get("identity")
         badges = []
@@ -323,13 +342,9 @@ class KickWebSocketManager:
         logger.info("[KickWebSocket] Pusher connection established. Subscribing to chatrooms.%s.v2", self._room_id)
         channels = [
             f"chatrooms.{self._room_id}.v2",
-            f"chatroom_{self._room_id}",
         ]
         if self._channel_id:
-            channels.extend([
-                f"channel_{self._channel_id}",
-                f"channel.{self._channel_id}",
-            ])
+            channels.append(f"channel_{self._channel_id}")
 
         for ch in channels:
             logger.info("[KickWebSocket] Subscribing to topic: %s", ch)

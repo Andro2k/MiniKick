@@ -62,6 +62,7 @@ class YouTubeChatProvider:
     def __init__(self, i18n=None) -> None:
         self.i18n = i18n or TranslationService()
         self._chat: Any | None = None
+        self._client: Any | None = None
         self._is_running = False
         self._video_id: str = ""
         self._target_channel: str = ""
@@ -89,8 +90,28 @@ class YouTubeChatProvider:
         logger.info("[YouTubeChatProvider] Connecting to YouTube live video: %s (Target: %s)", video_id, target)
 
         try:
+            import httpx
             import pytchat
-            self._chat = pytchat.create(video_id=video_id, interruptable=False)
+            import pytchat.core.pytchat as pc
+
+            if hasattr(pc, "PytchatCore") and hasattr(pc.PytchatCore.__init__, "__defaults__"):
+                defs = list(pc.PytchatCore.__init__.__defaults__)
+                if len(defs) > 2 and getattr(defs[2], "is_closed", False):
+                    defs[2] = httpx.Client(http2=True)
+                    pc.PytchatCore.__init__.__defaults__ = tuple(defs)
+
+            if self._client and not getattr(self._client, "is_closed", True):
+                try:
+                    self._client.close()
+                except Exception:
+                    pass
+            self._client = httpx.Client(http2=True, timeout=10.0)
+
+            self._chat = pytchat.create(
+                video_id=video_id,
+                client=self._client,
+                interruptable=False
+            )
             
             is_replay_func = getattr(self._chat, "is_replay", None)
             is_replay = is_replay_func() if callable(is_replay_func) else False
@@ -195,15 +216,17 @@ class YouTubeChatProvider:
     def stop_chat(self) -> None:
         self._is_running = False
         chat = self._chat
+        self._chat = None
         if chat:
             try:
                 chat.terminate()
             except Exception:
                 pass
-            client = getattr(chat, "_client", None)
-            if client and hasattr(client, "close"):
-                try:
-                    client.close()
-                except Exception:
-                    pass
-            self._chat = None
+
+        client = self._client
+        self._client = None
+        if client and hasattr(client, "close"):
+            try:
+                client.close()
+            except Exception:
+                pass
