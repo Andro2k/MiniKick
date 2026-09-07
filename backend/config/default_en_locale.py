@@ -2,8 +2,15 @@
 
 DEFAULT_DICTIONARY = {
     "alerts": {
+        "align": {
+            "center": "Center",
+            "left": "Left",
+            "right": "Right"
+        },
         "buttons": {
             "browse": "Browse...",
+            "discard": "Discard",
+            "save": "Save Changes",
             "test": "Test Alert",
             "test_sent": "Test alert sent to OBS."
         },
@@ -24,18 +31,44 @@ DEFAULT_DICTIONARY = {
         "fields": {
             "active": "Alert Enabled",
             "duration": "Duration (seconds)",
-            "media": "Image or Video",
-            "media_placeholder": "Path to .png, .gif, .mp4, or .webm file",
+            "duration_desc": "Time in seconds the alert is displayed on screen.",
+            "font_family": "Typography / Font",
+            "font_family_desc": "Font family for the alert text.",
+            "font_size": "Font Size",
+            "font_size_desc": "Font size in pixels for the alert text.",
+            "highlight_color": "Highlight Color",
+            "highlight_color_desc": "Highlight color for the username.",
+            "media": "Media or HTML",
+            "media_filter": "Media & Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Media Files (*.png *.gif *.webp *.mp4 *.webm);;All Files (*.*)",
+            "media_placeholder": "Path to .png, .gif, .mp4, .webm, or .html file",
             "sound": "Alert Sound",
             "sound_placeholder": "Path to .mp3, .wav, or .ogg file",
             "template": "Text Template",
             "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
+            "text_align": "Text Alignment",
+            "text_align_desc": "Horizontal text alignment within the layout.",
+            "text_color": "Text Color",
+            "text_color_desc": "Main text color for alert messages.",
             "tts": "Read alert with TTS voice",
             "volume": "Volume"
         },
         "header": {
             "subtitle": "Configure and customize your stream alerts for OBS on Kick and Twitch.",
             "title": "Live Alerts"
+        },
+        "layout": {
+            "above": "Image Above (Centered)",
+            "below": "Image Below",
+            "desc": "Choose the visual arrangement between media and text.",
+            "overlay": "Text Overlay",
+            "side": "Image Left",
+            "side_right": "Image Right",
+            "title": "Layout"
+        },
+        "notice": {
+            "connect_btn": "Link {platform}",
+            "disconnected_msg": "{platform} is not connected. Alerts will not trigger live until you link your account.",
+            "disconnected_title": "Account Not Linked"
         },
         "overlay_card": {
             "copied_msg": "The alerts overlay URL was copied to the clipboard.",
@@ -49,9 +82,38 @@ DEFAULT_DICTIONARY = {
             "kick": "Kick",
             "twitch": "Twitch"
         },
+        "preview": {
+            "sample_amount": "500",
+            "sample_template": "{user} just followed!",
+            "sample_tier": "1",
+            "sample_user": "TheAndro2K",
+            "title": "Alert Preview"
+        },
+        "sections": {
+            "appearance": "Layout & Appearance",
+            "general": "General Settings"
+        },
+        "sidebar": {
+            "title": "Alert Variants"
+        },
         "status": {
-            "saved_msg": "The alert configuration was saved successfully.",
-            "saved_title": "Alert Saved"
+            "disabled_msg": "The '{event}' alert has been disabled.",
+            "disabled_title": "Alert Disabled",
+            "disconnected": "Disconnected",
+            "enabled_msg": "The '{event}' alert has been enabled.",
+            "enabled_title": "Alert Enabled",
+            "platform_offline": "Platform not connected: alerts will not trigger live until your account is linked",
+            "saved_msg": "Alert configuration saved successfully.",
+            "saved_title": "Alert Saved",
+            "unsaved": "Unsaved changes"
+        },
+        "style": {
+            "compact": "Compact",
+            "desc": "Visual style of the alert container and frame.",
+            "glass": "Glassmorphism",
+            "minimal": "Minimalist",
+            "sticker": "Sticker / Transparent",
+            "title": "Style"
         }
     },
     "chat": {
@@ -90,6 +152,11 @@ DEFAULT_DICTIONARY = {
             "orientation_horizontal": "Horizontal (Ticker)",
             "orientation_title": "Chat Orientation",
             "orientation_vertical": "Vertical (Column)",
+            "preview_sample_bot_msg": "What's up @TheAndro2K! Welcome to the stream, make yourself comfortable. 👾",
+            "preview_sample_bot_user": "theandro2k",
+            "preview_sample_msg_1": "hola xd",
+            "preview_sample_user": "TheAndro2K",
+            "preview_title": "Overlay Preview",
             "recommended_dim": "Recommended OBS source size: {dim}",
             "show_bots_desc": "Display messages from muted bots on the stream screen.",
             "show_bots_title": "Show Bots",
@@ -132,6 +199,7 @@ DEFAULT_DICTIONARY = {
             "prefix_placeholder": "Ex. !tts",
             "prefix_title": "Command Prefix",
             "provider_title": "TTS Voice Engine",
+            "search_voice_placeholder": "Search voice...",
             "speed_desc": "Adjust voice speech speed and pacing.",
             "speed_title": "Speech Speed",
             "tts_desc": "Enable or disable automated message reading out loud.",
@@ -264,6 +332,7 @@ DEFAULT_DICTIONARY = {
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
+        "no_results": "No results found",
         "status": {
             "error": "Error",
             "offline": "Offline",
@@ -444,7 +513,6 @@ DEFAULT_DICTIONARY = {
             "title": "Release Notes"
         },
         "tiktok_connect": {
-            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter the username (@username) of the TikTok Live channel:",
             "placeholder": "e.g. @streamer or username",
@@ -488,7 +556,6 @@ DEFAULT_DICTIONARY = {
             "step_indicator": "Step {current}/{total}"
         },
         "youtube_connect": {
-            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter your channel handle (@channel), full live stream URL, or YouTube video ID:",
             "placeholder": "e.g. @lofigirl or https://youtube.com/watch?v=...",
@@ -634,6 +701,8 @@ DEFAULT_DICTIONARY = {
             "version": "Version {version}"
         },
         "toast": {
+            "auth_in_progress_msg": "An authentication process is already running in your browser. Please complete or close that window before starting another.",
+            "auth_in_progress_title": "Authentication in Progress",
             "kick_connected_msg": "Successfully connected to Kick chat: @{username}",
             "kick_connected_title": "Kick Connected",
             "kick_disconnected_msg": "Kick session unlinked.",
@@ -1143,6 +1212,8 @@ DEFAULT_DICTIONARY = {
         },
         "schedule_dialog": {
             "btn_clear": "Clear Form",
+            "btn_now": "Now",
+            "btn_now_tooltip": "Set to current date and time",
             "btn_save": "Save Schedule",
             "category_placeholder": "e.g. Just Chatting",
             "date_label": "Execution Date:",
@@ -1224,7 +1295,7 @@ DEFAULT_DICTIONARY = {
             "step_filters_title": "Timer Filters",
             "step_general_subtitle": "Configure timer name, intervals, and responses.",
             "step_general_title": "Configure Timer",
-            "suffix_lines": "messages",
+            "suffix_lines": "lines",
             "suffix_min": "min"
         },
         "empty": {

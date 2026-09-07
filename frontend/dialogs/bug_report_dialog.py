@@ -8,6 +8,15 @@ from frontend.widgets import ModernButton
 from frontend.common import get_assets_path, SPACING_SM, SPACING_MD, SPACING_XL, MARGIN_V_XS
 from frontend.components.dialogs import SeverityCard, ImageDropzone
 
+_ACTIVE_BUG_WORKERS = set()
+
+def _retire_bug_worker(worker):
+    _ACTIVE_BUG_WORKERS.discard(worker)
+    try:
+        worker.deleteLater()
+    except RuntimeError:
+        pass
+
 class BugReportDialog(ModernModal):
     def __init__(self, i18n, worker_class=None, initial_contact: str = "", parent=None):
         title = i18n.get("settings.feedback.title")
@@ -156,7 +165,9 @@ class BugReportDialog(ModernModal):
             i18n=self.i18n,
             severity=self.selected_severity
         )
+        _ACTIVE_BUG_WORKERS.add(self.worker)
         self.worker.finished.connect(self._on_worker_finished)
+        self.worker.finished.connect(lambda *_, w=self.worker: _retire_bug_worker(w))
         self.worker.start()
 
     def _set_loading(self, loading: bool):
@@ -176,6 +187,8 @@ class BugReportDialog(ModernModal):
 
     def _on_worker_finished(self, success: bool, message: str):
         self._set_loading(False)
+        if self.worker and self.worker.isRunning():
+            self.worker.wait(1000)
         if success:
             if hasattr(self.parent(), 'toast'):
                 self.parent().toast.show_toast(
@@ -187,3 +200,21 @@ class BugReportDialog(ModernModal):
         else:
             self.lbl_error.setText(message)
             self.lbl_error.show()
+
+    def closeEvent(self, event):
+        self._cleanup_worker()
+        super().closeEvent(event)
+
+    def reject(self):
+        self._cleanup_worker()
+        super().reject()
+
+    def _cleanup_worker(self):
+        if self.worker:
+            try:
+                self.worker.finished.disconnect(self._on_worker_finished)
+            except (RuntimeError, TypeError):
+                pass
+            if self.worker.isRunning():
+                self.worker.wait(500)
+            self.worker = None

@@ -1,5 +1,6 @@
 # frontend\dialogs\crash_report_dialog.py
 
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
     QLabel, QLineEdit, QTextEdit, QApplication,
     QHBoxLayout, QVBoxLayout, QFrame
@@ -10,6 +11,15 @@ from PySide6.QtGui import QColor
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton
 from frontend.common import get_assets_path, COLOR_RED, MARGIN_LG, SPACING_MD, SPACING_XS
+
+_ACTIVE_CRASH_WORKERS = set()
+
+def _retire_crash_worker(worker):
+    _ACTIVE_CRASH_WORKERS.discard(worker)
+    try:
+        worker.deleteLater()
+    except RuntimeError:
+        pass
 
 class CrashReportDialog(ModernModal):
     def __init__(self, traceback_text: str, i18n, webhook_url: str = "", worker_class=None, initial_contact: str = "", parent=None):
@@ -107,7 +117,6 @@ class CrashReportDialog(ModernModal):
         clipboard = QApplication.clipboard()
         clipboard.setText(self.traceback_text)
         self.btn_copy_tb.setText(self.copied_toast_text)
-        from PySide6.QtCore import QTimer
         QTimer.singleShot(2000, lambda: self.btn_copy_tb.setText(self.btn_copy_text))
 
     @Slot()
@@ -130,13 +139,18 @@ class CrashReportDialog(ModernModal):
             description=self.txt_desc.toPlainText(),
             i18n=self.i18n
         )
+        _ACTIVE_CRASH_WORKERS.add(self.worker)
         self.worker.finished.connect(self._on_worker_finished)
+        self.worker.finished.connect(lambda *_, w=self.worker: _retire_crash_worker(w))
         self.worker.start()
 
     def _on_worker_finished(self, success: bool, message: str):
         QApplication.restoreOverrideCursor()
         self.btn_send.setEnabled(True)
         self.btn_send.setText(self.btn_send_text)
+        
+        if self.worker and self.worker.isRunning():
+            self.worker.wait(1000)
 
         if success:
             self.accept()
@@ -145,6 +159,19 @@ class CrashReportDialog(ModernModal):
             self.lbl_error.show()
 
     def closeEvent(self, event):
-        if self.worker and self.worker.isRunning():
-            self.worker.wait(1000)
+        self._cleanup_worker()
         super().closeEvent(event)
+
+    def reject(self):
+        self._cleanup_worker()
+        super().reject()
+
+    def _cleanup_worker(self):
+        if self.worker:
+            try:
+                self.worker.finished.disconnect(self._on_worker_finished)
+            except (RuntimeError, TypeError):
+                pass
+            if self.worker.isRunning():
+                self.worker.wait(500)
+            self.worker = None
