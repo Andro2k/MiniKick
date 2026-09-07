@@ -316,7 +316,7 @@ class AlertsView(BaseView):
             self.overlay_card.set_responsive_direction(url_dir)
 
         if hasattr(self, 'notice_layout'):
-            notice_dir = QBoxLayout.Direction.TopToBottom if width < 720 else QBoxLayout.Direction.LeftToRight
+            notice_dir = QBoxLayout.Direction.TopToBottom if width < 900 else QBoxLayout.Direction.LeftToRight
             if notice_dir != self.notice_layout.direction():
                 self.notice_layout.setDirection(notice_dir)
                 if hasattr(self, 'notice_banner'):

@@ -337,6 +337,7 @@ class AlertEventCard(QWidget):
         col_preview = QVBoxLayout()
         col_preview.setContentsMargins(*MARGIN_NONE)
         col_preview.setSpacing(SPACING_SM)
+        col_preview.addStretch(1)
 
         lbl_preview = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_preview.setProperty("role", "caption")
@@ -347,7 +348,8 @@ class AlertEventCard(QWidget):
         self.mockup_widget.setMinimumSize(160, 160)
         self.mockup_widget.setMaximumSize(380, 380)
         self.mockup_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        col_preview.addWidget(self.mockup_widget, alignment=Qt.AlignmentFlag.AlignCenter)
+        col_preview.addWidget(self.mockup_widget, alignment=Qt.AlignmentFlag.AlignHCenter)
+        col_preview.addStretch(1)
 
         self.body_row.addLayout(col_controls, stretch=3)
         self.body_row.addLayout(col_preview, stretch=2)
