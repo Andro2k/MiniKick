@@ -63,7 +63,7 @@ class MainWindowCore(QMainWindow):
         ("Music", "music.svg", "top"),
         ("Widgets", "apps.svg", "top"),
         ("Triggers", "chart-bubble.svg", "top"),
-        ("Alerts", "alert-circle.svg", "top"),
+        ("Alerts", "megaphone-filled.svg", "top"),
 
         ("Settings", "settings.svg", "bottom"),
         ("Developer", "brand-tabler.svg", "bottom"),

@@ -64,6 +64,7 @@ class KickAPIClient:
         headers = kwargs.pop("headers", {})
         if access_token:
             headers["Authorization"] = f"Bearer {access_token}"
+        kwargs.setdefault("timeout", 10)
         
         try:
             response = self.scraper.request(method, url, headers=headers, **kwargs)
@@ -92,22 +93,31 @@ class KickAPIClient:
         return data[0].get("name")
 
     def _generate_channel_slug(self, username: str) -> str:
-        return username.replace("_", "-").replace(" ", "")
+        return username.strip().lstrip("@").replace("_", "-").replace(" ", "")
 
     def _fetch_channel_details(self, slug: str, max_retries: int = 3) -> dict:
-        url = KICK_CHANNEL_URL.format(slug=slug)
+        slug_candidates = [slug]
+        if "-" in slug:
+            slug_candidates.append(slug.replace("-", "_"))
+        elif "_" in slug:
+            slug_candidates.append(slug.replace("_", "-"))
+
         last_status_code = None
-        
-        for attempt in range(max_retries):
-            channel_resp = self.scraper.get(url)
-            last_status_code = channel_resp.status_code
-            
-            if last_status_code == 200:
-                return channel_resp.json()
-                
-            if attempt < max_retries - 1:
-                time.sleep(2 * (attempt + 1))
-                
+        for candidate in slug_candidates:
+            url = KICK_CHANNEL_URL.format(slug=candidate)
+            for attempt in range(max_retries):
+                try:
+                    channel_resp = self.scraper.get(url, timeout=10)
+                    last_status_code = channel_resp.status_code
+                    if last_status_code == 200:
+                        return channel_resp.json()
+                    if last_status_code == 404:
+                        break
+                except Exception as e:
+                    logger.debug("[KickAPIClient] Attempt %d failed for %s: %s", attempt, url, e)
+                if attempt < max_retries - 1:
+                    time.sleep(2 * (attempt + 1))
+
         raise ValueError(f"Channel not found: '{slug}'. Retries exhausted ({max_retries}). HTTP Status: {last_status_code}")
 
     def _map_channel_data(self, username: str, channel_data: dict) -> dict:

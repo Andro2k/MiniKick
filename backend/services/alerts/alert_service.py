@@ -59,6 +59,11 @@ class AlertService:
             "tts_read": config.tts_read,
             "layout": getattr(config, "layout", "above") or "above",
             "style": getattr(config, "style", "compact") or "compact",
+            "text_color": getattr(config, "text_color", "#FFFFFF") or "#FFFFFF",
+            "highlight_color": getattr(config, "highlight_color", "") or "",
+            "font_family": getattr(config, "font_family", "Outfit") or "Outfit",
+            "font_size": getattr(config, "font_size", 24) or 24,
+            "text_align": getattr(config, "text_align", "center") or "center",
             "timestamp": event.timestamp
         }
 

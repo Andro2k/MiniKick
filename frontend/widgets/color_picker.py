@@ -1,9 +1,9 @@
 # frontend\widgets\color_picker.py
 
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QLineEdit, QColorDialog
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QColorDialog
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.common import RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_MD, SPACING_XS
+from frontend.common import RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_MD, SPACING_SM, SPACING_XS
 
 DEFAULT_PRESET_COLORS = [
     "#00E701", "#00F0FF", "#9146FF", "#FF4655", "#FFB800", "#FFFFFF"
@@ -17,19 +17,17 @@ class ModernColorPicker(QWidget):
         initial_color: str = "#00e701",
         tooltip: str = "",
         presets: list[str] | None = None,
+        is_vertical: bool = False,
         parent: QWidget | None = None
     ):
         super().__init__(parent)
         self._current_color = initial_color if QColor.isValidColorName(initial_color) else "#00e701"
         self._tooltip = tooltip
         self._presets = presets if presets is not None else DEFAULT_PRESET_COLORS
+        self._is_vertical = is_vertical
         self._setup_ui()
 
     def _setup_ui(self):
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_NONE)
-        layout.setSpacing(SPACING_MD)
-
         self.btn_swatch = QPushButton(self)
         self.btn_swatch.setFixedSize(32, 32)
         self.btn_swatch.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -39,22 +37,53 @@ class ModernColorPicker(QWidget):
 
         self.txt_color = QLineEdit(self._current_color, self)
         self.txt_color.setMaxLength(7)
+        self.txt_color.setMinimumWidth(70)
+        self.txt_color.setFixedHeight(32)
         self.txt_color.textChanged.connect(self._on_text_changed)
 
-        layout.addWidget(self.btn_swatch)
-        layout.addWidget(self.txt_color, stretch=1)
+        if self._is_vertical:
+            layout = QVBoxLayout(self)
+            layout.setContentsMargins(*MARGIN_NONE)
+            layout.setSpacing(SPACING_XS)
 
-        if self._presets:
-            presets_layout = QHBoxLayout()
-            presets_layout.setSpacing(SPACING_XS)
-            for hex_code in self._presets:
-                btn_p = QPushButton(self)
-                btn_p.setFixedSize(22, 22)
-                btn_p.setCursor(Qt.CursorShape.PointingHandCursor)
-                btn_p.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=RADIUS_SM))
-                btn_p.clicked.connect(lambda _, c=hex_code: self.set_color(c))
-                presets_layout.addWidget(btn_p)
-            layout.addLayout(presets_layout)
+            row_top = QHBoxLayout()
+            row_top.setContentsMargins(*MARGIN_NONE)
+            row_top.setSpacing(SPACING_SM)
+            row_top.addWidget(self.btn_swatch)
+            row_top.addWidget(self.txt_color, stretch=1)
+            layout.addLayout(row_top)
+
+            if self._presets:
+                presets_layout = QHBoxLayout()
+                presets_layout.setContentsMargins(*MARGIN_NONE)
+                presets_layout.setSpacing(SPACING_XS)
+                for hex_code in self._presets:
+                    btn_p = QPushButton(self)
+                    btn_p.setFixedSize(22, 22)
+                    btn_p.setCursor(Qt.CursorShape.PointingHandCursor)
+                    btn_p.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=RADIUS_SM))
+                    btn_p.clicked.connect(lambda _, c=hex_code: self.set_color(c))
+                    presets_layout.addWidget(btn_p)
+                presets_layout.addStretch()
+                layout.addLayout(presets_layout)
+        else:
+            layout = QHBoxLayout(self)
+            layout.setContentsMargins(*MARGIN_NONE)
+            layout.setSpacing(SPACING_MD)
+            layout.addWidget(self.btn_swatch)
+            layout.addWidget(self.txt_color, stretch=1)
+
+            if self._presets:
+                presets_layout = QHBoxLayout()
+                presets_layout.setSpacing(SPACING_XS)
+                for hex_code in self._presets:
+                    btn_p = QPushButton(self)
+                    btn_p.setFixedSize(22, 22)
+                    btn_p.setCursor(Qt.CursorShape.PointingHandCursor)
+                    btn_p.setStyleSheet(get_swatch_qss(hex_code, border_width=1, radius=RADIUS_SM))
+                    btn_p.clicked.connect(lambda _, c=hex_code: self.set_color(c))
+                    presets_layout.addWidget(btn_p)
+                layout.addLayout(presets_layout)
 
         self._update_swatch_style(self._current_color)
 

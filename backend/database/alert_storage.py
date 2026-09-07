@@ -28,7 +28,8 @@ class SQLiteAlertStorage:
                 cursor.execute("""
                     SELECT platform, alert_type, enabled, sound_path, media_path,
                            text_template, duration_ms, sound_volume, tts_read,
-                           layout, style
+                           layout, style, text_color, highlight_color, font_family,
+                           font_size, text_align
                     FROM alert_configs
                 """)
                 rows = cursor.fetchall()
@@ -45,7 +46,12 @@ class SQLiteAlertStorage:
                         sound_volume=float(row[7] if row[7] is not None else 0.8),
                         tts_read=bool(row[8]),
                         layout=str(row[9] or "above"),
-                        style=str(row[10] or "compact")
+                        style=str(row[10] or "compact"),
+                        text_color=str(row[11] or "#FFFFFF"),
+                        highlight_color=str(row[12] or ""),
+                        font_family=str(row[13] or "Outfit"),
+                        font_size=int(row[14] or 24),
+                        text_align=str(row[15] or "center")
                     )
                     configs[(cfg.platform, cfg.alert_type)] = cfg
 
@@ -76,7 +82,12 @@ class SQLiteAlertStorage:
             sound_volume=0.8,
             tts_read=False,
             layout="above",
-            style="compact"
+            style="compact",
+            text_color="#FFFFFF",
+            highlight_color="",
+            font_family="Outfit",
+            font_size=24,
+            text_align="center"
         )
         self._cache[key] = default_cfg
         return default_cfg
@@ -102,7 +113,12 @@ class SQLiteAlertStorage:
                         c.sound_volume,
                         1 if c.tts_read else 0,
                         c.layout,
-                        c.style
+                        c.style,
+                        c.text_color,
+                        c.highlight_color,
+                        c.font_family,
+                        c.font_size,
+                        c.text_align
                     )
                     for c in configs
                 ]
@@ -110,8 +126,9 @@ class SQLiteAlertStorage:
                     INSERT INTO alert_configs (
                         platform, alert_type, enabled, sound_path, media_path,
                         text_template, duration_ms, sound_volume, tts_read,
-                        layout, style
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        layout, style, text_color, highlight_color, font_family,
+                        font_size, text_align
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(platform, alert_type) DO UPDATE SET
                         enabled=excluded.enabled,
                         sound_path=excluded.sound_path,
@@ -121,7 +138,12 @@ class SQLiteAlertStorage:
                         sound_volume=excluded.sound_volume,
                         tts_read=excluded.tts_read,
                         layout=excluded.layout,
-                        style=excluded.style
+                        style=excluded.style,
+                        text_color=excluded.text_color,
+                        highlight_color=excluded.highlight_color,
+                        font_family=excluded.font_family,
+                        font_size=excluded.font_size,
+                        text_align=excluded.text_align
                 """, data)
                 conn.commit()
 

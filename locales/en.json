@@ -1,5 +1,10 @@
 {
     "alerts": {
+        "align": {
+            "center": "Center",
+            "left": "Left",
+            "right": "Right"
+        },
         "buttons": {
             "browse": "Browse...",
             "discard": "Discard",
@@ -24,6 +29,13 @@
         "fields": {
             "active": "Alert Enabled",
             "duration": "Duration (seconds)",
+            "duration_desc": "Time in seconds the alert is displayed on screen.",
+            "font_family": "Typography / Font",
+            "font_family_desc": "Font family for the alert text.",
+            "font_size": "Font Size",
+            "font_size_desc": "Font size in pixels for the alert text.",
+            "highlight_color": "Highlight Color",
+            "highlight_color_desc": "Highlight color for the username.",
             "media": "Media or HTML",
             "media_filter": "Media & Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Media Files (*.png *.gif *.webp *.mp4 *.webm);;All Files (*.*)",
             "media_placeholder": "Path to .png, .gif, .mp4, .webm, or .html file",
@@ -31,6 +43,10 @@
             "sound_placeholder": "Path to .mp3, .wav, or .ogg file",
             "template": "Text Template",
             "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
+            "text_align": "Text Alignment",
+            "text_align_desc": "Horizontal text alignment within the layout.",
+            "text_color": "Text Color",
+            "text_color_desc": "Main text color for alert messages.",
             "tts": "Read alert with TTS voice",
             "volume": "Volume"
         },
@@ -39,10 +55,12 @@
             "title": "Live Alerts"
         },
         "layout": {
-            "above": "Above / Below",
+            "above": "Image Above (Centered)",
+            "below": "Image Below",
             "desc": "Choose the visual arrangement between media and text.",
-            "overlay": "Overlay / Banner",
-            "side": "Beside / Compact",
+            "overlay": "Text Overlay",
+            "side": "Image Left",
+            "side_right": "Image Right",
             "title": "Layout"
         },
         "notice": {
@@ -77,9 +95,13 @@
             "title": "Alert Variants"
         },
         "status": {
+            "disabled_msg": "The '{event}' alert has been disabled.",
+            "disabled_title": "Alert Disabled",
             "disconnected": "Disconnected",
+            "enabled_msg": "The '{event}' alert has been enabled.",
+            "enabled_title": "Alert Enabled",
             "platform_offline": "Platform not connected: alerts will not trigger live until your account is linked",
-            "saved_msg": "The alert configuration was saved successfully.",
+            "saved_msg": "Alert configuration saved successfully.",
             "saved_title": "Alert Saved",
             "unsaved": "Unsaved changes"
         },
@@ -88,6 +110,7 @@
             "desc": "Visual style of the alert container and frame.",
             "glass": "Glassmorphism",
             "minimal": "Minimalist",
+            "sticker": "Sticker / Transparent",
             "title": "Style"
         }
     },

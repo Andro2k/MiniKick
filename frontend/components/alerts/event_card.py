@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-    QFileDialog
+    QWidget, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel,
+    QFileDialog, QSizePolicy
 )
 from PySide6.QtCore import Qt, Signal, QSize
 
@@ -23,16 +23,22 @@ class AlertConfigData:
     tts_read: bool = False
     layout: str = "above"
     style: str = "compact"
+    text_color: str = "#FFFFFF"
+    highlight_color: str = ""
+    font_family: str = "Outfit"
+    font_size: int = 24
+    text_align: str = "center"
+
 from frontend.widgets import (
     ModernCard, ModernButton, ModernSwitch,
     NoWheelSlider, NoWheelSpinBox, ModernDivider,
     ModernSegmentedControl, NoWheelComboBox, SettingRow,
-    create_badge, ClearableLineEdit
+    create_badge, ClearableLineEdit, ModernColorPicker
 )
 from frontend.common import (
     get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
     SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
-    MARGIN_NONE, MARGIN_XS, MARGIN_H_XS
+    MARGIN_NONE, MARGIN_XS, MARGIN_H_XS, MARGIN_SM
 )
 from .alert_mockup import AlertOverlayMockupWidget
 
@@ -147,22 +153,24 @@ class AlertEventCard(QWidget):
         card_appearance.addLayout(sec_app_header)
         card_appearance.addWidget(ModernDivider(self))
 
-        body_row = QHBoxLayout()
-        body_row.setContentsMargins(*MARGIN_NONE)
-        body_row.setSpacing(SPACING_LG)
+        self.body_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.body_row.setContentsMargins(*MARGIN_NONE)
+        self.body_row.setSpacing(SPACING_LG)
 
         col_controls = QVBoxLayout()
         col_controls.setContentsMargins(*MARGIN_NONE)
         col_controls.setSpacing(SPACING_SM)
 
         self.seg_layout = ModernSegmentedControl(self)
-        self.seg_layout.add_option("above", "arrows-vertical.svg", self.i18n.get("alerts.layout.above"))
-        self.seg_layout.add_option("side", "arrows-horizontal.svg", self.i18n.get("alerts.layout.side"))
+        self.seg_layout.add_option("above", "arrow-up-filled.svg", self.i18n.get("alerts.layout.above"))
+        self.seg_layout.add_option("side", "arrow-left-filled.svg", self.i18n.get("alerts.layout.side"))
+        self.seg_layout.add_option("side_right", "arrow-right-filled.svg", self.i18n.get("alerts.layout.side_right"))
+        self.seg_layout.add_option("below", "arrow-down-filled.svg", self.i18n.get("alerts.layout.below"))
         self.seg_layout.add_option("overlay", "box-multiple-2.svg", self.i18n.get("alerts.layout.overlay"))
         self.seg_layout.value_changed.connect(lambda _: self._on_field_changed())
 
         row_layout = SettingRow(
-            "arrows-sort.svg",
+            "arrows-vertical.svg",
             self.i18n.get("alerts.layout.title"),
             self.i18n.get("alerts.layout.desc"),
             self.seg_layout,
@@ -175,6 +183,7 @@ class AlertEventCard(QWidget):
         self.combo_style.addItem(self.i18n.get("alerts.style.compact"), "compact")
         self.combo_style.addItem(self.i18n.get("alerts.style.glass"), "glass")
         self.combo_style.addItem(self.i18n.get("alerts.style.minimal"), "minimal")
+        self.combo_style.addItem(self.i18n.get("alerts.style.sticker"), "sticker")
         self.combo_style.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
         row_style = SettingRow(
@@ -186,24 +195,164 @@ class AlertEventCard(QWidget):
             parent=self
         )
         col_controls.addWidget(row_style)
-        col_controls.addStretch()
+
+        self.combo_font = NoWheelComboBox(self)
+        for f_name in ["Outfit", "Inter", "Roboto", "Montserrat", "Poppins"]:
+            self.combo_font.addItem(f_name, f_name)
+        self.combo_font.currentIndexChanged.connect(lambda _: self._on_field_changed())
+
+        row_font = SettingRow(
+            "file-text.svg",
+            self.i18n.get("alerts.fields.font_family"),
+            self.i18n.get("alerts.fields.font_family_desc"),
+            self.combo_font,
+            icon_color=COLOR_NEUTRAL_400,
+            parent=self
+        )
+        col_controls.addWidget(row_font)
+
+        self.spin_font_size = NoWheelSpinBox(parent=self)
+        self.spin_font_size.setRange(14, 48)
+        self.spin_font_size.setValue(24)
+        self.spin_font_size.setSuffix(" px")
+        self.spin_font_size.setFixedWidth(142)
+        self.spin_font_size.valueChanged.connect(self._on_field_changed)
+
+        row_size = SettingRow(
+            "text-size.svg",
+            self.i18n.get("alerts.fields.font_size"),
+            self.i18n.get("alerts.fields.font_size_desc"),
+            self.spin_font_size,
+            icon_color=COLOR_NEUTRAL_400,
+            parent=self
+        )
+        col_controls.addWidget(row_size)
+
+        self.combo_align = NoWheelComboBox(self)
+        self.combo_align.addItem(self.i18n.get("alerts.align.left"), "left")
+        self.combo_align.addItem(self.i18n.get("alerts.align.center"), "center")
+        self.combo_align.addItem(self.i18n.get("alerts.align.right"), "right")
+        self.combo_align.setCurrentIndex(1)
+        self.combo_align.setFixedWidth(120)
+        self.combo_align.currentIndexChanged.connect(lambda _: self._on_field_changed())
+
+        row_align = SettingRow(
+            "align-left-2.svg",
+            self.i18n.get("alerts.fields.text_align"),
+            self.i18n.get("alerts.fields.text_align_desc"),
+            self.combo_align,
+            icon_color=COLOR_NEUTRAL_400,
+            parent=self
+        )
+        col_controls.addWidget(row_align)
+
+        self.spin_duration = NoWheelSpinBox(parent=self)
+        self.spin_duration.setRange(1, 60)
+        self.spin_duration.setValue(5)
+        self.spin_duration.setSuffix(" s")
+        self.spin_duration.setFixedWidth(142)
+        self.spin_duration.valueChanged.connect(self._on_field_changed)
+
+        row_duration = SettingRow(
+            "clock.svg",
+            self.i18n.get("alerts.fields.duration"),
+            self.i18n.get("alerts.fields.duration_desc"),
+            self.spin_duration,
+            icon_color=COLOR_NEUTRAL_400,
+            parent=self
+        )
+        col_controls.addWidget(row_duration)
+
+        self.colors_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.colors_row.setContentsMargins(*MARGIN_NONE)
+        self.colors_row.setSpacing(SPACING_LG)
+
+        col_tc = QVBoxLayout()
+        col_tc.setContentsMargins(*MARGIN_SM)
+        col_tc.setSpacing(SPACING_XS)
+
+        header_tc = QHBoxLayout()
+        header_tc.setSpacing(SPACING_SM)
+        icon_tc = QLabel(parent=self)
+        icon_tc.setPixmap(get_pixmap_colored("palette.svg", COLOR_NEUTRAL_400, size=18))
+        lbl_tc_title = QLabel(self.i18n.get("alerts.fields.text_color"), parent=self)
+        lbl_tc_title.setProperty("role", "h3")
+        lbl_tc_title.setWordWrap(True)
+        header_tc.addWidget(icon_tc)
+        header_tc.addWidget(lbl_tc_title, 1)
+
+        lbl_tc_desc = QLabel(self.i18n.get("alerts.fields.text_color_desc"), parent=self)
+        lbl_tc_desc.setProperty("role", "body")
+        lbl_tc_desc.setWordWrap(True)
+
+        self.picker_text_color = ModernColorPicker(
+            initial_color="#FFFFFF",
+            tooltip=self.i18n.get("alerts.fields.text_color"),
+            presets=["#FFFFFF", "#F8FAFC", "#E2E8F0", "#94A3B8", "#FBBF24", "#F43F5E"],
+            is_vertical=True,
+            parent=self
+        )
+        self.picker_text_color.color_changed.connect(lambda _: self._on_field_changed())
+
+        col_tc.addLayout(header_tc)
+        col_tc.addWidget(lbl_tc_desc)
+        col_tc.addWidget(self.picker_text_color)
+
+        col_hl = QVBoxLayout()
+        col_hl.setContentsMargins(*MARGIN_SM)
+        col_hl.setSpacing(SPACING_XS)
+
+        header_hl = QHBoxLayout()
+        header_hl.setSpacing(SPACING_SM)
+        icon_hl = QLabel(parent=self)
+        icon_hl.setPixmap(get_pixmap_colored("star.svg", COLOR_NEUTRAL_400, size=18))
+        lbl_hl_title = QLabel(self.i18n.get("alerts.fields.highlight_color"), parent=self)
+        lbl_hl_title.setProperty("role", "h3")
+        lbl_hl_title.setWordWrap(True)
+        header_hl.addWidget(icon_hl)
+        header_hl.addWidget(lbl_hl_title, 1)
+
+        lbl_hl_desc = QLabel(self.i18n.get("alerts.fields.highlight_color_desc"), parent=self)
+        lbl_hl_desc.setProperty("role", "body")
+        lbl_hl_desc.setWordWrap(True)
+
+        default_highlight = "#53FC18" if self.platform == "kick" else "#9146FF"
+        self.picker_highlight_color = ModernColorPicker(
+            initial_color=default_highlight,
+            tooltip=self.i18n.get("alerts.fields.highlight_color"),
+            presets=["#53FC18", "#9146FF", "#00D2FF", "#FFB800", "#FF4655", "#FFFFFF"],
+            is_vertical=True,
+            parent=self
+        )
+        self.picker_highlight_color.color_changed.connect(lambda _: self._on_field_changed())
+
+        col_hl.addLayout(header_hl)
+        col_hl.addWidget(lbl_hl_desc)
+        col_hl.addWidget(self.picker_highlight_color)
+
+        self.colors_row.addLayout(col_tc, stretch=1)
+        self.colors_row.addLayout(col_hl, stretch=1)
+        col_controls.addLayout(self.colors_row)
 
         col_preview = QVBoxLayout()
         col_preview.setContentsMargins(*MARGIN_NONE)
-        col_preview.setSpacing(SPACING_XS)
+        col_preview.setSpacing(SPACING_SM)
 
         lbl_preview = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_preview.setProperty("role", "caption")
+        lbl_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
         col_preview.addWidget(lbl_preview)
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
-        col_preview.addWidget(self.mockup_widget)
-        col_preview.addStretch()
+        self.mockup_widget.setMinimumSize(160, 160)
+        self.mockup_widget.setMaximumSize(380, 380)
+        self.mockup_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        col_preview.addWidget(self.mockup_widget, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        body_row.addLayout(col_controls, stretch=1)
-        body_row.addLayout(col_preview, stretch=1)
+        self.body_row.addLayout(col_controls, stretch=3)
+        self.body_row.addLayout(col_preview, stretch=2)
 
-        card_appearance.addLayout(body_row)
+        card_appearance.addLayout(self.body_row)
         main_layout.addWidget(card_appearance)
 
         card_config = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
@@ -221,49 +370,16 @@ class AlertEventCard(QWidget):
         card_config.addLayout(sec_cfg_header)
         card_config.addWidget(ModernDivider(self))
 
-        quick_strip = QHBoxLayout()
-        quick_strip.setContentsMargins(*MARGIN_XS)
-        quick_strip.setSpacing(SPACING_XL)
-
-        active_box = QHBoxLayout()
-        active_box.setSpacing(SPACING_MD)
-        lbl_sw_active = QLabel(self.i18n.get("alerts.fields.active"), parent=self)
-        lbl_sw_active.setProperty("role", "body")
         self.sw_enabled = ModernSwitch(parent=self)
+        self.sw_enabled.setVisible(False)
         self.sw_enabled.toggled.connect(self._on_field_changed)
-        active_box.addWidget(lbl_sw_active)
-        active_box.addWidget(self.sw_enabled)
-        quick_strip.addLayout(active_box)
 
-        dur_box = QHBoxLayout()
-        dur_box.setSpacing(SPACING_MD)
-        lbl_duration = QLabel(self.i18n.get("alerts.fields.duration"), parent=self)
-        lbl_duration.setProperty("role", "caption")
-        self.spin_duration = NoWheelSpinBox(parent=self)
-        self.spin_duration.setRange(1, 60)
-        self.spin_duration.setSuffix(" s")
-        self.spin_duration.valueChanged.connect(self._on_field_changed)
-        dur_box.addWidget(lbl_duration)
-        dur_box.addWidget(self.spin_duration)
-        quick_strip.addLayout(dur_box)
+        template_row = QHBoxLayout()
+        template_row.setContentsMargins(*MARGIN_H_XS)
+        template_row.setSpacing(SPACING_XL)
 
-        tts_box = QHBoxLayout()
-        tts_box.setSpacing(SPACING_MD)
-        lbl_tts_title = QLabel(self.i18n.get("alerts.fields.tts"), parent=self)
-        lbl_tts_title.setProperty("role", "caption")
-        self.sw_tts = ModernSwitch(parent=self)
-        self.sw_tts.toggled.connect(self._on_field_changed)
-        tts_box.addWidget(lbl_tts_title)
-        tts_box.addWidget(self.sw_tts)
-        quick_strip.addLayout(tts_box)
-
-        quick_strip.addStretch(1)
-        card_config.addLayout(quick_strip)
-        card_config.addWidget(ModernDivider(self))
-
-        template_col = QVBoxLayout()
-        template_col.setContentsMargins(*MARGIN_H_XS)
-        template_col.setSpacing(SPACING_XS)
+        col_template = QVBoxLayout()
+        col_template.setSpacing(SPACING_XS)
 
         lbl_template = QLabel(self.i18n.get("alerts.fields.template"), parent=self)
         lbl_template.setProperty("role", "caption")
@@ -276,15 +392,32 @@ class AlertEventCard(QWidget):
         lbl_template_hint.setProperty("role", "caption")
         lbl_template_hint.setWordWrap(True)
 
-        template_col.addWidget(lbl_template)
-        template_col.addWidget(self.edit_template)
-        template_col.addWidget(lbl_template_hint)
-        card_config.addLayout(template_col)
+        col_template.addWidget(lbl_template)
+        col_template.addWidget(self.edit_template)
+        col_template.addWidget(lbl_template_hint)
+
+        col_tts = QVBoxLayout()
+        col_tts.setSpacing(SPACING_SM)
+
+        lbl_tts_title = QLabel(self.i18n.get("alerts.fields.tts"), parent=self)
+        lbl_tts_title.setProperty("role", "caption")
+
+        self.sw_tts = ModernSwitch(parent=self)
+        self.sw_tts.toggled.connect(self._on_field_changed)
+
+        col_tts.addWidget(lbl_tts_title)
+        col_tts.addWidget(self.sw_tts, alignment=Qt.AlignmentFlag.AlignLeft)
+        col_tts.addStretch()
+
+        template_row.addLayout(col_template, stretch=1)
+        template_row.addLayout(col_tts, stretch=0)
+
+        card_config.addLayout(template_row)
         card_config.addWidget(ModernDivider(self))
 
-        media_row = QHBoxLayout()
-        media_row.setContentsMargins(*MARGIN_H_XS)
-        media_row.setSpacing(SPACING_XL)
+        self.media_row = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.media_row.setContentsMargins(*MARGIN_H_XS)
+        self.media_row.setSpacing(SPACING_XL)
 
         col_video = QVBoxLayout()
         col_video.setSpacing(SPACING_SM)
@@ -360,9 +493,9 @@ class AlertEventCard(QWidget):
         col_audio.addLayout(vol_header)
         col_audio.addStretch()
 
-        media_row.addLayout(col_video, stretch=1)
-        media_row.addLayout(col_audio, stretch=1)
-        card_config.addLayout(media_row)
+        self.media_row.addLayout(col_video, stretch=1)
+        self.media_row.addLayout(col_audio, stretch=1)
+        card_config.addLayout(self.media_row)
 
         main_layout.addWidget(card_config)
         main_layout.addStretch()
@@ -370,16 +503,31 @@ class AlertEventCard(QWidget):
         self._is_loading = False
 
     def _update_mockup(self):
-        if hasattr(self, "mockup_widget") and hasattr(self, "seg_layout") and hasattr(self, "combo_style"):
+        if (
+            hasattr(self, "mockup_widget")
+            and hasattr(self, "seg_layout")
+            and hasattr(self, "combo_style")
+        ):
             layout_val = self.seg_layout.current_value() or "above"
             style_val = self.combo_style.currentData() or "compact"
+            font_family = self.combo_font.currentData() if hasattr(self, "combo_font") else "Outfit"
+            font_size = self.spin_font_size.value() if hasattr(self, "spin_font_size") else 24
+            text_align = self.combo_align.currentData() if hasattr(self, "combo_align") else "center"
+            text_color = self.picker_text_color.color() if hasattr(self, "picker_text_color") else "#FFFFFF"
+            highlight_color = self.picker_highlight_color.color() if hasattr(self, "picker_highlight_color") else ""
+
             self.mockup_widget.set_configuration(
                 platform=self.platform,
                 alert_type=self.alert_type,
                 layout=layout_val,
                 style=style_val,
-                text_template=self.edit_template.text().strip(),
-                media_path=self.edit_media.text().strip()
+                text_template=self.edit_template.text().strip() if hasattr(self, "edit_template") else "",
+                media_path=self.edit_media.text().strip() if hasattr(self, "edit_media") else "",
+                text_color=text_color,
+                highlight_color=highlight_color,
+                font_family=font_family,
+                font_size=font_size,
+                text_align=text_align
             )
 
     def _create_config(self, **kwargs):
@@ -405,6 +553,11 @@ class AlertEventCard(QWidget):
             tts_read=cfg.tts_read,
             layout=getattr(cfg, "layout", "above") or "above",
             style=getattr(cfg, "style", "compact") or "compact",
+            text_color=getattr(cfg, "text_color", "#FFFFFF") or "#FFFFFF",
+            highlight_color=getattr(cfg, "highlight_color", "") or "",
+            font_family=getattr(cfg, "font_family", "Outfit") or "Outfit",
+            font_size=int(getattr(cfg, "font_size", 24) or 24),
+            text_align=getattr(cfg, "text_align", "center") or "center",
         )
         self.sw_enabled.setChecked(cfg.enabled)
         self.edit_template.setText(cfg.text_template)
@@ -425,6 +578,23 @@ class AlertEventCard(QWidget):
         idx = self.combo_style.findData(style_val)
         if idx >= 0:
             self.combo_style.setCurrentIndex(idx)
+
+        font_val = getattr(cfg, "font_family", "Outfit") or "Outfit"
+        idx_f = self.combo_font.findData(font_val)
+        if idx_f >= 0:
+            self.combo_font.setCurrentIndex(idx_f)
+
+        self.spin_font_size.setValue(int(getattr(cfg, "font_size", 24) or 24))
+
+        align_val = getattr(cfg, "text_align", "center") or "center"
+        idx_a = self.combo_align.findData(align_val)
+        if idx_a >= 0:
+            self.combo_align.setCurrentIndex(idx_a)
+
+        self.picker_text_color.set_color(getattr(cfg, "text_color", "#FFFFFF") or "#FFFFFF")
+
+        default_hl = "#53FC18" if self.platform == "kick" else "#9146FF"
+        self.picker_highlight_color.set_color(getattr(cfg, "highlight_color", "") or default_hl)
 
         self._update_mockup()
 
@@ -470,6 +640,11 @@ class AlertEventCard(QWidget):
 
         layout_val = self.seg_layout.current_value() or "above"
         style_val = self.combo_style.currentData() or "compact"
+        font_family = self.combo_font.currentData() or "Outfit"
+        font_size = self.spin_font_size.value()
+        text_align = self.combo_align.currentData() or "center"
+        text_color = self.picker_text_color.color()
+        highlight_color = self.picker_highlight_color.color()
 
         cfg = self._create_config(
             platform=self.platform,
@@ -482,7 +657,12 @@ class AlertEventCard(QWidget):
             sound_volume=round(self.slider_volume.value() / 100.0, 2),
             tts_read=self.sw_tts.isChecked(),
             layout=layout_val,
-            style=style_val
+            style=style_val,
+            text_color=text_color,
+            highlight_color=highlight_color,
+            font_family=font_family,
+            font_size=font_size,
+            text_align=text_align
         )
         self._current_config = cfg
 
@@ -499,7 +679,12 @@ class AlertEventCard(QWidget):
                 cfg.sound_volume != self._saved_config.sound_volume or
                 cfg.tts_read != self._saved_config.tts_read or
                 cfg.layout != getattr(self._saved_config, "layout", "above") or
-                cfg.style != getattr(self._saved_config, "style", "compact")
+                cfg.style != getattr(self._saved_config, "style", "compact") or
+                cfg.text_color != getattr(self._saved_config, "text_color", "#FFFFFF") or
+                cfg.highlight_color != getattr(self._saved_config, "highlight_color", "") or
+                cfg.font_family != getattr(self._saved_config, "font_family", "Outfit") or
+                cfg.font_size != getattr(self._saved_config, "font_size", 24) or
+                cfg.text_align != getattr(self._saved_config, "text_align", "center")
             )
 
         self._is_dirty = dirty
@@ -526,6 +711,11 @@ class AlertEventCard(QWidget):
             tts_read=self._current_config.tts_read,
             layout=self._current_config.layout,
             style=self._current_config.style,
+            text_color=self._current_config.text_color,
+            highlight_color=self._current_config.highlight_color,
+            font_family=self._current_config.font_family,
+            font_size=self._current_config.font_size,
+            text_align=self._current_config.text_align,
         )
         self._is_dirty = False
         self.btn_save.setEnabled(False)
@@ -542,6 +732,17 @@ class AlertEventCard(QWidget):
             self._save_changes()
         self.test_requested.emit(self.platform, self.alert_type)
 
+    def set_enabled(self, enabled: bool):
+        self.sw_enabled.blockSignals(True)
+        self.sw_enabled.setChecked(enabled)
+        self.sw_enabled.blockSignals(False)
+        self._current_config.enabled = enabled
+
+    def save_enabled_change(self, enabled: bool):
+        self.set_enabled(enabled)
+        self._saved_config.enabled = enabled
+        self.save_requested.emit(self._saved_config)
+
     def set_platform_connected(self, connected: bool):
         self._platform_connected = connected
         if hasattr(self, "badge_offline"):
@@ -557,3 +758,22 @@ class AlertEventCard(QWidget):
     @property
     def btn_clear_media(self):
         return self.edit_media.btn_clear
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        width = self.width()
+
+        if hasattr(self, "body_row"):
+            body_dir = QBoxLayout.Direction.TopToBottom if width < 620 else QBoxLayout.Direction.LeftToRight
+            if body_dir != self.body_row.direction():
+                self.body_row.setDirection(body_dir)
+
+        if hasattr(self, "colors_row"):
+            colors_dir = QBoxLayout.Direction.TopToBottom if width < 500 else QBoxLayout.Direction.LeftToRight
+            if colors_dir != self.colors_row.direction():
+                self.colors_row.setDirection(colors_dir)
+
+        if hasattr(self, "media_row"):
+            media_dir = QBoxLayout.Direction.TopToBottom if width < 550 else QBoxLayout.Direction.LeftToRight
+            if media_dir != self.media_row.direction():
+                self.media_row.setDirection(media_dir)

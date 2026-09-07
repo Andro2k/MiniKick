@@ -46,8 +46,8 @@ class AlertsView(BaseView):
     connect_platform_requested = Signal(str)
     view_shown = Signal()
 
-    _KICK_EVENTS = [("follow", "user-check.svg"),("subscription", "crown.svg"),("resub", "star.svg"),("sub_gift", "box-multiple-2.svg"),("raid", "users.svg"),]
-    _TWITCH_EVENTS = [("follow", "user-check.svg"),("subscription", "crown.svg"),("resub", "star.svg"),("sub_gift", "box-multiple-2.svg"),("raid", "users.svg"),("cheer", "chart-bubble.svg"),]
+    _KICK_EVENTS = [("follow", "user-check.svg"),("subscription", "crown.svg"),("resub", "star.svg"),("sub_gift", "gift-filled.svg"),("raid", "users.svg"),]
+    _TWITCH_EVENTS = [("follow", "user-check.svg"),("subscription", "crown.svg"),("resub", "star.svg"),("sub_gift", "gift-filled.svg"),("raid", "users.svg"),("cheer", "prism.svg"),]
 
     def __init__(self, i18n, alerts_overlay_url: str = "", parent=None):
         super().__init__(
@@ -184,6 +184,7 @@ class AlertsView(BaseView):
 
         sidebar_panel = AlertsSidebarPanel(platform, events, self.i18n, parent=page)
         sidebar_panel.variant_selected.connect(lambda at, p=platform: self._select_variant(p, at))
+        sidebar_panel.variant_enabled_changed.connect(lambda at, enabled, p=platform: self._on_sidebar_variant_enabled_changed(p, at, enabled))
 
         for at, item in sidebar_panel.items.items():
             self.sidebar_items[(platform, at)] = item
@@ -195,6 +196,11 @@ class AlertsView(BaseView):
         page_layout.addWidget(editor_stack, 1)
 
         return page, sidebar_panel, editor_stack, page_layout
+
+    def _on_sidebar_variant_enabled_changed(self, platform: str, alert_type: str, enabled: bool):
+        card = self._get_or_create_card(platform, alert_type)
+        if card:
+            card.save_enabled_change(enabled)
 
     def _get_or_create_card(self, platform: str, alert_type: str) -> AlertEventCard:
         key = (platform, alert_type)

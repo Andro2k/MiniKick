@@ -42,6 +42,11 @@ class AlertConfig:
     tts_read: bool = False
     layout: str = "above"
     style: str = "compact"
+    text_color: str = "#FFFFFF"
+    highlight_color: str = ""
+    font_family: str = "Outfit"
+    font_size: int = 24
+    text_align: str = "center"
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -59,5 +64,10 @@ class AlertConfig:
             sound_volume=float(data.get("sound_volume", 0.8)),
             tts_read=bool(data.get("tts_read", False)),
             layout=str(data.get("layout", "above")),
-            style=str(data.get("style", "compact"))
+            style=str(data.get("style", "compact")),
+            text_color=str(data.get("text_color", "#FFFFFF")),
+            highlight_color=str(data.get("highlight_color", "")),
+            font_family=str(data.get("font_family", "Outfit")),
+            font_size=int(data.get("font_size", 24)),
+            text_align=str(data.get("text_align", "center"))
         )

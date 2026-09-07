@@ -305,6 +305,11 @@ class DatabaseManager:
                     tts_read INTEGER NOT NULL DEFAULT 0,
                     layout TEXT DEFAULT 'above',
                     style TEXT DEFAULT 'compact',
+                    text_color TEXT DEFAULT '#FFFFFF',
+                    highlight_color TEXT DEFAULT '',
+                    font_family TEXT DEFAULT 'Outfit',
+                    font_size INTEGER DEFAULT 24,
+                    text_align TEXT DEFAULT 'center',
                     PRIMARY KEY (platform, alert_type)
                 )
             """)
@@ -525,7 +530,12 @@ class DatabaseManager:
             ],
             "alert_configs": [
                 ("layout", "TEXT DEFAULT 'above'"),
-                ("style", "TEXT DEFAULT 'compact'")
+                ("style", "TEXT DEFAULT 'compact'"),
+                ("text_color", "TEXT DEFAULT '#FFFFFF'"),
+                ("highlight_color", "TEXT DEFAULT ''"),
+                ("font_family", "TEXT DEFAULT 'Outfit'"),
+                ("font_size", "INTEGER DEFAULT 24"),
+                ("text_align", "TEXT DEFAULT 'center'")
             ]
         }
 

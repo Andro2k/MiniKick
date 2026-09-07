@@ -1,5 +1,10 @@
 {
     "alerts": {
+        "align": {
+            "center": "Centro",
+            "left": "Izquierda",
+            "right": "Derecha"
+        },
         "buttons": {
             "browse": "Examinar...",
             "discard": "Descartar",
@@ -24,6 +29,13 @@
         "fields": {
             "active": "Alerta Activa",
             "duration": "Duración (segundos)",
+            "duration_desc": "Tiempo en segundos que se muestra la alerta en pantalla.",
+            "font_family": "Tipografía / Fuente",
+            "font_family_desc": "Familia tipográfica para los textos de la alerta.",
+            "font_size": "Tamaño de Fuente",
+            "font_size_desc": "Tamaño en píxeles del texto mostrado en la alerta.",
+            "highlight_color": "Color de Resaltado",
+            "highlight_color_desc": "Color para resaltar el nombre de usuario.",
             "media": "Multimedia o HTML",
             "media_filter": "Multimedia y Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Archivos Multimedia (*.png *.gif *.webp *.mp4 *.webm);;Todos los Archivos (*.*)",
             "media_placeholder": "Ruta a archivo .png, .gif, .mp4, .webm o .html",
@@ -31,6 +43,10 @@
             "sound_placeholder": "Ruta a archivo .mp3, .wav u .ogg",
             "template": "Plantilla de Texto",
             "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
+            "text_align": "Alineación del Texto",
+            "text_align_desc": "Alineación horizontal del texto dentro del diseño.",
+            "text_color": "Color del Texto",
+            "text_color_desc": "Color principal de los mensajes de la alerta.",
             "tts": "Leer alerta con voz (TTS)",
             "volume": "Volumen"
         },
@@ -39,10 +55,12 @@
             "title": "Alertas en Vivo"
         },
         "layout": {
-            "above": "Arriba / Abajo",
+            "above": "Imagen Arriba (Centrado)",
+            "below": "Imagen Abajo",
             "desc": "Elige la distribución visual entre imagen y texto.",
-            "overlay": "Superpuesto / Banner",
-            "side": "Al Lado / Compacto",
+            "overlay": "Texto Superpuesto",
+            "side": "Imagen Izquierda",
+            "side_right": "Imagen Derecha",
             "title": "Disposición"
         },
         "notice": {
@@ -77,17 +95,22 @@
             "title": "Variantes de Alerta"
         },
         "status": {
+            "disabled_msg": "La alerta de '{event}' ha sido desactivada.",
+            "disabled_title": "Alerta Desactivada",
             "disconnected": "Desconectado",
+            "enabled_msg": "La alerta de '{event}' ha sido activada.",
+            "enabled_title": "Alerta Activada",
             "platform_offline": "Plataforma no conectada: las alertas no se emitirán en directo hasta vincular tu cuenta",
             "saved_msg": "La configuración de la alerta se guardó correctamente.",
             "saved_title": "Alerta Guardada",
             "unsaved": "Cambios sin guardar"
         },
         "style": {
-            "compact": "Compacto",
+            "compact": "Compacto (Tarjeta)",
             "desc": "Estilo visual del contenedor y marco de la alerta.",
             "glass": "Glassmorphism",
             "minimal": "Minimalista",
+            "sticker": "Sticker / Transparente",
             "title": "Estilo"
         }
     },

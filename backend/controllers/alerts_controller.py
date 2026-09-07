@@ -15,6 +15,7 @@ class AlertsController(QObject):
         self.toast = toast_manager
         self.i18n = i18n
         self._view_connected = False
+        self._previous_enabled: dict[tuple[str, str], bool] = {}
         if self.view is not None:
             self._connect_signals()
             self.load_initial_data()
@@ -50,6 +51,12 @@ class AlertsController(QObject):
             configs = self.service.storage.load_all()
         if configs:
             self.view.populate_configs(configs)
+            items = configs.items() if isinstance(configs, dict) else [((c.platform, c.alert_type), c) for c in configs]
+            for key, cfg in items:
+                plat = key[0] if isinstance(key, tuple) else getattr(cfg, "platform", None)
+                atype = key[1] if isinstance(key, tuple) else getattr(cfg, "alert_type", None)
+                if plat and atype:
+                    self._previous_enabled[(plat, atype)] = bool(getattr(cfg, "enabled", True))
 
     @Slot(object)
     def _handle_config_changed(self, config: AlertConfig):
@@ -60,13 +67,35 @@ class AlertsController(QObject):
             config.platform, config.alert_type, config.enabled, config.duration_ms
         )
         self.service.save_config(config)
+
+        key = (config.platform, config.alert_type)
+        prev_enabled = self._previous_enabled.get(key, True)
+        self._previous_enabled[key] = bool(config.enabled)
+
         if self.toast and self.i18n:
-            self.toast.show_toast(
-                title=self.i18n.get("alerts.status.saved_title"),
-                message=self.i18n.get("alerts.status.saved_msg"),
-                state="success",
-                tag=f"alert_{config.platform}_{config.alert_type}"
-            )
+            if prev_enabled != config.enabled:
+                event_name = self.i18n.get(f"alerts.events.{config.alert_type}")
+                if config.enabled:
+                    title = self.i18n.get("alerts.status.enabled_title")
+                    msg = self.i18n.get("alerts.status.enabled_msg").replace("{event}", event_name)
+                    state = "success"
+                else:
+                    title = self.i18n.get("alerts.status.disabled_title")
+                    msg = self.i18n.get("alerts.status.disabled_msg").replace("{event}", event_name)
+                    state = "warning"
+                self.toast.show_toast(
+                    title=title,
+                    message=msg,
+                    state=state,
+                    tag=f"alert_{config.platform}_{config.alert_type}"
+                )
+            else:
+                self.toast.show_toast(
+                    title=self.i18n.get("alerts.status.saved_title"),
+                    message=self.i18n.get("alerts.status.saved_msg"),
+                    state="success",
+                    tag=f"alert_{config.platform}_{config.alert_type}"
+                )
 
     @Slot(str, str)
     def _handle_test_alert(self, platform: str, alert_type: str):

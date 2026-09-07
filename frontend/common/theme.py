@@ -398,8 +398,8 @@ QFrame[role="dialog"][state="neutral"] {{ border-color: {COLOR_NEUTRAL_700}; }}
 
 QFrame[role="banner_danger"] {{ background-color: {COLOR_RED_GLOW}; border: 1.2px solid {COLOR_RED_DARK}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_scope_card"] {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; }}
-QFrame[role="banner_scope_card"][state="kick"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.2px solid rgba(46, 205, 112, 0.40); }}
-QFrame[role="banner_scope_card"][state="twitch"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.2px solid rgba(145, 70, 255, 0.40); }}
+QFrame[role="banner_scope_card"][state="kick"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_GREEN}; }}
+QFrame[role="banner_scope_card"][state="twitch"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_PURPLE}; }}
 QFrame[role="danger_icon"] {{ background-color: {COLOR_RED}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="warning_icon"] {{ background-color: {COLOR_AMBER}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="info_icon"] {{ background-color: {COLOR_BLUE}; border-radius: {RADIUS_PILL}px; }}

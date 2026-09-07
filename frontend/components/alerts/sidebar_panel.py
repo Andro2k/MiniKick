@@ -9,6 +9,7 @@ from .variant_item import AlertVariantListItem
 
 class AlertsSidebarPanel(ModernCard):
     variant_selected = Signal(str)
+    variant_enabled_changed = Signal(str, bool)
     SIDEBAR_WIDTH = 320
 
     def __init__(self, platform: str, events: List[Tuple[str, str]], i18n, parent=None):
@@ -31,6 +32,7 @@ class AlertsSidebarPanel(ModernCard):
         for alert_type, icon_name in self.events:
             item = AlertVariantListItem(self.platform, alert_type, icon_name, self.i18n, parent=self)
             item.clicked.connect(self._on_item_clicked)
+            item.toggled.connect(lambda at, enabled: self.variant_enabled_changed.emit(at, enabled))
             self.addWidget(item)
             self.items[alert_type] = item
 

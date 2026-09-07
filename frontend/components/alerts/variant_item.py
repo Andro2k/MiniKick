@@ -7,8 +7,11 @@ from frontend.common import (
     MARGIN_MD, MARGIN_NONE, SPACING_MD, SPACING_2XS
 )
 
+from frontend.widgets import ModernSwitch
+
 class AlertVariantListItem(QFrame):
     clicked = Signal(str)
+    toggled = Signal(str, bool)
 
     def __init__(self, platform: str, alert_type: str, icon_name: str, i18n, parent=None):
         super().__init__(parent=parent)
@@ -48,20 +51,19 @@ class AlertVariantListItem(QFrame):
         text_layout.addWidget(self.lbl_title)
         text_layout.addWidget(self.lbl_desc)
 
-        self.status_lbl = QLabel("●", parent=self)
-        self.status_lbl.setProperty("role", "caption")
-        self.status_lbl.setProperty("state", "normal")
-        self.status_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.sw_enabled = ModernSwitch(parent=self)
+        self.sw_enabled.setToolTip(self.i18n.get("alerts.fields.active"))
+        self.sw_enabled.toggled.connect(lambda checked: self.toggled.emit(self.alert_type, checked))
 
         layout.addWidget(self.icon_lbl)
         layout.addLayout(text_layout, stretch=1)
-        layout.addWidget(self.status_lbl)
+        layout.addWidget(self.sw_enabled)
 
     def set_enabled_state(self, enabled: bool):
         self._is_enabled = enabled
-        self.status_lbl.setProperty("state", "success" if enabled else "normal")
-        self.status_lbl.style().unpolish(self.status_lbl)
-        self.status_lbl.style().polish(self.status_lbl)
+        self.sw_enabled.blockSignals(True)
+        self.sw_enabled.setChecked(enabled)
+        self.sw_enabled.blockSignals(False)
 
     def set_selected(self, selected: bool):
         self._is_selected = selected

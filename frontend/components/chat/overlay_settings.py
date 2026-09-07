@@ -56,7 +56,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self._populate_flow_options("vertical")
 
         row_overlay_flow = SettingRow(
-            "arrows-sort.svg",
+            "arrows-vertical.svg",
             self.i18n.get("chat.overlay.flow_title"),
             self.i18n.get("chat.overlay.flow_desc"),
             self.seg_overlay_flow

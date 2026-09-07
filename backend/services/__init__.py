@@ -1,7 +1,7 @@
 # backend/services/__init__.py
 
 from .alerts import AlertService, AlertQueue
-from .auth import KickAuthManager, TwitchAuthManager, OAuthCallbackServer
+from .auth import BaseOAuthManager, KickAuthManager, TwitchAuthManager, OAuthCallbackServer
 from .chat import (
     ChatService,
     CommandService,
@@ -31,6 +31,7 @@ from .system import (
 __all__ = [
     "AlertService",
     "AlertQueue",
+    "BaseOAuthManager",
     "KickAuthManager",
     "TwitchAuthManager",
     "OAuthCallbackServer",

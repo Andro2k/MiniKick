@@ -89,8 +89,17 @@ class OAuthCallbackServer:
         httpd.server_close()
         return httpd.auth_code
 
-class KickAuthManager:
-    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage, success_html_path: str = "") -> None:
+class BaseOAuthManager:
+    REQUIRED_SCOPES: dict[str, str] = {}
+
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        redirect_uri: str,
+        storage: TokenStorage,
+        success_html_path: str = ""
+    ) -> None:
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
@@ -104,6 +113,46 @@ class KickAuthManager:
         if tokens and "access_token" in tokens:
             return tokens
         return {}
+
+    def is_authenticated(self) -> bool:
+        tokens = self.storage.load()
+        return bool(tokens and (tokens.get("access_token") or tokens.get("refresh_token")))
+
+    def logout(self) -> None:
+        self.storage.clear()
+
+    def get_missing_scopes(self) -> list[str]:
+        tokens = self.storage.load()
+        if not tokens or not (tokens.get("access_token") or tokens.get("refresh_token")):
+            return []
+
+        raw_scopes = tokens.get("scope", "")
+        if isinstance(raw_scopes, list):
+            current_scopes = set(raw_scopes)
+        else:
+            current_scopes = set(raw_scopes.split())
+
+        return [
+            i18n_key
+            for scope, i18n_key in self.REQUIRED_SCOPES.items()
+            if scope not in current_scopes
+        ]
+
+    def has_missing_scopes(self) -> bool:
+        return len(self.get_missing_scopes()) > 0
+
+
+class KickAuthManager(BaseOAuthManager):
+    REQUIRED_SCOPES = {
+        "user:read": "dashboard.banner.scope.kick_user_read",
+        "channel:read": "dashboard.banner.scope.kick_channel_read",
+        "channel:write": "dashboard.banner.scope.kick_channel_write",
+        "channel:rewards:read": "dashboard.banner.scope.kick_channel_rewards_read",
+        "channel:rewards:write": "dashboard.banner.scope.kick_channel_rewards_write",
+        "chat:write": "dashboard.banner.scope.kick_chat_write",
+        "moderation:ban": "dashboard.banner.scope.kick_moderation_ban",
+        "moderation:chat_message:manage": "dashboard.banner.scope.kick_moderation_chat",
+    }
 
     def login(self, force: bool = False) -> dict:
         if not force:
@@ -128,6 +177,7 @@ class KickAuthManager:
                     "client_secret": self.client_secret,
                     "refresh_token": refresh_token,
                 },
+                timeout=10,
             )
             response.raise_for_status()
             new_tokens = response.json()
@@ -179,63 +229,27 @@ class KickAuthManager:
                 "code_verifier": verifier,
                 "redirect_uri": self.redirect_uri,
             },
+            timeout=10,
         )
         response.raise_for_status()
         return response.json()
 
-    def is_authenticated(self) -> bool:
-        tokens = self.storage.load()
-        return bool(tokens and (tokens.get("access_token") or tokens.get("refresh_token")))
 
-    def logout(self) -> None:
-        self.storage.clear()
-
+class TwitchAuthManager(BaseOAuthManager):
     REQUIRED_SCOPES = {
-        "user:read": "dashboard.banner.scope.kick_user_read",
-        "channel:read": "dashboard.banner.scope.kick_channel_read",
-        "channel:write": "dashboard.banner.scope.kick_channel_write",
-        "channel:rewards:read": "dashboard.banner.scope.kick_channel_rewards_read",
-        "channel:rewards:write": "dashboard.banner.scope.kick_channel_rewards_write",
-        "chat:write": "dashboard.banner.scope.kick_chat_write",
-        "moderation:ban": "dashboard.banner.scope.kick_moderation_ban",
-        "moderation:chat_message:manage": "dashboard.banner.scope.kick_moderation_chat",
+        "chat:read": "dashboard.banner.scope.twitch_chat_read",
+        "chat:edit": "dashboard.banner.scope.twitch_chat_edit",
+        "user:read:chat": "dashboard.banner.scope.twitch_user_read_chat",
+        "user:write:chat": "dashboard.banner.scope.twitch_user_write_chat",
+        "channel:moderate": "dashboard.banner.scope.twitch_channel_moderate",
+        "moderator:manage:chat_messages": "dashboard.banner.scope.twitch_moderation_chat",
+        "moderator:manage:banned_users": "dashboard.banner.scope.twitch_moderation_ban",
+        "channel:manage:broadcast": "dashboard.banner.scope.twitch_channel_manage_broadcast",
+        "channel:read:redemptions": "dashboard.banner.scope.twitch_channel_read_redemptions",
+        "channel:manage:redemptions": "dashboard.banner.scope.twitch_channel_manage_redemptions",
+        "moderator:read:followers": "dashboard.banner.scope.twitch_moderator_read_followers",
     }
-
-    def get_missing_scopes(self) -> list[str]:
-        tokens = self.storage.load()
-        if not tokens or not (tokens.get("access_token") or tokens.get("refresh_token")):
-            return []
-
-        raw_scopes = tokens.get("scope", "")
-        if isinstance(raw_scopes, list):
-            current_scopes = set(raw_scopes)
-        else:
-            current_scopes = set(raw_scopes.split())
-
-        return [
-            i18n_key
-            for scope, i18n_key in self.REQUIRED_SCOPES.items()
-            if scope not in current_scopes
-        ]
-
-    def has_missing_scopes(self) -> bool:
-        return len(self.get_missing_scopes()) > 0
-
-class TwitchAuthManager:
-    def __init__(self, client_id: str, client_secret: str, redirect_uri: str, storage: TokenStorage, success_html_path: str = "") -> None:
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.redirect_uri = redirect_uri
-        self.storage = storage
-        self.success_html_path = success_html_path
-
-    def get_tokens(self, force: bool = False) -> dict:
-        if force:
-            return self.login(force=True)
-        tokens = self.storage.load()
-        if tokens and "access_token" in tokens:
-            return tokens
-        return {}
+    REQUIRED_TWITCH_SCOPES = REQUIRED_SCOPES
 
     def login(self, force: bool = False) -> dict:
         if not force:
@@ -243,10 +257,6 @@ class TwitchAuthManager:
             if tokens and tokens.get("access_token"):
                 return tokens
         return self._new_login(force=force)
-
-    def is_authenticated(self) -> bool:
-        tokens = self.storage.load()
-        return bool(tokens and (tokens.get("access_token") or tokens.get("refresh_token")))
 
     def refresh_token(self) -> dict:
         tokens = self.storage.load()
@@ -314,6 +324,7 @@ class TwitchAuthManager:
                 "code": code,
                 "redirect_uri": self.redirect_uri,
             },
+            timeout=10,
         )
         if response.status_code != 200:
             try:
@@ -323,40 +334,3 @@ class TwitchAuthManager:
                 msg = response.text
             raise ValueError(f"Error {response.status_code} de Twitch: {msg}")
         return response.json()
-
-    def logout(self) -> None:
-        self.storage.clear()
-
-    REQUIRED_TWITCH_SCOPES = {
-        "chat:read": "dashboard.banner.scope.twitch_chat_read",
-        "chat:edit": "dashboard.banner.scope.twitch_chat_edit",
-        "user:read:chat": "dashboard.banner.scope.twitch_user_read_chat",
-        "user:write:chat": "dashboard.banner.scope.twitch_user_write_chat",
-        "channel:moderate": "dashboard.banner.scope.twitch_channel_moderate",
-        "moderator:manage:chat_messages": "dashboard.banner.scope.twitch_moderation_chat",
-        "moderator:manage:banned_users": "dashboard.banner.scope.twitch_moderation_ban",
-        "channel:manage:broadcast": "dashboard.banner.scope.twitch_channel_manage_broadcast",
-        "channel:read:redemptions": "dashboard.banner.scope.twitch_channel_read_redemptions",
-        "channel:manage:redemptions": "dashboard.banner.scope.twitch_channel_manage_redemptions",
-        "moderator:read:followers": "dashboard.banner.scope.twitch_moderator_read_followers",
-    }
-
-    def get_missing_scopes(self) -> list[str]:
-        tokens = self.storage.load()
-        if not tokens or not (tokens.get("access_token") or tokens.get("refresh_token")):
-            return []
-
-        raw_scopes = tokens.get("scope", "")
-        if isinstance(raw_scopes, list):
-            scopes_set = set(raw_scopes)
-        else:
-            scopes_set = set(raw_scopes.split())
-
-        return [
-            i18n_key
-            for scope, i18n_key in self.REQUIRED_TWITCH_SCOPES.items()
-            if scope not in scopes_set
-        ]
-
-    def has_missing_scopes(self) -> bool:
-        return len(self.get_missing_scopes()) > 0
