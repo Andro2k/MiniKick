@@ -39,7 +39,7 @@ class SpamService:
         clean_msg = self._YT_EMOTE_REGEX.sub('', clean_msg)
         clean_msg = self._TIKTOK_EMOTE_REGEX.sub('', clean_msg)
         if emotes_tag:
-            from backend.providers.chat.twitch_websocket import TwitchSocketManager
+            from backend.providers.chat import TwitchSocketManager
             clean_msg = TwitchSocketManager.strip_twitch_emotes(clean_msg, emotes_tag)
         if strip_urls:
             clean_msg = self._LINK_REGEX.sub('', clean_msg)
@@ -55,7 +55,7 @@ class SpamService:
         is_mod = "moderator" in badges
         is_sub = "subscriber" in badges or "vip" in badges
 
-        from backend.providers.chat.twitch_websocket import TwitchSocketManager
+        from backend.providers.chat import TwitchSocketManager
         twitch_emotes = TwitchSocketManager.count_twitch_emotes(emotes_tag)
 
         for f_id, config in self.filters.items():

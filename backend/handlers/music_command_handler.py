@@ -170,6 +170,8 @@ class MusicCommandHandler:
 
         def on_complete(success, reply_msg):
             self.send_chat_message(reply_msg, platform=platform)
+            if hasattr(self.controller, "_poll_now_playing"):
+                self.controller._poll_now_playing()
 
         success, immediate_reply = provider.add_to_queue(
             query,
@@ -178,6 +180,8 @@ class MusicCommandHandler:
             platform=platform,
             max_duration_min=self.controller.max_song_duration
         )
+        if hasattr(self.controller, "_poll_now_playing"):
+            self.controller._poll_now_playing()
         if immediate_reply:
             self.send_chat_message(immediate_reply, platform=platform)
 

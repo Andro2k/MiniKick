@@ -33,24 +33,22 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-from backend.core.app_logger_core import setup_application_logging, flush_all_logs
+from backend.core import setup_application_logging, flush_all_logs, MainWindowCore
 setup_application_logging()
 
-from backend.services.system.updater_service import GithubUpdateProvider, UpdateManager, WindowsInstaller
-from backend.services.system.instance_services import SocketInstanceProvider
-from backend.core.main_window_core import MainWindowCore
-from backend.config.version import APP_VERSION
+from backend.services.system import (
+    GithubUpdateProvider, UpdateManager, WindowsInstaller, SocketInstanceProvider
+)
+from backend.config import APP_VERSION
 
-from frontend.dialogs.already_running_dialog import AlreadyRunningDialog
-from frontend.common.theme import GLOBAL_QSS
-from frontend.common.paths import resource_path
+from frontend.dialogs import AlreadyRunningDialog, CrashReportDialog
+from frontend.common import GLOBAL_QSS, resource_path
 
 logger = logging.getLogger("minikick.main")
 
 def _get_safe_i18n():
     try:
-        from backend.database.manager import DatabaseManager
-        from backend.database import SQLiteSettingsStorage
+        from backend.database import DatabaseManager, SQLiteSettingsStorage
         from backend.services import TranslationService
         db = DatabaseManager()
         settings = SQLiteSettingsStorage(db)
@@ -92,14 +90,20 @@ def global_crash_handler(exctype, value, tb):
             app.setFont(app_font)
 
         i18n = _get_safe_i18n()
-        from backend.config.api_keys import DISCORD_WEBHOOK_URL
+        from backend.config import DISCORD_WEBHOOK_URL
         from backend.workers import CrashReportWorker
-        from frontend.dialogs.crash_report_dialog import CrashReportDialog
+        initial_contact = ""
+        try:
+            from backend.database import DatabaseManager
+            initial_contact = DatabaseManager().get_primary_identity()
+        except Exception:
+            pass
         dialog = CrashReportDialog(
             traceback_text=tb_text,
             i18n=i18n,
             webhook_url=DISCORD_WEBHOOK_URL,
-            worker_class=CrashReportWorker
+            worker_class=CrashReportWorker,
+            initial_contact=initial_contact
         )
         dialog.exec()
     except Exception as dialog_err:

@@ -2,6 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt
+from frontend.common import MARGIN_2XS, SPACING_LG, SPACING_MD
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow, NoWheelSlider
 
 class MusicSettingsPanel(QWidget):
@@ -19,14 +20,14 @@ class MusicSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(0, 0, 0, 0)
-        self.panel_layout.setSpacing(16)
+        self.panel_layout.setContentsMargins(*MARGIN_2XS)
+        self.panel_layout.setSpacing(SPACING_LG)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_settings_card()
 
     def _setup_settings_card(self):
-        self.card_settings = ModernCard(margin=12, spacing=8)
+        self.card_settings = ModernCard(margin=SPACING_LG, spacing=SPACING_MD)
 
         self.sw_auto_resume = ModernSwitch()
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)

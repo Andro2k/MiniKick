@@ -3,6 +3,7 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTabWidget, QBoxLayout, QSizePolicy)
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernScrollArea
+from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_XL
 from frontend.components.schedule import (
     ScheduleQuickChangePanel,
     ScheduleFormPanel,
@@ -32,8 +33,6 @@ class ScheduleView(BaseView):
             self._last_direction = direction
             if hasattr(self, "columns_layout"):
                 self.columns_layout.setDirection(direction)
-        if hasattr(self, "quick_change_panel"):
-            self.quick_change_panel.relayout(self.quick_change_panel.width())
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -42,17 +41,17 @@ class ScheduleView(BaseView):
     def _setup_ui(self):
         self.body_container = QWidget()
         self.body_layout = QVBoxLayout(self.body_container)
-        self.body_layout.setContentsMargins(0, 0, 0, 0)
-        self.body_layout.setSpacing(16)
+        self.body_layout.setContentsMargins(*MARGIN_NONE)
+        self.body_layout.setSpacing(SPACING_XL)
 
         self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.columns_layout.setContentsMargins(0, 0, 0, 0)
-        self.columns_layout.setSpacing(16)
+        self.columns_layout.setContentsMargins(*MARGIN_NONE)
+        self.columns_layout.setSpacing(SPACING_XL)
 
         col1 = QWidget()
         self.col1_layout = QVBoxLayout(col1)
-        self.col1_layout.setContentsMargins(0, 0, 0, 0)
-        self.col1_layout.setSpacing(0)
+        self.col1_layout.setContentsMargins(*MARGIN_NONE)
+        self.col1_layout.setSpacing(SPACING_NONE)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.tabs = QTabWidget()
@@ -68,8 +67,8 @@ class ScheduleView(BaseView):
 
         col2 = QWidget()
         self.col2_layout = QVBoxLayout(col2)
-        self.col2_layout.setContentsMargins(0, 0, 0, 0)
-        self.col2_layout.setSpacing(0)
+        self.col2_layout.setContentsMargins(*MARGIN_NONE)
+        self.col2_layout.setSpacing(SPACING_NONE)
 
         self.table_panel = ScheduleTablePanel(self.i18n)
         self.col2_layout.addWidget(self.table_panel)

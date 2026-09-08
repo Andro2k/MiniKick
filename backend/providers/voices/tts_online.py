@@ -54,8 +54,10 @@ class WebTTSProvider:
                         break
             if not target_dev:
                 target_dev = QMediaDevices.defaultAudioOutput()
+            if target_dev:
+                logger.debug("[Web TTS] Audio output device routed to: '%s' (configured: '%s')", target_dev.description(), self._audio_device_id)
         except Exception as dev_err:
-            logger.error("[Web TTS] Error resolving audio output device: %s", dev_err)
+            logger.error("[Web TTS] Error resolving audio output device (%s): %s", type(dev_err).__name__, dev_err, exc_info=True)
 
         self._cached_audio_device = target_dev
         self._cached_device_id = self._audio_device_id
@@ -152,7 +154,7 @@ class WebTTSProvider:
         for attempt in range(3):
             try:
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
-                await communicate.save(temp_path)
+                await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 elapsed = time.perf_counter() - start_t
                 logger.debug(f"[Web TTS Benchmark] Pre-downloaded audio in {elapsed:.3f}s for: '{text[:25]}...' (voice: {voice})")
                 return temp_path
@@ -218,7 +220,7 @@ class WebTTSProvider:
         for attempt in range(3):
             try:
                 communicate = edge_tts.Communicate(text, voice, volume=self.volume_str, rate=self.rate_str)
-                await communicate.save(temp_path)
+                await asyncio.wait_for(communicate.save(temp_path), timeout=5.0)
                 t_dl_end = time.perf_counter() - t_dl_start
                 logger.debug(f"[Web TTS Benchmark] On-the-fly download completed in {t_dl_end:.3f}s")
                 await self._play_audio_file(temp_path, start_t)
@@ -280,7 +282,7 @@ class WebTTSProvider:
                 pass
 
         except Exception as e:
-            logger.error("[Web TTS] Error playing audio file: %s", e)
+            logger.error("[Web TTS] Error playing audio file (%s): %s", type(e).__name__, e, exc_info=True)
         finally:
             self._current_loop = None
             if player:

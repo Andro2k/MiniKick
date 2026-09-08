@@ -2,16 +2,19 @@
 
 import sys
 import html
+import time
 import logging
+import warnings
+from collections import deque
 from datetime import datetime
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
     QSystemTrayIcon, QApplication
 )
-from PySide6.QtCore import Qt, Slot, QEvent
+from PySide6.QtCore import Qt, Slot, QEvent, QTimer
 
-from backend.core.app_container_core import AppContainerCore
-from backend.core.app_logger_core import setup_application_logging
+from .app_container_core import AppContainerCore
+from .app_logger_core import setup_application_logging
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
     LogService, SettingsService, SpamService, TimerService
@@ -20,26 +23,24 @@ from backend.controllers import (
     RewardsController, ChatController, CommandController, DashboardController,
     TimerController, LogController, MusicController, SettingsController,
     SpamController, UpdateController, WidgetController,
-    ScheduleController
+    ScheduleController, AlertsController
 )
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
     KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, YouTubeChatWorker, TikTokChatWorker,
-    FetchRewardsWorker, RewardWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
+    FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
 )
-from frontend.common.theme import COLOR_GREEN, get_global_qss
-from frontend.navigation.sidebar_component import Sidebar
-from frontend.navigation.toast_component import ToastManager
-from frontend.navigation.tray_menu_component import SystemTrayManager
+from frontend.common import COLOR_GREEN, get_global_qss
+from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
     LogView, MusicView, SettingsView, SpamView, WidgetsView,
-    ScheduleView
+    ScheduleView, AlertsView
 )
 from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog
 
 try:
-    from backend.config.api_keys import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
+    from backend.config import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
 except ImportError:
     KICK_PUSHER_CLUSTER = "us2"
     KICK_PUSHER_KEY = "32cbd69e4b950bf97679"
@@ -48,22 +49,24 @@ except ImportError:
 logger = logging.getLogger("minikick.core")
 
 class MainWindowCore(QMainWindow):
+    _recent_reward_redemptions: deque | None = None
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
 
     _NAV_CONFIG = (
         ("Dashboard", "dashboard.svg", "top"),
         ("Chat", "message.svg", "top"),
-        ("Stream Info", "calendar.svg", "top"),
-        ("Spam Filters", "shield-half.svg", "top"),
+        ("Stream Info", "calendar-duotone.svg", "top"),
+        ("Spam Filters", "shield-duotone.svg", "top"),
         ("Comandos", "code.svg", "top"),
         ("Timers", "clock.svg", "top"),
-        ("Music", "music.svg", "top"),
-        ("Widgets", "apps.svg", "top"),
-        ("Triggers", "chart-bubble.svg", "top"),
+        ("Music", "music-notes.svg", "top"),
+        ("Widgets", "widget-add.svg", "top"),
+        ("Triggers", "treasure-chest.svg", "top"),
+        ("Alerts", "megaphone-filled.svg", "top"),
 
         ("Settings", "settings.svg", "bottom"),
-        ("Developer", "brand-tabler.svg", "bottom"),
+        ("Developer", "file-text-duotone.svg", "bottom"),
     )
 
     def __init__(self, updater_manager, app_version: str):
@@ -83,16 +86,16 @@ class MainWindowCore(QMainWindow):
         self.timers_storage = self.container.timers_storage
         self.backup_service = self.container.backup_service
         self.i18n = self.container.i18n
-        self.auth_manager = self.container.auth_manager
+        self.kick_auth_manager = self.container.kick_auth_manager
         self.tts_manager = self.container.tts_manager
         self.overlay_server = self.container.overlay_server
         
         title_template = self.i18n.get("main.window.title")
         self.setWindowTitle(title_template.replace("{version}", app_version))
         
-        self.chat_worker = None
-        self.reward_worker = None
-        self.auth_worker = None
+        self.kick_chat_worker = None
+        self.kick_api_client = None
+        self.kick_auth_worker = None
         self.fetch_rewards_worker = None
         self.timers_worker = None
         self.schedule_worker = None
@@ -105,6 +108,7 @@ class MainWindowCore(QMainWindow):
         self.tiktok_chat_worker = None
         self._tiktok_connected = False
         self._tiktok_channel = ""
+        self._retiring_workers: set = set()
 
         self._cached_total_usages = None
         self._cached_active_timers = None
@@ -119,6 +123,7 @@ class MainWindowCore(QMainWindow):
             "youtube": 0,
             "tiktok": 0
         }
+        self._recent_reward_redemptions = deque(maxlen=100)
 
         self.logger, self.q_log_handler = setup_application_logging()  
         self.logger.info("[MainWindow] Initializing main window components and UI shell...")
@@ -138,6 +143,7 @@ class MainWindowCore(QMainWindow):
         self._load_settings_into_ui()
         self.setUpdatesEnabled(True)
         self.logger.info("[MainWindow] Main window initialization complete.")
+        self._schedule_view_prewarming()
 
     def _setup_ui(self):
         self.central_widget = QWidget()
@@ -159,7 +165,7 @@ class MainWindowCore(QMainWindow):
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
-        self.log_service = LogService(log_storage=self.container.log_storage)
+        self.log_service = LogService(log_storage=self.container.system_log_storage)
         self.schedule_service = self.container.schedule_service
 
         self.view_dashboard = DashboardView(self.i18n, parent=self)
@@ -173,6 +179,7 @@ class MainWindowCore(QMainWindow):
         self.view_timers = None
         self.view_settings = None
         self.view_logs = None
+        self.view_alerts = None
 
         self._instantiated_views = {"Dashboard": self.view_dashboard}
 
@@ -211,7 +218,7 @@ class MainWindowCore(QMainWindow):
             view=None, 
             service=self.rewards_service,
             toast_manager=self.toast,
-            auth_manager=self.auth_manager,
+            kick_auth_manager=self.kick_auth_manager,
             twitch_auth_manager=getattr(self.container, "twitch_auth_manager", None)
         )
         self.command_controller = CommandController(
@@ -251,6 +258,12 @@ class MainWindowCore(QMainWindow):
             toast_manager=self.toast,
             i18n=self.i18n,
             connected_platforms_provider=self.get_connected_platforms
+        )
+        self.alerts_controller = AlertsController(
+            view=None,
+            service=self.container.alert_service,
+            toast_manager=self.toast,
+            i18n=self.i18n
         )
         self._start_schedule_worker()
         self._setup_global_media_keys()
@@ -329,7 +342,7 @@ class MainWindowCore(QMainWindow):
 
         self.logger.info("[AutoStart] Autostart configuration: enabled=%s", autostart_enabled)
         if autostart_enabled:
-            if self.auth_manager.is_authenticated():
+            if self.kick_auth_manager.is_authenticated():
                 try:
                     self.logger.info("[AutoStart] Starting Kick integration...")
                     self._handle_auth_process()
@@ -375,26 +388,31 @@ class MainWindowCore(QMainWindow):
 
         view_widget = None
         if view_name == "Stream Info":
-            self.view_schedule = ScheduleView(self.i18n, parent=self)
+            self.view_schedule = ScheduleView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_schedule)
             self.schedule_controller.attach_view(self.view_schedule)
             view_widget = self.view_schedule
         elif view_name == "Chat":
-            self.view_chat = ChatView(self.i18n, parent=self)
+            self.view_chat = ChatView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_chat)
             self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
             self.chat_controller.attach_view(self.view_chat)
             view_widget = self.view_chat
         elif view_name == "Music":
-            self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self)
+            self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self.content_stack)
+            self.content_stack.addWidget(self.view_music)
             self.music_controller.attach_view(self.view_music)
             view_widget = self.view_music
         elif view_name == "Triggers":
-            self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self)
+            self.view_rewards = RewardsView(self.i18n, overlay_url=self.overlay_server.get_overlay_url(), parent=self.content_stack)
+            self.content_stack.addWidget(self.view_rewards)
             self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
             self.rewards_controller.attach_view(self.view_rewards)
             self._fetch_api_rewards()
             view_widget = self.view_rewards
         elif view_name == "Comandos":
-            self.view_commands = CommandView(self.i18n, parent=self)
+            self.view_commands = CommandView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_commands)
             self.command_controller.attach_view(self.view_commands)
             view_widget = self.view_commands
         elif view_name == "Widgets":
@@ -407,20 +425,24 @@ class MainWindowCore(QMainWindow):
                 combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
                 poll_overlay_url=self.overlay_server.get_poll_overlay_url(),
                 pinned_overlay_url=self.overlay_server.get_pinned_overlay_url(),
-                parent=self
+                parent=self.content_stack
             )
+            self.content_stack.addWidget(self.view_widgets)
             self.widget_controller.attach_view(self.view_widgets)
             view_widget = self.view_widgets
         elif view_name == "Spam Filters":
-            self.view_spam = SpamView(self.i18n, parent=self)
+            self.view_spam = SpamView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_spam)
             self.spam_controller.attach_view(self.view_spam)
             view_widget = self.view_spam
         elif view_name == "Timers":
-            self.view_timers = TimersView(self.i18n, parent=self)
+            self.view_timers = TimersView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_timers)
             self.timer_controller.attach_view(self.view_timers)
             view_widget = self.view_timers
         elif view_name == "Settings":
-            self.view_settings = SettingsView(self.i18n, parent=self)
+            self.view_settings = SettingsView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_settings)
             self.view_settings.twitch_integration_clicked.connect(self._on_twitch_integration_button_clicked)
             self.view_settings.youtube_integration_clicked.connect(self._on_youtube_integration_button_clicked)
             self.view_settings.tiktok_integration_clicked.connect(self._on_tiktok_integration_button_clicked)
@@ -428,15 +450,51 @@ class MainWindowCore(QMainWindow):
             self._update_integrations_status_ui()
             view_widget = self.view_settings
         elif view_name == "Developer":
-            self.view_logs = LogView(self.i18n, parent=self)
+            self.view_logs = LogView(self.i18n, parent=self.content_stack)
+            self.content_stack.addWidget(self.view_logs)
             self.log_controller.attach_view(self.view_logs)
             view_widget = self.view_logs
+        elif view_name == "Alerts":
+            self.view_alerts = AlertsView(
+                self.i18n,
+                alerts_overlay_url=self.overlay_server.get_alerts_overlay_url(),
+                parent=self.content_stack
+            )
+            self.view_alerts.set_connected_platforms(self.get_connected_platforms())
+            self.view_alerts.connect_platform_requested.connect(self._handle_alert_platform_connect)
+            self.content_stack.addWidget(self.view_alerts)
+            self.alerts_controller.attach_view(self.view_alerts)
+            view_widget = self.view_alerts
 
         if view_widget:
             self._instantiated_views[view_name] = view_widget
-            self.content_stack.addWidget(view_widget)
+            if self.content_stack.indexOf(view_widget) == -1:
+                self.content_stack.addWidget(view_widget)
 
         return view_widget
+
+    def _schedule_view_prewarming(self):
+        views_to_warm = [
+            "Chat", "Alerts", "Widgets", "Settings", "Triggers",
+            "Stream Info", "Comandos", "Timers", "Spam Filters",
+            "Music", "Developer"
+        ]
+        self._prewarm_queue = deque(views_to_warm)
+        QTimer.singleShot(750, self._prewarm_next_view)
+
+    def _prewarm_next_view(self):
+        if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:
+            return
+        view_name = self._prewarm_queue.popleft()
+        if view_name not in self._instantiated_views:
+            try:
+                self.logger.debug("[Prewarm] Background warming view: '%s'", view_name)
+                self._get_or_create_view(view_name)
+            except Exception as e:
+                self.logger.warning("[Prewarm] Error pre-warming view '%s': %s", view_name, e)
+
+        if self._prewarm_queue and not self._is_shutting_down:
+            QTimer.singleShot(150, self._prewarm_next_view)
 
     @Slot()
     def _restore_from_tray(self):
@@ -541,11 +599,82 @@ class MainWindowCore(QMainWindow):
         self.global_media_worker.stop_pressed.connect(self.music_controller.handle_play_pause)
         self.global_media_worker.start()
 
+    def _safe_stop_worker(self, worker_attr_name: str, timeout_ms: int = 1500) -> None:
+        worker = getattr(self, worker_attr_name, None)
+        if not worker:
+            return
+
+        setattr(self, worker_attr_name, None)
+
+        for sig_name in (
+            "connection_success",
+            "connection_lost",
+            "connection_restored",
+            "error_occurred",
+            "message_received",
+            "play_pause_pressed",
+            "skip_pressed",
+            "stop_pressed",
+        ):
+            sig = getattr(worker, sig_name, None)
+            if sig:
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", category=RuntimeWarning)
+                        sig.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+
+        try:
+            if hasattr(worker, 'stop'):
+                worker.stop()
+            if hasattr(worker, 'requestInterruption'):
+                worker.requestInterruption()
+            if hasattr(worker, 'quit'):
+                worker.quit()
+        except RuntimeError:
+            pass
+
+        start_t = time.perf_counter()
+        try:
+            if worker.isRunning():
+                if worker.wait(timeout_ms):
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                    self.logger.debug(
+                        "[Worker] Worker '%s' stopped cleanly in %.1f ms",
+                        worker_attr_name,
+                        elapsed_ms
+                    )
+                    worker.deleteLater()
+                else:
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                    self.logger.warning(
+                        "[Worker] Worker '%s' still active after %.1f ms (timeout: %d ms). Retaining in retirement registry.",
+                        worker_attr_name,
+                        elapsed_ms,
+                        timeout_ms
+                    )
+                    self._retiring_workers.add(worker)
+                    def _on_retired(w=worker):
+                        self._retiring_workers.discard(w)
+                        try:
+                            w.deleteLater()
+                        except RuntimeError:
+                            pass
+                    worker.finished.connect(_on_retired)
+            else:
+                elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                self.logger.debug(
+                    "[Worker] Worker '%s' was not running (shutdown check took %.1f ms)",
+                    worker_attr_name,
+                    elapsed_ms
+                )
+                worker.deleteLater()
+        except RuntimeError as e:
+            self.logger.debug("[Worker] Notice stopping worker '%s' (%s): %s", worker_attr_name, type(e).__name__, e)
+
     def _stop_global_media_worker(self):
-        if self.global_media_worker and self.global_media_worker.isRunning():
-            self.global_media_worker.stop()
-            self.global_media_worker.wait(2000)
-            self.global_media_worker = None
+        self._safe_stop_worker("global_media_worker", timeout_ms=1500)
 
     def _on_media_keys_state_changed(self, enabled: bool):
         if enabled:
@@ -620,27 +749,37 @@ class MainWindowCore(QMainWindow):
         stuck_template = self.i18n.get("main.logs.worker_stuck")
         stopped_template = self.i18n.get("main.logs.worker_stopped")
         for name, instance in active_workers:
+            start_t = time.perf_counter()
             try:
                 if instance.wait(2000):
-                    self.logger.info(stopped_template.replace("{worker}", name))
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                    msg = stopped_template.replace("{worker}", name)
+                    self.logger.info("%s (%.1f ms)", msg, elapsed_ms)
+                    instance.deleteLater()
                 else:
-                    self.logger.warning("[Shutdown] Worker '%s' wait timed out", name)
-                instance.deleteLater()
-            except RuntimeError:
-                pass
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                    self.logger.warning("[Shutdown] Worker '%s' wait timed out after %.1f ms", name, elapsed_ms)
+                    self._retiring_workers.add(instance)
+                    def _on_retired(inst=instance):
+                        self._retiring_workers.discard(inst)
+                        try:
+                            inst.deleteLater()
+                        except RuntimeError:
+                            pass
+                    instance.finished.connect(_on_retired)
+            except RuntimeError as e:
+                self.logger.debug("[Shutdown] Notice stopping worker '%s' (%s): %s", name, type(e).__name__, e)
 
     def _stop_kick_connection_workers(self):
         worker_map = [
-            ("Worker_Chat_Socket", getattr(self, 'chat_worker', None)),
-            ("Worker_Reward_Polling", getattr(self, 'reward_worker', None)),
-            ("Worker_Auth", getattr(self, 'auth_worker', None)),
+            ("Worker_Kick_Chat_Socket", getattr(self, 'kick_chat_worker', None)),
+            ("Worker_Kick_Auth", getattr(self, 'kick_auth_worker', None)),
             ("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None)),
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
-        self.chat_worker = None
-        self.reward_worker = None
-        self.auth_worker = None
+        self.kick_chat_worker = None
+        self.kick_auth_worker = None
         self.fetch_rewards_worker = None
         self.timers_worker = None
 
@@ -659,9 +798,8 @@ class MainWindowCore(QMainWindow):
 
     def _stop_all_workers(self):
         worker_map = [
-            ("Worker_Chat_Socket", getattr(self, 'chat_worker', None)),
-            ("Worker_Reward_Polling", getattr(self, 'reward_worker', None)),
-            ("Worker_Auth", getattr(self, 'auth_worker', None)),
+            ("Worker_Kick_Chat_Socket", getattr(self, 'kick_chat_worker', None)),
+            ("Worker_Kick_Auth", getattr(self, 'kick_auth_worker', None)),
             ("Worker_Fetch_Rewards", getattr(self, 'fetch_rewards_worker', None)),
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
             ("Worker_Twitch_Chat_Socket", getattr(self, 'twitch_chat_worker', None)),
@@ -675,9 +813,8 @@ class MainWindowCore(QMainWindow):
         ]
 
         self._stop_workers_parallel(worker_map)
-        self.chat_worker = None
-        self.reward_worker = None
-        self.auth_worker = None
+        self.kick_chat_worker = None
+        self.kick_auth_worker = None
         self.fetch_rewards_worker = None
         self.timers_worker = None
         self.twitch_chat_worker = None
@@ -693,48 +830,64 @@ class MainWindowCore(QMainWindow):
             except Exception:
                 pass
 
+    @staticmethod
+    def _is_worker_running(worker) -> bool:
+        if worker is None:
+            return False
+        try:
+            return bool(worker.isRunning())
+        except (RuntimeError, AttributeError):
+            return False
+
     @Slot()
     def _handle_auth_process(self, force: bool = False):
+        if self._is_worker_running(getattr(self, "twitch_auth_worker", None)):
+            self.toast.show_toast(
+                title=self.container.i18n.get("main.toast.auth_in_progress_title"),
+                message=self.container.i18n.get("main.toast.auth_in_progress_msg"),
+                state="warning"
+            )
+            return
+
         self._stop_kick_connection_workers()
         self.dashboard_controller.handle_connecting_state()
 
-        self.auth_worker = KickAuthWorker(self.i18n, self.auth_manager, force=force)
-        self.auth_worker.auth_success.connect(self._on_auth_success)
-        self.auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
-        self.auth_worker.finished.connect(self.auth_worker.deleteLater)
-        self.auth_worker.start()
+        self.kick_auth_worker = KickAuthWorker(self.i18n, self.kick_auth_manager, force=force)
+        self.kick_auth_worker.auth_success.connect(self._on_auth_success)
+        self.kick_auth_worker.auth_error.connect(self.dashboard_controller.handle_error_state)
+        self.kick_auth_worker.finished.connect(lambda: setattr(self, 'kick_auth_worker', None))
+        self.kick_auth_worker.finished.connect(self.kick_auth_worker.deleteLater)
+        self.kick_auth_worker.start()
 
     def _on_auth_success(self, tokens):
-        api_client = KickAPIClient(auth_provider=self.auth_manager)
+        self.kick_api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
         self._evaluate_all_scopes()
         
-        self.command_service.api_client = api_client
-        self.spam_service.api_client = api_client
-        self.timer_service.api_client = api_client
+        self.command_service.api_client = self.kick_api_client
+        self.spam_service.api_client = self.kick_api_client
+        self.timer_service.api_client = self.kick_api_client
         
         self.command_service.reload_cache()
         self.spam_service.reload_filters()
 
-        self.schedule_service.set_kick_client(api_client)
+        self.schedule_service.set_kick_client(self.kick_api_client)
         self._start_schedule_worker()
         if hasattr(self, "schedule_controller") and self.schedule_controller:
             self.schedule_controller.fetch_current_info()
 
-        self.chat_worker = KickChatWorker(self.i18n, api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY)
-        self.chat_worker.connection_success.connect(self._on_web_socket_connected)
-        self.chat_worker.message_received.connect(self._route_incoming_message)
-        self.chat_worker.poll_updated.connect(self._on_poll_updated)
-        self.chat_worker.poll_deleted.connect(self._on_poll_deleted)
-        self.chat_worker.pinned_created.connect(self._on_pinned_created)
-        self.chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
-        self.chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
+        self.kick_chat_worker = KickChatWorker(self.i18n, self.kick_api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY)
+        self.kick_chat_worker.connection_success.connect(self._on_web_socket_connected)
+        self.kick_chat_worker.message_received.connect(self._route_incoming_message)
+        self.kick_chat_worker.poll_updated.connect(self._on_poll_updated)
+        self.kick_chat_worker.poll_deleted.connect(self._on_poll_deleted)
+        self.kick_chat_worker.pinned_created.connect(self._on_pinned_created)
+        self.kick_chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
+        self.kick_chat_worker.alert_received.connect(self._handle_incoming_alert)
+        self.kick_chat_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
+        self.kick_chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
         
-        self.reward_worker = RewardWorker(self.i18n, api_client, poll_interval_seconds=10)
-        self.reward_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
-        
-        self.chat_worker.start()
-        self.reward_worker.start()
-        self.auth_worker = None
+        self.kick_chat_worker.start()
+        self.kick_auth_worker = None
 
     def _on_web_socket_connected(self, user_data):
         self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
@@ -760,21 +913,14 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _fetch_api_rewards(self):
-        if self.auth_manager.is_authenticated():
-            worker = getattr(self, 'fetch_rewards_worker', None)
-            is_running = False
-            if worker is not None:
+        if self.kick_auth_manager.is_authenticated():
+            if not self._is_worker_running(getattr(self, 'fetch_rewards_worker', None)):
                 try:
-                    is_running = worker.isRunning()
-                except RuntimeError:
-                    self.fetch_rewards_worker = None
-
-            if not is_running:
-                try:
-                    api_client = KickAPIClient(auth_provider=self.auth_manager)
+                    api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
                     self.fetch_rewards_worker = FetchRewardsWorker(api_client, platform="kick")
                     self.fetch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
                     self.fetch_rewards_worker.error_occurred.connect(self._handle_rewards_error)
+                    self.fetch_rewards_worker.finished.connect(lambda: setattr(self, 'fetch_rewards_worker', None))
                     self.fetch_rewards_worker.finished.connect(self.fetch_rewards_worker.deleteLater)
                     self.fetch_rewards_worker.start()
                 except Exception as e:
@@ -798,6 +944,14 @@ class MainWindowCore(QMainWindow):
         return f'<span style="color: #00e701;">{texto_canje}</span>'
 
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str, platform: str = "kick"):
+        recents = getattr(self, "_recent_reward_redemptions", None)
+        if recents is not None:
+            dedup_key = f"{platform}:{user.lower()}:{reward_name.lower()}:{int(time.time() / 8)}"
+            if dedup_key in recents:
+                self.logger.debug("[Reward] Ignorando canje duplicado: %s", dedup_key)
+                return
+            recents.append(dedup_key)
+
         self.logger.info("[Reward] Canje procesado: usuario='%s', recompensa='%s' (Plataforma: %s)", user, reward_name, platform.capitalize())
         toast_template = self.i18n.get("main.toasts.reward_msg")
         self.toast.show_toast(
@@ -838,10 +992,14 @@ class MainWindowCore(QMainWindow):
             dto = ChatMessageDTO(user, message, [], "", "", 0, timestamp=current_time, platform=platform)
             self.chat_controller.process_message(dto)
 
+    def _handle_incoming_alert(self, alert_event):
+        if hasattr(self.container, "alert_service") and self.container.alert_service:
+            self.container.alert_service.process_event(alert_event)
+
     def _start_timers_worker(self, channel_slug: str):
         self._stop_workers_parallel([("Worker_Timers", getattr(self, 'timers_worker', None))])
         
-        api_client = KickAPIClient(auth_provider=self.auth_manager)
+        api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
         self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug)
         self.timers_worker.post_message_requested.connect(self._send_timer_message)
         self.timers_worker.start()
@@ -852,12 +1010,20 @@ class MainWindowCore(QMainWindow):
             return
         if hasattr(self, "command_service") and self.command_service:
             self.command_service.post_chat_message(message, apply_kick=apply_kick, apply_twitch=apply_twitch)
-        elif apply_kick and hasattr(self, "chat_worker") and self.chat_worker:
-            self.chat_worker.send_message(message)
+        elif apply_kick and hasattr(self, "kick_chat_worker") and self.kick_chat_worker:
+            self.kick_chat_worker.send_message(message)
 
 
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
+        if self._is_worker_running(getattr(self, "kick_auth_worker", None)):
+            self.toast.show_toast(
+                title=self.container.i18n.get("main.toast.auth_in_progress_title"),
+                message=self.container.i18n.get("main.toast.auth_in_progress_msg"),
+                state="warning"
+            )
+            return
+
         self._stop_twitch_connection_workers()
         if not force and self.container.twitch_auth_manager.has_missing_scopes():
             force = True
@@ -873,19 +1039,24 @@ class MainWindowCore(QMainWindow):
         self.twitch_auth_worker = TwitchAuthWorker(self.container.twitch_auth_manager, force=force)
         self.twitch_auth_worker.auth_success.connect(self._on_twitch_auth_success)
         self.twitch_auth_worker.auth_error.connect(self._on_twitch_auth_error)
+        self.twitch_auth_worker.finished.connect(lambda: setattr(self, 'twitch_auth_worker', None))
         self.twitch_auth_worker.finished.connect(self.twitch_auth_worker.deleteLater)
         self.twitch_auth_worker.start()
 
     def _on_twitch_auth_error(self, err: str):
-        logger.error(f"[Twitch Auth Error] {err}")
+        self.twitch_auth_worker = None
+        self._twitch_connected = False
+        self._twitch_channel = ""
+        self._update_integrations_status_ui()
         log_msg = self.container.i18n.get("logs.main_window.twitch_auth_error").replace("{error}", str(err))
-        self.q_log_handler.emitter.log_received.emit(log_msg)
+        logger.error(f"[Twitch Auth Error] {log_msg}")
         if getattr(self, "_is_window_closing", False):
             return
         err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
         self.toast.show_toast(title=err_title, message=str(err), state="danger")
 
     def _on_twitch_auth_success(self, tokens):
+        self.twitch_auth_worker = None
         logger.info("[Twitch Auth] Success callback received.")
         try:
             twitch_api = TwitchAPIClient(auth_provider=self.container.twitch_auth_manager, client_id=TWITCH_CLIENT_ID, i18n=self.container.i18n)
@@ -978,6 +1149,7 @@ class MainWindowCore(QMainWindow):
                 broadcaster_id
             )
             self.twitch_reward_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="twitch"))
+            self.twitch_reward_worker.alert_received.connect(self._handle_incoming_alert)
             self.twitch_reward_worker.start()
             self._fetch_twitch_rewards(broadcaster_id)
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
@@ -1018,20 +1190,14 @@ class MainWindowCore(QMainWindow):
         if not b_id or not self.container.twitch_auth_manager.is_authenticated():
             return
 
-        is_running = False
-        if hasattr(self, 'fetch_twitch_rewards_worker') and self.fetch_twitch_rewards_worker is not None:
-            try:
-                is_running = self.fetch_twitch_rewards_worker.isRunning()
-            except RuntimeError:
-                self.fetch_twitch_rewards_worker = None
-
-        if is_running:
+        if self._is_worker_running(getattr(self, 'fetch_twitch_rewards_worker', None)):
             return
 
         try:
             twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
             self.fetch_twitch_rewards_worker = FetchRewardsWorker(twitch_api, broadcaster_id=b_id, platform="twitch")
             self.fetch_twitch_rewards_worker.rewards_fetched.connect(self.rewards_controller.update_rewards_list)
+            self.fetch_twitch_rewards_worker.finished.connect(lambda: setattr(self, 'fetch_twitch_rewards_worker', None))
             self.fetch_twitch_rewards_worker.finished.connect(self.fetch_twitch_rewards_worker.deleteLater)
             self.fetch_twitch_rewards_worker.start()
         except Exception as e:
@@ -1139,9 +1305,11 @@ class MainWindowCore(QMainWindow):
             self.view_rewards.set_connected_platforms(conn_dict)
         if hasattr(self, "view_timers") and self.view_timers and hasattr(self.view_timers, "set_connected_platforms"):
             self.view_timers.set_connected_platforms(conn_dict)
+        if hasattr(self, "view_alerts") and self.view_alerts and hasattr(self.view_alerts, "set_connected_platforms"):
+            self.view_alerts.set_connected_platforms(conn_dict)
 
     def get_connected_platforms(self) -> dict[str, bool]:
-        kick_auth = self.auth_manager.is_authenticated() if hasattr(self, "auth_manager") and self.auth_manager else False
+        kick_auth = self.kick_auth_manager.is_authenticated() if hasattr(self, "kick_auth_manager") and self.kick_auth_manager else False
         twitch_auth = self.container.twitch_auth_manager.is_authenticated() if hasattr(self.container, "twitch_auth_manager") and self.container.twitch_auth_manager else False
         return {
             "kick": kick_auth or getattr(self, "_kick_connected", False),
@@ -1178,9 +1346,7 @@ class MainWindowCore(QMainWindow):
                         self._handle_youtube_disconnect()
 
     def _handle_youtube_connect(self, target: str):
-        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker and self.youtube_chat_worker.isRunning():
-            self.youtube_chat_worker.stop()
-            self.youtube_chat_worker.wait(1000)
+        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1500)
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_youtube_status(connected=False, connecting=True)
@@ -1213,9 +1379,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_youtube_error(self, error_msg: str):
         self._youtube_connected = False
-        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker:
-            self.youtube_chat_worker.stop()
-            self.youtube_chat_worker = None
+        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
             title=self.container.i18n.get("common.status.error"),
@@ -1226,10 +1390,7 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _handle_youtube_disconnect(self):
         self.logger.info("[User Action] YouTube Live disconnected successfully")
-        if hasattr(self, "youtube_chat_worker") and self.youtube_chat_worker:
-            self.youtube_chat_worker.stop()
-            self.youtube_chat_worker.wait(1000)
-            self.youtube_chat_worker = None
+        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1500)
         self._youtube_connected = False
         self._youtube_channel = ""
         self.settings_storage.save_string("youtube_target_channel", "")
@@ -1270,9 +1431,7 @@ class MainWindowCore(QMainWindow):
         if not clean_target:
             return
 
-        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker and self.tiktok_chat_worker.isRunning():
-            self.tiktok_chat_worker.stop()
-            self.tiktok_chat_worker.wait(1000)
+        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1500)
 
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_tiktok_status(connected=False, connecting=True)
@@ -1304,9 +1463,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_tiktok_error(self, error_msg: str):
         self._tiktok_connected = False
-        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker:
-            self.tiktok_chat_worker.stop()
-            self.tiktok_chat_worker = None
+        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
             title=self.container.i18n.get("common.status.error"),
@@ -1317,10 +1474,7 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _handle_tiktok_disconnect(self):
         self.logger.info("[User Action] TikTok Live disconnected successfully")
-        if hasattr(self, "tiktok_chat_worker") and self.tiktok_chat_worker:
-            self.tiktok_chat_worker.stop()
-            self.tiktok_chat_worker.wait(1000)
-            self.tiktok_chat_worker = None
+        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1500)
         self._tiktok_connected = False
         self._tiktok_channel = ""
         self.settings_storage.save_string("tiktok_target_channel", "")
@@ -1347,7 +1501,7 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _evaluate_all_scopes(self):
         missing_scopes = {
-            "kick": self.auth_manager.get_missing_scopes() if self.auth_manager.is_authenticated() else [],
+            "kick": self.kick_auth_manager.get_missing_scopes() if self.kick_auth_manager.is_authenticated() else [],
             "twitch": self.container.twitch_auth_manager.get_missing_scopes() if self.container.twitch_auth_manager.is_authenticated() else []
         }
         self.dashboard_controller.evaluate_scopes(missing_scopes)
@@ -1356,13 +1510,13 @@ class MainWindowCore(QMainWindow):
     def _force_reauth(self):
         if self.container.twitch_auth_manager.has_missing_scopes():
             self._handle_reauth_twitch()
-        elif self.auth_manager.has_missing_scopes():
+        elif self.kick_auth_manager.has_missing_scopes():
             self._handle_reauth_kick()
 
     @Slot()
     def _handle_reauth_kick(self):
         self.logger.info("[User Action] Requested renewal of Kick permissions")
-        self.auth_manager.logout()
+        self.kick_auth_manager.logout()
         self._kick_connected = False
         self._kick_username = ""
         self.dashboard_controller.reset_to_disconnected()
@@ -1392,11 +1546,10 @@ class MainWindowCore(QMainWindow):
                     state="info"
                 )
                 self._stop_kick_connection_workers()
-                self.chat_worker = None
-                self.reward_worker = None
+                self.kick_chat_worker = None
                 self.timers_worker = None
 
-                self.auth_manager.logout()
+                self.kick_auth_manager.logout()
                 self._kick_connected = False
                 self._kick_username = ""
                 if hasattr(self, "dashboard_controller") and self.dashboard_controller:
@@ -1408,6 +1561,13 @@ class MainWindowCore(QMainWindow):
                 self._evaluate_all_scopes()
         else:
             self._handle_auth_process()
+
+    @Slot(str)
+    def _handle_alert_platform_connect(self, platform: str):
+        if platform == "kick":
+            self._handle_auth_process()
+        elif platform == "twitch":
+            self._handle_twitch_auth_process(force=False)
 
     def _start_schedule_worker(self):
         current_worker = getattr(self, "schedule_worker", None)
@@ -1449,7 +1609,6 @@ class MainWindowCore(QMainWindow):
                     youtube=self.session_platform_messages["youtube"],
                     tiktok=self.session_platform_messages["tiktok"]
                 )
-                self._update_integrations_status_ui()
 
         self.chat_controller.process_message(dto)
 

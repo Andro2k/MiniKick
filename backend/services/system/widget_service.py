@@ -1,7 +1,7 @@
 # backend\services\system\widget_service.py
 
 import logging
-from backend.database.widgets_storage import SQLiteWidgetsStorage
+from backend.database import SQLiteWidgetsStorage
 
 logger = logging.getLogger("minikick.services.widgets")
 
@@ -126,7 +126,7 @@ class WidgetService:
         if not clean_target:
             return ""
         try:
-            from backend.providers.chat.kick_client import ScraperFactory, KICK_CHANNEL_URL
+            from backend.providers.chat import ScraperFactory, KICK_CHANNEL_URL
             scraper = ScraperFactory.create()
             url = KICK_CHANNEL_URL.format(slug=clean_target)
             resp = scraper.get(url, timeout=3)

@@ -5,7 +5,7 @@ import re
 import time
 from typing import Callable, Any
 import requests
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_loads
 
 logger = logging.getLogger("minikick.providers.chat.youtube")
@@ -55,13 +55,14 @@ class YouTubeChatProvider:
                 except Exception:
                     pass
         except Exception as e:
-            logger.warning("[YouTubeChatProvider] Failed to resolve live video ID for %s: %s", target, e)
+            logger.warning("[YouTubeChatProvider] Failed to resolve live video ID for %s (%s): %s", target, type(e).__name__, e)
 
         return None
 
     def __init__(self, i18n=None) -> None:
         self.i18n = i18n or TranslationService()
         self._chat: Any | None = None
+        self._client: Any | None = None
         self._is_running = False
         self._video_id: str = ""
         self._target_channel: str = ""
@@ -89,8 +90,28 @@ class YouTubeChatProvider:
         logger.info("[YouTubeChatProvider] Connecting to YouTube live video: %s (Target: %s)", video_id, target)
 
         try:
+            import httpx
             import pytchat
-            self._chat = pytchat.create(video_id=video_id, interruptable=False)
+            import pytchat.core.pytchat as pc
+
+            if hasattr(pc, "PytchatCore") and hasattr(pc.PytchatCore.__init__, "__defaults__"):
+                defs = list(pc.PytchatCore.__init__.__defaults__)
+                if len(defs) > 2 and getattr(defs[2], "is_closed", False):
+                    defs[2] = httpx.Client(http2=True)
+                    pc.PytchatCore.__init__.__defaults__ = tuple(defs)
+
+            if self._client and not getattr(self._client, "is_closed", True):
+                try:
+                    self._client.close()
+                except Exception:
+                    pass
+            self._client = httpx.Client(http2=True, timeout=10.0)
+
+            self._chat = pytchat.create(
+                video_id=video_id,
+                client=self._client,
+                interruptable=False
+            )
             
             is_replay_func = getattr(self._chat, "is_replay", None)
             is_replay = is_replay_func() if callable(is_replay_func) else False
@@ -105,8 +126,17 @@ class YouTubeChatProvider:
                 on_connected({"platform": "youtube", "video_id": video_id, "channel": target})
 
             msg_seq = 0
-            while self._is_running and self._chat.is_alive():
-                sync_items = self._chat.get().sync_items()
+            while self._is_running:
+                chat = self._chat
+                if not chat or not chat.is_alive():
+                    break
+                try:
+                    sync_items = chat.get().sync_items()
+                except Exception:
+                    if not self._is_running:
+                        break
+                    raise
+
                 for c in sync_items:
                     if not self._is_running:
                         break
@@ -176,17 +206,27 @@ class YouTubeChatProvider:
                 on_disconnected()
 
         except Exception as e:
-            logger.error("[YouTubeChatProvider] Exception during live chat polling: %s", e)
-            if on_error and self._is_running:
-                on_error(str(e))
+            if self._is_running:
+                logger.error("[YouTubeChatProvider] Exception during live chat polling (%s): %s", type(e).__name__, e, exc_info=True)
+                if on_error:
+                    on_error(str(e))
         finally:
             self.stop_chat()
 
     def stop_chat(self) -> None:
         self._is_running = False
-        if self._chat:
+        chat = self._chat
+        self._chat = None
+        if chat:
             try:
-                self._chat.terminate()
+                chat.terminate()
             except Exception:
                 pass
-            self._chat = None
+
+        client = self._client
+        self._client = None
+        if client and hasattr(client, "close"):
+            try:
+                client.close()
+            except Exception:
+                pass

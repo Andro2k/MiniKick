@@ -6,8 +6,8 @@ from PySide6.QtCore import Qt, QByteArray, QRectF, QSize
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QImage, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
 
-from frontend.common.paths import resolve_icon_path
-from frontend.common.theme import COLOR_NEUTRAL_400
+from .paths import resolve_icon_path
+from .theme import COLOR_NEUTRAL_400
 
 logger = logging.getLogger("minikick.icons")
 

@@ -2,7 +2,7 @@
 
 import re
 import logging
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.handlers.chat_filter")
 
@@ -64,7 +64,7 @@ class ChatFilterHandler:
         cleaned = self._YT_EMOTE_REGEX.sub("", cleaned)
         cleaned = self._TIKTOK_EMOTE_REGEX.sub("", cleaned)
         if emotes_tag:
-            from backend.providers.chat.twitch_websocket import TwitchSocketManager
+            from backend.providers.chat import TwitchSocketManager
             cleaned = TwitchSocketManager.strip_twitch_emotes(cleaned, emotes_tag)
             if emotes_tag.startswith("["):
                 try:

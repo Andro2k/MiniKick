@@ -3,15 +3,16 @@
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider,
-                              NoWheelComboBox, NoWheelSlider)
-from frontend.common import validate_trigger_prefix, get_icon_colored, get_pixmap_colored
-from frontend.common.theme import COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_GREEN
+                              NoWheelComboBox, NoWheelSlider, SearchableComboBox)
+from frontend.common import (
+    validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
+    COLOR_NEUTRAL_400, COLOR_GREEN, MARGIN_2XS, SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_LG)
 
 class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
                  switch: ModernSwitch = None, test_signal=None, tooltip_text="",
                  action_button: QPushButton = None,
-                 icon_color=COLOR_NEUTRAL_200, parent=None):
+                 icon_color=COLOR_NEUTRAL_400, parent=None):
         super().__init__(parent)
         self.switch = switch
         self.combo = combo
@@ -19,11 +20,11 @@ class VoiceSettingRow(QWidget):
         self.action_button = action_button
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(2, 2, 2, 2)
-        main_layout.setSpacing(2)
+        main_layout.setContentsMargins(*MARGIN_2XS)
+        main_layout.setSpacing(SPACING_2XS)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(6)
+        header_layout.setSpacing(SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
@@ -38,7 +39,7 @@ class VoiceSettingRow(QWidget):
         main_layout.addLayout(header_layout)
 
         controls_layout = QHBoxLayout()
-        controls_layout.setSpacing(6)
+        controls_layout.setSpacing(SPACING_SM)
 
         if self.switch is not None:
             controls_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -93,7 +94,7 @@ class ChatTtsSettingsPanel(ModernCard):
     voice_test_requested = Signal(str)
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=8, spacing=4, orientation="vertical")
+        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_XS, orientation="vertical")
         self.i18n = i18n
         self._setup_ui()
         self._connect_signals()
@@ -153,7 +154,7 @@ class ChatTtsSettingsPanel(ModernCard):
         category_lbl.setProperty("role", "category")
         self.addWidget(category_lbl)
 
-        voices_card = ModernCard(parent=self, margin=4, spacing=4, orientation="vertical")
+        voices_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_XS, orientation="vertical")
 
         row_provider = VoiceSettingRow(
             "world.svg",
@@ -163,11 +164,13 @@ class ChatTtsSettingsPanel(ModernCard):
         )
         voices_card.addWidget(row_provider)
 
-        self.combo_voice = NoWheelComboBox(self)
-        self.combo_voice_broadcaster = NoWheelComboBox(self)
-        self.combo_voice_moderator = NoWheelComboBox(self)
-        self.combo_voice_vip = NoWheelComboBox(self)
-        self.combo_voice_subscriber = NoWheelComboBox(self)
+        voice_placeholder = self.i18n.get("chat.settings.search_voice_placeholder")
+        empty_text = self.i18n.get("common.no_results")
+        self.combo_voice = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_broadcaster = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_moderator = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_vip = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
+        self.combo_voice_subscriber = SearchableComboBox(self, placeholder=voice_placeholder, empty_text=empty_text)
 
         self.sw_role_everyone = ModernSwitch(self)
         self.sw_role_everyone.setChecked(True)

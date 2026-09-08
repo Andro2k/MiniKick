@@ -6,9 +6,8 @@ import re
 import sys
 import requests
 from PySide6.QtCore import QThread, Signal
-from backend.config.api_keys import DISCORD_WEBHOOK_URL
-from backend.config.version import APP_VERSION
-from backend.services.system.translation_service import TranslationService
+from backend.config import DISCORD_WEBHOOK_URL, APP_VERSION
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.workers.bug_report")
 

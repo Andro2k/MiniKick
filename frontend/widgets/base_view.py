@@ -1,8 +1,9 @@
 # frontend\widgets\base_view.py
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QFrame
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt
-from .blocks import ViewHeader
+from frontend.common import MARGIN_NONE, MARGIN_XL, SPACING_LG
+from .blocks import ViewHeader, FadingScrollArea
 
 class BaseView(QWidget):
     def __init__(self, i18n, title_key: str, subtitle_key: str, parent=None):
@@ -10,17 +11,17 @@ class BaseView(QWidget):
         self.i18n = i18n
 
         base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(0, 0, 0, 0)
+        base_layout.setContentsMargins(*MARGIN_NONE)
 
-        self.scroll_area = QScrollArea()
+        self.scroll_area = FadingScrollArea(parent=self)
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setFrameShape(QFrame.Shape.NoFrame)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.scroll_content = QWidget()
         self.main_layout = QVBoxLayout(self.scroll_content)
-        self.main_layout.setContentsMargins(16, 16, 16, 16)
-        self.main_layout.setSpacing(12)
+        self.main_layout.setContentsMargins(*MARGIN_XL)
+        self.main_layout.setSpacing(SPACING_LG)
         title_text = self.i18n.get(title_key) if hasattr(self.i18n, "get") else title_key
         subtitle_text = self.i18n.get(subtitle_key) if hasattr(self.i18n, "get") else subtitle_key
 

@@ -1,17 +1,19 @@
 # frontend\components\chat\overlay_settings.py
 
 from PySide6.QtCore import Signal, Slot, QTimer
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QLabel, QVBoxLayout, QHBoxLayout
+from frontend.common import MARGIN_NONE, SPACING_SM, SPACING_MD, SPACING_LG
 from frontend.widgets import (
     ModernCard, SettingRow, ModernSwitch, ModernButton, 
     CompactSpinBox, ModernDivider, ModernSegmentedControl, NoWheelComboBox
 )
+from .chat_mockup import ChatOverlayMockupWidget
 
 class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=12, spacing=8, orientation="vertical")
+        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
         self.i18n = i18n
         self._chat_overlay_url = ""
         self.chat_overlay_full_url = ""
@@ -54,7 +56,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self._populate_flow_options("vertical")
 
         row_overlay_flow = SettingRow(
-            "arrows-sort.svg",
+            "arrows-vertical.svg",
             self.i18n.get("chat.overlay.flow_title"),
             self.i18n.get("chat.overlay.flow_desc"),
             self.seg_overlay_flow
@@ -115,6 +117,22 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.btn_copy_overlay_obs
         )
         
+        preview_layout = QVBoxLayout()
+        preview_layout.setContentsMargins(*MARGIN_NONE)
+        preview_layout.setSpacing(SPACING_SM)
+        
+        preview_header = QHBoxLayout()
+        preview_header.setContentsMargins(*MARGIN_NONE)
+        preview_header.setSpacing(SPACING_SM)
+        lbl_preview = QLabel(self.i18n.get("chat.overlay.preview_title"))
+        lbl_preview.setProperty("role", "body")
+        preview_header.addWidget(lbl_preview)
+        preview_header.addStretch()
+
+        self.mockup_widget = ChatOverlayMockupWidget(self.i18n, parent=self)
+        preview_layout.addLayout(preview_header)
+        preview_layout.addWidget(self.mockup_widget)
+
         self.addWidget(row_overlay_theme)
         self.addWidget(row_overlay_orientation)
         self.addWidget(row_overlay_flow)
@@ -126,8 +144,13 @@ class ChatOverlaySettingsPanel(ModernCard):
         
         divider = ModernDivider()
         self.addWidget(divider)
+        self.addLayout(preview_layout)
+
+        divider2 = ModernDivider()
+        self.addWidget(divider2)
         self.addWidget(self.row_copy_obs)
         self.addStretch()
+        self._update_mockup_preview()
 
     def _populate_flow_options(self, orientation: str):
         self.seg_overlay_flow.blockSignals(True)
@@ -162,6 +185,11 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_overlay_show_bots.toggled.connect(self._update_overlay_url)
         self.sw_overlay_show_time.toggled.connect(self._update_overlay_url)
         self.btn_copy_overlay_obs.clicked.connect(self._copy_overlay_obs_url)
+
+        self.combo_overlay_theme.currentIndexChanged.connect(self._update_mockup_preview)
+        self.seg_overlay_orientation.value_changed.connect(self._update_mockup_preview)
+        self.sw_overlay_show_bots.toggled.connect(self._update_mockup_preview)
+        self.sw_overlay_show_time.toggled.connect(self._update_mockup_preview)
 
         self.combo_overlay_theme.currentIndexChanged.connect(self._on_setting_changed)
         self.seg_overlay_orientation.value_changed.connect(self._on_setting_changed)
@@ -263,3 +291,12 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.blockSignals(False)
         
         self._update_overlay_url()
+        self._update_mockup_preview()
+
+    def _update_mockup_preview(self, *args):
+        theme = self.combo_overlay_theme.currentData() or "glass"
+        orientation = self.seg_overlay_orientation.current_value() or "vertical"
+        show_time = self.sw_overlay_show_time.isChecked()
+        show_bots = self.sw_overlay_show_bots.isChecked()
+        if hasattr(self, "mockup_widget") and self.mockup_widget:
+            self.mockup_widget.set_configuration(theme, orientation, show_time, show_bots)

@@ -5,7 +5,7 @@ import os
 import re
 from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from backend.workers.music_worker import YouTubeResolveWorker, YouTubeSearchWorker
+from backend.workers import YouTubeResolveWorker, YouTubeSearchWorker
 
 logger = logging.getLogger("minikick.providers.youtube_client")
 
@@ -14,10 +14,11 @@ _ERR_PLAYER_ERROR = "PLAYER_ERROR"
 
 _YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
 
-from backend.database.music_storage import SQLiteMusicStorage
+from backend.database import SQLiteMusicStorage
 
 class YouTubeMusicProvider(QObject):
     resolve_error_occurred = Signal(str, str, str)
+    queue_updated = Signal()
 
     def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None):
         super().__init__()
@@ -30,10 +31,8 @@ class YouTubeMusicProvider(QObject):
         else:
             self.music_storage = None
 
-        from backend.database.cache_manager import MusicCacheManager
+        from backend.database import MusicCacheManager
         self.cache_manager = MusicCacheManager(self.music_storage)
-
-
         self.queue: list[dict] = []
         self.current_song: dict | None = None
         self.current_local_file: str | None = None
@@ -60,12 +59,14 @@ class YouTubeMusicProvider(QObject):
         self.auto_resume = True
         self._start_playing_current = True
         self._volume_gain = 1.0
+        self.loudness_normalization_enabled = True
 
         if self.db_manager:
             try:
                 from backend.database import SQLiteSettingsStorage
                 settings = SQLiteSettingsStorage(self.db_manager)
                 self.auto_resume = settings.load_bool("youtube_auto_resume", True)
+                self.loudness_normalization_enabled = settings.load_bool("music_loudness_normalization", True)
                 saved_vol = int(settings.load_string("music_volume", "100"))
                 self._volume_gain = max(0.0, min(1.0, saved_vol / 100.0))
                 saved_device = settings.load_string("youtube_audio_device", "default")
@@ -73,7 +74,7 @@ class YouTubeMusicProvider(QObject):
             except Exception as e:
                 logger.error("[YouTubeMusicProvider] Error loading settings: %s", e)
 
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
 
         if self.music_storage:
             pending = self.music_storage.load_pending_songs("youtube")
@@ -194,6 +195,7 @@ class YouTubeMusicProvider(QObject):
                     )
                     song_entry["db_id"] = db_id
                 self.queue.append(song_entry)
+                self.queue_updated.emit()
                 if not self.current_song:
                     if self.auto_resume:
                         QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
@@ -229,6 +231,7 @@ class YouTubeMusicProvider(QObject):
                     )
                     worker.song_entry["db_id"] = db_id
                 self.queue.append(worker.song_entry)
+                self.queue_updated.emit()
                 if is_search:
                     self._save_search_to_cache(query, worker.song_entry)
                 if not self.current_song:
@@ -252,9 +255,39 @@ class YouTubeMusicProvider(QObject):
         self._play_next()
         return True
 
+    def _calculate_effective_volume(self) -> float:
+        base_vol = self._volume_gain
+        if not getattr(self, "loudness_normalization_enabled", True):
+            return base_vol
+
+        loudness = None
+        if self.current_song:
+            loudness = self.current_song.get("loudness")
+
+        if loudness is None:
+            return base_vol
+
+        try:
+            gain_factor = 10.0 ** (-float(loudness) / 20.0)
+            gain_factor = max(0.2, min(1.5, gain_factor))
+            return max(0.0, min(1.0, base_vol * gain_factor))
+        except Exception as e:
+            logger.debug("[YouTubeMusicProvider] Error calculating loudness gain: %s", e)
+            return base_vol
+
+    def set_loudness_normalization(self, enabled: bool) -> None:
+        self.loudness_normalization_enabled = enabled
+        self.audio_output.setVolume(self._calculate_effective_volume())
+        if self.db_manager:
+            try:
+                from backend.database import SQLiteSettingsStorage
+                SQLiteSettingsStorage(self.db_manager).save_bool("music_loudness_normalization", enabled)
+            except Exception as e:
+                logger.debug("[YouTubeMusicProvider] Could not persist loudness normalization: %s", e)
+
     def set_volume(self, volume: int) -> None:
         self._volume_gain = max(0.0, min(1.0, volume / 100.0))
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
 
     def set_audio_device(self, device_id: str) -> None:
         self._audio_device_id = device_id
@@ -287,6 +320,7 @@ class YouTubeMusicProvider(QObject):
                 self.music_storage.update_song_status(db_id, 2)
             if index == 0:
                 self._preload_next_song()
+            self.queue_updated.emit()
             return True
         return False
 
@@ -298,6 +332,7 @@ class YouTubeMusicProvider(QObject):
             self.queue.insert(to_index, item)
             if from_index == 0 or to_index == 0:
                 self._preload_next_song()
+            self.queue_updated.emit()
             return True
         return False
 
@@ -382,9 +417,11 @@ class YouTubeMusicProvider(QObject):
             self.current_song = None
             self._cancel_worker("preload_worker")
             self.preload_song_url = None
+            self.queue_updated.emit()
             return
 
         self.current_song = self.queue.pop(0)
+        self.queue_updated.emit()
         
         db_id = self.current_song.get("db_id")
         if db_id is not None and self.music_storage:
@@ -445,6 +482,11 @@ class YouTubeMusicProvider(QObject):
                 logger.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
 
         
+        if hasattr(self, "resolve_worker") and self.resolve_worker:
+            worker_loudness = getattr(self.resolve_worker, "loudness", None)
+            if worker_loudness is not None:
+                self.current_song["loudness"] = worker_loudness
+
         if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
             self.current_local_file = None
             self.player.setSource(QUrl(path_or_url))
@@ -452,7 +494,7 @@ class YouTubeMusicProvider(QObject):
             self.current_local_file = path_or_url
             self.player.setSource(QUrl.fromLocalFile(path_or_url))
             
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
 
         if self._start_playing_current:
             self.player.play()
@@ -524,6 +566,6 @@ class YouTubeMusicProvider(QObject):
         return True
 
     def resume_playback(self) -> bool:
-        self.audio_output.setVolume(self._volume_gain)
+        self.audio_output.setVolume(self._calculate_effective_volume())
         self.player.play()
         return True

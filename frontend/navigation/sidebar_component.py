@@ -2,10 +2,14 @@
 
 from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton, 
                                QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea)
-from PySide6.QtCore import Qt, QPropertyAnimation, QParallelAnimationGroup, QSize, Signal, QEasingCurve
+from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property
 from PySide6.QtGui import QPainter, QPixmap, QColor
-from frontend.common import get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored
-from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800
+from frontend.common import (
+    COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800,
+    get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored,
+    MARGIN_NONE, MARGIN_SM, MARGIN_MD, MARGIN_V_SM,
+    SPACING_2XS, SPACING_SM, SPACING_MD
+)
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
@@ -37,12 +41,12 @@ class Sidebar(QFrame):
 
     def _setup_ui(self):
         self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(6, 6, 6, 6)
-        self.main_layout.setSpacing(6)
+        self.main_layout.setContentsMargins(*MARGIN_SM)
+        self.main_layout.setSpacing(SPACING_SM)
 
         self.header_container = QWidget()
         self.header_layout = QHBoxLayout(self.header_container)
-        self.header_layout.setContentsMargins(0, 0, 0, 0) 
+        self.header_layout.setContentsMargins(*MARGIN_NONE) 
         self.header_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         
         self.logo_btn = QPushButton()
@@ -69,7 +73,7 @@ class Sidebar(QFrame):
         self.header_layout.addWidget(self.expanded_spacer) 
         self.header_layout.addWidget(self.btn_toggle)
         self.main_layout.addWidget(self.header_container)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
         
         self.scroll_area = QScrollArea(self)
         self.scroll_area.setWidgetResizable(True)
@@ -79,8 +83,8 @@ class Sidebar(QFrame):
 
         scroll_content = QWidget()
         scroll_layout = QVBoxLayout(scroll_content)
-        scroll_layout.setContentsMargins(0, 0, 0, 0)
-        scroll_layout.setSpacing(6)
+        scroll_layout.setContentsMargins(*MARGIN_NONE)
+        scroll_layout.setSpacing(SPACING_SM)
 
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
         self.lbl_navigate_header = QLabel(navigate_text)
@@ -88,8 +92,8 @@ class Sidebar(QFrame):
         scroll_layout.addWidget(self.lbl_navigate_header)
         
         self.top_nav_layout = QVBoxLayout()
-        self.top_nav_layout.setContentsMargins(0, 0, 0, 0)
-        self.top_nav_layout.setSpacing(6)
+        self.top_nav_layout.setContentsMargins(*MARGIN_NONE)
+        self.top_nav_layout.setSpacing(SPACING_SM)
         scroll_layout.addLayout(self.top_nav_layout)
         scroll_layout.addStretch(1)
 
@@ -99,13 +103,13 @@ class Sidebar(QFrame):
         scroll_layout.addWidget(self.lbl_more_header)
 
         self.bottom_nav_layout = QVBoxLayout()
-        self.bottom_nav_layout.setContentsMargins(0, 0, 0, 0)
-        self.bottom_nav_layout.setSpacing(6)
+        self.bottom_nav_layout.setContentsMargins(*MARGIN_NONE)
+        self.bottom_nav_layout.setSpacing(SPACING_SM)
         scroll_layout.addLayout(self.bottom_nav_layout)
 
         self.scroll_area.setWidget(scroll_content)
         self.main_layout.addWidget(self.scroll_area, stretch=1)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
         
         self._setup_update_card()
         self.main_layout.addWidget(self.update_card)
@@ -114,7 +118,7 @@ class Sidebar(QFrame):
         self.btn_collapsed_update.setProperty("role", "action_accent")
         self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 18))
         self.btn_collapsed_update.setIconSize(QSize(18, 18))
-        self.btn_collapsed_update.setFixedSize(40, 40)
+        self.btn_collapsed_update.setFixedSize(36, 36)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_collapsed_update.clicked.connect(self._on_update_action_clicked)
         self.btn_collapsed_update.setVisible(False)
@@ -122,7 +126,7 @@ class Sidebar(QFrame):
 
         self._setup_profile_card()
         self.main_layout.addWidget(self.profile_card)
-        self.main_layout.addSpacing(6)
+        self.main_layout.addSpacing(SPACING_SM)
 
         version_text = self.i18n.get("main.sidebar.version").replace("{version}", self.app_version)
         self.lbl_version = QLabel(version_text)
@@ -135,18 +139,18 @@ class Sidebar(QFrame):
         self.update_card.setProperty("role", "update_banner_card")
         
         card_layout = QVBoxLayout(self.update_card)
-        card_layout.setContentsMargins(10, 10, 10, 10)
-        card_layout.setSpacing(8)
+        card_layout.setContentsMargins(*MARGIN_MD)
+        card_layout.setSpacing(SPACING_MD)
 
         top_row = QHBoxLayout()
-        top_row.setContentsMargins(0, 0, 0, 0)
-        top_row.setSpacing(6)
+        top_row.setContentsMargins(*MARGIN_NONE)
+        top_row.setSpacing(SPACING_SM)
 
         icon_box = QFrame()
         icon_box.setProperty("role", "update_icon_box")
         icon_box.setFixedSize(28, 28)
         icon_box_layout = QHBoxLayout(icon_box)
-        icon_box_layout.setContentsMargins(0, 0, 0, 0)
+        icon_box_layout.setContentsMargins(*MARGIN_NONE)
         icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         lbl_card_icon = QLabel()
@@ -161,7 +165,6 @@ class Sidebar(QFrame):
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
         self.btn_dismiss_update.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
         self.btn_dismiss_update.setIconSize(QSize(14, 14))
-        self.btn_dismiss_update.setFixedSize(22, 22)
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
         self.btn_dismiss_update.clicked.connect(self._dismiss_update_card)
@@ -194,8 +197,8 @@ class Sidebar(QFrame):
         self.profile_card.setProperty("role", "profile_card")
         
         self.profile_layout = QHBoxLayout(self.profile_card)
-        self.profile_layout.setContentsMargins(8, 8, 8, 8)
-        self.profile_layout.setSpacing(6)
+        self.profile_layout.setContentsMargins(*MARGIN_MD)
+        self.profile_layout.setSpacing(SPACING_SM)
         self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         
         self.profile_avatar = QLabel()
@@ -205,8 +208,8 @@ class Sidebar(QFrame):
         
         self.profile_text_widget = QWidget()
         self.profile_text_layout = QVBoxLayout(self.profile_text_widget)
-        self.profile_text_layout.setContentsMargins(0, 0, 0, 0)
-        self.profile_text_layout.setSpacing(2)
+        self.profile_text_layout.setContentsMargins(*MARGIN_NONE)
+        self.profile_text_layout.setSpacing(SPACING_2XS)
         
         self.profile_name_lbl = QLabel()
         self.profile_name_lbl.setObjectName("caption")
@@ -332,7 +335,8 @@ class Sidebar(QFrame):
         btn.setProperty("icon_inactive", icon_inactive)
         
         btn.setIcon(icon_active if is_active else icon_inactive)
-        btn.setIconSize(QSize(21, 21))
+        btn.setIconSize(QSize(20, 20))
+        btn.setFixedHeight(36)
         btn.setToolTip("" if self.is_expanded else display_name)
         
         if is_active:
@@ -346,6 +350,14 @@ class Sidebar(QFrame):
         else:
             self.top_nav_layout.addWidget(btn)
 
+    def _get_sidebar_width(self) -> int:
+        return self.width()
+
+    def _set_sidebar_width(self, w: int) -> None:
+        self.setFixedWidth(w)
+
+    sidebar_width = Property(int, _get_sidebar_width, _set_sidebar_width)
+
     def toggle_sidebar(self):
         self.is_expanded = not self.is_expanded
         target_width = self.expanded_width if self.is_expanded else self.collapsed_width
@@ -354,19 +366,15 @@ class Sidebar(QFrame):
         self.btn_toggle.setIcon(icon)
         self.btn_toggle.setIconSize(QSize(20, 20))
         
-        if hasattr(self, "anim_group") and self.anim_group.state() == QParallelAnimationGroup.State.Running:
-            self.anim_group.stop()
+        if hasattr(self, "anim") and self.anim.state() == QPropertyAnimation.State.Running:
+            self.anim.stop()
             
-        self.anim_group = QParallelAnimationGroup(self)
-        for prop in [b"minimumWidth", b"maximumWidth"]:
-            anim = QPropertyAnimation(self, prop)
-            anim.setDuration(250)
-            anim.setStartValue(self.width())
-            anim.setEndValue(target_width)
-            anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
-            self.anim_group.addAnimation(anim)
-        
-        self.anim_group.finished.connect(self._on_animation_finished)
+        self.anim = QPropertyAnimation(self, b"sidebar_width")
+        self.anim.setDuration(220)
+        self.anim.setStartValue(self.width())
+        self.anim.setEndValue(target_width)
+        self.anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.anim.finished.connect(self._on_animation_finished)
         
         if not self.is_expanded:
             self.logo_btn.hide()
@@ -375,15 +383,29 @@ class Sidebar(QFrame):
             self.header_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._update_texts_and_styles(show=False)
             
-        self.anim_group.start()
+        self.anim.start()
 
     def _update_texts_and_styles(self, show: bool):
+        collapsed_btn_style = "text-align: center; padding: 0px;"
         for btn in self.nav_buttons:
             btn.setText(btn.property("original_text") if show else "")
             btn.setToolTip("" if show else btn.property("original_text"))
             btn.setProperty("collapsed", not show)
-            btn.style().unpolish(btn)
-            btn.style().polish(btn)
+            if show:
+                btn.setMinimumWidth(0)
+                btn.setMaximumWidth(16777215)
+                btn.setFixedHeight(36)
+                btn.setStyleSheet("")
+            else:
+                btn.setFixedSize(36, 36)
+                btn.setStyleSheet(collapsed_btn_style)
+
+        if show:
+            self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+            self.bottom_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        else:
+            self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            self.bottom_nav_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         
         self.lbl_navigate_header.setVisible(show)
         self.lbl_more_header.setVisible(show)
@@ -393,11 +415,11 @@ class Sidebar(QFrame):
         self.profile_text_widget.setVisible(show)
         if show:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-            self.profile_layout.setContentsMargins(6, 6, 6, 6)
+            self.profile_layout.setContentsMargins(*MARGIN_SM)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         else:
             self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-            self.profile_layout.setContentsMargins(0, 6, 0, 6)
+            self.profile_layout.setContentsMargins(*MARGIN_V_SM)
             self.profile_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def _on_animation_finished(self):

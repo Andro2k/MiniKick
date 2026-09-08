@@ -1,12 +1,20 @@
 # frontend\dialogs\update_dialog.py
 
-from frontend.common.theme import COLOR_NEUTRAL_950, COLOR_RED, COLOR_GREEN
 from PySide6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QProgressBar, QPushButton, QWidget
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
-from frontend.common import get_icon_colored, get_assets_path
+from frontend.common import (
+    COLOR_NEUTRAL_950,
+    COLOR_RED,
+    COLOR_GREEN,
+    get_icon_colored,
+    get_assets_path,
+    SPACING_XL,
+    SPACING_MD,
+    MARGIN_NONE,
+)
 
 class UpdateDialog(ModernModal):
     download_requested = Signal() 
@@ -32,17 +40,16 @@ class UpdateDialog(ModernModal):
         self.lbl_subtitle.setProperty("role", "body")
         self.content_layout.addWidget(self.lbl_subtitle)
 
-        self.content_layout.addSpacing(15)
+        self.content_layout.addSpacing(SPACING_XL)
 
         self.progress_container = QWidget()
         progress_layout = QVBoxLayout(self.progress_container)
-        progress_layout.setContentsMargins(0, 0, 0, 0)
-        progress_layout.setSpacing(8)
+        progress_layout.setContentsMargins(*MARGIN_NONE)
+        progress_layout.setSpacing(SPACING_MD)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
-        self.progress_bar.setFixedHeight(10)
         self.progress_bar.setTextVisible(False)
         self.progress_bar.setProperty("role", "update_progress")
         progress_layout.addWidget(self.progress_bar)

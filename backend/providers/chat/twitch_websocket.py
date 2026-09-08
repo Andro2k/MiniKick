@@ -3,12 +3,28 @@
 import logging
 import websocket
 from typing import Callable
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.providers.twitch_websocket")
 
 TWITCH_WS_URL = "wss://irc-ws.chat.twitch.tv:443"
 DEFAULT_TWITCH_COLOR = "#9146FF"
+
+RFC_6455_CLOSE_CODES: dict[int, str] = {
+    1000: "Normal Closure",
+    1001: "Going Away",
+    1002: "Protocol Error",
+    1003: "Unsupported Data",
+    1005: "No Status Received",
+    1006: "Abnormal Closure",
+    1007: "Invalid frame payload data",
+    1008: "Policy Violation",
+    1009: "Message Too Big",
+    1011: "Internal Server Error",
+    1012: "Service Restart",
+    1013: "Try Again Later",
+    1015: "TLS Handshake Failure",
+}
 
 class TwitchSocketManager:
     @staticmethod
@@ -188,10 +204,16 @@ class TwitchSocketManager:
         return False
 
     def _on_error(self, ws: websocket.WebSocketApp, error: Exception) -> None:
-        logger.warning("[TwitchWS] Error in WebSocket connection: %s", error)
+        logger.error(
+            "[TwitchWS] WebSocket error (%s): %s",
+            type(error).__name__,
+            error,
+            exc_info=not isinstance(error, (KeyboardInterrupt, SystemExit))
+        )
 
     def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:
-        logger.info("[TwitchWS] Connection closed. Status: %s Msg: %s", close_status_code, close_msg)
+        meaning = RFC_6455_CLOSE_CODES.get(close_status_code, "Unknown/Unregistered") if close_status_code is not None else "Clean/No Code"
+        logger.info("[TwitchWS] Connection closed: code=%s (%s), reason=%s", close_status_code, meaning, close_msg or "N/A")
         if self._on_disconnected:
             try:
                 self._on_disconnected()

@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QLabel
 from PySide6.QtCore import Qt, Signal, QSize
-from frontend.common.icons import get_icon_colored
+from frontend.common import get_icon_colored, MARGIN_NONE, SPACING_NONE
 
 class SegmentedPagination(QFrame):
     first_requested = Signal()
@@ -15,8 +15,8 @@ class SegmentedPagination(QFrame):
         self.setProperty("role", "segmented_pagination")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setContentsMargins(*MARGIN_NONE)
+        layout.setSpacing(SPACING_NONE)
 
         self.btn_first = QPushButton(self)
         self.btn_first.setObjectName("btn_first")

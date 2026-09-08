@@ -1,137 +1,21 @@
 # frontend\views\log_view.py
 
 import os
-from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
+from PySide6.QtCore import Qt, Signal, Slot, QTimer
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import (
     QFileDialog, QFrame, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QStackedWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget, QGridLayout, QBoxLayout, QSizePolicy
+    QVBoxLayout, QWidget
 )
 from frontend.widgets import (BaseView, ModernTable, ScalableIllustration, ModernButton, 
-                              UnifiedSearchBar, SegmentedPagination, NoWheelComboBox)
-from frontend.common.theme import COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED
-from frontend.common import get_assets_path, get_icon_colored
-
-class LogControlsPanel(QFrame):
-    search_changed = Signal(str)
-    filter_changed = Signal(str)
-    date_changed = Signal(str)
-    folder_requested = Signal()
-    load_requested = Signal()
-    live_requested = Signal()
-    clear_requested = Signal()
-    report_requested = Signal()
-    view_toggle_requested = Signal()
-
-    def __init__(self, i18n, parent=None):
-        super().__init__(parent)
-        self.i18n = i18n
-        self.setProperty("role", "card")
-        self._setup_ui()
-
-    def _setup_ui(self):
-        root = QVBoxLayout(self)
-        root.setContentsMargins(8, 8, 8, 8)
-        root.setSpacing(8)
-
-        self._search = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self._search.setSpacing(6)
-
-        self.txt_search = UnifiedSearchBar(placeholder=self.i18n.get("log.controls.search_placeholder"))
-        self.txt_search.textChanged.connect(self.search_changed.emit)
-
-        self.combo_date = NoWheelComboBox()
-        self.combo_date.addItem(self.i18n.get("log.controls.date_all"), "")
-        self.combo_date.addItem(self.i18n.get("log.controls.date_1d"), "1d")
-        self.combo_date.addItem(self.i18n.get("log.controls.date_3d"), "3d")
-        self.combo_date.addItem(self.i18n.get("log.controls.date_7d"), "7d")
-        self.combo_date.setMinimumWidth(125)
-        self.combo_date.currentIndexChanged.connect(self._on_date_changed)
-
-        self._search.addWidget(self.txt_search, 1)
-        self._search.addWidget(self.combo_date)
-        root.addLayout(self._search)
-
-        self._actions = QGridLayout()
-        self._actions.setSpacing(6)
-        root.addLayout(self._actions)
-
-        specs = [
-            ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_neutral_border",
-             "folder-open.svg", COLOR_NEUTRAL_400, self.folder_requested.emit, True),
-            ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_neutral_border",
-             "file-text.svg", COLOR_NEUTRAL_400, self.load_requested.emit, True),
-            ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_neutral_border",
-             "eye.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
-            ("btn_live", self.i18n.get("log.controls.btn_live"), "action_neutral_border",
-             "player-play.svg", COLOR_NEUTRAL_400, self.live_requested.emit, False),
-            ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_neutral_border",
-             "trash.svg", COLOR_NEUTRAL_400, self.clear_requested.emit, True),
-            ("btn_report", self.i18n.get("log.controls.btn_report"), "action_neutral_border",
-             "bug.svg", COLOR_NEUTRAL_400, self.report_requested.emit, True),
-        ]
-
-        self._buttons: list[ModernButton] = []
-        for name, text, role, icon, color, slot, visible in specs:
-            btn = ModernButton(text, role=role)
-            btn.setParent(self)
-            btn.setIcon(get_icon_colored(icon, color, 16))
-            btn.setIconSize(QSize(16, 16))
-            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            btn.clicked.connect(slot)
-            btn.setVisible(visible)
-            setattr(self, name, btn)
-            self._buttons.append(btn)
-            if name == "btn_open_folder":
-                btn.setToolTip(self.i18n.get("log.controls.tooltip_folder"))
-
-        self._reflow_buttons()
-
-    def minimumSizeHint(self) -> QSize:
-        return QSize(100, 50)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._reflow_buttons()
-        self._search.setDirection(
-            QBoxLayout.Direction.TopToBottom if self.width() < 480
-            else QBoxLayout.Direction.LeftToRight
-        )
-
-    def _reflow_buttons(self):
-        width = max(self.width(), 320)
-        visible = [b for b in self._buttons if not b.isHidden()]
-        cols = max(1, min(len(visible), width // 120))
-
-        while self._actions.count() > 0:
-            self._actions.takeAt(0)
-
-        for c in range(cols):
-            self._actions.setColumnStretch(c, 1)
-
-        for i, btn in enumerate(visible):
-            self._actions.addWidget(btn, i // cols, i % cols)
-
-    def set_historical_mode(self, is_historical: bool):
-        self.btn_live.setVisible(is_historical)
-        self.btn_toggle_view.setVisible(not is_historical)
-        self.btn_clear.setEnabled(not is_historical)
-        self._reflow_buttons()
-
-    def set_streaming_controls_enabled(self, enabled: bool):
-        self.txt_search.setEnabled(enabled)
-        self.combo_date.setEnabled(enabled)
-        if not self.btn_live.isVisible():
-            self.btn_clear.setEnabled(enabled)
-
-    def set_view_toggle_state(self, logs_visible: bool):
-        key = "log.controls.btn_hide_logs" if logs_visible else "log.controls.btn_show_logs"
-        self.btn_toggle_view.setText(self.i18n.get(key))
-        self.set_streaming_controls_enabled(logs_visible)
-
-    def _on_date_changed(self, index: int):
-        val = self.combo_date.itemData(index)
-        self.date_changed.emit(val if val is not None else "")
+                              SegmentedPagination)
+from frontend.common import (
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED,
+    get_assets_path, get_icon_colored,
+    SPACING_NONE, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_XS, MARGIN_MD, MARGIN_2XL
+)
+from frontend.components.log import LogControlsPanel
 
 LOG_ILLUSTRATION_FILE = "illustration-document.svg"
 _LEVEL_COLORS = {
@@ -211,15 +95,16 @@ class LogView(BaseView):
         self.table_card = QFrame()
         self.table_card.setProperty("role", "card")
         table_layout = QVBoxLayout(self.table_card)
-        table_layout.setContentsMargins(0, 0, 0, 0)
+        table_layout.setContentsMargins(*MARGIN_NONE)
+        table_layout.setSpacing(SPACING_NONE)
         
         self.content_stack = QStackedWidget(self)
         self.empty_state = self._build_empty_state()
         self.content_stack.addWidget(self.empty_state)
 
-        table_page = QWidget()
-        table_page_layout = QVBoxLayout(table_page)
-        table_page_layout.setContentsMargins(4, 4, 4, 4)
+        self.table_page = QWidget()
+        table_page_layout = QVBoxLayout(self.table_page)
+        table_page_layout.setContentsMargins(*MARGIN_XS)
 
         col_1 = self.i18n.get("log.table.col_level")
         col_2 = self.i18n.get("log.table.col_time")
@@ -273,8 +158,8 @@ class LogView(BaseView):
         
         self.pagination_bar = QWidget()
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
-        self.pagination_layout.setContentsMargins(8, 8, 8, 8)
-        self.pagination_layout.setSpacing(6)
+        self.pagination_layout.setContentsMargins(*MARGIN_MD)
+        self.pagination_layout.setSpacing(SPACING_SM)
 
         self.segmented_pagination = SegmentedPagination(self)
         self.segmented_pagination.first_requested.connect(self.first_page)
@@ -291,7 +176,7 @@ class LogView(BaseView):
 
         table_page_layout.addWidget(self.pagination_bar)
 
-        self.content_stack.addWidget(table_page)
+        self.content_stack.addWidget(self.table_page)
         table_layout.addWidget(self.content_stack)
 
         self.main_layout.addWidget(self.table_card, stretch=1)
@@ -336,8 +221,8 @@ class LogView(BaseView):
     def _build_empty_state(self) -> QWidget:
         container = QWidget()
         layout = QVBoxLayout(container)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(12)
+        layout.setContentsMargins(*MARGIN_2XL)
+        layout.setSpacing(SPACING_LG)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         illustration_path = get_assets_path(os.path.join("icons", LOG_ILLUSTRATION_FILE))
@@ -362,14 +247,13 @@ class LogView(BaseView):
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
         self.btn_show_logs.set_icon("eye.svg", size=16)
-        self.btn_show_logs.setFixedWidth(200)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 
         layout.addStretch(1)
         layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
         layout.addWidget(lbl_desc)
-        layout.addSpacing(8)
+        layout.addSpacing(SPACING_MD)
         layout.addWidget(self.btn_show_logs, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(2)
 
@@ -547,7 +431,7 @@ class LogView(BaseView):
         msg_box.setIcon(QMessageBox.Icon.Critical if msg_type == "error" else QMessageBox.Icon.Information)
         msg_box.exec()
 
-    def show_bug_report_dialog(self, worker_class=None):
-        from frontend.dialogs.bug_report_dialog import BugReportDialog
-        dialog = BugReportDialog(self.i18n, worker_class=worker_class, parent=self.window())
+    def show_bug_report_dialog(self, worker_class=None, initial_contact: str = ""):
+        from frontend.dialogs import BugReportDialog
+        dialog = BugReportDialog(self.i18n, worker_class=worker_class, initial_contact=initial_contact, parent=self.window())
         dialog.exec()

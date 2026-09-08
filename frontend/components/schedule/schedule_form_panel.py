@@ -6,7 +6,10 @@ from PySide6.QtCore import Qt, Signal, QDate, QTime
 from PySide6.QtGui import QTextCharFormat, QColor
 from frontend.widgets import (ModernCard, ModernButton, ModernSwitch,
                               NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox)
-from frontend.common.theme import COLOR_NEUTRAL_200
+from frontend.common import (
+    COLOR_NEUTRAL_400, SPACING_NONE, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
+    MARGIN_NONE, MARGIN_LG
+)
 
 class ScheduleFormPanel(QWidget):
     schedule_saved = Signal(object)
@@ -24,15 +27,15 @@ class ScheduleFormPanel(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(12)
+        main_layout.setContentsMargins(*MARGIN_LG)
+        main_layout.setSpacing(SPACING_LG)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        card = ModernCard(parent=self, margin=16, spacing=14)
+        card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_LG)
         card.card_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(8)
+        header_layout.setSpacing(SPACING_MD)
         self.lbl_title = QLabel(self.i18n.get("stream_info.schedule_dialog.title_new"))
         self.lbl_title.setProperty("role", "h2")
         header_layout.addWidget(self.lbl_title)
@@ -40,7 +43,7 @@ class ScheduleFormPanel(QWidget):
         card.addLayout(header_layout)
 
         form_layout = QVBoxLayout()
-        form_layout.setSpacing(12)
+        form_layout.setSpacing(SPACING_LG)
 
         lbl_name = QLabel(self.i18n.get("stream_info.schedule_dialog.name_label"))
         lbl_name.setProperty("role", "h3")
@@ -54,10 +57,10 @@ class ScheduleFormPanel(QWidget):
         form_layout.addWidget(lbl_target)
 
         switches_row = QHBoxLayout()
-        switches_row.setSpacing(24)
+        switches_row.setSpacing(SPACING_XL)
 
         kick_switch_box = QHBoxLayout()
-        kick_switch_box.setSpacing(8)
+        kick_switch_box.setSpacing(SPACING_MD)
         self.switch_kick = ModernSwitch()
         self.switch_kick.setChecked(True)
         lbl_kick = QLabel("Kick")
@@ -67,7 +70,7 @@ class ScheduleFormPanel(QWidget):
         switches_row.addLayout(kick_switch_box)
 
         twitch_switch_box = QHBoxLayout()
-        twitch_switch_box.setSpacing(8)
+        twitch_switch_box.setSpacing(SPACING_MD)
         self.switch_twitch = ModernSwitch()
         self.switch_twitch.setChecked(True)
         lbl_twitch = QLabel("Twitch")
@@ -80,24 +83,23 @@ class ScheduleFormPanel(QWidget):
         form_layout.addLayout(switches_row)
 
         datetime_row = QHBoxLayout()
-        datetime_row.setSpacing(16)
+        datetime_row.setSpacing(SPACING_XL)
 
         date_box = QVBoxLayout()
-        date_box.setSpacing(6)
+        date_box.setSpacing(SPACING_SM)
         lbl_date = QLabel(self.i18n.get("stream_info.schedule_dialog.date_label"))
         lbl_date.setProperty("role", "h3")
         self.date_edit = NoWheelDateEdit()
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         self.date_edit.setDate(QDate.currentDate())
-        self.date_edit.setFixedWidth(160)
         
         cal = self.date_edit.calendarWidget()
         if cal:
             cal.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
             cal.setHorizontalHeaderFormat(QCalendarWidget.HorizontalHeaderFormat.ShortDayNames)
             neutral_fmt = QTextCharFormat()
-            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_200))
+            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_400))
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, neutral_fmt)
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, neutral_fmt)
             cal.setHeaderTextFormat(neutral_fmt)
@@ -107,16 +109,30 @@ class ScheduleFormPanel(QWidget):
         datetime_row.addLayout(date_box)
 
         time_box = QVBoxLayout()
-        time_box.setSpacing(6)
+        time_box.setSpacing(SPACING_SM)
         lbl_time = QLabel(self.i18n.get("stream_info.schedule_dialog.time_label"))
         lbl_time.setProperty("role", "h3")
         self.time_edit = NoWheelTimeEdit()
         self.time_edit.setDisplayFormat("HH:mm")
         self.time_edit.setTime(QTime.currentTime())
-        self.time_edit.setFixedWidth(150)
         time_box.addWidget(lbl_time)
         time_box.addWidget(self.time_edit)
         datetime_row.addLayout(time_box)
+
+        now_box = QVBoxLayout()
+        now_box.setSpacing(SPACING_SM)
+        lbl_now_spacer = QLabel("")
+        lbl_now_spacer.setProperty("role", "h3")
+        self.btn_now = ModernButton(
+            self.i18n.get("stream_info.schedule_dialog.btn_now"),
+            role="action_neutral_border",
+            icon_name="clock.svg"
+        )
+        self.btn_now.setToolTip(self.i18n.get("stream_info.schedule_dialog.btn_now_tooltip"))
+        self.btn_now.clicked.connect(self._set_current_datetime)
+        now_box.addWidget(lbl_now_spacer)
+        now_box.addWidget(self.btn_now)
+        datetime_row.addLayout(now_box)
         datetime_row.addStretch()
 
         form_layout.addLayout(datetime_row)
@@ -152,9 +168,9 @@ class ScheduleFormPanel(QWidget):
         form_layout.addWidget(lbl_cat_twitch)
         form_layout.addWidget(self.search_twitch_cat)
 
-        form_layout.addSpacing(6)
+        form_layout.addSpacing(SPACING_SM)
         action_row = QHBoxLayout()
-        action_row.setSpacing(10)
+        action_row.setSpacing(SPACING_MD)
 
         self.btn_clear = QPushButton(self.i18n.get("stream_info.schedule_dialog.btn_clear"))
         self.btn_clear.setProperty("role", "action_outlined")
@@ -267,6 +283,10 @@ class ScheduleFormPanel(QWidget):
 
         self.search_kick_cat.set_selected_category(kick_name, self._kick_cat_id, "kick")
         self.search_twitch_cat.set_selected_category(twitch_name, self._twitch_cat_id, "twitch")
+
+    def _set_current_datetime(self):
+        self.date_edit.setDate(QDate.currentDate())
+        self.time_edit.setTime(QTime.currentTime())
 
     def clear_form(self):
         self.editing_schedule_id = None

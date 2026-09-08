@@ -1,7 +1,7 @@
 # backend\database\token_storage.py
 
 import logging
-from backend.database.manager import DatabaseManager
+from .manager import DatabaseManager
 
 logger = logging.getLogger("minikick.database.token_storage")
 

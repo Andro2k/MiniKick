@@ -3,20 +3,22 @@
 from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, 
                                QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy)
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent, QSize
-from frontend.common.icons import get_icon_colored
-from frontend.common.theme import COLOR_NEUTRAL_400
+from frontend.common import (
+    get_icon_colored, COLOR_NEUTRAL_400,
+    SPACING_NONE, SPACING_2XS, SPACING_MD,
+    MARGIN_NONE, MARGIN_XS, MARGIN_SM
+)
 
 class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, cat_id=None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(6, 4, 6, 4)
-        layout.setSpacing(10)
+        layout.setContentsMargins(*MARGIN_SM)
+        layout.setSpacing(SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         plat_upper = platform.upper()
         self.badge = QLabel(plat_upper)
-        self.badge.setFixedHeight(20)
         self.badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         if plat_upper == "KICK":
@@ -45,8 +47,8 @@ class CategorySuggestionsPopup(QFrame):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(2)
+        layout.setContentsMargins(*MARGIN_XS)
+        layout.setSpacing(SPACING_2XS)
 
         self.list_widget = QListWidget(self)
         self.list_widget.setProperty("role", "category_list")
@@ -144,8 +146,8 @@ class CategorySearchComboBox(QFrame):
         self.setProperty("role", "search_bar")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
+        layout.setContentsMargins(*MARGIN_NONE)
+        layout.setSpacing(SPACING_NONE)
 
         self._icon_search = get_icon_colored("search.svg", COLOR_NEUTRAL_400, 16)
         self._icon_clear = get_icon_colored("x.svg", COLOR_NEUTRAL_400, 16)

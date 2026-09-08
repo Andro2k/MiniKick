@@ -3,8 +3,16 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QHeaderView, QAbstractItemView, QTableWidgetItem
 from PySide6.QtCore import Signal, Qt, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
-from frontend.common.theme import COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_TIKTOK
-from frontend.common import get_icon_colored
+from frontend.common import (
+    COLOR_RED,
+    COLOR_NEUTRAL_400,
+    COLOR_GREEN,
+    COLOR_TIKTOK,
+    get_icon_colored,
+    MARGIN_NONE,
+    SPACING_NONE,
+    SPACING_XS,
+)
 from frontend.widgets import ModernTable, ModernTableCard
 
 class DragDropQueueTable(ModernTable):
@@ -110,8 +118,8 @@ class MusicQueuePanel(QWidget):
 
     def _setup_ui(self):
         panel_layout = QVBoxLayout(self)
-        panel_layout.setContentsMargins(0, 0, 0, 0)
-        panel_layout.setSpacing(0)
+        panel_layout.setContentsMargins(*MARGIN_NONE)
+        panel_layout.setSpacing(SPACING_NONE)
 
         headers = [
             self.i18n.get("music.queue.col_num"),
@@ -124,11 +132,12 @@ class MusicQueuePanel(QWidget):
 
         self.card_queue = ModernTableCard(
             title_text=self.i18n.get("music.queue.title"),
-            headers=headers
+            headers=headers,
+            parent=self
         )
-        self.card_queue.setVisible(False)
         
         old_table = self.card_queue.table
+        old_table.hide()
         self.card_queue.stack.removeWidget(old_table)
         old_table.deleteLater()
 
@@ -171,6 +180,7 @@ class MusicQueuePanel(QWidget):
             self.card_queue.btn_empty_action.setVisible(False)
             
         panel_layout.addWidget(self.card_queue)
+        self.card_queue.setVisible(True)
 
     def _create_table_item(self, text: str, alignment: Qt.AlignmentFlag = None, color: Qt.GlobalColor = None) -> QTableWidgetItem:
         item = QTableWidgetItem(text)
@@ -183,8 +193,8 @@ class MusicQueuePanel(QWidget):
     def _create_action_buttons(self, index: int) -> QWidget:
         cell_widget = QWidget()
         cell_layout = QHBoxLayout(cell_widget)
-        cell_layout.setContentsMargins(0, 0, 0, 0)
-        cell_layout.setSpacing(4)
+        cell_layout.setContentsMargins(*MARGIN_NONE)
+        cell_layout.setSpacing(SPACING_XS)
         cell_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         btn_delete = QPushButton()

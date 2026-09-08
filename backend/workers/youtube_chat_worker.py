@@ -3,9 +3,9 @@
 import datetime
 import logging
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.youtube_chat_provider import YouTubeChatProvider
-from backend.services.chat.pipeline import ChatMessageDTO
-from backend.services.system.translation_service import TranslationService
+from backend.providers.chat import YouTubeChatProvider
+from backend.services.chat import ChatMessageDTO
+from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_dumps
 
 logger = logging.getLogger("minikick.workers.youtube_chat")
@@ -50,7 +50,7 @@ class YouTubeChatWorker(QThread):
                     if not self._has_connected_once:
                         self._is_stopped = True
 
-            while not self._is_stopped:
+            while not self._is_stopped and not self.isInterruptionRequested():
                 self.provider.start_chat(
                     target=self.target_channel,
                     on_message=self._dispatch_message,
@@ -58,18 +58,20 @@ class YouTubeChatWorker(QThread):
                     on_disconnected=_on_disconnected,
                     on_error=_on_error
                 )
-                if not self._has_connected_once or self._is_stopped:
+                if not self._has_connected_once or self._is_stopped or self.isInterruptionRequested():
                     break
-                if not self._is_stopped:
-                    self.msleep(10000)
+                for _ in range(100):
+                    if self._is_stopped or self.isInterruptionRequested():
+                        break
+                    self.msleep(100)
 
         except Exception as e:
-            if not self._is_stopped:
-                logger.error("[YouTubeChatWorker] Unhandled error: %s", e)
+            if not self._is_stopped and not self.isInterruptionRequested():
+                logger.error("[YouTubeChatWorker] Unhandled error (%s): %s", type(e).__name__, e, exc_info=True)
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, extra_data: dict):
-        if self._is_stopped:
+        if self._is_stopped or self.isInterruptionRequested():
             return
 
         if isinstance(extra_data, dict) and "emotes_tag" in extra_data:
@@ -97,5 +99,6 @@ class YouTubeChatWorker(QThread):
 
     def stop(self):
         self._is_stopped = True
+        self.requestInterruption()
         self.provider.stop_chat()
         self.quit()

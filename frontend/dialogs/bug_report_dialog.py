@@ -1,192 +1,31 @@
 # frontend\dialogs\bug_report_dialog.py
 
-import os
-from PySide6.QtWidgets import (
-    QLabel, QLineEdit, QTextEdit, QCheckBox, QPushButton,
-    QHBoxLayout, QVBoxLayout, QFileDialog, QFrame, QWidget
-)
-from PySide6.QtCore import Qt, QSize, Signal
-from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
+from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QCheckBox, QHBoxLayout, QVBoxLayout
+from PySide6.QtCore import Qt
+
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path, get_icon_colored
-from frontend.common.theme import COLOR_RED, COLOR_GREEN
+from frontend.widgets import ModernButton
+from frontend.common import get_assets_path, SPACING_SM, SPACING_MD, SPACING_XL, MARGIN_V_XS
+from frontend.components.dialogs import SeverityCard, ImageDropzone
 
-class SeverityCard(QFrame):
-    clicked = Signal(str)
+_ACTIVE_BUG_WORKERS = set()
 
-    def __init__(self, key: str, title: str, subtitle: str, parent=None):
-        super().__init__(parent)
-        self.key = key
-        self.setProperty("role", "card")
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 10, 8, 10)
-        layout.setSpacing(8)
-
-        text_layout = QVBoxLayout()
-        text_layout.setSpacing(2)
-        text_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.lbl_title = QLabel(title)
-        self.lbl_title.setProperty("role", "body")
-        self.lbl_title.setProperty("state", "bold")
-
-        self.lbl_sub = QLabel(subtitle)
-        self.lbl_sub.setProperty("role", "caption")
-        self.lbl_sub.setWordWrap(True)
-
-        text_layout.addWidget(self.lbl_title)
-        text_layout.addWidget(self.lbl_sub)
-        layout.addLayout(text_layout, 1)
-
-    def set_selected(self, selected: bool):
-        if selected:
-            self.lbl_title.setProperty("state", "success")
-        else:
-            self.lbl_title.setProperty("state", "bold")
-        self.lbl_title.style().unpolish(self.lbl_title)
-        self.lbl_title.style().polish(self.lbl_title)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.clicked.emit(self.key)
-        super().mousePressEvent(event)
-
-class ImageDropzone(QFrame):
-    image_selected = Signal(str)
-    image_cleared = Signal()
-
-    def __init__(self, i18n, parent=None):
-        super().__init__(parent)
-        self.i18n = i18n
-        self.image_path = ""
-        self.setProperty("role", "card")
-        self.setAcceptDrops(True)
-        self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.setFixedHeight(180)
-        self._setup_ui()
-
-    def _setup_ui(self):
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(8, 8, 8, 8)
-        self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.empty_container = QWidget()
-        empty_layout = QVBoxLayout(self.empty_container)
-        empty_layout.setContentsMargins(0, 0, 0, 0)
-        empty_layout.setSpacing(4)
-        empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.icon_lbl = QLabel()
-        self.icon_lbl.setPixmap(get_icon_colored("file-text.svg", COLOR_GREEN, size=24).pixmap(QSize(24, 24)))
-        self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.title_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_title"))
-        self.title_lbl.setProperty("role", "body")
-        self.title_lbl.setProperty("state", "bold")
-        self.title_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.sub_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_desc"))
-        self.sub_lbl.setProperty("role", "caption")
-        self.sub_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.sub_lbl.setWordWrap(True)
-
-        empty_layout.addWidget(self.icon_lbl)
-        empty_layout.addWidget(self.title_lbl)
-        empty_layout.addWidget(self.sub_lbl)
-
-        self.preview_container = QWidget()
-        preview_layout = QHBoxLayout(self.preview_container)
-        preview_layout.setContentsMargins(4, 4, 4, 4)
-        preview_layout.setSpacing(4)
-
-        self.img_lbl = QLabel()
-        self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        self.btn_remove = QPushButton()
-        self.btn_remove.setIcon(get_icon_colored("x.svg", COLOR_RED, size=16))
-        self.btn_remove.setIconSize(QSize(16, 16))
-        self.btn_remove.setFixedSize(28, 28)
-        self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_remove.setProperty("role", "action_danger_border")
-        self.btn_remove.setToolTip(self.i18n.get("dialogs.bug_report.remove_image_tooltip"))
-        self.btn_remove.clicked.connect(self.clear_image)
-
-        preview_layout.addWidget(self.img_lbl, 1)
-        preview_layout.addWidget(self.btn_remove, 0, Qt.AlignmentFlag.AlignTop)
-
-        self.layout.addWidget(self.empty_container)
-        self.layout.addWidget(self.preview_container)
-
-        self._update_state()
-
-    def _update_state(self):
-        if self.image_path and os.path.exists(self.image_path):
-            self.empty_container.hide()
-            self.preview_container.show()
-
-            pixmap = QPixmap(self.image_path)
-            if not pixmap.isNull():
-                scaled = pixmap.scaled(QSize(160, 160), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                self.img_lbl.setPixmap(scaled)
-        else:
-            self.empty_container.show()
-            self.preview_container.hide()
-
-    def set_image(self, path: str):
-        self.image_path = path
-        self._update_state()
-        if path:
-            self.image_selected.emit(path)
-
-    def clear_image(self):
-        self.image_path = ""
-        self._update_state()
-        self.image_cleared.emit()
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton and not self.image_path:
-            file_path, _ = QFileDialog.getOpenFileName(
-                self,
-                self.i18n.get("common.buttons.browse"),
-                "",
-                "Image files (*.png *.jpg *.jpeg *.webp *.gif *.bmp)"
-            )
-            if file_path:
-                self.set_image(file_path)
-        super().mousePressEvent(event)
-
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        if event.mimeData().hasUrls():
-            urls = event.mimeData().urls()
-            if urls and urls[0].toLocalFile().lower().endswith((".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp")):
-                event.acceptProposedAction()
-
-    def dropEvent(self, event: QDropEvent):
-        urls = event.mimeData().urls()
-        if urls:
-            file_path = urls[0].toLocalFile()
-            if file_path and os.path.exists(file_path):
-                self.set_image(file_path)
+def _retire_bug_worker(worker):
+    _ACTIVE_BUG_WORKERS.discard(worker)
+    try:
+        worker.deleteLater()
+    except RuntimeError:
+        pass
 
 class BugReportDialog(ModernModal):
     def __init__(self, i18n, worker_class=None, initial_contact: str = "", parent=None):
         title = i18n.get("settings.feedback.title")
         icon_path = get_assets_path("icons/bug.svg")
-        super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=720, parent=parent)
+        super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=660, parent=parent)
         self.i18n = i18n
         self.worker_class = worker_class
         self.worker = None
-
-        if not initial_contact:
-            try:
-                from backend.database.manager import DatabaseManager
-                initial_contact = DatabaseManager().get_primary_identity()
-            except Exception:
-                initial_contact = ""
-        self.initial_contact = initial_contact
-
+        self.initial_contact = initial_contact or ""
         self.selected_severity = "Low"
         self.severity_cards = {}
         self._setup_form()
@@ -197,7 +36,7 @@ class BugReportDialog(ModernModal):
         lbl_sev_header.setProperty("state", "bold")
 
         sev_layout = QHBoxLayout()
-        sev_layout.setSpacing(10)
+        sev_layout.setSpacing(SPACING_MD)
 
         card_configs = [
             ("Low", self.i18n.get("dialogs.bug_report.severity_low"), self.i18n.get("dialogs.bug_report.severity_low_desc")),
@@ -213,49 +52,62 @@ class BugReportDialog(ModernModal):
 
         self.severity_cards["Low"].set_selected(True)
 
-        cols_layout = QHBoxLayout()
-        cols_layout.setSpacing(16)
+        row1_layout = QHBoxLayout()
+        row1_layout.setSpacing(SPACING_XL)
 
-        left_col = QVBoxLayout()
-        left_col.setSpacing(10)
-
+        contact_col = QVBoxLayout()
+        contact_col.setSpacing(SPACING_SM)
         lbl_username = QLabel(self.i18n.get("dialogs.bug_report.lbl_contact"))
         lbl_username.setProperty("role", "body")
         self.txt_username = QLineEdit()
         self.txt_username.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_contact"))
-        self.txt_username.setFixedHeight(34)
         if self.initial_contact:
             self.txt_username.setText(self.initial_contact)
+        contact_col.addWidget(lbl_username)
+        contact_col.addWidget(self.txt_username)
 
+        logs_col = QVBoxLayout()
+        logs_col.setSpacing(SPACING_SM)
+        lbl_logs = QLabel(self.i18n.get("dialogs.bug_report.lbl_diagnostics"))
+        lbl_logs.setProperty("role", "body")
+        self.chk_logs = QCheckBox(self.i18n.get("dialogs.bug_report.chk_include_logs"))
+        self.chk_logs.setChecked(True)
+        self.chk_logs.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        chk_wrapper = QHBoxLayout()
+        chk_wrapper.setContentsMargins(*MARGIN_V_XS)
+        chk_wrapper.addWidget(self.chk_logs)
+        chk_wrapper.addStretch()
+
+        logs_col.addWidget(lbl_logs)
+        logs_col.addLayout(chk_wrapper)
+
+        row1_layout.addLayout(contact_col, 1)
+        row1_layout.addLayout(logs_col, 1)
+
+        row2_layout = QHBoxLayout()
+        row2_layout.setSpacing(SPACING_XL)
+
+        desc_col = QVBoxLayout()
+        desc_col.setSpacing(SPACING_SM)
         lbl_desc = QLabel(self.i18n.get("dialogs.bug_report.lbl_description"))
         lbl_desc.setProperty("role", "body")
         self.txt_desc = QTextEdit()
         self.txt_desc.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_desc"))
-        self.txt_desc.setFixedHeight(150)
+        self.txt_desc.setFixedHeight(140)
+        desc_col.addWidget(lbl_desc)
+        desc_col.addWidget(self.txt_desc)
 
-        left_col.addWidget(lbl_username)
-        left_col.addWidget(self.txt_username)
-        left_col.addWidget(lbl_desc)
-        left_col.addWidget(self.txt_desc)
-
-        right_col = QVBoxLayout()
-        right_col.setSpacing(10)
-
+        image_col = QVBoxLayout()
+        image_col.setSpacing(SPACING_SM)
         lbl_image = QLabel(self.i18n.get("dialogs.bug_report.lbl_image"))
         lbl_image.setProperty("role", "body")
-
         self.dropzone = ImageDropzone(self.i18n)
+        image_col.addWidget(lbl_image)
+        image_col.addWidget(self.dropzone)
 
-        self.chk_logs = QCheckBox(self.i18n.get("dialogs.bug_report.chk_include_logs"))
-        self.chk_logs.setChecked(True)
-
-        right_col.addWidget(lbl_image)
-        right_col.addWidget(self.dropzone)
-        right_col.addWidget(self.chk_logs)
-        right_col.addStretch()
-
-        cols_layout.addLayout(left_col, 3)
-        cols_layout.addLayout(right_col, 2)
+        row2_layout.addLayout(desc_col, 1)
+        row2_layout.addLayout(image_col, 1)
 
         self.lbl_error = QLabel()
         self.lbl_error.setProperty("state", "error")
@@ -264,20 +116,16 @@ class BugReportDialog(ModernModal):
 
         self.content_layout.addWidget(lbl_sev_header)
         self.content_layout.addLayout(sev_layout)
-        self.content_layout.addSpacing(6)
-        self.content_layout.addLayout(cols_layout)
+        self.content_layout.addSpacing(SPACING_SM)
+        self.content_layout.addLayout(row1_layout)
+        self.content_layout.addSpacing(SPACING_SM)
+        self.content_layout.addLayout(row2_layout)
         self.content_layout.addWidget(self.lbl_error)
 
-        self.btn_cancel = QPushButton(self.i18n.get("common.buttons.cancel"))
-        self.btn_cancel.setProperty("role", "action_outlined")
-        self.btn_cancel.setFixedHeight(38)
-        self.btn_cancel.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel"), role="action_outlined")
         self.btn_cancel.clicked.connect(self.reject)
 
-        self.btn_send = QPushButton(self.i18n.get("dialogs.bug_report.btn_send_low"))
-        self.btn_send.setProperty("role", "action_accent")
-        self.btn_send.setFixedHeight(38)
-        self.btn_send.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_send = ModernButton(self.i18n.get("dialogs.bug_report.btn_send_low"), role="action_accent")
         self.btn_send.clicked.connect(self._on_send_clicked)
 
         self.add_action_buttons(self.btn_cancel, self.btn_send)
@@ -306,8 +154,8 @@ class BugReportDialog(ModernModal):
 
         worker_cls = self.worker_class
         if not worker_cls:
-            from backend.workers import BugReportWorker
-            worker_cls = BugReportWorker
+            self._set_loading(False)
+            return
 
         self.worker = worker_cls(
             username=self.txt_username.text(),
@@ -317,7 +165,9 @@ class BugReportDialog(ModernModal):
             i18n=self.i18n,
             severity=self.selected_severity
         )
+        _ACTIVE_BUG_WORKERS.add(self.worker)
         self.worker.finished.connect(self._on_worker_finished)
+        self.worker.finished.connect(lambda *_, w=self.worker: _retire_bug_worker(w))
         self.worker.start()
 
     def _set_loading(self, loading: bool):
@@ -337,6 +187,8 @@ class BugReportDialog(ModernModal):
 
     def _on_worker_finished(self, success: bool, message: str):
         self._set_loading(False)
+        if self.worker and self.worker.isRunning():
+            self.worker.wait(1000)
         if success:
             if hasattr(self.parent(), 'toast'):
                 self.parent().toast.show_toast(
@@ -348,3 +200,21 @@ class BugReportDialog(ModernModal):
         else:
             self.lbl_error.setText(message)
             self.lbl_error.show()
+
+    def closeEvent(self, event):
+        self._cleanup_worker()
+        super().closeEvent(event)
+
+    def reject(self):
+        self._cleanup_worker()
+        super().reject()
+
+    def _cleanup_worker(self):
+        if self.worker:
+            try:
+                self.worker.finished.disconnect(self._on_worker_finished)
+            except (RuntimeError, TypeError):
+                pass
+            if self.worker.isRunning():
+                self.worker.wait(500)
+            self.worker = None

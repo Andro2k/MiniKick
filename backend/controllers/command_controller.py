@@ -6,13 +6,20 @@ from PySide6.QtCore import QObject, Slot
 logger = logging.getLogger("minikick.controllers.commands")
 
 class CommandController(QObject):
-    def __init__(self, view, service, toast_manager=None, connected_platforms_provider=None):
+    def __init__(self, view, service, toast_manager=None, connected_platforms_provider=None, i18n=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
         self.connected_platforms_provider = connected_platforms_provider
+        self.i18n = i18n
         self._needs_reload = False
+        self._view_connected = False
+        self._is_internal_toggle = False
+
+        if self.service and hasattr(self.service, "commands_changed"):
+            self.service.commands_changed.connect(self._on_commands_changed)
+
         if self.view is not None:
             self._connect_signals()
 
@@ -22,22 +29,31 @@ class CommandController(QObject):
             self._connect_signals()
             self.load_initial_data(force=True)
 
+    def _get_i18n(self):
+        if self.i18n:
+            return self.i18n
+        if self.view and hasattr(self.view, "i18n") and self.view.i18n:
+            return self.view.i18n
+        from backend.services.system import TranslationService
+        return TranslationService()
+
     def _connect_signals(self):
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         self.view.add_requested.connect(self._handle_add)
         self.view.edit_requested.connect(self._handle_edit)
         self.view.delete_requested.connect(self._handle_delete)
         self.view.status_toggled.connect(self._handle_status_change)
-        self.view.search_text_changed.connect(self._handle_search)
         if hasattr(self.view, "view_shown"):
             self.view.view_shown.connect(self._on_view_shown)
-        self.service.commands_changed.connect(self._on_commands_changed)
 
     def _on_view_shown(self):
         if self._needs_reload:
             self.load_initial_data(force=True)
 
     def _on_commands_changed(self):
-        if getattr(self, "_is_internal_toggle", False):
+        if self._is_internal_toggle:
             return
         self.load_initial_data(force=False)
 
@@ -94,49 +110,46 @@ class CommandController(QObject):
     @Slot(str, bool)
     def _handle_status_change(self, trigger: str, is_active: bool):
         existing = self.service.get_command_by_trigger(trigger)
-        if existing:
-            logger.info("[User Action] Toggled command status: trigger='%s', is_active=%s", trigger, is_active)
-            if self.toast:
-                title_key = "command.status.enabled" if is_active else "command.status.disabled"
-                state_color = "success" if is_active else "info"
-                self.toast.show_toast(
-                    title=self.view.i18n.get(title_key),
-                    message=(self.view.i18n.get("command.status.toggled_msg")).replace("{trigger}", trigger),
-                    state=state_color
-                )
-
-            self._is_internal_toggle = True
-            try:
-                self.service.save_command(
-                    trigger=existing["trigger"],
-                    response=existing["response"],
-                    is_active=is_active,
-                    cooldown=existing["cooldown"],
-                    aliases=existing["aliases"],
-                    is_regex=existing["is_regex"],
-                    permission=existing.get("permission", "everyone"),
-                    apply_kick=existing.get("apply_kick", True),
-                    apply_twitch=existing.get("apply_twitch", True),
-                    apply_youtube=existing.get("apply_youtube", True),
-                    apply_tiktok=existing.get("apply_tiktok", True)
-                )
-            finally:
-                self._is_internal_toggle = False
-
-    @Slot(str)
-    def _handle_search(self, text: str):
-        logger.debug("[User Action] Filtered commands by search term: '%s'", text)
-        if not text.strip():
-            self.load_initial_data()
+        if not existing:
             return
-            
-        filtered_commands = self.service.search_commands(text)
-        self.view.populate_table(filtered_commands)
+        if existing.get("is_active") == is_active:
+            return
+
+        logger.info("[User Action] Toggled command status: trigger='%s', is_active=%s", trigger, is_active)
+        i18n = self._get_i18n()
+        if self.toast:
+            title_key = "command.status.enabled" if is_active else "command.status.disabled"
+            state_color = "success" if is_active else "info"
+            self.toast.show_toast(
+                title=i18n.get(title_key),
+                message=i18n.get("command.status.toggled_msg").replace("{trigger}", trigger),
+                state=state_color,
+                tag=f"cmd_toggle_{trigger}"
+            )
+
+        self._is_internal_toggle = True
+        try:
+            self.service.save_command(
+                trigger=existing["trigger"],
+                response=existing["response"],
+                is_active=is_active,
+                cooldown=existing["cooldown"],
+                aliases=existing["aliases"],
+                is_regex=existing["is_regex"],
+                permission=existing.get("permission", "everyone"),
+                apply_kick=existing.get("apply_kick", True),
+                apply_twitch=existing.get("apply_twitch", True),
+                apply_youtube=existing.get("apply_youtube", True),
+                apply_tiktok=existing.get("apply_tiktok", True)
+            )
+        finally:
+            self._is_internal_toggle = False
 
     def _show_toast(self, title_key: str, msg_key: str, val: str, state: str):
         if self.toast:
+            i18n = self._get_i18n()
             self.toast.show_toast(
-                title=self.view.i18n.get(title_key),
-                message=self.view.i18n.get(msg_key).replace("{trigger}", val),
+                title=i18n.get(title_key),
+                message=i18n.get(msg_key).replace("{trigger}", val),
                 state=state
             )

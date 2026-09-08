@@ -1,9 +1,11 @@
 # frontend\components\music\stats_panel.py
 
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QFrame
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
-from frontend.common.theme import COLOR_NEUTRAL_400
-from frontend.common import get_pixmap_colored
+from frontend.common import (
+    COLOR_NEUTRAL_400, get_pixmap_colored,
+    MARGIN_NONE, SPACING_SM, SPACING_MD, SPACING_LG
+)
 from frontend.widgets import ModernCard, ModernSwitch
 
 class MusicStatsPanel(QWidget):
@@ -20,12 +22,13 @@ class MusicStatsPanel(QWidget):
 
     def _setup_ui(self):
         self.stats_grid = QGridLayout(self)
-        self.stats_grid.setContentsMargins(0, 0, 0, 0)
-        self.stats_grid.setSpacing(12)
+        self.stats_grid.setContentsMargins(*MARGIN_NONE)
+        self.stats_grid.setSpacing(SPACING_LG)
 
-        self.card_stat_queue = ModernCard(parent=self, margin=12, spacing=6)
+        self.card_stat_queue = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_SM)
         
         queue_header = QHBoxLayout()
+        queue_header.setSpacing(SPACING_MD)
         icon_queue = QLabel()
         icon_queue.setPixmap(get_pixmap_colored("music.svg", COLOR_NEUTRAL_400, 18))
         lbl_queue_title = QLabel(self.i18n.get("music.stats.queue_title"))
@@ -45,9 +48,10 @@ class MusicStatsPanel(QWidget):
         self.card_stat_queue.addWidget(self.lbl_stat_queue_count)
         self.card_stat_queue.addWidget(lbl_queue_desc)
 
-        self.card_stat_duration = ModernCard(parent=self, margin=12, spacing=6)
+        self.card_stat_duration = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_SM)
 
         dur_header = QHBoxLayout()
+        dur_header.setSpacing(SPACING_MD)
         icon_dur = QLabel()
         icon_dur.setPixmap(get_pixmap_colored("clock.svg", COLOR_NEUTRAL_400, 18))
         lbl_dur_title = QLabel(self.i18n.get("music.stats.duration_title"))
@@ -67,22 +71,14 @@ class MusicStatsPanel(QWidget):
         self.card_stat_duration.addWidget(self.lbl_stat_duration_sum)
         self.card_stat_duration.addWidget(lbl_dur_desc)
 
-        self.card_stat_service = ModernCard(parent=self, margin=12, spacing=6)
+        self.card_stat_service = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_SM)
 
         service_header = QHBoxLayout()
+        service_header.setSpacing(SPACING_MD)
         icon_cmd = QLabel()
         icon_cmd.setPixmap(get_pixmap_colored("code.svg", COLOR_NEUTRAL_400, 18))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))
         lbl_cmd_title.setProperty("role", "h3")
-        
-        self.badge_service_container = QFrame()
-        self.badge_service_container.setProperty("role", "badge")
-        self.badge_service_container.setProperty("state", "everyone")
-        badge_layout = QHBoxLayout(self.badge_service_container)
-        badge_layout.setContentsMargins(6, 2, 6, 2)
-        self.lbl_service_badge = QLabel(self.i18n.get("music.stats.badge_active"))
-        badge_layout.addWidget(self.lbl_service_badge)
-
         self.sw_music_service = ModernSwitch()
         self.sw_music_service.setChecked(True)
         self.sw_music_service.toggled.connect(self._on_service_switch_toggled)
@@ -90,7 +86,6 @@ class MusicStatsPanel(QWidget):
         service_header.addWidget(icon_cmd)
         service_header.addWidget(lbl_cmd_title)
         service_header.addStretch()
-        service_header.addWidget(self.badge_service_container)
         service_header.addWidget(self.sw_music_service)
 
         self.lbl_stat_service_value = QLabel(self.i18n.get("music.stats.service_active"))
@@ -129,20 +124,12 @@ class MusicStatsPanel(QWidget):
         self._cached_service_enabled = enabled
 
         if enabled:
-            self.lbl_service_badge.setText(self.i18n.get("music.stats.badge_active"))
-            self.badge_service_container.setProperty("state", "everyone")
             self.lbl_stat_service_value.setText(self.i18n.get("music.stats.service_active"))
-            self.lbl_stat_service_value.setProperty("state", "normal")
+            self.lbl_stat_service_value.setProperty("state", "success")
         else:
-            self.lbl_service_badge.setText(self.i18n.get("music.stats.badge_disabled"))
-            self.badge_service_container.setProperty("state", "broadcaster")
             self.lbl_stat_service_value.setText(self.i18n.get("music.stats.service_disabled"))
             self.lbl_stat_service_value.setProperty("state", "error")
 
-        self.badge_service_container.style().unpolish(self.badge_service_container)
-        self.badge_service_container.style().polish(self.badge_service_container)
-        self.lbl_service_badge.style().unpolish(self.lbl_service_badge)
-        self.lbl_service_badge.style().polish(self.lbl_service_badge)
         self.lbl_stat_service_value.style().unpolish(self.lbl_stat_service_value)
         self.lbl_stat_service_value.style().polish(self.lbl_stat_service_value)
 

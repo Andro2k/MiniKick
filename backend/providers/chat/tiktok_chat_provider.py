@@ -6,7 +6,7 @@ import re
 import time
 from collections import deque
 from typing import Callable, Any
-from backend.services.system.translation_service import TranslationService
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.providers.chat.tiktok")
 
@@ -252,7 +252,7 @@ class TikTokChatProvider:
                 on_error(err)
         except Exception as ex:
             if self._is_running:
-                logger.error("[TikTokChatProvider] Excepción general de conexión: %s", ex)
+                logger.error("[TikTokChatProvider] Excepción general de conexión (%s): %s", type(ex).__name__, ex, exc_info=True)
                 if on_error:
                     on_error(str(ex))
         finally:

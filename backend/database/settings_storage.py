@@ -1,7 +1,7 @@
 # backend\database\settings_storage.py
 
 import logging
-from backend.database.manager import DatabaseManager
+from .manager import DatabaseManager
 
 logger = logging.getLogger("minikick.database.settings_storage")
 

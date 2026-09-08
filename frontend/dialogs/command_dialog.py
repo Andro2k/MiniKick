@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
 from frontend.widgets import VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge
-from frontend.common import validate_trigger_prefix
+from frontend.common import validate_trigger_prefix, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):
@@ -11,7 +11,18 @@ class CommandConfigWizard(ModernWizardPanel):
         self.connected_platforms = connected_platforms if isinstance(connected_platforms, dict) else {"kick": True, "twitch": True, "youtube": True, "tiktok": True}
         title_steps = [self.i18n.get("command.dialog.title"), self.i18n.get("command.dialog.tab_advanced")]
         subtitle_steps = [self.i18n.get("command.dialog.subtitle"), self.i18n.get("command.dialog.regex_help")]       
-        super().__init__(title_steps=title_steps, subtitle_steps=subtitle_steps, i18n=i18n, width=520, parent=parent)       
+        super().__init__(
+            title_steps=title_steps,
+            subtitle_steps=subtitle_steps,
+            i18n=i18n,
+            width=600,
+            height=700,
+            resizable=True,
+            min_width=600,
+            min_height=700,
+            dialog_key="command_config_wizard",
+            parent=parent
+        )       
         self.existing_config = existing_config
         self.original_trigger = existing_config.get("trigger", "") if existing_config else None       
         self._setup_ui()
@@ -22,8 +33,8 @@ class CommandConfigWizard(ModernWizardPanel):
     def _setup_ui(self):
         self.tab_basic = QWidget()
         basic_layout = QVBoxLayout(self.tab_basic)
-        basic_layout.setContentsMargins(0, 0, 0, 0)
-        basic_layout.setSpacing(10)
+        basic_layout.setContentsMargins(*MARGIN_NONE)
+        basic_layout.setSpacing(SPACING_LG)
 
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
         lbl_trigger.setProperty("role", "h3")
@@ -41,7 +52,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.badge_plugin.setVisible(False)
         
         lbl_response_layout.addWidget(lbl_response)
-        lbl_response_layout.addSpacing(6)
+        lbl_response_layout.addSpacing(SPACING_SM)
         lbl_response_layout.addWidget(self.badge_plugin)
         lbl_response_layout.addStretch()
 
@@ -50,13 +61,13 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_response.setMinimumHeight(90) 
         self.txt_response.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         basic_layout.addLayout(lbl_response_layout)
-        basic_layout.addWidget(self.txt_response)
+        basic_layout.addWidget(self.txt_response, stretch=1)
 
         row_configs = QHBoxLayout()
-        row_configs.setSpacing(12)
+        row_configs.setSpacing(SPACING_LG)
 
         col_cooldown = QVBoxLayout()
-        col_cooldown.setSpacing(4)
+        col_cooldown.setSpacing(SPACING_XS)
         lbl_cooldown = QLabel(self.i18n.get("command.dialog.cooldown_label"))
         lbl_cooldown.setProperty("role", "h3")
         col_cooldown.addWidget(lbl_cooldown)
@@ -69,7 +80,7 @@ class CommandConfigWizard(ModernWizardPanel):
         row_configs.addLayout(col_cooldown, stretch=1)
         
         col_perm = QVBoxLayout()
-        col_perm.setSpacing(4)
+        col_perm.setSpacing(SPACING_XS)
         lbl_perm = QLabel(self.i18n.get("command.dialog.permission_label"))
         lbl_perm.setProperty("role", "h3")
         col_perm.addWidget(lbl_perm)
@@ -92,13 +103,13 @@ class CommandConfigWizard(ModernWizardPanel):
 
         self.tab_adv = QWidget()
         adv_main_layout = QHBoxLayout(self.tab_adv)
-        adv_main_layout.setContentsMargins(0, 0, 0, 0)
-        adv_main_layout.setSpacing(12)
+        adv_main_layout.setContentsMargins(*MARGIN_NONE)
+        adv_main_layout.setSpacing(SPACING_LG)
 
         left_col = QWidget()
         adv_layout = QVBoxLayout(left_col)
-        adv_layout.setContentsMargins(0, 0, 0, 0)
-        adv_layout.setSpacing(12)
+        adv_layout.setContentsMargins(*MARGIN_NONE)
+        adv_layout.setSpacing(SPACING_LG)
 
         lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
         lbl_aliases.setProperty("role", "h3")
@@ -107,7 +118,7 @@ class CommandConfigWizard(ModernWizardPanel):
         adv_layout.addWidget(lbl_aliases)
         adv_layout.addWidget(self.txt_aliases)
 
-        adv_layout.addSpacing(6)
+        adv_layout.addSpacing(SPACING_SM)
 
         lbl_platforms = QLabel(self.i18n.get("command.dialog.platform_label"))
         lbl_platforms.setProperty("role", "h3")
@@ -120,28 +131,24 @@ class CommandConfigWizard(ModernWizardPanel):
         off_tip = self.i18n.get("command.dialog.platform_offline")
 
         platforms_row = QHBoxLayout()
-        platforms_row.setSpacing(12)
+        platforms_row.setSpacing(SPACING_LG)
         self.chk_kick = QCheckBox(self.i18n.get("command.dialog.platform_kick"))
-        self.chk_kick.setEnabled(kick_on)
-        self.chk_kick.setChecked(kick_on)
+        self.chk_kick.setChecked(True)
         if not kick_on:
             self.chk_kick.setToolTip(off_tip)
 
         self.chk_twitch = QCheckBox(self.i18n.get("command.dialog.platform_twitch"))
-        self.chk_twitch.setEnabled(twitch_on)
-        self.chk_twitch.setChecked(twitch_on)
+        self.chk_twitch.setChecked(True)
         if not twitch_on:
             self.chk_twitch.setToolTip(off_tip)
 
         self.chk_youtube = QCheckBox(self.i18n.get("command.dialog.platform_youtube"))
-        self.chk_youtube.setEnabled(youtube_on)
-        self.chk_youtube.setChecked(youtube_on)
+        self.chk_youtube.setChecked(True)
         if not youtube_on:
             self.chk_youtube.setToolTip(off_tip)
 
         self.chk_tiktok = QCheckBox(self.i18n.get("command.dialog.platform_tiktok"))
-        self.chk_tiktok.setEnabled(tiktok_on)
-        self.chk_tiktok.setChecked(tiktok_on)
+        self.chk_tiktok.setChecked(True)
         if not tiktok_on:
             self.chk_tiktok.setToolTip(off_tip)
 
@@ -152,7 +159,7 @@ class CommandConfigWizard(ModernWizardPanel):
         platforms_row.addStretch()
         adv_layout.addLayout(platforms_row)
 
-        adv_layout.addSpacing(10)
+        adv_layout.addSpacing(SPACING_MD)
 
         self.chk_regex = QCheckBox(self.i18n.get("command.dialog.regex_checkbox"))
         self.chk_regex.toggled.connect(self._on_regex_toggled)
@@ -203,20 +210,20 @@ class CommandConfigWizard(ModernWizardPanel):
         return True
 
     def _load_existing(self):
+        resp = self.existing_config.get("response", "")
         self.txt_trigger.setText(self.existing_config.get("trigger", ""))
-        self.txt_response.setText(self.existing_config.get("response", ""))
+        self.txt_response.setText(resp)
         self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
         self.chk_active.setChecked(self.existing_config.get("is_active", True))
+
+        is_plugin = "[PLUGIN_" in resp
+        self.badge_plugin.setVisible(is_plugin)
+        self.txt_response.setReadOnly(is_plugin)
         
-        kick_on = self.connected_platforms.get("kick", False)
-        twitch_on = self.connected_platforms.get("twitch", False)
-        youtube_on = self.connected_platforms.get("youtube", False)
-        tiktok_on = self.connected_platforms.get("tiktok", False)
-        
-        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True) if kick_on else False)
-        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True) if twitch_on else False)
-        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True) if youtube_on else False)
-        self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True) if tiktok_on else False)
+        self.chk_kick.setChecked(self.existing_config.get("apply_kick", True))
+        self.chk_twitch.setChecked(self.existing_config.get("apply_twitch", True))
+        self.chk_youtube.setChecked(self.existing_config.get("apply_youtube", True))
+        self.chk_tiktok.setChecked(self.existing_config.get("apply_tiktok", True))
         
         permission = self.existing_config.get("permission", "everyone")
         index = self.combo_perm.findData(permission)
@@ -226,6 +233,8 @@ class CommandConfigWizard(ModernWizardPanel):
         is_regex = self.existing_config.get("is_regex", False)
         self.chk_regex.setChecked(is_regex)
         
+        self.chk_active.setChecked(self.existing_config.get("is_active", True))
+
         if is_regex:
             self.txt_regex.setText(self.existing_config.get("aliases", ""))
         else:

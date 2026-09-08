@@ -5,12 +5,33 @@ from PySide6.QtWidgets import QTableWidgetItem, QHeaderView, QApplication
 from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
-from frontend.common.theme import COLOR_GREEN, COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER
-from frontend.common import get_pixmap_colored, get_icon_colored
+from frontend.common import (
+    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER,
+    get_pixmap_colored, get_icon_colored
+)
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
 
+_REWARD_ICON_CACHE: dict[str, QIcon] = {}
+_MAX_REWARD_ICON_CACHE = 256
+
 def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True) -> QIcon:
+    if not is_valid_file:
+        cache_key = "__invalid__"
+    else:
+        ext = os.path.splitext(filepath)[1].lower() if filepath else ""
+        if ext in AUDIO_EXTENSIONS:
+            cache_key = "__audio__"
+        else:
+            thumb_bytes = config.get("thumbnail_bytes") if isinstance(config, dict) else None
+            if thumb_bytes:
+                cache_key = f"thumb_{filepath}_{hash(thumb_bytes)}"
+            else:
+                cache_key = "__video_default__"
+
+    if cache_key in _REWARD_ICON_CACHE:
+        return _REWARD_ICON_CACHE[cache_key]
+
     target_w, target_h = 48, 32
     
     if not is_valid_file:
@@ -32,12 +53,8 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
             y = (target_h - 18) / 2
             painter.drawPixmap(int(x), int(y), icon_pixmap)
         painter.end()
-        return QIcon(pixmap)
-
-    ext = os.path.splitext(filepath)[1].lower() if filepath else ""
-    is_audio = ext in AUDIO_EXTENSIONS
-    
-    if is_audio:
+        icon = QIcon(pixmap)
+    elif ext in AUDIO_EXTENSIONS:
         pixmap = QPixmap(target_w, target_h)
         pixmap.fill(Qt.GlobalColor.transparent)
         
@@ -56,11 +73,10 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
             painter.drawPixmap(int(x), int(y), icon_pixmap)
             
         painter.end()
-        return QIcon(pixmap)
-        
-    thumb_bytes = config.get("thumbnail_bytes") if isinstance(config, dict) else None
-    if thumb_bytes:
+        icon = QIcon(pixmap)
+    elif thumb_bytes:
         img = QImage()
+        icon = None
         if img.loadFromData(thumb_bytes):
             scaled = img.scaled(target_w, target_h, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
             
@@ -78,23 +94,30 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
             y = (target_h - scaled.height()) / 2
             painter.drawImage(int(x), int(y), scaled)
             painter.end()
-            return QIcon(final_pix)
-            
-    pixmap = QPixmap(target_w, target_h)
-    pixmap.fill(Qt.GlobalColor.transparent)
-    painter = QPainter(pixmap)
-    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-    path = QPainterPath()
-    path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
-    painter.fillPath(path, QColor("#1e293b"))
-    
-    icon_pixmap = get_pixmap_colored("movie.svg", COLOR_NEUTRAL_400, 18)
-    if not icon_pixmap.isNull():
-        x = (target_w - 18) / 2
-        y = (target_h - 18) / 2
-        painter.drawPixmap(int(x), int(y), icon_pixmap)
-    painter.end()
-    return QIcon(pixmap)
+            icon = QIcon(final_pix)
+        if not icon:
+            icon = _create_reward_icon({}, "", is_valid_file=True)
+    else:
+        pixmap = QPixmap(target_w, target_h)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
+        painter.fillPath(path, QColor("#1e293b"))
+        
+        icon_pixmap = get_pixmap_colored("movie.svg", COLOR_NEUTRAL_400, 18)
+        if not icon_pixmap.isNull():
+            x = (target_w - 18) / 2
+            y = (target_h - 18) / 2
+            painter.drawPixmap(int(x), int(y), icon_pixmap)
+        painter.end()
+        icon = QIcon(pixmap)
+
+    if len(_REWARD_ICON_CACHE) >= _MAX_REWARD_ICON_CACHE:
+        _REWARD_ICON_CACHE.pop(next(iter(_REWARD_ICON_CACHE)))
+    _REWARD_ICON_CACHE[cache_key] = icon
+    return icon
 
 class RewardsView(BaseView):
     add_requested = Signal()
@@ -394,7 +417,7 @@ class RewardsView(BaseView):
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
                 icon_name="player-play.svg", 
-                color=COLOR_NEUTRAL_200 if is_valid_file else COLOR_RED, 
+                color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
                 role="action_neutral_border" if is_valid_file else "action_danger_border", 
                 tooltip=play_tooltip, 
                 callback=lambda checked=False, r=reward: self.preview_requested.emit(r)
@@ -441,7 +464,7 @@ class RewardsView(BaseView):
         self.btn_copy_url.setEnabled(True)
 
     def show_add_dialog(self, available_rewards: list, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
-        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
+        from frontend.dialogs import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
             parent=self, 
@@ -458,7 +481,7 @@ class RewardsView(BaseView):
         return None
 
     def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
-        from frontend.dialogs.rewards_dialog import RewardsConfigWizard
+        from frontend.dialogs import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
             self.i18n, 
             parent=self, 

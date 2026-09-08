@@ -6,7 +6,7 @@ import logging
 import os
 from datetime import datetime, timezone
 from backend.interfaces import SettingsStorage
-from backend.config.version import APP_VERSION
+from backend.config import APP_VERSION
 
 logger = logging.getLogger("minikick.services.system.backup")
 
@@ -14,13 +14,16 @@ class BackupService:
     SENSITIVE_KEYS = {"overlay_session_token"}
 
     def __init__(self, settings_storage: SettingsStorage, rewards_storage, commands_storage,
-                 spam_storage, timers_storage=None, schedule_storage=None):
+                 spam_storage, timers_storage=None, schedule_storage=None,
+                 alert_storage=None, widgets_storage=None):
         self.settings_storage = settings_storage
         self.rewards_storage = rewards_storage
         self.commands_storage = commands_storage
         self.spam_storage = spam_storage
         self.timers_storage = timers_storage
         self.schedule_storage = schedule_storage
+        self.alert_storage = alert_storage
+        self.widgets_storage = widgets_storage
         self.logger = logger
 
     @staticmethod
@@ -60,6 +63,11 @@ class BackupService:
                 data["timers"] = self.timers_storage.load_all()
             if self.schedule_storage:
                 data["schedules"] = self.schedule_storage.load_all()
+            if self.widgets_storage:
+                data["widgets"] = self.widgets_storage.load_all_widgets()
+            if self.alert_storage:
+                raw_alerts = self.alert_storage.load_all()
+                data["alerts"] = [cfg.to_dict() for cfg in raw_alerts.values()]
 
             sanitized_data = self._sanitize_for_json(data)
 
@@ -120,15 +128,30 @@ class BackupService:
                     response = cmd.get("response")
                     if not trigger or response is None:
                         continue
-                    self.commands_storage.save_command(
-                        trigger=trigger,
-                        response=response,
-                        is_active=cmd.get("is_active", True),
-                        cooldown=int(cmd.get("cooldown", 5)),
-                        aliases=cmd.get("aliases", ""),
-                        is_regex=bool(cmd.get("is_regex", False)),
-                        permission=cmd.get("permission", "everyone")
-                    )
+                    try:
+                        self.commands_storage.save_command(
+                            trigger=trigger,
+                            response=response,
+                            is_active=bool(cmd.get("is_active", True)),
+                            cooldown=int(cmd.get("cooldown", 5)),
+                            aliases=str(cmd.get("aliases", "")),
+                            is_regex=bool(cmd.get("is_regex", False)),
+                            permission=str(cmd.get("permission", "everyone")),
+                            apply_kick=bool(cmd.get("apply_kick", True)),
+                            apply_twitch=bool(cmd.get("apply_twitch", True)),
+                            apply_youtube=bool(cmd.get("apply_youtube", True)),
+                            apply_tiktok=bool(cmd.get("apply_tiktok", True))
+                        )
+                    except TypeError:
+                        self.commands_storage.save_command(
+                            trigger=trigger,
+                            response=response,
+                            is_active=bool(cmd.get("is_active", True)),
+                            cooldown=int(cmd.get("cooldown", 5)),
+                            aliases=str(cmd.get("aliases", "")),
+                            is_regex=bool(cmd.get("is_regex", False)),
+                            permission=str(cmd.get("permission", "everyone"))
+                        )
 
             if "spam_filters" in data and isinstance(data["spam_filters"], dict) and self.spam_storage:
                 for f_id, config in data["spam_filters"].items():
@@ -143,16 +166,30 @@ class BackupService:
                     t_msgs = timer.get("messages")
                     if not t_name or not t_msgs:
                         continue
-                    self.timers_storage.save_timer(
-                        name=t_name,
-                        messages=t_msgs,
-                        is_active=timer.get("is_active", True),
-                        interval_online=timer.get("interval_online"),
-                        interval_offline=timer.get("interval_offline"),
-                        chat_lines=timer.get("chat_lines", 0),
-                        keywords=timer.get("keywords", []),
-                        categories=timer.get("categories", [])
-                    )
+                    try:
+                        self.timers_storage.save_timer(
+                            name=t_name,
+                            messages=t_msgs,
+                            is_active=bool(timer.get("is_active", True)),
+                            interval_online=timer.get("interval_online"),
+                            interval_offline=timer.get("interval_offline"),
+                            chat_lines=int(timer.get("chat_lines", 0)),
+                            keywords=list(timer.get("keywords", [])),
+                            categories=list(timer.get("categories", [])),
+                            apply_kick=bool(timer.get("apply_kick", True)),
+                            apply_twitch=bool(timer.get("apply_twitch", True))
+                        )
+                    except TypeError:
+                        self.timers_storage.save_timer(
+                            name=t_name,
+                            messages=t_msgs,
+                            is_active=bool(timer.get("is_active", True)),
+                            interval_online=timer.get("interval_online"),
+                            interval_offline=timer.get("interval_offline"),
+                            chat_lines=int(timer.get("chat_lines", 0)),
+                            keywords=list(timer.get("keywords", [])),
+                            categories=list(timer.get("categories", []))
+                        )
 
             if "schedules" in data and isinstance(data["schedules"], list) and self.schedule_storage:
                 for item in data["schedules"]:
@@ -167,8 +204,48 @@ class BackupService:
                             kick_category_name=item.get("kick_category_name", ""),
                             twitch_category_id=item.get("twitch_category_id"),
                             twitch_category_name=item.get("twitch_category_name", ""),
-                            is_active=item.get("is_active", True)
+                            is_active=bool(item.get("is_active", True))
                         )
+
+            if "widgets" in data and self.widgets_storage:
+                widgets_dict = data["widgets"]
+                if isinstance(widgets_dict, dict):
+                    for w_id, w_data in widgets_dict.items():
+                        if isinstance(w_data, dict):
+                            self.widgets_storage.save_widget(
+                                widget_id=str(w_data.get("widget_id", w_id)),
+                                is_active=bool(w_data.get("is_active", True)),
+                                command=str(w_data.get("command", "")),
+                                cooldown=int(w_data.get("cooldown", 3)),
+                                permission=str(w_data.get("permission", "everyone")),
+                                config=dict(w_data.get("config", {}))
+                            )
+                elif isinstance(widgets_dict, list):
+                    for w_data in widgets_dict:
+                        if isinstance(w_data, dict) and "widget_id" in w_data:
+                            self.widgets_storage.save_widget(
+                                widget_id=str(w_data["widget_id"]),
+                                is_active=bool(w_data.get("is_active", True)),
+                                command=str(w_data.get("command", "")),
+                                cooldown=int(w_data.get("cooldown", 3)),
+                                permission=str(w_data.get("permission", "everyone")),
+                                config=dict(w_data.get("config", {}))
+                            )
+
+            if "alerts" in data and self.alert_storage:
+                from backend.models import AlertConfig
+                alerts_data = data["alerts"]
+                configs_to_save = []
+                if isinstance(alerts_data, list):
+                    for item in alerts_data:
+                        if isinstance(item, dict):
+                            configs_to_save.append(AlertConfig.from_dict(item))
+                elif isinstance(alerts_data, dict):
+                    for item in alerts_data.values():
+                        if isinstance(item, dict):
+                            configs_to_save.append(AlertConfig.from_dict(item))
+                if configs_to_save:
+                    self.alert_storage.save_all(configs_to_save)
 
             self.logger.info("Successfully imported configuration from %s", filepath)
             return True

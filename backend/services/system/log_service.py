@@ -4,7 +4,7 @@ import os
 import re
 import logging
 from collections import deque
-from backend.database.system_log_storage import SQLiteSystemLogStorage
+from backend.database import SQLiteSystemLogStorage
 
 logger = logging.getLogger("minikick.services.logs")
 

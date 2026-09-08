@@ -1,4 +1,119 @@
 {
+    "alerts": {
+        "align": {
+            "center": "Center",
+            "left": "Left",
+            "right": "Right"
+        },
+        "buttons": {
+            "browse": "Browse...",
+            "discard": "Discard",
+            "save": "Save Changes",
+            "test": "Test Alert",
+            "test_sent": "Test alert sent to OBS."
+        },
+        "events": {
+            "cheer": "Bits / Cheers (Twitch)",
+            "cheer_desc": "Alert when a viewer sends Bits on Twitch.",
+            "follow": "New Follower",
+            "follow_desc": "Alert when a user follows your channel.",
+            "raid": "Raid / Host",
+            "raid_desc": "Alert when another streamer raids your stream with viewers.",
+            "resub": "Subscription Renewal",
+            "resub_desc": "Alert when a subscriber renews their subscription.",
+            "sub_gift": "Gifted Subscriptions",
+            "sub_gift_desc": "Alert when a user gifts subscriptions to the community.",
+            "subscription": "New Subscription",
+            "subscription_desc": "Alert when a user subscribes for the first time."
+        },
+        "fields": {
+            "active": "Alert Enabled",
+            "duration": "Duration (seconds)",
+            "duration_desc": "Time in seconds the alert is displayed on screen.",
+            "font_family": "Typography / Font",
+            "font_family_desc": "Font family for the alert text.",
+            "font_size": "Font Size",
+            "font_size_desc": "Font size in pixels for the alert text.",
+            "highlight_color": "Highlight Color",
+            "highlight_color_desc": "Highlight color for the username.",
+            "media": "Media or HTML",
+            "media_filter": "Media & Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Media Files (*.png *.gif *.webp *.mp4 *.webm);;All Files (*.*)",
+            "media_placeholder": "Path to .png, .gif, .mp4, .webm, or .html file",
+            "sound": "Alert Sound",
+            "sound_placeholder": "Path to .mp3, .wav, or .ogg file",
+            "template": "Text Template",
+            "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
+            "text_align": "Text Alignment",
+            "text_align_desc": "Horizontal text alignment within the layout.",
+            "text_color": "Text Color",
+            "text_color_desc": "Main text color for alert messages.",
+            "tts": "Read alert with TTS voice",
+            "volume": "Volume"
+        },
+        "header": {
+            "subtitle": "Configure and customize your stream alerts for OBS on Kick and Twitch.",
+            "title": "Live Alerts"
+        },
+        "layout": {
+            "above": "Image Above (Centered)",
+            "below": "Image Below",
+            "desc": "Choose the visual arrangement between media and text.",
+            "overlay": "Text Overlay",
+            "side": "Image Left",
+            "side_right": "Image Right",
+            "title": "Layout"
+        },
+        "notice": {
+            "connect_btn": "Link {platform}",
+            "disconnected_msg": "{platform} is not connected. Alerts will not trigger live until you link your account.",
+            "disconnected_title": "Account Not Linked"
+        },
+        "overlay_card": {
+            "copied_msg": "The alerts overlay URL was copied to the clipboard.",
+            "copied_title": "URL Copied",
+            "copy_btn": "Copy URL",
+            "desc": "Add this URL as a 'Browser Source' in OBS (1920x1080 with transparent background).",
+            "open_btn": "Preview Overlay",
+            "title": "OBS Overlay URL"
+        },
+        "platforms": {
+            "kick": "Kick",
+            "twitch": "Twitch"
+        },
+        "preview": {
+            "sample_amount": "500",
+            "sample_template": "{user} just followed!",
+            "sample_tier": "1",
+            "sample_user": "TheAndro2K",
+            "title": "Alert Preview"
+        },
+        "sections": {
+            "appearance": "Layout & Appearance",
+            "general": "General Settings"
+        },
+        "sidebar": {
+            "title": "Alert Variants"
+        },
+        "status": {
+            "disabled_msg": "The '{event}' alert has been disabled.",
+            "disabled_title": "Alert Disabled",
+            "disconnected": "Disconnected",
+            "enabled_msg": "The '{event}' alert has been enabled.",
+            "enabled_title": "Alert Enabled",
+            "platform_offline": "Platform not connected: alerts will not trigger live until your account is linked",
+            "saved_msg": "Alert configuration saved successfully.",
+            "saved_title": "Alert Saved",
+            "unsaved": "Unsaved changes"
+        },
+        "style": {
+            "compact": "Compact",
+            "desc": "Visual style of the alert container and frame.",
+            "glass": "Glassmorphism",
+            "minimal": "Minimalist",
+            "sticker": "Sticker / Transparent",
+            "title": "Style"
+        }
+    },
     "chat": {
         "banned_words": {
             "input_placeholder": "ex. insult or banned word",
@@ -35,6 +150,11 @@
             "orientation_horizontal": "Horizontal (Ticker)",
             "orientation_title": "Chat Orientation",
             "orientation_vertical": "Vertical (Column)",
+            "preview_sample_bot_msg": "What's up @TheAndro2K! Welcome to the stream, make yourself comfortable. 👾",
+            "preview_sample_bot_user": "theandro2k",
+            "preview_sample_msg_1": "hola xd",
+            "preview_sample_user": "TheAndro2K",
+            "preview_title": "Overlay Preview",
             "recommended_dim": "Recommended OBS source size: {dim}",
             "show_bots_desc": "Display messages from muted bots on the stream screen.",
             "show_bots_title": "Show Bots",
@@ -77,6 +197,7 @@
             "prefix_placeholder": "Ex. !tts",
             "prefix_title": "Command Prefix",
             "provider_title": "TTS Voice Engine",
+            "search_voice_placeholder": "Search voice...",
             "speed_desc": "Adjust voice speech speed and pacing.",
             "speed_title": "Speech Speed",
             "tts_desc": "Enable or disable automated message reading out loud.",
@@ -209,6 +330,7 @@
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
+        "no_results": "No results found",
         "status": {
             "error": "Error",
             "offline": "Offline",
@@ -356,6 +478,7 @@
             "header": "**BUG REPORT**",
             "lbl_contact": "Contact / Discord (Optional):",
             "lbl_description": "Problem Description (Required):",
+            "lbl_diagnostics": "System Diagnostics (Optional):",
             "lbl_image": "Attach Screenshot / Image (Optional):",
             "placeholder_contact": "Your username or contact info...",
             "placeholder_desc": "Briefly describe what you were doing and what error occurred...",
@@ -388,7 +511,6 @@
             "title": "Release Notes"
         },
         "tiktok_connect": {
-            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter the username (@username) of the TikTok Live channel:",
             "placeholder": "e.g. @streamer or username",
@@ -432,7 +554,6 @@
             "step_indicator": "Step {current}/{total}"
         },
         "youtube_connect": {
-            "btn_clear": "Clear",
             "btn_connect": "Connect Chat",
             "desc": "Enter your channel handle (@channel), full live stream URL, or YouTube video ID:",
             "placeholder": "e.g. @lofigirl or https://youtube.com/watch?v=...",
@@ -555,6 +676,7 @@
                 "navigate": "Navigate"
             },
             "tabs": {
+                "alerts": "Alerts",
                 "chat": "Chat",
                 "comandos": "Commands",
                 "dashboard": "Dashboard",
@@ -577,6 +699,8 @@
             "version": "Version {version}"
         },
         "toast": {
+            "auth_in_progress_msg": "An authentication process is already running in your browser. Please complete or close that window before starting another.",
+            "auth_in_progress_title": "Authentication in Progress",
             "kick_connected_msg": "Successfully connected to Kick chat: @{username}",
             "kick_connected_title": "Kick Connected",
             "kick_disconnected_msg": "Kick session unlinked.",
@@ -624,11 +748,6 @@
             },
             "chat": {
                 "error_room_id": "Could not retrieve ChatRoom ID from API."
-            },
-            "reward": {
-                "poll_error": "Error querying rewards: {error}",
-                "someone": "Someone",
-                "unknown_reward": "Unknown Reward"
             }
         }
     },
@@ -729,8 +848,6 @@
             "title": "Playback Queue"
         },
         "stats": {
-            "badge_active": "O ENABLED",
-            "badge_disabled": "O DISABLED",
             "cmd_desc": "Allows viewers to request songs using the !sr command",
             "cmd_title": "Chat command",
             "duration_desc": "Total accumulated duration of all queued songs",
@@ -901,10 +1018,6 @@
             "col_volume": "Volume",
             "file_not_found_tag": "Not found",
             "file_not_found_tooltip": "Media file does not exist on disk or was moved",
-            "status_unlinked_tag": "Unlinked",
-            "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
-            "status_offline_tag": "Offline",
-            "status_offline_tooltip": "{platform} is not connected",
             "filter_all": "All",
             "filter_cost_asc": "Lowest to highest cost",
             "filter_cost_desc": "Highest to lowest cost",
@@ -914,6 +1027,10 @@
             "pos_random": "Random",
             "pts_suffix": "{cost} pts",
             "search_placeholder": "Search by name, file...",
+            "status_offline_tag": "Offline",
+            "status_offline_tooltip": "{platform} is not connected",
+            "status_unlinked_tag": "Unlinked",
+            "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Reward",
             "tooltip_edit": "Modify settings",
@@ -1093,6 +1210,8 @@
         },
         "schedule_dialog": {
             "btn_clear": "Clear Form",
+            "btn_now": "Now",
+            "btn_now_tooltip": "Set to current date and time",
             "btn_save": "Save Schedule",
             "category_placeholder": "e.g. Just Chatting",
             "date_label": "Execution Date:",
@@ -1174,7 +1293,7 @@
             "step_filters_title": "Timer Filters",
             "step_general_subtitle": "Configure timer name, intervals, and responses.",
             "step_general_title": "Configure Timer",
-            "suffix_lines": "messages",
+            "suffix_lines": "lines",
             "suffix_min": "min"
         },
         "empty": {

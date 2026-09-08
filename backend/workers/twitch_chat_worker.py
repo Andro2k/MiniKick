@@ -3,9 +3,9 @@
 import logging
 import datetime
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.twitch_websocket import TwitchSocketManager
-from backend.services.chat.pipeline import ChatMessageDTO
-from backend.services.system.translation_service import TranslationService
+from backend.providers.chat import TwitchSocketManager
+from backend.services.chat import ChatMessageDTO
+from backend.services.system import TranslationService
 
 logger = logging.getLogger("minikick.workers.twitch_chat")
 
@@ -90,7 +90,7 @@ class TwitchChatWorker(QThread):
                     self.msleep(5000)
 
         except Exception as e:
-            logger.error("[TwitchChatWorker] Unhandled error in Twitch chat worker: %s", e)
+            logger.error("[TwitchChatWorker] Unhandled error (%s) in Twitch chat worker: %s", type(e).__name__, e, exc_info=True)
             if not self._is_stopped:
                 self.error_occurred.emit(str(e))
 
@@ -99,6 +99,7 @@ class TwitchChatWorker(QThread):
             return
 
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        logger.info("[TwitchChatWorker] [%s] Message dispatched from '%s': %s (id=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a")
         dto = ChatMessageDTO(
             user=user,
             content=msg,

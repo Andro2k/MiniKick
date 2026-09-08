@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout
 from frontend.widgets import BaseView
 from frontend.components.widgets import WidgetCard
+from frontend.common import MARGIN_NONE, SPACING_XL
 
 class WidgetsView(BaseView):
     widget_saved = Signal(str, bool, str, int, str, object)
@@ -31,23 +32,23 @@ class WidgetsView(BaseView):
     def _setup_ui(self):
         self.body_container = QWidget()
         self.body_layout = QVBoxLayout(self.body_container)
-        self.body_layout.setContentsMargins(0, 0, 0, 0)
-        self.body_layout.setSpacing(16)
+        self.body_layout.setContentsMargins(*MARGIN_NONE)
+        self.body_layout.setSpacing(SPACING_XL)
 
         self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.columns_layout.setContentsMargins(0, 0, 0, 0)
-        self.columns_layout.setSpacing(16)
+        self.columns_layout.setContentsMargins(*MARGIN_NONE)
+        self.columns_layout.setSpacing(SPACING_XL)
 
         col1 = QWidget()
         self.col1_layout = QVBoxLayout(col1)
-        self.col1_layout.setContentsMargins(0, 0, 0, 0)
-        self.col1_layout.setSpacing(16)
+        self.col1_layout.setContentsMargins(*MARGIN_NONE)
+        self.col1_layout.setSpacing(SPACING_XL)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         col2 = QWidget()
         self.col2_layout = QVBoxLayout(col2)
-        self.col2_layout.setContentsMargins(0, 0, 0, 0)
-        self.col2_layout.setSpacing(16)
+        self.col2_layout.setContentsMargins(*MARGIN_NONE)
+        self.col2_layout.setSpacing(SPACING_XL)
         self.col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.columns_layout.addWidget(col1, stretch=1)

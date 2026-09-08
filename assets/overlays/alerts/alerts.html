@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick Alerts Overlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;800;900&family=Inter:wght@400;600;700&family=Montserrat:wght@600;800;900&family=Poppins:wght@600;700;800&family=Roboto:wght@500;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-font: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --secondary-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --kick-color: #53fc18;
+            --twitch-color: #9146ff;
+            --default-color: #00d2ff;
+            --bg-glass: rgba(18, 19, 23, 0.88);
+            --border-glass: rgba(255, 255, 255, 0.12);
+            --text-main: #ffffff;
+            --text-sub: #b3b9c5;
+            --card-radius: 20px;
+            --glow-spread: 25px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: transparent;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--secondary-font);
+        }
+
+        #alert-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 380px;
+            max-width: 620px;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.85) translateY(30px);
+            transition: opacity 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #alert-container.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+
+        #alert-container.dismissing {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+            transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+        }
+
+        .media-box {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: -15px;
+            z-index: 2;
+        }
+
+        .media-box img,
+        .media-box video,
+        .media-box iframe {
+            max-width: 320px;
+            max-height: 240px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+        }
+
+        .media-box iframe {
+            width: 320px;
+            height: 220px;
+            border: none;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        #alert-container.custom-html-active .media-box {
+            margin-bottom: 0;
+            width: 100%;
+        }
+
+        #alert-container.custom-html-active .media-box iframe {
+            max-width: 100%;
+            width: 520px;
+            height: 280px;
+        }
+
+        .alert-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--card-radius);
+            padding: 24px 32px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .alert-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-color, var(--default-color)), transparent);
+            box-shadow: 0 0 var(--glow-spread) var(--accent-color, var(--default-color));
+        }
+
+        .platform-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .platform-badge.kick {
+            color: #000;
+            background: var(--kick-color);
+            border-color: var(--kick-color);
+            box-shadow: 0 0 12px rgba(83, 252, 24, 0.4);
+        }
+
+        .platform-badge.twitch {
+            color: #fff;
+            background: var(--twitch-color);
+            border-color: var(--twitch-color);
+            box-shadow: 0 0 12px rgba(145, 70, 255, 0.4);
+        }
+
+        .alert-title {
+            font-family: var(--primary-font);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.25;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .alert-title span.highlight {
+            color: var(--accent-color, var(--default-color));
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .alert-message {
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-top: 8px;
+            font-style: italic;
+            word-break: break-word;
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 100%;
+            background: var(--accent-color, var(--default-color));
+            box-shadow: 0 0 10px var(--accent-color, var(--default-color));
+            transform-origin: left;
+        }
+
+        .audio-unlock-banner {
+            position: fixed;
+            top: 20px;
+            background: rgba(18, 19, 23, 0.94);
+            border: 1.5px solid rgba(83, 252, 24, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            animation: pulse-unlock 2s infinite ease-in-out;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            user-select: none;
+        }
+
+        .audio-unlock-banner:hover {
+            transform: scale(1.03);
+            border-color: #53fc18;
+        }
+
+        /* Layout Variants */
+        #alert-container.layout-above {
+            flex-direction: column;
+            align-items: center;
+        }
+        #alert-container.layout-above .media-box {
+            width: 100%;
+            margin-bottom: -15px;
+            z-index: 2;
+        }
+        #alert-container.layout-above .alert-card {
+            text-align: center;
+            width: 100%;
+        }
+
+        #alert-container.layout-below {
+            flex-direction: column-reverse;
+            align-items: center;
+        }
+        #alert-container.layout-below .media-box {
+            width: 100%;
+            margin-top: -15px;
+            margin-bottom: 0;
+            z-index: 2;
+        }
+        #alert-container.layout-below .alert-card {
+            text-align: center;
+            width: 100%;
+        }
+
+        #alert-container.layout-side {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            min-width: 440px;
+            max-width: 720px;
+            padding: 10px;
+        }
+        #alert-container.layout-side .media-box {
+            width: 90px;
+            height: 90px;
+            min-width: 90px;
+            max-width: 90px;
+            max-height: 90px;
+            margin-bottom: 0;
+            margin-right: 18px;
+            border-radius: 50%;
+            background: rgba(10, 12, 16, 0.8);
+            border: 2.5px solid var(--accent-color, var(--default-color));
+            box-shadow: 0 0 16px var(--accent-color, var(--default-color));
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+        #alert-container.layout-side .media-box img,
+        #alert-container.layout-side .media-box video {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        #alert-container.layout-side .alert-card {
+            text-align: left;
+            flex: 1;
+            padding: 20px 28px;
+        }
+        #alert-container.layout-side .platform-badge {
+            margin-bottom: 6px;
+        }
+        #alert-container.layout-side .alert-title {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        #alert-container.layout-side_right {
+            flex-direction: row-reverse;
+            align-items: center;
+            justify-content: center;
+            min-width: 440px;
+            max-width: 720px;
+            padding: 10px;
+        }
+        #alert-container.layout-side_right .media-box {
+            width: 90px;
+            height: 90px;
+            min-width: 90px;
+            max-width: 90px;
+            max-height: 90px;
+            margin-bottom: 0;
+            margin-left: 18px;
+            border-radius: 50%;
+            background: rgba(10, 12, 16, 0.8);
+            border: 2.5px solid var(--accent-color, var(--default-color));
+            box-shadow: 0 0 16px var(--accent-color, var(--default-color));
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+        #alert-container.layout-side_right .media-box img,
+        #alert-container.layout-side_right .media-box video {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        #alert-container.layout-side_right .alert-card {
+            text-align: right;
+            flex: 1;
+            padding: 20px 28px;
+        }
+        #alert-container.layout-side_right .platform-badge {
+            margin-bottom: 6px;
+        }
+        #alert-container.layout-side_right .alert-title {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        #alert-container.layout-overlay {
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--card-radius);
+            min-width: 460px;
+            max-width: 650px;
+        }
+        #alert-container.layout-overlay .media-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin-bottom: 0;
+            z-index: 0;
+            opacity: 0.35;
+            overflow: hidden;
+        }
+        #alert-container.layout-overlay .media-box img,
+        #alert-container.layout-overlay .media-box video {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            filter: blur(1.5px) brightness(0.65);
+        }
+        #alert-container.layout-overlay .alert-card {
+            z-index: 1;
+            background: rgba(14, 16, 22, 0.72);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            text-align: center;
+            width: 100%;
+            border: 1px solid var(--border-glass);
+        }
+
+        /* Visual Style Variants */
+        #alert-container.style-compact .alert-card {
+            background: rgba(14, 17, 24, 0.96);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+        }
+
+        #alert-container.style-glass .alert-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.06);
+        }
+
+        #alert-container.style-minimal .alert-card {
+            background: rgba(16, 17, 22, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        #alert-container.style-minimal .alert-card::before {
+            display: none;
+        }
+
+        #alert-container.style-sticker .alert-card {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 12px 16px;
+        }
+        #alert-container.style-sticker .alert-card::before {
+            display: none !important;
+        }
+        #alert-container.style-sticker .progress-bar {
+            display: none !important;
+        }
+        #alert-container.style-sticker .alert-title {
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 4px #000000, 0 0 2px #000000;
+        }
+        #alert-container.style-sticker .alert-message {
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 3px #000000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="audio-unlock-banner" class="audio-unlock-banner" style="display: none;" onclick="unlockAudio()">
+        <span>🔊 Haz clic aquí para activar el audio de las alertas</span>
+    </div>
+
+    <div id="alert-container">
+        <div class="media-box" id="media-box"></div>
+        <div class="alert-card" id="alert-card">
+            <div class="platform-badge" id="platform-badge">KICK</div>
+            <div class="alert-title" id="alert-title">¡Nuevo Seguidor!</div>
+            <div class="alert-message" id="alert-message" style="display: none;"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || '';
+        const container = document.getElementById('alert-container');
+        const mediaBox = document.getElementById('media-box');
+        const alertCard = document.getElementById('alert-card');
+        const platformBadge = document.getElementById('platform-badge');
+        const alertTitle = document.getElementById('alert-title');
+        const alertMsg = document.getElementById('alert-message');
+        const progressFill = document.getElementById('progress-fill');
+
+        let ws = null;
+        let activeAlertTimer = null;
+        let isPlaying = false;
+        let isAudioUnlocked = false;
+        let pendingAudioToPlay = null;
+        let activeAudioElement = null;
+        const localQueue = [];
+
+        function unlockAudio() {
+            if (isAudioUnlocked) return;
+            isAudioUnlocked = true;
+
+            const banner = document.getElementById('audio-unlock-banner');
+            if (banner) banner.style.display = 'none';
+
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    const ctx = new AudioContextClass();
+                    if (ctx.state === 'suspended') {
+                        ctx.resume();
+                    }
+                    const buffer = ctx.createBuffer(1, 1, 22050);
+                    const source = ctx.createBufferSource();
+                    source.buffer = buffer;
+                    source.connect(ctx.destination);
+                    source.start(0);
+                }
+            } catch (e) { }
+
+            if (pendingAudioToPlay) {
+                try {
+                    pendingAudioToPlay.play().catch(() => {});
+                } catch (e) { }
+                pendingAudioToPlay = null;
+            }
+        }
+
+        window.addEventListener('click', unlockAudio);
+        window.addEventListener('keydown', unlockAudio);
+        window.addEventListener('pointerdown', unlockAudio);
+
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) { }
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=alerts&token=${encodeURIComponent(token)}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Alerts Overlay] WebSocket conectado.");
+            };
+
+            ws.onmessage = function (event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data && data.id) {
+                        localQueue.push(data);
+                        processNextAlert();
+                    }
+                } catch (e) {
+                    console.error("[Alerts Overlay] Error al procesar mensaje:", e);
+                }
+            };
+
+            ws.onclose = function () {
+                console.warn("[Alerts Overlay] Conexión cerrada. Reconectando en 3s...");
+                setTimeout(connectWS, 3000);
+            };
+
+            ws.onerror = function (err) {
+                console.error("[Alerts Overlay] Error de WebSocket:", err);
+            };
+        }
+
+        function processNextAlert() {
+            if (isPlaying || localQueue.length === 0) return;
+            isPlaying = true;
+            const alertData = localQueue.shift();
+            showAlert(alertData);
+        }
+
+        function showAlert(data) {
+            const platform = (data.platform || 'kick').toLowerCase();
+            const defaultHighlight = platform === 'twitch' ? '#9146ff' : '#53fc18';
+            const highlightColor = data.highlight_color || defaultHighlight;
+            const textColor = data.text_color || '#ffffff';
+            const fontFamily = data.font_family ? `'${data.font_family}', var(--primary-font)` : 'var(--primary-font)';
+            const fontSize = (data.font_size || 26) + 'px';
+
+            document.documentElement.style.setProperty('--accent-color', highlightColor);
+            document.documentElement.style.setProperty('--text-main', textColor);
+
+            const layout = (data.layout || 'above').toLowerCase();
+            const style = (data.style || 'compact').toLowerCase();
+
+            container.className = `layout-${layout} style-${style}`;
+
+            platformBadge.textContent = platform.toUpperCase();
+            platformBadge.className = `platform-badge ${platform}`;
+
+            let titleHtml = data.formatted_text || `¡${data.username || 'Alguien'} te sigue!`;
+            if (!titleHtml.includes('<span class="highlight">') && data.username) {
+                const regex = new RegExp(`(${data.username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                titleHtml = titleHtml.replace(regex, '<span class="highlight">$1</span>');
+            }
+            alertTitle.innerHTML = titleHtml;
+            alertTitle.style.fontFamily = fontFamily;
+            alertTitle.style.fontSize = fontSize;
+            alertTitle.style.color = textColor;
+
+            const defaultAlign = (layout === 'side') ? 'left' : (layout === 'side_right' ? 'right' : 'center');
+            const textAlign = data.text_align || defaultAlign;
+            alertCard.style.textAlign = textAlign;
+
+            if (data.message) {
+                alertMsg.textContent = `"${data.message}"`;
+                alertMsg.style.display = 'block';
+            } else {
+                alertMsg.style.display = 'none';
+            }
+
+            mediaBox.innerHTML = '';
+            let videoElement = null;
+            const targetVolume = Math.max(0.0, Math.min(1.0, data.sound_volume ?? 0.8));
+
+            if (data.media_url) {
+                const ext = (data.media_ext || '').toLowerCase();
+                if (ext === '.mp4' || ext === '.webm') {
+                    videoElement = document.createElement('video');
+                    videoElement.playsInline = true;
+                    videoElement.loop = true;
+                    if (data.sound_url) {
+                        videoElement.muted = true;
+                    } else {
+                        videoElement.muted = false;
+                        videoElement.volume = targetVolume;
+                    }
+                    videoElement.src = data.media_url;
+                    mediaBox.appendChild(videoElement);
+                    videoElement.play().catch(e => {
+                        console.warn("[Alerts Video] Unmuted play blocked, falling back to muted:", e);
+                        videoElement.muted = true;
+                        videoElement.play().catch(err => console.warn("[Alerts Video] Muted play blocked:", err));
+                    });
+                } else if (ext === '.html' || ext === '.htm') {
+                    container.classList.add('custom-html-active');
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'alert-custom-frame';
+                    iframe.setAttribute('allow', 'autoplay');
+                    iframe.src = data.media_url;
+
+                    iframe.onload = function () {
+                        try {
+                            const eventPayload = {
+                                type: 'onEventReceived',
+                                detail: {
+                                    listener: data.alert_type || 'alert',
+                                    event: data
+                                }
+                            };
+                            iframe.contentWindow.postMessage(eventPayload, '*');
+                        } catch (err) {
+                            console.warn("[Alerts Custom HTML] Error al enviar postMessage a iframe:", err);
+                        }
+                    };
+                    mediaBox.appendChild(iframe);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = data.media_url;
+                    mediaBox.appendChild(img);
+                }
+            } else if (layout === 'side' || layout === 'side_right') {
+                const starColor = highlightColor;
+                mediaBox.innerHTML = `<svg width="44" height="44" viewBox="0 0 24 24" fill="${starColor}"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+            }
+
+            if (data.sound_url) {
+                if (activeAudioElement) {
+                    try { activeAudioElement.pause(); activeAudioElement.src = ''; } catch (e) { }
+                    activeAudioElement = null;
+                }
+                const audio = new Audio();
+                audio.src = data.sound_url;
+                audio.volume = targetVolume;
+                audio.load();
+                activeAudioElement = audio;
+
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.warn("[Alerts Audio] Play blocked by browser policy:", e);
+                        pendingAudioToPlay = audio;
+                        const banner = document.getElementById('audio-unlock-banner');
+                        if (banner) banner.style.display = 'flex';
+                    });
+                }
+            }
+
+            const duration = data.duration_ms || 5000;
+            progressFill.style.transition = 'none';
+            progressFill.style.transform = 'scaleX(1)';
+
+            container.classList.remove('dismissing');
+            container.classList.add('active');
+
+            requestAnimationFrame(() => {
+                progressFill.style.transition = `transform ${duration}ms linear`;
+                progressFill.style.transform = 'scaleX(0)';
+            });
+
+            function dismissAlert() {
+                if (!isPlaying) return;
+                if (activeAlertTimer) {
+                    clearTimeout(activeAlertTimer);
+                    activeAlertTimer = null;
+                }
+                window.removeEventListener('message', onCustomAlertMessage);
+
+                container.classList.remove('active');
+                container.classList.add('dismissing');
+
+                setTimeout(() => {
+                    if (videoElement) {
+                        try {
+                            videoElement.pause();
+                            videoElement.src = '';
+                            videoElement.load();
+                        } catch (e) { }
+                        videoElement = null;
+                    }
+                    mediaBox.innerHTML = '';
+                    container.classList.remove('custom-html-active');
+
+                    if (activeAudioElement) {
+                        try {
+                            activeAudioElement.pause();
+                            activeAudioElement.src = '';
+                        } catch (e) { }
+                        activeAudioElement = null;
+                    }
+                    pendingAudioToPlay = null;
+                    isPlaying = false;
+
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'alert_finished', id: data.id }));
+                    }
+
+                    processNextAlert();
+                }, 350);
+            }
+
+            function onCustomAlertMessage(event) {
+                if (event.data && (event.data.type === 'minikick:finish_alert' || event.data.type === 'finish_alert')) {
+                    dismissAlert();
+                }
+            }
+            window.addEventListener('message', onCustomAlertMessage);
+
+            activeAlertTimer = setTimeout(dismissAlert, duration);
+        }
+
+        connectWS();
+    </script>
+</body>
+
+</html>

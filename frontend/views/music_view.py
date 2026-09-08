@@ -3,6 +3,7 @@
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QTabWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernScrollArea
+from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_XL
 from frontend.components.music import (
     MusicStatsPanel,
     MusicPlayerSettingsPanel,
@@ -30,7 +31,7 @@ class MusicView(BaseView):
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
         super().__init__(i18n=i18n, title_key="music.header.title", subtitle_key="music.header.subtitle", parent=parent)
         self._music_overlay_url = music_overlay_url
-        self._last_direction = None
+        self._last_direction = QBoxLayout.Direction.LeftToRight
         self._setup_ui()
         self._connect_internal_signals()
 
@@ -41,40 +42,40 @@ class MusicView(BaseView):
     def _setup_ui(self):
         self.body_container = QWidget()
         self.body_layout = QVBoxLayout(self.body_container)
-        self.body_layout.setContentsMargins(0, 0, 0, 0)
-        self.body_layout.setSpacing(16)
+        self.body_layout.setContentsMargins(*MARGIN_NONE)
+        self.body_layout.setSpacing(SPACING_XL)
 
         self.stats_panel = MusicStatsPanel(self.i18n)
         self.body_layout.addWidget(self.stats_panel)
 
         self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.columns_layout.setContentsMargins(0, 0, 0, 0)
-        self.columns_layout.setSpacing(16)
+        self.columns_layout.setContentsMargins(*MARGIN_NONE)
+        self.columns_layout.setSpacing(SPACING_XL)
 
-        col1 = QWidget()
+        col1 = QWidget(self.body_container)
         self.col1_layout = QVBoxLayout(col1)
-        self.col1_layout.setContentsMargins(0, 0, 0, 0)
-        self.col1_layout.setSpacing(0)
+        self.col1_layout.setContentsMargins(*MARGIN_NONE)
+        self.col1_layout.setSpacing(SPACING_NONE)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.tabs = QTabWidget()
+        self.tabs = QTabWidget(col1)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.player_panel = MusicPlayerSettingsPanel(self.i18n, music_overlay_url=self._music_overlay_url)
-        self.commands_panel = MusicCommandsPanel(self.i18n)
-        self.settings_panel = MusicSettingsPanel(self.i18n)
-        self.queue_panel = MusicQueuePanel(self.i18n)
+        self.player_panel = MusicPlayerSettingsPanel(self.i18n, music_overlay_url=self._music_overlay_url, parent=self.tabs)
+        self.commands_panel = MusicCommandsPanel(self.i18n, parent=self.tabs)
+        self.settings_panel = MusicSettingsPanel(self.i18n, parent=self.tabs)
+        self.queue_panel = MusicQueuePanel(self.i18n, parent=self.body_container)
 
-        self.tabs.addTab(ModernScrollArea(self.player_panel), self.i18n.get("music.tabs.player"))
-        self.tabs.addTab(ModernScrollArea(self.commands_panel), self.i18n.get("music.tabs.commands"))
-        self.tabs.addTab(ModernScrollArea(self.settings_panel), self.i18n.get("music.tabs.settings"))
+        self.tabs.addTab(ModernScrollArea(self.player_panel, parent=self.tabs), self.i18n.get("music.tabs.player"))
+        self.tabs.addTab(ModernScrollArea(self.commands_panel, parent=self.tabs), self.i18n.get("music.tabs.commands"))
+        self.tabs.addTab(ModernScrollArea(self.settings_panel, parent=self.tabs), self.i18n.get("music.tabs.settings"))
 
         self.col1_layout.addWidget(self.tabs)
 
-        col2 = QWidget()
+        col2 = QWidget(self.body_container)
         self.col2_layout = QVBoxLayout(col2)
-        self.col2_layout.setContentsMargins(0, 0, 0, 0)
-        self.col2_layout.setSpacing(0)
+        self.col2_layout.setContentsMargins(*MARGIN_NONE)
+        self.col2_layout.setSpacing(SPACING_NONE)
         self.col2_layout.addWidget(self.queue_panel)
 
         self.columns_layout.addWidget(col1, stretch=3)

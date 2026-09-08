@@ -2,6 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt
+from frontend.common import MARGIN_2XS, SPACING_LG, SPACING_MD
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow
 
 class MusicCommandsPanel(QWidget):
@@ -25,11 +26,11 @@ class MusicCommandsPanel(QWidget):
 
     def _setup_ui(self):
         panel_layout = QVBoxLayout(self)
-        panel_layout.setContentsMargins(0, 0, 0, 0)
-        panel_layout.setSpacing(16)
+        panel_layout.setContentsMargins(*MARGIN_2XS)
+        panel_layout.setSpacing(SPACING_LG)
         panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.card_cmds = ModernCard(margin=12, spacing=8)
+        self.card_cmds = ModernCard(margin=SPACING_LG, spacing=SPACING_MD)
         self.card_cmds.setEnabled(False)
 
         lbl_title = QLabel(self.i18n.get("music.cmds.title"))
@@ -51,9 +52,8 @@ class MusicCommandsPanel(QWidget):
 
     def set_switch_states(self, states: dict[str, bool]) -> None:
         for cmd, sw in self.switches.items():
-            if cmd in states:
-                val = bool(states[cmd])
-                if sw.isChecked() != val:
-                    sw.blockSignals(True)
-                    sw.setChecked(val)
-                    sw.blockSignals(False)
+            val = bool(states.get(cmd, False))
+            if sw.isChecked() != val:
+                sw.blockSignals(True)
+                sw.setChecked(val)
+                sw.blockSignals(False)

@@ -7,8 +7,11 @@ from .controls import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
-from frontend.common.icons import get_icon_colored
-from frontend.common.paths import get_assets_path
+from frontend.common import (
+    get_icon_colored, get_assets_path,
+    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_MD, MARGIN_XL, MARGIN_H_SM
+)
 
 class ModernTable(QTableWidget):
     def __init__(self, headers: list[str], parent=None):
@@ -35,8 +38,8 @@ class ModernTableCard(QFrame):
         self.setProperty("role", "card")
         
         self.card_layout = QVBoxLayout(self)
-        self.card_layout.setContentsMargins(8, 8, 8, 8)
-        self.card_layout.setSpacing(6)
+        self.card_layout.setContentsMargins(*MARGIN_MD)
+        self.card_layout.setSpacing(SPACING_SM)
         
         self.header_layout = None
         self.lbl_title = None
@@ -78,8 +81,8 @@ class ModernTableCard(QFrame):
     def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked):
         self.empty_widget = QWidget(self)
         layout = QVBoxLayout(self.empty_widget)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(12)
+        layout.setContentsMargins(*MARGIN_XL)
+        layout.setSpacing(SPACING_LG)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         illustration_path = get_assets_path(os.path.join("icons", icon_name))
@@ -104,14 +107,13 @@ class ModernTableCard(QFrame):
         
         self.btn_empty_action = ModernButton(button_text, role="action_accent")
         self.btn_empty_action.set_icon("add.svg", size=16)
-        self.btn_empty_action.setFixedWidth(200)
         self.btn_empty_action.clicked.connect(on_button_clicked)
         
         layout.addStretch(1)
         layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(lbl_title)
         layout.addWidget(lbl_desc)
-        layout.addSpacing(8)
+        layout.addSpacing(SPACING_MD)
         layout.addWidget(self.btn_empty_action, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch(2)
         
@@ -147,8 +149,8 @@ class TableActionCell(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QHBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(6)
+        self.layout.setContentsMargins(*MARGIN_NONE)
+        self.layout.setSpacing(SPACING_SM)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
     def add_switch(self, checked: bool, callback) -> ModernSwitch:
@@ -156,7 +158,7 @@ class TableActionCell(QWidget):
         sw.setChecked(checked)
         sw.toggled.connect(callback)
         self.layout.addWidget(sw)
-        self.layout.addSpacing(4)
+        self.layout.addSpacing(SPACING_XS)
         return sw
         
     def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
@@ -168,3 +170,45 @@ class TableActionCell(QWidget):
         btn.clicked.connect(callback)
         self.layout.addWidget(btn)
         return btn
+
+class PlatformBadgeCell(QWidget):
+    def __init__(self, platforms: list[str] | None = None, parent=None):
+        super().__init__(parent)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(*MARGIN_H_SM)
+        self.layout.setSpacing(SPACING_SM)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        if platforms is not None:
+            self.set_platforms(platforms)
+
+    def set_platforms(self, platforms: list[str]):
+        while self.layout.count() > 0:
+            item = self.layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        if not platforms:
+            lbl_empty = QLabel("-", self)
+            lbl_empty.setProperty("role", "body")
+            self.layout.addWidget(lbl_empty)
+            return
+
+        from frontend.common import COLOR_GREEN, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, get_pixmap_colored
+        plat_configs = {
+            "kick": ("brand-kick.svg", COLOR_GREEN, "Kick"),
+            "twitch": ("brand-twitch.svg", COLOR_TWITCH, "Twitch"),
+            "youtube": ("brand-youtube.svg", COLOR_YOUTUBE, "YouTube"),
+            "tiktok": ("brand-tiktok.svg", COLOR_TIKTOK, "TikTok"),
+        }
+
+        for p in platforms:
+            p_key = p.lower()
+            if p_key in plat_configs:
+                icon_file, color, name = plat_configs[p_key]
+                lbl_icon = QLabel(self)
+                lbl_icon.setPixmap(get_pixmap_colored(icon_file, color, 16))
+                lbl_icon.setToolTip(name)
+                self.layout.addWidget(lbl_icon)
+
+        self.layout.addStretch()
+

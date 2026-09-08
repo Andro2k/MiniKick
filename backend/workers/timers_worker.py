@@ -3,7 +3,7 @@
 import logging
 import time
 from PySide6.QtCore import QThread, Signal
-from backend.providers.chat.kick_client import KickAPIClient
+from backend.providers.chat import KickAPIClient
 
 logger = logging.getLogger("minikick.workers.timers")
 

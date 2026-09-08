@@ -2,7 +2,6 @@
 
 import sys
 import ctypes
-import ctypes.wintypes
 import logging
 from PySide6.QtCore import QThread, Signal
 
@@ -18,16 +17,22 @@ WM_KEYDOWN     = 0x0100
 WM_SYSKEYDOWN  = 0x0104
 WM_QUIT        = 0x0012
 
-class KBDLLHOOKSTRUCT(ctypes.Structure):
-    _fields_ = [
-        ("vkCode", ctypes.wintypes.DWORD),
-        ("scanCode", ctypes.wintypes.DWORD),
-        ("flags", ctypes.wintypes.DWORD),
-        ("time", ctypes.wintypes.DWORD),
-        ("dwExtraInfo", ctypes.c_size_t)
-    ]
+if sys.platform == "win32":
+    import ctypes.wintypes
 
-HOOKPROC = ctypes.WINFUNCTYPE(ctypes.c_ssize_t, ctypes.c_int, ctypes.wintypes.WPARAM, ctypes.wintypes.LPARAM)
+    class KBDLLHOOKSTRUCT(ctypes.Structure):
+        _fields_ = [
+            ("vkCode", ctypes.wintypes.DWORD),
+            ("scanCode", ctypes.wintypes.DWORD),
+            ("flags", ctypes.wintypes.DWORD),
+            ("time", ctypes.wintypes.DWORD),
+            ("dwExtraInfo", ctypes.c_size_t)
+        ]
+
+    HOOKPROC = ctypes.WINFUNCTYPE(ctypes.c_ssize_t, ctypes.c_int, ctypes.wintypes.WPARAM, ctypes.wintypes.LPARAM)
+else:
+    KBDLLHOOKSTRUCT = None
+    HOOKPROC = None
 
 class GlobalMediaWorker(QThread):
     play_pause_pressed = Signal()
@@ -44,6 +49,7 @@ class GlobalMediaWorker(QThread):
 
     def run(self):
         if sys.platform != "win32":
+            logger.debug("[GlobalMediaWorker] Global media keys hook is only supported on Windows. Skipping.")
             return
 
         user32 = ctypes.windll.user32

@@ -257,8 +257,9 @@ class PiperTTSProvider:
                     target_dev = QMediaDevices.defaultAudioOutput()
                 if target_dev:
                     audio_output.setDevice(target_dev)
+                    logger.debug("[Piper TTS] Audio output device routed to: '%s' (configured: '%s')", target_dev.description(), self._audio_device_id)
             except Exception as dev_err:
-                logger.error("[Piper TTS] Error setting audio output device: %s", dev_err)
+                logger.error("[Piper TTS] Error setting audio output device (%s): %s", type(dev_err).__name__, dev_err, exc_info=True)
 
             player.setAudioOutput(audio_output)
             audio_output.setVolume(self.volume)
@@ -287,7 +288,7 @@ class PiperTTSProvider:
                 pass
 
         except Exception as e:
-            logger.error("[Piper TTS] Playback error: %s", e)
+            logger.error("[Piper TTS] Playback error (%s): %s", type(e).__name__, e, exc_info=True)
         finally:
             if player:
                 try:

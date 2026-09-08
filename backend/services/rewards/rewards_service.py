@@ -2,7 +2,7 @@
 
 import os
 import logging
-from backend.services.rewards.thumbnail_service import generate_media_thumbnail
+from .thumbnail_service import generate_media_thumbnail
 
 logger = logging.getLogger("minikick.services.rewards")
 

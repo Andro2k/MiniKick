@@ -1,4 +1,119 @@
 {
+    "alerts": {
+        "align": {
+            "center": "Centro",
+            "left": "Izquierda",
+            "right": "Derecha"
+        },
+        "buttons": {
+            "browse": "Examinar...",
+            "discard": "Descartar",
+            "save": "Guardar Cambios",
+            "test": "Probar Alerta",
+            "test_sent": "Alerta de prueba enviada a OBS."
+        },
+        "events": {
+            "cheer": "Bits / Cheers (Twitch)",
+            "cheer_desc": "Alerta cuando un espectador envía Bits en Twitch.",
+            "follow": "Nuevo Seguidor",
+            "follow_desc": "Alerta cuando un usuario sigue tu canal.",
+            "raid": "Raid / Host",
+            "raid_desc": "Alerta cuando otro streamer te envía una raid con espectadores.",
+            "resub": "Renovación de Suscripción",
+            "resub_desc": "Alerta cuando un suscriptor renueva su suscripción.",
+            "sub_gift": "Suscripciones de Regalo",
+            "sub_gift_desc": "Alerta cuando un usuario regala suscripciones a la comunidad.",
+            "subscription": "Nueva Suscripción",
+            "subscription_desc": "Alerta cuando un usuario se suscribe por primera vez."
+        },
+        "fields": {
+            "active": "Alerta Activa",
+            "duration": "Duración (segundos)",
+            "duration_desc": "Tiempo en segundos que se muestra la alerta en pantalla.",
+            "font_family": "Tipografía / Fuente",
+            "font_family_desc": "Familia tipográfica para los textos de la alerta.",
+            "font_size": "Tamaño de Fuente",
+            "font_size_desc": "Tamaño en píxeles del texto mostrado en la alerta.",
+            "highlight_color": "Color de Resaltado",
+            "highlight_color_desc": "Color para resaltar el nombre de usuario.",
+            "media": "Multimedia o HTML",
+            "media_filter": "Multimedia y Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Archivos Multimedia (*.png *.gif *.webp *.mp4 *.webm);;Todos los Archivos (*.*)",
+            "media_placeholder": "Ruta a archivo .png, .gif, .mp4, .webm o .html",
+            "sound": "Sonido de Alerta",
+            "sound_placeholder": "Ruta a archivo .mp3, .wav u .ogg",
+            "template": "Plantilla de Texto",
+            "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
+            "text_align": "Alineación del Texto",
+            "text_align_desc": "Alineación horizontal del texto dentro del diseño.",
+            "text_color": "Color del Texto",
+            "text_color_desc": "Color principal de los mensajes de la alerta.",
+            "tts": "Leer alerta con voz (TTS)",
+            "volume": "Volumen"
+        },
+        "header": {
+            "subtitle": "Configura y personaliza las alertas de tu stream en OBS para Kick y Twitch.",
+            "title": "Alertas en Vivo"
+        },
+        "layout": {
+            "above": "Imagen Arriba (Centrado)",
+            "below": "Imagen Abajo",
+            "desc": "Elige la distribución visual entre imagen y texto.",
+            "overlay": "Texto Superpuesto",
+            "side": "Imagen Izquierda",
+            "side_right": "Imagen Derecha",
+            "title": "Disposición"
+        },
+        "notice": {
+            "connect_btn": "Vincular {platform}",
+            "disconnected_msg": "{platform} no está conectado. Las alertas no se activarán en vivo hasta que vincules tu cuenta.",
+            "disconnected_title": "Cuenta no vinculada"
+        },
+        "overlay_card": {
+            "copied_msg": "La URL del overlay de alertas se copió al portapapeles.",
+            "copied_title": "URL Copiada",
+            "copy_btn": "Copiar URL",
+            "desc": "Agrega esta URL como 'Fuente de Navegador' en OBS (1920x1080 con fondo transparente).",
+            "open_btn": "Previsualizar Overlay",
+            "title": "URL del Overlay para OBS"
+        },
+        "platforms": {
+            "kick": "Kick",
+            "twitch": "Twitch"
+        },
+        "preview": {
+            "sample_amount": "500",
+            "sample_template": "{user} te acaba de seguir!",
+            "sample_tier": "1",
+            "sample_user": "TheAndro2K",
+            "title": "Vista Previa de la Alerta"
+        },
+        "sections": {
+            "appearance": "Diseño y Apariencia",
+            "general": "Ajustes Generales"
+        },
+        "sidebar": {
+            "title": "Variantes de Alerta"
+        },
+        "status": {
+            "disabled_msg": "La alerta de '{event}' ha sido desactivada.",
+            "disabled_title": "Alerta Desactivada",
+            "disconnected": "Desconectado",
+            "enabled_msg": "La alerta de '{event}' ha sido activada.",
+            "enabled_title": "Alerta Activada",
+            "platform_offline": "Plataforma no conectada: las alertas no se emitirán en directo hasta vincular tu cuenta",
+            "saved_msg": "La configuración de la alerta se guardó correctamente.",
+            "saved_title": "Alerta Guardada",
+            "unsaved": "Cambios sin guardar"
+        },
+        "style": {
+            "compact": "Compacto (Tarjeta)",
+            "desc": "Estilo visual del contenedor y marco de la alerta.",
+            "glass": "Glassmorphism",
+            "minimal": "Minimalista",
+            "sticker": "Sticker / Transparente",
+            "title": "Estilo"
+        }
+    },
     "chat": {
         "banned_words": {
             "input_placeholder": "ej. insulto o palabra prohibida",
@@ -35,6 +150,11 @@
             "orientation_horizontal": "Horizontal (Marquesina)",
             "orientation_title": "Orientación del Chat",
             "orientation_vertical": "Vertical (Columna)",
+            "preview_sample_bot_msg": "¡Qué onda @TheAndro2K! Bienvenido al stream, ponte cómodo. 👾",
+            "preview_sample_bot_user": "theandro2k",
+            "preview_sample_msg_1": "hola xd",
+            "preview_sample_user": "TheAndro2K",
+            "preview_title": "Vista Previa del Overlay",
             "recommended_dim": "Tamaño recomendado en OBS: {dim}",
             "show_bots_desc": "Muestra los mensajes de bots silenciados en la pantalla del stream.",
             "show_bots_title": "Mostrar Bots",
@@ -77,6 +197,7 @@
             "prefix_placeholder": "Ej. !tts",
             "prefix_title": "Prefijo de Comando",
             "provider_title": "Motor de Voz TTS",
+            "search_voice_placeholder": "Buscar voz...",
             "speed_desc": "Ajusta la velocidad y el ritmo de la locución.",
             "speed_title": "Velocidad de Lectura",
             "tts_desc": "Activa o desactiva la lectura automática del chat en voz alta.",
@@ -209,6 +330,7 @@
             "update": "Buscar actualizaciones",
             "view_release_notes": "Ver Novedades"
         },
+        "no_results": "No se encontraron resultados",
         "status": {
             "error": "Error",
             "offline": "Desconectado",
@@ -356,6 +478,7 @@
             "header": "**REPORTE DE BUG**",
             "lbl_contact": "Contacto / Discord (Opcional):",
             "lbl_description": "Descripción del problema (Requerido):",
+            "lbl_diagnostics": "Diagnóstico del Sistema (Opcional):",
             "lbl_image": "Adjuntar Captura / Imagen (Opcional):",
             "placeholder_contact": "Tu nombre de usuario o contacto...",
             "placeholder_desc": "Describe brevemente qué estabas haciendo y qué error ocurrió...",
@@ -388,7 +511,6 @@
             "title": "Novedades de la Versión"
         },
         "tiktok_connect": {
-            "btn_clear": "Limpiar",
             "btn_connect": "Conectar Chat",
             "desc": "Introduce el nombre de usuario (@usuario) del canal de TikTok Live:",
             "placeholder": "ej. @streamer o usuario",
@@ -432,7 +554,6 @@
             "step_indicator": "Paso {current}/{total}"
         },
         "youtube_connect": {
-            "btn_clear": "Limpiar",
             "btn_connect": "Conectar Chat",
             "desc": "Introduce el handle (@canal), el enlace completo del directo o el ID del video de YouTube:",
             "placeholder": "ej. @lofigirl o https://youtube.com/watch?v=...",
@@ -555,6 +676,7 @@
                 "navigate": "Navegar"
             },
             "tabs": {
+                "alerts": "Alertas",
                 "chat": "Chat",
                 "comandos": "Comandos",
                 "dashboard": "Panel de Control",
@@ -577,6 +699,8 @@
             "version": "Versión {version}"
         },
         "toast": {
+            "auth_in_progress_msg": "Ya hay una autenticación en curso en tu navegador. Por favor completa o cierra esa ventana antes de iniciar otra.",
+            "auth_in_progress_title": "Autenticación en curso",
             "kick_connected_msg": "Conectado exitosamente al chat de Kick: @{username}",
             "kick_connected_title": "Kick Conectado",
             "kick_disconnected_msg": "Se ha desvinculado la sesión de Kick.",
@@ -624,11 +748,6 @@
             },
             "chat": {
                 "error_room_id": "No se pudo obtener el ID de la sala de chat desde la API."
-            },
-            "reward": {
-                "poll_error": "Error al consultar recompensas: {error}",
-                "someone": "Alguien",
-                "unknown_reward": "Recompensa Desconocida"
             }
         }
     },
@@ -729,8 +848,6 @@
             "title": "Cola de Reproducción"
         },
         "stats": {
-            "badge_active": "O ACTIVADO",
-            "badge_disabled": "O DESACTIVADO",
             "cmd_desc": "Permite a tus espectadores solicitar canciones con el comando !sr",
             "cmd_title": "Comando del chat",
             "duration_desc": "Duración acumulada de todas las canciones en espera",
@@ -901,10 +1018,6 @@
             "col_volume": "Volumen",
             "file_not_found_tag": "No encontrado",
             "file_not_found_tooltip": "El archivo multimedia no existe en el disco o fue movido de ubicación",
-            "status_unlinked_tag": "Desvinculada",
-            "status_unlinked_tooltip": "Esta recompensa fue eliminada o no existe en {platform}",
-            "status_offline_tag": "Desconectado",
-            "status_offline_tooltip": "{platform} no está conectado",
             "filter_all": "Todos",
             "filter_cost_asc": "Menor a mayor costo",
             "filter_cost_desc": "Mayor a menor costo",
@@ -914,6 +1027,10 @@
             "pos_random": "Aleatorio",
             "pts_suffix": "{cost} pts",
             "search_placeholder": "Buscar por nombre, archivo...",
+            "status_offline_tag": "Desconectado",
+            "status_offline_tooltip": "{platform} no está conectado",
+            "status_unlinked_tag": "Desvinculada",
+            "status_unlinked_tooltip": "Esta recompensa fue eliminada o no existe en {platform}",
             "title": "Recompensas Vinculadas",
             "tooltip_delete": "Eliminar Recompensa",
             "tooltip_edit": "Modificar ajustes",
@@ -1093,6 +1210,8 @@
         },
         "schedule_dialog": {
             "btn_clear": "Limpiar Formulario",
+            "btn_now": "Ahora",
+            "btn_now_tooltip": "Establecer la fecha y hora actual",
             "btn_save": "Guardar Horario",
             "category_placeholder": "ej. Just Chatting",
             "date_label": "Fecha de ejecución:",
@@ -1174,7 +1293,7 @@
             "step_filters_title": "Filtros del Temporizador",
             "step_general_subtitle": "Configura el nombre, intervalos y respuestas del anuncio.",
             "step_general_title": "Configurar Temporizador",
-            "suffix_lines": "mensajes",
+            "suffix_lines": "lineas",
             "suffix_min": "min"
         },
         "empty": {

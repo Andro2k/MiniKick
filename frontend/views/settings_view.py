@@ -4,6 +4,7 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
+from frontend.common import MARGIN_NONE, SPACING_MD
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -102,8 +103,8 @@ class SettingsView(BaseView):
 
         btn_backup_container = QWidget()
         btn_backup_layout = QHBoxLayout(btn_backup_container)
-        btn_backup_layout.setContentsMargins(0, 0, 0, 0) 
-        btn_backup_layout.setSpacing(8)
+        btn_backup_layout.setContentsMargins(*MARGIN_NONE) 
+        btn_backup_layout.setSpacing(SPACING_MD)
         
         self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_neutral_border")
         self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_neutral_border")
@@ -259,13 +260,13 @@ class SettingsView(BaseView):
         size = self.combo_font.itemData(index)
         self.font_size_changed.emit(size)
 
-    def show_bug_report_dialog(self, worker_class=None) -> None:
-        from frontend.dialogs.bug_report_dialog import BugReportDialog
-        dialog = BugReportDialog(self.i18n, worker_class=worker_class, parent=self.window())
+    def show_bug_report_dialog(self, worker_class=None, initial_contact: str = "") -> None:
+        from frontend.dialogs import BugReportDialog
+        dialog = BugReportDialog(self.i18n, worker_class=worker_class, initial_contact=initial_contact, parent=self.window())
         dialog.exec()
 
     def show_release_notes_dialog(self, worker_class=None) -> None:
-        from frontend.dialogs.release_notes_dialog import ReleaseNotesDialog
+        from frontend.dialogs import ReleaseNotesDialog
         dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, parent=self.window())
         dialog.exec()
 

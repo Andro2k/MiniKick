@@ -1,7 +1,7 @@
 # backend\database\schedule_storage.py
 
 import logging
-from backend.database.manager import DatabaseManager
+from .manager import DatabaseManager
 logger = logging.getLogger("minikick.schedule_storage")
 
 class SQLiteScheduleStorage:

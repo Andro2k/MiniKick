@@ -78,7 +78,7 @@ class CommandService(QObject):
         self._pending_saves.clear()
 
     def get_all_commands(self) -> list[dict]:
-        return list(self._all_commands_cache)
+        return [dict(c) for c in self._all_commands_cache]
 
     def get_command_by_trigger(self, trigger: str) -> dict | None:
         clean = trigger.strip().lower()
@@ -158,15 +158,19 @@ class CommandService(QObject):
         return user_level >= req_level
 
     def process_incoming_message(self, user: str, message: str, badges: list, platform: str = "kick") -> tuple[bool, str, dict, str]:
-        if not message:
+        if not message or not message.strip():
             return False, "", {}, ""
 
-        parts = message.split(maxsplit=1)
+        parts = message.strip().split(maxsplit=1)
+        if not parts:
+            return False, "", {}, ""
+
         first_word = parts[0].lower()
         raw_first_word = parts[0]
 
         args = parts[1] if len(parts) > 1 else ""
-        touser = args.strip().split()[0] if args.strip() else user
+        args_words = args.strip().split()
+        touser = args_words[0] if args_words else user
         if touser.startswith("@"):
             touser = touser[1:]
 
@@ -180,7 +184,8 @@ class CommandService(QObject):
                 match = compiled.search(message)
                 if match:
                     remaining = message[match.end():].strip()
-                    reg_touser = remaining.split()[0] if remaining else user
+                    rem_words = remaining.split()
+                    reg_touser = rem_words[0] if rem_words else user
                     if reg_touser.startswith("@"):
                         reg_touser = reg_touser[1:]
                     return self._try_execute(regex_cmd, user, reg_touser, badges, match.group(0), platform=platform)
@@ -217,16 +222,13 @@ class CommandService(QObject):
         except Exception as e:
             logger.error("[CommandService] Error logging command execution: %s", e)
 
-        if final_response.startswith("[PLUGIN_") or final_response.startswith("__PLUGIN:"):
-            clean_tag = final_response
-            if clean_tag.startswith("__PLUGIN:") and clean_tag.endswith("__"):
-                clean_tag = clean_tag[len("__PLUGIN:"): -2]
-            return True, clean_tag, cmd, matched_prefix
+        if final_response.startswith("[PLUGIN_"):
+            return True, final_response, cmd, matched_prefix
 
         self.send_response(final_response, platform=platform)
         return True, "", cmd, matched_prefix
 
-    def send_response(self, response_text: str, platform: str = "kick"):
+    def send_response(self, response_text: str, platform: str = "kick", async_kick: bool = True):
         if not response_text:
             return
 
@@ -241,10 +243,19 @@ class CommandService(QObject):
                 logger.debug("[CommandService] Twitch worker not active, skipping Twitch chat message dispatch.")
         elif platform == "kick":
             if self.api_client and (not hasattr(self.api_client, "is_authenticated") or self.api_client.is_authenticated()):
-                try:
-                    self.api_client.post_chat_message(content=response_text, msg_type="bot")
-                except Exception as e:
-                    logger.error("[CommandService] Error sending response to Kick: %s", e)
+                def _do_post():
+                    try:
+                        self.api_client.post_chat_message(content=response_text, msg_type="bot")
+                    except Exception as e:
+                        logger.error("[CommandService] Error sending response to Kick: %s", e)
+
+                if async_kick:
+                    import threading
+                    t = threading.Thread(target=_do_post, daemon=True, name="KickChatSendResponse")
+                    t.start()
+                    self._last_kick_thread = t
+                else:
+                    _do_post()
             else:
                 logger.debug("[CommandService] Kick not authenticated, skipping Kick chat message dispatch.")
         elif platform in ("youtube", "tiktok"):
@@ -253,10 +264,10 @@ class CommandService(QObject):
 
         self.response_generated.emit(response_text, platform)
 
-    def post_chat_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True):
+    def post_chat_message(self, message: str, apply_kick: bool = True, apply_twitch: bool = True, async_kick: bool = True):
         if not message:
             return
         if apply_kick:
-            self.send_response(message, platform="kick")
+            self.send_response(message, platform="kick", async_kick=async_kick)
         if apply_twitch:
             self.send_response(message, platform="twitch")
