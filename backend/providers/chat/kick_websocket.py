@@ -13,6 +13,22 @@ from backend.models import AlertEvent, AlertType
 
 logger = logging.getLogger("minikick.providers.kick_websocket")
 
+RFC_6455_CLOSE_CODES: dict[int, str] = {
+    1000: "Normal Closure",
+    1001: "Going Away",
+    1002: "Protocol Error",
+    1003: "Unsupported Data",
+    1005: "No Status Received",
+    1006: "Abnormal Closure",
+    1007: "Invalid frame payload data",
+    1008: "Policy Violation",
+    1009: "Message Too Big",
+    1011: "Internal Server Error",
+    1012: "Service Restart",
+    1013: "Try Again Later",
+    1015: "TLS Handshake Failure",
+}
+
 DEFAULT_KICK_COLOR = "#2ECD70"
 
 class KickWebSocketManager:
@@ -98,14 +114,26 @@ class KickWebSocketManager:
         self.ws = websocket.WebSocketApp(
             url,
             on_message=self._on_raw_frame,
-            on_error=lambda ws, err: logger.error("[KickWebSocket] WebSocket error: %s", err),
-            on_close=lambda ws, status, msg: logger.info("[KickWebSocket] WebSocket closed: status=%s msg=%s", status, msg)
+            on_error=self._on_error,
+            on_close=self._on_close
         )
         self.ws.run_forever(
             sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),),
             ping_interval=30,
             ping_timeout=10
         )
+
+    def _on_error(self, ws: websocket.WebSocketApp, err: Exception) -> None:
+        logger.error(
+            "[KickWebSocket] WebSocket error (%s): %s",
+            type(err).__name__,
+            err,
+            exc_info=not isinstance(err, (KeyboardInterrupt, SystemExit))
+        )
+
+    def _on_close(self, ws: websocket.WebSocketApp, status: int | None, msg: str | None) -> None:
+        meaning = RFC_6455_CLOSE_CODES.get(status, "Unknown/Unregistered") if status is not None else "Clean/No Code"
+        logger.info("[KickWebSocket] WebSocket closed: code=%s (%s), reason=%s", status, meaning, msg or "N/A")
 
     def _on_raw_frame(self, ws: websocket.WebSocketApp, raw: str) -> None:
         if not self._running:
@@ -316,11 +344,11 @@ class KickWebSocketManager:
         self._last_followers_count = current_count
 
     def _handle_reward_redeemed(self, inner: dict, ws: websocket.WebSocketApp) -> None:
-        reward_title = inner.get("reward_title", "")
-        username = inner.get("username", "")
-        user_input = inner.get("user_input", "")
+        reward_title = inner.get("reward_title", "") or inner.get("reward", {}).get("title", "")
+        username = inner.get("username", "") or inner.get("user", {}).get("username", "")
+        user_input = inner.get("user_input", "") or inner.get("message", "") or ""
         if reward_title and username and self._on_reward:
-            logger.info("[KickWebSocket] Real-time reward redeemed: '%s' by %s", reward_title, username)
+            logger.info("[KickWebSocket] Real-time reward redeemed: '%s' by %s (input: '%s')", reward_title, username, user_input)
             self._on_reward(username, reward_title, user_input)
 
     def _handle_message_deleted(self, inner: dict, ws: websocket.WebSocketApp) -> None:
@@ -339,12 +367,14 @@ class KickWebSocketManager:
                 self._on_user_banned(username)
 
     def _handle_connection_established(self, inner: dict, ws: websocket.WebSocketApp) -> None:
-        logger.info("[KickWebSocket] Pusher connection established. Subscribing to chatrooms.%s.v2", self._room_id)
+        logger.info("[KickWebSocket] Pusher connection established. Subscribing to room_id=%s, channel_id=%s", self._room_id, self._channel_id)
         channels = [
             f"chatrooms.{self._room_id}.v2",
+            f"chatroom_{self._room_id}",
         ]
         if self._channel_id:
             channels.append(f"channel_{self._channel_id}")
+            channels.append(f"channel.{self._channel_id}")
 
         for ch in channels:
             logger.info("[KickWebSocket] Subscribing to topic: %s", ch)

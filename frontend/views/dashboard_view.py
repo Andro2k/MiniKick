@@ -377,7 +377,7 @@ class DashboardView(BaseView):
         self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "message.svg", "0")
         self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "code.svg", "0")
         self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock.svg", "0")
-        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-half.svg", "0")
+        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-duotone.svg", "0")
 
         self.session_cards = [
             self.card_msg_processed, self.card_cmd_executed,

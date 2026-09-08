@@ -63,7 +63,7 @@ class KickChatWorker(QThread):
                     self.msleep(5000)
 
         except Exception as e:
-            logger.error("[KickChatWorker] Unhandled error in worker thread: %s", e)
+            logger.error("[KickChatWorker] Unhandled error (%s) in worker thread: %s", type(e).__name__, e, exc_info=True)
             if not self._is_stopped:
                 self.error_occurred.emit(str(e))
 

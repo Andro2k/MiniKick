@@ -56,17 +56,17 @@ class MainWindowCore(QMainWindow):
     _NAV_CONFIG = (
         ("Dashboard", "dashboard.svg", "top"),
         ("Chat", "message.svg", "top"),
-        ("Stream Info", "calendar.svg", "top"),
-        ("Spam Filters", "shield-half.svg", "top"),
+        ("Stream Info", "calendar-duotone.svg", "top"),
+        ("Spam Filters", "shield-duotone.svg", "top"),
         ("Comandos", "code.svg", "top"),
         ("Timers", "clock.svg", "top"),
-        ("Music", "music.svg", "top"),
-        ("Widgets", "apps.svg", "top"),
-        ("Triggers", "chart-bubble.svg", "top"),
+        ("Music", "music-notes.svg", "top"),
+        ("Widgets", "widget-add.svg", "top"),
+        ("Triggers", "treasure-chest.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
 
         ("Settings", "settings.svg", "bottom"),
-        ("Developer", "brand-tabler.svg", "bottom"),
+        ("Developer", "file-text-duotone.svg", "bottom"),
     )
 
     def __init__(self, updater_manager, app_version: str):
@@ -635,14 +635,23 @@ class MainWindowCore(QMainWindow):
         except RuntimeError:
             pass
 
+        start_t = time.perf_counter()
         try:
             if worker.isRunning():
                 if worker.wait(timeout_ms):
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                    self.logger.debug(
+                        "[Worker] Worker '%s' stopped cleanly in %.1f ms",
+                        worker_attr_name,
+                        elapsed_ms
+                    )
                     worker.deleteLater()
                 else:
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
                     self.logger.warning(
-                        "[Worker] Worker '%s' still active after %d ms. Retaining in retirement registry.",
+                        "[Worker] Worker '%s' still active after %.1f ms (timeout: %d ms). Retaining in retirement registry.",
                         worker_attr_name,
+                        elapsed_ms,
                         timeout_ms
                     )
                     self._retiring_workers.add(worker)
@@ -654,9 +663,15 @@ class MainWindowCore(QMainWindow):
                             pass
                     worker.finished.connect(_on_retired)
             else:
+                elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                self.logger.debug(
+                    "[Worker] Worker '%s' was not running (shutdown check took %.1f ms)",
+                    worker_attr_name,
+                    elapsed_ms
+                )
                 worker.deleteLater()
-        except RuntimeError:
-            pass
+        except RuntimeError as e:
+            self.logger.debug("[Worker] Notice stopping worker '%s' (%s): %s", worker_attr_name, type(e).__name__, e)
 
     def _stop_global_media_worker(self):
         self._safe_stop_worker("global_media_worker", timeout_ms=1500)
@@ -734,12 +749,16 @@ class MainWindowCore(QMainWindow):
         stuck_template = self.i18n.get("main.logs.worker_stuck")
         stopped_template = self.i18n.get("main.logs.worker_stopped")
         for name, instance in active_workers:
+            start_t = time.perf_counter()
             try:
                 if instance.wait(2000):
-                    self.logger.info(stopped_template.replace("{worker}", name))
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                    msg = stopped_template.replace("{worker}", name)
+                    self.logger.info("%s (%.1f ms)", msg, elapsed_ms)
                     instance.deleteLater()
                 else:
-                    self.logger.warning("[Shutdown] Worker '%s' wait timed out", name)
+                    elapsed_ms = (time.perf_counter() - start_t) * 1000.0
+                    self.logger.warning("[Shutdown] Worker '%s' wait timed out after %.1f ms", name, elapsed_ms)
                     self._retiring_workers.add(instance)
                     def _on_retired(inst=instance):
                         self._retiring_workers.discard(inst)
@@ -748,8 +767,8 @@ class MainWindowCore(QMainWindow):
                         except RuntimeError:
                             pass
                     instance.finished.connect(_on_retired)
-            except RuntimeError:
-                pass
+            except RuntimeError as e:
+                self.logger.debug("[Shutdown] Notice stopping worker '%s' (%s): %s", name, type(e).__name__, e)
 
     def _stop_kick_connection_workers(self):
         worker_map = [

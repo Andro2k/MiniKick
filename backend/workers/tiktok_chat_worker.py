@@ -67,7 +67,7 @@ class TikTokChatWorker(QThread):
 
         except Exception as e:
             if not self._is_stopped and not self.isInterruptionRequested():
-                logger.error("[TikTokChatWorker] Error no controlado: %s", e)
+                logger.error("[TikTokChatWorker] Error no controlado (%s): %s", type(e).__name__, e, exc_info=True)
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, timestamp: str, msg_id: int, extra_data: dict):

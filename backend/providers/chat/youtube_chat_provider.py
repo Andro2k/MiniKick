@@ -55,7 +55,7 @@ class YouTubeChatProvider:
                 except Exception:
                     pass
         except Exception as e:
-            logger.warning("[YouTubeChatProvider] Failed to resolve live video ID for %s: %s", target, e)
+            logger.warning("[YouTubeChatProvider] Failed to resolve live video ID for %s (%s): %s", target, type(e).__name__, e)
 
         return None
 
@@ -207,7 +207,7 @@ class YouTubeChatProvider:
 
         except Exception as e:
             if self._is_running:
-                logger.error("[YouTubeChatProvider] Exception during live chat polling: %s", e)
+                logger.error("[YouTubeChatProvider] Exception during live chat polling (%s): %s", type(e).__name__, e, exc_info=True)
                 if on_error:
                     on_error(str(e))
         finally:

@@ -278,13 +278,12 @@
             let ws = null;
             let reconnectTimer = null;
             let heartbeatTimer = null;
-            let isReconnecting = false;
 
             function connectWS() {
                 cleanupSocket();
 
                 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const host = window.location.host || 'localhost:6868';
+                const host = window.location.host || 'localhost:8090';
                 const wsUrl = `${protocol}//${host}/ws?topic=rewards&token=${encodeURIComponent(token)}`;
 
                 try {
@@ -297,7 +296,6 @@
 
                 ws.onopen = function () {
                     console.log('[Rewards Overlay] WebSocket conectado exitosamente.');
-                    isReconnecting = false;
                     if (reconnectTimer) {
                         clearTimeout(reconnectTimer);
                         reconnectTimer = null;
@@ -366,9 +364,8 @@
 
             function scheduleReconnect() {
                 cleanupSocket();
-                if (isReconnecting || reconnectTimer) return;
+                if (reconnectTimer) clearTimeout(reconnectTimer);
 
-                isReconnecting = true;
                 reconnectTimer = setTimeout(() => {
                     reconnectTimer = null;
                     console.log('[Rewards Overlay] Intentando reconectar WebSocket...');

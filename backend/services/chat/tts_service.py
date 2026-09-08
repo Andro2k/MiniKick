@@ -81,32 +81,42 @@ class TTSManager:
 
     def set_audio_device(self, device_id: str) -> None:
         self._audio_device_id = device_id
+        logger.info("[TTS Manager] Setting audio output device: %s", device_id)
         for provider in self._providers.values():
             if hasattr(provider, "set_audio_device"):
                 provider.set_audio_device(device_id)
 
     def say(self, text: str, voice_id: str = None) -> None:
         if text and text.strip():
-            self.text_queue.put((text.strip(), voice_id))
+            clean_t = text.strip()
+            self.text_queue.put((clean_t, voice_id))
+            logger.debug("[TTS Manager] Enqueued text (qsize=%d): '%s' (voice=%s)", self.text_queue.qsize(), clean_t[:35], voice_id or "default")
 
     def speak(self, text: str, voice_id: str = None) -> None:
         self.say(text, voice_id=voice_id)
 
     def stop(self) -> None:
+        discarded_text = 0
         while not self.text_queue.empty():
             try:
                 self.text_queue.get_nowait()
                 self.text_queue.task_done()
+                discarded_text += 1
             except queue.Empty:
                 break
         
+        discarded_play = 0
         while not self.play_queue.empty():
             try:
                 self.play_queue.get_nowait()
                 self.play_queue.task_done()
+                discarded_play += 1
             except queue.Empty:
                 break
                 
+        if discarded_text > 0 or discarded_play > 0:
+            logger.info("[TTS Manager] Stop requested: cleared %d pending text items, %d playback items", discarded_text, discarded_play)
+
         if self._active_provider_key in self._providers:
             self._providers[self._active_provider_key].stop()
 
@@ -137,7 +147,7 @@ class TTSManager:
                 
                 self.play_queue.put((text, voice_id, target_voice))
             except Exception as e:
-                logger.error("[TTS Manager] Downloader worker error: %s", e)
+                logger.error("[TTS Manager] Downloader worker error (%s): %s", type(e).__name__, e, exc_info=True)
             finally:
                 self.text_queue.task_done()
 
@@ -166,7 +176,7 @@ class TTSManager:
                 active_provider.speak(text, voice_id=target_voice)
                 
             except Exception as e:
-                logger.error("[TTS Manager] Critical engine failure avoided: %s", e)
+                logger.error("[TTS Manager] Critical engine failure avoided (%s): %s", type(e).__name__, e, exc_info=True)
             finally:
                 self.play_queue.task_done()
 

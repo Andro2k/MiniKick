@@ -90,7 +90,7 @@ class TwitchChatWorker(QThread):
                     self.msleep(5000)
 
         except Exception as e:
-            logger.error("[TwitchChatWorker] Unhandled error in Twitch chat worker: %s", e)
+            logger.error("[TwitchChatWorker] Unhandled error (%s) in Twitch chat worker: %s", type(e).__name__, e, exc_info=True)
             if not self._is_stopped:
                 self.error_occurred.emit(str(e))
 

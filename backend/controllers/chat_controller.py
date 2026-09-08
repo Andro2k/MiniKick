@@ -344,25 +344,36 @@ class ChatController(QObject):
         if getattr(dto, "is_command", False):
             return
         settings = self._tts_settings_cache
-        if not settings.get("enabled", True) or self.filter_handler.is_bot(dto.user):
+        if not settings.get("enabled", True):
+            return
+        if self.filter_handler.is_bot(dto.user):
+            logger.debug("[TTS] Skipped '%s' from %s: User is marked as bot/ignored", dto.content[:30], dto.user)
             return
 
         if not self.voice_handler.is_role_enabled(dto.badges, settings):
+            logger.debug("[TTS] Skipped '%s' from %s: Role not enabled for badges %s", dto.content[:30], dto.user, dto.badges)
             return
 
         if settings.get("use_command", False):
+            logger.debug("[TTS] Skipped '%s' from %s: 'use_command' is active (waiting for %s)", dto.content[:30], dto.user, settings.get("command", "!tts"))
             return
 
         msg = dto.content.strip()
-        if not msg or self.filter_handler.is_message_banned(msg):
+        if not msg:
+            return
+        if self.filter_handler.is_message_banned(msg):
+            logger.debug("[TTS] Skipped '%s' from %s: Message contains banned word", msg[:30], dto.user)
             return
 
         emotes_tag = getattr(dto, "emotes_tag", "")
         cleaned = self.filter_handler.clean_message_for_tts(msg, emotes_tag=emotes_tag)
-        if cleaned:
-            text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
-            voice_id = self.voice_handler.resolve_voice_for_badges(dto.badges, settings)
-            self.service.speak(text, voice_id=voice_id)
+        if not cleaned:
+            logger.debug("[TTS] Skipped '%s' from %s: Cleaned message is empty (only emotes/symbols)", msg[:30], dto.user)
+            return
+
+        text = self.i18n.get("chat.status.user_says").replace("{user}", dto.user).replace("{message}", cleaned) if settings.get("read_name", True) else cleaned
+        voice_id = self.voice_handler.resolve_voice_for_badges(dto.badges, settings)
+        self.service.speak(text, voice_id=voice_id)
 
     @Slot()
     def _handle_settings_save(self) -> None:

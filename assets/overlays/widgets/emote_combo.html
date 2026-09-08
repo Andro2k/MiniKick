@@ -308,11 +308,11 @@
         }
 
         function scheduleReconnect() {
-            if (!reconnectTimer) {
-                reconnectTimer = setTimeout(() => {
-                    connectWS();
-                }, 3000);
-            }
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null;
+                connectWS();
+            }, 3000);
         }
 
         connectWS();
