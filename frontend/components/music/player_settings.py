@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplic
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK,
-    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_LG,
+    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_2XS,
     SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
@@ -44,7 +44,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_LG)
+        self.panel_layout.setContentsMargins(*MARGIN_2XS)
         self.panel_layout.setSpacing(SPACING_LG)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 

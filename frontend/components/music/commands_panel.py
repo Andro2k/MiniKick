@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt
-from frontend.common import MARGIN_LG, SPACING_LG, SPACING_MD
+from frontend.common import MARGIN_2XS, SPACING_LG, SPACING_MD
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow
 
 class MusicCommandsPanel(QWidget):
@@ -26,7 +26,7 @@ class MusicCommandsPanel(QWidget):
 
     def _setup_ui(self):
         panel_layout = QVBoxLayout(self)
-        panel_layout.setContentsMargins(*MARGIN_LG)
+        panel_layout.setContentsMargins(*MARGIN_2XS)
         panel_layout.setSpacing(SPACING_LG)
         panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
