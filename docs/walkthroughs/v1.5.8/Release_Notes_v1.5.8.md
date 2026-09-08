@@ -1,44 +1,136 @@
 # Release Notes - MiniKick Version 1.5.8
 
-**02 de Septiembre, 2026**
+**07 de Septiembre, 2026**
 
-## Optimización Extrema de Rendimiento, Sincronización Diferencial y Respuesta In-Place en Notificaciones
+## Suite de Alertas Multiplataforma, Rediseño Visual Studio, Canjes Kick a 0 ms, Resiliencia Extrema y Respaldo Integral
 
 > [!NOTE]
-> MiniKick v1.5.8 se enfoca en la optimización exhaustiva del hilo de interfaz (UI Thread) y la persistencia en base de datos SQLite. Se erradican las tormentas de sincronización masiva en widgets, se unifican las escrituras de configuración de Chat/TTS en transacciones atómicas batch por lote, se amortigua la persistencia de audio y se rediseña el ciclo de vida de los Toasts para brindar una alternancia de switches instantánea y libre de lag.
-
-### Nuevas Funcionalidades (1)
-
-- **[NEW FEATURE] [ALERTS] Interfaz de Configuración de Alertas Multiplataforma en Tiempo Real:** Nueva pestaña *Alertas* en la barra lateral con soporte dedicado para Kick y Twitch. Permite personalizar sonidos (.mp3, .wav, .ogg), imágenes/videos (.gif, .mp4, .webm), plantillas de texto interactivo (`{user}`, `{amount}`, `{tier}`), duración, volumen, lectura TTS y botón de prueba instantánea hacia OBS con copiado de URL en un clic.
+> MiniKick v1.5.8 representa una de las actualizaciones más ambiciosas y completas en la historia del proyecto. Introduce un sistema de **Alertas Multiplataforma (Kick y Twitch)** en tiempo real con diseño estilo *Twitch Alerts Studio*, canjes de puntos de canal Kick instantáneos vía WebSocket nativo, previsualizador vectorial interactivo de chat, servidor de medios locales con soporte HTML/CSS personalizado, normalización de audio ReplayGain (-14 LUFS), búsqueda difusa en caché SQLite FTS5, telemetría diagnóstica RFC 6455, auto-reconexión continua en overlays de OBS, respaldo integral de configuraciones y una optimización arquitectónica global con certificación del 100% en pruebas unitarias.
 
 ---
 
-- **[IMPROVEMENT] [ALERTS] Rediseño Visual Estilo Twitch Alerts Studio:** Soporte para 5 disposiciones de imagen/texto (Arriba, Izquierda, Derecha, Abajo, Superpuesto), modo *Sticker* 100% transparente sin marco oscuro, personalización tipográfica completa (Outfit, Inter, Roboto, Montserrat, Poppins, tamaño 14-48px, alineación) y selectores de color RGB para texto y resaltado de usuario, con previsualización en vivo en lienzo de ajedrez de alta fidelidad.
-- **[IMPROVEMENT] [REWARDS] Canjes de Puntos de Canal en Kick en Tiempo Real vía WebSocket (0 ms):** Migración del procesamiento de canjes de recompensas de Kick hacia eventos nativos WebSocket Pusher (`RewardRedeemedEvent` en el canal `chatroom_{chatroom_id}`). Erradica la latencia de 10 segundos del sondeo HTTP REST anterior, disparando de forma instantánea el overlay, chat y toast con deduplicación en $\mathcal{O}(1)$.
-- **[IMPROVEMENT] [ARCHITECTURE] Separación y Nomenclatura Simétrica Kick vs Twitch:** Se extrajo `TwitchRewardWorker` a su propio archivo independiente (`backend/workers/twitch_reward_worker.py`), y se estandarizaron los componentes de Kick con nombres unívocos (`KickWebSocketManager`, `KickAuthManager`, `kick_chat_worker`, `kick_auth_manager`) equilibrando simétricamente la arquitectura con Twitch y preservando 100% de compatibilidad hacia atrás mediante alias.
-- **[IMPROVEMENT] [ALERTS] Detección Instantánea de Seguidores en Kick:** Monitoreo activo de `GoalProgressUpdateEvent` y extracción de nombres de usuario mediante regex sobre saludos de bots en chat (`@Kicklet`, `BotRix`, `KickBot`), garantizando la activación inmediata de alertas visuales y de audio al recibir nuevos follows en Kick.
-- **[IMPROVEMENT] [ALERTS] Arquitectura Backend de Alertas Multiplataforma (Kick y Twitch) y Plantilla Base de Overlays:** Sistema completo de detección de Follows, Subs, Resubs, Regalos de Subs, Raids y Bits en tiempo real para Kick y Twitch. Incluye persistencia SQLite con cache $\mathcal{O}(1)$, cola FIFO con consolidación de regalos masivos (sub bombs), canal WebSocket dedicado (`/ws?topic=alerts`) y plantilla base en `/alerts` con Glassmorphism, Google Fonts, audio y video.
-- **[IMPROVEMENT] [WIDGETS] Sincronización Diferencial de Comandos en $\mathcal{O}(1)$:** Desacoplamiento de la sincronización masiva al guardar widgets. Ahora solo se evalúa y sincroniza el comando asociado al widget modificado, omitiendo la escritura en base de datos y la emisión de señales si los atributos no sufrieron cambios.
-- **[IMPROVEMENT] [CHAT] Transacción Atómica Batch en Persistencia de Chat/TTS:** Reducción de 19 transacciones SQLite individuales e independientes a una única transacción atómica por lote con `save_all` (`executemany`), eliminando los bloqueos síncronos en disco en el hilo principal.
-- **[IMPROVEMENT] [AUDIO] Persistencia Amortiguada (Debounced) en Parámetros de Audio:** Arrastrar los sliders de volumen y velocidad ahora aplica los cambios en el motor de audio a 60 FPS en memoria de forma instantánea, consolidando la persistencia a SQLite tras 300 ms de inactividad para evitar congelamientos de interfaz.
-- **[IMPROVEMENT] [ARCHITECTURE] Auditoría y Modernización Integral de Fachadas de Importación:** Estandarización de toda la capa de `frontend/` (`frontend.common`, `frontend.widgets`, `frontend.views`, `frontend.navigation`, `frontend.dialogs`, `frontend.components`) y módulos de arranque (`main.py`, `app_container_core.py`, `main_window_core.py`) bajo el patrón de fachadas unificadas con `__all__`. Erradicación al 100% de importaciones profundas hacia submódulos internos y desacoplamiento total de proveedores de backend (`kick_websocket.py`) respecto a dependencias de interfaz de usuario. Resoluciones de módulos en $\mathcal{O}(1)$ y certificación con 239 pruebas unitarias superadas al 100%.
-- **[IMPROVEMENT] [TOAST] Actualización en Caliente (*In-Place*) de Notificaciones de Estado:** El sistema de Toasts ahora detecta alternancias rápidas de un mismo switch (ej. encender/apagar repetidamente), actualizando el texto, icono y borde visual sobre el mismo widget visible sin destruirlo, sin acumular colas y sin generar colisiones de animación.
-- **[IMPROVEMENT] [MUSIC] Resiliencia de Descargas, Normalización ReplayGain y Caché FTS5 Trigram:** Reintentos con *Exponential Backoff* y rotación de clientes en `YouTubeResolveWorker`. Normalización automática de volumen respecto al estándar de transmisión (-14 LUFS) protegiendo los oídos del streamer. Búsqueda difusa en caché escalable en $\mathcal{O}(\log N)$ mediante tabla virtual SQLite FTS5 con tokenizador `trigram` y triggers automáticos.
-- **[IMPROVEMENT] [OVERLAY] Interpolación Fluida a 60 FPS en Barra de Progreso de Música:** El overlay de música (`/music`) ahora interpola la barra de tiempo y el reloj mediante `requestAnimationFrame` continuo a 60 FPS, erradicando los saltos de 1 segundo para una presentación premium en OBS.
-- **[IMPROVEMENT] [DIAGNOSTICS] Telemetría Diagnóstica Integral, Códigos RFC 6455 y Trazabilidad Avanzada:** Decodificación automática de códigos de cierre RFC 6455 (1000, 1001, 1006) en WebSockets de Kick y Twitch; medición precisa con `time.perf_counter()` del tiempo de parada de workers/hilos en `MainWindowCore`; captura tipada de excepciones y tracebacks (`exc_info=True`) en todos los workers de chat (Kick, Twitch, YouTube, TikTok); y trazabilidad granular en TTS para identificar omisiones por filtros (roles, comandos, bots, palabras prohibidas) y enrutamiento de dispositivos de audio.
+### Nuevas Funcionalidades (6)
+
+- **[NEW FEATURE] [ALERTS] Sistema Integral de Alertas Multiplataforma en Tiempo Real (Kick y Twitch):**
+  - Nueva pestaña principal *Alertas* en la barra lateral con soporte simultáneo y desacoplado para Kick y Twitch.
+  - Detección de eventos en vivo: **Seguidores (Follows)**, **Suscripciones (Subs)**, **Renovaciones (Resubs)**, **Regalos de Subs (Sub Gifts individuales y masivos)**, **Raids** y **Bits / Cheers**.
+  - Canal WebSocket dedicado (`/ws?topic=alerts`) en el servidor local integrado con cola FIFO acotada, consolidación inteligente de sub-bombs (evitando saturación de pantalla) y botón de prueba instantánea hacia OBS con copiado de URL en un solo clic.
+
+- **[NEW FEATURE] [ALERTS] Rediseño Visual Estilo *Twitch Alerts Studio* y Previsualizador en Ajedrez:**
+  - **5 Disposiciones Flexibles:** Imagen/Video arriba del texto, lateral izquierdo, lateral derecho, texto debajo o superpuesto sobre la media.
+  - **Modo *Sticker*:** Presentación moderna 100% transparente sin marco ni fondo oscuro, ideal para animaciones limpias sobre el juego.
+  - **Tipografía y Colorimetría Avanzada:** Selección entre 5 familias tipográficas de Google Fonts (*Outfit*, *Inter*, *Roboto*, *Montserrat*, *Poppins*), ajuste de tamaño de fuente (14px a 48px), alineación de texto y selectores de color RGB dedicados para texto base y nombre de usuario destacado.
+  - Previsualizador reactivo en vivo sobre lienzo cuadriculado de transparencia con soporte de placeholders dinámicos (`{user}`, `{amount}`, `{tier}`).
+
+- **[NEW FEATURE] [ALERTS] Soporte para Alertas Personalizadas en HTML/HTM y Servidor de Medios:**
+  - Posibilidad de vincular plantillas web externas personalizadas (`.html` / `.htm`) creadas por diseñadores.
+  - Servidor de medios locales seguro (`/user_media/`) con resolución de recursos relativos (CSS, JS, fuentes, imágenes locales) y protocolo bidireccional `postMessage` para control de eventos y animaciones avanzadas.
+
+- **[NEW FEATURE] [CHAT] Previsualizador Vectorial Interactivo de Chat Overlay:**
+  - Mockup dinámico en tiempo real (`ChatOverlayMockupWidget`) integrado en la configuración de chat.
+  - Permite visualizar al instante los cambios de tema (*Neon*, *Dark*, *Glass*), tamaño de texto, animación vertical u horizontal, insignias de plataforma (Kick, Twitch, YouTube, TikTok) e iconos Nerd Font antes de transmitirlos a OBS.
+
+- **[NEW FEATURE] [SCHEDULE] Botón "Ahora" para Relleno Instantáneo de Fecha y Hora:**
+  - Acceso directo en el panel de creación y edición rápida de `ScheduleView` para sincronizar la fecha y hora actual del sistema en un solo clic, acelerando la publicación de directos no programados.
+
+- **[NEW FEATURE] [UI] Componente `ClearableLineEdit` con Limpieza Rápida:**
+  - Nuevo control de entrada de texto reutilizable con icono interactivo de borrado rápido (`clear`), integrado en tarjetas de configuración de alertas, diálogos de vinculación de cuentas y asistentes.
 
 ---
 
-### Correcciones (3)
+### Mejoras de Rendimiento y Arquitectura (12)
 
-- **[FIX] [MUSIC] Eliminación de Conexión Redundante a `commands_changed`:** Se suprimió la suscripción duplicada en el constructor de `MusicController` y se implementó protección de idempotencia en `_connect_signals()`, evitando que los slots de sincronización de switches se ejecuten por duplicado ante cada evento de comandos.
-- **[FIX] [ALERTS] Audio de Video, Streaming HTTP 206 y Layout Flex Responsivo:** Se corrigió el atributo `video.muted = true` incondicional en el overlay de alertas permitiendo que los videos con pista de audio suenen correctamente a menos que se configure un sonido dedicado. Se implementó soporte de solicitudes parciales `Range` con HTTP `206 Partial Content` en el servidor de overlays erradicando el retardo de 1-2s por buffering de medios en Chromium/OBS. Se rediseñó la card de URL OBS en `AlertsView` con un `QBoxLayout` responsivo que se adapta dinámicamente en anchos estrechos (< 760px).
-- **[FIX] [OVERLAYS] Auto-Reconexión Continua en Rewards Overlay y Widgets OBS:** Se eliminó el deadlock provocado por la bandera `isReconnecting` en `assets/overlays/rewards/rewards.html` que interrumpía definitivamente futuros intentos de conexión WebSocket si la app se cerraba. Se actualizó el puerto de fallback de 6868 a 8090 y se corrigió la gestión del temporizador en los 7 widgets integrados de OBS (`deaths`, `score`, `poll`, `pinned`, `shoutout`, `emote_combo`, `emote_explosion`), garantizando reconexión automática instantánea sin recargar la fuente del navegador en OBS al reiniciar MiniKick.
-- **[FIX] [KICK] Restauración de Suscripción a Puntos de Canal en Pusher (`chatroom_{id}`):** Se restauró la suscripción activa al tópico `chatroom_{room_id}` en `KickWebsocketManager`, permitiendo la recepción ininterrumpida de eventos `RewardRedeemedEvent` en conjunto con el canal `chatrooms.{room_id}.v2` de mensajes de chat.
-- **[IMPROVEMENT] [BACKUP] Respaldo Integral de Configuración (Alertas, Widgets y Paridad de Plataformas):** Inclusión completa de las alertas de eventos (`alert_configs`) y widgets de OBS (`widgets_config`) en el sistema de exportación e importación de `BackupService`. Se aseguró la preservación estricta de las banderas de habilitación de plataformas en comandos (`apply_kick`, `apply_twitch`, `apply_youtube`, `apply_tiktok`) y temporizadores (`apply_kick`, `apply_twitch`), con total compatibilidad hacia atrás para archivos de respaldo previos.
+- **[IMPROVEMENT] [REWARDS] Canjes de Puntos de Canal en Kick a Latencia Cero (0 ms):**
+  - Migración del sondeo HTTP REST previo (que demoraba hasta 10 segundos) hacia eventos nativos WebSocket Pusher (`RewardRedeemedEvent` en el canal `chatroom_{room_id}`).
+  - Activación instantánea de alertas en OBS, lectura en TTS y notificación Toast en $\mathcal{O}(1)$ con deduplicación por ID de redención.
+
+- **[IMPROVEMENT] [BACKUP] Respaldo y Restauración Integral de la Aplicación:**
+  - Se expandió `BackupService` para exportar e importar la totalidad de las **Alertas** (`alert_configs`) y los **7 Widgets de OBS** (`widgets_config`).
+  - Preservación estricta de las banderas de habilitación de plataformas en comandos (`apply_kick`, `apply_twitch`, `apply_youtube`, `apply_tiktok`) y temporizadores (`apply_kick`, `apply_twitch`).
+  - Total retrocompatibilidad con archivos JSON de versiones anteriores y defensa de firmas con desacoplamiento Liskov.
+
+- **[IMPROVEMENT] [MUSIC] Normalización ReplayGain (-14 LUFS) y Caché FTS5 Trigram:**
+  - Normalización automática de volumen en el motor de audio de YouTube protegiendo los oídos del streamer y espectadores ante pistas con volumen dispar.
+  - Búsqueda difusa en caché SQLite en $\mathcal{O}(\log N)$ mediante tabla virtual FTS5 con tokenizador `trigram` y triggers automáticos.
+  - Reintentos exponenciales (*Exponential Backoff*) con rotación de clientes en `YouTubeResolveWorker` para evitar bloqueos por rate-limit.
+  - Despacho inmediato y reactivo de la cola ante comandos `!sr` sin esperar ciclos de sondeo pasivo.
+
+- **[IMPROVEMENT] [MUSIC] Interpolación Suave a 60 FPS en el Overlay de Música:**
+  - Barra de progreso y temporizador de `/music` renderizados mediante `requestAnimationFrame` a 60 FPS continuos, eliminando los saltos bruscos de 1 segundo en OBS Studio.
+
+- **[IMPROVEMENT] [WIDGETS] Sincronización Diferencial en $\mathcal{O}(1)$:**
+  - Al guardar cambios en un widget, se evalúa y sincroniza únicamente el comando específico del widget editado, eliminando la sobrecarga de reescritura masiva en base de datos y transmisiones innecesarias.
+
+- **[IMPROVEMENT] [CHAT] Transacciones Atómicas por Lote (Batch):**
+  - Consolidación de 19 escrituras SQLite individuales e independientes en una sola transacción atómica con `executemany` (`save_all`), eliminando pausas en el hilo de interfaz.
+
+- **[IMPROVEMENT] [AUDIO] Persistencia Amortiguada (Debounced) a 300 ms:**
+  - Los sliders de volumen y velocidad aplican cambios inmediatos al motor de audio en memoria, consolidando la persistencia a disco solo tras 300 ms de inactividad del usuario.
+
+- **[IMPROVEMENT] [ARCHITECTURE] Simetría Arquitectónica y Desacoplamiento Two-Tier:**
+  - Unificación de clientes bajo `BaseOAuthManager` (DRY).
+  - Extracción independiente de `TwitchRewardWorker` en `backend/workers/twitch_reward_worker.py`.
+  - Nomenclatura unívoca y simétrica (`KickWebSocketManager`, `KickAuthManager`) con alias para compatibilidad total hacia atrás.
+  - Estandarización de fachadas de importación unificadas (`__all__`) en toda la capa `frontend/` y `backend/services/`, erradicando importaciones cruzadas y reduciendo resoluciones a $\mathcal{O}(1)$.
+
+- **[IMPROVEMENT] [DIAGNOSTICS] Telemetría Diagnóstica Integral y Códigos RFC 6455:**
+  - Decodificación automática de códigos de cierre estándar WebSocket (1000, 1001, 1006, etc.) en Kick y Twitch.
+  - Medición de apagado de hilos en milisegundos con `time.perf_counter()` en `MainWindowCore`.
+  - Captura tipada de excepciones (`type(e).__name__`, `exc_info=True`) en todos los workers de chat (Kick, Twitch, YouTube, TikTok).
+  - Trazabilidad granular en TTS para identificar omisiones por filtros (roles, comandos, bots, palabras prohibidas) y estado de dispositivos de salida de audio.
+
+- **[IMPROVEMENT] [UI] Estandarización de Geometría, Márgenes y QSS:**
+  - Migración de dimensiones fijas hacia hojas de estilo QSS dinámicas.
+  - Reorganización de asistentes (`RewardsConfigWizard`, `TimerConfigWizard`, `BugReportDialog`) a disposiciones limpias de columna única.
+  - Estandarización simétrica de márgenes y espaciados en paneles de música, chat y horarios.
+
+- **[IMPROVEMENT] [UI] Notificaciones Toast en Caliente (*In-Place*):**
+  - Detección de alternancias repetitivas de un mismo switch, reutilizando el Toast visible y actualizando texto, icono y borde visual sin encolar ni parpadear.
+
+- **[IMPROVEMENT] [UI] ScrollArea con Difuminado Dinámico:**
+  - Implementación de `FadingScrollArea` con máscaras de gradiente dinámicas en bordes superior e inferior para indicar visualmente contenido desplazable.
+
+---
+
+### Correcciones Críticas (10)
+
+- **[FIX] [OVERLAYS] Auto-Reconexión Continua en Rewards Overlay y Widgets OBS:**
+  - Se eliminó el deadlock producido por la bandera `isReconnecting` en `assets/overlays/rewards/rewards.html`, la cual quedaba perpetuamente en `true` si el socket fallaba al reconectar con MiniKick cerrado, impidiendo nuevos reintentos.
+  - Se unificó el bucle de reconexión idempotente cada 3 segundos y se corrigió el mismo problema en los 7 widgets integrados de OBS (`deaths`, `score`, `poll`, `pinned`, `shoutout`, `emote_combo`, `emote_explosion`).
+  - Se actualizó el puerto de fallback obsoleto de `6868` al puerto oficial `8090`.
+
+- **[FIX] [KICK] Restauración de Suscripción a Puntos de Canal en Pusher (`chatroom_{id}`):**
+  - Se aseguró la suscripción activa simultánea a `chatroom_{room_id}` y `chatrooms.{room_id}.v2`, garantizando que los canjes de recompensas de canal (`RewardRedeemedEvent`) y los mensajes de chat se procesen en paralelo sin interrupción.
+
+- **[FIX] [ALERTS] Streaming HTTP 206, Buffer de Video y Audio de Alertas:**
+  - Implementación de soporte de solicitudes parciales `Range` con respuesta HTTP `206 Partial Content` en el servidor web local, eliminando el buffering de 1 a 2 segundos en OBS Studio.
+  - Corrección del atributo `video.muted = true` incondicional, permitiendo que videos con pista de audio integrada suenen correctamente sin requerir un audio secundario.
+  - Diseño responsivo adaptativo en la tarjeta de URL OBS de `AlertsView` para monitores y ventanas estrechas (< 760px).
+
+- **[FIX] [YOUTUBE] Resiliencia de Ciclo de Vida y Reconexión en YouTube Live Chat:**
+  - Corrección en la sesión HTTP y manejo de tokens en `YouTubeChatWorker`, previniendo bucles de reconexión infinita ante transmisiones finalizadas o suspensiones temporales de cuota.
+
+- **[FIX] [PLATFORM] Compatibilidad Multiplataforma (Linux / Ubuntu):**
+  - Encapsulación de tipos y estructuras Win32 (`ctypes.wintypes`, `WINFUNCTYPE`) en `GlobalMediaWorker` tras barreras `sys.platform == 'win32'`, resolviendo el bloqueo de inicio en sistemas GNU/Linux.
+  - Adición de directorios temporales estándar mediante `tempfile.gettempdir()` en `UpdaterService`.
+
+- **[FIX] [REPORTS] Prevención de Crash en `BugReportWorker`:**
+  - Sanitización de nombres de archivo de logs adjuntos y captura defensiva de excepciones al armar volcados de diagnóstico.
+
+- **[FIX] [MUSIC] Supresión de Conexión Duplicada a `commands_changed`:**
+  - Eliminación de suscripción redundante en `MusicController` con validación de idempotencia en `_connect_signals()`.
+
+- **[FIX] [SECURITY] Blindaje contra Path Traversal en Servidor de Medios:**
+  - Validación de rutas normalizadas y comprobación de límites de directorio en `/user_media/`, bloqueando accesos no autorizados a archivos fuera de la carpeta designada.
+
+- **[FIX] [ALERTS] Detección Instantánea de Seguidores en Kick:**
+  - Extracción de nombres de usuario mediante regex sobre eventos `GoalProgressUpdateEvent` y mensajes de bienvenida de bots oficiales en chat (`@Kicklet`, `BotRix`, `KickBot`).
+
+- **[FIX] [TOAST] Diferenciación Contextual en Alertas:**
+  - Notificaciones Toast personalizadas con iconos y mensajes específicos al activar, pausar o modificar alertas individuales o grupales.
 
 ---
 
 > [!IMPORTANT]
 > **Notas de Actualización:**
-> La versión 1.5.8 mantiene total compatibilidad con configuraciones, bases de datos y tokens existentes.
+> La versión 1.5.8 mantiene 100% de compatibilidad con bases de datos SQLite, configuraciones existentes y credenciales OAuth de Kick y Twitch.
