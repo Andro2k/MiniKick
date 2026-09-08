@@ -61,7 +61,9 @@ class AppContainerCore:
             commands_storage=self.commands_storage,
             spam_storage=self.spam_storage,
             timers_storage=self.timers_storage,
-            schedule_storage=self.schedule_storage
+            schedule_storage=self.schedule_storage,
+            alert_storage=self.alert_storage,
+            widgets_storage=self.widgets_storage
         )
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.i18n = self._init_i18n()
