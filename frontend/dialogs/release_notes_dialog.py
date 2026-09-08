@@ -13,9 +13,10 @@ from frontend.common import (
 )
 
 class ReleaseNotesDialog(ModernModal):
-    def __init__(self, i18n, worker_class=None, parent=None):
+    def __init__(self, i18n, worker_class=None, browser_service=None, parent=None):
         self.i18n = i18n
         self.worker_class = worker_class
+        self.browser_service = browser_service
         super().__init__(
             title=self.i18n.get("dialogs.release_notes.title"),
             icon_path=get_assets_path("icons/file-text.svg"),
@@ -164,11 +165,18 @@ class ReleaseNotesDialog(ModernModal):
 
     def _handle_anchor_clicked(self, url: QUrl):
         if url.scheme() in ("http", "https"):
-            QDesktopServices.openUrl(url)
+            url_str = url.toString()
+            if self.browser_service and hasattr(self.browser_service, "open_url"):
+                self.browser_service.open_url(url_str)
+            else:
+                QDesktopServices.openUrl(url)
 
     def _open_github_release(self):
         if self._release_url:
-            QDesktopServices.openUrl(QUrl(self._release_url))
+            if self.browser_service and hasattr(self.browser_service, "open_url"):
+                self.browser_service.open_url(self._release_url)
+            else:
+                QDesktopServices.openUrl(QUrl(self._release_url))
 
     def closeEvent(self, event):
         if self._worker and self._worker.isRunning():

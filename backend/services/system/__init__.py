@@ -1,6 +1,7 @@
 # backend/services/system/__init__.py
 
 from .backup_service import BackupService
+from .browser_service import BrowserService
 from .dashboard_service import AvatarService
 from .instance_services import SocketInstanceProvider
 from .log_service import LogService
@@ -12,6 +13,7 @@ from .widget_service import WidgetService
 __all__ = [
     "AvatarService",
     "BackupService",
+    "BrowserService",
     "GithubUpdateProvider",
     "LogService",
     "SettingsService",

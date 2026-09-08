@@ -1,10 +1,11 @@
 # frontend\views\settings_view.py
 
+import os
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
-from frontend.common import MARGIN_NONE, SPACING_MD
+from frontend.common import MARGIN_NONE, SPACING_MD, SPACING_SM
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -15,6 +16,7 @@ class SettingsView(BaseView):
     update_clicked = Signal()
     release_notes_clicked = Signal()
     language_changed = Signal(str)
+    browser_changed = Signal(str)
     music_audio_device_changed = Signal(str)
     tts_audio_device_changed = Signal(str)
     feedback_clicked = Signal()
@@ -58,6 +60,38 @@ class SettingsView(BaseView):
             title_text=self.i18n.get("settings.system.font_title"), 
             desc_text=self.i18n.get("settings.system.font_desc"), 
             right_widget=self.combo_font
+        )
+
+        self._current_browser_path = "default"
+        self._installed_browser_paths = set()
+
+        browser_container = QWidget(parent=self)
+        browser_layout = QHBoxLayout(browser_container)
+        browser_layout.setContentsMargins(*MARGIN_NONE)
+        browser_layout.setSpacing(SPACING_SM)
+
+        self.combo_browser = NoWheelComboBox(browser_container)
+        self.combo_browser.setMinimumWidth(180)
+        self.combo_browser.currentIndexChanged.connect(self._on_browser_combo_changed)
+
+        self.btn_browse_browser = ModernButton(
+            "",
+            role="action_neutral_border",
+            icon_name="folder-open.svg",
+            icon_size=16,
+            parent=browser_container
+        )
+        self.btn_browse_browser.setToolTip(self.i18n.get("settings.system.browser_browse"))
+        self.btn_browse_browser.clicked.connect(self._on_browse_browser_clicked)
+
+        browser_layout.addWidget(self.combo_browser)
+        browser_layout.addWidget(self.btn_browse_browser)
+
+        row_browser = SettingRow(
+            icon_name="window-duotone.svg",
+            title_text=self.i18n.get("settings.system.browser_title"),
+            desc_text=self.i18n.get("settings.system.browser_desc"),
+            right_widget=browser_container
         )
 
         self.sw_start_bg = ModernSwitch(self)
@@ -124,6 +158,7 @@ class SettingsView(BaseView):
 
         app_card.addWidget(row_lang)
         app_card.addWidget(row_font)
+        app_card.addWidget(row_browser)
         app_card.addWidget(row_tray)
         app_card.addWidget(row_music_audio)
         app_card.addWidget(row_tts_audio)
@@ -265,9 +300,9 @@ class SettingsView(BaseView):
         dialog = BugReportDialog(self.i18n, worker_class=worker_class, initial_contact=initial_contact, parent=self.window())
         dialog.exec()
 
-    def show_release_notes_dialog(self, worker_class=None) -> None:
+    def show_release_notes_dialog(self, worker_class=None, browser_service=None) -> None:
         from frontend.dialogs import ReleaseNotesDialog
-        dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, parent=self.window())
+        dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, browser_service=browser_service, parent=self.window())
         dialog.exec()
 
     def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "", youtube_connected: bool = False, youtube_channel: str = "", tiktok_connected: bool = False, tiktok_channel: str = "") -> None:
@@ -432,3 +467,96 @@ class SettingsView(BaseView):
         device_id = self.combo_tts_audio_device.itemData(index)
         if device_id is not None:
             self.tts_audio_device_changed.emit(str(device_id))
+
+    def populate_browsers(self, browsers: list[dict], current_path: str = "default"):
+        self.combo_browser.blockSignals(True)
+        try:
+            self.combo_browser.clear()
+            self._installed_browser_paths = set()
+            self._current_browser_path = current_path or "default"
+
+            default_text = self.i18n.get("settings.system.browser_default")
+            self.combo_browser.addItem(default_text, "default")
+
+            for b in browsers:
+                name = b.get("name", "")
+                path = b.get("path", "")
+                if path:
+                    self._installed_browser_paths.add(os.path.normpath(path).lower())
+                    self.combo_browser.addItem(name, path)
+
+            if current_path and current_path != "default":
+                norm_current = os.path.normpath(current_path).lower()
+                if norm_current not in self._installed_browser_paths:
+                    base_name = os.path.basename(current_path)
+                    custom_label = self.i18n.get("settings.system.browser_custom").replace("{name}", base_name)
+                    self.combo_browser.addItem(custom_label, current_path)
+
+            browse_text = self.i18n.get("settings.system.browser_browse")
+            self.combo_browser.addItem(browse_text, "__browse__")
+
+            idx = self.combo_browser.findData(self._current_browser_path)
+            if idx >= 0:
+                self.combo_browser.setCurrentIndex(idx)
+            else:
+                self.combo_browser.setCurrentIndex(0)
+        finally:
+            self.combo_browser.blockSignals(False)
+
+    def set_current_browser(self, path: str):
+        self.combo_browser.blockSignals(True)
+        try:
+            self._current_browser_path = path or "default"
+            idx = self.combo_browser.findData(self._current_browser_path)
+            if idx >= 0:
+                self.combo_browser.setCurrentIndex(idx)
+            else:
+                self.combo_browser.setCurrentIndex(0)
+        finally:
+            self.combo_browser.blockSignals(False)
+
+    def _on_browser_combo_changed(self, index: int):
+        data = self.combo_browser.itemData(index)
+        if data == "__browse__":
+            self._on_browse_browser_clicked()
+        elif data is not None:
+            self._current_browser_path = str(data)
+            self.browser_changed.emit(str(data))
+
+    def _on_browse_browser_clicked(self):
+        title = self.i18n.get("settings.system.browser_dialog_title")
+        filter_str = self.i18n.get("settings.system.browser_dialog_filter")
+        chosen_path, _ = QFileDialog.getOpenFileName(self, title, "", filter_str)
+        if chosen_path and os.path.exists(chosen_path):
+            norm_chosen = os.path.normpath(chosen_path)
+            self._current_browser_path = norm_chosen
+
+            self.combo_browser.blockSignals(True)
+            idx = -1
+            for i in range(self.combo_browser.count()):
+                item_data = self.combo_browser.itemData(i)
+                if item_data and item_data not in ("__browse__", "default"):
+                    if os.path.normcase(os.path.normpath(item_data)) == os.path.normcase(norm_chosen):
+                        idx = i
+                        break
+
+            if idx >= 0:
+                self.combo_browser.setCurrentIndex(idx)
+            else:
+                base_name = os.path.basename(norm_chosen)
+                custom_label = self.i18n.get("settings.system.browser_custom").replace("{name}", base_name)
+                insert_idx = max(0, self.combo_browser.count() - 1)
+                self.combo_browser.insertItem(insert_idx, custom_label, norm_chosen)
+                self.combo_browser.setCurrentIndex(insert_idx)
+
+            self.combo_browser.blockSignals(False)
+            self.browser_changed.emit(norm_chosen)
+        else:
+            self.combo_browser.blockSignals(True)
+            idx = self.combo_browser.findData(self._current_browser_path)
+            if idx >= 0:
+                self.combo_browser.setCurrentIndex(idx)
+            else:
+                self.combo_browser.setCurrentIndex(0)
+            self.combo_browser.blockSignals(False)
+

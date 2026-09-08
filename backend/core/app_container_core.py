@@ -32,7 +32,7 @@ from backend.database import (
 from backend.services import (
     BackupService, TranslationService, KickAuthManager, TwitchAuthManager, 
     SettingsService, AvatarService, WidgetService, ScheduleService,
-    TTSManager, OverlayServerManager, AlertService
+    TTSManager, OverlayServerManager, AlertService, BrowserService
 )
 from frontend.common import resource_path
 
@@ -54,7 +54,7 @@ class AppContainerCore:
         self.schedule_storage = SQLiteScheduleStorage(self.db_manager)
         self.alert_storage = SQLiteAlertStorage(self.db_manager)
 
-        logger.debug("[AppContainer] Initializing core services (Backup, Settings, Avatar, Widget, Schedule)...")
+        logger.debug("[AppContainer] Initializing core services (Backup, Settings, Browser, Avatar, Widget, Schedule)...")
         self.backup_service = BackupService(
             settings_storage=self.settings_storage,
             rewards_storage=self.rewards_storage,
@@ -66,6 +66,7 @@ class AppContainerCore:
             widgets_storage=self.widgets_storage
         )
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
+        self.browser_service = BrowserService(self.settings_storage)
         self.i18n = self._init_i18n()
         self.avatar_service = AvatarService(avatar_storage=self.avatar_storage, db_manager=self.db_manager)
         self.widget_service = WidgetService(self.widgets_storage)
@@ -79,7 +80,8 @@ class AppContainerCore:
             client_secret=KICK_CLIENT_SECRET,
             redirect_uri=KICK_REDIRECT_URI,
             storage=self.kick_token_storage,
-            success_html_path=auth_html_path
+            success_html_path=auth_html_path,
+            browser_service=self.browser_service
         )
 
         self.twitch_auth_manager = TwitchAuthManager(
@@ -87,7 +89,8 @@ class AppContainerCore:
             client_secret=TWITCH_CLIENT_SECRET,
             redirect_uri=TWITCH_REDIRECT_URI,
             storage=self.twitch_token_storage,
-            success_html_path=auth_html_path
+            success_html_path=auth_html_path,
+            browser_service=self.browser_service
         )
 
         logger.debug("[AppContainer] Initializing TTS Manager and Overlay Server...")

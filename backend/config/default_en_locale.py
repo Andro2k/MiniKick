@@ -1086,6 +1086,8 @@ DEFAULT_DICTIONARY = {
             "youtube_title": "YouTube Live Channel"
         },
         "status": {
+            "browser_changed": "Browser Updated",
+            "browser_changed_msg": "{name} will be used for links and authentication.",
             "error_title": "Backup Error",
             "export_error": "Could not export configuration file.",
             "exported": "Backup Exported",
@@ -1103,6 +1105,13 @@ DEFAULT_DICTIONARY = {
             "tray_enabled_msg": "MiniKick will minimize to tray on close."
         },
         "system": {
+            "browser_browse": "Browse executable...",
+            "browser_custom": "Custom ({name})",
+            "browser_default": "System Default",
+            "browser_desc": "Choose the browser used for OAuth logins and external links.",
+            "browser_dialog_filter": "Executables (*.exe);;All Files (*.*)",
+            "browser_dialog_title": "Select Web Browser",
+            "browser_title": "Web Browser",
             "font_desc": "Adjust application text size according to your visual preference.",
             "font_size_large": "Large (14px)",
             "font_size_normal": "Normal (13px)",

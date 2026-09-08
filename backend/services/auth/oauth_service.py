@@ -67,7 +67,14 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
 
 class OAuthCallbackServer:
     @staticmethod
-    def capture_auth_code(url: str, port: int, success_html_path: str, timeout_seconds: int = 120, provider: str = "kick") -> str | None:
+    def capture_auth_code(
+        url: str,
+        port: int,
+        success_html_path: str,
+        timeout_seconds: int = 120,
+        provider: str = "kick",
+        browser_service=None,
+    ) -> str | None:
         try:
             httpd = HTTPServer(("", port), _OAuthCallbackHandler)
         except OSError as e:
@@ -78,7 +85,10 @@ class OAuthCallbackServer:
         httpd.success_html_path = success_html_path
         httpd.provider = provider
         
-        webbrowser.open(url)
+        if browser_service and hasattr(browser_service, "open_url"):
+            browser_service.open_url(url)
+        else:
+            webbrowser.open(url)
         start_time = time.time()
         
         while httpd.auth_code is None:
@@ -98,13 +108,15 @@ class BaseOAuthManager:
         client_secret: str,
         redirect_uri: str,
         storage: TokenStorage,
-        success_html_path: str = ""
+        success_html_path: str = "",
+        browser_service=None,
     ) -> None:
         self.client_id = client_id
         self.client_secret = client_secret
         self.redirect_uri = redirect_uri
         self.storage = storage
         self.success_html_path = success_html_path
+        self.browser_service = browser_service
 
     def get_tokens(self, force: bool = False) -> dict:
         if force:
@@ -191,7 +203,9 @@ class KickAuthManager(BaseOAuthManager):
         auth_url = self._build_auth_url(challenge)
 
         port = int(urlparse(self.redirect_uri).port or 8080)
-        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path, provider="kick")
+        auth_code = OAuthCallbackServer.capture_auth_code(
+            auth_url, port, self.success_html_path, provider="kick", browser_service=self.browser_service
+        )
 
         if not auth_code:
             raise TimeoutError("Auth timeout or user canceled login.")
@@ -302,7 +316,9 @@ class TwitchAuthManager(BaseOAuthManager):
             f"{force_param}"
         )
         port = int(urlparse(self.redirect_uri).port or 8080)
-        auth_code = OAuthCallbackServer.capture_auth_code(auth_url, port, self.success_html_path, provider="twitch")
+        auth_code = OAuthCallbackServer.capture_auth_code(
+            auth_url, port, self.success_html_path, provider="twitch", browser_service=self.browser_service
+        )
 
         if not auth_code:
             raise TimeoutError("Auth timeout or user canceled login.")

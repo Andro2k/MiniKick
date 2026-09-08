@@ -168,7 +168,7 @@ class MainWindowCore(QMainWindow):
         self.log_service = LogService(log_storage=self.container.system_log_storage)
         self.schedule_service = self.container.schedule_service
 
-        self.view_dashboard = DashboardView(self.i18n, parent=self)
+        self.view_dashboard = DashboardView(self.i18n, browser_service=self.container.browser_service, parent=self)
         self.view_schedule = None
         self.view_chat = None
         self.view_music = None
@@ -245,7 +245,8 @@ class MainWindowCore(QMainWindow):
             service=self.settings_service,
             toast_manager=self.toast,
             music_provider=self.container.music_provider,
-            tts_manager=self.tts_manager
+            tts_manager=self.tts_manager,
+            browser_service=self.container.browser_service
         )
         self.log_controller = LogController(
             view=None, 
@@ -263,7 +264,8 @@ class MainWindowCore(QMainWindow):
             view=None,
             service=self.container.alert_service,
             toast_manager=self.toast,
-            i18n=self.i18n
+            i18n=self.i18n,
+            browser_service=self.container.browser_service
         )
         self._start_schedule_worker()
         self._setup_global_media_keys()

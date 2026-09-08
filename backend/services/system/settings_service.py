@@ -11,6 +11,7 @@ class SettingsService:
         self.SETTING_MINIMIZE_TRAY = "minimize_to_tray"
         self.SETTING_LANGUAGE = "app_language"
         self.SETTING_FONT_SIZE = "app_font_size"
+        self.SETTING_BROWSER_PATH = "app_browser_path"
 
     def is_minimize_tray_enabled(self) -> bool:
         return self.storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
@@ -59,3 +60,11 @@ class SettingsService:
     def set_tts_audio_device(self, device_id: str):
         self.storage.save_string("tts_audio_device", device_id)
         logger.debug("[SettingsService] TTS audio output device set to: %s", device_id)
+
+    def get_browser_path(self) -> str:
+        return self.storage.load_string(self.SETTING_BROWSER_PATH, "default")
+
+    def set_browser_path(self, path: str):
+        clean = (path or "default").strip()
+        self.storage.save_string(self.SETTING_BROWSER_PATH, clean)
+        logger.info("[SettingsService] Browser path set to: %s", clean)

@@ -1084,6 +1084,8 @@
             "youtube_title": "Canal de YouTube Live"
         },
         "status": {
+            "browser_changed": "Navegador Actualizado",
+            "browser_changed_msg": "Se utilizará {name} para enlaces y autenticación.",
             "error_title": "Error de Respaldo",
             "export_error": "No se pudo exportar el archivo de configuración.",
             "exported": "Respaldo Exportado",
@@ -1101,6 +1103,13 @@
             "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar."
         },
         "system": {
+            "browser_browse": "Examinar ejecutable...",
+            "browser_custom": "Personalizado ({name})",
+            "browser_default": "Predeterminado del sistema",
+            "browser_desc": "Selecciona el navegador para autenticación OAuth y apertura de enlaces externos.",
+            "browser_dialog_filter": "Ejecutables (*.exe);;Todos los archivos (*.*)",
+            "browser_dialog_title": "Seleccionar Navegador Web",
+            "browser_title": "Navegador Web",
             "font_desc": "Ajusta el tamaño del texto de la aplicación según tu preferencia visual.",
             "font_size_large": "Grande (14px)",
             "font_size_normal": "Normal (13px)",

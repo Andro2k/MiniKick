@@ -38,8 +38,9 @@ class DashboardView(BaseView):
     _SESSION_CARDS_ATTR = "_session_cols"
     _PLATFORM_CARDS_ATTR = "_platform_cols"
     
-    def __init__(self, i18n, parent=None):
+    def __init__(self, i18n, browser_service=None, parent=None):
         super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
+        self.browser_service = browser_service
         self._stats_cols = -1
         self._session_cols = -1
         self._platform_cols = -1
@@ -668,10 +669,13 @@ class DashboardView(BaseView):
         username = getattr(self, "_current_channel_username", "")
         platform = getattr(self, "_current_profile_platform", "kick")
         if username and username != "-":
-            from PySide6.QtGui import QDesktopServices
-            from PySide6.QtCore import QUrl
             url = f"https://twitch.tv/{username}" if platform == "twitch" else f"https://kick.com/{username}"
-            QDesktopServices.openUrl(QUrl(url))
+            if hasattr(self, "browser_service") and self.browser_service and hasattr(self.browser_service, "open_url"):
+                self.browser_service.open_url(url)
+            else:
+                from PySide6.QtGui import QDesktopServices
+                from PySide6.QtCore import QUrl
+                QDesktopServices.openUrl(QUrl(url))
 
     def show_scope_warning(self, missing_scopes: dict | list):
         if not missing_scopes:

@@ -9,6 +9,7 @@ from .music_provider import IMusicProvider
 from .chat_service import IChatService
 from .chat_provider import IChatProvider
 from .alert_interfaces import AlertStorageProtocol
+from .browser_interface import IBrowserService
 
 __all__ = [
     "TokenStorage",
@@ -23,4 +24,5 @@ __all__ = [
     "IChatService",
     "IChatProvider",
     "AlertStorageProtocol",
+    "IBrowserService",
 ]
