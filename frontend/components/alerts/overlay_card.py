@@ -24,7 +24,7 @@ class AlertsOverlayCard(ModernCard):
         card_header.setSpacing(SPACING_MD)
 
         icon_link = QLabel(parent=self)
-        icon_link.setPixmap(get_pixmap_colored("link.svg", COLOR_NEUTRAL_400, size=18))
+        icon_link.setPixmap(get_pixmap_colored("link-duotone.svg", COLOR_NEUTRAL_400, size=18))
 
         lbl_obs_title = QLabel(self.i18n.get("alerts.overlay_card.title"), parent=self)
         lbl_obs_title.setProperty("role", "h3")

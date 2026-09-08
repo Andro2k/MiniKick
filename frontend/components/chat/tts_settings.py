@@ -130,14 +130,14 @@ class ChatTtsSettingsPanel(ModernCard):
 
         row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
         row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
-        row_cmd = SettingRow("code.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
+        row_cmd = SettingRow("code-duotone.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
 
         self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
         row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
-        row_volume = SliderRow("adjustments.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
+        row_volume = SliderRow("tuning-duotone.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
         row_speed = SliderRow("dashboard.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc)
 
         self.addWidget(row_tts)

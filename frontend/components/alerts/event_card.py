@@ -143,7 +143,7 @@ class AlertEventCard(QWidget):
         sec_app_header = QHBoxLayout()
         sec_app_header.setSpacing(SPACING_MD)
         lbl_sec_app_icon = QLabel(parent=self)
-        lbl_sec_app_icon.setPixmap(get_pixmap_colored("palette.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_app_icon.setPixmap(get_pixmap_colored("palette-duotone.svg", COLOR_NEUTRAL_400, size=16))
         lbl_sec_app_title = QLabel(self.i18n.get("alerts.sections.appearance"), parent=self)
         lbl_sec_app_title.setProperty("role", "h3")
         sec_app_header.addWidget(lbl_sec_app_icon)
@@ -166,7 +166,7 @@ class AlertEventCard(QWidget):
         self.seg_layout.add_option("side", "arrow-left-filled.svg", self.i18n.get("alerts.layout.side"))
         self.seg_layout.add_option("side_right", "arrow-right-filled.svg", self.i18n.get("alerts.layout.side_right"))
         self.seg_layout.add_option("below", "arrow-down-filled.svg", self.i18n.get("alerts.layout.below"))
-        self.seg_layout.add_option("overlay", "box-multiple-2.svg", self.i18n.get("alerts.layout.overlay"))
+        self.seg_layout.add_option("overlay", "squares-duotone.svg", self.i18n.get("alerts.layout.overlay"))
         self.seg_layout.value_changed.connect(lambda _: self._on_field_changed())
 
         row_layout = SettingRow(
@@ -187,7 +187,7 @@ class AlertEventCard(QWidget):
         self.combo_style.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
         row_style = SettingRow(
-            "adjustments.svg",
+            "tuning-duotone.svg",
             self.i18n.get("alerts.style.title"),
             self.i18n.get("alerts.style.desc"),
             self.combo_style,
@@ -202,7 +202,7 @@ class AlertEventCard(QWidget):
         self.combo_font.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
         row_font = SettingRow(
-            "file-text.svg",
+            "file-text-duotone.svg",
             self.i18n.get("alerts.fields.font_family"),
             self.i18n.get("alerts.fields.font_family_desc"),
             self.combo_font,
@@ -254,7 +254,7 @@ class AlertEventCard(QWidget):
         self.spin_duration.valueChanged.connect(self._on_field_changed)
 
         row_duration = SettingRow(
-            "clock.svg",
+            "clock-circle-duotone.svg",
             self.i18n.get("alerts.fields.duration"),
             self.i18n.get("alerts.fields.duration_desc"),
             self.spin_duration,
@@ -274,7 +274,7 @@ class AlertEventCard(QWidget):
         header_tc = QHBoxLayout()
         header_tc.setSpacing(SPACING_SM)
         icon_tc = QLabel(parent=self)
-        icon_tc.setPixmap(get_pixmap_colored("palette.svg", COLOR_NEUTRAL_400, size=18))
+        icon_tc.setPixmap(get_pixmap_colored("palette-duotone.svg", COLOR_NEUTRAL_400, size=18))
         lbl_tc_title = QLabel(self.i18n.get("alerts.fields.text_color"), parent=self)
         lbl_tc_title.setProperty("role", "h3")
         lbl_tc_title.setWordWrap(True)
@@ -362,7 +362,7 @@ class AlertEventCard(QWidget):
         sec_cfg_header = QHBoxLayout()
         sec_cfg_header.setSpacing(SPACING_MD)
         lbl_sec_cfg_icon = QLabel(parent=self)
-        lbl_sec_cfg_icon.setPixmap(get_pixmap_colored("settings.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_cfg_icon.setPixmap(get_pixmap_colored("settings-duotone.svg", COLOR_NEUTRAL_400, size=16))
         lbl_sec_cfg_title = QLabel(self.i18n.get("alerts.sections.general"), parent=self)
         lbl_sec_cfg_title.setProperty("role", "h3")
         sec_cfg_header.addWidget(lbl_sec_cfg_icon)
@@ -464,7 +464,7 @@ class AlertEventCard(QWidget):
         btn_browse_sound = ModernButton(
             text=self.i18n.get("alerts.buttons.browse"),
             role="action_outlined",
-            icon_name="folder-open.svg",
+            icon_name="folder-open-duotone.svg",
             icon_size=14,
             parent=self
         )

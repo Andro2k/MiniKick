@@ -9,7 +9,7 @@ class MessageEditorDialog(ModernModal):
     def __init__(self, current_text: str, i18n, parent=None):
         super().__init__(
             title=i18n.get("timer.dialog.editor_title"),
-            icon_path=get_assets_path("icons/clock.svg"),
+            icon_path=get_assets_path("icons/clock-circle-duotone.svg"),
             icon_bg_color=COLOR_GREEN,
             width=500,
             parent=parent

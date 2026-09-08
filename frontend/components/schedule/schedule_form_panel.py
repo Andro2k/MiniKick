@@ -126,7 +126,7 @@ class ScheduleFormPanel(QWidget):
         self.btn_now = ModernButton(
             self.i18n.get("stream_info.schedule_dialog.btn_now"),
             role="action_neutral_border",
-            icon_name="clock.svg"
+            icon_name="clock-circle-duotone.svg"
         )
         self.btn_now.setToolTip(self.i18n.get("stream_info.schedule_dialog.btn_now_tooltip"))
         self.btn_now.clicked.connect(self._set_current_datetime)

@@ -35,7 +35,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_minimal"), "minimal")
         
         row_overlay_theme = SettingRow(
-            "palette.svg", 
+            "palette-duotone.svg", 
             self.i18n.get("chat.overlay.theme_title"), 
             self.i18n.get("chat.overlay.theme_desc"), 
             self.combo_overlay_theme
@@ -103,7 +103,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_overlay_show_time = ModernSwitch()
         self.sw_overlay_show_time.setChecked(False)
         row_overlay_show_time = SettingRow(
-            "clock.svg",
+            "clock-circle-duotone.svg",
             self.i18n.get("chat.overlay.show_time_title"),
             self.i18n.get("chat.overlay.show_time_desc"),
             self.sw_overlay_show_time
@@ -111,7 +111,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         
         self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
         self.row_copy_obs = SettingRow(
-            "link.svg",
+            "link-duotone.svg",
             self.i18n.get("chat.settings.obs_title"),
             self.i18n.get("chat.settings.obs_desc"),
             self.btn_copy_overlay_obs

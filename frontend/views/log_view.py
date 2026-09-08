@@ -30,22 +30,22 @@ _LEVEL_COLORS = {
     "BOOTSTRAP": COLOR_BLUE
 }
 _LEVEL_ICON_NAMES = {
-    "DEBUG": "code.svg",
-    "INFO": "info-circle.svg",
-    "WARNING": "alert-triangle.svg",
+    "DEBUG": "code-duotone.svg",
+    "INFO": "info-circle-duotone.svg",
+    "WARNING": "alert-triangle-duotone.svg",
     "ERROR": "bug.svg",
-    "CRITICAL": "alert-circle.svg",
+    "CRITICAL": "bolt-circle-duotone.svg",
     "CRASH": "bomb.svg",
     "FATAL_CRASH": "bomb.svg",
     "THREAD_CRASH": "bomb.svg",
-    "BOOTSTRAP": "info-circle.svg"
+    "BOOTSTRAP": "info-circle-duotone.svg"
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}
 
 def _get_level_icon(level: str) -> QIcon:
     if level not in _LEVEL_ICONS:
         hex_color = _LEVEL_COLORS.get(level, COLOR_NEUTRAL_200)
-        icon_name = _LEVEL_ICON_NAMES.get(level, "message.svg")
+        icon_name = _LEVEL_ICON_NAMES.get(level, "dialog-duotone.svg")
         _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color, 16)
     return _LEVEL_ICONS[level]
 

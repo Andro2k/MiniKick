@@ -58,9 +58,9 @@ class LogControlsPanel(QFrame):
 
         specs = [
             ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_neutral_border",
-             "folder-open.svg", COLOR_NEUTRAL_400, self.folder_requested.emit, True),
+             "folder-open-duotone.svg", COLOR_NEUTRAL_400, self.folder_requested.emit, True),
             ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_neutral_border",
-             "file-text.svg", COLOR_NEUTRAL_400, self.load_requested.emit, True),
+             "file-text-duotone.svg", COLOR_NEUTRAL_400, self.load_requested.emit, True),
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_neutral_border",
              "eye.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_neutral_border",

@@ -62,7 +62,7 @@ class WidgetsView(BaseView):
         self._add_card("pinned", self.i18n.get("widgets.pinned.title"), self.i18n.get("widgets.pinned.desc"), "pin.svg", column=2, obs_url=self.pinned_overlay_url)
         self._add_card("explosion", self.i18n.get("widgets.explosion.title"), self.i18n.get("widgets.explosion.desc"), "bomb.svg", column=2, obs_url=self.explosion_overlay_url)
         self._add_card("death", self.i18n.get("widgets.death.title"), self.i18n.get("widgets.death.desc"), "skull.svg", column=2, obs_url=self.death_overlay_url)
-        self._add_card("combo", self.i18n.get("widgets.combo.title"), self.i18n.get("widgets.combo.desc"), "box-multiple-2.svg", column=2, obs_url=self.combo_overlay_url)
+        self._add_card("combo", self.i18n.get("widgets.combo.title"), self.i18n.get("widgets.combo.desc"), "squares-duotone.svg", column=2, obs_url=self.combo_overlay_url)
 
         self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()

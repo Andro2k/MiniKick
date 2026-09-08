@@ -76,12 +76,12 @@ class ModernToast(QFrame):
     def _update_icon(self, state: str):
         if state not in ModernToast._pixmap_cache:
             icon_map = {
-                "success": ("circle-check.svg", COLOR_GREEN),
-                "danger": ("alert-circle.svg", COLOR_RED),
-                "warning": ("alert-triangle.svg", COLOR_AMBER),
-                "info": ("info-circle.svg", COLOR_BLUE)
+                "success": ("check-circle-duotone.svg", COLOR_GREEN),
+                "danger": ("alert-circle-duotone.svg", COLOR_RED),
+                "warning": ("alert-triangle-duotone.svg", COLOR_AMBER),
+                "info": ("info-circle-duotone.svg", COLOR_BLUE)
             }
-            icon_name, icon_color = icon_map.get(state, ("info-circle.svg", COLOR_NEUTRAL_400))
+            icon_name, icon_color = icon_map.get(state, ("info-circle-duotone.svg", COLOR_NEUTRAL_400))
             ModernToast._pixmap_cache[state] = get_pixmap_colored(icon_name, icon_color, 20)
         self.icon_lbl.setPixmap(ModernToast._pixmap_cache[state])
 

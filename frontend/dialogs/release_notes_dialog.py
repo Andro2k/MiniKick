@@ -19,7 +19,7 @@ class ReleaseNotesDialog(ModernModal):
         self.browser_service = browser_service
         super().__init__(
             title=self.i18n.get("dialogs.release_notes.title"),
-            icon_path=get_assets_path("icons/file-text.svg"),
+            icon_path=get_assets_path("icons/file-text-duotone.svg"),
             icon_bg_color=COLOR_GREEN,
             width=700,
             parent=parent

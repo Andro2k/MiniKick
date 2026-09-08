@@ -71,7 +71,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_user_cooldown = QLabel("30s")
         self.lbl_user_cooldown.setProperty("role", "body")
         self.row_user_cooldown = SliderRow(
-            icon_name="clock.svg",
+            icon_name="clock-circle-duotone.svg",
             title_text=self.i18n.get("music.youtube.user_cooldown_title"),
             desc_text=self.i18n.get("music.youtube.user_cooldown_desc"),
             slider_widget=self.slider_user_cooldown,

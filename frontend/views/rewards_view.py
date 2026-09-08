@@ -47,7 +47,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setPen(QColor(COLOR_RED))
         painter.drawPath(path)
         
-        icon_pixmap = get_pixmap_colored("alert-triangle.svg", COLOR_RED, 18)
+        icon_pixmap = get_pixmap_colored("alert-triangle-duotone.svg", COLOR_RED, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -147,7 +147,7 @@ class RewardsView(BaseView):
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
-            icon_name="link.svg",
+            icon_name="link-duotone.svg",
             title_text=self.i18n.get("rewards.obs.title"),
             desc_text=self.i18n.get("rewards.obs.desc"),
             right_widget=self.btn_copy_url
@@ -362,7 +362,7 @@ class RewardsView(BaseView):
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
-                item_plat.setIcon(get_icon_colored("alert-triangle.svg", COLOR_AMBER, 16))
+                item_plat.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_AMBER, 16))
                 item_plat.setForeground(QColor(COLOR_AMBER))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
             else:
@@ -387,7 +387,7 @@ class RewardsView(BaseView):
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
-                item_file.setIcon(get_icon_colored("alert-triangle.svg", COLOR_RED, 16))
+                item_file.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_RED, 16))
                 item_file.setForeground(QColor(COLOR_RED))
                 item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
             else:

@@ -11,7 +11,7 @@ class MusicCommandsPanel(QWidget):
     _COMMANDS_CONFIG = [
         ("!sr", "add.svg", "music.cmds.sr_label", "music.cmds.sr_desc", "sw_sr"),
         ("!skip", "player-skip.svg", "music.cmds.skip_label", "music.cmds.skip_desc", "sw_skip"),
-        ("!song", "info-circle.svg", "music.cmds.song_label", "music.cmds.song_desc", "sw_song"),
+        ("!song", "info-circle-duotone.svg", "music.cmds.song_label", "music.cmds.song_desc", "sw_song"),
         ("!pause", "player-pause.svg", "music.cmds.pause_label", "music.cmds.pause_desc", "sw_pause"),
         ("!resume", "player-play.svg", "music.cmds.resume_label", "music.cmds.resume_desc", "sw_resume"),
         ("!playlist", "list.svg", "music.cmds.playlist_label", "music.cmds.playlist_desc", "sw_playlist"),

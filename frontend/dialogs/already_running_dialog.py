@@ -10,7 +10,7 @@ class AlreadyRunningDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         title_str = self.i18n.get("dialogs.already_running.title")
-        icon_path = get_assets_path("icons/alert-circle.svg")
+        icon_path = get_assets_path("icons/alert-circle-duotone.svg")
         super().__init__(
             title=title_str,
             icon_path=icon_path,

@@ -37,7 +37,7 @@ class ImageDropzone(QFrame):
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.icon_lbl = QLabel()
-        self.icon_lbl.setPixmap(get_icon_colored("file-text.svg", COLOR_GREEN, size=24).pixmap(QSize(24, 24)))
+        self.icon_lbl.setPixmap(get_icon_colored("file-text-duotone.svg", COLOR_GREEN, size=24).pixmap(QSize(24, 24)))
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.title_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_title"))

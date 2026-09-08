@@ -56,7 +56,7 @@ class SettingsView(BaseView):
         self.combo_font.currentIndexChanged.connect(self._on_font_changed)
 
         row_font = SettingRow(
-            icon_name="file-text.svg", 
+            icon_name="file-text-duotone.svg", 
             title_text=self.i18n.get("settings.system.font_title"), 
             desc_text=self.i18n.get("settings.system.font_desc"), 
             right_widget=self.combo_font
@@ -77,7 +77,7 @@ class SettingsView(BaseView):
         self.btn_browse_browser = ModernButton(
             "",
             role="action_neutral_border",
-            icon_name="folder-open.svg",
+            icon_name="folder-open-duotone.svg",
             icon_size=16,
             parent=browser_container
         )
@@ -230,7 +230,7 @@ class SettingsView(BaseView):
         self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
 
         row_release_notes = SettingRow(
-            icon_name="file-text.svg",
+            icon_name="file-text-duotone.svg",
             title_text=self.i18n.get("settings.system.release_notes_title"),
             desc_text=self.i18n.get("settings.system.release_notes_desc"),
             right_widget=self.btn_release_notes

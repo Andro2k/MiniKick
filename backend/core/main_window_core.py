@@ -55,17 +55,17 @@ class MainWindowCore(QMainWindow):
 
     _NAV_CONFIG = (
         ("Dashboard", "dashboard.svg", "top"),
-        ("Chat", "message.svg", "top"),
+        ("Chat", "dialog-duotone.svg", "top"),
         ("Stream Info", "calendar-duotone.svg", "top"),
         ("Spam Filters", "shield-duotone.svg", "top"),
-        ("Comandos", "code.svg", "top"),
-        ("Timers", "clock.svg", "top"),
+        ("Comandos", "code-duotone.svg", "top"),
+        ("Timers", "clock-circle-duotone.svg", "top"),
         ("Music", "music-notes.svg", "top"),
-        ("Widgets", "widget-add.svg", "top"),
+        ("Widgets", "widget-add-duotone.svg", "top"),
         ("Triggers", "treasure-chest.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
 
-        ("Settings", "settings.svg", "bottom"),
+        ("Settings", "settings-duotone.svg", "bottom"),
         ("Developer", "file-text-duotone.svg", "bottom"),
     )
 

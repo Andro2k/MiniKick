@@ -120,7 +120,7 @@ class AlertsView(BaseView):
         self.notice_layout.setSpacing(SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
-        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle.svg", COLOR_AMBER, size=20))
+        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-duotone.svg", COLOR_AMBER, size=20))
 
         notice_text_col = QVBoxLayout()
         notice_text_col.setContentsMargins(*MARGIN_NONE)
