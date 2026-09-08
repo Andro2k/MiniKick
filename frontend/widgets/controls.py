@@ -37,7 +37,6 @@ class ModernButton(QPushButton):
             "action_accent_border": COLOR_GREEN,
             "btn_ghost": COLOR_NEUTRAL_400,
             "nav_button": COLOR_NEUTRAL_400,
-            "filter_chip": COLOR_NEUTRAL_400,
         }
         return role_map.get(role, COLOR_WHITE)
 
