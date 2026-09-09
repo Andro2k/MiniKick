@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["resources/tests/unit"]
+testpaths = ["resources/tests/backend", "resources/tests/frontend"]
 addopts = "-v -s"
 
 [dependency-groups]
