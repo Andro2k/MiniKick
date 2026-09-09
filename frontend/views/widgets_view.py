@@ -56,7 +56,7 @@ class WidgetsView(BaseView):
 
         self.body_layout.addLayout(self.columns_layout)
 
-        self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-text.svg", column=1, obs_url=self.poll_overlay_url)
+        self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-duotone.svg", column=1, obs_url=self.poll_overlay_url)
         self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), "user-check.svg", column=1, obs_url=self.shoutout_overlay_url)
         self._add_card("score", self.i18n.get("widgets.score.title"), self.i18n.get("widgets.score.desc"), "trophy.svg", column=1, obs_url=self.score_overlay_url)
         self._add_card("pinned", self.i18n.get("widgets.pinned.title"), self.i18n.get("widgets.pinned.desc"), "pin.svg", column=2, obs_url=self.pinned_overlay_url)

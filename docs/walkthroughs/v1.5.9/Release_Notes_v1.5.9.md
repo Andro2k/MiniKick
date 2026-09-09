@@ -11,6 +11,11 @@ Esta versión introduce mejoras y correcciones críticas en las herramientas de 
   - Trazabilidad y reporte exacto del número de línea donde se encuentra definido cada selector no utilizado (por ejemplo, `QFrame[role="searchable_combo_divider"]` en línea 314).
   - Motor de inspección AST mejorado para capturar ternarios condicionales, argumentos específicos (`btn_role`, `icon_role`, `button_role`) y llamadas a helpers de estado sin falsos positivos.
   - Nuevas opciones CLI: `--unused`, `--missing` y `--strict` (retorno de código de salida 1 ante selectores huérfanos).
+- **Calibración y Auditoría de Iconos en `icon_manager.py` ([WT-1.5.9_03](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_03.md))**:
+  - Corrección de la detección de iconos huérfanos (como `message.svg`) aislando el escaneo al código fuente de producción (`frontend/`, `backend/`, `main.py`) para evitar contaminación por tests unitarios.
+  - Extractor AST (`IconASTVisitor`) que descarta docstrings de módulos/funciones y fragmentos constantes de f-strings dinámicas (`JoinedStr`), eliminando falsos positivos.
+  - Incorporación de opciones CLI completas (`--audit`, `--unused`, `--missing`, `--report`, `--clean`, `--force`, `--json`, `--strict`, `--include-tests`).
+  - Limpieza segura de iconos sin uso con reporte de peso recuperable y confirmación interactiva.
 
 ---
 

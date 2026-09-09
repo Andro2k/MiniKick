@@ -30,7 +30,7 @@ class MusicStatsPanel(QWidget):
         queue_header = QHBoxLayout()
         queue_header.setSpacing(SPACING_MD)
         icon_queue = QLabel()
-        icon_queue.setPixmap(get_pixmap_colored("music.svg", COLOR_NEUTRAL_400, 18))
+        icon_queue.setPixmap(get_pixmap_colored("music-notes.svg", COLOR_NEUTRAL_400, 18))
         lbl_queue_title = QLabel(self.i18n.get("music.stats.queue_title"))
         lbl_queue_title.setProperty("role", "h3")
         queue_header.addWidget(icon_queue)

@@ -54,7 +54,7 @@ class AlertsOverlayCard(ModernCard):
         self.btn_copy_url = ModernButton(
             text=self.i18n.get("alerts.overlay_card.copy_btn"),
             role="action_accent",
-            icon_name="clipboard-text.svg",
+            icon_name="clipboard-duotone.svg",
             icon_size=15,
             parent=self
         )

@@ -64,7 +64,7 @@ class LogControlsPanel(QFrame):
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_neutral_border",
              "eye.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_neutral_border",
-             "player-play.svg", COLOR_NEUTRAL_400, self.live_requested.emit, False),
+             "play-duotone.svg", COLOR_NEUTRAL_400, self.live_requested.emit, False),
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_neutral_border",
              "trash.svg", COLOR_NEUTRAL_400, self.clear_requested.emit, True),
             ("btn_report", self.i18n.get("log.controls.btn_report"), "action_neutral_border",

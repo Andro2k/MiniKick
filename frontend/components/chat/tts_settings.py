@@ -136,7 +136,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
-        row_prefix = SettingRow("hash.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
+        row_prefix = SettingRow("hashtag-square-duotone.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
         row_volume = SliderRow("tuning-duotone.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
         row_speed = SliderRow("dashboard.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc)
 

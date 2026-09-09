@@ -44,7 +44,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         )
         self._is_video = False
         
-        self._icon_refresh = get_icon_colored("refresh.svg")
+        self._icon_refresh = get_icon_colored("refresh-duotone.svg")
         self._icon_map_pin = get_icon_colored("map-pin.svg")
         
         self.step1_widget = QWidget()

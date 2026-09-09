@@ -98,7 +98,7 @@ class SettingsView(BaseView):
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
 
         row_tray = SettingRow(
-            icon_name="minimize.svg", 
+            icon_name="minimize-square-duotone.svg", 
             title_text=self.i18n.get("settings.system.tray_title"), 
             desc_text=self.i18n.get("settings.system.tray_desc"), 
             right_widget=self.sw_start_bg
@@ -122,7 +122,7 @@ class SettingsView(BaseView):
         self.combo_tts_audio_device.currentIndexChanged.connect(self._on_tts_audio_device_changed)
 
         row_music_audio = SettingRow(
-            icon_name="music.svg",
+            icon_name="music-notes.svg",
             title_text=self.i18n.get("settings.audio.music_title"),
             desc_text=self.i18n.get("settings.audio.music_desc"),
             right_widget=self.combo_music_audio_device
@@ -150,7 +150,7 @@ class SettingsView(BaseView):
         btn_backup_layout.addWidget(self.btn_import)
 
         row_backup = SettingRow(
-            icon_name="restore.svg", 
+            icon_name="restart-duotone.svg", 
             title_text=self.i18n.get("settings.backup.title"), 
             desc_text=self.i18n.get("settings.backup.desc"), 
             right_widget=btn_backup_container

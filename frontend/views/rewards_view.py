@@ -416,7 +416,7 @@ class RewardsView(BaseView):
             cell = TableActionCell()
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
-                icon_name="player-play.svg", 
+                icon_name="play-duotone.svg", 
                 color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
                 role="action_neutral_border" if is_valid_file else "action_danger_border", 
                 tooltip=play_tooltip, 

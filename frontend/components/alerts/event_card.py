@@ -125,7 +125,7 @@ class AlertEventCard(QWidget):
         self.btn_test = ModernButton(
             text=self.i18n.get("alerts.buttons.test"),
             role="action_outlined",
-            icon_name="player-play.svg",
+            icon_name="play-duotone.svg",
             icon_size=14,
             parent=self
         )
@@ -219,7 +219,7 @@ class AlertEventCard(QWidget):
         self.spin_font_size.valueChanged.connect(self._on_field_changed)
 
         row_size = SettingRow(
-            "text-size.svg",
+            "text-square-duotone.svg",
             self.i18n.get("alerts.fields.font_size"),
             self.i18n.get("alerts.fields.font_size_desc"),
             self.spin_font_size,

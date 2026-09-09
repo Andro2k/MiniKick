@@ -77,7 +77,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         
         self.spin_overlay_size = CompactSpinBox(10, 32, 14, suffix="px")
         row_overlay_size = SettingRow(
-            "text-size.svg",
+            "text-square-duotone.svg",
             self.i18n.get("chat.overlay.size_title"),
             self.i18n.get("chat.overlay.size_desc"),
             self.spin_overlay_size
