@@ -270,7 +270,12 @@ class YouTubeMusicProvider(QObject):
         try:
             gain_factor = 10.0 ** (-float(loudness) / 20.0)
             gain_factor = max(0.2, min(1.5, gain_factor))
-            return max(0.0, min(1.0, base_vol * gain_factor))
+            effective   = max(0.0, min(1.0, base_vol * gain_factor))
+            logger.debug(
+                "[YouTubeMusicProvider] Loudness normalization applied: %.2f dB → gain=%.3f, base=%.2f, effective=%.2f",
+                loudness, gain_factor, base_vol, effective
+            )
+            return effective
         except Exception as e:
             logger.debug("[YouTubeMusicProvider] Error calculating loudness gain: %s", e)
             return base_vol
@@ -371,9 +376,13 @@ class YouTubeMusicProvider(QObject):
             self.preload_song_url = None
 
         self.preload_song_url = next_song["url"]
-        self.preload_worker = YouTubeResolveWorker(next_song["url"], expected_title=next_song.get("title", ""), i18n=self.i18n)
+        self.preload_worker = YouTubeResolveWorker(
+            next_song["url"],
+            expected_title=next_song.get("title", ""),
+            i18n=self.i18n,
+            music_storage=self.music_storage
+        )
 
-        
         def on_preload_resolved(title, path_or_url):
             if self.queue and self.queue[0]["url"] == self.preload_song_url:
                 self.queue[0]["resolved"] = True
@@ -446,7 +455,12 @@ class YouTubeMusicProvider(QObject):
             self._cancel_worker("preload_worker")
             self.preload_song_url = None
 
-            self.resolve_worker = YouTubeResolveWorker(self.current_song["url"], expected_title=self.current_song.get("title", ""), i18n=self.i18n)
+            self.resolve_worker = YouTubeResolveWorker(
+                self.current_song["url"],
+                expected_title=self.current_song.get("title", ""),
+                i18n=self.i18n,
+                music_storage=self.music_storage
+            )
             self.resolve_worker.resolved.connect(self._on_song_resolved)
 
             self.resolve_worker.error.connect(self._on_resolve_error)
@@ -486,6 +500,11 @@ class YouTubeMusicProvider(QObject):
             worker_loudness = getattr(self.resolve_worker, "loudness", None)
             if worker_loudness is not None:
                 self.current_song["loudness"] = worker_loudness
+                if self.music_storage and self.current_song.get("url"):
+                    try:
+                        self.music_storage.update_loudness(self.current_song["url"], worker_loudness)
+                    except Exception as loudness_err:
+                        logger.debug("[YouTubeMusicProvider] Could not persist loudness: %s", loudness_err)
 
         if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
             self.current_local_file = None

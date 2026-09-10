@@ -24,6 +24,8 @@ class QLogHandler(logging.Handler):
             pass
 
 class StreamToLogger:
+    _DEBUG_PREFIXES = ("[download]", "[info]", "[youtube]", "[generic]")
+
     def __init__(self, logger, log_level=logging.INFO):
         self.logger = logger
         self.log_level = log_level
@@ -46,7 +48,12 @@ class StreamToLogger:
                 for line in buf.rstrip().splitlines():
                     cleaned = line.strip()
                     if cleaned:
-                        self.logger.log(self.log_level, line.rstrip())
+                        level = (
+                            logging.DEBUG
+                            if cleaned.startswith(self._DEBUG_PREFIXES)
+                            else self.log_level
+                        )
+                        self.logger.log(level, line.rstrip())
             finally:
                 self._in_write = False
 

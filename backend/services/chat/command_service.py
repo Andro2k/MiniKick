@@ -217,6 +217,11 @@ class CommandService(QObject):
         import random
         final_response = cmd["response"].replace("{user}", user).replace("{touser}", touser).replace("{random}", str(random.randint(1, 100)))
 
+        logger.info(
+            "[CommandService] Command executed — trigger='%s', user='%s', platform='%s'",
+            trigger, user, platform
+        )
+
         try:
             self.storage.log_command_execution(trigger, user, platform=platform)
         except Exception as e:

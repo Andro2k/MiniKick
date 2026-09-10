@@ -144,6 +144,42 @@ class SQLiteMusicStorage:
                 pass
             logger.error("[SQLiteMusicStorage] Error updating file size: %s", e)
 
+    def update_loudness(self, url: str, loudness: float) -> None:
+        if not self.db_manager or not url or loudness is None:
+            return
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "UPDATE youtube_search_cache SET loudness_db = ? WHERE LOWER(url) = ?",
+                    (float(loudness), url.lower().strip())
+                )
+                conn.commit()
+                logger.debug("[SQLiteMusicStorage] Loudness %.2f dB persisted for URL: %s", loudness, url)
+        except Exception as e:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            logger.debug("[SQLiteMusicStorage] Error persisting loudness: %s", e)
+
+    def get_loudness_for_url(self, url: str) -> float | None:
+        if not self.db_manager or not url:
+            return None
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT loudness_db FROM youtube_search_cache WHERE LOWER(url) = ?",
+                    (url.lower().strip(),)
+                )
+                row = cursor.fetchone()
+                if row and row[0] is not None:
+                    return float(row[0])
+        except Exception as e:
+            logger.debug("[SQLiteMusicStorage] Error reading loudness: %s", e)
+        return None
+
     def get_least_popular_cached_songs(self) -> list[dict]:
         if not self.db_manager:
             return []

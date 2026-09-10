@@ -748,8 +748,8 @@ class MainWindowCore(QMainWindow):
             except RuntimeError:
                 pass
 
-        stuck_template = self.i18n.get("main.logs.worker_stuck")
         stopped_template = self.i18n.get("main.logs.worker_stopped")
+        stuck_template = self.i18n.get("main.logs.worker_stuck")
         for name, instance in active_workers:
             start_t = time.perf_counter()
             try:
@@ -760,7 +760,8 @@ class MainWindowCore(QMainWindow):
                     instance.deleteLater()
                 else:
                     elapsed_ms = (time.perf_counter() - start_t) * 1000.0
-                    self.logger.warning("[Shutdown] Worker '%s' wait timed out after %.1f ms", name, elapsed_ms)
+                    stuck_msg = stuck_template.replace("{worker}", name)
+                    self.logger.warning("%s (%.1f ms)", stuck_msg, elapsed_ms)
                     self._retiring_workers.add(instance)
                     def _on_retired(inst=instance):
                         self._retiring_workers.discard(inst)
@@ -1015,7 +1016,6 @@ class MainWindowCore(QMainWindow):
         elif apply_kick and hasattr(self, "kick_chat_worker") and self.kick_chat_worker:
             self.kick_chat_worker.send_message(message)
 
-
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
         if self._is_worker_running(getattr(self, "kick_auth_worker", None)):
@@ -1207,10 +1207,12 @@ class MainWindowCore(QMainWindow):
 
     def _on_twitch_socket_lost(self):
         self._twitch_connected = False
+        self.logger.warning("[Twitch] Connection lost for channel '%s'.", getattr(self, '_twitch_channel', '?'))
         self._update_integrations_status_ui()
 
     def _on_twitch_socket_restored(self):
         self._twitch_connected = True
+        self.logger.info("[Twitch] Connection restored for channel '%s'.", getattr(self, '_twitch_channel', '?'))
         self._update_integrations_status_ui()
 
     def _refresh_sidebar_profile(self):
@@ -1370,6 +1372,7 @@ class MainWindowCore(QMainWindow):
         target = stream_info.get("channel", "")
         if target:
             self.settings_storage.save_string("youtube_target_channel", target)
+        self.logger.info("[YouTube] Connected to YouTube Live: '%s'.", ch_name)
         self._update_integrations_status_ui()
         title = self.container.i18n.get("main.toast.youtube_connected_title")
         msg = self.container.i18n.get("main.toast.youtube_connected_msg").replace("{target}", ch_name)
@@ -1381,6 +1384,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_youtube_error(self, error_msg: str):
         self._youtube_connected = False
+        self.logger.error("[YouTube] Error in YouTube Live worker: %s", error_msg)
         self._safe_stop_worker("youtube_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
@@ -1454,6 +1458,7 @@ class MainWindowCore(QMainWindow):
         self._tiktok_channel = unique_id
         if unique_id:
             self.settings_storage.save_string("tiktok_target_channel", unique_id)
+        self.logger.info("[TikTok] Connected to TikTok Live: '@%s'.", unique_id)
         self._update_integrations_status_ui()
         title = self.container.i18n.get("main.toast.tiktok_connected_title")
         msg = self.container.i18n.get("main.toast.tiktok_connected_msg").replace("{target}", unique_id)
@@ -1465,6 +1470,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_tiktok_error(self, error_msg: str):
         self._tiktok_connected = False
+        self.logger.error("[TikTok] Error in TikTok Live worker: %s", error_msg)
         self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
@@ -1634,7 +1640,6 @@ class MainWindowCore(QMainWindow):
     def _handle_autostart_change(self, enabled: bool):
         self.logger.info("[User Action] Toggled dashboard autostart setting: enabled=%s", enabled)
         self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
-
 
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):

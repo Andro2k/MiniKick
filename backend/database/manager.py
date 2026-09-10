@@ -185,6 +185,7 @@ class DatabaseManager:
                     play_count INTEGER DEFAULT 1,
                     last_accessed TEXT,
                     file_size_mb REAL DEFAULT 4.0,
+                    loudness_db REAL DEFAULT NULL,
                     cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -510,7 +511,8 @@ class DatabaseManager:
                 ("duration", "TEXT DEFAULT '-'"),
                 ("play_count", "INTEGER DEFAULT 1"),
                 ("last_accessed", "TEXT"),
-                ("file_size_mb", "REAL DEFAULT 4.0")
+                ("file_size_mb", "REAL DEFAULT 4.0"),
+                ("loudness_db", "REAL DEFAULT NULL")
             ],
             "music_queue": [
                 ("duration", "TEXT DEFAULT '-'"),

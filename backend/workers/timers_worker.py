@@ -42,8 +42,11 @@ class TimerWorker(QThread):
                 for item in messages_to_send:
                     if isinstance(item, tuple) and len(item) == 3:
                         msg, apply_kick, apply_twitch = item
+                        platforms = [p for p, active in [("kick", apply_kick), ("twitch", apply_twitch)] if active]
+                        logger.debug("[TimerWorker] Dispatching timer message to [%s]: %s", ", ".join(platforms) or "none", msg[:80])
                         self.post_message_requested.emit(msg, apply_kick, apply_twitch)
                     else:
+                        logger.debug("[TimerWorker] Dispatching timer message (all platforms): %s", str(item)[:80])
                         self.post_message_requested.emit(str(item), True, True)
 
             except Exception as e:
