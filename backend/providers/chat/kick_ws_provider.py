@@ -9,7 +9,6 @@ from backend.utils.json_utils import parse_kick_payload, fast_dumps
 from collections import deque
 import websocket
 from typing import Callable
-from backend.models import AlertEvent, AlertType
 
 logger = logging.getLogger("minikick.providers.kick_ws_provider")
 
@@ -39,7 +38,6 @@ class KickWebSocketManager:
         self.ws: websocket.WebSocketApp | None = None
         self._room_id = 0
         self._channel_id = 0
-        self._last_followers_count: int | None = None
         self._seen_message_ids = deque(maxlen=1000)
         self._seen_message_ids_set = set()
         self._callback: Callable | None = None
@@ -47,7 +45,6 @@ class KickWebSocketManager:
         self._on_poll_delete: Callable[[], None] | None = None
         self._on_pinned_created: Callable[[dict], None] | None = None
         self._on_pinned_deleted: Callable[[], None] | None = None
-        self._on_alert: Callable[[AlertEvent], None] | None = None
         self._on_reward: Callable[[str, str, str], None] | None = None
         self._on_message_deleted: Callable[[str], None] | None = None
         self._on_user_banned: Callable[[str], None] | None = None
@@ -57,17 +54,6 @@ class KickWebSocketManager:
             "App\\Events\\PollDeleteEvent": self._handle_poll_delete,
             "App\\Events\\PinnedMessageCreatedEvent": self._handle_pinned_created,
             "App\\Events\\PinnedMessageDeletedEvent": self._handle_pinned_deleted,
-            "App\\Events\\SubscriptionEvent": self._handle_subscription,
-            "App\\Events\\ChannelSubscriptionEvent": self._handle_subscription,
-            "App\\Events\\GiftedSubscriptionsEvent": self._handle_gifted_subscriptions,
-            "App\\Events\\LuckyUsersWhoGotGiftSubscriptionsEvent": self._handle_gifted_subscriptions,
-            "App\\Events\\StreamHostEvent": self._handle_stream_host,
-            "App\\Events\\FollowersUpdated": self._handle_followers_updated,
-            "FollowersUpdated": self._handle_followers_updated,
-            "followers.updated": self._handle_followers_updated,
-            "channel.followed": self._handle_followers_updated,
-            "GoalProgressUpdateEvent": self._handle_goal_progress_update,
-            "App\\Events\\GoalProgressUpdateEvent": self._handle_goal_progress_update,
             "RewardRedeemedEvent": self._handle_reward_redeemed,
             "App\\Events\\RewardRedeemedEvent": self._handle_reward_redeemed,
             "App\\Events\\ChatMessageDeletedEvent": self._handle_message_deleted,
@@ -89,21 +75,17 @@ class KickWebSocketManager:
         on_poll_delete: Callable[[], None] | None = None,
         on_pinned_created: Callable[[dict], None] | None = None,
         on_pinned_deleted: Callable[[], None] | None = None,
-        on_alert: Callable[[AlertEvent], None] | None = None,
         on_reward_redeemed: Callable[[str, str, str], None] | None = None,
         on_message_deleted: Callable[[str], None] | None = None,
         on_user_banned: Callable[[str], None] | None = None,
     ) -> None:
         self._room_id = room_id
         self._channel_id = channel_id
-        if initial_followers is not None and self._last_followers_count is None:
-            self._last_followers_count = initial_followers
         self._callback = on_message
         self._on_poll_update = on_poll_update
         self._on_poll_delete = on_poll_delete
         self._on_pinned_created = on_pinned_created
         self._on_pinned_deleted = on_pinned_deleted
-        self._on_alert = on_alert
         self._on_reward = on_reward_redeemed
         self._on_message_deleted = on_message_deleted
         self._on_user_banned = on_user_banned
@@ -246,102 +228,6 @@ class KickWebSocketManager:
     def _handle_pinned_deleted(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         if self._on_pinned_deleted:
             self._on_pinned_deleted()
-
-    def _handle_subscription(self, inner: dict, ws: websocket.WebSocketApp) -> None:
-        if not self._on_alert:
-            return
-        user = inner.get("username", "") or inner.get("user", {}).get("username", "")
-        if not user:
-            return
-        months = int(inner.get("months", 1))
-        alert_type = AlertType.RESUB if months > 1 else AlertType.SUBSCRIPTION
-        event = AlertEvent(
-            event_id=f"kick_sub_{inner.get('id', uuid.uuid4().hex[:8])}",
-            platform="kick",
-            alert_type=alert_type,
-            username=user,
-            display_name=user,
-            amount=months,
-            tier="1",
-            timestamp=time.time()
-        )
-        self._on_alert(event)
-
-    def _handle_gifted_subscriptions(self, inner: dict, ws: websocket.WebSocketApp) -> None:
-        if not self._on_alert:
-            return
-        gifter = inner.get("gifter_username") or inner.get("username") or "Anónimo"
-        recipients = inner.get("gifted_usernames", [])
-        amount = len(recipients) if isinstance(recipients, list) and recipients else int(inner.get("count", 1))
-        event = AlertEvent(
-            event_id=f"kick_gift_{inner.get('id', uuid.uuid4().hex[:8])}",
-            platform="kick",
-            alert_type=AlertType.SUB_GIFT,
-            username=gifter,
-            display_name=gifter,
-            amount=amount,
-            tier="1",
-            timestamp=time.time()
-        )
-        self._on_alert(event)
-
-    def _handle_stream_host(self, inner: dict, ws: websocket.WebSocketApp) -> None:
-        if not self._on_alert:
-            return
-        host_user = inner.get("host_username") or inner.get("username") or "Streamer"
-        viewers = int(inner.get("number_viewers", 1))
-        event = AlertEvent(
-            event_id=f"kick_host_{inner.get('id', uuid.uuid4().hex[:8])}",
-            platform="kick",
-            alert_type=AlertType.RAID,
-            username=host_user,
-            display_name=host_user,
-            amount=viewers,
-            timestamp=time.time()
-        )
-        self._on_alert(event)
-
-    def _handle_followers_updated(self, inner: dict, ws: websocket.WebSocketApp) -> None:
-        if not self._on_alert:
-            return
-        if inner.get("followed") is False:
-            return
-        user = inner.get("username") or inner.get("follower", {}).get("username", "") or "Nuevo Seguidor"
-        event = AlertEvent(
-            event_id=f"kick_follow_{inner.get('id', uuid.uuid4().hex[:8])}",
-            platform="kick",
-            alert_type=AlertType.FOLLOW,
-            username=user,
-            display_name=user,
-            amount=1,
-            timestamp=time.time()
-        )
-        self._on_alert(event)
-
-    def _handle_goal_progress_update(self, inner: dict, ws: websocket.WebSocketApp) -> None:
-        if inner.get("type") != "followers":
-            return
-        
-        current_val = inner.get("current_value")
-        if not isinstance(current_val, (int, float)):
-            return
-
-        current_count = int(current_val)
-        if self._last_followers_count is not None and current_count > self._last_followers_count:
-            logger.info("[KickWebSocket] Follower count increase detected: %d -> %d", self._last_followers_count, current_count)
-            if self._on_alert:
-                event = AlertEvent(
-                    event_id=f"kick_follow_{int(time.time())}",
-                    platform="kick",
-                    alert_type=AlertType.FOLLOW,
-                    username="Nuevo Seguidor",
-                    display_name="Nuevo Seguidor",
-                    amount=1,
-                    timestamp=time.time()
-                )
-                self._on_alert(event)
-
-        self._last_followers_count = current_count
 
     def _handle_reward_redeemed(self, inner: dict, ws: websocket.WebSocketApp) -> None:
         reward_title = inner.get("reward_title", "") or inner.get("reward", {}).get("title", "")

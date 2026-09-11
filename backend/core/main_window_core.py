@@ -885,7 +885,6 @@ class MainWindowCore(QMainWindow):
         self.kick_chat_worker.poll_deleted.connect(self._on_poll_deleted)
         self.kick_chat_worker.pinned_created.connect(self._on_pinned_created)
         self.kick_chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
-        self.kick_chat_worker.alert_received.connect(self._handle_incoming_alert)
         self.kick_chat_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
         self.kick_chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
         

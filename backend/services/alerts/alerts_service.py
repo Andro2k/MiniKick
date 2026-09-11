@@ -76,7 +76,7 @@ class AlertService:
 
     def trigger_test_alert(
         self,
-        platform: str = "kick",
+        platform: str = "twitch",
         alert_type: str = "follow",
         username: str = "MiniKickStreamer",
         amount: int = 1,

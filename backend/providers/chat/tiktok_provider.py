@@ -79,13 +79,6 @@ class TikTokChatProvider:
         if self.sign_api_key:
             web_kwargs["signer_kwargs"] = {"sign_api_key": self.sign_api_key}
             os.environ["SIGN_API_KEY"] = self.sign_api_key
-            masked_key = (
-                self.sign_api_key[:4] + "*" * max(0, len(self.sign_api_key) - 8) + self.sign_api_key[-4:]
-                if len(self.sign_api_key) >= 8 else "***"
-            )
-            logger.info("[TikTokChatProvider] Usando EulerStream SIGN_API_KEY: %s", masked_key)
-        else:
-            logger.warning("[TikTokChatProvider] No se detectó SIGN_API_KEY. Usando cuota pública compartida.")
 
         client = TikTokLiveClient(
             unique_id=f"@{clean_user}",

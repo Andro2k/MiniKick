@@ -16,7 +16,6 @@ class KickChatWorker(QThread):
     poll_deleted = Signal()
     pinned_created = Signal(object)
     pinned_deleted = Signal()
-    alert_received = Signal(object)
     reward_redeemed = Signal(str, str, str)
     
     def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):
@@ -55,7 +54,6 @@ class KickChatWorker(QThread):
                     on_poll_delete=self._dispatch_poll_delete,
                     on_pinned_created=self._dispatch_pinned_created,
                     on_pinned_deleted=self._dispatch_pinned_deleted,
-                    on_alert=self._dispatch_alert,
                     on_reward_redeemed=self._dispatch_reward,
                 )
                 if not self._is_stopped:
@@ -98,10 +96,6 @@ class KickChatWorker(QThread):
     def _dispatch_pinned_deleted(self):
         if not self._is_stopped:
             self.pinned_deleted.emit()
-
-    def _dispatch_alert(self, alert_event):
-        if not self._is_stopped:
-            self.alert_received.emit(alert_event)
 
     def _dispatch_reward(self, username: str, reward_title: str, user_input: str):
         if not self._is_stopped:
