@@ -123,12 +123,47 @@
             "input_placeholder": "ej. botrix",
             "title": "Usuarios Silenciados"
         },
+        "commands": {
+            "ttsblock_already": "@{user}, la palabra '{word}' ya está bloqueada en el TTS.",
+            "ttsblock_success": "@{user}, la palabra '{word}' ha sido bloqueada en el TTS.",
+            "ttsblock_usage": "@{user}, uso correcto: !ttsblock <palabra> o !ttsblock unblock <palabra>",
+            "ttsmute_already": "@{user}, el usuario @{target} ya está silenciado en el TTS.",
+            "ttsmute_success": "@{user}, el usuario @{target} ha sido silenciado en el TTS.",
+            "ttsmute_usage": "@{user}, uso correcto: !ttsmute [@usuario] o !ttsmute unmute [@usuario]",
+            "ttsunblock_not_found": "@{user}, la palabra '{word}' no estaba bloqueada en el TTS.",
+            "ttsunblock_success": "@{user}, la palabra '{word}' ha sido desbloqueada en el TTS.",
+            "ttsunblock_usage": "@{user}, uso correcto: !ttsunblock <palabra>",
+            "ttsunmute_not_found": "@{user}, el usuario @{target} no estaba silenciado en el TTS.",
+            "ttsunmute_success": "@{user}, el usuario @{target} ha sido reactivado en el TTS.",
+            "ttsunmute_usage": "@{user}, uso correcto: !ttsunmute <usuario>"
+        },
+        "mod_commands": {
+            "block_cmd_desc": "Permite que moderadores y streamer bloqueen o desbloqueen palabras censuradas",
+            "block_cmd_title": "Comandos de censurar palabras (!ttsblock)",
+            "block_disabled_msg": "@{user}, los comandos de bloqueo de palabras están desactivados actualmente.",
+            "mute_cmd_desc": "Permite que moderadores y streamer silencien o desilencien usuarios del TTS",
+            "mute_cmd_title": "Comandos de silenciar usuarios (!ttsmute)",
+            "mute_disabled_msg": "@{user}, los comandos de silenciar usuarios están desactivados actualmente.",
+            "section_desc": "Habilita o deshabilita los comandos de moderación en vivo desde el chat",
+            "section_title": "Comandos de Moderación en Chat"
+        },
         "display": {
             "title": "Historial del Chat"
         },
         "header": {
             "subtitle": "Gestiona la moderación, la lectura de voz interactiva (TTS) y los eventos de tu canal en tiempo real.",
             "title": "Chat en Vivo"
+        },
+        "platforms": {
+            "kick_desc": "Reproducir mensajes del chat de Kick en el TTS.",
+            "kick_title": "Kick",
+            "tiktok_desc": "Reproducir mensajes del chat de TikTok en el TTS.",
+            "tiktok_title": "TikTok",
+            "title": "Plataformas de Chat para TTS",
+            "twitch_desc": "Reproducir mensajes del chat de Twitch en el TTS.",
+            "twitch_title": "Twitch",
+            "youtube_desc": "Reproducir mensajes del chat de YouTube en el TTS.",
+            "youtube_title": "YouTube"
         },
         "overlay": {
             "entry_bottom": "Desde Abajo",

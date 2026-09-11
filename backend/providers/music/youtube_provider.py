@@ -588,3 +588,13 @@ class YouTubeMusicProvider(QObject):
         self.audio_output.setVolume(self._calculate_effective_volume())
         self.player.play()
         return True
+
+    def seek(self, position_ms: int) -> bool:
+        if not hasattr(self, "player") or self.player is None:
+            return False
+        target = max(0, int(position_ms))
+        dur = self.player.duration()
+        if dur > 0:
+            target = min(target, dur)
+        self.player.setPosition(target)
+        return True

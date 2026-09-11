@@ -147,6 +147,34 @@ class ChatTtsSettingsPanel(ModernCard):
         self.addWidget(row_volume)
         self.addWidget(row_speed)
 
+        divider_platforms = ModernDivider()
+        self.addWidget(divider_platforms)
+
+        platforms_lbl = QLabel(self.i18n.get("chat.platforms.title"))
+        platforms_lbl.setProperty("role", "category")
+        self.addWidget(platforms_lbl)
+
+        platforms_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_XS, orientation="vertical")
+        self.sw_plat_kick = ModernSwitch(self)
+        self.sw_plat_kick.setChecked(True)
+        self.sw_plat_twitch = ModernSwitch(self)
+        self.sw_plat_twitch.setChecked(True)
+        self.sw_plat_youtube = ModernSwitch(self)
+        self.sw_plat_youtube.setChecked(True)
+        self.sw_plat_tiktok = ModernSwitch(self)
+        self.sw_plat_tiktok.setChecked(True)
+
+        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color="#53FC18")
+        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color="#9146FF")
+        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color="#FF0000")
+        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color="#00F2FE")
+
+        platforms_card.addWidget(row_plat_kick)
+        platforms_card.addWidget(row_plat_twitch)
+        platforms_card.addWidget(row_plat_youtube)
+        platforms_card.addWidget(row_plat_tiktok)
+        self.addWidget(platforms_card)
+
         divider = ModernDivider()
         self.addWidget(divider)
 
@@ -247,7 +275,8 @@ class ChatTtsSettingsPanel(ModernCard):
             self.combo_voice_broadcaster, self.combo_voice_moderator,
             self.combo_voice_vip, self.combo_voice_subscriber,
             self.sw_role_everyone, self.sw_role_broadcaster,
-            self.sw_role_moderator, self.sw_role_vip, self.sw_role_subscriber
+            self.sw_role_moderator, self.sw_role_vip, self.sw_role_subscriber,
+            self.sw_plat_kick, self.sw_plat_twitch, self.sw_plat_youtube, self.sw_plat_tiktok
         ]
         for control in controls:
             if isinstance(control, ModernSwitch):
@@ -290,12 +319,14 @@ class ChatTtsSettingsPanel(ModernCard):
 
     def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str,
                         is_web_provider: bool = False, volume: int = 100, role_voices: dict = None,
-                        role_enabled: dict = None, provider: str = None, speed: int = 100):
+                        role_enabled: dict = None, provider: str = None, speed: int = 100,
+                        platform_enabled: dict = None):
         interactive_widgets = [
             self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
             self.combo_provider, self.slider_vol, self.slider_speed,
             self.sw_role_everyone, self.sw_role_broadcaster,
-            self.sw_role_moderator, self.sw_role_vip, self.sw_role_subscriber
+            self.sw_role_moderator, self.sw_role_vip, self.sw_role_subscriber,
+            self.sw_plat_kick, self.sw_plat_twitch, self.sw_plat_youtube, self.sw_plat_tiktok
         ]
         for w in interactive_widgets:
             w.blockSignals(True)
@@ -330,6 +361,12 @@ class ChatTtsSettingsPanel(ModernCard):
                 self.sw_role_moderator.setChecked(role_enabled.get("moderator", True))
                 self.sw_role_vip.setChecked(role_enabled.get("vip", True))
                 self.sw_role_subscriber.setChecked(role_enabled.get("subscriber", True))
+
+            if platform_enabled:
+                self.sw_plat_kick.setChecked(platform_enabled.get("kick", True))
+                self.sw_plat_twitch.setChecked(platform_enabled.get("twitch", True))
+                self.sw_plat_youtube.setChecked(platform_enabled.get("youtube", True))
+                self.sw_plat_tiktok.setChecked(platform_enabled.get("tiktok", True))
         finally:
             for w in interactive_widgets:
                 w.blockSignals(False)
@@ -397,4 +434,8 @@ class ChatTtsSettingsPanel(ModernCard):
             "role_enabled_moderator": self.sw_role_moderator.isChecked(),
             "role_enabled_vip": self.sw_role_vip.isChecked(),
             "role_enabled_subscriber": self.sw_role_subscriber.isChecked(),
+            "platform_kick": self.sw_plat_kick.isChecked(),
+            "platform_twitch": self.sw_plat_twitch.isChecked(),
+            "platform_youtube": self.sw_plat_youtube.isChecked(),
+            "platform_tiktok": self.sw_plat_tiktok.isChecked(),
         }

@@ -9,8 +9,8 @@ try:
 except ImportError:
     pass
 
-os.environ["AV_LOG_LEVEL"] = "error"
-os.environ["QT_LOGGING_RULES"] = "qt.multimedia.ffmpeg=false;qt.multimedia=false;qt.qpa.wayland.*=false"
+os.environ["AV_LOG_LEVEL"] = "fatal"
+os.environ["QT_LOGGING_RULES"] = "qt.multimedia.*=false;qt.multimedia.ffmpeg.*=false;qt.qpa.wayland.*=false"
 
 import logging
 import traceback

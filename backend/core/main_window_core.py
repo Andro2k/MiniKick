@@ -832,6 +832,11 @@ class MainWindowCore(QMainWindow):
                 self.chat_service.shutdown()
             except Exception:
                 pass
+        if hasattr(self, "chat_controller") and self.chat_controller and hasattr(self.chat_controller, "cleanup"):
+            try:
+                self.chat_controller.cleanup()
+            except Exception:
+                pass
 
     @staticmethod
     def _is_worker_running(worker) -> bool:

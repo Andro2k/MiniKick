@@ -24,3 +24,6 @@ class IMusicProvider(Protocol):
 
     def set_volume(self, volume: int) -> None:
         ...
+
+    def seek(self, position_ms: int) -> bool:
+        ...

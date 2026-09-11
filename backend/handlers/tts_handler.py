@@ -19,6 +19,7 @@ class TTSVoiceHandler(QObject):
         self._all_voices: list[dict] = []
         self._available_voice_ids: set[str] = set()
         self._voice_worker = None
+        self._retiring_workers: set = set()
 
     def load_voices(self, provider: str, is_initial: bool = False) -> None:
         if self.view is not None:
@@ -30,17 +31,30 @@ class TTSVoiceHandler(QObject):
             self._on_voices_fetched(cached, provider, is_initial)
             return
 
-        if self._voice_worker:
-            if self._voice_worker.isRunning():
-                try:
-                    self._voice_worker.voices_fetched.disconnect()
-                    self._voice_worker.error_occurred.disconnect()
-                except Exception:
-                    pass
-                self._voice_worker.requestInterruption()
-                self._voice_worker.wait(300)
-            self._voice_worker.deleteLater()
+        if self._voice_worker and self._voice_worker.isRunning():
+            if getattr(self._voice_worker, "provider_type", None) == provider:
+                logger.debug("[TTSVoiceHandler] Voice fetcher worker already running for provider '%s'. Reusing.", provider)
+                return
+
+            old_worker = self._voice_worker
             self._voice_worker = None
+            try:
+                old_worker.voices_fetched.disconnect()
+                old_worker.error_occurred.disconnect()
+            except Exception:
+                pass
+            old_worker.requestInterruption()
+            self._retiring_workers.add(old_worker)
+
+            def _on_retired(w=old_worker):
+                self._retiring_workers.discard(w)
+                try:
+                    w.deleteLater()
+                except RuntimeError:
+                    pass
+
+            old_worker.finished.connect(_on_retired)
+            old_worker.wait(100)
 
         from backend.workers import VoiceFetcherWorker
         self._voice_worker = VoiceFetcherWorker(self.service.tts, provider, parent=self)
@@ -71,11 +85,37 @@ class TTSVoiceHandler(QObject):
             self.filter_voices_by_language(sel_prefix, select_id=saved_voice_id, play_test=(not is_initial))
 
         if self._voice_worker:
-            self._voice_worker.deleteLater()
+            w = self._voice_worker
             self._voice_worker = None
+            if not w.isRunning():
+                w.deleteLater()
+            else:
+                self._retiring_workers.add(w)
+                def _on_done(worker=w):
+                    self._retiring_workers.discard(worker)
+                    try:
+                        worker.deleteLater()
+                    except RuntimeError:
+                        pass
+                w.finished.connect(_on_done)
 
     @Slot(str, str)
     def _on_voices_error(self, error_msg: str, provider: str) -> None:
+        if self._voice_worker:
+            w = self._voice_worker
+            self._voice_worker = None
+            if not w.isRunning():
+                w.deleteLater()
+            else:
+                self._retiring_workers.add(w)
+                def _on_done(worker=w):
+                    self._retiring_workers.discard(worker)
+                    try:
+                        worker.deleteLater()
+                    except RuntimeError:
+                        pass
+                w.finished.connect(_on_done)
+
         if provider == "piper":
             fallback = [{"id": "es_ES-sharvard-medium", "name": "Sharvard (Local)"}]
         elif provider == "web":
@@ -200,3 +240,30 @@ class TTSVoiceHandler(QObject):
             if badge in badges:
                 return settings.get(f"role_voice_{badge}") or None
         return None
+
+    def cleanup(self) -> None:
+        if self._voice_worker:
+            w = self._voice_worker
+            self._voice_worker = None
+            try:
+                w.voices_fetched.disconnect()
+                w.error_occurred.disconnect()
+            except Exception:
+                pass
+            if w.isRunning():
+                w.requestInterruption()
+                w.wait(500)
+            try:
+                w.deleteLater()
+            except RuntimeError:
+                pass
+
+        for w in list(self._retiring_workers):
+            if w.isRunning():
+                w.requestInterruption()
+                w.wait(500)
+            try:
+                w.deleteLater()
+            except RuntimeError:
+                pass
+        self._retiring_workers.clear()

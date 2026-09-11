@@ -19,12 +19,21 @@ class ChatView(BaseView):
     word_remove_requested = Signal(str)
     language_filter_changed = Signal(str)
     voice_test_requested = Signal(str)
+    view_shown = Signal()
 
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="chat.header.title", subtitle_key="chat.header.subtitle", parent=parent)
         self._last_body_dir = None
         self._setup_ui()
         self._connect_internal_signals()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.view_shown.emit()
+
+    def set_mod_command_toggles(self, mute_enabled: bool, block_enabled: bool) -> None:
+        if hasattr(self, "bot_panel") and hasattr(self.bot_panel, "set_command_toggles"):
+            self.bot_panel.set_command_toggles(mute_enabled, block_enabled)
 
     def _setup_ui(self):
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
@@ -84,8 +93,25 @@ class ChatView(BaseView):
         self.bot_panel.bot_remove_requested.connect(self.bot_remove_requested.emit)
         self.bot_panel.word_add_requested.connect(self.word_add_requested.emit)
         self.bot_panel.word_remove_requested.connect(self.word_remove_requested.emit)
+        self.bot_panel.settings_changed.connect(self.settings_changed.emit)
 
         self.overlay_settings_panel.settings_changed.connect(self.settings_changed.emit)
+
+    @property
+    def mod_mute_command_enabled(self) -> bool:
+        return self.bot_panel.mod_mute_command_enabled
+
+    @mod_mute_command_enabled.setter
+    def mod_mute_command_enabled(self, value: bool):
+        self.bot_panel.mod_mute_command_enabled = value
+
+    @property
+    def mod_block_command_enabled(self) -> bool:
+        return self.bot_panel.mod_block_command_enabled
+
+    @mod_block_command_enabled.setter
+    def mod_block_command_enabled(self, value: bool):
+        self.bot_panel.mod_block_command_enabled = value
 
     @property
     def tts_enabled(self) -> bool:
@@ -186,10 +212,14 @@ class ChatView(BaseView):
 
     def set_settings_ui(self, enabled: bool, read_name: bool, use_command: bool, command: str,
                         is_web_provider: bool = False, volume: int = 100, role_voices: dict = None,
-                        role_enabled: dict = None, provider: str = None, speed: int = 100):
+                        role_enabled: dict = None, provider: str = None, speed: int = 100,
+                        platform_enabled: dict = None,
+                        mod_mute_command_enabled: bool = True,
+                        mod_block_command_enabled: bool = True):
         self.tts_settings_panel.set_settings_ui(
-            enabled, read_name, use_command, command, is_web_provider, volume, role_voices, role_enabled, provider, speed
+            enabled, read_name, use_command, command, is_web_provider, volume, role_voices, role_enabled, provider, speed, platform_enabled
         )
+        self.bot_panel.set_command_toggles(mod_mute_command_enabled, mod_block_command_enabled)
 
     def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool):
         self.overlay_settings_panel.set_overlay_settings_ui(theme, size, fade, show_bots, show_time)
@@ -200,6 +230,9 @@ class ChatView(BaseView):
     def add_bot_tag(self, bot_name: str):
         self.bot_panel.add_bot_tag(bot_name)
 
+    def remove_bot_tag(self, bot_name: str):
+        self.bot_panel.remove_bot_tag(bot_name)
+
     def clear_bots_list(self):
         self.bot_panel.clear_list()
 
@@ -208,6 +241,9 @@ class ChatView(BaseView):
 
     def add_word_tag(self, word: str):
         self.bot_panel.add_word_tag(word)
+
+    def remove_word_tag(self, word: str):
+        self.bot_panel.remove_word_tag(word)
 
     def clear_words_list(self):
         self.bot_panel.clear_words_list()

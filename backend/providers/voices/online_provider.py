@@ -323,11 +323,22 @@ class WebTTSProvider:
 
     def shutdown(self) -> None:
         self.stop()
-        if hasattr(self, "_loop") and self._loop and self._loop.is_running():
+        if hasattr(self, "_loop") and self._loop and not self._loop.is_closed():
             try:
                 self._loop.call_soon_threadsafe(self._loop.stop)
             except Exception:
                 pass
+        if hasattr(self, "_loop_thread") and self._loop_thread and self._loop_thread.is_alive():
+            try:
+                self._loop_thread.join(timeout=1.0)
+            except Exception:
+                pass
+
+    def __del__(self):
+        try:
+            self.shutdown()
+        except Exception:
+            pass
 
     def get_available_voices(self) -> list[dict]:
         try:

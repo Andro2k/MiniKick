@@ -12,11 +12,46 @@ logger = logging.getLogger("minikick.controllers.chat")
 _SYSTTS_ON_KEYWORDS = frozenset({"on", "1", "enable", "activar", "encender"})
 _SYSTTS_OFF_KEYWORDS = frozenset({"off", "0", "disable", "desactivar", "apagar"})
 
+_MUTE_REMOVE_KEYWORDS = frozenset({"unmute", "desilenciar", "quitar", "remove", "del", "-"})
+_MUTE_REMOVE_ALIASES = frozenset({"!unmutetts", "!desilenciartts", "!ttsunmute"})
+_MUTE_ADD_KEYWORDS = frozenset({"add", "mute", "silenciar", "+"})
+
+_BLOCK_REMOVE_KEYWORDS = frozenset({"unblock", "descensurar", "desbloquear", "quitar", "remove", "del", "-"})
+_BLOCK_REMOVE_ALIASES = frozenset({"!unblockword", "!descensurartts", "!ttsunblock"})
+_BLOCK_ADD_KEYWORDS = frozenset({"add", "block", "censurar", "bloquear", "+"})
+
 def _find_command_by_response(commands: list[dict], response_tag: str) -> dict | None:
     for cmd in commands:
         if cmd.get("response") == response_tag:
             return cmd
     return None
+
+_DEFAULT_MOD_COMMANDS: dict[str, dict] = {
+    "[PLUGIN_CHAT_TTS_MUTE]": {
+        "trigger": "!ttsmute",
+        "response": "[PLUGIN_CHAT_TTS_MUTE]",
+        "cooldown": 2,
+        "aliases": "!mutetts,!silenciartts,!unmutetts,!desilenciartts",
+        "is_regex": False,
+        "permission": "moderator",
+        "apply_kick": True,
+        "apply_twitch": True,
+        "apply_youtube": True,
+        "apply_tiktok": True,
+    },
+    "[PLUGIN_CHAT_TTS_BLOCK]": {
+        "trigger": "!ttsblock",
+        "response": "[PLUGIN_CHAT_TTS_BLOCK]",
+        "cooldown": 2,
+        "aliases": "!blockword,!censurartts,!unblockword,!descensurartts",
+        "is_regex": False,
+        "permission": "moderator",
+        "apply_kick": True,
+        "apply_twitch": True,
+        "apply_youtube": True,
+        "apply_tiktok": True,
+    },
+}
 
 class ChatController(QObject):
     tts_state_changed = Signal(bool)
@@ -43,11 +78,16 @@ class ChatController(QObject):
         self._tts_enabled = True
         self._read_name_enabled = True
         self._use_command_enabled = False
+        self._mod_mute_command_enabled = True
+        self._mod_block_command_enabled = True
         self._tts_settings_cache: dict = {}
+        self._view_connected: bool = False
 
         self._exact_plugin_handlers = {
             "[PLUGIN_CHAT_TTS]": self._handle_plugin_tts,
             "[PLUGIN_CHAT_SYSTTS]": self._handle_plugin_systts,
+            "[PLUGIN_CHAT_TTS_MUTE]": self._handle_plugin_ttsmute,
+            "[PLUGIN_CHAT_TTS_BLOCK]": self._handle_plugin_ttsblock,
         }
 
         self._save_timer = QTimer(self)
@@ -58,9 +98,11 @@ class ChatController(QObject):
         self.pipeline = MessagePipeline()
         self._build_pipeline()
         self.command_service.response_generated.connect(self._handle_bot_response)
+        
+        self._init_backend_state()
         if self.view is not None:
             self._connect_signals()
-            self._load_initial_data()
+            self._populate_view()
 
     def attach_view(self, view) -> None:
         first_attach = (self.view is None)
@@ -69,10 +111,14 @@ class ChatController(QObject):
             self.voice_handler.view = view
         if self.view is not None:
             self._connect_signals()
-            self._load_initial_data()
+            self._populate_view()
             if first_attach and self._message_buffer:
                 for item in self._message_buffer:
                     self.view.append_message(item["user"], item["content"], item["color"], timestamp=item["timestamp"], role=item["role"], platform=item["platform"])
+
+    def cleanup(self) -> None:
+        if hasattr(self, "voice_handler") and self.voice_handler:
+            self.voice_handler.cleanup()
 
     @property
     def muted_bots(self) -> set[str]:
@@ -89,6 +135,9 @@ class ChatController(QObject):
         self.pipeline.register(self._step_tts)
 
     def _connect_signals(self) -> None:
+        if not self.view or self._view_connected:
+            return
+        self._view_connected = True
         self.view.volume_changed.connect(self.service.set_volume)
         if hasattr(self.view, "speed_changed"):
             self.view.speed_changed.connect(self.service.set_speed)
@@ -106,19 +155,33 @@ class ChatController(QObject):
         self.view.word_remove_requested.connect(self._remove_word)
         self.view.language_filter_changed.connect(self.voice_handler.filter_voices_by_language)
         self.command_service.commands_changed.connect(self._sync_tts_command_from_db)
+        if hasattr(self.view, "view_shown"):
+            self.view.view_shown.connect(self._sync_tts_command_from_db)
 
     def load_initial_data(self) -> None:
-        self._load_initial_data()
+        self._init_backend_state()
+        if self.view is not None:
+            self._populate_view()
 
     def _load_initial_data(self) -> None:
-        settings = self.service.get_settings()
+        self.load_initial_data()
+
+    def _init_backend_state(self) -> None:
+        self.sync_settings_cache()
+        settings = self._tts_settings_cache
         provider = settings.get("provider", "piper")
         self.service.set_provider(provider)
-            
-        self._tts_enabled = settings.get("enabled", True)
-        self._read_name_enabled = settings.get("read_name", True)
-        self._use_command_enabled = settings.get("use_command", False)
-        self._tts_settings_cache = dict(settings)
+        self.filter_handler.initialize_from_settings(settings, self.view)
+        self.service.set_volume(settings.get("volume", 100))
+        self.service.set_speed(settings.get("speed", 100))
+        self._register_system_commands()
+        self.voice_handler.load_voices(provider, is_initial=True)
+
+    def _populate_view(self) -> None:
+        if self.view is None:
+            return
+        settings = self._tts_settings_cache
+        provider = settings.get("provider", "piper")
         
         role_voices = {
             "broadcaster": settings.get("role_voice_broadcaster", ""),
@@ -133,34 +196,44 @@ class ChatController(QObject):
             "vip": settings.get("role_enabled_vip", True),
             "subscriber": settings.get("role_enabled_subscriber", True)
         }
+        platform_enabled = {
+            "kick": settings.get("platform_kick", True),
+            "twitch": settings.get("platform_twitch", True),
+            "youtube": settings.get("platform_youtube", True),
+            "tiktok": settings.get("platform_tiktok", True),
+        }
         
-        if self.view is not None:
-            self.view.set_settings_ui(
-                enabled=settings.get("enabled", True),
-                read_name=settings.get("read_name", True),
-                use_command=settings.get("use_command", False),
-                command=settings.get("command", "!tts"),
-                is_web_provider=(provider == "web"),
-                volume=settings.get("volume", 100),
-                role_voices=role_voices,
-                role_enabled=role_enabled,
-                provider=provider,
-                speed=settings.get("speed", 100)
-            )
-            self.filter_handler.initialize_from_settings(settings, self.view)
-        self.service.set_volume(settings.get("volume", 100))
-        self.service.set_speed(settings.get("speed", 100))
+        self.view.set_settings_ui(
+            enabled=settings.get("enabled", True),
+            read_name=settings.get("read_name", True),
+            use_command=settings.get("use_command", False),
+            command=settings.get("command", "!tts"),
+            is_web_provider=(provider == "web"),
+            volume=settings.get("volume", 100),
+            role_voices=role_voices,
+            role_enabled=role_enabled,
+            provider=provider,
+            speed=settings.get("speed", 100),
+            platform_enabled=platform_enabled,
+            mod_mute_command_enabled=settings.get("mod_mute_command_enabled", True),
+            mod_block_command_enabled=settings.get("mod_block_command_enabled", True)
+        )
+        self.filter_handler.initialize_from_settings(settings, self.view)
 
         overlay_settings = self.service.get_overlay_settings()
-        if self.view is not None:
-            self.view.set_overlay_settings_ui(
-                theme=overlay_settings["theme"],
-                size=overlay_settings["size"],
-                fade=overlay_settings["fade"],
-                show_bots=overlay_settings["show_bots"],
-                show_time=overlay_settings["show_time"]
-            )
+        self.view.set_overlay_settings_ui(
+            theme=overlay_settings["theme"],
+            size=overlay_settings["size"],
+            fade=overlay_settings["fade"],
+            show_bots=overlay_settings["show_bots"],
+            show_time=overlay_settings["show_time"]
+        )
 
+        if self.voice_handler._all_voices:
+            self.voice_handler._on_voices_fetched(self.voice_handler._all_voices, provider, is_initial=True)
+
+    def _register_system_commands(self) -> None:
+        settings = self._tts_settings_cache
         commands = self.command_service.get_all_commands()
         existing = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
         if not existing:
@@ -194,11 +267,107 @@ class ChatController(QObject):
             finally:
                 self.command_service.blockSignals(False)
 
-        self.voice_handler.load_voices(provider, is_initial=True)
+        existing_ttsmute = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_MUTE]")
+        def_mute = _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_MUTE]"]
+        if not existing_ttsmute:
+            self.command_service.blockSignals(True)
+            try:
+                self.command_service.save_command(
+                    trigger=def_mute["trigger"],
+                    response=def_mute["response"],
+                    is_active=settings.get("mod_mute_command_enabled", True),
+                    cooldown=def_mute["cooldown"],
+                    aliases=def_mute["aliases"],
+                    is_regex=def_mute["is_regex"],
+                    permission=def_mute["permission"],
+                    apply_kick=def_mute["apply_kick"],
+                    apply_twitch=def_mute["apply_twitch"],
+                    apply_youtube=def_mute["apply_youtube"],
+                    apply_tiktok=def_mute["apply_tiktok"]
+                )
+            finally:
+                self.command_service.blockSignals(False)
+        else:
+            current_aliases = [a.strip() for a in existing_ttsmute.get("aliases", "").split(",") if a.strip()]
+            needed_aliases = [a.strip() for a in def_mute["aliases"].split(",") if a.strip()]
+            if any(na not in current_aliases for na in needed_aliases):
+                updated_aliases = list(dict.fromkeys(current_aliases + needed_aliases))
+                self.command_service.blockSignals(True)
+                try:
+                    self.command_service.save_command(
+                        trigger=existing_ttsmute["trigger"],
+                        response=existing_ttsmute["response"],
+                        is_active=existing_ttsmute.get("is_active", True),
+                        cooldown=existing_ttsmute.get("cooldown", def_mute["cooldown"]),
+                        aliases=",".join(updated_aliases),
+                        is_regex=existing_ttsmute.get("is_regex", False),
+                        permission=existing_ttsmute.get("permission", def_mute["permission"]),
+                        apply_kick=existing_ttsmute.get("apply_kick", True),
+                        apply_twitch=existing_ttsmute.get("apply_twitch", True),
+                        apply_youtube=existing_ttsmute.get("apply_youtube", True),
+                        apply_tiktok=existing_ttsmute.get("apply_tiktok", True)
+                    )
+                finally:
+                    self.command_service.blockSignals(False)
+
+        existing_ttsblock = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_BLOCK]")
+        def_block = _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"]
+        if not existing_ttsblock:
+            self.command_service.blockSignals(True)
+            try:
+                self.command_service.save_command(
+                    trigger=def_block["trigger"],
+                    response=def_block["response"],
+                    is_active=settings.get("mod_block_command_enabled", True),
+                    cooldown=def_block["cooldown"],
+                    aliases=def_block["aliases"],
+                    is_regex=def_block["is_regex"],
+                    permission=def_block["permission"],
+                    apply_kick=def_block["apply_kick"],
+                    apply_twitch=def_block["apply_twitch"],
+                    apply_youtube=def_block["apply_youtube"],
+                    apply_tiktok=def_block["apply_tiktok"]
+                )
+            finally:
+                self.command_service.blockSignals(False)
+        else:
+            current_aliases = [a.strip() for a in existing_ttsblock.get("aliases", "").split(",") if a.strip()]
+            needed_aliases = [a.strip() for a in def_block["aliases"].split(",") if a.strip()]
+            if any(na not in current_aliases for na in needed_aliases):
+                updated_aliases = list(dict.fromkeys(current_aliases + needed_aliases))
+                self.command_service.blockSignals(True)
+                try:
+                    self.command_service.save_command(
+                        trigger=existing_ttsblock["trigger"],
+                        response=existing_ttsblock["response"],
+                        is_active=existing_ttsblock.get("is_active", True),
+                        cooldown=existing_ttsblock.get("cooldown", def_block["cooldown"]),
+                        aliases=",".join(updated_aliases),
+                        is_regex=existing_ttsblock.get("is_regex", False),
+                        permission=existing_ttsblock.get("permission", def_block["permission"]),
+                        apply_kick=existing_ttsblock.get("apply_kick", True),
+                        apply_twitch=existing_ttsblock.get("apply_twitch", True),
+                        apply_youtube=existing_ttsblock.get("apply_youtube", True),
+                        apply_tiktok=existing_ttsblock.get("apply_tiktok", True)
+                    )
+                finally:
+                    self.command_service.blockSignals(False)
+
+        for legacy_tag in ("[PLUGIN_CHAT_TTS_UNMUTE]", "[PLUGIN_CHAT_TTS_UNBLOCK]"):
+            legacy_cmd = _find_command_by_response(commands, legacy_tag)
+            if legacy_cmd:
+                try:
+                    self.command_service.delete_command(legacy_cmd["trigger"])
+                except Exception as ex:
+                    logger.warning("[ChatController] Could not remove legacy command %s: %s", legacy_tag, ex)
 
     def sync_settings_cache(self) -> None:
         self._tts_settings_cache = self.service.get_settings()
         self._tts_enabled = self._tts_settings_cache.get("enabled", True)
+        self._read_name_enabled = self._tts_settings_cache.get("read_name", True)
+        self._use_command_enabled = self._tts_settings_cache.get("use_command", False)
+        self._mod_mute_command_enabled = self._tts_settings_cache.get("mod_mute_command_enabled", True)
+        self._mod_block_command_enabled = self._tts_settings_cache.get("mod_block_command_enabled", True)
 
     @Slot(object)
     def process_message(self, dto: ChatMessageDTO) -> None:
@@ -240,6 +409,9 @@ class ChatController(QObject):
     def _handle_plugin_tts(self, dto: ChatMessageDTO, prefix: str) -> None:
         settings = self._tts_settings_cache
         if not self._tts_enabled or not settings.get("enabled", True):
+            return
+        platform = getattr(dto, "platform", "kick")
+        if not settings.get(f"platform_{platform}", True):
             return
         if self.filter_handler.is_bot(dto.user):
             return
@@ -294,6 +466,129 @@ class ChatController(QObject):
         resp_msg = resp_template.replace("{user}", user)
         self.command_service.send_response(resp_msg, platform=platform)
 
+    def _handle_plugin_ttsmute(self, dto: ChatMessageDTO, prefix: str) -> None:
+        platform = getattr(dto, "platform", "kick")
+        if not self._mod_mute_command_enabled:
+            msg = self.i18n.get("chat.mod_commands.mute_disabled_msg").replace("{user}", dto.user)
+            self.command_service.send_response(msg, platform=platform)
+            return
+
+        raw_args = dto.content[len(prefix):].strip()
+        tokens = raw_args.split() if raw_args else []
+        prefix_lower = prefix.strip().lower()
+
+        is_remove = prefix_lower in _MUTE_REMOVE_ALIASES
+        if not is_remove and tokens:
+            first_token_lower = tokens[0].lower().lstrip("-")
+            if tokens[0].lower() in _MUTE_REMOVE_KEYWORDS or (tokens[0].startswith("-") and first_token_lower):
+                is_remove = True
+                if tokens[0].startswith("-") and first_token_lower:
+                    target = first_token_lower.lstrip("@")
+                elif len(tokens) > 1:
+                    target = tokens[1].lstrip("@")
+                else:
+                    target = ""
+            elif tokens[0].lower() in _MUTE_ADD_KEYWORDS:
+                target = tokens[1].lstrip("@") if len(tokens) > 1 else ""
+            else:
+                target = tokens[0].lstrip("@")
+        else:
+            target = tokens[0].lstrip("@") if tokens else ""
+
+        if not target:
+            usage_key = "chat.commands.ttsunmute_usage" if is_remove else "chat.commands.ttsmute_usage"
+            msg = self.i18n.get(usage_key).replace("{user}", dto.user)
+            self.command_service.send_response(msg, platform=platform)
+            return
+
+        target_lower = target.lower()
+
+        if is_remove:
+            if target_lower not in self.filter_handler.muted_bots:
+                msg = self.i18n.get("chat.commands.ttsunmute_not_found").replace("{user}", dto.user).replace("{target}", target)
+                self.command_service.send_response(msg, platform=platform)
+                return
+
+            self.filter_handler.remove_bot(target)
+            if self.view is not None:
+                self.view.remove_bot_tag(target)
+            msg = self.i18n.get("chat.commands.ttsunmute_success").replace("{user}", dto.user).replace("{target}", target)
+            self.command_service.send_response(msg, platform=platform)
+        else:
+            if target_lower in self.filter_handler.muted_bots:
+                msg = self.i18n.get("chat.commands.ttsmute_already").replace("{user}", dto.user).replace("{target}", target)
+                self.command_service.send_response(msg, platform=platform)
+                return
+
+            self.filter_handler.add_bot(target, self.view)
+            msg = self.i18n.get("chat.commands.ttsmute_success").replace("{user}", dto.user).replace("{target}", target)
+            self.command_service.send_response(msg, platform=platform)
+
+    def _handle_plugin_ttsunmute(self, dto: ChatMessageDTO, prefix: str = "!ttsunmute") -> None:
+        self._handle_plugin_ttsmute(dto, prefix="!unmutetts")
+
+    def _handle_plugin_ttsblock(self, dto: ChatMessageDTO, prefix: str) -> None:
+        platform = getattr(dto, "platform", "kick")
+        if not self._mod_block_command_enabled:
+            msg = self.i18n.get("chat.mod_commands.block_disabled_msg").replace("{user}", dto.user)
+            self.command_service.send_response(msg, platform=platform)
+            return
+
+        raw_args = dto.content[len(prefix):].strip()
+        tokens = raw_args.split() if raw_args else []
+        prefix_lower = prefix.strip().lower()
+
+        is_remove = prefix_lower in _BLOCK_REMOVE_ALIASES
+        if not is_remove and tokens:
+            first_token_lower = tokens[0].lower().lstrip("-")
+            if tokens[0].lower() in _BLOCK_REMOVE_KEYWORDS or (tokens[0].startswith("-") and first_token_lower):
+                is_remove = True
+                if tokens[0].startswith("-") and first_token_lower:
+                    word = " ".join([first_token_lower] + tokens[1:]).strip().lower()
+                elif len(tokens) > 1:
+                    word = " ".join(tokens[1:]).strip().lower()
+                else:
+                    word = ""
+            elif tokens[0].lower() in _BLOCK_ADD_KEYWORDS:
+                if len(tokens) > 1:
+                    word = " ".join(tokens[1:]).strip().lower()
+                else:
+                    word = ""
+            else:
+                word = raw_args.strip().lower()
+        else:
+            word = raw_args.strip().lower()
+
+        if not word:
+            usage_key = "chat.commands.ttsunblock_usage" if is_remove else "chat.commands.ttsblock_usage"
+            msg = self.i18n.get(usage_key).replace("{user}", dto.user)
+            self.command_service.send_response(msg, platform=platform)
+            return
+
+        if is_remove:
+            if word not in self.filter_handler.banned_words:
+                msg = self.i18n.get("chat.commands.ttsunblock_not_found").replace("{user}", dto.user).replace("{word}", word)
+                self.command_service.send_response(msg, platform=platform)
+                return
+
+            self.filter_handler.remove_word(word)
+            if self.view is not None:
+                self.view.remove_word_tag(word)
+            msg = self.i18n.get("chat.commands.ttsunblock_success").replace("{user}", dto.user).replace("{word}", word)
+            self.command_service.send_response(msg, platform=platform)
+        else:
+            if word in self.filter_handler.banned_words:
+                msg = self.i18n.get("chat.commands.ttsblock_already").replace("{user}", dto.user).replace("{word}", word)
+                self.command_service.send_response(msg, platform=platform)
+                return
+
+            self.filter_handler.add_word(word, self.view)
+            msg = self.i18n.get("chat.commands.ttsblock_success").replace("{user}", dto.user).replace("{word}", word)
+            self.command_service.send_response(msg, platform=platform)
+
+    def _handle_plugin_ttsunblock(self, dto: ChatMessageDTO, prefix: str = "!ttsunblock") -> None:
+        self._handle_plugin_ttsblock(dto, prefix="!unblockword")
+
     def _resolve_user_role(self, badges: list, user: str) -> str:
         badge_set = set(badges) if badges else set()
         if "broadcaster" in badge_set:
@@ -346,6 +641,10 @@ class ChatController(QObject):
         settings = self._tts_settings_cache
         if not settings.get("enabled", True):
             return
+        platform = getattr(dto, "platform", "kick")
+        if not settings.get(f"platform_{platform}", True):
+            logger.debug("[TTS] Skipped '%s' from %s: Platform '%s' TTS is disabled", dto.content[:30], dto.user, platform)
+            return
         if self.filter_handler.is_bot(dto.user):
             logger.debug("[TTS] Skipped '%s' from %s: User is marked as bot/ignored", dto.content[:30], dto.user)
             return
@@ -388,7 +687,9 @@ class ChatController(QObject):
             "volume": self.view.tts_volume,
             "speed": self.view.tts_speed if hasattr(self.view, "tts_speed") else 100,
             "ignored_users": ",".join(self.filter_handler.muted_bots),
-            "banned_words": ",".join(self.filter_handler.banned_words)
+            "banned_words": ",".join(self.filter_handler.banned_words),
+            "mod_mute_command_enabled": self.view.mod_mute_command_enabled if hasattr(self.view, "mod_mute_command_enabled") else True,
+            "mod_block_command_enabled": self.view.mod_block_command_enabled if hasattr(self.view, "mod_block_command_enabled") else True,
         }
         settings.update(self.view.get_role_voices())
         settings.update({
@@ -401,6 +702,8 @@ class ChatController(QObject):
         logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
                     settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))
         self._tts_settings_cache = dict(settings)
+        self._mod_mute_command_enabled = settings["mod_mute_command_enabled"]
+        self._mod_block_command_enabled = settings["mod_block_command_enabled"]
         self.tts_state_changed.emit(settings["enabled"])
         self._save_timer.start()
 
@@ -493,7 +796,56 @@ class ChatController(QObject):
             finally:
                 self.command_service.blockSignals(False)
 
-            QTimer.singleShot(0, self.command_service.commands_changed.emit)
+        target_mod_mute = settings.get("mod_mute_command_enabled", True)
+        target_mod_block = settings.get("mod_block_command_enabled", True)
+        self._sync_command_active_state(commands, "[PLUGIN_CHAT_TTS_MUTE]", target_mod_mute)
+        self._sync_command_active_state(commands, "[PLUGIN_CHAT_TTS_BLOCK]", target_mod_block)
+
+    def _sync_command_active_state(self, commands: list[dict], plugin_tag: str, is_active: bool) -> None:
+        cmd = _find_command_by_response(commands, plugin_tag)
+        if cmd:
+            if cmd.get("is_active") != is_active:
+                self.command_service.blockSignals(True)
+                try:
+                    self.command_service.save_command(
+                        trigger=cmd["trigger"],
+                        response=cmd["response"],
+                        is_active=is_active,
+                        cooldown=cmd.get("cooldown", 2),
+                        aliases=cmd.get("aliases", ""),
+                        is_regex=cmd.get("is_regex", False),
+                        permission=cmd.get("permission", "moderator"),
+                        apply_kick=cmd.get("apply_kick", True),
+                        apply_twitch=cmd.get("apply_twitch", True),
+                        apply_youtube=cmd.get("apply_youtube", True),
+                        apply_tiktok=cmd.get("apply_tiktok", True)
+                    )
+                finally:
+                    self.command_service.blockSignals(False)
+
+                QTimer.singleShot(0, self.command_service.commands_changed.emit)
+        elif is_active:
+            def_cmd = _DEFAULT_MOD_COMMANDS.get(plugin_tag)
+            if def_cmd:
+                self.command_service.blockSignals(True)
+                try:
+                    self.command_service.save_command(
+                        trigger=def_cmd["trigger"],
+                        response=def_cmd["response"],
+                        is_active=True,
+                        cooldown=def_cmd["cooldown"],
+                        aliases=def_cmd["aliases"],
+                        is_regex=def_cmd["is_regex"],
+                        permission=def_cmd["permission"],
+                        apply_kick=def_cmd["apply_kick"],
+                        apply_twitch=def_cmd["apply_twitch"],
+                        apply_youtube=def_cmd["apply_youtube"],
+                        apply_tiktok=def_cmd["apply_tiktok"]
+                    )
+                finally:
+                    self.command_service.blockSignals(False)
+
+                QTimer.singleShot(0, self.command_service.commands_changed.emit)
 
     def _sync_tts_command_from_db(self) -> None:
         commands = self.command_service.get_all_commands()
@@ -508,13 +860,40 @@ class ChatController(QObject):
             use_command = False
             command_trigger = settings.get("command", "!tts")
             
+        settings_modified = False
         if settings.get("use_command", False) != use_command or settings.get("command", "") != command_trigger:
             settings["use_command"] = use_command
             settings["command"] = command_trigger
-            self.service.save_settings(settings)
-            self._tts_settings_cache = settings           
+            settings_modified = True
             if self.view is not None:
                 self.view.set_tts_command_configuration(use_command, command_trigger)
+
+        mute_cmd = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_MUTE]")
+        block_cmd = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_BLOCK]")
+
+        mute_active = bool(mute_cmd and mute_cmd.get("is_active", False))
+        block_active = bool(block_cmd and block_cmd.get("is_active", False))
+
+        if settings.get("mod_mute_command_enabled", True) != mute_active:
+            settings["mod_mute_command_enabled"] = mute_active
+            settings_modified = True
+
+        if settings.get("mod_block_command_enabled", True) != block_active:
+            settings["mod_block_command_enabled"] = block_active
+            settings_modified = True
+
+        self._mod_mute_command_enabled = mute_active
+        self._mod_block_command_enabled = block_active
+
+        if settings_modified:
+            self.service.save_settings(settings)
+            self._tts_settings_cache = settings
+
+        if self.view is not None:
+            if hasattr(self.view, "set_mod_command_toggles"):
+                self.view.set_mod_command_toggles(mute_active, block_active)
+            elif hasattr(self.view, "bot_panel") and hasattr(self.view.bot_panel, "set_command_toggles"):
+                self.view.bot_panel.set_command_toggles(mute_active, block_active)
 
     @Slot(str)
     def _add_bot(self, bot_name: str) -> None:

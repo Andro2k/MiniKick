@@ -25,17 +25,19 @@ class ChatFilterHandler:
         bots_str = settings.get("ignored_users", "")
         self.muted_bots = {b.strip().lower() for b in bots_str.split(",") if b.strip()}
         
-        view.clear_bots_list()
-        for bot in self.muted_bots:
-            view.add_bot_tag(bot)
+        if view is not None:
+            view.clear_bots_list()
+            for bot in self.muted_bots:
+                view.add_bot_tag(bot)
 
         words_str = settings.get("banned_words", "")
         self.banned_words = {w.strip().lower() for w in words_str.split(",") if w.strip()}
         self._recompile_banned_words_regex()
         
-        view.clear_words_list()
-        for word in self.banned_words:
-            view.add_word_tag(word)
+        if view is not None:
+            view.clear_words_list()
+            for word in self.banned_words:
+                view.add_word_tag(word)
 
     def _recompile_banned_words_regex(self) -> None:
         if not self.banned_words:
@@ -84,7 +86,8 @@ class ChatFilterHandler:
         clean_name = bot_name.strip().lower()
         if clean_name and clean_name not in self.muted_bots:
             self.muted_bots.add(clean_name)
-            view.add_bot_tag(clean_name)
+            if view is not None:
+                view.add_bot_tag(clean_name)
             self._save_bot_list()
             return True
         return False
@@ -107,7 +110,8 @@ class ChatFilterHandler:
         if clean_word and clean_word not in self.banned_words:
             self.banned_words.add(clean_word)
             self._recompile_banned_words_regex()
-            view.add_word_tag(clean_word)
+            if view is not None:
+                view.add_word_tag(clean_word)
             self._save_word_list()
             return True
         return False

@@ -123,12 +123,47 @@
             "input_placeholder": "ex. botrix",
             "title": "Muted Users"
         },
+        "commands": {
+            "ttsblock_already": "@{user}, the word '{word}' is already blocked in TTS.",
+            "ttsblock_success": "@{user}, the word '{word}' has been blocked in TTS.",
+            "ttsblock_usage": "@{user}, correct usage: !ttsblock <word> or !ttsblock unblock <word>",
+            "ttsmute_already": "@{user}, user @{target} is already muted in TTS.",
+            "ttsmute_success": "@{user}, user @{target} has been muted in TTS.",
+            "ttsmute_usage": "@{user}, correct usage: !ttsmute [@username] or !ttsmute unmute [@username]",
+            "ttsunblock_not_found": "@{user}, the word '{word}' was not blocked in TTS.",
+            "ttsunblock_success": "@{user}, the word '{word}' has been unblocked in TTS.",
+            "ttsunblock_usage": "@{user}, correct usage: !ttsunblock <word>",
+            "ttsunmute_not_found": "@{user}, user @{target} was not muted in TTS.",
+            "ttsunmute_success": "@{user}, user @{target} has been unmuted in TTS.",
+            "ttsunmute_usage": "@{user}, correct usage: !ttsunmute <username>"
+        },
+        "mod_commands": {
+            "block_cmd_desc": "Allows moderators and streamer to ban or unban words from TTS",
+            "block_cmd_title": "Block word commands (!ttsblock)",
+            "block_disabled_msg": "@{user}, word blocking commands are currently disabled.",
+            "mute_cmd_desc": "Allows moderators and streamer to mute or unmute users from TTS",
+            "mute_cmd_title": "Mute user commands (!ttsmute)",
+            "mute_disabled_msg": "@{user}, user muting commands are currently disabled.",
+            "section_desc": "Enable or disable live moderation commands from the chat",
+            "section_title": "Chat Moderation Commands"
+        },
         "display": {
             "title": "Chat History"
         },
         "header": {
             "subtitle": "Manage moderation, interactive Text-to-Speech (TTS), and real-time channel events.",
             "title": "Live Chat"
+        },
+        "platforms": {
+            "kick_desc": "Play Kick chat messages via TTS.",
+            "kick_title": "Kick",
+            "tiktok_desc": "Play TikTok chat messages via TTS.",
+            "tiktok_title": "TikTok",
+            "title": "Chat Platforms for TTS",
+            "twitch_desc": "Play Twitch chat messages via TTS.",
+            "twitch_title": "Twitch",
+            "youtube_desc": "Play YouTube chat messages via TTS.",
+            "youtube_title": "YouTube"
         },
         "overlay": {
             "entry_bottom": "From Bottom",

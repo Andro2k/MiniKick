@@ -11,10 +11,44 @@ from frontend.common import (
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
 from .music_mockup import MusicOverlayMockupWidget
 
+def _format_time(ms: int) -> str:
+    if ms <= 0:
+        return "00:00"
+    seconds = int(ms // 1000)
+    minutes = seconds // 60
+    sec_rem = seconds % 60
+    if minutes >= 60:
+        hours = minutes // 60
+        min_rem = minutes % 60
+        return f"{hours:02d}:{min_rem:02d}:{sec_rem:02d}"
+    return f"{minutes:02d}:{sec_rem:02d}"
+
+class MusicScrubberSlider(NoWheelSlider):
+    def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):
+        super().__init__(orientation, parent)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setMouseTracking(True)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self.isEnabled() and self.maximum() > self.minimum():
+            ratio = max(0.0, min(1.0, event.position().x() / max(1, self.width())))
+            val = int(self.minimum() + (self.maximum() - self.minimum()) * ratio)
+            self.setValue(val)
+            self.sliderMoved.emit(val)
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self.isEnabled() and self.maximum() > self.minimum():
+            ratio = max(0.0, min(1.0, event.position().x() / max(1, self.width())))
+            val = int(self.minimum() + (self.maximum() - self.minimum()) * ratio)
+            self.setToolTip(_format_time(val))
+        super().mouseMoveEvent(event)
+
 class MusicPlayerSettingsPanel(QWidget):
     volume_changed = Signal(int)
     play_pause_requested = Signal()
     skip_requested = Signal()
+    seek_requested = Signal(int)
 
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
         super().__init__(parent)
@@ -27,6 +61,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self._current_progress_ms = 0
         self._duration_ms = 0
         self._is_playing = False
+        self._is_user_scrubbing = False
         self._last_rendered_pct = -1
         self._last_rendered_elapsed = ""
         self._last_rendered_total = ""
@@ -130,10 +165,15 @@ class MusicPlayerSettingsPanel(QWidget):
         progress_layout.setContentsMargins(*MARGIN_NONE)
         progress_layout.setSpacing(SPACING_XS)
 
-        self.progress_bar = QProgressBar(self)
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        self.progress_bar.setTextVisible(False)
+        self.slider_progress = MusicScrubberSlider(Qt.Orientation.Horizontal, parent=self)
+        self.slider_progress.setRange(0, 100)
+        self.slider_progress.setValue(0)
+        self.slider_progress.setEnabled(False)
+        self.progress_bar = self.slider_progress
+
+        self.slider_progress.sliderPressed.connect(self._on_scrubber_pressed)
+        self.slider_progress.sliderMoved.connect(self._on_scrubber_moved)
+        self.slider_progress.sliderReleased.connect(self._on_scrubber_released)
 
         time_layout = QHBoxLayout()
         time_layout.setContentsMargins(*MARGIN_NONE)
@@ -148,7 +188,7 @@ class MusicPlayerSettingsPanel(QWidget):
         time_layout.addStretch()
         time_layout.addWidget(self.lbl_time_total)
 
-        progress_layout.addWidget(self.progress_bar)
+        progress_layout.addWidget(self.slider_progress)
         progress_layout.addLayout(time_layout)
 
         self.card_player.addLayout(top_layout)
@@ -299,43 +339,59 @@ class MusicPlayerSettingsPanel(QWidget):
         self._cached_auth_state = (connected, label_key)
         self.lbl_auth_status.setText(self.i18n.get("music.status.youtube_active"))
 
-    def _format_time(self, ms: int) -> str:
-        if ms <= 0:
-            return "00:00"
-        seconds = int(ms // 1000)
-        minutes = seconds // 60
-        sec_rem = seconds % 60
-        if minutes >= 60:
-            hours = minutes // 60
-            min_rem = minutes % 60
-            return f"{hours:02d}:{min_rem:02d}:{sec_rem:02d}"
-        return f"{minutes:02d}:{sec_rem:02d}"
+    _format_time = staticmethod(_format_time)
+
+    def _on_scrubber_pressed(self):
+        self._is_user_scrubbing = True
+
+    def _on_scrubber_moved(self, val: int):
+        self.lbl_time_elapsed.setText(_format_time(val))
+
+    def _on_scrubber_released(self):
+        self._is_user_scrubbing = False
+        if self._duration_ms > 0:
+            target_ms = self.slider_progress.value()
+            self._current_progress_ms = target_ms
+            self.lbl_time_elapsed.setText(_format_time(target_ms))
+            self.seek_requested.emit(target_ms)
 
     def _on_progress_tick(self):
+        if self._is_user_scrubbing:
+            return
         if self._is_playing and self._duration_ms > 0:
             self._current_progress_ms = min(self._current_progress_ms + 1000, self._duration_ms)
             self._update_progress_ui()
 
     def _update_progress_ui(self):
+        if self._is_user_scrubbing:
+            return
         if self._duration_ms > 0:
-            percentage = int((self._current_progress_ms / self._duration_ms) * 100)
-            if percentage != self._last_rendered_pct:
-                self._last_rendered_pct = percentage
-                self.progress_bar.setValue(min(100, max(0, percentage)))
-            
-            elapsed_str = self._format_time(self._current_progress_ms)
+            self.slider_progress.setEnabled(True)
+            if self.slider_progress.maximum() != self._duration_ms:
+                self.slider_progress.blockSignals(True)
+                self.slider_progress.setRange(0, self._duration_ms)
+                self.slider_progress.blockSignals(False)
+
+            self.slider_progress.blockSignals(True)
+            self.slider_progress.setValue(min(self._duration_ms, max(0, self._current_progress_ms)))
+            self.slider_progress.blockSignals(False)
+
+            elapsed_str = _format_time(self._current_progress_ms)
             if elapsed_str != self._last_rendered_elapsed:
                 self._last_rendered_elapsed = elapsed_str
                 self.lbl_time_elapsed.setText(elapsed_str)
-                
-            total_str = self._format_time(self._duration_ms)
+
+            total_str = _format_time(self._duration_ms)
             if total_str != self._last_rendered_total:
                 self._last_rendered_total = total_str
                 self.lbl_time_total.setText(total_str)
         else:
-            if self._last_rendered_pct != 0:
-                self._last_rendered_pct = 0
-                self.progress_bar.setValue(0)
+            self.slider_progress.setEnabled(False)
+            self.slider_progress.blockSignals(True)
+            self.slider_progress.setRange(0, 100)
+            self.slider_progress.setValue(0)
+            self.slider_progress.blockSignals(False)
+
             if self._last_rendered_elapsed != "00:00":
                 self._last_rendered_elapsed = "00:00"
                 self.lbl_time_elapsed.setText("00:00")
@@ -346,6 +402,7 @@ class MusicPlayerSettingsPanel(QWidget):
     def update_current_song(self, song_data: dict | None):
         self._cached_song_state = song_data
         if not song_data:
+            self._is_user_scrubbing = False
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
             self.lbl_song_artist.setText("-")
             self.lbl_song_requester.setText("-")

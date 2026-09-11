@@ -92,6 +92,8 @@ class MusicController(QObject):
         self.command_service.commands_changed.connect(self._sync_switches_from_db)
         self.view.play_pause_requested.connect(self.handle_play_pause)
         self.view.skip_requested.connect(self.handle_skip)
+        if hasattr(self.view, "seek_requested"):
+            self.view.seek_requested.connect(self.handle_seek)
         self.view.youtube_auto_resume_toggled.connect(self.handle_youtube_auto_resume_toggle)
         if hasattr(self.view, "media_keys_toggled"):
             self.view.media_keys_toggled.connect(self.handle_media_keys_toggle)
@@ -394,6 +396,19 @@ class MusicController(QObject):
         if self.music_provider:
             self.music_provider.skip_current()
             self._poll_now_playing()
+
+    @Slot(int)
+    def handle_seek(self, position_ms: int):
+        logger.info("[User Action] Seek playback requested: %d ms", position_ms)
+        if not self.music_provider:
+            return
+        if hasattr(self.music_provider, "seek"):
+            self.music_provider.seek(position_ms)
+        elif hasattr(self.music_provider, "set_position"):
+            self.music_provider.set_position(position_ms)
+        elif hasattr(self.music_provider, "player") and hasattr(self.music_provider.player, "setPosition"):
+            self.music_provider.player.setPosition(position_ms)
+        self._poll_now_playing()
 
     @Slot(bool)
     def handle_youtube_auto_resume_toggle(self, enabled: bool):

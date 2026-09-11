@@ -23,11 +23,17 @@ class VoiceFetcherWorker(QThread):
                 pythoncom.CoInitialize()
             except Exception:
                 pass
+        if self.isInterruptionRequested():
+            return
         logger.debug("[VoiceFetcherWorker] Fetching available voices for provider: %s...", self.provider_type)
         try:
             voices = self.tts_manager.get_available_voices(self.provider_type)
+            if self.isInterruptionRequested():
+                return
             logger.debug("[VoiceFetcherWorker] Fetched %d voices for %s.", len(voices) if voices else 0, self.provider_type)
             self.voices_fetched.emit(voices, self.provider_type)
         except Exception as e:
+            if self.isInterruptionRequested():
+                return
             logger.error("[VoiceFetcherWorker] Error fetching voices for %s: %s", self.provider_type, e)
             self.error_occurred.emit(str(e), self.provider_type)

@@ -56,7 +56,13 @@ class ChatService:
             "role_enabled_broadcaster": self.storage.load_bool("tts_role_enabled_broadcaster", True),
             "role_enabled_moderator": self.storage.load_bool("tts_role_enabled_moderator", True),
             "role_enabled_vip": self.storage.load_bool("tts_role_enabled_vip", True),
-            "role_enabled_subscriber": self.storage.load_bool("tts_role_enabled_subscriber", True)
+            "role_enabled_subscriber": self.storage.load_bool("tts_role_enabled_subscriber", True),
+            "platform_kick": self.storage.load_bool("tts_platform_kick", True),
+            "platform_twitch": self.storage.load_bool("tts_platform_twitch", True),
+            "platform_youtube": self.storage.load_bool("tts_platform_youtube", True),
+            "platform_tiktok": self.storage.load_bool("tts_platform_tiktok", True),
+            "mod_mute_command_enabled": self.storage.load_bool("tts_mod_mute_command_enabled", True),
+            "mod_block_command_enabled": self.storage.load_bool("tts_mod_block_command_enabled", True),
         }
 
     def get_overlay_settings(self) -> dict:
@@ -111,6 +117,18 @@ class ChatService:
             batch["tts_role_enabled_vip"] = settings["role_enabled_vip"]
         if "role_enabled_subscriber" in settings:
             batch["tts_role_enabled_subscriber"] = settings["role_enabled_subscriber"]
+        if "platform_kick" in settings:
+            batch["tts_platform_kick"] = settings["platform_kick"]
+        if "platform_twitch" in settings:
+            batch["tts_platform_twitch"] = settings["platform_twitch"]
+        if "platform_youtube" in settings:
+            batch["tts_platform_youtube"] = settings["platform_youtube"]
+        if "platform_tiktok" in settings:
+            batch["tts_platform_tiktok"] = settings["platform_tiktok"]
+        if "mod_mute_command_enabled" in settings:
+            batch["tts_mod_mute_command_enabled"] = settings["mod_mute_command_enabled"]
+        if "mod_block_command_enabled" in settings:
+            batch["tts_mod_block_command_enabled"] = settings["mod_block_command_enabled"]
         if "chat_overlay_theme" in settings:
             batch["chat_overlay_theme"] = settings["chat_overlay_theme"]
         if "chat_overlay_size" in settings:
