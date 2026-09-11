@@ -1,4 +1,4 @@
-# backend\providers\chat\kick_websocket.py
+# backend\providers\chat\kick_ws_provider.py
 
 import logging
 import time
@@ -11,7 +11,7 @@ import websocket
 from typing import Callable
 from backend.models import AlertEvent, AlertType
 
-logger = logging.getLogger("minikick.providers.kick_websocket")
+logger = logging.getLogger("minikick.providers.kick_ws_provider")
 
 RFC_6455_CLOSE_CODES: dict[int, str] = {
     1000: "Normal Closure",

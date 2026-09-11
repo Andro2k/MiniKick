@@ -12,7 +12,7 @@ from .api_keys import (
     TWITCH_CLIENT_SECRET,
     SIGN_API_KEY,
 )
-from .default_en_locale import DEFAULT_DICTIONARY
+from .locale_defaults import DEFAULT_DICTIONARY
 
 __all__ = [
     "APP_VERSION",

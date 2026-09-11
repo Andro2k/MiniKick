@@ -1,4 +1,4 @@
-# backend\interfaces\updater_interfaces.py
+# backend\interfaces\i_updater.py
 
 from typing import Protocol, Optional, Dict, Callable
 

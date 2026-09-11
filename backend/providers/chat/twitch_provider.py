@@ -1,11 +1,11 @@
-# backend\providers\chat\twitch_client.py
+# backend\providers\chat\twitch_provider.py
 
 import logging
 import requests
 from backend.interfaces import TokenProvider
 from backend.services.system import TranslationService
 
-logger = logging.getLogger("minikick.providers.twitch_client")
+logger = logging.getLogger("minikick.providers.twitch_provider")
 
 TWITCH_HELIX_BASE = "https://api.twitch.tv/helix"
 

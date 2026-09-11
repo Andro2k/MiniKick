@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt
 from frontend.common import MARGIN_NONE, MARGIN_XL, SPACING_LG
-from .blocks import ViewHeader, FadingScrollArea
+from frontend.widgets.block_widget import ViewHeader, FadingScrollArea
 
 class BaseView(QWidget):
     def __init__(self, i18n, title_key: str, subtitle_key: str, parent=None):

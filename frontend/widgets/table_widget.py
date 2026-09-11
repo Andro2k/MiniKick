@@ -3,7 +3,7 @@
 import os
 from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget
 from PySide6.QtCore import Qt, QSize
-from .controls import ModernButton, ModernSwitch
+from .controls_widget import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar

@@ -1,11 +1,11 @@
-# backend\providers\chat\twitch_websocket.py
+# backend\providers\chat\twitch_ws_provider.py
 
 import logging
 import websocket
 from typing import Callable
 from backend.services.system import TranslationService
 
-logger = logging.getLogger("minikick.providers.twitch_websocket")
+logger = logging.getLogger("minikick.providers.twitch_ws_provider")
 
 TWITCH_WS_URL = "wss://irc-ws.chat.twitch.tv:443"
 DEFAULT_TWITCH_COLOR = "#9146FF"

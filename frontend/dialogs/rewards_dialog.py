@@ -10,7 +10,7 @@ from PySide6.QtCore import Qt, QSize
 from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker
 from frontend.common import get_icon_colored, SPACING_XS, SPACING_MD, MARGIN_NONE, MARGIN_LG
 from .base_dialog import ModernWizardPanel
-from .visual_positioner_dialog import VisualPositionerDialog
+from .positioner_dialog import VisualPositionerDialog
 
 class RewardsConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, rewards_list=None, rewards_details_map=None, existing_config=None, existing_reward=None, kick_authenticated: bool = True, twitch_authenticated: bool = True):

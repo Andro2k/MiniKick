@@ -1,4 +1,4 @@
-# backend\interfaces\tts_interfaces.py
+# backend\interfaces\i_tts.py
 
 from typing import Protocol
 

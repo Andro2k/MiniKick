@@ -3,7 +3,8 @@
 from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBoxLayout
 from PySide6.QtCore import Signal
-from frontend.widgets import BaseView, ModernScrollArea
+from .base_view import BaseView
+from frontend.widgets import ModernScrollArea
 from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_XL
 
 class ChatView(BaseView):

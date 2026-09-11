@@ -1,4 +1,4 @@
-# backend\interfaces\browser_interface.py
+# backend\interfaces\i_browser.py
 
 from typing import Protocol
 

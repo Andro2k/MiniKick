@@ -1,4 +1,4 @@
-# backend\interfaces\music_provider.py
+# backend\interfaces\i_music_provider.py
 
 from typing import Protocol, runtime_checkable
 

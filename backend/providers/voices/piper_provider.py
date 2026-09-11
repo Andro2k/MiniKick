@@ -1,4 +1,4 @@
-# backend\providers\voices\tts_piper.py
+# backend\providers\voices\piper_provider.py
 
 import os
 import re
@@ -9,9 +9,9 @@ import logging
 from typing import Dict, List, Optional
 from PySide6.QtCore import QUrl, QEventLoop
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from backend.services.chat.piper_voice_manager import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
+from backend.services.chat.piper_manager import PiperVoiceManager, DEFAULT_PIPER_VOICE_ID
 
-logger = logging.getLogger("minikick.providers.tts_piper")
+logger = logging.getLogger("minikick.providers.piper_provider")
 
 class PiperTTSProvider:
     def __init__(self, voice_manager: Optional[PiperVoiceManager] = None):

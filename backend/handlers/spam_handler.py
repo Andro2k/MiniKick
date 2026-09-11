@@ -1,4 +1,4 @@
-# backend\handlers\chat_filter_handler.py
+# backend\handlers\spam_handler.py
 
 import re
 import logging

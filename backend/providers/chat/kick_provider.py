@@ -1,4 +1,4 @@
-# backend\providers\chat\kick_client.py
+# backend\providers\chat\kick_provider.py
 
 import logging
 import time
@@ -6,7 +6,7 @@ import cloudscraper
 import requests
 from backend.interfaces import TokenProvider
 
-logger = logging.getLogger("minikick.providers.kick_client")
+logger = logging.getLogger("minikick.providers.kick_provider")
 
 KICK_API_URL = "https://api.kick.com/public/v1/users"
 KICK_CHANNEL_URL = "https://kick.com/api/v1/channels/{slug}"

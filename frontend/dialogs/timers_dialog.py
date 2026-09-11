@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
 from PySide6.QtCore import Qt, Signal
 
 from .base_dialog import ModernWizardPanel
-from .message_editor_dialog import MessageEditorDialog
+from .message_dialog import MessageEditorDialog
 from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox
 from frontend.common import (
     COLOR_RED, COLOR_GREEN, get_icon_colored,

@@ -1,4 +1,4 @@
-# backend\providers\music\youtube_client.py
+# backend\providers\music\youtube_provider.py
 
 import logging
 import os
@@ -7,7 +7,7 @@ from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from backend.workers import YouTubeResolveWorker, YouTubeSearchWorker
 
-logger = logging.getLogger("minikick.providers.youtube_client")
+logger = logging.getLogger("minikick.providers.youtube_provider")
 
 _ERR_INVALID_MEDIA = "INVALID_MEDIA"
 _ERR_PLAYER_ERROR = "PLAYER_ERROR"

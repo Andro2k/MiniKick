@@ -3,12 +3,12 @@
 from .backup_service import BackupService
 from .browser_service import BrowserService
 from .dashboard_service import AvatarService
-from .instance_services import SocketInstanceProvider
-from .log_service import LogService
+from .instance_service import SocketInstanceProvider
+from .logs_service import LogService
 from .settings_service import SettingsService
 from .translation_service import TranslationService
 from .updater_service import GithubUpdateProvider, WindowsInstaller, UpdateManager
-from .widget_service import WidgetService
+from .widgets_service import WidgetService
 
 __all__ = [
     "AvatarService",

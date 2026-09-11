@@ -1,20 +1,20 @@
 # frontend\dialogs\__init__.py
 
 from .base_dialog import ModernFramelessShell, ModernModal, ModernWizardPanel, ModernConfirmDialog
-from .platform_connect_dialog import PlatformConnectDialog
+from .platform_dialog import PlatformConnectDialog
 from .already_running_dialog import AlreadyRunningDialog
 from .bug_report_dialog import BugReportDialog
 from .crash_report_dialog import CrashReportDialog
-from .update_dialog import UpdateDialog
+from .updater_dialog import UpdateDialog
 from .release_notes_dialog import ReleaseNotesDialog
 from .rewards_dialog import RewardsConfigWizard
-from .timer_dialog import TimerConfigWizard
-from .message_editor_dialog import MessageEditorDialog
-from .visual_positioner_dialog import VisualPositionerDialog
-from .command_dialog import CommandConfigWizard
-from .piper_voices_dialog import PiperVoicesDialog
-from .youtube_connect_dialog import YouTubeConnectDialog
-from .tiktok_connect_dialog import TikTokConnectDialog
+from .timers_dialog import TimerConfigWizard
+from .message_dialog import MessageEditorDialog
+from .positioner_dialog import VisualPositionerDialog
+from .commands_dialog import CommandConfigWizard
+from .piper_dialog import PiperVoicesDialog
+from .youtube_dialog import YouTubeConnectDialog
+from .tiktok_dialog import TikTokConnectDialog
 
 __all__ = [
     "ModernFramelessShell",

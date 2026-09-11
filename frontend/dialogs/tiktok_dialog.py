@@ -1,6 +1,6 @@
 # frontend\dialogs\tiktok_connect_dialog.py
 
-from .platform_connect_dialog import PlatformConnectDialog
+from .platform_dialog import PlatformConnectDialog
 from frontend.common import get_assets_path, COLOR_TIKTOK
 
 class TikTokConnectDialog(PlatformConnectDialog):

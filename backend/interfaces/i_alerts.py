@@ -1,4 +1,4 @@
-# backend\interfaces\alert_interfaces.py
+# backend\interfaces\i_alerts.py
 
 from typing import Protocol
 from backend.models import AlertConfig

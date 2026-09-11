@@ -11,7 +11,7 @@ import sys
 import time
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse, unquote
-from .websocket_client import WebSocketClient
+from .overlay_ws_client import WebSocketClient
 
 logger = logging.getLogger("minikick.services.overlay.routes")
 

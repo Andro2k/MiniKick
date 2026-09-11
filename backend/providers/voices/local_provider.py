@@ -1,11 +1,11 @@
-# backend\providers\voices\tts_local.py
+# backend\providers\voices\local_provider.py
 
 import logging
 import sys
 import pyttsx3
 import threading
 
-logger = logging.getLogger("minikick.providers.tts_local")
+logger = logging.getLogger("minikick.providers.local_provider")
 
 def _init_com():
     if sys.platform == "win32":

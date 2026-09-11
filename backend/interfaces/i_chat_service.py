@@ -1,4 +1,4 @@
-# backend\interfaces\chat_service.py
+# backend\interfaces\i_chat_service.py
 
 from typing import Protocol, runtime_checkable
 

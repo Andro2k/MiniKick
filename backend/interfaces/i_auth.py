@@ -1,4 +1,4 @@
-# backend\interfaces\auth_interfaces.py
+# backend\interfaces\i_auth.py
 
 from typing import Protocol
 

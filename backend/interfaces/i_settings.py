@@ -1,4 +1,4 @@
-# backend\interfaces\settings_interfaces.py
+# backend\interfaces\i_settings.py
 
 from typing import Protocol
 

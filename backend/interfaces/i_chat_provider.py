@@ -1,4 +1,4 @@
-# backend\interfaces\chat_provider.py
+# backend\interfaces\i_chat_provider.py
 
 from typing import Protocol, runtime_checkable, Callable
 

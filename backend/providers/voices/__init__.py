@@ -1,8 +1,8 @@
 # backend\providers\voices\__init__.py
 
-from .tts_local import LocalTTSProvider
-from .tts_online import WebTTSProvider
-from .tts_piper import PiperTTSProvider
+from .local_provider import LocalTTSProvider
+from .online_provider import WebTTSProvider
+from .piper_provider import PiperTTSProvider
 
 __all__ = [
     "LocalTTSProvider",

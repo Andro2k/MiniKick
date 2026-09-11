@@ -10,7 +10,7 @@ from frontend.common import (
     MARGIN_NONE, MARGIN_SM, MARGIN_MD, MARGIN_LG, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS
 )
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
-from .controls import ModernSwitch
+from .controls_widget import ModernSwitch
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, title_color: str = None, parent=None):
