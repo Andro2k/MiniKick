@@ -1,4 +1,4 @@
-# backend\controllers\widget_controller.py
+# backend\controllers\widgets_controller.py
 
 import json
 import logging
@@ -34,7 +34,7 @@ _DEATH_ADD_WORDS: frozenset[str] = frozenset({"+", "add", "sumar", "1", "muerte"
 _DEATH_CHECK_WORDS: frozenset[str] = frozenset({"check", "status", "ver"})
 
 
-class WidgetController(QObject):
+class WidgetsController(QObject):
     death_count_updated = Signal(int)
     score_updated = Signal(int, int)
     widgets_reloaded = Signal(object)

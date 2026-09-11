@@ -10,6 +10,7 @@ from .api_keys import (
     DISCORD_WEBHOOK_URL,
     TWITCH_CLIENT_ID,
     TWITCH_CLIENT_SECRET,
+    SIGN_API_KEY,
 )
 from .default_en_locale import DEFAULT_DICTIONARY
 
@@ -23,5 +24,6 @@ __all__ = [
     "DISCORD_WEBHOOK_URL",
     "TWITCH_CLIENT_ID",
     "TWITCH_CLIENT_SECRET",
+    "SIGN_API_KEY",
     "DEFAULT_DICTIONARY",
 ]

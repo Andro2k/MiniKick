@@ -1,12 +1,12 @@
-# backend\controllers\timer_controller.py
+# backend\controllers\timers_controller.py
 
 import threading
 import logging
 from PySide6.QtCore import QObject, Slot, Signal
 
-logger = logging.getLogger("minikick.timer_controller")
+logger = logging.getLogger("minikick.timers_controller")
 
-class TimerController(QObject):
+class TimersController(QObject):
     metrics_update_requested = Signal()
     categories_found = Signal(str, object)
 
@@ -71,7 +71,7 @@ class TimerController(QObject):
                 sorted_results = sorted(combined, key=_sort_key)
                 self.categories_found.emit("both", sorted_results)
             except Exception as e:
-                logger.error("[TimerController] Error searching categories: %s", e)
+                logger.error("[TimersController] Error searching categories: %s", e)
 
         threading.Thread(target=_worker, daemon=True).start()
 

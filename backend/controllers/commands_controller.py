@@ -1,11 +1,11 @@
-# backend\controllers\command_controller.py
+# backend\controllers\commands_controller.py
 
 import logging
 from PySide6.QtCore import QObject, Slot
 
 logger = logging.getLogger("minikick.controllers.commands")
 
-class CommandController(QObject):
+class CommandsController(QObject):
     def __init__(self, view, service, toast_manager=None, connected_platforms_provider=None, i18n=None):
         super().__init__()
         self.view = view

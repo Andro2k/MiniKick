@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from .manager import DatabaseManager
+from .database_manager import DatabaseManager
 
 logger = logging.getLogger("minikick.database.system_logs")
 

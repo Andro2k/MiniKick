@@ -1,4 +1,4 @@
-# backend\controllers\log_controller.py
+# backend\controllers\logs_controller.py
 
 import os
 import re
@@ -11,7 +11,7 @@ logger = logging.getLogger("minikick.controllers.logs")
 
 _LOG_LINE_RE = re.compile(r"^\[(.*?)\] \[(.*?)\] (.*)", re.DOTALL)
 
-class LogController(QObject):
+class LogsController(QObject):
     log_processed = Signal(bool, str, str, str)
 
     def __init__(self, view, service, toast_manager=None):

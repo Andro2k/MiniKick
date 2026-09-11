@@ -32,7 +32,7 @@ class YouTubeMusicProvider(QObject):
             self.music_storage = None
 
         from backend.database import MusicCacheManager
-        self.cache_manager = MusicCacheManager(self.music_storage)
+        self.cache_storage = MusicCacheManager(self.music_storage)
         self.queue: list[dict] = []
         self.current_song: dict | None = None
         self.current_local_file: str | None = None
@@ -489,9 +489,9 @@ class YouTubeMusicProvider(QObject):
                 except Exception as sz_err:
                     logger.debug("[YouTubeMusicProvider] Could not update file size: %s", sz_err)
 
-        if self.cache_manager:
+        if self.cache_storage:
             try:
-                self.cache_manager.check_and_clean_cache(max_size_mb=5000)
+                self.cache_storage.check_and_clean_cache(max_size_mb=5000)
             except Exception as cache_err:
                 logger.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
 

@@ -1,7 +1,7 @@
 # backend\database\__init__.py
 
-from .manager import DatabaseManager
-from .cache_manager import MusicCacheManager
+from .database_manager import DatabaseManager
+from .cache_storage import MusicCacheManager
 from .token_storage import SQLiteTokenStorage
 from .settings_storage import SQLiteSettingsStorage
 from .rewards_storage import SQLiteRewardsStorage

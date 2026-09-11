@@ -1,61 +1,72 @@
-# WT-1.5.9_01: Calibración y Auditoría de Estilos en `role_manager.py`
+﻿# WT-1.5.9_01 — Fix: TikTok WebSocket `InvalidStatusCode: HTTP 400`
 
-- **Versión**: v1.5.9
-- **Tipo**: Fix / Tooling Enhancement
-- **Componente**: [`resources/tools/role_manager.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tools/role_manager.py)
-
----
-
-## 1. Descripción del Problema
-Al remover selectores o llamadas `setProperty("role", ...)` en el código del frontend (como `divider.setProperty("role", "searchable_combo_divider")`), la herramienta [`role_manager.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tools/role_manager.py) continuaba reportando `✅ [PASS] All roles and states used in the codebase are validly defined in theme.py!`. 
-
-Esto ocurría porque:
-1. La verificación de roles sin uso (`unused_roles`) estaba delegada únicamente a la bandera opcional `-v` como mero `[INFO]`, ignorando estados sin uso y aprobando la ejecución por defecto.
-2. La inspección AST original descartaba llamadas con ternarios (`ast.IfExp`), argumentos personalizados (`btn_role`, `icon_role`, `button_role`), llamadas a métodos de estado (`set_dialog_state`) y tablas de despacho de iconos.
-3. No existía trazabilidad de línea para ubicar dónde se definía cada rol o estado dentro de [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py).
+**Versión:** v1.5.9  
+**Fecha:** 2026-09-10  
+**Reportado por:** JosueGMN (via log `minikick_JosueGMN_v1.5.8.log`)  
+**Prioridad:** Alta — el error impide conectar TikTok Live por completo
 
 ---
 
-## 2. Solución Aplicada
+## Problema
 
-1. **Estructura de Datos `ThemeDefinition`**:
-   - Se modificó `parse_theme_qss` para mapear cada rol y estado a un `ThemeDefinition` que incluye tipos de widgets asociados, números de línea precisos en `theme.py` y sus selectores QSS.
-2. **Refactorización de `ASTCodeAuditor`**:
-   - Incorporación de `_extract_strings` recursivo para evaluar ramas `body` y `orelse` de ternarios sin contaminar variables con las condiciones lógicas `test`.
-   - Soporte para argumentos de rol/estado personalizados y componentes principales (`ModernButton`, `PlatformStatusCard`).
-   - Resolución desacoplada de variables por tipo esperado (`role` vs `state`).
-   - Detección de constantes en código frontend con exclusión explícita de `controls.py:_resolve_role_color`.
-3. **Reporte y Salida del Terminal en Español**:
-   - Salida del terminal, opciones de ayuda (`--help`), recomendaciones y banners completamente en español, alineado al estándar de herramientas del proyecto (`icon_manager.py`, `i18n_manager.py`).
-   - Presentación obligatoria y prioritaria de roles y estados sin uso (`SIN USO`) con el archivo y la línea exacta (ejemplo: `frontend/common/theme.py:314`).
-   - Estados de salida: `❌ [AUDITORÍA FALLIDA]`, `⚠️ [ADVERTENCIA DE AUDITORÍA]` y `✅ [APROBADO]`.
-   - Incorporación de opciones `--unused`, `--missing` y `--strict` (código de salida 1 en caso de estilos muertos).
+Al intentar conectar el chat de TikTok Live, el app lanzaba:
 
----
-
-## 3. Verificación
-
-Se ejecutó la suite de auditoría:
-```powershell
-uv run .\resources\tools\role_manager.py
 ```
-Salida validada:
-```text
-================================================================================
- 🎨  REPORTE DE AUDITORÍA DE ROLES Y ESTADOS QSS (MINIKICK)
-================================================================================
-🔹 Roles definidos en theme.py   : 63
-🔹 Roles en uso en el frontend   : 63
-🔹 Estados definidos en theme.py : 19
-🔹 Estados en uso en el frontend : 19
---------------------------------------------------------------------------------
-🔹 Roles faltantes (en código, NO en theme) : 0
-🔹 Estados faltantes (en código, NO en theme): 0
-🔸 Roles sin uso (en theme, NO en código)   : 0
-🔸 Estados sin uso (en theme, NO en código)  : 0
-================================================================================
-
---------------------------------------------------------------------------------
-✅ [APROBADO] ¡Todos los roles y estados están perfectamente sincronizados! (Sin faltantes ni estilos sin uso)
-================================================================================
+[ERROR] [TikTokChatProvider] Excepción general de conexión (InvalidStatusCode):
+server rejected WebSocket connection: HTTP 400
 ```
+
+El error ocurría consistentemente cuando el stream estaba activo y el usuario intentaba
+conectar (especialmente luego de un intento fallido previo por `UserOfflineError`).
+
+## Causa raíz
+
+`TikTokLive v7.0.0` usa un **sign server externo** (`api.eulerstream.com`) para obtener
+una URL de WebSocket firmada. Esta URL **expira en ~30 segundos**.
+
+El flujo que producía el 400:
+
+1. `start_chat()` llamado
+2. `fetch_room_id_from_html()` (~2–5 s)
+3. `fetch_is_live()` (~1–2 s)
+4. `fetch_signed_websocket()` — URL firmada válida por ~30 s
+5. [demora acumulada > 30 s]
+6. WebSocket connect — TikTok responde HTTP 400 (token expirado)
+
+El problema se amplificaba porque el código anterior capturaba `InvalidStatusCode`
+dentro del `except Exception` genérico, sin retry ni mensaje claro al usuario.
+
+---
+
+## Cambios implementados
+
+### `backend/providers/chat/tiktok_chat_provider.py`
+
+**Constantes de clase:** `_WS_MAX_RETRIES = 2` y `_WS_RETRY_DELAY = 5.0`
+
+**Nuevo método `_build_client()`:** Extrae la construcción del `TikTokLiveClient` y el
+registro de handlers. El counter `msg_seq` se pasa como `list[int]` (holder mutable) para
+ser continuo entre reintentos.
+
+**Retry loop en `start_chat()`:**
+- Máx. 3 intentos totales (2 reintentos)
+- En cada intento se recrea el cliente completo → fresh sign-server call → URL no expirada
+- 5 segundos de espera entre intentos
+- Jerarquía de excepciones de más específico a más genérico (Guard Clause pattern)
+
+### `locales/en.json` y `locales/es.json`
+
+Nuevas claves bajo `logs.tiktok`:
+- `ws_rejected_400` — notificación de reintento (warn)
+- `ws_rejected_400_final` — error final tras agotar reintentos
+- `ws_rejected` — otros códigos HTTP del WebSocket
+
+---
+
+## Verificación
+
+- Sintaxis Python: OK
+- JSON locales: OK
+- Zero hardcoded strings: OK
+- SoR: retry en provider (infra), no en worker (aplicación)
+- SRP: `_build_client()` tiene un solo propósito

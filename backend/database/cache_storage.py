@@ -1,11 +1,11 @@
-# backend\database\cache_manager.py
+# backend\database\cache_storage.py
 
 import os
 import re
 import logging
 from .music_storage import SQLiteMusicStorage
 
-logger = logging.getLogger("minikick.database.cache_manager")
+logger = logging.getLogger("minikick.database.cache_storage")
 
 class MusicCacheManager:
     DEFAULT_MAX_CACHE_MB = 5000

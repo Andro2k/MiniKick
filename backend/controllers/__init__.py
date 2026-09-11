@@ -2,30 +2,30 @@
 
 from .alerts_controller import AlertsController
 from .chat_controller import ChatController
-from .command_controller import CommandController
+from .commands_controller import CommandsController
 from .dashboard_controller import DashboardController
-from .log_controller import LogController
+from .logs_controller import LogsController
 from .music_controller import MusicController
 from .rewards_controller import RewardsController
 from .schedule_controller import ScheduleController
 from .settings_controller import SettingsController
 from .spam_controller import SpamController
-from .timer_controller import TimerController
-from .update_controller import UpdateController
-from .widget_controller import WidgetController
+from .timers_controller import TimersController
+from .updater_controller import UpdaterController
+from .widgets_controller import WidgetsController
 
 __all__ = [
     "AlertsController",
     "ChatController",
-    "CommandController",
+    "CommandsController",
     "DashboardController",
-    "LogController",
+    "LogsController",
     "MusicController",
     "RewardsController",
     "ScheduleController",
     "SettingsController",
     "SpamController",
-    "TimerController",
-    "UpdateController",
-    "WidgetController"
+    "TimersController",
+    "UpdaterController",
+    "WidgetsController"
 ]

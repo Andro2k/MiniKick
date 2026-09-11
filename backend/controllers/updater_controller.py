@@ -1,13 +1,13 @@
-# backend\controllers\update_controller.py
+# backend\controllers\updater_controller.py
 
 import logging
 from PySide6.QtCore import QObject, Slot, Signal
 from backend.workers import UpdateCheckWorker, UpdateDownloadWorker
 from frontend.dialogs import UpdateDialog
 
-logger = logging.getLogger("minikick.controllers.update")
+logger = logging.getLogger("minikick.controllers.updater")
 
-class UpdateController(QObject):
+class UpdaterController(QObject):
     update_found_silent = Signal(object)
 
     update_check_started = Signal()
@@ -29,21 +29,21 @@ class UpdateController(QObject):
     def check_updates_silently(self):
         if self.bg_update_worker and self.bg_update_worker.isRunning():
             return
-        logger.debug("[UpdateController] Starting silent background update check...")
+        logger.debug("[UpdaterController] Starting silent background update check...")
         self.bg_update_worker = UpdateCheckWorker(self.updater_manager)
         self.bg_update_worker.update_found.connect(self._on_silent_update_found)
         self.bg_update_worker.start()
 
     def _on_silent_update_found(self, info):
         version = info.get("version", "unknown") if isinstance(info, dict) else str(info)
-        logger.info("[UpdateController] Silent check found new update version: %s", version)
+        logger.info("[UpdaterController] Silent check found new update version: %s", version)
         self.update_found_silent.emit(info)
 
     @Slot()
     def start_update_check(self):
         if self.check_worker and self.check_worker.isRunning():
             return
-        logger.info("[UpdateController] Manual update check initiated.")
+        logger.info("[UpdaterController] Manual update check initiated.")
         self.update_check_started.emit()
         self.check_worker = UpdateCheckWorker(self.updater_manager)
         self.check_worker.update_found.connect(self._on_update_found)
@@ -53,22 +53,22 @@ class UpdateController(QObject):
 
     def _on_update_found(self, info):
         version = info.get("version", "unknown") if isinstance(info, dict) else str(info)
-        logger.info("[UpdateController] Update available: version %s", version)
+        logger.info("[UpdaterController] Update available: version %s", version)
         self.update_found.emit(info)
 
     def _on_no_update(self):
-        logger.info("[UpdateController] Application is up-to-date. No updates available.")
+        logger.info("[UpdaterController] Application is up-to-date. No updates available.")
         self.no_update.emit()
 
     def _on_check_error(self, err_msg: str):
-        logger.error("[UpdateController] Error checking for updates: %s", err_msg)
+        logger.error("[UpdaterController] Error checking for updates: %s", err_msg)
         self.error.emit(err_msg)
 
     @Slot(str)
     def start_download(self, url: str):
         if self.download_worker and self.download_worker.isRunning():
             return
-        logger.info("[UpdateController] Starting download from URL: %s", url)
+        logger.info("[UpdaterController] Starting download from URL: %s", url)
         self.download_started.emit()
         self.download_worker = UpdateDownloadWorker(self.updater_manager, url)
         self.download_worker.progress.connect(self.download_progress.emit)
@@ -78,25 +78,25 @@ class UpdateController(QObject):
 
     def _on_download_finished(self, success: bool):
         if success:
-            logger.info("[UpdateController] Update downloaded successfully.")
+            logger.info("[UpdaterController] Update downloaded successfully.")
         else:
-            logger.error("[UpdateController] Update download finished with failure.")
+            logger.error("[UpdaterController] Update download finished with failure.")
         self.download_finished.emit(success)
 
     def _on_download_error(self, err_msg: str):
-        logger.error("[UpdateController] Download error: %s", err_msg)
+        logger.error("[UpdaterController] Download error: %s", err_msg)
         self.error.emit(err_msg)
 
     @Slot()
     def install_update(self):
-        logger.info("[UpdateController] Triggering updater installer execution...")
+        logger.info("[UpdaterController] Triggering updater installer execution...")
         try:
             self.updater_manager.install_update()
         except Exception as e:
-            logger.error("[UpdateController] Failed to launch update installer: %s", e)
+            logger.error("[UpdaterController] Failed to launch update installer: %s", e)
 
     def show_update_dialog(self, parent_window, i18n, on_restart_callback=None):
-        logger.debug("[UpdateController] Presenting UpdateDialog modal to user.")
+        logger.debug("[UpdaterController] Presenting UpdateDialog modal to user.")
         dialog = UpdateDialog(i18n, parent=parent_window)
         update_info = {"url": ""}
 
@@ -141,4 +141,4 @@ class UpdateController(QObject):
                 self.download_progress.disconnect(dialog.update_progress)
                 self.download_finished.disconnect(on_download_finished)
             except Exception as e:
-                logger.debug("[UpdateController] Dialog signals disconnect notice: %s", e)
+                logger.debug("[UpdaterController] Dialog signals disconnect notice: %s", e)

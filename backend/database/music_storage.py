@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from .manager import DatabaseManager
+from .database_manager import DatabaseManager
 
 logger = logging.getLogger("minikick.database.music")
 

@@ -17,12 +17,12 @@ class TikTokChatWorker(QThread):
     connection_lost = Signal()
     connection_restored = Signal()
 
-    def __init__(self, target_channel: str = "", provider=None, i18n=None, parent=None):
+    def __init__(self, target_channel: str = "", provider=None, i18n=None, sign_api_key: str | None = None, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_TikTok_Chat_Socket")
         self.target_channel = target_channel.strip().lstrip("@")
         self.i18n = i18n or TranslationService()
-        self.provider = provider or TikTokChatProvider(i18n=self.i18n)
+        self.provider = provider or TikTokChatProvider(i18n=self.i18n, sign_api_key=sign_api_key)
         self._is_stopped = False
         self._has_connected_once = False
 

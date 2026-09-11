@@ -6,7 +6,7 @@ import subprocess
 import sys
 import webbrowser
 from typing import Optional
-from backend.interfaces.settings_interfaces import SettingsStorage
+from backend.interfaces.i_settings import SettingsStorage
 
 logger = logging.getLogger("minikick.services.browser")
 

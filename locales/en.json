@@ -626,7 +626,10 @@
             "age_restricted": "The live stream for @{unique_id} has an age restriction (+18).",
             "empty_user": "TikTok username cannot be empty.",
             "stream_offline": "@{unique_id} is not currently live on TikTok.",
-            "user_not_found": "User @{unique_id} does not exist or does not have Live enabled on TikTok."
+            "user_not_found": "User @{unique_id} does not exist or does not have Live enabled on TikTok.",
+            "ws_rejected_400": "TikTok rejected the WebSocket connection (expired token). Retrying automatically...",
+            "ws_rejected_400_final": "TikTok repeatedly rejected the WebSocket connection (HTTP 400). The signed URL may be expiring too quickly. Try reconnecting manually.",
+            "ws_rejected": "TikTok rejected the WebSocket connection with HTTP code {code}."
         },
         "twitch": {
             "channel_empty": "Twitch channel name cannot be empty.",

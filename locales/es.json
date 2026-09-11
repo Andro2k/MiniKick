@@ -626,7 +626,10 @@
             "age_restricted": "La transmisión de @{unique_id} tiene restricción de edad (+18).",
             "empty_user": "El usuario de TikTok no puede estar vacío.",
             "stream_offline": "@{unique_id} no está transmitiendo en vivo actualmente.",
-            "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok."
+            "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok.",
+            "ws_rejected_400": "TikTok rechazó la conexión WebSocket (token de firma expirado). Reintentando automáticamente...",
+            "ws_rejected_400_final": "TikTok rechazó la conexión WebSocket repetidamente (HTTP 400). El token firmado puede estar expirando muy rápido. Intenta reconectar manualmente.",
+            "ws_rejected": "TikTok rechazó la conexión WebSocket con código HTTP {code}."
         },
         "twitch": {
             "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",

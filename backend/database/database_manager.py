@@ -1,4 +1,4 @@
-# backend\database\manager.py
+# backend\database\database_manager.py
 
 import os
 import json
