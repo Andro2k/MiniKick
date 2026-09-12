@@ -78,6 +78,8 @@ class ChatService:
         overlay_show_bots = self.storage.load_bool("chat_overlay_show_bots", False)
         overlay_show_time = self.storage.load_bool("chat_overlay_show_time", False)
         overlay_big_emotes = self.storage.load_bool("chat_overlay_big_emotes", True)
+        overlay_edge_fade = self.storage.load_bool("chat_overlay_edge_fade", True)
+        overlay_anim_in = self.storage.load_string("chat_overlay_anim_in", "fade")
 
         return {
             "theme": overlay_theme,
@@ -85,7 +87,9 @@ class ChatService:
             "fade": overlay_fade,
             "show_bots": overlay_show_bots,
             "show_time": overlay_show_time,
-            "big_emotes": overlay_big_emotes
+            "big_emotes": overlay_big_emotes,
+            "edge_fade": overlay_edge_fade,
+            "anim_in": overlay_anim_in,
         }
 
     def set_tts_enabled(self, enabled: bool) -> None:
@@ -143,6 +147,10 @@ class ChatService:
             batch["chat_overlay_show_bots"] = settings["chat_overlay_show_bots"]
         if "chat_overlay_big_emotes" in settings:
             batch["chat_overlay_big_emotes"] = settings["chat_overlay_big_emotes"]
+        if "chat_overlay_edge_fade" in settings:
+            batch["chat_overlay_edge_fade"] = settings["chat_overlay_edge_fade"]
+        if "chat_overlay_anim_in" in settings:
+            batch["chat_overlay_anim_in"] = settings["chat_overlay_anim_in"]
         if "piper_length_scale" in settings:
             batch["piper_length_scale"] = str(settings["piper_length_scale"])
         if "piper_noise_scale" in settings:

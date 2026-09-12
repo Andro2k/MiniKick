@@ -137,16 +137,6 @@
             "ttsunmute_success": "@{user}, user @{target} has been unmuted in TTS.",
             "ttsunmute_usage": "@{user}, correct usage: !ttsunmute <username>"
         },
-        "mod_commands": {
-            "block_cmd_desc": "Allows moderators and streamer to ban or unban words from TTS",
-            "block_cmd_title": "Block word commands (!ttsblock)",
-            "block_disabled_msg": "@{user}, word blocking commands are currently disabled.",
-            "mute_cmd_desc": "Allows moderators and streamer to mute or unmute users from TTS",
-            "mute_cmd_title": "Mute user commands (!ttsmute)",
-            "mute_disabled_msg": "@{user}, user muting commands are currently disabled.",
-            "section_desc": "Enable or disable live moderation commands from the chat",
-            "section_title": "Chat Moderation Commands"
-        },
         "display": {
             "title": "Chat History"
         },
@@ -154,18 +144,25 @@
             "subtitle": "Manage moderation, interactive Text-to-Speech (TTS), and real-time channel events.",
             "title": "Live Chat"
         },
-        "platforms": {
-            "kick_desc": "Play Kick chat messages via TTS.",
-            "kick_title": "Kick",
-            "tiktok_desc": "Play TikTok chat messages via TTS.",
-            "tiktok_title": "TikTok",
-            "title": "Chat Platforms for TTS",
-            "twitch_desc": "Play Twitch chat messages via TTS.",
-            "twitch_title": "Twitch",
-            "youtube_desc": "Play YouTube chat messages via TTS.",
-            "youtube_title": "YouTube"
+        "mod_commands": {
+            "block_cmd_desc": "Allows moderators and streamer to ban or unban words from TTS",
+            "block_cmd_title": "Block word commands (!ttsblock)",
+            "block_disabled_msg": "@{user}, word blocking commands are currently disabled.",
+            "mute_cmd_desc": "Allows moderators and streamer to mute or unmute users from TTS",
+            "mute_cmd_title": "Mute user commands (!ttsmute)",
+            "mute_disabled_msg": "@{user}, user muting commands are currently disabled.",
+            "section_title": "Chat Moderation Commands"
         },
         "overlay": {
+            "anim_in_desc": "Visual effect when new messages appear on screen.",
+            "anim_in_fade": "Smooth (Fade Up)",
+            "anim_in_pop": "Subtle Bounce (Pop)",
+            "anim_in_slide": "Slide (Slide In)",
+            "anim_in_title": "Entrance Animation",
+            "big_emotes_desc": "Enlarge emotes when a message contains only emotes.",
+            "big_emotes_title": "Big Emotes (Bigmoji)",
+            "edge_fade_desc": "Adds top and bottom gradient fades to smoothly dissolve messages in OBS.",
+            "edge_fade_title": "Edge Fade (Gradient)",
             "entry_bottom": "From Bottom",
             "entry_desc": "Direction from which new messages enter the screen.",
             "entry_left": "From Left",
@@ -197,8 +194,6 @@
             "show_time_title": "Show Timestamp",
             "size_desc": "Adjust the chat text font size on screen.",
             "size_title": "Font Size",
-            "big_emotes_desc": "Enlarge emotes when a message contains only emotes.",
-            "big_emotes_title": "Big Emotes (Bigmoji)",
             "theme_card": "Solid Card",
             "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_desc": "Choose the visual design that best fits your stream.",
@@ -206,6 +201,17 @@
             "theme_minimal": "Minimalist (Floating Glow)",
             "theme_neon": "Neon Glow (Neon)",
             "theme_title": "Overlay Design"
+        },
+        "platforms": {
+            "kick_desc": "Play Kick chat messages via TTS.",
+            "kick_title": "Kick",
+            "tiktok_desc": "Play TikTok chat messages via TTS.",
+            "tiktok_title": "TikTok",
+            "title": "Chat Platforms for TTS",
+            "twitch_desc": "Play Twitch chat messages via TTS.",
+            "twitch_title": "Twitch",
+            "youtube_desc": "Play YouTube chat messages via TTS.",
+            "youtube_title": "YouTube"
         },
         "roles": {
             "broadcaster_title": "Streamer Voice",
@@ -664,9 +670,9 @@
             "empty_user": "TikTok username cannot be empty.",
             "stream_offline": "@{unique_id} is not currently live on TikTok.",
             "user_not_found": "User @{unique_id} does not exist or does not have Live enabled on TikTok.",
+            "ws_rejected": "TikTok rejected the WebSocket connection with HTTP code {code}.",
             "ws_rejected_400": "TikTok rejected the WebSocket connection (expired token). Retrying automatically...",
-            "ws_rejected_400_final": "TikTok repeatedly rejected the WebSocket connection (HTTP 400). The signed URL may be expiring too quickly. Try reconnecting manually.",
-            "ws_rejected": "TikTok rejected the WebSocket connection with HTTP code {code}."
+            "ws_rejected_400_final": "TikTok repeatedly rejected the WebSocket connection (HTTP 400). The signed URL may be expiring too quickly. Try reconnecting manually."
         },
         "twitch": {
             "channel_empty": "Twitch channel name cannot be empty.",
@@ -1388,23 +1394,12 @@
             "msg_empty": "🏆 No chat messages recorded yet in this stream session.",
             "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
             "msg_reset": "🔄 @{user} has reset the Top Chatters leaderboard.",
-            "obs_title": "TOP CHATTERS",
             "reset_btn": "Reset Leaderboard",
             "reset_success": "Chatters leaderboard reset successfully!",
             "title": "Top Chatters (!topchatters)"
         },
         "clock": {
             "desc": "Displays the current time and date in real-time in a sleek capsule design for your stream.",
-            "format_12h": "12 Hours (AM/PM)",
-            "format_24h": "24 Hours",
-            "format_label": "Time Format:",
-            "msg_time": "🕒 @{user}, the current time is {time}.",
-            "show_date_label": "Show Date in Header",
-            "show_seconds_label": "Show Seconds",
-            "theme_dark": "Dark / Slate",
-            "theme_label": "Visual Theme:",
-            "theme_pastel": "Pastel / Lavender",
-            "theme_warm": "Warm / Peach",
             "title": "Clock & Date (!time)"
         },
         "combo": {

@@ -227,7 +227,9 @@ class ChatController(QObject):
             fade=overlay_settings.get("fade", 15),
             show_bots=overlay_settings.get("show_bots", False),
             show_time=overlay_settings.get("show_time", False),
-            big_emotes=overlay_settings.get("big_emotes", True)
+            big_emotes=overlay_settings.get("big_emotes", True),
+            edge_fade=overlay_settings.get("edge_fade", True),
+            anim_in=overlay_settings.get("anim_in", "fade")
         )
 
         if self.voice_handler._all_voices:
@@ -699,7 +701,9 @@ class ChatController(QObject):
             "chat_overlay_fade": str(self.view.overlay_fade),
             "chat_overlay_show_bots": self.view.overlay_show_bots,
             "chat_overlay_show_time": self.view.overlay_show_time,
-            "chat_overlay_big_emotes": getattr(self.view, "overlay_big_emotes", True)
+            "chat_overlay_big_emotes": getattr(self.view, "overlay_big_emotes", True),
+            "chat_overlay_edge_fade": getattr(self.view, "overlay_edge_fade", True),
+            "chat_overlay_anim_in": getattr(self.view, "overlay_anim_in", "fade")
         })
         logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
                     settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))

@@ -137,16 +137,6 @@
             "ttsunmute_success": "@{user}, el usuario @{target} ha sido reactivado en el TTS.",
             "ttsunmute_usage": "@{user}, uso correcto: !ttsunmute <usuario>"
         },
-        "mod_commands": {
-            "block_cmd_desc": "Permite que moderadores y streamer bloqueen o desbloqueen palabras censuradas",
-            "block_cmd_title": "Comandos de censurar palabras (!ttsblock)",
-            "block_disabled_msg": "@{user}, los comandos de bloqueo de palabras están desactivados actualmente.",
-            "mute_cmd_desc": "Permite que moderadores y streamer silencien o desilencien usuarios del TTS",
-            "mute_cmd_title": "Comandos de silenciar usuarios (!ttsmute)",
-            "mute_disabled_msg": "@{user}, los comandos de silenciar usuarios están desactivados actualmente.",
-            "section_desc": "Habilita o deshabilita los comandos de moderación en vivo desde el chat",
-            "section_title": "Comandos de Moderación en Chat"
-        },
         "display": {
             "title": "Historial del Chat"
         },
@@ -154,18 +144,25 @@
             "subtitle": "Gestiona la moderación, la lectura de voz interactiva (TTS) y los eventos de tu canal en tiempo real.",
             "title": "Chat en Vivo"
         },
-        "platforms": {
-            "kick_desc": "Reproducir mensajes del chat de Kick en el TTS.",
-            "kick_title": "Kick",
-            "tiktok_desc": "Reproducir mensajes del chat de TikTok en el TTS.",
-            "tiktok_title": "TikTok",
-            "title": "Plataformas de Chat para TTS",
-            "twitch_desc": "Reproducir mensajes del chat de Twitch en el TTS.",
-            "twitch_title": "Twitch",
-            "youtube_desc": "Reproducir mensajes del chat de YouTube en el TTS.",
-            "youtube_title": "YouTube"
+        "mod_commands": {
+            "block_cmd_desc": "Permite que moderadores y streamer bloqueen o desbloqueen palabras censuradas",
+            "block_cmd_title": "Comandos de censurar palabras (!ttsblock)",
+            "block_disabled_msg": "@{user}, los comandos de bloqueo de palabras están desactivados actualmente.",
+            "mute_cmd_desc": "Permite que moderadores y streamer silencien o desilencien usuarios del TTS",
+            "mute_cmd_title": "Comandos de silenciar usuarios (!ttsmute)",
+            "mute_disabled_msg": "@{user}, los comandos de silenciar usuarios están desactivados actualmente.",
+            "section_title": "Comandos de Moderación en Chat"
         },
         "overlay": {
+            "anim_in_desc": "Efecto visual con el que aparecen los nuevos mensajes en pantalla.",
+            "anim_in_fade": "Suave (Fade Up)",
+            "anim_in_pop": "Rebote Sutil (Pop / Bounce)",
+            "anim_in_slide": "Deslizamiento (Slide In)",
+            "anim_in_title": "Animación de Entrada",
+            "big_emotes_desc": "Aumenta el tamaño de los emotes cuando el mensaje contenga únicamente emotes.",
+            "big_emotes_title": "Emotes Grandes (Bigmoji)",
+            "edge_fade_desc": "Añade un degradado superior e inferior para disolver los mensajes suavemente en OBS.",
+            "edge_fade_title": "Desvanecimiento de Bordes",
             "entry_bottom": "Desde Abajo",
             "entry_desc": "Dirección por la que entran los nuevos mensajes a la pantalla.",
             "entry_left": "Desde la Izquierda",
@@ -197,8 +194,6 @@
             "show_time_title": "Mostrar Hora",
             "size_desc": "Ajusta el tamaño del texto del chat en pantalla.",
             "size_title": "Tamaño de Fuente",
-            "big_emotes_desc": "Aumenta el tamaño de los emotes cuando el mensaje contenga únicamente emotes.",
-            "big_emotes_title": "Emotes Grandes (Bigmoji)",
             "theme_card": "Tarjeta Sólida (Card)",
             "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_desc": "Elige el diseño visual que mejor combine con tu stream.",
@@ -206,6 +201,17 @@
             "theme_minimal": "Minimalista (Floating Glow)",
             "theme_neon": "Brillo Neón (Neon)",
             "theme_title": "Diseño del Overlay"
+        },
+        "platforms": {
+            "kick_desc": "Reproducir mensajes del chat de Kick en el TTS.",
+            "kick_title": "Kick",
+            "tiktok_desc": "Reproducir mensajes del chat de TikTok en el TTS.",
+            "tiktok_title": "TikTok",
+            "title": "Plataformas de Chat para TTS",
+            "twitch_desc": "Reproducir mensajes del chat de Twitch en el TTS.",
+            "twitch_title": "Twitch",
+            "youtube_desc": "Reproducir mensajes del chat de YouTube en el TTS.",
+            "youtube_title": "YouTube"
         },
         "roles": {
             "broadcaster_title": "Voz del Streamer",
@@ -664,9 +670,9 @@
             "empty_user": "El usuario de TikTok no puede estar vacío.",
             "stream_offline": "@{unique_id} no está transmitiendo en vivo actualmente.",
             "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok.",
+            "ws_rejected": "TikTok rechazó la conexión WebSocket con código HTTP {code}.",
             "ws_rejected_400": "TikTok rechazó la conexión WebSocket (token de firma expirado). Reintentando automáticamente...",
-            "ws_rejected_400_final": "TikTok rechazó la conexión WebSocket repetidamente (HTTP 400). El token firmado puede estar expirando muy rápido. Intenta reconectar manualmente.",
-            "ws_rejected": "TikTok rechazó la conexión WebSocket con código HTTP {code}."
+            "ws_rejected_400_final": "TikTok rechazó la conexión WebSocket repetidamente (HTTP 400). El token firmado puede estar expirando muy rápido. Intenta reconectar manualmente."
         },
         "twitch": {
             "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",
@@ -1388,23 +1394,12 @@
             "msg_empty": "🏆 Aún no hay mensajes registrados en este stream.",
             "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
             "msg_reset": "🔄 @{user} ha reiniciado el ranking de Top Chatters.",
-            "obs_title": "TOP CHATTERS",
             "reset_btn": "Reiniciar Ranking",
             "reset_success": "¡Ranking de chatters reiniciado con éxito!",
             "title": "Top Chatters (!topchatters)"
         },
         "clock": {
             "desc": "Muestra la hora y fecha actual en tiempo real en un elegante diseño de cápsula para tu stream.",
-            "format_12h": "12 Horas (AM/PM)",
-            "format_24h": "24 Horas",
-            "format_label": "Formato de Hora:",
-            "msg_time": "🕒 @{user}, la hora actual es {time}.",
-            "show_date_label": "Mostrar Fecha en la Cabecera",
-            "show_seconds_label": "Mostrar Segundos",
-            "theme_dark": "Oscuro / Slate",
-            "theme_label": "Tema Visual:",
-            "theme_pastel": "Pastel / Lavanda",
-            "theme_warm": "Cálido / Melocotón",
             "title": "Reloj y Fecha (!time)"
         },
         "combo": {

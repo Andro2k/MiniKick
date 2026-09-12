@@ -57,4 +57,18 @@ Esta versión introduce mejoras y correcciones críticas en las herramientas de 
   - Renombre de primitivas de widgets a `{name}_widget.py` (`block_widget.py`, `controls_widget.py`, `pagination_widget.py`, `table_widget.py`).
   - Resolución limpia de ciclos de importación mediante PEP 562 (`__getattr__`) en `frontend/widgets/__init__.py`.
   - Hito final alcanzado: **179 de 179 archivos del proyecto (100%) cumplen rigurosamente la convención de arquitectura**.
-  - **394 pruebas unitarias aprobadas en total (96 en frontend + 298 en backend) con 0 fallos**.
+  - **Personalización Avanzada de Chat Overlay ([WT-1.5.9_22](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_22.md))**:
+  - Selector de Estilo de Insignias (`badge_style=official|generic`) con soporte para insignias genéricas unificadas e insignias auténticas de Kick con sus 99 niveles.
+  - Efecto Edge Fade con máscara de gradiente nativa para un desvanecimiento suave en los bordes del chat.
+  - Rediseño del tema Tagged Card con cabecera en pestaña superpuesta y borde coloreado dinámicamente por usuario (`user_border_color`).
+  - Animaciones de entrada configurables (`fade`, `slide`, `pop`) aceleradas por GPU.
+- **Modularización del Chat Overlay, Prime Gaming & Insignias Twitch Zero-Latency ([WT-1.5.9_23](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_23.md))**:
+  - Desacoplamiento de `chat.html` (reducido de 238 KB a 14.8 KB) en `js/badges.js` y `js/chat.js`.
+  - Integración completa de insignias oficiales de Twitch en Base64 de alta resolución (`data:image/png;base64,...`) para garantizar **0ms de latencia y cero imágenes rotas**.
+  - Soporte nativo para la insignia de **Prime Gaming** (`premium` / `prime`) con la corona oficial en alta fidelidad gráfica.
+  - Normalización de alias canónicos para Twitch: `mod`, `sub`, `prime`, `premium`, `broadcaster`, `vip`, `founder`, `turbo`, `partner`, `verified` y `twitchbot`.
+  - Algoritmo $\mathcal{O}(1)$ de corrección inteligente de contraste para nombres oscuros sobre fondos oscuros (`ensureReadableColor`).
+  - Soporte de mensajes de acción (`/me`) en cursiva y mensajes destacados (`highlighted`).
+  - Retiro de opciones redundantes (`badge_style` y `user_border_color`), delegando el borde con color de usuario de forma exclusiva y nativa al tema Neón.
+  - Hot-reloading automático en `overlay_routes.py` con validación de `mtime` y bypass de token para recursos `/js/` y `/css/`.
+
