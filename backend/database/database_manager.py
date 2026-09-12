@@ -311,6 +311,20 @@ class DatabaseManager:
                     font_family TEXT DEFAULT 'Outfit',
                     font_size INTEGER DEFAULT 24,
                     text_align TEXT DEFAULT 'center',
+                    animation_in TEXT DEFAULT 'fade_in',
+                    animation_in_duration REAL DEFAULT 1.0,
+                    animation_out TEXT DEFAULT 'fade_out',
+                    animation_out_duration REAL DEFAULT 1.0,
+                    bg_color TEXT DEFAULT '#121317',
+                    bg_opacity INTEGER DEFAULT 88,
+                    border_radius INTEGER DEFAULT 20,
+                    padding_px INTEGER DEFAULT 24,
+                    spacing_px INTEGER DEFAULT 16,
+                    box_shadow INTEGER DEFAULT 1,
+                    font_weight TEXT DEFAULT 'bold',
+                    text_shadow INTEGER DEFAULT 1,
+                    card_width INTEGER DEFAULT 560,
+                    card_height INTEGER DEFAULT 0,
                     PRIMARY KEY (platform, alert_type)
                 )
             """)
@@ -537,7 +551,21 @@ class DatabaseManager:
                 ("highlight_color", "TEXT DEFAULT ''"),
                 ("font_family", "TEXT DEFAULT 'Outfit'"),
                 ("font_size", "INTEGER DEFAULT 24"),
-                ("text_align", "TEXT DEFAULT 'center'")
+                ("text_align", "TEXT DEFAULT 'center'"),
+                ("animation_in", "TEXT DEFAULT 'fade_in'"),
+                ("animation_in_duration", "REAL DEFAULT 1.0"),
+                ("animation_out", "TEXT DEFAULT 'fade_out'"),
+                ("animation_out_duration", "REAL DEFAULT 1.0"),
+                ("bg_color", "TEXT DEFAULT '#121317'"),
+                ("bg_opacity", "INTEGER DEFAULT 88"),
+                ("border_radius", "INTEGER DEFAULT 20"),
+                ("padding_px", "INTEGER DEFAULT 24"),
+                ("spacing_px", "INTEGER DEFAULT 16"),
+                ("box_shadow", "INTEGER DEFAULT 1"),
+                ("font_weight", "TEXT DEFAULT 'bold'"),
+                ("text_shadow", "INTEGER DEFAULT 1"),
+                ("card_width", "INTEGER DEFAULT 560"),
+                ("card_height", "INTEGER DEFAULT 0")
             ]
         }
 

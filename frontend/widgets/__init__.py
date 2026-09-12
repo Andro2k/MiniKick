@@ -22,8 +22,15 @@ from .no_wheel import (
 )
 from .category_search import CategorySearchComboBox, CategorySuggestionsPopup, CategoryItemWidget
 from .searchable_combo_box import SearchableComboBox, SearchableComboPopup
+from .inspector_widgets import (
+    InspectorPropertyRow, InspectorDualSpinBox, InspectorColorRow, InspectorFilePicker
+)
 
 __all__ = [
+    "InspectorPropertyRow",
+    "InspectorDualSpinBox",
+    "InspectorColorRow",
+    "InspectorFilePicker",
     "BaseView",
     "ViewHeader",
     "SettingRow",

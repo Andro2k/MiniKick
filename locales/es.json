@@ -2,11 +2,34 @@
     "alerts": {
         "align": {
             "center": "Centro",
+            "justify": "Justificado",
             "left": "Izquierda",
             "right": "Derecha"
         },
+        "animations": {
+            "bounce_in": "Rebotar (Bounce in)",
+            "bounce_out": "Rebotar (Bounce out)",
+            "fade_in": "Mostrar gradualmente",
+            "fade_out": "Hacer desaparecer",
+            "in_duration": "Duración entrada (s)",
+            "in_label": "Animación de inicio",
+            "out_duration": "Duración salida (s)",
+            "out_label": "Animación de cierre",
+            "slide_down": "Deslizar hacia abajo",
+            "slide_down_out": "Deslizar hacia abajo",
+            "slide_left": "Deslizar desde derecha",
+            "slide_left_out": "Deslizar hacia izquierda",
+            "slide_right": "Deslizar desde izquierda",
+            "slide_right_out": "Deslizar hacia derecha",
+            "slide_up": "Deslizar hacia arriba",
+            "slide_up_out": "Deslizar hacia arriba",
+            "title": "Animaciones (En segundos)",
+            "zoom_in": "Acercar (Zoom in)",
+            "zoom_out": "Alejar (Zoom out)"
+        },
         "buttons": {
             "browse": "Examinar...",
+            "clear": "Limpiar",
             "discard": "Descartar",
             "save": "Guardar Cambios",
             "test": "Probar Alerta",
@@ -28,40 +51,75 @@
         },
         "fields": {
             "active": "Alerta Activa",
-            "duration": "Duración (segundos)",
+            "auto": "Auto",
+            "bg_color": "Fondo",
+            "bg_color_desc": "Color de fondo de la tarjeta de alerta.",
+            "bg_opacity": "Opacidad (por ciento)",
+            "bg_opacity_desc": "Porcentaje de opacidad del fondo de la alerta.",
+            "border_radius": "Esquinas redondeadas (px)",
+            "border_radius_desc": "Radio de curvatura de las esquinas del contenedor.",
+            "box_shadow": "Sombra",
+            "box_shadow_desc": "Sombra difuminada para resaltar el contenedor de la alerta.",
+            "card_height": "Alto del contenedor (px)",
+            "card_height_desc": "Altura del recuadro o 'Auto' para ajustarse al contenido.",
+            "card_width": "Ancho del contenedor (px)",
+            "card_width_desc": "Ancho total del recuadro de la alerta en píxeles.",
+            "clear_media": "Quitar multimedia",
+            "clear_sound": "Quitar sonido",
+            "colors_title": "Colores",
+            "dimensions_title": "Dimensiones",
+            "duration": "Duración (En segundos, 99 máx.)",
             "duration_desc": "Tiempo en segundos que se muestra la alerta en pantalla.",
-            "font_family": "Tipografía / Fuente",
+            "font_family": "Fuente",
             "font_family_desc": "Familia tipográfica para los textos de la alerta.",
-            "font_size": "Tamaño de Fuente",
+            "font_size": "Tamaño de Fuente (px)",
             "font_size_desc": "Tamaño en píxeles del texto mostrado en la alerta.",
-            "highlight_color": "Color de Resaltado",
-            "highlight_color_desc": "Color para resaltar el nombre de usuario.",
+            "font_size_short": "TAMAÑO",
+            "font_weight": "Grosor de Fuente",
+            "font_weight_desc": "Peso tipográfico aplicado al texto.",
+            "height_short": "ALTO",
+            "highlight_color": "Color de detalle",
+            "highlight_color_desc": "Color para resaltar el nombre de usuario y cantidades.",
             "media": "Multimedia o HTML",
             "media_filter": "Multimedia y Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Archivos Multimedia (*.png *.gif *.webp *.mp4 *.webm);;Todos los Archivos (*.*)",
             "media_placeholder": "Ruta a archivo .png, .gif, .mp4, .webm o .html",
+            "no_file_selected": "Ningún archivo seleccionado",
+            "padding": "Espacio de relleno (px)",
+            "padding_desc": "Espacio interno alrededor del contenido.",
+            "padding_short": "RELLENO",
+            "radius_short": "RADIO",
             "sound": "Sonido de Alerta",
             "sound_placeholder": "Ruta a archivo .mp3, .wav u .ogg",
-            "template": "Plantilla de Texto",
+            "spacing": "Espacio (px)",
+            "spacing_desc": "Separación en píxeles entre la imagen y el texto.",
+            "spacing_short": "ESPACIO",
+            "spacing_title": "Relleno y Separación",
+            "template": "Mensaje",
             "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
-            "text_align": "Alineación del Texto",
+            "text_align": "Diseño de texto",
             "text_align_desc": "Alineación horizontal del texto dentro del diseño.",
-            "text_color": "Color del Texto",
+            "text_color": "Color del texto",
             "text_color_desc": "Color principal de los mensajes de la alerta.",
-            "tts": "Leer alerta con voz (TTS)",
-            "volume": "Volumen"
+            "text_shadow": "Sombra de texto",
+            "text_shadow_desc": "Sombra exterior en el texto para máxima legibilidad.",
+            "tts": "Reproducir el texto de la alerta",
+            "tts_section": "Leer en voz alta",
+            "typography_title": "Tipografía",
+            "volume": "Volumen",
+            "width_short": "ANCHO"
         },
         "header": {
             "subtitle": "Configura y personaliza las alertas de tu stream en OBS para Twitch.",
             "title": "Alertas en Vivo"
         },
         "layout": {
-            "above": "Imagen Arriba (Centrado)",
+            "above": "Imagen Arriba",
             "below": "Imagen Abajo",
             "desc": "Elige la distribución visual entre imagen y texto.",
             "overlay": "Texto Superpuesto",
             "side": "Imagen Izquierda",
             "side_right": "Imagen Derecha",
-            "title": "Disposición"
+            "title": "Diseño"
         },
         "notice": {
             "connect_btn": "Vincular {platform}",
@@ -82,14 +140,16 @@
         },
         "preview": {
             "sample_amount": "500",
-            "sample_template": "{user} te acaba de seguir!",
+            "sample_template": "¡Acaba de seguirte {user}!",
             "sample_tier": "1",
-            "sample_user": "TheAndro2K",
+            "sample_user": "Jax",
             "title": "Vista Previa de la Alerta"
         },
         "sections": {
-            "appearance": "Diseño y Apariencia",
-            "general": "Ajustes Generales"
+            "appearance": "Diseño",
+            "general": "Ajustes generales",
+            "media_sound": "Imágenes y sonido",
+            "text_speech": "Texto y voz"
         },
         "sidebar": {
             "title": "Variantes de Alerta"
@@ -112,6 +172,12 @@
             "minimal": "Minimalista",
             "sticker": "Sticker / Transparente",
             "title": "Estilo"
+        },
+        "weights": {
+            "bold": "Negrita",
+            "extra_bold": "Extra negrita",
+            "normal": "Normal",
+            "semi_bold": "Seminegrita"
         }
     },
     "chat": {

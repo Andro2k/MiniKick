@@ -1,21 +1,30 @@
 # frontend\views\alerts_view.py
 
 from typing import Dict, Tuple
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QBoxLayout, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QBoxLayout, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
-from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
+from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
     AlertVariantListItem,
     AlertsSidebarPanel,
+    AlertVariantsTabBar,
+    AlertVariantTabPill,
     AlertEventCard,
     AlertsOverlayCard,
 )
 
 __all__ = [
-    "AlertsView","AlertEventCard","AlertVariantListItem","AlertsSidebarPanel","AlertsOverlayCard","ResponsiveStackedWidget"
+    "AlertsView",
+    "AlertEventCard",
+    "AlertVariantListItem",
+    "AlertsSidebarPanel",
+    "AlertVariantsTabBar",
+    "AlertVariantTabPill",
+    "AlertsOverlayCard",
+    "ResponsiveStackedWidget"
 ]
 
 class LazyAlertCardsDict(dict):
@@ -66,8 +75,8 @@ class AlertsView(BaseView):
         self._configs_cache: Dict[Tuple[str, str], AlertConfig] = {}
         self._event_meta: Dict[str, Dict[str, str]] = {}
         self.cards: Dict[Tuple[str, str], AlertEventCard] = LazyAlertCardsDict(self)
-        self.sidebar_items: Dict[Tuple[str, str], AlertVariantListItem] = {}
-        self.sidebars: Dict[str, AlertsSidebarPanel] = {}
+        self.sidebar_items: Dict[Tuple[str, str], AlertVariantTabPill] = {}
+        self.sidebars: Dict[str, AlertVariantsTabBar] = {}
         self.active_variant: Dict[str, str] = {"twitch": "follow"}
         self.connected_platforms: Dict[str, bool] = {}
         self._last_direction = None
@@ -138,6 +147,7 @@ class AlertsView(BaseView):
         self.stack.setMinimumWidth(0)
 
         twitch_page, self.twitch_sidebar, self.twitch_editor_stack, self.twitch_columns = self._build_master_detail_page("twitch", self._TWITCH_EVENTS)
+        self.twitch_tab_bar = self.twitch_sidebar
         self.sidebars["twitch"] = self.twitch_sidebar
 
         self.stack.addWidget(twitch_page)
@@ -148,28 +158,28 @@ class AlertsView(BaseView):
         self._select_variant("twitch", "follow")
         self._update_platform_connection_ui()
 
-    def _build_master_detail_page(self, platform: str, events: list[tuple[str, str]]) -> tuple[QWidget, AlertsSidebarPanel, ResponsiveStackedWidget, QBoxLayout]:
+    def _build_master_detail_page(self, platform: str, events: list[tuple[str, str]]) -> tuple[QWidget, AlertVariantsTabBar, ResponsiveStackedWidget, QVBoxLayout]:
         page = QWidget()
-        page_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight, page)
+        page_layout = QVBoxLayout(page)
         page_layout.setContentsMargins(*MARGIN_NONE)
-        page_layout.setSpacing(SPACING_LG)
+        page_layout.setSpacing(SPACING_MD)
 
         self._event_meta[platform] = dict(events)
 
-        sidebar_panel = AlertsSidebarPanel(platform, events, self.i18n, parent=page)
-        sidebar_panel.variant_selected.connect(lambda at, p=platform: self._select_variant(p, at))
-        sidebar_panel.variant_enabled_changed.connect(lambda at, enabled, p=platform: self._on_sidebar_variant_enabled_changed(p, at, enabled))
+        tab_bar = AlertVariantsTabBar(platform, events, self.i18n, parent=page)
+        tab_bar.variant_selected.connect(lambda at, p=platform: self._select_variant(p, at))
+        tab_bar.variant_enabled_changed.connect(lambda at, enabled, p=platform: self._on_sidebar_variant_enabled_changed(p, at, enabled))
 
-        for at, item in sidebar_panel.items.items():
+        for at, item in tab_bar.items.items():
             self.sidebar_items[(platform, at)] = item
 
         editor_stack = ResponsiveStackedWidget(parent=page)
         editor_stack.setMinimumWidth(0)
 
-        page_layout.addWidget(sidebar_panel, 0)
+        page_layout.addWidget(tab_bar, 0)
         page_layout.addWidget(editor_stack, 1)
 
-        return page, sidebar_panel, editor_stack, page_layout
+        return page, tab_bar, editor_stack, page_layout
 
     def _on_sidebar_variant_enabled_changed(self, platform: str, alert_type: str, enabled: bool):
         card = self._get_or_create_card(platform, alert_type)
@@ -256,11 +266,11 @@ class AlertsView(BaseView):
         width = self.width()
 
         if hasattr(self, 'overlay_card'):
-            url_dir = QBoxLayout.Direction.TopToBottom if width < 900 else QBoxLayout.Direction.LeftToRight
+            url_dir = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
             self.overlay_card.set_responsive_direction(url_dir)
 
         if hasattr(self, 'notice_layout'):
-            notice_dir = QBoxLayout.Direction.TopToBottom if width < 900 else QBoxLayout.Direction.LeftToRight
+            notice_dir = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
             if notice_dir != self.notice_layout.direction():
                 self.notice_layout.setDirection(notice_dir)
                 if hasattr(self, 'notice_banner'):
@@ -270,17 +280,10 @@ class AlertsView(BaseView):
                     self.scroll_content.layout().invalidate()
                     self.scroll_content.updateGeometry()
 
-        target_direction = QBoxLayout.Direction.TopToBottom if width < 900 else QBoxLayout.Direction.LeftToRight
+        target_direction = QBoxLayout.Direction.TopToBottom if width < 1080 else QBoxLayout.Direction.LeftToRight
         if target_direction != self._last_direction:
             self._last_direction = target_direction
             is_horizontal = (target_direction == QBoxLayout.Direction.LeftToRight)
 
-            if hasattr(self, 'twitch_columns') and hasattr(self, 'twitch_sidebar'):
-                self.twitch_columns.setDirection(target_direction)
+            if hasattr(self, 'twitch_sidebar') and hasattr(self.twitch_sidebar, 'set_responsive_mode'):
                 self.twitch_sidebar.set_responsive_mode(is_horizontal)
-                if is_horizontal:
-                    self.twitch_columns.setStretch(0, 0)
-                    self.twitch_columns.setStretch(1, 1)
-                else:
-                    self.twitch_columns.setStretch(0, 0)
-                    self.twitch_columns.setStretch(1, 0)

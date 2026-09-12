@@ -64,6 +64,20 @@ class AlertService:
             "font_family": getattr(config, "font_family", "Outfit") or "Outfit",
             "font_size": getattr(config, "font_size", 24) or 24,
             "text_align": getattr(config, "text_align", "center") or "center",
+            "animation_in": getattr(config, "animation_in", "fade_in") or "fade_in",
+            "animation_in_duration": getattr(config, "animation_in_duration", 1.0) or 1.0,
+            "animation_out": getattr(config, "animation_out", "fade_out") or "fade_out",
+            "animation_out_duration": getattr(config, "animation_out_duration", 1.0) or 1.0,
+            "bg_color": getattr(config, "bg_color", "#121317") or "#121317",
+            "bg_opacity": getattr(config, "bg_opacity", 88) if getattr(config, "bg_opacity", None) is not None else 88,
+            "border_radius": getattr(config, "border_radius", 20) if getattr(config, "border_radius", None) is not None else 20,
+            "padding_px": getattr(config, "padding_px", 24) if getattr(config, "padding_px", None) is not None else 24,
+            "spacing_px": getattr(config, "spacing_px", 16) if getattr(config, "spacing_px", None) is not None else 16,
+            "box_shadow": getattr(config, "box_shadow", True),
+            "font_weight": getattr(config, "font_weight", "bold") or "bold",
+            "text_shadow": getattr(config, "text_shadow", True),
+            "card_width": getattr(config, "card_width", 560) or 560,
+            "card_height": getattr(config, "card_height", 0) if getattr(config, "card_height", None) is not None else 0,
             "timestamp": event.timestamp
         }
 

@@ -47,6 +47,20 @@ class AlertConfig:
     font_family: str = "Outfit"
     font_size: int = 24
     text_align: str = "center"
+    animation_in: str = "fade_in"
+    animation_in_duration: float = 1.0
+    animation_out: str = "fade_out"
+    animation_out_duration: float = 1.0
+    bg_color: str = "#121317"
+    bg_opacity: int = 88
+    border_radius: int = 20
+    padding_px: int = 24
+    spacing_px: int = 16
+    box_shadow: bool = True
+    font_weight: str = "bold"
+    text_shadow: bool = True
+    card_width: int = 560
+    card_height: int = 0
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -69,5 +83,21 @@ class AlertConfig:
             highlight_color=str(data.get("highlight_color", "")),
             font_family=str(data.get("font_family", "Outfit")),
             font_size=int(data.get("font_size", 24)),
-            text_align=str(data.get("text_align", "center"))
+            text_align=str(data.get("text_align", "center")),
+            animation_in=str(data.get("animation_in", "fade_in")),
+            animation_in_duration=float(data.get("animation_in_duration", 1.0)),
+            animation_out=str(data.get("animation_out", "fade_out")),
+            animation_out_duration=float(data.get("animation_out_duration", 1.0)),
+            bg_color=str(data.get("bg_color", "#121317")),
+            bg_opacity=int(data.get("bg_opacity", 88)),
+            border_radius=int(data.get("border_radius", 20)),
+            padding_px=int(data.get("padding_px", 24)),
+            spacing_px=int(data.get("spacing_px", 16)),
+            box_shadow=bool(data.get("box_shadow", True)),
+            font_weight=str(data.get("font_weight", "bold")),
+            text_shadow=bool(data.get("text_shadow", True)),
+            card_width=int(data.get("card_width", 560) or 560),
+            card_height=int(data.get("card_height", 0) or 0)
         )
+
+

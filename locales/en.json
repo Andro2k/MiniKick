@@ -2,11 +2,34 @@
     "alerts": {
         "align": {
             "center": "Center",
+            "justify": "Justify",
             "left": "Left",
             "right": "Right"
         },
+        "animations": {
+            "bounce_in": "Bounce in",
+            "bounce_out": "Bounce out",
+            "fade_in": "Fade in",
+            "fade_out": "Fade out",
+            "in_duration": "In Duration (s)",
+            "in_label": "Entrance Animation",
+            "out_duration": "Out Duration (s)",
+            "out_label": "Exit Animation",
+            "slide_down": "Slide down",
+            "slide_down_out": "Slide down",
+            "slide_left": "Slide from right",
+            "slide_left_out": "Slide to left",
+            "slide_right": "Slide from left",
+            "slide_right_out": "Slide to right",
+            "slide_up": "Slide up",
+            "slide_up_out": "Slide up",
+            "title": "Animations (In seconds)",
+            "zoom_in": "Zoom in",
+            "zoom_out": "Zoom out"
+        },
         "buttons": {
             "browse": "Browse...",
+            "clear": "Clear",
             "discard": "Discard",
             "save": "Save Changes",
             "test": "Test Alert",
@@ -28,40 +51,75 @@
         },
         "fields": {
             "active": "Alert Enabled",
-            "duration": "Duration (seconds)",
+            "auto": "Auto",
+            "bg_color": "Background",
+            "bg_color_desc": "Background color for the alert card.",
+            "bg_opacity": "Opacity (percent)",
+            "bg_opacity_desc": "Background opacity percentage.",
+            "border_radius": "Rounded corners (px)",
+            "border_radius_desc": "Corner border radius in pixels.",
+            "box_shadow": "Shadow",
+            "box_shadow_desc": "Box shadow to elevate the alert container.",
+            "card_height": "Container Height (px)",
+            "card_height_desc": "Card height or 'Auto' to adjust to content.",
+            "card_width": "Container Width (px)",
+            "card_width_desc": "Total alert card width in pixels.",
+            "clear_media": "Remove media",
+            "clear_sound": "Remove sound",
+            "colors_title": "Colors",
+            "dimensions_title": "Dimensions",
+            "duration": "Duration (In seconds, max 99)",
             "duration_desc": "Time in seconds the alert is displayed on screen.",
-            "font_family": "Typography / Font",
+            "font_family": "Font",
             "font_family_desc": "Font family for the alert text.",
-            "font_size": "Font Size",
+            "font_size": "Font Size (px)",
             "font_size_desc": "Font size in pixels for the alert text.",
-            "highlight_color": "Highlight Color",
-            "highlight_color_desc": "Highlight color for the username.",
+            "font_size_short": "SIZE",
+            "font_weight": "Font Weight",
+            "font_weight_desc": "Font weight applied to text.",
+            "height_short": "HEIGHT",
+            "highlight_color": "Accent color",
+            "highlight_color_desc": "Accent color for username and amounts.",
             "media": "Media or HTML",
             "media_filter": "Media & Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Media Files (*.png *.gif *.webp *.mp4 *.webm);;All Files (*.*)",
             "media_placeholder": "Path to .png, .gif, .mp4, .webm, or .html file",
+            "no_file_selected": "No file selected",
+            "padding": "Padding (px)",
+            "padding_desc": "Internal padding around content.",
+            "padding_short": "PADDING",
+            "radius_short": "RADIUS",
             "sound": "Alert Sound",
             "sound_placeholder": "Path to .mp3, .wav, or .ogg file",
-            "template": "Text Template",
+            "spacing": "Spacing (px)",
+            "spacing_desc": "Pixel gap between media and text.",
+            "spacing_short": "SPACING",
+            "spacing_title": "Padding & Spacing",
+            "template": "Message",
             "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
-            "text_align": "Text Alignment",
+            "text_align": "Text layout",
             "text_align_desc": "Horizontal text alignment within the layout.",
-            "text_color": "Text Color",
+            "text_color": "Text color",
             "text_color_desc": "Main text color for alert messages.",
-            "tts": "Read alert with TTS voice",
-            "volume": "Volume"
+            "text_shadow": "Text shadow",
+            "text_shadow_desc": "Outer text shadow for enhanced readability.",
+            "tts": "Play alert text (TTS)",
+            "tts_section": "Message speech",
+            "typography_title": "Typography",
+            "volume": "Volume",
+            "width_short": "WIDTH"
         },
         "header": {
             "subtitle": "Configure and customize your stream alerts for OBS on Twitch.",
             "title": "Live Alerts"
         },
         "layout": {
-            "above": "Image Above (Centered)",
+            "above": "Image Above",
             "below": "Image Below",
             "desc": "Choose the visual arrangement between media and text.",
             "overlay": "Text Overlay",
             "side": "Image Left",
             "side_right": "Image Right",
-            "title": "Layout"
+            "title": "Design"
         },
         "notice": {
             "connect_btn": "Link {platform}",
@@ -84,12 +142,14 @@
             "sample_amount": "500",
             "sample_template": "{user} just followed!",
             "sample_tier": "1",
-            "sample_user": "TheAndro2K",
+            "sample_user": "Jax",
             "title": "Alert Preview"
         },
         "sections": {
-            "appearance": "Layout & Appearance",
-            "general": "General Settings"
+            "appearance": "Design",
+            "general": "General settings",
+            "media_sound": "Media and sound",
+            "text_speech": "Text and speech"
         },
         "sidebar": {
             "title": "Alert Variants"
@@ -112,6 +172,12 @@
             "minimal": "Minimalist",
             "sticker": "Sticker / Transparent",
             "title": "Style"
+        },
+        "weights": {
+            "bold": "Bold",
+            "extra_bold": "Extra bold",
+            "normal": "Normal",
+            "semi_bold": "Semi-bold"
         }
     },
     "chat": {

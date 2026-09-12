@@ -29,7 +29,10 @@ class SQLiteAlertStorage:
                     SELECT platform, alert_type, enabled, sound_path, media_path,
                            text_template, duration_ms, sound_volume, tts_read,
                            layout, style, text_color, highlight_color, font_family,
-                           font_size, text_align
+                           font_size, text_align,
+                           animation_in, animation_in_duration, animation_out, animation_out_duration,
+                           bg_color, bg_opacity, border_radius, padding_px, spacing_px,
+                           box_shadow, font_weight, text_shadow, card_width, card_height
                     FROM alert_configs
                 """)
                 rows = cursor.fetchall()
@@ -51,7 +54,21 @@ class SQLiteAlertStorage:
                         highlight_color=str(row[12] or ""),
                         font_family=str(row[13] or "Outfit"),
                         font_size=int(row[14] or 24),
-                        text_align=str(row[15] or "center")
+                        text_align=str(row[15] or "center"),
+                        animation_in=str(row[16] or "fade_in"),
+                        animation_in_duration=float(row[17] if row[17] is not None else 1.0),
+                        animation_out=str(row[18] or "fade_out"),
+                        animation_out_duration=float(row[19] if row[19] is not None else 1.0),
+                        bg_color=str(row[20] or "#121317"),
+                        bg_opacity=int(row[21] if row[21] is not None else 88),
+                        border_radius=int(row[22] if row[22] is not None else 20),
+                        padding_px=int(row[23] if row[23] is not None else 24),
+                        spacing_px=int(row[24] if row[24] is not None else 16),
+                        box_shadow=bool(row[25] if row[25] is not None else True),
+                        font_weight=str(row[26] or "bold"),
+                        text_shadow=bool(row[27] if row[27] is not None else True),
+                        card_width=int(row[28] if len(row) > 28 and row[28] is not None else 560),
+                        card_height=int(row[29] if len(row) > 29 and row[29] is not None else 0)
                     )
                     configs[(cfg.platform, cfg.alert_type)] = cfg
 
@@ -87,7 +104,21 @@ class SQLiteAlertStorage:
             highlight_color="",
             font_family="Outfit",
             font_size=24,
-            text_align="center"
+            text_align="center",
+            animation_in="fade_in",
+            animation_in_duration=1.0,
+            animation_out="fade_out",
+            animation_out_duration=1.0,
+            bg_color="#121317",
+            bg_opacity=88,
+            border_radius=20,
+            padding_px=24,
+            spacing_px=16,
+            box_shadow=True,
+            font_weight="bold",
+            text_shadow=True,
+            card_width=560,
+            card_height=0
         )
         self._cache[key] = default_cfg
         return default_cfg
@@ -118,7 +149,21 @@ class SQLiteAlertStorage:
                         c.highlight_color,
                         c.font_family,
                         c.font_size,
-                        c.text_align
+                        c.text_align,
+                        c.animation_in,
+                        c.animation_in_duration,
+                        c.animation_out,
+                        c.animation_out_duration,
+                        c.bg_color,
+                        c.bg_opacity,
+                        c.border_radius,
+                        c.padding_px,
+                        c.spacing_px,
+                        1 if c.box_shadow else 0,
+                        c.font_weight,
+                        1 if c.text_shadow else 0,
+                        c.card_width,
+                        c.card_height
                     )
                     for c in configs
                 ]
@@ -127,8 +172,11 @@ class SQLiteAlertStorage:
                         platform, alert_type, enabled, sound_path, media_path,
                         text_template, duration_ms, sound_volume, tts_read,
                         layout, style, text_color, highlight_color, font_family,
-                        font_size, text_align
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        font_size, text_align,
+                        animation_in, animation_in_duration, animation_out, animation_out_duration,
+                        bg_color, bg_opacity, border_radius, padding_px, spacing_px,
+                        box_shadow, font_weight, text_shadow, card_width, card_height
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(platform, alert_type) DO UPDATE SET
                         enabled=excluded.enabled,
                         sound_path=excluded.sound_path,
@@ -143,7 +191,21 @@ class SQLiteAlertStorage:
                         highlight_color=excluded.highlight_color,
                         font_family=excluded.font_family,
                         font_size=excluded.font_size,
-                        text_align=excluded.text_align
+                        text_align=excluded.text_align,
+                        animation_in=excluded.animation_in,
+                        animation_in_duration=excluded.animation_in_duration,
+                        animation_out=excluded.animation_out,
+                        animation_out_duration=excluded.animation_out_duration,
+                        bg_color=excluded.bg_color,
+                        bg_opacity=excluded.bg_opacity,
+                        border_radius=excluded.border_radius,
+                        padding_px=excluded.padding_px,
+                        spacing_px=excluded.spacing_px,
+                        box_shadow=excluded.box_shadow,
+                        font_weight=excluded.font_weight,
+                        text_shadow=excluded.text_shadow,
+                        card_width=excluded.card_width,
+                        card_height=excluded.card_height
                 """, data)
                 conn.commit()
 
