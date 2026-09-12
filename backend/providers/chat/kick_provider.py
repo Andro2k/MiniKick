@@ -85,7 +85,25 @@ class KickAPIClient:
         username = self._fetch_authenticated_username()
         channel_slug = self._generate_channel_slug(username)
         channel_data = self._fetch_channel_details(channel_slug)
-        return self._map_channel_data(username, channel_data)
+        mapped = self._map_channel_data(username, channel_data)
+        mapped["slug"] = channel_slug
+        return mapped
+
+    def fetch_active_poll(self, slug: str) -> dict | None:
+        if not slug:
+            return None
+        url = f"https://kick.com/api/v2/channels/{slug}/polls"
+        try:
+            resp = self.scraper.get(url, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                if isinstance(data, dict):
+                    poll = data.get("data", {}).get("poll") if isinstance(data.get("data"), dict) else data.get("poll")
+                    if isinstance(poll, dict) and poll.get("title"):
+                        return poll
+        except Exception as e:
+            logger.debug("[KickAPIClient] Error fetching active poll for '%s': %s", slug, e)
+        return None
 
     def _fetch_authenticated_username(self) -> str:
         resp = self._request("GET", KICK_API_URL, timeout=10)

@@ -284,6 +284,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
 
         const pollContainer = document.getElementById('poll-container');
         const pollCard = document.getElementById('poll-card');
@@ -380,9 +381,42 @@
                 return;
             }
 
+            const isSamePoll = currentPollState && (
+                (poll.id !== undefined && currentPollState.id !== undefined && poll.id === currentPollState.id) ||
+                (poll.title && currentPollState.title && poll.title === currentPollState.title)
+            );
+
+            if (isSamePoll && currentPollState.options && poll.options) {
+                const existingVoteMap = new Map();
+                currentPollState.options.forEach((opt, idx) => {
+                    const key = opt.id !== undefined ? String(opt.id) : (opt.label || String(idx));
+                    existingVoteMap.set(key, opt.votes || 0);
+                });
+                poll.options.forEach((opt, idx) => {
+                    const key = opt.id !== undefined ? String(opt.id) : (opt.label || String(idx));
+                    const prevVotes = existingVoteMap.get(key) || 0;
+                    opt.votes = Math.max(prevVotes, opt.votes || 0);
+                });
+            } else if (!isSamePoll) {
+                isResultPhase = false;
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+            }
+
             currentPollState = poll;
-            remainingSeconds = typeof poll.remaining === 'number' ? poll.remaining : (poll.duration || 30);
-            resultDisplaySeconds = typeof poll.result_display_duration === 'number' ? poll.result_display_duration : 15;
+
+            if (typeof poll.remaining === 'number') {
+                remainingSeconds = Math.max(0, poll.remaining);
+            } else if (!isSamePoll || remainingSeconds <= 0) {
+                remainingSeconds = poll.duration || 30;
+            }
+
+            resultDisplaySeconds = typeof poll.result_display_duration === 'number'
+                ? poll.result_display_duration
+                : (resultDisplaySeconds > 0 ? resultDisplaySeconds : 15);
+
             isResultPhase = (remainingSeconds <= 0);
 
             startTimerLoop();
@@ -390,10 +424,7 @@
         }
 
         function startTimerLoop() {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
+            if (countdownInterval) return;
 
             countdownInterval = setInterval(() => {
                 if (!isResultPhase) {
@@ -421,17 +452,25 @@
             const options = currentPollState.options || [];
             const totalVotes = options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
 
-            let maxVotes = -1;
+            let maxVotes = 0;
             options.forEach(opt => {
                 const v = opt.votes || 0;
                 if (v > maxVotes) maxVotes = v;
             });
 
-            const hasWinners = isResultPhase && maxVotes > 0;
+            const topOptions = maxVotes > 0 ? options.filter(opt => (opt.votes || 0) === maxVotes) : [];
+            const isTie = isResultPhase && topOptions.length > 1;
+            const singleWinner = (isResultPhase && topOptions.length === 1) ? topOptions[0] : null;
 
             if (isResultPhase) {
                 pollCard.classList.add('finished');
-                pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT' : 'RESULTADO FINAL';
+                if (isTie) {
+                    pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT - TIE' : 'RESULTADO FINAL - EMPATE';
+                } else if (singleWinner) {
+                    pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT' : 'RESULTADO FINAL';
+                } else {
+                    pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT' : 'RESULTADO FINAL';
+                }
                 pollTimer.textContent = lang === 'en' ? `Closing in ${resultDisplaySeconds}s` : `Cerrando en ${resultDisplaySeconds}s`;
             } else {
                 pollCard.classList.remove('finished');
@@ -445,7 +484,7 @@
             options.forEach(opt => {
                 const votes = opt.votes || 0;
                 const percent = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0';
-                const isWinner = hasWinners && (votes === maxVotes);
+                const isWinner = singleWinner && (opt === singleWinner || (opt.id !== undefined && opt.id === singleWinner.id));
 
                 const optItem = document.createElement('div');
                 optItem.className = `option-item ${isWinner ? 'winner' : ''}`;
@@ -473,6 +512,8 @@
         function hidePoll() {
             pollContainer.classList.remove('visible');
             currentPollState = null;
+            remainingSeconds = 0;
+            isResultPhase = false;
             if (countdownInterval) {
                 clearInterval(countdownInterval);
                 countdownInterval = null;
@@ -483,7 +524,23 @@
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         }
 
-        connectWS();
+        if (isPreview) {
+            handlePollUpdate({
+                id: 'preview_poll',
+                title: lang === 'en' ? 'Live Poll Preview: Favorite Game?' : 'Encuesta en Vivo: ¿Cuál es tu juego favorito?',
+                duration: 60,
+                remaining: 45,
+                options: [
+                    { id: 1, label: 'Minecraft', votes: 15 },
+                    { id: 2, label: 'Valorant', votes: 22 },
+                    { id: 3, label: 'League of Legends', votes: 18 }
+                ]
+            });
+        }
+
+        if (window.location.protocol !== 'file:') {
+            connectWS();
+        }
     </script>
 </body>
 
