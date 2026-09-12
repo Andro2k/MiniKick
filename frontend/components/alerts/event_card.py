@@ -51,8 +51,7 @@ from frontend.widgets import (
 )
 from frontend.common import (
     get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
-    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
-    MARGIN_NONE, MARGIN_XS, MARGIN_H_XS, MARGIN_SM
+    SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
 )
 from .alert_mockup import AlertOverlayMockupWidget
 
@@ -152,15 +151,15 @@ class AlertEventCard(QWidget):
         header_card.addLayout(header_row)
         main_layout.addWidget(header_card)
 
-        self.body_row = QHBoxLayout()
-        self.body_row.setContentsMargins(*MARGIN_NONE)
-        self.body_row.setSpacing(SPACING_LG)
-
-        col_left = QVBoxLayout()
+        self.w_col_left = QWidget(self)
+        self.w_col_left.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        col_left = QVBoxLayout(self.w_col_left)
         col_left.setContentsMargins(*MARGIN_NONE)
         col_left.setSpacing(SPACING_MD)
 
-        col_right = QVBoxLayout()
+        self.w_col_right = QWidget(self)
+        self.w_col_right.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        col_right = QVBoxLayout(self.w_col_right)
         col_right.setContentsMargins(*MARGIN_NONE)
         col_right.setSpacing(SPACING_MD)
 
@@ -207,6 +206,14 @@ class AlertEventCard(QWidget):
             self.combo_anim_in.addItem(label, key)
         self.combo_anim_in.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
+        card_general.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.animations.in_label"),
+            self.combo_anim_in,
+            icon_name="play-duotone.svg",
+            tooltip=self.i18n.get("alerts.animations.title"),
+            parent=self
+        ))
+
         self.spin_anim_in_dur = NoWheelDoubleSpinBox(parent=self)
         self.spin_anim_in_dur.setRange(0.2, 5.0)
         self.spin_anim_in_dur.setSingleStep(0.1)
@@ -215,17 +222,10 @@ class AlertEventCard(QWidget):
         self.spin_anim_in_dur.setMinimumWidth(96)
         self.spin_anim_in_dur.valueChanged.connect(self._on_field_changed)
 
-        box_anim_in = QWidget(self)
-        layout_anim_in = QHBoxLayout(box_anim_in)
-        layout_anim_in.setContentsMargins(*MARGIN_NONE)
-        layout_anim_in.setSpacing(SPACING_SM)
-        layout_anim_in.addWidget(self.combo_anim_in)
-        layout_anim_in.addWidget(self.spin_anim_in_dur)
-
         card_general.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.animations.in_label"),
-            box_anim_in,
-            icon_name="play-duotone.svg",
+            self.i18n.get("alerts.animations.in_duration"),
+            self.spin_anim_in_dur,
+            icon_name="stopwatch.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -244,6 +244,14 @@ class AlertEventCard(QWidget):
             self.combo_anim_out.addItem(label, key)
         self.combo_anim_out.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
+        card_general.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.animations.out_label"),
+            self.combo_anim_out,
+            icon_name="stopwatch.svg",
+            tooltip=self.i18n.get("alerts.animations.title"),
+            parent=self
+        ))
+
         self.spin_anim_out_dur = NoWheelDoubleSpinBox(parent=self)
         self.spin_anim_out_dur.setRange(0.2, 5.0)
         self.spin_anim_out_dur.setSingleStep(0.1)
@@ -252,16 +260,9 @@ class AlertEventCard(QWidget):
         self.spin_anim_out_dur.setMinimumWidth(96)
         self.spin_anim_out_dur.valueChanged.connect(self._on_field_changed)
 
-        box_anim_out = QWidget(self)
-        layout_anim_out = QHBoxLayout(box_anim_out)
-        layout_anim_out.setContentsMargins(*MARGIN_NONE)
-        layout_anim_out.setSpacing(SPACING_SM)
-        layout_anim_out.addWidget(self.combo_anim_out)
-        layout_anim_out.addWidget(self.spin_anim_out_dur)
-
         card_general.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.animations.out_label"),
-            box_anim_out,
+            self.i18n.get("alerts.animations.out_duration"),
+            self.spin_anim_out_dur,
             icon_name="stopwatch.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
@@ -298,89 +299,47 @@ class AlertEventCard(QWidget):
             parent=self
         ))
 
-        w_dim = QWidget(self)
-        l_dim = QHBoxLayout(w_dim)
-        l_dim.setContentsMargins(*MARGIN_NONE)
-        l_dim.setSpacing(SPACING_SM)
-
-        lbl_w = QLabel(self.i18n.get("alerts.fields.width_short"), self)
-        lbl_w.setProperty("role", "caption")
-        lbl_w.setProperty("state", "bold")
-        self.spin_card_width = NoWheelSpinBox(parent=self)
-        self.spin_card_width.setRange(200, 1920)
-        self.spin_card_width.setValue(560)
-        self.spin_card_width.setSuffix(" px")
-        self.spin_card_width.setMinimumWidth(96)
-        self.spin_card_width.valueChanged.connect(self._on_field_changed)
-
-        lbl_h = QLabel(self.i18n.get("alerts.fields.height_short"), self)
-        lbl_h.setProperty("role", "caption")
-        lbl_h.setProperty("state", "bold")
-        self.spin_card_height = NoWheelSpinBox(parent=self)
-        self.spin_card_height.setRange(0, 1080)
-        self.spin_card_height.setValue(0)
-        self.spin_card_height.setSuffix(" px")
-        self.spin_card_height.setSpecialValueText(self.i18n.get("alerts.fields.auto"))
-        self.spin_card_height.setMinimumWidth(96)
-        self.spin_card_height.valueChanged.connect(self._on_field_changed)
-
-        l_dim.addWidget(lbl_w)
-        l_dim.addWidget(self.spin_card_width)
-        l_dim.addSpacing(SPACING_XS)
-        l_dim.addWidget(lbl_h)
-        l_dim.addWidget(self.spin_card_height)
-
-        card_design.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.fields.dimensions_title"),
-            w_dim,
-            icon_name="window-duotone.svg",
-            tooltip=self.i18n.get("alerts.fields.card_height_desc"),
-            parent=self
-        ))
-
-        row_bg_widget = QWidget(self)
-        layout_bg = QHBoxLayout(row_bg_widget)
-        layout_bg.setContentsMargins(*MARGIN_NONE)
-        layout_bg.setSpacing(SPACING_SM)
-
         self.picker_bg_color = ModernColorPicker(
             initial_color="#121317",
             tooltip=self.i18n.get("alerts.fields.bg_color"),
-            presets=["#121317", "#0E1118", "#1A1B23", "#000000", "#1E293B", "#FFFFFF"],
-            is_vertical=False,
+            show_presets=False,
             parent=self
         )
         self.picker_bg_color.color_changed.connect(lambda _: self._on_field_changed())
 
+        card_design.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.fields.bg_color"),
+            self.picker_bg_color,
+            icon_name="palette-duotone.svg",
+            tooltip=self.i18n.get("alerts.fields.bg_color_desc"),
+            parent=self
+        ))
+
+        box_bg_opacity = QWidget(self)
+        layout_bg_op = QHBoxLayout(box_bg_opacity)
+        layout_bg_op.setContentsMargins(*MARGIN_NONE)
+        layout_bg_op.setSpacing(SPACING_SM)
+
         self.slider_bg_opacity = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_bg_opacity.setRange(0, 100)
         self.slider_bg_opacity.setValue(88)
-        self.slider_bg_opacity.setFixedWidth(70)
         self.slider_bg_opacity.valueChanged.connect(self._on_bg_opacity_changed)
 
         self.lbl_bg_opacity_val = QLabel("88%", parent=self)
         self.lbl_bg_opacity_val.setProperty("role", "caption")
+        self.lbl_bg_opacity_val.setMinimumWidth(36)
 
-        layout_bg.addWidget(self.picker_bg_color)
-        layout_bg.addWidget(self.slider_bg_opacity)
-        layout_bg.addWidget(self.lbl_bg_opacity_val)
+        layout_bg_op.addWidget(self.slider_bg_opacity, 1)
+        layout_bg_op.addWidget(self.lbl_bg_opacity_val, 0)
 
         card_design.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.fields.bg_color"),
-            row_bg_widget,
+            self.i18n.get("alerts.fields.bg_opacity"),
+            box_bg_opacity,
             icon_name="tuning-duotone.svg",
             tooltip=self.i18n.get("alerts.fields.bg_opacity_desc"),
             parent=self
         ))
 
-        w_ps = QWidget(self)
-        l_ps = QHBoxLayout(w_ps)
-        l_ps.setContentsMargins(*MARGIN_NONE)
-        l_ps.setSpacing(SPACING_SM)
-
-        lbl_pad = QLabel(self.i18n.get("alerts.fields.padding_short"), self)
-        lbl_pad.setProperty("role", "caption")
-        lbl_pad.setProperty("state", "bold")
         self.spin_padding = NoWheelSpinBox(parent=self)
         self.spin_padding.setRange(0, 64)
         self.spin_padding.setValue(24)
@@ -388,9 +347,14 @@ class AlertEventCard(QWidget):
         self.spin_padding.setMinimumWidth(96)
         self.spin_padding.valueChanged.connect(self._on_field_changed)
 
-        lbl_gap = QLabel(self.i18n.get("alerts.fields.spacing_short"), self)
-        lbl_gap.setProperty("role", "caption")
-        lbl_gap.setProperty("state", "bold")
+        card_design.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.fields.padding"),
+            self.spin_padding,
+            icon_name="minimize-square-duotone.svg",
+            tooltip=self.i18n.get("alerts.fields.padding_desc"),
+            parent=self
+        ))
+
         self.spin_spacing = NoWheelSpinBox(parent=self)
         self.spin_spacing.setRange(0, 64)
         self.spin_spacing.setValue(16)
@@ -398,17 +362,11 @@ class AlertEventCard(QWidget):
         self.spin_spacing.setMinimumWidth(96)
         self.spin_spacing.valueChanged.connect(self._on_field_changed)
 
-        l_ps.addWidget(lbl_pad)
-        l_ps.addWidget(self.spin_padding)
-        l_ps.addSpacing(SPACING_XS)
-        l_ps.addWidget(lbl_gap)
-        l_ps.addWidget(self.spin_spacing)
-
         card_design.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.fields.spacing_title"),
-            w_ps,
+            self.i18n.get("alerts.fields.spacing"),
+            self.spin_spacing,
             icon_name="arrows-horizontal.svg",
-            tooltip=self.i18n.get("alerts.fields.padding_desc"),
+            tooltip=self.i18n.get("alerts.fields.spacing_desc"),
             parent=self
         ))
 
@@ -468,15 +426,18 @@ class AlertEventCard(QWidget):
             parent=self
         ))
 
-        font_box = QWidget(self)
-        l_font = QHBoxLayout(font_box)
-        l_font.setContentsMargins(*MARGIN_NONE)
-        l_font.setSpacing(SPACING_SM)
-
         self.combo_font = NoWheelComboBox(self)
         for f_name in ["Outfit", "Inter", "Roboto", "Montserrat", "Poppins"]:
             self.combo_font.addItem(f_name, f_name)
         self.combo_font.currentIndexChanged.connect(lambda _: self._on_field_changed())
+
+        card_typography.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.fields.font_family"),
+            self.combo_font,
+            icon_name="text-square-duotone.svg",
+            tooltip=self.i18n.get("alerts.fields.font_family_desc"),
+            parent=self
+        ))
 
         self.combo_font_weight = NoWheelComboBox(self)
         self.combo_font_weight.addItem(self.i18n.get("alerts.weights.normal"), "normal")
@@ -486,21 +447,13 @@ class AlertEventCard(QWidget):
         self.combo_font_weight.setCurrentIndex(2)
         self.combo_font_weight.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
-        l_font.addWidget(self.combo_font)
-        l_font.addWidget(self.combo_font_weight)
-
         card_typography.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.fields.font_family"),
-            font_box,
+            self.i18n.get("alerts.fields.font_weight"),
+            self.combo_font_weight,
             icon_name="text-square-duotone.svg",
-            tooltip=self.i18n.get("alerts.fields.font_family_desc"),
+            tooltip=self.i18n.get("alerts.fields.font_weight_desc"),
             parent=self
         ))
-
-        align_size_box = QWidget(self)
-        l_as = QHBoxLayout(align_size_box)
-        l_as.setContentsMargins(*MARGIN_NONE)
-        l_as.setSpacing(SPACING_SM)
 
         self.seg_align = ModernSegmentedControl(self)
         self.seg_align.add_option("left", "textalign-left.svg", self.i18n.get("alerts.align.left"))
@@ -509,6 +462,14 @@ class AlertEventCard(QWidget):
         self.seg_align.add_option("justify", "textalign-justify.svg", self.i18n.get("alerts.align.justify"))
         self.seg_align.value_changed.connect(lambda _: self._on_field_changed())
 
+        card_typography.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.fields.text_align"),
+            self.seg_align,
+            icon_name="textalign-left.svg",
+            tooltip=self.i18n.get("alerts.fields.text_align_desc"),
+            parent=self
+        ))
+
         self.spin_font_size = NoWheelSpinBox(parent=self)
         self.spin_font_size.setRange(14, 72)
         self.spin_font_size.setValue(24)
@@ -516,49 +477,44 @@ class AlertEventCard(QWidget):
         self.spin_font_size.setMinimumWidth(96)
         self.spin_font_size.valueChanged.connect(self._on_field_changed)
 
-        l_as.addWidget(self.seg_align)
-        l_as.addWidget(self.spin_font_size)
-
         card_typography.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.fields.text_align"),
-            align_size_box,
-            icon_name="textalign-left.svg",
-            tooltip=self.i18n.get("alerts.fields.text_align_desc"),
+            self.i18n.get("alerts.fields.font_size"),
+            self.spin_font_size,
+            icon_name="text-square-duotone.svg",
+            tooltip=self.i18n.get("alerts.fields.font_size_desc"),
             parent=self
         ))
-
-        colors_box = QWidget(self)
-        l_c = QHBoxLayout(colors_box)
-        l_c.setContentsMargins(*MARGIN_NONE)
-        l_c.setSpacing(SPACING_SM)
 
         self.picker_text_color = ModernColorPicker(
             initial_color="#FFFFFF",
             tooltip=self.i18n.get("alerts.fields.text_color"),
-            presets=["#FFFFFF", "#F8FAFC", "#E2E8F0", "#94A3B8", "#FBBF24", "#F43F5E"],
-            is_vertical=False,
+            show_presets=False,
             parent=self
         )
         self.picker_text_color.color_changed.connect(lambda _: self._on_field_changed())
+
+        card_typography.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.fields.text_color"),
+            self.picker_text_color,
+            icon_name="palette-duotone.svg",
+            tooltip=self.i18n.get("alerts.fields.text_color_desc"),
+            parent=self
+        ))
 
         default_highlight = "#53FC18" if self.platform == "kick" else "#9146FF"
         self.picker_highlight_color = ModernColorPicker(
             initial_color=default_highlight,
             tooltip=self.i18n.get("alerts.fields.highlight_color"),
-            presets=["#53FC18", "#9146FF", "#00D2FF", "#FFB800", "#FF4655", "#FFFFFF"],
-            is_vertical=False,
+            show_presets=False,
             parent=self
         )
         self.picker_highlight_color.color_changed.connect(lambda _: self._on_field_changed())
 
-        l_c.addWidget(self.picker_text_color)
-        l_c.addWidget(self.picker_highlight_color)
-
         card_typography.addWidget(InspectorPropertyRow(
-            self.i18n.get("alerts.fields.colors_title"),
-            colors_box,
-            icon_name="palette-duotone.svg",
-            tooltip=self.i18n.get("alerts.fields.text_color_desc"),
+            self.i18n.get("alerts.fields.highlight_color"),
+            self.picker_highlight_color,
+            icon_name="tuning-duotone.svg",
+            tooltip=self.i18n.get("alerts.fields.highlight_color_desc"),
             parent=self
         ))
 
@@ -668,14 +624,14 @@ class AlertEventCard(QWidget):
         self.slider_volume = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_volume.setRange(0, 100)
         self.slider_volume.setValue(80)
-        self.slider_volume.setFixedWidth(130)
         self.slider_volume.valueChanged.connect(self._on_volume_changed)
 
         self.lbl_volume_val = QLabel("80%", parent=self)
         self.lbl_volume_val.setProperty("role", "caption")
+        self.lbl_volume_val.setMinimumWidth(36)
 
-        l_vol.addWidget(self.slider_volume)
-        l_vol.addWidget(self.lbl_volume_val)
+        l_vol.addWidget(self.slider_volume, 1)
+        l_vol.addWidget(self.lbl_volume_val, 0)
 
         card_media.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.volume"),
@@ -700,16 +656,55 @@ class AlertEventCard(QWidget):
         card_preview.addWidget(ModernDivider(self))
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
-        self.mockup_widget.setMinimumSize(220, 220)
-        self.mockup_widget.setMaximumSize(460, 460)
+        self.mockup_widget.setMinimumSize(280, 280)
+        self.mockup_widget.setMaximumSize(600, 600)
         self.mockup_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         card_preview.addWidget(self.mockup_widget, alignment=Qt.AlignmentFlag.AlignHCenter)
+
+        card_preview.addWidget(ModernDivider(self))
+
+        self.spin_card_width = NoWheelSpinBox(parent=self)
+        self.spin_card_width.setRange(200, 1920)
+        self.spin_card_width.setValue(560)
+        self.spin_card_width.setSuffix(" px")
+        self.spin_card_width.setMinimumWidth(96)
+        self.spin_card_width.valueChanged.connect(self._on_field_changed)
+
+        card_preview.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.fields.card_width"),
+            self.spin_card_width,
+            icon_name="arrows-horizontal.svg",
+            tooltip=self.i18n.get("alerts.fields.card_width_desc"),
+            parent=self
+        ))
+
+        self.spin_card_height = NoWheelSpinBox(parent=self)
+        self.spin_card_height.setRange(0, 1080)
+        self.spin_card_height.setValue(0)
+        self.spin_card_height.setSuffix(" px")
+        self.spin_card_height.setSpecialValueText(self.i18n.get("alerts.fields.auto"))
+        self.spin_card_height.setMinimumWidth(96)
+        self.spin_card_height.valueChanged.connect(self._on_field_changed)
+
+        card_preview.addWidget(InspectorPropertyRow(
+            self.i18n.get("alerts.fields.card_height"),
+            self.spin_card_height,
+            icon_name="arrows-vertical.svg",
+            tooltip=self.i18n.get("alerts.fields.card_height_desc"),
+            parent=self
+        ))
         card_preview.addStretch(1)
 
-        self.body_row.addLayout(col_left, stretch=4)
-        self.body_row.addWidget(card_preview, stretch=3, alignment=Qt.AlignmentFlag.AlignTop)
-        self.body_row.addLayout(col_right, stretch=4)
-        main_layout.addLayout(self.body_row)
+        self.w_preview = card_preview
+
+        self.body_box = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.body_box.setContentsMargins(*MARGIN_NONE)
+        self.body_box.setSpacing(SPACING_LG)
+
+        self.body_box.addWidget(self.w_col_left, stretch=4)
+        self.body_box.addWidget(self.w_preview, stretch=4, alignment=Qt.AlignmentFlag.AlignTop)
+        self.body_box.addWidget(self.w_col_right, stretch=4)
+        main_layout.addLayout(self.body_box)
 
         self.sw_enabled = ModernSwitch(parent=self)
         self.sw_enabled.setVisible(False)
@@ -1060,19 +1055,21 @@ class AlertEventCard(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        width = self.width()
+        width = event.size().width() if event else self.width()
 
-        if hasattr(self, "body_row"):
-            body_dir = QBoxLayout.Direction.TopToBottom if width < 680 else QBoxLayout.Direction.LeftToRight
-            if body_dir != self.body_row.direction():
-                self.body_row.setDirection(body_dir)
+        target_dir = QBoxLayout.Direction.TopToBottom if width < 1280 else QBoxLayout.Direction.LeftToRight
+        if hasattr(self, "body_box") and self.body_box.direction() != target_dir:
+            self.body_box.setDirection(target_dir)
 
-        if hasattr(self, "colors_row"):
-            colors_dir = QBoxLayout.Direction.TopToBottom if width < 520 else QBoxLayout.Direction.LeftToRight
-            if colors_dir != self.colors_row.direction():
-                self.colors_row.setDirection(colors_dir)
+            self.body_box.removeWidget(self.w_preview)
+            self.body_box.removeWidget(self.w_col_left)
+            self.body_box.removeWidget(self.w_col_right)
 
-        if hasattr(self, "media_row"):
-            media_dir = QBoxLayout.Direction.TopToBottom if width < 560 else QBoxLayout.Direction.LeftToRight
-            if media_dir != self.media_row.direction():
-                self.media_row.setDirection(media_dir)
+            if target_dir == QBoxLayout.Direction.TopToBottom:
+                self.body_box.addWidget(self.w_preview, 0)
+                self.body_box.addWidget(self.w_col_left, 0)
+                self.body_box.addWidget(self.w_col_right, 0)
+            else:
+                self.body_box.addWidget(self.w_col_left, 4)
+                self.body_box.addWidget(self.w_preview, 5, alignment=Qt.AlignmentFlag.AlignTop)
+                self.body_box.addWidget(self.w_col_right, 4)

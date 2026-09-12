@@ -1,9 +1,11 @@
 # frontend\components\alerts\alert_mockup.py
 
+import os
 from PySide6.QtWidgets import QWidget, QSizePolicy
 from PySide6.QtCore import Qt, QRectF, QPointF, QSize
 from PySide6.QtGui import (
-    QPainter, QColor, QBrush, QPen, QFont, QFontMetrics, QPainterPath
+    QPainter, QColor, QBrush, QPen, QFont, QFontMetrics, QPainterPath,
+    QPixmap, QLinearGradient
 )
 
 class AlertOverlayMockupWidget(QWidget):
@@ -40,15 +42,15 @@ class AlertOverlayMockupWidget(QWidget):
         self.text_shadow = True
         self.card_width = 560
         self.card_height = 0
-        self.setMinimumSize(160, 160)
+        self.setMinimumSize(220, 220)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
     def sizeHint(self) -> QSize:
-        return QSize(320, 320)
+        return QSize(340, 340)
 
     def minimumSizeHint(self) -> QSize:
-        return QSize(160, 160)
+        return QSize(180, 180)
 
     def set_configuration(
         self,
@@ -149,9 +151,9 @@ class AlertOverlayMockupWidget(QWidget):
         w = self.width()
         h = self.height()
 
-        side = min(w, h) - 4
-        if side < 100:
-            side = 100
+        side = min(w, h) - 6
+        if side < 140:
+            side = 140
         cx = (w - side) / 2.0
         cy = (h - side) / 2.0
         canvas_rect = QRectF(cx, cy, side, side)
@@ -222,48 +224,90 @@ class AlertOverlayMockupWidget(QWidget):
         return QFont.Weight.Bold
 
     def _get_card_geometry(self, cx: float, cy: float, side: float, default_h: float) -> tuple[float, float, float, float, QRectF]:
-        base_w = side - 20.0
-        ratio_w = max(0.45, min(1.25, self.card_width / 560.0))
-        card_w = max(110.0, min(side - 12.0, base_w * ratio_w))
-
+        avail_space = side - 16.0
         if self.card_height > 0:
-            ratio_h = max(0.5, min(1.5, self.card_height / 200.0))
-            card_h = max(44.0, min(side - 16.0, default_h * ratio_h))
+            target_w = max(100.0, float(self.card_width))
+            target_h = max(40.0, float(self.card_height))
+            scale = min(avail_space / target_w, avail_space / target_h)
+            card_w = max(60.0, min(avail_space, target_w * scale))
+            card_h = max(40.0, min(avail_space, target_h * scale))
         else:
-            card_h = default_h
+            scale = min(1.0, avail_space / 560.0)
+            card_w = min(avail_space, max(120.0, float(self.card_width) * scale))
+            card_h = min(avail_space, max(50.0, default_h * (avail_space / 240.0)))
 
         card_x = cx + (side - card_w) / 2.0
         card_y = cy + (side - card_h) / 2.0
         return card_x, card_y, card_w, card_h, QRectF(card_x, card_y, card_w, card_h)
 
+    def _draw_media_box(self, p: QPainter, rect: QRectF, glyph: str, accent: QColor):
+        p.save()
+        clip_path = QPainterPath()
+        clip_path.addRoundedRect(rect, 8.0, 8.0)
+        p.setClipPath(clip_path)
+
+        drawn_media = False
+        if self.media_path and os.path.isfile(self.media_path):
+            ext = os.path.splitext(self.media_path)[1].lower()
+            if ext in ('.png', '.jpg', '.jpeg', '.webp', '.bmp'):
+                pix = QPixmap(self.media_path)
+                if not pix.isNull():
+                    scaled_pix = pix.scaled(
+                        int(rect.width()), int(rect.height()),
+                        Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                        Qt.TransformationMode.SmoothTransformation
+                    )
+                    sx = int(rect.x() + (rect.width() - scaled_pix.width()) / 2)
+                    sy = int(rect.y() + (rect.height() - scaled_pix.height()) / 2)
+                    p.drawPixmap(sx, sy, scaled_pix)
+                    drawn_media = True
+
+        if not drawn_media:
+            p.setBrush(QBrush(QColor(18, 22, 30, 240)))
+            p.setPen(QPen(QColor(accent.red(), accent.green(), accent.blue(), 200), 1.5))
+            p.drawRoundedRect(rect, 8.0, 8.0)
+
+            p.setFont(QFont("GoogleSansCode Nerd Font", int(min(rect.width(), rect.height()) * 0.4)))
+            p.setPen(accent)
+            fm = QFontMetrics(p.font())
+            tb = fm.tightBoundingRect(glyph)
+            gx = rect.center().x() - tb.x() - tb.width() / 2.0
+            gy = rect.center().y() - tb.y() - tb.height() / 2.0
+            p.drawText(QPointF(gx, gy), glyph)
+
+        p.restore()
+
     def _draw_above_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
-        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 86.0)
+        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 96.0)
         self._draw_card_container(p, card_rect, accent)
 
-        icon_size = 32.0
+        badge_w = 54.0
+        badge_h = 14.0
+        badge_rect = QRectF(card_x + (card_w - badge_w) / 2.0, card_y + 8.0, badge_w, badge_h)
+        badge_bg = QColor("#9146FF") if self.platform == "twitch" else QColor("#53FC18")
+        badge_fg = QColor("#FFFFFF") if self.platform == "twitch" else QColor("#000000")
+        p.setBrush(QBrush(badge_bg))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(badge_rect, 7.0, 7.0)
+        p.setFont(QFont("Inter", 6, QFont.Weight.Bold))
+        p.setPen(badge_fg)
+        p.drawText(badge_rect, Qt.AlignmentFlag.AlignCenter, self.platform.upper())
+
+        icon_size = max(26.0, min(54.0, card_h * 0.36))
         icon_x = card_x + (card_w - icon_size) / 2.0
-        icon_y = card_y + 10.0
+        icon_y = card_y + badge_h + 12.0
         icon_rect = QRectF(icon_x, icon_y, icon_size, icon_size)
 
-        p.setBrush(QBrush(QColor(18, 22, 30, 240)))
-        p.setPen(QPen(QColor(accent.red(), accent.green(), accent.blue(), 200), 1.5))
-        p.drawRoundedRect(icon_rect, 8.0, 8.0)
+        self._draw_media_box(p, icon_rect, glyph, accent)
 
-        p.setFont(QFont("GoogleSansCode Nerd Font", 12))
-        p.setPen(accent)
-        fm = QFontMetrics(p.font())
-        tb = fm.tightBoundingRect(glyph)
-        gx = icon_rect.center().x() - tb.x() - tb.width() / 2.0
-        gy = icon_rect.center().y() - tb.y() - tb.height() / 2.0
-        p.drawText(QPointF(gx, gy), glyph)
-
-        font_size = max(8.5, min(13.0, self.font_size * 0.42))
-        title_font = QFont(self.font_family, font_size, self._get_font_weight())
+        scale_factor = card_w / 560.0
+        font_size = max(8.5, min(14.0, self.font_size * scale_factor * 1.2))
+        title_font = QFont(self.font_family, int(font_size), self._get_font_weight())
         p.setFont(title_font)
 
         align_flag = self._get_alignment_flag(Qt.AlignmentFlag.AlignCenter) | Qt.AlignmentFlag.AlignVCenter
         text_y = icon_y + icon_size + 6.0
-        text_h = max(20.0, card_h - (text_y - card_y) - 6.0)
+        text_h = max(18.0, card_h - (text_y - card_y) - 6.0)
         msg_rect = QRectF(card_x + 8, text_y, card_w - 16, text_h)
 
         if self.text_shadow:
@@ -274,15 +318,29 @@ class AlertOverlayMockupWidget(QWidget):
         p.drawText(msg_rect, align_flag, self._elide(full_text, title_font, card_w - 16))
 
     def _draw_below_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
-        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 86.0)
+        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 96.0)
         self._draw_card_container(p, card_rect, accent)
 
-        font_size = max(8.5, min(13.0, self.font_size * 0.42))
-        title_font = QFont(self.font_family, font_size, self._get_font_weight())
+        badge_w = 54.0
+        badge_h = 14.0
+        badge_rect = QRectF(card_x + (card_w - badge_w) / 2.0, card_y + 8.0, badge_w, badge_h)
+        badge_bg = QColor("#9146FF") if self.platform == "twitch" else QColor("#53FC18")
+        badge_fg = QColor("#FFFFFF") if self.platform == "twitch" else QColor("#000000")
+        p.setBrush(QBrush(badge_bg))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(badge_rect, 7.0, 7.0)
+        p.setFont(QFont("Inter", 6, QFont.Weight.Bold))
+        p.setPen(badge_fg)
+        p.drawText(badge_rect, Qt.AlignmentFlag.AlignCenter, self.platform.upper())
+
+        scale_factor = card_w / 560.0
+        font_size = max(8.5, min(14.0, self.font_size * scale_factor * 1.2))
+        title_font = QFont(self.font_family, int(font_size), self._get_font_weight())
         p.setFont(title_font)
 
         align_flag = self._get_alignment_flag(Qt.AlignmentFlag.AlignCenter) | Qt.AlignmentFlag.AlignVCenter
-        msg_rect = QRectF(card_x + 8, card_y + 10.0, card_w - 16, 24.0)
+        text_y = card_y + badge_h + 10.0
+        msg_rect = QRectF(card_x + 8, text_y, card_w - 16, 22.0)
 
         if self.text_shadow:
             p.setPen(QColor(0, 0, 0, 220))
@@ -291,53 +349,34 @@ class AlertOverlayMockupWidget(QWidget):
         p.setPen(text_color)
         p.drawText(msg_rect, align_flag, self._elide(full_text, title_font, card_w - 16))
 
-        icon_size = 32.0
+        icon_size = max(26.0, min(54.0, card_h * 0.36))
         icon_x = card_x + (card_w - icon_size) / 2.0
         icon_y = card_y + card_h - icon_size - 10.0
         icon_rect = QRectF(icon_x, icon_y, icon_size, icon_size)
 
-        p.setBrush(QBrush(QColor(18, 22, 30, 240)))
-        p.setPen(QPen(QColor(accent.red(), accent.green(), accent.blue(), 200), 1.5))
-        p.drawRoundedRect(icon_rect, 8.0, 8.0)
-
-        p.setFont(QFont("GoogleSansCode Nerd Font", 12))
-        p.setPen(accent)
-        fm = QFontMetrics(p.font())
-        tb = fm.tightBoundingRect(glyph)
-        gx = icon_rect.center().x() - tb.x() - tb.width() / 2.0
-        gy = icon_rect.center().y() - tb.y() - tb.height() / 2.0
-        p.drawText(QPointF(gx, gy), glyph)
+        self._draw_media_box(p, icon_rect, glyph, accent)
 
     def _draw_side_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
-        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 68.0)
+        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 72.0)
         self._draw_card_container(p, card_rect, accent)
 
-        badge_d = 38.0
+        badge_d = min(56.0, max(36.0, card_h - 16.0))
         badge_x = card_x + 10.0
         badge_y = card_y + (card_h - badge_d) / 2.0
         badge_rect = QRectF(badge_x, badge_y, badge_d, badge_d)
 
-        p.setBrush(QBrush(QColor(18, 22, 30, 240)))
-        p.setPen(QPen(QColor(accent.red(), accent.green(), accent.blue(), 200), 1.5))
-        p.drawRoundedRect(badge_rect, 10.0, 10.0)
+        self._draw_media_box(p, badge_rect, glyph, accent)
 
-        p.setFont(QFont("GoogleSansCode Nerd Font", 12))
-        p.setPen(accent)
-        fm = QFontMetrics(p.font())
-        tb = fm.tightBoundingRect(glyph)
-        gx = badge_rect.center().x() - tb.x() - tb.width() / 2.0
-        gy = badge_rect.center().y() - tb.y() - tb.height() / 2.0
-        p.drawText(QPointF(gx, gy), glyph)
+        text_x = card_x + badge_d + 16.0
+        text_w = max(40.0, card_w - (badge_d + 24.0))
 
-        text_x = card_x + badge_d + 18.0
-        text_w = max(40.0, card_w - (badge_d + 26.0))
-
-        font_size = max(8.5, min(13.0, self.font_size * 0.42))
-        title_font = QFont(self.font_family, font_size, self._get_font_weight())
+        scale_factor = card_w / 560.0
+        font_size = max(8.5, min(14.0, self.font_size * scale_factor * 1.2))
+        title_font = QFont(self.font_family, int(font_size), self._get_font_weight())
         p.setFont(title_font)
 
         align_flag = self._get_alignment_flag(Qt.AlignmentFlag.AlignLeft) | Qt.AlignmentFlag.AlignVCenter
-        t_rect = QRectF(text_x, card_y + 12.0, text_w, 20.0)
+        t_rect = QRectF(text_x, card_y + 10.0, text_w, 20.0)
 
         if self.text_shadow:
             p.setPen(QColor(0, 0, 0, 220))
@@ -348,7 +387,7 @@ class AlertOverlayMockupWidget(QWidget):
 
         sub_font = QFont("Inter", 8.0, QFont.Weight.Normal)
         p.setFont(sub_font)
-        msg_rect = QRectF(text_x, card_y + 34.0, text_w, 18.0)
+        msg_rect = QRectF(text_x, card_y + 32.0, text_w, 18.0)
 
         if self.text_shadow:
             p.setPen(QColor(0, 0, 0, 220))
@@ -358,35 +397,26 @@ class AlertOverlayMockupWidget(QWidget):
         p.drawText(msg_rect, align_flag, self._elide(full_text, sub_font, text_w))
 
     def _draw_side_right_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
-        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 68.0)
+        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 72.0)
         self._draw_card_container(p, card_rect, accent)
 
-        badge_d = 38.0
+        badge_d = min(56.0, max(36.0, card_h - 16.0))
         badge_x = card_x + card_w - badge_d - 10.0
         badge_y = card_y + (card_h - badge_d) / 2.0
         badge_rect = QRectF(badge_x, badge_y, badge_d, badge_d)
 
-        p.setBrush(QBrush(QColor(18, 22, 30, 240)))
-        p.setPen(QPen(QColor(accent.red(), accent.green(), accent.blue(), 200), 1.5))
-        p.drawRoundedRect(badge_rect, 10.0, 10.0)
-
-        p.setFont(QFont("GoogleSansCode Nerd Font", 12))
-        p.setPen(accent)
-        fm = QFontMetrics(p.font())
-        tb = fm.tightBoundingRect(glyph)
-        gx = badge_rect.center().x() - tb.x() - tb.width() / 2.0
-        gy = badge_rect.center().y() - tb.y() - tb.height() / 2.0
-        p.drawText(QPointF(gx, gy), glyph)
+        self._draw_media_box(p, badge_rect, glyph, accent)
 
         text_x = card_x + 10.0
         text_w = max(40.0, card_w - (badge_d + 20.0))
 
-        font_size = max(8.5, min(13.0, self.font_size * 0.42))
-        title_font = QFont(self.font_family, font_size, self._get_font_weight())
+        scale_factor = card_w / 560.0
+        font_size = max(8.5, min(14.0, self.font_size * scale_factor * 1.2))
+        title_font = QFont(self.font_family, int(font_size), self._get_font_weight())
         p.setFont(title_font)
 
         align_flag = self._get_alignment_flag(Qt.AlignmentFlag.AlignRight) | Qt.AlignmentFlag.AlignVCenter
-        t_rect = QRectF(text_x, card_y + 12.0, text_w, 20.0)
+        t_rect = QRectF(text_x, card_y + 10.0, text_w, 20.0)
 
         if self.text_shadow:
             p.setPen(QColor(0, 0, 0, 220))
@@ -397,7 +427,7 @@ class AlertOverlayMockupWidget(QWidget):
 
         sub_font = QFont("Inter", 8.0, QFont.Weight.Normal)
         p.setFont(sub_font)
-        msg_rect = QRectF(text_x, card_y + 34.0, text_w, 18.0)
+        msg_rect = QRectF(text_x, card_y + 32.0, text_w, 18.0)
 
         if self.text_shadow:
             p.setPen(QColor(0, 0, 0, 220))
@@ -407,51 +437,116 @@ class AlertOverlayMockupWidget(QWidget):
         p.drawText(msg_rect, align_flag, self._elide(full_text, sub_font, text_w))
 
     def _draw_overlay_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
-        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 72.0)
+        card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 120.0)
+
+        r = max(0.0, float(self.border_radius) * (card_w / max(1.0, float(self.card_width))))
+        p.save()
+        clip_path = QPainterPath()
+        clip_path.addRoundedRect(card_rect, r, r)
+        p.setClipPath(clip_path)
+
+        drawn_media = False
+        if self.media_path and os.path.isfile(self.media_path):
+            ext = os.path.splitext(self.media_path)[1].lower()
+            if ext in ('.png', '.jpg', '.jpeg', '.webp', '.bmp'):
+                pix = QPixmap(self.media_path)
+                if not pix.isNull():
+                    scaled_pix = pix.scaled(
+                        int(card_rect.width()), int(card_rect.height()),
+                        Qt.AspectRatioMode.KeepAspectRatioByExpanding,
+                        Qt.TransformationMode.SmoothTransformation
+                    )
+                    sx = int(card_rect.x() + (card_rect.width() - scaled_pix.width()) / 2)
+                    sy = int(card_rect.y() + (card_rect.height() - scaled_pix.height()) / 2)
+                    p.drawPixmap(sx, sy, scaled_pix)
+                    drawn_media = True
+
+        if not drawn_media:
+            grad = QLinearGradient(card_rect.topLeft(), card_rect.bottomRight())
+            grad.setColorAt(0, QColor(34, 38, 50))
+            grad.setColorAt(1, QColor(18, 22, 30))
+            p.fillRect(card_rect, grad)
+            if not self.media_path:
+                p.setFont(QFont("GoogleSansCode Nerd Font", int(min(card_w, card_h) * 0.3)))
+                p.setPen(QColor(255, 255, 255, 35))
+                p.drawText(card_rect, Qt.AlignmentFlag.AlignCenter, glyph)
+
+        p.restore()
+
         self._draw_card_container(p, card_rect, accent)
 
-        font_size = max(8.5, min(13.0, self.font_size * 0.42))
-        title_font = QFont(self.font_family, font_size, self._get_font_weight())
-        p.setFont(title_font)
-        p.setPen(accent)
+        badge_text = self.platform.upper()
+        badge_bg = QColor("#9146FF") if self.platform == "twitch" else QColor("#53FC18")
+        badge_fg = QColor("#FFFFFF") if self.platform == "twitch" else QColor("#000000")
+        badge_w = 64.0
+        badge_h = 18.0
 
+        scale_factor = card_w / 560.0
+        title_pt = max(9.5, min(22.0, self.font_size * scale_factor * 1.3))
+        title_font = QFont(self.font_family, int(title_pt), self._get_font_weight())
+        sub_pt = max(7.5, min(14.0, title_pt * 0.65))
+        sub_font = QFont(self.font_family, int(sub_pt), QFont.Weight.Normal)
+
+        fm_title = QFontMetrics(title_font)
+        fm_sub = QFontMetrics(sub_font)
+        title_h = fm_title.height() * 1.25
+        sub_h = fm_sub.height()
+
+        gap = 6.0
+        total_content_h = badge_h + gap + title_h + (gap + sub_h)
+        start_y = card_y + (card_h - total_content_h) / 2.0
+
+        badge_rect = QRectF(card_x + (card_w - badge_w) / 2.0, start_y, badge_w, badge_h)
+        p.setBrush(QBrush(badge_bg))
+        p.setPen(Qt.PenStyle.NoPen)
+        p.drawRoundedRect(badge_rect, 9.0, 9.0)
+
+        badge_font = QFont("Inter", 7, QFont.Weight.Bold)
+        p.setFont(badge_font)
+        p.setPen(badge_fg)
+        p.drawText(badge_rect, Qt.AlignmentFlag.AlignCenter, badge_text)
+
+        t_y = start_y + badge_h + gap
+        t_rect = QRectF(card_x + 10.0, t_y, card_w - 20.0, title_h)
         align_flag = self._get_alignment_flag(Qt.AlignmentFlag.AlignCenter) | Qt.AlignmentFlag.AlignVCenter
-        t_rect = QRectF(card_x + 14, card_y + 12, card_w - 28, 20)
+        p.setFont(title_font)
 
         if self.text_shadow:
             p.setPen(QColor(0, 0, 0, 220))
-            p.drawText(t_rect.adjusted(1.2, 1.2, 1.2, 1.2), align_flag, self._elide(user, title_font, card_w - 28))
+            p.drawText(t_rect.adjusted(1.2, 1.2, 1.2, 1.2), align_flag, self._elide(full_text, title_font, card_w - 20.0))
 
         p.setPen(accent)
-        p.drawText(t_rect, align_flag, self._elide(user, title_font, card_w - 28))
+        p.drawText(t_rect, align_flag, self._elide(full_text, title_font, card_w - 20.0))
 
-        sub_font = QFont("Inter", 8.0, QFont.Weight.Normal)
+        msg_y = t_y + title_h + 3.0
+        msg_rect = QRectF(card_x + 10.0, msg_y, card_w - 20.0, sub_h)
+        sub_font.setItalic(True)
         p.setFont(sub_font)
-        sub_rect = QRectF(card_x + 14, card_y + 36, card_w - 28, 18)
+        sample_msg = '"¡Hola a todos!"'
 
         if self.text_shadow:
             p.setPen(QColor(0, 0, 0, 220))
-            p.drawText(sub_rect.adjusted(1.2, 1.2, 1.2, 1.2), align_flag, self._elide(full_text, sub_font, card_w - 28))
+            p.drawText(msg_rect.adjusted(1.0, 1.0, 1.0, 1.0), align_flag, self._elide(sample_msg, sub_font, card_w - 20.0))
 
         p.setPen(text_color)
-        p.drawText(sub_rect, align_flag, self._elide(full_text, sub_font, card_w - 28))
+        p.drawText(msg_rect, align_flag, self._elide(sample_msg, sub_font, card_w - 20.0))
 
     def _draw_card_container(self, p: QPainter, rect: QRectF, accent: QColor):
         opacity_alpha = int(max(0, min(100, self.bg_opacity)) * 2.55)
+        r = max(0.0, float(self.border_radius) * (rect.width() / max(1.0, float(self.card_width))))
+
+        if self.box_shadow:
+            p.save()
+            p.setPen(Qt.PenStyle.NoPen)
+            p.setBrush(QBrush(QColor(0, 0, 0, 100)))
+            p.drawRoundedRect(rect.translated(0, 4), r, r)
+            p.restore()
+
         if opacity_alpha <= 3:
             return
 
         bg_c = QColor(self.bg_color)
         bg_c.setAlpha(opacity_alpha)
-
-        r = max(0.0, float(self.border_radius) * 0.5)
-
-        if self.box_shadow:
-            p.save()
-            p.setPen(Qt.PenStyle.NoPen)
-            p.setBrush(QBrush(QColor(0, 0, 0, min(110, opacity_alpha))))
-            p.drawRoundedRect(rect.translated(0, 3), r, r)
-            p.restore()
 
         p.setPen(Qt.PenStyle.NoPen)
         p.setBrush(QBrush(bg_c))
