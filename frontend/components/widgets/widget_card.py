@@ -243,6 +243,15 @@ class WidgetCard(QFrame):
             flow.addWidget(group_tout)
             self.specific_layout.addLayout(flow)
 
+        elif self.widget_id == "chatters":
+            flow = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
+            btn_reset = QPushButton(self.i18n.get("widgets.chatters.reset_btn"))
+            btn_reset.setProperty("role", "action_neutral_border")
+            btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
+            btn_reset.clicked.connect(lambda: self.counter_action_triggered.emit("chatters", "reset_chatters", None))
+            flow.addWidget(btn_reset)
+            self.specific_layout.addLayout(flow)
+
         if self.obs_overlay_url:
             flow_obs = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
             lbl_obs = QLabel(self.i18n.get("widgets.obs_label"))

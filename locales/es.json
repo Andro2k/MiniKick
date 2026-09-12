@@ -197,6 +197,8 @@
             "show_time_title": "Mostrar Hora",
             "size_desc": "Ajusta el tamaño del texto del chat en pantalla.",
             "size_title": "Tamaño de Fuente",
+            "big_emotes_desc": "Aumenta el tamaño de los emotes cuando el mensaje contenga únicamente emotes.",
+            "big_emotes_title": "Emotes Grandes (Bigmoji)",
             "theme_card": "Tarjeta Sólida (Card)",
             "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_desc": "Elige el diseño visual que mejor combine con tu stream.",
@@ -1381,6 +1383,30 @@
         }
     },
     "widgets": {
+        "chatters": {
+            "desc": "Muestra en tiempo real el ranking de los 5 usuarios más activos del chat en tu stream.",
+            "msg_empty": "🏆 Aún no hay mensajes registrados en este stream.",
+            "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
+            "msg_reset": "🔄 @{user} ha reiniciado el ranking de Top Chatters.",
+            "obs_title": "TOP CHATTERS",
+            "reset_btn": "Reiniciar Ranking",
+            "reset_success": "¡Ranking de chatters reiniciado con éxito!",
+            "title": "Top Chatters (!topchatters)"
+        },
+        "clock": {
+            "desc": "Muestra la hora y fecha actual en tiempo real en un elegante diseño de cápsula para tu stream.",
+            "format_12h": "12 Horas (AM/PM)",
+            "format_24h": "24 Horas",
+            "format_label": "Formato de Hora:",
+            "msg_time": "🕒 @{user}, la hora actual es {time}.",
+            "show_date_label": "Mostrar Fecha en la Cabecera",
+            "show_seconds_label": "Mostrar Segundos",
+            "theme_dark": "Oscuro / Slate",
+            "theme_label": "Tema Visual:",
+            "theme_pastel": "Pastel / Lavanda",
+            "theme_warm": "Cálido / Melocotón",
+            "title": "Reloj y Fecha (!time)"
+        },
         "combo": {
             "desc": "Detecta cuando tu chat repite un mismo emote en racha y muestra un espectacular contador animado de fuego en OBS.",
             "min_combo_label": "Combo Mínimo para Mostrar:",

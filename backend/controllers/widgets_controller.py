@@ -1,5 +1,6 @@
 # backend\controllers\widgets_controller.py
 
+import heapq
 import json
 import logging
 import re
@@ -20,7 +21,10 @@ _WIDGET_TITLE_KEYS: dict[str, str] = {
     "shoutout": "widgets.so.title",
     "death": "widgets.death.title",
     "score": "widgets.score.title",
+    "chatters": "widgets.chatters.title",
 }
+
+_IGNORED_CHATTER_BOTS: frozenset[str] = frozenset({"botrix", "streamelements", "nightbot", "moobot", "streamlabs"})
 
 _RESET_COMMANDS: frozenset[str] = frozenset({"reset", "0", "reiniciar", "clear"})
 _SCORE_WIN_WORDS: frozenset[str] = frozenset({"win", "w", "victoria"})
@@ -41,7 +45,8 @@ class WidgetsController(QObject):
 
     PLUGIN_TAGS = {
         "shoutout": "[PLUGIN_WIDGET_SO]", "death": "[PLUGIN_WIDGET_DEATH]", "score": "[PLUGIN_WIDGET_SCORE]",
-        "explosion": "[PLUGIN_WIDGET_EXPLOSION]", "combo": "[PLUGIN_WIDGET_COMBO]"
+        "explosion": "[PLUGIN_WIDGET_EXPLOSION]", "combo": "[PLUGIN_WIDGET_COMBO]",
+        "chatters": "[PLUGIN_WIDGET_CHATTERS]"
     }
 
     _KICK_EMOTE_REGEX = re.compile(r"\[emote:(?:(\d+):)?([^\]]+)\]")
@@ -62,12 +67,21 @@ class WidgetsController(QObject):
         self._combo_count = 0
         self._view_connected = False
 
+        self._chatters_counts: dict[str, dict] = {}
+        self._last_chatters_signature = None
+        self._last_emitted_top_chatters: list[dict] = []
+        self._chatters_debounce_timer = QTimer(self)
+        self._chatters_debounce_timer.setSingleShot(True)
+        self._chatters_debounce_timer.setInterval(1000)
+        self._chatters_debounce_timer.timeout.connect(self._flush_top_chatters_update)
+
         self._widget_handlers = {
             self.PLUGIN_TAGS["shoutout"]: lambda user, args, action_word, prefix, platform: self._process_shoutout(user, args, prefix, platform=platform),
             self.PLUGIN_TAGS["death"]: lambda user, args, action_word, prefix, platform: self._process_death(user, args, action_word, platform=platform),
             self.PLUGIN_TAGS["score"]: lambda user, args, action_word, prefix, platform: self._dispatch_score_command(user, args, action_word, prefix, platform=platform),
             self.PLUGIN_TAGS["explosion"]: lambda user, args, action_word, prefix, platform: self._process_explosion_command(user, args, platform=platform),
             self.PLUGIN_TAGS["combo"]: lambda user, args, action_word, prefix, platform: self._process_combo_command(user, args, platform=platform),
+            self.PLUGIN_TAGS["chatters"]: lambda user, args, action_word, prefix, platform: self._process_topchatters_command(user, args, platform=platform),
         }
 
         self._save_timer = QTimer(self)
@@ -119,6 +133,8 @@ class WidgetsController(QObject):
         self.view.score_changed.connect(self.handle_score_change)
         self.death_count_updated.connect(self.view.update_death_count_display)
         self.score_updated.connect(self.view.update_score_display)
+        if hasattr(self.view, "chatters_reset_requested"):
+            self.view.chatters_reset_requested.connect(self.handle_chatters_reset)
         if hasattr(self.view, "view_shown"):
             self.view.view_shown.connect(self._on_view_shown)
 
@@ -136,6 +152,7 @@ class WidgetsController(QObject):
         if self.overlay_server:
             death_w = widgets.get("death", {})
             score_w = widgets.get("score", {})
+            chatters_w = widgets.get("chatters", {})
             title_death = self.i18n.get("widgets.death.overlay_title")
             title_score = self.i18n.get("widgets.score.overlay_title")
 
@@ -150,6 +167,12 @@ class WidgetsController(QObject):
                 "losses": score_w.get("config", {}).get("losses", 0),
                 "is_active": score_w.get("is_active", True),
                 "title_text": title_score
+            })
+
+            self.overlay_server.trigger_widget_event("top_chatters_update", {
+                "top": self._last_emitted_top_chatters,
+                "total_messages": sum(x["count"] for x in self._chatters_counts.values()),
+                "is_active": chatters_w.get("is_active", True)
             })
 
 
@@ -469,7 +492,12 @@ class WidgetsController(QObject):
     @Slot(str, str, str, object)
     @Slot(str, str, str, object, str, str)
     def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick", emotes_tag: str = ""):
-        if not content or not self.overlay_server:
+        if not content:
+            return
+
+        self._record_chatter_message(user, content, color, badges, platform)
+
+        if not self.overlay_server:
             return
 
         emotes_list = []
@@ -586,3 +614,83 @@ class WidgetsController(QObject):
             })
             msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote)
             self.command_service.send_response(msg, platform=platform)
+
+    def _record_chatter_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick"):
+        if not user or not content:
+            return
+        if content.strip().startswith("!"):
+            return
+        user_clean = user.strip()
+        user_lower = user_clean.lower()
+        if user_lower in _IGNORED_CHATTER_BOTS:
+            return
+        w_chatters = self.widget_service.get_widget("chatters")
+        if not w_chatters.get("is_active", True):
+            return
+
+        if user_lower not in self._chatters_counts:
+            self._chatters_counts[user_lower] = {
+                "user": user_clean,
+                "count": 0,
+                "color": color or "#2ecd70",
+                "badges": badges or [],
+                "platform": platform
+            }
+        self._chatters_counts[user_lower]["count"] += 1
+        if color and not self._chatters_counts[user_lower].get("color"):
+            self._chatters_counts[user_lower]["color"] = color
+
+        if not self._chatters_debounce_timer.isActive():
+            self._chatters_debounce_timer.start()
+
+    def _flush_top_chatters_update(self):
+        w_chatters = self.widget_service.get_widget("chatters")
+        if not w_chatters.get("is_active", True) or not self.overlay_server:
+            return
+        top_count = int(w_chatters.get("config", {}).get("top_count", 5))
+        top_5 = heapq.nlargest(top_count, self._chatters_counts.values(), key=lambda x: x["count"])
+        total_msgs = sum(x["count"] for x in self._chatters_counts.values())
+
+        current_sig = tuple((item["user"], item["count"]) for item in top_5)
+        if current_sig != self._last_chatters_signature:
+            self._last_chatters_signature = current_sig
+            self._last_emitted_top_chatters = list(top_5)
+            self.overlay_server.trigger_widget_event("top_chatters_update", {
+                "top": top_5,
+                "total_messages": total_msgs,
+                "is_active": w_chatters.get("is_active", True)
+            })
+
+    def _process_topchatters_command(self, user: str, args: str, platform: str = "kick"):
+        if args and args.strip().lower() in _RESET_COMMANDS:
+            self.reset_chatters_counts()
+            msg = self.i18n.get("widgets.chatters.msg_reset").replace("{user}", user)
+            self.command_service.send_response(msg, platform=platform)
+            return
+
+        w_chatters = self.widget_service.get_widget("chatters")
+        top_count = int(w_chatters.get("config", {}).get("top_count", 5))
+        top_5 = heapq.nlargest(top_count, self._chatters_counts.values(), key=lambda x: x["count"])
+        if not top_5 or top_5[0]["count"] == 0:
+            msg = self.i18n.get("widgets.chatters.msg_empty")
+        else:
+            items_str = " | ".join(f"{idx+1}. @{item['user']} ({item['count']})" for idx, item in enumerate(top_5))
+            msg = self.i18n.get("widgets.chatters.msg_leaderboard").replace("{list}", items_str)
+        self.command_service.send_response(msg, platform=platform)
+
+    def reset_chatters_counts(self):
+        self._chatters_counts.clear()
+        self._last_chatters_signature = None
+        self._last_emitted_top_chatters = []
+        if self.overlay_server:
+            w_chatters = self.widget_service.get_widget("chatters")
+            self.overlay_server.trigger_widget_event("top_chatters_update", {
+                "top": [],
+                "total_messages": 0,
+                "is_active": w_chatters.get("is_active", True)
+            })
+
+    def handle_chatters_reset(self):
+        self.reset_chatters_counts()
+        if self.toast:
+            self.toast.show_toast(self.i18n.get("widgets.chatters.reset_success"), role="success")

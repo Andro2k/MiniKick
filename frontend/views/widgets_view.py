@@ -10,9 +10,10 @@ class WidgetsView(BaseView):
     widget_saved = Signal(str, bool, str, int, str, object)
     death_count_changed = Signal(int)
     score_changed = Signal(int, int)
+    chatters_reset_requested = Signal()
     view_shown = Signal()
 
-    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", poll_overlay_url: str = "", pinned_overlay_url: str = "", parent=None):
+    def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", poll_overlay_url: str = "", pinned_overlay_url: str = "", chatters_overlay_url: str = "", clock_overlay_url: str = "", parent=None):
         super().__init__(i18n=i18n, title_key="widgets.header.title", subtitle_key="widgets.header.subtitle", parent=parent)
         self.shoutout_overlay_url = shoutout_overlay_url
         self.death_overlay_url = death_overlay_url
@@ -21,6 +22,8 @@ class WidgetsView(BaseView):
         self.combo_overlay_url = combo_overlay_url
         self.poll_overlay_url = poll_overlay_url
         self.pinned_overlay_url = pinned_overlay_url
+        self.chatters_overlay_url = chatters_overlay_url
+        self.clock_overlay_url = clock_overlay_url
         self.cards: dict[str, WidgetCard] = {}
         self._is_compact_layout: bool | None = None
         self._setup_ui()
@@ -56,7 +59,9 @@ class WidgetsView(BaseView):
 
         self.body_layout.addLayout(self.columns_layout)
 
+        self._add_card("clock", self.i18n.get("widgets.clock.title"), self.i18n.get("widgets.clock.desc"), "clock-circle-duotone.svg", column=1, obs_url=self.clock_overlay_url)
         self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-duotone.svg", column=1, obs_url=self.poll_overlay_url)
+        self._add_card("chatters", self.i18n.get("widgets.chatters.title"), self.i18n.get("widgets.chatters.desc"), "users.svg", column=1, obs_url=self.chatters_overlay_url)
         self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), "user-check.svg", column=1, obs_url=self.shoutout_overlay_url)
         self._add_card("score", self.i18n.get("widgets.score.title"), self.i18n.get("widgets.score.desc"), "trophy.svg", column=1, obs_url=self.score_overlay_url)
         self._add_card("pinned", self.i18n.get("widgets.pinned.title"), self.i18n.get("widgets.pinned.desc"), "pin.svg", column=2, obs_url=self.pinned_overlay_url)
@@ -67,7 +72,7 @@ class WidgetsView(BaseView):
         self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()
 
-    def set_overlay_urls(self, shoutout_url: str = "", death_url: str = "", score_url: str = "", explosion_url: str = "", combo_url: str = "", poll_url: str = "", pinned_url: str = ""):
+    def set_overlay_urls(self, shoutout_url: str = "", death_url: str = "", score_url: str = "", explosion_url: str = "", combo_url: str = "", poll_url: str = "", pinned_url: str = "", chatters_url: str = "", clock_url: str = ""):
         self.shoutout_overlay_url = shoutout_url
         self.death_overlay_url = death_url
         self.score_overlay_url = score_url
@@ -75,10 +80,16 @@ class WidgetsView(BaseView):
         self.combo_overlay_url = combo_url
         self.poll_overlay_url = poll_url
         self.pinned_overlay_url = pinned_url
+        self.chatters_overlay_url = chatters_url
+        self.clock_overlay_url = clock_url
         if "pinned" in self.cards and pinned_url:
             self.cards["pinned"].set_obs_overlay_url(pinned_url)
         if "poll" in self.cards and poll_url:
             self.cards["poll"].set_obs_overlay_url(poll_url)
+        if "chatters" in self.cards and chatters_url:
+            self.cards["chatters"].set_obs_overlay_url(chatters_url)
+        if "clock" in self.cards and clock_url:
+            self.cards["clock"].set_obs_overlay_url(clock_url)
         if "shoutout" in self.cards and shoutout_url:
             self.cards["shoutout"].set_obs_overlay_url(shoutout_url)
         if "death" in self.cards and death_url:
@@ -106,6 +117,8 @@ class WidgetsView(BaseView):
             self.death_count_changed.emit(data.get("count", 0))
         elif action == "set_score":
             self.score_changed.emit(data.get("wins", 0), data.get("losses", 0))
+        elif action == "reset_chatters":
+            self.chatters_reset_requested.emit()
 
     def populate_widgets(self, widgets_data: dict):
         self.setUpdatesEnabled(False)

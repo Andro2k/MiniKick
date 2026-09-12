@@ -109,6 +109,15 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.sw_overlay_show_time
         )
         
+        self.sw_big_emotes = ModernSwitch()
+        self.sw_big_emotes.setChecked(True)
+        row_big_emotes = SettingRow(
+            "star.svg",
+            self.i18n.get("chat.overlay.big_emotes_title"),
+            self.i18n.get("chat.overlay.big_emotes_desc"),
+            self.sw_big_emotes
+        )
+
         self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
         self.row_copy_obs = SettingRow(
             "link-duotone.svg",
@@ -141,6 +150,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.addWidget(row_overlay_fade)
         self.addWidget(row_overlay_show_bots)
         self.addWidget(row_overlay_show_time)
+        self.addWidget(row_big_emotes)
         
         divider = ModernDivider()
         self.addWidget(divider)
@@ -184,6 +194,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.spin_overlay_fade.valueChanged.connect(self._update_overlay_url)
         self.sw_overlay_show_bots.toggled.connect(self._update_overlay_url)
         self.sw_overlay_show_time.toggled.connect(self._update_overlay_url)
+        self.sw_big_emotes.toggled.connect(self._update_overlay_url)
         self.btn_copy_overlay_obs.clicked.connect(self._copy_overlay_obs_url)
 
         self.combo_overlay_theme.currentIndexChanged.connect(self._update_mockup_preview)
@@ -197,6 +208,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.seg_overlay_entry.value_changed.connect(self._on_setting_changed)
         self.sw_overlay_show_bots.toggled.connect(self._on_setting_changed)
         self.sw_overlay_show_time.toggled.connect(self._on_setting_changed)
+        self.sw_big_emotes.toggled.connect(self._on_setting_changed)
         self.spin_overlay_size.valueChanged.connect(self._on_setting_changed)
         self.spin_overlay_fade.valueChanged.connect(self._on_setting_changed)
 
@@ -224,6 +236,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         fade = self.spin_overlay_fade.value()
         show_bots = "true" if self.sw_overlay_show_bots.isChecked() else "false"
         show_time = "true" if self.sw_overlay_show_time.isChecked() else "false"
+        big_emotes = "true" if self.sw_big_emotes.isChecked() else "false"
 
         dim = "1920 × 80 px" if orientation == "horizontal" else "384 × 680 px"
         desc = f"{self.i18n.get('chat.settings.obs_desc')} ({self.i18n.get('chat.overlay.recommended_dim').replace('{dim}', dim)})"
@@ -231,7 +244,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.row_copy_obs.set_description(desc)
         
         base_url = self._chat_overlay_url or ""
-        params = f"theme={theme}&orientation={orientation}&flow={flow}&entry={entry}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}"
+        params = f"theme={theme}&orientation={orientation}&flow={flow}&entry={entry}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}&big_emotes={big_emotes}"
         if "?" in base_url:
             base_part, token_part = base_url.split("?", 1)
             self.chat_overlay_full_url = f"{base_part}?{token_part}&{params}"
@@ -250,7 +263,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.btn_copy_overlay_obs.setText(original_text)
         self.btn_copy_overlay_obs.setEnabled(True)
 
-    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = ""):
+    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = "", big_emotes: bool = True):
         self.blockSignals(True)
         self.combo_overlay_theme.blockSignals(True)
         self.seg_overlay_orientation.blockSignals(True)
@@ -260,10 +273,13 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.spin_overlay_fade.blockSignals(True)
         self.sw_overlay_show_bots.blockSignals(True)
         self.sw_overlay_show_time.blockSignals(True)
+        self.sw_big_emotes.blockSignals(True)
 
         idx = self.combo_overlay_theme.findData(theme)
         if idx != -1:
             self.combo_overlay_theme.setCurrentIndex(idx)
+
+        self.sw_big_emotes.setChecked(big_emotes)
 
         if orientation:
             self.seg_overlay_orientation.set_current_value(orientation)
@@ -288,6 +304,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.spin_overlay_fade.blockSignals(False)
         self.sw_overlay_show_bots.blockSignals(False)
         self.sw_overlay_show_time.blockSignals(False)
+        self.sw_big_emotes.blockSignals(False)
         self.blockSignals(False)
         
         self._update_overlay_url()

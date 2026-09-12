@@ -41,6 +41,7 @@ class OverlayServerManager:
         self._last_poll_data: dict | None = None
         self._last_poll_timestamp: float = 0.0
         self._last_pinned_data: dict | None = None
+        self._last_top_chatters_data: dict | None = None
         self.settings_storage = settings_storage
         self.lock = threading.Lock()
 
@@ -94,6 +95,12 @@ class OverlayServerManager:
 
     def get_pinned_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/widgets/pinned?token={self.session_token}"
+
+    def get_chatters_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/chatters?token={self.session_token}"
+
+    def get_clock_overlay_url(self) -> str:
+        return f"http://localhost:{self.port}/widgets/clock?token={self.session_token}"
 
     def get_widgets_overlay_url(self) -> str:
         return self.get_shoutout_overlay_url()
@@ -229,6 +236,8 @@ class OverlayServerManager:
             self._last_pinned_data = data.get("pinned") or data
         elif event_type == "pinned_deleted":
             self._last_pinned_data = None
+        elif event_type == "top_chatters_update":
+            self._last_top_chatters_data = data
         elif event_type == "widget_toggle":
             w_id = data.get("widget_id")
             if w_id == "death":

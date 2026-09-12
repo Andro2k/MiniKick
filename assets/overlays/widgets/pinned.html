@@ -45,80 +45,69 @@
         }
 
         .pinned-card {
-            background: rgba(13, 17, 23, 0.94);
+            background: rgba(15, 19, 26, 0.94);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 2.5px solid rgba(255, 193, 7, 0.45);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
             border-radius: 20px;
-            padding: 16px 20px;
+            overflow: hidden;
             color: #ffffff;
             display: flex;
-            gap: 14px;
-            align-items: flex-start;
-        }
-
-        .icon-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 193, 7, 0.15);
-            border: 2px solid rgba(255, 193, 7, 0.35);
-            border-radius: 14px;
-            flex-shrink: 0;
-        }
-
-        .pin-icon {
-            font-size: 20px;
-            line-height: 1;
-        }
-
-        .content-box {
-            flex: 1;
-            display: flex;
             flex-direction: column;
-            gap: 4px;
-            overflow: hidden;
+            align-items: stretch;
         }
 
-        .header-row {
+        .pinned-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 10px;
+            padding: 9px 18px;
+            background: rgba(255, 193, 7, 0.12);
+            border-bottom: 1px solid rgba(255, 193, 7, 0.18);
         }
 
-        .author-box {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
+        }
+
+        .pin-svg {
+            width: 15px;
+            height: 15px;
+            color: #ffc107;
+            display: block;
+            flex-shrink: 0;
         }
 
         .badge-tag {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
-            background: rgba(255, 193, 7, 0.2);
             color: #ffc107;
-            border: 1px solid rgba(255, 193, 7, 0.4);
-            padding: 2px 6px;
-            border-radius: 6px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
         }
 
         .author-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
-            color: #ffc107;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .pinned-body {
+            padding: 14px 20px;
         }
 
         .pinned-text {
             font-size: 14px;
             font-weight: 600;
             color: #f0f6fc;
-            line-height: 1.4;
+            line-height: 1.5;
             word-break: break-word;
         }
     </style>
@@ -128,16 +117,17 @@
 
     <div id="pinned-container">
         <div class="pinned-card">
-            <div class="icon-box">
-                <span class="pin-icon">📌</span>
-            </div>
-            <div class="content-box">
-                <div class="header-row">
-                    <div class="author-box">
-                        <span id="badge-tag" class="badge-tag">MENSAJE FIJADO</span>
-                        <span id="author-name" class="author-name">@Streamer</span>
-                    </div>
+            <div class="pinned-header">
+                <div class="header-left">
+                    <svg class="pin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="17" x2="12" y2="22"></line>
+                        <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6a1 1 0 0 1 1-1 1.5 1.5 0 0 0 1.5-1.5V3a1 1 0 0 0-1-1H7.5a1 1 0 0 0-1 1v.5A1.5 1.5 0 0 0 8 5a1 1 0 0 1 1 1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"></path>
+                    </svg>
+                    <span id="badge-tag" class="badge-tag">MENSAJE FIJADO</span>
                 </div>
+                <span id="author-name" class="author-name">@Streamer</span>
+            </div>
+            <div class="pinned-body">
                 <div id="pinned-text" class="pinned-text">--</div>
             </div>
         </div>

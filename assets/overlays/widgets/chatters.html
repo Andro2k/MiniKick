@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniKick - Top Chatters OBS Overlay</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: transparent;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 12px;
+        }
+
+        #chatters-container {
+            width: 100%;
+            max-width: 420px;
+            margin: auto;
+            position: relative;
+            z-index: 1000;
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #chatters-container.hidden {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+            pointer-events: none;
+        }
+
+        .chatters-card {
+            min-width: 320px;
+            max-width: 380px;
+            background: rgba(15, 19, 26, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+            border-radius: 20px;
+            overflow: hidden;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            background: rgba(46, 205, 112, 0.1);
+            border-bottom: 1px solid rgba(46, 205, 112, 0.15);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: rgba(46, 205, 112, 0.15);
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .trophy-icon {
+            width: 15px;
+            height: 15px;
+            color: #2ecd70;
+            display: block;
+        }
+
+        .header-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .badge-tag {
+            font-size: 9px;
+            font-weight: 800;
+            color: #2ecd70;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .main-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.2px;
+        }
+
+        .total-pill {
+            font-size: 11px;
+            font-weight: 700;
+            color: #8b949e;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .ranking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 14px 18px;
+        }
+
+        .chatter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chatter-item.rank-1 {
+            background: rgba(255, 215, 0, 0.06);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .chatter-item.rank-2 {
+            background: rgba(226, 232, 240, 0.06);
+            border-color: rgba(226, 232, 240, 0.3);
+        }
+
+        .chatter-item.rank-3 {
+            background: rgba(249, 115, 22, 0.06);
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+
+        .item-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            z-index: 2;
+        }
+
+        .user-col {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 900;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.08);
+            color: #8b949e;
+        }
+
+        .rank-badge svg {
+            width: 14px;
+            height: 14px;
+            display: block;
+        }
+
+        .rank-1 .rank-badge {
+            background: linear-gradient(135deg, #ffe066 0%, #ffd700 100%);
+            color: #0d1117;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .rank-2 .rank-badge {
+            background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+            color: #0d1117;
+            box-shadow: 0 0 8px rgba(203, 213, 225, 0.3);
+        }
+
+        .rank-3 .rank-badge {
+            background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(234, 88, 12, 0.3);
+        }
+
+        .username {
+            color: #f0f6fc;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 220px;
+        }
+
+        .rank-1 .username {
+            color: #ffd700;
+            font-weight: 800;
+        }
+
+        .count-pill {
+            font-size: 11px;
+            font-weight: 800;
+            color: #8b949e;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 7px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .rank-1 .count-pill {
+            color: #ffd700;
+            background: rgba(255, 215, 0, 0.15);
+        }
+
+        .bar-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2ecd70 0%, #25ae60 100%);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rank-1 .bar-fill {
+            background: linear-gradient(90deg, #ffd700 0%, #ffaa00 100%);
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        }
+
+        .rank-2 .bar-fill {
+            background: linear-gradient(90deg, #94a3b8 0%, #cbd5e1 100%);
+        }
+
+        .rank-3 .bar-fill {
+            background: linear-gradient(90deg, #f97316 0%, #ea580c 100%);
+        }
+
+        .empty-placeholder {
+            text-align: center;
+            font-size: 12px;
+            color: #8b949e;
+            padding: 20px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="chatters-container">
+        <div class="chatters-card">
+            <div class="header-row">
+                <div class="header-left">
+                    <div class="icon-box">
+                        <svg class="trophy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                            <path d="M4 22h16"></path>
+                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                        </svg>
+                    </div>
+                    <div class="header-titles">
+                        <span id="badge-tag" class="badge-tag">TOP CHATTERS</span>
+                        <span id="main-title" class="main-title">Más Activos</span>
+                    </div>
+                </div>
+                <div id="total-pill" class="total-pill">0 msgs</div>
+            </div>
+
+            <div id="ranking-list" class="ranking-list">
+                <div id="empty-state" class="empty-placeholder">Esperando mensajes del chat...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
+
+        const chattersContainer = document.getElementById('chatters-container');
+        const badgeTag = document.getElementById('badge-tag');
+        const mainTitle = document.getElementById('main-title');
+        const totalPill = document.getElementById('total-pill');
+        const rankingList = document.getElementById('ranking-list');
+        const emptyState = document.getElementById('empty-state');
+
+        if (lang === 'en') {
+            badgeTag.textContent = 'TOP CHATTERS';
+            mainTitle.textContent = 'Most Active';
+            emptyState.textContent = 'Waiting for chat messages...';
+        }
+
+        let ws = null;
+        let reconnectTimer = null;
+        let heartbeatTimer = null;
+
+        function connectWS() {
+            if (ws) {
+                try { ws.close(); } catch (e) { }
+                ws = null;
+            }
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws?topic=widgets&token=${encodeURIComponent(token || '')}`;
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log("[Top Chatters Overlay] WebSocket conectado.");
+                if (reconnectTimer) {
+                    clearTimeout(reconnectTimer);
+                    reconnectTimer = null;
+                }
+                heartbeatTimer = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({ type: 'ping' }));
+                    }
+                }, 15000);
+            };
+
+            ws.onmessage = function (e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'pong') return;
+                    if (data.event === 'top_chatters_update') {
+                        renderTopChatters(data);
+                    } else if (data.event === 'widget_toggle' && data.widget_id === 'chatters') {
+                        if (data.is_active === false) {
+                            chattersContainer.classList.add('hidden');
+                        } else {
+                            chattersContainer.classList.remove('hidden');
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error al procesar evento de top chatters:", err);
+                }
+            };
+
+            ws.onerror = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+
+            ws.onclose = function () {
+                cleanup();
+                scheduleReconnect();
+            };
+        }
+
+        function cleanup() {
+            if (heartbeatTimer) {
+                clearInterval(heartbeatTimer);
+                heartbeatTimer = null;
+            }
+        }
+
+        function scheduleReconnect() {
+            if (reconnectTimer) clearTimeout(reconnectTimer);
+            reconnectTimer = setTimeout(() => {
+                reconnectTimer = null;
+                connectWS();
+            }, 3000);
+        }
+
+        function renderTopChatters(data) {
+            if (!data) return;
+
+            if (data.is_active === false) {
+                chattersContainer.classList.add('hidden');
+                return;
+            } else {
+                chattersContainer.classList.remove('hidden');
+            }
+
+            const top = data.top || [];
+            const totalMessages = data.total_messages || 0;
+            totalPill.textContent = lang === 'en' ? `${totalMessages} msgs` : `${totalMessages} msgs`;
+
+            if (top.length === 0) {
+                rankingList.innerHTML = `<div class="empty-placeholder">${lang === 'en' ? 'Waiting for chat messages...' : 'Esperando mensajes del chat...'}</div>`;
+                return;
+            }
+
+            const maxVotes = top[0] && top[0].count > 0 ? top[0].count : 1;
+
+            rankingList.innerHTML = '';
+            top.forEach((item, index) => {
+                const rank = index + 1;
+                const count = item.count || 0;
+                const percent = Math.min(100, Math.round((count / maxVotes) * 100));
+
+                let badgeContent = String(rank);
+                if (rank === 1) {
+                    badgeContent = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>';
+                } else if (rank === 2) {
+                    badgeContent = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="14" r="6"/><path d="M8.2 2H5l4.5 7.2 1.3-.9L8.2 2zm10.8 0h-3.2l-2.6 6.3 1.3.9L19 2z"/><circle cx="12" cy="14" r="3" fill="#ffffff" fill-opacity="0.35"/></svg>';
+                } else if (rank === 3) {
+                    badgeContent = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="14" r="6"/><path d="M8.2 2H5l4.5 7.2 1.3-.9L8.2 2zm10.8 0h-3.2l-2.6 6.3 1.3.9L19 2z"/><circle cx="12" cy="14" r="3" fill="#000000" fill-opacity="0.25"/></svg>';
+                }
+
+                const chatterRow = document.createElement('div');
+                chatterRow.className = `chatter-item rank-${rank}`;
+
+                const userColor = item.color ? `style="color: ${escapeHtml(item.color)}"` : '';
+
+                chatterRow.innerHTML = `
+                    <div class="item-info">
+                        <div class="user-col">
+                            <span class="rank-badge">${badgeContent}</span>
+                            <span class="username" ${userColor}>${escapeHtml(item.user || 'User')}</span>
+                        </div>
+                        <span class="count-pill">${count}</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: ${percent}%"></div>
+                    </div>
+                `;
+                rankingList.appendChild(chatterRow);
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+        }
+
+        if (isPreview) {
+            renderTopChatters({
+                is_active: true,
+                total_messages: 164,
+                top: [
+                    { user: 'TheAndro2K', count: 54, color: '#ffd700' },
+                    { user: 'StreamHero', count: 42, color: '#53fc18' },
+                    { user: 'PixelGamer', count: 31, color: '#38bdf8' },
+                    { user: 'CyberWolf', count: 23, color: '#f43f5e' },
+                    { user: 'NeonValkyrie', count: 14, color: '#a855f7' }
+                ]
+            });
+        }
+
+        if (window.location.protocol !== 'file:') {
+            connectWS();
+        }
+    </script>
+</body>
+
+</html>

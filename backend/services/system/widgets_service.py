@@ -54,6 +54,27 @@ class WidgetService:
                 "min_combo": 3,
                 "timeout_sec": 5
             }
+        },
+        "chatters": {
+            "is_active": True,
+            "command": "!topchatters",
+            "cooldown": 5,
+            "permission": "everyone",
+            "config": {
+                "top_count": 5
+            }
+        },
+        "clock": {
+            "is_active": True,
+            "command": "!time",
+            "cooldown": 5,
+            "permission": "everyone",
+            "config": {
+                "format": "12h",
+                "show_date": True,
+                "show_seconds": False,
+                "theme": "dark"
+            }
         }
     }
 

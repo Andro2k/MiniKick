@@ -25,67 +25,65 @@
             color: #ffffff;
         }
 
-        .score-badge {
+        .score-capsule {
             display: flex;
-            align-items: center;
-            gap: 14px;
-            min-width: 260px;
-            min-height: 54px;
-            background: rgba(13, 17, 23, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1.5px solid rgba(56, 189, 248, 0.4);
-            border-radius: 16px;
-            padding: 10px 22px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.2);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 170px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(15, 19, 26, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .score-badge.bump {
-            animation: pulse-bump 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .score-capsule.bump {
+            animation: pulse-bump 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes pulse-bump {
             0% { transform: scale(1); }
-            50% { transform: scale(1.15); border-color: #38bdf8; box-shadow: 0 0 35px rgba(56, 189, 248, 0.5); }
+            50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
 
-        .icon-box {
+        .capsule-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 42px;
-            height: 42px;
+            gap: 7px;
+            padding: 7px 18px;
             background: rgba(255, 215, 0, 0.12);
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            border-radius: 12px;
-            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.18);
         }
 
         .trophy-svg {
-            width: 26px;
-            height: 26px;
-            filter: drop-shadow(0 2px 6px rgba(255, 215, 0, 0.5));
-        }
-
-        .text-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 2px;
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+            display: block;
         }
 
         .score-title {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.4px;
-            color: #38bdf8;
+            color: #ffd700;
+        }
+
+        .capsule-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 22px;
         }
 
         .score-counts {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 900;
             display: flex;
             align-items: center;
@@ -96,17 +94,15 @@
         .win-tag {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             color: #2ed573;
-            text-shadow: 0 0 12px rgba(46, 213, 115, 0.4);
         }
 
         .loss-tag {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             color: #ff4757;
-            text-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
         }
 
         .score-divider {
@@ -123,8 +119,8 @@
 </head>
 <body>
 
-    <div class="score-badge" id="scoreBadge">
-        <div class="icon-box">
+    <div class="score-capsule" id="scoreBadge">
+        <div class="capsule-header">
             <svg class="trophy-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M19 5H17V3H7V5H5C3.9 5 3 5.9 3 7V9C3 11.21 4.79 13 7 13H7.54C8.28 14.79 10.03 16 12 16C13.97 16 15.72 14.79 16.46 13H17C19.21 13 21 11.21 21 9V7C21 5.9 20.1 5 19 5ZM5 9V7H7V9H5ZM19 9H17V7H19V9ZM10 18H14V20H10V18ZM8 21H16V22H8V21Z" fill="url(#trophy-grad)"/>
                 <defs>
@@ -134,9 +130,9 @@
                     </linearGradient>
                 </defs>
             </svg>
+            <span class="score-title" id="scoreTitle">RÉCORD V / D</span>
         </div>
-        <div class="text-container">
-            <div class="score-title" id="scoreTitle">RÉCORD V / D</div>
+        <div class="capsule-body">
             <div class="score-counts">
                 <span class="win-tag">
                     <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="#2ed573" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">

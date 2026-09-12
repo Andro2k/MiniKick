@@ -197,6 +197,8 @@
             "show_time_title": "Show Timestamp",
             "size_desc": "Adjust the chat text font size on screen.",
             "size_title": "Font Size",
+            "big_emotes_desc": "Enlarge emotes when a message contains only emotes.",
+            "big_emotes_title": "Big Emotes (Bigmoji)",
             "theme_card": "Solid Card",
             "theme_cyber": "Retro Cyberpunk (Cyber)",
             "theme_desc": "Choose the visual design that best fits your stream.",
@@ -1381,6 +1383,30 @@
         }
     },
     "widgets": {
+        "chatters": {
+            "desc": "Displays a real-time leaderboard of the 5 most active chatters during your stream.",
+            "msg_empty": "🏆 No chat messages recorded yet in this stream session.",
+            "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
+            "msg_reset": "🔄 @{user} has reset the Top Chatters leaderboard.",
+            "obs_title": "TOP CHATTERS",
+            "reset_btn": "Reset Leaderboard",
+            "reset_success": "Chatters leaderboard reset successfully!",
+            "title": "Top Chatters (!topchatters)"
+        },
+        "clock": {
+            "desc": "Displays the current time and date in real-time in a sleek capsule design for your stream.",
+            "format_12h": "12 Hours (AM/PM)",
+            "format_24h": "24 Hours",
+            "format_label": "Time Format:",
+            "msg_time": "🕒 @{user}, the current time is {time}.",
+            "show_date_label": "Show Date in Header",
+            "show_seconds_label": "Show Seconds",
+            "theme_dark": "Dark / Slate",
+            "theme_label": "Visual Theme:",
+            "theme_pastel": "Pastel / Lavender",
+            "theme_warm": "Warm / Peach",
+            "title": "Clock & Date (!time)"
+        },
         "combo": {
             "desc": "Detect when your chat repeats an emote streak and show a fiery animated counter in OBS.",
             "min_combo_label": "Minimum Combo to Show:",

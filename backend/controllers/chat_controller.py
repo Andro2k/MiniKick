@@ -222,11 +222,12 @@ class ChatController(QObject):
 
         overlay_settings = self.service.get_overlay_settings()
         self.view.set_overlay_settings_ui(
-            theme=overlay_settings["theme"],
-            size=overlay_settings["size"],
-            fade=overlay_settings["fade"],
-            show_bots=overlay_settings["show_bots"],
-            show_time=overlay_settings["show_time"]
+            theme=overlay_settings.get("theme", "glass"),
+            size=overlay_settings.get("size", 14),
+            fade=overlay_settings.get("fade", 15),
+            show_bots=overlay_settings.get("show_bots", False),
+            show_time=overlay_settings.get("show_time", False),
+            big_emotes=overlay_settings.get("big_emotes", True)
         )
 
         if self.voice_handler._all_voices:
@@ -697,7 +698,8 @@ class ChatController(QObject):
             "chat_overlay_size": str(self.view.overlay_size),
             "chat_overlay_fade": str(self.view.overlay_fade),
             "chat_overlay_show_bots": self.view.overlay_show_bots,
-            "chat_overlay_show_time": self.view.overlay_show_time
+            "chat_overlay_show_time": self.view.overlay_show_time,
+            "chat_overlay_big_emotes": getattr(self.view, "overlay_big_emotes", True)
         })
         logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
                     settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))

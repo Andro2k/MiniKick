@@ -427,6 +427,8 @@ class MainWindowCore(QMainWindow):
                 combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
                 poll_overlay_url=self.overlay_server.get_poll_overlay_url(),
                 pinned_overlay_url=self.overlay_server.get_pinned_overlay_url(),
+                chatters_overlay_url=self.overlay_server.get_chatters_overlay_url(),
+                clock_overlay_url=self.overlay_server.get_clock_overlay_url(),
                 parent=self.content_stack
             )
             self.content_stack.addWidget(self.view_widgets)

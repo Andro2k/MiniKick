@@ -45,9 +45,15 @@ STATIC_ENDPOINTS_MAP: dict[str, tuple[str, str]] = {
     "/widgets/poll": (os.path.join("assets", "overlays", "widgets", "poll.html"), "Poll Overlay HTML"),
     "/widgets/polls": (os.path.join("assets", "overlays", "widgets", "poll.html"), "Poll Overlay HTML"),
     "/poll": (os.path.join("assets", "overlays", "widgets", "poll.html"), "Poll Overlay HTML"),
+    "/widgets/chatters": (os.path.join("assets", "overlays", "widgets", "chatters.html"), "Top Chatters Overlay HTML"),
+    "/widgets/top_chatters": (os.path.join("assets", "overlays", "widgets", "chatters.html"), "Top Chatters Overlay HTML"),
+    "/chatters": (os.path.join("assets", "overlays", "widgets", "chatters.html"), "Top Chatters Overlay HTML"),
     "/widgets/pinned": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
     "/widgets/pinned_message": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
     "/pinned": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
+    "/widgets/clock": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
+    "/widgets/time": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
+    "/clock": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
     "/alerts": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
     "/alerts/": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
     "/alert": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
@@ -200,6 +206,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     ws_client.send_json({"event": "poll_update", "poll": poll_copy})
                 if getattr(self.server.manager, "_last_pinned_data", None):
                     ws_client.send_json({"event": "pinned_created", "pinned": self.server.manager._last_pinned_data})
+                if getattr(self.server.manager, "_last_top_chatters_data", None):
+                    ws_client.send_json({"event": "top_chatters_update", **self.server.manager._last_top_chatters_data})
 
             while not ws_client.closed:
                 msg = ws_client.read_frame()
