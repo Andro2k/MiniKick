@@ -1161,7 +1161,35 @@
         },
         "dialogs": {
             "export_title": "Exportar Configuración",
-            "import_title": "Importar Configuración"
+            "import_title": "Importar Configuración",
+            "import_modal": {
+                "title": "Restaurar Copia de Seguridad",
+                "desc": "Selecciona las secciones de configuración que deseas restaurar desde este respaldo.",
+                "metadata_version": "Versión:",
+                "metadata_date": "Exportado el:",
+                "btn_select_all": "Seleccionar Todo",
+                "btn_deselect_all": "Deseleccionar Todo",
+                "btn_confirm": "Restaurar Selección",
+                "btn_cancel": "Cancelar",
+                "elements_suffix": "elementos",
+                "element_suffix": "elemento",
+                "section_settings": "Ajustes Generales",
+                "section_settings_desc": "Preferencias de idioma, tamaño de letra, navegador y dispositivos de audio.",
+                "section_alerts": "Alertas de Eventos",
+                "section_alerts_desc": "Estilos visuales, sonidos y plantillas para Kick y Twitch.",
+                "section_rewards": "Recompensas de Puntos",
+                "section_rewards_desc": "Mapeos locales y disparadores multimedia de recompensas.",
+                "section_commands": "Comandos de Chat",
+                "section_commands_desc": "Respuestas automáticas, permisos, tiempos de espera y alias.",
+                "section_spam_filters": "Filtros Anti-Spam",
+                "section_spam_filters_desc": "Límites de mayúsculas, símbolos repetidos y longitud de párrafos.",
+                "section_timers": "Temporizadores",
+                "section_timers_desc": "Mensajes programados y automatizaciones periódicas de chat.",
+                "section_schedules": "Programaciones de Transmisión",
+                "section_schedules_desc": "Planes de emisión, títulos y categorías asignadas.",
+                "section_widgets": "Widgets de OBS",
+                "section_widgets_desc": "Configuración de contadores, marcador, chat, reloj y overlays."
+            }
         },
         "feedback": {
             "desc": "¿Encontraste un problema o quieres sugerir una mejora? Envíanos un reporte directo.",

@@ -24,9 +24,12 @@ class SettingsService:
         logger.info("[SettingsService] Exporting settings backup to: %s", filepath)
         return self.backup.export_to_json(filepath)
 
-    def import_settings(self, filepath: str) -> bool:
-        logger.info("[SettingsService] Importing settings backup from: %s", filepath)
-        return self.backup.import_from_json(filepath)
+    def inspect_backup(self, filepath: str) -> dict | None:
+        return self.backup.inspect_backup(filepath)
+
+    def import_settings(self, filepath: str, sections: set[str] | list[str] | None = None) -> bool:
+        logger.info("[SettingsService] Importing settings backup from: %s (sections=%s)", filepath, sections)
+        return self.backup.import_from_json(filepath, sections=sections)
     
     def get_language(self) -> str:
         return self.storage.load_string(self.SETTING_LANGUAGE, "es")

@@ -305,6 +305,13 @@ class SettingsView(BaseView):
         dialog = ReleaseNotesDialog(self.i18n, worker_class=worker_class, browser_service=browser_service, parent=self.window())
         dialog.exec()
 
+    def show_import_backup_dialog(self, backup_info: dict) -> set[str] | None:
+        from frontend.dialogs import ImportBackupModal
+        modal = ImportBackupModal(backup_info, i18n=self.i18n, parent=self.window())
+        if modal.exec():
+            return modal.get_selected_sections()
+        return None
+
     def set_integrations_status(self, kick_connected: bool = False, kick_channel: str = "", twitch_connected: bool = False, twitch_channel: str = "", youtube_connected: bool = False, youtube_channel: str = "", tiktok_connected: bool = False, tiktok_channel: str = "") -> None:
         if kick_connected and kick_channel:
             text_kick = self.i18n.get("settings.integrations.btn_disconnect_kick").replace("{channel}", kick_channel)

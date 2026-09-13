@@ -16,6 +16,7 @@ from .piper_dialog import PiperVoicesDialog
 from .youtube_dialog import YouTubeConnectDialog
 from .tiktok_dialog import TikTokConnectDialog
 from .duplicate_alert_dialog import DuplicateAlertModal
+from .import_backup_dialog import ImportBackupModal
 
 __all__ = [
     "ModernFramelessShell",
@@ -36,5 +37,6 @@ __all__ = [
     "PiperVoicesDialog",
     "YouTubeConnectDialog",
     "TikTokConnectDialog",
-    "DuplicateAlertModal"
+    "DuplicateAlertModal",
+    "ImportBackupModal"
 ]

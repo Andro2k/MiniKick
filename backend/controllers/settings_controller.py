@@ -141,24 +141,46 @@ class SettingsController(QObject):
     @Slot()
     def handle_import(self):
         filepath = self.view.ask_open_path()
-        if filepath:
-            logger.info("[User Action] Imported app settings from: '%s'", filepath)
-            i18n = self._get_i18n()
-            if self.service.import_settings(filepath):
-                self.backup_restored.emit()
-                if self.toast:
-                    self.toast.show_toast(
-                        title=i18n.get("settings.status.imported"),
-                        message=i18n.get("settings.status.imported_msg"),
-                        state="success"
-                    )
-            else:
-                if self.toast:
-                    self.toast.show_toast(
-                        title=i18n.get("settings.status.error_title"),
-                        message=i18n.get("settings.status.import_error"),
-                        state="danger"
-                    )
+        if not filepath:
+            return
+
+        i18n = self._get_i18n()
+        backup_info = self.service.inspect_backup(filepath)
+        if not backup_info:
+            logger.warning("[SettingsController] Failed to inspect backup file: %s", filepath)
+            if self.toast:
+                self.toast.show_toast(
+                    title=i18n.get("settings.status.error_title"),
+                    message=i18n.get("settings.status.import_error"),
+                    state="danger"
+                )
+            return
+
+        selected_sections = self.view.show_import_backup_dialog(backup_info)
+        if selected_sections is None:
+            logger.info("[SettingsController] Backup import cancelled by user.")
+            return
+
+        if not selected_sections:
+            logger.info("[SettingsController] No sections selected for restore.")
+            return
+
+        logger.info("[User Action] Importing app settings from: '%s' (sections=%s)", filepath, selected_sections)
+        if self.service.import_settings(filepath, sections=selected_sections):
+            self.backup_restored.emit()
+            if self.toast:
+                self.toast.show_toast(
+                    title=i18n.get("settings.status.imported"),
+                    message=i18n.get("settings.status.imported_msg"),
+                    state="success"
+                )
+        else:
+            if self.toast:
+                self.toast.show_toast(
+                    title=i18n.get("settings.status.error_title"),
+                    message=i18n.get("settings.status.import_error"),
+                    state="danger"
+                )
 
     @Slot(str)
     def handle_language_change(self, lang_code: str):
