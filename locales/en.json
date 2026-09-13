@@ -30,9 +30,24 @@
         "buttons": {
             "browse": "Browse...",
             "discard": "Discard",
+            "duplicate": "Duplicate to another alert",
+            "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
             "save": "Save Changes",
             "test": "Test Alert",
             "test_sent": "Test alert sent to OBS."
+        },
+        "dialogs": {
+            "duplicate": {
+                "btn_cancel": "Cancel",
+                "btn_confirm": "Duplicate Configuration",
+                "desc": "Copies the visual styling, colors, animations, typography and media from this alert to another event.",
+                "include_media": "Also copy media and sound files",
+                "include_template": "Also copy message template text",
+                "source_label": "Source alert:",
+                "target_label": "Select destination event(s):",
+                "target_all": "All other Twitch events",
+                "title": "Duplicate Alert Configuration"
+            }
         },
         "events": {
             "cheer": "Bits / Cheers (Twitch)",
@@ -143,6 +158,8 @@
             "disabled_msg": "The '{event}' alert has been disabled.",
             "disabled_title": "Alert Disabled",
             "disconnected": "Disconnected",
+            "duplicated": "Configuration duplicated successfully to '{target}'.",
+            "duplicated_title": "Alert Duplicated",
             "enabled_msg": "The '{event}' alert has been enabled.",
             "enabled_title": "Alert Enabled",
             "platform_offline": "Platform not connected: alerts will not trigger live until your account is linked",
@@ -1024,6 +1041,7 @@
                 "step1": {
                     "color_pick_tooltip": "Select background color",
                     "desc": "Select the channel points reward that will trigger this visual or sound effect.",
+                    "duplicate_title_suffix": " (Copy)",
                     "edit_offline_warning": "This platform is not connected. Changes will only apply to the local alert.",
                     "edit_title_label": "Reward Name",
                     "file_label": "Media File",
@@ -1122,6 +1140,7 @@
             "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Reward",
+            "tooltip_duplicate": "Duplicate Reward (other platform or new)",
             "tooltip_edit": "Modify settings",
             "tooltip_play": "Test in OBS",
             "tooltip_play_missing": "Cannot play: media file not found",

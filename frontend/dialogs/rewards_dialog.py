@@ -13,9 +13,11 @@ from .base_dialog import ModernWizardPanel
 from .positioner_dialog import VisualPositionerDialog
 
 class RewardsConfigWizard(ModernWizardPanel):
-    def __init__(self, i18n, parent=None, rewards_list=None, rewards_details_map=None, existing_config=None, existing_reward=None, kick_authenticated: bool = True, twitch_authenticated: bool = True):
+    def __init__(self, i18n, parent=None, rewards_list=None, rewards_details_map=None, existing_config=None, existing_reward=None, kick_authenticated: bool = True, twitch_authenticated: bool = True, duplicate_from: tuple[str, dict] | None = None):
         self.i18n = i18n
-        self.is_edit_mode = existing_config is not None
+        self.is_duplicate_mode = duplicate_from is not None
+        self.duplicate_from = duplicate_from
+        self.is_edit_mode = existing_config is not None and not self.is_duplicate_mode
         self.existing_reward = existing_reward
         self.existing_config = existing_config or {}
         self.rewards_details_map = rewards_details_map or {}
@@ -49,7 +51,15 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
-        if self.is_edit_mode:
+        if self.is_duplicate_mode:
+            src_plat = duplicate_from[1].get("platform", "kick")
+            if src_plat == "kick" and self.twitch_authenticated:
+                self.selected_platform = "twitch"
+            elif src_plat == "twitch" and self.kick_authenticated:
+                self.selected_platform = "kick"
+            else:
+                self.selected_platform = src_plat
+        elif self.is_edit_mode:
             self.selected_platform = self.existing_config.get("platform", "kick")
         elif self.twitch_authenticated and not self.kick_authenticated:
             self.selected_platform = "twitch"
@@ -62,6 +72,8 @@ class RewardsConfigWizard(ModernWizardPanel):
         
         if self.is_edit_mode:
             self._load_existing_data(self.existing_config)
+        elif self.is_duplicate_mode:
+            self._load_duplicate_data(duplicate_from[0], duplicate_from[1])
             
         self.start_wizard()
 
@@ -309,16 +321,20 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _on_combo_reward_changed(self, text: str):
         self._update_btn_next_state()
-        if text and text in self.rewards_details_map:
-            details = self.rewards_details_map[text]
-            if "cost" in details and hasattr(self, "spin_new_cost"):
-                self.spin_new_cost.setValue(int(details["cost"]))
-            if "description" in details and hasattr(self, "txt_new_desc"):
-                self.txt_new_desc.setText(str(details.get("description") or ""))
-            if "background_color" in details and hasattr(self, "txt_new_color"):
-                self._set_color(str(details.get("background_color") or "#00e701"))
-            if "is_user_input_required" in details and hasattr(self, "chk_user_input"):
-                self.chk_user_input.setChecked(bool(details.get("is_user_input_required", False)))
+        if text:
+            plat = getattr(self, "selected_platform", "kick")
+            composite_key = f"{plat}:{text}"
+            details = self.rewards_details_map.get(composite_key) or self.rewards_details_map.get(text)
+            if details and isinstance(details, dict):
+                if "cost" in details and hasattr(self, "spin_new_cost"):
+                    self.spin_new_cost.setValue(int(details["cost"]))
+                if "description" in details and hasattr(self, "txt_new_desc"):
+                    self.txt_new_desc.setText(str(details.get("description") or ""))
+                if "background_color" in details and hasattr(self, "txt_new_color"):
+                    default_color = "#9146FF" if plat == "twitch" else "#00e701"
+                    self._set_color(str(details.get("background_color") or default_color))
+                if "is_user_input_required" in details and hasattr(self, "chk_user_input"):
+                    self.chk_user_input.setChecked(bool(details.get("is_user_input_required", False)))
 
     def _on_mode_changed(self):
         is_create = hasattr(self, 'rb_create') and self.rb_create.isChecked()
@@ -432,8 +448,11 @@ class RewardsConfigWizard(ModernWizardPanel):
             for r_name in self.rewards_list_raw:
                 if r_name in invalid_placeholders:
                     continue
-                details = self.rewards_details_map.get(r_name, {})
-                r_plat = details.get("platform", "kick") if isinstance(details, dict) else "kick"
+                if isinstance(r_name, str) and (r_name.startswith("id:") or ":" in r_name):
+                    continue
+                composite_key = f"{plat}:{r_name}"
+                details = self.rewards_details_map.get(composite_key) or self.rewards_details_map.get(r_name, {})
+                r_plat = details.get("platform", plat) if isinstance(details, dict) else plat
                 if r_plat == plat and r_name not in filtered:
                     filtered.append(r_name)
 
@@ -531,7 +550,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             
             self.chk_random_pos.setChecked(config.get("is_random_pos", False))
             
-            details = self.rewards_details_map.get(self.existing_reward, {})
+            details = self.rewards_details_map.get(f"{plat}:{self.existing_reward}") or self.rewards_details_map.get(self.existing_reward, {})
             default_color = "#9146FF" if plat == "twitch" else "#00e701"
             color_val = config.get("background_color") or config.get("new_reward_data", {}).get("background_color") or details.get("background_color", default_color)
             self._set_color(color_val)
@@ -552,6 +571,56 @@ class RewardsConfigWizard(ModernWizardPanel):
             if hasattr(self, 'txt_edit_desc'):
                 self.txt_edit_desc.setText(str(desc_val))
 
+    def _load_duplicate_data(self, source_title: str, source_config: dict):
+        if hasattr(self, 'rb_create'):
+            self.rb_create.setChecked(True)
+
+        suffix = self.i18n.get("rewards.dialogs.wizard.step1.duplicate_title_suffix")
+        duplicated_title = f"{source_title}{suffix}"
+        if hasattr(self, 'txt_new_title'):
+            self.txt_new_title.setText(duplicated_title)
+
+        filepath = source_config.get("filepath", "")
+        self.txt_file_path.setText(filepath)
+        if filepath and (not os.path.exists(filepath) or not os.path.isfile(filepath)):
+            self.txt_file_path.setProperty("state", "error")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.file_missing_warning"))
+        else:
+            self.txt_file_path.setProperty("state", "normal")
+            self.txt_file_path.style().polish(self.txt_file_path)
+            self.txt_file_path.setToolTip("")
+        self._evaluate_media_type(filepath)
+
+        self.spin_x.setValue(source_config.get("pos_x", 0))
+        self.spin_y.setValue(source_config.get("pos_y", 0))
+        self.spin_scale.setValue(source_config.get("scale", 1.0))
+
+        vol_val = int(source_config.get("volume", 1.0) * 100)
+        self.slider_vol.setValue(vol_val)
+        self.lbl_vol_perc.setText(f"{vol_val}%")
+
+        self.chk_random_pos.setChecked(source_config.get("is_random_pos", False))
+
+        target_plat = self.selected_platform
+        default_color = "#9146FF" if target_plat == "twitch" else "#00e701"
+        color_val = source_config.get("background_color") or default_color
+        self._set_color(color_val)
+
+        user_in = source_config.get("is_user_input_required", False)
+        if hasattr(self, 'chk_user_input'):
+            self.chk_user_input.setChecked(bool(user_in))
+
+        cost_val = source_config.get("cost", 100)
+        if hasattr(self, 'spin_new_cost'):
+            self.spin_new_cost.setValue(int(cost_val))
+
+        desc_val = source_config.get("description", "")
+        if hasattr(self, 'txt_new_desc'):
+            self.txt_new_desc.setText(str(desc_val))
+
+        self._update_btn_next_state()
+
     def get_config_data(self):
         if self.is_edit_mode:
             platform = self.existing_config.get("platform") or self.selected_platform or "kick"
@@ -565,7 +634,8 @@ class RewardsConfigWizard(ModernWizardPanel):
             new_data = None
             cost_val = self.spin_edit_cost.value()
             desc_val = self.txt_edit_desc.text().strip()
-            reward_id = self.existing_config.get("id") or self.rewards_details_map.get(self.existing_reward, {}).get("id")
+            composite_key = f"{platform}:{self.existing_reward}"
+            reward_id = self.existing_config.get("id") or (self.rewards_details_map.get(composite_key) or self.rewards_details_map.get(self.existing_reward, {})).get("id")
         else:
             is_create_mode = hasattr(self, 'rb_create') and self.rb_create.isChecked()
             if is_create_mode:
@@ -584,7 +654,8 @@ class RewardsConfigWizard(ModernWizardPanel):
                 reward_id = None
             else:
                 reward_title = self.combo_rewards.currentText()
-                details = self.rewards_details_map.get(reward_title, {})
+                composite_key = f"{platform}:{reward_title}"
+                details = self.rewards_details_map.get(composite_key) or self.rewards_details_map.get(reward_title, {})
                 cost_val = details.get("cost", 100)
                 desc_val = details.get("description", "")
                 reward_id = details.get("id")

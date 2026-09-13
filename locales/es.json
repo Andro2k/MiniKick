@@ -30,9 +30,24 @@
         "buttons": {
             "browse": "Examinar...",
             "discard": "Descartar",
+            "duplicate": "Duplicar a otra alerta",
+            "duplicate_tooltip": "Copiar ajustes visuales, multimedia y de sonido a otra alerta",
             "save": "Guardar Cambios",
             "test": "Probar Alerta",
             "test_sent": "Alerta de prueba enviada a OBS."
+        },
+        "dialogs": {
+            "duplicate": {
+                "btn_cancel": "Cancelar",
+                "btn_confirm": "Duplicar Configuración",
+                "desc": "Copia la apariencia visual, colores, animaciones, tipografía y multimedia de esta alerta a otro evento.",
+                "include_media": "Copiar también archivo multimedia y sonido",
+                "include_template": "Copiar también el texto de la plantilla",
+                "source_label": "Alerta de origen:",
+                "target_label": "Seleccionar evento(s) de destino:",
+                "target_all": "Todos los demás eventos de Twitch",
+                "title": "Duplicar Configuración de Alerta"
+            }
         },
         "events": {
             "cheer": "Bits / Cheers (Twitch)",
@@ -143,6 +158,8 @@
             "disabled_msg": "La alerta de '{event}' ha sido desactivada.",
             "disabled_title": "Alerta Desactivada",
             "disconnected": "Desconectado",
+            "duplicated": "Configuración duplicada exitosamente a '{target}'.",
+            "duplicated_title": "Alerta Duplicada",
             "enabled_msg": "La alerta de '{event}' ha sido activada.",
             "enabled_title": "Alerta Activada",
             "platform_offline": "Plataforma no conectada: las alertas no se emitirán en directo hasta vincular tu cuenta",
@@ -1024,6 +1041,7 @@
                 "step1": {
                     "color_pick_tooltip": "Seleccionar color de fondo",
                     "desc": "Selecciona la recompensa de puntos de canal que activará este efecto visual o de sonido.",
+                    "duplicate_title_suffix": " (Copia)",
                     "edit_offline_warning": "Esta plataforma no está conectada. Los cambios solo se aplicarán a la alerta local.",
                     "edit_title_label": "Nombre de la Recompensa",
                     "file_label": "Archivo Multimedia",
@@ -1122,6 +1140,7 @@
             "status_unlinked_tooltip": "Esta recompensa fue eliminada o no existe en {platform}",
             "title": "Recompensas Vinculadas",
             "tooltip_delete": "Eliminar Recompensa",
+            "tooltip_duplicate": "Duplicar Recompensa (otra plataforma o nueva)",
             "tooltip_edit": "Modificar ajustes",
             "tooltip_play": "Probar en OBS",
             "tooltip_play_missing": "No se puede reproducir: archivo multimedia no encontrado",

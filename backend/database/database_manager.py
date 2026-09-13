@@ -104,7 +104,7 @@ class DatabaseManager:
             """)           
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS obs_rewards (
-                    reward_name TEXT PRIMARY KEY,
+                    reward_name TEXT NOT NULL,
                     filepath TEXT NOT NULL,
                     volume REAL DEFAULT 1.0,
                     scale REAL DEFAULT 1.0,
@@ -117,7 +117,8 @@ class DatabaseManager:
                     description TEXT DEFAULT '',
                     background_color TEXT DEFAULT '#00e701',
                     is_user_input_required INTEGER DEFAULT 0,
-                    platform TEXT DEFAULT 'kick'
+                    platform TEXT DEFAULT 'kick',
+                    PRIMARY KEY (reward_name, platform)
                 )
             """)
             cursor.execute("""
@@ -273,8 +274,7 @@ class DatabaseManager:
                     reward_name TEXT NOT NULL,
                     username TEXT NOT NULL,
                     platform TEXT DEFAULT 'kick',
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY(reward_name) REFERENCES obs_rewards(reward_name) ON DELETE CASCADE
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
             cursor.execute("""
@@ -585,6 +585,67 @@ class DatabaseManager:
                                 cursor.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
                             except sqlite3.OperationalError as alter_err:
                                 logger.error("Error adding column %s to table %s: %s", col_name, table, alter_err)
+
+                cursor.execute("PRAGMA table_info(obs_rewards)")
+                obs_cols = cursor.fetchall()
+                if obs_cols:
+                    pk_cols = [r[1].lower() for r in obs_cols if r[5] > 0]
+                    if "platform" not in pk_cols:
+                        logger.info("Upgrading table obs_rewards: migrating to composite primary key (reward_name, platform)")
+                        cursor.execute("""
+                            CREATE TABLE obs_rewards_new (
+                                reward_name TEXT NOT NULL,
+                                filepath TEXT NOT NULL,
+                                volume REAL DEFAULT 1.0,
+                                scale REAL DEFAULT 1.0,
+                                pos_x INTEGER DEFAULT 0,
+                                pos_y INTEGER DEFAULT 0,
+                                is_random_pos INTEGER DEFAULT 0,
+                                thumbnail_bytes BLOB,
+                                reward_id TEXT,
+                                cost INTEGER DEFAULT 100,
+                                description TEXT DEFAULT '',
+                                background_color TEXT DEFAULT '#00e701',
+                                is_user_input_required INTEGER DEFAULT 0,
+                                platform TEXT DEFAULT 'kick',
+                                PRIMARY KEY (reward_name, platform)
+                            )
+                        """)
+                        cursor.execute("""
+                            INSERT OR IGNORE INTO obs_rewards_new (
+                                reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes,
+                                reward_id, cost, description, background_color, is_user_input_required, platform
+                            )
+                            SELECT reward_name, filepath, volume, scale, pos_x, pos_y, is_random_pos, thumbnail_bytes,
+                                   reward_id, cost, description, background_color, is_user_input_required,
+                                   COALESCE(platform, 'kick')
+                            FROM obs_rewards
+                        """)
+                        cursor.execute("DROP TABLE obs_rewards")
+                        cursor.execute("ALTER TABLE obs_rewards_new RENAME TO obs_rewards")
+
+                cursor.execute("PRAGMA foreign_key_list(reward_redemptions)")
+                fk_rows = cursor.fetchall()
+                has_obs_fk = any(len(r) > 2 and str(r[2]).lower() == "obs_rewards" for r in fk_rows)
+                if has_obs_fk:
+                    logger.info("Upgrading table reward_redemptions: removing outdated foreign key referencing obs_rewards")
+                    cursor.execute("""
+                        CREATE TABLE reward_redemptions_new (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            reward_name TEXT NOT NULL,
+                            username TEXT NOT NULL,
+                            platform TEXT DEFAULT 'kick',
+                            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """)
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO reward_redemptions_new (id, reward_name, username, platform, timestamp)
+                        SELECT id, reward_name, username, COALESCE(platform, 'kick'), timestamp
+                        FROM reward_redemptions
+                    """)
+                    cursor.execute("DROP TABLE reward_redemptions")
+                    cursor.execute("ALTER TABLE reward_redemptions_new RENAME TO reward_redemptions")
+
                 conn.commit()
         except Exception as e:
             logger.error("Error executing database schema upgrade: %s", e)

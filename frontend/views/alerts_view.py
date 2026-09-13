@@ -15,6 +15,7 @@ from frontend.components.alerts import (
     AlertEventCard,
     AlertsOverlayCard,
 )
+from frontend.dialogs import DuplicateAlertModal
 
 __all__ = [
     "AlertsView",
@@ -199,6 +200,7 @@ class AlertsView(BaseView):
         card.set_platform_connected(bool(self.connected_platforms.get(platform, False)))
         card.save_requested.connect(self.config_changed.emit)
         card.test_requested.connect(self.test_alert_requested.emit)
+        card.duplicate_requested.connect(self._handle_duplicate_alert)
         if sidebar_panel:
             card.config_changed.connect(lambda cfg, at=alert_type, sb=sidebar_panel: sb.set_item_enabled_state(at, cfg.enabled))
 
@@ -208,6 +210,84 @@ class AlertsView(BaseView):
         editor_stack.addWidget(card)
         dict.__setitem__(self.cards, key, card)
         return card
+
+    def _handle_duplicate_alert(self, source_cfg: AlertConfig):
+        platform = source_cfg.platform
+        source_event = source_cfg.alert_type
+        events = self._TWITCH_EVENTS
+
+        modal = DuplicateAlertModal(
+            source_platform=platform,
+            source_event=source_event,
+            available_events=events,
+            i18n=self.i18n,
+            parent=self
+        )
+        if not modal.exec():
+            return
+
+        target_events, include_media, include_template = modal.get_selection()
+        if not target_events:
+            return
+
+        for target_event in target_events:
+            target_key = (platform, target_event)
+            existing_target = self._configs_cache.get(target_key)
+            target_card = self.cards.get(target_key)
+
+            target_template = source_cfg.text_template if include_template else (
+                existing_target.text_template if existing_target else (
+                    target_card._current_config.text_template if target_card else f"¡{target_event}!"
+                )
+            )
+            target_sound = source_cfg.sound_path if include_media else (
+                existing_target.sound_path if existing_target else (
+                    target_card._current_config.sound_path if target_card else ""
+                )
+            )
+            target_media = source_cfg.media_path if include_media else (
+                existing_target.media_path if existing_target else (
+                    target_card._current_config.media_path if target_card else ""
+                )
+            )
+
+            new_cfg = AlertConfig(
+                platform=platform,
+                alert_type=target_event,
+                enabled=existing_target.enabled if existing_target else (target_card._current_config.enabled if target_card else True),
+                sound_path=target_sound,
+                media_path=target_media,
+                text_template=target_template,
+                duration_ms=source_cfg.duration_ms,
+                sound_volume=source_cfg.sound_volume,
+                tts_read=source_cfg.tts_read,
+                layout=getattr(source_cfg, "layout", "above"),
+                style=getattr(source_cfg, "style", "compact"),
+                text_color=getattr(source_cfg, "text_color", "#FFFFFF"),
+                highlight_color=getattr(source_cfg, "highlight_color", ""),
+                font_family=getattr(source_cfg, "font_family", "Outfit"),
+                font_size=getattr(source_cfg, "font_size", 24),
+                text_align=getattr(source_cfg, "text_align", "center"),
+                animation_in=getattr(source_cfg, "animation_in", "fade_in"),
+                animation_in_duration=getattr(source_cfg, "animation_in_duration", 1.0),
+                animation_out=getattr(source_cfg, "animation_out", "fade_out"),
+                animation_out_duration=getattr(source_cfg, "animation_out_duration", 1.0),
+                bg_color=getattr(source_cfg, "bg_color", "#121317"),
+                bg_opacity=getattr(source_cfg, "bg_opacity", 88),
+                border_radius=getattr(source_cfg, "border_radius", 20),
+                padding_px=getattr(source_cfg, "padding_px", 24),
+                spacing_px=getattr(source_cfg, "spacing_px", 16),
+                box_shadow=getattr(source_cfg, "box_shadow", True),
+                font_weight=getattr(source_cfg, "font_weight", "bold"),
+                text_shadow=getattr(source_cfg, "text_shadow", True),
+                card_width=getattr(source_cfg, "card_width", 560),
+                card_height=getattr(source_cfg, "card_height", 0)
+            )
+
+            self._configs_cache[target_key] = new_cfg
+            if target_card:
+                target_card.load_config(new_cfg)
+            self.config_changed.emit(new_cfg)
 
     def _select_variant(self, platform: str, alert_type: str):
         self.active_variant[platform] = alert_type

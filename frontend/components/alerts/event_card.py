@@ -59,6 +59,7 @@ class AlertEventCard(QWidget):
     config_changed = Signal(object)
     save_requested = Signal(object)
     test_requested = Signal(str, str)
+    duplicate_requested = Signal(object)
 
     def minimumSizeHint(self) -> QSize:
         return QSize(0, super().minimumSizeHint().height())
@@ -135,6 +136,16 @@ class AlertEventCard(QWidget):
         self.btn_save.setEnabled(False)
         self.btn_save.clicked.connect(self._save_changes)
 
+        self.btn_duplicate = ModernButton(
+            text=self.i18n.get("alerts.buttons.duplicate"),
+            role="action_outlined",
+            icon_name="copy-duotone.svg",
+            icon_size=13,
+            parent=self
+        )
+        self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
+        self.btn_duplicate.clicked.connect(self._on_duplicate_clicked)
+
         self.btn_test = ModernButton(
             text=self.i18n.get("alerts.buttons.test"),
             role="action_outlined",
@@ -146,6 +157,7 @@ class AlertEventCard(QWidget):
 
         header_row.addWidget(self.btn_discard)
         header_row.addWidget(self.btn_save)
+        header_row.addWidget(self.btn_duplicate)
         header_row.addWidget(self.btn_test)
 
         header_card.addLayout(header_row)
@@ -1019,6 +1031,9 @@ class AlertEventCard(QWidget):
     def _discard_changes(self):
         if self._saved_config:
             self.load_config(self._saved_config)
+
+    def _on_duplicate_clicked(self):
+        self.duplicate_requested.emit(self._current_config)
 
     def _on_test_clicked(self):
         if self._is_dirty:

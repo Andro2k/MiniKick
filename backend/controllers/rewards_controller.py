@@ -45,6 +45,7 @@ class RewardsController(QObject):
     def _connect_signals(self):
         self.view.add_requested.connect(self._handle_add)
         self.view.edit_requested.connect(self._handle_edit)
+        self.view.duplicate_requested.connect(self._handle_duplicate)
         self.view.delete_requested.connect(self._handle_delete)
         self.view.preview_requested.connect(self._handle_preview)
 
@@ -67,9 +68,12 @@ class RewardsController(QObject):
         return "Twitch" if platform.lower() == "twitch" else "Kick"
 
     def _purge_platform_details(self, platform: str) -> None:
+        target = platform.lower()
         keys_to_remove = [
             k for k, v in self.rewards_details_map.items()
-            if isinstance(v, dict) and v.get("platform", "kick") == platform
+            if (isinstance(k, str) and k.startswith(f"{target}:"))
+            or (isinstance(k, str) and k.startswith("id:") and isinstance(v, dict) and v.get("platform", "").lower() == target)
+            or (isinstance(v, dict) and v.get("platform", "kick").lower() == target and not (isinstance(k, str) and ":" in k))
         ]
         for k in keys_to_remove:
             self.rewards_details_map.pop(k, None)
@@ -159,9 +163,17 @@ class RewardsController(QObject):
     def load_initial_data(self):
         if self.view is not None:
             mappings = self.service.get_mappings()
-            for title, conf in mappings.items():
-                if isinstance(conf, dict) and title not in self.rewards_details_map:
-                    self.rewards_details_map[title] = conf
+            for key, conf in mappings.items():
+                if isinstance(conf, dict):
+                    plat = conf.get("platform", "kick").lower()
+                    title = conf.get("name") or conf.get("reward_name") or (key.split(":", 1)[1] if ":" in key else key)
+                    composite_key = f"{plat}:{title}"
+                    if composite_key not in self.rewards_details_map:
+                        self.rewards_details_map[composite_key] = conf
+                    if conf.get("id"):
+                        self.rewards_details_map[f"id:{conf['id']}"] = conf
+                    if title not in self.rewards_details_map:
+                        self.rewards_details_map[title] = conf
             self.view.populate_table(
                 mappings,
                 remote_rewards_map=self.rewards_details_map,
@@ -182,29 +194,47 @@ class RewardsController(QObject):
                         target_platform = item["platform"]
                         break
 
+                target_platform = target_platform.lower()
                 self.remote_loaded[target_platform] = True
                 self._purge_platform_details(target_platform)
-                self.rewards_details_map.update(rewards_map)
+                
+                for title, details in rewards_map.items():
+                    if isinstance(details, dict):
+                        p = details.get("platform", target_platform).lower()
+                        self.rewards_details_map[f"{p}:{title}"] = details
+                        if details.get("id"):
+                            self.rewards_details_map[f"id:{details['id']}"] = details
+                        self.rewards_details_map[title] = details
                 
                 mappings = self.service.get_mappings()
                 updated = False
                 for title, details in rewards_map.items():
-                    if title in mappings and isinstance(mappings[title], dict):
-                        conf = mappings[title]
-                        if conf.get("platform", "kick") == details.get("platform", "kick"):
-                            for field in ("id", "cost", "description", "background_color", "is_user_input_required"):
-                                if field in details and conf.get(field) != details[field]:
-                                    conf[field] = details[field]
-                                    updated = True
+                    plat = details.get("platform", target_platform).lower()
+                    key = f"{plat}:{title}"
+                    conf = mappings.get(key)
+                    if not conf and title in mappings and isinstance(mappings[title], dict):
+                        if mappings[title].get("platform", "kick").lower() == plat:
+                            conf = mappings[title]
+                    if conf and isinstance(conf, dict):
+                        for field in ("id", "cost", "description", "background_color", "is_user_input_required"):
+                            if field in details and conf.get(field) != details[field]:
+                                conf[field] = details[field]
+                                updated = True
                 if updated:
                     self.service.save_mappings(mappings)
 
             seen = set(placeholder_strings)
             self.current_rewards_list = []
-            for r in list(self.rewards_details_map.keys()) + (rewards or []):
-                if r and r not in seen:
+            for r in (rewards or []):
+                if r and r not in seen and not (isinstance(r, str) and (r.startswith("id:") or ":" in r)):
                     seen.add(r)
                     self.current_rewards_list.append(r)
+            for k in self.rewards_details_map.keys():
+                if isinstance(k, str) and (k.startswith("id:") or ":" in k):
+                    continue
+                if k and k not in seen:
+                    seen.add(k)
+                    self.current_rewards_list.append(k)
 
             self.view.update_active_dialog_rewards(self._get_available_rewards(), self.rewards_details_map)
             mappings = self.service.get_mappings()
@@ -216,19 +246,27 @@ class RewardsController(QObject):
             )
 
     def _get_available_rewards(self, ignore_reward=None):
-        mappings = self.service.get_mappings()
-        used_rewards = set(mappings.keys())
         placeholder_strings = self._get_placeholder_strings()
-
         seen = set(placeholder_strings)
+        if ignore_reward:
+            clean_ignore = ignore_reward.split(":", 1)[1] if ":" in ignore_reward else ignore_reward
+            seen.add(clean_ignore)
+            seen.add(ignore_reward)
         all_rewards = []
-        for r in list(self.rewards_details_map.keys()) + self.current_rewards_list:
+        for r in self.current_rewards_list:
+            if isinstance(r, str) and (r.startswith("id:") or ":" in r):
+                continue
+            if r and r not in seen:
+                seen.add(r)
+                all_rewards.append(r)
+        for r in self.rewards_details_map.keys():
+            if isinstance(r, str) and (r.startswith("id:") or ":" in r):
+                continue
             if r and r not in seen:
                 seen.add(r)
                 all_rewards.append(r)
 
-        available = [r for r in all_rewards if r not in used_rewards or r == ignore_reward]
-        return available if available else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")] if self.view else ["No rewards available"]
+        return all_rewards if all_rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")] if self.view else ["No rewards available"]
 
     @Slot()
     def _handle_add(self):
@@ -268,6 +306,13 @@ class RewardsController(QObject):
             del config["new_reward_data"]
         config["is_new_reward"] = False
 
+        plat = platform.lower()
+        details_entry = dict(config)
+        self.rewards_details_map[f"{plat}:{created_title}"] = details_entry
+        if created_id:
+            self.rewards_details_map[f"id:{created_id}"] = details_entry
+        self.rewards_details_map[created_title] = details_entry
+
         self._save_reward_mapping(created_title, config)
         if self.toast:
             plat_label = self._get_platform_label(platform)
@@ -290,11 +335,28 @@ class RewardsController(QObject):
             )
 
     def _save_reward_mapping(self, reward_name: str, config: dict):
+        platform = config.get("platform", "kick")
+        config["name"] = reward_name
+        key = f"{platform}:{reward_name}"
         mappings = self.service.get_mappings()
-        mappings[reward_name] = config
+        mappings[key] = config
         self.service.save_mappings(mappings)
+        
+        plat = platform.lower()
+        if key not in self.rewards_details_map:
+            self.rewards_details_map[key] = config
+        if config.get("id"):
+            self.rewards_details_map[f"id:{config['id']}"] = config
+        if reward_name not in self.rewards_details_map:
+            self.rewards_details_map[reward_name] = config
+
         if self.view:
-            self.view.populate_table(mappings)
+            self.view.populate_table(
+                mappings,
+                remote_rewards_map=self.rewards_details_map,
+                connected_platforms=self._get_connected_platforms(),
+                remote_loaded=self.remote_loaded
+            )
             if self.toast and not config.get("is_new_reward"):
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.created"),
@@ -303,28 +365,77 @@ class RewardsController(QObject):
                 )
 
     @Slot(str)
-    def _handle_edit(self, reward_name: str):
+    def _handle_duplicate(self, reward_name: str):
         mappings = self.service.get_mappings()
-        if reward_name not in mappings:
-            return
-            
-        logger.info("[User Action] Opened Edit Reward dialog: name='%s'", reward_name)
-        available_rewards = self._get_available_rewards(ignore_reward=reward_name)
+        target_key = reward_name
+        if target_key not in mappings:
+            for k, v in mappings.items():
+                if k == reward_name or (isinstance(v, dict) and (v.get("name") == reward_name or v.get("reward_name") == reward_name)):
+                    target_key = k
+                    break
+            if target_key not in mappings:
+                return
+
+        source_config = mappings[target_key]
+        source_name = source_config.get("name") or source_config.get("reward_name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
+        logger.info("[User Action] Opened Duplicate Reward dialog: source='%s'", source_name)
+        available_rewards = self._get_available_rewards()
         kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False
         twitch_auth = self.twitch_auth_manager.is_authenticated() if self.twitch_auth_manager else False
-        res = self.view.show_edit_dialog(available_rewards, mappings[reward_name], reward_name, self.rewards_details_map, kick_authenticated=kick_auth, twitch_authenticated=twitch_auth)
+        res = self.view.show_duplicate_dialog(
+            available_rewards=available_rewards,
+            source_reward=source_name,
+            source_config=source_config,
+            rewards_details_map=self.rewards_details_map,
+            kick_authenticated=kick_auth,
+            twitch_authenticated=twitch_auth
+        )
+        if not res:
+            return
+
+        reward, config = res
+        if not config.get("filepath"):
+            return
+
+        target_platform = config.get("platform", "kick")
+        logger.info("[User Action] Duplicating reward trigger: name='%s', platform=%s, is_new=%s", reward, target_platform, config.get("is_new_reward"))
+
+        if config.get("is_new_reward") and config.get("new_reward_data"):
+            self._dispatch_create_reward_worker(target_platform, config["new_reward_data"], config)
+        else:
+            self._save_reward_mapping(reward, config)
+
+    @Slot(str)
+    def _handle_edit(self, reward_name: str):
+        mappings = self.service.get_mappings()
+        target_key = reward_name
+        if target_key not in mappings:
+            for k, v in mappings.items():
+                if k == reward_name or (isinstance(v, dict) and (v.get("name") == reward_name or v.get("reward_name") == reward_name)):
+                    target_key = k
+                    break
+            if target_key not in mappings:
+                return
+            
+        source_config = mappings[target_key]
+        r_name = source_config.get("name") or source_config.get("reward_name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
+        logger.info("[User Action] Opened Edit Reward dialog: name='%s'", r_name)
+        available_rewards = self._get_available_rewards(ignore_reward=r_name)
+        kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False
+        twitch_auth = self.twitch_auth_manager.is_authenticated() if self.twitch_auth_manager else False
+        res = self.view.show_edit_dialog(available_rewards, source_config, r_name, self.rewards_details_map, kick_authenticated=kick_auth, twitch_authenticated=twitch_auth)
         if res:
             new_reward, updated_config = res
             if updated_config.get("filepath"):
                 reward_id = (
                     updated_config.get("id") or 
-                    mappings.get(reward_name, {}).get("id") or 
-                    self.rewards_details_map.get(reward_name, {}).get("id")
+                    source_config.get("id") or 
+                    self.rewards_details_map.get(r_name, {}).get("id")
                 )
                 if reward_id:
                     updated_config["id"] = reward_id
 
-                target_platform = updated_config.get("platform", mappings.get(reward_name, {}).get("platform", "kick"))
+                target_platform = updated_config.get("platform", source_config.get("platform", "kick"))
                 updated_config["platform"] = target_platform
 
                 if target_platform in ("twitch", "kick") and reward_id:
@@ -338,10 +449,10 @@ class RewardsController(QObject):
                             "background_color": updated_config.get("background_color", default_bg),
                             "is_user_input_required": updated_config.get("is_user_input_required", False)
                         }
-                        self._dispatch_update_reward_worker(target_platform, reward_id, payload, reward_name, new_reward, updated_config)
+                        self._dispatch_update_reward_worker(target_platform, reward_id, payload, target_key, new_reward, updated_config)
                         return
 
-                self._save_edited_mapping(reward_name, new_reward, updated_config)
+                self._save_edited_mapping(target_key, new_reward, updated_config)
 
     def _on_reward_updated_api(self, api_response: dict, old_reward: str, new_reward: str, updated_config: dict):
         updated_title = api_response.get("title", new_reward)
@@ -355,13 +466,14 @@ class RewardsController(QObject):
         updated_config["background_color"] = api_response.get("background_color", updated_config.get("background_color", "#53FC18"))
         updated_config["is_user_input_required"] = api_response.get("is_user_input_required", updated_config.get("is_user_input_required", False))
 
-        if old_reward in self.current_rewards_list:
-            self.current_rewards_list.remove(old_reward)
-        self.current_rewards_list.append(updated_title)
+        plat = platform.lower()
+        clean_old = old_reward.split(":", 1)[1] if ":" in old_reward else old_reward
+        if clean_old in self.current_rewards_list:
+            self.current_rewards_list.remove(clean_old)
+        if updated_title not in self.current_rewards_list:
+            self.current_rewards_list.append(updated_title)
 
-        if old_reward in self.rewards_details_map:
-            del self.rewards_details_map[old_reward]
-        self.rewards_details_map[updated_title] = {
+        details = {
             "id": updated_id,
             "platform": platform,
             "cost": updated_config["cost"],
@@ -369,6 +481,11 @@ class RewardsController(QObject):
             "background_color": updated_config["background_color"],
             "is_user_input_required": updated_config["is_user_input_required"]
         }
+        self.rewards_details_map.pop(f"{plat}:{clean_old}", None)
+        self.rewards_details_map[f"{plat}:{updated_title}"] = details
+        if updated_id:
+            self.rewards_details_map[f"id:{updated_id}"] = details
+        self.rewards_details_map[updated_title] = details
 
         self._save_edited_mapping(old_reward, updated_title, updated_config, show_toast=False)
 
@@ -418,6 +535,10 @@ class RewardsController(QObject):
     def _save_edited_mapping(self, old_reward: str, new_reward: str, updated_config: dict, show_toast: bool = True):
         logger.info("[User Action] Saved edited reward trigger mapping: old='%s', new='%s'", old_reward, new_reward)
         mappings = self.service.get_mappings()
+        target_platform = updated_config.get("platform", "kick")
+        updated_config["name"] = new_reward
+        new_key = f"{target_platform}:{new_reward}"
+
         old_filepath = mappings.get(old_reward, {}).get("filepath", "") if old_reward in mappings else ""
         if updated_config.get("filepath") != old_filepath:
             updated_config.pop("thumbnail_bytes", None)
@@ -425,11 +546,25 @@ class RewardsController(QObject):
             if "thumbnail_bytes" in mappings[old_reward]:
                 updated_config["thumbnail_bytes"] = mappings[old_reward]["thumbnail_bytes"]
 
-        if old_reward in mappings and old_reward != new_reward:
+        if old_reward in mappings and old_reward != new_key:
             del mappings[old_reward]
+        legacy_name = old_reward.split(":", 1)[-1] if ":" in old_reward else old_reward
+        if legacy_name in mappings and legacy_name != new_key:
+            if isinstance(mappings[legacy_name], dict) and mappings[legacy_name].get("platform", "kick") == target_platform:
+                del mappings[legacy_name]
 
-        mappings[new_reward] = updated_config
+        mappings[new_key] = updated_config
         self.service.save_mappings(mappings)
+        
+        plat = target_platform.lower()
+        clean_old = old_reward.split(":", 1)[1] if ":" in old_reward else old_reward
+        details = dict(updated_config)
+        self.rewards_details_map.pop(f"{plat}:{clean_old}", None)
+        self.rewards_details_map[new_key] = details
+        if updated_config.get("id"):
+            self.rewards_details_map[f"id:{updated_config['id']}"] = details
+        self.rewards_details_map[new_reward] = details
+
         if self.view:
             self.view.populate_table(
                 mappings,
@@ -448,14 +583,26 @@ class RewardsController(QObject):
     def _handle_delete(self, reward_name: str):
         logger.info("[User Action] Deleted reward trigger mapping: name='%s'", reward_name)
         mappings = self.service.get_mappings()
-        if reward_name in mappings:
-            del mappings[reward_name]
+        target_key = reward_name
+        if target_key not in mappings:
+            for k, v in mappings.items():
+                if k == reward_name or (isinstance(v, dict) and (v.get("name") == reward_name or v.get("reward_name") == reward_name)):
+                    target_key = k
+                    break
+        if target_key in mappings:
+            r_name = mappings[target_key].get("name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
+            del mappings[target_key]
             self.service.save_mappings(mappings)
-            self.view.populate_table(mappings)
+            self.view.populate_table(
+                mappings,
+                remote_rewards_map=self.rewards_details_map,
+                connected_platforms=self._get_connected_platforms(),
+                remote_loaded=self.remote_loaded
+            )
             if self.toast:
                 self.toast.show_toast(
                     title=self.view.i18n.get("rewards.status.deleted"),
-                    message=(self.view.i18n.get("rewards.status.deleted_msg")).replace("{reward}", reward_name),
+                    message=(self.view.i18n.get("rewards.status.deleted_msg")).replace("{reward}", r_name),
                     state="warning"
                 )
 
@@ -463,8 +610,15 @@ class RewardsController(QObject):
     def _handle_preview(self, reward_name: str):
         logger.info("[User Action] Preview triggered for reward: name='%s'", reward_name)
         mappings = self.service.get_mappings()
-        if reward_name in mappings:
-            config = mappings[reward_name]
+        target_key = reward_name
+        if target_key not in mappings:
+            for k, v in mappings.items():
+                if k == reward_name or (isinstance(v, dict) and (v.get("name") == reward_name or v.get("reward_name") == reward_name)):
+                    target_key = k
+                    break
+        if target_key in mappings:
+            config = mappings[target_key]
+            r_name = config.get("name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
             if not self.service.is_file_valid(config):
                 if self.toast and self.view:
                     self.toast.show_toast(
@@ -473,4 +627,4 @@ class RewardsController(QObject):
                         state="danger"
                     )
                 return
-            self.service.trigger_preview(reward_name, config)
+            self.service.trigger_preview(r_name, config)

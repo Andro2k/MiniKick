@@ -15,6 +15,7 @@ from .commands_dialog import CommandConfigWizard
 from .piper_dialog import PiperVoicesDialog
 from .youtube_dialog import YouTubeConnectDialog
 from .tiktok_dialog import TikTokConnectDialog
+from .duplicate_alert_dialog import DuplicateAlertModal
 
 __all__ = [
     "ModernFramelessShell",
@@ -34,5 +35,6 @@ __all__ = [
     "CommandConfigWizard",
     "PiperVoicesDialog",
     "YouTubeConnectDialog",
-    "TikTokConnectDialog"
+    "TikTokConnectDialog",
+    "DuplicateAlertModal"
 ]

@@ -976,9 +976,8 @@ class MainWindowCore(QMainWindow):
         if self.view_chat is not None:
             self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True, platform=platform)
         
-        mappings = self.rewards_service.get_mappings()
-        config = mappings.get(reward_name)
-        if config and config.get("platform", "kick") == platform:
+        config = self.rewards_service.get_reward_config(reward_name, platform=platform)
+        if config:
             if self.rewards_service.is_file_valid(config):
                 self.rewards_service.trigger_preview(reward_name, config)
                 self.rewards_service.log_redemption(reward_name, user, platform=platform)
