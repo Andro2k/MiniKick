@@ -32,9 +32,24 @@ DEFAULT_DICTIONARY = {
         "buttons": {
             "browse": "Browse...",
             "discard": "Discard",
+            "duplicate": "Duplicate to another alert",
+            "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
             "save": "Save Changes",
             "test": "Test Alert",
             "test_sent": "Test alert sent to OBS."
+        },
+        "dialogs": {
+            "duplicate": {
+                "btn_cancel": "Cancel",
+                "btn_confirm": "Duplicate Configuration",
+                "desc": "Copies the visual styling, colors, animations, typography and media from this alert to another event.",
+                "include_media": "Also copy media and sound files",
+                "include_template": "Also copy message template text",
+                "source_label": "Source alert:",
+                "target_all": "All other Twitch events",
+                "target_label": "Select destination event(s):",
+                "title": "Duplicate Alert Configuration"
+            }
         },
         "events": {
             "cheer": "Bits / Cheers (Twitch)",
@@ -1026,6 +1041,7 @@ DEFAULT_DICTIONARY = {
                 "step1": {
                     "color_pick_tooltip": "Select background color",
                     "desc": "Select the channel points reward that will trigger this visual or sound effect.",
+                    "duplicate_title_suffix": " (Copy)",
                     "edit_offline_warning": "This platform is not connected. Changes will only apply to the local alert.",
                     "edit_title_label": "Reward Name",
                     "file_label": "Media File",
@@ -1124,6 +1140,7 @@ DEFAULT_DICTIONARY = {
             "status_unlinked_tooltip": "This reward was deleted or does not exist on {platform}",
             "title": "Linked Rewards",
             "tooltip_delete": "Delete Reward",
+            "tooltip_duplicate": "Duplicate Reward (other platform or new)",
             "tooltip_edit": "Modify settings",
             "tooltip_play": "Test in OBS",
             "tooltip_play_missing": "Cannot play: media file not found",
@@ -1143,8 +1160,20 @@ DEFAULT_DICTIONARY = {
             "title": "Configuration Backup"
         },
         "dialogs": {
-            "export_title": "Export Configuration",
-            "import_title": "Import Configuration"
+            "export_title": "Exportar Configuración",
+            "import_modal": {
+                "btn_cancel": "Cancel",
+                "btn_confirm": "Restore Selection",
+                "btn_deselect_all": "Deselect All",
+                "btn_select_all": "Select All",
+                "desc": "Select the configuration sections you wish to restore from this backup.",
+                "element_suffix": "item",
+                "elements_suffix": "items",
+                "metadata_date": "Exported on:",
+                "metadata_version": "Version:",
+                "title": "Restore Backup Copy"
+            },
+            "import_title": "Importar Configuración"
         },
         "feedback": {
             "desc": "Found an issue or have suggestions? Send us a direct report.",
