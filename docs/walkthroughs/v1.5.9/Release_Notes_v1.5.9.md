@@ -1,74 +1,64 @@
-# Notas de la Versión - MiniKick v1.5.9
+# Release Notes - MiniKick Version 1.5.9
 
-## Resumen de Cambios
-Esta versión introduce mejoras y correcciones críticas en las herramientas de desarrollo y auditoría del sistema de diseño QSS, asegurando la sincronización estricta entre los selectores de estilo y el código frontend.
+**12 de Septiembre, 2026**
 
----
+## Suite de Alertas Granular, Duplicación Cross-Platform, Overlays Zero-Latency, Nuevos Widgets y Restauración Selectiva
 
-### Herramientas de Auditoría y Calidad (`resources/tools/`)
-- **Calibración de `role_manager.py` ([WT-1.5.9_01](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_01.md))**:
-  - Detección precisa de roles y estados QSS huérfanos/sin uso definidos en [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py).
-  - Trazabilidad y reporte exacto del número de línea donde se encuentra definido cada selector no utilizado (por ejemplo, `QFrame[role="searchable_combo_divider"]` en línea 314).
-  - Motor de inspección AST mejorado para capturar ternarios condicionales, argumentos específicos (`btn_role`, `icon_role`, `button_role`) y llamadas a helpers de estado sin falsos positivos.
-  - Nuevas opciones CLI: `--unused`, `--missing` y `--strict` (retorno de código de salida 1 ante selectores huérfanos).
-- **Calibración y Auditoría de Iconos en `icon_manager.py` ([WT-1.5.9_03](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_03.md))**:
-  - Corrección de la detección de iconos huérfanos (como `message.svg`) aislando el escaneo al código fuente de producción (`frontend/`, `backend/`, `main.py`) para evitar contaminación por tests unitarios.
-  - Extractor AST (`IconASTVisitor`) que descarta docstrings de módulos/funciones y fragmentos constantes de f-strings dinámicas (`JoinedStr`), eliminando falsos positivos.
-  - Incorporación de opciones CLI completas (`--audit`, `--unused`, `--missing`, `--report`, `--clean`, `--force`, `--json`, `--strict`, `--include-tests`).
-  - Limpieza segura de iconos sin uso con reporte de peso recuperable y confirmación interactiva.
+> [!NOTE]
+> MiniKick v1.5.9 representa una de las actualizaciones evolutivas más extensas del proyecto. Introduce un sistema de restauración selectiva de respaldos con inspección instantánea, una suite remodelada de personalización granular de alertas con 14 animaciones y layout simétrico de 3 columnas, duplicación cross-platform de recompensas y alertas, modernización del overlay de chat con insignias en Base64 a 0 ms de latencia y Prime Gaming, nuevos widgets de OBS para espectadores activos y reloj, control de música con scrubber interactivo, comandos en vivo de moderación de voz, y la estandarización canónica del 100% de la arquitectura del código.
 
 ---
 
-### Configuración del Sistema y Autenticación (`frontend/views/` & `backend/services/`)
-- **Selector de Navegador Web para OAuth y Enlaces ([WT-1.5.9_02](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_02.md))**:
-  - Nueva opción en [`SettingsView`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/settings_view.py) para elegir el navegador utilizado en inicios de sesión OAuth (Kick y Twitch), previsualización de overlays y enlaces externos.
-  - Detección automática en Windows mediante el registro (`winreg`) y escaneo de rutas de navegadores estándar (Google Chrome, Microsoft Edge, Mozilla Firefox, Brave, Opera, Opera GX, Vivaldi).
-  - Selector manual con botón de exploración rápida para elegir cualquier ejecutable personalizado (`.exe`).
-  - Servicio desacoplado [`BrowserService`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/browser_service.py) con memoización $\mathcal{O}(1)$ y mecanismo tolerante a fallos que recurre automáticamente al navegador del sistema ante cualquier error o ruta faltante.
+### Novedades (14)
+
+- **[FEATURE] [BACKUP] Diálogo Interactivo de Restauración Selectiva de Respaldos:** Permite seleccionar de forma granular qué secciones restaurar (Ajustes, Alertas, Recompensas, Comandos, Filtros Anti-Spam, Temporizadores, Horarios y Widgets) mediante una ventana modal interactiva con recuento de elementos, botones de selección rápida y verificación previa en tiempo constante sin sobreescribir datos innecesariamente.
+- **[FEATURE] [ALERTS] Biblioteca de Animaciones de Entrada y Salida Independientes:** 7 animaciones de inicio y 7 de cierre (desvanecidos, desplazamientos laterales y verticales, zoom y rebotes elásticos) con configuración de duración en segundos ajustable de forma independiente para cada alerta y sincronización precisa con OBS Studio.
+- **[FEATURE] [ALERTS] Control Visual Granular y Tipografía Avanzada de Contenedor:** Ajustes de dimensiones de contenedor (ancho y alto personalizables o automático), radio de esquinas redondeadas, relleno interior, separación entre elementos, sombra profunda de caja, alineación de texto de 4 modos, peso tipográfico de 4 niveles (Normal, Seminegrita, Negrita, Extra negrita) y sombra de texto para garantizar contraste sobre cualquier fondo de directo.
+- **[FEATURE] [ALERTS] Barra de Variantes de Alerta y Layout Simétrico de 3 Columnas:** Navegación por pestañas tipo píldora con scroll horizontal para alternar y conmutar el estado activo de cada evento rápidamente. Organización de la interfaz en tres columnas perfectamente emparejadas (Ajustes de Contenedor, Previsualización expandida al centro y Ajustes de Tipografía/Multimedia) con adaptación automática a diseño vertical en resoluciones inferiores a 1280 px.
+- **[FEATURE] [ALERTS] Duplicación Rápida de Configuraciones de Alerta:** Botón de duplicar que permite clonar instantáneamente todos los estilos visuales, colores, animaciones, tipografía y multimedia de un evento hacia otro o propagarlos hacia todas las demás alertas en un solo clic.
+- **[FEATURE] [REWARDS] Duplicación Cross-Platform de Recompensas de Puntos:** Asistente de duplicación que precarga multimedia, costos, volumen y colores de una recompensa existente con sugerencia inteligente para clonarla directamente en la plataforma opuesta (Kick hacia Twitch o viceversa) o en la misma plataforma con sufijo automático.
+- **[FEATURE] [REWARDS] Soporte Multiplataforma para Recompensas con el Mismo Nombre:** Posibilidad de crear y gestionar simultáneamente recompensas homónimas en Kick y Twitch de forma totalmente independiente, aislando sus configuraciones mediante claves compuestas para que ninguna acción en una plataforma altere a la otra.
+- **[FEATURE] [CHAT] Insignias Oficiales Zero-Latency y Soporte de Prime Gaming:** Integración de insignias oficiales de Twitch y Kick en Base64 de alta resolución garantizando 0 ms de latencia y eliminando imágenes rotas, incorporando la corona oficial de Prime Gaming, los 99 niveles oficiales de Kick y soporte para emoticonos gigantes (Bigmoji).
+- **[FEATURE] [CHAT] Desvanecimiento Suave (Edge Fade) y Contraste Dinámico de Nombres:** Efecto de máscara de degradado en los bordes del chat para disolver los mensajes de forma cinematográfica en OBS, junto con un algoritmo de corrección automática de luminosidad que garantiza legibilidad de nombres oscuros sobre fondos oscuros.
+- **[FEATURE] [WIDGETS] Nuevos Widgets para OBS (Live Top Chatters y Reloj/Fecha):** Nuevo widget en vivo para reconocer a los espectadores más activos del chat en pantalla y nuevo widget configurable de hora y fecha actual, ambos construidos con iconografía vectorial SVG y estética de cristal minimalista.
+- **[FEATURE] [MUSIC] Barra de Progreso Deslizante Interactiva (Scrubber) y Búsqueda Seek:** Capacidad de saltar a cualquier punto de la reproducción de canciones de YouTube o música local en tiempo real arrastrando la barra de progreso en el reproductor.
+- **[FEATURE] [TTS] Comandos de Moderación en Chat y Control por Plataforma:** Comandos de moderación en tiempo real (!ttsmute y !ttsblock) ejecutables desde el chat de transmisión, acompañados de switches individuales en la interfaz para activar o silenciar la voz sintetizada por plataforma de forma independiente.
+- **[FEATURE] [SYSTEM] Selector de Navegador Web para Autenticación y Enlaces:** Selector dedicado con detección automática de navegadores instalados en el sistema (Chrome, Edge, Firefox, Brave, Opera, Vivaldi) o selección de ejecutable personalizado para flujos de inicio de sesión OAuth y apertura de previsualizaciones.
+- **[FEATURE] [INTEGRATIONS] Integración Estable de TikTok Live Chat sin Navegador Embebido:** Conexión directa y fluida mediante WebSocket autenticado con firma dedicada, permitiendo recibir eventos de chat en vivo con avatares y roles sin necesidad de ventanas de navegador embebidas ni resolución manual de captchas.
 
 ---
 
-### Integraciones de Streaming & Chat (`backend/providers/` & `backend/config/`)
-- **Estabilización de TikTok Live Chat vía EulerStream ([WT-1.5.9_05](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_05.md))**:
-  - Corrección definitiva del error `InvalidStatusCode: server rejected WebSocket connection: HTTP 400` reportado al intentar conectar salas de TikTok Live.
-  - Integración de firma autenticada y dedicada mediante `SIGN_API_KEY` en [`backend/config/api_keys.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/config/api_keys.py) y [`TikTokChatProvider`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/tiktok_chat_provider.py).
-  - Soporte de sobrescritura de clave vía variable de entorno o archivo `.env` (`python-dotenv` cargado en [`main.py`](file:///c:/Users/TheAn/Desktop/python/Kick/main.py)).
-  - Recepción fluida en tiempo real de eventos de chat estructurados (con usuario, avatar, comentario y roles) sin navegadores embebidos ni captchas visuales.
+### Mejoras (11)
+
+- **[IMPROVEMENT] [ARCHITECTURE] Estandarización Canónica del 100% de la Base de Código:** Auditoría y normalización integral de los 179 archivos del proyecto bajo convenciones canónicas estrictas en todas las capas (interfaces, manejadores, proveedores, servicios, diálogos y vistas), eliminando redundancias léxicas y dependencias circulares.
+- **[IMPROVEMENT] [UI] Erradicación Total de Estilos Inline en Favor del Tema Nativo:** Reemplazo de estilos CSS manuales en componentes por selectores de roles y estados centralizados, asegurando coherencia visual global y mantenimiento simplificado.
+- **[IMPROVEMENT] [UI] Optimización de Altura y Espaciado en Tablas del Sistema:** Incremento de la altura estándar de filas a 42 px y optimización del relleno interior a 2px vertical, otorgando holgura completa a caracteres tipográficos con trazos descendentes (como las letras p, g, j, q, y) en las 6 tablas de la aplicación (Comandos, Recompensas, Temporizadores, Logs, Horarios y Cola de Música).
+- **[IMPROVEMENT] [REWARDS] Ordenamiento Alfabético Predeterminado:** La tabla de recompensas vinculadas se organiza automáticamente de forma alfabética de la A a la Z al cargar o actualizar datos, mejorando la localización visual de elementos.
+- **[IMPROVEMENT] [ALERTS] Fidelidad Geométrica 1:1 en Previsualización:** Cálculo proporcional exacto en el lienzo de vista previa que reproduce fielmente relaciones de aspecto cuadradas y rectangulares, manteniendo centrado el contenido textual y multimedia tal como se emitirá en OBS Studio.
+- **[IMPROVEMENT] [CHAT] Modularización y Optimización de Peso del Overlay de Chat:** Desacoplamiento de la lógica del chat web y reducción de peso de 238 KB a 14.8 KB con soporte de recarga automática en caliente por fecha de modificación de archivo.
+- **[IMPROVEMENT] [WIDGETS] Sustitución de Emojis por Iconografía Vectorial SVG:** Estandarización visual de todos los overlays de widgets de OBS sustituyendo emojis dependientes del sistema operativo por iconos vectoriales nítidos de alta definición.
+- **[IMPROVEMENT] [WIDGETS] Reconciliación REST y Resolución de Empates en Encuestas:** Algoritmo concurrente para sincronización de encuestas en vivo y resolución equitativa en caso de empate de votos.
+- **[IMPROVEMENT] [DATABASE] Esquema Relacional Compuesto y Migraciones No Destructivas:** Clave primaria compuesta por nombre y plataforma en tablas de recompensas con actualización de esquema automática que preserva íntegramente el historial de redenciones previas.
+- **[IMPROVEMENT] [I18N] Consolidación de Claves de Copiado de Enlaces:** Unificación de todas las acciones de copiado de URLs para overlays bajo una única clave común en español e inglés, reduciendo la memoria del árbol de localización.
+- **[IMPROVEMENT] [QUALITY] Herramientas de Auditoría y Calidad de Código:** Calibración de herramientas de análisis sintáctico para detección estricta de selectores QSS huérfanos, iconos sin uso y paridad completa de cadenas de idioma en archivos JSON.
+
 ---
 
-### Arquitectura y Estandarización de Código (`backend/interfaces/`, `backend/handlers/`, `backend/providers/` & `docs/`)
-- **Estandarización de Nombres de Archivos y Capa de Interfaces ([WT-1.5.9_06](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_06.md))**:
-  - Auditoría integral de los 179 archivos `.py` del proyecto documentada en [`docs/Correcciones.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/Correcciones.md) con tablero de control y justificación técnica para cada archivo.
-  - Ejecución de la Fase 1 del plan de migración: estandarización completa de los 10 archivos de `backend/interfaces/` bajo la convención unificada `i_{dominio}.py` (`i_alerts.py`, `i_auth.py`, `i_browser.py`, `i_chat_provider.py`, `i_chat_service.py`, `i_instance.py`, `i_music_provider.py`, `i_settings.py`, `i_tts.py`, `i_updater.py`).
-- **Estandarización de Handlers y Providers ([WT-1.5.9_07](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_07.md))**:
-  - Ejecución de la Fase 2 del plan de migración: estandarización de 14 archivos en `backend/handlers/` y `backend/providers/` (chat, music y voices).
-  - Normalización a `{domain}_handler.py` (`spam_handler.py`, `logs_handler.py`, `music_handler.py`, `tts_handler.py`) eliminando redundancias léxicas.
-  - Normalización a `{platform}_provider.py` (`kick_provider.py`, `twitch_provider.py`, `tiktok_provider.py`, `youtube_provider.py`, `local_provider.py`, `online_provider.py`, `piper_provider.py`).
-  - Actualización sincronizada de 21 archivos de tests y servicios, logrando 153 tests unitarios pasando exitosamente.
-- **Estandarización Integral del Backend ([WT-1.5.9_08](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_08.md))**:
-  - Ejecución de la Fase 3 del plan de migración: estandarización de 18 archivos restantes en `backend/services/`, `backend/workers/`, `backend/database/`, `backend/models/` y `backend/config/`.
-  - Normalización canónica de servicios (`commands_service.py`, `timers_service.py`, `chat_pipeline.py`, `piper_manager.py`, `overlay_ws_client.py`, `instance_service.py`, `logs_service.py`, `widgets_service.py`, `auth_service.py`, `alerts_queue.py`, `alerts_service.py`).
-  - Normalización de workers (`twitch_rewards_worker.py`, `updater_worker.py`), storage (`alerts_storage.py`, `logs_storage.py`, `tokens_storage.py`), modelos (`alerts_models.py`) y configuración (`locale_defaults.py`).
-- **Estandarización Integral del Frontend & Reubicación Arquitectónica ([WT-1.5.9_09](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_09.md))**:
-  - Ejecución de las Fases 4 y 5 del plan de migración: estandarización de 18 archivos en `frontend/` (dialogs, views, components y widgets).
-  - Renombre de diálogos modales a `{domain}_dialog.py` (`commands_dialog.py`, `message_dialog.py`, `piper_dialog.py`, `platform_dialog.py`, `tiktok_dialog.py`, `timers_dialog.py`, `updater_dialog.py`, `positioner_dialog.py`, `youtube_dialog.py`).
-  - Renombre de vistas (`commands_view.py`, `logs_view.py`) y componentes (`widget_card.py`, `logs_controls.py`).
-  - Reubicación arquitectónica de `base_view.py` desde `frontend/widgets/` a `frontend/views/base_view.py`, resolviendo la clasificación errónea de la clase base de vistas.
-  - Renombre de primitivas de widgets a `{name}_widget.py` (`block_widget.py`, `controls_widget.py`, `pagination_widget.py`, `table_widget.py`).
-  - Resolución limpia de ciclos de importación mediante PEP 562 (`__getattr__`) en `frontend/widgets/__init__.py`.
-  - Hito final alcanzado: **179 de 179 archivos del proyecto (100%) cumplen rigurosamente la convención de arquitectura**.
-  - **Personalización Avanzada de Chat Overlay ([WT-1.5.9_22](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_22.md))**:
-  - Selector de Estilo de Insignias (`badge_style=official|generic`) con soporte para insignias genéricas unificadas e insignias auténticas de Kick con sus 99 niveles.
-  - Efecto Edge Fade con máscara de gradiente nativa para un desvanecimiento suave en los bordes del chat.
-  - Rediseño del tema Tagged Card con cabecera en pestaña superpuesta y borde coloreado dinámicamente por usuario (`user_border_color`).
-  - Animaciones de entrada configurables (`fade`, `slide`, `pop`) aceleradas por GPU.
-- **Modularización del Chat Overlay, Prime Gaming & Insignias Twitch Zero-Latency ([WT-1.5.9_23](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.5.9/WT-1.5.9_23.md))**:
-  - Desacoplamiento de `chat.html` (reducido de 238 KB a 14.8 KB) en `js/badges.js` y `js/chat.js`.
-  - Integración completa de insignias oficiales de Twitch en Base64 de alta resolución (`data:image/png;base64,...`) para garantizar **0ms de latencia y cero imágenes rotas**.
-  - Soporte nativo para la insignia de **Prime Gaming** (`premium` / `prime`) con la corona oficial en alta fidelidad gráfica.
-  - Normalización de alias canónicos para Twitch: `mod`, `sub`, `prime`, `premium`, `broadcaster`, `vip`, `founder`, `turbo`, `partner`, `verified` y `twitchbot`.
-  - Algoritmo $\mathcal{O}(1)$ de corrección inteligente de contraste para nombres oscuros sobre fondos oscuros (`ensureReadableColor`).
-  - Soporte de mensajes de acción (`/me`) en cursiva y mensajes destacados (`highlighted`).
-  - Retiro de opciones redundantes (`badge_style` y `user_border_color`), delegando el borde con color de usuario de forma exclusiva y nativa al tema Neón.
-  - Hot-reloading automático en `overlay_routes.py` con validación de `mtime` y bypass de token para recursos `/js/` y `/css/`.
+### Correcciones (10)
 
+- **[FIX] [DATABASE] Corrección de Conflicto de Clave Foránea en Recompensas:** Eliminación del error de coincidencia de claves foráneas en SQLite que impedía guardar o eliminar configuraciones de recompensas y provocaba reversión de cambios al recargar.
+- **[FIX] [REWARDS] Corrección de Falso Estado de Recompensa Desvinculada:** Resuelto el problema donde recompensas homónimas entre Twitch y Kick se sobreescribían en memoria y se mostraban incorrectamente como desvinculadas en la tabla.
+- **[FIX] [ALERTS] Corrección de Imagen Velada y Fondo Lechoso en Alertas:** Supresión de filtros de desenfoque y opacidades indebidas en diseños superpuestos, permitiendo fondos 100% transparentes sin halos grisáceos sobre la transmisión.
+- **[FIX] [ALERTS] Corrección de Desbordamiento Multimedia y Recorte de Formas:** Contención del elemento multimedia dentro de los límites de la tarjeta de alerta y reemplazo de recortes circulares forzados por bordes rectangulares redondeados elegantes.
+- **[FIX] [ALERTS] Sincronización de Duración en Despedida de Alertas:** Cálculo dinámico de la animación de salida en el overlay web respetando los segundos exactos configurados antes de la remoción del elemento.
+- **[FIX] [ALERTS] Especialización Exclusiva de Alertas para Twitch:** Eliminación limpia de alertas no oficiales de Kick para concentrar el módulo en webhooks 100% oficiales y estables.
+- **[FIX] [UI] Corrección de Letras Cortadas en Disparadores de Comandos:** Ajuste de márgenes verticales y alineación en celdas de tabla para evitar el truncamiento del trazo inferior en comandos como !explosion.
+- **[FIX] [THREADS] Blindaje de Hilos Secundarios en Moderación y Pruebas:** Prevención de cierres inesperados y excepciones de acceso en tareas en segundo plano mediante desconexión preventiva de señales y cierre coordinado de hilos.
+- **[FIX] [AUDIO] Supresión de Advertencias Nativas de FFmpeg:** Silenciamiento de advertencias de consola no críticas durante la reproducción y salto de pistas de audio.
+- **[FIX] [TIKTOK] Resolución de Rechazo WebSocket HTTP 400:** Corrección de la cabecera y firma de conexión en el cliente de chat de TikTok Live garantizando enlace permanente.
+
+---
+
+> [!IMPORTANT]
+> **Notas de Actualización:**
+> La versión 1.5.9 mantiene compatibilidad total con bases de datos existentes mediante migraciones automáticas al iniciar, preserva todas las configuraciones previas e incorpora el nuevo diálogo de importación selectiva para mayor seguridad al restaurar copias de seguridad.
