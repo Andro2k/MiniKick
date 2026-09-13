@@ -52,7 +52,7 @@ class AlertsOverlayCard(ModernCard):
         self.url_actions_layout.setSpacing(SPACING_MD)
 
         self.btn_copy_url = ModernButton(
-            text=self.i18n.get("alerts.overlay_card.copy_btn"),
+            text=self.i18n.get("common.buttons.copy"),
             role="action_accent",
             icon_name="copy-duotone.svg",
             icon_size=15,

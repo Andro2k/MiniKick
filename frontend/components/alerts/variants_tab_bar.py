@@ -88,7 +88,7 @@ class AlertVariantTabPill(QFrame):
             self.lbl_title.setProperty("state", "white")
             self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, accent, size=16))
         else:
-            self.setProperty("state", "default")
+            self.setProperty("state", "normal")
             self.lbl_title.setProperty("state", "normal")
             self.icon_lbl.setPixmap(get_pixmap_colored(self.icon_name, COLOR_NEUTRAL_400, size=16))
 

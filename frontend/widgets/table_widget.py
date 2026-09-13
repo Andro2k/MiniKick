@@ -18,7 +18,7 @@ class ModernTable(QTableWidget):
         super().__init__(0, len(headers), parent)
         self.setHorizontalHeaderLabels(headers)     
         self.verticalHeader().setVisible(False)
-        self.verticalHeader().setDefaultSectionSize(38)
+        self.verticalHeader().setDefaultSectionSize(42)
         self.setShowGrid(False)
         self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)

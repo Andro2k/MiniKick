@@ -47,10 +47,10 @@ class AlertOverlayMockupWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
 
     def sizeHint(self) -> QSize:
-        return QSize(340, 340)
+        return QSize(440, 440)
 
     def minimumSizeHint(self) -> QSize:
-        return QSize(180, 180)
+        return QSize(220, 220)
 
     def set_configuration(
         self,

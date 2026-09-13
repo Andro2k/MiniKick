@@ -642,6 +642,7 @@ class AlertEventCard(QWidget):
         col_right.addWidget(card_media)
 
         card_preview = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
+        card_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         sec_prev_header = QHBoxLayout()
         sec_prev_header.setSpacing(SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
@@ -656,10 +657,9 @@ class AlertEventCard(QWidget):
         card_preview.addWidget(ModernDivider(self))
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
-        self.mockup_widget.setMinimumSize(280, 280)
-        self.mockup_widget.setMaximumSize(600, 600)
+        self.mockup_widget.setMinimumSize(300, 300)
         self.mockup_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        card_preview.addWidget(self.mockup_widget, alignment=Qt.AlignmentFlag.AlignHCenter)
+        card_preview.addWidget(self.mockup_widget, stretch=1)
 
         card_preview.addWidget(ModernDivider(self))
 
@@ -693,7 +693,6 @@ class AlertEventCard(QWidget):
             tooltip=self.i18n.get("alerts.fields.card_height_desc"),
             parent=self
         ))
-        card_preview.addStretch(1)
 
         self.w_preview = card_preview
 
@@ -702,7 +701,7 @@ class AlertEventCard(QWidget):
         self.body_box.setSpacing(SPACING_LG)
 
         self.body_box.addWidget(self.w_col_left, stretch=4)
-        self.body_box.addWidget(self.w_preview, stretch=4, alignment=Qt.AlignmentFlag.AlignTop)
+        self.body_box.addWidget(self.w_preview, stretch=5)
         self.body_box.addWidget(self.w_col_right, stretch=4)
         main_layout.addLayout(self.body_box)
 
@@ -1071,5 +1070,5 @@ class AlertEventCard(QWidget):
                 self.body_box.addWidget(self.w_col_right, 0)
             else:
                 self.body_box.addWidget(self.w_col_left, 4)
-                self.body_box.addWidget(self.w_preview, 5, alignment=Qt.AlignmentFlag.AlignTop)
+                self.body_box.addWidget(self.w_preview, 5)
                 self.body_box.addWidget(self.w_col_right, 4)

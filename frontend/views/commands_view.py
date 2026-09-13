@@ -7,7 +7,7 @@ from frontend.widgets import (
 )
 from frontend.common import (
     COLOR_RED, COLOR_GREEN,
-    MARGIN_MD, MARGIN_H_MD, SPACING_MD
+    MARGIN_H_MD, SPACING_MD
 )
 
 class CommandView(BaseView):
@@ -194,7 +194,8 @@ class CommandView(BaseView):
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(*MARGIN_MD)
+        layout.setContentsMargins(*MARGIN_H_MD)
+        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         lbl_trigger = QLabel(cmd_data["trigger"])
         lbl_trigger.setProperty("role", "body")
         layout.addWidget(lbl_trigger)

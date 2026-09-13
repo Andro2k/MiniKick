@@ -54,7 +54,7 @@ class MainWindowCore(QMainWindow):
     SETTING_AUTOSTART = "dashboard_autostart"
 
     _NAV_CONFIG = (
-        ("Dashboard", "dashboard.svg", "top"),
+        ("Dashboard", "circle-graph-duotone.svg", "top"),
         ("Chat", "dialog-duotone.svg", "top"),
         ("Stream Info", "calendar-duotone.svg", "top"),
         ("Spam Filters", "shield-duotone.svg", "top"),

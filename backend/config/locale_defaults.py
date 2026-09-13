@@ -4,8 +4,30 @@ DEFAULT_DICTIONARY = {
     "alerts": {
         "align": {
             "center": "Center",
+            "justify": "Justify",
             "left": "Left",
             "right": "Right"
+        },
+        "animations": {
+            "bounce_in": "Bounce in",
+            "bounce_out": "Bounce out",
+            "fade_in": "Fade in",
+            "fade_out": "Fade out",
+            "in_duration": "In Duration (s)",
+            "in_label": "Entrance Animation",
+            "out_duration": "Out Duration (s)",
+            "out_label": "Exit Animation",
+            "slide_down": "Slide down",
+            "slide_down_out": "Slide down",
+            "slide_left": "Slide from right",
+            "slide_left_out": "Slide to left",
+            "slide_right": "Slide from left",
+            "slide_right_out": "Slide to right",
+            "slide_up": "Slide up",
+            "slide_up_out": "Slide up",
+            "title": "Animations (In seconds)",
+            "zoom_in": "Zoom in",
+            "zoom_out": "Zoom out"
         },
         "buttons": {
             "browse": "Browse...",
@@ -30,40 +52,62 @@ DEFAULT_DICTIONARY = {
         },
         "fields": {
             "active": "Alert Enabled",
-            "duration": "Duration (seconds)",
+            "auto": "Auto",
+            "bg_color": "Background",
+            "bg_color_desc": "Background color for the alert card.",
+            "bg_opacity": "Opacity (percent)",
+            "bg_opacity_desc": "Background opacity percentage.",
+            "border_radius": "Rounded corners (px)",
+            "border_radius_desc": "Corner border radius in pixels.",
+            "box_shadow": "Shadow",
+            "box_shadow_desc": "Box shadow to elevate the alert container.",
+            "card_height": "Container Height (px)",
+            "card_height_desc": "Card height or 'Auto' to adjust to content.",
+            "card_width": "Container Width (px)",
+            "card_width_desc": "Total alert card width in pixels.",
+            "duration": "Duration (In seconds, max 99)",
             "duration_desc": "Time in seconds the alert is displayed on screen.",
-            "font_family": "Typography / Font",
+            "font_family": "Font",
             "font_family_desc": "Font family for the alert text.",
-            "font_size": "Font Size",
+            "font_size": "Font Size (px)",
             "font_size_desc": "Font size in pixels for the alert text.",
-            "highlight_color": "Highlight Color",
-            "highlight_color_desc": "Highlight color for the username.",
+            "font_weight": "Font Weight",
+            "font_weight_desc": "Font weight applied to text.",
+            "highlight_color": "Accent color",
+            "highlight_color_desc": "Accent color for username and amounts.",
             "media": "Media or HTML",
             "media_filter": "Media & Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Media Files (*.png *.gif *.webp *.mp4 *.webm);;All Files (*.*)",
             "media_placeholder": "Path to .png, .gif, .mp4, .webm, or .html file",
+            "padding": "Padding (px)",
+            "padding_desc": "Internal padding around content.",
             "sound": "Alert Sound",
             "sound_placeholder": "Path to .mp3, .wav, or .ogg file",
-            "template": "Text Template",
+            "spacing": "Spacing (px)",
+            "spacing_desc": "Pixel gap between media and text.",
+            "template": "Message",
             "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
-            "text_align": "Text Alignment",
+            "text_align": "Text layout",
             "text_align_desc": "Horizontal text alignment within the layout.",
-            "text_color": "Text Color",
+            "text_color": "Text color",
             "text_color_desc": "Main text color for alert messages.",
-            "tts": "Read alert with TTS voice",
+            "text_shadow": "Text shadow",
+            "text_shadow_desc": "Outer text shadow for enhanced readability.",
+            "tts": "Play alert text (TTS)",
+            "tts_section": "Message speech",
             "volume": "Volume"
         },
         "header": {
-            "subtitle": "Configure and customize your stream alerts for OBS on Kick and Twitch.",
+            "subtitle": "Configure and customize your stream alerts for OBS on Twitch.",
             "title": "Live Alerts"
         },
         "layout": {
-            "above": "Image Above (Centered)",
+            "above": "Image Above",
             "below": "Image Below",
             "desc": "Choose the visual arrangement between media and text.",
             "overlay": "Text Overlay",
             "side": "Image Left",
             "side_right": "Image Right",
-            "title": "Layout"
+            "title": "Design"
         },
         "notice": {
             "connect_btn": "Link {platform}",
@@ -73,7 +117,6 @@ DEFAULT_DICTIONARY = {
         "overlay_card": {
             "copied_msg": "The alerts overlay URL was copied to the clipboard.",
             "copied_title": "URL Copied",
-            "copy_btn": "Copy URL",
             "desc": "Add this URL as a 'Browser Source' in OBS (1920x1080 with transparent background).",
             "open_btn": "Preview Overlay",
             "title": "OBS Overlay URL"
@@ -86,12 +129,14 @@ DEFAULT_DICTIONARY = {
             "sample_amount": "500",
             "sample_template": "{user} just followed!",
             "sample_tier": "1",
-            "sample_user": "TheAndro2K",
+            "sample_user": "Jax",
             "title": "Alert Preview"
         },
         "sections": {
-            "appearance": "Layout & Appearance",
-            "general": "General Settings"
+            "appearance": "Design",
+            "general": "General settings",
+            "media_sound": "Media and sound",
+            "text_speech": "Text and speech"
         },
         "sidebar": {
             "title": "Alert Variants"
@@ -107,13 +152,11 @@ DEFAULT_DICTIONARY = {
             "saved_title": "Alert Saved",
             "unsaved": "Unsaved changes"
         },
-        "style": {
-            "compact": "Compact",
-            "desc": "Visual style of the alert container and frame.",
-            "glass": "Glassmorphism",
-            "minimal": "Minimalist",
-            "sticker": "Sticker / Transparent",
-            "title": "Style"
+        "weights": {
+            "bold": "Bold",
+            "extra_bold": "Extra bold",
+            "normal": "Normal",
+            "semi_bold": "Semi-bold"
         }
     },
     "chat": {
@@ -125,6 +168,20 @@ DEFAULT_DICTIONARY = {
             "input_placeholder": "ex. botrix",
             "title": "Muted Users"
         },
+        "commands": {
+            "ttsblock_already": "@{user}, the word '{word}' is already blocked in TTS.",
+            "ttsblock_success": "@{user}, the word '{word}' has been blocked in TTS.",
+            "ttsblock_usage": "@{user}, correct usage: !ttsblock <word> or !ttsblock unblock <word>",
+            "ttsmute_already": "@{user}, user @{target} is already muted in TTS.",
+            "ttsmute_success": "@{user}, user @{target} has been muted in TTS.",
+            "ttsmute_usage": "@{user}, correct usage: !ttsmute [@username] or !ttsmute unmute [@username]",
+            "ttsunblock_not_found": "@{user}, the word '{word}' was not blocked in TTS.",
+            "ttsunblock_success": "@{user}, the word '{word}' has been unblocked in TTS.",
+            "ttsunblock_usage": "@{user}, correct usage: !ttsunblock <word>",
+            "ttsunmute_not_found": "@{user}, user @{target} was not muted in TTS.",
+            "ttsunmute_success": "@{user}, user @{target} has been unmuted in TTS.",
+            "ttsunmute_usage": "@{user}, correct usage: !ttsunmute <username>"
+        },
         "display": {
             "title": "Chat History"
         },
@@ -132,7 +189,25 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Manage moderation, interactive Text-to-Speech (TTS), and real-time channel events.",
             "title": "Live Chat"
         },
+        "mod_commands": {
+            "block_cmd_desc": "Allows moderators and streamer to ban or unban words from TTS",
+            "block_cmd_title": "Block word commands (!ttsblock)",
+            "block_disabled_msg": "@{user}, word blocking commands are currently disabled.",
+            "mute_cmd_desc": "Allows moderators and streamer to mute or unmute users from TTS",
+            "mute_cmd_title": "Mute user commands (!ttsmute)",
+            "mute_disabled_msg": "@{user}, user muting commands are currently disabled.",
+            "section_title": "Chat Moderation Commands"
+        },
         "overlay": {
+            "anim_in_desc": "Visual effect when new messages appear on screen.",
+            "anim_in_fade": "Smooth (Fade Up)",
+            "anim_in_pop": "Subtle Bounce (Pop)",
+            "anim_in_slide": "Slide (Slide In)",
+            "anim_in_title": "Entrance Animation",
+            "big_emotes_desc": "Enlarge emotes when a message contains only emotes.",
+            "big_emotes_title": "Big Emotes (Bigmoji)",
+            "edge_fade_desc": "Adds top and bottom gradient fades to smoothly dissolve messages in OBS.",
+            "edge_fade_title": "Edge Fade (Gradient)",
             "entry_bottom": "From Bottom",
             "entry_desc": "Direction from which new messages enter the screen.",
             "entry_left": "From Left",
@@ -171,6 +246,17 @@ DEFAULT_DICTIONARY = {
             "theme_minimal": "Minimalist (Floating Glow)",
             "theme_neon": "Neon Glow (Neon)",
             "theme_title": "Overlay Design"
+        },
+        "platforms": {
+            "kick_desc": "Play Kick chat messages via TTS.",
+            "kick_title": "Kick",
+            "tiktok_desc": "Play TikTok chat messages via TTS.",
+            "tiktok_title": "TikTok",
+            "title": "Chat Platforms for TTS",
+            "twitch_desc": "Play Twitch chat messages via TTS.",
+            "twitch_title": "Twitch",
+            "youtube_desc": "Play YouTube chat messages via TTS.",
+            "youtube_title": "YouTube"
         },
         "roles": {
             "broadcaster_title": "Streamer Voice",
@@ -628,7 +714,10 @@ DEFAULT_DICTIONARY = {
             "age_restricted": "The live stream for @{unique_id} has an age restriction (+18).",
             "empty_user": "TikTok username cannot be empty.",
             "stream_offline": "@{unique_id} is not currently live on TikTok.",
-            "user_not_found": "User @{unique_id} does not exist or does not have Live enabled on TikTok."
+            "user_not_found": "User @{unique_id} does not exist or does not have Live enabled on TikTok.",
+            "ws_rejected": "TikTok rejected the WebSocket connection with HTTP code {code}.",
+            "ws_rejected_400": "TikTok rejected the WebSocket connection (expired token). Retrying automatically...",
+            "ws_rejected_400_final": "TikTok repeatedly rejected the WebSocket connection (HTTP 400). The signed URL may be expiring too quickly. Try reconnecting manually."
         },
         "twitch": {
             "channel_empty": "Twitch channel name cannot be empty.",
@@ -1345,6 +1434,19 @@ DEFAULT_DICTIONARY = {
         }
     },
     "widgets": {
+        "chatters": {
+            "desc": "Displays a real-time leaderboard of the 5 most active chatters during your stream.",
+            "msg_empty": "🏆 No chat messages recorded yet in this stream session.",
+            "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
+            "msg_reset": "🔄 @{user} has reset the Top Chatters leaderboard.",
+            "reset_btn": "Reset Leaderboard",
+            "reset_success": "Chatters leaderboard reset successfully!",
+            "title": "Top Chatters (!topchatters)"
+        },
+        "clock": {
+            "desc": "Displays the current time and date in real-time in a sleek capsule design for your stream.",
+            "title": "Clock & Date (!time)"
+        },
         "combo": {
             "desc": "Detect when your chat repeats an emote streak and show a fiery animated counter in OBS.",
             "min_combo_label": "Minimum Combo to Show:",
@@ -1374,7 +1476,6 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Add interactive OBS overlays that react in real-time to chat actions.",
             "title": "Interactive Chat Widgets"
         },
-        "obs_copy_btn": "Copy URL for OBS",
         "obs_label": "OBS Overlay URL:",
         "pinned": {
             "desc": "Display in OBS the message currently pinned by you or your moderators on Kick.",

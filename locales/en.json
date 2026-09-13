@@ -115,7 +115,6 @@
         "overlay_card": {
             "copied_msg": "The alerts overlay URL was copied to the clipboard.",
             "copied_title": "URL Copied",
-            "copy_btn": "Copy URL",
             "desc": "Add this URL as a 'Browser Source' in OBS (1920x1080 with transparent background).",
             "open_btn": "Preview Overlay",
             "title": "OBS Overlay URL"
@@ -1475,7 +1474,6 @@
             "subtitle": "Add interactive OBS overlays that react in real-time to chat actions.",
             "title": "Interactive Chat Widgets"
         },
-        "obs_copy_btn": "Copy URL for OBS",
         "obs_label": "OBS Overlay URL:",
         "pinned": {
             "desc": "Display in OBS the message currently pinned by you or your moderators on Kick.",

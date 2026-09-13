@@ -115,7 +115,6 @@
         "overlay_card": {
             "copied_msg": "La URL del overlay de alertas se copió al portapapeles.",
             "copied_title": "URL Copiada",
-            "copy_btn": "Copiar URL",
             "desc": "Agrega esta URL como 'Fuente de Navegador' en OBS (1920x1080 con fondo transparente).",
             "open_btn": "Previsualizar Overlay",
             "title": "URL del Overlay para OBS"
@@ -1475,7 +1474,6 @@
             "subtitle": "Añade overlays interactivos a tu OBS que reaccionan en tiempo real a las acciones de tu chat.",
             "title": "Widgets Interactivos de Chat"
         },
-        "obs_copy_btn": "Copiar URL para OBS",
         "obs_label": "URL de Overlay OBS:",
         "pinned": {
             "desc": "Muestra en OBS el mensaje anclado actualmente por ti o por tus moderadores en Kick.",

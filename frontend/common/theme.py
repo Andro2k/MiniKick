@@ -440,7 +440,7 @@ QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_9
 
 /* Table Widget */
 QTableWidget {{ background-color: {COLOR_NEUTRAL_900}; border: none; gridline-color: transparent; }}
-QTableWidget::item {{ padding: 6px; border-bottom: 1.2px solid {COLOR_NEUTRAL_800}; }}
+QTableWidget::item {{ padding: 2px 8px; border-bottom: 1.2px solid {COLOR_NEUTRAL_800}; }}
 QTableWidget::item:selected {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QHeaderView, QHeaderView::section {{ background-color: transparent; border: none; }}
 QHeaderView::section {{ color: {COLOR_NEUTRAL_400}; font-weight: 500; padding: {PADDING_INPUT}; border-bottom: 1.2px solid {COLOR_NEUTRAL_750}; text-align: left; }}

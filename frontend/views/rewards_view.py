@@ -130,7 +130,7 @@ class RewardsView(BaseView):
         super().__init__(i18n=i18n, title_key="rewards.header.title", subtitle_key="rewards.header.subtitle", parent=parent)
         self.overlay_url = overlay_url
         self._raw_mappings: dict = {}
-        self._current_sort: tuple[int, str] | None = None
+        self._current_sort: tuple[int, str] | None = (0, "asc")
         self.connected_platforms: dict[str, bool] = {"kick": True, "twitch": True}
         self.remote_rewards_map: dict = {}
         self.remote_loaded: dict[str, bool] = {"kick": False, "twitch": False}
@@ -311,9 +311,9 @@ class RewardsView(BaseView):
                         return float(conf.get("volume", 1.0))
                     except (ValueError, TypeError):
                         return 1.0
-                return name.lower()
-
             filtered.sort(key=get_sort_key, reverse=reverse)
+        else:
+            filtered.sort(key=lambda item: item[0].lower())
 
         self._render_rows(filtered)
 

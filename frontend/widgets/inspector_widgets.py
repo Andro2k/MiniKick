@@ -199,7 +199,7 @@ class InspectorFilePicker(QWidget):
 
         self.btn_browse = ModernButton(
             text=browse_text,
-            role="action_secondary",
+            role="action_outlined",
             icon_name="folder-open-duotone.svg",
             icon_size=12,
             parent=self

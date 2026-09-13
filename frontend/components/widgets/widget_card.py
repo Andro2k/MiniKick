@@ -257,7 +257,7 @@ class WidgetCard(QFrame):
             lbl_obs = QLabel(self.i18n.get("widgets.obs_label"))
             lbl_obs.setProperty("role", "body")
 
-            btn_copy_obs = QPushButton(self.i18n.get("widgets.obs_copy_btn"))
+            btn_copy_obs = QPushButton(self.i18n.get("common.buttons.copy"))
             btn_copy_obs.setProperty("role", "action_neutral_border")
             btn_copy_obs.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_copy_obs.clicked.connect(self._copy_obs_url)
