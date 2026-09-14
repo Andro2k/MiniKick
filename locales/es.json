@@ -2,15 +2,52 @@
     "alerts": {
         "align": {
             "center": "Centro",
+            "justify": "Justificado",
             "left": "Izquierda",
             "right": "Derecha"
+        },
+        "animations": {
+            "bounce_in": "Rebotar (Bounce in)",
+            "bounce_out": "Rebotar (Bounce out)",
+            "fade_in": "Mostrar gradualmente",
+            "fade_out": "Hacer desaparecer",
+            "in_duration": "Duración entrada (s)",
+            "in_label": "Animación de inicio",
+            "out_duration": "Duración salida (s)",
+            "out_label": "Animación de cierre",
+            "slide_down": "Deslizar hacia abajo",
+            "slide_down_out": "Deslizar hacia abajo",
+            "slide_left": "Deslizar desde derecha",
+            "slide_left_out": "Deslizar hacia izquierda",
+            "slide_right": "Deslizar desde izquierda",
+            "slide_right_out": "Deslizar hacia derecha",
+            "slide_up": "Deslizar hacia arriba",
+            "slide_up_out": "Deslizar hacia arriba",
+            "title": "Animaciones (En segundos)",
+            "zoom_in": "Acercar (Zoom in)",
+            "zoom_out": "Alejar (Zoom out)"
         },
         "buttons": {
             "browse": "Examinar...",
             "discard": "Descartar",
+            "duplicate": "Duplicar a otra alerta",
+            "duplicate_tooltip": "Copiar ajustes visuales, multimedia y de sonido a otra alerta",
             "save": "Guardar Cambios",
             "test": "Probar Alerta",
             "test_sent": "Alerta de prueba enviada a OBS."
+        },
+        "dialogs": {
+            "duplicate": {
+                "btn_cancel": "Cancelar",
+                "btn_confirm": "Duplicar Configuración",
+                "desc": "Copia la apariencia visual, colores, animaciones, tipografía y multimedia de esta alerta a otro evento.",
+                "include_media": "Copiar también archivo multimedia y sonido",
+                "include_template": "Copiar también el texto de la plantilla",
+                "source_label": "Alerta de origen:",
+                "target_all": "Todos los demás eventos de Twitch",
+                "target_label": "Seleccionar evento(s) de destino:",
+                "title": "Duplicar Configuración de Alerta"
+            }
         },
         "events": {
             "cheer": "Bits / Cheers (Twitch)",
@@ -28,40 +65,62 @@
         },
         "fields": {
             "active": "Alerta Activa",
-            "duration": "Duración (segundos)",
+            "auto": "Auto",
+            "bg_color": "Fondo",
+            "bg_color_desc": "Color de fondo de la tarjeta de alerta.",
+            "bg_opacity": "Opacidad (por ciento)",
+            "bg_opacity_desc": "Porcentaje de opacidad del fondo de la alerta.",
+            "border_radius": "Esquinas redondeadas (px)",
+            "border_radius_desc": "Radio de curvatura de las esquinas del contenedor.",
+            "box_shadow": "Sombra",
+            "box_shadow_desc": "Sombra difuminada para resaltar el contenedor de la alerta.",
+            "card_height": "Alto del contenedor (px)",
+            "card_height_desc": "Altura del recuadro o 'Auto' para ajustarse al contenido.",
+            "card_width": "Ancho del contenedor (px)",
+            "card_width_desc": "Ancho total del recuadro de la alerta en píxeles.",
+            "duration": "Duración (En segundos, 99 máx.)",
             "duration_desc": "Tiempo en segundos que se muestra la alerta en pantalla.",
-            "font_family": "Tipografía / Fuente",
+            "font_family": "Fuente",
             "font_family_desc": "Familia tipográfica para los textos de la alerta.",
-            "font_size": "Tamaño de Fuente",
+            "font_size": "Tamaño de Fuente (px)",
             "font_size_desc": "Tamaño en píxeles del texto mostrado en la alerta.",
-            "highlight_color": "Color de Resaltado",
-            "highlight_color_desc": "Color para resaltar el nombre de usuario.",
+            "font_weight": "Grosor de Fuente",
+            "font_weight_desc": "Peso tipográfico aplicado al texto.",
+            "highlight_color": "Color de detalle",
+            "highlight_color_desc": "Color para resaltar el nombre de usuario y cantidades.",
             "media": "Multimedia o HTML",
             "media_filter": "Multimedia y Web (*.png *.gif *.webp *.mp4 *.webm *.html *.htm);;HTML (*.html *.htm);;Archivos Multimedia (*.png *.gif *.webp *.mp4 *.webm);;Todos los Archivos (*.*)",
             "media_placeholder": "Ruta a archivo .png, .gif, .mp4, .webm o .html",
+            "padding": "Espacio de relleno (px)",
+            "padding_desc": "Espacio interno alrededor del contenido.",
             "sound": "Sonido de Alerta",
             "sound_placeholder": "Ruta a archivo .mp3, .wav u .ogg",
-            "template": "Plantilla de Texto",
+            "spacing": "Espacio (px)",
+            "spacing_desc": "Separación en píxeles entre la imagen y el texto.",
+            "template": "Mensaje",
             "template_hint": "Variables: {user}, {amount}, {tier}, {platform}",
-            "text_align": "Alineación del Texto",
+            "text_align": "Diseño de texto",
             "text_align_desc": "Alineación horizontal del texto dentro del diseño.",
-            "text_color": "Color del Texto",
+            "text_color": "Color del texto",
             "text_color_desc": "Color principal de los mensajes de la alerta.",
-            "tts": "Leer alerta con voz (TTS)",
+            "text_shadow": "Sombra de texto",
+            "text_shadow_desc": "Sombra exterior en el texto para máxima legibilidad.",
+            "tts": "Reproducir el texto de la alerta",
+            "tts_section": "Leer en voz alta",
             "volume": "Volumen"
         },
         "header": {
-            "subtitle": "Configura y personaliza las alertas de tu stream en OBS para Kick y Twitch.",
+            "subtitle": "Configura y personaliza las alertas de tu stream en OBS para Twitch.",
             "title": "Alertas en Vivo"
         },
         "layout": {
-            "above": "Imagen Arriba (Centrado)",
+            "above": "Imagen Arriba",
             "below": "Imagen Abajo",
             "desc": "Elige la distribución visual entre imagen y texto.",
             "overlay": "Texto Superpuesto",
             "side": "Imagen Izquierda",
             "side_right": "Imagen Derecha",
-            "title": "Disposición"
+            "title": "Diseño"
         },
         "notice": {
             "connect_btn": "Vincular {platform}",
@@ -71,7 +130,6 @@
         "overlay_card": {
             "copied_msg": "La URL del overlay de alertas se copió al portapapeles.",
             "copied_title": "URL Copiada",
-            "copy_btn": "Copiar URL",
             "desc": "Agrega esta URL como 'Fuente de Navegador' en OBS (1920x1080 con fondo transparente).",
             "open_btn": "Previsualizar Overlay",
             "title": "URL del Overlay para OBS"
@@ -82,14 +140,16 @@
         },
         "preview": {
             "sample_amount": "500",
-            "sample_template": "{user} te acaba de seguir!",
+            "sample_template": "¡Acaba de seguirte {user}!",
             "sample_tier": "1",
-            "sample_user": "TheAndro2K",
+            "sample_user": "Jax",
             "title": "Vista Previa de la Alerta"
         },
         "sections": {
-            "appearance": "Diseño y Apariencia",
-            "general": "Ajustes Generales"
+            "appearance": "Diseño",
+            "general": "Ajustes generales",
+            "media_sound": "Imágenes y sonido",
+            "text_speech": "Texto y voz"
         },
         "sidebar": {
             "title": "Variantes de Alerta"
@@ -105,13 +165,11 @@
             "saved_title": "Alerta Guardada",
             "unsaved": "Cambios sin guardar"
         },
-        "style": {
-            "compact": "Compacto (Tarjeta)",
-            "desc": "Estilo visual del contenedor y marco de la alerta.",
-            "glass": "Glassmorphism",
-            "minimal": "Minimalista",
-            "sticker": "Sticker / Transparente",
-            "title": "Estilo"
+        "weights": {
+            "bold": "Negrita",
+            "extra_bold": "Extra negrita",
+            "normal": "Normal",
+            "semi_bold": "Seminegrita"
         }
     },
     "chat": {
@@ -123,6 +181,20 @@
             "input_placeholder": "ej. botrix",
             "title": "Usuarios Silenciados"
         },
+        "commands": {
+            "ttsblock_already": "@{user}, la palabra '{word}' ya está bloqueada en el TTS.",
+            "ttsblock_success": "@{user}, la palabra '{word}' ha sido bloqueada en el TTS.",
+            "ttsblock_usage": "@{user}, uso correcto: !ttsblock <palabra> o !ttsblock unblock <palabra>",
+            "ttsmute_already": "@{user}, el usuario @{target} ya está silenciado en el TTS.",
+            "ttsmute_success": "@{user}, el usuario @{target} ha sido silenciado en el TTS.",
+            "ttsmute_usage": "@{user}, uso correcto: !ttsmute [@usuario] o !ttsmute unmute [@usuario]",
+            "ttsunblock_not_found": "@{user}, la palabra '{word}' no estaba bloqueada en el TTS.",
+            "ttsunblock_success": "@{user}, la palabra '{word}' ha sido desbloqueada en el TTS.",
+            "ttsunblock_usage": "@{user}, uso correcto: !ttsunblock <palabra>",
+            "ttsunmute_not_found": "@{user}, el usuario @{target} no estaba silenciado en el TTS.",
+            "ttsunmute_success": "@{user}, el usuario @{target} ha sido reactivado en el TTS.",
+            "ttsunmute_usage": "@{user}, uso correcto: !ttsunmute <usuario>"
+        },
         "display": {
             "title": "Historial del Chat"
         },
@@ -130,7 +202,25 @@
             "subtitle": "Gestiona la moderación, la lectura de voz interactiva (TTS) y los eventos de tu canal en tiempo real.",
             "title": "Chat en Vivo"
         },
+        "mod_commands": {
+            "block_cmd_desc": "Permite que moderadores y streamer bloqueen o desbloqueen palabras censuradas",
+            "block_cmd_title": "Comandos de censurar palabras (!ttsblock)",
+            "block_disabled_msg": "@{user}, los comandos de bloqueo de palabras están desactivados actualmente.",
+            "mute_cmd_desc": "Permite que moderadores y streamer silencien o desilencien usuarios del TTS",
+            "mute_cmd_title": "Comandos de silenciar usuarios (!ttsmute)",
+            "mute_disabled_msg": "@{user}, los comandos de silenciar usuarios están desactivados actualmente.",
+            "section_title": "Comandos de Moderación en Chat"
+        },
         "overlay": {
+            "anim_in_desc": "Efecto visual con el que aparecen los nuevos mensajes en pantalla.",
+            "anim_in_fade": "Suave (Fade Up)",
+            "anim_in_pop": "Rebote Sutil (Pop / Bounce)",
+            "anim_in_slide": "Deslizamiento (Slide In)",
+            "anim_in_title": "Animación de Entrada",
+            "big_emotes_desc": "Aumenta el tamaño de los emotes cuando el mensaje contenga únicamente emotes.",
+            "big_emotes_title": "Emotes Grandes (Bigmoji)",
+            "edge_fade_desc": "Añade un degradado superior e inferior para disolver los mensajes suavemente en OBS.",
+            "edge_fade_title": "Desvanecimiento de Bordes",
             "entry_bottom": "Desde Abajo",
             "entry_desc": "Dirección por la que entran los nuevos mensajes a la pantalla.",
             "entry_left": "Desde la Izquierda",
@@ -169,6 +259,17 @@
             "theme_minimal": "Minimalista (Floating Glow)",
             "theme_neon": "Brillo Neón (Neon)",
             "theme_title": "Diseño del Overlay"
+        },
+        "platforms": {
+            "kick_desc": "Reproducir mensajes del chat de Kick en el TTS.",
+            "kick_title": "Kick",
+            "tiktok_desc": "Reproducir mensajes del chat de TikTok en el TTS.",
+            "tiktok_title": "TikTok",
+            "title": "Plataformas de Chat para TTS",
+            "twitch_desc": "Reproducir mensajes del chat de Twitch en el TTS.",
+            "twitch_title": "Twitch",
+            "youtube_desc": "Reproducir mensajes del chat de YouTube en el TTS.",
+            "youtube_title": "YouTube"
         },
         "roles": {
             "broadcaster_title": "Voz del Streamer",
@@ -626,7 +727,10 @@
             "age_restricted": "La transmisión de @{unique_id} tiene restricción de edad (+18).",
             "empty_user": "El usuario de TikTok no puede estar vacío.",
             "stream_offline": "@{unique_id} no está transmitiendo en vivo actualmente.",
-            "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok."
+            "user_not_found": "El usuario @{unique_id} no existe o no tiene habilitada la función Live en TikTok.",
+            "ws_rejected": "TikTok rechazó la conexión WebSocket con código HTTP {code}.",
+            "ws_rejected_400": "TikTok rechazó la conexión WebSocket (token de firma expirado). Reintentando automáticamente...",
+            "ws_rejected_400_final": "TikTok rechazó la conexión WebSocket repetidamente (HTTP 400). El token firmado puede estar expirando muy rápido. Intenta reconectar manualmente."
         },
         "twitch": {
             "channel_empty": "El nombre del canal de Twitch no puede estar vacío.",
@@ -935,6 +1039,7 @@
                 "step1": {
                     "color_pick_tooltip": "Seleccionar color de fondo",
                     "desc": "Selecciona la recompensa de puntos de canal que activará este efecto visual o de sonido.",
+                    "duplicate_title_suffix": " (Copia)",
                     "edit_offline_warning": "Esta plataforma no está conectada. Los cambios solo se aplicarán a la alerta local.",
                     "edit_title_label": "Nombre de la Recompensa",
                     "file_label": "Archivo Multimedia",
@@ -1033,6 +1138,7 @@
             "status_unlinked_tooltip": "Esta recompensa fue eliminada o no existe en {platform}",
             "title": "Recompensas Vinculadas",
             "tooltip_delete": "Eliminar Recompensa",
+            "tooltip_duplicate": "Duplicar Recompensa (otra plataforma o nueva)",
             "tooltip_edit": "Modificar ajustes",
             "tooltip_play": "Probar en OBS",
             "tooltip_play_missing": "No se puede reproducir: archivo multimedia no encontrado",
@@ -1053,6 +1159,18 @@
         },
         "dialogs": {
             "export_title": "Exportar Configuración",
+            "import_modal": {
+                "btn_cancel": "Cancelar",
+                "btn_confirm": "Restaurar Selección",
+                "btn_deselect_all": "Deseleccionar Todo",
+                "btn_select_all": "Seleccionar Todo",
+                "desc": "Selecciona las secciones de configuración que deseas restaurar desde este respaldo.",
+                "element_suffix": "elemento",
+                "elements_suffix": "elementos",
+                "metadata_date": "Exportado el:",
+                "metadata_version": "Versión:",
+                "title": "Restaurar Copia de Seguridad"
+            },
             "import_title": "Importar Configuración"
         },
         "feedback": {
@@ -1084,6 +1202,8 @@
             "youtube_title": "Canal de YouTube Live"
         },
         "status": {
+            "browser_changed": "Navegador Actualizado",
+            "browser_changed_msg": "Se utilizará {name} para enlaces y autenticación.",
             "error_title": "Error de Respaldo",
             "export_error": "No se pudo exportar el archivo de configuración.",
             "exported": "Respaldo Exportado",
@@ -1101,6 +1221,13 @@
             "tray_enabled_msg": "MiniKick se minimizará a la bandeja al cerrar."
         },
         "system": {
+            "browser_browse": "Examinar ejecutable...",
+            "browser_custom": "Personalizado ({name})",
+            "browser_default": "Predeterminado del sistema",
+            "browser_desc": "Selecciona el navegador para autenticación OAuth y apertura de enlaces externos.",
+            "browser_dialog_filter": "Ejecutables (*.exe);;Todos los archivos (*.*)",
+            "browser_dialog_title": "Seleccionar Navegador Web",
+            "browser_title": "Navegador Web",
             "font_desc": "Ajusta el tamaño del texto de la aplicación según tu preferencia visual.",
             "font_size_large": "Grande (14px)",
             "font_size_normal": "Normal (13px)",
@@ -1334,6 +1461,19 @@
         }
     },
     "widgets": {
+        "chatters": {
+            "desc": "Muestra en tiempo real el ranking de los 5 usuarios más activos del chat en tu stream.",
+            "msg_empty": "🏆 Aún no hay mensajes registrados en este stream.",
+            "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
+            "msg_reset": "🔄 @{user} ha reiniciado el ranking de Top Chatters.",
+            "reset_btn": "Reiniciar Ranking",
+            "reset_success": "¡Ranking de chatters reiniciado con éxito!",
+            "title": "Top Chatters (!topchatters)"
+        },
+        "clock": {
+            "desc": "Muestra la hora y fecha actual en tiempo real en un elegante diseño de cápsula para tu stream.",
+            "title": "Reloj y Fecha (!time)"
+        },
         "combo": {
             "desc": "Detecta cuando tu chat repite un mismo emote en racha y muestra un espectacular contador animado de fuego en OBS.",
             "min_combo_label": "Combo Mínimo para Mostrar:",
@@ -1363,7 +1503,6 @@
             "subtitle": "Añade overlays interactivos a tu OBS que reaccionan en tiempo real a las acciones de tu chat.",
             "title": "Widgets Interactivos de Chat"
         },
-        "obs_copy_btn": "Copiar URL para OBS",
         "obs_label": "URL de Overlay OBS:",
         "pinned": {
             "desc": "Muestra en OBS el mensaje anclado actualmente por ti o por tus moderadores en Kick.",

@@ -47,7 +47,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setPen(QColor(COLOR_RED))
         painter.drawPath(path)
         
-        icon_pixmap = get_pixmap_colored("alert-triangle.svg", COLOR_RED, 18)
+        icon_pixmap = get_pixmap_colored("alert-triangle-duotone.svg", COLOR_RED, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -122,6 +122,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
 class RewardsView(BaseView):
     add_requested = Signal()
     edit_requested = Signal(str)
+    duplicate_requested = Signal(str)
     delete_requested = Signal(str)
     preview_requested = Signal(str)
     refresh_rewards_requested = Signal()
@@ -130,7 +131,7 @@ class RewardsView(BaseView):
         super().__init__(i18n=i18n, title_key="rewards.header.title", subtitle_key="rewards.header.subtitle", parent=parent)
         self.overlay_url = overlay_url
         self._raw_mappings: dict = {}
-        self._current_sort: tuple[int, str] | None = None
+        self._current_sort: tuple[int, str] | None = (0, "asc")
         self.connected_platforms: dict[str, bool] = {"kick": True, "twitch": True}
         self.remote_rewards_map: dict = {}
         self.remote_loaded: dict[str, bool] = {"kick": False, "twitch": False}
@@ -147,7 +148,7 @@ class RewardsView(BaseView):
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
-            icon_name="link.svg",
+            icon_name="link-duotone.svg",
             title_text=self.i18n.get("rewards.obs.title"),
             desc_text=self.i18n.get("rewards.obs.desc"),
             right_widget=self.btn_copy_url
@@ -241,7 +242,7 @@ class RewardsView(BaseView):
         self.table_rewards.setColumnWidth(2, 95)
         self.table_rewards.setColumnWidth(4, 115)
         self.table_rewards.setColumnWidth(5, 85)
-        self.table_rewards.setColumnWidth(6, 140)
+        self.table_rewards.setColumnWidth(6, 175)
         
         self.main_layout.addWidget(self.table_card, stretch=1) 
 
@@ -269,29 +270,31 @@ class RewardsView(BaseView):
         plat_active = active_filters.get(1, set())
 
         filtered: list[tuple[str, dict]] = []
-        for reward, config in self._raw_mappings.items():
+        for key, config in self._raw_mappings.items():
             conf_dict = config if isinstance(config, dict) else {}
             plat = conf_dict.get("platform", "kick").lower()
+            reward_name = conf_dict.get("name") or conf_dict.get("reward_name") or (key.split(":", 1)[1] if isinstance(key, str) and ":" in key else str(key))
             if plat_active and plat not in plat_active:
                 continue
 
             if query:
                 filepath = config if isinstance(config, str) else conf_dict.get("filepath", "")
                 cost_str = str(conf_dict.get("cost", 0))
-                if (query not in reward.lower() and 
+                if (query not in reward_name.lower() and 
                     query not in filepath.lower() and 
                     query not in plat and 
                     query not in cost_str):
                     continue
 
-            filtered.append((reward, conf_dict))
+            filtered.append((key, conf_dict))
 
         if self._current_sort:
             col_idx, order = self._current_sort
             reverse = (order == "desc")
 
             def get_sort_key(item: tuple[str, dict]):
-                name, conf = item
+                key, conf = item
+                name = conf.get("name") or conf.get("reward_name") or (key.split(":", 1)[1] if isinstance(key, str) and ":" in key else str(key))
                 if col_idx == 0:
                     return name.lower()
                 elif col_idx == 1:
@@ -311,9 +314,9 @@ class RewardsView(BaseView):
                         return float(conf.get("volume", 1.0))
                     except (ValueError, TypeError):
                         return 1.0
-                return name.lower()
-
             filtered.sort(key=get_sort_key, reverse=reverse)
+        else:
+            filtered.sort(key=lambda item: (item[1].get("name") or item[1].get("reward_name") or (item[0].split(":", 1)[1] if isinstance(item[0], str) and ":" in item[0] else str(item[0]))).lower())
 
         self._render_rows(filtered)
 
@@ -325,21 +328,22 @@ class RewardsView(BaseView):
         missing_tooltip_base = self.i18n.get("rewards.table.file_not_found_tooltip")
         missing_count = 0
         
-        for reward, conf_dict in items:
+        for key, conf_dict in items:
             row = self.table_rewards.rowCount()
             self.table_rewards.insertRow(row)
             
+            reward_name = conf_dict.get("name") or conf_dict.get("reward_name") or (key.split(":", 1)[1] if isinstance(key, str) and ":" in key else str(key))
             filepath = conf_dict.get("filepath", str_unknown)
             
             is_valid_file = bool(filepath) and filepath != str_unknown and os.path.exists(filepath) and os.path.isfile(filepath)
             if not is_valid_file:
                 missing_count += 1
             
-            item_reward = QTableWidgetItem(reward)
+            item_reward = QTableWidgetItem(reward_name)
             item_reward.setIcon(_create_reward_icon(conf_dict, filepath, is_valid_file=is_valid_file))
             item_reward.setFlags(item_reward.flags() & ~Qt.ItemFlag.ItemIsEditable)
             if not is_valid_file:
-                item_reward.setToolTip(f"{reward}\n⚠️ {missing_tooltip_base}")
+                item_reward.setToolTip(f"{reward_name}\n⚠️ {missing_tooltip_base}")
             self.table_rewards.setItem(row, 0, item_reward)
             
             plat = conf_dict.get("platform", "kick")
@@ -351,7 +355,23 @@ class RewardsView(BaseView):
             is_plat_connected = self.connected_platforms.get(plat.lower(), False)
             is_remote_loaded = self.remote_loaded.get(plat.lower(), False)
             has_remote_id = bool(conf_dict.get("id"))
-            exists_remotely = (reward in self.remote_rewards_map and self.remote_rewards_map[reward].get("platform", "").lower() == plat.lower())
+            
+            plat_key = f"{plat.lower()}:{reward_name}"
+            id_key = f"id:{conf_dict.get('id')}" if has_remote_id else None
+
+            exists_remotely = False
+            if plat_key in self.remote_rewards_map:
+                entry = self.remote_rewards_map[plat_key]
+                if isinstance(entry, dict) and entry.get("platform", "").lower() == plat.lower():
+                    exists_remotely = True
+            elif id_key and id_key in self.remote_rewards_map:
+                entry = self.remote_rewards_map[id_key]
+                if isinstance(entry, dict) and entry.get("platform", "").lower() == plat.lower():
+                    exists_remotely = True
+            elif reward_name in self.remote_rewards_map:
+                entry = self.remote_rewards_map[reward_name]
+                if isinstance(entry, dict) and entry.get("platform", "").lower() == plat.lower():
+                    exists_remotely = True
 
             if not is_plat_connected:
                 offline_tag = self.i18n.get("rewards.table.status_offline_tag")
@@ -362,7 +382,7 @@ class RewardsView(BaseView):
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
-                item_plat.setIcon(get_icon_colored("alert-triangle.svg", COLOR_AMBER, 16))
+                item_plat.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_AMBER, 16))
                 item_plat.setForeground(QColor(COLOR_AMBER))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
             else:
@@ -387,7 +407,7 @@ class RewardsView(BaseView):
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
-                item_file.setIcon(get_icon_colored("alert-triangle.svg", COLOR_RED, 16))
+                item_file.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_RED, 16))
                 item_file.setForeground(QColor(COLOR_RED))
                 item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
             else:
@@ -416,25 +436,32 @@ class RewardsView(BaseView):
             cell = TableActionCell()
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
-                icon_name="player-play.svg", 
+                icon_name="play-duotone.svg", 
                 color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
                 role="action_neutral_border" if is_valid_file else "action_danger_border", 
                 tooltip=play_tooltip, 
-                callback=lambda checked=False, r=reward: self.preview_requested.emit(r)
+                callback=lambda checked=False, k=key: self.preview_requested.emit(k)
             )
             cell.add_button(
                 icon_name="edit.svg", 
                 color=COLOR_GREEN, 
                 role="action_accent_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_edit"), 
-                callback=lambda checked=False, r=reward: self.edit_requested.emit(r)
+                callback=lambda checked=False, k=key: self.edit_requested.emit(k)
+            )
+            cell.add_button(
+                icon_name="copy-duotone.svg", 
+                color=COLOR_TWITCH, 
+                role="action_neutral_border", 
+                tooltip=self.i18n.get("rewards.table.tooltip_duplicate"), 
+                callback=lambda checked=False, k=key: self.duplicate_requested.emit(k)
             )
             cell.add_button(
                 icon_name="trash.svg", 
                 color=COLOR_RED, 
                 role="action_danger_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
-                callback=lambda checked=False, r=reward: self.delete_requested.emit(r)
+                callback=lambda checked=False, k=key: self.delete_requested.emit(k)
             )
             
             self.table_rewards.setCellWidget(row, 6, cell)
@@ -491,6 +518,26 @@ class RewardsView(BaseView):
             existing_reward=existing_reward,
             kick_authenticated=kick_authenticated,
             twitch_authenticated=twitch_authenticated
+        )
+        try:
+            if self._active_dialog.exec():
+                return self._active_dialog.get_config_data()
+        finally:
+            self._active_dialog = None
+        return None
+
+    def show_duplicate_dialog(self, available_rewards: list, source_reward: str, source_config: dict, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
+        from frontend.dialogs import RewardsConfigWizard
+        self._active_dialog = RewardsConfigWizard(
+            self.i18n,
+            parent=self,
+            rewards_list=available_rewards,
+            rewards_details_map=rewards_details_map,
+            existing_config=None,
+            existing_reward=None,
+            kick_authenticated=kick_authenticated,
+            twitch_authenticated=twitch_authenticated,
+            duplicate_from=(source_reward, source_config)
         )
         try:
             if self._active_dialog.exec():

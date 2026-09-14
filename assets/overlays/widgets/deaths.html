@@ -29,71 +29,67 @@
             z-index: 1000;
         }
 
-        .death-badge {
+        .death-capsule {
             display: flex;
-            align-items: center;
-            gap: 14px;
-            min-width: 250px;
-            min-height: 54px;
-            background: rgba(13, 17, 23, 0.92);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1.5px solid rgba(255, 71, 87, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 71, 87, 0.3);
-            border-radius: 16px;
-            padding: 10px 22px;
-            color: #ffffff;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease, box-shadow 0.3s ease;
+            flex-direction: column;
+            align-items: stretch;
+            min-width: 140px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(15, 19, 26, 0.94);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .icon-box {
+        .capsule-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 42px;
-            height: 42px;
-            background: rgba(255, 71, 87, 0.15);
-            border: 1px solid rgba(255, 71, 87, 0.3);
-            border-radius: 12px;
-            flex-shrink: 0;
+            gap: 7px;
+            padding: 7px 18px;
+            background: rgba(255, 71, 87, 0.14);
+            border-bottom: 1px solid rgba(255, 71, 87, 0.18);
         }
 
         .skull-svg {
-            width: 26px;
-            height: 26px;
-            filter: drop-shadow(0 2px 6px rgba(255, 71, 87, 0.5));
-        }
-
-        .death-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 1px;
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+            display: block;
         }
 
         .death-title {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 800;
             color: #ff6b81;
             text-transform: uppercase;
             letter-spacing: 1.4px;
         }
 
+        .capsule-body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 22px;
+        }
+
         .death-count {
-            font-size: 30px;
+            font-size: 34px;
             font-weight: 900;
             color: #ffffff;
             line-height: 1;
-            text-shadow: 0 0 12px rgba(255, 71, 87, 0.4);
         }
 
-        .death-badge.bounce {
-            animation: pulse-bump 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .death-capsule.bounce {
+            animation: pulse-bump 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes pulse-bump {
             0% { transform: scale(1); }
-            50% { transform: scale(1.15); border-color: #ffffff; box-shadow: 0 0 35px rgba(255, 71, 87, 0.6); }
+            50% { transform: scale(1.12); }
             100% { transform: scale(1); }
         }
     </style>
@@ -101,8 +97,8 @@
 <body>
 
     <div id="death-container">
-        <div id="death-badge" class="death-badge">
-            <div class="icon-box">
+        <div id="death-badge" class="death-capsule">
+            <div class="capsule-header">
                 <svg class="skull-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2C7.03 2 3 6.03 3 11C3 13.68 4.18 16.09 6.05 17.75C6.65 18.28 7 19.04 7 19.84V21C7 21.55 7.45 22 8 22H16C16.55 22 17 21.55 17 21V19.84C17 19.04 17.35 18.28 17.95 17.75C19.82 16.09 21 13.68 21 11C21 6.03 16.97 2 12 2Z" fill="url(#skull-grad)" stroke="#ff4757" stroke-width="1.2"/>
                     <circle cx="8.5" cy="11.5" r="2" fill="#0d1117"/>
@@ -116,10 +112,10 @@
                         </linearGradient>
                     </defs>
                 </svg>
+                <span id="death-title" class="death-title">MUERTES</span>
             </div>
-            <div class="death-info">
-                <div id="death-title" class="death-title">MUERTES</div>
-                <div id="death-count" class="death-count">0</div>
+            <div class="capsule-body">
+                <span id="death-count" class="death-count">0</span>
             </div>
         </div>
     </div>

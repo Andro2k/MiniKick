@@ -33,6 +33,17 @@ class RewardsService:
         self.storage.save_all(mappings)
         logger.debug("[RewardsService] Saved %d reward mappings to storage.", len(mappings))
 
+    def get_reward_config(self, reward_name: str, platform: str = "kick") -> dict | None:
+        mappings = self.get_mappings()
+        key = f"{platform.lower()}:{reward_name}"
+        if key in mappings:
+            return mappings[key]
+        if reward_name in mappings:
+            conf = mappings[reward_name]
+            if isinstance(conf, dict) and conf.get("platform", "kick").lower() == platform.lower():
+                return conf
+        return None
+
     def is_file_valid(self, config: dict | str) -> bool:
         if not config:
             return False

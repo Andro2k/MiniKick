@@ -11,7 +11,7 @@ import sys
 import time
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse, unquote
-from .websocket_client import WebSocketClient
+from .overlay_ws_client import WebSocketClient
 
 logger = logging.getLogger("minikick.services.overlay.routes")
 
@@ -45,24 +45,37 @@ STATIC_ENDPOINTS_MAP: dict[str, tuple[str, str]] = {
     "/widgets/poll": (os.path.join("assets", "overlays", "widgets", "poll.html"), "Poll Overlay HTML"),
     "/widgets/polls": (os.path.join("assets", "overlays", "widgets", "poll.html"), "Poll Overlay HTML"),
     "/poll": (os.path.join("assets", "overlays", "widgets", "poll.html"), "Poll Overlay HTML"),
+    "/widgets/chatters": (os.path.join("assets", "overlays", "widgets", "chatters.html"), "Top Chatters Overlay HTML"),
+    "/widgets/top_chatters": (os.path.join("assets", "overlays", "widgets", "chatters.html"), "Top Chatters Overlay HTML"),
+    "/chatters": (os.path.join("assets", "overlays", "widgets", "chatters.html"), "Top Chatters Overlay HTML"),
     "/widgets/pinned": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
     "/widgets/pinned_message": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
     "/pinned": (os.path.join("assets", "overlays", "widgets", "pinned.html"), "Pinned Message Overlay HTML"),
+    "/widgets/clock": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
+    "/widgets/time": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
+    "/clock": (os.path.join("assets", "overlays", "widgets", "clock.html"), "Clock Widget Overlay HTML"),
     "/alerts": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
     "/alerts/": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
     "/alert": (os.path.join("assets", "overlays", "alerts", "alerts.html"), "Alerts Overlay HTML"),
 }
 
-_ASSET_CACHE: dict[str, bytes] = {}
+_ASSET_CACHE: dict[str, tuple[float, bytes]] = {}
 
 def get_cached_asset(filepath: str) -> bytes | None:
-    if filepath not in _ASSET_CACHE:
-        try:
-            with open(filepath, "rb") as f:
-                _ASSET_CACHE[filepath] = f.read()
-        except FileNotFoundError:
-            return None
-    return _ASSET_CACHE[filepath]
+    try:
+        mtime = os.path.getmtime(filepath)
+    except OSError:
+        return None
+    cached = _ASSET_CACHE.get(filepath)
+    if cached is not None and cached[0] == mtime:
+        return cached[1]
+    try:
+        with open(filepath, "rb") as f:
+            content = f.read()
+            _ASSET_CACHE[filepath] = (mtime, content)
+            return content
+    except OSError:
+        return None
 
 
 class OverlayRequestHandler(BaseHTTPRequestHandler):
@@ -74,8 +87,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
 
         expected_token = getattr(self.server.manager, "session_token", None)
         is_user_media = path.startswith("/user_media/")
-        is_css_request = path.endswith(".css") or "/css/" in path
-        if expected_token and not is_css_request and not is_user_media and token != expected_token:
+        is_static_asset = path.endswith((".css", ".js")) or "/css/" in path or "/js/" in path
+        if expected_token and not is_static_asset and not is_user_media and token != expected_token:
             self.send_error(403, "Forbidden: Invalid session token")
             return
 
@@ -98,7 +111,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 self.send_error(404, f"{error_label} not found at: {html_path}")
             return
 
-        if path.startswith("/css/"):
+        if "/css/" in path or path.startswith("/css/"):
             css_filename = os.path.basename(path)
             css_path = get_resource_path(os.path.join("assets", "overlays", "chat", "css", css_filename))
             content = get_cached_asset(css_path)
@@ -109,6 +122,19 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 self.wfile.write(content)
             else:
                 self.send_error(404, f"CSS file not found at: {css_path}")
+            return
+
+        if "/js/" in path or path.startswith("/js/"):
+            js_filename = os.path.basename(path)
+            js_path = get_resource_path(os.path.join("assets", "overlays", "chat", "js", js_filename))
+            content = get_cached_asset(js_path)
+            if content is not None:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(content)
+            else:
+                self.send_error(404, f"JS file not found at: {js_path}")
             return
 
         if path == "/media":
@@ -200,6 +226,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     ws_client.send_json({"event": "poll_update", "poll": poll_copy})
                 if getattr(self.server.manager, "_last_pinned_data", None):
                     ws_client.send_json({"event": "pinned_created", "pinned": self.server.manager._last_pinned_data})
+                if getattr(self.server.manager, "_last_top_chatters_data", None):
+                    ws_client.send_json({"event": "top_chatters_update", **self.server.manager._last_top_chatters_data})
 
             while not ws_client.closed:
                 msg = ws_client.read_frame()

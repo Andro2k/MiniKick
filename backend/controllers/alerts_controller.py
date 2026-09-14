@@ -8,12 +8,13 @@ from backend.models import AlertConfig
 logger = logging.getLogger("minikick.controllers.alerts")
 
 class AlertsController(QObject):
-    def __init__(self, view=None, service=None, toast_manager=None, i18n=None):
+    def __init__(self, view=None, service=None, toast_manager=None, i18n=None, browser_service=None):
         super().__init__()
         self.view = view
         self.service = service
         self.toast = toast_manager
         self.i18n = i18n
+        self.browser_service = browser_service
         self._view_connected = False
         self._previous_enabled: dict[tuple[str, str], bool] = {}
         if self.view is not None:
@@ -134,5 +135,8 @@ class AlertsController(QObject):
             return
         url = self.view.alerts_overlay_url
         if url:
-            logger.info("[User Action] Opening alerts overlay in default browser: %s", url)
-            QDesktopServices.openUrl(QUrl(url))
+            logger.info("[User Action] Opening alerts overlay in browser: %s", url)
+            if self.browser_service and hasattr(self.browser_service, "open_url"):
+                self.browser_service.open_url(url)
+            else:
+                QDesktopServices.openUrl(QUrl(url))

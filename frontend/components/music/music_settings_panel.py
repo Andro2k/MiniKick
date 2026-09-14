@@ -32,7 +32,7 @@ class MusicSettingsPanel(QWidget):
         self.sw_auto_resume = ModernSwitch()
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
         self.row_auto_resume = SettingRow(
-            icon_name="refresh.svg",
+            icon_name="refresh-duotone.svg",
             title_text=self.i18n.get("music.youtube.auto_resume_title"),
             desc_text=self.i18n.get("music.youtube.auto_resume_desc"),
             right_widget=self.sw_auto_resume
@@ -43,7 +43,7 @@ class MusicSettingsPanel(QWidget):
         self.sw_media_keys.setChecked(True)
         self.sw_media_keys.toggled.connect(self.media_keys_toggled.emit)
         self.row_media_keys = SettingRow(
-            icon_name="player-play.svg",
+            icon_name="play-duotone.svg",
             title_text=self.i18n.get("music.youtube.media_keys_title"),
             desc_text=self.i18n.get("music.youtube.media_keys_desc"),
             right_widget=self.sw_media_keys
@@ -71,7 +71,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_user_cooldown = QLabel("30s")
         self.lbl_user_cooldown.setProperty("role", "body")
         self.row_user_cooldown = SliderRow(
-            icon_name="clock.svg",
+            icon_name="clock-circle-duotone.svg",
             title_text=self.i18n.get("music.youtube.user_cooldown_title"),
             desc_text=self.i18n.get("music.youtube.user_cooldown_desc"),
             slider_widget=self.slider_user_cooldown,

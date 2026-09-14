@@ -11,6 +11,7 @@ class SettingsService:
         self.SETTING_MINIMIZE_TRAY = "minimize_to_tray"
         self.SETTING_LANGUAGE = "app_language"
         self.SETTING_FONT_SIZE = "app_font_size"
+        self.SETTING_BROWSER_PATH = "app_browser_path"
 
     def is_minimize_tray_enabled(self) -> bool:
         return self.storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
@@ -23,9 +24,12 @@ class SettingsService:
         logger.info("[SettingsService] Exporting settings backup to: %s", filepath)
         return self.backup.export_to_json(filepath)
 
-    def import_settings(self, filepath: str) -> bool:
-        logger.info("[SettingsService] Importing settings backup from: %s", filepath)
-        return self.backup.import_from_json(filepath)
+    def inspect_backup(self, filepath: str) -> dict | None:
+        return self.backup.inspect_backup(filepath)
+
+    def import_settings(self, filepath: str, sections: set[str] | list[str] | None = None) -> bool:
+        logger.info("[SettingsService] Importing settings backup from: %s (sections=%s)", filepath, sections)
+        return self.backup.import_from_json(filepath, sections=sections)
     
     def get_language(self) -> str:
         return self.storage.load_string(self.SETTING_LANGUAGE, "es")
@@ -59,3 +63,11 @@ class SettingsService:
     def set_tts_audio_device(self, device_id: str):
         self.storage.save_string("tts_audio_device", device_id)
         logger.debug("[SettingsService] TTS audio output device set to: %s", device_id)
+
+    def get_browser_path(self) -> str:
+        return self.storage.load_string(self.SETTING_BROWSER_PATH, "default")
+
+    def set_browser_path(self, path: str):
+        clean = (path or "default").strip()
+        self.storage.save_string(self.SETTING_BROWSER_PATH, clean)
+        logger.info("[SettingsService] Browser path set to: %s", clean)

@@ -23,7 +23,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.twitch_selected_category = None
         self._current_cols = -1
 
-        self._icon_refresh = get_icon_colored("refresh.svg", COLOR_NEUTRAL_400, 16)
+        self._icon_refresh = get_icon_colored("refresh-duotone.svg", COLOR_NEUTRAL_400, 16)
         self._setup_ui()
 
     def _setup_ui(self):

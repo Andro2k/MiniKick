@@ -69,11 +69,6 @@ class SearchableComboPopup(QFrame):
 
         layout.addWidget(search_container)
 
-        divider = QFrame(self)
-        divider.setProperty("role", "searchable_combo_divider")
-        divider.setFixedHeight(1)
-        layout.addWidget(divider)
-
         self.list_widget = QListWidget(self)
         self.list_widget.setProperty("role", "searchable_combo_list")
         self.list_widget.setFrameShape(QFrame.Shape.NoFrame)

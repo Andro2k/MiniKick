@@ -27,21 +27,26 @@ class YouTubeChatWorker(QThread):
         self._has_connected_once = False
 
     def run(self):
+        logger.info("[YouTubeChatWorker] Starting YouTube chat worker for channel: '%s'...", self.target_channel)
         try:
             if not self.target_channel:
                 err_msg = self.i18n.get("logs.youtube.channel_empty")
+                logger.error("[YouTubeChatWorker] Cannot start: target channel is empty.")
                 self.error_occurred.emit(err_msg)
                 return
 
             def _on_connected(conn_data: dict):
                 if not self._has_connected_once:
                     self._has_connected_once = True
+                    logger.info("[YouTubeChatWorker] Connected to YouTube Live: '%s'.", self.target_channel)
                     self.connection_success.emit(conn_data)
                 else:
+                    logger.info("[YouTubeChatWorker] Reconnected to YouTube Live: '%s'.", self.target_channel)
                     self.connection_restored.emit()
 
             def _on_disconnected():
                 if not self._is_stopped:
+                    logger.warning("[YouTubeChatWorker] Connection lost with YouTube Live '%s'.", self.target_channel)
                     self.connection_lost.emit()
 
             def _on_error(err_str: str):
@@ -98,6 +103,7 @@ class YouTubeChatWorker(QThread):
         self.message_received.emit(dto)
 
     def stop(self):
+        logger.info("[YouTubeChatWorker] Stopping YouTube chat worker for '%s'...", self.target_channel)
         self._is_stopped = True
         self.requestInterruption()
         self.provider.stop_chat()

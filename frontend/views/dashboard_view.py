@@ -38,8 +38,9 @@ class DashboardView(BaseView):
     _SESSION_CARDS_ATTR = "_session_cols"
     _PLATFORM_CARDS_ATTR = "_platform_cols"
     
-    def __init__(self, i18n, parent=None):
+    def __init__(self, i18n, browser_service=None, parent=None):
         super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
+        self.browser_service = browser_service
         self._stats_cols = -1
         self._session_cols = -1
         self._platform_cols = -1
@@ -240,7 +241,7 @@ class DashboardView(BaseView):
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
         self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_neutral_border")
-        self.btn_open_channel.setIcon(get_icon_colored("link.svg", COLOR_WHITE, 14))
+        self.btn_open_channel.setIcon(get_icon_colored("link-duotone.svg", COLOR_WHITE, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)
 
@@ -374,9 +375,9 @@ class DashboardView(BaseView):
         self.session_grid.setContentsMargins(*MARGIN_NONE)
         self.session_grid.setSpacing(SPACING_MD)
 
-        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "message.svg", "0")
-        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "code.svg", "0")
-        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock.svg", "0")
+        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-duotone.svg", "0")
+        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "code-duotone.svg", "0")
+        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock-circle-duotone.svg", "0")
         self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-duotone.svg", "0")
 
         self.session_cards = [
@@ -668,10 +669,13 @@ class DashboardView(BaseView):
         username = getattr(self, "_current_channel_username", "")
         platform = getattr(self, "_current_profile_platform", "kick")
         if username and username != "-":
-            from PySide6.QtGui import QDesktopServices
-            from PySide6.QtCore import QUrl
             url = f"https://twitch.tv/{username}" if platform == "twitch" else f"https://kick.com/{username}"
-            QDesktopServices.openUrl(QUrl(url))
+            if hasattr(self, "browser_service") and self.browser_service and hasattr(self.browser_service, "open_url"):
+                self.browser_service.open_url(url)
+            else:
+                from PySide6.QtGui import QDesktopServices
+                from PySide6.QtCore import QUrl
+                QDesktopServices.openUrl(QUrl(url))
 
     def show_scope_warning(self, missing_scopes: dict | list):
         if not missing_scopes:

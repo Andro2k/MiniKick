@@ -41,11 +41,12 @@ class YouTubeResolveWorker(QThread):
     resolved = Signal(str, str)
     error = Signal(str)
 
-    def __init__(self, query_or_url: str, expected_title: str = "", i18n=None):
+    def __init__(self, query_or_url: str, expected_title: str = "", i18n=None, music_storage=None):
         super().__init__()
         self.query_or_url = query_or_url
         self.expected_title = expected_title
         self.loudness: float | None = None
+        self.music_storage = music_storage
         from backend.services.system import TranslationService
         self.i18n = i18n or TranslationService()
 
@@ -67,7 +68,23 @@ class YouTubeResolveWorker(QThread):
                 for fpath in matching_files:
                     if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
                         cache_title = self.expected_title or f"Track {direct_id}"
-                        logger.debug("[YouTubeResolveWorker] Instant disk cache hit for '%s' (ID %s): %s", cache_title, direct_id, fpath)
+                        video_url = f"https://www.youtube.com/watch?v={direct_id}"
+                        if self.music_storage:
+                            self.loudness = self.music_storage.get_loudness_for_url(video_url)
+                            loudness_info = (
+                                f"{self.loudness:.2f} dB (from DB)"
+                                if self.loudness is not None
+                                else "not persisted yet"
+                            )
+                            logger.debug(
+                                "[YouTubeResolveWorker] Instant disk cache hit for '%s' (ID %s): loudness=%s",
+                                cache_title, direct_id, loudness_info
+                            )
+                        else:
+                            logger.debug(
+                                "[YouTubeResolveWorker] Instant disk cache hit for '%s' (ID %s): no storage",
+                                cache_title, direct_id
+                            )
                         self.resolved.emit(cache_title, fpath)
                         return
 
@@ -155,7 +172,19 @@ class YouTubeResolveWorker(QThread):
                 ]
                 for fpath in matching_files:
                     if os.path.exists(fpath) and os.path.getsize(fpath) > 0:
-                        logger.debug("[YouTubeResolveWorker] Disk cache hit for '%s' (ID %s): %s", title, raw_id, fpath)
+                        if self.music_storage and self.loudness is None:
+                            self.loudness = self.music_storage.get_loudness_for_url(
+                                f"https://www.youtube.com/watch?v={raw_id}"
+                            )
+                        loudness_info = (
+                            f"{self.loudness:.2f} dB (from DB)"
+                            if self.loudness is not None
+                            else "not persisted yet"
+                        )
+                        logger.debug(
+                            "[YouTubeResolveWorker] Disk cache hit for '%s' (ID %s): loudness=%s",
+                            title, raw_id, loudness_info
+                        )
                         self.resolved.emit(title, fpath)
                         return
 

@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
 from frontend.common import MARGIN_NONE, SPACING_XL, SPACING_SM
-from .controls import ModernSwitch
+from .controls_widget import ModernSwitch
 
 class PlatformSwitchGroup(QWidget):
     platform_toggled = Signal(str, bool)

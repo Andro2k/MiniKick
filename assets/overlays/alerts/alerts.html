@@ -45,42 +45,90 @@
         #alert-container {
             position: relative;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-width: 380px;
-            max-width: 620px;
             opacity: 0;
             pointer-events: none;
-            transform: scale(0.85) translateY(30px);
-            transition: opacity 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation-fill-mode: forwards;
         }
 
-        #alert-container.active {
-            opacity: 1;
-            transform: scale(1) translateY(0);
+        /* Entrance Animations */
+        @keyframes animInFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes animInSlideUp {
+            from { opacity: 0; transform: translateY(70px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes animInSlideDown {
+            from { opacity: 0; transform: translateY(-70px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes animInSlideLeft {
+            from { opacity: 0; transform: translateX(70px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes animInSlideRight {
+            from { opacity: 0; transform: translateX(-70px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes animInZoom {
+            from { opacity: 0; transform: scale(0.35); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes animInBounce {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 0.95; transform: scale(1.08); }
+            70% { transform: scale(0.96); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
-        #alert-container.dismissing {
-            opacity: 0;
-            transform: scale(0.9) translateY(-20px);
-            transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+        /* Exit Animations */
+        @keyframes animOutFade {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes animOutSlideDown {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(70px); }
+        }
+        @keyframes animOutSlideUp {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-70px); }
+        }
+        @keyframes animOutSlideLeft {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-70px); }
+        }
+        @keyframes animOutSlideRight {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(70px); }
+        }
+        @keyframes animOutZoom {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.35); }
+        }
+        @keyframes animOutBounce {
+            0% { transform: scale(1); opacity: 1; }
+            20% { transform: scale(1.06); }
+            100% { opacity: 0; transform: scale(0.3); }
         }
 
         .media-box {
-            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: -15px;
             z-index: 2;
+            flex-shrink: 1;
+            min-height: 0;
+            max-width: 100%;
         }
 
         .media-box img,
         .media-box video,
         .media-box iframe {
-            max-width: 320px;
+            max-width: 100%;
             max-height: 240px;
             object-fit: contain;
             filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
@@ -95,7 +143,6 @@
         }
 
         #alert-container.custom-html-active .media-box {
-            margin-bottom: 0;
             width: 100%;
         }
 
@@ -107,28 +154,34 @@
 
         .alert-card {
             background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-glass);
+            border: none;
             border-radius: var(--card-radius);
             padding: 24px 32px;
             text-align: center;
-            width: 100%;
+            width: 560px;
+            box-sizing: border-box;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             position: relative;
             overflow: hidden;
             z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, border-radius 0.2s ease, padding 0.2s ease, width 0.2s ease, height 0.2s ease;
         }
 
         .alert-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--accent-color, var(--default-color)), transparent);
-            box-shadow: 0 0 var(--glow-spread) var(--accent-color, var(--default-color));
+            display: none;
+        }
+
+        .alert-content-box {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .platform-badge {
@@ -185,20 +238,11 @@
         }
 
         .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
+            display: none !important;
         }
 
         .progress-fill {
-            height: 100%;
-            width: 100%;
-            background: var(--accent-color, var(--default-color));
-            box-shadow: 0 0 10px var(--accent-color, var(--default-color));
-            transform-origin: left;
+            display: none !important;
         }
 
         .audio-unlock-banner {
@@ -229,56 +273,51 @@
             border-color: #53fc18;
         }
 
-        /* Layout Variants */
-        #alert-container.layout-above {
+        /* Layout Variants inside .alert-card */
+        #alert-container.layout-above .alert-card {
             flex-direction: column;
             align-items: center;
         }
         #alert-container.layout-above .media-box {
             width: 100%;
-            margin-bottom: -15px;
-            z-index: 2;
+            margin-bottom: 14px;
         }
-        #alert-container.layout-above .alert-card {
+        #alert-container.layout-above .alert-content-box {
+            align-items: center;
             text-align: center;
-            width: 100%;
         }
 
-        #alert-container.layout-below {
+        #alert-container.layout-below .alert-card {
             flex-direction: column-reverse;
             align-items: center;
         }
         #alert-container.layout-below .media-box {
             width: 100%;
-            margin-top: -15px;
+            margin-top: 14px;
             margin-bottom: 0;
-            z-index: 2;
         }
-        #alert-container.layout-below .alert-card {
+        #alert-container.layout-below .alert-content-box {
+            align-items: center;
             text-align: center;
-            width: 100%;
         }
 
-        #alert-container.layout-side {
+        #alert-container.layout-side .alert-card {
             flex-direction: row;
             align-items: center;
-            justify-content: center;
-            min-width: 440px;
-            max-width: 720px;
-            padding: 10px;
+            justify-content: flex-start;
         }
         #alert-container.layout-side .media-box {
-            width: 90px;
-            height: 90px;
-            min-width: 90px;
-            max-width: 90px;
-            max-height: 90px;
+            width: 100px;
+            height: 100px;
+            min-width: 100px;
+            max-width: 100px;
+            max-height: 100px;
             margin-bottom: 0;
             margin-right: 18px;
-            border-radius: 50%;
-            background: rgba(10, 12, 16, 0.8);
-            border: 2.5px solid var(--accent-color, var(--default-color));
-            box-shadow: 0 0 16px var(--accent-color, var(--default-color));
+            border-radius: 14px;
+            background: rgba(10, 12, 16, 0.75);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -293,11 +332,13 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: cover;
+            border-radius: 12px;
         }
-        #alert-container.layout-side .alert-card {
-            text-align: left;
+        #alert-container.layout-side .alert-content-box {
             flex: 1;
-            padding: 20px 28px;
+            min-width: 0;
+            align-items: flex-start;
+            text-align: left;
         }
         #alert-container.layout-side .platform-badge {
             margin-bottom: 6px;
@@ -307,26 +348,23 @@
             margin-bottom: 4px;
         }
 
-        #alert-container.layout-side_right {
+        #alert-container.layout-side_right .alert-card {
             flex-direction: row-reverse;
             align-items: center;
-            justify-content: center;
-            min-width: 440px;
-            max-width: 720px;
-            padding: 10px;
+            justify-content: flex-start;
         }
         #alert-container.layout-side_right .media-box {
-            width: 90px;
-            height: 90px;
-            min-width: 90px;
-            max-width: 90px;
-            max-height: 90px;
+            width: 100px;
+            height: 100px;
+            min-width: 100px;
+            max-width: 100px;
+            max-height: 100px;
             margin-bottom: 0;
             margin-left: 18px;
-            border-radius: 50%;
-            background: rgba(10, 12, 16, 0.8);
-            border: 2.5px solid var(--accent-color, var(--default-color));
-            box-shadow: 0 0 16px var(--accent-color, var(--default-color));
+            border-radius: 14px;
+            background: rgba(10, 12, 16, 0.75);
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -341,11 +379,13 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: cover;
+            border-radius: 12px;
         }
-        #alert-container.layout-side_right .alert-card {
-            text-align: right;
+        #alert-container.layout-side_right .alert-content-box {
             flex: 1;
-            padding: 20px 28px;
+            min-width: 0;
+            align-items: flex-end;
+            text-align: right;
         }
         #alert-container.layout-side_right .platform-badge {
             margin-bottom: 6px;
@@ -355,14 +395,11 @@
             margin-bottom: 4px;
         }
 
-        #alert-container.layout-overlay {
+        #alert-container.layout-overlay .alert-card {
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             position: relative;
-            overflow: hidden;
-            border-radius: var(--card-radius);
-            min-width: 460px;
-            max-width: 650px;
         }
         #alert-container.layout-overlay .media-box {
             position: absolute;
@@ -370,10 +407,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            margin-bottom: 0;
+            max-width: 100%;
+            max-height: 100%;
+            margin: 0;
             z-index: 0;
-            opacity: 0.35;
+            opacity: 1;
             overflow: hidden;
+            border-radius: inherit;
         }
         #alert-container.layout-overlay .media-box img,
         #alert-container.layout-overlay .media-box video {
@@ -382,61 +422,14 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: cover;
-            filter: blur(1.5px) brightness(0.65);
+            filter: none;
+            border-radius: inherit;
         }
-        #alert-container.layout-overlay .alert-card {
+        #alert-container.layout-overlay .alert-content-box {
+            position: relative;
             z-index: 1;
-            background: rgba(14, 16, 22, 0.72);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
             text-align: center;
-            width: 100%;
-            border: 1px solid var(--border-glass);
-        }
-
-        /* Visual Style Variants */
-        #alert-container.style-compact .alert-card {
-            background: rgba(14, 17, 24, 0.96);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
-        }
-
-        #alert-container.style-glass .alert-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.06);
-        }
-
-        #alert-container.style-minimal .alert-card {
-            background: rgba(16, 17, 22, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-        #alert-container.style-minimal .alert-card::before {
-            display: none;
-        }
-
-        #alert-container.style-sticker .alert-card {
-            background: transparent !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 12px 16px;
-        }
-        #alert-container.style-sticker .alert-card::before {
-            display: none !important;
-        }
-        #alert-container.style-sticker .progress-bar {
-            display: none !important;
-        }
-        #alert-container.style-sticker .alert-title {
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 4px #000000, 0 0 2px #000000;
-        }
-        #alert-container.style-sticker .alert-message {
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 3px #000000;
         }
     </style>
 </head>
@@ -448,11 +441,13 @@
     </div>
 
     <div id="alert-container">
-        <div class="media-box" id="media-box"></div>
         <div class="alert-card" id="alert-card">
-            <div class="platform-badge" id="platform-badge">KICK</div>
-            <div class="alert-title" id="alert-title">¡Nuevo Seguidor!</div>
-            <div class="alert-message" id="alert-message" style="display: none;"></div>
+            <div class="media-box" id="media-box"></div>
+            <div class="alert-content-box" id="alert-content-box">
+                <div class="platform-badge" id="platform-badge">KICK</div>
+                <div class="alert-title" id="alert-title">¡Nuevo Seguidor!</div>
+                <div class="alert-message" id="alert-message" style="display: none;"></div>
+            </div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
@@ -465,6 +460,7 @@
         const container = document.getElementById('alert-container');
         const mediaBox = document.getElementById('media-box');
         const alertCard = document.getElementById('alert-card');
+        const alertContentBox = document.getElementById('alert-content-box');
         const platformBadge = document.getElementById('platform-badge');
         const alertTitle = document.getElementById('alert-title');
         const alertMsg = document.getElementById('alert-message');
@@ -555,6 +551,44 @@
             showAlert(alertData);
         }
 
+        function hexToRgba(hex, opacityPct) {
+            if (!hex) return 'transparent';
+            hex = hex.replace('#', '');
+            if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+            const r = parseInt(hex.substring(0, 2), 16) || 0;
+            const g = parseInt(hex.substring(2, 4), 16) || 0;
+            const b = parseInt(hex.substring(4, 6), 16) || 0;
+            const a = Math.max(0, Math.min(100, opacityPct !== undefined && opacityPct !== null ? opacityPct : 88)) / 100.0;
+            return `rgba(${r}, ${g}, ${b}, ${a})`;
+        }
+
+        const IN_ANIM_MAP = {
+            'fade_in': 'animInFade',
+            'slide_up': 'animInSlideUp',
+            'slide_down': 'animInSlideDown',
+            'slide_left': 'animInSlideLeft',
+            'slide_right': 'animInSlideRight',
+            'zoom_in': 'animInZoom',
+            'bounce_in': 'animInBounce'
+        };
+
+        const OUT_ANIM_MAP = {
+            'fade_out': 'animOutFade',
+            'slide_down': 'animOutSlideDown',
+            'slide_up': 'animOutSlideUp',
+            'slide_left': 'animOutSlideLeft',
+            'slide_right': 'animOutSlideRight',
+            'zoom_out': 'animOutZoom',
+            'bounce_out': 'animOutBounce'
+        };
+
+        const FONT_WEIGHT_MAP = {
+            'normal': '400',
+            'semi_bold': '600',
+            'bold': '700',
+            'extra_bold': '800'
+        };
+
         function showAlert(data) {
             const platform = (data.platform || 'kick').toLowerCase();
             const defaultHighlight = platform === 'twitch' ? '#9146ff' : '#53fc18';
@@ -562,14 +596,60 @@
             const textColor = data.text_color || '#ffffff';
             const fontFamily = data.font_family ? `'${data.font_family}', var(--primary-font)` : 'var(--primary-font)';
             const fontSize = (data.font_size || 26) + 'px';
+            const fontWeight = FONT_WEIGHT_MAP[data.font_weight] || data.font_weight || '700';
 
             document.documentElement.style.setProperty('--accent-color', highlightColor);
             document.documentElement.style.setProperty('--text-main', textColor);
 
             const layout = (data.layout || 'above').toLowerCase();
-            const style = (data.style || 'compact').toLowerCase();
+            container.className = `layout-${layout}`;
 
-            container.className = `layout-${layout} style-${style}`;
+            // Container dynamic styling
+            const bgColor = hexToRgba(data.bg_color || '#121317', data.bg_opacity);
+            const borderRadius = (data.border_radius !== undefined ? data.border_radius : 20) + 'px';
+            const paddingPx = (data.padding_px !== undefined ? data.padding_px : 24) + 'px';
+            const spacingPx = data.spacing_px !== undefined ? data.spacing_px : 16;
+            const hasShadow = data.box_shadow !== false;
+            const hasTextShadow = data.text_shadow !== false;
+
+            alertCard.style.background = (data.bg_opacity === 0) ? 'transparent' : bgColor;
+            alertCard.style.borderRadius = borderRadius;
+            alertCard.style.padding = paddingPx;
+            alertCard.style.boxShadow = hasShadow ? '0 20px 40px rgba(0, 0, 0, 0.6)' : 'none';
+            alertCard.style.border = 'none';
+
+            const cardWidth = data.card_width || 560;
+            alertCard.style.width = cardWidth + 'px';
+            if (data.card_height && data.card_height > 0) {
+                alertCard.style.height = data.card_height + 'px';
+            } else {
+                alertCard.style.height = 'auto';
+            }
+
+            // Media spacing adjustment
+            if (layout === 'above') {
+                mediaBox.style.marginBottom = `${spacingPx}px`;
+                mediaBox.style.marginTop = '0';
+                mediaBox.style.marginRight = '0';
+                mediaBox.style.marginLeft = '0';
+            } else if (layout === 'below') {
+                mediaBox.style.marginTop = `${spacingPx}px`;
+                mediaBox.style.marginBottom = '0';
+                mediaBox.style.marginRight = '0';
+                mediaBox.style.marginLeft = '0';
+            } else if (layout === 'side') {
+                mediaBox.style.marginRight = `${spacingPx}px`;
+                mediaBox.style.marginLeft = '0';
+                mediaBox.style.marginTop = '0';
+                mediaBox.style.marginBottom = '0';
+            } else if (layout === 'side_right') {
+                mediaBox.style.marginLeft = `${spacingPx}px`;
+                mediaBox.style.marginRight = '0';
+                mediaBox.style.marginTop = '0';
+                mediaBox.style.marginBottom = '0';
+            } else {
+                mediaBox.style.margin = '0';
+            }
 
             platformBadge.textContent = platform.toUpperCase();
             platformBadge.className = `platform-badge ${platform}`;
@@ -582,15 +662,29 @@
             alertTitle.innerHTML = titleHtml;
             alertTitle.style.fontFamily = fontFamily;
             alertTitle.style.fontSize = fontSize;
+            alertTitle.style.fontWeight = fontWeight;
             alertTitle.style.color = textColor;
+            alertTitle.style.textShadow = hasTextShadow ? '0 2px 10px rgba(0, 0, 0, 0.85), 0 0 2px #000000' : 'none';
 
             const defaultAlign = (layout === 'side') ? 'left' : (layout === 'side_right' ? 'right' : 'center');
             const textAlign = data.text_align || defaultAlign;
             alertCard.style.textAlign = textAlign;
+            if (alertContentBox) {
+                alertContentBox.style.textAlign = textAlign;
+                if (textAlign === 'center') {
+                    alertContentBox.style.alignItems = 'center';
+                } else if (textAlign === 'right') {
+                    alertContentBox.style.alignItems = 'flex-end';
+                } else {
+                    alertContentBox.style.alignItems = 'flex-start';
+                }
+            }
 
             if (data.message) {
                 alertMsg.textContent = `"${data.message}"`;
                 alertMsg.style.display = 'block';
+                alertMsg.style.fontFamily = fontFamily;
+                alertMsg.style.textShadow = hasTextShadow ? '0 2px 8px rgba(0, 0, 0, 0.85), 0 0 2px #000000' : 'none';
             } else {
                 alertMsg.style.display = 'none';
             }
@@ -672,17 +766,21 @@
                 }
             }
 
+            // Trigger Entrance Animation
+            const inAnimKey = IN_ANIM_MAP[data.animation_in] || 'animInFade';
+            const inDurationSec = Math.max(0.2, data.animation_in_duration || 1.0);
+            container.style.animation = `${inAnimKey} ${inDurationSec}s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards`;
+
             const duration = data.duration_ms || 5000;
-            progressFill.style.transition = 'none';
-            progressFill.style.transform = 'scaleX(1)';
+            if (progressFill) {
+                progressFill.style.transition = 'none';
+                progressFill.style.transform = 'scaleX(1)';
 
-            container.classList.remove('dismissing');
-            container.classList.add('active');
-
-            requestAnimationFrame(() => {
-                progressFill.style.transition = `transform ${duration}ms linear`;
-                progressFill.style.transform = 'scaleX(0)';
-            });
+                requestAnimationFrame(() => {
+                    progressFill.style.transition = `transform ${duration}ms linear`;
+                    progressFill.style.transform = 'scaleX(0)';
+                });
+            }
 
             function dismissAlert() {
                 if (!isPlaying) return;
@@ -692,8 +790,10 @@
                 }
                 window.removeEventListener('message', onCustomAlertMessage);
 
-                container.classList.remove('active');
-                container.classList.add('dismissing');
+                // Trigger Exit Animation
+                const outAnimKey = OUT_ANIM_MAP[data.animation_out] || 'animOutFade';
+                const outDurationSec = Math.max(0.2, data.animation_out_duration || 1.0);
+                container.style.animation = `${outAnimKey} ${outDurationSec}s ease-in forwards`;
 
                 setTimeout(() => {
                     if (videoElement) {
@@ -722,7 +822,7 @@
                     }
 
                     processNextAlert();
-                }, 350);
+                }, Math.round(outDurationSec * 1000));
             }
 
             function onCustomAlertMessage(event) {

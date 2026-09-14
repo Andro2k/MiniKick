@@ -1,0 +1,214 @@
+# frontend\widgets\table.py
+
+import os
+from PySide6.QtWidgets import QTableWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget, QStackedWidget
+from PySide6.QtCore import Qt, QSize
+from .controls_widget import ModernButton, ModernSwitch
+from .scalable_illustration import ScalableIllustration
+from .filter_header import FilterHeaderView
+from .search_bar import UnifiedSearchBar
+from frontend.common import (
+    get_icon_colored, get_assets_path,
+    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_MD, MARGIN_XL, MARGIN_H_SM
+)
+
+class ModernTable(QTableWidget):
+    def __init__(self, headers: list[str], parent=None):
+        super().__init__(0, len(headers), parent)
+        self.setHorizontalHeaderLabels(headers)     
+        self.verticalHeader().setVisible(False)
+        self.verticalHeader().setDefaultSectionSize(42)
+        self.setShowGrid(False)
+        self.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+    def enable_filter_header(self) -> FilterHeaderView:
+        headers = [self.horizontalHeaderItem(i).text() if self.horizontalHeaderItem(i) else "" for i in range(self.columnCount())]
+        filter_header = FilterHeaderView(Qt.Orientation.Horizontal, parent=self)
+        self.setHorizontalHeader(filter_header)
+        self.setHorizontalHeaderLabels(headers)
+        return filter_header
+
+class ModernTableCard(QFrame):
+    def __init__(self, title_text: str = None, headers: list[str] = None, 
+                 search_placeholder: str = None, add_button_text: str = None, 
+                 add_button_icon: str = "add.svg", parent=None):
+        super().__init__(parent)
+        self.setProperty("role", "card")
+        
+        self.card_layout = QVBoxLayout(self)
+        self.card_layout.setContentsMargins(*MARGIN_MD)
+        self.card_layout.setSpacing(SPACING_SM)
+        
+        self.header_layout = None
+        self.lbl_title = None
+        self.txt_search = None
+        self.btn_add = None
+        
+        if title_text or search_placeholder or add_button_text:
+            self.header_layout = QHBoxLayout()
+            
+            if title_text:
+                self.lbl_title = QLabel(title_text, parent=self)
+                self.lbl_title.setProperty("role", "h3")
+                self.header_layout.addWidget(self.lbl_title)
+                
+            self.header_layout.addStretch()
+            
+            if search_placeholder:
+                self.txt_search = UnifiedSearchBar(placeholder=search_placeholder, parent=self)
+                self.header_layout.addWidget(self.txt_search)
+                
+            if add_button_text:
+                self.btn_add = ModernButton(add_button_text, role="action_accent", parent=self)
+                if add_button_icon:
+                    self.btn_add.set_icon(add_button_icon, size=16)
+                self.header_layout.addWidget(self.btn_add)
+                
+            self.card_layout.addLayout(self.header_layout)
+            
+        self.stack = QStackedWidget(self)
+        
+        self.table = ModernTable(headers or [], parent=self)
+        self.stack.addWidget(self.table)
+        
+        self.empty_widget = None
+        self.lbl_illustration = None
+        
+        self.card_layout.addWidget(self.stack)
+
+    def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked):
+        self.empty_widget = QWidget(self)
+        layout = QVBoxLayout(self.empty_widget)
+        layout.setContentsMargins(*MARGIN_XL)
+        layout.setSpacing(SPACING_LG)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        illustration_path = get_assets_path(os.path.join("icons", icon_name))
+        self.lbl_illustration = ScalableIllustration(
+            icon_path=illustration_path,
+            aspect_ratio=1.0,
+            min_size=120,
+            max_size=280,
+            size_offset=180,
+            parent=self
+        )
+        
+        lbl_title = QLabel(title)
+        lbl_title.setProperty("role", "h2")
+        lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        lbl_desc = QLabel(desc)
+        lbl_desc.setProperty("role", "body")
+        lbl_desc.setWordWrap(True)
+        lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        lbl_desc.setMaximumWidth(450)
+        
+        self.btn_empty_action = ModernButton(button_text, role="action_accent")
+        self.btn_empty_action.set_icon("add.svg", size=16)
+        self.btn_empty_action.clicked.connect(on_button_clicked)
+        
+        layout.addStretch(1)
+        layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(lbl_title)
+        layout.addWidget(lbl_desc)
+        layout.addSpacing(SPACING_MD)
+        layout.addWidget(self.btn_empty_action, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addStretch(2)
+        
+        self.stack.addWidget(self.empty_widget)
+
+    def set_empty(self, is_empty: bool):
+        if is_empty and self.stack.count() > 1:
+            self.stack.setCurrentIndex(1)
+            if self.txt_search and not self.txt_search.text().strip():
+                self.txt_search.setVisible(False)
+        else:
+            self.stack.setCurrentIndex(0)
+            if self.txt_search:
+                self.txt_search.setVisible(True)
+        if is_empty and hasattr(self, "lbl_illustration") and self.lbl_illustration:
+            card_h = max(self.height(), 300)
+            self.lbl_illustration.update_image(card_h)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if hasattr(self, "lbl_illustration") and self.lbl_illustration and self.stack.currentIndex() == 1:
+            card_h = max(self.height(), 300)
+            self.lbl_illustration.update_image(card_h)
+
+    def set_title_count(self, base_title: str, count: int):
+        if self.lbl_title:
+            self.lbl_title.setText(f"{base_title} ({count})")
+
+    def enable_filter_header(self) -> FilterHeaderView:
+        return self.table.enable_filter_header()
+
+class TableActionCell(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(*MARGIN_NONE)
+        self.layout.setSpacing(SPACING_SM)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+    def add_switch(self, checked: bool, callback) -> ModernSwitch:
+        sw = ModernSwitch(self)
+        sw.setChecked(checked)
+        sw.toggled.connect(callback)
+        self.layout.addWidget(sw)
+        self.layout.addSpacing(SPACING_XS)
+        return sw
+        
+    def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
+        btn = ModernButton("", role=role, parent=self)
+        btn.setFixedSize(24, 24)
+        btn.setIcon(get_icon_colored(icon_name, color, size=16))
+        btn.setIconSize(QSize(16, 16))
+        btn.setToolTip(tooltip)
+        btn.clicked.connect(callback)
+        self.layout.addWidget(btn)
+        return btn
+
+class PlatformBadgeCell(QWidget):
+    def __init__(self, platforms: list[str] | None = None, parent=None):
+        super().__init__(parent)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(*MARGIN_H_SM)
+        self.layout.setSpacing(SPACING_SM)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        if platforms is not None:
+            self.set_platforms(platforms)
+
+    def set_platforms(self, platforms: list[str]):
+        while self.layout.count() > 0:
+            item = self.layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        if not platforms:
+            lbl_empty = QLabel("-", self)
+            lbl_empty.setProperty("role", "body")
+            self.layout.addWidget(lbl_empty)
+            return
+
+        from frontend.common import COLOR_GREEN, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, get_pixmap_colored
+        plat_configs = {
+            "kick": ("brand-kick.svg", COLOR_GREEN, "Kick"),
+            "twitch": ("brand-twitch.svg", COLOR_TWITCH, "Twitch"),
+            "youtube": ("brand-youtube.svg", COLOR_YOUTUBE, "YouTube"),
+            "tiktok": ("brand-tiktok.svg", COLOR_TIKTOK, "TikTok"),
+        }
+
+        for p in platforms:
+            p_key = p.lower()
+            if p_key in plat_configs:
+                icon_file, color, name = plat_configs[p_key]
+                lbl_icon = QLabel(self)
+                lbl_icon.setPixmap(get_pixmap_colored(icon_file, color, 16))
+                lbl_icon.setToolTip(name)
+                self.layout.addWidget(lbl_icon)
+
+        self.layout.addStretch()
+

@@ -80,7 +80,7 @@ def _silence_ffmpeg_native_logging():
                 if 'avutil' in f and (f.endswith('.dll') or f.endswith('.so') or '.so.' in f or f.endswith('.dylib')):
                     dll_path = os.path.join(root, f)
                     avutil = ctypes.CDLL(dll_path)
-                    avutil.av_log_set_level(16)
+                    avutil.av_log_set_level(8)
                     return
     except Exception:
         pass

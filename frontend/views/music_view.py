@@ -18,6 +18,7 @@ class MusicView(BaseView):
     remove_queue_item_requested = Signal(int)
     play_pause_requested = Signal()
     skip_requested = Signal()
+    seek_requested = Signal(int)
     youtube_auto_resume_toggled = Signal(bool)
     media_keys_toggled = Signal(bool)
     max_user_songs_changed = Signal(int)
@@ -90,6 +91,8 @@ class MusicView(BaseView):
         self.player_panel.volume_changed.connect(self.volume_changed.emit)
         self.player_panel.play_pause_requested.connect(self.play_pause_requested.emit)
         self.player_panel.skip_requested.connect(self.skip_requested.emit)
+        if hasattr(self.player_panel, "seek_requested"):
+            self.player_panel.seek_requested.connect(self.seek_requested.emit)
 
         self.settings_panel.youtube_auto_resume_toggled.connect(self.youtube_auto_resume_toggled.emit)
         self.settings_panel.media_keys_toggled.connect(self.media_keys_toggled.emit)

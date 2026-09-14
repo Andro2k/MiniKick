@@ -79,8 +79,68 @@ class BackupService:
             self.logger.error("Error exporting configuration: %s", e)
             return False
 
-    def import_from_json(self, filepath: str) -> bool:
+    def inspect_backup(self, filepath: str) -> dict | None:
+        if not os.path.exists(filepath) or not os.path.isfile(filepath):
+            self.logger.error("[BackupService] File does not exist: %s", filepath)
+            return None
         try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            if not isinstance(data, dict):
+                self.logger.error("[BackupService] Root element is not a JSON object.")
+                return None
+
+            metadata = data.get("_metadata", {})
+            sections = {}
+
+            if "settings" in data and isinstance(data["settings"], dict):
+                sections["settings"] = len(data["settings"])
+            if "alerts" in data:
+                if isinstance(data["alerts"], list):
+                    sections["alerts"] = len(data["alerts"])
+                elif isinstance(data["alerts"], dict):
+                    sections["alerts"] = len(data["alerts"])
+            if "rewards" in data and isinstance(data["rewards"], dict):
+                sections["rewards"] = len(data["rewards"])
+            if "commands" in data and isinstance(data["commands"], list):
+                sections["commands"] = len(data["commands"])
+            if "spam_filters" in data and isinstance(data["spam_filters"], dict):
+                sections["spam_filters"] = len(data["spam_filters"])
+            if "timers" in data and isinstance(data["timers"], list):
+                sections["timers"] = len(data["timers"])
+            if "schedules" in data and isinstance(data["schedules"], list):
+                sections["schedules"] = len(data["schedules"])
+            if "widgets" in data:
+                if isinstance(data["widgets"], dict):
+                    sections["widgets"] = len(data["widgets"])
+                elif isinstance(data["widgets"], list):
+                    sections["widgets"] = len(data["widgets"])
+
+            meta = metadata if isinstance(metadata, dict) else {}
+            version_str = meta.get("version", "")
+            export_date_str = meta.get("exported_at", "") or meta.get("export_date", "")
+
+            return {
+                "version": version_str,
+                "export_date": export_date_str,
+                "metadata": meta,
+                "sections": {
+                    s_name: {"count": s_count} for s_name, s_count in sections.items()
+                },
+                "filepath": filepath
+            }
+        except Exception as e:
+            self.logger.error("[BackupService] Failed to inspect backup file %s: %s", filepath, e)
+            return None
+
+    def import_from_json(self, filepath: str, sections: set[str] | list[str] | None = None) -> bool:
+        try:
+            target_sections = set(sections) if sections is not None else None
+            if target_sections is not None and not target_sections:
+                self.logger.info("[BackupService] Empty sections set selected for import. No changes made.")
+                return True
+
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
@@ -92,14 +152,14 @@ class BackupService:
             if metadata and isinstance(metadata, dict):
                 self.logger.info("Importing MiniKick backup v%s exported at %s", metadata.get("version", "unknown"), metadata.get("exported_at", "unknown"))
 
-            if "settings" in data and isinstance(data["settings"], dict):
+            if (target_sections is None or "settings" in target_sections) and "settings" in data and isinstance(data["settings"], dict):
                 imported_settings = dict(data["settings"])
                 current_token = self.settings_storage.load_string("overlay_session_token", "")
                 if current_token and "overlay_session_token" not in imported_settings:
                     imported_settings["overlay_session_token"] = current_token
                 self.settings_storage.save_all(imported_settings)
 
-            if "rewards" in data and isinstance(data["rewards"], dict) and self.rewards_storage:
+            if (target_sections is None or "rewards" in target_sections) and "rewards" in data and isinstance(data["rewards"], dict) and self.rewards_storage:
                 cleaned_rewards = {}
                 for r_name, r_cfg in data["rewards"].items():
                     if not isinstance(r_cfg, dict):
@@ -120,7 +180,7 @@ class BackupService:
                     cleaned_rewards[r_name] = cfg_copy
                 self.rewards_storage.save_all(cleaned_rewards)
 
-            if "commands" in data and isinstance(data["commands"], list) and self.commands_storage:
+            if (target_sections is None or "commands" in target_sections) and "commands" in data and isinstance(data["commands"], list) and self.commands_storage:
                 for cmd in data["commands"]:
                     if not isinstance(cmd, dict):
                         continue
@@ -153,12 +213,12 @@ class BackupService:
                             permission=str(cmd.get("permission", "everyone"))
                         )
 
-            if "spam_filters" in data and isinstance(data["spam_filters"], dict) and self.spam_storage:
+            if (target_sections is None or "spam_filters" in target_sections) and "spam_filters" in data and isinstance(data["spam_filters"], dict) and self.spam_storage:
                 for f_id, config in data["spam_filters"].items():
                     if isinstance(config, dict):
                         self.spam_storage.save_filter(f_id, config)
 
-            if "timers" in data and isinstance(data["timers"], list) and self.timers_storage:
+            if (target_sections is None or "timers" in target_sections) and "timers" in data and isinstance(data["timers"], list) and self.timers_storage:
                 for timer in data["timers"]:
                     if not isinstance(timer, dict):
                         continue
@@ -191,7 +251,7 @@ class BackupService:
                             categories=list(timer.get("categories", []))
                         )
 
-            if "schedules" in data and isinstance(data["schedules"], list) and self.schedule_storage:
+            if (target_sections is None or "schedules" in target_sections) and "schedules" in data and isinstance(data["schedules"], list) and self.schedule_storage:
                 for item in data["schedules"]:
                     if isinstance(item, dict) and "name" in item:
                         self.schedule_storage.save(
@@ -207,7 +267,7 @@ class BackupService:
                             is_active=bool(item.get("is_active", True))
                         )
 
-            if "widgets" in data and self.widgets_storage:
+            if (target_sections is None or "widgets" in target_sections) and "widgets" in data and self.widgets_storage:
                 widgets_dict = data["widgets"]
                 if isinstance(widgets_dict, dict):
                     for w_id, w_data in widgets_dict.items():
@@ -232,7 +292,7 @@ class BackupService:
                                 config=dict(w_data.get("config", {}))
                             )
 
-            if "alerts" in data and self.alert_storage:
+            if (target_sections is None or "alerts" in target_sections) and "alerts" in data and self.alert_storage:
                 from backend.models import AlertConfig
                 alerts_data = data["alerts"]
                 configs_to_save = []

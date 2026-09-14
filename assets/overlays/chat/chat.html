@@ -5,18 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiniKick Chat Overlay</title>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <!-- Dynamic Theme Stylesheet -->
     <link id="theme-style" rel="stylesheet" href="">
     <style>
-        /* ==========================================================================
-           1. CSS Variables & Reset
-           ========================================================================== */
         :root {
             --font-size: 14px;
         }
@@ -38,9 +33,6 @@
             flex-direction: column;
         }
 
-        /* ==========================================================================
-           2. Chat Container & Orientations
-           ========================================================================== */
         #chat-container {
             display: flex;
             gap: 12px;
@@ -54,7 +46,6 @@
             display: none;
         }
 
-        /* --- Vertical Orientations --- */
         #chat-container.orientation-vertical.flow-bottom-to-top {
             flex-direction: column;
             justify-content: flex-end;
@@ -73,7 +64,6 @@
             overflow-x: hidden;
         }
 
-        /* --- Horizontal Ticker Orientations --- */
         #chat-container.orientation-horizontal {
             flex-wrap: nowrap;
             overflow-x: auto;
@@ -141,9 +131,6 @@
             vertical-align: middle !important;
         }
 
-        /* ==========================================================================
-           3. Message Box & Hardware-Accelerated Animations
-           ========================================================================== */
         .message-box {
             display: flex;
             flex-direction: column;
@@ -163,7 +150,6 @@
             pointer-events: none;
         }
 
-        /* Entry Animations */
         .anim-entry-bottom {
             animation: slideInFromBottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
@@ -185,6 +171,7 @@
                 opacity: 0;
                 transform: translate3d(0, 35px, 0) scale(0.92);
             }
+
             to {
                 opacity: 1;
                 transform: translate3d(0, 0, 0) scale(1);
@@ -196,6 +183,7 @@
                 opacity: 0;
                 transform: translate3d(0, -35px, 0) scale(0.92);
             }
+
             to {
                 opacity: 1;
                 transform: translate3d(0, 0, 0) scale(1);
@@ -207,6 +195,7 @@
                 opacity: 0;
                 transform: translate3d(-40px, 0, 0) scale(0.92);
             }
+
             to {
                 opacity: 1;
                 transform: translate3d(0, 0, 0) scale(1);
@@ -218,15 +207,59 @@
                 opacity: 0;
                 transform: translate3d(40px, 0, 0) scale(0.92);
             }
+
             to {
                 opacity: 1;
                 transform: translate3d(0, 0, 0) scale(1);
             }
         }
 
-        /* ==========================================================================
-           4. Badges, Icons & Typography
-           ========================================================================== */
+        .anim-pop {
+            animation: chatAnimPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes chatAnimPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.65) translate3d(0, 20px, 0);
+            }
+
+            70% {
+                transform: scale(1.05) translate3d(0, -2px, 0);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translate3d(0, 0, 0);
+            }
+        }
+
+        .anim-slide {
+            animation: chatAnimSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes chatAnimSlide {
+            from {
+                opacity: 0;
+                transform: translate3d(-40px, 0, 0);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        #chat-container.edge-fade {
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
+        }
+
+        #chat-container.orientation-horizontal.edge-fade {
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+        }
+
         .message-header {
             display: flex;
             align-items: center;
@@ -235,117 +268,150 @@
         }
 
         .badge {
-            font-family: 'Outfit', sans-serif;
-            font-size: calc(var(--font-size) * 0.9);
-            font-weight: 700;
-            padding: 0;
-            border-radius: 6px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 1.45em;
-            height: 1.45em;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            width: 1.35em;
+            height: 1.35em;
             line-height: 1;
             flex-shrink: 0;
+            vertical-align: middle;
+            background: transparent;
+            border: none;
+            box-shadow: none;
         }
 
         .badge svg {
-            width: 1.15em;
-            height: 1.15em;
+            width: 100%;
+            height: 100%;
             display: block;
         }
 
-        /* Platform Badges */
-        .badge-platform-twitch {
+        .badge-platform {
+            width: 1.35em;
+            height: 1.35em;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        }
+
+        .badge-platform svg {
+            width: 1.05em;
+            height: 1.05em;
+        }
+
+        .badge-platform.badge-platform-twitch {
             background: linear-gradient(135deg, #9146FF, #772CE8);
             color: #FFFFFF;
-            border: none;
         }
 
-        .badge-platform-kick {
+        .badge-platform.badge-platform-kick {
             background: linear-gradient(135deg, #53FC18, #3DB510);
             color: #000000;
-            font-weight: 900;
-            border: none;
         }
 
-        .badge-platform-youtube {
+        .badge-platform.badge-platform-youtube {
             background: linear-gradient(135deg, #EF4444, #DC2626);
             color: #FFFFFF;
-            border: none;
         }
 
-        .badge-platform-tiktok {
+        .badge-platform.badge-platform-tiktok {
             background: linear-gradient(135deg, #00F2FE 0%, #FF0050 100%);
             color: #FFFFFF;
-            font-weight: 900;
-            border: none;
-            box-shadow: 0 0 8px rgba(0, 242, 254, 0.4);
-        }
-
-        /* Role Badges */
-        .badge-broadcaster {
-            background: linear-gradient(135deg, #EF4444, #DC2626);
-            color: #FFFFFF;
-            border: none;
-        }
-
-        .badge-moderator {
-            background: linear-gradient(135deg, #2ECD70, #16A34A);
-            color: #FFFFFF;
-            border: none;
-        }
-
-        .badge-vip {
-            background: linear-gradient(135deg, #EAB308, #CA8A04);
-            color: #FFFFFF;
-            border: none;
-        }
-
-        .badge-subscriber {
-            background: linear-gradient(135deg, #A855F7, #9333EA);
-            color: #FFFFFF;
-            border: none;
-        }
-
-        .badge-bot {
-            background: linear-gradient(135deg, #3B82F6, #2563EB);
-            color: #FFFFFF;
-            border: none;
-        }
-
-        .badge-og {
-            background: linear-gradient(135deg, #F59E0B, #D97706);
-            color: #FFFFFF;
-            border: none;
-        }
-
-        .badge-super_fan {
-            background: linear-gradient(135deg, #FF6B00, #FFA800);
-            color: #FFFFFF;
-            border: none;
-        }
-
-        .badge-top_gifter {
-            background: linear-gradient(135deg, #FF007A, #9B00E8);
-            color: #FFFFFF;
-            border: none;
+            box-shadow: 0 0 6px rgba(0, 242, 254, 0.35);
         }
 
         .badge-level {
-            width: auto;
-            min-width: 1.4em;
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: calc(var(--font-size) * 0.72);
-            background: linear-gradient(135deg, rgba(46, 205, 112, 0.25), rgba(22, 163, 74, 0.35));
-            color: #2ECD70;
-            border: 1px solid rgba(46, 205, 112, 0.5);
-            font-weight: 800;
+            width: 1.35em;
+            height: 1.35em;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
         }
 
-        /* Username, Content & Timestamp */
+        .badge-level svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .badge.badge-generic {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.25em;
+            height: 1.25em;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+        }
+
+        .badge.badge-generic svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .badge.badge-generic.badge-broadcaster {
+            color: #FF2E93;
+        }
+
+        .badge.badge-generic.badge-moderator {
+            color: #00E5FF;
+        }
+
+        .badge.badge-generic.badge-vip {
+            color: #FFB800;
+        }
+
+        .badge.badge-generic.badge-subscriber {
+            color: #00E676;
+        }
+
+        .badge.badge-generic.badge-bot {
+            color: #3B82F6;
+        }
+
+        .badge.badge-generic.badge-og {
+            color: #F43F5E;
+        }
+
+        .badge.badge-generic.badge-super_fan {
+            color: #FF6D00;
+        }
+
+        .badge.badge-generic.badge-top_gifter {
+            color: #A855F7;
+        }
+
+        .badge.badge-generic.badge-founder {
+            color: #FFB800;
+        }
+
+        .badge.badge-generic.badge-staff {
+            color: #10B981;
+        }
+
+        .badge.badge-generic.badge-verified {
+            color: #00E5FF;
+        }
+
+        .badge.badge-generic.badge-premium,
+        .badge.badge-generic.badge-prime {
+            color: #00A8E8;
+        }
+
+        .badge-level.badge-level-generic {
+            width: auto;
+            min-width: 1.4em;
+            padding: 2px 6px !important;
+            border-radius: 8px !important;
+            font-size: calc(var(--font-size) * 0.72);
+            background: rgba(255, 255, 255, 0.12) !important;
+            color: #FFFFFF !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
         .username {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
@@ -367,6 +433,28 @@
             display: inline-block;
         }
 
+        .message-box.only-emotes .message-content {
+            padding: 4px 0 2px 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .message-box.only-emotes .chat-emote {
+            height: 56px;
+            width: auto;
+            margin: 2px 4px;
+            vertical-align: middle;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-block;
+        }
+
+        .message-box.only-emotes .chat-emote:hover {
+            transform: scale(1.15);
+        }
+
         .timestamp {
             font-size: calc(var(--font-size) - 3px);
             color: #FFFFFF;
@@ -374,549 +462,29 @@
             font-family: 'Inter', sans-serif;
             font-weight: 500;
         }
+
+        .badge-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .message-content.action {
+            font-style: italic;
+        }
+
+        .message-box.highlighted {
+            border-color: #FFD700 !important;
+            box-shadow: 0 0 14px rgba(255, 215, 0, 0.45) !important;
+        }
     </style>
 </head>
 
 <body>
     <div id="chat-container"></div>
-
-    <script>
-        // ==========================================================================
-        // 1. Configuration & URL Parameters
-        // ==========================================================================
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token') || '';
-        const theme = urlParams.get('theme') || 'glass';
-        const fadeTime = urlParams.get('fade') !== null ? parseInt(urlParams.get('fade')) : 15;
-        const fontSize = urlParams.get('size') || '14px';
-        const maxMessages = parseInt(urlParams.get('max')) || 15;
-        const showBots = urlParams.get('show_bots') !== 'false';
-        const showTime = urlParams.get('show_time') === 'true';
-        const orientation = urlParams.get('orientation') || 'vertical';
-        const defaultFlow = orientation === 'horizontal' ? 'right-to-left' : 'bottom-to-top';
-        const flow = urlParams.get('flow') || defaultFlow;
-        const defaultEntry = orientation === 'horizontal' ? 'right' : 'bottom';
-        const entryDir = urlParams.get('entry') || defaultEntry;
-
-        // Apply theme and base styles
-        const themeStyle = document.getElementById('theme-style');
-        themeStyle.href = `/chat/css/${theme}.css`;
-        document.documentElement.style.setProperty('--font-size', fontSize);
-
-        const container = document.getElementById('chat-container');
-        container.classList.add(`orientation-${orientation}`, `flow-${flow}`);
-
-        // Precompiled regular expressions for high throughput
-        const REGEX_ESCAPE = /[&<>"']/g;
-        const ESCAPE_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        const REGEX_KICK_EMOTE = /\[emote:(\d+):([^\]]+)\]/g;
-        const REGEX_TIKTOK_STICKER = /\[([a-zA-Z0-9_\-]+)\]/g;
-
-        // ==========================================================================
-        // 2. SVG Icons & Stickers Dictionary
-        // ==========================================================================
-        const ICONS = {
-            twitch: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57V4.714zm4.715 0H18v5.143h-1.714V4.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0H6zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714v9.429z"/></svg>`,
-            kick: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>kick</title><path fill="currentColor" d="M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z"/></svg>`,
-            youtube: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><path fill="none" d="M0 0h24v24H0z"/><path fill="currentColor" d="M18 3a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H6a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5zM9 9v6a1 1 0 0 0 1.514.857l5-3a1 1 0 0 0 0-1.714l-5-3A1 1 0 0 0 9 9"/></svg>`,
-            tiktok: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74a2.89 2.89 0 0 1 2.31-4.64c.298-.002.595.042.88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z"/></svg>`,
-
-            super_fan: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-            top_gifter: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>trophy</title><path fill="currentColor" d="M7 21v-2h4v-3.1q-1.225-.275-2.187-1.037T7.4 12.95q-1.875-.225-3.137-1.637T3 8V7q0-.825.588-1.412T5 5h2V3h10v2h2q.825 0 1.413.588T21 7v1q0 1.9-1.263 3.313T16.6 12.95q-.45 1.15-1.412 1.913T13 15.9V19h4v2zm0-10.2V7H5v1q0 .95.55 1.713T7 10.8m10 0q.9-.325 1.45-1.088T19 8V7h-2z"/></svg>`,
-            broadcaster: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>microphone-filled</title><path fill="currentColor" d="M19 9a1 1 0 0 1 1 1a8 8 0 0 1-6.999 7.938L13 20h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-2.062A8 8 0 0 1 4 10a1 1 0 1 1 2 0a6 6 0 0 0 12 0a1 1 0 0 1 1-1m-7-8a4 4 0 0 1 4 4v5a4 4 0 1 1-8 0V5a4 4 0 0 1 4-4"/></svg>`,
-            moderator: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>sword-filled</title><path fill="currentColor" d="m2.29 18.71l3 3c.2.2.45.29.71.29s.51-.1.71-.29L10 18.42l2.29 2.29l1.41-1.41l-2.29-2.29L7 12.6l-2.29-2.29l-1.41 1.41l2.29 2.29L2.3 17.3a.996.996 0 0 0 0 1.41ZM21 2h-3c-.27 0-.52.11-.71.29l-9.58 9.59l4.41 4.41l9.59-9.59a1 1 0 0 0 .29-.71v-3c0-.55-.45-1-1-1Z"/></svg>`,
-            vip: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>vip-2</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h4m10 0h4M3 19h18M4 9l2 6h1l2-6m3 1v5m4 0V9h2a2 2 0 1 1 0 4h-2m-6-8a2 2 0 0 1 2 2a2 2 0 0 1 2-2a2 2 0 0 1-2-2a2 2 0 0 1-2 2"/></svg>`,
-            subscriber: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>gift-filled</title><path fill="currentColor" d="M11 14v8H7a3 3 0 0 1-3-3v-4a1 1 0 0 1 1-1zm8 0a1 1 0 0 1 1 1v4a3 3 0 0 1-3 3h-4v-8zM16.5 2a3.5 3.5 0 0 1 3.163 5H20a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-7V7h-2v5H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h.337A3.5 3.5 0 0 1 4 5.5C4 3.567 5.567 2 7.483 2c1.755-.03 3.312 1.092 4.381 2.934l.136.243c1.033-1.914 2.56-3.114 4.291-3.175zm-9 2a1.5 1.5 0 0 0 0 3h3.143C9.902 5.095 8.694 3.98 7.5 4m8.983 0c-1.18-.02-2.385 1.096-3.126 3H16.5a1.5 1.5 0 1 0-.017-3"/></svg>`,
-            bot: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16"><title>bot</title><path fill="currentColor" d="M8 0a1 1 0 0 1 .5 1.864V4H11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2.5V1.864A.998.998 0 0 1 8 0M5 10v2h6v-2zm.5-4a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0-3m5 0a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0-3m-9 1a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5m13 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 1 .5-.5"/></svg>`,
-            og: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24"><title>heart-filled</title><path fill="currentColor" d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037.033l.034-.03a6 6 0 0 1 4.733-1.44l.246.036a6 6 0 0 1 3.364 10.008l-.18.185l-.048.041l-7.45 7.379a1 1 0 0 1-1.313.082l-.094-.082l-7.493-7.422A6 6 0 0 1 6.979 3.074"/></svg>`
-        };
-
-        const TIKTOK_STICKERS = {
-            'wow': { svg: '1f62e', emoji: '😮' },
-            'laugh': { svg: '1f606', emoji: '😆' },
-            'thanks': { svg: '1f64f', emoji: '🙏' },
-            'laughcry': { svg: '1f602', emoji: '😂' },
-            'thumb': { svg: '1f44d', emoji: '👍' },
-            'hi': { svg: '1f44b', emoji: '👋' },
-            'heart': { svg: '2764', emoji: '❤️' },
-            'congrat': { svg: '1f389', emoji: '🎉' },
-            'rockyloveit': { svg: '1f60d', emoji: '😍' },
-            'rockyserious': { svg: '1f620', emoji: '😠' },
-            'rockyproud': { svg: '1f981', emoji: '🦁' },
-            'rockycool': { svg: '1f60e', emoji: '😎' },
-            'rockyhappy': { svg: '1f601', emoji: '😁' },
-            'rockyangry': { svg: '1f621', emoji: '😡' },
-            'rockywave': { svg: '1f44b', emoji: '👋' },
-            'rockyshock': { svg: '1f631', emoji: '😱' },
-            'rosiedislike': { svg: '1f44e', emoji: '👎' },
-            'rosieawkward': { svg: '1f605', emoji: '😅' },
-            'rosiekisskiss': { svg: '1f48b', emoji: '💋' },
-            'rosiecute': { svg: '1f970', emoji: '🥰' },
-            'rosielove': { svg: '2764', emoji: '❤️' },
-            'rosiecry': { svg: '1f62d', emoji: '😭' },
-            'rosieshy': { svg: '1f648', emoji: '🙈' },
-            'jolliekissingface': { svg: '1f618', emoji: '😘' },
-            'jolliewow': { svg: '1f929', emoji: '🤩' },
-            'jolliespeechless': { svg: '1f636', emoji: '😶' },
-            'jolliesatisfied': { svg: '1f60c', emoji: '😌' },
-            'jolliehappy': { svg: '1f973', emoji: '🥳' },
-            'jollielaugh': { svg: '1f923', emoji: '🤣' },
-            'sagethink': { svg: '1f914', emoji: '🤔' },
-            'sagefulfilled': { svg: '2728', emoji: '✨' },
-            'sageclever': { svg: '1f4a1', emoji: '💡' },
-            'sagemoney': { svg: '1f911', emoji: '🤑' },
-            'sagewow': { svg: '1f92f', emoji: '🤯' },
-            'sageproud': { svg: '1f393', emoji: '🎓' },
-            'smile': { svg: '1f60a', emoji: '😊' },
-            'happy': { svg: '1f970', emoji: '🥰' },
-            'angry': { svg: '1f621', emoji: '😡' },
-            'cry': { svg: '1f62d', emoji: '😭' },
-            'embarrassed': { svg: '1f633', emoji: '😳' },
-            'surprised': { svg: '1f62e', emoji: '😲' },
-            'wronged': { svg: '1f97a', emoji: '🥺' },
-            'shout': { svg: '1f4e2', emoji: '📢' },
-            'flushed': { svg: '1f633', emoji: '😳' },
-            'yummy': { svg: '1f60b', emoji: '😋' },
-            'complacent': { svg: '1f60f', emoji: '😏' },
-            'drool': { svg: '1f924', emoji: '🤤' },
-            'scream': { svg: '1f631', emoji: '😱' },
-            'weep': { svg: '1f622', emoji: '😢' },
-            'speechless': { svg: '1f636', emoji: '😶' },
-            'funnyface': { svg: '1f92a', emoji: '🤪' },
-            'laughwithtears': { svg: '1f602', emoji: '😂' },
-            'wicked': { svg: '1f608', emoji: '😈' },
-            'facewithrollingeyes': { svg: '1f644', emoji: '🙄' },
-            'sulk': { svg: '1f624', emoji: '😤' },
-            'thinking': { svg: '1f914', emoji: '🤔' },
-            'lovely': { svg: '1f60d', emoji: '😍' },
-            'greedy': { svg: '1f911', emoji: '🤑' },
-            'joyful': { svg: '1f604', emoji: '😄' },
-            'hehe': { svg: '1f92d', emoji: '🤭' },
-            'slap': { svg: '1f926', emoji: '🤦' },
-            'tears': { svg: '1f4a7', emoji: '💧' },
-            'stun': { svg: '1f635', emoji: '😵' },
-            'cute': { svg: '1f97a', emoji: '🥺' },
-            'blink': { svg: '1f609', emoji: '😉' },
-            'disdain': { svg: '1f612', emoji: '😒' },
-            'astonish': { svg: '1f632', emoji: '😯' },
-            'rage': { svg: '1f92c', emoji: '🤬' },
-            'cool': { svg: '1f60e', emoji: '😎' },
-            'excited': { svg: '1f929', emoji: '🤩' },
-            'proud': { svg: '1f60c', emoji: '😌' },
-            'smileface': { svg: '1f600', emoji: '😀' },
-            'evil': { svg: '1f47f', emoji: '👿' },
-            'angel': { svg: '1f607', emoji: '😇' },
-            'pride': { svg: '1f981', emoji: '🦁' },
-            'nap': { svg: '1f634', emoji: '😴' },
-            'loveface': { svg: '1f618', emoji: '😘' },
-            'awkward': { svg: '1f62c', emoji: '😬' },
-            'shock': { svg: '1f631', emoji: '😱' }
-        };
-
-        // ==========================================================================
-        // 3. String & Emote Processing Pipeline
-        // ==========================================================================
-        function escapeHtml(text) {
-            if (!text) return '';
-            return String(text).replace(REGEX_ESCAPE, m => ESCAPE_MAP[m]);
-        }
-
-        function parseTwitchEmotes(rawMessage, emotesTag) {
-            if (!emotesTag || typeof emotesTag !== 'string' || !emotesTag.includes(':') || emotesTag.startsWith('[')) {
-                return null;
-            }
-
-            const ranges = [];
-            const groups = emotesTag.split('/');
-            for (let i = 0; i < groups.length; i++) {
-                const group = groups[i];
-                if (!group.includes(':')) continue;
-                const [emoteId, rangeStr] = group.split(':');
-                if (!rangeStr) continue;
-
-                const rangeList = rangeStr.split(',');
-                for (let j = 0; j < rangeList.length; j++) {
-                    const r = rangeList[j];
-                    if (!r.includes('-')) continue;
-                    const [start, end] = r.split('-').map(Number);
-                    if (!isNaN(start) && !isNaN(end)) {
-                        ranges.push({ emoteId, start, end });
-                    }
-                }
-            }
-
-            if (ranges.length === 0) return null;
-
-            ranges.sort((a, b) => a.start - b.start);
-            const chars = Array.from(rawMessage);
-            let result = '';
-            let lastIdx = 0;
-
-            for (let i = 0; i < ranges.length; i++) {
-                const { emoteId, start, end } = ranges[i];
-                if (start >= lastIdx) {
-                    const beforeText = chars.slice(lastIdx, start).join('');
-                    const emoteCode = chars.slice(start, end + 1).join('');
-                    result += escapeHtml(beforeText);
-                    result += `<img src="https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/2.0" alt="${escapeHtml(emoteCode)}" title="${escapeHtml(emoteCode)}" class="chat-emote" loading="lazy" decoding="async" />`;
-                    lastIdx = end + 1;
-                }
-            }
-            result += escapeHtml(chars.slice(lastIdx).join(''));
-            return result;
-        }
-
-        function parseYouTubeEmotes(messageHtml, emotesTag) {
-            if (!emotesTag) return messageHtml;
-            try {
-                let ytEmotes = [];
-                if (typeof emotesTag === 'string' && emotesTag.trim().startsWith('[')) {
-                    ytEmotes = JSON.parse(emotesTag);
-                } else if (Array.isArray(emotesTag)) {
-                    ytEmotes = emotesTag;
-                }
-
-                if (Array.isArray(ytEmotes) && ytEmotes.length > 0) {
-                    const seenNames = new Set();
-                    for (let i = 0; i < ytEmotes.length; i++) {
-                        const em = ytEmotes[i];
-                        if (em && em.name && em.url && !seenNames.has(em.name)) {
-                            seenNames.add(em.name);
-                            const cleanLabel = escapeHtml(em.name.replace(/^:+|:+$/g, ''));
-                            const escUrl = escapeHtml(em.url);
-                            const escapedBase = em.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                            const regex = new RegExp(escapedBase, 'g');
-                            messageHtml = messageHtml.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn("[Chat Overlay] Error parseando emotes de YouTube:", e);
-            }
-            return messageHtml;
-        }
-
-        function parseTikTokEmotes(messageHtml, emotesTag) {
-            if (!emotesTag) return messageHtml;
-            try {
-                let ttEmotes = [];
-                if (typeof emotesTag === 'string' && emotesTag.trim().startsWith('[')) {
-                    ttEmotes = JSON.parse(emotesTag);
-                } else if (Array.isArray(emotesTag)) {
-                    ttEmotes = emotesTag;
-                }
-
-                if (Array.isArray(ttEmotes) && ttEmotes.length > 0) {
-                    const seenNames = new Set();
-                    for (let i = 0; i < ttEmotes.length; i++) {
-                        const em = ttEmotes[i];
-                        if (em && em.name && em.url) {
-                            const rawName = String(em.name).trim();
-                            if (seenNames.has(rawName)) continue;
-                            seenNames.add(rawName);
-
-                            const cleanName = rawName.replace(/^\[+|\]+$/g, '');
-                            const cleanLabel = escapeHtml(cleanName);
-                            const escUrl = escapeHtml(em.url);
-                            const escapedBase = cleanName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                            const regex = new RegExp(`\\[${escapedBase}\\]|\\b${escapedBase}\\b`, 'g');
-                            messageHtml = messageHtml.replace(regex, `<img src="${escUrl}" alt="${cleanLabel}" title="${cleanLabel}" class="chat-emote" loading="lazy" decoding="async" />`);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn("[Chat Overlay] Error parseando emotes de TikTok:", e);
-            }
-            return messageHtml;
-        }
-
-        function parseKickEmotes(messageHtml) {
-            return messageHtml.replace(REGEX_KICK_EMOTE, (match, id, name) => {
-                return `<img src="https://files.kick.com/emotes/${id}/fullsize" alt="${escapeHtml(name)}" title="${escapeHtml(name)}" class="chat-emote" loading="lazy" decoding="async" />`;
-            });
-        }
-
-        function parseTikTokStickers(messageHtml) {
-            return messageHtml.replace(REGEX_TIKTOK_STICKER, (match, code) => {
-                const key = code.toLowerCase();
-                const item = TIKTOK_STICKERS[key];
-                if (item) {
-                    const label = escapeHtml(code);
-                    return `<img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${item.svg}.svg" alt="${label}" title="${label}" class="chat-emote" loading="lazy" decoding="async" onerror="this.outerHTML='${item.emoji}'" />`;
-                }
-                return match;
-            });
-        }
-
-        function formatChatMessage(data) {
-            let safeMsg = '';
-
-            // 1. Twitch native emotes if provided
-            if (data.platform === 'twitch' && data.emotes_tag) {
-                const twitchHtml = parseTwitchEmotes(data.message, data.emotes_tag);
-                if (twitchHtml !== null) {
-                    safeMsg = twitchHtml;
-                }
-            }
-
-            // 2. Default HTML escaping if not formatted by Twitch
-            if (!safeMsg) {
-                safeMsg = escapeHtml(data.message);
-            }
-
-            // 3. YouTube custom emotes
-            if (data.platform === 'youtube' && data.emotes_tag) {
-                safeMsg = parseYouTubeEmotes(safeMsg, data.emotes_tag);
-            }
-
-            // 4. TikTok custom emotes
-            if (data.platform === 'tiktok' && data.emotes_tag) {
-                safeMsg = parseTikTokEmotes(safeMsg, data.emotes_tag);
-            }
-
-            // 5. Kick emotes
-            safeMsg = parseKickEmotes(safeMsg);
-
-            // 6. TikTok twemoji stickers
-            safeMsg = parseTikTokStickers(safeMsg);
-
-            return safeMsg;
-        }
-
-        function getBadgeLabel(badge) {
-            const labels = {
-                'broadcaster': 'Streamer',
-                'moderator': 'Mod',
-                'vip': 'VIP',
-                'subscriber': 'Sub',
-                'super_fan': 'Super Fan',
-                'top_gifter': 'Top Gifter',
-                'bot': 'Bot'
-            };
-            return labels[badge] || badge;
-        }
-
-        function getRoleClass(badges) {
-            if (!badges || !Array.isArray(badges)) return 'default';
-            if (badges.includes('broadcaster')) return 'broadcaster';
-            if (badges.includes('moderator')) return 'moderator';
-            if (badges.includes('vip')) return 'vip';
-            if (badges.includes('subscriber')) return 'subscriber';
-            if (badges.includes('bot')) return 'bot';
-            return 'default';
-        }
-
-        // ==========================================================================
-        // 4. DOM Construction & Message Rendering
-        // ==========================================================================
-        function addMessage(data) {
-            if (!showBots && data.badges && data.badges.includes('bot')) {
-                return;
-            }
-
-            const roleClass = getRoleClass(data.badges);
-            const msgBox = document.createElement('div');
-            msgBox.className = `message-box theme-${theme} role-${roleClass} anim-entry-${entryDir}`;
-            msgBox.style.fontSize = fontSize;
-
-            // Theme-specific glow accents
-            const accentColor = data.color || '#2ECD70';
-            if (theme === 'neon') {
-                msgBox.style.borderColor = accentColor;
-                msgBox.style.boxShadow = `0 0 10px ${accentColor}, inset 0 0 5px ${accentColor}`;
-            } else if (theme === 'minimal') {
-                msgBox.style.setProperty('--author-color', data.color || '#C084FC');
-            } else if (theme === 'cyber') {
-                msgBox.style.setProperty('--cyber-color', data.color || '#00FF66');
-            }
-
-            // Header construction
-            const header = document.createElement('div');
-            header.className = 'message-header';
-
-            if (showTime) {
-                const timeSpan = document.createElement('span');
-                timeSpan.className = 'timestamp';
-                const now = new Date();
-                const hh = String(now.getHours()).padStart(2, '0');
-                const mm = String(now.getMinutes()).padStart(2, '0');
-                const ss = String(now.getSeconds()).padStart(2, '0');
-                timeSpan.innerText = `[${hh}:${mm}:${ss}]`;
-                header.appendChild(timeSpan);
-            }
-
-            // Platform badge
-            const platform = (data.platform || 'kick').toLowerCase();
-            const platformSpan = document.createElement('span');
-            platformSpan.className = `badge badge-platform-${platform}`;
-            platformSpan.innerHTML = ICONS[platform] || ICONS.kick;
-            platformSpan.title = platform === 'twitch' ? 'Twitch' : platform === 'youtube' ? 'YouTube' : platform === 'tiktok' ? 'TikTok' : 'Kick';
-            header.appendChild(platformSpan);
-
-            // User badges
-            if (data.badges && Array.isArray(data.badges)) {
-                for (let i = 0; i < data.badges.length; i++) {
-                    const badge = data.badges[i];
-                    const badgeSpan = document.createElement('span');
-                    if (typeof badge === 'string' && badge.startsWith('level_')) {
-                        const lvl = badge.replace('level_', '');
-                        badgeSpan.className = 'badge badge-level';
-                        badgeSpan.innerText = `Lvl ${lvl}`;
-                        badgeSpan.title = `Nivel ${lvl}`;
-                        header.appendChild(badgeSpan);
-                    } else if (ICONS[badge]) {
-                        badgeSpan.className = `badge badge-${badge}`;
-                        badgeSpan.innerHTML = ICONS[badge];
-                        badgeSpan.title = getBadgeLabel(badge);
-                        header.appendChild(badgeSpan);
-                    }
-                }
-            }
-
-            // Username
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'username';
-            nameSpan.style.color = data.color || '#FAFAFA';
-            nameSpan.innerText = data.user;
-            if (theme === 'neon') {
-                nameSpan.style.textShadow = `0 0 8px ${accentColor}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
-            } else if (theme === 'cyber') {
-                nameSpan.style.textShadow = `0 0 8px ${data.color || '#00FF66'}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
-            } else if (theme === 'minimal') {
-                nameSpan.style.textShadow = `0 0 10px ${data.color || '#C084FC'}, 0 1px 3px rgba(0, 0, 0, 0.95), 0 2px 6px rgba(0, 0, 0, 0.85)`;
-            }
-            header.appendChild(nameSpan);
-            msgBox.appendChild(header);
-
-            // Content construction
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            const textSpan = document.createElement('span');
-            textSpan.innerHTML = formatChatMessage(data);
-            content.appendChild(textSpan);
-            msgBox.appendChild(content);
-
-            container.appendChild(msgBox);
-
-            // Maintain max message limit and avoid DOM overflow
-            pruneMessages();
-
-            // Auto-scroll logic
-            autoScroll();
-
-            // Auto-fade timer
-            if (fadeTime > 0) {
-                setTimeout(() => {
-                    removeMessage(msgBox);
-                }, fadeTime * 1000);
-            }
-        }
-
-        // ==========================================================================
-        // 5. Message Lifecycle & Auto-Scroll
-        // ==========================================================================
-        function pruneMessages() {
-            while (container.children.length > maxMessages) {
-                const first = container.firstElementChild;
-                if (!first) break;
-                if (first.classList.contains('fade-out')) {
-                    container.removeChild(first);
-                } else {
-                    removeMessage(first);
-                    // Fast purge if way over threshold
-                    if (container.children.length > maxMessages + 5) {
-                        container.removeChild(first);
-                    } else {
-                        break;
-                    }
-                }
-            }
-        }
-
-        function removeMessage(msgBox) {
-            if (!msgBox || msgBox.classList.contains('fade-out')) return;
-            msgBox.classList.add('fade-out');
-            setTimeout(() => {
-                if (msgBox.parentNode === container) {
-                    container.removeChild(msgBox);
-                }
-            }, 400);
-        }
-
-        function autoScroll() {
-            if (orientation === 'horizontal') {
-                container.scrollLeft = (flow === 'right-to-left') ? container.scrollWidth : 0;
-            } else {
-                container.scrollTop = (flow === 'bottom-to-top') ? container.scrollHeight : 0;
-            }
-        }
-
-        // ==========================================================================
-        // 6. WebSocket Connection & Heartbeat Manager
-        // ==========================================================================
-        let ws = null;
-        let reconnectTimer = null;
-        let heartbeatTimer = null;
-
-        function connectWS() {
-            if (ws) {
-                try { ws.close(); } catch (e) { }
-                ws = null;
-            }
-
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws?topic=chat&token=${encodeURIComponent(token)}`;
-            ws = new WebSocket(wsUrl);
-
-            ws.onopen = function () {
-                console.log("[Chat Overlay] WebSocket conectado exitosamente.");
-                if (reconnectTimer) {
-                    clearTimeout(reconnectTimer);
-                    reconnectTimer = null;
-                }
-                heartbeatTimer = setInterval(() => {
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({ type: 'ping' }));
-                    }
-                }, 15000);
-            };
-
-            ws.onmessage = function (event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'pong') return;
-                    addMessage(data);
-                } catch (e) {
-                    console.error("[Chat Overlay] Error parseando evento de chat:", e);
-                }
-            };
-
-            ws.onerror = function () {
-                cleanup();
-                scheduleReconnect();
-            };
-
-            ws.onclose = function () {
-                cleanup();
-                scheduleReconnect();
-            };
-        }
-
-        function cleanup() {
-            if (heartbeatTimer) {
-                clearInterval(heartbeatTimer);
-                heartbeatTimer = null;
-            }
-        }
-
-        function scheduleReconnect() {
-            if (reconnectTimer) clearTimeout(reconnectTimer);
-            reconnectTimer = setTimeout(connectWS, 3000);
-        }
-
-        // Initialize connection
-        connectWS();
-    </script>
+    <script src="/js/badges.js"></script>
+    <script src="/js/chat.js"></script>
 </body>
 
 </html>

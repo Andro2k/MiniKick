@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QColorDialog
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.common import RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_MD, SPACING_SM, SPACING_XS
+from frontend.common import RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_SM, SPACING_XS
 
 DEFAULT_PRESET_COLORS = [
     "#00E701", "#00F0FF", "#9146FF", "#FF4655", "#FFB800", "#FFFFFF"
@@ -18,13 +18,15 @@ class ModernColorPicker(QWidget):
         tooltip: str = "",
         presets: list[str] | None = None,
         is_vertical: bool = False,
+        show_presets: bool = False,
         parent: QWidget | None = None
     ):
         super().__init__(parent)
         self._current_color = initial_color if QColor.isValidColorName(initial_color) else "#00e701"
         self._tooltip = tooltip
-        self._presets = presets if presets is not None else DEFAULT_PRESET_COLORS
+        self._presets = presets if (presets is not None and show_presets) else ([] if not show_presets else DEFAULT_PRESET_COLORS)
         self._is_vertical = is_vertical
+        self._show_presets = show_presets
         self._setup_ui()
 
     def _setup_ui(self):
@@ -37,7 +39,7 @@ class ModernColorPicker(QWidget):
 
         self.txt_color = QLineEdit(self._current_color, self)
         self.txt_color.setMaxLength(7)
-        self.txt_color.setMinimumWidth(70)
+        self.txt_color.setMinimumWidth(76)
         self.txt_color.setFixedHeight(32)
         self.txt_color.textChanged.connect(self._on_text_changed)
 
@@ -53,7 +55,7 @@ class ModernColorPicker(QWidget):
             row_top.addWidget(self.txt_color, stretch=1)
             layout.addLayout(row_top)
 
-            if self._presets:
+            if self._show_presets and self._presets:
                 presets_layout = QHBoxLayout()
                 presets_layout.setContentsMargins(*MARGIN_NONE)
                 presets_layout.setSpacing(SPACING_XS)
@@ -69,11 +71,11 @@ class ModernColorPicker(QWidget):
         else:
             layout = QHBoxLayout(self)
             layout.setContentsMargins(*MARGIN_NONE)
-            layout.setSpacing(SPACING_MD)
+            layout.setSpacing(SPACING_SM)
             layout.addWidget(self.btn_swatch)
             layout.addWidget(self.txt_color, stretch=1)
 
-            if self._presets:
+            if self._show_presets and self._presets:
                 presets_layout = QHBoxLayout()
                 presets_layout.setSpacing(SPACING_XS)
                 for hex_code in self._presets:

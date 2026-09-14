@@ -1,9 +1,10 @@
 # frontend\views\__init__.py
 
+from .base_view import BaseView
 from .chat_view import ChatView
-from .command_view import CommandView
+from .commands_view import CommandView
 from .dashboard_view import DashboardView
-from .log_view import LogView
+from .logs_view import LogView
 from .music_view import MusicView
 from .rewards_view import RewardsView
 from .settings_view import SettingsView
@@ -14,6 +15,7 @@ from .schedule_view import ScheduleView
 from .alerts_view import AlertsView
 
 __all__ = [
+    "BaseView",
     "ChatView",
     "CommandView",
     "DashboardView",

@@ -13,7 +13,7 @@ class SettingsController(QObject):
     backup_restored = Signal()
     notification_requested = Signal(str, str)
 
-    def __init__(self, view, service, toast_manager=None, music_provider=None, tts_manager=None, i18n=None):
+    def __init__(self, view, service, toast_manager=None, music_provider=None, tts_manager=None, i18n=None, browser_service=None):
         super().__init__()
         self.view = view
         self.service = service
@@ -21,6 +21,7 @@ class SettingsController(QObject):
         self.music_provider = music_provider
         self.tts_manager = tts_manager
         self.i18n = i18n
+        self.browser_service = browser_service
         self._view_connected = False
         if self.view is not None:
             self._connect_signals()
@@ -53,6 +54,8 @@ class SettingsController(QObject):
         self.view.language_changed.connect(self.handle_language_change)
         self.view.music_audio_device_changed.connect(self.handle_music_audio_device)
         self.view.tts_audio_device_changed.connect(self.handle_tts_audio_device)
+        if hasattr(self.view, "browser_changed"):
+            self.view.browser_changed.connect(self.handle_browser_change)
         self.view.feedback_clicked.connect(self.handle_feedback)
         self.view.release_notes_clicked.connect(self.handle_release_notes)
 
@@ -69,6 +72,12 @@ class SettingsController(QObject):
             self.view.set_current_font_size(current_font)
             self.view.set_current_music_audio_device(music_device)
             self.view.set_current_tts_audio_device(tts_device)
+            if hasattr(self.view, "populate_browsers"):
+                browsers = self.browser_service.get_installed_browsers() if self.browser_service else []
+                current_browser = self.browser_service.get_browser_path() if self.browser_service else (
+                    self.service.get_browser_path() if hasattr(self.service, "get_browser_path") else "default"
+                )
+                self.view.populate_browsers(browsers, current_browser)
 
         if hasattr(self, 'music_provider') and self.music_provider and hasattr(self.music_provider, 'set_audio_device'):
             self.music_provider.set_audio_device(music_device)
@@ -132,24 +141,46 @@ class SettingsController(QObject):
     @Slot()
     def handle_import(self):
         filepath = self.view.ask_open_path()
-        if filepath:
-            logger.info("[User Action] Imported app settings from: '%s'", filepath)
-            i18n = self._get_i18n()
-            if self.service.import_settings(filepath):
-                self.backup_restored.emit()
-                if self.toast:
-                    self.toast.show_toast(
-                        title=i18n.get("settings.status.imported"),
-                        message=i18n.get("settings.status.imported_msg"),
-                        state="success"
-                    )
-            else:
-                if self.toast:
-                    self.toast.show_toast(
-                        title=i18n.get("settings.status.error_title"),
-                        message=i18n.get("settings.status.import_error"),
-                        state="danger"
-                    )
+        if not filepath:
+            return
+
+        i18n = self._get_i18n()
+        backup_info = self.service.inspect_backup(filepath)
+        if not backup_info:
+            logger.warning("[SettingsController] Failed to inspect backup file: %s", filepath)
+            if self.toast:
+                self.toast.show_toast(
+                    title=i18n.get("settings.status.error_title"),
+                    message=i18n.get("settings.status.import_error"),
+                    state="danger"
+                )
+            return
+
+        selected_sections = self.view.show_import_backup_dialog(backup_info)
+        if selected_sections is None:
+            logger.info("[SettingsController] Backup import cancelled by user.")
+            return
+
+        if not selected_sections:
+            logger.info("[SettingsController] No sections selected for restore.")
+            return
+
+        logger.info("[User Action] Importing app settings from: '%s' (sections=%s)", filepath, selected_sections)
+        if self.service.import_settings(filepath, sections=selected_sections):
+            self.backup_restored.emit()
+            if self.toast:
+                self.toast.show_toast(
+                    title=i18n.get("settings.status.imported"),
+                    message=i18n.get("settings.status.imported_msg"),
+                    state="success"
+                )
+        else:
+            if self.toast:
+                self.toast.show_toast(
+                    title=i18n.get("settings.status.error_title"),
+                    message=i18n.get("settings.status.import_error"),
+                    state="danger"
+                )
 
     @Slot(str)
     def handle_language_change(self, lang_code: str):
@@ -196,7 +227,36 @@ class SettingsController(QObject):
             pass
         self.view.show_bug_report_dialog(worker_class=BugReportWorker, initial_contact=initial_contact)
 
+    @Slot(str)
+    def handle_browser_change(self, browser_path: str):
+        current = (
+            self.browser_service.get_browser_path()
+            if self.browser_service
+            else (self.service.get_browser_path() if hasattr(self.service, "get_browser_path") else "default")
+        )
+        if current == browser_path:
+            return
+        logger.info("[User Action] Changed web browser preference to: '%s'", browser_path)
+        if self.browser_service:
+            self.browser_service.set_browser_path(browser_path)
+        elif hasattr(self.service, "set_browser_path"):
+            self.service.set_browser_path(browser_path)
+
+        if self.toast:
+            i18n = self._get_i18n()
+            if browser_path == "default":
+                friendly_name = i18n.get("settings.system.browser_default")
+            else:
+                import os
+                friendly_name = os.path.basename(browser_path)
+            self.toast.show_toast(
+                title=i18n.get("settings.status.browser_changed"),
+                message=i18n.get("settings.status.browser_changed_msg").replace("{name}", friendly_name),
+                state="success",
+                tag="browser_change",
+            )
+
     @Slot()
     def handle_release_notes(self):
         logger.info("[User Action] Opened Release Notes modal")
-        self.view.show_release_notes_dialog(worker_class=ReleaseNotesWorker)
+        self.view.show_release_notes_dialog(worker_class=ReleaseNotesWorker, browser_service=self.browser_service)

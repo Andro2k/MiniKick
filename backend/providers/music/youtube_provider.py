@@ -1,0 +1,600 @@
+# backend\providers\music\youtube_provider.py
+
+import logging
+import os
+import re
+from PySide6.QtCore import QObject, QUrl, QTimer, Signal, Slot
+from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
+from backend.workers import YouTubeResolveWorker, YouTubeSearchWorker
+
+logger = logging.getLogger("minikick.providers.youtube_provider")
+
+_ERR_INVALID_MEDIA = "INVALID_MEDIA"
+_ERR_PLAYER_ERROR = "PLAYER_ERROR"
+
+_YT_ID_RE = re.compile(r'(?:v=|\/|embed\/|v\/)([a-zA-Z0-9_-]{11})')
+
+from backend.database import SQLiteMusicStorage
+
+class YouTubeMusicProvider(QObject):
+    resolve_error_occurred = Signal(str, str, str)
+    queue_updated = Signal()
+
+    def __init__(self, i18n, music_storage: SQLiteMusicStorage = None, db_manager=None):
+        super().__init__()
+        self.i18n = i18n
+        self.db_manager = db_manager
+        if music_storage:
+            self.music_storage = music_storage
+        elif db_manager:
+            self.music_storage = SQLiteMusicStorage(db_manager)
+        else:
+            self.music_storage = None
+
+        from backend.database import MusicCacheManager
+        self.cache_storage = MusicCacheManager(self.music_storage)
+        self.queue: list[dict] = []
+        self.current_song: dict | None = None
+        self.current_local_file: str | None = None
+        self.resolve_worker = None
+        self._search_workers = []
+        self.preload_worker = None
+        self.preload_song_url: str | None = None
+
+        self.player = QMediaPlayer(self)
+        self.audio_output = QAudioOutput(self)
+        self.player.setAudioOutput(self.audio_output)
+        self.audio_output.setVolume(1.0)
+
+        self.player.mediaStatusChanged.connect(self._handle_media_status)
+        self.player.errorOccurred.connect(self._handle_player_error)
+
+        try:
+            from PySide6.QtMultimedia import QMediaDevices
+            self._media_devices = QMediaDevices(self)
+            self._media_devices.audioOutputsChanged.connect(self._on_audio_outputs_changed)
+        except Exception as dev_err:
+            logger.error("[YouTubeMusicProvider] Error initializing audio device watcher: %s", dev_err)
+
+        self.auto_resume = True
+        self._start_playing_current = True
+        self._volume_gain = 1.0
+        self.loudness_normalization_enabled = True
+
+        if self.db_manager:
+            try:
+                from backend.database import SQLiteSettingsStorage
+                settings = SQLiteSettingsStorage(self.db_manager)
+                self.auto_resume = settings.load_bool("youtube_auto_resume", True)
+                self.loudness_normalization_enabled = settings.load_bool("music_loudness_normalization", True)
+                saved_vol = int(settings.load_string("music_volume", "100"))
+                self._volume_gain = max(0.0, min(1.0, saved_vol / 100.0))
+                saved_device = settings.load_string("youtube_audio_device", "default")
+                self.set_audio_device(saved_device)
+            except Exception as e:
+                logger.error("[YouTubeMusicProvider] Error loading settings: %s", e)
+
+        self.audio_output.setVolume(self._calculate_effective_volume())
+
+        if self.music_storage:
+            pending = self.music_storage.load_pending_songs("youtube")
+            for song in pending:
+                self.queue.append({
+                    "db_id": song["db_id"],
+                    "title": song["title"],
+                    "artist": song["artist"],
+                    "url": song["url"],
+                    "resolved": False,
+                    "stream_url": None,
+                    "requester": song["requester"],
+                    "platform": song.get("platform", "kick"),
+                    "duration": song.get("duration", "-")
+                })
+            
+            if self.queue:
+                from PySide6.QtCore import QTimer
+                if self.auto_resume:
+                    QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
+                else:
+                    QTimer.singleShot(0, lambda: self._play_next(start_playing=False))
+
+    def _get_cached_search(self, query: str) -> dict | None:
+        if not self.music_storage:
+            return None
+        return self.music_storage.get_cached_search(query)
+
+    def _save_search_to_cache(self, query: str, song_entry: dict):
+        if not self.music_storage:
+            return
+        self.music_storage.save_search_cache(query, song_entry)
+
+    def _extract_thumbnail(self, song: dict) -> str:
+        if not song:
+            return ""
+        if song.get("thumbnail"):
+            return song["thumbnail"]
+        url = song.get("url", "")
+        if url:
+            match = _YT_ID_RE.search(url)
+            if match:
+                return f"https://i.ytimg.com/vi/{match.group(1)}/hqdefault.jpg"
+        return ""
+
+    def get_current_song(self) -> dict | None:
+        if not self.current_song:
+            return None
+
+        is_resolving = (self.resolve_worker is not None and self.resolve_worker.isRunning())
+        is_playing = is_resolving or (self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState)
+        duration = self.player.duration()
+        if duration <= 0:
+            duration_str = self.current_song.get("duration", "")
+            if duration_str and duration_str != "-":
+                try:
+                    parts = duration_str.split(":")
+                    if len(parts) == 2:
+                        duration = (int(parts[0]) * 60 + int(parts[1])) * 1000
+                    elif len(parts) == 3:
+                        duration = (int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])) * 1000
+                except Exception:
+                    pass
+
+        return {
+            "title": self.current_song["title"],
+            "artist": self.current_song["artist"],
+            "url": self.current_song["url"],
+            "is_playing": is_playing,
+            "duration": duration,
+            "progress": self.player.position(),
+            "thumbnail": self._extract_thumbnail(self.current_song),
+            "requester": self.current_song.get("requester", ""),
+            "platform": self.current_song.get("platform", "kick")
+        }
+
+    @property
+    def provider_id(self) -> str:
+        return "youtube"
+
+    def add_to_queue(self, query_or_uri: str, callback=None, requester: str = None, platform: str = "kick", max_duration_min: int = 10) -> tuple[bool, str]:
+        query = query_or_uri.strip()
+        is_search = not (query.startswith("http://") or query.startswith("https://") or query.startswith("www."))
+        
+        if is_search:
+            cached = self._get_cached_search(query)
+            if cached:
+                dur_str = cached.get("duration", "-")
+                if dur_str and dur_str != "-" and max_duration_min > 0:
+                    try:
+                        parts = [int(p) for p in dur_str.split(":")]
+                        dur_sec = parts[0] * 60 + parts[1] if len(parts) == 2 else (parts[0] * 3600 + parts[1] * 60 + parts[2] if len(parts) == 3 else 0)
+                        if dur_sec > max_duration_min * 60:
+                            msg = self.i18n.get("music.chat.song_too_long").replace("{user}", requester or "").replace("{max}", str(max_duration_min))
+                            return False, msg
+                    except Exception:
+                        pass
+
+                song_entry = {
+                    "title": cached["title"],
+                    "artist": cached["artist"],
+                    "url": cached["url"],
+                    "resolved": False,
+                    "stream_url": None,
+                    "requester": requester,
+                    "platform": platform,
+                    "duration": dur_str
+                }
+                if self.music_storage:
+                    db_id = self.music_storage.add_song_to_queue(
+                        title=song_entry["title"],
+                        artist=song_entry["artist"],
+                        url=song_entry["url"],
+                        requester=requester,
+                        provider="youtube",
+                        platform=platform,
+                        duration=song_entry.get("duration", "-")
+                    )
+                    song_entry["db_id"] = db_id
+                self.queue.append(song_entry)
+                self.queue_updated.emit()
+                if not self.current_song:
+                    if self.auto_resume:
+                        QTimer.singleShot(0, lambda: self._play_next(start_playing=True))
+                    else:
+                        QTimer.singleShot(0, lambda: self._play_next(start_playing=False))
+                else:
+                    self._preload_next_song()
+                
+                success_msg = self.i18n.get("music.queue.success").replace("{track}", f"{cached['title']} - {cached['artist']}")
+                return True, success_msg
+
+            search_query = f"ytsearch1:{query}"
+            immediate_msg = self.i18n.get("music.queue.searching").replace("{query}", query)
+        else:
+            search_query = query
+            immediate_msg = self.i18n.get("music.queue.processing_link")
+
+        worker = YouTubeSearchWorker(search_query, query, self.i18n, max_duration_min=max_duration_min)
+        
+        def on_worker_finished(success, message):
+            if success and worker.song_entry:
+                worker.song_entry["requester"] = requester
+                worker.song_entry["platform"] = platform
+                if self.music_storage:
+                    db_id = self.music_storage.add_song_to_queue(
+                        title=worker.song_entry["title"],
+                        artist=worker.song_entry["artist"],
+                        url=worker.song_entry["url"],
+                        requester=requester,
+                        provider="youtube",
+                        platform=platform,
+                        duration=worker.song_entry.get("duration", "-")
+                    )
+                    worker.song_entry["db_id"] = db_id
+                self.queue.append(worker.song_entry)
+                self.queue_updated.emit()
+                if is_search:
+                    self._save_search_to_cache(query, worker.song_entry)
+                if not self.current_song:
+                    self._play_next(start_playing=self.auto_resume)
+                else:
+                    self._preload_next_song()
+            if callback:
+                callback(success, message)
+            
+            if worker in self._search_workers:
+                self._search_workers.remove(worker)
+            worker.deleteLater()
+
+        worker.finished.connect(on_worker_finished)
+        self._search_workers.append(worker)
+        worker.start()
+
+        return True, immediate_msg
+
+    def skip_current(self) -> bool:
+        self._play_next()
+        return True
+
+    def _calculate_effective_volume(self) -> float:
+        base_vol = self._volume_gain
+        if not getattr(self, "loudness_normalization_enabled", True):
+            return base_vol
+
+        loudness = None
+        if self.current_song:
+            loudness = self.current_song.get("loudness")
+
+        if loudness is None:
+            return base_vol
+
+        try:
+            gain_factor = 10.0 ** (-float(loudness) / 20.0)
+            gain_factor = max(0.2, min(1.5, gain_factor))
+            effective   = max(0.0, min(1.0, base_vol * gain_factor))
+            logger.debug(
+                "[YouTubeMusicProvider] Loudness normalization applied: %.2f dB → gain=%.3f, base=%.2f, effective=%.2f",
+                loudness, gain_factor, base_vol, effective
+            )
+            return effective
+        except Exception as e:
+            logger.debug("[YouTubeMusicProvider] Error calculating loudness gain: %s", e)
+            return base_vol
+
+    def set_loudness_normalization(self, enabled: bool) -> None:
+        self.loudness_normalization_enabled = enabled
+        self.audio_output.setVolume(self._calculate_effective_volume())
+        if self.db_manager:
+            try:
+                from backend.database import SQLiteSettingsStorage
+                SQLiteSettingsStorage(self.db_manager).save_bool("music_loudness_normalization", enabled)
+            except Exception as e:
+                logger.debug("[YouTubeMusicProvider] Could not persist loudness normalization: %s", e)
+
+    def set_volume(self, volume: int) -> None:
+        self._volume_gain = max(0.0, min(1.0, volume / 100.0))
+        self.audio_output.setVolume(self._calculate_effective_volume())
+
+    def set_audio_device(self, device_id: str) -> None:
+        self._audio_device_id = device_id
+        try:
+            from PySide6.QtMultimedia import QMediaDevices
+            outputs = QMediaDevices.audioOutputs()
+            target_device = None
+            if device_id and device_id != "default":
+                for dev in outputs:
+                    dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
+                    if dev_id_str == device_id or dev.description() == device_id:
+                        target_device = dev
+                        break
+            if not target_device:
+                target_device = QMediaDevices.defaultAudioOutput()
+            if target_device:
+                self.audio_output.setDevice(target_device)
+                logger.info("[YouTubeMusicProvider] Audio output device set to: %s", target_device.description())
+        except Exception as e:
+            logger.error("[YouTubeMusicProvider] Error setting audio device: %s", e)
+
+    def get_queue(self) -> list[dict]:
+        return list(self.queue)
+
+    def remove_from_queue(self, index: int) -> bool:
+        if 0 <= index < len(self.queue):
+            song = self.queue.pop(index)
+            db_id = song.get("db_id")
+            if db_id is not None and self.music_storage:
+                self.music_storage.update_song_status(db_id, 2)
+            if index == 0:
+                self._preload_next_song()
+            self.queue_updated.emit()
+            return True
+        return False
+
+    def move_in_queue(self, from_index: int, to_index: int) -> bool:
+        if 0 <= from_index < len(self.queue) and 0 <= to_index < len(self.queue):
+            if from_index == to_index:
+                return True
+            item = self.queue.pop(from_index)
+            self.queue.insert(to_index, item)
+            if from_index == 0 or to_index == 0:
+                self._preload_next_song()
+            self.queue_updated.emit()
+            return True
+        return False
+
+    def _cancel_worker(self, worker_attr: str):
+        worker = getattr(self, worker_attr, None)
+        if worker:
+            try:
+                if worker.isRunning():
+                    worker.requestInterruption()
+                    worker.quit()
+                    worker.wait(300)
+                worker.deleteLater()
+            except RuntimeError:
+                pass
+            setattr(self, worker_attr, None)
+
+    def shutdown(self):
+        self.player.stop()
+        self.player.setSource(QUrl())
+        self.current_local_file = None
+        self._cancel_worker("preload_worker")
+        self.preload_song_url = None
+
+    def _preload_next_song(self):
+        if not self.queue:
+            return
+
+        next_song = self.queue[0]
+        if next_song.get("resolved"):
+            return
+
+        if self.preload_worker and self.preload_worker.isRunning():
+            if self.preload_song_url == next_song["url"]:
+                return
+            self._cancel_worker("preload_worker")
+            self.preload_song_url = None
+
+        self.preload_song_url = next_song["url"]
+        self.preload_worker = YouTubeResolveWorker(
+            next_song["url"],
+            expected_title=next_song.get("title", ""),
+            i18n=self.i18n,
+            music_storage=self.music_storage
+        )
+
+        def on_preload_resolved(title, path_or_url):
+            if self.queue and self.queue[0]["url"] == self.preload_song_url:
+                self.queue[0]["resolved"] = True
+                self.queue[0]["stream_url"] = path_or_url
+                if path_or_url and not (path_or_url.startswith("http://") or path_or_url.startswith("https://")):
+                    if os.path.exists(path_or_url) and self.music_storage:
+                        try:
+                            fsize_mb = os.path.getsize(path_or_url) / (1024 * 1024)
+                            self.music_storage.update_file_size(self.preload_song_url, fsize_mb)
+                        except Exception:
+                            pass
+            if self.preload_worker:
+                self.preload_worker.deleteLater()
+                self.preload_worker = None
+            self.preload_song_url = None
+
+        def on_preload_error(error_msg):
+            logger.error("[YouTubeMusicProvider] Preload error: %s", error_msg)
+            if self.preload_worker:
+                self.preload_worker.deleteLater()
+                self.preload_worker = None
+            self.preload_song_url = None
+
+        self.preload_worker.resolved.connect(on_preload_resolved)
+        self.preload_worker.error.connect(on_preload_error)
+        self.preload_worker.start()
+
+    def _play_next(self, start_playing: bool = True):
+        self._cancel_worker("resolve_worker")
+
+        self.player.stop()
+        self.player.setSource(QUrl())
+        self.current_local_file = None
+
+        if self.current_song:
+            db_id = self.current_song.get("db_id")
+            if db_id is not None and self.music_storage:
+                self.music_storage.update_song_status(db_id, 2)
+
+        if not self.queue:
+            self.current_song = None
+            self._cancel_worker("preload_worker")
+            self.preload_song_url = None
+            self.queue_updated.emit()
+            return
+
+        self.current_song = self.queue.pop(0)
+        self.queue_updated.emit()
+        
+        db_id = self.current_song.get("db_id")
+        if db_id is not None and self.music_storage:
+            self.music_storage.update_song_status(db_id, 1)
+
+        if self.current_song.get("resolved") and self.current_song.get("stream_url"):
+            self._start_playing_current = start_playing
+            self._on_song_resolved(self.current_song["title"], self.current_song["stream_url"])
+        elif self.preload_worker and self.preload_worker.isRunning() and self.preload_song_url == self.current_song["url"]:
+            self.resolve_worker = self.preload_worker
+            self.preload_worker = None
+            self.preload_song_url = None
+            try:
+                self.resolve_worker.resolved.disconnect()
+                self.resolve_worker.error.disconnect()
+            except Exception:
+                pass
+            self.resolve_worker.resolved.connect(self._on_song_resolved)
+            self.resolve_worker.error.connect(self._on_resolve_error)
+            self._start_playing_current = start_playing
+        else:
+            self._cancel_worker("preload_worker")
+            self.preload_song_url = None
+
+            self.resolve_worker = YouTubeResolveWorker(
+                self.current_song["url"],
+                expected_title=self.current_song.get("title", ""),
+                i18n=self.i18n,
+                music_storage=self.music_storage
+            )
+            self.resolve_worker.resolved.connect(self._on_song_resolved)
+
+            self.resolve_worker.error.connect(self._on_resolve_error)
+            self._start_playing_current = start_playing
+            self.resolve_worker.start()
+
+        self._preload_next_song()
+
+    @Slot(str, str)
+    def _on_song_resolved(self, title: str, path_or_url: str):
+        if not self.current_song:
+            if path_or_url and not (path_or_url.startswith("http://") or path_or_url.startswith("https://")):
+                if os.path.exists(path_or_url):
+                    try:
+                        os.remove(path_or_url)
+                    except Exception:
+                        pass
+            return
+
+        self.current_song["resolved"] = True
+        if path_or_url and not (path_or_url.startswith("http://") or path_or_url.startswith("https://")):
+            if os.path.exists(path_or_url) and self.music_storage and self.current_song.get("url"):
+                try:
+                    fsize_mb = os.path.getsize(path_or_url) / (1024 * 1024)
+                    self.music_storage.update_file_size(self.current_song["url"], fsize_mb)
+                except Exception as sz_err:
+                    logger.debug("[YouTubeMusicProvider] Could not update file size: %s", sz_err)
+
+        if self.cache_storage:
+            try:
+                self.cache_storage.check_and_clean_cache(max_size_mb=5000)
+            except Exception as cache_err:
+                logger.warning("[YouTubeMusicProvider] Cache check error: %s", cache_err)
+
+        
+        if hasattr(self, "resolve_worker") and self.resolve_worker:
+            worker_loudness = getattr(self.resolve_worker, "loudness", None)
+            if worker_loudness is not None:
+                self.current_song["loudness"] = worker_loudness
+                if self.music_storage and self.current_song.get("url"):
+                    try:
+                        self.music_storage.update_loudness(self.current_song["url"], worker_loudness)
+                    except Exception as loudness_err:
+                        logger.debug("[YouTubeMusicProvider] Could not persist loudness: %s", loudness_err)
+
+        if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
+            self.current_local_file = None
+            self.player.setSource(QUrl(path_or_url))
+        else:
+            self.current_local_file = path_or_url
+            self.player.setSource(QUrl.fromLocalFile(path_or_url))
+            
+        self.audio_output.setVolume(self._calculate_effective_volume())
+
+        if self._start_playing_current:
+            self.player.play()
+        else:
+            self.player.pause()
+        self._preload_next_song()
+
+    @Slot(str)
+    def _on_resolve_error(self, error_msg: str):
+        logger.error("[YouTubeMusicProvider] Error resolving audio stream: %s", error_msg)
+        if self.current_song:
+            title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
+            requester = self.current_song.get("requester", "") or ""
+            self.resolve_error_occurred.emit(title, error_msg, requester)
+        self._play_next()
+
+    @Slot(QMediaPlayer.MediaStatus)
+    def _handle_media_status(self, status: QMediaPlayer.MediaStatus):
+        if status in (QMediaPlayer.MediaStatus.EndOfMedia, QMediaPlayer.MediaStatus.InvalidMedia):
+            if status == QMediaPlayer.MediaStatus.InvalidMedia and self.current_song:
+                title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
+                requester = self.current_song.get("requester", "") or ""
+                self.resolve_error_occurred.emit(title, _ERR_INVALID_MEDIA, requester)
+            self._play_next()
+
+    @Slot()
+    def _on_audio_outputs_changed(self):
+        try:
+            from PySide6.QtMultimedia import QMediaDevices
+            outputs = QMediaDevices.audioOutputs()
+            
+            device_still_exists = False
+            if hasattr(self, "_audio_device_id") and self._audio_device_id and self._audio_device_id != "default":
+                for dev in outputs:
+                    dev_id_str = dev.id().data().decode("utf-8", errors="ignore") if hasattr(dev.id(), "data") else str(dev.id())
+                    if dev_id_str == self._audio_device_id or dev.description() == self._audio_device_id:
+                        device_still_exists = True
+                        break
+            else:
+                device_still_exists = True
+
+            if not device_still_exists:
+                logger.info("[YouTubeMusicProvider] Configured audio device was disconnected. Falling back automatically to default audio output.")
+                self.set_audio_device("default")
+                if self.player.playbackState() == QMediaPlayer.PlaybackState.PlayingState:
+                    curr_pos = self.player.position()
+                    self.player.pause()
+                    self.audio_output.setVolume(self._volume_gain)
+                    self.player.setPosition(curr_pos)
+                    self.player.play()
+        except Exception as e:
+            logger.error("[YouTubeMusicProvider] Error in audio outputs changed handler: %s", e)
+
+    @Slot(QMediaPlayer.Error, str)
+    def _handle_player_error(self, error, error_string):
+        logger.error("[YouTubeMusicProvider] Player error: %s - %s", error, error_string)
+        if "AUDCLNT" in error_string or "audio" in error_string.lower() or "device" in error_string.lower():
+            logger.info("[YouTubeMusicProvider] Recovering from audio device error, switching to default output.")
+            self.set_audio_device("default")
+            return
+        if self.current_song:
+            title = self.current_song.get("title", self.i18n.get("music.player.unknown_song"))
+            requester = self.current_song.get("requester", "") or ""
+            self.resolve_error_occurred.emit(title, f"{_ERR_PLAYER_ERROR}: {error_string}", requester)
+        self._play_next()
+
+    def pause_playback(self) -> bool:
+        self.player.pause()
+        return True
+
+    def resume_playback(self) -> bool:
+        self.audio_output.setVolume(self._calculate_effective_volume())
+        self.player.play()
+        return True
+
+    def seek(self, position_ms: int) -> bool:
+        if not hasattr(self, "player") or self.player is None:
+            return False
+        target = max(0, int(position_ms))
+        dur = self.player.duration()
+        if dur > 0:
+            target = min(target, dur)
+        self.player.setPosition(target)
+        return True

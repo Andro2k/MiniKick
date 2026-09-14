@@ -153,6 +153,10 @@ class SpamService:
     def _apply_penalty(self, user: str, sender_id: int, msg_id: str, config: dict, filter_id: str, message: str, platform: str = "kick"):
         penalty_type = config.get("penalty", "timeout")
         duration_mins = config.get("duration", 5)
+        logger.info(
+            "[SpamService] Violation detected — user='%s', filter='%s', penalty='%s' (%dmin), platform='%s', msg='%s'",
+            user, filter_id, penalty_type, duration_mins, platform, message[:60]
+        )
 
         if hasattr(self.storage, "db_manager") and self.storage.db_manager:
             self.storage.db_manager.log_spam_violation(

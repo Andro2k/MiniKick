@@ -18,6 +18,7 @@ from .schedule import ScheduleService
 from .system import (
     AvatarService,
     BackupService,
+    BrowserService,
     GithubUpdateProvider,
     LogService,
     SettingsService,
@@ -50,6 +51,7 @@ __all__ = [
     "ScheduleService",
     "AvatarService",
     "BackupService",
+    "BrowserService",
     "GithubUpdateProvider",
     "LogService",
     "SettingsService",

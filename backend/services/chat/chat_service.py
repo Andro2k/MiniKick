@@ -56,7 +56,13 @@ class ChatService:
             "role_enabled_broadcaster": self.storage.load_bool("tts_role_enabled_broadcaster", True),
             "role_enabled_moderator": self.storage.load_bool("tts_role_enabled_moderator", True),
             "role_enabled_vip": self.storage.load_bool("tts_role_enabled_vip", True),
-            "role_enabled_subscriber": self.storage.load_bool("tts_role_enabled_subscriber", True)
+            "role_enabled_subscriber": self.storage.load_bool("tts_role_enabled_subscriber", True),
+            "platform_kick": self.storage.load_bool("tts_platform_kick", True),
+            "platform_twitch": self.storage.load_bool("tts_platform_twitch", True),
+            "platform_youtube": self.storage.load_bool("tts_platform_youtube", True),
+            "platform_tiktok": self.storage.load_bool("tts_platform_tiktok", True),
+            "mod_mute_command_enabled": self.storage.load_bool("tts_mod_mute_command_enabled", True),
+            "mod_block_command_enabled": self.storage.load_bool("tts_mod_block_command_enabled", True),
         }
 
     def get_overlay_settings(self) -> dict:
@@ -71,13 +77,19 @@ class ChatService:
             overlay_fade = 15
         overlay_show_bots = self.storage.load_bool("chat_overlay_show_bots", False)
         overlay_show_time = self.storage.load_bool("chat_overlay_show_time", False)
+        overlay_big_emotes = self.storage.load_bool("chat_overlay_big_emotes", True)
+        overlay_edge_fade = self.storage.load_bool("chat_overlay_edge_fade", True)
+        overlay_anim_in = self.storage.load_string("chat_overlay_anim_in", "fade")
 
         return {
             "theme": overlay_theme,
             "size": overlay_size,
             "fade": overlay_fade,
             "show_bots": overlay_show_bots,
-            "show_time": overlay_show_time
+            "show_time": overlay_show_time,
+            "big_emotes": overlay_big_emotes,
+            "edge_fade": overlay_edge_fade,
+            "anim_in": overlay_anim_in,
         }
 
     def set_tts_enabled(self, enabled: bool) -> None:
@@ -111,6 +123,18 @@ class ChatService:
             batch["tts_role_enabled_vip"] = settings["role_enabled_vip"]
         if "role_enabled_subscriber" in settings:
             batch["tts_role_enabled_subscriber"] = settings["role_enabled_subscriber"]
+        if "platform_kick" in settings:
+            batch["tts_platform_kick"] = settings["platform_kick"]
+        if "platform_twitch" in settings:
+            batch["tts_platform_twitch"] = settings["platform_twitch"]
+        if "platform_youtube" in settings:
+            batch["tts_platform_youtube"] = settings["platform_youtube"]
+        if "platform_tiktok" in settings:
+            batch["tts_platform_tiktok"] = settings["platform_tiktok"]
+        if "mod_mute_command_enabled" in settings:
+            batch["tts_mod_mute_command_enabled"] = settings["mod_mute_command_enabled"]
+        if "mod_block_command_enabled" in settings:
+            batch["tts_mod_block_command_enabled"] = settings["mod_block_command_enabled"]
         if "chat_overlay_theme" in settings:
             batch["chat_overlay_theme"] = settings["chat_overlay_theme"]
         if "chat_overlay_size" in settings:
@@ -119,6 +143,14 @@ class ChatService:
             batch["chat_overlay_fade"] = settings["chat_overlay_fade"]
         if "chat_overlay_show_time" in settings:
             batch["chat_overlay_show_time"] = settings["chat_overlay_show_time"]
+        if "chat_overlay_show_bots" in settings:
+            batch["chat_overlay_show_bots"] = settings["chat_overlay_show_bots"]
+        if "chat_overlay_big_emotes" in settings:
+            batch["chat_overlay_big_emotes"] = settings["chat_overlay_big_emotes"]
+        if "chat_overlay_edge_fade" in settings:
+            batch["chat_overlay_edge_fade"] = settings["chat_overlay_edge_fade"]
+        if "chat_overlay_anim_in" in settings:
+            batch["chat_overlay_anim_in"] = settings["chat_overlay_anim_in"]
         if "piper_length_scale" in settings:
             batch["piper_length_scale"] = str(settings["piper_length_scale"])
         if "piper_noise_scale" in settings:

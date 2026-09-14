@@ -18,6 +18,7 @@ class FetchRewardsWorker(QThread):
         self._is_shutting_down = False
 
     def run(self):
+        logger.debug("[FetchRewardsWorker] Fetching rewards for platform: %s...", self.platform)
         try:
             if self.platform == "twitch":
                 resp = self.api_client.fetch_channel_rewards(self.broadcaster_id)
@@ -34,8 +35,10 @@ class FetchRewardsWorker(QThread):
                     rewards_list.append(title)
                     rewards_map[title] = item
 
+            logger.debug("[FetchRewardsWorker] Fetched %d reward(s) for platform: %s", len(rewards_list), self.platform)
             self.rewards_fetched.emit(rewards_list, rewards_map)
         except Exception as e:
+            logger.error("[FetchRewardsWorker] Error fetching rewards (%s) for platform %s: %s", type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))
 
 class CreateRewardWorker(QThread):
@@ -51,6 +54,8 @@ class CreateRewardWorker(QThread):
         self.platform = platform
 
     def run(self):
+        title = self.payload.get("title", "?")
+        logger.debug("[CreateRewardWorker] Creating reward '%s' on platform: %s...", title, self.platform)
         try:
             if self.platform == "twitch":
                 resp = self.api_client.create_channel_reward(
@@ -73,8 +78,10 @@ class CreateRewardWorker(QThread):
             reward_data = resp.get("data", {})
             if isinstance(reward_data, dict):
                 reward_data["platform"] = self.platform
+            logger.debug("[CreateRewardWorker] Reward '%s' created successfully on platform: %s", title, self.platform)
             self.reward_created.emit(reward_data)
         except Exception as e:
+            logger.error("[CreateRewardWorker] Error creating reward '%s' (%s) on platform %s: %s", title, type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))
 
 class UpdateRewardWorker(QThread):
@@ -91,6 +98,8 @@ class UpdateRewardWorker(QThread):
         self.platform = platform
 
     def run(self):
+        title = self.payload.get("title", self.reward_id)
+        logger.debug("[UpdateRewardWorker] Updating reward '%s' (id=%s) on platform: %s...", title, self.reward_id, self.platform)
         try:
             if self.platform == "twitch":
                 resp = self.api_client.update_channel_reward(
@@ -103,6 +112,8 @@ class UpdateRewardWorker(QThread):
             reward_data = resp.get("data", {})
             if isinstance(reward_data, dict):
                 reward_data["platform"] = self.platform
+            logger.debug("[UpdateRewardWorker] Reward '%s' updated successfully on platform: %s", title, self.platform)
             self.reward_updated.emit(reward_data)
         except Exception as e:
+            logger.error("[UpdateRewardWorker] Error updating reward '%s' (%s) on platform %s: %s", title, type(e).__name__, self.platform, e)
             self.error_occurred.emit(str(e))

@@ -17,31 +17,36 @@ class TikTokChatWorker(QThread):
     connection_lost = Signal()
     connection_restored = Signal()
 
-    def __init__(self, target_channel: str = "", provider=None, i18n=None, parent=None):
+    def __init__(self, target_channel: str = "", provider=None, i18n=None, sign_api_key: str | None = None, parent=None):
         super().__init__(parent)
         self.setObjectName("Worker_TikTok_Chat_Socket")
         self.target_channel = target_channel.strip().lstrip("@")
         self.i18n = i18n or TranslationService()
-        self.provider = provider or TikTokChatProvider(i18n=self.i18n)
+        self.provider = provider or TikTokChatProvider(i18n=self.i18n, sign_api_key=sign_api_key)
         self._is_stopped = False
         self._has_connected_once = False
 
     def run(self):
+        logger.info("[TikTokChatWorker] Starting TikTok chat worker for channel: '@%s'...", self.target_channel)
         try:
             if not self.target_channel:
                 err_msg = self.i18n.get("logs.tiktok.empty_user")
+                logger.error("[TikTokChatWorker] Cannot start: target channel is empty.")
                 self.error_occurred.emit(err_msg)
                 return
 
             def _on_connected(conn_data: dict):
                 if not self._has_connected_once:
                     self._has_connected_once = True
+                    logger.info("[TikTokChatWorker] Connected to TikTok Live: '@%s'.", self.target_channel)
                     self.connection_success.emit(conn_data)
                 else:
+                    logger.info("[TikTokChatWorker] Reconnected to TikTok Live: '@%s'.", self.target_channel)
                     self.connection_restored.emit()
 
             def _on_disconnected():
                 if not self._is_stopped:
+                    logger.warning("[TikTokChatWorker] Connection lost with TikTok Live '@%s'.", self.target_channel)
                     self.connection_lost.emit()
 
             def _on_error(err_str: str):
@@ -98,6 +103,7 @@ class TikTokChatWorker(QThread):
         self.message_received.emit(dto)
 
     def stop(self):
+        logger.info("[TikTokChatWorker] Stopping TikTok chat worker for '@%s'...", self.target_channel)
         self._is_stopped = True
         self.requestInterruption()
         self.provider.stop_chat()

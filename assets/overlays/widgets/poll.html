@@ -45,50 +45,58 @@
         }
 
         .poll-card {
-            background: rgba(13, 17, 23, 0.94);
+            background: rgba(15, 19, 26, 0.94);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 2.5px solid rgba(46, 205, 112, 0.35);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 30px rgba(46, 205, 112, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
             border-radius: 22px;
-            padding: 20px 22px;
+            overflow: hidden;
             color: #ffffff;
-            transition: border-color 0.4s ease, box-shadow 0.4s ease;
+            transition: border-color 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
         }
 
         .poll-card.finished {
-            border-color: rgba(255, 215, 0, 0.6);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 215, 0, 0.25);
+            border-color: rgba(255, 215, 0, 0.3);
         }
 
         .poll-header {
             display: flex;
             align-items: center;
-            gap: 14px;
-            margin-bottom: 16px;
+            gap: 12px;
+            padding: 12px 20px;
+            background: rgba(46, 205, 112, 0.1);
+            border-bottom: 1px solid rgba(46, 205, 112, 0.15);
+            transition: background 0.4s ease, border-color 0.4s ease;
+        }
+
+        .poll-card.finished .poll-header {
+            background: rgba(255, 215, 0, 0.1);
+            border-bottom-color: rgba(255, 215, 0, 0.15);
         }
 
         .icon-box {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 42px;
-            height: 42px;
-            background: rgba(46, 205, 112, 0.15);
-            border: 1px solid rgba(46, 205, 112, 0.35);
-            border-radius: 14px;
+            width: 32px;
+            height: 32px;
+            background: rgba(46, 205, 112, 0.18);
+            border-radius: 10px;
             flex-shrink: 0;
-            transition: background 0.4s ease, border-color 0.4s ease;
+            transition: background 0.4s ease;
         }
 
         .poll-card.finished .icon-box {
-            background: rgba(255, 215, 0, 0.18);
-            border-color: rgba(255, 215, 0, 0.5);
+            background: rgba(255, 215, 0, 0.2);
         }
 
         .poll-icon {
-            width: 24px;
-            height: 24px;
+            width: 18px;
+            height: 18px;
             color: #2ecd70;
             transition: color 0.4s ease;
         }
@@ -101,7 +109,8 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 1px;
+            overflow: hidden;
         }
 
         .poll-badge {
@@ -109,7 +118,7 @@
             font-weight: 800;
             color: #2ecd70;
             text-transform: uppercase;
-            letter-spacing: 1.4px;
+            letter-spacing: 1.2px;
             transition: color 0.4s ease;
         }
 
@@ -118,17 +127,20 @@
         }
 
         .poll-question {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             color: #ffffff;
-            line-height: 1.35;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .options-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-bottom: 14px;
+            gap: 10px;
+            padding: 14px 20px 8px 20px;
         }
 
         .option-item {
@@ -175,9 +187,13 @@
             overflow: hidden;
         }
 
-        .winner-crown {
-            font-size: 14px;
-            line-height: 1;
+        .winner-crown-svg {
+            width: 16px;
+            height: 16px;
+            color: #ffd700;
+            filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.6));
+            flex-shrink: 0;
+            display: block;
         }
 
         .winner-tag {
@@ -220,12 +236,10 @@
             border-radius: 5px;
             width: 0%;
             transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
-            box-shadow: 0 0 10px rgba(46, 205, 112, 0.4);
         }
 
         .option-item.winner .bar-fill {
             background: linear-gradient(90deg, #ffd700 0%, #ffaa00 100%);
-            box-shadow: 0 0 14px rgba(255, 215, 0, 0.6);
         }
 
         .poll-footer {
@@ -235,8 +249,9 @@
             font-size: 11px;
             font-weight: 700;
             color: #8b949e;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.15);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .timer-badge {
@@ -284,6 +299,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
         const lang = (urlParams.get('lang') || 'es').toLowerCase();
+        const isPreview = urlParams.get('preview') === 'true' || urlParams.get('preview') === '1' || window.location.protocol === 'file:';
 
         const pollContainer = document.getElementById('poll-container');
         const pollCard = document.getElementById('poll-card');
@@ -380,9 +396,42 @@
                 return;
             }
 
+            const isSamePoll = currentPollState && (
+                (poll.id !== undefined && currentPollState.id !== undefined && poll.id === currentPollState.id) ||
+                (poll.title && currentPollState.title && poll.title === currentPollState.title)
+            );
+
+            if (isSamePoll && currentPollState.options && poll.options) {
+                const existingVoteMap = new Map();
+                currentPollState.options.forEach((opt, idx) => {
+                    const key = opt.id !== undefined ? String(opt.id) : (opt.label || String(idx));
+                    existingVoteMap.set(key, opt.votes || 0);
+                });
+                poll.options.forEach((opt, idx) => {
+                    const key = opt.id !== undefined ? String(opt.id) : (opt.label || String(idx));
+                    const prevVotes = existingVoteMap.get(key) || 0;
+                    opt.votes = Math.max(prevVotes, opt.votes || 0);
+                });
+            } else if (!isSamePoll) {
+                isResultPhase = false;
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+            }
+
             currentPollState = poll;
-            remainingSeconds = typeof poll.remaining === 'number' ? poll.remaining : (poll.duration || 30);
-            resultDisplaySeconds = typeof poll.result_display_duration === 'number' ? poll.result_display_duration : 15;
+
+            if (typeof poll.remaining === 'number') {
+                remainingSeconds = Math.max(0, poll.remaining);
+            } else if (!isSamePoll || remainingSeconds <= 0) {
+                remainingSeconds = poll.duration || 30;
+            }
+
+            resultDisplaySeconds = typeof poll.result_display_duration === 'number'
+                ? poll.result_display_duration
+                : (resultDisplaySeconds > 0 ? resultDisplaySeconds : 15);
+
             isResultPhase = (remainingSeconds <= 0);
 
             startTimerLoop();
@@ -390,10 +439,7 @@
         }
 
         function startTimerLoop() {
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
+            if (countdownInterval) return;
 
             countdownInterval = setInterval(() => {
                 if (!isResultPhase) {
@@ -421,17 +467,25 @@
             const options = currentPollState.options || [];
             const totalVotes = options.reduce((sum, opt) => sum + (opt.votes || 0), 0);
 
-            let maxVotes = -1;
+            let maxVotes = 0;
             options.forEach(opt => {
                 const v = opt.votes || 0;
                 if (v > maxVotes) maxVotes = v;
             });
 
-            const hasWinners = isResultPhase && maxVotes > 0;
+            const topOptions = maxVotes > 0 ? options.filter(opt => (opt.votes || 0) === maxVotes) : [];
+            const isTie = isResultPhase && topOptions.length > 1;
+            const singleWinner = (isResultPhase && topOptions.length === 1) ? topOptions[0] : null;
 
             if (isResultPhase) {
                 pollCard.classList.add('finished');
-                pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT' : 'RESULTADO FINAL';
+                if (isTie) {
+                    pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT - TIE' : 'RESULTADO FINAL - EMPATE';
+                } else if (singleWinner) {
+                    pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT' : 'RESULTADO FINAL';
+                } else {
+                    pollBadgeText.textContent = lang === 'en' ? 'FINAL RESULT' : 'RESULTADO FINAL';
+                }
                 pollTimer.textContent = lang === 'en' ? `Closing in ${resultDisplaySeconds}s` : `Cerrando en ${resultDisplaySeconds}s`;
             } else {
                 pollCard.classList.remove('finished');
@@ -445,12 +499,12 @@
             options.forEach(opt => {
                 const votes = opt.votes || 0;
                 const percent = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : '0.0';
-                const isWinner = hasWinners && (votes === maxVotes);
+                const isWinner = singleWinner && (opt === singleWinner || (opt.id !== undefined && opt.id === singleWinner.id));
 
                 const optItem = document.createElement('div');
                 optItem.className = `option-item ${isWinner ? 'winner' : ''}`;
 
-                const winnerBadge = isWinner ? `<span class="winner-crown">👑</span><span class="winner-tag">${lang === 'en' ? 'WINNER' : 'GANADOR'}</span>` : '';
+                const winnerBadge = isWinner ? `<svg class="winner-crown-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg><span class="winner-tag">${lang === 'en' ? 'WINNER' : 'GANADOR'}</span>` : '';
 
                 optItem.innerHTML = `
                     <div class="option-meta">
@@ -473,6 +527,8 @@
         function hidePoll() {
             pollContainer.classList.remove('visible');
             currentPollState = null;
+            remainingSeconds = 0;
+            isResultPhase = false;
             if (countdownInterval) {
                 clearInterval(countdownInterval);
                 countdownInterval = null;
@@ -483,7 +539,23 @@
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         }
 
-        connectWS();
+        if (isPreview) {
+            handlePollUpdate({
+                id: 'preview_poll',
+                title: lang === 'en' ? 'Live Poll Preview: Favorite Game?' : 'Encuesta en Vivo: ¿Cuál es tu juego favorito?',
+                duration: 60,
+                remaining: 45,
+                options: [
+                    { id: 1, label: 'Minecraft', votes: 15 },
+                    { id: 2, label: 'Valorant', votes: 22 },
+                    { id: 3, label: 'League of Legends', votes: 18 }
+                ]
+            });
+        }
+
+        if (window.location.protocol !== 'file:') {
+            connectWS();
+        }
     </script>
 </body>
 

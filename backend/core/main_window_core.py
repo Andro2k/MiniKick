@@ -20,9 +20,9 @@ from backend.services import (
     LogService, SettingsService, SpamService, TimerService
 )
 from backend.controllers import (
-    RewardsController, ChatController, CommandController, DashboardController,
-    TimerController, LogController, MusicController, SettingsController,
-    SpamController, UpdateController, WidgetController,
+    RewardsController, ChatController, CommandsController, DashboardController,
+    TimersController, LogsController, MusicController, SettingsController,
+    SpamController, UpdaterController, WidgetsController,
     ScheduleController, AlertsController
 )
 from backend.providers import KickAPIClient, TwitchAPIClient
@@ -54,18 +54,18 @@ class MainWindowCore(QMainWindow):
     SETTING_AUTOSTART = "dashboard_autostart"
 
     _NAV_CONFIG = (
-        ("Dashboard", "dashboard.svg", "top"),
-        ("Chat", "message.svg", "top"),
+        ("Dashboard", "circle-graph-duotone.svg", "top"),
+        ("Chat", "dialog-duotone.svg", "top"),
         ("Stream Info", "calendar-duotone.svg", "top"),
         ("Spam Filters", "shield-duotone.svg", "top"),
-        ("Comandos", "code.svg", "top"),
-        ("Timers", "clock.svg", "top"),
+        ("Comandos", "code-duotone.svg", "top"),
+        ("Timers", "clock-circle-duotone.svg", "top"),
         ("Music", "music-notes.svg", "top"),
-        ("Widgets", "widget-add.svg", "top"),
+        ("Widgets", "widget-add-duotone.svg", "top"),
         ("Triggers", "treasure-chest.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
 
-        ("Settings", "settings.svg", "bottom"),
+        ("Settings", "settings-duotone.svg", "bottom"),
         ("Developer", "file-text-duotone.svg", "bottom"),
     )
 
@@ -133,9 +133,9 @@ class MainWindowCore(QMainWindow):
         self._setup_tray() 
         
         self.logger.debug("[MainWindow] Checking background silent updates...")
-        self.update_controller = UpdateController(self.updater_manager)
-        self.update_controller.update_found_silent.connect(self._on_silent_update_found)
-        self.update_controller.check_updates_silently()
+        self.updater_controller = UpdaterController(self.updater_manager)
+        self.updater_controller.update_found_silent.connect(self._on_silent_update_found)
+        self.updater_controller.check_updates_silently()
         
         self.logger.debug("[MainWindow] Connecting signal handlers...")
         self._connect_signals()     
@@ -168,7 +168,7 @@ class MainWindowCore(QMainWindow):
         self.log_service = LogService(log_storage=self.container.system_log_storage)
         self.schedule_service = self.container.schedule_service
 
-        self.view_dashboard = DashboardView(self.i18n, parent=self)
+        self.view_dashboard = DashboardView(self.i18n, browser_service=self.container.browser_service, parent=self)
         self.view_schedule = None
         self.view_chat = None
         self.view_music = None
@@ -197,7 +197,7 @@ class MainWindowCore(QMainWindow):
             timer_service=self.timer_service,
             toast_manager=self.toast
         )
-        self.widget_controller = WidgetController(
+        self.widgets_controller = WidgetsController(
             view=None,
             widget_service=self.container.widget_service,
             command_service=self.command_service,
@@ -221,7 +221,7 @@ class MainWindowCore(QMainWindow):
             kick_auth_manager=self.kick_auth_manager,
             twitch_auth_manager=getattr(self.container, "twitch_auth_manager", None)
         )
-        self.command_controller = CommandController(
+        self.commands_controller = CommandsController(
             None, 
             self.command_service,
             toast_manager=self.toast,
@@ -233,7 +233,7 @@ class MainWindowCore(QMainWindow):
             toast_manager=self.toast,
             connected_platforms_provider=self.get_connected_platforms
         )
-        self.timer_controller = TimerController(
+        self.timers_controller = TimersController(
             None,
             self.timer_service,
             toast_manager=self.toast,
@@ -245,9 +245,10 @@ class MainWindowCore(QMainWindow):
             service=self.settings_service,
             toast_manager=self.toast,
             music_provider=self.container.music_provider,
-            tts_manager=self.tts_manager
+            tts_manager=self.tts_manager,
+            browser_service=self.container.browser_service
         )
-        self.log_controller = LogController(
+        self.logs_controller = LogsController(
             view=None, 
             service=self.log_service,
             toast_manager=self.toast
@@ -263,7 +264,8 @@ class MainWindowCore(QMainWindow):
             view=None,
             service=self.container.alert_service,
             toast_manager=self.toast,
-            i18n=self.i18n
+            i18n=self.i18n,
+            browser_service=self.container.browser_service
         )
         self._start_schedule_worker()
         self._setup_global_media_keys()
@@ -305,10 +307,10 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
-        self.chat_controller.message_received.connect(self.widget_controller.handle_chat_message)
+        self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
-        self.chat_controller.widget_plugin_triggered.connect(self.widget_controller.handle_widget_command)
+        self.chat_controller.widget_plugin_triggered.connect(self.widgets_controller.handle_widget_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
         self.chat_controller.command_executed.connect(lambda *args: self._update_dashboard_metrics(force_db_query=True))
         self.settings_controller.unlink_account_requested.connect(self._handle_unlink_account)
@@ -316,13 +318,13 @@ class MainWindowCore(QMainWindow):
         self.sidebar.update_requested.connect(self.handle_update_check)
         self.settings_controller.notification_requested.connect(lambda title, msg: self.tray_manager.showMessage(title, msg))
         self.settings_controller.backup_restored.connect(self._load_settings_into_ui)
-        self.q_log_handler.emitter.log_received.connect(self.log_controller.process_incoming_log)
+        self.q_log_handler.emitter.log_received.connect(self.logs_controller.process_incoming_log)
         self.avatar_service.avatar_downloaded.connect(self.sidebar.update_profile_avatar)
 
     def _load_settings_into_ui(self):
         self.logger.debug("[AutoStart] Loading controller initial state (Rewards, Widgets, Chat, Spam, Timers, Music)...")
         self.rewards_controller.load_initial_data()
-        self.widget_controller.load_initial_data()
+        self.widgets_controller.load_initial_data()
         settings = self.chat_service.get_settings()
         self.tray_manager.set_tts_state(settings.get("enabled", True))
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
@@ -331,7 +333,7 @@ class MainWindowCore(QMainWindow):
         self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_service.reload_cache()
         self.spam_controller.load_initial_data()
-        self.timer_controller.load_initial_data()
+        self.timers_controller.load_initial_data()
         self.music_controller.load_initial_data()
         self.chat_controller.load_initial_data()
         self.chat_controller.sync_settings_cache()
@@ -413,7 +415,7 @@ class MainWindowCore(QMainWindow):
         elif view_name == "Comandos":
             self.view_commands = CommandView(self.i18n, parent=self.content_stack)
             self.content_stack.addWidget(self.view_commands)
-            self.command_controller.attach_view(self.view_commands)
+            self.commands_controller.attach_view(self.view_commands)
             view_widget = self.view_commands
         elif view_name == "Widgets":
             self.view_widgets = WidgetsView(
@@ -425,10 +427,12 @@ class MainWindowCore(QMainWindow):
                 combo_overlay_url=self.overlay_server.get_combo_overlay_url(),
                 poll_overlay_url=self.overlay_server.get_poll_overlay_url(),
                 pinned_overlay_url=self.overlay_server.get_pinned_overlay_url(),
+                chatters_overlay_url=self.overlay_server.get_chatters_overlay_url(),
+                clock_overlay_url=self.overlay_server.get_clock_overlay_url(),
                 parent=self.content_stack
             )
             self.content_stack.addWidget(self.view_widgets)
-            self.widget_controller.attach_view(self.view_widgets)
+            self.widgets_controller.attach_view(self.view_widgets)
             view_widget = self.view_widgets
         elif view_name == "Spam Filters":
             self.view_spam = SpamView(self.i18n, parent=self.content_stack)
@@ -438,7 +442,7 @@ class MainWindowCore(QMainWindow):
         elif view_name == "Timers":
             self.view_timers = TimersView(self.i18n, parent=self.content_stack)
             self.content_stack.addWidget(self.view_timers)
-            self.timer_controller.attach_view(self.view_timers)
+            self.timers_controller.attach_view(self.view_timers)
             view_widget = self.view_timers
         elif view_name == "Settings":
             self.view_settings = SettingsView(self.i18n, parent=self.content_stack)
@@ -452,7 +456,7 @@ class MainWindowCore(QMainWindow):
         elif view_name == "Developer":
             self.view_logs = LogView(self.i18n, parent=self.content_stack)
             self.content_stack.addWidget(self.view_logs)
-            self.log_controller.attach_view(self.view_logs)
+            self.logs_controller.attach_view(self.view_logs)
             view_widget = self.view_logs
         elif view_name == "Alerts":
             self.view_alerts = AlertsView(
@@ -746,8 +750,8 @@ class MainWindowCore(QMainWindow):
             except RuntimeError:
                 pass
 
-        stuck_template = self.i18n.get("main.logs.worker_stuck")
         stopped_template = self.i18n.get("main.logs.worker_stopped")
+        stuck_template = self.i18n.get("main.logs.worker_stuck")
         for name, instance in active_workers:
             start_t = time.perf_counter()
             try:
@@ -758,7 +762,8 @@ class MainWindowCore(QMainWindow):
                     instance.deleteLater()
                 else:
                     elapsed_ms = (time.perf_counter() - start_t) * 1000.0
-                    self.logger.warning("[Shutdown] Worker '%s' wait timed out after %.1f ms", name, elapsed_ms)
+                    stuck_msg = stuck_template.replace("{worker}", name)
+                    self.logger.warning("%s (%.1f ms)", stuck_msg, elapsed_ms)
                     self._retiring_workers.add(instance)
                     def _on_retired(inst=instance):
                         self._retiring_workers.discard(inst)
@@ -829,6 +834,11 @@ class MainWindowCore(QMainWindow):
                 self.chat_service.shutdown()
             except Exception:
                 pass
+        if hasattr(self, "chat_controller") and self.chat_controller and hasattr(self.chat_controller, "cleanup"):
+            try:
+                self.chat_controller.cleanup()
+            except Exception:
+                pass
 
     @staticmethod
     def _is_worker_running(worker) -> bool:
@@ -882,7 +892,6 @@ class MainWindowCore(QMainWindow):
         self.kick_chat_worker.poll_deleted.connect(self._on_poll_deleted)
         self.kick_chat_worker.pinned_created.connect(self._on_pinned_created)
         self.kick_chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
-        self.kick_chat_worker.alert_received.connect(self._handle_incoming_alert)
         self.kick_chat_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
         self.kick_chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
         
@@ -967,9 +976,8 @@ class MainWindowCore(QMainWindow):
         if self.view_chat is not None:
             self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True, platform=platform)
         
-        mappings = self.rewards_service.get_mappings()
-        config = mappings.get(reward_name)
-        if config and config.get("platform", "kick") == platform:
+        config = self.rewards_service.get_reward_config(reward_name, platform=platform)
+        if config:
             if self.rewards_service.is_file_valid(config):
                 self.rewards_service.trigger_preview(reward_name, config)
                 self.rewards_service.log_redemption(reward_name, user, platform=platform)
@@ -1012,7 +1020,6 @@ class MainWindowCore(QMainWindow):
             self.command_service.post_chat_message(message, apply_kick=apply_kick, apply_twitch=apply_twitch)
         elif apply_kick and hasattr(self, "kick_chat_worker") and self.kick_chat_worker:
             self.kick_chat_worker.send_message(message)
-
 
     @Slot()
     def _handle_twitch_auth_process(self, force: bool = False):
@@ -1205,10 +1212,12 @@ class MainWindowCore(QMainWindow):
 
     def _on_twitch_socket_lost(self):
         self._twitch_connected = False
+        self.logger.warning("[Twitch] Connection lost for channel '%s'.", getattr(self, '_twitch_channel', '?'))
         self._update_integrations_status_ui()
 
     def _on_twitch_socket_restored(self):
         self._twitch_connected = True
+        self.logger.info("[Twitch] Connection restored for channel '%s'.", getattr(self, '_twitch_channel', '?'))
         self._update_integrations_status_ui()
 
     def _refresh_sidebar_profile(self):
@@ -1368,6 +1377,7 @@ class MainWindowCore(QMainWindow):
         target = stream_info.get("channel", "")
         if target:
             self.settings_storage.save_string("youtube_target_channel", target)
+        self.logger.info("[YouTube] Connected to YouTube Live: '%s'.", ch_name)
         self._update_integrations_status_ui()
         title = self.container.i18n.get("main.toast.youtube_connected_title")
         msg = self.container.i18n.get("main.toast.youtube_connected_msg").replace("{target}", ch_name)
@@ -1379,6 +1389,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_youtube_error(self, error_msg: str):
         self._youtube_connected = False
+        self.logger.error("[YouTube] Error in YouTube Live worker: %s", error_msg)
         self._safe_stop_worker("youtube_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
@@ -1436,8 +1447,10 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_tiktok_status(connected=False, connecting=True)
 
+        custom_sign_key = self.settings_storage.load_string("tiktok_sign_api_key", "").strip()
         self.tiktok_chat_worker = TikTokChatWorker(
             target_channel=clean_target,
+            sign_api_key=custom_sign_key or None,
             i18n=self.container.i18n
         )
         self.tiktok_chat_worker.connection_success.connect(self._on_tiktok_connected)
@@ -1452,6 +1465,7 @@ class MainWindowCore(QMainWindow):
         self._tiktok_channel = unique_id
         if unique_id:
             self.settings_storage.save_string("tiktok_target_channel", unique_id)
+        self.logger.info("[TikTok] Connected to TikTok Live: '@%s'.", unique_id)
         self._update_integrations_status_ui()
         title = self.container.i18n.get("main.toast.tiktok_connected_title")
         msg = self.container.i18n.get("main.toast.tiktok_connected_msg").replace("{target}", unique_id)
@@ -1463,6 +1477,7 @@ class MainWindowCore(QMainWindow):
 
     def _on_tiktok_error(self, error_msg: str):
         self._tiktok_connected = False
+        self.logger.error("[TikTok] Error in TikTok Live worker: %s", error_msg)
         self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
@@ -1633,7 +1648,6 @@ class MainWindowCore(QMainWindow):
         self.logger.info("[User Action] Toggled dashboard autostart setting: enabled=%s", enabled)
         self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
 
-
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
         settings = self.chat_service.get_settings()
@@ -1692,7 +1706,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def handle_update_check(self):
-        self.update_controller.show_update_dialog(self, self.i18n, on_restart_callback=self._force_quit)
+        self.updater_controller.show_update_dialog(self, self.i18n, on_restart_callback=self._force_quit)
 
     def _increment_metric(self, name: str):
         if hasattr(self, 'session_metrics') and name in self.session_metrics:
