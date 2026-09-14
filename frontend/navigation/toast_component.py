@@ -145,7 +145,10 @@ class ToastManager(QObject):
         self._stack = []
         self.main_window.installEventFilter(self)
 
-    def show_toast(self, title: str, message: str, state: str = "success", duration: int = 3500, tag: str = ""):
+    def show_toast(self, title: str, message: str = "", state: str = "success", duration: int = 3500, tag: str = "", **kwargs):
+        if "role" in kwargs and (state == "success" or not state):
+            state = kwargs["role"]
+        message = message or ""
         if self._stack:
             last_toast = self._stack[-1]
             if getattr(last_toast, "title_text", None) == title and getattr(last_toast, "message_text", None) == message and getattr(last_toast, "state_str", None) == state:

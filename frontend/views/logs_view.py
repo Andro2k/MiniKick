@@ -17,7 +17,7 @@ from frontend.common import (
 )
 from frontend.components.log import LogControlsPanel
 
-LOG_ILLUSTRATION_FILE = "illustration-document.svg"
+LOG_ILLUSTRATION_FILE = "illustration-result-no-found.svg"
 _LEVEL_COLORS = {
     "DEBUG": COLOR_NEUTRAL_400,
     "INFO": COLOR_BLUE,

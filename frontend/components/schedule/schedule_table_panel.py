@@ -42,7 +42,7 @@ class ScheduleTablePanel(QWidget):
         self.table_card.setup_empty_state(
             title=self.i18n.get("stream_info.empty.title"),
             desc=self.i18n.get("stream_info.empty.desc"),
-            icon_name="illustration-stream.svg",
+            icon_name="illustration-no-notification.svg",
             button_text=self.i18n.get("stream_info.empty.btn"),
             on_button_clicked=self.new_schedule_clicked.emit
         )

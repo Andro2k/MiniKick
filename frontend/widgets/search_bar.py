@@ -1,7 +1,7 @@
 # frontend\widgets\search_bar.py
 
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QPushButton
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtCore import Qt, Signal, QSize, QEvent
 from frontend.common import get_icon_colored, MARGIN_NONE, SPACING_NONE
 
 class UnifiedSearchBar(QFrame):
@@ -25,6 +25,7 @@ class UnifiedSearchBar(QFrame):
         self.txt_input.setFrame(False)
         self.txt_input.textChanged.connect(self._on_text_changed)
         self.txt_input.returnPressed.connect(self.returnPressed.emit)
+        self.txt_input.installEventFilter(self)
 
         self.btn_search = QPushButton(self)
         self.btn_search.setIcon(self._icon_search)
@@ -68,3 +69,15 @@ class UnifiedSearchBar(QFrame):
 
     def setFocus(self):
         self.txt_input.setFocus()
+
+    def eventFilter(self, watched, event):
+        if watched == self.txt_input:
+            if event.type() == QEvent.Type.FocusIn:
+                self.setProperty("state", "focused")
+                self.style().unpolish(self)
+                self.style().polish(self)
+            elif event.type() == QEvent.Type.FocusOut:
+                self.setProperty("state", "")
+                self.style().unpolish(self)
+                self.style().polish(self)
+        return super().eventFilter(watched, event)

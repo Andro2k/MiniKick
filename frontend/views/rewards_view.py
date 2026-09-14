@@ -176,7 +176,7 @@ class RewardsView(BaseView):
         self.table_card.setup_empty_state(
             title=self.i18n.get("rewards.empty.title"),
             desc=self.i18n.get("rewards.empty.desc"),
-            icon_name="illustration-picture.svg",
+            icon_name="illustration-empty-file.svg",
             button_text=self.i18n.get("rewards.empty.btn"),
             on_button_clicked=self.add_requested.emit
         )
