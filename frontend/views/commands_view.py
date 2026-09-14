@@ -61,7 +61,7 @@ class CommandView(BaseView):
         self.table_card.setup_empty_state(
             title=self.i18n.get("command.empty.title"),
             desc=self.i18n.get("command.empty.desc"),
-            icon_name="illustration-menu.svg",
+            icon_name="illustration-empty-box.svg",
             button_text=self.i18n.get("command.empty.btn"),
             on_button_clicked=self.add_requested.emit
         )

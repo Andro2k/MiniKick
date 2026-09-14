@@ -39,7 +39,7 @@ class TimersView(BaseView):
         self.table_card.setup_empty_state(
             title=self.i18n.get("timer.empty.title"),
             desc=self.i18n.get("timer.empty.desc"),
-            icon_name="illustration-time.svg",
+            icon_name="illustration-request-timeout.svg",
             button_text=self.i18n.get("timer.empty.btn"),
             on_button_clicked=self.add_requested.emit
         )

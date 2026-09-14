@@ -693,4 +693,9 @@ class WidgetsController(QObject):
     def handle_chatters_reset(self):
         self.reset_chatters_counts()
         if self.toast:
-            self.toast.show_toast(self.i18n.get("widgets.chatters.reset_success"), role="success")
+            self.toast.show_toast(
+                title=self.i18n.get("widgets.chatters.title"),
+                message=self.i18n.get("widgets.chatters.reset_success"),
+                state="success",
+                tag="widget_chatters_reset"
+            )
