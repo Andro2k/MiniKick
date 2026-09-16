@@ -42,6 +42,10 @@
    - Reestructuración de `SliderRow` para unificar su jerarquía visual con `SettingRow`. La descripción textual ahora se agrupa verticalmente junto al título a la derecha del icono, eliminando el desfasaje que provocaba que la descripción iniciara debajo del icono.
    - Estandarización del contenedor del icono con ancho fijo de `20px` y alineación horizontal centrada en `SettingRow` y `SliderRow`, garantizando que todos los títulos y descripciones de la aplicación comiencen exactamente en la misma coordenada visual X independientemente de las proporciones del SVG.
 
+5. **Optimización de Resiliencia en Conexiones WebSocket (`kick_ws_provider.py` y `twitch_ws_provider.py`)**:
+   - Incremento del `ping_timeout` de 10s a 20s en los sockets de Kick (Pusher) y Twitch (IRC), ofreciendo mayor tolerancia ante microcortes, fluctuaciones de latencia o congestión temporal de red.
+   - Silenciado de trazas complejas de Python en cortes rutinarios de red (`WebSocketTimeoutException`, `ConnectionResetError`, `BrokenPipeError`), registrándolos como advertencias limpias de una sola línea mientras el worker ejecuta su reconexión transparente en 5s.
+
 ---
 
 ## Correcciones

@@ -96,7 +96,7 @@ class TwitchSocketManager:
             on_error=self._on_error,
             on_close=self._on_close
         )
-        self.ws.run_forever(ping_interval=30, ping_timeout=10)
+        self.ws.run_forever(ping_interval=30, ping_timeout=20)
 
     def _on_open(self, ws: websocket.WebSocketApp) -> None:
         logger.info("[TwitchWS] Connecting to Twitch channel: #%s", self._channel)
@@ -214,11 +214,16 @@ class TwitchSocketManager:
         return False
 
     def _on_error(self, ws: websocket.WebSocketApp, error: Exception) -> None:
-        logger.error(
+        is_routine_network_drop = isinstance(
+            error,
+            (websocket.WebSocketTimeoutException, TimeoutError, ConnectionResetError, BrokenPipeError)
+        )
+        log_func = logger.warning if is_routine_network_drop else logger.error
+        log_func(
             "[TwitchWS] WebSocket error (%s): %s",
             type(error).__name__,
             error,
-            exc_info=not isinstance(error, (KeyboardInterrupt, SystemExit))
+            exc_info=not is_routine_network_drop and not isinstance(error, (KeyboardInterrupt, SystemExit))
         )
 
     def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:
