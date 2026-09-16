@@ -137,6 +137,7 @@ class TwitchSocketManager:
 
     def _parse_privmsg(self, line: str) -> None:
         try:
+            line = line.rstrip("\r\n")
             tags = {}
             raw_tags = ""
             rest = line
@@ -176,6 +177,12 @@ class TwitchSocketManager:
 
             color = tags.get("color") or DEFAULT_TWITCH_COLOR
             emotes_tag = tags.get("emotes", "")
+            gifs_tag = tags.get("gifs", "")
+            gif_url = ""
+            if gifs_tag:
+                parts = gifs_tag.split("|")
+                if len(parts) >= 3 and parts[2].startswith("http"):
+                    gif_url = parts[2]
 
             raw_badges_str = tags.get("badges", "")
             badges = []
@@ -187,9 +194,12 @@ class TwitchSocketManager:
 
             if self._callback and user and msg_text:
                 try:
-                    self._callback(user, msg_text, badges, color, msg_id, sender_id, emotes_tag)
+                    self._callback(user, msg_text, badges, color, msg_id, sender_id, emotes_tag, gif_url)
                 except TypeError:
-                    self._callback(user, msg_text, badges, color, msg_id, sender_id)
+                    try:
+                        self._callback(user, msg_text, badges, color, msg_id, sender_id, emotes_tag)
+                    except TypeError:
+                        self._callback(user, msg_text, badges, color, msg_id, sender_id)
 
         except Exception as e:
             logger.debug("[TwitchWS] Error parsing PRIVMSG line: %s", e)

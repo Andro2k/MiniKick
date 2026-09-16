@@ -491,8 +491,9 @@ class WidgetsController(QObject):
 
     @Slot(str, str, str, object)
     @Slot(str, str, str, object, str, str)
-    def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick", emotes_tag: str = ""):
-        if not content:
+    @Slot(str, str, str, object, str, str, str)
+    def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick", emotes_tag: str = "", gif_url: str = ""):
+        if not content and not gif_url:
             return
 
         self._record_chatter_message(user, content, color, badges, platform)

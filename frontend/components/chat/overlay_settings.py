@@ -173,6 +173,15 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.addWidget(row_overlay_show_bots)
         self.addWidget(row_overlay_show_time)
         self.addWidget(row_big_emotes)
+
+        self.sw_overlay_show_gifs = ModernSwitch(self)
+        row_overlay_show_gifs = SettingRow(
+            "gift-filled.svg",
+            self.i18n.get("chat.overlay.show_gifs_title"),
+            self.i18n.get("chat.overlay.show_gifs_desc"),
+            self.sw_overlay_show_gifs
+        )
+        self.addWidget(row_overlay_show_gifs)
         
         divider = ModernDivider()
         self.addWidget(divider)
@@ -237,12 +246,23 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.combo_anim_in.currentIndexChanged.connect(self._on_setting_changed)
         self.spin_overlay_size.valueChanged.connect(self._on_setting_changed)
         self.spin_overlay_fade.valueChanged.connect(self._on_setting_changed)
+        self.sw_overlay_show_gifs.toggled.connect(self._on_setting_changed)
 
     def _on_setting_changed(self, *args):
         self._save_timer.start()
 
     def _emit_settings_changed(self):
         self.settings_changed.emit()
+
+    @property
+    def overlay_show_gifs(self) -> bool:
+        return self.sw_overlay_show_gifs.isChecked()
+
+    @overlay_show_gifs.setter
+    def overlay_show_gifs(self, value: bool):
+        self.sw_overlay_show_gifs.blockSignals(True)
+        self.sw_overlay_show_gifs.setChecked(bool(value))
+        self.sw_overlay_show_gifs.blockSignals(False)
 
     @property
     def overlay_edge_fade(self) -> bool:
@@ -270,6 +290,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         fade = self.spin_overlay_fade.value()
         show_bots = "true" if self.sw_overlay_show_bots.isChecked() else "false"
         show_time = "true" if self.sw_overlay_show_time.isChecked() else "false"
+        show_gifs = "true" if self.sw_overlay_show_gifs.isChecked() else "false"
         big_emotes = "true" if self.sw_big_emotes.isChecked() else "false"
         edge_fade = "true" if self.sw_edge_fade.isChecked() else "false"
         anim_in = self.combo_anim_in.currentData() or "fade"
@@ -280,7 +301,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.row_copy_obs.set_description(desc)
         
         base_url = self._chat_overlay_url or ""
-        params = f"theme={theme}&orientation={orientation}&flow={flow}&entry={entry}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}&big_emotes={big_emotes}&edge_fade={edge_fade}&anim_in={anim_in}"
+        params = f"theme={theme}&orientation={orientation}&flow={flow}&entry={entry}&size={size}px&fade={fade}&show_bots={show_bots}&show_time={show_time}&show_gifs={show_gifs}&big_emotes={big_emotes}&edge_fade={edge_fade}&anim_in={anim_in}"
         if "?" in base_url:
             base_part, token_part = base_url.split("?", 1)
             self.chat_overlay_full_url = f"{base_part}?{token_part}&{params}"
@@ -299,7 +320,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.btn_copy_overlay_obs.setText(original_text)
         self.btn_copy_overlay_obs.setEnabled(True)
 
-    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = "", big_emotes: bool = True, edge_fade: bool = True, anim_in: str = "fade"):
+    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = "", big_emotes: bool = True, edge_fade: bool = True, anim_in: str = "fade", show_gifs: bool = True):
         self.blockSignals(True)
         self.combo_overlay_theme.blockSignals(True)
         self.seg_overlay_orientation.blockSignals(True)
@@ -309,6 +330,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.spin_overlay_fade.blockSignals(True)
         self.sw_overlay_show_bots.blockSignals(True)
         self.sw_overlay_show_time.blockSignals(True)
+        self.sw_overlay_show_gifs.blockSignals(True)
         self.sw_big_emotes.blockSignals(True)
         self.sw_edge_fade.blockSignals(True)
         self.combo_anim_in.blockSignals(True)
@@ -323,6 +345,7 @@ class ChatOverlaySettingsPanel(ModernCard):
 
         self.sw_big_emotes.setChecked(big_emotes)
         self.sw_edge_fade.setChecked(edge_fade)
+        self.sw_overlay_show_gifs.setChecked(show_gifs)
 
         if orientation:
             self.seg_overlay_orientation.set_current_value(orientation)
@@ -347,6 +370,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.spin_overlay_fade.blockSignals(False)
         self.sw_overlay_show_bots.blockSignals(False)
         self.sw_overlay_show_time.blockSignals(False)
+        self.sw_overlay_show_gifs.blockSignals(False)
         self.sw_big_emotes.blockSignals(False)
         self.sw_edge_fade.blockSignals(False)
         self.combo_anim_in.blockSignals(False)

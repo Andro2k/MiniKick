@@ -21,6 +21,7 @@ const entryDir = urlParams.get('entry') || defaultEntry;
 const bigEmotes = urlParams.get('big_emotes') !== 'false';
 const edgeFade = urlParams.get('edge_fade') !== 'false';
 const animIn = urlParams.get('anim_in') || 'fade';
+const showGifs = urlParams.get('show_gifs') !== 'false';
 
 // Apply theme and base styles
 const themeStyle = document.getElementById('theme-style');
@@ -227,6 +228,14 @@ function formatChatMessage(data) {
 
     let safeMsg = '';
 
+    // Suppress Twitch GIF placeholder or redundant gif_url from text display if gif_url is present
+    if (data.gif_url) {
+        rawText = rawText.replace(/\[.*? GIF by .*?\]/gi, '').trim();
+        if (data.gif_url && rawText.includes(data.gif_url)) {
+            rawText = rawText.replace(data.gif_url, '').trim();
+        }
+    }
+
     // 1. Twitch native emotes if provided
     if (data.platform === 'twitch' && data.emotes_tag) {
         const twitchHtml = parseTwitchEmotes(rawText, data.emotes_tag);
@@ -386,12 +395,31 @@ function addMessage(data) {
     const { formattedHtml, isAction } = formatChatMessage(data);
     const content = document.createElement('div');
     content.className = `message-content${isAction ? ' action' : ''}`;
-    const textSpan = document.createElement('span');
-    textSpan.innerHTML = formattedHtml;
-    content.appendChild(textSpan);
+
+    if (formattedHtml && formattedHtml.trim().length > 0) {
+        const textSpan = document.createElement('span');
+        textSpan.innerHTML = formattedHtml;
+        content.appendChild(textSpan);
+    }
+
+    if (showGifs && data.gif_url) {
+        const gifWrapper = document.createElement('div');
+        gifWrapper.className = 'chat-gif-wrapper';
+        const gifImg = document.createElement('img');
+        gifImg.className = 'chat-gif';
+        gifImg.src = data.gif_url;
+        gifImg.alt = 'GIF';
+        gifImg.loading = 'lazy';
+        gifImg.onload = () => {
+            autoScroll();
+        };
+        gifWrapper.appendChild(gifImg);
+        content.appendChild(gifWrapper);
+    }
+
     msgBox.appendChild(content);
 
-    if (bigEmotes && isOnlyEmotes(formattedHtml)) {
+    if (bigEmotes && (!showGifs || !data.gif_url) && isOnlyEmotes(formattedHtml)) {
         msgBox.classList.add('only-emotes');
     }
 

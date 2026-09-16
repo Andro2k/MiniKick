@@ -12,6 +12,7 @@ class ChatFilterHandler:
     _YT_EMOTE_REGEX = re.compile(r":[a-zA-Z0-9_\-]+:")
     _TIKTOK_EMOTE_REGEX = re.compile(r"\[[a-zA-Z0-9_\-]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
+    _TWITCH_GIF_REGEX = re.compile(r"\[.*? GIF by .*?\]", re.IGNORECASE)
     _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
 
     def __init__(self, i18n, service):
@@ -58,9 +59,13 @@ class ChatFilterHandler:
             return True
         return bool(badges and "bot" in badges)
 
-    def clean_message_for_tts(self, text: str, emotes_tag: str = "") -> str:
+    def clean_message_for_tts(self, text: str, emotes_tag: str = "", gif_url: str = "") -> str:
+        cleaned = self._TWITCH_GIF_REGEX.sub("", text)
+        if gif_url:
+            cleaned = cleaned.replace(gif_url, "")
+
         web_link_label = self.i18n.get("chat.status.web_link")
-        cleaned = self._URL_REGEX.sub(web_link_label, text)
+        cleaned = self._URL_REGEX.sub(web_link_label, cleaned)
 
         cleaned = self._EMOTE_REGEX.sub("", cleaned)
         cleaned = self._YT_EMOTE_REGEX.sub("", cleaned)

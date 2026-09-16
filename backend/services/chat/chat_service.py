@@ -63,6 +63,7 @@ class ChatService:
             "platform_tiktok": self.storage.load_bool("tts_platform_tiktok", True),
             "mod_mute_command_enabled": self.storage.load_bool("tts_mod_mute_command_enabled", True),
             "mod_block_command_enabled": self.storage.load_bool("tts_mod_block_command_enabled", True),
+            "giphy_api_key": self.storage.load_string("giphy_api_key", ""),
         }
 
     def get_overlay_settings(self) -> dict:
@@ -77,6 +78,7 @@ class ChatService:
             overlay_fade = 15
         overlay_show_bots = self.storage.load_bool("chat_overlay_show_bots", False)
         overlay_show_time = self.storage.load_bool("chat_overlay_show_time", False)
+        overlay_show_gifs = self.storage.load_bool("chat_overlay_show_gifs", True)
         overlay_big_emotes = self.storage.load_bool("chat_overlay_big_emotes", True)
         overlay_edge_fade = self.storage.load_bool("chat_overlay_edge_fade", True)
         overlay_anim_in = self.storage.load_string("chat_overlay_anim_in", "fade")
@@ -87,6 +89,7 @@ class ChatService:
             "fade": overlay_fade,
             "show_bots": overlay_show_bots,
             "show_time": overlay_show_time,
+            "show_gifs": overlay_show_gifs,
             "big_emotes": overlay_big_emotes,
             "edge_fade": overlay_edge_fade,
             "anim_in": overlay_anim_in,
@@ -143,6 +146,8 @@ class ChatService:
             batch["chat_overlay_fade"] = settings["chat_overlay_fade"]
         if "chat_overlay_show_time" in settings:
             batch["chat_overlay_show_time"] = settings["chat_overlay_show_time"]
+        if "chat_overlay_show_gifs" in settings:
+            batch["chat_overlay_show_gifs"] = settings["chat_overlay_show_gifs"]
         if "chat_overlay_show_bots" in settings:
             batch["chat_overlay_show_bots"] = settings["chat_overlay_show_bots"]
         if "chat_overlay_big_emotes" in settings:
@@ -157,6 +162,8 @@ class ChatService:
             batch["piper_noise_scale"] = str(settings["piper_noise_scale"])
         if "piper_noise_w_scale" in settings:
             batch["piper_noise_w_scale"] = str(settings["piper_noise_w_scale"])
+        if "giphy_api_key" in settings:
+            batch["giphy_api_key"] = str(settings["giphy_api_key"]).strip()
 
         if hasattr(self.storage, "save_all"):
             self.storage.save_all(batch)

@@ -478,6 +478,31 @@
             border-color: #FFD700 !important;
             box-shadow: 0 0 14px rgba(255, 215, 0, 0.45) !important;
         }
+
+        .chat-gif-wrapper {
+            margin-top: 6px;
+            display: inline-flex;
+            max-width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
+
+        .chat-gif {
+            display: block;
+            max-width: 100%;
+            max-height: 220px;
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+        }
+
+        .chat-gif:hover {
+            transform: scale(1.02);
+        }
     </style>
 </head>
 

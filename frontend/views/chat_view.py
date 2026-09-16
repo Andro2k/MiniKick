@@ -215,6 +215,14 @@ class ChatView(BaseView):
         return self.overlay_settings_panel.overlay_anim_in
 
     @property
+    def overlay_show_gifs(self) -> bool:
+        return self.overlay_settings_panel.overlay_show_gifs
+
+    @overlay_show_gifs.setter
+    def overlay_show_gifs(self, value: bool):
+        self.overlay_settings_panel.overlay_show_gifs = value
+
+    @property
     def chat_overlay_url(self) -> str:
         return self.overlay_settings_panel.chat_overlay_url
 
@@ -233,8 +241,8 @@ class ChatView(BaseView):
         )
         self.bot_panel.set_command_toggles(mod_mute_command_enabled, mod_block_command_enabled)
 
-    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = "", big_emotes: bool = True, edge_fade: bool = True, anim_in: str = "fade"):
-        self.overlay_settings_panel.set_overlay_settings_ui(theme, size, fade, show_bots, show_time, orientation, flow, entry, big_emotes, edge_fade, anim_in)
+    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = "", big_emotes: bool = True, edge_fade: bool = True, anim_in: str = "fade", show_gifs: bool = True):
+        self.overlay_settings_panel.set_overlay_settings_ui(theme, size, fade, show_bots, show_time, orientation, flow, entry, big_emotes, edge_fade, anim_in, show_gifs=show_gifs)
 
     def clear_bot_input(self):
         self.bot_panel.clear_input()

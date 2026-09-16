@@ -19,6 +19,7 @@ class ChatMessageDTO:
     is_cancelled: bool = False
     emotes_tag: str = ""
     is_command: bool = False
+    gif_url: str = ""
 
 class MessagePipeline:
     def __init__(self):
