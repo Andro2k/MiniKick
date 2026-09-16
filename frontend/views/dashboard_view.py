@@ -41,12 +41,14 @@ class DashboardView(BaseView):
     def __init__(self, i18n, browser_service=None, parent=None):
         super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
         self.browser_service = browser_service
-        self._stats_cols = -1
-        self._session_cols = -1
-        self._platform_cols = -1
-        self._metadata_cols = -1
+        self._stats_cols = 4
+        self._session_cols = 4
+        self._platform_cols = 4
+        self._metadata_cols = 4
         self._last_top_row_dir = None
         self._current_profile_platform = "kick"
+        self._current_avatar_bytes = None
+        self._rendered_top_commands = None
         self._setup_ui()
 
     def _setup_ui(self):
@@ -542,7 +544,9 @@ class DashboardView(BaseView):
         if avatar_bytes:
             self.set_avatar_from_bytes(avatar_bytes)
         else:
+            self._current_avatar_bytes = None
             self.lbl_avatar.setPixmap(QPixmap())
+            self.lbl_avatar.setProperty("has_image", False)
             self.lbl_avatar.setText("?")
 
     def update_analytics_summary(self, analytics: dict):
@@ -550,47 +554,49 @@ class DashboardView(BaseView):
             return
 
         top_commands = analytics.get("top_commands", [])
-        while self.top_commands_container.count() > 0:
-            item = self.top_commands_container.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-            elif item.layout():
-                while item.layout().count() > 0:
-                    child = item.layout().takeAt(0)
-                    if child.widget():
-                        child.widget().deleteLater()
+        if getattr(self, "_rendered_top_commands", None) != top_commands:
+            self._rendered_top_commands = list(top_commands)
+            while self.top_commands_container.count() > 0:
+                item = self.top_commands_container.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+                elif item.layout():
+                    while item.layout().count() > 0:
+                        child = item.layout().takeAt(0)
+                        if child.widget():
+                            child.widget().deleteLater()
 
-        if not top_commands:
-            lbl_none = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
-            lbl_none.setProperty("role", "body")
-            self.top_commands_container.addWidget(lbl_none)
-        else:
-            max_cnt = max((cmd.get("count", 1) for cmd in top_commands), default=1)
-            usages_str = self.i18n.get("dashboard.analytics.usages")
-            for idx, cmd in enumerate(top_commands):
-                row = QHBoxLayout()
-                row.setSpacing(SPACING_MD)
-                
-                lbl_rank = QLabel(f"#{idx + 1}")
-                lbl_rank.setProperty("role", "rank_number")
-                
-                lbl_trigger = QLabel(cmd.get("trigger", ""))
-                lbl_trigger.setProperty("role", "body")
-                
-                pbar = QProgressBar()
-                pbar.setProperty("role", "top_command_progress")
-                pbar.setTextVisible(False)
-                pbar.setRange(0, max_cnt)
-                pbar.setValue(cmd.get("count", 0))
-                
-                lbl_cnt = QLabel(f"{cmd.get('count', 0)} {usages_str}")
-                lbl_cnt.setProperty("role", "caption")
-                
-                row.addWidget(lbl_rank)
-                row.addWidget(lbl_trigger)
-                row.addWidget(pbar, stretch=1)
-                row.addWidget(lbl_cnt)
-                self.top_commands_container.addLayout(row)
+            if not top_commands:
+                lbl_none = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
+                lbl_none.setProperty("role", "body")
+                self.top_commands_container.addWidget(lbl_none)
+            else:
+                max_cnt = max((cmd.get("count", 1) for cmd in top_commands), default=1)
+                usages_str = self.i18n.get("dashboard.analytics.usages")
+                for idx, cmd in enumerate(top_commands):
+                    row = QHBoxLayout()
+                    row.setSpacing(SPACING_MD)
+                    
+                    lbl_rank = QLabel(f"#{idx + 1}")
+                    lbl_rank.setProperty("role", "rank_number")
+                    
+                    lbl_trigger = QLabel(cmd.get("trigger", ""))
+                    lbl_trigger.setProperty("role", "body")
+                    
+                    pbar = QProgressBar()
+                    pbar.setProperty("role", "top_command_progress")
+                    pbar.setTextVisible(False)
+                    pbar.setRange(0, max_cnt)
+                    pbar.setValue(cmd.get("count", 0))
+                    
+                    lbl_cnt = QLabel(f"{cmd.get('count', 0)} {usages_str}")
+                    lbl_cnt.setProperty("role", "caption")
+                    
+                    row.addWidget(lbl_rank)
+                    row.addWidget(lbl_trigger)
+                    row.addWidget(pbar, stretch=1)
+                    row.addWidget(lbl_cnt)
+                    self.top_commands_container.addLayout(row)
 
         self.lbl_active_cmds_val.setText(str(analytics.get("active_commands", 0)))
         self.lbl_active_timers_val.setText(str(analytics.get("active_timers", 0)))
@@ -648,7 +654,10 @@ class DashboardView(BaseView):
             card.set_value(self._fmt_metric(count, total))
 
     def set_avatar_from_bytes(self, image_data: bytes):
-        pixmap = create_circular_pixmap(image_data)
+        if getattr(self, "_current_avatar_bytes", None) == image_data and self.lbl_avatar.property("has_image"):
+            return
+        self._current_avatar_bytes = image_data
+        pixmap = create_circular_pixmap(image_data, target_size=96)
         if not pixmap.isNull():
             self.lbl_avatar.setPixmap(pixmap)
             self.lbl_avatar.setProperty("has_image", True)
@@ -656,8 +665,11 @@ class DashboardView(BaseView):
             self.lbl_avatar.style().polish(self.lbl_avatar)
     
     def reset_to_disconnected(self):
+        self._current_avatar_bytes = None
         self.set_kick_status(connected=False)
         self.lbl_avatar.setPixmap(QPixmap())
+        self.lbl_avatar.setProperty("has_image", False)
+        self.lbl_avatar.setText("?")
 
     def _on_reauth_kick_clicked(self):
         self.reauth_kick_requested.emit()
@@ -734,12 +746,16 @@ class DashboardView(BaseView):
         align = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop if width < 480 else Qt.AlignmentFlag.AlignVCenter
         
         if hasattr(self, 'banner_layout_kick'):
-            self.banner_layout_kick.setDirection(banner_dir)
-            self.lbl_warn_text_kick.setAlignment(align)
+            if self.banner_layout_kick.direction() != banner_dir:
+                self.banner_layout_kick.setDirection(banner_dir)
+            if self.lbl_warn_text_kick.alignment() != align:
+                self.lbl_warn_text_kick.setAlignment(align)
 
         if hasattr(self, 'banner_layout_twitch'):
-            self.banner_layout_twitch.setDirection(banner_dir)
-            self.lbl_warn_text_twitch.setAlignment(align)
+            if self.banner_layout_twitch.direction() != banner_dir:
+                self.banner_layout_twitch.setDirection(banner_dir)
+            if self.lbl_warn_text_twitch.alignment() != align:
+                self.lbl_warn_text_twitch.setAlignment(align)
 
         if hasattr(self, 'platforms_grid') and hasattr(self, 'platform_cards'):
             plat_cols = 1 if width < 550 else (2 if width < 900 else 4)
@@ -755,4 +771,5 @@ class DashboardView(BaseView):
 
         if hasattr(self, 'bottom_analytics_layout'):
             bottom_dir = QBoxLayout.Direction.TopToBottom if width < 750 else QBoxLayout.Direction.LeftToRight
-            self.bottom_analytics_layout.setDirection(bottom_dir)
+            if self.bottom_analytics_layout.direction() != bottom_dir:
+                self.bottom_analytics_layout.setDirection(bottom_dir)

@@ -2,11 +2,14 @@
 
 import os
 import json
+import time
 import sqlite3
 import logging
 from datetime import datetime
 
 logger = logging.getLogger("minikick.database")
+
+CURRENT_SCHEMA_VERSION = 1
 
 class AutoCloseConnection(sqlite3.Connection):
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -22,26 +25,37 @@ class DatabaseManager:
         os.makedirs(self.db_dir, exist_ok=True)
         self.db_name = os.path.join(self.db_dir, db_name)
         
+        t0 = time.perf_counter()
         self._initialize_database()
+        logger.debug("[Perf/DB] Database initialization completed in %.2f ms", (time.perf_counter() - t0) * 1000)
 
     def _initialize_database(self) -> None:
         try:
             if os.path.exists(self.db_name):
                 with sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection) as conn:
                     cursor = conn.cursor()
-                    cursor.execute("PRAGMA integrity_check")
+                    cursor.execute("PRAGMA quick_check(1)")
                     res = cursor.fetchone()
                     if not res or res[0] != "ok":
-                        raise sqlite3.DatabaseError("Database integrity check failed")
+                        raise sqlite3.DatabaseError(f"Database quick check failed: {res}")
             
             with sqlite3.connect(self.db_name, timeout=10.0) as conn:
                 conn.execute("PRAGMA journal_mode=WAL")
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA user_version")
+                user_ver = cursor.fetchone()[0]
 
             self._create_tables()
-            self._upgrade_schema()
-            self._create_indexes_and_views()
+            if user_ver < CURRENT_SCHEMA_VERSION:
+                logger.info("[DatabaseManager] Schema version %d < %d. Upgrading schema...", user_ver, CURRENT_SCHEMA_VERSION)
+                self._upgrade_schema()
+                self._create_indexes_and_views()
+                with sqlite3.connect(self.db_name, timeout=10.0) as conn:
+                    conn.execute(f"PRAGMA user_version = {CURRENT_SCHEMA_VERSION}")
+            else:
+                logger.debug("[DatabaseManager] Schema up-to-date (version %d). Skipping DDL re-runs.", user_ver)
         except sqlite3.DatabaseError as e:
-            if "malformed" in str(e).lower() or "corrupt" in str(e).lower() or "integrity" in str(e).lower():
+            if "malformed" in str(e).lower() or "corrupt" in str(e).lower() or "integrity" in str(e).lower() or "quick check" in str(e).lower():
                 logger.error("Database file is malformed at startup, recreating: %s", e)
                 self._handle_corrupt_database()
             else:
@@ -81,6 +95,11 @@ class DatabaseManager:
         self._create_tables()
         self._upgrade_schema()
         self._create_indexes_and_views()
+        try:
+            with sqlite3.connect(self.db_name, timeout=10.0) as conn:
+                conn.execute(f"PRAGMA user_version = {CURRENT_SCHEMA_VERSION}")
+        except Exception:
+            pass
 
     def _create_tables(self) -> None:
         with self.get_connection() as conn:

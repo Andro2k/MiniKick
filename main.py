@@ -64,7 +64,6 @@ def _get_safe_i18n():
         logger.warning("[Bootstrap] Pre-boot i18n hydration failed: %s", e)
         return None
 
-
 def global_crash_handler(exctype, value, tb):
     tb_text = "".join(traceback.format_exception(exctype, value, tb))
     from datetime import datetime
@@ -118,8 +117,9 @@ def global_crash_handler(exctype, value, tb):
 
     sys.exit(1)
 
-
 def bootstrap():
+    import time
+    t_boot_start = time.perf_counter()
     logger.info("==================================================================")
     logger.info("MiniKick Starting | Version: %s | Platform: %s | Python: %s", APP_VERSION, sys.platform, sys.version.split()[0])
     logger.info("==================================================================")
@@ -152,6 +152,9 @@ def bootstrap():
     app.setFont(app_font)
     app.setStyleSheet(GLOBAL_QSS)
 
+    t_app_ready = time.perf_counter()
+    logger.debug("[Perf/Bootstrap] Qt Application & Fonts initialized in %.2f ms", (t_app_ready - t_boot_start) * 1000)
+
     logger.debug("[Bootstrap] Checking single-instance socket on port 45678...")
     instance_provider = SocketInstanceProvider(port=45678)
     if instance_provider.is_already_running():
@@ -177,9 +180,19 @@ def bootstrap():
         app.setWindowIcon(QIcon(icon_path))
         
         logger.info("[Bootstrap] Initializing MainWindowCore...")
+        t_win_start = time.perf_counter()
         window = MainWindowCore(updater_manager=updater, app_version=APP_VERSION)
+        t_win_ready = time.perf_counter()
+        logger.debug("[Perf/Bootstrap] MainWindowCore instantiated in %.2f ms", (t_win_ready - t_win_start) * 1000)
+
         logger.info("[Bootstrap] Displaying main window...")
         window.show()
+        t_show_ready = time.perf_counter()
+        logger.info(
+            "[Perf/Bootstrap] Window displayed in %.2f ms (Total bootstrap: %.2f ms)",
+            (t_show_ready - t_win_ready) * 1000,
+            (t_show_ready - t_boot_start) * 1000
+        )
         logger.info("[Bootstrap] Entering Qt application event loop.")
         sys.exit(app.exec())
         

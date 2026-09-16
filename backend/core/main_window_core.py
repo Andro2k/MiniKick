@@ -27,7 +27,7 @@ from backend.controllers import (
 )
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
-    KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, YouTubeChatWorker, TikTokChatWorker,
+    KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker,
     FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
 )
 from frontend.common import COLOR_GREEN, get_global_qss
@@ -410,7 +410,6 @@ class MainWindowCore(QMainWindow):
             self.content_stack.addWidget(self.view_rewards)
             self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
             self.rewards_controller.attach_view(self.view_rewards)
-            self._fetch_api_rewards()
             view_widget = self.view_rewards
         elif view_name == "Comandos":
             self.view_commands = CommandView(self.i18n, parent=self.content_stack)
@@ -484,7 +483,7 @@ class MainWindowCore(QMainWindow):
             "Music", "Developer"
         ]
         self._prewarm_queue = deque(views_to_warm)
-        QTimer.singleShot(750, self._prewarm_next_view)
+        QTimer.singleShot(2500, self._prewarm_next_view)
 
     def _prewarm_next_view(self):
         if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:
@@ -498,7 +497,7 @@ class MainWindowCore(QMainWindow):
                 self.logger.warning("[Prewarm] Error pre-warming view '%s': %s", view_name, e)
 
         if self._prewarm_queue and not self._is_shutting_down:
-            QTimer.singleShot(150, self._prewarm_next_view)
+            QTimer.singleShot(250, self._prewarm_next_view)
 
     @Slot()
     def _restore_from_tray(self):
@@ -1360,6 +1359,7 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_youtube_status(connected=False, connecting=True)
 
+        from backend.workers import YouTubeChatWorker
         self.youtube_chat_worker = YouTubeChatWorker(
             target_channel=target,
             i18n=self.container.i18n
@@ -1448,6 +1448,7 @@ class MainWindowCore(QMainWindow):
             self.dashboard_controller.set_tiktok_status(connected=False, connecting=True)
 
         custom_sign_key = self.settings_storage.load_string("tiktok_sign_api_key", "").strip()
+        from backend.workers import TikTokChatWorker
         self.tiktok_chat_worker = TikTokChatWorker(
             target_channel=clean_target,
             sign_api_key=custom_sign_key or None,
@@ -1691,6 +1692,10 @@ class MainWindowCore(QMainWindow):
 
     @Slot(int)
     def _apply_dynamic_theme(self, base_size: int, immediate: bool = True):
+        current_size = getattr(self, "_applied_font_size", None)
+        if current_size == base_size:
+            return
+        self._applied_font_size = base_size
         app = QApplication.instance()
         if app:
             app.setStyleSheet(get_global_qss(base_size))

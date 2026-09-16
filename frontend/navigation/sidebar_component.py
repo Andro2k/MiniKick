@@ -241,10 +241,13 @@ class Sidebar(QFrame):
         self.profile_role_lbl.setText(status_or_role)
 
     def update_profile_avatar(self, image_data: bytes):
-        pixmap = create_circular_pixmap(image_data)
+        if getattr(self, "_current_avatar_bytes", None) == image_data and getattr(self, "_has_profile_avatar", False):
+            return
+        self._current_avatar_bytes = image_data
+        dpr = self.devicePixelRatio()
+        target_physical = int(36 * dpr)
+        pixmap = create_circular_pixmap(image_data, target_size=target_physical)
         if not pixmap.isNull():
-            dpr = self.devicePixelRatio()
-            target_physical = int(36 * dpr)
             scaled_pixmap = pixmap.scaled(
                 target_physical, target_physical, 
                 Qt.AspectRatioMode.KeepAspectRatio, 
@@ -252,7 +255,9 @@ class Sidebar(QFrame):
             )
             scaled_pixmap.setDevicePixelRatio(dpr)
             self.profile_avatar.setPixmap(scaled_pixmap)
+            self._has_profile_avatar = True
         else:
+            self._has_profile_avatar = False
             self.reset_profile_avatar()
 
     def reset_profile_avatar(self):

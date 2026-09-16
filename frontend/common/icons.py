@@ -88,11 +88,13 @@ def get_pixmap(name: str, size: int = 16, dpr: float | None = None) -> QPixmap:
     icon = get_icon(name)
     return icon.pixmap(QSize(size, size), dpr)
 
-def create_circular_pixmap(img_data: QByteArray) -> QPixmap:
+def create_circular_pixmap(img_data: QByteArray, target_size: int | None = None) -> QPixmap:
     image = QImage.fromData(img_data)   
     if image.isNull():
         return QPixmap()
     size = min(image.width(), image.height())
+    if target_size and target_size > 0 and size > target_size:
+        size = target_size
     image = image.scaled(
         size, size, 
         Qt.AspectRatioMode.KeepAspectRatioByExpanding, 
