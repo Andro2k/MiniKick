@@ -38,6 +38,10 @@
      - `chat.overlay.show_gifs_desc`: "Permite visualizar GIFs animados y activa el comando !gif en el chat." / "Display animated GIFs and enable the !gif command in chat."
    - Cumplimiento estricto de la regla de cero cadenas de texto quemadas en la interfaz de usuario.
 
+4. **Armonización Visual y Alineación de Controles (`frontend/widgets/block_widget.py`)**:
+   - Reestructuración de `SliderRow` para unificar su jerarquía visual con `SettingRow`. La descripción textual ahora se agrupa verticalmente junto al título a la derecha del icono, eliminando el desfasaje que provocaba que la descripción iniciara debajo del icono.
+   - Estandarización del contenedor del icono con ancho fijo de `20px` y alineación horizontal centrada en `SettingRow` y `SliderRow`, garantizando que todos los títulos y descripciones de la aplicación comiencen exactamente en la misma coordenada visual X independientemente de las proporciones del SVG.
+
 ---
 
 ## Correcciones

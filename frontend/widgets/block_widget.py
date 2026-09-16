@@ -43,6 +43,8 @@ class SettingRow(QWidget):
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+        icon_lbl.setFixedWidth(20)
+        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(SPACING_2XS)
@@ -61,7 +63,7 @@ class SettingRow(QWidget):
         text_layout.addWidget(lbl_title)
         text_layout.addWidget(self.lbl_desc)
         
-        layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addLayout(text_layout, stretch=1)
         layout.addWidget(right_widget, alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
 
@@ -156,29 +158,39 @@ class SliderRow(QWidget):
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(*MARGIN_SM)
-        layout.setSpacing(SPACING_XS)
+        layout.setSpacing(SPACING_SM)
 
-        header_row = QHBoxLayout()
-        header_row.setSpacing(SPACING_SM)
+        top_layout = QHBoxLayout()
+        top_layout.setSpacing(SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+        icon_lbl.setFixedWidth(20)
+        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+
+        text_layout = QVBoxLayout()
+        text_layout.setSpacing(SPACING_2XS)
 
         lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
 
-        header_row.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
-        header_row.addWidget(lbl_title, alignment=Qt.AlignmentFlag.AlignVCenter)
-        header_row.addStretch()
-        header_row.addWidget(value_label, alignment=Qt.AlignmentFlag.AlignVCenter)
+        self.lbl_desc = QLabel(desc_text, parent=self)
+        self.lbl_desc.setProperty("role", "body")
+        self.lbl_desc.setWordWrap(True)
 
-        lbl_desc = QLabel(desc_text, parent=self)
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
+        text_layout.addWidget(lbl_title)
+        text_layout.addWidget(self.lbl_desc)
 
-        layout.addLayout(header_row)
-        layout.addWidget(lbl_desc)
+        top_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
+        top_layout.addLayout(text_layout, stretch=1)
+        top_layout.addWidget(value_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+
+        layout.addLayout(top_layout)
         layout.addWidget(slider_widget)
+
+    def set_description(self, text: str):
+        if hasattr(self, 'lbl_desc') and self.lbl_desc:
+            self.lbl_desc.setText(text)
 
 class StatCard(QFrame):
     def __init__(self, title_text: str, icon_name: str, initial_value: str = "-", parent=None):
