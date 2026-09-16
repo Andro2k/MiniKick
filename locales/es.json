@@ -399,7 +399,7 @@
             "col_actions": "Acciones",
             "col_aliases": "Alias / Regex",
             "col_command": "Comando",
-            "col_permission": "Nivel de Acceso",
+            "col_permission": "Rango",
             "col_platforms": "Plataformas",
             "col_type": "Tipo",
             "filter_all": "Mostrar Todos",

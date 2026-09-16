@@ -36,7 +36,7 @@ class ScheduleTablePanel(QWidget):
             headers=[col_1, col_2, col_3, col_4, col_5, col_6, col_7],
             search_placeholder=self.i18n.get("stream_info.table.search_placeholder"),
             add_button_text=self.i18n.get("stream_info.schedule_section.btn_new"),
-            add_button_icon="add.svg",
+            add_button_icon="plus-filled.svg",
             parent=self
         )
         self.table_card.setup_empty_state(
@@ -144,7 +144,7 @@ class ScheduleTablePanel(QWidget):
         )
 
         cell.add_button(
-            icon_name="trash.svg",
+            icon_name="trash-filled.svg",
             color=COLOR_RED,
             role="action_danger_border",
             tooltip=self.i18n.get("stream_info.confirm_delete.title"),

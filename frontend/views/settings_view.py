@@ -38,7 +38,7 @@ class SettingsView(BaseView):
         self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
 
         row_lang = SettingRow(
-            icon_name="world.svg", 
+            icon_name="globe-filled.svg", 
             title_text=self.i18n.get("settings.system.lang_title"), 
             desc_text=self.i18n.get("settings.system.lang_desc"), 
             right_widget=self.combo_lang
@@ -122,14 +122,14 @@ class SettingsView(BaseView):
         self.combo_tts_audio_device.currentIndexChanged.connect(self._on_tts_audio_device_changed)
 
         row_music_audio = SettingRow(
-            icon_name="music-notes.svg",
+            icon_name="music-notes-duotone.svg",
             title_text=self.i18n.get("settings.audio.music_title"),
             desc_text=self.i18n.get("settings.audio.music_desc"),
             right_widget=self.combo_music_audio_device
         )
 
         row_tts_audio = SettingRow(
-            icon_name="volume.svg",
+            icon_name="volume-up-filled.svg",
             title_text=self.i18n.get("settings.audio.tts_title"),
             desc_text=self.i18n.get("settings.audio.tts_desc"),
             right_widget=self.combo_tts_audio_device
@@ -220,7 +220,7 @@ class SettingsView(BaseView):
         self.btn_update.clicked.connect(self.update_clicked.emit)
 
         row_update = SettingRow(
-            icon_name="cloud-download.svg", 
+            icon_name="cloud-download-filled.svg", 
             title_text=self.i18n.get("settings.system.update_title"), 
             desc_text=self.i18n.get("settings.system.update_desc"), 
             right_widget=self.btn_update

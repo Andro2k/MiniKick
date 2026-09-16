@@ -57,11 +57,11 @@ class AlertsView(BaseView):
     view_shown = Signal()
 
     _TWITCH_EVENTS = [
-        ("follow", "user-check.svg"),
+        ("follow", "user-check-duotone.svg"),
         ("subscription", "crown.svg"),
         ("resub", "star.svg"),
         ("sub_gift", "gift-filled.svg"),
-        ("raid", "users.svg"),
+        ("raid", "users-duotone.svg"),
         ("cheer", "prism.svg"),
     ]
 
@@ -128,7 +128,7 @@ class AlertsView(BaseView):
         self.btn_notice_connect = ModernButton(
             text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
             role="action_outlined",
-            icon_name="plug.svg",
+            icon_name="plug-filled.svg",
             icon_size=15,
             parent=self
         )
@@ -192,7 +192,7 @@ class AlertsView(BaseView):
         if dict.__contains__(self.cards, key):
             return dict.__getitem__(self.cards, key)
 
-        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-check.svg")
+        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-check-duotone.svg")
         editor_stack = self.twitch_editor_stack
         sidebar_panel = self.sidebars.get(platform)
 

@@ -85,14 +85,14 @@ class ImportBackupModal(ModernModal):
         self.btn_select_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_select_all"),
             role="action_neutral_border",
-            icon_name="check.svg",
+            icon_name="check-filled.svg",
             icon_size=12,
             parent=self
         )
         self.btn_deselect_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_deselect_all"),
             role="action_neutral_border",
-            icon_name="x.svg",
+            icon_name="x-filled.svg",
             icon_size=12,
             parent=self
         )

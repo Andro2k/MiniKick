@@ -27,7 +27,7 @@ class SegmentedPagination(QFrame):
 
         self.btn_prev = QPushButton(self)
         self.btn_prev.setObjectName("btn_prev")
-        self.btn_prev.setIcon(get_icon_colored("chevron-left.svg"))
+        self.btn_prev.setIcon(get_icon_colored("chevron-left-filled.svg"))
         self.btn_prev.setIconSize(QSize(16, 16))
         self.btn_prev.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_prev.clicked.connect(self.prev_requested.emit)
@@ -38,7 +38,7 @@ class SegmentedPagination(QFrame):
 
         self.btn_next = QPushButton(self)
         self.btn_next.setObjectName("btn_next")
-        self.btn_next.setIcon(get_icon_colored("chevron-right.svg"))
+        self.btn_next.setIcon(get_icon_colored("chevron-right-filled.svg"))
         self.btn_next.setIconSize(QSize(16, 16))
         self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_next.clicked.connect(self.next_requested.emit)

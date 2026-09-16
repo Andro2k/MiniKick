@@ -42,11 +42,11 @@ class ChatOverlaySettingsPanel(ModernCard):
         )
 
         self.seg_overlay_orientation = ModernSegmentedControl(self)
-        self.seg_overlay_orientation.add_option("vertical", "arrows-vertical.svg", self.i18n.get("chat.overlay.orientation_vertical"))
-        self.seg_overlay_orientation.add_option("horizontal", "arrows-horizontal.svg", self.i18n.get("chat.overlay.orientation_horizontal"))
+        self.seg_overlay_orientation.add_option("vertical", "carousel-v-duotone.svg", self.i18n.get("chat.overlay.orientation_vertical"))
+        self.seg_overlay_orientation.add_option("horizontal", "carousel-h-duotone.svg", self.i18n.get("chat.overlay.orientation_horizontal"))
         
         row_overlay_orientation = SettingRow(
-            "align-left-2.svg",
+            "align-left-duotone.svg",
             self.i18n.get("chat.overlay.orientation_title"),
             self.i18n.get("chat.overlay.orientation_desc"),
             self.seg_overlay_orientation
@@ -56,20 +56,20 @@ class ChatOverlaySettingsPanel(ModernCard):
         self._populate_flow_options("vertical")
 
         row_overlay_flow = SettingRow(
-            "arrows-vertical.svg",
+            "transfer-v-filled.svg",
             self.i18n.get("chat.overlay.flow_title"),
             self.i18n.get("chat.overlay.flow_desc"),
             self.seg_overlay_flow
         )
 
         self.seg_overlay_entry = ModernSegmentedControl(self)
-        self.seg_overlay_entry.add_option("bottom", "chevron-up.svg", self.i18n.get("chat.overlay.entry_bottom"))
-        self.seg_overlay_entry.add_option("top", "chevron-down.svg", self.i18n.get("chat.overlay.entry_top"))
-        self.seg_overlay_entry.add_option("left", "chevron-right.svg", self.i18n.get("chat.overlay.entry_left"))
-        self.seg_overlay_entry.add_option("right", "chevron-left.svg", self.i18n.get("chat.overlay.entry_right"))
+        self.seg_overlay_entry.add_option("bottom", "chevron-up-filled.svg", self.i18n.get("chat.overlay.entry_bottom"))
+        self.seg_overlay_entry.add_option("top", "chevron-down-filled.svg", self.i18n.get("chat.overlay.entry_top"))
+        self.seg_overlay_entry.add_option("left", "chevron-right-filled.svg", self.i18n.get("chat.overlay.entry_left"))
+        self.seg_overlay_entry.add_option("right", "chevron-left-filled.svg", self.i18n.get("chat.overlay.entry_right"))
 
         row_overlay_entry = SettingRow(
-            "movie.svg",
+            "album-filled.svg",
             self.i18n.get("chat.overlay.entry_title"),
             self.i18n.get("chat.overlay.entry_desc"),
             self.seg_overlay_entry
@@ -77,7 +77,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         
         self.spin_overlay_size = CompactSpinBox(10, 32, 14, suffix="px")
         row_overlay_size = SettingRow(
-            "text-square-duotone.svg",
+            "text-filled.svg",
             self.i18n.get("chat.overlay.size_title"),
             self.i18n.get("chat.overlay.size_desc"),
             self.spin_overlay_size
@@ -112,7 +112,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_big_emotes = ModernSwitch()
         self.sw_big_emotes.setChecked(True)
         row_big_emotes = SettingRow(
-            "star.svg",
+            "emoji-circle-duotone.svg",
             self.i18n.get("chat.overlay.big_emotes_title"),
             self.i18n.get("chat.overlay.big_emotes_desc"),
             self.sw_big_emotes
@@ -140,7 +140,7 @@ class ChatOverlaySettingsPanel(ModernCard):
 
         self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
         self.row_copy_obs = SettingRow(
-            "link-duotone.svg",
+            "link-filled.svg",
             self.i18n.get("chat.settings.obs_title"),
             self.i18n.get("chat.settings.obs_desc"),
             self.btn_copy_overlay_obs
@@ -197,13 +197,13 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.seg_overlay_flow.blockSignals(True)
         if orientation == "horizontal":
             options = [
-                ("right-to-left", "chevron-left.svg", self.i18n.get("chat.overlay.flow_r2l")),
-                ("left-to-right", "chevron-right.svg", self.i18n.get("chat.overlay.flow_l2r"))
+                ("right-to-left", "chevron-left-filled.svg", self.i18n.get("chat.overlay.flow_r2l")),
+                ("left-to-right", "chevron-right-filled.svg", self.i18n.get("chat.overlay.flow_l2r"))
             ]
         else:
             options = [
-                ("bottom-to-top", "chevron-up.svg", self.i18n.get("chat.overlay.flow_b2t")),
-                ("top-to-bottom", "chevron-down.svg", self.i18n.get("chat.overlay.flow_t2b"))
+                ("bottom-to-top", "chevron-up-filled.svg", self.i18n.get("chat.overlay.flow_b2t")),
+                ("top-to-bottom", "chevron-down-filled.svg", self.i18n.get("chat.overlay.flow_t2b"))
             ]
         self.seg_overlay_flow.set_options(options)
         self.seg_overlay_flow.blockSignals(False)

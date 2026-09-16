@@ -85,9 +85,9 @@ class FilterHeaderView(QHeaderView):
         has_sort = bool(config.get("sort_asc_label") or config.get("sort_desc_label"))
 
         if config.get("sort_asc_label"):
-            action_sort_asc = menu.addAction(get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
+            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-filled.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
         if config.get("sort_desc_label"):
-            action_sort_desc = menu.addAction(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
+            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-filled.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
 
         action_all = None
         action_map: dict[QAction, str] = {}

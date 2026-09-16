@@ -35,8 +35,8 @@ class WidgetCard(QFrame):
         self.main_layout.setContentsMargins(*MARGIN_NONE)
         self.main_layout.setSpacing(SPACING_NONE)
 
-        self._icon_up = get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 20)
-        self._icon_down = get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 20)
+        self._icon_up = get_icon_colored("chevron-up-filled.svg", COLOR_NEUTRAL_400, 20)
+        self._icon_down = get_icon_colored("chevron-down-filled.svg", COLOR_NEUTRAL_400, 20)
 
         self._build_header(title, desc, icon_name)
         self._build_body()

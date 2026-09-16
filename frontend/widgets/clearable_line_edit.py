@@ -17,7 +17,7 @@ class ClearableLineEdit(QFrame):
         layout.setContentsMargins(*MARGIN_NONE)
         layout.setSpacing(SPACING_NONE)
 
-        self._icon_clear = get_icon_colored("x.svg")
+        self._icon_clear = get_icon_colored("x-filled.svg")
 
         self.txt_input = QLineEdit(self)
         self.txt_input.setPlaceholderText(placeholder)

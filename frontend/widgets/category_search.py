@@ -149,8 +149,8 @@ class CategorySearchComboBox(QFrame):
         layout.setContentsMargins(*MARGIN_NONE)
         layout.setSpacing(SPACING_NONE)
 
-        self._icon_search = get_icon_colored("search.svg", COLOR_NEUTRAL_400, 16)
-        self._icon_clear = get_icon_colored("x.svg", COLOR_NEUTRAL_400, 16)
+        self._icon_search = get_icon_colored("search-filled.svg", COLOR_NEUTRAL_400, 16)
+        self._icon_clear = get_icon_colored("x-filled.svg", COLOR_NEUTRAL_400, 16)
 
         self.txt_input = QLineEdit(self)
         self.txt_input.setPlaceholderText(placeholder)

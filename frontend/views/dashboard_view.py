@@ -109,7 +109,7 @@ class DashboardView(BaseView):
         self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
         
         row_autostart = SettingRow(
-            "plug.svg", 
+            "plug-filled.svg", 
             self.i18n.get("dashboard.connection.autostart_title"), 
             self.i18n.get("dashboard.connection.autostart_desc"), 
             self.sw_autostart
@@ -243,7 +243,7 @@ class DashboardView(BaseView):
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
         self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_neutral_border")
-        self.btn_open_channel.setIcon(get_icon_colored("link-duotone.svg", COLOR_WHITE, 14))
+        self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", COLOR_WHITE, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)
 
@@ -325,7 +325,7 @@ class DashboardView(BaseView):
         empty_header.setSpacing(SPACING_LG)
 
         lbl_empty_icon = QLabel(self)
-        lbl_empty_icon.setPixmap(get_pixmap_colored("users.svg", COLOR_NEUTRAL_500, 32))
+        lbl_empty_icon.setPixmap(get_pixmap_colored("users-duotone.svg", COLOR_NEUTRAL_500, 32))
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         empty_text_layout = QVBoxLayout()
@@ -378,7 +378,7 @@ class DashboardView(BaseView):
         self.session_grid.setSpacing(SPACING_MD)
 
         self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-duotone.svg", "0")
-        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "code-duotone.svg", "0")
+        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "chat-square-code-filled.svg", "0")
         self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock-circle-duotone.svg", "0")
         self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-duotone.svg", "0")
 

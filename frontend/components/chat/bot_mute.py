@@ -68,7 +68,7 @@ class BotMutePanel(ModernCard):
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
         
         self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
-        self.btn_add_bot.set_icon("add.svg", size=16)
+        self.btn_add_bot.set_icon("plus-filled.svg", size=16)
             
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
@@ -100,7 +100,7 @@ class BotMutePanel(ModernCard):
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
         
         self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
-        self.btn_add_word.set_icon("add.svg", size=16)
+        self.btn_add_word.set_icon("plus-filled.svg", size=16)
             
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
@@ -169,7 +169,7 @@ class BotMutePanel(ModernCard):
             btn_size = max(22, font_height + 4)
             
             if icon_size not in self._trash_icon_cache:
-                self._trash_icon_cache[icon_size] = get_icon_colored("trash.svg", COLOR_RED, size=icon_size)
+                self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", COLOR_RED, size=icon_size)
             
             btn_delete.setIcon(self._trash_icon_cache[icon_size])
             btn_delete.setIconSize(QSize(icon_size, icon_size))

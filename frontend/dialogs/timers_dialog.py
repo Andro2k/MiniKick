@@ -46,7 +46,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.message_rows = []
 
         self._icon_edit = get_icon_colored("edit.svg", COLOR_GREEN, 14)
-        self._icon_trash = get_icon_colored("trash.svg", COLOR_RED, 14)
+        self._icon_trash = get_icon_colored("trash-filled.svg", COLOR_RED, 14)
 
         self._setup_ui()
         if self.existing_config:

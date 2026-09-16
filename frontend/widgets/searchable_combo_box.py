@@ -57,7 +57,7 @@ class SearchableComboPopup(QFrame):
         search_layout.setSpacing(SPACING_XS)
 
         self.lbl_search_icon = QLabel(search_container)
-        self.lbl_search_icon.setPixmap(get_pixmap_colored("search.svg", COLOR_NEUTRAL_400, size=14))
+        self.lbl_search_icon.setPixmap(get_pixmap_colored("search-filled.svg", COLOR_NEUTRAL_400, size=14))
         self.lbl_search_icon.setFixedSize(14, 14)
         search_layout.addWidget(self.lbl_search_icon, alignment=Qt.AlignmentFlag.AlignVCenter)
 

@@ -30,14 +30,14 @@ _LEVEL_COLORS = {
     "BOOTSTRAP": COLOR_BLUE
 }
 _LEVEL_ICON_NAMES = {
-    "DEBUG": "code-duotone.svg",
+    "DEBUG": "chat-square-code-filled.svg",
     "INFO": "info-circle-duotone.svg",
     "WARNING": "alert-triangle-duotone.svg",
     "ERROR": "bug.svg",
     "CRITICAL": "bolt-circle-duotone.svg",
-    "CRASH": "bomb.svg",
-    "FATAL_CRASH": "bomb.svg",
-    "THREAD_CRASH": "bomb.svg",
+    "CRASH": "bolt-circle-duotone.svg",
+    "FATAL_CRASH": "bolt-circle-duotone.svg",
+    "THREAD_CRASH": "bolt-circle-duotone.svg",
     "BOOTSTRAP": "info-circle-duotone.svg"
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}

@@ -399,7 +399,7 @@
             "col_actions": "Actions",
             "col_aliases": "Aliases / Regex",
             "col_command": "Command",
-            "col_permission": "Access Level",
+            "col_permission": "Rank",
             "col_platforms": "Platforms",
             "col_type": "Type",
             "filter_all": "Show All",

@@ -52,7 +52,7 @@ class ModernToast(QFrame):
         layout.addLayout(text_layout, stretch=1)
 
         if "close" not in ModernToast._pixmap_cache:
-            ModernToast._pixmap_cache["close"] = get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14)
+            ModernToast._pixmap_cache["close"] = get_icon_colored("x-filled.svg", COLOR_NEUTRAL_400, 14)
 
         btn_close = QPushButton(self)
         btn_close.setProperty("role", "btn_ghost")

@@ -57,7 +57,7 @@ class VoiceSettingRow(QWidget):
 
         if test_signal is not None:
             self.btn_test = QPushButton()
-            self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_400, size=14))
+            self.btn_test.setIcon(get_icon_colored("play-duotone.svg", COLOR_NEUTRAL_400, size=14))
             self.btn_test.setIconSize(QSize(14, 14))
             self.btn_test.setFixedSize(28, 28)
             self.btn_test.setToolTip(tooltip_text)
@@ -109,7 +109,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.chk_command = ModernSwitch(self)
 
         self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
-        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download.svg", COLOR_GREEN, size=14))
+        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_GREEN, size=14))
         self.btn_manage_piper.setIconSize(QSize(14, 14))
         self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
         self.btn_manage_piper.setProperty("role", "action_accent_border")
@@ -128,17 +128,17 @@ class ChatTtsSettingsPanel(ModernCard):
         self.lbl_speed_perc = QLabel("100%", parent=self)
         self.lbl_speed_perc.setProperty("role", "monospace")
 
-        row_tts = SettingRow("volume.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
-        row_read_name = SettingRow("user.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
-        row_cmd = SettingRow("code-duotone.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
+        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
+        row_read_name = SettingRow("user-duotone.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
+        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
 
         self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
-        row_prefix = SettingRow("hashtag-square-duotone.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
-        row_volume = SliderRow("tuning-duotone.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
-        row_speed = SliderRow("circle-graph-duotone.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc)
+        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
+        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
+        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc)
 
         self.addWidget(row_tts)
         self.addWidget(row_read_name)
@@ -185,7 +185,7 @@ class ChatTtsSettingsPanel(ModernCard):
         voices_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_XS, orientation="vertical")
 
         row_provider = VoiceSettingRow(
-            "world.svg",
+            "globe-filled.svg",
             self.i18n.get("chat.settings.provider_title"),
             self.combo_provider,
             action_button=self.btn_manage_piper
@@ -212,7 +212,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.sw_role_subscriber.setChecked(True)
 
         row_voice_general = VoiceSettingRow(
-            "users.svg",
+            "users-duotone.svg",
             self.i18n.get("chat.settings.voice_general_title"),
             self.combo_voice,
             switch=self.sw_role_everyone,

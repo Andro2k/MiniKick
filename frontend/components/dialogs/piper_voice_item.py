@@ -61,7 +61,7 @@ class PiperVoiceItemWidget(QFrame):
         self.update_status(self.is_installed)
         header_layout.addWidget(self.lbl_status, alignment=Qt.AlignmentFlag.AlignVCenter)
         self.btn_test = QPushButton(self)
-        self.btn_test.setIcon(get_icon_colored("volume.svg", COLOR_NEUTRAL_400, size=14))
+        self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg", COLOR_NEUTRAL_400, size=14))
         self.btn_test.setIconSize(QSize(14, 14))
         self.btn_test.setFixedSize(28, 28)
         self.btn_test.setProperty("role", "action_neutral_border")

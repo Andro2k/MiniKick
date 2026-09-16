@@ -32,7 +32,7 @@ class MusicSettingsPanel(QWidget):
         self.sw_auto_resume = ModernSwitch()
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
         self.row_auto_resume = SettingRow(
-            icon_name="refresh-duotone.svg",
+            icon_name="refresh-filled.svg",
             title_text=self.i18n.get("music.youtube.auto_resume_title"),
             desc_text=self.i18n.get("music.youtube.auto_resume_desc"),
             right_widget=self.sw_auto_resume
@@ -56,7 +56,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_user_songs = QLabel("2")
         self.lbl_max_user_songs.setProperty("role", "body")
         self.row_max_user_songs = SliderRow(
-            icon_name="user.svg",
+            icon_name="user-duotone.svg",
             title_text=self.i18n.get("music.youtube.max_user_songs_title"),
             desc_text=self.i18n.get("music.youtube.max_user_songs_desc"),
             slider_widget=self.slider_max_user_songs,
@@ -86,7 +86,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_queue = QLabel("30")
         self.lbl_max_queue.setProperty("role", "body")
         self.row_max_queue = SliderRow(
-            icon_name="list.svg",
+            icon_name="playlist-duotone.svg",
             title_text=self.i18n.get("music.youtube.max_queue_size_title"),
             desc_text=self.i18n.get("music.youtube.max_queue_size_desc"),
             slider_widget=self.slider_max_queue,

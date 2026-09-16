@@ -116,7 +116,7 @@ class Sidebar(QFrame):
 
         self.btn_collapsed_update = QPushButton()
         self.btn_collapsed_update.setProperty("role", "action_accent")
-        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 18))
+        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 18))
         self.btn_collapsed_update.setIconSize(QSize(18, 18))
         self.btn_collapsed_update.setFixedSize(36, 36)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -154,7 +154,7 @@ class Sidebar(QFrame):
         icon_box_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         lbl_card_icon = QLabel()
-        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download.svg", COLOR_GREEN, 16))
+        lbl_card_icon.setPixmap(get_pixmap_colored("cloud-download-filled.svg", COLOR_GREEN, 16))
         lbl_card_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon_box_layout.addWidget(lbl_card_icon)
 
@@ -163,7 +163,7 @@ class Sidebar(QFrame):
 
         self.btn_dismiss_update = QPushButton()
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
-        self.btn_dismiss_update.setIcon(get_icon_colored("x.svg", COLOR_NEUTRAL_400, 14))
+        self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg", COLOR_NEUTRAL_400, 14))
         self.btn_dismiss_update.setIconSize(QSize(14, 14))
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
@@ -184,7 +184,7 @@ class Sidebar(QFrame):
 
         self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
         self.btn_update_action.setProperty("role", "action_accent")
-        self.btn_update_action.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 16))
+        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 16))
         self.btn_update_action.setIconSize(QSize(16, 16))
         self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_action.clicked.connect(self._on_update_action_clicked)
@@ -269,7 +269,7 @@ class Sidebar(QFrame):
         logical_size = 36
         physical_size = int(logical_size * dpr)
         
-        icon_pixmap = get_pixmap_colored("user.svg", COLOR_NEUTRAL_400, 24, dpr)
+        icon_pixmap = get_pixmap_colored("user-duotone.svg", COLOR_NEUTRAL_400, 24, dpr)
         
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)

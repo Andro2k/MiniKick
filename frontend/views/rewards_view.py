@@ -66,7 +66,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(rect, 6, 6)
         painter.fillPath(path, QColor("#1e293b"))
         
-        icon_pixmap = get_pixmap_colored("volume.svg", COLOR_GREEN, 18)
+        icon_pixmap = get_pixmap_colored("volume-up-filled.svg", COLOR_GREEN, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -106,7 +106,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
         painter.fillPath(path, QColor("#1e293b"))
         
-        icon_pixmap = get_pixmap_colored("movie.svg", COLOR_NEUTRAL_400, 18)
+        icon_pixmap = get_pixmap_colored("album-filled.svg", COLOR_NEUTRAL_400, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -148,7 +148,7 @@ class RewardsView(BaseView):
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
-            icon_name="link-duotone.svg",
+            icon_name="link-filled.svg",
             title_text=self.i18n.get("rewards.obs.title"),
             desc_text=self.i18n.get("rewards.obs.desc"),
             right_widget=self.btn_copy_url
@@ -171,7 +171,7 @@ class RewardsView(BaseView):
             headers=[col_0, col_plat, col_cost, col_file, col_pos, col_vol, col_actions],
             search_placeholder=self.i18n.get("rewards.table.search_placeholder"),
             add_button_text=self.i18n.get("rewards.table.btn_new"),
-            add_button_icon="add.svg"
+            add_button_icon="plus-filled.svg"
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("rewards.empty.title"),
@@ -457,7 +457,7 @@ class RewardsView(BaseView):
                 callback=lambda checked=False, k=key: self.duplicate_requested.emit(k)
             )
             cell.add_button(
-                icon_name="trash.svg", 
+                icon_name="trash-filled.svg", 
                 color=COLOR_RED, 
                 role="action_danger_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"), 

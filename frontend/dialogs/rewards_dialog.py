@@ -46,8 +46,8 @@ class RewardsConfigWizard(ModernWizardPanel):
         )
         self._is_video = False
         
-        self._icon_refresh = get_icon_colored("refresh-duotone.svg")
-        self._icon_map_pin = get_icon_colored("map-pin.svg")
+        self._icon_refresh = get_icon_colored("refresh-filled.svg")
+        self._icon_map_pin = get_icon_colored("crosshairs-filled.svg")
         
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
@@ -358,7 +358,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
         
         vol_row = SliderRow(
-            icon_name="volume.svg",
+            icon_name="volume-up-filled.svg",
             title_text=self.i18n.get("rewards.dialogs.wizard.step2.volume"),
             desc_text="",
             slider_widget=self.slider_vol,

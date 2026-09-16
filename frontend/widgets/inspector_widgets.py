@@ -210,7 +210,7 @@ class InspectorFilePicker(QWidget):
         self.btn_clear = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="trash.svg",
+            icon_name="trash-filled.svg",
             icon_size=12,
             parent=self
         )

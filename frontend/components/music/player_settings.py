@@ -205,7 +205,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_vol_perc.setProperty("role", "body")
         
         self.row_vol = SliderRow(
-            icon_name="volume.svg",
+            icon_name="volume-up-filled.svg",
             title_text=self.i18n.get("music.player.volume_title"),
             desc_text=self.i18n.get("music.player.volume_desc"),
             slider_widget=self.slider_vol,

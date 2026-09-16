@@ -33,7 +33,7 @@ class ModernTable(QTableWidget):
 class ModernTableCard(QFrame):
     def __init__(self, title_text: str = None, headers: list[str] = None, 
                  search_placeholder: str = None, add_button_text: str = None, 
-                 add_button_icon: str = "add.svg", parent=None):
+                 add_button_icon: str = "plus-filled.svg", parent=None):
         super().__init__(parent)
         self.setProperty("role", "card")
         
@@ -106,7 +106,7 @@ class ModernTableCard(QFrame):
         lbl_desc.setMaximumWidth(450)
         
         self.btn_empty_action = ModernButton(button_text, role="action_accent")
-        self.btn_empty_action.set_icon("add.svg", size=16)
+        self.btn_empty_action.set_icon("plus-filled.svg", size=16)
         self.btn_empty_action.clicked.connect(on_button_clicked)
         
         layout.addStretch(1)

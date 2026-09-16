@@ -61,12 +61,12 @@ class WidgetsView(BaseView):
 
         self._add_card("clock", self.i18n.get("widgets.clock.title"), self.i18n.get("widgets.clock.desc"), "clock-circle-duotone.svg", column=1, obs_url=self.clock_overlay_url)
         self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-duotone.svg", column=1, obs_url=self.poll_overlay_url)
-        self._add_card("chatters", self.i18n.get("widgets.chatters.title"), self.i18n.get("widgets.chatters.desc"), "users.svg", column=1, obs_url=self.chatters_overlay_url)
-        self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), "user-check.svg", column=1, obs_url=self.shoutout_overlay_url)
-        self._add_card("score", self.i18n.get("widgets.score.title"), self.i18n.get("widgets.score.desc"), "trophy.svg", column=1, obs_url=self.score_overlay_url)
-        self._add_card("pinned", self.i18n.get("widgets.pinned.title"), self.i18n.get("widgets.pinned.desc"), "pin.svg", column=2, obs_url=self.pinned_overlay_url)
-        self._add_card("explosion", self.i18n.get("widgets.explosion.title"), self.i18n.get("widgets.explosion.desc"), "bomb.svg", column=2, obs_url=self.explosion_overlay_url)
-        self._add_card("death", self.i18n.get("widgets.death.title"), self.i18n.get("widgets.death.desc"), "skull.svg", column=2, obs_url=self.death_overlay_url)
+        self._add_card("chatters", self.i18n.get("widgets.chatters.title"), self.i18n.get("widgets.chatters.desc"), "users-duotone.svg", column=1, obs_url=self.chatters_overlay_url)
+        self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), "user-check-duotone.svg", column=1, obs_url=self.shoutout_overlay_url)
+        self._add_card("score", self.i18n.get("widgets.score.title"), self.i18n.get("widgets.score.desc"), "cup-duotone.svg", column=1, obs_url=self.score_overlay_url)
+        self._add_card("pinned", self.i18n.get("widgets.pinned.title"), self.i18n.get("widgets.pinned.desc"), "pin-tack-filled.svg", column=2, obs_url=self.pinned_overlay_url)
+        self._add_card("explosion", self.i18n.get("widgets.explosion.title"), self.i18n.get("widgets.explosion.desc"), "emoji-circle-duotone.svg", column=2, obs_url=self.explosion_overlay_url)
+        self._add_card("death", self.i18n.get("widgets.death.title"), self.i18n.get("widgets.death.desc"), "ghost-filled.svg", column=2, obs_url=self.death_overlay_url)
         self._add_card("combo", self.i18n.get("widgets.combo.title"), self.i18n.get("widgets.combo.desc"), "squares-duotone.svg", column=2, obs_url=self.combo_overlay_url)
 
         self.main_layout.addWidget(self.body_container)

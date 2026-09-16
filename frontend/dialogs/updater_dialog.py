@@ -23,7 +23,7 @@ class UpdateDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         super().__init__(
-            title=self.i18n.get("dialogs.update.title_default"), icon_path=get_assets_path("icons/cloud-download.svg"), 
+            title=self.i18n.get("dialogs.update.title_default"), icon_path=get_assets_path("icons/cloud-download-filled.svg"), 
             icon_bg_color=COLOR_GREEN, width=400, parent=parent
         )
         self.version = ""
@@ -84,7 +84,7 @@ class UpdateDialog(ModernModal):
     def show_update_available(self, version: str):
         self.version = version
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_950, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
             
         self.title_lbl.setText(self.i18n.get("dialogs.update.top_available").replace("{version}", version))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_available"))
@@ -121,7 +121,7 @@ class UpdateDialog(ModernModal):
     def show_complete(self):
         self.set_dialog_state("accent", QColor(83, 252, 24, 60))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-check.svg", COLOR_NEUTRAL_950, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
             
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_completed"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_restart_req"))
@@ -143,7 +143,7 @@ class UpdateDialog(ModernModal):
     def show_no_update(self):
         self.set_dialog_state("neutral", QColor(0, 0, 0, 0))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-check.svg", COLOR_NEUTRAL_950, 48).pixmap(48, 48))
+            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
             
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_up_to_date"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_up_to_date"))

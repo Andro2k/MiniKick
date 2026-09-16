@@ -63,7 +63,7 @@ class ImageDropzone(QFrame):
         self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.btn_remove = QPushButton()
-        self.btn_remove.setIcon(get_icon_colored("x.svg", COLOR_RED, size=16))
+        self.btn_remove.setIcon(get_icon_colored("x-filled.svg", COLOR_RED, size=16))
         self.btn_remove.setIconSize(QSize(16, 16))
         self.btn_remove.setFixedSize(28, 28)
         self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
