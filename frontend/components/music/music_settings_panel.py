@@ -101,7 +101,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_duration = QLabel("10m")
         self.lbl_max_duration.setProperty("role", "body")
         self.row_max_duration = SliderRow(
-            icon_name="stopwatch.svg",
+            icon_name="stopwatch-filled.svg",
             title_text=self.i18n.get("music.youtube.max_song_duration_title"),
             desc_text=self.i18n.get("music.youtube.max_song_duration_desc"),
             slider_widget=self.slider_max_duration,

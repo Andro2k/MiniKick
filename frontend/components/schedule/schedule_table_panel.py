@@ -106,7 +106,7 @@ class ScheduleTablePanel(QWidget):
             self.table.setCellWidget(row, 6, action_cell)
 
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(filtered) == 0 and len(self.schedules_data) == 0)
+        self.table_card.set_empty(len(filtered) == 0)
 
         if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
             title_base = self.i18n.get("stream_info.schedule_section.title")
@@ -136,7 +136,7 @@ class ScheduleTablePanel(QWidget):
         )
 
         cell.add_button(
-            icon_name="edit.svg",
+            icon_name="edit-filled.svg",
             color=COLOR_GREEN,
             role="action_accent_border",
             tooltip=self.i18n.get("stream_info.schedule_dialog.title_edit"),

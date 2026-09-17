@@ -33,7 +33,7 @@ _LEVEL_ICON_NAMES = {
     "DEBUG": "code-square-filled.svg",
     "INFO": "circle-info-filled.svg",
     "WARNING": "alert-triangle-filled.svg",
-    "ERROR": "bug-duotone.svg",
+    "ERROR": "bug-filled.svg",
     "CRITICAL": "bolt-circle-filled.svg",
     "CRASH": "bolt-circle-filled.svg",
     "FATAL_CRASH": "bolt-circle-filled.svg",
@@ -246,7 +246,7 @@ class LogView(BaseView):
         lbl_desc.setMaximumWidth(450)
 
         self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
-        self.btn_show_logs.set_icon("eye.svg", size=16)
+        self.btn_show_logs.set_icon("eye-filled.svg", size=16)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 
         layout.addStretch(1)

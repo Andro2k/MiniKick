@@ -20,7 +20,7 @@ def _retire_bug_worker(worker):
 class BugReportDialog(ModernModal):
     def __init__(self, i18n, worker_class=None, initial_contact: str = "", parent=None):
         title = i18n.get("settings.feedback.title")
-        icon_path = get_assets_path("icons/bug-duotone.svg")
+        icon_path = get_assets_path("icons/bug-filled.svg")
         super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=660, parent=parent)
         self.i18n = i18n
         self.worker_class = worker_class

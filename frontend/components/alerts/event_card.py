@@ -237,7 +237,7 @@ class AlertEventCard(QWidget):
         card_general.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.in_duration"),
             self.spin_anim_in_dur,
-            icon_name="stopwatch.svg",
+            icon_name="stopwatch-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -259,7 +259,7 @@ class AlertEventCard(QWidget):
         card_general.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.out_label"),
             self.combo_anim_out,
-            icon_name="stopwatch.svg",
+            icon_name="stopwatch-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -275,7 +275,7 @@ class AlertEventCard(QWidget):
         card_general.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.out_duration"),
             self.spin_anim_out_dur,
-            icon_name="stopwatch.svg",
+            icon_name="stopwatch-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -432,7 +432,7 @@ class AlertEventCard(QWidget):
         card_typography.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.template"),
             self.edit_template,
-            icon_name="edit.svg",
+            icon_name="edit-filled.svg",
             tooltip=self.i18n.get("alerts.fields.template_hint"),
             stretch_content=True,
             parent=self
@@ -537,7 +537,7 @@ class AlertEventCard(QWidget):
         card_typography.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_shadow"),
             self.sw_text_shadow,
-            icon_name="eye.svg",
+            icon_name="eye-filled.svg",
             tooltip=self.i18n.get("alerts.fields.text_shadow_desc"),
             parent=self
         ))
@@ -658,7 +658,7 @@ class AlertEventCard(QWidget):
         sec_prev_header = QHBoxLayout()
         sec_prev_header.setSpacing(SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", COLOR_NEUTRAL_400, size=16))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_sec_prev_title.setProperty("role", "h3")
         sec_prev_header.addWidget(lbl_sec_prev_icon)

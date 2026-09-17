@@ -443,7 +443,7 @@ class RewardsView(BaseView):
                 callback=lambda checked=False, k=key: self.preview_requested.emit(k)
             )
             cell.add_button(
-                icon_name="edit.svg", 
+                icon_name="edit-filled.svg", 
                 color=COLOR_GREEN, 
                 role="action_accent_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_edit"), 
@@ -468,7 +468,7 @@ class RewardsView(BaseView):
 
         self.table_rewards.setUpdatesEnabled(True)
         total_mappings_count = len(self._raw_mappings)
-        self.table_card.set_empty(len(items) == 0 and total_mappings_count == 0)
+        self.table_card.set_empty(len(items) == 0)
 
         if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
             title_base = self.i18n.get("rewards.table.title")

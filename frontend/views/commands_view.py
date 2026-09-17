@@ -188,7 +188,7 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 4, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 5, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(commands) == 0 and len(self._raw_commands) == 0)
+        self.table_card.set_empty(len(commands) == 0)
         self.table_card.set_title_count(self.i18n.get("command.table.title"), len(self._raw_commands))
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
@@ -280,7 +280,7 @@ class CommandView(BaseView):
         )
         
         cell.add_button(
-            icon_name="edit.svg", 
+            icon_name="edit-filled.svg", 
             color=COLOR_GREEN, 
             role="action_accent_border", 
             tooltip=self.i18n.get("command.table.tooltip_edit"),

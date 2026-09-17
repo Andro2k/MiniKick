@@ -44,7 +44,7 @@ class CrashReportDialog(ModernModal):
         self.err_no_webhook_text = self.i18n.get("crash.err_no_webhook")
         self.subtitle_text = self.i18n.get("crash.subtitle")
 
-        icon_path = get_assets_path("icons/bug-duotone.svg")
+        icon_path = get_assets_path("icons/bug-filled.svg")
         super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=COLOR_RED, width=580, parent=parent)
         self.set_dialog_state("danger", QColor(239, 68, 68, 80))
         self._setup_crash_form()

@@ -47,7 +47,7 @@ class SpamView(BaseView):
         
         self._add_card("paragraph_protection", self.i18n.get("spam.filters.paragraph.title"), self.i18n.get("spam.filters.paragraph.desc"), "file-text-filled.svg", column=2)
         self._add_card("symbol_protection", self.i18n.get("spam.filters.symbol.title"), self.i18n.get("spam.filters.symbol.desc"), "hashtag-filled.svg", column=2)
-        self._add_card("repetition_protection", self.i18n.get("spam.filters.repetition.title"), self.i18n.get("spam.filters.repetition.desc"), "repeat.svg", column=2)
+        self._add_card("repetition_protection", self.i18n.get("spam.filters.repetition.title"), self.i18n.get("spam.filters.repetition.desc"), "repeat-filled.svg", column=2)
 
         self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()

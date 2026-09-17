@@ -220,7 +220,7 @@ class ChatTtsSettingsPanel(ModernCard):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_broadcaster = VoiceSettingRow(
-            "microphone.svg",
+            "microphone-filled.svg",
             self.i18n.get("chat.roles.broadcaster_title"),
             self.combo_voice_broadcaster,
             switch=self.sw_role_broadcaster,

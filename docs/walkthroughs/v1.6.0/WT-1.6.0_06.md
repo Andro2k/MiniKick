@@ -46,6 +46,17 @@
    - Incremento del `ping_timeout` de 10s a 20s en los sockets de Kick (Pusher) y Twitch (IRC), ofreciendo mayor tolerancia ante microcortes, fluctuaciones de latencia o congestión temporal de red.
    - Silenciado de trazas complejas de Python en cortes rutinarios de red (`WebSocketTimeoutException`, `ConnectionResetError`, `BrokenPipeError`), registrándolos como advertencias limpias de una sola línea mientras el worker ejecuta su reconexión transparente en 5s.
 
+6. **Sugerencia de Creación en Búsquedas sin Resultados (`commands_view.py`, `rewards_view.py`, `schedule_table_panel.py`)**:
+   - Se unificó la evaluación de `table_card.set_empty()` para mostrar la tarjeta de estado vacío con ilustración descriptiva y botón de acción directa ("Crear Comando", "Crear Recompensa", "Crear Horario") cuando una búsqueda o filtro no devuelva coincidencias.
+   - Al igual que en `timers_view.py`, mientras la barra de búsqueda contenga texto, `ModernTableCard` mantiene visible el campo de búsqueda permitiendo borrarlo o modificarlo de inmediato, al tiempo que ofrece al usuario el atajo para crear el elemento faltante con un solo clic.
+
+7. **Estandarización 100% a Iconografía Sólida (Filled) y Depuración SVG (`assets/icons/`)**:
+   - Auditoría completa de los 109 iconos SVG del proyecto y unificación visual al estilo *Filled* (`*-filled.svg`) para máxima legibilidad, contraste y armonía con el diseño moderno de la aplicación.
+   - Eliminación de iconos duotone inconsistentes (`bug-duotone.svg`, `help-circle-duotone.svg`), reemplazándolos con el nuevo `bug-filled.svg` y `circle-info-filled.svg`.
+   - Soporte de color dinámico en `radio-dot.svg` mediante `fill="currentColor"`, permitiendo que el componente de radio se adapte a los temas activos.
+   - Depuración de 6 iconos funcionales duplicados o lineales (`edit.svg`, `eye.svg`, `microphone.svg`, `minus.svg`, `repeat.svg`, `stopwatch.svg`), migrando todas las vistas y componentes a sus versiones `-filled.svg` ya existentes.
+   - Alcanzada una paridad perfecta del 100%: 0 iconos huérfanos/sin uso y 0 iconos faltantes en toda la base de código.
+
 ---
 
 ## Correcciones
@@ -55,3 +66,15 @@
 
 2. **Prevención de Bucles Infinitos de Señales en Sincronización**:
    - El setter `overlay_show_gifs` en `OverlaySettingsWidget` utiliza `blockSignals(True)` mientras actualiza el estado del switch visual, evitando disparar eventos redundantes de guardado cuando la actualización proviene de una señal de base de datos (`commands_changed`).
+
+3. **Restauración de Claves i18n en Diálogo de Respaldos (`import_backup_dialog.py`)**:
+   - Reincorporadas las 16 claves de traducción faltantes bajo `settings.dialogs.import_modal` en `locales/en.json` y `locales/es.json` (`section_settings`, `section_alerts`, `section_rewards`, `section_commands`, `section_spam_filters`, `section_timers`, `section_schedules`, `section_widgets` y sus descripciones), resolviendo el problema donde la interfaz mostraba claves crudas.
+   - Implementadas tablas de despacho estáticas `SECTION_TITLES` y `SECTION_DESCRIPTIONS` en `import_backup_dialog.py` para resolución en tiempo constante $\mathcal{O}(1)$ y total trazabilidad estática con fallback a nombres limpios.
+
+4. **Detección Global de f-strings y Auditoría Rigurosa en `i18n_manager.py` y Tests**:
+   - Corregido el analizador AST en `resources/tools/i18n_manager.py` y `test_i18n_integrity.py` para rastrear todos los nodos `ast.JoinedStr` en el código que pertenecen a namespaces de i18n, aun si están asignados a variables intermedias.
+   - Validación bidireccional estricta contra `en.json` y `es.json`, asegurando que cualquier patrón dinámico sin correspondencia en ambos idiomas sea advertido y que las claves dinámicas no sean eliminadas accidentalmente en limpiezas automáticas.
+
+5. **Corrección de Referencias a Iconos Obsoletos en la Suite de Pruebas Unitarias**:
+   - Actualizadas las aserciones de iconos en `test_frontend_common.py`, `test_alerts_view.py` y `test_spam_view.py` que aún buscaban nombres desfasados (`refresh-duotone.svg`, `dialog-duotone.svg`, `user-check.svg`, `star.svg`, `text-size.svg`), alineándolas con los nuevos iconos filled (`refresh-filled.svg`, `dialog-filled.svg`, `profile-tick-filled.svg`, `star-filled.svg`, `text-filled.svg`).
+   - El 100% de los tests unitarios frontend (99/99) y controladores backend (111/111) pasan exitosamente.

@@ -62,13 +62,13 @@ class LogControlsPanel(QFrame):
             ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_neutral_border",
              "file-text-filled.svg", COLOR_NEUTRAL_400, self.load_requested.emit, True),
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_neutral_border",
-             "eye.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
+             "eye-filled.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_neutral_border",
              "play-filled.svg", COLOR_NEUTRAL_400, self.live_requested.emit, False),
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_neutral_border",
              "trash-filled.svg", COLOR_NEUTRAL_400, self.clear_requested.emit, True),
             ("btn_report", self.i18n.get("log.controls.btn_report"), "action_neutral_border",
-             "bug-duotone.svg", COLOR_NEUTRAL_400, self.report_requested.emit, True),
+             "bug-filled.svg", COLOR_NEUTRAL_400, self.report_requested.emit, True),
         ]
 
         self._buttons: list[ModernButton] = []

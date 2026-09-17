@@ -161,14 +161,14 @@ def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = COLOR_NEUT
 def _get_qss_icon_url(relative_path: str) -> str:
     return get_assets_path(relative_path).replace('\\', '/')
 
-PATH_ICON_HELP          = get_qss_colored_icon("icons/help-circle-duotone.svg", COLOR_WHITE)
+PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg", COLOR_WHITE)
 PATH_ICON_CHEVRON_DOWN  = get_qss_colored_icon("icons/chevron-down-filled.svg", COLOR_NEUTRAL_400)
 PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg", COLOR_NEUTRAL_400)
 PATH_ICON_CHEVRON_LEFT  = get_qss_colored_icon("icons/chevron-left-filled.svg", COLOR_NEUTRAL_400)
 PATH_ICON_CHEVRON_RIGHT = get_qss_colored_icon("icons/chevron-right-filled.svg", COLOR_NEUTRAL_400)
 PATH_ICON_CHECK         = _get_qss_icon_url("icons/check-filled.svg")
 PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg", COLOR_GREEN)
-PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus.svg")
+PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus-filled.svg")
 PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
 PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg", COLOR_NEUTRAL_400)
 

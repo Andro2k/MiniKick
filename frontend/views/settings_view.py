@@ -240,7 +240,7 @@ class SettingsView(BaseView):
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
 
         row_feedback = SettingRow(
-            icon_name="bug-duotone.svg", 
+            icon_name="bug-filled.svg", 
             title_text=self.i18n.get("settings.feedback.title"), 
             desc_text=self.i18n.get("settings.feedback.desc"), 
             right_widget=self.btn_feedback

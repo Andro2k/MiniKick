@@ -85,7 +85,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         
         self.spin_overlay_fade = CompactSpinBox(0, 120, 15, suffix="s", special_value_text=self.i18n.get("chat.overlay.fade_never"))
         row_overlay_fade = SettingRow(
-            "stopwatch.svg",
+            "stopwatch-filled.svg",
             self.i18n.get("chat.overlay.fade_title"),
             self.i18n.get("chat.overlay.fade_desc"),
             self.spin_overlay_fade
@@ -121,7 +121,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_edge_fade = ModernSwitch()
         self.sw_edge_fade.setChecked(True)
         row_edge_fade = SettingRow(
-            "eye.svg",
+            "eye-filled.svg",
             self.i18n.get("chat.overlay.edge_fade_title"),
             self.i18n.get("chat.overlay.edge_fade_desc"),
             self.sw_edge_fade

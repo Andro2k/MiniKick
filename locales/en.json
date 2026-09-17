@@ -1172,9 +1172,25 @@
                 "elements_suffix": "items",
                 "metadata_date": "Exported on:",
                 "metadata_version": "Version:",
+                "section_alerts": "Event Alerts",
+                "section_alerts_desc": "Visual styles, sounds, and templates for Kick and Twitch.",
+                "section_commands": "Chat Commands",
+                "section_commands_desc": "Automated replies, permissions, cooldowns, and aliases.",
+                "section_rewards": "Point Rewards",
+                "section_rewards_desc": "Local mappings and multimedia reward triggers.",
+                "section_schedules": "Stream Schedules",
+                "section_schedules_desc": "Broadcast plans, titles, and assigned categories.",
+                "section_settings": "General Settings",
+                "section_settings_desc": "Language preferences, font size, browser and audio devices.",
+                "section_spam_filters": "Anti-Spam Filters",
+                "section_spam_filters_desc": "Limits on caps, repetitive symbols, and paragraph length.",
+                "section_timers": "Timers",
+                "section_timers_desc": "Scheduled messages and periodic chat automations.",
+                "section_widgets": "OBS Widgets",
+                "section_widgets_desc": "Configuration of counters, scoreboard, chat, clock, and overlays.",
                 "title": "Restore Backup Copy"
             },
-            "import_title": "Importar Configuración"
+            "import_title": "Import Configuration"
         },
         "feedback": {
             "desc": "Found an issue or have suggestions? Send us a direct report.",

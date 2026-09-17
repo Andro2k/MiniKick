@@ -162,7 +162,7 @@ class TimersView(BaseView):
         )
 
         cell.add_button(
-            icon_name="edit.svg",
+            icon_name="edit-filled.svg",
             color=COLOR_GREEN,
             role="action_accent_border",
             tooltip=self.i18n.get("timer.table.tooltip_edit"),
