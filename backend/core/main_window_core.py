@@ -55,18 +55,18 @@ class MainWindowCore(QMainWindow):
 
     _NAV_CONFIG = (
         ("Dashboard", "element-filled.svg", "top"),
-        ("Chat", "dialog-duotone.svg", "top"),
-        ("Stream Info", "calendar-duotone.svg", "top"),
-        ("Spam Filters", "shield-duotone.svg", "top"),
+        ("Chat", "dialog-filled.svg", "top"),
+        ("Stream Info", "calendar-days-filled.svg", "top"),
+        ("Spam Filters", "shield-filled.svg", "top"),
         ("Comandos", "chat-square-code-filled.svg", "top"),
-        ("Timers", "alarm-play-duotone.svg", "top"),
-        ("Music", "music-notes-duotone.svg", "top"),
-        ("Widgets", "widget-add-duotone.svg", "top"),
-        ("Triggers", "treasure-chest.svg", "top"),
+        ("Timers", "alarm-filled.svg", "top"),
+        ("Music", "music-notes-filled.svg", "top"),
+        ("Widgets", "widget-add-filled.svg", "top"),
+        ("Triggers", "treasure-chest-filled.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
 
-        ("Settings", "settings-duotone.svg", "bottom"),
-        ("Developer", "file-text-duotone.svg", "bottom"),
+        ("Settings", "gear-filled.svg", "bottom"),
+        ("Developer", "file-text-filled.svg", "bottom"),
     )
 
     def __init__(self, updater_manager, app_version: str):

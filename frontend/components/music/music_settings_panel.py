@@ -43,7 +43,7 @@ class MusicSettingsPanel(QWidget):
         self.sw_media_keys.setChecked(True)
         self.sw_media_keys.toggled.connect(self.media_keys_toggled.emit)
         self.row_media_keys = SettingRow(
-            icon_name="play-duotone.svg",
+            icon_name="play-filled.svg",
             title_text=self.i18n.get("music.youtube.media_keys_title"),
             desc_text=self.i18n.get("music.youtube.media_keys_desc"),
             right_widget=self.sw_media_keys
@@ -56,7 +56,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_user_songs = QLabel("2")
         self.lbl_max_user_songs.setProperty("role", "body")
         self.row_max_user_songs = SliderRow(
-            icon_name="user-duotone.svg",
+            icon_name="user-filled.svg",
             title_text=self.i18n.get("music.youtube.max_user_songs_title"),
             desc_text=self.i18n.get("music.youtube.max_user_songs_desc"),
             slider_widget=self.slider_max_user_songs,
@@ -71,7 +71,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_user_cooldown = QLabel("30s")
         self.lbl_user_cooldown.setProperty("role", "body")
         self.row_user_cooldown = SliderRow(
-            icon_name="clock-circle-duotone.svg",
+            icon_name="clock-filled.svg",
             title_text=self.i18n.get("music.youtube.user_cooldown_title"),
             desc_text=self.i18n.get("music.youtube.user_cooldown_desc"),
             slider_widget=self.slider_user_cooldown,
@@ -86,7 +86,7 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_queue = QLabel("30")
         self.lbl_max_queue.setProperty("role", "body")
         self.row_max_queue = SliderRow(
-            icon_name="playlist-duotone.svg",
+            icon_name="playlist-filled.svg",
             title_text=self.i18n.get("music.youtube.max_queue_size_title"),
             desc_text=self.i18n.get("music.youtube.max_queue_size_desc"),
             slider_widget=self.slider_max_queue,

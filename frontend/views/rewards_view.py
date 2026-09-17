@@ -47,7 +47,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setPen(QColor(COLOR_RED))
         painter.drawPath(path)
         
-        icon_pixmap = get_pixmap_colored("alert-triangle-duotone.svg", COLOR_RED, 18)
+        icon_pixmap = get_pixmap_colored("alert-triangle-filled.svg", COLOR_RED, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -382,7 +382,7 @@ class RewardsView(BaseView):
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
-                item_plat.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_AMBER, 16))
+                item_plat.setIcon(get_icon_colored("alert-triangle-filled.svg", COLOR_AMBER, 16))
                 item_plat.setForeground(QColor(COLOR_AMBER))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
             else:
@@ -407,7 +407,7 @@ class RewardsView(BaseView):
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
-                item_file.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_RED, 16))
+                item_file.setIcon(get_icon_colored("alert-triangle-filled.svg", COLOR_RED, 16))
                 item_file.setForeground(QColor(COLOR_RED))
                 item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
             else:
@@ -436,7 +436,7 @@ class RewardsView(BaseView):
             cell = TableActionCell()
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
-                icon_name="play-duotone.svg", 
+                icon_name="play-filled.svg", 
                 color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
                 role="action_neutral_border" if is_valid_file else "action_danger_border", 
                 tooltip=play_tooltip, 
@@ -450,7 +450,7 @@ class RewardsView(BaseView):
                 callback=lambda checked=False, k=key: self.edit_requested.emit(k)
             )
             cell.add_button(
-                icon_name="copy-duotone.svg", 
+                icon_name="copy-filled.svg", 
                 color=COLOR_TWITCH, 
                 role="action_neutral_border", 
                 tooltip=self.i18n.get("rewards.table.tooltip_duplicate"), 

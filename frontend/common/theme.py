@@ -170,7 +170,7 @@ PATH_ICON_CHECK         = _get_qss_icon_url("icons/check-filled.svg")
 PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg", COLOR_GREEN)
 PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus.svg")
 PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
-PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-duotone.svg", COLOR_NEUTRAL_400)
+PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg", COLOR_NEUTRAL_400)
 
 def _build_reset_and_typography_qss(h1: int, h2: int, h3: int, text1: int, text2: int) -> str:
     return f"""

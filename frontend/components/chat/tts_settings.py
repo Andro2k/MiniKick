@@ -57,7 +57,7 @@ class VoiceSettingRow(QWidget):
 
         if test_signal is not None:
             self.btn_test = QPushButton()
-            self.btn_test.setIcon(get_icon_colored("play-duotone.svg", COLOR_NEUTRAL_400, size=14))
+            self.btn_test.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, size=14))
             self.btn_test.setIconSize(QSize(14, 14))
             self.btn_test.setFixedSize(28, 28)
             self.btn_test.setToolTip(tooltip_text)
@@ -129,7 +129,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.lbl_speed_perc.setProperty("role", "monospace")
 
         row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
-        row_read_name = SettingRow("user-duotone.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
+        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
         row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
 
         self.txt_command = QLineEdit(parent=self)
@@ -212,7 +212,7 @@ class ChatTtsSettingsPanel(ModernCard):
         self.sw_role_subscriber.setChecked(True)
 
         row_voice_general = VoiceSettingRow(
-            "users-duotone.svg",
+            "users-filled.svg",
             self.i18n.get("chat.settings.voice_general_title"),
             self.combo_voice,
             switch=self.sw_role_everyone,
@@ -228,7 +228,7 @@ class ChatTtsSettingsPanel(ModernCard):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_moderator = VoiceSettingRow(
-            "shield-user-bold.svg",
+            "shield-user-filled.svg",
             self.i18n.get("chat.roles.moderator_title"),
             self.combo_voice_moderator,
             switch=self.sw_role_moderator,
@@ -236,7 +236,7 @@ class ChatTtsSettingsPanel(ModernCard):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_vip = VoiceSettingRow(
-            "star.svg",
+            "star-filled.svg",
             self.i18n.get("chat.roles.vip_title"),
             self.combo_voice_vip,
             switch=self.sw_role_vip,
@@ -244,7 +244,7 @@ class ChatTtsSettingsPanel(ModernCard):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
         row_role_subscriber = VoiceSettingRow(
-            "crown.svg",
+            "crown-filled.svg",
             self.i18n.get("chat.roles.subscriber_title"),
             self.combo_voice_subscriber,
             switch=self.sw_role_subscriber,

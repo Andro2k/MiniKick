@@ -10,11 +10,11 @@ class MusicCommandsPanel(QWidget):
 
     _COMMANDS_CONFIG = [
         ("!sr", "plus-filled.svg", "music.cmds.sr_label", "music.cmds.sr_desc", "sw_sr"),
-        ("!skip", "skip-next-duotone.svg", "music.cmds.skip_label", "music.cmds.skip_desc", "sw_skip"),
-        ("!song", "info-circle-duotone.svg", "music.cmds.song_label", "music.cmds.song_desc", "sw_song"),
-        ("!pause", "pause-duotone.svg", "music.cmds.pause_label", "music.cmds.pause_desc", "sw_pause"),
-        ("!resume", "play-duotone.svg", "music.cmds.resume_label", "music.cmds.resume_desc", "sw_resume"),
-        ("!playlist", "playlist-duotone.svg", "music.cmds.playlist_label", "music.cmds.playlist_desc", "sw_playlist"),
+        ("!skip", "skip-next-filled.svg", "music.cmds.skip_label", "music.cmds.skip_desc", "sw_skip"),
+        ("!song", "circle-info-filled.svg", "music.cmds.song_label", "music.cmds.song_desc", "sw_song"),
+        ("!pause", "pause-filled.svg", "music.cmds.pause_label", "music.cmds.pause_desc", "sw_pause"),
+        ("!resume", "play-filled.svg", "music.cmds.resume_label", "music.cmds.resume_desc", "sw_resume"),
+        ("!playlist", "playlist-filled.svg", "music.cmds.playlist_label", "music.cmds.playlist_desc", "sw_playlist"),
         ("!vol", "volume-up-filled.svg", "music.cmds.vol_label", "music.cmds.vol_desc", "sw_volume"),
     ]
 

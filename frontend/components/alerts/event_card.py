@@ -139,7 +139,7 @@ class AlertEventCard(QWidget):
         self.btn_duplicate = ModernButton(
             text=self.i18n.get("alerts.buttons.duplicate"),
             role="action_outlined",
-            icon_name="copy-duotone.svg",
+            icon_name="copy-filled.svg",
             icon_size=13,
             parent=self
         )
@@ -149,7 +149,7 @@ class AlertEventCard(QWidget):
         self.btn_test = ModernButton(
             text=self.i18n.get("alerts.buttons.test"),
             role="action_outlined",
-            icon_name="play-duotone.svg",
+            icon_name="play-filled.svg",
             icon_size=14,
             parent=self
         )
@@ -179,7 +179,7 @@ class AlertEventCard(QWidget):
         sec_gen_header = QHBoxLayout()
         sec_gen_header.setSpacing(SPACING_SM)
         lbl_sec_gen_icon = QLabel(parent=self)
-        lbl_sec_gen_icon.setPixmap(get_pixmap_colored("clock-circle-duotone.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_gen_icon.setPixmap(get_pixmap_colored("clock-filled.svg", COLOR_NEUTRAL_400, size=16))
         lbl_sec_gen_title = QLabel(self.i18n.get("alerts.sections.general"), parent=self)
         lbl_sec_gen_title.setProperty("role", "h3")
         sec_gen_header.addWidget(lbl_sec_gen_icon)
@@ -199,7 +199,7 @@ class AlertEventCard(QWidget):
         card_general.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.duration"),
             self.spin_duration,
-            icon_name="clock-circle-duotone.svg",
+            icon_name="clock-filled.svg",
             tooltip=self.i18n.get("alerts.fields.duration_desc"),
             parent=self
         ))
@@ -221,7 +221,7 @@ class AlertEventCard(QWidget):
         card_general.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.in_label"),
             self.combo_anim_in,
-            icon_name="play-duotone.svg",
+            icon_name="play-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
@@ -285,7 +285,7 @@ class AlertEventCard(QWidget):
         sec_des_header = QHBoxLayout()
         sec_des_header.setSpacing(SPACING_SM)
         lbl_sec_des_icon = QLabel(parent=self)
-        lbl_sec_des_icon.setPixmap(get_pixmap_colored("palette-duotone.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_des_icon.setPixmap(get_pixmap_colored("palette-filled.svg", COLOR_NEUTRAL_400, size=16))
         lbl_sec_des_title = QLabel(self.i18n.get("alerts.sections.appearance"), parent=self)
         lbl_sec_des_title.setProperty("role", "h3")
         sec_des_header.addWidget(lbl_sec_des_icon)
@@ -300,7 +300,7 @@ class AlertEventCard(QWidget):
         self.seg_layout.add_option("side", "arrow-left-filled.svg", self.i18n.get("alerts.layout.side"))
         self.seg_layout.add_option("side_right", "arrow-right-filled.svg", self.i18n.get("alerts.layout.side_right"))
         self.seg_layout.add_option("below", "arrow-down-filled.svg", self.i18n.get("alerts.layout.below"))
-        self.seg_layout.add_option("overlay", "squares-duotone.svg", self.i18n.get("alerts.layout.overlay"))
+        self.seg_layout.add_option("overlay", "squares-filled.svg", self.i18n.get("alerts.layout.overlay"))
         self.seg_layout.value_changed.connect(lambda _: self._on_field_changed())
 
         card_design.addWidget(InspectorPropertyRow(
@@ -322,7 +322,7 @@ class AlertEventCard(QWidget):
         card_design.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.bg_color"),
             self.picker_bg_color,
-            icon_name="palette-duotone.svg",
+            icon_name="palette-filled.svg",
             tooltip=self.i18n.get("alerts.fields.bg_color_desc"),
             parent=self
         ))
@@ -362,7 +362,7 @@ class AlertEventCard(QWidget):
         card_design.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.padding"),
             self.spin_padding,
-            icon_name="minimize-square-duotone.svg",
+            icon_name="minimize-filled.svg",
             tooltip=self.i18n.get("alerts.fields.padding_desc"),
             parent=self
         ))
@@ -392,7 +392,7 @@ class AlertEventCard(QWidget):
         card_design.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.border_radius"),
             self.spin_border_radius,
-            icon_name="minimize-square-duotone.svg",
+            icon_name="minimize-filled.svg",
             tooltip=self.i18n.get("alerts.fields.border_radius_desc"),
             parent=self
         ))
@@ -404,7 +404,7 @@ class AlertEventCard(QWidget):
         card_design.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.box_shadow"),
             self.sw_box_shadow,
-            icon_name="squares-duotone.svg",
+            icon_name="squares-filled.svg",
             tooltip=self.i18n.get("alerts.fields.box_shadow_desc"),
             parent=self
         ))
@@ -414,7 +414,7 @@ class AlertEventCard(QWidget):
         sec_txt_header = QHBoxLayout()
         sec_txt_header.setSpacing(SPACING_SM)
         lbl_sec_txt_icon = QLabel(parent=self)
-        lbl_sec_txt_icon.setPixmap(get_pixmap_colored("file-text-duotone.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_txt_icon.setPixmap(get_pixmap_colored("file-text-filled.svg", COLOR_NEUTRAL_400, size=16))
         lbl_sec_txt_title = QLabel(self.i18n.get("alerts.sections.text_speech"), parent=self)
         lbl_sec_txt_title.setProperty("role", "h3")
         sec_txt_header.addWidget(lbl_sec_txt_icon)
@@ -508,7 +508,7 @@ class AlertEventCard(QWidget):
         card_typography.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_color"),
             self.picker_text_color,
-            icon_name="palette-duotone.svg",
+            icon_name="palette-filled.svg",
             tooltip=self.i18n.get("alerts.fields.text_color_desc"),
             parent=self
         ))
@@ -579,7 +579,7 @@ class AlertEventCard(QWidget):
         btn_browse_media = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="folder-open-duotone.svg",
+            icon_name="folder-open-filled.svg",
             icon_size=13,
             parent=self
         )
@@ -609,7 +609,7 @@ class AlertEventCard(QWidget):
         btn_browse_sound = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="folder-open-duotone.svg",
+            icon_name="folder-open-filled.svg",
             icon_size=13,
             parent=self
         )
@@ -623,7 +623,7 @@ class AlertEventCard(QWidget):
         card_media.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.sound"),
             sound_picker_box,
-            icon_name="music-notes-duotone.svg",
+            icon_name="music-notes-filled.svg",
             stretch_content=True,
             parent=self
         ))

@@ -35,13 +35,13 @@ class BotMutePanel(ModernCard):
         self.sw_cmd_block.setChecked(True)
 
         row_cmd_mute = SettingRow(
-            "shield-user-bold.svg",
+            "shield-user-filled.svg",
             self.i18n.get("chat.mod_commands.mute_cmd_title"),
             self.i18n.get("chat.mod_commands.mute_cmd_desc"),
             self.sw_cmd_mute
         )
         row_cmd_block = SettingRow(
-            "shield-duotone.svg",
+            "shield-filled.svg",
             self.i18n.get("chat.mod_commands.block_cmd_title"),
             self.i18n.get("chat.mod_commands.block_cmd_desc"),
             self.sw_cmd_block

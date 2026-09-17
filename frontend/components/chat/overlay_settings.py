@@ -35,18 +35,18 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_minimal"), "minimal")
         
         row_overlay_theme = SettingRow(
-            "palette-duotone.svg", 
+            "palette-filled.svg", 
             self.i18n.get("chat.overlay.theme_title"), 
             self.i18n.get("chat.overlay.theme_desc"), 
             self.combo_overlay_theme
         )
 
         self.seg_overlay_orientation = ModernSegmentedControl(self)
-        self.seg_overlay_orientation.add_option("vertical", "carousel-v-duotone.svg", self.i18n.get("chat.overlay.orientation_vertical"))
-        self.seg_overlay_orientation.add_option("horizontal", "carousel-h-duotone.svg", self.i18n.get("chat.overlay.orientation_horizontal"))
+        self.seg_overlay_orientation.add_option("vertical", "carousel-v-filled.svg", self.i18n.get("chat.overlay.orientation_vertical"))
+        self.seg_overlay_orientation.add_option("horizontal", "carousel-h-filled.svg", self.i18n.get("chat.overlay.orientation_horizontal"))
         
         row_overlay_orientation = SettingRow(
-            "align-left-duotone.svg",
+            "align-left-filled.svg",
             self.i18n.get("chat.overlay.orientation_title"),
             self.i18n.get("chat.overlay.orientation_desc"),
             self.seg_overlay_orientation
@@ -103,7 +103,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_overlay_show_time = ModernSwitch()
         self.sw_overlay_show_time.setChecked(False)
         row_overlay_show_time = SettingRow(
-            "clock-circle-duotone.svg",
+            "clock-filled.svg",
             self.i18n.get("chat.overlay.show_time_title"),
             self.i18n.get("chat.overlay.show_time_desc"),
             self.sw_overlay_show_time
@@ -112,7 +112,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_big_emotes = ModernSwitch()
         self.sw_big_emotes.setChecked(True)
         row_big_emotes = SettingRow(
-            "emoji-circle-duotone.svg",
+            "emoji-circle-filled.svg",
             self.i18n.get("chat.overlay.big_emotes_title"),
             self.i18n.get("chat.overlay.big_emotes_desc"),
             self.sw_big_emotes
@@ -132,7 +132,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.combo_anim_in.addItem(self.i18n.get("chat.overlay.anim_in_slide"), "slide")
         self.combo_anim_in.addItem(self.i18n.get("chat.overlay.anim_in_pop"), "pop")
         row_anim_in = SettingRow(
-            "bolt-circle-duotone.svg",
+            "bolt-circle-filled.svg",
             self.i18n.get("chat.overlay.anim_in_title"),
             self.i18n.get("chat.overlay.anim_in_desc"),
             self.combo_anim_in

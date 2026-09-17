@@ -57,11 +57,11 @@ class AlertsView(BaseView):
     view_shown = Signal()
 
     _TWITCH_EVENTS = [
-        ("follow", "user-check-duotone.svg"),
-        ("subscription", "crown.svg"),
-        ("resub", "star.svg"),
+        ("follow", "profile-tick-filled.svg"),
+        ("subscription", "crown-filled.svg"),
+        ("resub", "star-filled.svg"),
         ("sub_gift", "gift-filled.svg"),
-        ("raid", "users-duotone.svg"),
+        ("raid", "users-filled.svg"),
         ("cheer", "prism.svg"),
     ]
 
@@ -108,7 +108,7 @@ class AlertsView(BaseView):
         self.notice_layout.setSpacing(SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
-        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-duotone.svg", COLOR_AMBER, size=20))
+        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, size=20))
 
         notice_text_col = QVBoxLayout()
         notice_text_col.setContentsMargins(*MARGIN_NONE)
@@ -192,7 +192,7 @@ class AlertsView(BaseView):
         if dict.__contains__(self.cards, key):
             return dict.__getitem__(self.cards, key)
 
-        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-check-duotone.svg")
+        icon_name = self._event_meta.get(platform, {}).get(alert_type, "profile-tick-filled.svg")
         editor_stack = self.twitch_editor_stack
         sidebar_panel = self.sidebars.get(platform)
 

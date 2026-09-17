@@ -269,7 +269,7 @@ class Sidebar(QFrame):
         logical_size = 36
         physical_size = int(logical_size * dpr)
         
-        icon_pixmap = get_pixmap_colored("user-duotone.svg", COLOR_NEUTRAL_400, 24, dpr)
+        icon_pixmap = get_pixmap_colored("user-filled.svg", COLOR_NEUTRAL_400, 24, dpr)
         
         circle_pixmap = QPixmap(physical_size, physical_size)
         circle_pixmap.fill(Qt.GlobalColor.transparent)

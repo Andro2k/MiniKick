@@ -325,7 +325,7 @@ class DashboardView(BaseView):
         empty_header.setSpacing(SPACING_LG)
 
         lbl_empty_icon = QLabel(self)
-        lbl_empty_icon.setPixmap(get_pixmap_colored("users-duotone.svg", COLOR_NEUTRAL_500, 32))
+        lbl_empty_icon.setPixmap(get_pixmap_colored("users-filled.svg", COLOR_NEUTRAL_500, 32))
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         empty_text_layout = QVBoxLayout()
@@ -377,10 +377,10 @@ class DashboardView(BaseView):
         self.session_grid.setContentsMargins(*MARGIN_NONE)
         self.session_grid.setSpacing(SPACING_MD)
 
-        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-duotone.svg", "0")
+        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-filled.svg", "0")
         self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "chat-square-code-filled.svg", "0")
-        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock-circle-duotone.svg", "0")
-        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-duotone.svg", "0")
+        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock-filled.svg", "0")
+        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-filled.svg", "0")
 
         self.session_cards = [
             self.card_msg_processed, self.card_cmd_executed,

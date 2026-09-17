@@ -56,7 +56,7 @@ class SettingsView(BaseView):
         self.combo_font.currentIndexChanged.connect(self._on_font_changed)
 
         row_font = SettingRow(
-            icon_name="file-text-duotone.svg", 
+            icon_name="file-text-filled.svg", 
             title_text=self.i18n.get("settings.system.font_title"), 
             desc_text=self.i18n.get("settings.system.font_desc"), 
             right_widget=self.combo_font
@@ -77,7 +77,7 @@ class SettingsView(BaseView):
         self.btn_browse_browser = ModernButton(
             "",
             role="action_neutral_border",
-            icon_name="folder-open-duotone.svg",
+            icon_name="folder-open-filled.svg",
             icon_size=16,
             parent=browser_container
         )
@@ -88,7 +88,7 @@ class SettingsView(BaseView):
         browser_layout.addWidget(self.btn_browse_browser)
 
         row_browser = SettingRow(
-            icon_name="window-duotone.svg",
+            icon_name="window-pointer-filled.svg",
             title_text=self.i18n.get("settings.system.browser_title"),
             desc_text=self.i18n.get("settings.system.browser_desc"),
             right_widget=browser_container
@@ -98,7 +98,7 @@ class SettingsView(BaseView):
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
 
         row_tray = SettingRow(
-            icon_name="minimize-square-duotone.svg", 
+            icon_name="minimize-filled.svg", 
             title_text=self.i18n.get("settings.system.tray_title"), 
             desc_text=self.i18n.get("settings.system.tray_desc"), 
             right_widget=self.sw_start_bg
@@ -122,7 +122,7 @@ class SettingsView(BaseView):
         self.combo_tts_audio_device.currentIndexChanged.connect(self._on_tts_audio_device_changed)
 
         row_music_audio = SettingRow(
-            icon_name="music-notes-duotone.svg",
+            icon_name="music-notes-filled.svg",
             title_text=self.i18n.get("settings.audio.music_title"),
             desc_text=self.i18n.get("settings.audio.music_desc"),
             right_widget=self.combo_music_audio_device
@@ -150,7 +150,7 @@ class SettingsView(BaseView):
         btn_backup_layout.addWidget(self.btn_import)
 
         row_backup = SettingRow(
-            icon_name="restart-duotone.svg", 
+            icon_name="restart-filled.svg", 
             title_text=self.i18n.get("settings.backup.title"), 
             desc_text=self.i18n.get("settings.backup.desc"), 
             right_widget=btn_backup_container
@@ -230,7 +230,7 @@ class SettingsView(BaseView):
         self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
 
         row_release_notes = SettingRow(
-            icon_name="file-text-duotone.svg",
+            icon_name="file-text-filled.svg",
             title_text=self.i18n.get("settings.system.release_notes_title"),
             desc_text=self.i18n.get("settings.system.release_notes_desc"),
             right_widget=self.btn_release_notes
@@ -240,7 +240,7 @@ class SettingsView(BaseView):
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
 
         row_feedback = SettingRow(
-            icon_name="bug.svg", 
+            icon_name="bug-duotone.svg", 
             title_text=self.i18n.get("settings.feedback.title"), 
             desc_text=self.i18n.get("settings.feedback.desc"), 
             right_widget=self.btn_feedback

@@ -30,7 +30,7 @@ class ImportBackupModal(ModernModal):
         title = self.i18n.get("settings.dialogs.import_modal.title")
         super().__init__(
             title=title,
-            icon_path="restart-duotone.svg",
+            icon_path="restart-filled.svg",
             icon_role="accent_icon",
             width=540,
             resizable=False,
@@ -188,7 +188,7 @@ class ImportBackupModal(ModernModal):
         self.btn_confirm = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_confirm"),
             role="action_accent",
-            icon_name="restart-duotone.svg",
+            icon_name="restart-filled.svg",
             icon_size=14,
             parent=self
         )
