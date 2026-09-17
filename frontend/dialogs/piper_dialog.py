@@ -106,7 +106,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         card_header.addLayout(card_title_layout, stretch=1)
 
         self.btn_reset_synthesis = QPushButton(self.i18n.get("piper_dialog.btn_reset_synthesis"), synthesis_card)
-        self.btn_reset_synthesis.setProperty("role", "action_neutral_border")
+        self.btn_reset_synthesis.setProperty("role", "action_outlined")
         self.btn_reset_synthesis.setToolTip(self.i18n.get("piper_dialog.btn_reset_tooltip"))
         self.btn_reset_synthesis.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_reset_synthesis.clicked.connect(self._reset_synthesis_defaults)
@@ -167,7 +167,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         btn_layout = QHBoxLayout()
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), self)
-        self.btn_import.setProperty("role", "action_neutral_border")
+        self.btn_import.setProperty("role", "action_outlined")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
         self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_400, size=14))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -177,7 +177,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         btn_layout.addStretch()
 
         btn_close = QPushButton(self.i18n.get("piper_dialog.btn_close"), self)
-        btn_close.setProperty("role", "action_accent")
+        btn_close.setProperty("role", "action_outlined")
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.accept)
         btn_layout.addWidget(btn_close)

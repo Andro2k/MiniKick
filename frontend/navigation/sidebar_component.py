@@ -115,7 +115,7 @@ class Sidebar(QFrame):
         self.main_layout.addWidget(self.update_card)
 
         self.btn_collapsed_update = QPushButton()
-        self.btn_collapsed_update.setProperty("role", "action_accent")
+        self.btn_collapsed_update.setProperty("role", "action_outlined")
         self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 18))
         self.btn_collapsed_update.setIconSize(QSize(18, 18))
         self.btn_collapsed_update.setFixedSize(36, 36)
@@ -183,7 +183,7 @@ class Sidebar(QFrame):
         card_layout.addWidget(self.lbl_update_desc)
 
         self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
-        self.btn_update_action.setProperty("role", "action_accent")
+        self.btn_update_action.setProperty("role", "action_outlined")
         self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 16))
         self.btn_update_action.setIconSize(QSize(16, 16))
         self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)

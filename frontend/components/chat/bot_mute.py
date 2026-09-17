@@ -67,7 +67,7 @@ class BotMutePanel(ModernCard):
         self.txt_bot_input = QLineEdit()
         self.txt_bot_input.setPlaceholderText(self.i18n.get("chat.bots.input_placeholder"))
         
-        self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
+        self.btn_add_bot = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined")
         self.btn_add_bot.set_icon("plus-filled.svg", size=16)
             
         input_row.addWidget(self.txt_bot_input)
@@ -99,7 +99,7 @@ class BotMutePanel(ModernCard):
         self.txt_word_input = QLineEdit()
         self.txt_word_input.setPlaceholderText(self.i18n.get("chat.banned_words.input_placeholder"))
         
-        self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_accent")
+        self.btn_add_word = ModernButton(self.i18n.get("common.buttons.add"), role="action_outlined")
         self.btn_add_word.set_icon("plus-filled.svg", size=16)
             
         input_row_words.addWidget(self.txt_word_input)

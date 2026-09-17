@@ -537,7 +537,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.btn_back.clicked.connect(self._go_back)
         
         self.btn_next = QPushButton()
-        self.btn_next.setProperty("role", "action_accent")
+        self.btn_next.setProperty("role", "action_outlined")
         self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_next.setAutoDefault(False)
         self.btn_next.setDefault(False)

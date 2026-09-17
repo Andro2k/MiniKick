@@ -64,7 +64,7 @@ class PiperVoiceItemWidget(QFrame):
         self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg", COLOR_NEUTRAL_400, size=14))
         self.btn_test.setIconSize(QSize(14, 14))
         self.btn_test.setFixedSize(28, 28)
-        self.btn_test.setProperty("role", "action_neutral_border")
+        self.btn_test.setProperty("role", "action_outlined")
         self.btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
         self.btn_test.clicked.connect(lambda: self.test_requested.emit(self.voice_id))
         self.btn_test.setVisible(self.is_installed)
@@ -93,7 +93,7 @@ class PiperVoiceItemWidget(QFrame):
             self.btn_action.setEnabled(not self.is_default)
         else:
             self.btn_action.setText(self.i18n.get("piper_dialog.btn_download"))
-            self.btn_action.setProperty("role", "action_accent")
+            self.btn_action.setProperty("role", "action_outlined")
             self.btn_action.setEnabled(True)
         self.btn_action.style().unpolish(self.btn_action)
         self.btn_action.style().polish(self.btn_action)

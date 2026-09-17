@@ -106,14 +106,14 @@ class ImportBackupModal(ModernModal):
 
         self.btn_select_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_select_all"),
-            role="action_neutral_border",
+            role="action_outlined",
             icon_name="check-filled.svg",
             icon_size=12,
             parent=self
         )
         self.btn_deselect_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_deselect_all"),
-            role="action_neutral_border",
+            role="action_outlined",
             icon_name="x-filled.svg",
             icon_size=12,
             parent=self
@@ -208,14 +208,14 @@ class ImportBackupModal(ModernModal):
 
         self.btn_cancel = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_cancel"),
-            role="action_neutral_border",
+            role="action_outlined",
             parent=self
         )
         self.btn_cancel.clicked.connect(self.reject)
 
         self.btn_confirm = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_confirm"),
-            role="action_accent",
+            role="action_outlined",
             icon_name="restart-filled.svg",
             icon_size=14,
             parent=self

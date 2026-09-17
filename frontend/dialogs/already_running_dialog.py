@@ -37,7 +37,7 @@ class AlreadyRunningDialog(ModernModal):
 
         ok_str = self.i18n.get("common.buttons.understood")
         btn_ok = QPushButton(ok_str)
-        btn_ok.setProperty("role", "action_accent")
+        btn_ok.setProperty("role", "action_outlined")
         btn_ok.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_ok.clicked.connect(self.accept)
 

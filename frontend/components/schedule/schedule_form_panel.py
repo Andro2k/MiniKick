@@ -125,7 +125,7 @@ class ScheduleFormPanel(QWidget):
         lbl_now_spacer.setProperty("role", "h3")
         self.btn_now = ModernButton(
             self.i18n.get("stream_info.schedule_dialog.btn_now"),
-            role="action_neutral_border",
+            role="action_outlined",
             icon_name="clock-filled.svg"
         )
         self.btn_now.setToolTip(self.i18n.get("stream_info.schedule_dialog.btn_now_tooltip"))
@@ -177,7 +177,7 @@ class ScheduleFormPanel(QWidget):
         self.btn_clear.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clear.clicked.connect(self.clear_form)
 
-        self.btn_save = ModernButton(self.i18n.get("stream_info.schedule_dialog.btn_save"), role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("stream_info.schedule_dialog.btn_save"), role="action_outlined")
         self.btn_save.clicked.connect(self._on_save)
 
         action_row.addWidget(self.btn_clear)

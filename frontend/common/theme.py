@@ -208,16 +208,16 @@ QPushButton:focus {{ outline: none; }}
 QPushButton:default {{ border: 1.2px solid {COLOR_GREEN}; }}
 
 /* Neutral & Outlined Buttons (Figma Spec) */
-QPushButton[role="action_outlined"], QPushButton[role="action_neutral_border"] {{ background-color: {GRADIENT_NEUTRAL_FILL}; color: {COLOR_WHITE}; font-size: {text1}px; font-weight: 500; border: 1.2px solid #38363E; border-top: 1.2px solid #4B4951; border-bottom: 1.2px solid #313036; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
-QPushButton[role="action_outlined"]:hover, QPushButton[role="action_neutral_border"]:hover {{ background-color: {GRADIENT_NEUTRAL_HOVER}; border: 1.2px solid #45434C; border-top: {BORDER_FOCUS}; border-bottom: 1.2px solid #38363E; color: {COLOR_WHITE}; }}
-QPushButton[role="action_outlined"]:pressed, QPushButton[role="action_neutral_border"]:pressed {{ background-color: {GRADIENT_NEUTRAL_PRESSED}; border: 1.2px solid #28272D; border-top: 1.2px solid #201E25; border-bottom: 1.2px solid #35343A; }}
-QPushButton[role="action_outlined"]:focus, QPushButton[role="action_neutral_border"]:focus {{ border: {BORDER_FOCUS}; border-top: 1.2px solid #71717A; }}
+QPushButton[role="action_outlined"] {{ background-color: {GRADIENT_NEUTRAL_FILL}; color: {COLOR_WHITE}; font-size: {text1}px; font-weight: 500; border: 1.2px solid #38363E; border-top: 1.2px solid #4B4951; border-bottom: 1.2px solid #313036; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_outlined"]:hover {{ background-color: {GRADIENT_NEUTRAL_HOVER}; border: 1.2px solid #45434C; border-top: {BORDER_FOCUS}; border-bottom: 1.2px solid #38363E; color: {COLOR_WHITE}; }}
+QPushButton[role="action_outlined"]:pressed {{ background-color: {GRADIENT_NEUTRAL_PRESSED}; border: 1.2px solid #28272D; border-top: 1.2px solid #201E25; border-bottom: 1.2px solid #35343A; }}
+QPushButton[role="action_outlined"]:focus {{ border: {BORDER_FOCUS}; border-top: 1.2px solid #71717A; }}
 
-/* Primary Accent & Kick Buttons */
-QPushButton[role="action_accent"], QPushButton[role="action_kick"] {{ background-color: {GRADIENT_ACCENT_FILL}; color: {COLOR_WHITE}; font-size: {text1}px; font-weight: 500; border: 1.2px solid #1A7A42; border-top: 1.2px solid {COLOR_GREEN}; border-bottom: 1.2px solid #125E31; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
-QPushButton[role="action_accent"]:hover, QPushButton[role="action_kick"]:hover {{ background-color: {GRADIENT_ACCENT_HOVER}; border: 1.2px solid #1E8E4D; border-top: 1.2px solid #3DE082; border-bottom: 1.2px solid #15733C; }}
-QPushButton[role="action_accent"]:pressed, QPushButton[role="action_kick"]:pressed {{ background-color: {GRADIENT_ACCENT_PRESSED}; border: 1.2px solid #125E31; border-top: 1.2px solid #146133; border-bottom: 1.2px solid #1E8E4D; }}
-QPushButton[role="action_accent"]:focus, QPushButton[role="action_kick"]:focus {{ border: 1.2px solid {COLOR_GREEN}; }}
+/* Platform: Kick Button */
+QPushButton[role="action_kick"] {{ background-color: {GRADIENT_ACCENT_FILL}; color: {COLOR_WHITE}; font-size: {text1}px; font-weight: 500; border: 1.2px solid #1A7A42; border-top: 1.2px solid {COLOR_GREEN}; border-bottom: 1.2px solid #125E31; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_kick"]:hover {{ background-color: {GRADIENT_ACCENT_HOVER}; border: 1.2px solid #1E8E4D; border-top: 1.2px solid #3DE082; border-bottom: 1.2px solid #15733C; }}
+QPushButton[role="action_kick"]:pressed {{ background-color: {GRADIENT_ACCENT_PRESSED}; border: 1.2px solid #125E31; border-top: 1.2px solid #146133; border-bottom: 1.2px solid #1E8E4D; }}
+QPushButton[role="action_kick"]:focus {{ border: 1.2px solid {COLOR_GREEN}; }}
 QPushButton[role="action_kick"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; }}
 
 /* Platform: Twitch Button */
@@ -279,7 +279,7 @@ QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-l
 QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 10px 0px; }}
 
 /* Global Disabled Button States */
-QPushButton:disabled, QPushButton[role="action_accent"]:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_border"]:disabled, QPushButton[role="action_accent_border"]:disabled, QPushButton[role="action_neutral_border"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_icon_sm"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; padding: {PADDING_BUTTON}; }}
+QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_border"]:disabled, QPushButton[role="action_accent_border"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_icon_sm"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; padding: {PADDING_BUTTON}; }}
 """
 
 

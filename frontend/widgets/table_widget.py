@@ -61,7 +61,7 @@ class ModernTableCard(QFrame):
                 self.header_layout.addWidget(self.txt_search)
                 
             if add_button_text:
-                self.btn_add = ModernButton(add_button_text, role="action_accent", parent=self)
+                self.btn_add = ModernButton(add_button_text, role="action_outlined", parent=self)
                 if add_button_icon:
                     self.btn_add.set_icon(add_button_icon, size=16)
                 self.header_layout.addWidget(self.btn_add)
@@ -105,7 +105,7 @@ class ModernTableCard(QFrame):
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_desc.setMaximumWidth(450)
         
-        self.btn_empty_action = ModernButton(button_text, role="action_accent")
+        self.btn_empty_action = ModernButton(button_text, role="action_outlined")
         self.btn_empty_action.set_icon("plus-filled.svg", size=16)
         self.btn_empty_action.clicked.connect(on_button_clicked)
         

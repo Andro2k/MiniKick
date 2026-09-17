@@ -242,7 +242,7 @@ class DashboardView(BaseView):
         action_col = QVBoxLayout()
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
-        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_neutral_border")
+        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined")
         self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", COLOR_WHITE, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)

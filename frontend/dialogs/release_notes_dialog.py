@@ -81,7 +81,7 @@ class ReleaseNotesDialog(ModernModal):
         self.content_layout.addStretch()
 
         self.btn_github = QPushButton(self.i18n.get("dialogs.release_notes.btn_github"))
-        self.btn_github.setProperty("role", "action_accent")
+        self.btn_github.setProperty("role", "action_outlined")
         self.btn_github.clicked.connect(self._open_github_release)
 
         self.btn_close = QPushButton(self.i18n.get("common.buttons.close"))

@@ -138,7 +138,7 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.combo_anim_in
         )
 
-        self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
+        self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined")
         self.row_copy_obs = SettingRow(
             "link-filled.svg",
             self.i18n.get("chat.settings.obs_title"),

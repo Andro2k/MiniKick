@@ -61,7 +61,7 @@ class VoiceSettingRow(QWidget):
             self.btn_test.setIconSize(QSize(14, 14))
             self.btn_test.setFixedSize(28, 28)
             self.btn_test.setToolTip(tooltip_text)
-            self.btn_test.setProperty("role", "action_neutral_border")
+            self.btn_test.setProperty("role", "action_outlined")
 
             def trigger_test():
                 voice_id = combo.currentData() or ""

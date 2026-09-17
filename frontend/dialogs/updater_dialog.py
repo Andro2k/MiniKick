@@ -71,7 +71,7 @@ class UpdateDialog(ModernModal):
         self.content_layout.addStretch()
 
         self.btn_primary = QPushButton(self.i18n.get("dialogs.update.btn_restart"))
-        self.btn_primary.setProperty("role", "action_accent")
+        self.btn_primary.setProperty("role", "action_outlined")
         self.btn_primary.hide()
         
         self.btn_secondary = QPushButton(self.i18n.get("dialogs.update.btn_close"))

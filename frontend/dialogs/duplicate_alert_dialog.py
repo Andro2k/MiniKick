@@ -90,7 +90,7 @@ class DuplicateAlertModal(ModernModal):
 
         self.btn_confirm = ModernButton(
             text=self.i18n.get("alerts.dialogs.duplicate.btn_confirm"),
-            role="action_accent",
+            role="action_outlined",
             icon_name="copy-filled.svg",
             icon_size=14,
             parent=self

@@ -27,7 +27,7 @@ class MessageEditorDialog(ModernModal):
         btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel"), role="action_outlined")
         btn_cancel.clicked.connect(self.reject)
 
-        self.btn_save = ModernButton(self.i18n.get("common.buttons.save"), role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("common.buttons.save"), role="action_outlined")
         self.btn_save.clicked.connect(self.accept)
 
         self.add_action_buttons(btn_cancel, self.btn_save)

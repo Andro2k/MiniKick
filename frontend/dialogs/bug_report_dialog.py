@@ -125,7 +125,7 @@ class BugReportDialog(ModernModal):
         self.btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel"), role="action_outlined")
         self.btn_cancel.clicked.connect(self.reject)
 
-        self.btn_send = ModernButton(self.i18n.get("dialogs.bug_report.btn_send_low"), role="action_accent")
+        self.btn_send = ModernButton(self.i18n.get("dialogs.bug_report.btn_send_low"), role="action_outlined")
         self.btn_send.clicked.connect(self._on_send_clicked)
 
         self.add_action_buttons(self.btn_cancel, self.btn_send)

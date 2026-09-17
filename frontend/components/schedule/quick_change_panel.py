@@ -250,7 +250,7 @@ class ScheduleQuickChangePanel(QWidget):
         action_row = QHBoxLayout()
         action_row.addStretch()
 
-        self.btn_apply = ModernButton(self.i18n.get("stream_info.quick_change.btn_update"), role="action_accent")
+        self.btn_apply = ModernButton(self.i18n.get("stream_info.quick_change.btn_update"), role="action_outlined")
         self.btn_apply.setFixedWidth(200)
         self.btn_apply.clicked.connect(self._on_update_clicked)
         action_row.addWidget(self.btn_apply)

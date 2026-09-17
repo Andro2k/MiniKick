@@ -144,7 +144,7 @@ class RewardsView(BaseView):
     def _build_obs_card(self):
         obs_card = ModernCard(parent=self)
 
-        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
+        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
@@ -438,7 +438,7 @@ class RewardsView(BaseView):
             cell.add_button(
                 icon_name="play-filled.svg", 
                 color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
-                role="action_neutral_border" if is_valid_file else "action_danger_border", 
+                role="action_outlined" if is_valid_file else "action_danger_border", 
                 tooltip=play_tooltip, 
                 callback=lambda checked=False, k=key: self.preview_requested.emit(k)
             )
@@ -452,7 +452,7 @@ class RewardsView(BaseView):
             cell.add_button(
                 icon_name="copy-filled.svg", 
                 color=COLOR_TWITCH, 
-                role="action_neutral_border", 
+                role="action_outlined", 
                 tooltip=self.i18n.get("rewards.table.tooltip_duplicate"), 
                 callback=lambda checked=False, k=key: self.duplicate_requested.emit(k)
             )

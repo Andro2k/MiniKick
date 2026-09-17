@@ -245,7 +245,7 @@ class LogView(BaseView):
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_desc.setMaximumWidth(450)
 
-        self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
+        self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_outlined")
         self.btn_show_logs.set_icon("eye-filled.svg", size=16)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 

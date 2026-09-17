@@ -136,7 +136,7 @@ class WidgetCard(QFrame):
             g_layout.addWidget(self.spn_deaths)
 
             btn_reset = QPushButton(self.i18n.get("widgets.death.reset_btn"))
-            btn_reset.setProperty("role", "action_neutral_border")
+            btn_reset.setProperty("role", "action_outlined")
             btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_reset.clicked.connect(lambda: self.spn_deaths.setValue(0))
 
@@ -172,7 +172,7 @@ class WidgetCard(QFrame):
             gl_layout.addWidget(self.spn_losses)
 
             btn_reset = QPushButton(self.i18n.get("widgets.score.reset_btn"))
-            btn_reset.setProperty("role", "action_neutral_border")
+            btn_reset.setProperty("role", "action_outlined")
             btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_reset.clicked.connect(self._reset_score_counters)
 
@@ -246,7 +246,7 @@ class WidgetCard(QFrame):
         elif self.widget_id == "chatters":
             flow = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
             btn_reset = QPushButton(self.i18n.get("widgets.chatters.reset_btn"))
-            btn_reset.setProperty("role", "action_neutral_border")
+            btn_reset.setProperty("role", "action_outlined")
             btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_reset.clicked.connect(lambda: self.counter_action_triggered.emit("chatters", "reset_chatters", None))
             flow.addWidget(btn_reset)
@@ -258,7 +258,7 @@ class WidgetCard(QFrame):
             lbl_obs.setProperty("role", "body")
 
             btn_copy_obs = QPushButton(self.i18n.get("common.buttons.copy"))
-            btn_copy_obs.setProperty("role", "action_neutral_border")
+            btn_copy_obs.setProperty("role", "action_outlined")
             btn_copy_obs.setCursor(Qt.CursorShape.PointingHandCursor)
             btn_copy_obs.clicked.connect(self._copy_obs_url)
 

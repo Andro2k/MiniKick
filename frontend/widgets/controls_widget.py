@@ -14,7 +14,7 @@ _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
 class ModernButton(QPushButton):
-    def __init__(self, text: str = "", role: str = "action_accent", icon_name: str = "", 
+    def __init__(self, text: str = "", role: str = "action_outlined", icon_name: str = "", 
                  icon_color: str | None = None, icon_size: int = 16, parent=None):
         super().__init__(text, parent)
         self._role = role
@@ -26,13 +26,12 @@ class ModernButton(QPushButton):
     @staticmethod
     def _resolve_role_color(role: str) -> str:
         role_map = {
-            "action_accent": COLOR_WHITE,
+            "action_outlined": COLOR_WHITE,
             "action_kick": COLOR_WHITE,
             "action_twitch": COLOR_WHITE,
             "action_youtube": COLOR_WHITE,
             "action_tiktok": COLOR_BLACK,
             "action_outlined": COLOR_WHITE,
-            "action_neutral_border": COLOR_WHITE,
             "action_danger_border": COLOR_RED,
             "action_accent_border": COLOR_GREEN,
             "btn_ghost": COLOR_NEUTRAL_400,

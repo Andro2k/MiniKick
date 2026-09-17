@@ -76,7 +76,7 @@ class SettingsView(BaseView):
 
         self.btn_browse_browser = ModernButton(
             "",
-            role="action_neutral_border",
+            role="action_outlined",
             icon_name="folder-open-filled.svg",
             icon_size=16,
             parent=browser_container
@@ -140,8 +140,8 @@ class SettingsView(BaseView):
         btn_backup_layout.setContentsMargins(*MARGIN_NONE) 
         btn_backup_layout.setSpacing(SPACING_MD)
         
-        self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_neutral_border")
-        self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_neutral_border")
+        self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_outlined")
+        self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_outlined")
         
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
@@ -167,7 +167,7 @@ class SettingsView(BaseView):
 
         integrations_card = ModernCard(parent=self)
 
-        self.btn_kick_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_kick"), role="action_accent", parent=self)
+        self.btn_kick_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_kick"), role="action_outlined", parent=self)
         self.btn_kick_integration.clicked.connect(self.unlink_clicked.emit)
         self.btn_unlink = self.btn_kick_integration
 
@@ -178,7 +178,7 @@ class SettingsView(BaseView):
             right_widget=self.btn_kick_integration
         )
 
-        self.btn_twitch_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_twitch"), role="action_accent", parent=self)
+        self.btn_twitch_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_twitch"), role="action_outlined", parent=self)
         self.btn_twitch_integration.clicked.connect(self.twitch_integration_clicked.emit)
 
         self.row_twitch_integration = SettingRow(
@@ -188,7 +188,7 @@ class SettingsView(BaseView):
             right_widget=self.btn_twitch_integration
         )
 
-        self.btn_youtube_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_youtube"), role="action_accent", parent=self)
+        self.btn_youtube_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_youtube"), role="action_outlined", parent=self)
         self.btn_youtube_integration.clicked.connect(self.youtube_integration_clicked.emit)
 
         self.row_youtube_integration = SettingRow(
@@ -198,7 +198,7 @@ class SettingsView(BaseView):
             right_widget=self.btn_youtube_integration
         )
 
-        self.btn_tiktok_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_tiktok"), role="action_accent", parent=self)
+        self.btn_tiktok_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_tiktok"), role="action_outlined", parent=self)
         self.btn_tiktok_integration.clicked.connect(self.tiktok_integration_clicked.emit)
 
         self.row_tiktok_integration = SettingRow(
@@ -216,7 +216,7 @@ class SettingsView(BaseView):
 
         support_card = ModernCard(parent=self)
 
-        self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_accent")
+        self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined")
         self.btn_update.clicked.connect(self.update_clicked.emit)
 
         row_update = SettingRow(
@@ -236,7 +236,7 @@ class SettingsView(BaseView):
             right_widget=self.btn_release_notes
         )
 
-        self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_accent")
+        self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_outlined")
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
 
         row_feedback = SettingRow(
@@ -324,7 +324,7 @@ class SettingsView(BaseView):
             text_kick = self.i18n.get("settings.integrations.btn_connect_kick")
             desc_kick = self.i18n.get("settings.integrations.kick_desc_disconnected")
             self.btn_kick_integration.setText(text_kick)
-            self.btn_kick_integration.setProperty("role", "action_accent")
+            self.btn_kick_integration.setProperty("role", "action_outlined")
             if hasattr(self, 'row_kick_integration') and self.row_kick_integration:
                 self.row_kick_integration.set_description(desc_kick)
 
@@ -342,7 +342,7 @@ class SettingsView(BaseView):
             text = self.i18n.get("settings.integrations.btn_connect_twitch")
             desc = self.i18n.get("settings.integrations.desc")
             self.btn_twitch_integration.setText(text)
-            self.btn_twitch_integration.setProperty("role", "action_accent")
+            self.btn_twitch_integration.setProperty("role", "action_outlined")
             if hasattr(self, 'row_twitch_integration') and self.row_twitch_integration:
                 self.row_twitch_integration.set_description(desc)
 
@@ -361,7 +361,7 @@ class SettingsView(BaseView):
             text_yt = self.i18n.get("settings.integrations.btn_connect_youtube")
             desc_yt = self.i18n.get("settings.integrations.desc")
             self.btn_youtube_integration.setText(text_yt)
-            self.btn_youtube_integration.setProperty("role", "action_accent")
+            self.btn_youtube_integration.setProperty("role", "action_outlined")
             if hasattr(self, 'row_youtube_integration') and self.row_youtube_integration:
                 self.row_youtube_integration.set_description(desc_yt)
 
@@ -380,7 +380,7 @@ class SettingsView(BaseView):
             text_tk = self.i18n.get("settings.integrations.btn_connect_tiktok")
             desc_tk = self.i18n.get("settings.integrations.desc")
             self.btn_tiktok_integration.setText(text_tk)
-            self.btn_tiktok_integration.setProperty("role", "action_accent")
+            self.btn_tiktok_integration.setProperty("role", "action_outlined")
             if hasattr(self, 'row_tiktok_integration') and self.row_tiktok_integration:
                 self.row_tiktok_integration.set_description(desc_tk)
 
