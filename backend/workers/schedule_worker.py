@@ -60,8 +60,7 @@ class ScheduleWorker(QThread):
             if last_date == today_date_str:
                 continue
 
-            self.service.schedule_storage.update_last_executed(sched["id"], today_date_str)
-            self.service.toggle_schedule(sched["id"], False)
+            self.service.mark_schedule_executed(sched["id"], today_date_str)
             sched["last_executed_date"] = today_date_str
             sched["is_active"] = False
 

@@ -65,8 +65,8 @@ class DatabaseManager:
     def get_connection(self) -> sqlite3.Connection:
         conn = None
         try:
-            conn = sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection)
-            conn.execute("PRAGMA busy_timeout=5000")
+            conn = sqlite3.connect(self.db_name, timeout=30.0, factory=AutoCloseConnection)
+            conn.execute("PRAGMA busy_timeout=30000")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-20000")
             conn.execute("PRAGMA foreign_keys=ON")
@@ -80,7 +80,7 @@ class DatabaseManager:
             if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
                 logger.error("Database error in get_connection, recreating database: %s", e)
                 self._handle_corrupt_database()
-                return sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection)
+                return sqlite3.connect(self.db_name, timeout=30.0, factory=AutoCloseConnection)
             raise e
 
     def _handle_corrupt_database(self) -> None:
