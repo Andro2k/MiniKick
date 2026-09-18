@@ -307,6 +307,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
+        self.chat_controller.chat_overlay_config_changed.connect(self.overlay_server.trigger_chat_config_update)
         self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
@@ -337,6 +338,8 @@ class MainWindowCore(QMainWindow):
         self.music_controller.load_initial_data()
         self.chat_controller.load_initial_data()
         self.chat_controller.sync_settings_cache()
+        if hasattr(self, "overlay_server") and self.overlay_server:
+            self.overlay_server.trigger_chat_config_update(self.chat_controller.get_active_overlay_config())
         self._apply_dynamic_theme(self.settings_service.get_font_size(), immediate=True)
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()

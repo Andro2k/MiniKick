@@ -7,21 +7,24 @@
 // 1. Configuration & URL Parameters
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token') || '';
-const theme = urlParams.get('theme') || 'glass';
-const fadeTime = urlParams.get('fade') !== null ? parseInt(urlParams.get('fade'), 10) : 15;
-const fontSize = urlParams.get('size') || '14px';
-const maxMessages = parseInt(urlParams.get('max'), 10) || 15;
-const showBots = urlParams.get('show_bots') !== 'false';
-const showTime = urlParams.get('show_time') === 'true';
-const orientation = urlParams.get('orientation') || 'vertical';
-const defaultFlow = orientation === 'horizontal' ? 'right-to-left' : 'bottom-to-top';
-const flow = urlParams.get('flow') || defaultFlow;
-const defaultEntry = orientation === 'horizontal' ? 'right' : 'bottom';
-const entryDir = urlParams.get('entry') || defaultEntry;
-const bigEmotes = urlParams.get('big_emotes') !== 'false';
-const edgeFade = urlParams.get('edge_fade') !== 'false';
-const animIn = urlParams.get('anim_in') || 'fade';
-const showGifs = urlParams.get('show_gifs') !== 'false';
+const urlOrientation = urlParams.get('orientation');
+
+const MAX_SAFE_DOM_NODES = 50;
+let theme = urlParams.get('theme') || 'glass';
+let fadeTime = urlParams.get('fade') !== null ? parseInt(urlParams.get('fade'), 10) : 15;
+let fontSize = urlParams.get('size') || '14px';
+let showBots = urlParams.get('show_bots') !== 'false';
+let showTime = urlParams.get('show_time') === 'true';
+let orientation = urlOrientation || 'vertical';
+let defaultFlow = orientation === 'horizontal' ? 'right-to-left' : 'bottom-to-top';
+let flow = urlParams.get('flow') || defaultFlow;
+let bigEmotes = urlParams.get('big_emotes') !== 'false';
+let edgeFade = urlParams.get('edge_fade') !== 'false';
+let animIn = urlParams.get('anim_in') || 'fade';
+let showGifs = urlParams.get('show_gifs') !== 'false';
+let hideCommands = urlParams.get('hide_commands') === 'true';
+let showBadges = urlParams.get('show_badges') !== 'false';
+let showPlatform = urlParams.get('show_platform') !== 'false';
 
 // Apply theme and base styles
 const themeStyle = document.getElementById('theme-style');
@@ -35,6 +38,87 @@ if (container) {
     container.classList.add(`orientation-${orientation}`, `flow-${flow}`);
     if (edgeFade) {
         container.classList.add('edge-fade');
+    }
+}
+
+/**
+ * Applies live configuration changes dispatched from MiniKick via WebSocket.
+ * Supports individual styles for vertical and horizontal orientations.
+ * @param {Object} cfg Active chat overlay settings from server
+ */
+function applyLiveConfig(cfg) {
+    if (!cfg || typeof cfg !== 'object') return;
+
+    // Resolve orientation: locked by URL if provided, or updated live
+    if (!urlOrientation && cfg.orientation) {
+        orientation = cfg.orientation;
+    }
+
+    // Extract profile specific to current orientation (vertical or horizontal)
+    const modeConfig = (cfg[orientation] && typeof cfg[orientation] === 'object')
+        ? cfg[orientation]
+        : cfg;
+    const commonConfig = (cfg.common && typeof cfg.common === 'object')
+        ? cfg.common
+        : cfg;
+
+    if (modeConfig.theme && !urlParams.has('theme')) {
+        theme = modeConfig.theme;
+        if (themeStyle) themeStyle.href = `/css/${theme}.css`;
+    }
+
+    if (modeConfig.size && !urlParams.has('size')) {
+        const rawSize = String(modeConfig.size).trim();
+        fontSize = rawSize.endsWith('px') ? rawSize : `${rawSize}px`;
+        document.documentElement.style.setProperty('--font-size', fontSize);
+    }
+
+    if (modeConfig.fade !== undefined && !urlParams.has('fade')) {
+        fadeTime = parseInt(modeConfig.fade, 10) || 0;
+    }
+
+    if (modeConfig.anim_in && !urlParams.has('anim_in')) {
+        animIn = modeConfig.anim_in;
+    }
+
+    if (!urlParams.has('flow')) {
+        flow = modeConfig.flow || (orientation === 'horizontal' ? 'right-to-left' : 'bottom-to-top');
+    }
+
+    if (commonConfig.show_bots !== undefined && !urlParams.has('show_bots')) {
+        showBots = Boolean(commonConfig.show_bots);
+    }
+
+    if (commonConfig.show_time !== undefined && !urlParams.has('show_time')) {
+        showTime = Boolean(commonConfig.show_time);
+    }
+
+    if (commonConfig.big_emotes !== undefined && !urlParams.has('big_emotes')) {
+        bigEmotes = Boolean(commonConfig.big_emotes);
+    }
+
+    if (commonConfig.edge_fade !== undefined && !urlParams.has('edge_fade')) {
+        edgeFade = Boolean(commonConfig.edge_fade);
+    }
+
+    if (commonConfig.show_gifs !== undefined && !urlParams.has('show_gifs')) {
+        showGifs = Boolean(commonConfig.show_gifs);
+    }
+
+    if (commonConfig.hide_commands !== undefined && !urlParams.has('hide_commands')) {
+        hideCommands = Boolean(commonConfig.hide_commands);
+    }
+
+    if (commonConfig.show_badges !== undefined && !urlParams.has('show_badges')) {
+        showBadges = Boolean(commonConfig.show_badges);
+    }
+
+    if (commonConfig.show_platform !== undefined && !urlParams.has('show_platform')) {
+        showPlatform = Boolean(commonConfig.show_platform);
+    }
+
+    if (container) {
+        container.className = `orientation-${orientation} flow-${flow}${edgeFade ? ' edge-fade' : ''}`;
     }
 }
 
@@ -297,8 +381,11 @@ function addMessage(data) {
     if (!showBots && data.badges && data.badges.includes('bot')) {
         return;
     }
+    if (hideCommands && data.content && typeof data.content === 'string' && data.content.trim().startsWith('!')) {
+        return;
+    }
 
-    let animClass = `anim-entry-${entryDir}`;
+    let animClass = 'anim-fade';
     if (animIn === 'pop') {
         animClass = 'anim-pop';
     } else if (animIn === 'slide') {
@@ -345,14 +432,16 @@ function addMessage(data) {
 
     // Platform badge
     const platform = (data.platform || 'kick').toLowerCase();
-    const platformSpan = document.createElement('span');
-    platformSpan.className = `badge badge-platform badge-platform-${platform}`;
-    platformSpan.innerHTML = (typeof ICONS !== 'undefined' && ICONS[platform]) ? ICONS[platform] : (typeof ICONS !== 'undefined' ? ICONS.kick : '');
-    platformSpan.title = platform.charAt(0).toUpperCase() + platform.slice(1);
-    header.appendChild(platformSpan);
+    if (showPlatform) {
+        const platformSpan = document.createElement('span');
+        platformSpan.className = `badge badge-platform badge-platform-${platform}`;
+        platformSpan.innerHTML = (typeof ICONS !== 'undefined' && ICONS[platform]) ? ICONS[platform] : (typeof ICONS !== 'undefined' ? ICONS.kick : '');
+        platformSpan.title = platform.charAt(0).toUpperCase() + platform.slice(1);
+        header.appendChild(platformSpan);
+    }
 
     // Badges & Roles resolution (O(1) lookups via resolveBadge)
-    if (data.badges && Array.isArray(data.badges) && typeof resolveBadge === 'function') {
+    if (showBadges && data.badges && Array.isArray(data.badges) && typeof resolveBadge === 'function') {
         for (let i = 0; i < data.badges.length; i++) {
             const badgeKey = data.badges[i];
             const resolved = resolveBadge(platform, badgeKey);
@@ -441,14 +530,14 @@ function addMessage(data) {
 
 // 5. Message Lifecycle & Auto-Scroll
 function pruneMessages() {
-    while (container.children.length > maxMessages) {
+    while (container.children.length > MAX_SAFE_DOM_NODES) {
         const first = container.firstElementChild;
         if (!first) break;
         if (first.classList.contains('fade-out')) {
             container.removeChild(first);
         } else {
             removeMessage(first);
-            if (container.children.length > maxMessages + 5) {
+            if (container.children.length > MAX_SAFE_DOM_NODES + 5) {
                 container.removeChild(first);
             } else {
                 break;
@@ -507,6 +596,10 @@ function connectWS() {
         try {
             const data = JSON.parse(event.data);
             if (data.type === 'pong') return;
+            if (data.event === 'chat_config' && data.config) {
+                applyLiveConfig(data.config);
+                return;
+            }
             addMessage(data);
         } catch (e) {
             console.error("[Chat Overlay] Error parseando evento de chat:", e);

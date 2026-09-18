@@ -72,6 +72,7 @@ class ChatController(QObject):
     message_received = Signal(str, str, str, object, str, str, str)
     music_plugin_triggered = Signal(str, str, str, str, str)
     widget_plugin_triggered = Signal(str, str, str, str, str)
+    chat_overlay_config_changed = Signal(dict)
 
     def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None):
         super().__init__()
@@ -237,15 +238,23 @@ class ChatController(QObject):
 
         overlay_settings = self.service.get_overlay_settings()
         self.view.set_overlay_settings_ui(
-            theme=overlay_settings.get("theme", "glass"),
-            size=overlay_settings.get("size", 14),
-            fade=overlay_settings.get("fade", 15),
-            show_bots=overlay_settings.get("show_bots", False),
-            show_time=overlay_settings.get("show_time", False),
-            big_emotes=overlay_settings.get("big_emotes", True),
-            edge_fade=overlay_settings.get("edge_fade", True),
-            anim_in=overlay_settings.get("anim_in", "fade"),
-            show_gifs=overlay_settings.get("show_gifs", True)
+            vertical_config=overlay_settings.get("vertical"),
+            horizontal_config=overlay_settings.get("horizontal"),
+            common_config=overlay_settings.get("common"),
+            orientation=overlay_settings.get("orientation", "vertical"),
+            theme=overlay_settings.get("vertical", {}).get("theme", "glass"),
+            size=overlay_settings.get("vertical", {}).get("size", 14),
+            fade=overlay_settings.get("vertical", {}).get("fade", 15),
+            flow=overlay_settings.get("vertical", {}).get("flow", "bottom-to-top"),
+            anim_in=overlay_settings.get("vertical", {}).get("anim_in", "fade"),
+            show_bots=overlay_settings.get("common", {}).get("show_bots", False),
+            show_time=overlay_settings.get("common", {}).get("show_time", False),
+            big_emotes=overlay_settings.get("common", {}).get("big_emotes", True),
+            edge_fade=overlay_settings.get("common", {}).get("edge_fade", True),
+            show_gifs=overlay_settings.get("common", {}).get("show_gifs", True),
+            hide_commands=overlay_settings.get("common", {}).get("hide_commands", False),
+            show_badges=overlay_settings.get("common", {}).get("show_badges", True),
+            show_platform=overlay_settings.get("common", {}).get("show_platform", True)
         )
 
         if self.voice_handler._all_voices:
@@ -767,16 +776,35 @@ class ChatController(QObject):
             "mod_block_command_enabled": self.view.mod_block_command_enabled if hasattr(self.view, "mod_block_command_enabled") else True,
         }
         settings.update(self.view.get_role_voices())
+        v_cfg = getattr(self.view, "vertical_config", {})
+        h_cfg = getattr(self.view, "horizontal_config", {})
+        cur_orientation = getattr(self.view, "overlay_orientation", "vertical")
+
         settings.update({
+            "chat_overlay_orientation": cur_orientation,
+            "chat_overlay_vertical_theme": v_cfg.get("theme", "glass"),
+            "chat_overlay_vertical_size": str(v_cfg.get("size", 14)),
+            "chat_overlay_vertical_fade": str(v_cfg.get("fade", 15)),
+            "chat_overlay_vertical_flow": v_cfg.get("flow", "bottom-to-top"),
+            "chat_overlay_vertical_anim_in": v_cfg.get("anim_in", "fade"),
+            "chat_overlay_horizontal_theme": h_cfg.get("theme", "glass"),
+            "chat_overlay_horizontal_size": str(h_cfg.get("size", 14)),
+            "chat_overlay_horizontal_fade": str(h_cfg.get("fade", 15)),
+            "chat_overlay_horizontal_flow": h_cfg.get("flow", "right-to-left"),
+            "chat_overlay_horizontal_anim_in": h_cfg.get("anim_in", "fade"),
             "chat_overlay_theme": self.view.overlay_theme,
             "chat_overlay_size": str(self.view.overlay_size),
             "chat_overlay_fade": str(self.view.overlay_fade),
+            "chat_overlay_flow": self.view.overlay_flow,
+            "chat_overlay_anim_in": getattr(self.view, "overlay_anim_in", "fade"),
             "chat_overlay_show_bots": self.view.overlay_show_bots,
             "chat_overlay_show_time": self.view.overlay_show_time,
             "chat_overlay_big_emotes": getattr(self.view, "overlay_big_emotes", True),
             "chat_overlay_edge_fade": getattr(self.view, "overlay_edge_fade", True),
-            "chat_overlay_anim_in": getattr(self.view, "overlay_anim_in", "fade"),
-            "chat_overlay_show_gifs": getattr(self.view, "overlay_show_gifs", True)
+            "chat_overlay_show_gifs": getattr(self.view, "overlay_show_gifs", True),
+            "chat_overlay_hide_commands": getattr(self.view, "overlay_hide_commands", False),
+            "chat_overlay_show_badges": getattr(self.view, "overlay_show_badges", True),
+            "chat_overlay_show_platform": getattr(self.view, "overlay_show_platform", True)
         })
 
         logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
@@ -810,11 +838,60 @@ class ChatController(QObject):
         color = "success" if is_active else "warning"
         self.toast.show_toast(title=title, message=msg, state=color, tag=tag)
 
+    def get_active_overlay_config(self) -> dict:
+        settings = self._tts_settings_cache or {}
+        cur_orientation = settings.get("chat_overlay_orientation", "vertical")
+        v_cfg = {
+            "theme": settings.get("chat_overlay_vertical_theme", settings.get("chat_overlay_theme", "glass")),
+            "size": str(settings.get("chat_overlay_vertical_size", settings.get("chat_overlay_size", "14"))),
+            "fade": str(settings.get("chat_overlay_vertical_fade", settings.get("chat_overlay_fade", "15"))),
+            "flow": settings.get("chat_overlay_vertical_flow", "bottom-to-top"),
+            "anim_in": settings.get("chat_overlay_vertical_anim_in", settings.get("chat_overlay_anim_in", "fade")),
+        }
+        h_cfg = {
+            "theme": settings.get("chat_overlay_horizontal_theme", settings.get("chat_overlay_theme", "glass")),
+            "size": str(settings.get("chat_overlay_horizontal_size", settings.get("chat_overlay_size", "14"))),
+            "fade": str(settings.get("chat_overlay_horizontal_fade", settings.get("chat_overlay_fade", "15"))),
+            "flow": settings.get("chat_overlay_horizontal_flow", "right-to-left"),
+            "anim_in": settings.get("chat_overlay_horizontal_anim_in", settings.get("chat_overlay_anim_in", "fade")),
+        }
+        common = {
+            "show_bots": bool(settings.get("chat_overlay_show_bots", False)),
+            "show_time": bool(settings.get("chat_overlay_show_time", False)),
+            "show_gifs": bool(settings.get("chat_overlay_show_gifs", True)),
+            "big_emotes": bool(settings.get("chat_overlay_big_emotes", True)),
+            "edge_fade": bool(settings.get("chat_overlay_edge_fade", True)),
+            "hide_commands": bool(settings.get("chat_overlay_hide_commands", False)),
+            "show_badges": bool(settings.get("chat_overlay_show_badges", True)),
+            "show_platform": bool(settings.get("chat_overlay_show_platform", True)),
+        }
+        active_sub = v_cfg if cur_orientation == "vertical" else h_cfg
+        return {
+            "orientation": cur_orientation,
+            "vertical": v_cfg,
+            "horizontal": h_cfg,
+            "common": common,
+            "theme": active_sub["theme"],
+            "size": active_sub["size"],
+            "fade": active_sub["fade"],
+            "flow": active_sub["flow"],
+            "anim_in": active_sub["anim_in"],
+            "show_bots": common["show_bots"],
+            "show_time": common["show_time"],
+            "show_gifs": common["show_gifs"],
+            "big_emotes": common["big_emotes"],
+            "edge_fade": common["edge_fade"],
+            "hide_commands": common["hide_commands"],
+            "show_badges": common["show_badges"],
+            "show_platform": common["show_platform"],
+        }
+
     def _flush_settings_save(self) -> None:
         if not self._tts_settings_cache:
             return
         settings = dict(self._tts_settings_cache)
         self.service.save_settings(settings)
+        self.chat_overlay_config_changed.emit(self.get_active_overlay_config())
 
         commands = self.command_service.get_all_commands()
         existing = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
