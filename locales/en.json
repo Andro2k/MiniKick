@@ -30,10 +30,13 @@
         "buttons": {
             "browse": "Browse...",
             "discard": "Discard",
-            "duplicate": "Duplicate to another alert",
+            "discard_tooltip": "Discard unsaved changes",
+            "duplicate": "Duplicate",
             "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
             "save": "Save Changes",
+            "save_short": "Save",
             "test": "Test Alert",
+            "test_short": "Test",
             "test_sent": "Test alert sent to OBS."
         },
         "dialogs": {
@@ -147,9 +150,13 @@
         },
         "sections": {
             "appearance": "Design",
+            "appearance_desc": "Layout, background color, borders, and shadows.",
             "general": "General settings",
+            "general_desc": "Duration and entry/exit animation settings.",
             "media_sound": "Media and sound",
-            "text_speech": "Text and speech"
+            "media_sound_desc": "Image/video files, alert sound, and volume.",
+            "text_speech": "Text and speech",
+            "text_speech_desc": "Message template, typography, colors, and TTS."
         },
         "sidebar": {
             "title": "Alert Variants"
@@ -1204,6 +1211,19 @@
         "header": {
             "subtitle": "Customize MiniKick general behavior, manage accounts, and check for software updates.",
             "title": "General Settings"
+        },
+        "sections": {
+            "system": "System & Appearance",
+            "audio": "Audio Devices",
+            "integrations": "Platforms & Connections",
+            "backup": "Backup & Restore",
+            "support": "Updates & Support",
+            "danger_zone": "Danger Zone"
+        },
+        "danger": {
+            "unlink_title": "Unlink Kick Account",
+            "unlink_desc": "Logs out of active Kick session and clears stored streaming credentials.",
+            "btn_unlink": "Unlink Account"
         },
         "integrations": {
             "btn_connect_kick": "Connect Kick",

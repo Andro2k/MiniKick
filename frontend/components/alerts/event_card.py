@@ -44,14 +44,14 @@ class AlertConfigData:
     card_height: int = 0
 
 from frontend.widgets import (
-    ModernCard, ModernButton, ModernSwitch,
+    ModernCard, ModernButton, ModernSwitch, ExpandableCard,
     NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox, ModernDivider,
     ModernSegmentedControl, NoWheelComboBox, create_badge, ClearableLineEdit, ModernColorPicker,
     InspectorPropertyRow
 )
 from frontend.common import (
     get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
-    SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
+    SPACING_NONE, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
 )
 from .alert_mockup import AlertOverlayMockupWidget
 
@@ -88,7 +88,7 @@ class AlertEventCard(QWidget):
         accent_color = COLOR_GREEN if self.platform == "kick" else COLOR_PURPLE
         btn_role = "action_kick" if self.platform == "kick" else "action_twitch"
 
-        header_card = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
+        header_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         header_row = QHBoxLayout()
         header_row.setContentsMargins(*MARGIN_NONE)
         header_row.setSpacing(SPACING_MD)
@@ -117,27 +117,18 @@ class AlertEventCard(QWidget):
         header_row.addStretch(1)
 
         self.btn_discard = ModernButton(
-            text=self.i18n.get("alerts.buttons.discard"),
+            text="",
             role="action_outlined",
             icon_name="x-filled.svg",
             icon_size=13,
             parent=self
         )
+        self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
         self.btn_discard.setEnabled(False)
         self.btn_discard.clicked.connect(self._discard_changes)
 
-        self.btn_save = ModernButton(
-            text=self.i18n.get("alerts.buttons.save"),
-            role=btn_role,
-            icon_name="check-filled.svg",
-            icon_size=14,
-            parent=self
-        )
-        self.btn_save.setEnabled(False)
-        self.btn_save.clicked.connect(self._save_changes)
-
         self.btn_duplicate = ModernButton(
-            text=self.i18n.get("alerts.buttons.duplicate"),
+            text="",
             role="action_outlined",
             icon_name="copy-filled.svg",
             icon_size=13,
@@ -147,18 +138,29 @@ class AlertEventCard(QWidget):
         self.btn_duplicate.clicked.connect(self._on_duplicate_clicked)
 
         self.btn_test = ModernButton(
-            text=self.i18n.get("alerts.buttons.test"),
+            text=self.i18n.get("alerts.buttons.test_short"),
             role="action_outlined",
             icon_name="play-filled.svg",
             icon_size=14,
             parent=self
         )
+        self.btn_test.setToolTip(self.i18n.get("alerts.buttons.test"))
         self.btn_test.clicked.connect(self._on_test_clicked)
 
+        self.btn_save = ModernButton(
+            text=self.i18n.get("alerts.buttons.save_short"),
+            role=btn_role,
+            icon_name="check-filled.svg",
+            icon_size=14,
+            parent=self
+        )
+        self.btn_save.setEnabled(False)
+        self.btn_save.clicked.connect(self._save_changes)
+
         header_row.addWidget(self.btn_discard)
-        header_row.addWidget(self.btn_save)
         header_row.addWidget(self.btn_duplicate)
         header_row.addWidget(self.btn_test)
+        header_row.addWidget(self.btn_save)
 
         header_card.addLayout(header_row)
         main_layout.addWidget(header_card)
@@ -168,26 +170,23 @@ class AlertEventCard(QWidget):
         col_left = QVBoxLayout(self.w_col_left)
         col_left.setContentsMargins(*MARGIN_NONE)
         col_left.setSpacing(SPACING_MD)
+        col_left.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.w_col_right = QWidget(self)
         self.w_col_right.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         col_right = QVBoxLayout(self.w_col_right)
         col_right.setContentsMargins(*MARGIN_NONE)
         col_right.setSpacing(SPACING_MD)
+        col_right.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        card_general = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
-        sec_gen_header = QHBoxLayout()
-        sec_gen_header.setSpacing(SPACING_SM)
-        lbl_sec_gen_icon = QLabel(parent=self)
-        lbl_sec_gen_icon.setPixmap(get_pixmap_colored("clock-filled.svg", COLOR_NEUTRAL_400, size=16))
-        lbl_sec_gen_title = QLabel(self.i18n.get("alerts.sections.general"), parent=self)
-        lbl_sec_gen_title.setProperty("role", "h3")
-        sec_gen_header.addWidget(lbl_sec_gen_icon)
-        sec_gen_header.addWidget(lbl_sec_gen_title)
-        sec_gen_header.addStretch()
-
-        card_general.addLayout(sec_gen_header)
-        card_general.addWidget(ModernDivider(self))
+        self.card_general = ExpandableCard(
+            title=self.i18n.get("alerts.sections.general"),
+            description=self.i18n.get("alerts.sections.general_desc"),
+            icon_name="clock-filled.svg",
+            switch_enabled=False,
+            parent=self
+        )
+        self.card_general.set_expanded(True)
 
         self.spin_duration = NoWheelSpinBox(parent=self)
         self.spin_duration.setRange(1, 99)
@@ -196,7 +195,7 @@ class AlertEventCard(QWidget):
         self.spin_duration.setMinimumWidth(96)
         self.spin_duration.valueChanged.connect(self._on_field_changed)
 
-        card_general.addWidget(InspectorPropertyRow(
+        self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.duration"),
             self.spin_duration,
             icon_name="clock-filled.svg",
@@ -218,7 +217,7 @@ class AlertEventCard(QWidget):
             self.combo_anim_in.addItem(label, key)
         self.combo_anim_in.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
-        card_general.addWidget(InspectorPropertyRow(
+        self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.in_label"),
             self.combo_anim_in,
             icon_name="play-filled.svg",
@@ -234,7 +233,7 @@ class AlertEventCard(QWidget):
         self.spin_anim_in_dur.setMinimumWidth(96)
         self.spin_anim_in_dur.valueChanged.connect(self._on_field_changed)
 
-        card_general.addWidget(InspectorPropertyRow(
+        self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.in_duration"),
             self.spin_anim_in_dur,
             icon_name="stopwatch-filled.svg",
@@ -256,7 +255,7 @@ class AlertEventCard(QWidget):
             self.combo_anim_out.addItem(label, key)
         self.combo_anim_out.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
-        card_general.addWidget(InspectorPropertyRow(
+        self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.out_label"),
             self.combo_anim_out,
             icon_name="stopwatch-filled.svg",
@@ -272,28 +271,23 @@ class AlertEventCard(QWidget):
         self.spin_anim_out_dur.setMinimumWidth(96)
         self.spin_anim_out_dur.valueChanged.connect(self._on_field_changed)
 
-        card_general.addWidget(InspectorPropertyRow(
+        self.card_general.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.animations.out_duration"),
             self.spin_anim_out_dur,
             icon_name="stopwatch-filled.svg",
             tooltip=self.i18n.get("alerts.animations.title"),
             parent=self
         ))
-        col_left.addWidget(card_general)
+        col_left.addWidget(self.card_general)
 
-        card_design = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
-        sec_des_header = QHBoxLayout()
-        sec_des_header.setSpacing(SPACING_SM)
-        lbl_sec_des_icon = QLabel(parent=self)
-        lbl_sec_des_icon.setPixmap(get_pixmap_colored("palette-filled.svg", COLOR_NEUTRAL_400, size=16))
-        lbl_sec_des_title = QLabel(self.i18n.get("alerts.sections.appearance"), parent=self)
-        lbl_sec_des_title.setProperty("role", "h3")
-        sec_des_header.addWidget(lbl_sec_des_icon)
-        sec_des_header.addWidget(lbl_sec_des_title)
-        sec_des_header.addStretch()
-
-        card_design.addLayout(sec_des_header)
-        card_design.addWidget(ModernDivider(self))
+        self.card_design = ExpandableCard(
+            title=self.i18n.get("alerts.sections.appearance"),
+            description=self.i18n.get("alerts.sections.appearance_desc"),
+            icon_name="palette-filled.svg",
+            switch_enabled=False,
+            parent=self
+        )
+        self.card_design.set_expanded(False)
 
         self.seg_layout = ModernSegmentedControl(self)
         self.seg_layout.add_option("above", "arrow-up-filled.svg", self.i18n.get("alerts.layout.above"))
@@ -303,7 +297,7 @@ class AlertEventCard(QWidget):
         self.seg_layout.add_option("overlay", "squares-filled.svg", self.i18n.get("alerts.layout.overlay"))
         self.seg_layout.value_changed.connect(lambda _: self._on_field_changed())
 
-        card_design.addWidget(InspectorPropertyRow(
+        self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.layout.title"),
             self.seg_layout,
             icon_name="transfer-v-filled.svg",
@@ -319,7 +313,7 @@ class AlertEventCard(QWidget):
         )
         self.picker_bg_color.color_changed.connect(lambda _: self._on_field_changed())
 
-        card_design.addWidget(InspectorPropertyRow(
+        self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.bg_color"),
             self.picker_bg_color,
             icon_name="palette-filled.svg",
@@ -344,7 +338,7 @@ class AlertEventCard(QWidget):
         layout_bg_op.addWidget(self.slider_bg_opacity, 1)
         layout_bg_op.addWidget(self.lbl_bg_opacity_val, 0)
 
-        card_design.addWidget(InspectorPropertyRow(
+        self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.bg_opacity"),
             box_bg_opacity,
             icon_name="dark-light-filled.svg",
@@ -359,7 +353,7 @@ class AlertEventCard(QWidget):
         self.spin_padding.setMinimumWidth(96)
         self.spin_padding.valueChanged.connect(self._on_field_changed)
 
-        card_design.addWidget(InspectorPropertyRow(
+        self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.padding"),
             self.spin_padding,
             icon_name="minimize-filled.svg",
@@ -374,7 +368,7 @@ class AlertEventCard(QWidget):
         self.spin_spacing.setMinimumWidth(96)
         self.spin_spacing.valueChanged.connect(self._on_field_changed)
 
-        card_design.addWidget(InspectorPropertyRow(
+        self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.spacing"),
             self.spin_spacing,
             icon_name="transfer-h-filled.svg",
@@ -389,7 +383,7 @@ class AlertEventCard(QWidget):
         self.spin_border_radius.setMinimumWidth(96)
         self.spin_border_radius.valueChanged.connect(self._on_field_changed)
 
-        card_design.addWidget(InspectorPropertyRow(
+        self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.border_radius"),
             self.spin_border_radius,
             icon_name="minimize-filled.svg",
@@ -401,35 +395,31 @@ class AlertEventCard(QWidget):
         self.sw_box_shadow.setChecked(True)
         self.sw_box_shadow.toggled.connect(self._on_field_changed)
 
-        card_design.addWidget(InspectorPropertyRow(
+        self.card_design.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.box_shadow"),
             self.sw_box_shadow,
             icon_name="squares-filled.svg",
             tooltip=self.i18n.get("alerts.fields.box_shadow_desc"),
             parent=self
         ))
-        col_left.addWidget(card_design)
+        col_left.addWidget(self.card_design)
+        col_left.addStretch(1)
 
-        card_typography = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
-        sec_txt_header = QHBoxLayout()
-        sec_txt_header.setSpacing(SPACING_SM)
-        lbl_sec_txt_icon = QLabel(parent=self)
-        lbl_sec_txt_icon.setPixmap(get_pixmap_colored("file-text-filled.svg", COLOR_NEUTRAL_400, size=16))
-        lbl_sec_txt_title = QLabel(self.i18n.get("alerts.sections.text_speech"), parent=self)
-        lbl_sec_txt_title.setProperty("role", "h3")
-        sec_txt_header.addWidget(lbl_sec_txt_icon)
-        sec_txt_header.addWidget(lbl_sec_txt_title)
-        sec_txt_header.addStretch()
-
-        card_typography.addLayout(sec_txt_header)
-        card_typography.addWidget(ModernDivider(self))
+        self.card_typography = ExpandableCard(
+            title=self.i18n.get("alerts.sections.text_speech"),
+            description=self.i18n.get("alerts.sections.text_speech_desc"),
+            icon_name="file-text-filled.svg",
+            switch_enabled=False,
+            parent=self
+        )
+        self.card_typography.set_expanded(True)
 
         self.edit_template = ClearableLineEdit(parent=self)
         self.edit_template.setToolTip(self.i18n.get("alerts.fields.template_hint"))
         self.edit_template.setPlaceholderText(self.i18n.get("alerts.fields.template_hint"))
         self.edit_template.textChanged.connect(self._on_field_changed)
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.template"),
             self.edit_template,
             icon_name="edit-filled.svg",
@@ -443,7 +433,7 @@ class AlertEventCard(QWidget):
             self.combo_font.addItem(f_name, f_name)
         self.combo_font.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.font_family"),
             self.combo_font,
             icon_name="text-filled.svg",
@@ -459,7 +449,7 @@ class AlertEventCard(QWidget):
         self.combo_font_weight.setCurrentIndex(2)
         self.combo_font_weight.currentIndexChanged.connect(lambda _: self._on_field_changed())
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.font_weight"),
             self.combo_font_weight,
             icon_name="bold-filled.svg",
@@ -474,7 +464,7 @@ class AlertEventCard(QWidget):
         self.seg_align.add_option("justify", "textalign-justifycenter-filled.svg", self.i18n.get("alerts.align.justify"))
         self.seg_align.value_changed.connect(lambda _: self._on_field_changed())
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_align"),
             self.seg_align,
             icon_name="textalign-left-filled.svg",
@@ -489,7 +479,7 @@ class AlertEventCard(QWidget):
         self.spin_font_size.setMinimumWidth(96)
         self.spin_font_size.valueChanged.connect(self._on_field_changed)
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.font_size"),
             self.spin_font_size,
             icon_name="text-filled.svg",
@@ -505,7 +495,7 @@ class AlertEventCard(QWidget):
         )
         self.picker_text_color.color_changed.connect(lambda _: self._on_field_changed())
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_color"),
             self.picker_text_color,
             icon_name="palette-filled.svg",
@@ -522,7 +512,7 @@ class AlertEventCard(QWidget):
         )
         self.picker_highlight_color.color_changed.connect(lambda _: self._on_field_changed())
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.highlight_color"),
             self.picker_highlight_color,
             icon_name="text-input-filled.svg",
@@ -534,7 +524,7 @@ class AlertEventCard(QWidget):
         self.sw_text_shadow.setChecked(True)
         self.sw_text_shadow.toggled.connect(self._on_field_changed)
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.text_shadow"),
             self.sw_text_shadow,
             icon_name="eye-filled.svg",
@@ -545,28 +535,23 @@ class AlertEventCard(QWidget):
         self.sw_tts = ModernSwitch(parent=self)
         self.sw_tts.toggled.connect(self._on_field_changed)
 
-        card_typography.addWidget(InspectorPropertyRow(
+        self.card_typography.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.tts"),
             self.sw_tts,
             icon_name="megaphone-filled.svg",
             tooltip=self.i18n.get("alerts.fields.tts_section"),
             parent=self
         ))
-        col_right.addWidget(card_typography)
+        col_right.addWidget(self.card_typography)
 
-        card_media = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
-        sec_med_header = QHBoxLayout()
-        sec_med_header.setSpacing(SPACING_SM)
-        lbl_sec_med_icon = QLabel(parent=self)
-        lbl_sec_med_icon.setPixmap(get_pixmap_colored("album-filled.svg", COLOR_NEUTRAL_400, size=16))
-        lbl_sec_med_title = QLabel(self.i18n.get("alerts.sections.media_sound"), parent=self)
-        lbl_sec_med_title.setProperty("role", "h3")
-        sec_med_header.addWidget(lbl_sec_med_icon)
-        sec_med_header.addWidget(lbl_sec_med_title)
-        sec_med_header.addStretch()
-
-        card_media.addLayout(sec_med_header)
-        card_media.addWidget(ModernDivider(self))
+        self.card_media = ExpandableCard(
+            title=self.i18n.get("alerts.sections.media_sound"),
+            description=self.i18n.get("alerts.sections.media_sound_desc"),
+            icon_name="album-filled.svg",
+            switch_enabled=False,
+            parent=self
+        )
+        self.card_media.set_expanded(False)
 
         media_picker_box = QWidget(self)
         l_mp = QHBoxLayout(media_picker_box)
@@ -590,7 +575,7 @@ class AlertEventCard(QWidget):
         l_mp.addWidget(self.edit_media, 1)
         l_mp.addWidget(btn_browse_media, 0)
 
-        card_media.addWidget(InspectorPropertyRow(
+        self.card_media.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.media"),
             media_picker_box,
             icon_name="album-filled.svg",
@@ -620,7 +605,7 @@ class AlertEventCard(QWidget):
         l_sp.addWidget(self.edit_sound, 1)
         l_sp.addWidget(btn_browse_sound, 0)
 
-        card_media.addWidget(InspectorPropertyRow(
+        self.card_media.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.sound"),
             sound_picker_box,
             icon_name="music-notes-filled.svg",
@@ -645,17 +630,21 @@ class AlertEventCard(QWidget):
         l_vol.addWidget(self.slider_volume, 1)
         l_vol.addWidget(self.lbl_volume_val, 0)
 
-        card_media.addWidget(InspectorPropertyRow(
+        self.card_media.add_widget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.volume"),
             vol_box,
             icon_name="volume-up-filled.svg",
             parent=self
         ))
-        col_right.addWidget(card_media)
+        col_right.addWidget(self.card_media)
+        col_right.addStretch(1)
 
-        card_preview = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
+        card_preview = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE)
         card_preview.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sec_prev_header = QHBoxLayout()
+
+        preview_header_w = QWidget(card_preview)
+        sec_prev_header = QHBoxLayout(preview_header_w)
+        sec_prev_header.setContentsMargins(*MARGIN_MD)
         sec_prev_header.setSpacing(SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
         lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", COLOR_NEUTRAL_400, size=16))
@@ -665,15 +654,26 @@ class AlertEventCard(QWidget):
         sec_prev_header.addWidget(lbl_sec_prev_title)
         sec_prev_header.addStretch()
 
-        card_preview.addLayout(sec_prev_header)
-        card_preview.addWidget(ModernDivider(self))
+        card_preview.addWidget(preview_header_w)
+        card_preview.add_separator()
+
+        mockup_container = QWidget(card_preview)
+        mockup_layout = QVBoxLayout(mockup_container)
+        mockup_layout.setContentsMargins(*MARGIN_MD)
+        mockup_layout.setSpacing(SPACING_NONE)
 
         self.mockup_widget = AlertOverlayMockupWidget(self.i18n, parent=self)
         self.mockup_widget.setMinimumSize(300, 300)
         self.mockup_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        card_preview.addWidget(self.mockup_widget, stretch=1)
+        mockup_layout.addWidget(self.mockup_widget)
 
-        card_preview.addWidget(ModernDivider(self))
+        card_preview.addWidget(mockup_container, stretch=1)
+        card_preview.add_separator()
+
+        controls_container = QWidget(card_preview)
+        controls_layout = QVBoxLayout(controls_container)
+        controls_layout.setContentsMargins(*MARGIN_MD)
+        controls_layout.setSpacing(SPACING_SM)
 
         self.spin_card_width = NoWheelSpinBox(parent=self)
         self.spin_card_width.setRange(200, 1920)
@@ -682,7 +682,7 @@ class AlertEventCard(QWidget):
         self.spin_card_width.setMinimumWidth(96)
         self.spin_card_width.valueChanged.connect(self._on_field_changed)
 
-        card_preview.addWidget(InspectorPropertyRow(
+        controls_layout.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.card_width"),
             self.spin_card_width,
             icon_name="transfer-h-filled.svg",
@@ -698,7 +698,7 @@ class AlertEventCard(QWidget):
         self.spin_card_height.setMinimumWidth(96)
         self.spin_card_height.valueChanged.connect(self._on_field_changed)
 
-        card_preview.addWidget(InspectorPropertyRow(
+        controls_layout.addWidget(InspectorPropertyRow(
             self.i18n.get("alerts.fields.card_height"),
             self.spin_card_height,
             icon_name="transfer-v-filled.svg",
@@ -706,11 +706,12 @@ class AlertEventCard(QWidget):
             parent=self
         ))
 
+        card_preview.addWidget(controls_container)
         self.w_preview = card_preview
 
         self.body_box = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.body_box.setContentsMargins(*MARGIN_NONE)
-        self.body_box.setSpacing(SPACING_LG)
+        self.body_box.setSpacing(SPACING_MD)
 
         self.body_box.addWidget(self.w_col_left, stretch=4)
         self.body_box.addWidget(self.w_preview, stretch=5)

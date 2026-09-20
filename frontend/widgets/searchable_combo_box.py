@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
 )
 from frontend.common import (
     get_pixmap_colored, COLOR_NEUTRAL_400,
-    MARGIN_XS, SPACING_XS, SPACING_2XS
+    MARGIN_XS, MARGIN_H_MD, SPACING_XS, SPACING_2XS
 )
 from .no_wheel import NoWheelComboBox
 
@@ -53,7 +53,7 @@ class SearchableComboPopup(QFrame):
         search_container.setProperty("role", "searchable_combo_search_bar")
         search_container.setFixedHeight(30)
         search_layout = QHBoxLayout(search_container)
-        search_layout.setContentsMargins(8, 0, 8, 0)
+        search_layout.setContentsMargins(*MARGIN_H_MD)
         search_layout.setSpacing(SPACING_XS)
 
         self.lbl_search_icon = QLabel(search_container)
@@ -74,7 +74,7 @@ class SearchableComboPopup(QFrame):
         self.list_widget.setFrameShape(QFrame.Shape.NoFrame)
         self.list_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.list_widget.setUniformItemSizes(True)
-        self.list_widget.setSpacing(2)
+        self.list_widget.setSpacing(SPACING_2XS)
         self.list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.list_widget.itemClicked.connect(self._on_item_clicked)
         layout.addWidget(self.list_widget)

@@ -1,16 +1,16 @@
 # frontend\components\chat\bot_mute.py
 
-from PySide6.QtWidgets import (QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, 
-                               QFrame, QPushButton, QListWidgetItem)
+from PySide6.QtWidgets import (QWidget, QHBoxLayout, QLabel, QLineEdit, QListWidget, QListView, 
+                               QFrame, QPushButton, QListWidgetItem, QVBoxLayout)
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
-from frontend.widgets import ModernButton, ModernDivider, ModernCard, ModernSwitch, SettingRow
+from frontend.widgets import ModernButton, ModernCard, ModernSwitch, SettingRow, SectionHeader
 from frontend.common import (
     COLOR_RED, get_icon_colored,
-    MARGIN_NONE, MARGIN_XS, MARGIN_MD,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG
+    MARGIN_NONE, MARGIN_MD, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAG_BADGE, MARGIN_TAB_PANEL,
+    SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
 )
 
-class BotMutePanel(ModernCard):
+class BotMutePanel(QWidget):
     bot_add_requested = Signal(str)
     bot_remove_requested = Signal(str)
     word_add_requested = Signal(str)
@@ -18,17 +18,30 @@ class BotMutePanel(ModernCard):
     settings_changed = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
+        super().__init__(parent)
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self._trash_icon_cache = {}
         self._setup_ui()
 
-    def _setup_ui(self):
-        title_mod_cmds = QLabel(self.i18n.get("chat.mod_commands.section_title"))
-        title_mod_cmds.setProperty("role", "category")
-        self.addWidget(title_mod_cmds)
+    def addWidget(self, widget, *args, **kwargs):
+        self.panel_layout.addWidget(widget, *args, **kwargs)
 
-        commands_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_XS, orientation="vertical")
+    def addLayout(self, layout, *args, **kwargs):
+        self.panel_layout.addLayout(layout, *args, **kwargs)
+
+    def addStretch(self, stretch: int = 0):
+        self.panel_layout.addStretch(stretch)
+
+    def _setup_ui(self):
+        self.panel_layout = QVBoxLayout(self)
+        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setSpacing(SPACING_MD)
+
+        header_commands = SectionHeader(self.i18n.get("chat.mod_commands.section_title"), parent=self, first=True)
+        self.panel_layout.addWidget(header_commands)
+
+        commands_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
         self.sw_cmd_mute = ModernSwitch(self)
         self.sw_cmd_mute.setChecked(True)
         self.sw_cmd_block = ModernSwitch(self)
@@ -38,28 +51,28 @@ class BotMutePanel(ModernCard):
             "shield-user-filled.svg",
             self.i18n.get("chat.mod_commands.mute_cmd_title"),
             self.i18n.get("chat.mod_commands.mute_cmd_desc"),
-            self.sw_cmd_mute
+            self.sw_cmd_mute,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         row_cmd_block = SettingRow(
             "shield-filled.svg",
             self.i18n.get("chat.mod_commands.block_cmd_title"),
             self.i18n.get("chat.mod_commands.block_cmd_desc"),
-            self.sw_cmd_block
+            self.sw_cmd_block,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         commands_card.addWidget(row_cmd_mute)
+        commands_card.add_separator()
         commands_card.addWidget(row_cmd_block)
-        self.addWidget(commands_card)
+        self.panel_layout.addWidget(commands_card)
 
         self.sw_cmd_mute.toggled.connect(lambda _: self.settings_changed.emit())
         self.sw_cmd_block.toggled.connect(lambda _: self.settings_changed.emit())
 
-        divider_top = ModernDivider()
-        self.addWidget(divider_top)
+        header_bots = SectionHeader(self.i18n.get("chat.bots.title"), parent=self)
+        self.panel_layout.addWidget(header_bots)
 
-        title = QLabel(self.i18n.get("chat.bots.title"))
-        title.setProperty("role", "h3")
-        self.addWidget(title)
-
+        bots_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         input_row = QHBoxLayout()
         input_row.setContentsMargins(*MARGIN_NONE)
         input_row.setSpacing(SPACING_SM)
@@ -72,7 +85,7 @@ class BotMutePanel(ModernCard):
             
         input_row.addWidget(self.txt_bot_input)
         input_row.addWidget(self.btn_add_bot)
-        self.addLayout(input_row)
+        bots_card.addLayout(input_row)
 
         self.list_bots = QListWidget()
         self.list_bots.setFlow(QListView.Flow.LeftToRight) 
@@ -81,17 +94,16 @@ class BotMutePanel(ModernCard):
         self.list_bots.setProperty("role", "transparent_list")
         self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
         self.list_bots.setSpacing(SPACING_2XS)
-        self.addWidget(self.list_bots)
+        bots_card.addWidget(self.list_bots)
+        self.panel_layout.addWidget(bots_card)
 
         self.btn_add_bot.clicked.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
         self.txt_bot_input.returnPressed.connect(lambda: self.bot_add_requested.emit(self.txt_bot_input.text()))
 
-        divider = ModernDivider()
-        self.addWidget(divider)
-        title_words = QLabel(self.i18n.get("chat.banned_words.title"))
-        title_words.setProperty("role", "h3")
-        self.addWidget(title_words)
+        header_words = SectionHeader(self.i18n.get("chat.banned_words.title"), parent=self)
+        self.panel_layout.addWidget(header_words)
 
+        words_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         input_row_words = QHBoxLayout()
         input_row_words.setContentsMargins(*MARGIN_NONE)
         input_row_words.setSpacing(SPACING_SM)
@@ -104,7 +116,7 @@ class BotMutePanel(ModernCard):
             
         input_row_words.addWidget(self.txt_word_input)
         input_row_words.addWidget(self.btn_add_word)
-        self.addLayout(input_row_words)
+        words_card.addLayout(input_row_words)
 
         self.list_words = QListWidget()
         self.list_words.setFlow(QListView.Flow.LeftToRight) 
@@ -113,12 +125,13 @@ class BotMutePanel(ModernCard):
         self.list_words.setProperty("role", "transparent_list")
         self.list_words.setFrameShape(QFrame.Shape.NoFrame)
         self.list_words.setSpacing(SPACING_2XS)
-        self.addWidget(self.list_words)
+        words_card.addWidget(self.list_words)
+        self.panel_layout.addWidget(words_card)
 
         self.btn_add_word.clicked.connect(lambda: self.word_add_requested.emit(self.txt_word_input.text()))
         self.txt_word_input.returnPressed.connect(lambda: self.word_add_requested.emit(self.txt_word_input.text()))
 
-        self.addStretch()
+        self.panel_layout.addStretch()
 
     def clear_input(self):
         self.txt_bot_input.clear()
@@ -201,7 +214,7 @@ class BotMutePanel(ModernCard):
         tag_widget = QFrame()
         tag_widget.setProperty("role", "bot_tag")
         layout = QHBoxLayout(tag_widget)
-        layout.setContentsMargins(MARGIN_XS[0], MARGIN_XS[1], MARGIN_MD[2], MARGIN_XS[3]) 
+        layout.setContentsMargins(*MARGIN_TAG_BADGE)
         layout.setSpacing(SPACING_2XS)
         layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
         

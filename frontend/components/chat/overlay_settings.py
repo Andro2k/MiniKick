@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
     QApplication, QLabel, QHBoxLayout, QGridLayout, QWidget, QSizePolicy
 )
 from frontend.common import (
-    MARGIN_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_MD, MARGIN_CHIP, MARGIN_TAB_PANEL, SPACING_XS, SPACING_SM, SPACING_MD,
     COLOR_NEUTRAL_400, get_pixmap_colored
 )
 from frontend.widgets import (
@@ -20,7 +20,7 @@ class CompactToggleItem(QWidget):
         super().__init__(parent)
         self.switch = switch
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(SPACING_XS, SPACING_2XS, SPACING_XS, SPACING_2XS)
+        layout.setContentsMargins(*MARGIN_CHIP)
         layout.setSpacing(SPACING_SM)
 
         if icon_name:
@@ -43,7 +43,8 @@ class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
+        super().__init__(parent, margin=MARGIN_TAB_PANEL, spacing=SPACING_MD, orientation="vertical")
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self._chat_overlay_url = ""
         self.chat_overlay_full_url = ""
@@ -103,7 +104,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         return header_widget
 
     def _setup_ui(self):
-        card_style = ModernCard(self, margin=SPACING_MD, spacing=SPACING_SM, orientation="vertical")
+        card_style = ModernCard(self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         card_style.addWidget(self._create_section_header(self.i18n.get("chat.overlay.section_style")))
 
         self.combo_overlay_theme = NoWheelComboBox(self)
@@ -155,7 +156,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         card_style.addLayout(grid_metrics)
         self.addWidget(card_style)
 
-        card_layout = ModernCard(self, margin=SPACING_MD, spacing=SPACING_SM, orientation="vertical")
+        card_layout = ModernCard(self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         card_layout.addWidget(self._create_section_header(self.i18n.get("chat.overlay.section_layout")))
 
         self.seg_overlay_orientation = ModernSegmentedControl(self)
@@ -198,7 +199,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         card_layout.addWidget(row_anim)
         self.addWidget(card_layout)
 
-        card_visibility = ModernCard(self, margin=SPACING_MD, spacing=SPACING_SM, orientation="vertical")
+        card_visibility = ModernCard(self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         card_visibility.addWidget(self._create_section_header(self.i18n.get("chat.overlay.section_visibility")))
 
         grid_toggles = QGridLayout()
@@ -250,7 +251,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         card_visibility.addLayout(grid_toggles)
         self.addWidget(card_visibility)
 
-        card_preview = ModernCard(self, margin=SPACING_MD, spacing=SPACING_SM, orientation="vertical")
+        card_preview = ModernCard(self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         lbl_preview = QLabel(self.i18n.get("chat.overlay.preview_title"))
         lbl_preview.setProperty("role", "body")
         card_preview.addWidget(lbl_preview)

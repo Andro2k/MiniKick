@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard
 from frontend.common import (
-    SPACING_XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_H_SM
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_H_SM
 )
 
 SECTION_ORDER = [
@@ -181,7 +181,7 @@ class ImportBackupModal(ModernModal):
             badge_frame.setProperty("role", "badge")
             badge_layout = QHBoxLayout(badge_frame)
             badge_layout.setContentsMargins(*MARGIN_H_SM)
-            badge_layout.setSpacing(0)
+            badge_layout.setSpacing(SPACING_NONE)
             badge_lbl = QLabel(count_str, badge_frame)
             badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             badge_layout.addWidget(badge_lbl)

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QBoxLayout, QSizePol
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
-from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE
+from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
     AlertVariantListItem,
@@ -101,7 +101,7 @@ class AlertsView(BaseView):
         self.main_layout.addWidget(self.overlay_card, 0)
         self.main_layout.addSpacing(SPACING_SM)
 
-        self.notice_banner = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
+        self.notice_banner = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         self.notice_banner.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.notice_layout.setContentsMargins(*MARGIN_NONE)

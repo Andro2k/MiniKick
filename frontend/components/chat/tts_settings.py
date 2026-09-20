@@ -2,11 +2,13 @@
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
-from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch, ModernDivider,
-                              NoWheelComboBox, NoWheelSlider, SearchableComboBox)
+from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
+                              NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader)
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
-    COLOR_NEUTRAL_400, COLOR_GREEN, MARGIN_2XS, SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_LG)
+    COLOR_NEUTRAL_400, COLOR_GREEN, MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
+    SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
+)
 
 class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
@@ -20,7 +22,7 @@ class VoiceSettingRow(QWidget):
         self.action_button = action_button
 
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_2XS)
+        main_layout.setContentsMargins(*MARGIN_SETTING_ROW_COMPACT)
         main_layout.setSpacing(SPACING_2XS)
 
         header_layout = QHBoxLayout()
@@ -83,7 +85,7 @@ class VoiceSettingRow(QWidget):
         if self.btn_test is not None:
             self.btn_test.setEnabled(checked)
 
-class ChatTtsSettingsPanel(ModernCard):
+class ChatTtsSettingsPanel(QWidget):
     volume_changed = Signal(int)
     speed_changed = Signal(int)
     voice_changed = Signal(str)
@@ -94,12 +96,26 @@ class ChatTtsSettingsPanel(ModernCard):
     voice_test_requested = Signal(str)
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=SPACING_LG, spacing=SPACING_XS, orientation="vertical")
+        super().__init__(parent)
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self._setup_ui()
         self._connect_signals()
 
+    def addWidget(self, widget, *args, **kwargs):
+        self.panel_layout.addWidget(widget, *args, **kwargs)
+
+    def addLayout(self, layout, *args, **kwargs):
+        self.panel_layout.addLayout(layout, *args, **kwargs)
+
+    def addStretch(self, stretch: int = 0):
+        self.panel_layout.addStretch(stretch)
+
     def _setup_ui(self):
+        self.panel_layout = QVBoxLayout(self)
+        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setSpacing(SPACING_MD)
+
         self.chk_tts = ModernSwitch(self)
         self.chk_name = ModernSwitch(self)
         self.combo_provider = NoWheelComboBox(self)
@@ -128,33 +144,36 @@ class ChatTtsSettingsPanel(ModernCard):
         self.lbl_speed_perc = QLabel("100%", parent=self)
         self.lbl_speed_perc.setProperty("role", "monospace")
 
-        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts)
-        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name)
-        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command)
+        card_general = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
+        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command, contents_margins=MARGIN_SETTING_ROW_COMPACT)
 
         self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
-        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command)
-        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc)
-        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc)
+        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc, contents_margins=MARGIN_SETTING_ROW_COMPACT)
 
-        self.addWidget(row_tts)
-        self.addWidget(row_read_name)
-        self.addWidget(row_cmd)
-        self.addWidget(row_prefix)
-        self.addWidget(row_volume)
-        self.addWidget(row_speed)
+        card_general.addWidget(row_tts)
+        card_general.add_separator()
+        card_general.addWidget(row_read_name)
+        card_general.add_separator()
+        card_general.addWidget(row_cmd)
+        card_general.add_separator()
+        card_general.addWidget(row_prefix)
+        card_general.add_separator()
+        card_general.addWidget(row_volume)
+        card_general.add_separator()
+        card_general.addWidget(row_speed)
+        self.panel_layout.addWidget(card_general)
 
-        divider_platforms = ModernDivider()
-        self.addWidget(divider_platforms)
+        header_platforms = SectionHeader(self.i18n.get("chat.platforms.title"), parent=self)
+        self.panel_layout.addWidget(header_platforms)
 
-        platforms_lbl = QLabel(self.i18n.get("chat.platforms.title"))
-        platforms_lbl.setProperty("role", "category")
-        self.addWidget(platforms_lbl)
-
-        platforms_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_XS, orientation="vertical")
+        platforms_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
         self.sw_plat_kick = ModernSwitch(self)
         self.sw_plat_kick.setChecked(True)
         self.sw_plat_twitch = ModernSwitch(self)
@@ -164,25 +183,24 @@ class ChatTtsSettingsPanel(ModernCard):
         self.sw_plat_tiktok = ModernSwitch(self)
         self.sw_plat_tiktok.setChecked(True)
 
-        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color="#53FC18")
-        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color="#9146FF")
-        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color="#FF0000")
-        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color="#00F2FE")
+        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color="#53FC18", contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color="#9146FF", contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color="#FF0000", contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color="#00F2FE", contents_margins=MARGIN_SETTING_ROW_COMPACT)
 
         platforms_card.addWidget(row_plat_kick)
+        platforms_card.add_separator()
         platforms_card.addWidget(row_plat_twitch)
+        platforms_card.add_separator()
         platforms_card.addWidget(row_plat_youtube)
+        platforms_card.add_separator()
         platforms_card.addWidget(row_plat_tiktok)
-        self.addWidget(platforms_card)
+        self.panel_layout.addWidget(platforms_card)
 
-        divider = ModernDivider()
-        self.addWidget(divider)
+        header_roles = SectionHeader(self.i18n.get("chat.roles.title"), parent=self)
+        self.panel_layout.addWidget(header_roles)
 
-        category_lbl = QLabel(self.i18n.get("chat.roles.title"))
-        category_lbl.setProperty("role", "category")
-        self.addWidget(category_lbl)
-
-        voices_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_XS, orientation="vertical")
+        voices_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
 
         row_provider = VoiceSettingRow(
             "globe-filled.svg",
@@ -252,14 +270,19 @@ class ChatTtsSettingsPanel(ModernCard):
             tooltip_text=self.i18n.get("chat.status.test_btn_tooltip")
         )
 
+        voices_card.add_separator()
         voices_card.addWidget(row_voice_general)
+        voices_card.add_separator()
         voices_card.addWidget(row_role_broadcaster)
+        voices_card.add_separator()
         voices_card.addWidget(row_role_moderator)
+        voices_card.add_separator()
         voices_card.addWidget(row_role_vip)
+        voices_card.add_separator()
         voices_card.addWidget(row_role_subscriber)
 
-        self.addWidget(voices_card)
-        self.addStretch()
+        self.panel_layout.addWidget(voices_card)
+        self.panel_layout.addStretch()
 
     def _connect_signals(self):
         self.combo_provider.currentIndexChanged.connect(self._on_provider_combo_changed)

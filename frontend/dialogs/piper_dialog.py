@@ -13,7 +13,7 @@ from frontend.widgets import NoWheelDoubleSpinBox
 from frontend.common import (
     get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_GREEN,
     SPACING_2XS, SPACING_XS, SPACING_MD, SPACING_LG, SPACING_2XL,
-    MARGIN_LG, MARGIN_XL
+    MARGIN_LG, MARGIN_XL, MARGIN_SCROLL_CONTENT
 )
 from frontend.components.dialogs import PiperVoiceItemWidget
 
@@ -76,7 +76,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         scroll_content = QWidget()
         self.scroll_layout = QVBoxLayout(scroll_content)
-        self.scroll_layout.setContentsMargins(SPACING_2XS, SPACING_2XS, SPACING_MD, SPACING_2XS)
+        self.scroll_layout.setContentsMargins(*MARGIN_SCROLL_CONTENT)
         self.scroll_layout.setSpacing(SPACING_MD)
 
         self._populate_catalog()

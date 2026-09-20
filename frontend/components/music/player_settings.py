@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplic
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK,
-    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_2XS,
+    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL, MARGIN_SETTING_ROW_COMPACT,
     SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
@@ -52,6 +52,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
         super().__init__(parent)
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self._music_overlay_url = music_overlay_url
         self._cached_song_state = None
@@ -79,8 +80,8 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_2XS)
-        self.panel_layout.setSpacing(SPACING_LG)
+        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setSpacing(SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_status_card()
@@ -89,7 +90,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self._setup_overlay_url_card()
 
     def _setup_status_card(self):
-        card = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
         status_layout = QHBoxLayout()
         status_layout.setContentsMargins(*MARGIN_NONE)
@@ -107,7 +108,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
-        self.card_player = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
+        self.card_player = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD, orientation="vertical")
         self.card_player.setVisible(True)
 
         top_layout = QHBoxLayout()
@@ -196,7 +197,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_volume_card(self):
-        self.card_volume = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        self.card_volume = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
@@ -209,7 +210,8 @@ class MusicPlayerSettingsPanel(QWidget):
             title_text=self.i18n.get("music.player.volume_title"),
             desc_text=self.i18n.get("music.player.volume_desc"),
             slider_widget=self.slider_vol,
-            value_label=self.lbl_vol_perc
+            value_label=self.lbl_vol_perc,
+            contents_margins=MARGIN_NONE
         )
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
         self.card_volume.addWidget(self.row_vol)
@@ -224,7 +226,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.volume_changed.emit(self._pending_volume)
 
     def _setup_overlay_url_card(self):
-        self.card_overlay_url = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        self.card_overlay_url = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD)
 
         url_info = QVBoxLayout()
         url_info.setContentsMargins(*MARGIN_NONE)

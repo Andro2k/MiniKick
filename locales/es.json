@@ -30,10 +30,13 @@
         "buttons": {
             "browse": "Examinar...",
             "discard": "Descartar",
-            "duplicate": "Duplicar a otra alerta",
+            "discard_tooltip": "Descartar cambios no guardados",
+            "duplicate": "Duplicar",
             "duplicate_tooltip": "Copiar ajustes visuales, multimedia y de sonido a otra alerta",
             "save": "Guardar Cambios",
+            "save_short": "Guardar",
             "test": "Probar Alerta",
+            "test_short": "Probar",
             "test_sent": "Alerta de prueba enviada a OBS."
         },
         "dialogs": {
@@ -147,9 +150,13 @@
         },
         "sections": {
             "appearance": "Diseño",
+            "appearance_desc": "Disposición, color de fondo, esquinas y sombras.",
             "general": "Ajustes generales",
+            "general_desc": "Duración y animaciones de entrada y salida.",
             "media_sound": "Imágenes y sonido",
-            "text_speech": "Texto y voz"
+            "media_sound_desc": "Archivos de imagen/video, sonido y volumen.",
+            "text_speech": "Texto y voz",
+            "text_speech_desc": "Mensaje, tipografía, colores y síntesis de voz."
         },
         "sidebar": {
             "title": "Variantes de Alerta"
@@ -1204,6 +1211,19 @@
         "header": {
             "subtitle": "Personaliza el comportamiento general de MiniKick, gestiona tus cuentas y busca actualizaciones.",
             "title": "Configuración General"
+        },
+        "sections": {
+            "system": "Sistema y Apariencia",
+            "audio": "Dispositivos de Audio",
+            "integrations": "Plataformas y Conexiones",
+            "backup": "Copia de Seguridad",
+            "support": "Actualizaciones y Soporte",
+            "danger_zone": "Zona de Peligro"
+        },
+        "danger": {
+            "unlink_title": "Desvincular Cuenta de Kick",
+            "unlink_desc": "Cierra la sesión activa de Kick y elimina las credenciales locales de streaming.",
+            "btn_unlink": "Desvincular Cuenta"
         },
         "integrations": {
             "btn_connect_kick": "Conectar Kick",

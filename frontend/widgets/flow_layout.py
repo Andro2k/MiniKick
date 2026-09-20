@@ -2,15 +2,18 @@
 
 from PySide6.QtWidgets import QLayout
 from PySide6.QtCore import Qt, QSize, QRect
-from frontend.common import SPACING_NONE, SPACING_MD
+from frontend.common import MARGIN_NONE, SPACING_MD
 
 class FlowLayout(QLayout):
-    def __init__(self, parent=None, margin=SPACING_NONE, hspacing=SPACING_MD, vspacing=SPACING_MD):
+    def __init__(self, parent=None, margin=MARGIN_NONE, hspacing=SPACING_MD, vspacing=SPACING_MD):
         super().__init__(parent)
         self._item_list = []
         self._hspacing = hspacing
         self._vspacing = vspacing
-        self.setContentsMargins(margin, margin, margin, margin)
+        if isinstance(margin, (tuple, list)):
+            self.setContentsMargins(*margin)
+        else:
+            self.setContentsMargins(margin, margin, margin, margin)
 
     def __del__(self):
         item = self.takeAt(0)

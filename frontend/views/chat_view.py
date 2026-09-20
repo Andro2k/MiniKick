@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBo
 from PySide6.QtCore import Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
-from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_XL
+from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -36,8 +36,9 @@ class ChatView(BaseView):
             self.bot_panel.set_command_toggles(mute_enabled, block_enabled)
 
     def _setup_ui(self):
+        self.main_layout.setSpacing(SPACING_MD)
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_layout.setSpacing(SPACING_XL)
+        self.body_layout.setSpacing(SPACING_MD)
 
         self.tabs = QTabWidget()
         self.tabs.setMinimumWidth(320)

@@ -4,13 +4,13 @@ import html
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy
 from frontend.widgets import ModernCard
-from frontend.common import COLOR_NEUTRAL_200, SPACING_SM, SPACING_MD
+from frontend.common import COLOR_NEUTRAL_200, MARGIN_MD, SPACING_SM
 
 class ChatDisplayPanel(ModernCard):
     _MAX_CHAT_BLOCKS = 400
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=SPACING_MD, spacing=SPACING_SM, orientation="vertical")
+        super().__init__(parent, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         self.i18n = i18n
         self._setup_ui()
 

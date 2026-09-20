@@ -7,7 +7,8 @@ from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common import (
     COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER,
-    get_pixmap_colored, get_icon_colored
+    get_pixmap_colored, get_icon_colored,
+    MARGIN_NONE, MARGIN_MD, SPACING_SM
 )
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
@@ -142,7 +143,7 @@ class RewardsView(BaseView):
         self._build_table_card()
 
     def _build_obs_card(self):
-        obs_card = ModernCard(parent=self)
+        obs_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
         self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
@@ -151,7 +152,8 @@ class RewardsView(BaseView):
             icon_name="link-filled.svg",
             title_text=self.i18n.get("rewards.obs.title"),
             desc_text=self.i18n.get("rewards.obs.desc"),
-            right_widget=self.btn_copy_url
+            right_widget=self.btn_copy_url,
+            contents_margins=MARGIN_NONE
         )
         
         obs_card.addWidget(obs_row)

@@ -10,7 +10,7 @@ from frontend.common import (
     COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
     COLOR_WHITE, PATH_ICON_HELP,
     SPACING_2XS, SPACING_MD, SPACING_LG,
-    MARGIN_NONE, MARGIN_XL, MARGIN_2XL
+    MARGIN_NONE, MARGIN_XL
 )
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
@@ -389,7 +389,7 @@ class ModernModal(ModernFramelessShell):
         )
         
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(*MARGIN_2XL)
+        self.content_layout.setContentsMargins(*MARGIN_XL)
         self.content_layout.setSpacing(SPACING_LG)
 
         if icon_path:

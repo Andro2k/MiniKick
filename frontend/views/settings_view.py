@@ -4,8 +4,8 @@ import os
 from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
-from frontend.widgets import BaseView, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
-from frontend.common import MARGIN_NONE, SPACING_MD, SPACING_SM
+from frontend.widgets import BaseView, SectionHeader, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
+from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD, SPACING_SM
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -30,7 +30,8 @@ class SettingsView(BaseView):
         self._setup_ui()
 
     def _setup_ui(self):
-        app_card = ModernCard(parent=self)
+        header_system = SectionHeader(self.i18n.get("settings.sections.system"), parent=self, first=True)
+        card_system = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
 
         self.combo_lang = NoWheelComboBox(self)
         self.combo_lang.addItem("Español", "es")
@@ -104,6 +105,19 @@ class SettingsView(BaseView):
             right_widget=self.sw_start_bg
         )
 
+        card_system.addWidget(row_lang)
+        card_system.add_separator()
+        card_system.addWidget(row_font)
+        card_system.add_separator()
+        card_system.addWidget(row_browser)
+        card_system.add_separator()
+        card_system.addWidget(row_tray)
+        self.main_layout.addWidget(header_system)
+        self.main_layout.addWidget(card_system)
+
+        header_audio = SectionHeader(self.i18n.get("settings.sections.audio"), parent=self)
+        card_audio = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
+
         self.combo_music_audio_device = NoWheelComboBox(self)
         self.combo_music_audio_device.setMinimumWidth(160)
         self.combo_tts_audio_device = NoWheelComboBox(self)
@@ -135,37 +149,14 @@ class SettingsView(BaseView):
             right_widget=self.combo_tts_audio_device
         )
 
-        btn_backup_container = QWidget()
-        btn_backup_layout = QHBoxLayout(btn_backup_container)
-        btn_backup_layout.setContentsMargins(*MARGIN_NONE) 
-        btn_backup_layout.setSpacing(SPACING_MD)
-        
-        self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_outlined")
-        self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_outlined")
-        
-        self.btn_export.clicked.connect(self.export_clicked.emit)
-        self.btn_import.clicked.connect(self.import_clicked.emit)
+        card_audio.addWidget(row_music_audio)
+        card_audio.add_separator()
+        card_audio.addWidget(row_tts_audio)
+        self.main_layout.addWidget(header_audio)
+        self.main_layout.addWidget(card_audio)
 
-        btn_backup_layout.addWidget(self.btn_export)
-        btn_backup_layout.addWidget(self.btn_import)
-
-        row_backup = SettingRow(
-            icon_name="restart-filled.svg", 
-            title_text=self.i18n.get("settings.backup.title"), 
-            desc_text=self.i18n.get("settings.backup.desc"), 
-            right_widget=btn_backup_container
-        )
-
-        app_card.addWidget(row_lang)
-        app_card.addWidget(row_font)
-        app_card.addWidget(row_browser)
-        app_card.addWidget(row_tray)
-        app_card.addWidget(row_music_audio)
-        app_card.addWidget(row_tts_audio)
-        app_card.addWidget(row_backup)
-        self.main_layout.addWidget(app_card)
-
-        integrations_card = ModernCard(parent=self)
+        header_integrations = SectionHeader(self.i18n.get("settings.sections.integrations"), parent=self)
+        integrations_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
 
         self.btn_kick_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_kick"), role="action_outlined", parent=self)
         self.btn_kick_integration.clicked.connect(self.unlink_clicked.emit)
@@ -209,12 +200,44 @@ class SettingsView(BaseView):
         )
 
         integrations_card.addWidget(self.row_kick_integration)
+        integrations_card.add_separator()
         integrations_card.addWidget(self.row_twitch_integration)
+        integrations_card.add_separator()
         integrations_card.addWidget(self.row_youtube_integration)
+        integrations_card.add_separator()
         integrations_card.addWidget(self.row_tiktok_integration)
+        self.main_layout.addWidget(header_integrations)
         self.main_layout.addWidget(integrations_card)
 
-        support_card = ModernCard(parent=self)
+        header_backup = SectionHeader(self.i18n.get("settings.sections.backup"), parent=self)
+        card_backup = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
+
+        btn_backup_container = QWidget()
+        btn_backup_layout = QHBoxLayout(btn_backup_container)
+        btn_backup_layout.setContentsMargins(*MARGIN_NONE) 
+        btn_backup_layout.setSpacing(SPACING_MD)
+        
+        self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_outlined")
+        self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_outlined")
+        
+        self.btn_export.clicked.connect(self.export_clicked.emit)
+        self.btn_import.clicked.connect(self.import_clicked.emit)
+
+        btn_backup_layout.addWidget(self.btn_export)
+        btn_backup_layout.addWidget(self.btn_import)
+
+        row_backup = SettingRow(
+            icon_name="restart-filled.svg", 
+            title_text=self.i18n.get("settings.backup.title"), 
+            desc_text=self.i18n.get("settings.backup.desc"), 
+            right_widget=btn_backup_container
+        )
+        card_backup.addWidget(row_backup)
+        self.main_layout.addWidget(header_backup)
+        self.main_layout.addWidget(card_backup)
+
+        header_support = SectionHeader(self.i18n.get("settings.sections.support"), parent=self)
+        support_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
 
         self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined")
         self.btn_update.clicked.connect(self.update_clicked.emit)
@@ -247,8 +270,11 @@ class SettingsView(BaseView):
         )
 
         support_card.addWidget(row_update)
+        support_card.add_separator()
         support_card.addWidget(row_release_notes)
+        support_card.add_separator()
         support_card.addWidget(row_feedback)
+        self.main_layout.addWidget(header_support)
         self.main_layout.addWidget(support_card)
         
         self.main_layout.addStretch()
@@ -317,7 +343,7 @@ class SettingsView(BaseView):
             text_kick = self.i18n.get("settings.integrations.btn_disconnect_kick").replace("{channel}", kick_channel)
             desc_kick = self.i18n.get("settings.integrations.kick_desc_connected").replace("{channel}", kick_channel)
             self.btn_kick_integration.setText(text_kick)
-            self.btn_kick_integration.setProperty("role", "action_danger_border")
+            self.btn_kick_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_kick_integration') and self.row_kick_integration:
                 self.row_kick_integration.set_description(desc_kick)
         else:
@@ -335,7 +361,7 @@ class SettingsView(BaseView):
             text = self.i18n.get("settings.integrations.btn_disconnect_twitch").replace("{channel}", twitch_channel)
             desc = self.i18n.get("settings.integrations.twitch_desc_connected").replace("{channel}", twitch_channel)
             self.btn_twitch_integration.setText(text)
-            self.btn_twitch_integration.setProperty("role", "action_danger_border")
+            self.btn_twitch_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_twitch_integration') and self.row_twitch_integration:
                 self.row_twitch_integration.set_description(desc)
         else:
@@ -354,7 +380,7 @@ class SettingsView(BaseView):
             text_yt = self.i18n.get("settings.integrations.btn_disconnect_youtube").replace("{channel}", short_channel)
             desc_yt = self.i18n.get("settings.integrations.youtube_desc_connected").replace("{channel}", youtube_channel)
             self.btn_youtube_integration.setText(text_yt)
-            self.btn_youtube_integration.setProperty("role", "action_danger_border")
+            self.btn_youtube_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_youtube_integration') and self.row_youtube_integration:
                 self.row_youtube_integration.set_description(desc_yt)
         else:
@@ -373,7 +399,7 @@ class SettingsView(BaseView):
             text_tk = self.i18n.get("settings.integrations.btn_disconnect_tiktok").replace("{channel}", short_tk)
             desc_tk = self.i18n.get("settings.integrations.tiktok_desc_connected").replace("{channel}", short_tk)
             self.btn_tiktok_integration.setText(text_tk)
-            self.btn_tiktok_integration.setProperty("role", "action_danger_border")
+            self.btn_tiktok_integration.setProperty("role", "action_danger_solid")
             if hasattr(self, 'row_tiktok_integration') and self.row_tiktok_integration:
                 self.row_tiktok_integration.set_description(desc_tk)
         else:

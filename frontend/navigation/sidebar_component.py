@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import (
-    COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_800,
+    COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_WHITE, COLOR_NEUTRAL_800,
     get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored,
     MARGIN_NONE, MARGIN_SM, MARGIN_MD, MARGIN_V_SM,
     SPACING_2XS, SPACING_SM, SPACING_MD
@@ -87,24 +87,24 @@ class Sidebar(QFrame):
         scroll_layout.setSpacing(SPACING_SM)
 
         navigate_text = self.i18n.get("main.sidebar.section.navigate")
-        self.lbl_navigate_header = QLabel(navigate_text)
-        self.lbl_navigate_header.setProperty("role", "body")
+        self.lbl_navigate_header = QLabel(navigate_text.upper() if navigate_text else "")
+        self.lbl_navigate_header.setProperty("role", "sidebar_section_header")
         scroll_layout.addWidget(self.lbl_navigate_header)
         
         self.top_nav_layout = QVBoxLayout()
         self.top_nav_layout.setContentsMargins(*MARGIN_NONE)
-        self.top_nav_layout.setSpacing(SPACING_SM)
+        self.top_nav_layout.setSpacing(SPACING_2XS)
         scroll_layout.addLayout(self.top_nav_layout)
         scroll_layout.addStretch(1)
 
         more_text = self.i18n.get("main.sidebar.section.more")
-        self.lbl_more_header = QLabel(more_text)
-        self.lbl_more_header.setProperty("role", "body")
+        self.lbl_more_header = QLabel(more_text.upper() if more_text else "")
+        self.lbl_more_header.setProperty("role", "sidebar_section_header")
         scroll_layout.addWidget(self.lbl_more_header)
 
         self.bottom_nav_layout = QVBoxLayout()
         self.bottom_nav_layout.setContentsMargins(*MARGIN_NONE)
-        self.bottom_nav_layout.setSpacing(SPACING_SM)
+        self.bottom_nav_layout.setSpacing(SPACING_2XS)
         scroll_layout.addLayout(self.bottom_nav_layout)
 
         self.scroll_area.setWidget(scroll_content)
@@ -212,10 +212,10 @@ class Sidebar(QFrame):
         self.profile_text_layout.setSpacing(SPACING_2XS)
         
         self.profile_name_lbl = QLabel()
-        self.profile_name_lbl.setObjectName("caption")
+        self.profile_name_lbl.setProperty("role", "profile_name")
         
         self.profile_role_lbl = QLabel()
-        self.profile_role_lbl.setObjectName("caption")
+        self.profile_role_lbl.setProperty("role", "profile_role")
         
         self.profile_text_layout.addWidget(self.profile_name_lbl)
         self.profile_text_layout.addWidget(self.profile_role_lbl)
@@ -334,13 +334,13 @@ class Sidebar(QFrame):
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)        
         
-        icon_active = get_icon_colored(icon_name, COLOR_GREEN, 21)
-        icon_inactive = get_icon_colored(icon_name, COLOR_NEUTRAL_400, 21)
+        icon_active = get_icon_colored(icon_name, COLOR_WHITE, 20)
+        icon_inactive = get_icon_colored(icon_name, COLOR_NEUTRAL_400, 20)
         btn.setProperty("icon_active", icon_active)
         btn.setProperty("icon_inactive", icon_inactive)
         
         btn.setIcon(icon_active if is_active else icon_inactive)
-        btn.setIconSize(QSize(20, 20))
+        btn.setIconSize(QSize(18, 18))
         btn.setFixedHeight(36)
         btn.setToolTip("" if self.is_expanded else display_name)
         
@@ -391,7 +391,6 @@ class Sidebar(QFrame):
         self.anim.start()
 
     def _update_texts_and_styles(self, show: bool):
-        collapsed_btn_style = "text-align: center; padding: 0px;"
         for btn in self.nav_buttons:
             btn.setText(btn.property("original_text") if show else "")
             btn.setToolTip("" if show else btn.property("original_text"))
@@ -400,10 +399,10 @@ class Sidebar(QFrame):
                 btn.setMinimumWidth(0)
                 btn.setMaximumWidth(16777215)
                 btn.setFixedHeight(36)
-                btn.setStyleSheet("")
             else:
                 btn.setFixedSize(36, 36)
-                btn.setStyleSheet(collapsed_btn_style)
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
 
         if show:
             self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)

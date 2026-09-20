@@ -10,7 +10,7 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.common import (
     get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
-    SPACING_XS, SPACING_SM, MARGIN_NONE
+    SPACING_XS, SPACING_SM, MARGIN_NONE, MARGIN_TAB_BAR
 )
 from frontend.widgets import ModernSwitch, ModernCard
 
@@ -43,7 +43,7 @@ class AlertVariantTabPill(QFrame):
     def _setup_ui(self):
         self.setProperty("role", "banner_scope_card")
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(12, 4, 12, 4)
+        layout.setContentsMargins(*MARGIN_TAB_BAR)
         layout.setSpacing(SPACING_SM)
 
         self.icon_lbl = QLabel(parent=self)

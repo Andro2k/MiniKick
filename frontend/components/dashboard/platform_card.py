@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
 from PySide6.QtCore import Qt
-from frontend.common import get_pixmap_colored, MARGIN_LG, SPACING_MD
+from frontend.common import get_pixmap_colored, MARGIN_MD, SPACING_SM
 from frontend.widgets import ModernButton
 
 class PlatformStatusCard(QFrame):
@@ -38,11 +38,11 @@ class PlatformStatusCard(QFrame):
 
     def _setup_ui(self, brand_name: str, icon_file: str):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_LG)
-        layout.setSpacing(SPACING_MD)
+        layout.setContentsMargins(*MARGIN_MD)
+        layout.setSpacing(SPACING_SM)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_MD)
+        header_layout.setSpacing(SPACING_SM)
 
         self.lbl_icon = QLabel(self)
         self.lbl_icon.setPixmap(get_pixmap_colored(icon_file, self.brand_color, 20))
