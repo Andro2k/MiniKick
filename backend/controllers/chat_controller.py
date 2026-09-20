@@ -6,6 +6,7 @@ import logging
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from backend.handlers import TTSVoiceHandler, ChatFilterHandler
 from backend.services import MessagePipeline, ChatMessageDTO
+from backend.services.chat.giphy_service import GiphyService
 
 logger = logging.getLogger("minikick.controllers.chat")
 
@@ -20,11 +21,66 @@ _BLOCK_REMOVE_KEYWORDS = frozenset({"unblock", "descensurar", "desbloquear", "qu
 _BLOCK_REMOVE_ALIASES = frozenset({"!unblockword", "!descensurartts", "!ttsunblock"})
 _BLOCK_ADD_KEYWORDS = frozenset({"add", "block", "censurar", "bloquear", "+"})
 
+def _build_command_response_map(commands: list[dict]) -> dict[str, dict]:
+    return {cmd.get("response", ""): cmd for cmd in commands if "response" in cmd}
+
 def _find_command_by_response(commands: list[dict], response_tag: str) -> dict | None:
     for cmd in commands:
         if cmd.get("response") == response_tag:
             return cmd
     return None
+
+def _parse_mute_args(prefix: str, content: str) -> tuple[bool, str]:
+    raw_args = content[len(prefix):].strip()
+    tokens = raw_args.split() if raw_args else []
+    prefix_lower = prefix.strip().lower()
+
+    if prefix_lower in _MUTE_REMOVE_ALIASES:
+        return True, (tokens[0].lstrip("@-+") if tokens else "")
+
+    if not tokens:
+        return False, ""
+
+    first_token = tokens[0]
+    first_token_lower = first_token.lower().lstrip("-+")
+
+    if first_token.lower() in _MUTE_REMOVE_KEYWORDS or (first_token.startswith("-") and first_token_lower):
+        if first_token.startswith("-") and first_token_lower:
+            return True, first_token_lower.lstrip("@")
+        return True, (tokens[1].lstrip("@") if len(tokens) > 1 else "")
+
+    if first_token.lower() in _MUTE_ADD_KEYWORDS or (first_token.startswith("+") and first_token_lower):
+        if first_token.startswith("+") and first_token_lower:
+            return False, first_token_lower.lstrip("@")
+        return False, (tokens[1].lstrip("@") if len(tokens) > 1 else "")
+
+    return False, first_token.lstrip("@")
+
+def _parse_block_args(prefix: str, content: str) -> tuple[bool, str]:
+    raw_args = content[len(prefix):].strip()
+    tokens = raw_args.split() if raw_args else []
+    prefix_lower = prefix.strip().lower()
+
+    if prefix_lower in _BLOCK_REMOVE_ALIASES:
+        return True, raw_args.strip().lower()
+
+    if not tokens:
+        return False, ""
+
+    first_token = tokens[0]
+    first_token_lower = first_token.lower().lstrip("-+")
+
+    if first_token.lower() in _BLOCK_REMOVE_KEYWORDS or (first_token.startswith("-") and first_token_lower):
+        if first_token.startswith("-") and first_token_lower:
+            return True, " ".join([first_token_lower] + tokens[1:]).strip().lower()
+        return True, (" ".join(tokens[1:]).strip().lower() if len(tokens) > 1 else "")
+
+    if first_token.lower() in _BLOCK_ADD_KEYWORDS or (first_token.startswith("+") and first_token_lower):
+        if first_token.startswith("+") and first_token_lower:
+            return False, " ".join([first_token_lower] + tokens[1:]).strip().lower()
+        return False, (" ".join(tokens[1:]).strip().lower() if len(tokens) > 1 else "")
+
+    return False, raw_args.strip().lower()
 
 _DEFAULT_MOD_COMMANDS: dict[str, dict] = {
     "[PLUGIN_CHAT_TTS_MUTE]": {
@@ -74,7 +130,7 @@ class ChatController(QObject):
     widget_plugin_triggered = Signal(str, str, str, str, str)
     chat_overlay_config_changed = Signal(dict)
 
-    def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None):
+    def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None, giphy_service=None):
         super().__init__()
         self.view = view
         self.service = service
@@ -87,8 +143,7 @@ class ChatController(QObject):
 
         self.filter_handler = ChatFilterHandler(i18n, service)
         self.voice_handler = TTSVoiceHandler(self, view, service, toast_manager, i18n)
-        from backend.services.chat.giphy_service import GiphyService
-        self.giphy_service = GiphyService()
+        self.giphy_service = giphy_service or GiphyService()
 
         self._tts_enabled = True
         self._read_name_enabled = True
@@ -96,6 +151,7 @@ class ChatController(QObject):
         self._mod_mute_command_enabled = True
         self._mod_block_command_enabled = True
         self._tts_settings_cache: dict = {}
+        self.sync_settings_cache()
         self._view_connected: bool = False
 
         self._exact_plugin_handlers = {
@@ -260,149 +316,76 @@ class ChatController(QObject):
         if self.voice_handler._all_voices:
             self.voice_handler._on_voices_fetched(self.voice_handler._all_voices, provider, is_initial=True)
 
+    def _upsert_system_command(self, cmd_map: dict[str, dict], tag: str, default_cfg: dict, active_override: bool | None = None) -> None:
+        existing = cmd_map.get(tag)
+        is_active = active_override if active_override is not None else default_cfg.get("is_active", True)
+        
+        self.command_service.blockSignals(True)
+        try:
+            if not existing:
+                self.command_service.save_command(
+                    trigger=default_cfg["trigger"],
+                    response=tag,
+                    is_active=is_active,
+                    cooldown=default_cfg.get("cooldown", 2),
+                    aliases=default_cfg.get("aliases", ""),
+                    is_regex=default_cfg.get("is_regex", False),
+                    permission=default_cfg.get("permission", "everyone"),
+                    apply_kick=default_cfg.get("apply_kick", True),
+                    apply_twitch=default_cfg.get("apply_twitch", True),
+                    apply_youtube=default_cfg.get("apply_youtube", True),
+                    apply_tiktok=default_cfg.get("apply_tiktok", True),
+                )
+            else:
+                def_aliases = [a.strip() for a in default_cfg.get("aliases", "").split(",") if a.strip()]
+                curr_aliases = [a.strip() for a in existing.get("aliases", "").split(",") if a.strip()]
+                if def_aliases and any(na not in curr_aliases for na in def_aliases):
+                    merged_aliases = list(dict.fromkeys(curr_aliases + def_aliases))
+                    self.command_service.save_command(
+                        trigger=existing["trigger"],
+                        response=existing["response"],
+                        is_active=existing.get("is_active", True),
+                        cooldown=existing.get("cooldown", default_cfg.get("cooldown", 2)),
+                        aliases=",".join(merged_aliases),
+                        is_regex=existing.get("is_regex", False),
+                        permission=existing.get("permission", default_cfg.get("permission", "everyone")),
+                        apply_kick=existing.get("apply_kick", True),
+                        apply_twitch=existing.get("apply_twitch", True),
+                        apply_youtube=existing.get("apply_youtube", True),
+                        apply_tiktok=existing.get("apply_tiktok", True),
+                    )
+        finally:
+            self.command_service.blockSignals(False)
+
     def _register_system_commands(self) -> None:
         settings = self._tts_settings_cache
         commands = self.command_service.get_all_commands()
-        existing = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
-        if not existing:
-            self.command_service.blockSignals(True)
-            try:
-                self.command_service.save_command(
-                    trigger=settings.get("command", "!tts"),
-                    response="[PLUGIN_CHAT_TTS]",
-                    is_active=settings.get("use_command", False),
-                    cooldown=1,
-                    aliases="",
-                    is_regex=False,
-                    permission="everyone"
-                )
-            finally:
-                self.command_service.blockSignals(False)
+        cmd_map = _build_command_response_map(commands)
 
-        existing_systts = _find_command_by_response(commands, "[PLUGIN_CHAT_SYSTTS]")
-        if not existing_systts:
-            self.command_service.blockSignals(True)
-            try:
-                self.command_service.save_command(
-                    trigger="!systts",
-                    response="[PLUGIN_CHAT_SYSTTS]",
-                    is_active=True,
-                    cooldown=3,
-                    aliases="!ttssys",
-                    is_regex=False,
-                    permission="moderator"
-                )
-            finally:
-                self.command_service.blockSignals(False)
+        tts_cfg = {
+            "trigger": settings.get("command", "!tts"),
+            "cooldown": 1,
+            "aliases": "",
+            "is_regex": False,
+            "permission": "everyone"
+        }
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS]", tts_cfg, active_override=settings.get("use_command", False))
 
-        existing_ttsmute = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_MUTE]")
-        def_mute = _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_MUTE]"]
-        if not existing_ttsmute:
-            self.command_service.blockSignals(True)
-            try:
-                self.command_service.save_command(
-                    trigger=def_mute["trigger"],
-                    response=def_mute["response"],
-                    is_active=settings.get("mod_mute_command_enabled", True),
-                    cooldown=def_mute["cooldown"],
-                    aliases=def_mute["aliases"],
-                    is_regex=def_mute["is_regex"],
-                    permission=def_mute["permission"],
-                    apply_kick=def_mute["apply_kick"],
-                    apply_twitch=def_mute["apply_twitch"],
-                    apply_youtube=def_mute["apply_youtube"],
-                    apply_tiktok=def_mute["apply_tiktok"]
-                )
-            finally:
-                self.command_service.blockSignals(False)
-        else:
-            current_aliases = [a.strip() for a in existing_ttsmute.get("aliases", "").split(",") if a.strip()]
-            needed_aliases = [a.strip() for a in def_mute["aliases"].split(",") if a.strip()]
-            if any(na not in current_aliases for na in needed_aliases):
-                updated_aliases = list(dict.fromkeys(current_aliases + needed_aliases))
-                self.command_service.blockSignals(True)
-                try:
-                    self.command_service.save_command(
-                        trigger=existing_ttsmute["trigger"],
-                        response=existing_ttsmute["response"],
-                        is_active=existing_ttsmute.get("is_active", True),
-                        cooldown=existing_ttsmute.get("cooldown", def_mute["cooldown"]),
-                        aliases=",".join(updated_aliases),
-                        is_regex=existing_ttsmute.get("is_regex", False),
-                        permission=existing_ttsmute.get("permission", def_mute["permission"]),
-                        apply_kick=existing_ttsmute.get("apply_kick", True),
-                        apply_twitch=existing_ttsmute.get("apply_twitch", True),
-                        apply_youtube=existing_ttsmute.get("apply_youtube", True),
-                        apply_tiktok=existing_ttsmute.get("apply_tiktok", True)
-                    )
-                finally:
-                    self.command_service.blockSignals(False)
+        systts_cfg = {
+            "trigger": "!systts",
+            "cooldown": 3,
+            "aliases": "!ttssys",
+            "is_regex": False,
+            "permission": "moderator"
+        }
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_SYSTTS]", systts_cfg, active_override=True)
 
-        existing_ttsblock = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_BLOCK]")
-        def_block = _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"]
-        if not existing_ttsblock:
-            self.command_service.blockSignals(True)
-            try:
-                self.command_service.save_command(
-                    trigger=def_block["trigger"],
-                    response=def_block["response"],
-                    is_active=settings.get("mod_block_command_enabled", True),
-                    cooldown=def_block["cooldown"],
-                    aliases=def_block["aliases"],
-                    is_regex=def_block["is_regex"],
-                    permission=def_block["permission"],
-                    apply_kick=def_block["apply_kick"],
-                    apply_twitch=def_block["apply_twitch"],
-                    apply_youtube=def_block["apply_youtube"],
-                    apply_tiktok=def_block["apply_tiktok"]
-                )
-            finally:
-                self.command_service.blockSignals(False)
-        else:
-            current_aliases = [a.strip() for a in existing_ttsblock.get("aliases", "").split(",") if a.strip()]
-            needed_aliases = [a.strip() for a in def_block["aliases"].split(",") if a.strip()]
-            if any(na not in current_aliases for na in needed_aliases):
-                updated_aliases = list(dict.fromkeys(current_aliases + needed_aliases))
-                self.command_service.blockSignals(True)
-                try:
-                    self.command_service.save_command(
-                        trigger=existing_ttsblock["trigger"],
-                        response=existing_ttsblock["response"],
-                        is_active=existing_ttsblock.get("is_active", True),
-                        cooldown=existing_ttsblock.get("cooldown", def_block["cooldown"]),
-                        aliases=",".join(updated_aliases),
-                        is_regex=existing_ttsblock.get("is_regex", False),
-                        permission=existing_ttsblock.get("permission", def_block["permission"]),
-                        apply_kick=existing_ttsblock.get("apply_kick", True),
-                        apply_twitch=existing_ttsblock.get("apply_twitch", True),
-                        apply_youtube=existing_ttsblock.get("apply_youtube", True),
-                        apply_tiktok=existing_ttsblock.get("apply_tiktok", True)
-                    )
-                finally:
-                    self.command_service.blockSignals(False)
-
-        existing_gif = _find_command_by_response(commands, "[PLUGIN_CHAT_GIF]")
-        if not existing_gif:
-            self.command_service.blockSignals(True)
-            try:
-                self.command_service.save_command(
-                    trigger="!gif",
-                    response="[PLUGIN_CHAT_GIF]",
-                    is_active=True,
-                    cooldown=2,
-                    aliases="!giphy",
-                    is_regex=False,
-                    permission="everyone",
-                    apply_kick=True,
-                    apply_twitch=True,
-                    apply_youtube=True,
-                    apply_tiktok=True
-                )
-            finally:
-                self.command_service.blockSignals(False)
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_MUTE]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_MUTE]"], active_override=settings.get("mod_mute_command_enabled", True))
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_BLOCK]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"], active_override=settings.get("mod_block_command_enabled", True))
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_GIF]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"], active_override=True)
 
         for legacy_tag in ("[PLUGIN_CHAT_TTS_UNMUTE]", "[PLUGIN_CHAT_TTS_UNBLOCK]"):
-            legacy_cmd = _find_command_by_response(commands, legacy_tag)
+            legacy_cmd = cmd_map.get(legacy_tag)
             if legacy_cmd:
                 try:
                     self.command_service.delete_command(legacy_cmd["trigger"])
@@ -522,27 +505,7 @@ class ChatController(QObject):
             self.command_service.send_response(msg, platform=platform)
             return
 
-        raw_args = dto.content[len(prefix):].strip()
-        tokens = raw_args.split() if raw_args else []
-        prefix_lower = prefix.strip().lower()
-
-        is_remove = prefix_lower in _MUTE_REMOVE_ALIASES
-        if not is_remove and tokens:
-            first_token_lower = tokens[0].lower().lstrip("-")
-            if tokens[0].lower() in _MUTE_REMOVE_KEYWORDS or (tokens[0].startswith("-") and first_token_lower):
-                is_remove = True
-                if tokens[0].startswith("-") and first_token_lower:
-                    target = first_token_lower.lstrip("@")
-                elif len(tokens) > 1:
-                    target = tokens[1].lstrip("@")
-                else:
-                    target = ""
-            elif tokens[0].lower() in _MUTE_ADD_KEYWORDS:
-                target = tokens[1].lstrip("@") if len(tokens) > 1 else ""
-            else:
-                target = tokens[0].lstrip("@")
-        else:
-            target = tokens[0].lstrip("@") if tokens else ""
+        is_remove, target = _parse_mute_args(prefix, dto.content)
 
         if not target:
             usage_key = "chat.commands.ttsunmute_usage" if is_remove else "chat.commands.ttsmute_usage"
@@ -583,30 +546,7 @@ class ChatController(QObject):
             self.command_service.send_response(msg, platform=platform)
             return
 
-        raw_args = dto.content[len(prefix):].strip()
-        tokens = raw_args.split() if raw_args else []
-        prefix_lower = prefix.strip().lower()
-
-        is_remove = prefix_lower in _BLOCK_REMOVE_ALIASES
-        if not is_remove and tokens:
-            first_token_lower = tokens[0].lower().lstrip("-")
-            if tokens[0].lower() in _BLOCK_REMOVE_KEYWORDS or (tokens[0].startswith("-") and first_token_lower):
-                is_remove = True
-                if tokens[0].startswith("-") and first_token_lower:
-                    word = " ".join([first_token_lower] + tokens[1:]).strip().lower()
-                elif len(tokens) > 1:
-                    word = " ".join(tokens[1:]).strip().lower()
-                else:
-                    word = ""
-            elif tokens[0].lower() in _BLOCK_ADD_KEYWORDS:
-                if len(tokens) > 1:
-                    word = " ".join(tokens[1:]).strip().lower()
-                else:
-                    word = ""
-            else:
-                word = raw_args.strip().lower()
-        else:
-            word = raw_args.strip().lower()
+        is_remove, word = _parse_block_args(prefix, dto.content)
 
         if not word:
             usage_key = "chat.commands.ttsunblock_usage" if is_remove else "chat.commands.ttsblock_usage"
@@ -708,9 +648,9 @@ class ChatController(QObject):
             return
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
         bot_user = "MiniKick"
-        if hasattr(self.command_service, "twitch_worker") and self.command_service.twitch_worker:
-            tw_worker = self.command_service.twitch_worker
-            bot_user = getattr(tw_worker, "bot_nick", "") or getattr(tw_worker, "channel_name", "")
+        tw_worker = getattr(self.command_service, "twitch_worker", None)
+        if tw_worker:
+            bot_user = getattr(tw_worker, "bot_nick", "") or getattr(tw_worker, "channel_name", "") or "MiniKick"
         
         dto = ChatMessageDTO(
             user=bot_user, content=text, badges=["broadcaster", "bot"], color="#9146FF",
@@ -839,7 +779,11 @@ class ChatController(QObject):
         self.toast.show_toast(title=title, message=msg, state=color, tag=tag)
 
     def get_active_overlay_config(self) -> dict:
-        settings = self._tts_settings_cache or {}
+        settings = self._tts_settings_cache
+        if not settings or "chat_overlay_orientation" not in settings:
+            if hasattr(self.service, "get_overlay_settings"):
+                return self.service.get_overlay_settings()
+            settings = settings or {}
         cur_orientation = settings.get("chat_overlay_orientation", "vertical")
         v_cfg = {
             "theme": settings.get("chat_overlay_vertical_theme", settings.get("chat_overlay_theme", "glass")),
@@ -894,7 +838,8 @@ class ChatController(QObject):
         self.chat_overlay_config_changed.emit(self.get_active_overlay_config())
 
         commands = self.command_service.get_all_commands()
-        existing = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
+        cmd_map = _build_command_response_map(commands)
+        existing = cmd_map.get("[PLUGIN_CHAT_TTS]")
         target_trigger = settings.get("command", "!tts").strip()
         target_use_cmd = settings.get("use_command", False)
         
@@ -939,7 +884,7 @@ class ChatController(QObject):
                         apply_tiktok=True
                     )
 
-                existing_systts = _find_command_by_response(commands, "[PLUGIN_CHAT_SYSTTS]")
+                existing_systts = cmd_map.get("[PLUGIN_CHAT_SYSTTS]")
                 if not existing_systts:
                     self.command_service.save_command(
                         trigger="!systts",
@@ -956,12 +901,13 @@ class ChatController(QObject):
         target_mod_mute = settings.get("mod_mute_command_enabled", True)
         target_mod_block = settings.get("mod_block_command_enabled", True)
         target_show_gifs = settings.get("chat_overlay_show_gifs", True)
-        self._sync_command_active_state(commands, "[PLUGIN_CHAT_TTS_MUTE]", target_mod_mute)
-        self._sync_command_active_state(commands, "[PLUGIN_CHAT_TTS_BLOCK]", target_mod_block)
-        self._sync_command_active_state(commands, "[PLUGIN_CHAT_GIF]", target_show_gifs)
+        self._sync_command_active_state(cmd_map, "[PLUGIN_CHAT_TTS_MUTE]", target_mod_mute)
+        self._sync_command_active_state(cmd_map, "[PLUGIN_CHAT_TTS_BLOCK]", target_mod_block)
+        self._sync_command_active_state(cmd_map, "[PLUGIN_CHAT_GIF]", target_show_gifs)
 
-    def _sync_command_active_state(self, commands: list[dict], plugin_tag: str, is_active: bool) -> None:
-        cmd = _find_command_by_response(commands, plugin_tag)
+    def _sync_command_active_state(self, cmd_map_or_commands: list[dict] | dict[str, dict], plugin_tag: str, is_active: bool) -> None:
+        cmd_map = cmd_map_or_commands if isinstance(cmd_map_or_commands, dict) else _build_command_response_map(cmd_map_or_commands)
+        cmd = cmd_map.get(plugin_tag)
         if cmd:
             if cmd.get("is_active") != is_active:
                 self.command_service.blockSignals(True)
@@ -1008,7 +954,8 @@ class ChatController(QObject):
 
     def _sync_tts_command_from_db(self) -> None:
         commands = self.command_service.get_all_commands()
-        tts_cmd = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS]")
+        cmd_map = _build_command_response_map(commands)
+        tts_cmd = cmd_map.get("[PLUGIN_CHAT_TTS]")
         
         settings = self.service.get_settings()
         
@@ -1027,9 +974,9 @@ class ChatController(QObject):
             if self.view is not None:
                 self.view.set_tts_command_configuration(use_command, command_trigger)
 
-        mute_cmd = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_MUTE]")
-        block_cmd = _find_command_by_response(commands, "[PLUGIN_CHAT_TTS_BLOCK]")
-        gif_cmd = _find_command_by_response(commands, "[PLUGIN_CHAT_GIF]")
+        mute_cmd = cmd_map.get("[PLUGIN_CHAT_TTS_MUTE]")
+        block_cmd = cmd_map.get("[PLUGIN_CHAT_TTS_BLOCK]")
+        gif_cmd = cmd_map.get("[PLUGIN_CHAT_GIF]")
 
         mute_active = bool(mute_cmd and mute_cmd.get("is_active", False))
         block_active = bool(block_cmd and block_cmd.get("is_active", False))

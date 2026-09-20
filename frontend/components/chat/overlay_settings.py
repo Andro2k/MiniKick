@@ -449,7 +449,7 @@ class ChatOverlaySettingsPanel(ModernCard):
     def _update_overlay_url(self, *args):
         orientation = self.seg_overlay_orientation.current_value() or "vertical"
 
-        dim = "1920 × 100 px" if orientation == "horizontal" else "400 × 1080 px"
+        dim = "1920 × 80–300 px" if orientation == "horizontal" else "400 × 1080 px"
         desc = f"{self.i18n.get('chat.settings.obs_desc')} ({self.i18n.get('chat.overlay.recommended_dim').replace('{dim}', dim)})"
         if hasattr(self, 'row_copy_obs') and self.row_copy_obs:
             self.row_copy_obs.set_description(desc)

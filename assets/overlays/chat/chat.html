@@ -31,6 +31,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             flex-direction: column;
+            justify-content: flex-end;
         }
 
         #chat-container {
@@ -68,7 +69,7 @@
             flex-wrap: nowrap;
             overflow-x: auto;
             overflow-y: hidden;
-            align-items: center;
+            align-items: flex-end;
             height: 100%;
         }
 
@@ -97,9 +98,11 @@
             max-width: none !important;
             flex-shrink: 0 !important;
             white-space: nowrap !important;
-            align-self: center !important;
+            align-self: flex-end !important;
             margin-top: 0 !important;
             margin-bottom: 0 !important;
+            max-height: calc(100vh - 10px) !important;
+            box-sizing: border-box !important;
         }
 
         #chat-container.orientation-horizontal .message-header {
@@ -123,12 +126,36 @@
         }
 
         #chat-container.orientation-horizontal .message-content {
-            display: inline-block !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
             white-space: nowrap !important;
             overflow: visible !important;
             text-overflow: clip !important;
             max-width: none !important;
+            max-height: 100% !important;
             vertical-align: middle !important;
+        }
+
+        #chat-container.orientation-horizontal .chat-gif-wrapper {
+            margin-top: 0 !important;
+            margin-left: 6px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            max-height: calc(100vh - 22px) !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+        }
+
+        #chat-container.orientation-horizontal .chat-gif {
+            max-height: calc(100vh - 22px) !important;
+            max-width: min(450px, 70vw) !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            display: block !important;
+            border-radius: 8px !important;
         }
 
         .message-box {

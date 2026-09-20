@@ -14,6 +14,7 @@
 | **INC-002** | `ConnectionResetError: [WinError 10054]` (Pérdida de mensajes en `KickAPIClient`) | `minikick_crash_DeyDeyLove_v1.5.9.log` | v1.5.9 | `✅ Solventado` | `backend/providers/chat/kick_provider.py` | v1.6.0 (`WT-1.6.0_12`) |
 | **INC-003** | `sqlite3.OperationalError: database is locked` en `ScheduleWorker` | `minikick_crash_DeyDeyLove_v1.5.9.log` | v1.5.9 | `✅ Solventado` | `backend/services/schedule/schedule_service.py`, `backend/workers/schedule_worker.py`, `backend/database/database_manager.py` | v1.6.0 (`WT-1.6.0_12`) |
 | **INC-004** | `Windows fatal exception: access violation` en Garbage Collector / `yt_dlp` | `minikick_crash_DeyDeyLove_v1.5.9.log` | v1.5.9 (Dump 15/09) | `ℹ️ Mitigado / Monitoreado` | `backend/workers/music_worker.py` | CPython / yt-dlp low-level |
+| **INC-005** | Reseteo a valores por defecto en Overlay de Chat OBS (`chat.html`) al arrancar la app | Reporte de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/chat_service.py`, `backend/controllers/chat_controller.py` | v1.6.0 (`WT-1.6.0_14`) |
 
 ---
 
@@ -137,6 +138,35 @@
   Colisión en el Garbage Collector cíclico de Python 3.14 (build pre-release) al liberar estructuras de extensiones C de sockets/urllib durante la ejecución concurrente en hilos secundarios de `YoutubeDL`.
 * **Acción de Mitigación**:
   En `backend/workers/music_worker.py`, las opciones de extracción y aislamiento de sesión se ejecutan con context managers acotados (`with yt_dlp.YoutubeDL(...) as ydl:`) y reintentos con backoff exponencial.
+
+---
+
+### INC-005: Reseteo a Valores por Defecto en Overlay de Chat OBS (`chat.html`) al Arrancar MiniKick
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Pérdida de presentación visual personalizada: tema, tamaño de fuente, desvanecimiento y orientación volvían a defaults en OBS tras reiniciar la app).
+* **Reportes Asociados**:
+  - Reporte directo de usuario en v1.6.0 (Chat overlay arranca con estilos de fábrica hasta que se edita manualmente en la UI).
+* **Fecha y Versión del Fallo**: 2026-09-19 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. `ChatService.save_settings()` persistía correctamente en SQLite las 23 claves `chat_overlay_*` (`chat_overlay_vertical_theme`, `chat_overlay_horizontal_size`, etc.).
+  2. Sin embargo, `ChatService.get_settings()` únicamente cargaba y retornaba las claves de voz y TTS (`tts_enabled`, `tts_volume`, etc.), omitiendo todas las claves de overlay.
+  3. Al iniciar la aplicación, `MainWindowCore._load_settings_into_ui()` ejecutaba `chat_controller.sync_settings_cache()`, que poblaba `self._tts_settings_cache` exclusivamente desde `get_settings()`.
+  4. Inmediatamente después, `ChatController.get_active_overlay_config()` leía dicho caché y, al no encontrar las claves de overlay, recaía en los fallbacks por defecto (`theme="glass"`, `size="14"`, `fade="15"`, etc.).
+  5. Este payload con valores por defecto era transmitido a `OverlayServerManager.trigger_chat_config_update()`, el cual por WebSocket enviaba `chat_config` a OBS, forzando a `chat.js` (`applyLiveConfig`) a sobreescribir la configuración visual guardada del streamer por los estilos por defecto.
+* **Archivos y Líneas Modificadas**:
+  1. [`backend/services/chat/chat_service.py:L30-L163`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/chat/chat_service.py#L30-L163):
+     - Se incluyeron todas las 23 claves `chat_overlay_*` dentro del diccionario devuelto por `get_settings()`.
+     - Se refactorizó `get_overlay_settings()` para derivar directamente de `get_settings()`, eliminando código redundante y manteniendo adherencia estricta al principio DRY.
+  2. [`backend/controllers/chat_controller.py:L143-L153`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/chat_controller.py#L143-L153), [`L780-L790`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/chat_controller.py#L780-L790):
+     - Inyección corregida de `giphy_service` (`giphy_service or GiphyService()`).
+     - Invocación de `sync_settings_cache()` en `__init__` para garantizar que `_tts_settings_cache` esté hidratado desde el arranque.
+     - Fallback defensivo en `get_active_overlay_config()` hacia `self.service.get_overlay_settings()` si la clave de orientación no está en el caché.
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_chat_overlay_controls.py`:
+    - `test_chat_service_get_settings_contains_overlay_keys`
+    - `test_chat_controller_get_active_overlay_config_preserves_custom_settings_on_startup`
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_14.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_14.md).
 
 ---
 
