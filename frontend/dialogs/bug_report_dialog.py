@@ -20,7 +20,7 @@ def _retire_bug_worker(worker):
 class BugReportDialog(ModernModal):
     def __init__(self, i18n, worker_class=None, initial_contact: str = "", parent=None):
         title = i18n.get("settings.feedback.title")
-        icon_path = get_assets_path("icons/bug.svg")
+        icon_path = get_assets_path("icons/bug-filled.svg")
         super().__init__(title=title, icon_path=icon_path, icon_bg_color="", width=660, parent=parent)
         self.i18n = i18n
         self.worker_class = worker_class
@@ -125,7 +125,7 @@ class BugReportDialog(ModernModal):
         self.btn_cancel = ModernButton(self.i18n.get("common.buttons.cancel"), role="action_outlined")
         self.btn_cancel.clicked.connect(self.reject)
 
-        self.btn_send = ModernButton(self.i18n.get("dialogs.bug_report.btn_send_low"), role="action_accent")
+        self.btn_send = ModernButton(self.i18n.get("dialogs.bug_report.btn_send_low"), role="action_outlined")
         self.btn_send.clicked.connect(self._on_send_clicked)
 
         self.add_action_buttons(self.btn_cancel, self.btn_send)

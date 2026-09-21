@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBo
 from PySide6.QtCore import Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
-from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_XL
+from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -36,8 +36,9 @@ class ChatView(BaseView):
             self.bot_panel.set_command_toggles(mute_enabled, block_enabled)
 
     def _setup_ui(self):
+        self.main_layout.setSpacing(SPACING_MD)
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_layout.setSpacing(SPACING_XL)
+        self.body_layout.setSpacing(SPACING_MD)
 
         self.tabs = QTabWidget()
         self.tabs.setMinimumWidth(320)
@@ -199,6 +200,34 @@ class ChatView(BaseView):
         return self.overlay_settings_panel.sw_overlay_show_bots.isChecked()
 
     @property
+    def vertical_config(self) -> dict:
+        return self.overlay_settings_panel.vertical_config
+
+    @property
+    def horizontal_config(self) -> dict:
+        return self.overlay_settings_panel.horizontal_config
+
+    @property
+    def overlay_orientation(self) -> str:
+        return self.overlay_settings_panel.overlay_orientation
+
+    @property
+    def overlay_theme(self) -> str:
+        return self.overlay_settings_panel.overlay_theme
+
+    @property
+    def overlay_size(self) -> int:
+        return self.overlay_settings_panel.overlay_size
+
+    @property
+    def overlay_fade(self) -> int:
+        return self.overlay_settings_panel.overlay_fade
+
+    @property
+    def overlay_flow(self) -> str:
+        return self.overlay_settings_panel.overlay_flow
+
+    @property
     def overlay_show_time(self) -> bool:
         return self.overlay_settings_panel.sw_overlay_show_time.isChecked()
 
@@ -213,6 +242,30 @@ class ChatView(BaseView):
     @property
     def overlay_anim_in(self) -> str:
         return self.overlay_settings_panel.overlay_anim_in
+
+    @property
+    def overlay_show_gifs(self) -> bool:
+        return self.overlay_settings_panel.overlay_show_gifs
+
+    @overlay_show_gifs.setter
+    def overlay_show_gifs(self, value: bool):
+        self.overlay_settings_panel.overlay_show_gifs = value
+
+    @property
+    def overlay_max(self) -> int:
+        return 15
+
+    @property
+    def overlay_hide_commands(self) -> bool:
+        return self.overlay_settings_panel.sw_hide_commands.isChecked()
+
+    @property
+    def overlay_show_badges(self) -> bool:
+        return self.overlay_settings_panel.sw_show_badges.isChecked()
+
+    @property
+    def overlay_show_platform(self) -> bool:
+        return self.overlay_settings_panel.sw_show_platform.isChecked()
 
     @property
     def chat_overlay_url(self) -> str:
@@ -233,8 +286,49 @@ class ChatView(BaseView):
         )
         self.bot_panel.set_command_toggles(mod_mute_command_enabled, mod_block_command_enabled)
 
-    def set_overlay_settings_ui(self, theme: str, size: int, fade: int, show_bots: bool, show_time: bool, orientation: str = "vertical", flow: str = "", entry: str = "", big_emotes: bool = True, edge_fade: bool = True, anim_in: str = "fade"):
-        self.overlay_settings_panel.set_overlay_settings_ui(theme, size, fade, show_bots, show_time, orientation, flow, entry, big_emotes, edge_fade, anim_in)
+    def set_overlay_settings_ui(
+        self,
+        theme: str = "glass",
+        size: int = 14,
+        fade: int = 15,
+        show_bots: bool = False,
+        show_time: bool = False,
+        orientation: str = "vertical",
+        flow: str = "",
+        entry: str = "",
+        big_emotes: bool = True,
+        edge_fade: bool = True,
+        anim_in: str = "fade",
+        show_gifs: bool = True,
+        max_messages: int = 15,
+        hide_commands: bool = False,
+        show_badges: bool = True,
+        show_platform: bool = True,
+        vertical_config: dict = None,
+        horizontal_config: dict = None,
+        common_config: dict = None
+    ):
+        self.overlay_settings_panel.set_overlay_settings_ui(
+            theme=theme,
+            size=size,
+            fade=fade,
+            show_bots=show_bots,
+            show_time=show_time,
+            orientation=orientation,
+            flow=flow,
+            entry=entry,
+            big_emotes=big_emotes,
+            edge_fade=edge_fade,
+            anim_in=anim_in,
+            show_gifs=show_gifs,
+            max_messages=max_messages,
+            hide_commands=hide_commands,
+            show_badges=show_badges,
+            show_platform=show_platform,
+            vertical_config=vertical_config,
+            horizontal_config=horizontal_config,
+            common_config=common_config
+        )
 
     def clear_bot_input(self):
         self.bot_panel.clear_input()

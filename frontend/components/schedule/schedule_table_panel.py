@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem, QHeaderVie
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernTableCard, TableActionCell
 from frontend.dialogs import ModernConfirmDialog
-from frontend.common import COLOR_GREEN, COLOR_RED, MARGIN_NONE, SPACING_NONE
+from frontend.common import COLOR_WHITE, MARGIN_NONE, SPACING_NONE
 
 class ScheduleTablePanel(QWidget):
     new_schedule_clicked = Signal()
@@ -36,7 +36,7 @@ class ScheduleTablePanel(QWidget):
             headers=[col_1, col_2, col_3, col_4, col_5, col_6, col_7],
             search_placeholder=self.i18n.get("stream_info.table.search_placeholder"),
             add_button_text=self.i18n.get("stream_info.schedule_section.btn_new"),
-            add_button_icon="add.svg",
+            add_button_icon="plus-filled.svg",
             parent=self
         )
         self.table_card.setup_empty_state(
@@ -106,7 +106,7 @@ class ScheduleTablePanel(QWidget):
             self.table.setCellWidget(row, 6, action_cell)
 
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(filtered) == 0 and len(self.schedules_data) == 0)
+        self.table_card.set_empty(len(filtered) == 0)
 
         if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
             title_base = self.i18n.get("stream_info.schedule_section.title")
@@ -136,17 +136,17 @@ class ScheduleTablePanel(QWidget):
         )
 
         cell.add_button(
-            icon_name="edit.svg",
-            color=COLOR_GREEN,
-            role="action_accent_border",
+            icon_name="edit-filled.svg",
+            color=COLOR_WHITE,
+            role="action_accent_solid",
             tooltip=self.i18n.get("stream_info.schedule_dialog.title_edit"),
             callback=lambda _, s=sched: self.edit_schedule_clicked.emit(s)
         )
 
         cell.add_button(
-            icon_name="trash.svg",
-            color=COLOR_RED,
-            role="action_danger_border",
+            icon_name="trash-filled.svg",
+            color=COLOR_WHITE,
+            role="action_danger_solid",
             tooltip=self.i18n.get("stream_info.confirm_delete.title"),
             callback=lambda _, s_id=sched_id: self._confirm_delete_schedule(s_id)
         )

@@ -8,12 +8,12 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget
 )
 from frontend.widgets import (BaseView, ModernTable, ScalableIllustration, ModernButton, 
-                              SegmentedPagination)
+                              SegmentedPagination, ModernDivider)
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED,
     get_assets_path, get_icon_colored,
     SPACING_NONE, SPACING_SM, SPACING_MD, SPACING_LG,
-    MARGIN_NONE, MARGIN_XS, MARGIN_MD, MARGIN_2XL
+    MARGIN_NONE, MARGIN_XS, MARGIN_MD, MARGIN_XL
 )
 from frontend.components.log import LogControlsPanel
 
@@ -30,22 +30,22 @@ _LEVEL_COLORS = {
     "BOOTSTRAP": COLOR_BLUE
 }
 _LEVEL_ICON_NAMES = {
-    "DEBUG": "code-duotone.svg",
-    "INFO": "info-circle-duotone.svg",
-    "WARNING": "alert-triangle-duotone.svg",
-    "ERROR": "bug.svg",
-    "CRITICAL": "bolt-circle-duotone.svg",
-    "CRASH": "bomb.svg",
-    "FATAL_CRASH": "bomb.svg",
-    "THREAD_CRASH": "bomb.svg",
-    "BOOTSTRAP": "info-circle-duotone.svg"
+    "DEBUG": "code-square-filled.svg",
+    "INFO": "circle-info-filled.svg",
+    "WARNING": "alert-triangle-filled.svg",
+    "ERROR": "bug-filled.svg",
+    "CRITICAL": "bolt-circle-filled.svg",
+    "CRASH": "bolt-circle-filled.svg",
+    "FATAL_CRASH": "bolt-circle-filled.svg",
+    "THREAD_CRASH": "bolt-circle-filled.svg",
+    "BOOTSTRAP": "circle-info-filled.svg"
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}
 
 def _get_level_icon(level: str) -> QIcon:
     if level not in _LEVEL_ICONS:
         hex_color = _LEVEL_COLORS.get(level, COLOR_NEUTRAL_200)
-        icon_name = _LEVEL_ICON_NAMES.get(level, "dialog-duotone.svg")
+        icon_name = _LEVEL_ICON_NAMES.get(level, "dialog-filled.svg")
         _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color, 16)
     return _LEVEL_ICONS[level]
 
@@ -104,7 +104,8 @@ class LogView(BaseView):
 
         self.table_page = QWidget()
         table_page_layout = QVBoxLayout(self.table_page)
-        table_page_layout.setContentsMargins(*MARGIN_XS)
+        table_page_layout.setContentsMargins(*MARGIN_NONE)
+        table_page_layout.setSpacing(SPACING_NONE)
 
         col_1 = self.i18n.get("log.table.col_level")
         col_2 = self.i18n.get("log.table.col_time")
@@ -154,7 +155,8 @@ class LogView(BaseView):
         self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 160)
 
-        table_page_layout.addWidget(self.table)
+        table_page_layout.addWidget(self.table, 1)
+        table_page_layout.addWidget(ModernDivider(self.table_page))
         
         self.pagination_bar = QWidget()
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
@@ -221,7 +223,7 @@ class LogView(BaseView):
     def _build_empty_state(self) -> QWidget:
         container = QWidget()
         layout = QVBoxLayout(container)
-        layout.setContentsMargins(*MARGIN_2XL)
+        layout.setContentsMargins(*MARGIN_XL)
         layout.setSpacing(SPACING_LG)
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -245,8 +247,8 @@ class LogView(BaseView):
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_desc.setMaximumWidth(450)
 
-        self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_accent")
-        self.btn_show_logs.set_icon("eye.svg", size=16)
+        self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_outlined")
+        self.btn_show_logs.set_icon("eye-filled.svg", size=16)
         self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
 
         layout.addStretch(1)

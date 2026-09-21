@@ -42,6 +42,7 @@ class OverlayServerManager:
         self._last_poll_timestamp: float = 0.0
         self._last_pinned_data: dict | None = None
         self._last_top_chatters_data: dict | None = None
+        self._last_chat_config: dict | None = None
         self.settings_storage = settings_storage
         self.lock = threading.Lock()
 
@@ -190,16 +191,21 @@ class OverlayServerManager:
         logger.info("[Overlay] Emitiendo alerta en vivo: '%s' (%s)", payload.get("formatted_text"), payload.get("id"))
         self._broadcast("alert_clients", "alerts", broadcast_payload)
 
-    def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = ""):
+    def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = "", gif_url: str = ""):
         payload = {
             "user": user,
             "message": message,
             "color": color,
             "badges": badges or [],
             "platform": platform,
-            "emotes_tag": emotes_tag
+            "emotes_tag": emotes_tag,
+            "gif_url": gif_url
         }
         self._broadcast("chat_clients", "chat", payload)
+
+    def trigger_chat_config_update(self, config: dict):
+        self._last_chat_config = dict(config)
+        self._broadcast("chat_clients", "chat", {"event": "chat_config", "config": config})
 
     def trigger_music_change(self, song: dict):
         if not song:

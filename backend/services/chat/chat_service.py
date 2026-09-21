@@ -35,6 +35,42 @@ class ChatService:
             nws = float(self.storage.load_string("piper_noise_w_scale", "0.8"))
         except Exception:
             ls, ns, nws = 1.0, 0.667, 0.8
+
+        legacy_theme = self.storage.load_string("chat_overlay_theme", "glass")
+        try:
+            legacy_size = int(self.storage.load_string("chat_overlay_size", "14"))
+        except ValueError:
+            legacy_size = 14
+        try:
+            legacy_fade = int(self.storage.load_string("chat_overlay_fade", "15"))
+        except ValueError:
+            legacy_fade = 15
+        legacy_anim_in = self.storage.load_string("chat_overlay_anim_in", "fade")
+
+        v_theme = self.storage.load_string("chat_overlay_vertical_theme", legacy_theme)
+        try:
+            v_size = int(self.storage.load_string("chat_overlay_vertical_size", str(legacy_size)))
+        except ValueError:
+            v_size = legacy_size
+        try:
+            v_fade = int(self.storage.load_string("chat_overlay_vertical_fade", str(legacy_fade)))
+        except ValueError:
+            v_fade = legacy_fade
+        v_flow = self.storage.load_string("chat_overlay_vertical_flow", "bottom-to-top")
+        v_anim_in = self.storage.load_string("chat_overlay_vertical_anim_in", legacy_anim_in)
+
+        h_theme = self.storage.load_string("chat_overlay_horizontal_theme", legacy_theme)
+        try:
+            h_size = int(self.storage.load_string("chat_overlay_horizontal_size", str(legacy_size)))
+        except ValueError:
+            h_size = legacy_size
+        try:
+            h_fade = int(self.storage.load_string("chat_overlay_horizontal_fade", str(legacy_fade)))
+        except ValueError:
+            h_fade = legacy_fade
+        h_flow = self.storage.load_string("chat_overlay_horizontal_flow", "right-to-left")
+        h_anim_in = self.storage.load_string("chat_overlay_horizontal_anim_in", legacy_anim_in)
+
         return {
             "enabled": self.storage.load_bool("tts_enabled", True),
             "read_name": self.storage.load_bool("tts_read_name", True),
@@ -63,33 +99,115 @@ class ChatService:
             "platform_tiktok": self.storage.load_bool("tts_platform_tiktok", True),
             "mod_mute_command_enabled": self.storage.load_bool("tts_mod_mute_command_enabled", True),
             "mod_block_command_enabled": self.storage.load_bool("tts_mod_block_command_enabled", True),
+            "giphy_api_key": self.storage.load_string("giphy_api_key", ""),
+            "chat_overlay_orientation": self.storage.load_string("chat_overlay_orientation", "vertical"),
+            "chat_overlay_theme": legacy_theme,
+            "chat_overlay_size": str(legacy_size),
+            "chat_overlay_fade": str(legacy_fade),
+            "chat_overlay_anim_in": legacy_anim_in,
+            "chat_overlay_vertical_theme": v_theme,
+            "chat_overlay_vertical_size": str(v_size),
+            "chat_overlay_vertical_fade": str(v_fade),
+            "chat_overlay_vertical_flow": v_flow,
+            "chat_overlay_vertical_anim_in": v_anim_in,
+            "chat_overlay_horizontal_theme": h_theme,
+            "chat_overlay_horizontal_size": str(h_size),
+            "chat_overlay_horizontal_fade": str(h_fade),
+            "chat_overlay_horizontal_flow": h_flow,
+            "chat_overlay_horizontal_anim_in": h_anim_in,
+            "chat_overlay_show_bots": self.storage.load_bool("chat_overlay_show_bots", False),
+            "chat_overlay_show_time": self.storage.load_bool("chat_overlay_show_time", False),
+            "chat_overlay_show_gifs": self.storage.load_bool("chat_overlay_show_gifs", True),
+            "chat_overlay_big_emotes": self.storage.load_bool("chat_overlay_big_emotes", True),
+            "chat_overlay_edge_fade": self.storage.load_bool("chat_overlay_edge_fade", True),
+            "chat_overlay_hide_commands": self.storage.load_bool("chat_overlay_hide_commands", False),
+            "chat_overlay_show_badges": self.storage.load_bool("chat_overlay_show_badges", True),
+            "chat_overlay_show_platform": self.storage.load_bool("chat_overlay_show_platform", True),
         }
 
     def get_overlay_settings(self) -> dict:
-        overlay_theme = self.storage.load_string("chat_overlay_theme", "glass")
+        s = self.get_settings()
+        current_orientation = s.get("chat_overlay_orientation", "vertical")
+        v_theme = s.get("chat_overlay_vertical_theme", "glass")
         try:
-            overlay_size = int(self.storage.load_string("chat_overlay_size", "14"))
+            v_size = int(s.get("chat_overlay_vertical_size", 14))
         except ValueError:
-            overlay_size = 14
+            v_size = 14
         try:
-            overlay_fade = int(self.storage.load_string("chat_overlay_fade", "15"))
+            v_fade = int(s.get("chat_overlay_vertical_fade", 15))
         except ValueError:
-            overlay_fade = 15
-        overlay_show_bots = self.storage.load_bool("chat_overlay_show_bots", False)
-        overlay_show_time = self.storage.load_bool("chat_overlay_show_time", False)
-        overlay_big_emotes = self.storage.load_bool("chat_overlay_big_emotes", True)
-        overlay_edge_fade = self.storage.load_bool("chat_overlay_edge_fade", True)
-        overlay_anim_in = self.storage.load_string("chat_overlay_anim_in", "fade")
+            v_fade = 15
+        v_flow = s.get("chat_overlay_vertical_flow", "bottom-to-top")
+        v_anim_in = s.get("chat_overlay_vertical_anim_in", "fade")
+
+        h_theme = s.get("chat_overlay_horizontal_theme", "glass")
+        try:
+            h_size = int(s.get("chat_overlay_horizontal_size", 14))
+        except ValueError:
+            h_size = 14
+        try:
+            h_fade = int(s.get("chat_overlay_horizontal_fade", 15))
+        except ValueError:
+            h_fade = 15
+        h_flow = s.get("chat_overlay_horizontal_flow", "right-to-left")
+        h_anim_in = s.get("chat_overlay_horizontal_anim_in", "fade")
+
+        overlay_show_bots = s.get("chat_overlay_show_bots", False)
+        overlay_show_time = s.get("chat_overlay_show_time", False)
+        overlay_show_gifs = s.get("chat_overlay_show_gifs", True)
+        overlay_big_emotes = s.get("chat_overlay_big_emotes", True)
+        overlay_edge_fade = s.get("chat_overlay_edge_fade", True)
+        overlay_hide_commands = s.get("chat_overlay_hide_commands", False)
+        overlay_show_badges = s.get("chat_overlay_show_badges", True)
+        overlay_show_platform = s.get("chat_overlay_show_platform", True)
+
+        active_profile = {
+            "theme": v_theme if current_orientation == "vertical" else h_theme,
+            "size": v_size if current_orientation == "vertical" else h_size,
+            "fade": v_fade if current_orientation == "vertical" else h_fade,
+            "flow": v_flow if current_orientation == "vertical" else h_flow,
+            "anim_in": v_anim_in if current_orientation == "vertical" else h_anim_in,
+        }
 
         return {
-            "theme": overlay_theme,
-            "size": overlay_size,
-            "fade": overlay_fade,
+            "orientation": current_orientation,
+            "vertical": {
+                "theme": v_theme,
+                "size": v_size,
+                "fade": v_fade,
+                "flow": v_flow,
+                "anim_in": v_anim_in,
+            },
+            "horizontal": {
+                "theme": h_theme,
+                "size": h_size,
+                "fade": h_fade,
+                "flow": h_flow,
+                "anim_in": h_anim_in,
+            },
+            "common": {
+                "show_bots": overlay_show_bots,
+                "show_time": overlay_show_time,
+                "show_gifs": overlay_show_gifs,
+                "big_emotes": overlay_big_emotes,
+                "edge_fade": overlay_edge_fade,
+                "hide_commands": overlay_hide_commands,
+                "show_badges": overlay_show_badges,
+                "show_platform": overlay_show_platform,
+            },
+            "theme": active_profile["theme"],
+            "size": active_profile["size"],
+            "fade": active_profile["fade"],
+            "flow": active_profile["flow"],
+            "anim_in": active_profile["anim_in"],
             "show_bots": overlay_show_bots,
             "show_time": overlay_show_time,
+            "show_gifs": overlay_show_gifs,
             "big_emotes": overlay_big_emotes,
             "edge_fade": overlay_edge_fade,
-            "anim_in": overlay_anim_in,
+            "hide_commands": overlay_hide_commands,
+            "show_badges": overlay_show_badges,
+            "show_platform": overlay_show_platform,
         }
 
     def set_tts_enabled(self, enabled: bool) -> None:
@@ -135,28 +253,55 @@ class ChatService:
             batch["tts_mod_mute_command_enabled"] = settings["mod_mute_command_enabled"]
         if "mod_block_command_enabled" in settings:
             batch["tts_mod_block_command_enabled"] = settings["mod_block_command_enabled"]
-        if "chat_overlay_theme" in settings:
-            batch["chat_overlay_theme"] = settings["chat_overlay_theme"]
-        if "chat_overlay_size" in settings:
-            batch["chat_overlay_size"] = settings["chat_overlay_size"]
-        if "chat_overlay_fade" in settings:
-            batch["chat_overlay_fade"] = settings["chat_overlay_fade"]
+
+        if "chat_overlay_orientation" in settings:
+            batch["chat_overlay_orientation"] = settings["chat_overlay_orientation"]
+        if "chat_overlay_vertical_theme" in settings:
+            batch["chat_overlay_vertical_theme"] = settings["chat_overlay_vertical_theme"]
+        if "chat_overlay_vertical_size" in settings:
+            batch["chat_overlay_vertical_size"] = str(settings["chat_overlay_vertical_size"])
+        if "chat_overlay_vertical_fade" in settings:
+            batch["chat_overlay_vertical_fade"] = str(settings["chat_overlay_vertical_fade"])
+        if "chat_overlay_vertical_flow" in settings:
+            batch["chat_overlay_vertical_flow"] = settings["chat_overlay_vertical_flow"]
+        if "chat_overlay_vertical_anim_in" in settings:
+            batch["chat_overlay_vertical_anim_in"] = settings["chat_overlay_vertical_anim_in"]
+
+        if "chat_overlay_horizontal_theme" in settings:
+            batch["chat_overlay_horizontal_theme"] = settings["chat_overlay_horizontal_theme"]
+        if "chat_overlay_horizontal_size" in settings:
+            batch["chat_overlay_horizontal_size"] = str(settings["chat_overlay_horizontal_size"])
+        if "chat_overlay_horizontal_fade" in settings:
+            batch["chat_overlay_horizontal_fade"] = str(settings["chat_overlay_horizontal_fade"])
+        if "chat_overlay_horizontal_flow" in settings:
+            batch["chat_overlay_horizontal_flow"] = settings["chat_overlay_horizontal_flow"]
+        if "chat_overlay_horizontal_anim_in" in settings:
+            batch["chat_overlay_horizontal_anim_in"] = settings["chat_overlay_horizontal_anim_in"]
+
         if "chat_overlay_show_time" in settings:
             batch["chat_overlay_show_time"] = settings["chat_overlay_show_time"]
+        if "chat_overlay_show_gifs" in settings:
+            batch["chat_overlay_show_gifs"] = settings["chat_overlay_show_gifs"]
         if "chat_overlay_show_bots" in settings:
             batch["chat_overlay_show_bots"] = settings["chat_overlay_show_bots"]
         if "chat_overlay_big_emotes" in settings:
             batch["chat_overlay_big_emotes"] = settings["chat_overlay_big_emotes"]
         if "chat_overlay_edge_fade" in settings:
             batch["chat_overlay_edge_fade"] = settings["chat_overlay_edge_fade"]
-        if "chat_overlay_anim_in" in settings:
-            batch["chat_overlay_anim_in"] = settings["chat_overlay_anim_in"]
+        if "chat_overlay_hide_commands" in settings:
+            batch["chat_overlay_hide_commands"] = settings["chat_overlay_hide_commands"]
+        if "chat_overlay_show_badges" in settings:
+            batch["chat_overlay_show_badges"] = settings["chat_overlay_show_badges"]
+        if "chat_overlay_show_platform" in settings:
+            batch["chat_overlay_show_platform"] = settings["chat_overlay_show_platform"]
         if "piper_length_scale" in settings:
             batch["piper_length_scale"] = str(settings["piper_length_scale"])
         if "piper_noise_scale" in settings:
             batch["piper_noise_scale"] = str(settings["piper_noise_scale"])
         if "piper_noise_w_scale" in settings:
             batch["piper_noise_w_scale"] = str(settings["piper_noise_w_scale"])
+        if "giphy_api_key" in settings:
+            batch["giphy_api_key"] = str(settings["giphy_api_key"]).strip()
 
         if hasattr(self.storage, "save_all"):
             self.storage.save_all(batch)

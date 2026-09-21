@@ -7,6 +7,7 @@ from .piper_manager import PiperVoiceManager, PiperVoiceDownloadWorker, DEFAULT_
 from .spam_service import SpamService
 from .timers_service import TimerService
 from .tts_service import TTSManager
+from .giphy_service import GiphyService
 
 __all__ = [
     "ChatService",
@@ -19,4 +20,5 @@ __all__ = [
     "SpamService",
     "TimerService",
     "TTSManager",
+    "GiphyService",
 ]

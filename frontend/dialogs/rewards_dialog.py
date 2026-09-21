@@ -46,8 +46,8 @@ class RewardsConfigWizard(ModernWizardPanel):
         )
         self._is_video = False
         
-        self._icon_refresh = get_icon_colored("refresh-duotone.svg")
-        self._icon_map_pin = get_icon_colored("map-pin.svg")
+        self._icon_refresh = get_icon_colored("refresh-filled.svg")
+        self._icon_map_pin = get_icon_colored("crosshairs-filled.svg")
         
         self.step1_widget = QWidget()
         self.step2_widget = QWidget()
@@ -275,7 +275,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                 
             row1.addWidget(self.combo_rewards, stretch=1)
             
-            self.btn_refresh = ModernButton("", role="action_neutral_border")
+            self.btn_refresh = ModernButton("", role="action_outlined")
             self.btn_refresh.setIcon(self._icon_refresh)
             self.btn_refresh.setIconSize(QSize(16, 16))
             self.btn_refresh.setToolTip(self.i18n.get("rewards.dialogs.wizard.step1.tooltip_refresh"))
@@ -309,7 +309,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.txt_file_path.setReadOnly(True)
         self.txt_file_path.setPlaceholderText(self.i18n.get("rewards.dialogs.wizard.step1.file_placeholder"))
         
-        self.btn_browse = ModernButton(self.i18n.get("common.buttons.browse"), role="action_neutral_border")
+        self.btn_browse = ModernButton(self.i18n.get("common.buttons.browse"), role="action_outlined")
         self.btn_browse.clicked.connect(self._browse_file)
         row2.addWidget(self.txt_file_path, stretch=1)
         row2.addWidget(self.btn_browse)
@@ -358,7 +358,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.slider_vol.valueChanged.connect(lambda v: self.lbl_vol_perc.setText(f"{v}%"))
         
         vol_row = SliderRow(
-            icon_name="volume.svg",
+            icon_name="volume-up-filled.svg",
             title_text=self.i18n.get("rewards.dialogs.wizard.step2.volume"),
             desc_text="",
             slider_widget=self.slider_vol,
@@ -381,7 +381,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         row_rnd.addWidget(self.chk_random_pos)
         v_layout.addLayout(row_rnd)
         
-        self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_neutral_border")
+        self.btn_visual = ModernButton(self.i18n.get("rewards.dialogs.wizard.step2.btn_visual"), role="action_outlined")
         self.btn_visual.setIcon(self._icon_map_pin)
         self.btn_visual.setIconSize(QSize(16, 16))
         self.btn_visual.clicked.connect(self._open_visual_editor)

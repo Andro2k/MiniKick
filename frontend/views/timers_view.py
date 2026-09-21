@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableW
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common import COLOR_RED, COLOR_GREEN, COLOR_NEUTRAL_400, MARGIN_H_MD
+from frontend.common import COLOR_WHITE, COLOR_NEUTRAL_400, MARGIN_H_MD
 
 class TimersView(BaseView):
     add_requested = Signal()
@@ -34,7 +34,7 @@ class TimersView(BaseView):
             headers=[col_1, col_2, col_3, col_4, col_5, col_6, col_7],
             search_placeholder=self.i18n.get("timer.table.search_placeholder"),
             add_button_text=self.i18n.get("timer.table.btn_new"),
-            add_button_icon="add.svg"
+            add_button_icon="plus-filled.svg"
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("timer.empty.title"),
@@ -162,17 +162,17 @@ class TimersView(BaseView):
         )
 
         cell.add_button(
-            icon_name="edit.svg",
-            color=COLOR_GREEN,
-            role="action_accent_border",
+            icon_name="edit-filled.svg",
+            color=COLOR_WHITE,
+            role="action_accent_solid",
             tooltip=self.i18n.get("timer.table.tooltip_edit"),
             callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
         )
 
         cell.add_button(
-            icon_name="trash.svg",
-            color=COLOR_RED,
-            role="action_danger_border",
+            icon_name="trash-filled.svg",
+            color=COLOR_WHITE,
+            role="action_danger_solid",
             tooltip=self.i18n.get("timer.table.tooltip_delete"),
             callback=lambda checked=False, tid=timer_id: self.delete_requested.emit(tid)
         )

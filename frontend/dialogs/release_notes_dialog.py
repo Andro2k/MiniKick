@@ -19,7 +19,7 @@ class ReleaseNotesDialog(ModernModal):
         self.browser_service = browser_service
         super().__init__(
             title=self.i18n.get("dialogs.release_notes.title"),
-            icon_path=get_assets_path("icons/file-text-duotone.svg"),
+            icon_path=get_assets_path("icons/file-text-filled.svg"),
             icon_bg_color=COLOR_GREEN,
             width=700,
             parent=parent
@@ -81,7 +81,7 @@ class ReleaseNotesDialog(ModernModal):
         self.content_layout.addStretch()
 
         self.btn_github = QPushButton(self.i18n.get("dialogs.release_notes.btn_github"))
-        self.btn_github.setProperty("role", "action_accent")
+        self.btn_github.setProperty("role", "action_outlined")
         self.btn_github.clicked.connect(self._open_github_release)
 
         self.btn_close = QPushButton(self.i18n.get("common.buttons.close"))

@@ -7,8 +7,8 @@ from PySide6.QtGui import QTextCharFormat, QColor
 from frontend.widgets import (ModernCard, ModernButton, ModernSwitch,
                               NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox)
 from frontend.common import (
-    COLOR_NEUTRAL_400, SPACING_NONE, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
-    MARGIN_NONE, MARGIN_LG
+    COLOR_NEUTRAL_400, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_MD, MARGIN_TAB_PANEL
 )
 
 class ScheduleFormPanel(QWidget):
@@ -18,6 +18,7 @@ class ScheduleFormPanel(QWidget):
 
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self.editing_schedule_id = None
         self._kick_cat_id = None
@@ -27,11 +28,11 @@ class ScheduleFormPanel(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_LG)
-        main_layout.setSpacing(SPACING_LG)
+        main_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        main_layout.setSpacing(SPACING_MD)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_LG)
+        card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD)
         card.card_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         header_layout = QHBoxLayout()
@@ -43,7 +44,7 @@ class ScheduleFormPanel(QWidget):
         card.addLayout(header_layout)
 
         form_layout = QVBoxLayout()
-        form_layout.setSpacing(SPACING_LG)
+        form_layout.setSpacing(SPACING_MD)
 
         lbl_name = QLabel(self.i18n.get("stream_info.schedule_dialog.name_label"))
         lbl_name.setProperty("role", "h3")
@@ -57,7 +58,7 @@ class ScheduleFormPanel(QWidget):
         form_layout.addWidget(lbl_target)
 
         switches_row = QHBoxLayout()
-        switches_row.setSpacing(SPACING_XL)
+        switches_row.setSpacing(SPACING_LG)
 
         kick_switch_box = QHBoxLayout()
         kick_switch_box.setSpacing(SPACING_MD)
@@ -83,7 +84,7 @@ class ScheduleFormPanel(QWidget):
         form_layout.addLayout(switches_row)
 
         datetime_row = QHBoxLayout()
-        datetime_row.setSpacing(SPACING_XL)
+        datetime_row.setSpacing(SPACING_LG)
 
         date_box = QVBoxLayout()
         date_box.setSpacing(SPACING_SM)
@@ -125,8 +126,8 @@ class ScheduleFormPanel(QWidget):
         lbl_now_spacer.setProperty("role", "h3")
         self.btn_now = ModernButton(
             self.i18n.get("stream_info.schedule_dialog.btn_now"),
-            role="action_neutral_border",
-            icon_name="clock-circle-duotone.svg"
+            role="action_outlined",
+            icon_name="clock-filled.svg"
         )
         self.btn_now.setToolTip(self.i18n.get("stream_info.schedule_dialog.btn_now_tooltip"))
         self.btn_now.clicked.connect(self._set_current_datetime)
@@ -177,7 +178,7 @@ class ScheduleFormPanel(QWidget):
         self.btn_clear.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clear.clicked.connect(self.clear_form)
 
-        self.btn_save = ModernButton(self.i18n.get("stream_info.schedule_dialog.btn_save"), role="action_accent")
+        self.btn_save = ModernButton(self.i18n.get("stream_info.schedule_dialog.btn_save"), role="action_outlined")
         self.btn_save.clicked.connect(self._on_save)
 
         action_row.addWidget(self.btn_clear)

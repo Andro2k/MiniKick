@@ -228,6 +228,10 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     ws_client.send_json({"event": "pinned_created", "pinned": self.server.manager._last_pinned_data})
                 if getattr(self.server.manager, "_last_top_chatters_data", None):
                     ws_client.send_json({"event": "top_chatters_update", **self.server.manager._last_top_chatters_data})
+            elif topic == "chat":
+                chat_config = getattr(self.server.manager, "_last_chat_config", None)
+                if chat_config:
+                    ws_client.send_json({"event": "chat_config", "config": chat_config})
 
             while not ws_client.closed:
                 msg = ws_client.read_frame()

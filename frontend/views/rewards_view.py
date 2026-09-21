@@ -6,8 +6,9 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common import (
-    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER,
-    get_pixmap_colored, get_icon_colored
+    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER, COLOR_WHITE,
+    get_pixmap_colored, get_icon_colored,
+    MARGIN_NONE, MARGIN_MD, SPACING_SM
 )
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
@@ -47,7 +48,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setPen(QColor(COLOR_RED))
         painter.drawPath(path)
         
-        icon_pixmap = get_pixmap_colored("alert-triangle-duotone.svg", COLOR_RED, 18)
+        icon_pixmap = get_pixmap_colored("alert-triangle-filled.svg", COLOR_RED, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -66,7 +67,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(rect, 6, 6)
         painter.fillPath(path, QColor("#1e293b"))
         
-        icon_pixmap = get_pixmap_colored("volume.svg", COLOR_GREEN, 18)
+        icon_pixmap = get_pixmap_colored("volume-up-filled.svg", COLOR_GREEN, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -106,7 +107,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
         painter.fillPath(path, QColor("#1e293b"))
         
-        icon_pixmap = get_pixmap_colored("movie.svg", COLOR_NEUTRAL_400, 18)
+        icon_pixmap = get_pixmap_colored("album-filled.svg", COLOR_NEUTRAL_400, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -142,16 +143,17 @@ class RewardsView(BaseView):
         self._build_table_card()
 
     def _build_obs_card(self):
-        obs_card = ModernCard(parent=self)
+        obs_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
-        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_neutral_border")
+        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined")
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
-            icon_name="link-duotone.svg",
+            icon_name="link-filled.svg",
             title_text=self.i18n.get("rewards.obs.title"),
             desc_text=self.i18n.get("rewards.obs.desc"),
-            right_widget=self.btn_copy_url
+            right_widget=self.btn_copy_url,
+            contents_margins=MARGIN_NONE
         )
         
         obs_card.addWidget(obs_row)
@@ -171,7 +173,7 @@ class RewardsView(BaseView):
             headers=[col_0, col_plat, col_cost, col_file, col_pos, col_vol, col_actions],
             search_placeholder=self.i18n.get("rewards.table.search_placeholder"),
             add_button_text=self.i18n.get("rewards.table.btn_new"),
-            add_button_icon="add.svg"
+            add_button_icon="plus-filled.svg"
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("rewards.empty.title"),
@@ -382,7 +384,7 @@ class RewardsView(BaseView):
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
-                item_plat.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_AMBER, 16))
+                item_plat.setIcon(get_icon_colored("alert-triangle-filled.svg", COLOR_AMBER, 16))
                 item_plat.setForeground(QColor(COLOR_AMBER))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
             else:
@@ -407,7 +409,7 @@ class RewardsView(BaseView):
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
-                item_file.setIcon(get_icon_colored("alert-triangle-duotone.svg", COLOR_RED, 16))
+                item_file.setIcon(get_icon_colored("alert-triangle-filled.svg", COLOR_RED, 16))
                 item_file.setForeground(QColor(COLOR_RED))
                 item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
             else:
@@ -436,30 +438,30 @@ class RewardsView(BaseView):
             cell = TableActionCell()
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
-                icon_name="play-duotone.svg", 
-                color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
-                role="action_neutral_border" if is_valid_file else "action_danger_border", 
+                icon_name="play-filled.svg", 
+                color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_WHITE, 
+                role="action_outlined" if is_valid_file else "action_danger_solid", 
                 tooltip=play_tooltip, 
                 callback=lambda checked=False, k=key: self.preview_requested.emit(k)
             )
             cell.add_button(
-                icon_name="edit.svg", 
-                color=COLOR_GREEN, 
-                role="action_accent_border", 
+                icon_name="edit-filled.svg", 
+                color=COLOR_WHITE, 
+                role="action_accent_solid", 
                 tooltip=self.i18n.get("rewards.table.tooltip_edit"), 
                 callback=lambda checked=False, k=key: self.edit_requested.emit(k)
             )
             cell.add_button(
-                icon_name="copy-duotone.svg", 
+                icon_name="copy-filled.svg", 
                 color=COLOR_TWITCH, 
-                role="action_neutral_border", 
+                role="action_outlined", 
                 tooltip=self.i18n.get("rewards.table.tooltip_duplicate"), 
                 callback=lambda checked=False, k=key: self.duplicate_requested.emit(k)
             )
             cell.add_button(
-                icon_name="trash.svg", 
-                color=COLOR_RED, 
-                role="action_danger_border", 
+                icon_name="trash-filled.svg", 
+                color=COLOR_WHITE, 
+                role="action_danger_solid", 
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
                 callback=lambda checked=False, k=key: self.delete_requested.emit(k)
             )
@@ -468,7 +470,7 @@ class RewardsView(BaseView):
 
         self.table_rewards.setUpdatesEnabled(True)
         total_mappings_count = len(self._raw_mappings)
-        self.table_card.set_empty(len(items) == 0 and total_mappings_count == 0)
+        self.table_card.set_empty(len(items) == 0)
 
         if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
             title_base = self.i18n.get("rewards.table.title")

@@ -27,7 +27,7 @@ from backend.controllers import (
 )
 from backend.providers import KickAPIClient, TwitchAPIClient
 from backend.workers import (
-    KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker, YouTubeChatWorker, TikTokChatWorker,
+    KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker,
     FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
 )
 from frontend.common import COLOR_GREEN, get_global_qss
@@ -54,19 +54,19 @@ class MainWindowCore(QMainWindow):
     SETTING_AUTOSTART = "dashboard_autostart"
 
     _NAV_CONFIG = (
-        ("Dashboard", "circle-graph-duotone.svg", "top"),
-        ("Chat", "dialog-duotone.svg", "top"),
-        ("Stream Info", "calendar-duotone.svg", "top"),
-        ("Spam Filters", "shield-duotone.svg", "top"),
-        ("Comandos", "code-duotone.svg", "top"),
-        ("Timers", "clock-circle-duotone.svg", "top"),
-        ("Music", "music-notes.svg", "top"),
-        ("Widgets", "widget-add-duotone.svg", "top"),
-        ("Triggers", "treasure-chest.svg", "top"),
+        ("Dashboard", "element-filled.svg", "top"),
+        ("Chat", "dialog-filled.svg", "top"),
+        ("Stream Info", "calendar-days-filled.svg", "top"),
+        ("Spam Filters", "shield-filled.svg", "top"),
+        ("Comandos", "chat-square-code-filled.svg", "top"),
+        ("Timers", "alarm-filled.svg", "top"),
+        ("Music", "music-notes-filled.svg", "top"),
+        ("Widgets", "widget-add-filled.svg", "top"),
+        ("Triggers", "treasure-chest-filled.svg", "top"),
         ("Alerts", "megaphone-filled.svg", "top"),
 
-        ("Settings", "settings-duotone.svg", "bottom"),
-        ("Developer", "file-text-duotone.svg", "bottom"),
+        ("Settings", "gear-filled.svg", "bottom"),
+        ("Developer", "file-text-filled.svg", "bottom"),
     )
 
     def __init__(self, updater_manager, app_version: str):
@@ -307,6 +307,7 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
+        self.chat_controller.chat_overlay_config_changed.connect(self.overlay_server.trigger_chat_config_update)
         self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
@@ -337,6 +338,8 @@ class MainWindowCore(QMainWindow):
         self.music_controller.load_initial_data()
         self.chat_controller.load_initial_data()
         self.chat_controller.sync_settings_cache()
+        if hasattr(self, "overlay_server") and self.overlay_server:
+            self.overlay_server.trigger_chat_config_update(self.chat_controller.get_active_overlay_config())
         self._apply_dynamic_theme(self.settings_service.get_font_size(), immediate=True)
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
@@ -410,7 +413,6 @@ class MainWindowCore(QMainWindow):
             self.content_stack.addWidget(self.view_rewards)
             self.view_rewards.refresh_rewards_requested.connect(self._fetch_api_rewards)
             self.rewards_controller.attach_view(self.view_rewards)
-            self._fetch_api_rewards()
             view_widget = self.view_rewards
         elif view_name == "Comandos":
             self.view_commands = CommandView(self.i18n, parent=self.content_stack)
@@ -484,7 +486,7 @@ class MainWindowCore(QMainWindow):
             "Music", "Developer"
         ]
         self._prewarm_queue = deque(views_to_warm)
-        QTimer.singleShot(750, self._prewarm_next_view)
+        QTimer.singleShot(2500, self._prewarm_next_view)
 
     def _prewarm_next_view(self):
         if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:
@@ -498,7 +500,7 @@ class MainWindowCore(QMainWindow):
                 self.logger.warning("[Prewarm] Error pre-warming view '%s': %s", view_name, e)
 
         if self._prewarm_queue and not self._is_shutting_down:
-            QTimer.singleShot(150, self._prewarm_next_view)
+            QTimer.singleShot(250, self._prewarm_next_view)
 
     @Slot()
     def _restore_from_tray(self):
@@ -1360,6 +1362,7 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
             self.dashboard_controller.set_youtube_status(connected=False, connecting=True)
 
+        from backend.workers import YouTubeChatWorker
         self.youtube_chat_worker = YouTubeChatWorker(
             target_channel=target,
             i18n=self.container.i18n
@@ -1448,6 +1451,7 @@ class MainWindowCore(QMainWindow):
             self.dashboard_controller.set_tiktok_status(connected=False, connecting=True)
 
         custom_sign_key = self.settings_storage.load_string("tiktok_sign_api_key", "").strip()
+        from backend.workers import TikTokChatWorker
         self.tiktok_chat_worker = TikTokChatWorker(
             target_channel=clean_target,
             sign_api_key=custom_sign_key or None,
@@ -1691,6 +1695,10 @@ class MainWindowCore(QMainWindow):
 
     @Slot(int)
     def _apply_dynamic_theme(self, base_size: int, immediate: bool = True):
+        current_size = getattr(self, "_applied_font_size", None)
+        if current_size == base_size:
+            return
+        self._applied_font_size = base_size
         app = QApplication.instance()
         if app:
             app.setStyleSheet(get_global_qss(base_size))

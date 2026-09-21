@@ -11,12 +11,11 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.common import (
     get_pixmap_colored, COLOR_NEUTRAL_400,
-    SPACING_XS, SPACING_SM, MARGIN_NONE
+    SPACING_XS, SPACING_SM, MARGIN_NONE, MARGIN_V_XS
 )
 from .controls_widget import ModernButton
 from .no_wheel import NoWheelSpinBox, NoWheelSlider
 from .color_picker import ModernColorPicker
-
 
 class InspectorPropertyRow(QWidget):
     def __init__(
@@ -33,7 +32,7 @@ class InspectorPropertyRow(QWidget):
         self.setMinimumHeight(36)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 2, 0, 2)
+        layout.setContentsMargins(*MARGIN_V_XS)
         layout.setSpacing(SPACING_SM)
 
         if icon_name:
@@ -200,7 +199,7 @@ class InspectorFilePicker(QWidget):
         self.btn_browse = ModernButton(
             text=browse_text,
             role="action_outlined",
-            icon_name="folder-open-duotone.svg",
+            icon_name="folder-open-filled.svg",
             icon_size=12,
             parent=self
         )
@@ -210,7 +209,7 @@ class InspectorFilePicker(QWidget):
         self.btn_clear = ModernButton(
             text="",
             role="action_outlined",
-            icon_name="trash.svg",
+            icon_name="trash-filled.svg",
             icon_size=12,
             parent=self
         )

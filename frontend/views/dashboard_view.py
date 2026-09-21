@@ -11,16 +11,15 @@ from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE,
     create_circular_pixmap, get_icon_colored, get_pixmap_colored,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
-    MARGIN_NONE, MARGIN_2XS, MARGIN_XL
+    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD,
+    MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_HERO, MARGIN_PLATFORMS_GRID, MARGIN_SETTING_ROW_COMPACT
 )
 from frontend.widgets import (
     BaseView, StatCard, SettingRow, ModernCard,
-    ModernButton, ModernSwitch, ModernDivider
+    ModernButton, ModernSwitch
 )
 from frontend.components.dashboard import (
-    SegmentedDistributionBar,
-    PlatformStatusCard,
+    SegmentedDistributionBar, PlatformStatusCard
 )
 
 class DashboardView(BaseView):
@@ -41,28 +40,32 @@ class DashboardView(BaseView):
     def __init__(self, i18n, browser_service=None, parent=None):
         super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
         self.browser_service = browser_service
-        self._stats_cols = -1
-        self._session_cols = -1
-        self._platform_cols = -1
-        self._metadata_cols = -1
+        self._stats_cols = 4
+        self._session_cols = 4
+        self._platform_cols = 4
+        self._metadata_cols = 4
         self._last_top_row_dir = None
         self._current_profile_platform = "kick"
+        self._current_avatar_bytes = None
+        self._rendered_top_commands = None
         self._setup_ui()
 
     def _setup_ui(self):
+        self.main_layout.setSpacing(SPACING_MD)
+
         self.banner_scopes_kick = QFrame()
         self.banner_scopes_kick.setProperty("role", "banner_scope_card")
         self.banner_scopes_kick.setProperty("state", "kick")
         self.banner_layout_kick = QHBoxLayout(self.banner_scopes_kick)
-        self.banner_layout_kick.setContentsMargins(*MARGIN_XL)
-        self.banner_layout_kick.setSpacing(SPACING_LG)
+        self.banner_layout_kick.setContentsMargins(*MARGIN_LG)
+        self.banner_layout_kick.setSpacing(SPACING_MD)
         self.banner_scopes_kick.setVisible(False)
         self.lbl_warn_text_kick = QLabel()
         self.lbl_warn_text_kick.setWordWrap(True)
         self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_kick")
         self.btn_reauth_kick.clicked.connect(self._on_reauth_kick_clicked)
         lbl_kick_icon = QLabel()
-        lbl_kick_icon.setPixmap(get_pixmap_colored("brand-kick.svg", COLOR_GREEN, 26))
+        lbl_kick_icon.setPixmap(get_pixmap_colored("brand-kick.svg", COLOR_GREEN, 24))
         lbl_kick_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_kick.addWidget(lbl_kick_icon, 0, Qt.AlignmentFlag.AlignTop)
         self.banner_layout_kick.addWidget(self.lbl_warn_text_kick, 1)
@@ -73,15 +76,15 @@ class DashboardView(BaseView):
         self.banner_scopes_twitch.setProperty("role", "banner_scope_card")
         self.banner_scopes_twitch.setProperty("state", "twitch")
         self.banner_layout_twitch = QHBoxLayout(self.banner_scopes_twitch)
-        self.banner_layout_twitch.setContentsMargins(*MARGIN_XL)
-        self.banner_layout_twitch.setSpacing(SPACING_LG)
+        self.banner_layout_twitch.setContentsMargins(*MARGIN_LG)
+        self.banner_layout_twitch.setSpacing(SPACING_MD)
         self.banner_scopes_twitch.setVisible(False)
         self.lbl_warn_text_twitch = QLabel()
         self.lbl_warn_text_twitch.setWordWrap(True)
         self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_twitch")
         self.btn_reauth_twitch.clicked.connect(self._on_reauth_twitch_clicked)
         lbl_twitch_icon = QLabel()
-        lbl_twitch_icon.setPixmap(get_pixmap_colored("brand-twitch.svg", COLOR_TWITCH, 26))
+        lbl_twitch_icon.setPixmap(get_pixmap_colored("brand-twitch.svg", COLOR_TWITCH, 24))
         lbl_twitch_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_twitch.addWidget(lbl_twitch_icon, 0, Qt.AlignmentFlag.AlignTop)
         self.banner_layout_twitch.addWidget(self.lbl_warn_text_twitch, 1)
@@ -101,23 +104,24 @@ class DashboardView(BaseView):
         self.main_layout.addStretch()
 
     def _setup_platforms_hub(self):
-        hub_card = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        hub_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE)
 
         self.sw_autostart = ModernSwitch()
         self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
         
         row_autostart = SettingRow(
-            "plug.svg", 
+            "plug-filled.svg", 
             self.i18n.get("dashboard.connection.autostart_title"), 
             self.i18n.get("dashboard.connection.autostart_desc"), 
-            self.sw_autostart
+            self.sw_autostart,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         hub_card.addWidget(row_autostart)
-        hub_card.addWidget(ModernDivider())
+        hub_card.add_separator()
 
         platforms_container = QWidget(self)
         self.platforms_grid = QGridLayout(platforms_container)
-        self.platforms_grid.setContentsMargins(*MARGIN_NONE)
+        self.platforms_grid.setContentsMargins(*MARGIN_PLATFORMS_GRID)
         self.platforms_grid.setSpacing(SPACING_MD)
 
         self.card_kick = PlatformStatusCard(
@@ -190,12 +194,13 @@ class DashboardView(BaseView):
         profile_layout.setContentsMargins(*MARGIN_NONE)
         profile_layout.setSpacing(SPACING_NONE)
 
-        self.card_channel_profile = ModernCard(parent=self, margin=SPACING_XL, spacing=SPACING_LG)
+        self.card_channel_profile = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE)
         self.card_channel_profile.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
-        top_hero_layout = QHBoxLayout()
-        top_hero_layout.setSpacing(SPACING_LG)
-        top_hero_layout.setContentsMargins(*MARGIN_NONE)
+        hero_container = QWidget(self)
+        top_hero_layout = QHBoxLayout(hero_container)
+        top_hero_layout.setSpacing(SPACING_MD)
+        top_hero_layout.setContentsMargins(*MARGIN_HERO)
 
         self.lbl_avatar = QLabel()
         self.lbl_avatar.setFixedSize(96, 96)
@@ -240,19 +245,24 @@ class DashboardView(BaseView):
         action_col = QVBoxLayout()
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
-        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_neutral_border")
-        self.btn_open_channel.setIcon(get_icon_colored("link-duotone.svg", COLOR_WHITE, 14))
+        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined")
+        self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", COLOR_WHITE, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)
 
         top_hero_layout.addLayout(action_col)
-        self.card_channel_profile.addLayout(top_hero_layout)
+        self.card_channel_profile.addWidget(hero_container)
 
-        self.card_channel_profile.addWidget(ModernDivider())
+        self.card_channel_profile.add_separator()
+
+        meta_container = QWidget(self)
+        meta_layout = QVBoxLayout(meta_container)
+        meta_layout.setContentsMargins(*MARGIN_SETTING_ROW_COMPACT)
+        meta_layout.setSpacing(SPACING_NONE)
 
         self.metadata_grid = QGridLayout()
-        self.metadata_grid.setContentsMargins(*MARGIN_2XS)
-        self.metadata_grid.setSpacing(SPACING_LG)
+        self.metadata_grid.setContentsMargins(*MARGIN_NONE)
+        self.metadata_grid.setSpacing(SPACING_MD)
 
         self.lbl_meta_created_title = QLabel(self.i18n.get("dashboard.stats.created_at").upper())
         self.lbl_meta_created_title.setProperty("role", "caption")
@@ -296,7 +306,9 @@ class DashboardView(BaseView):
         for i, col_widget in enumerate(self.metadata_cols_list):
             self.metadata_grid.addWidget(col_widget, 0, i)
 
-        self.card_channel_profile.addLayout(self.metadata_grid)
+        meta_layout.addLayout(self.metadata_grid)
+        self.card_channel_profile.addWidget(meta_container)
+
         profile_layout.addWidget(self.card_channel_profile)
 
         class _StatCardAdapter:
@@ -316,14 +328,14 @@ class DashboardView(BaseView):
         self.profile_container.setVisible(False)
         self.profile_wrapper_layout.addWidget(self.profile_container)
 
-        self.disconnected_container = ModernCard(parent=self, margin=SPACING_XL, spacing=SPACING_MD)
+        self.disconnected_container = ModernCard(parent=self, margin=MARGIN_LG, spacing=SPACING_SM)
         self.disconnected_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         
         empty_header = QHBoxLayout()
-        empty_header.setSpacing(SPACING_LG)
+        empty_header.setSpacing(SPACING_MD)
 
         lbl_empty_icon = QLabel(self)
-        lbl_empty_icon.setPixmap(get_pixmap_colored("users.svg", COLOR_NEUTRAL_500, 32))
+        lbl_empty_icon.setPixmap(get_pixmap_colored("users-filled.svg", COLOR_NEUTRAL_500, 28))
         lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         empty_text_layout = QVBoxLayout()
@@ -353,15 +365,13 @@ class DashboardView(BaseView):
         analytics_container = QWidget(self)
         analytics_layout = QVBoxLayout(analytics_container)
         analytics_layout.setContentsMargins(*MARGIN_NONE)
-        analytics_layout.setSpacing(SPACING_LG)
-
-        analytics_layout.addWidget(ModernDivider())
+        analytics_layout.setSpacing(SPACING_MD)
 
         lbl_activity_title = QLabel(self.i18n.get("dashboard.analytics.title"))
         lbl_activity_title.setProperty("role", "h2")
         analytics_layout.addWidget(lbl_activity_title)
 
-        bar_card = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
+        bar_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_XS)
         lbl_dist_title = QLabel(self.i18n.get("dashboard.analytics.distribution_title"))
         lbl_dist_title.setProperty("role", "caption")
         bar_card.addWidget(lbl_dist_title)
@@ -375,10 +385,10 @@ class DashboardView(BaseView):
         self.session_grid.setContentsMargins(*MARGIN_NONE)
         self.session_grid.setSpacing(SPACING_MD)
 
-        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-duotone.svg", "0")
-        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "code-duotone.svg", "0")
-        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock-circle-duotone.svg", "0")
-        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-duotone.svg", "0")
+        self.card_msg_processed = StatCard(self.i18n.get("dashboard.session.messages"), "dialog-filled.svg", "0")
+        self.card_cmd_executed = StatCard(self.i18n.get("dashboard.session.commands"), "chat-square-code-filled.svg", "0")
+        self.card_timers_sent = StatCard(self.i18n.get("dashboard.session.timers"), "clock-filled.svg", "0")
+        self.card_spam_blocked = StatCard(self.i18n.get("dashboard.session.spam"), "shield-filled.svg", "0")
 
         self.session_cards = [
             self.card_msg_processed, self.card_cmd_executed,
@@ -390,9 +400,9 @@ class DashboardView(BaseView):
         analytics_layout.addWidget(session_stats_container)
 
         self.bottom_analytics_layout = QHBoxLayout()
-        self.bottom_analytics_layout.setSpacing(SPACING_LG)
+        self.bottom_analytics_layout.setSpacing(SPACING_MD)
 
-        self.top_commands_card = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        self.top_commands_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         self.top_commands_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_top_cmds = QLabel(self.i18n.get("dashboard.analytics.top_commands_title"))
         lbl_top_cmds.setProperty("role", "h3")
@@ -405,14 +415,14 @@ class DashboardView(BaseView):
         self.top_commands_container.addWidget(self.lbl_no_commands)
         self.top_commands_card.addLayout(self.top_commands_container)
 
-        self.modules_card = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        self.modules_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         self.modules_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_modules_title = QLabel(self.i18n.get("dashboard.analytics.modules_summary_title"))
         lbl_modules_title.setProperty("role", "h3")
         self.modules_card.addWidget(lbl_modules_title)
 
         self.modules_grid = QGridLayout()
-        self.modules_grid.setSpacing(SPACING_MD)
+        self.modules_grid.setSpacing(SPACING_SM)
 
         self.lbl_active_cmds_val = QLabel("0")
         self.lbl_active_cmds_val.setProperty("role", "h2")
@@ -542,7 +552,9 @@ class DashboardView(BaseView):
         if avatar_bytes:
             self.set_avatar_from_bytes(avatar_bytes)
         else:
+            self._current_avatar_bytes = None
             self.lbl_avatar.setPixmap(QPixmap())
+            self.lbl_avatar.setProperty("has_image", False)
             self.lbl_avatar.setText("?")
 
     def update_analytics_summary(self, analytics: dict):
@@ -550,47 +562,49 @@ class DashboardView(BaseView):
             return
 
         top_commands = analytics.get("top_commands", [])
-        while self.top_commands_container.count() > 0:
-            item = self.top_commands_container.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
-            elif item.layout():
-                while item.layout().count() > 0:
-                    child = item.layout().takeAt(0)
-                    if child.widget():
-                        child.widget().deleteLater()
+        if getattr(self, "_rendered_top_commands", None) != top_commands:
+            self._rendered_top_commands = list(top_commands)
+            while self.top_commands_container.count() > 0:
+                item = self.top_commands_container.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+                elif item.layout():
+                    while item.layout().count() > 0:
+                        child = item.layout().takeAt(0)
+                        if child.widget():
+                            child.widget().deleteLater()
 
-        if not top_commands:
-            lbl_none = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
-            lbl_none.setProperty("role", "body")
-            self.top_commands_container.addWidget(lbl_none)
-        else:
-            max_cnt = max((cmd.get("count", 1) for cmd in top_commands), default=1)
-            usages_str = self.i18n.get("dashboard.analytics.usages")
-            for idx, cmd in enumerate(top_commands):
-                row = QHBoxLayout()
-                row.setSpacing(SPACING_MD)
-                
-                lbl_rank = QLabel(f"#{idx + 1}")
-                lbl_rank.setProperty("role", "rank_number")
-                
-                lbl_trigger = QLabel(cmd.get("trigger", ""))
-                lbl_trigger.setProperty("role", "body")
-                
-                pbar = QProgressBar()
-                pbar.setProperty("role", "top_command_progress")
-                pbar.setTextVisible(False)
-                pbar.setRange(0, max_cnt)
-                pbar.setValue(cmd.get("count", 0))
-                
-                lbl_cnt = QLabel(f"{cmd.get('count', 0)} {usages_str}")
-                lbl_cnt.setProperty("role", "caption")
-                
-                row.addWidget(lbl_rank)
-                row.addWidget(lbl_trigger)
-                row.addWidget(pbar, stretch=1)
-                row.addWidget(lbl_cnt)
-                self.top_commands_container.addLayout(row)
+            if not top_commands:
+                lbl_none = QLabel(self.i18n.get("dashboard.analytics.no_commands_used"))
+                lbl_none.setProperty("role", "body")
+                self.top_commands_container.addWidget(lbl_none)
+            else:
+                max_cnt = max((cmd.get("count", 1) for cmd in top_commands), default=1)
+                usages_str = self.i18n.get("dashboard.analytics.usages")
+                for idx, cmd in enumerate(top_commands):
+                    row = QHBoxLayout()
+                    row.setSpacing(SPACING_MD)
+                    
+                    lbl_rank = QLabel(f"#{idx + 1}")
+                    lbl_rank.setProperty("role", "rank_number")
+                    
+                    lbl_trigger = QLabel(cmd.get("trigger", ""))
+                    lbl_trigger.setProperty("role", "body")
+                    
+                    pbar = QProgressBar()
+                    pbar.setProperty("role", "top_command_progress")
+                    pbar.setTextVisible(False)
+                    pbar.setRange(0, max_cnt)
+                    pbar.setValue(cmd.get("count", 0))
+                    
+                    lbl_cnt = QLabel(f"{cmd.get('count', 0)} {usages_str}")
+                    lbl_cnt.setProperty("role", "caption")
+                    
+                    row.addWidget(lbl_rank)
+                    row.addWidget(lbl_trigger)
+                    row.addWidget(pbar, stretch=1)
+                    row.addWidget(lbl_cnt)
+                    self.top_commands_container.addLayout(row)
 
         self.lbl_active_cmds_val.setText(str(analytics.get("active_commands", 0)))
         self.lbl_active_timers_val.setText(str(analytics.get("active_timers", 0)))
@@ -648,7 +662,10 @@ class DashboardView(BaseView):
             card.set_value(self._fmt_metric(count, total))
 
     def set_avatar_from_bytes(self, image_data: bytes):
-        pixmap = create_circular_pixmap(image_data)
+        if getattr(self, "_current_avatar_bytes", None) == image_data and self.lbl_avatar.property("has_image"):
+            return
+        self._current_avatar_bytes = image_data
+        pixmap = create_circular_pixmap(image_data, target_size=96)
         if not pixmap.isNull():
             self.lbl_avatar.setPixmap(pixmap)
             self.lbl_avatar.setProperty("has_image", True)
@@ -656,8 +673,11 @@ class DashboardView(BaseView):
             self.lbl_avatar.style().polish(self.lbl_avatar)
     
     def reset_to_disconnected(self):
+        self._current_avatar_bytes = None
         self.set_kick_status(connected=False)
         self.lbl_avatar.setPixmap(QPixmap())
+        self.lbl_avatar.setProperty("has_image", False)
+        self.lbl_avatar.setText("?")
 
     def _on_reauth_kick_clicked(self):
         self.reauth_kick_requested.emit()
@@ -734,12 +754,16 @@ class DashboardView(BaseView):
         align = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop if width < 480 else Qt.AlignmentFlag.AlignVCenter
         
         if hasattr(self, 'banner_layout_kick'):
-            self.banner_layout_kick.setDirection(banner_dir)
-            self.lbl_warn_text_kick.setAlignment(align)
+            if self.banner_layout_kick.direction() != banner_dir:
+                self.banner_layout_kick.setDirection(banner_dir)
+            if self.lbl_warn_text_kick.alignment() != align:
+                self.lbl_warn_text_kick.setAlignment(align)
 
         if hasattr(self, 'banner_layout_twitch'):
-            self.banner_layout_twitch.setDirection(banner_dir)
-            self.lbl_warn_text_twitch.setAlignment(align)
+            if self.banner_layout_twitch.direction() != banner_dir:
+                self.banner_layout_twitch.setDirection(banner_dir)
+            if self.lbl_warn_text_twitch.alignment() != align:
+                self.lbl_warn_text_twitch.setAlignment(align)
 
         if hasattr(self, 'platforms_grid') and hasattr(self, 'platform_cards'):
             plat_cols = 1 if width < 550 else (2 if width < 900 else 4)
@@ -755,4 +779,5 @@ class DashboardView(BaseView):
 
         if hasattr(self, 'bottom_analytics_layout'):
             bottom_dir = QBoxLayout.Direction.TopToBottom if width < 750 else QBoxLayout.Direction.LeftToRight
-            self.bottom_analytics_layout.setDirection(bottom_dir)
+            if self.bottom_analytics_layout.direction() != bottom_dir:
+                self.bottom_analytics_layout.setDirection(bottom_dir)

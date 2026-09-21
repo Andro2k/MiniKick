@@ -75,10 +75,17 @@ def _silence_ffmpeg_native_logging():
         import ctypes
         import PySide6
         pyside_dir = os.path.dirname(PySide6.__file__)
-        for root, dirs, files in os.walk(pyside_dir):
-            for f in files:
+        candidate_dirs = [
+            pyside_dir,
+            os.path.join(pyside_dir, "plugins", "multimedia"),
+            os.path.join(pyside_dir, "bin"),
+        ]
+        for cdir in candidate_dirs:
+            if not os.path.isdir(cdir):
+                continue
+            for f in os.listdir(cdir):
                 if 'avutil' in f and (f.endswith('.dll') or f.endswith('.so') or '.so.' in f or f.endswith('.dylib')):
-                    dll_path = os.path.join(root, f)
+                    dll_path = os.path.join(cdir, f)
                     avutil = ctypes.CDLL(dll_path)
                     avutil.av_log_set_level(8)
                     return

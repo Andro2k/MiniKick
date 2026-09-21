@@ -2,8 +2,11 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from PySide6.QtCore import Signal, Qt
-from frontend.common import MARGIN_2XS, SPACING_LG, SPACING_MD
-from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow, NoWheelSlider
+from frontend.common import (
+    MARGIN_NONE, MARGIN_TAB_PANEL, MARGIN_SETTING_ROW_COMPACT,
+    SPACING_NONE, SPACING_MD
+)
+from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SliderRow, NoWheelSlider, SectionHeader
 
 class MusicSettingsPanel(QWidget):
     youtube_auto_resume_toggled = Signal(bool)
@@ -15,40 +18,48 @@ class MusicSettingsPanel(QWidget):
 
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self._setup_ui()
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_2XS)
-        self.panel_layout.setSpacing(SPACING_LG)
+        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setSpacing(SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_settings_card()
 
     def _setup_settings_card(self):
-        self.card_settings = ModernCard(margin=SPACING_LG, spacing=SPACING_MD)
+        header_settings = SectionHeader(self.i18n.get("music.tabs.settings"), first=True, parent=self)
+        self.panel_layout.addWidget(header_settings)
+
+        self.card_settings = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
 
         self.sw_auto_resume = ModernSwitch()
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
         self.row_auto_resume = SettingRow(
-            icon_name="refresh-duotone.svg",
+            icon_name="refresh-filled.svg",
             title_text=self.i18n.get("music.youtube.auto_resume_title"),
             desc_text=self.i18n.get("music.youtube.auto_resume_desc"),
-            right_widget=self.sw_auto_resume
+            right_widget=self.sw_auto_resume,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.card_settings.addWidget(self.row_auto_resume)
+        self.card_settings.add_separator()
 
         self.sw_media_keys = ModernSwitch()
         self.sw_media_keys.setChecked(True)
         self.sw_media_keys.toggled.connect(self.media_keys_toggled.emit)
         self.row_media_keys = SettingRow(
-            icon_name="play-duotone.svg",
+            icon_name="play-filled.svg",
             title_text=self.i18n.get("music.youtube.media_keys_title"),
             desc_text=self.i18n.get("music.youtube.media_keys_desc"),
-            right_widget=self.sw_media_keys
+            right_widget=self.sw_media_keys,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.card_settings.addWidget(self.row_media_keys)
+        self.card_settings.add_separator()
 
         self.slider_max_user_songs = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_max_user_songs.setRange(1, 10)
@@ -56,14 +67,16 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_user_songs = QLabel("2")
         self.lbl_max_user_songs.setProperty("role", "body")
         self.row_max_user_songs = SliderRow(
-            icon_name="user.svg",
+            icon_name="user-filled.svg",
             title_text=self.i18n.get("music.youtube.max_user_songs_title"),
             desc_text=self.i18n.get("music.youtube.max_user_songs_desc"),
             slider_widget=self.slider_max_user_songs,
-            value_label=self.lbl_max_user_songs
+            value_label=self.lbl_max_user_songs,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_max_user_songs.valueChanged.connect(self._on_max_user_songs_changed)
         self.card_settings.addWidget(self.row_max_user_songs)
+        self.card_settings.add_separator()
 
         self.slider_user_cooldown = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_user_cooldown.setRange(0, 300)
@@ -71,14 +84,16 @@ class MusicSettingsPanel(QWidget):
         self.lbl_user_cooldown = QLabel("30s")
         self.lbl_user_cooldown.setProperty("role", "body")
         self.row_user_cooldown = SliderRow(
-            icon_name="clock-circle-duotone.svg",
+            icon_name="clock-filled.svg",
             title_text=self.i18n.get("music.youtube.user_cooldown_title"),
             desc_text=self.i18n.get("music.youtube.user_cooldown_desc"),
             slider_widget=self.slider_user_cooldown,
-            value_label=self.lbl_user_cooldown
+            value_label=self.lbl_user_cooldown,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_user_cooldown.valueChanged.connect(self._on_user_cooldown_changed)
         self.card_settings.addWidget(self.row_user_cooldown)
+        self.card_settings.add_separator()
 
         self.slider_max_queue = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_max_queue.setRange(5, 100)
@@ -86,14 +101,16 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_queue = QLabel("30")
         self.lbl_max_queue.setProperty("role", "body")
         self.row_max_queue = SliderRow(
-            icon_name="list.svg",
+            icon_name="playlist-filled.svg",
             title_text=self.i18n.get("music.youtube.max_queue_size_title"),
             desc_text=self.i18n.get("music.youtube.max_queue_size_desc"),
             slider_widget=self.slider_max_queue,
-            value_label=self.lbl_max_queue
+            value_label=self.lbl_max_queue,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_max_queue.valueChanged.connect(self._on_max_queue_changed)
         self.card_settings.addWidget(self.row_max_queue)
+        self.card_settings.add_separator()
 
         self.slider_max_duration = NoWheelSlider(Qt.Orientation.Horizontal)
         self.slider_max_duration.setRange(1, 30)
@@ -101,11 +118,12 @@ class MusicSettingsPanel(QWidget):
         self.lbl_max_duration = QLabel("10m")
         self.lbl_max_duration.setProperty("role", "body")
         self.row_max_duration = SliderRow(
-            icon_name="stopwatch.svg",
+            icon_name="stopwatch-filled.svg",
             title_text=self.i18n.get("music.youtube.max_song_duration_title"),
             desc_text=self.i18n.get("music.youtube.max_song_duration_desc"),
             slider_widget=self.slider_max_duration,
-            value_label=self.lbl_max_duration
+            value_label=self.lbl_max_duration,
+            contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_max_duration.valueChanged.connect(self._on_max_duration_changed)
         self.card_settings.addWidget(self.row_max_duration)

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QBoxLayout, QSizePol
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
-from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE
+from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
     AlertVariantListItem,
@@ -57,11 +57,11 @@ class AlertsView(BaseView):
     view_shown = Signal()
 
     _TWITCH_EVENTS = [
-        ("follow", "user-check.svg"),
-        ("subscription", "crown.svg"),
-        ("resub", "star.svg"),
+        ("follow", "profile-tick-filled.svg"),
+        ("subscription", "crown-filled.svg"),
+        ("resub", "star-filled.svg"),
         ("sub_gift", "gift-filled.svg"),
-        ("raid", "users.svg"),
+        ("raid", "users-filled.svg"),
         ("cheer", "prism.svg"),
     ]
 
@@ -101,14 +101,14 @@ class AlertsView(BaseView):
         self.main_layout.addWidget(self.overlay_card, 0)
         self.main_layout.addSpacing(SPACING_SM)
 
-        self.notice_banner = ModernCard(parent=self, margin=SPACING_MD, spacing=SPACING_SM)
+        self.notice_banner = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         self.notice_banner.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self.notice_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.notice_layout.setContentsMargins(*MARGIN_NONE)
         self.notice_layout.setSpacing(SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
-        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-duotone.svg", COLOR_AMBER, size=20))
+        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, size=20))
 
         notice_text_col = QVBoxLayout()
         notice_text_col.setContentsMargins(*MARGIN_NONE)
@@ -128,7 +128,7 @@ class AlertsView(BaseView):
         self.btn_notice_connect = ModernButton(
             text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
             role="action_outlined",
-            icon_name="plug.svg",
+            icon_name="plug-filled.svg",
             icon_size=15,
             parent=self
         )
@@ -192,7 +192,7 @@ class AlertsView(BaseView):
         if dict.__contains__(self.cards, key):
             return dict.__getitem__(self.cards, key)
 
-        icon_name = self._event_meta.get(platform, {}).get(alert_type, "user-check.svg")
+        icon_name = self._event_meta.get(platform, {}).get(alert_type, "profile-tick-filled.svg")
         editor_stack = self.twitch_editor_stack
         sidebar_panel = self.sidebars.get(platform)
 

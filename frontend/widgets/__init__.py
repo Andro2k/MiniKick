@@ -1,8 +1,8 @@
 # frontend\widgets\__init__.py
 
 from .block_widget import (
-    ViewHeader, SettingRow, FormField, SliderRow, StatCard, 
-    ModernCard, ModernScrollArea, FadingScrollArea, ExpandableSettingCard, ModernDivider,
+    ViewHeader, SectionHeader, SettingRow, FormField, SliderRow, StatCard, 
+    ModernCard, ModernScrollArea, FadingScrollArea, ExpandableCard, ExpandableSettingCard, ModernDivider,
     create_badge
 )
 from .controls_widget import ModernButton, ModernSwitch, CompactSpinBox, VariableHighlighter, VariableTextEdit
@@ -33,6 +33,7 @@ __all__ = [
     "InspectorFilePicker",
     "BaseView",
     "ViewHeader",
+    "SectionHeader",
     "SettingRow",
     "FormField",
     "SliderRow",
@@ -40,6 +41,7 @@ __all__ = [
     "ModernCard",
     "ModernScrollArea",
     "FadingScrollArea",
+    "ExpandableCard",
     "ExpandableSettingCard",
     "ModernDivider",
     "create_badge",

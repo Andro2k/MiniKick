@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplic
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK,
-    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_2XS,
+    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL, MARGIN_SETTING_ROW_COMPACT,
     SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
@@ -52,6 +52,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def __init__(self, i18n, music_overlay_url: str = "", parent=None):
         super().__init__(parent)
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self._music_overlay_url = music_overlay_url
         self._cached_song_state = None
@@ -79,8 +80,8 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_2XS)
-        self.panel_layout.setSpacing(SPACING_LG)
+        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setSpacing(SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_status_card()
@@ -89,7 +90,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self._setup_overlay_url_card()
 
     def _setup_status_card(self):
-        card = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
         status_layout = QHBoxLayout()
         status_layout.setContentsMargins(*MARGIN_NONE)
@@ -107,7 +108,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
-        self.card_player = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD, orientation="vertical")
+        self.card_player = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD, orientation="vertical")
         self.card_player.setVisible(True)
 
         top_layout = QHBoxLayout()
@@ -141,15 +142,15 @@ class MusicPlayerSettingsPanel(QWidget):
         controls_layout.setContentsMargins(*MARGIN_NONE)
         controls_layout.setSpacing(SPACING_SM)
         
-        self.btn_play_pause = ModernButton("", role="action_neutral_border")
+        self.btn_play_pause = ModernButton("", role="action_outlined")
         self.btn_play_pause.setFixedSize(36, 36)
-        self.btn_play_pause.setIcon(get_icon_colored("play-duotone.svg", COLOR_NEUTRAL_400, 18))
+        self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, 18))
         self.btn_play_pause.setIconSize(QSize(18, 18))
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
         
-        self.btn_skip = ModernButton("", role="action_neutral_border")
+        self.btn_skip = ModernButton("", role="action_outlined")
         self.btn_skip.setFixedSize(36, 36)
-        self.btn_skip.setIcon(get_icon_colored("skip-next-duotone.svg", COLOR_NEUTRAL_400, 18))
+        self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", COLOR_NEUTRAL_400, 18))
         self.btn_skip.setIconSize(QSize(18, 18))
         self.btn_skip.clicked.connect(self.skip_requested.emit)
         
@@ -196,7 +197,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_volume_card(self):
-        self.card_volume = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        self.card_volume = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
@@ -205,11 +206,12 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_vol_perc.setProperty("role", "body")
         
         self.row_vol = SliderRow(
-            icon_name="volume.svg",
+            icon_name="volume-up-filled.svg",
             title_text=self.i18n.get("music.player.volume_title"),
             desc_text=self.i18n.get("music.player.volume_desc"),
             slider_widget=self.slider_vol,
-            value_label=self.lbl_vol_perc
+            value_label=self.lbl_vol_perc,
+            contents_margins=MARGIN_NONE
         )
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
         self.card_volume.addWidget(self.row_vol)
@@ -224,7 +226,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.volume_changed.emit(self._pending_volume)
 
     def _setup_overlay_url_card(self):
-        self.card_overlay_url = ModernCard(parent=self, margin=SPACING_LG, spacing=SPACING_MD)
+        self.card_overlay_url = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD)
 
         url_info = QVBoxLayout()
         url_info.setContentsMargins(*MARGIN_NONE)
@@ -291,7 +293,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
         self.btn_copy_music_url = ModernButton(
             self.i18n.get("common.buttons.copy"),
-            role="action_neutral_border"
+            role="action_outlined"
         )
         self.btn_copy_music_url.clicked.connect(self._copy_music_overlay_url)
 
@@ -406,7 +408,7 @@ class MusicPlayerSettingsPanel(QWidget):
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
             self.lbl_song_artist.setText("-")
             self.lbl_song_requester.setText("-")
-            self.btn_play_pause.setIcon(get_icon_colored("play-duotone.svg", COLOR_NEUTRAL_400, 18))
+            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, 18))
             self._is_playing = False
             self._duration_ms = 0
             self._current_progress_ms = 0
@@ -441,7 +443,7 @@ class MusicPlayerSettingsPanel(QWidget):
             req_text = self.i18n.get("music.player.requested_by_streamer")
         self.lbl_song_requester.setText(req_text)
 
-        icon_name = "pause-duotone.svg" if is_playing else "play-duotone.svg"
+        icon_name = "pause-filled.svg" if is_playing else "play-filled.svg"
         self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_400, 18))
 
         self._duration_ms = duration

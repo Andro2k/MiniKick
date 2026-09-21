@@ -102,15 +102,20 @@ class KickWebSocketManager:
         self.ws.run_forever(
             sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),),
             ping_interval=30,
-            ping_timeout=10
+            ping_timeout=20
         )
 
     def _on_error(self, ws: websocket.WebSocketApp, err: Exception) -> None:
-        logger.error(
+        is_routine_network_drop = isinstance(
+            err,
+            (websocket.WebSocketTimeoutException, TimeoutError, ConnectionResetError, BrokenPipeError)
+        )
+        log_func = logger.warning if is_routine_network_drop else logger.error
+        log_func(
             "[KickWebSocket] WebSocket error (%s): %s",
             type(err).__name__,
             err,
-            exc_info=not isinstance(err, (KeyboardInterrupt, SystemExit))
+            exc_info=not is_routine_network_drop and not isinstance(err, (KeyboardInterrupt, SystemExit))
         )
 
     def _on_close(self, ws: websocket.WebSocketApp, status: int | None, msg: str | None) -> None:

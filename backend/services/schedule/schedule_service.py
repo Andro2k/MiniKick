@@ -2,6 +2,7 @@
 
 import time
 import logging
+import threading
 from typing import TYPE_CHECKING
 from concurrent.futures import ThreadPoolExecutor
 from backend.database import SQLiteScheduleStorage
@@ -25,6 +26,8 @@ class ScheduleService:
         self.i18n = i18n or TranslationService()
         self._category_cache: dict[tuple[str, str], tuple[float, list[dict]]] = {}
         self._cache_ttl = 120.0
+        self._schedules_cache: list[dict] | None = None
+        self._schedules_cache_lock = threading.Lock()
 
     def set_kick_client(self, kick_client: KickAPIClient | None) -> None:
         self.kick_client = kick_client
@@ -226,14 +229,25 @@ class ScheduleService:
 
         return outcome
 
-    def get_all_schedules(self) -> list[dict]:
-        return self.schedule_storage.load_all()
+    def invalidate_schedules_cache(self) -> None:
+        with self._schedules_cache_lock:
+            self._schedules_cache = None
+
+    def get_all_schedules(self, force_reload: bool = False) -> list[dict]:
+        with self._schedules_cache_lock:
+            if self._schedules_cache is not None and not force_reload:
+                return [dict(s) for s in self._schedules_cache]
+
+        loaded = self.schedule_storage.load_all()
+        with self._schedules_cache_lock:
+            self._schedules_cache = [dict(s) for s in loaded]
+            return [dict(s) for s in self._schedules_cache]
 
     def save_schedule(self, name: str, date_str: str, time_str: str, target_platform: str,
                       title: str, kick_category_id: int | None, kick_category_name: str,
                       twitch_category_id: str | None, twitch_category_name: str,
                       is_active: bool = True, schedule_id: int | None = None) -> int:
-        return self.schedule_storage.save(
+        schedule_id_result = self.schedule_storage.save(
             name=name,
             date_str=date_str,
             time_str=time_str,
@@ -246,12 +260,22 @@ class ScheduleService:
             is_active=is_active,
             schedule_id=schedule_id
         )
+        self.invalidate_schedules_cache()
+        return schedule_id_result
 
     def delete_schedule(self, schedule_id: int) -> bool:
-        return self.schedule_storage.delete(schedule_id)
+        result = self.schedule_storage.delete(schedule_id)
+        self.invalidate_schedules_cache()
+        return result
 
     def toggle_schedule(self, schedule_id: int, is_active: bool) -> bool:
-        return self.schedule_storage.toggle_active(schedule_id, is_active)
+        result = self.schedule_storage.toggle_active(schedule_id, is_active)
+        self.invalidate_schedules_cache()
+        return result
+
+    def mark_schedule_executed(self, schedule_id: int, executed_date: str) -> None:
+        self.schedule_storage.update_last_executed(schedule_id, executed_date)
+        self.toggle_schedule(schedule_id, False)
 
     def apply_schedule(self, schedule: dict) -> dict:
         target_platform = schedule.get("target_platform", "all")

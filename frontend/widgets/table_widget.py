@@ -7,9 +7,10 @@ from .controls_widget import ModernButton, ModernSwitch
 from .scalable_illustration import ScalableIllustration
 from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
+from .block_widget import ModernDivider
 from frontend.common import (
     get_icon_colored, get_assets_path,
-    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
     MARGIN_NONE, MARGIN_MD, MARGIN_XL, MARGIN_H_SM
 )
 
@@ -33,40 +34,47 @@ class ModernTable(QTableWidget):
 class ModernTableCard(QFrame):
     def __init__(self, title_text: str = None, headers: list[str] = None, 
                  search_placeholder: str = None, add_button_text: str = None, 
-                 add_button_icon: str = "add.svg", parent=None):
+                 add_button_icon: str = "plus-filled.svg", parent=None):
         super().__init__(parent)
         self.setProperty("role", "card")
         
         self.card_layout = QVBoxLayout(self)
-        self.card_layout.setContentsMargins(*MARGIN_MD)
-        self.card_layout.setSpacing(SPACING_SM)
+        self.card_layout.setContentsMargins(*MARGIN_NONE)
+        self.card_layout.setSpacing(SPACING_NONE)
         
+        self.header_widget = None
         self.header_layout = None
         self.lbl_title = None
         self.txt_search = None
         self.btn_add = None
+        self.divider = None
         
         if title_text or search_placeholder or add_button_text:
-            self.header_layout = QHBoxLayout()
+            self.header_widget = QWidget(self)
+            self.header_layout = QHBoxLayout(self.header_widget)
+            self.header_layout.setContentsMargins(*MARGIN_MD)
+            self.header_layout.setSpacing(SPACING_MD)
             
             if title_text:
-                self.lbl_title = QLabel(title_text, parent=self)
+                self.lbl_title = QLabel(title_text, self.header_widget)
                 self.lbl_title.setProperty("role", "h3")
                 self.header_layout.addWidget(self.lbl_title)
                 
             self.header_layout.addStretch()
             
             if search_placeholder:
-                self.txt_search = UnifiedSearchBar(placeholder=search_placeholder, parent=self)
+                self.txt_search = UnifiedSearchBar(placeholder=search_placeholder, parent=self.header_widget)
                 self.header_layout.addWidget(self.txt_search)
                 
             if add_button_text:
-                self.btn_add = ModernButton(add_button_text, role="action_accent", parent=self)
+                self.btn_add = ModernButton(add_button_text, role="action_outlined", parent=self.header_widget)
                 if add_button_icon:
                     self.btn_add.set_icon(add_button_icon, size=16)
                 self.header_layout.addWidget(self.btn_add)
                 
-            self.card_layout.addLayout(self.header_layout)
+            self.card_layout.addWidget(self.header_widget)
+            self.divider = ModernDivider(self)
+            self.card_layout.addWidget(self.divider)
             
         self.stack = QStackedWidget(self)
         
@@ -76,7 +84,7 @@ class ModernTableCard(QFrame):
         self.empty_widget = None
         self.lbl_illustration = None
         
-        self.card_layout.addWidget(self.stack)
+        self.card_layout.addWidget(self.stack, 1)
 
     def setup_empty_state(self, title: str, desc: str, icon_name: str, button_text: str, on_button_clicked):
         self.empty_widget = QWidget(self)
@@ -105,8 +113,8 @@ class ModernTableCard(QFrame):
         lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         lbl_desc.setMaximumWidth(450)
         
-        self.btn_empty_action = ModernButton(button_text, role="action_accent")
-        self.btn_empty_action.set_icon("add.svg", size=16)
+        self.btn_empty_action = ModernButton(button_text, role="action_outlined")
+        self.btn_empty_action.set_icon("plus-filled.svg", size=16)
         self.btn_empty_action.clicked.connect(on_button_clicked)
         
         layout.addStretch(1)

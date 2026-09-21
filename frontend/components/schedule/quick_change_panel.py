@@ -7,8 +7,8 @@ from frontend.widgets import ModernCard, ModernButton, ModernSwitch, CategorySea
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_PURPLE,
     get_icon_colored, get_pixmap_colored,
-    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
-    MARGIN_NONE, MARGIN_MD, MARGIN_LG,
+    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL
 )
 
 class ScheduleQuickChangePanel(QWidget):
@@ -18,18 +18,19 @@ class ScheduleQuickChangePanel(QWidget):
 
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
+        self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self.kick_selected_category = None
         self.twitch_selected_category = None
         self._current_cols = -1
 
-        self._icon_refresh = get_icon_colored("refresh-duotone.svg", COLOR_NEUTRAL_400, 16)
+        self._icon_refresh = get_icon_colored("refresh-filled.svg", COLOR_NEUTRAL_400, 16)
         self._setup_ui()
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_LG)
-        layout.setSpacing(SPACING_LG)
+        layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        layout.setSpacing(SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_status_section(layout)
@@ -42,7 +43,7 @@ class ScheduleQuickChangePanel(QWidget):
         status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         lbl_status_title = QLabel(self.i18n.get("stream_info.status.title"))
-        lbl_status_title.setProperty("role", "h2")
+        lbl_status_title.setProperty("role", "h3")
         status_header.addWidget(lbl_status_title, alignment=Qt.AlignmentFlag.AlignVCenter)
         status_header.addStretch()
 
@@ -61,7 +62,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.cards_grid.setContentsMargins(*MARGIN_NONE)
         self.cards_grid.setSpacing(SPACING_MD)
 
-        self.kick_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_SM)
+        self.kick_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         kick_header = QHBoxLayout()
         kick_header.setSpacing(SPACING_MD)
 
@@ -106,7 +107,7 @@ class ScheduleQuickChangePanel(QWidget):
         kick_cat_layout.addWidget(self.lbl_kick_cat)
         self.kick_card.addWidget(self.kick_cat_box)
 
-        self.twitch_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_SM)
+        self.twitch_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         twitch_header = QHBoxLayout()
         twitch_header.setSpacing(SPACING_MD)
 
@@ -182,25 +183,25 @@ class ScheduleQuickChangePanel(QWidget):
             self.cards_grid.addWidget(self.twitch_card, 0, 1)
 
     def _setup_quick_change_card(self, parent_layout: QVBoxLayout):
-        change_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_LG)
+        change_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD)
         header_layout = QHBoxLayout()
         header_layout.setSpacing(SPACING_MD)
 
         lbl_title = QLabel(self.i18n.get("stream_info.quick_change.title"))
-        lbl_title.setProperty("role", "h2")
+        lbl_title.setProperty("role", "h3")
         header_layout.addWidget(lbl_title)
         header_layout.addStretch()
         change_card.addLayout(header_layout)
 
         form_layout = QVBoxLayout()
-        form_layout.setSpacing(SPACING_LG)
+        form_layout.setSpacing(SPACING_MD)
 
         lbl_target = QLabel(self.i18n.get("stream_info.quick_change.target_platform"))
         lbl_target.setProperty("role", "h3")
         form_layout.addWidget(lbl_target)
 
         switches_row = QHBoxLayout()
-        switches_row.setSpacing(SPACING_XL)
+        switches_row.setSpacing(SPACING_LG)
 
         kick_switch_box = QHBoxLayout()
         kick_switch_box.setSpacing(SPACING_MD)
@@ -250,7 +251,7 @@ class ScheduleQuickChangePanel(QWidget):
         action_row = QHBoxLayout()
         action_row.addStretch()
 
-        self.btn_apply = ModernButton(self.i18n.get("stream_info.quick_change.btn_update"), role="action_accent")
+        self.btn_apply = ModernButton(self.i18n.get("stream_info.quick_change.btn_update"), role="action_outlined")
         self.btn_apply.setFixedWidth(200)
         self.btn_apply.clicked.connect(self._on_update_clicked)
         action_row.addWidget(self.btn_apply)

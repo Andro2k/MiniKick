@@ -12,8 +12,8 @@ from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import NoWheelDoubleSpinBox
 from frontend.common import (
     get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_GREEN,
-    SPACING_2XS, SPACING_XS, SPACING_MD, SPACING_LG, SPACING_2XL,
-    MARGIN_LG, MARGIN_XL
+    SPACING_2XS, SPACING_XS, SPACING_MD, SPACING_LG, SPACING_XL,
+    MARGIN_LG, MARGIN_XL, MARGIN_SCROLL_CONTENT
 )
 from frontend.components.dialogs import PiperVoiceItemWidget
 
@@ -51,7 +51,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         header_layout.setSpacing(SPACING_MD)
 
         icon_lbl = QLabel(self)
-        icon_lbl.setPixmap(get_pixmap_colored("microphone.svg", COLOR_GREEN, size=24))
+        icon_lbl.setPixmap(get_pixmap_colored("microphone-filled.svg", COLOR_GREEN, size=24))
         header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         title_layout = QVBoxLayout()
@@ -67,7 +67,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         title_layout.addWidget(lbl_title)
         title_layout.addWidget(lbl_subtitle)
         header_layout.addLayout(title_layout, stretch=1)
-        header_layout.addSpacing(SPACING_2XL)
+        header_layout.addSpacing(SPACING_XL)
 
         layout.addLayout(header_layout)
 
@@ -76,7 +76,7 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         scroll_content = QWidget()
         self.scroll_layout = QVBoxLayout(scroll_content)
-        self.scroll_layout.setContentsMargins(SPACING_2XS, SPACING_2XS, SPACING_MD, SPACING_2XS)
+        self.scroll_layout.setContentsMargins(*MARGIN_SCROLL_CONTENT)
         self.scroll_layout.setSpacing(SPACING_MD)
 
         self._populate_catalog()
@@ -106,7 +106,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         card_header.addLayout(card_title_layout, stretch=1)
 
         self.btn_reset_synthesis = QPushButton(self.i18n.get("piper_dialog.btn_reset_synthesis"), synthesis_card)
-        self.btn_reset_synthesis.setProperty("role", "action_neutral_border")
+        self.btn_reset_synthesis.setProperty("role", "action_outlined")
         self.btn_reset_synthesis.setToolTip(self.i18n.get("piper_dialog.btn_reset_tooltip"))
         self.btn_reset_synthesis.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_reset_synthesis.clicked.connect(self._reset_synthesis_defaults)
@@ -167,9 +167,9 @@ class PiperVoicesDialog(ModernFramelessShell):
 
         btn_layout = QHBoxLayout()
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), self)
-        self.btn_import.setProperty("role", "action_neutral_border")
+        self.btn_import.setProperty("role", "action_outlined")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
-        self.btn_import.setIcon(get_icon_colored("cloud-download.svg", COLOR_NEUTRAL_400, size=14))
+        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_400, size=14))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_import.clicked.connect(self._on_import_model_clicked)
         btn_layout.addWidget(self.btn_import)
@@ -177,7 +177,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         btn_layout.addStretch()
 
         btn_close = QPushButton(self.i18n.get("piper_dialog.btn_close"), self)
-        btn_close.setProperty("role", "action_accent")
+        btn_close.setProperty("role", "action_outlined")
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.accept)
         btn_layout.addWidget(btn_close)

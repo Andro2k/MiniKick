@@ -1,9 +1,9 @@
 # frontend\widgets\filter_header.py
 
-from PySide6.QtWidgets import QHeaderView, QMenu
+from PySide6.QtWidgets import QHeaderView, QMenu, QStyleOptionHeader, QStyle
 from PySide6.QtCore import Qt, Signal, QRect, QPoint, QSize
-from PySide6.QtGui import QPainter, QAction
-from frontend.common import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, get_icon_colored
+from PySide6.QtGui import QPainter, QAction, QColor, QFont
+from frontend.common import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_WHITE, get_icon_colored
 
 class FilterHeaderView(QHeaderView):
     filter_changed = Signal(object)
@@ -52,26 +52,60 @@ class FilterHeaderView(QHeaderView):
         return base_size
 
     def paintSection(self, painter: QPainter, rect: QRect, logicalIndex: int):
-        super().paintSection(painter, rect, logicalIndex)
+        if logicalIndex not in self._column_filters:
+            super().paintSection(painter, rect, logicalIndex)
+            return
 
-        if logicalIndex in self._column_filters:
-            config = self._column_filters[logicalIndex]
-            total_opts = len(config["options"])
-            active_opts = len(config["active"])
-            is_filtered = (active_opts < total_opts) and (total_opts > 0)
+        config = self._column_filters[logicalIndex]
+        total_opts = len(config["options"])
+        active_opts = len(config["active"])
+        is_filtered = (active_opts < total_opts) and (total_opts > 0)
 
-            icon_size = 14
-            margin = 6
-            icon_rect = QRect(
-                rect.right() - icon_size - margin,
-                rect.center().y() - icon_size // 2,
-                icon_size,
-                icon_size
-            )
+        title = config.get("title")
+        if not title and self.model():
+            header_val = self.model().headerData(logicalIndex, self.orientation(), Qt.ItemDataRole.DisplayRole)
+            title = str(header_val) if header_val is not None else ""
+        if not title:
+            title = ""
 
-            icon = self._icon_filtered if is_filtered else self._icon_unfiltered
-            icon.paint(painter, icon_rect, Qt.AlignmentFlag.AlignCenter)
+        opt = QStyleOptionHeader()
+        self.initStyleOption(opt)
+        opt.section = logicalIndex
+        opt.rect = rect
+        opt.text = ""
+        self.style().drawControl(QStyle.ControlElement.CE_Header, opt, painter, self)
 
+        icon_size = 14
+        pad_left = 10
+        gap = 6
+
+        icon_rect = QRect(
+            rect.left() + pad_left,
+            rect.center().y() - icon_size // 2,
+            icon_size,
+            icon_size
+        )
+        icon = self._icon_filtered if is_filtered else self._icon_unfiltered
+        icon.paint(painter, icon_rect, Qt.AlignmentFlag.AlignCenter)
+
+        text_rect = QRect(
+            rect.left() + pad_left + icon_size + gap,
+            rect.top(),
+            max(0, rect.width() - (pad_left + icon_size + gap + 8)),
+            rect.height()
+        )
+
+        is_hover_or_pressed = bool(opt.state & (QStyle.StateFlag.State_MouseOver | QStyle.StateFlag.State_Sunken))
+        text_color = QColor(COLOR_WHITE) if is_hover_or_pressed else QColor(COLOR_NEUTRAL_400)
+
+        painter.save()
+        painter.setPen(text_color)
+        font = self.font()
+        font.setWeight(QFont.Weight.Medium)
+        painter.setFont(font)
+        elided = painter.fontMetrics().elidedText(title, Qt.TextElideMode.ElideRight, text_rect.width())
+        painter.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, elided)
+        painter.restore()
 
     def _on_section_clicked(self, logicalIndex: int):
         if logicalIndex not in self._column_filters:
@@ -85,9 +119,9 @@ class FilterHeaderView(QHeaderView):
         has_sort = bool(config.get("sort_asc_label") or config.get("sort_desc_label"))
 
         if config.get("sort_asc_label"):
-            action_sort_asc = menu.addAction(get_icon_colored("chevron-up.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
+            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-filled.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
         if config.get("sort_desc_label"):
-            action_sort_desc = menu.addAction(get_icon_colored("chevron-down.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
+            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-filled.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
 
         action_all = None
         action_map: dict[QAction, str] = {}

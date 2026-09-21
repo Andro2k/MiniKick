@@ -4,13 +4,13 @@ from PySide6.QtWidgets import QLabel, QPushButton
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path, COLOR_GREEN, MARGIN_2XL, SPACING_LG
+from frontend.common import get_assets_path, COLOR_GREEN, MARGIN_XL, SPACING_LG
 
 class AlreadyRunningDialog(ModernModal):
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         title_str = self.i18n.get("dialogs.already_running.title")
-        icon_path = get_assets_path("icons/alert-circle-duotone.svg")
+        icon_path = get_assets_path("icons/alert-circle-filled.svg")
         super().__init__(
             title=title_str,
             icon_path=icon_path,
@@ -19,7 +19,7 @@ class AlreadyRunningDialog(ModernModal):
             parent=parent
         )
         self.set_dialog_state("accent", QColor(46, 205, 112, 60))
-        self.content_layout.setContentsMargins(*MARGIN_2XL)
+        self.content_layout.setContentsMargins(*MARGIN_XL)
         self.content_layout.setSpacing(SPACING_LG)
 
         desc_str = self.i18n.get("dialogs.already_running.desc")
@@ -37,7 +37,7 @@ class AlreadyRunningDialog(ModernModal):
 
         ok_str = self.i18n.get("common.buttons.understood")
         btn_ok = QPushButton(ok_str)
-        btn_ok.setProperty("role", "action_accent")
+        btn_ok.setProperty("role", "action_outlined")
         btn_ok.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_ok.clicked.connect(self.accept)
 

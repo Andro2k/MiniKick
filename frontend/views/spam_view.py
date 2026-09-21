@@ -3,7 +3,7 @@
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout
 from frontend.widgets import BaseView, ExpandableSettingCard
-from frontend.common import MARGIN_NONE, SPACING_XL
+from frontend.common import MARGIN_NONE, SPACING_MD
 
 class SpamView(BaseView):
     filter_updated = Signal(str, object)
@@ -18,22 +18,22 @@ class SpamView(BaseView):
         self.body_container = QWidget()
         self.body_layout = QVBoxLayout(self.body_container)
         self.body_layout.setContentsMargins(*MARGIN_NONE)
-        self.body_layout.setSpacing(SPACING_XL)
+        self.body_layout.setSpacing(SPACING_MD)
 
         self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.columns_layout.setContentsMargins(*MARGIN_NONE)
-        self.columns_layout.setSpacing(SPACING_XL)
+        self.columns_layout.setSpacing(SPACING_MD)
 
         col1 = QWidget()
         self.col1_layout = QVBoxLayout(col1)
         self.col1_layout.setContentsMargins(*MARGIN_NONE)
-        self.col1_layout.setSpacing(SPACING_XL)
+        self.col1_layout.setSpacing(SPACING_MD)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         col2 = QWidget()
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(*MARGIN_NONE)
-        self.col2_layout.setSpacing(SPACING_XL)
+        self.col2_layout.setSpacing(SPACING_MD)
         self.col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.columns_layout.addWidget(col1, stretch=1)
@@ -41,13 +41,13 @@ class SpamView(BaseView):
 
         self.body_layout.addLayout(self.columns_layout)
 
-        self._add_card("caps_protection", self.i18n.get("spam.filters.caps.title"), self.i18n.get("spam.filters.caps.desc"), "text-square-duotone.svg", column=1)
-        self._add_card("link_protection", self.i18n.get("spam.filters.link.title"), self.i18n.get("spam.filters.link.desc"), "link-duotone.svg", has_amount=False, column=1)
-        self._add_card("emote_protection", self.i18n.get("spam.filters.emote.title"), self.i18n.get("spam.filters.emote.desc"), "star.svg", column=1)
+        self._add_card("caps_protection", self.i18n.get("spam.filters.caps.title"), self.i18n.get("spam.filters.caps.desc"), "text-filled.svg", column=1)
+        self._add_card("link_protection", self.i18n.get("spam.filters.link.title"), self.i18n.get("spam.filters.link.desc"), "link-filled.svg", has_amount=False, column=1)
+        self._add_card("emote_protection", self.i18n.get("spam.filters.emote.title"), self.i18n.get("spam.filters.emote.desc"), "star-filled.svg", column=1)
         
-        self._add_card("paragraph_protection", self.i18n.get("spam.filters.paragraph.title"), self.i18n.get("spam.filters.paragraph.desc"), "file-text-duotone.svg", column=2)
-        self._add_card("symbol_protection", self.i18n.get("spam.filters.symbol.title"), self.i18n.get("spam.filters.symbol.desc"), "hashtag-square-duotone.svg", column=2)
-        self._add_card("repetition_protection", self.i18n.get("spam.filters.repetition.title"), self.i18n.get("spam.filters.repetition.desc"), "repeat.svg", column=2)
+        self._add_card("paragraph_protection", self.i18n.get("spam.filters.paragraph.title"), self.i18n.get("spam.filters.paragraph.desc"), "file-text-filled.svg", column=2)
+        self._add_card("symbol_protection", self.i18n.get("spam.filters.symbol.title"), self.i18n.get("spam.filters.symbol.desc"), "hashtag-filled.svg", column=2)
+        self._add_card("repetition_protection", self.i18n.get("spam.filters.repetition.title"), self.i18n.get("spam.filters.repetition.desc"), "repeat-filled.svg", column=2)
 
         self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()

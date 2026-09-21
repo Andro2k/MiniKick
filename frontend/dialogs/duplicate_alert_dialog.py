@@ -12,7 +12,7 @@ class DuplicateAlertModal(ModernModal):
         title = i18n.get("alerts.dialogs.duplicate.title")
         super().__init__(
             title=title,
-            icon_path="copy-duotone.svg",
+            icon_path="copy-filled.svg",
             icon_role="accent_icon",
             width=480,
             resizable=False,
@@ -90,8 +90,8 @@ class DuplicateAlertModal(ModernModal):
 
         self.btn_confirm = ModernButton(
             text=self.i18n.get("alerts.dialogs.duplicate.btn_confirm"),
-            role="action_accent",
-            icon_name="copy-duotone.svg",
+            role="action_outlined",
+            icon_name="copy-filled.svg",
             icon_size=14,
             parent=self
         )

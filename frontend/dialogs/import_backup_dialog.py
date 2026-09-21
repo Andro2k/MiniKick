@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard
 from frontend.common import (
-    SPACING_XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_H_SM
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_H_SM
 )
 
 SECTION_ORDER = [
@@ -21,6 +21,28 @@ SECTION_ORDER = [
     "widgets",
 ]
 
+SECTION_TITLES = {
+    "settings": "settings.dialogs.import_modal.section_settings",
+    "alerts": "settings.dialogs.import_modal.section_alerts",
+    "rewards": "settings.dialogs.import_modal.section_rewards",
+    "commands": "settings.dialogs.import_modal.section_commands",
+    "spam_filters": "settings.dialogs.import_modal.section_spam_filters",
+    "timers": "settings.dialogs.import_modal.section_timers",
+    "schedules": "settings.dialogs.import_modal.section_schedules",
+    "widgets": "settings.dialogs.import_modal.section_widgets",
+}
+
+SECTION_DESCRIPTIONS = {
+    "settings": "settings.dialogs.import_modal.section_settings_desc",
+    "alerts": "settings.dialogs.import_modal.section_alerts_desc",
+    "rewards": "settings.dialogs.import_modal.section_rewards_desc",
+    "commands": "settings.dialogs.import_modal.section_commands_desc",
+    "spam_filters": "settings.dialogs.import_modal.section_spam_filters_desc",
+    "timers": "settings.dialogs.import_modal.section_timers_desc",
+    "schedules": "settings.dialogs.import_modal.section_schedules_desc",
+    "widgets": "settings.dialogs.import_modal.section_widgets_desc",
+}
+
 class ImportBackupModal(ModernModal):
     def __init__(self, backup_info: dict, i18n, parent=None):
         self.i18n = i18n
@@ -30,7 +52,7 @@ class ImportBackupModal(ModernModal):
         title = self.i18n.get("settings.dialogs.import_modal.title")
         super().__init__(
             title=title,
-            icon_path="restart-duotone.svg",
+            icon_path="restart-filled.svg",
             icon_role="accent_icon",
             width=540,
             resizable=False,
@@ -84,15 +106,15 @@ class ImportBackupModal(ModernModal):
 
         self.btn_select_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_select_all"),
-            role="action_neutral_border",
-            icon_name="check.svg",
+            role="action_outlined",
+            icon_name="check-filled.svg",
             icon_size=12,
             parent=self
         )
         self.btn_deselect_all = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_deselect_all"),
-            role="action_neutral_border",
-            icon_name="x.svg",
+            role="action_outlined",
+            icon_name="x-filled.svg",
             icon_size=12,
             parent=self
         )
@@ -132,13 +154,19 @@ class ImportBackupModal(ModernModal):
             info_col.setContentsMargins(*MARGIN_NONE)
             info_col.setSpacing(SPACING_XS)
 
-            title_key = f"settings.dialogs.import_modal.section_{sec_key}"
-            desc_key = f"settings.dialogs.import_modal.section_{sec_key}_desc"
+            title_key = SECTION_TITLES.get(sec_key, f"settings.dialogs.import_modal.section_{sec_key}")
+            desc_key = SECTION_DESCRIPTIONS.get(sec_key, f"settings.dialogs.import_modal.section_{sec_key}_desc")
 
-            lbl_title = QLabel(self.i18n.get(title_key), card_sections)
+            raw_title = self.i18n.get(title_key)
+            raw_desc = self.i18n.get(desc_key)
+
+            title_text = sec_key.replace("_", " ").title() if raw_title == title_key else raw_title
+            desc_text = "" if raw_desc == desc_key else raw_desc
+
+            lbl_title = QLabel(title_text, card_sections)
             lbl_title.setProperty("role", "h3")
 
-            lbl_sub = QLabel(self.i18n.get(desc_key), card_sections)
+            lbl_sub = QLabel(desc_text, card_sections)
             lbl_sub.setProperty("role", "caption")
             lbl_sub.setWordWrap(True)
 
@@ -153,7 +181,7 @@ class ImportBackupModal(ModernModal):
             badge_frame.setProperty("role", "badge")
             badge_layout = QHBoxLayout(badge_frame)
             badge_layout.setContentsMargins(*MARGIN_H_SM)
-            badge_layout.setSpacing(0)
+            badge_layout.setSpacing(SPACING_NONE)
             badge_lbl = QLabel(count_str, badge_frame)
             badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
             badge_layout.addWidget(badge_lbl)
@@ -180,15 +208,15 @@ class ImportBackupModal(ModernModal):
 
         self.btn_cancel = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_cancel"),
-            role="action_neutral_border",
+            role="action_outlined",
             parent=self
         )
         self.btn_cancel.clicked.connect(self.reject)
 
         self.btn_confirm = ModernButton(
             text=self.i18n.get("settings.dialogs.import_modal.btn_confirm"),
-            role="action_accent",
-            icon_name="restart-duotone.svg",
+            role="action_outlined",
+            icon_name="restart-filled.svg",
             icon_size=14,
             parent=self
         )

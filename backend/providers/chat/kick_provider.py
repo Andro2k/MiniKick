@@ -66,20 +66,34 @@ class KickAPIClient:
             headers["Authorization"] = f"Bearer {access_token}"
         kwargs.setdefault("timeout", 10)
         
-        try:
-            response = self.scraper.request(method, url, headers=headers, **kwargs)
-            response.raise_for_status()
-            return response
-        except requests.exceptions.HTTPError as e:
-            if e.response is not None and e.response.status_code == 401 and hasattr(self.auth_provider, "refresh_token"):
-                self.auth_provider.refresh_token()
-                tokens = self._get_tokens()
-                if tokens.get("access_token"):
-                    headers["Authorization"] = f"Bearer {tokens.get('access_token', '')}"
-                    response = self.scraper.request(method, url, headers=headers, **kwargs)
-                    response.raise_for_status()
-                    return response
-            raise e
+        max_attempts = 2
+        for attempt in range(max_attempts):
+            try:
+                response = self.scraper.request(method, url, headers=headers, **kwargs)
+                response.raise_for_status()
+                return response
+            except (requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError, ConnectionResetError) as e:
+                logger.warning(
+                    "[KickAPIClient] Network connection dropped/reset (%s) on %s %s. Recreating scraper session and retrying (attempt %d/%d)...",
+                    e, method, url, attempt + 1, max_attempts
+                )
+                try:
+                    self.scraper.close()
+                except Exception:
+                    pass
+                self.scraper = ScraperFactory.create()
+                if attempt == max_attempts - 1:
+                    raise e
+            except requests.exceptions.HTTPError as e:
+                if e.response is not None and e.response.status_code == 401 and hasattr(self.auth_provider, "refresh_token"):
+                    self.auth_provider.refresh_token()
+                    tokens = self._get_tokens()
+                    if tokens.get("access_token"):
+                        headers["Authorization"] = f"Bearer {tokens.get('access_token', '')}"
+                        response = self.scraper.request(method, url, headers=headers, **kwargs)
+                        response.raise_for_status()
+                        return response
+                raise e
 
     def fetch_user_data(self) -> dict:
         username = self._fetch_authenticated_username()

@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout
 from frontend.widgets import BaseView
 from frontend.components.widgets import WidgetCard
-from frontend.common import MARGIN_NONE, SPACING_XL
+from frontend.common import MARGIN_NONE, SPACING_MD
 
 class WidgetsView(BaseView):
     widget_saved = Signal(str, bool, str, int, str, object)
@@ -36,22 +36,22 @@ class WidgetsView(BaseView):
         self.body_container = QWidget()
         self.body_layout = QVBoxLayout(self.body_container)
         self.body_layout.setContentsMargins(*MARGIN_NONE)
-        self.body_layout.setSpacing(SPACING_XL)
+        self.body_layout.setSpacing(SPACING_MD)
 
         self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.columns_layout.setContentsMargins(*MARGIN_NONE)
-        self.columns_layout.setSpacing(SPACING_XL)
+        self.columns_layout.setSpacing(SPACING_MD)
 
         col1 = QWidget()
         self.col1_layout = QVBoxLayout(col1)
         self.col1_layout.setContentsMargins(*MARGIN_NONE)
-        self.col1_layout.setSpacing(SPACING_XL)
+        self.col1_layout.setSpacing(SPACING_MD)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         col2 = QWidget()
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(*MARGIN_NONE)
-        self.col2_layout.setSpacing(SPACING_XL)
+        self.col2_layout.setSpacing(SPACING_MD)
         self.col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.columns_layout.addWidget(col1, stretch=1)
@@ -59,15 +59,15 @@ class WidgetsView(BaseView):
 
         self.body_layout.addLayout(self.columns_layout)
 
-        self._add_card("clock", self.i18n.get("widgets.clock.title"), self.i18n.get("widgets.clock.desc"), "clock-circle-duotone.svg", column=1, obs_url=self.clock_overlay_url)
-        self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-duotone.svg", column=1, obs_url=self.poll_overlay_url)
-        self._add_card("chatters", self.i18n.get("widgets.chatters.title"), self.i18n.get("widgets.chatters.desc"), "users.svg", column=1, obs_url=self.chatters_overlay_url)
-        self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), "user-check.svg", column=1, obs_url=self.shoutout_overlay_url)
-        self._add_card("score", self.i18n.get("widgets.score.title"), self.i18n.get("widgets.score.desc"), "trophy.svg", column=1, obs_url=self.score_overlay_url)
-        self._add_card("pinned", self.i18n.get("widgets.pinned.title"), self.i18n.get("widgets.pinned.desc"), "pin.svg", column=2, obs_url=self.pinned_overlay_url)
-        self._add_card("explosion", self.i18n.get("widgets.explosion.title"), self.i18n.get("widgets.explosion.desc"), "bomb.svg", column=2, obs_url=self.explosion_overlay_url)
-        self._add_card("death", self.i18n.get("widgets.death.title"), self.i18n.get("widgets.death.desc"), "skull.svg", column=2, obs_url=self.death_overlay_url)
-        self._add_card("combo", self.i18n.get("widgets.combo.title"), self.i18n.get("widgets.combo.desc"), "squares-duotone.svg", column=2, obs_url=self.combo_overlay_url)
+        self._add_card("clock", self.i18n.get("widgets.clock.title"), self.i18n.get("widgets.clock.desc"), "clock-filled.svg", column=1, obs_url=self.clock_overlay_url)
+        self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-filled.svg", column=1, obs_url=self.poll_overlay_url)
+        self._add_card("chatters", self.i18n.get("widgets.chatters.title"), self.i18n.get("widgets.chatters.desc"), "users-filled.svg", column=1, obs_url=self.chatters_overlay_url)
+        self._add_card("shoutout", self.i18n.get("widgets.so.title"), self.i18n.get("widgets.so.desc"), "profile-tick-filled.svg", column=1, obs_url=self.shoutout_overlay_url)
+        self._add_card("score", self.i18n.get("widgets.score.title"), self.i18n.get("widgets.score.desc"), "cup-star-filled.svg", column=1, obs_url=self.score_overlay_url)
+        self._add_card("pinned", self.i18n.get("widgets.pinned.title"), self.i18n.get("widgets.pinned.desc"), "pin-tack-filled.svg", column=2, obs_url=self.pinned_overlay_url)
+        self._add_card("explosion", self.i18n.get("widgets.explosion.title"), self.i18n.get("widgets.explosion.desc"), "emoji-circle-filled.svg", column=2, obs_url=self.explosion_overlay_url)
+        self._add_card("death", self.i18n.get("widgets.death.title"), self.i18n.get("widgets.death.desc"), "ghost-filled.svg", column=2, obs_url=self.death_overlay_url)
+        self._add_card("combo", self.i18n.get("widgets.combo.title"), self.i18n.get("widgets.combo.desc"), "squares-filled.svg", column=2, obs_url=self.combo_overlay_url)
 
         self.main_layout.addWidget(self.body_container)
         self.main_layout.addStretch()

@@ -4,13 +4,50 @@ import html
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy
 from frontend.widgets import ModernCard
-from frontend.common import COLOR_NEUTRAL_200, SPACING_SM, SPACING_MD
+from frontend.common import COLOR_NEUTRAL_200, MARGIN_SM, SPACING_SM
+
+class ChatConsoleEdit(QTextEdit):
+    def createMimeDataFromSelection(self):
+        mime = super().createMimeDataFromSelection()
+        if mime and mime.hasText():
+            clean_text = mime.text().replace("\ue0b6", "").replace("\ue0b4", "")
+            mime.setText(clean_text)
+        return mime
 
 class ChatDisplayPanel(ModernCard):
     _MAX_CHAT_BLOCKS = 400
+    _PILL_BG = "#29315A"
+    _CAP_LEFT = "\ue0b6"
+    _CAP_RIGHT = "\ue0b4"
+    _FONT_FMT = "font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
+
+    _ROLE_SYMBOLS = {
+        "Streamer": ("\uf130", "#E64747"),
+        "Broadcaster": ("\uf130", "#E64747"),
+        "Moderador": ("\ued25", "#3EC669"),
+        "Moderator": ("\ued25", "#3EC669"),
+        "VIP": ("\uedeb", "#E4F34A"),
+        "Suscriptor": ("\udb83\ude44", "#9B6BDF"),
+        "Subscriber": ("\udb83\ude44", "#9B6BDF"),
+        "Miembro": ("\udb83\ude44", "#43CCEA"),
+        "Member": ("\udb83\ude44", "#43CCEA"),
+        "Verified": ("\uf00c", "#AEA4BF"),
+        "Bot": ("\uee0d", "#43CCEA"),
+        "Sistema": ("\uf113", "#3EC669"),
+        "System": ("\uf113", "#3EC669"),
+        "Usuario": ("\ued35", "#AEA4BF"),
+        "User": ("\ued35", "#AEA4BF")
+    }
+
+    _PLATFORM_ICONS = {
+        "twitch": ("\uf1e8", "#9146FF", "Twitch"),
+        "kick": ("\uf2f3", "#53FC18", "Kick"),
+        "youtube": ("\uf16a", "#FF0000", "YouTube"),
+        "tiktok": ("\udb80\udf8c", "#00F2FE", "TikTok")
+    }
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=SPACING_MD, spacing=SPACING_SM, orientation="vertical")
+        super().__init__(parent, margin=MARGIN_SM, spacing=SPACING_SM, orientation="vertical")
         self.i18n = i18n
         self._setup_ui()
 
@@ -22,78 +59,54 @@ class ChatDisplayPanel(ModernCard):
         lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
         lbl_chat_title.setProperty("role", "h3")
         
-        self.chat_display = QTextEdit()
+        self.chat_display = ChatConsoleEdit()
         self.chat_display.setReadOnly(True)
         self.chat_display.setProperty("role", "ConsoleDisplay")
         chat_font = QFont("GoogleSansCode Nerd Font", 10)
         chat_font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
         self.chat_display.setFont(chat_font)
+        self.chat_display.document().setDocumentMargin(2)
 
         self.addWidget(lbl_chat_title)
         self.addWidget(self.chat_display)
 
-    _ROLE_SYMBOLS = {
-        "Streamer": ("\uf130", "#dc2626", "#ffffff"),
-        "Broadcaster": ("\uf130", "#dc2626", "#ffffff"),
-        "Moderador": ("\ued25", "#16a34a", "#ffffff"),
-        "Moderator": ("\ued25", "#16a34a", "#ffffff"),
-        "VIP": ("\uedeb", "#ca8a04", "#ffffff"),
-        "Suscriptor": ("\udb83\ude44", "#9333ea", "#ffffff"),
-        "Subscriber": ("\udb83\ude44", "#9333ea", "#ffffff"),
-        "Miembro": ("\udb83\ude44", "#065fd4", "#ffffff"),
-        "Member": ("\udb83\ude44", "#065fd4", "#ffffff"),
-        "Verified": ("\uf00c", "#606060", "#ffffff"),
-        "Bot": ("\uee0d", "#2563eb", "#ffffff"),
-        "Sistema": ("\uf113", "#059669", "#ffffff"),
-        "System": ("\uf113", "#059669", "#ffffff"),
-        "Usuario": ("\ued35", "#374151", "#e2e8f0"),
-        "User": ("\ued35", "#374151", "#e2e8f0")
-    }
-
-    _PLATFORM_ICONS = {
-        "twitch": ("\uf1e8", "#9146FF", "#ffffff", "Twitch"),
-        "kick": ("\uf2f3", "#53FC18", "#000000", "Kick"),
-        "youtube": ("\uf16a", "#FF0000", "#ffffff", "YouTube"),
-        "tiktok": ("\udb80\udf8c", "#F72B52", "#ffffff", "TikTok")
-    }
+    @classmethod
+    def _create_pill(cls, content_html: str, text_color: str = "#AEA4BF", pill_bg: str = _PILL_BG) -> str:
+        return (
+            f'<span style="{cls._FONT_FMT}">'
+            f'<span style="color: {pill_bg};">{cls._CAP_LEFT}</span>'
+            f'<span style="background-color: {pill_bg}; color: {text_color};">{content_html}</span>'
+            f'<span style="color: {pill_bg};">{cls._CAP_RIGHT}</span>'
+            f'</span>'
+        )
 
     def append_message(self, user: str, message: str, color: str, timestamp: str = "", is_html: bool = False, role: str = "", platform: str = "kick"):
         safe_user = html.escape(user)
         safe_message = message if is_html else html.escape(message)        
         safe_color = color if (color and color.startswith("#") and len(color) <= 7) else COLOR_NEUTRAL_200
         
-        segments = []
-        
-        if timestamp:
-            segments.append(("#1e293b", "#94a3b8", f"&nbsp;{timestamp}&nbsp;"))
-            
-        plat_icon, plat_bg, plat_fg, plat_name = self._PLATFORM_ICONS.get(
-            platform.lower() if platform else "kick", ("\uf2f3", "#53FC18", "#000000", "Kick")
+        pills = []
+        plat_icon, plat_color, _ = self._PLATFORM_ICONS.get(
+            platform.lower() if platform else "kick", ("\uf2f3", "#53FC18", "Kick")
         )
-        segments.append((plat_bg, plat_fg, f"&nbsp;{plat_icon}&nbsp;"))
-        
+        plat_span = f'<span style="color: {plat_color};">{plat_icon}</span>'
+
+        if timestamp:
+            time_plat_content = f"{plat_span} {timestamp}"
+        else:
+            time_plat_content = plat_span
+
+        pills.append(self._create_pill(time_plat_content, text_color="#AEA4BF"))
+
         if role:
-            symbol, role_bg, role_fg = self._ROLE_SYMBOLS.get(role, ("\ued35", "#374151", "#e2e8f0"))
-            segments.append((role_bg, role_fg, f"&nbsp;{symbol}&nbsp;&nbsp;{role}&nbsp;"))
-            
-        segments.append(("#262626", safe_color, f"&nbsp;{safe_user}&nbsp;"))
+            symbol, role_color = self._ROLE_SYMBOLS.get(role, ("\ued35", "#AEA4BF"))
+            role_content = f'<span style="color: {role_color};">{symbol}</span> {role}'
+            pills.append(self._create_pill(role_content, text_color="#E4E5E9"))
 
-        font_fmt = "font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
-        html_parts = []
-        for i, (bg, fg, text) in enumerate(segments):
-            if i == 0:
-                html_parts.append(f'<span style="{font_fmt} color: {bg};">\ue0b2</span>')
-            else:
-                prev_bg = segments[i-1][0]
-                html_parts.append(f'<span style="{font_fmt} color: {prev_bg}; background-color: {bg};">\ue0b0</span>')
-            
-            html_parts.append(f'<span style="{font_fmt} background-color: {bg}; color: {fg};">{text}</span>')
-        
-        last_bg = segments[-1][0]
-        html_parts.append(f'<span style="{font_fmt} color: {last_bg};">\ue0b0</span>')
+        pills.append(self._create_pill(safe_user, text_color=safe_color))
 
-        header_html = "".join(html_parts)
-        html_msg = f'{header_html} <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span>'
+        header_html = " ".join(pills)
+        html_msg = f'<div style="margin: 2px 0px;">{header_html}  <span style="color: {COLOR_NEUTRAL_200};">{safe_message}</span></div>'
         self.chat_display.append(html_msg)
         self._trim_chat_history()
 

@@ -6,7 +6,7 @@ from frontend.widgets import (
     BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
 )
 from frontend.common import (
-    COLOR_RED, COLOR_GREEN,
+    COLOR_WHITE,
     MARGIN_H_MD, SPACING_MD
 )
 
@@ -56,7 +56,7 @@ class CommandView(BaseView):
             headers=[col_1, col_2, col_3, col_4, col_5, col_6],
             search_placeholder=self.i18n.get("command.table.search_placeholder"),
             add_button_text=self.i18n.get("command.table.btn_new"),
-            add_button_icon="add.svg"
+            add_button_icon="plus-filled.svg"
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("command.empty.title"),
@@ -188,7 +188,7 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 4, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 5, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(commands) == 0 and len(self._raw_commands) == 0)
+        self.table_card.set_empty(len(commands) == 0)
         self.table_card.set_title_count(self.i18n.get("command.table.title"), len(self._raw_commands))
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
@@ -280,17 +280,17 @@ class CommandView(BaseView):
         )
         
         cell.add_button(
-            icon_name="edit.svg", 
-            color=COLOR_GREEN, 
-            role="action_accent_border", 
+            icon_name="edit-filled.svg", 
+            color=COLOR_WHITE, 
+            role="action_accent_solid", 
             tooltip=self.i18n.get("command.table.tooltip_edit"),
             callback=lambda checked=False, t=trigger_name: self.edit_requested.emit(t)
         )
         
         cell.add_button(
-            icon_name="trash.svg", 
-            color=COLOR_RED, 
-            role="action_danger_border", 
+            icon_name="trash-filled.svg", 
+            color=COLOR_WHITE, 
+            role="action_danger_solid", 
             tooltip=self.i18n.get("command.table.tooltip_delete"),
             callback=lambda checked=False, t=trigger_name: self.delete_requested.emit(t)
         )

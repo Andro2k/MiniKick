@@ -94,12 +94,12 @@ class TwitchChatWorker(QThread):
             if not self._is_stopped:
                 self.error_occurred.emit(str(e))
 
-    def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, emotes_tag: str = ""):
+    def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, emotes_tag: str = "", gif_url: str = ""):
         if self._is_stopped:
             return
 
         now_str = datetime.datetime.now().strftime("%H:%M:%S")
-        logger.info("[TwitchChatWorker] [%s] Message dispatched from '%s': %s (id=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a")
+        logger.info("[TwitchChatWorker] [%s] Message dispatched from '%s': %s (id=%s, gif=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a", bool(gif_url))
         dto = ChatMessageDTO(
             user=user,
             content=msg,
@@ -109,7 +109,8 @@ class TwitchChatWorker(QThread):
             sender_id=sender_id,
             timestamp=now_str,
             platform="twitch",
-            emotes_tag=emotes_tag
+            emotes_tag=emotes_tag,
+            gif_url=gif_url
         )
         self.message_received.emit(dto)
 

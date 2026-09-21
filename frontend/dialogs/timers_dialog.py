@@ -9,7 +9,7 @@ from .base_dialog import ModernWizardPanel
 from .message_dialog import MessageEditorDialog
 from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox
 from frontend.common import (
-    COLOR_RED, COLOR_GREEN, get_icon_colored,
+    COLOR_WHITE, get_icon_colored,
     SPACING_MD, MARGIN_NONE, MARGIN_LG
 )
 
@@ -45,8 +45,8 @@ class TimerConfigWizard(ModernWizardPanel):
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []
 
-        self._icon_edit = get_icon_colored("edit.svg", COLOR_GREEN, 14)
-        self._icon_trash = get_icon_colored("trash.svg", COLOR_RED, 14)
+        self._icon_edit = get_icon_colored("edit-filled.svg", COLOR_WHITE, 14)
+        self._icon_trash = get_icon_colored("trash-filled.svg", COLOR_WHITE, 14)
 
         self._setup_ui()
         if self.existing_config:
@@ -318,13 +318,13 @@ class TimerConfigWizard(ModernWizardPanel):
         txt.textChanged.connect(self._update_btn_next_state)
         row_layout.addWidget(txt)
 
-        btn_edit = ModernButton("", role="action_accent_border")
+        btn_edit = ModernButton("", role="action_accent_solid")
         btn_edit.setIcon(self._icon_edit)
         btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_edit.clicked.connect(lambda: self._open_message_editor(txt))
         row_layout.addWidget(btn_edit)
 
-        btn_del = ModernButton("", role="action_danger_border")
+        btn_del = ModernButton("", role="action_danger_solid")
         btn_del.setIcon(self._icon_trash)
         btn_del.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_del.clicked.connect(lambda: self._remove_message_field(row))

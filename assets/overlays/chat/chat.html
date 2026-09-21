@@ -31,6 +31,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             flex-direction: column;
+            justify-content: flex-end;
         }
 
         #chat-container {
@@ -68,7 +69,7 @@
             flex-wrap: nowrap;
             overflow-x: auto;
             overflow-y: hidden;
-            align-items: center;
+            align-items: flex-end;
             height: 100%;
         }
 
@@ -97,9 +98,11 @@
             max-width: none !important;
             flex-shrink: 0 !important;
             white-space: nowrap !important;
-            align-self: center !important;
+            align-self: flex-end !important;
             margin-top: 0 !important;
             margin-bottom: 0 !important;
+            max-height: calc(100vh - 10px) !important;
+            box-sizing: border-box !important;
         }
 
         #chat-container.orientation-horizontal .message-header {
@@ -123,12 +126,36 @@
         }
 
         #chat-container.orientation-horizontal .message-content {
-            display: inline-block !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
             white-space: nowrap !important;
             overflow: visible !important;
             text-overflow: clip !important;
             max-width: none !important;
+            max-height: 100% !important;
             vertical-align: middle !important;
+        }
+
+        #chat-container.orientation-horizontal .chat-gif-wrapper {
+            margin-top: 0 !important;
+            margin-left: 6px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            max-height: calc(100vh - 22px) !important;
+            border-radius: 8px !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+        }
+
+        #chat-container.orientation-horizontal .chat-gif {
+            max-height: calc(100vh - 22px) !important;
+            max-width: min(450px, 70vw) !important;
+            width: auto !important;
+            height: auto !important;
+            object-fit: contain !important;
+            display: block !important;
+            border-radius: 8px !important;
         }
 
         .message-box {
@@ -150,26 +177,64 @@
             pointer-events: none;
         }
 
-        .anim-entry-bottom {
+        .anim-fade {
+            animation: chatAnimFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes chatAnimFade {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .anim-pop {
+            animation: chatAnimPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes chatAnimPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.65) translate3d(0, 15px, 0);
+            }
+
+            70% {
+                transform: scale(1.04) translate3d(0, -2px, 0);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1) translate3d(0, 0, 0);
+            }
+        }
+
+        .anim-slide {
             animation: slideInFromBottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .anim-entry-top {
+        #chat-container.orientation-vertical.flow-bottom-to-top .anim-slide {
+            animation: slideInFromBottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        #chat-container.orientation-vertical.flow-top-to-bottom .anim-slide {
             animation: slideInFromTop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .anim-entry-left {
-            animation: slideInFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        #chat-container.orientation-horizontal.flow-right-to-left .anim-slide {
+            animation: slideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .anim-entry-right {
-            animation: slideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        #chat-container.orientation-horizontal.flow-left-to-right .anim-slide {
+            animation: slideInFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes slideInFromBottom {
             from {
                 opacity: 0;
-                transform: translate3d(0, 35px, 0) scale(0.92);
+                transform: translate3d(0, 35px, 0) scale(0.95);
             }
 
             to {
@@ -181,7 +246,7 @@
         @keyframes slideInFromTop {
             from {
                 opacity: 0;
-                transform: translate3d(0, -35px, 0) scale(0.92);
+                transform: translate3d(0, -35px, 0) scale(0.95);
             }
 
             to {
@@ -193,7 +258,7 @@
         @keyframes slideInFromLeft {
             from {
                 opacity: 0;
-                transform: translate3d(-40px, 0, 0) scale(0.92);
+                transform: translate3d(-40px, 0, 0) scale(0.95);
             }
 
             to {
@@ -205,48 +270,12 @@
         @keyframes slideInFromRight {
             from {
                 opacity: 0;
-                transform: translate3d(40px, 0, 0) scale(0.92);
+                transform: translate3d(40px, 0, 0) scale(0.95);
             }
 
             to {
                 opacity: 1;
                 transform: translate3d(0, 0, 0) scale(1);
-            }
-        }
-
-        .anim-pop {
-            animation: chatAnimPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes chatAnimPop {
-            0% {
-                opacity: 0;
-                transform: scale(0.65) translate3d(0, 20px, 0);
-            }
-
-            70% {
-                transform: scale(1.05) translate3d(0, -2px, 0);
-            }
-
-            100% {
-                opacity: 1;
-                transform: scale(1) translate3d(0, 0, 0);
-            }
-        }
-
-        .anim-slide {
-            animation: chatAnimSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes chatAnimSlide {
-            from {
-                opacity: 0;
-                transform: translate3d(-40px, 0, 0);
-            }
-
-            to {
-                opacity: 1;
-                transform: translate3d(0, 0, 0);
             }
         }
 
@@ -477,6 +506,31 @@
         .message-box.highlighted {
             border-color: #FFD700 !important;
             box-shadow: 0 0 14px rgba(255, 215, 0, 0.45) !important;
+        }
+
+        .chat-gif-wrapper {
+            margin-top: 6px;
+            display: inline-flex;
+            max-width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
+
+        .chat-gif {
+            display: block;
+            max-width: 100%;
+            max-height: 220px;
+            width: auto;
+            height: auto;
+            border-radius: 8px;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+        }
+
+        .chat-gif:hover {
+            transform: scale(1.02);
         }
     </style>
 </head>

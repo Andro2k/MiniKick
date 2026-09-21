@@ -96,7 +96,7 @@ class TwitchSocketManager:
             on_error=self._on_error,
             on_close=self._on_close
         )
-        self.ws.run_forever(ping_interval=30, ping_timeout=10)
+        self.ws.run_forever(ping_interval=30, ping_timeout=20)
 
     def _on_open(self, ws: websocket.WebSocketApp) -> None:
         logger.info("[TwitchWS] Connecting to Twitch channel: #%s", self._channel)
@@ -137,6 +137,7 @@ class TwitchSocketManager:
 
     def _parse_privmsg(self, line: str) -> None:
         try:
+            line = line.rstrip("\r\n")
             tags = {}
             raw_tags = ""
             rest = line
@@ -176,6 +177,12 @@ class TwitchSocketManager:
 
             color = tags.get("color") or DEFAULT_TWITCH_COLOR
             emotes_tag = tags.get("emotes", "")
+            gifs_tag = tags.get("gifs", "")
+            gif_url = ""
+            if gifs_tag:
+                parts = gifs_tag.split("|")
+                if len(parts) >= 3 and parts[2].startswith("http"):
+                    gif_url = parts[2]
 
             raw_badges_str = tags.get("badges", "")
             badges = []
@@ -187,9 +194,12 @@ class TwitchSocketManager:
 
             if self._callback and user and msg_text:
                 try:
-                    self._callback(user, msg_text, badges, color, msg_id, sender_id, emotes_tag)
+                    self._callback(user, msg_text, badges, color, msg_id, sender_id, emotes_tag, gif_url)
                 except TypeError:
-                    self._callback(user, msg_text, badges, color, msg_id, sender_id)
+                    try:
+                        self._callback(user, msg_text, badges, color, msg_id, sender_id, emotes_tag)
+                    except TypeError:
+                        self._callback(user, msg_text, badges, color, msg_id, sender_id)
 
         except Exception as e:
             logger.debug("[TwitchWS] Error parsing PRIVMSG line: %s", e)
@@ -204,11 +214,16 @@ class TwitchSocketManager:
         return False
 
     def _on_error(self, ws: websocket.WebSocketApp, error: Exception) -> None:
-        logger.error(
+        is_routine_network_drop = isinstance(
+            error,
+            (websocket.WebSocketTimeoutException, TimeoutError, ConnectionResetError, BrokenPipeError)
+        )
+        log_func = logger.warning if is_routine_network_drop else logger.error
+        log_func(
             "[TwitchWS] WebSocket error (%s): %s",
             type(error).__name__,
             error,
-            exc_info=not isinstance(error, (KeyboardInterrupt, SystemExit))
+            exc_info=not is_routine_network_drop and not isinstance(error, (KeyboardInterrupt, SystemExit))
         )
 
     def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:

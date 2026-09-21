@@ -107,7 +107,7 @@ class MusicQueuePanel(QWidget):
         self.i18n = i18n
         self._current_queue_signature = None
         
-        self._icon_delete = get_icon_colored("trash.svg", COLOR_RED, 14)
+        self._icon_delete = get_icon_colored("trash-filled.svg", COLOR_RED, 14)
         self._icon_grip = get_icon_colored("grip-vertical.svg", COLOR_NEUTRAL_400, 14)
         self._icon_kick = get_icon_colored("brand-kick.svg", "#53FC18", 14)
         self._icon_twitch = get_icon_colored("brand-twitch.svg", "#A970FF", 14)

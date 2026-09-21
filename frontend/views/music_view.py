@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout, QTabWidget, QSizePolicy
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import BaseView, ModernScrollArea
-from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_XL
+from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
 from frontend.components.music import (
     MusicStatsPanel,
     MusicPlayerSettingsPanel,
@@ -44,14 +44,14 @@ class MusicView(BaseView):
         self.body_container = QWidget()
         self.body_layout = QVBoxLayout(self.body_container)
         self.body_layout.setContentsMargins(*MARGIN_NONE)
-        self.body_layout.setSpacing(SPACING_XL)
+        self.body_layout.setSpacing(SPACING_MD)
 
         self.stats_panel = MusicStatsPanel(self.i18n)
         self.body_layout.addWidget(self.stats_panel)
 
         self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.columns_layout.setContentsMargins(*MARGIN_NONE)
-        self.columns_layout.setSpacing(SPACING_XL)
+        self.columns_layout.setSpacing(SPACING_MD)
 
         col1 = QWidget(self.body_container)
         self.col1_layout = QVBoxLayout(col1)

@@ -10,7 +10,7 @@ from frontend.common import (
     COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
     COLOR_WHITE, PATH_ICON_HELP,
     SPACING_2XS, SPACING_MD, SPACING_LG,
-    MARGIN_NONE, MARGIN_XL, MARGIN_2XL
+    MARGIN_NONE, MARGIN_XL
 )
 
 logger = logging.getLogger("minikick.dialogs.base_dialog")
@@ -108,7 +108,7 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.setAutoDefault(False)
         self.btn_close_shell.setDefault(False)
         if ModernFramelessShell._icon_close is None:
-            ModernFramelessShell._icon_close = get_icon_colored("x.svg", size=14)
+            ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg", size=14)
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
         self.btn_close_shell.setIconSize(QSize(14, 14))
         self.btn_close_shell.clicked.connect(self.reject)
@@ -389,7 +389,7 @@ class ModernModal(ModernFramelessShell):
         )
         
         self.content_layout = QVBoxLayout(self.container)
-        self.content_layout.setContentsMargins(*MARGIN_2XL)
+        self.content_layout.setContentsMargins(*MARGIN_XL)
         self.content_layout.setSpacing(SPACING_LG)
 
         if icon_path:
@@ -537,7 +537,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.btn_back.clicked.connect(self._go_back)
         
         self.btn_next = QPushButton()
-        self.btn_next.setProperty("role", "action_accent")
+        self.btn_next.setProperty("role", "action_outlined")
         self.btn_next.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_next.setAutoDefault(False)
         self.btn_next.setDefault(False)
@@ -623,7 +623,7 @@ class ModernConfirmDialog(ModernModal):
         self.content_layout.addWidget(body_label)
         
         btn_cancel = self._create_btn(i18n.get("common.buttons.cancel"), "action_outlined", self.reject)
-        btn_confirm = self._create_btn(i18n.get("common.buttons.continue"), "action_danger_border", self.accept)
+        btn_confirm = self._create_btn(i18n.get("common.buttons.continue"), "action_danger_solid", self.accept)
 
         self.add_action_buttons(btn_cancel, btn_confirm, stretch_center=False)
 
