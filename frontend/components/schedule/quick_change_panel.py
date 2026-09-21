@@ -43,7 +43,7 @@ class ScheduleQuickChangePanel(QWidget):
         status_header.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         lbl_status_title = QLabel(self.i18n.get("stream_info.status.title"))
-        lbl_status_title.setProperty("role", "h2")
+        lbl_status_title.setProperty("role", "h3")
         status_header.addWidget(lbl_status_title, alignment=Qt.AlignmentFlag.AlignVCenter)
         status_header.addStretch()
 
@@ -188,7 +188,7 @@ class ScheduleQuickChangePanel(QWidget):
         header_layout.setSpacing(SPACING_MD)
 
         lbl_title = QLabel(self.i18n.get("stream_info.quick_change.title"))
-        lbl_title.setProperty("role", "h2")
+        lbl_title.setProperty("role", "h3")
         header_layout.addWidget(lbl_title)
         header_layout.addStretch()
         change_card.addLayout(header_layout)

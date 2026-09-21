@@ -108,7 +108,7 @@ class CrashReportDialog(ModernModal):
         self.content_layout.addWidget(self.txt_traceback)
         self.content_layout.addWidget(self.lbl_error)
 
-        self.btn_send = ModernButton(self.btn_send_text, role="action_danger_border")
+        self.btn_send = ModernButton(self.btn_send_text, role="action_danger_solid")
         self.btn_send.clicked.connect(self._send_and_close)
 
         self.add_action_buttons(None, self.btn_send)

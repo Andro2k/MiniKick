@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
 from frontend.common import (
-    get_icon_colored, COLOR_RED, COLOR_GREEN,
+    get_icon_colored, COLOR_WHITE, COLOR_GREEN,
     MARGIN_MD, MARGIN_NONE, MARGIN_XS, SPACING_XS
 )
 
@@ -63,11 +63,11 @@ class ImageDropzone(QFrame):
         self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.btn_remove = QPushButton()
-        self.btn_remove.setIcon(get_icon_colored("x-filled.svg", COLOR_RED, size=16))
+        self.btn_remove.setIcon(get_icon_colored("x-filled.svg", COLOR_WHITE, size=16))
         self.btn_remove.setIconSize(QSize(16, 16))
         self.btn_remove.setFixedSize(28, 28)
         self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_remove.setProperty("role", "action_danger_border")
+        self.btn_remove.setProperty("role", "action_danger_solid")
         self.btn_remove.setToolTip(self.i18n.get("dialogs.bug_report.remove_image_tooltip"))
         self.btn_remove.clicked.connect(self.clear_image)
 

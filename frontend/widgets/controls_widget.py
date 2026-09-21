@@ -31,10 +31,8 @@ class ModernButton(QPushButton):
             "action_twitch": COLOR_WHITE,
             "action_youtube": COLOR_WHITE,
             "action_tiktok": COLOR_BLACK,
-            "action_outlined": COLOR_WHITE,
             "action_danger_solid": COLOR_WHITE,
-            "action_danger_border": COLOR_RED,
-            "action_accent_border": COLOR_GREEN,
+            "action_accent_solid": COLOR_WHITE,
             "btn_ghost": COLOR_NEUTRAL_400,
             "nav_button": COLOR_NEUTRAL_400,
         }

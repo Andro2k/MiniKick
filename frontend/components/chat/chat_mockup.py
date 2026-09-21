@@ -137,13 +137,13 @@ class ChatOverlayMockupWidget(QWidget):
         start_x = 14.0
 
         m1_w = self._calculate_horizontal_width(p, user, msg1, is_bot=False)
-        self._draw_horizontal_pill(p, start_x, pill_y, m1_w, pill_h, "10:49:05", user, msg1, "#FACC15", is_bot=False, role="broadcaster", platform="twitch")
+        self._draw_horizontal_pill(p, start_x, pill_y, m1_w, pill_h, "10:49:05", user, msg1, "#FACC15", is_bot=False, badge_type="broadcaster", platform="twitch")
 
         if msg2_data and (start_x + m1_w + 12 < w):
             start_x2 = start_x + m1_w + 12
             t2, u2, m2, c2, ib2, r2, plat2 = msg2_data
             m2_w = self._calculate_horizontal_width(p, u2, m2, is_bot=ib2)
-            self._draw_horizontal_pill(p, start_x2, pill_y, m2_w, pill_h, t2, u2, m2, c2, is_bot=ib2, role=r2, platform=plat2)
+            self._draw_horizontal_pill(p, start_x2, pill_y, m2_w, pill_h, t2, u2, m2, c2, is_bot=ib2, badge_type=r2, platform=plat2)
 
         p.restore()
 
@@ -167,7 +167,7 @@ class ChatOverlayMockupWidget(QWidget):
 
     def _draw_horizontal_pill(self, p: QPainter, x: float, y: float, width: float, height: float,
                               time_str: str, user: str, msg: str, color_hex: str, is_bot: bool,
-                              role: str = "broadcaster", platform: str = "twitch"):
+                              badge_type: str = "broadcaster", platform: str = "twitch"):
         rect = QRectF(x, y, width, height)
         color = QColor(color_hex)
 
@@ -186,7 +186,7 @@ class ChatOverlayMockupWidget(QWidget):
             curr_x += 19.0
 
         if self.show_badges:
-            self._draw_badge(p, curr_x, y + (height - 16) / 2, role)
+            self._draw_badge(p, curr_x, y + (height - 16) / 2, badge_type)
             curr_x += 21.0
 
         p.setFont(QFont("Google Sans", 8, QFont.Weight.Bold if self.theme_mode != "cyber" else QFont.Weight.ExtraBold))
@@ -245,17 +245,17 @@ class ChatOverlayMockupWidget(QWidget):
 
         y1 = 12.0
         rect1 = QRectF(card_x, y1, card_w, card_h)
-        self._draw_vertical_card(p, rect1, "10:49:05", user, msg1, "#FACC15", is_bot=False, role="broadcaster", platform="twitch")
+        self._draw_vertical_card(p, rect1, "10:49:05", user, msg1, "#FACC15", is_bot=False, badge_type="broadcaster", platform="twitch")
 
         if msg2_data:
             y2 = y1 + card_h + gap
             if y2 + card_h <= h - 4:
                 rect2 = QRectF(card_x, y2, card_w, card_h)
                 t2, u2, m2, c2, ib2, r2, plat2 = msg2_data
-                self._draw_vertical_card(p, rect2, t2, u2, m2, c2, is_bot=ib2, role=r2, platform=plat2)
+                self._draw_vertical_card(p, rect2, t2, u2, m2, c2, is_bot=ib2, badge_type=r2, platform=plat2)
 
     def _draw_vertical_card(self, p: QPainter, rect: QRectF, time_str: str, user: str, msg: str,
-                           color_hex: str, is_bot: bool, role: str = "broadcaster", platform: str = "twitch"):
+                           color_hex: str, is_bot: bool, badge_type: str = "broadcaster", platform: str = "twitch"):
         color = QColor(color_hex)
         x = rect.x()
         y = rect.y()
@@ -308,7 +308,7 @@ class ChatOverlayMockupWidget(QWidget):
             curr_x += 19.0
 
         if self.show_badges:
-            self._draw_badge(p, curr_x, header_y, role)
+            self._draw_badge(p, curr_x, header_y, badge_type)
             curr_x += 21.0
 
         p.setFont(QFont("Google Sans", 8.5, QFont.Weight.Bold if self.theme_mode != "cyber" else QFont.Weight.ExtraBold))

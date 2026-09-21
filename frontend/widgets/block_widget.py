@@ -193,17 +193,22 @@ class SliderRow(QWidget):
         contents_margins: tuple = MARGIN_SETTING_ROW
     ):
         super().__init__(parent)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(*contents_margins)
-        layout.setSpacing(SPACING_SM)
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(*contents_margins)
+        main_layout.setSpacing(SPACING_SM)
 
-        top_layout = QHBoxLayout()
-        top_layout.setSpacing(SPACING_SM)
+        if icon_name:
+            icon_lbl = QLabel(parent=self)
+            icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
+            icon_lbl.setFixedWidth(20)
+            icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+            main_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
-        icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=18))
-        icon_lbl.setFixedWidth(20)
-        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        content_layout = QVBoxLayout()
+        content_layout.setSpacing(SPACING_SM)
+
+        header_layout = QHBoxLayout()
+        header_layout.setSpacing(SPACING_SM)
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(SPACING_2XS)
@@ -218,12 +223,14 @@ class SliderRow(QWidget):
         text_layout.addWidget(lbl_title)
         text_layout.addWidget(self.lbl_desc)
 
-        top_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
-        top_layout.addLayout(text_layout, stretch=1)
-        top_layout.addWidget(value_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+        header_layout.addLayout(text_layout, stretch=1)
+        if value_label:
+            header_layout.addWidget(value_label, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
-        layout.addLayout(top_layout)
-        layout.addWidget(slider_widget)
+        content_layout.addLayout(header_layout)
+        content_layout.addWidget(slider_widget)
+
+        main_layout.addLayout(content_layout, stretch=1)
 
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:

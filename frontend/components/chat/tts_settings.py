@@ -6,7 +6,7 @@ from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
                               NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader)
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
-    COLOR_NEUTRAL_400, COLOR_GREEN, MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
+    COLOR_NEUTRAL_400, COLOR_WHITE, MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
     SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
 )
 
@@ -125,10 +125,10 @@ class ChatTtsSettingsPanel(QWidget):
         self.chk_command = ModernSwitch(self)
 
         self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
-        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_GREEN, size=14))
+        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_WHITE, size=14))
         self.btn_manage_piper.setIconSize(QSize(14, 14))
         self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
-        self.btn_manage_piper.setProperty("role", "action_accent_border")
+        self.btn_manage_piper.setProperty("role", "action_accent_solid")
         self.btn_manage_piper.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_manage_piper.clicked.connect(self.manage_piper_voices_requested.emit)
 

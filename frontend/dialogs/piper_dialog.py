@@ -12,7 +12,7 @@ from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
 from frontend.widgets import NoWheelDoubleSpinBox
 from frontend.common import (
     get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_GREEN,
-    SPACING_2XS, SPACING_XS, SPACING_MD, SPACING_LG, SPACING_2XL,
+    SPACING_2XS, SPACING_XS, SPACING_MD, SPACING_LG, SPACING_XL,
     MARGIN_LG, MARGIN_XL, MARGIN_SCROLL_CONTENT
 )
 from frontend.components.dialogs import PiperVoiceItemWidget
@@ -67,7 +67,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         title_layout.addWidget(lbl_title)
         title_layout.addWidget(lbl_subtitle)
         header_layout.addLayout(title_layout, stretch=1)
-        header_layout.addSpacing(SPACING_2XL)
+        header_layout.addSpacing(SPACING_XL)
 
         layout.addLayout(header_layout)
 

@@ -16,7 +16,7 @@ from frontend.common import (
 )
 from frontend.widgets import (
     BaseView, StatCard, SettingRow, ModernCard,
-    ModernButton, ModernSwitch, ModernDivider
+    ModernButton, ModernSwitch
 )
 from frontend.components.dashboard import (
     SegmentedDistributionBar, PlatformStatusCard
@@ -366,8 +366,6 @@ class DashboardView(BaseView):
         analytics_layout = QVBoxLayout(analytics_container)
         analytics_layout.setContentsMargins(*MARGIN_NONE)
         analytics_layout.setSpacing(SPACING_MD)
-
-        analytics_layout.addWidget(ModernDivider())
 
         lbl_activity_title = QLabel(self.i18n.get("dashboard.analytics.title"))
         lbl_activity_title.setProperty("role", "h2")

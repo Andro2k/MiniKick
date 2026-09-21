@@ -11,12 +11,11 @@ from PySide6.QtCore import Qt, Signal
 
 from frontend.common import (
     get_pixmap_colored, COLOR_NEUTRAL_400,
-    SPACING_XS, SPACING_SM, MARGIN_NONE, MARGIN_V_2XS
+    SPACING_XS, SPACING_SM, MARGIN_NONE, MARGIN_V_XS
 )
 from .controls_widget import ModernButton
 from .no_wheel import NoWheelSpinBox, NoWheelSlider
 from .color_picker import ModernColorPicker
-
 
 class InspectorPropertyRow(QWidget):
     def __init__(
@@ -33,7 +32,7 @@ class InspectorPropertyRow(QWidget):
         self.setMinimumHeight(36)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_V_2XS)
+        layout.setContentsMargins(*MARGIN_V_XS)
         layout.setSpacing(SPACING_SM)
 
         if icon_name:

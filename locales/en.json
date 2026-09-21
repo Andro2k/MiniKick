@@ -29,15 +29,12 @@
         },
         "buttons": {
             "browse": "Browse...",
-            "discard": "Discard",
             "discard_tooltip": "Discard unsaved changes",
-            "duplicate": "Duplicate",
             "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
-            "save": "Save Changes",
             "save_short": "Save",
             "test": "Test Alert",
-            "test_short": "Test",
-            "test_sent": "Test alert sent to OBS."
+            "test_sent": "Test alert sent to OBS.",
+            "test_short": "Test"
         },
         "dialogs": {
             "duplicate": {
@@ -1212,19 +1209,6 @@
             "subtitle": "Customize MiniKick general behavior, manage accounts, and check for software updates.",
             "title": "General Settings"
         },
-        "sections": {
-            "system": "System & Appearance",
-            "audio": "Audio Devices",
-            "integrations": "Platforms & Connections",
-            "backup": "Backup & Restore",
-            "support": "Updates & Support",
-            "danger_zone": "Danger Zone"
-        },
-        "danger": {
-            "unlink_title": "Unlink Kick Account",
-            "unlink_desc": "Logs out of active Kick session and clears stored streaming credentials.",
-            "btn_unlink": "Unlink Account"
-        },
         "integrations": {
             "btn_connect_kick": "Connect Kick",
             "btn_connect_tiktok": "Connect TikTok",
@@ -1244,6 +1228,13 @@
             "twitch_title": "Twitch Channel",
             "youtube_desc_connected": "Successfully connected to {channel} live stream.",
             "youtube_title": "YouTube Live Channel"
+        },
+        "sections": {
+            "audio": "Audio Devices",
+            "backup": "Backup & Restore",
+            "integrations": "Platforms & Connections",
+            "support": "Updates & Support",
+            "system": "System & Appearance"
         },
         "status": {
             "browser_changed": "Browser Updated",

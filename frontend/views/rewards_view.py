@@ -6,7 +6,7 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common import (
-    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER,
+    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER, COLOR_WHITE,
     get_pixmap_colored, get_icon_colored,
     MARGIN_NONE, MARGIN_MD, SPACING_SM
 )
@@ -439,15 +439,15 @@ class RewardsView(BaseView):
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
                 icon_name="play-filled.svg", 
-                color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_RED, 
-                role="action_outlined" if is_valid_file else "action_danger_border", 
+                color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_WHITE, 
+                role="action_outlined" if is_valid_file else "action_danger_solid", 
                 tooltip=play_tooltip, 
                 callback=lambda checked=False, k=key: self.preview_requested.emit(k)
             )
             cell.add_button(
                 icon_name="edit-filled.svg", 
-                color=COLOR_GREEN, 
-                role="action_accent_border", 
+                color=COLOR_WHITE, 
+                role="action_accent_solid", 
                 tooltip=self.i18n.get("rewards.table.tooltip_edit"), 
                 callback=lambda checked=False, k=key: self.edit_requested.emit(k)
             )
@@ -460,8 +460,8 @@ class RewardsView(BaseView):
             )
             cell.add_button(
                 icon_name="trash-filled.svg", 
-                color=COLOR_RED, 
-                role="action_danger_border", 
+                color=COLOR_WHITE, 
+                role="action_danger_solid", 
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
                 callback=lambda checked=False, k=key: self.delete_requested.emit(k)
             )

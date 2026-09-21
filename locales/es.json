@@ -29,15 +29,12 @@
         },
         "buttons": {
             "browse": "Examinar...",
-            "discard": "Descartar",
             "discard_tooltip": "Descartar cambios no guardados",
-            "duplicate": "Duplicar",
             "duplicate_tooltip": "Copiar ajustes visuales, multimedia y de sonido a otra alerta",
-            "save": "Guardar Cambios",
             "save_short": "Guardar",
             "test": "Probar Alerta",
-            "test_short": "Probar",
-            "test_sent": "Alerta de prueba enviada a OBS."
+            "test_sent": "Alerta de prueba enviada a OBS.",
+            "test_short": "Probar"
         },
         "dialogs": {
             "duplicate": {
@@ -1212,19 +1209,6 @@
             "subtitle": "Personaliza el comportamiento general de MiniKick, gestiona tus cuentas y busca actualizaciones.",
             "title": "Configuración General"
         },
-        "sections": {
-            "system": "Sistema y Apariencia",
-            "audio": "Dispositivos de Audio",
-            "integrations": "Plataformas y Conexiones",
-            "backup": "Copia de Seguridad",
-            "support": "Actualizaciones y Soporte",
-            "danger_zone": "Zona de Peligro"
-        },
-        "danger": {
-            "unlink_title": "Desvincular Cuenta de Kick",
-            "unlink_desc": "Cierra la sesión activa de Kick y elimina las credenciales locales de streaming.",
-            "btn_unlink": "Desvincular Cuenta"
-        },
         "integrations": {
             "btn_connect_kick": "Conectar Kick",
             "btn_connect_tiktok": "Conectar TikTok",
@@ -1244,6 +1228,13 @@
             "twitch_title": "Canal de Twitch",
             "youtube_desc_connected": "Conectado exitosamente al directo de {channel}.",
             "youtube_title": "Canal de YouTube Live"
+        },
+        "sections": {
+            "audio": "Dispositivos de Audio",
+            "backup": "Copia de Seguridad",
+            "integrations": "Plataformas y Conexiones",
+            "support": "Actualizaciones y Soporte",
+            "system": "Sistema y Apariencia"
         },
         "status": {
             "browser_changed": "Navegador Actualizado",

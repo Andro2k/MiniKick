@@ -89,7 +89,7 @@ class PiperVoiceItemWidget(QFrame):
     def _update_action_button(self):
         if self.is_installed:
             self.btn_action.setText(self.i18n.get("piper_dialog.btn_delete"))
-            self.btn_action.setProperty("role", "action_danger_border")
+            self.btn_action.setProperty("role", "action_danger_solid")
             self.btn_action.setEnabled(not self.is_default)
         else:
             self.btn_action.setText(self.i18n.get("piper_dialog.btn_download"))
