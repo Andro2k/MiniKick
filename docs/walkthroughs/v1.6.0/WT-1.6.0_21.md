@@ -42,9 +42,18 @@
   - Se reestructuró el layout jerárquico de `SliderRow` para colocar el icono en una columna lateral independiente (`main_layout: QHBoxLayout`), conteniendo en la columna contigua (`content_layout: QVBoxLayout`) la cabecera y el control `slider_widget`.
   - El origen horizontal del deslizador coincide con el margen izquierdo de los textos, eliminando el desborde antiestético hacia la izquierda.
 
+- **Redondeo, Geometría y Reposicionamiento del Icono de Filtro a la Izquierda (`FilterHeaderView` y `theme.py`)**:
+  - Se rediseñó el estado `:hover` y `:pressed` de `QHeaderView::section` para adoptar una geometría redondeada (`border-radius: {RADIUS_SM}px;` / 6px) con margen (`margin: 3px 4px;`).
+  - Al interactuar o abrir el menú desplegable de filtros, la sección se resalta como un botón interactivo redondeado flotante, eliminando el corte cuadrado a 90 grados que antes rompía la curvatura redondeada superior de la tarjeta contenedora (`table_card`).
+  - La línea divisoria inferior de la cabecera se mantiene continua y de borde a borde mediante `border-bottom: 1.2px solid {COLOR_NEUTRAL_750};` aplicada al contenedor `QHeaderView`.
+  - **Reposicionamiento del Icono de Filtro a la Izquierda**: Se reubicó el icono de filtro a la izquierda del título en lugar del extremo derecho. Esto previene colisiones visuales cuando la columna es estrecha, garantizando que el título se elida (`...`) a la derecha sin superponerse sobre el icono.
+
 ---
 
 ## Correcciones
+- **Prevención de Colisión de Texto e Icono de Filtro en Tablas (`FilterHeaderView`)**:
+  - Al posicionar previamente el icono a la derecha sobreescribiendo la cabecera por defecto, los títulos largos de columna se dibujaban por debajo del icono en anchos reducidos. Con el icono anclado a la izquierda (`pad_left = 10`, `gap = 6`) y el cálculo dinámico de `text_rect` con elisión a la derecha, el texto nunca colisiona con el icono de filtro.
+
 - **Eliminación Definitiva de Microcortes en los Pills de Chat**:
   - El uso de glifos de fuente (`\ue0b6` y `\ue0b4`) adyacentes a `<span>` con color de fondo generaba franjas verticales y microcortes oscuros por redondeo subpixel en monitores con escalado DPI en Windows. El renderizado vectorial en una pasada garantiza bordes redondeados perfectos, continuos y sin costuras a cualquier resolución.
 
