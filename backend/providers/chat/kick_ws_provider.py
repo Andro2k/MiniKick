@@ -1,8 +1,6 @@
 # backend\providers\chat\kick_ws_provider.py
 
 import logging
-import time
-import uuid
 import socket
 from datetime import datetime, timezone
 from backend.utils.json_utils import parse_kick_payload, fast_dumps

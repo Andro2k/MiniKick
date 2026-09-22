@@ -8,8 +8,6 @@ from frontend.widgets import BaseView, ModernButton, ModernCard
 from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
-    AlertVariantListItem,
-    AlertsSidebarPanel,
     AlertVariantsTabBar,
     AlertVariantTabPill,
     AlertEventCard,
@@ -20,8 +18,6 @@ from frontend.dialogs import DuplicateAlertModal
 __all__ = [
     "AlertsView",
     "AlertEventCard",
-    "AlertVariantListItem",
-    "AlertsSidebarPanel",
     "AlertVariantsTabBar",
     "AlertVariantTabPill",
     "AlertsOverlayCard",

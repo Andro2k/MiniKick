@@ -56,7 +56,8 @@ class CommandView(BaseView):
             headers=[col_1, col_2, col_3, col_4, col_5, col_6],
             search_placeholder=self.i18n.get("command.table.search_placeholder"),
             add_button_text=self.i18n.get("command.table.btn_new"),
-            add_button_icon="plus-filled.svg"
+            add_button_icon="plus-filled.svg",
+            i18n=self.i18n
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("command.empty.title"),
@@ -188,8 +189,16 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 4, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 5, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(commands) == 0)
-        self.table_card.set_title_count(self.i18n.get("command.table.title"), len(self._raw_commands))
+        is_empty_system = (len(self._raw_commands) == 0)
+        has_no_matches = (len(commands) == 0 and not is_empty_system)
+
+        self.table_card.set_empty(is_empty_system)
+        self.table_card.set_no_results(has_no_matches)
+        self.table_card.set_title_count(
+            self.i18n.get("command.table.title"),
+            count=len(commands),
+            total_count=len(self._raw_commands)
+        )
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()

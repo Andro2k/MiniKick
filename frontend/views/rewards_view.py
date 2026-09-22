@@ -173,7 +173,8 @@ class RewardsView(BaseView):
             headers=[col_0, col_plat, col_cost, col_file, col_pos, col_vol, col_actions],
             search_placeholder=self.i18n.get("rewards.table.search_placeholder"),
             add_button_text=self.i18n.get("rewards.table.btn_new"),
-            add_button_icon="plus-filled.svg"
+            add_button_icon="plus-filled.svg",
+            i18n=self.i18n
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("rewards.empty.title"),
@@ -470,15 +471,25 @@ class RewardsView(BaseView):
 
         self.table_rewards.setUpdatesEnabled(True)
         total_mappings_count = len(self._raw_mappings)
-        self.table_card.set_empty(len(items) == 0)
+        filtered_count = len(items)
+        is_empty_system = (total_mappings_count == 0)
+        has_no_matches = (filtered_count == 0 and not is_empty_system)
 
-        if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
-            title_base = self.i18n.get("rewards.table.title")
-            if missing_count > 0:
-                warning_label = self.i18n.get("rewards.table.missing_files_warning")
-                self.table_card.lbl_title.setText(f"{title_base} ({total_mappings_count}) • {missing_count} {warning_label}")
-            else:
-                self.table_card.lbl_title.setText(f"{title_base} ({total_mappings_count})")
+        self.table_card.set_empty(is_empty_system)
+        self.table_card.set_no_results(has_no_matches)
+
+        title_base = self.i18n.get("rewards.table.title")
+        extra_suffix = ""
+        if missing_count > 0:
+            warning_label = self.i18n.get("rewards.table.missing_files_warning")
+            extra_suffix = f" • {missing_count} {warning_label}"
+
+        self.table_card.set_title_count(
+            title_base,
+            count=filtered_count,
+            total_count=total_mappings_count,
+            extra_suffix=extra_suffix
+        )
 
     @Slot()
     def _copy_obs_url(self):

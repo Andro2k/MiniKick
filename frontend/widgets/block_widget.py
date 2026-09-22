@@ -6,8 +6,8 @@ from PySide6.QtCore import Qt, Signal, QSize, QEvent
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
 from frontend.common import (
     get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_950,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
-    MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
+    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_XL,
+    MARGIN_NONE, MARGIN_MD, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
     MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_SETTING_ROW
 )
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
@@ -97,83 +97,6 @@ class SettingRow(QWidget):
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
             self.lbl_desc.setText(text)
-
-class FormField(QWidget):
-    def __init__(
-        self,
-        label_text: str,
-        control_widget: QWidget,
-        hint_text: str = "",
-        is_horizontal: bool = False,
-        parent: QWidget | None = None
-    ):
-        super().__init__(parent)
-        self.control_widget = control_widget
-        self._initial_hint = hint_text
-
-        if is_horizontal:
-            self.layout = QHBoxLayout(self)
-            self.layout.setContentsMargins(*MARGIN_NONE)
-            self.layout.setSpacing(SPACING_LG)
-
-            self.lbl_title = QLabel(label_text, parent=self)
-            self.lbl_title.setProperty("role", "h3")
-            self.layout.addWidget(self.lbl_title)
-            self.layout.addWidget(control_widget, stretch=1)
-            self.lbl_hint = None
-        else:
-            self.layout = QVBoxLayout(self)
-            self.layout.setContentsMargins(*MARGIN_NONE)
-            self.layout.setSpacing(SPACING_XS)
-
-            self.lbl_title = QLabel(label_text, parent=self)
-            self.lbl_title.setProperty("role", "h3")
-            self.layout.addWidget(self.lbl_title)
-            self.layout.addWidget(control_widget)
-
-            self.lbl_hint = QLabel(hint_text, parent=self) if hint_text else None
-            if self.lbl_hint:
-                self.lbl_hint.setProperty("role", "caption")
-                self.lbl_hint.setWordWrap(True)
-                self.layout.addWidget(self.lbl_hint)
-
-    def set_label(self, text: str):
-        self.lbl_title.setText(text)
-
-    def set_hint(self, text: str):
-        if not self.lbl_hint and text:
-            self.lbl_hint = QLabel(text, parent=self)
-            self.lbl_hint.setProperty("role", "caption")
-            self.lbl_hint.setWordWrap(True)
-            self.layout.addWidget(self.lbl_hint)
-        elif self.lbl_hint:
-            self.lbl_hint.setText(text)
-            self.lbl_hint.setVisible(bool(text))
-
-    def set_error(self, error_text: str):
-        if not self.lbl_hint:
-            self.lbl_hint = QLabel(parent=self)
-            self.lbl_hint.setWordWrap(True)
-            self.layout.addWidget(self.lbl_hint)
-        self.lbl_hint.setText(error_text)
-        self.lbl_hint.setProperty("role", "caption")
-        self.lbl_hint.setProperty("state", "danger")
-        self.lbl_hint.style().unpolish(self.lbl_hint)
-        self.lbl_hint.style().polish(self.lbl_hint)
-        self.lbl_hint.setVisible(bool(error_text))
-
-    def clear_error(self):
-        if self.lbl_hint:
-            if self._initial_hint:
-                self.lbl_hint.setText(self._initial_hint)
-                self.lbl_hint.setProperty("role", "caption")
-                self.lbl_hint.setProperty("state", "normal")
-                self.lbl_hint.style().unpolish(self.lbl_hint)
-                self.lbl_hint.style().polish(self.lbl_hint)
-                self.lbl_hint.setVisible(True)
-            else:
-                self.lbl_hint.setText("")
-                self.lbl_hint.setVisible(False)
 
 class ModernDivider(QFrame):
     def __init__(self, parent=None):

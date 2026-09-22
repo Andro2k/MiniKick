@@ -37,7 +37,8 @@ class ScheduleTablePanel(QWidget):
             search_placeholder=self.i18n.get("stream_info.table.search_placeholder"),
             add_button_text=self.i18n.get("stream_info.schedule_section.btn_new"),
             add_button_icon="plus-filled.svg",
-            parent=self
+            parent=self,
+            i18n=self.i18n
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("stream_info.empty.title"),
@@ -106,12 +107,18 @@ class ScheduleTablePanel(QWidget):
             self.table.setCellWidget(row, 6, action_cell)
 
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(filtered) == 0)
+        is_empty_system = (len(self.schedules_data) == 0)
+        has_no_matches = (len(filtered) == 0 and not is_empty_system)
 
-        if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
-            title_base = self.i18n.get("stream_info.schedule_section.title")
-            total_count = len(self.schedules_data)
-            self.table_card.lbl_title.setText(f"{title_base} ({total_count})")
+        self.table_card.set_empty(is_empty_system)
+        self.table_card.set_no_results(has_no_matches)
+
+        title_base = self.i18n.get("stream_info.schedule_section.title")
+        self.table_card.set_title_count(
+            title_base,
+            count=len(filtered),
+            total_count=len(self.schedules_data)
+        )
 
     def _create_item(self, text: str) -> QTableWidgetItem:
         item = QTableWidgetItem(str(text))

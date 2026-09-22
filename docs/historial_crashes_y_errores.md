@@ -15,6 +15,8 @@
 | **INC-003** | `sqlite3.OperationalError: database is locked` en `ScheduleWorker` | `minikick_crash_DeyDeyLove_v1.5.9.log` | v1.5.9 | `✅ Solventado` | `backend/services/schedule/schedule_service.py`, `backend/workers/schedule_worker.py`, `backend/database/database_manager.py` | v1.6.0 (`WT-1.6.0_12`) |
 | **INC-004** | `Windows fatal exception: access violation` en Garbage Collector / `yt_dlp` | `minikick_crash_DeyDeyLove_v1.5.9.log` | v1.5.9 (Dump 15/09) | `ℹ️ Mitigado / Monitoreado` | `backend/workers/music_worker.py` | CPython / yt-dlp low-level |
 | **INC-005** | Reseteo a valores por defecto en Overlay de Chat OBS (`chat.html`) al arrancar la app | Reporte de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/chat_service.py`, `backend/controllers/chat_controller.py` | v1.6.0 (`WT-1.6.0_14`) |
+| **INC-006** | Ocultamiento indebido de tablas y visualización errónea del estado vacío (Empty State de creación) al filtrar 0 elementos | Reporte de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/widgets/table_widget.py`, `frontend/views/commands_view.py`, `frontend/views/rewards_view.py`, `frontend/components/schedule/schedule_table_panel.py` | v1.6.0 (`WT-1.6.0_21`) |
+| **INC-007** | `RuntimeError: libshiboken: Internal C++ object (PySide6.QtWidgets.QWidget) already deleted` en `ModernTableCard.resizeEvent` | Log de Usuario `minikick.log` (Línea 794) | v1.6.0 | `✅ Solventado` | `frontend/widgets/table_widget.py`, `frontend/components/music/queue_panel.py` | v1.6.0 (`WT-1.6.0_21`) |
 
 ---
 
@@ -167,6 +169,64 @@
     - `test_chat_service_get_settings_contains_overlay_keys`
     - `test_chat_controller_get_active_overlay_config_preserves_custom_settings_on_startup`
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_14.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_14.md).
+
+---
+
+### INC-006: Ocultamiento Indebido de Tablas y Disparo del Empty State Inicial al Filtrar Cero Resultados
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA / UX CRÍTICA** (La tabla, cabeceras y barra de búsqueda desaparecían al no haber coincidencias de filtro o búsqueda, impidiendo limpiar o ajustar los filtros).
+* **Reportes Asociados**:
+  - Reporte de Usuario en v1.6.0 ("cuando no existe nada que filtrar o digamos que el filtro es 0 la tabla desaparece y solo me sale la sugerencia de crear").
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  En `commands_view.py`, `rewards_view.py` y `schedule_table_panel.py`, la llamada `self.table_card.set_empty(...)` recibía la condición `len(filtered) == 0` en lugar de evaluar si el sistema contenía registros totales (`len(raw) == 0`). Al aplicar un filtro de columna o búsqueda que dejaba 0 coincidencias, `set_empty(True)` conmutaba el `QStackedWidget` al índice 1 (el estado vacío inicial con ilustración y botón `+ Crear`). Esto ocultaba la tabla completa con sus cabeceras interactivas, imposibilitando al usuario restablecer los filtros desde la UI.
+* **Archivos y Líneas Modificadas**:
+  1. [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py):
+     - Se incorporó `no_results_overlay` en `ModernTableCard` sobre el viewport de la tabla, con mensaje claro (`common.no_results_filter`) y botón de acción interactivo `[Limpiar filtros]` (`common.buttons.clear_filters`).
+     - Se agregó el método `clear_filters()` que resetea la barra de búsqueda y los filtros de columna mediante `reset_filters()`.
+     - Se agregó `set_no_results(show: bool)` para alternar la visualización del overlay sin ocultar la cabecera ni la tarjeta de la tabla.
+  2. [`frontend/widgets/filter_header.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/filter_header.py):
+     - Se añadieron `reset_filters()` y `has_active_filters()` a `FilterHeaderView` para restaurar todas las opciones activas y notificar a la vista reactivamente.
+  3. [`frontend/views/commands_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/commands_view.py), [`frontend/views/rewards_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/rewards_view.py), [`frontend/components/schedule/schedule_table_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/schedule/schedule_table_panel.py):
+     - `set_empty(is_empty_system)` ahora evalúa exclusivamente el total de elementos (`len(raw) == 0`).
+     - `set_no_results(has_no_matches)` activa el overlay con el botón `Limpiar filtros` cuando `len(filtered) == 0 and not is_empty_system`.
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_21.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_21.md).
+
+---
+
+### INC-007: Crash Fatal al Navegar a Música (`libshiboken: Internal C++ object already deleted` en `ModernTableCard.resizeEvent`)
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **CRÍTICA** (Cierre abrupto de la aplicación / Fatal Crash Handler al cambiar de pestaña).
+* **Reportes Asociados**:
+  - `minikick.log` (Línea 794, 2026-09-21 10:30:58)
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Traza de la Excepción**:
+  ```text
+  [CRITICAL] [FATAL CRASH] Unhandled exception caught by global excepthook:
+  Traceback (most recent call last):
+    File "backend/core/main_window_core.py", line 382, in _handle_navigation
+      self.content_stack.setCurrentWidget(target_view)
+    File "frontend/widgets/block_widget.py", line 329, in viewportEvent
+      res = super().viewportEvent(event)
+    File "frontend/widgets/table_widget.py", line 346, in resizeEvent
+      if hasattr(self, "no_results_overlay") and self.no_results_overlay.isVisible():
+  RuntimeError: Error calling Python override of QScrollArea::viewportEvent(): Error calling Python override of QScrollArea::viewportEvent(): Error calling Python override of QFrame::resizeEvent(): libshiboken: Internal C++ object (PySide6.QtWidgets.QWidget) already deleted.
+  ```
+* **Causa Raíz**:
+  1. En `ModernTableCard.__init__`, el widget de overlay `self.no_results_overlay = QWidget(self.table)` se asociaba como hijo de `self.table`.
+  2. En `frontend/components/music/queue_panel.py`, para implementar la tabla de cola con soporte drag-and-drop (`DragDropQueueTable`), el panel obtenía `old_table = self.card_queue.table` y ejecutaba `old_table.deleteLater()`, reemplazando la tabla por `self.queue_table`.
+  3. Al destruir `old_table` en C++, Qt eliminaba en cascada a todos sus hijos, incluyendo `self.no_results_overlay`.
+  4. Cuando el usuario navegaba a la pestaña de Música, el layout de la ventana disparaba `resizeEvent` sobre `card_queue`. En `table_widget.py:346`, la comprobación `hasattr(self, "no_results_overlay")` resultaba `True` (el wrapper de Python aún existía), pero al invocar `self.no_results_overlay.isVisible()`, Shiboken lanzaba `RuntimeError` por objeto C++ ya eliminado.
+* **Archivos y Líneas Modificadas**:
+  1. [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py):
+     - Se añadió soporte para `custom_table: QTableWidget = None` en el constructor de `ModernTableCard`, permitiendo inyectar tablas especializadas desde el inicio sin necesidad de destruir tablas predeterminadas.
+     - Se implementó la función helper `_is_valid_widget(widget)` utilizando `shiboken6.isValid()` y captura defensiva de `RuntimeError`.
+     - Se blindaron `resizeEvent`, `eventFilter`, `_update_no_results_geometry`, `set_empty` y `set_no_results` comprobando `self._is_valid(...)` y envolviendo en bloques `try ... except RuntimeError: pass`.
+  2. [`frontend/components/music/queue_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/music/queue_panel.py):
+     - Se eliminó el flujo destructivo `old_table.deleteLater()`. Ahora `self.queue_table = DragDropQueueTable(...)` se instancia directamente y se inyecta como `custom_table` en `ModernTableCard(...)`.
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_21.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_21.md).
 
 ---
 

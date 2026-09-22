@@ -45,7 +45,7 @@ class AlertConfigData:
 
 from frontend.widgets import (
     ModernCard, ModernButton, ModernSwitch, ExpandableCard,
-    NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox, ModernDivider,
+    NoWheelSlider, NoWheelSpinBox, NoWheelDoubleSpinBox,
     ModernSegmentedControl, NoWheelComboBox, create_badge, ClearableLineEdit, ModernColorPicker,
     InspectorPropertyRow
 )

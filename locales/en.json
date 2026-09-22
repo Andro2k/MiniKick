@@ -155,9 +155,6 @@
             "text_speech": "Text and speech",
             "text_speech_desc": "Message template, typography, colors, and TTS."
         },
-        "sidebar": {
-            "title": "Alert Variants"
-        },
         "status": {
             "disabled_msg": "The '{event}' alert has been disabled.",
             "disabled_title": "Alert Disabled",
@@ -430,6 +427,7 @@
             "back": "Back",
             "browse": "Browse",
             "cancel": "Cancel",
+            "clear_filters": "Clear Filters",
             "close": "Close",
             "continue": "Continue",
             "copy": "Copy Link",
@@ -443,7 +441,9 @@
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
+        "filtered_count": "({count} of {total})",
         "no_results": "No results found",
+        "no_results_filter": "No results found matching the applied filters.",
         "status": {
             "error": "Error",
             "offline": "Offline",
@@ -707,7 +707,8 @@
             "historical": "HISTORICAL"
         },
         "pagination": {
-            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
+            "info": "{showing_from}-{showing_to} of {total} row(s) shown.",
+            "info_filtered": "{showing_from}-{showing_to} of {total} row(s) shown (filtered from {total_all})"
         },
         "status": {
             "cleared_msg": "Log view cleared successfully.",
@@ -722,7 +723,8 @@
         "table": {
             "col_level": "Log Level",
             "col_message": "Log Message",
-            "col_time": "Timestamp"
+            "col_time": "Timestamp",
+            "title": "Event Logs"
         }
     },
     "logs": {

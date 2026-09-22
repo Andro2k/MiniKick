@@ -1,21 +1,21 @@
 # frontend\views\log_view.py
 
-import os
-from PySide6.QtCore import Qt, Signal, Slot, QTimer
+from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import (
-    QFileDialog, QFrame, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QStackedWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget
+    QFileDialog, QHeaderView, QHBoxLayout, QLabel, QMessageBox, QTableWidgetItem,
+    QWidget, QSizePolicy
 )
-from frontend.widgets import (BaseView, ModernTable, ScalableIllustration, ModernButton, 
-                              SegmentedPagination, ModernDivider)
+from frontend.widgets import (
+    BaseView, ModernTableCard, ModernButton, 
+    SegmentedPagination, NoWheelComboBox
+)
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED,
-    get_assets_path, get_icon_colored,
-    SPACING_NONE, SPACING_SM, SPACING_MD, SPACING_LG,
-    MARGIN_NONE, MARGIN_XS, MARGIN_MD, MARGIN_XL
+    get_icon_colored,
+    SPACING_SM,
+    MARGIN_MD
 )
-from frontend.components.log import LogControlsPanel
 
 LOG_ILLUSTRATION_FILE = "illustration-result-no-found.svg"
 _LEVEL_COLORS = {
@@ -80,39 +80,61 @@ class LogView(BaseView):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.controls_panel = LogControlsPanel(self.i18n)
-        self.controls_panel.search_changed.connect(self.search_changed.emit)
-        self.controls_panel.filter_changed.connect(self.filter_changed.emit)
-        self.controls_panel.date_changed.connect(self.date_changed.emit)
-        self.controls_panel.folder_requested.connect(self.open_folder_requested.emit)
-        self.controls_panel.load_requested.connect(self.load_requested.emit)
-        self.controls_panel.live_requested.connect(self.live_requested.emit)
-        self.controls_panel.clear_requested.connect(self.clear_requested.emit)
-        self.controls_panel.report_requested.connect(self.report_requested.emit)
-        self.controls_panel.view_toggle_requested.connect(self.view_toggle_requested.emit)
-        self.main_layout.addWidget(self.controls_panel)
-
-        self.table_card = QFrame()
-        self.table_card.setProperty("role", "card")
-        table_layout = QVBoxLayout(self.table_card)
-        table_layout.setContentsMargins(*MARGIN_NONE)
-        table_layout.setSpacing(SPACING_NONE)
-        
-        self.content_stack = QStackedWidget(self)
-        self.empty_state = self._build_empty_state()
-        self.content_stack.addWidget(self.empty_state)
-
-        self.table_page = QWidget()
-        table_page_layout = QVBoxLayout(self.table_page)
-        table_page_layout.setContentsMargins(*MARGIN_NONE)
-        table_page_layout.setSpacing(SPACING_NONE)
-
         col_1 = self.i18n.get("log.table.col_level")
         col_2 = self.i18n.get("log.table.col_time")
         col_3 = self.i18n.get("log.table.col_message")
 
-        self.table = ModernTable([col_1, col_2, col_3])
+        self.table_card = ModernTableCard(
+            title_text=self.i18n.get("log.table.title"),
+            headers=[col_1, col_2, col_3],
+            search_placeholder=self.i18n.get("log.controls.search_placeholder"),
+            i18n=self.i18n
+        )
+        self.table = self.table_card.table
         self.table.setWordWrap(True)
+        self.table_page = self.table_card
+
+        self.txt_search = self.table_card.txt_search
+        if self.txt_search:
+            self.txt_search.textChanged.connect(self.search_changed.emit)
+
+        self.combo_date = NoWheelComboBox()
+        self.combo_date.addItem(self.i18n.get("log.controls.date_all"), "")
+        self.combo_date.addItem(self.i18n.get("log.controls.date_1d"), "1d")
+        self.combo_date.addItem(self.i18n.get("log.controls.date_3d"), "3d")
+        self.combo_date.addItem(self.i18n.get("log.controls.date_7d"), "7d")
+        self.combo_date.setMinimumWidth(110)
+        self.combo_date.currentIndexChanged.connect(self._on_date_changed)
+        self.table_card.add_header_control(self.combo_date, insert_before_search=False)
+
+        specs = [
+            ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_outlined",
+             "folder-open-filled.svg", COLOR_NEUTRAL_400, self.open_folder_requested.emit, True),
+            ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_outlined",
+             "file-text-filled.svg", COLOR_NEUTRAL_400, self.load_requested.emit, True),
+            ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_outlined",
+             "eye-filled.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
+            ("btn_live", self.i18n.get("log.controls.btn_live"), "action_outlined",
+             "play-filled.svg", COLOR_NEUTRAL_400, self.live_requested.emit, False),
+            ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_outlined",
+             "trash-filled.svg", COLOR_NEUTRAL_400, self.clear_requested.emit, True),
+            ("btn_report", self.i18n.get("log.controls.btn_report"), "action_outlined",
+             "bug-filled.svg", COLOR_NEUTRAL_400, self.report_requested.emit, True),
+        ]
+
+        self._action_buttons: list[ModernButton] = []
+        for name, text, role, icon, color, slot, visible in specs:
+            btn = ModernButton(text, role=role)
+            btn.setIcon(get_icon_colored(icon, color, 14))
+            btn.setIconSize(QSize(14, 14))
+            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            btn.clicked.connect(slot)
+            btn.setVisible(visible)
+            setattr(self, name, btn)
+            self._action_buttons.append(btn)
+            if name == "btn_open_folder":
+                btn.setToolTip(self.i18n.get("log.controls.tooltip_folder"))
+            self.table_card.add_action_button(btn)
 
         self.filter_header = self.table.enable_filter_header()
 
@@ -148,6 +170,7 @@ class LogView(BaseView):
 
         self.filter_header.filter_changed.connect(self._on_header_filter_changed)
         self.filter_header.sort_requested.connect(self._on_header_sort_requested)
+        self.table_card.clear_filters_requested.connect(self._on_clear_filters_requested)
 
         self.filter_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
@@ -155,9 +178,15 @@ class LogView(BaseView):
         self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 160)
 
-        table_page_layout.addWidget(self.table, 1)
-        table_page_layout.addWidget(ModernDivider(self.table_page))
-        
+        self.table_card.setup_empty_state(
+            title=self.i18n.get("log.empty.title"),
+            desc=self.i18n.get("log.empty.desc"),
+            icon_name=LOG_ILLUSTRATION_FILE,
+            button_text=self.i18n.get("log.empty.btn_show"),
+            on_button_clicked=self.view_toggle_requested.emit,
+            button_icon="eye-filled.svg"
+        )
+
         self.pagination_bar = QWidget()
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
         self.pagination_layout.setContentsMargins(*MARGIN_MD)
@@ -176,12 +205,18 @@ class LogView(BaseView):
         self.lbl_page_info.setProperty("role", "body")
         self.pagination_layout.addWidget(self.lbl_page_info)
 
-        table_page_layout.addWidget(self.pagination_bar)
-
-        self.content_stack.addWidget(self.table_page)
-        table_layout.addWidget(self.content_stack)
-
+        self.table_card.set_footer_widget(self.pagination_bar)
         self.main_layout.addWidget(self.table_card, stretch=1)
+
+    def _on_date_changed(self, index: int):
+        val = self.combo_date.itemData(index)
+        self.date_changed.emit(val if val is not None else "")
+
+    def _on_clear_filters_requested(self):
+        if hasattr(self, "filter_header") and self.filter_header:
+            self.filter_header.reset_filters()
+        self.current_page = 1
+        self.update_page_display()
 
     def _on_header_filter_changed(self, filters: dict):
         self.current_page = 1
@@ -220,53 +255,9 @@ class LogView(BaseView):
 
         return filtered
 
-    def _build_empty_state(self) -> QWidget:
-        container = QWidget()
-        layout = QVBoxLayout(container)
-        layout.setContentsMargins(*MARGIN_XL)
-        layout.setSpacing(SPACING_LG)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        illustration_path = get_assets_path(os.path.join("icons", LOG_ILLUSTRATION_FILE))
-        self.lbl_illustration = ScalableIllustration(
-            icon_path=illustration_path,
-            aspect_ratio=1.0,
-            min_size=160,
-            max_size=320,
-            size_offset=240,
-            parent=self
-        )
-
-        lbl_title = QLabel(self.i18n.get("log.empty.title"))
-        lbl_title.setProperty("role", "h2")
-        lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        lbl_desc = QLabel(self.i18n.get("log.empty.desc"))
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
-        lbl_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        lbl_desc.setMaximumWidth(450)
-
-        self.btn_show_logs = ModernButton(self.i18n.get("log.empty.btn_show"), role="action_outlined")
-        self.btn_show_logs.set_icon("eye-filled.svg", size=16)
-        self.btn_show_logs.clicked.connect(self.view_toggle_requested.emit)
-
-        layout.addStretch(1)
-        layout.addWidget(self.lbl_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(lbl_title)
-        layout.addWidget(lbl_desc)
-        layout.addSpacing(SPACING_MD)
-        layout.addWidget(self.btn_show_logs, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addStretch(2)
-
-        return container
-
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self.table.resizeRowsToContents()
-        if hasattr(self, "lbl_illustration") and self.content_stack.currentIndex() == 0:
-            card_h = max(self.table_card.height(), 400)
-            self.lbl_illustration.update_image(card_h)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -274,13 +265,22 @@ class LogView(BaseView):
 
     def update_display_state(self, is_historical: bool, streaming_visible: bool):
         show_table = streaming_visible or is_historical
-        self.content_stack.setCurrentIndex(1 if show_table else 0)
-        self.controls_panel.set_historical_mode(is_historical)
-        self.controls_panel.set_view_toggle_state(streaming_visible)
-        
-        if not show_table and hasattr(self, "lbl_illustration"):
-            card_h = max(self.table_card.height(), 400)
-            self.lbl_illustration.update_image(card_h)
+        self.table_card.set_empty(not show_table)
+
+        self.btn_live.setVisible(is_historical)
+        self.btn_toggle_view.setVisible(not is_historical)
+        self.btn_clear.setEnabled(not is_historical and streaming_visible)
+
+        key = "log.controls.btn_hide_logs" if streaming_visible else "log.controls.btn_show_logs"
+        self.btn_toggle_view.setText(self.i18n.get(key))
+
+        controls_enabled = streaming_visible or is_historical
+        if hasattr(self, "txt_search") and self.txt_search:
+            self.txt_search.setEnabled(controls_enabled)
+        if hasattr(self, "combo_date") and self.combo_date:
+            self.combo_date.setEnabled(controls_enabled)
+
+        self.table_card.reflow_header_actions()
 
     def display_logs(self, logs: list[tuple[str, str, str]]):
         self.all_logs = list(logs)
@@ -386,10 +386,29 @@ class LogView(BaseView):
         showing_from = start_idx + 1 if total_logs > 0 else 0
         showing_to = end_idx
 
-        info_text = self.i18n.get("log.pagination.info")
-        info_text = info_text.replace("{showing_from}", str(showing_from))
-        info_text = info_text.replace("{showing_to}", str(showing_to))
-        info_text = info_text.replace("{total}", str(total_logs))
+        total_all = len(self.all_logs)
+        if hasattr(self, "table_card"):
+            self.table_card.set_title_count(
+                base_title=self.i18n.get("log.table.title"),
+                count=total_logs,
+                total_count=total_all
+            )
+            if total_logs == 0 and total_all > 0:
+                self.table_card.set_no_results(True)
+            else:
+                self.table_card.set_no_results(False)
+
+        if total_logs < total_all:
+            info_text = self.i18n.get("log.pagination.info_filtered")
+            info_text = info_text.replace("{showing_from}", str(showing_from))
+            info_text = info_text.replace("{showing_to}", str(showing_to))
+            info_text = info_text.replace("{total}", str(total_logs))
+            info_text = info_text.replace("{total_all}", str(total_all))
+        else:
+            info_text = self.i18n.get("log.pagination.info")
+            info_text = info_text.replace("{showing_from}", str(showing_from))
+            info_text = info_text.replace("{showing_to}", str(showing_to))
+            info_text = info_text.replace("{total}", str(total_logs))
         self.lbl_page_info.setText(info_text)
 
         if hasattr(self, "segmented_pagination"):

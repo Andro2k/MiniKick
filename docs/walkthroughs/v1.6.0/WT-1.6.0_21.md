@@ -18,9 +18,53 @@
   - **Copia al Portapapeles Limpia (`ChatConsoleEdit`)**: Se implementó una subclase personalizada de `QTextEdit` con `createMimeDataFromSelection`, permitiendo copiar mensajes al portapapeles en texto legible y natural (` 21:35:35  Streamer TheAndro2K !sr birds`) sin caracteres de reemplazo de objeto (`￼`) ni glifos privados corruptos.
   - **Orden y Espaciado Compacto**: Cápsula de plataforma y hora (`Icono + Hora`), rol y usuario, con espaciado inter-cápsula estrecho (`" "`) para maximizar la amplitud del mensaje.
 
+- **Estandarización y Unificación de `LogView` en `ModernTableCard` con Cabecera Integrada y Reflow Responsivo**:
+  - Se retiró el panel/card superior independiente `LogControlsPanel` en [`frontend/views/logs_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/logs_view.py), unificando la vista bajo el estándar universal de tarjetas de tabla `ModernTableCard`.
+  - Se integraron todos los controles dentro de la cabecera del propio card:
+    - **Fila Superior**: Título reactivo ("Registros de Eventos" con conteo dinámico), barra de búsqueda integrada (`UnifiedSearchBar`) y selector de rango temporal (`NoWheelComboBox`).
+    - **Fila Secundaria de Acciones**: Los 6 botones de control (`Carpeta`, `Cargar Historial`, `Ocultar/Ver Logs`, `Vista en Vivo`, `Limpiar`, `Reportar Bug`) migrados como botones compactos contorneados (`action_outlined` con icono de 14px).
+  - **Reflow Responsivo Dinámico (`reflow_header_actions`)**: Implementado en [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py) con complejidad $\mathcal{O}(k)$ (donde $k$ es el número de botones visibles). Al reducir el ancho de la ventana (ej. 950px, 620px, 450px), los botones se reacomodan fluidamente en columnas automáticas (`cols = max(1, min(len(visible), content_width // 115))`), garantizando adaptabilidad completa sin desbordes.
+  - **Soporte de Footer y Estado Vacío en `ModernTableCard`**: Se implementó `set_footer_widget` para anclar la barra de paginación con divisor continuo y `setup_empty_state` con soporte para icono personalizado (`eye-filled.svg`) para el estado de consola en pausa ("Ver logs en vivo").
+
+- **Conteo Dinámico de Elementos Filtrados frente al Total en Tablas (`ModernTableCard`)**:
+  - Se actualizó el método `set_title_count` en [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py) para soportar el conteo dual `count` y `total_count`.
+  - Cuando no hay filtros activos (o `count == total_count`), se mantiene el total estándar: `Título (total)` (ej. `Comandos Vinculados (15)`).
+  - Al aplicar un filtro o búsqueda (`count < total_count`), se refleja automáticamente el número de coincidencias respecto al total mediante la nueva clave i18n `common.filtered_count`: `Título (filtrados de total)` (ej. `Comandos Vinculados (1 de 3)`, `Recompensas Vinculadas (1 de 2)`).
+  - Integrado de forma reactiva en [`commands_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/commands_view.py), [`rewards_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/rewards_view.py), [`schedule_table_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/schedule/schedule_table_panel.py) y en la barra de paginación de [`logs_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/logs_view.py) (`log.pagination.info_filtered`).
+
+- **Overlay de Cero Coincidencias con Botón de Restablecimiento ("Limpiar Filtros")**:
+  - Se implementó `no_results_overlay` en [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py) centrado en el viewport de la tabla.
+  - Cuando los filtros o la búsqueda no arrojan resultados, se muestra un mensaje explicativo (`common.no_results_filter`) junto con un botón interactivo `[Limpiar filtros]` (`common.buttons.clear_filters`).
+  - Al pulsar el botón, se vacía la barra de búsqueda y se restablecen todas las opciones de los filtros de columna mediante `reset_filters()` en [`FilterHeaderView`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/filter_header.py), refrescando la tabla a su estado original sin recargar vistas.
+
+- **Nueva Herramienta de Auditoría y Saneamiento de Código Muerto (`resources/tools/dead_code_manager.py`)**:
+  - Se desarrolló un motor de análisis estático integral en tiempo $\mathcal{O}(N)$ amortizado basado en el árbol sintáctico nativo de Python (`ast.NodeVisitor`), diseñado para auditar tanto `frontend/` como `backend/`.
+  - **Capacidades Principales**:
+    - **Archivos y Módulos Huérfanos**: Identifica archivos `.py` que no son importados por ningún componente activo en todo el proyecto ni por los módulos de arranque (`main.py`).
+    - **Símbolos y Clases No Referenciadas**: Detecta clases, funciones y variables top-level en desuso. Incorpora una whitelist de PySide6/Qt (`resizeEvent`, `paintEvent`, `eventFilter`, etc.) y métodos de ciclo de vida para garantizar cero falsos positivos en vistas y widgets.
+    - **Importaciones Innecesarias**: Localiza imports definidos en cabecera que no se consumen dentro del cuerpo del archivo.
+    - **Modos de Ejecución**: Soporta `--scope {frontend,backend,all}`, `--orphans-only`, `--symbols-only`, `--imports-only`, `--vulture` (integración con `uvx vulture`), `--clean-orphans` y `--dry-run` para limpieza asistida.
+
 ---
 
 ## Mejoras
+- **Saneamiento y Depuración Integral de Archivos Huérfanos, Símbolos Muertos e Importaciones Innecesarias**:
+  - **Archivos Huérfanos Eliminados (Reducción a 0)**:
+    - [`frontend/components/log/logs_controls.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/log/logs_controls.py) y paquete obsoleto `frontend/components/log/`.
+    - [`frontend/components/alerts/sidebar_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/alerts/sidebar_panel.py) y [`frontend/components/alerts/variant_item.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/alerts/variant_item.py) (antigua lista lateral de variantes de alertas, reemplazada por las pestañas reactivas `AlertVariantsTabBar`).
+    - [`frontend/widgets/platform_controls.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/platform_controls.py) (`PlatformSwitchGroup`, reemplazado por los componentes universales `SegmentedControl` y `ModernFilterHeader`).
+    - 4 interfaces no adoptadas en [`backend/interfaces/`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/interfaces/): `i_browser.py`, `i_chat_provider.py`, `i_chat_service.py` e `i_instance.py`.
+  - **Clases y Símbolos Top-Level No Usados Eliminados (Reducción a 0)**:
+    - `FormField` en [`frontend/widgets/block_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/block_widget.py) y su exportación en [`frontend/widgets/__init__.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/__init__.py).
+    - `InspectorDualSpinBox`, `InspectorColorRow` e `InspectorFilePicker` en [`frontend/widgets/inspector_widgets.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/inspector_widgets.py) y sus exportaciones en [`frontend/widgets/__init__.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/__init__.py).
+  - **Importaciones Innecesarias Depuradas (Reducción a 0)**:
+    - Eliminadas importaciones olvidadas en `alerts_view.py`, `event_card.py`, `player_settings.py`, `block_widget.py`, `controls_widget.py`, `kick_ws_provider.py`, `piper_manager.py`, `overlay_manager.py` e `inspector_widgets.py`.
+    - Blindaje de la herramienta `dead_code_manager.py` para reconocer referencias a submódulos (`import a.b`) y directivas de compilador (`from __future__ import annotations`).
+  - **Resultado de la Auditoría Global**:
+    - Archivos huérfanos: **0**
+    - Símbolos no usados: **0**
+    - Imports innecesarios: **0** (Código 100% limpio y optimizado).
+
 - **Compactación y Optimización de Márgenes de Chat**:
   - Se redujo el padding de `QTextEdit[role="ConsoleDisplay"]` en `theme.py` a `2px 4px;` y se ajustó `document().setDocumentMargin(2)` en `ChatDisplayPanel`.
   - Se ajustó el margen del contenedor de tarjeta a `MARGIN_SM` (6px), maximizando el espacio útil de visualización de mensajes y evitando márgenes vacíos innecesarios.
@@ -48,9 +92,24 @@
   - La línea divisoria inferior de la cabecera se mantiene continua y de borde a borde mediante `border-bottom: 1.2px solid {COLOR_NEUTRAL_750};` aplicada al contenedor `QHeaderView`.
   - **Reposicionamiento del Icono de Filtro a la Izquierda**: Se reubicó el icono de filtro a la izquierda del título en lugar del extremo derecho. Esto previene colisiones visuales cuando la columna es estrecha, garantizando que el título se elida (`...`) a la derecha sin superponerse sobre el icono.
 
+- **Fondo Opaco en `no_results_overlay` y Estabilidad Geométrica de Botones de Cabecera**:
+  - Se configuró fondo sólido `{COLOR_NEUTRAL_900}` en `no_results_overlay` en [`ModernTableCard`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py), evitando que las celdas o texto previo de la tabla se transparenten cuando no hay coincidencias de filtrado.
+  - Se asignó política de tamaño `Minimum` al contenedor de cabecera (`header_widget`) y altura mínima de 30px (`setMinimumHeight(30)`) a los botones de acción, previniendo que los layouts de Qt colapsen verticalmente los botones durante el reacomodo responsivo.
+
 ---
 
 ## Correcciones
+- **Subsanación de Ocultamiento Indebido de Tablas y Disparo de Empty State al Filtrar Cero Elementos (`INC-006`)**:
+  - En `commands_view.py`, `rewards_view.py` y `schedule_table_panel.py`, la condición enviada a `set_empty(...)` evaluaba erróneamente la lista filtrada (`len(filtered) == 0`) en vez de los datos totales del sistema (`len(raw) == 0`). Esto provocaba que, al aplicar un filtro restrictivo sin coincidencias, la tabla y sus cabeceras desaparecieran, reemplazándose por el estado vacío inicial de bienvenida ("Crea un comando...").
+  - Se corrigió evaluando `set_empty(len(raw) == 0)` para reservar el onboarding únicamente a tablas vacías de origen, y se incorporó `set_no_results(True)` con el overlay interactivo y botón de limpieza inmediata.
+
+- **Crash Fatal al Navegar a Música por Destrucción en Cascada de Overlay C++ (`INC-007`)**:
+  - **Problema**: En `queue_panel.py`, se ejecutaba `old_table.deleteLater()` para sustituir la tabla por defecto por `DragDropQueueTable`. Al destruirse la tabla nativa en C++, Qt eliminaba en cascada a su widget hijo `self.no_results_overlay`. Al navegar a la vista de Música, `card_queue.resizeEvent` invocaba `self.no_results_overlay.isVisible()`, disparando un crash fatal: `RuntimeError: libshiboken: Internal C++ object (PySide6.QtWidgets.QWidget) already deleted`.
+  - **Solución**: Se añadió inyección de dependencias `custom_table: QTableWidget = None` en el constructor de [`ModernTableCard`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py), eliminando el patrón destructivo `old_table.deleteLater()`. Adicionalmente, se blindaron los métodos de eventos con la comprobación `_is_valid_widget()` mediante `shiboken6.isValid()` y bloques `try ... except RuntimeError: pass`.
+
+- **Corrección de Conteo Estático al Filtrar Tablas**:
+  - Anteriormente, el título de la tarjeta en tablas como Comandos, Recompensas y Horarios solo renderizaba el total absoluto (`len(raw)`), permaneciendo inmutable aunque la búsqueda o los filtros de columna redujeran los resultados visibles. Ahora se calcula y actualiza dinámicamente tanto la cantidad filtrada como el total acumulado en $\mathcal{O}(1)$.
+
 - **Prevención de Colisión de Texto e Icono de Filtro en Tablas (`FilterHeaderView`)**:
   - Al posicionar previamente el icono a la derecha sobreescribiendo la cabecera por defecto, los títulos largos de columna se dibujaban por debajo del icono en anchos reducidos. Con el icono anclado a la izquierda (`pad_left = 10`, `gap = 6`) y el cálculo dinámico de `text_rect` con elisión a la derecha, el texto nunca colisiona con el icono de filtro.
 

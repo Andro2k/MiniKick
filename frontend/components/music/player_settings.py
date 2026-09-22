@@ -1,11 +1,11 @@
 # frontend\components\music\player_settings.py
 
 import html
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication, QProgressBar
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK,
-    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL, MARGIN_SETTING_ROW_COMPACT,
+    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL,
     SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
 from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider

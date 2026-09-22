@@ -130,21 +130,13 @@ class MusicQueuePanel(QWidget):
             self.i18n.get("music.queue.col_actions")
         ]
 
+        self.queue_table = DragDropQueueTable(headers, parent=self)
         self.card_queue = ModernTableCard(
             title_text=self.i18n.get("music.queue.title"),
             headers=headers,
-            parent=self
+            parent=self,
+            custom_table=self.queue_table
         )
-        
-        old_table = self.card_queue.table
-        old_table.hide()
-        self.card_queue.stack.removeWidget(old_table)
-        old_table.deleteLater()
-
-        self.queue_table = DragDropQueueTable(headers, parent=self.card_queue)
-        self.card_queue.table = self.queue_table
-        self.card_queue.stack.insertWidget(0, self.queue_table)
-        self.card_queue.stack.setCurrentIndex(0)
 
         self.queue_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.queue_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)

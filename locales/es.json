@@ -155,9 +155,6 @@
             "text_speech": "Texto y voz",
             "text_speech_desc": "Mensaje, tipografía, colores y síntesis de voz."
         },
-        "sidebar": {
-            "title": "Variantes de Alerta"
-        },
         "status": {
             "disabled_msg": "La alerta de '{event}' ha sido desactivada.",
             "disabled_title": "Alerta Desactivada",
@@ -430,6 +427,7 @@
             "back": "Atrás",
             "browse": "Examinar",
             "cancel": "Cancelar",
+            "clear_filters": "Limpiar filtros",
             "close": "Cerrar",
             "continue": "Continuar",
             "copy": "Copiar Enlace",
@@ -443,7 +441,9 @@
             "update": "Buscar actualizaciones",
             "view_release_notes": "Ver Novedades"
         },
+        "filtered_count": "({count} de {total})",
         "no_results": "No se encontraron resultados",
+        "no_results_filter": "No se encontraron resultados que coincidan con los filtros aplicados.",
         "status": {
             "error": "Error",
             "offline": "Desconectado",
@@ -707,7 +707,8 @@
             "historical": "HISTÓRICO"
         },
         "pagination": {
-            "info": "{showing_from}-{showing_to} de {total} fila(s) mostradas."
+            "info": "{showing_from}-{showing_to} de {total} fila(s) mostradas.",
+            "info_filtered": "{showing_from}-{showing_to} de {total} fila(s) mostradas (filtradas de {total_all})"
         },
         "status": {
             "cleared_msg": "La vista de registros se ha limpiado correctamente.",
@@ -722,7 +723,8 @@
         "table": {
             "col_level": "Nivel de Log",
             "col_message": "Mensaje de Log",
-            "col_time": "Marca de Tiempo"
+            "col_time": "Marca de Tiempo",
+            "title": "Registros de Eventos"
         }
     },
     "logs": {
