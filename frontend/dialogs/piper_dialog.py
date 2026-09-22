@@ -483,9 +483,22 @@ class PiperVoicesDialog(ModernFramelessShell):
     @Slot(str)
     def _delete_voice(self, voice_id: str):
         item = self._item_widgets.get(voice_id)
+        voice_name = voice_id
         is_custom = False
         if item:
             is_custom = item.voice_meta.get("is_custom", False) or not item._can_download()
+            voice_name = item.voice_meta.get("name", voice_id)
+
+        from frontend.dialogs import ModernConfirmDialog
+        desc = self.i18n.get("piper_dialog.confirm_delete.desc").replace("{voice_name}", voice_name)
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("piper_dialog.confirm_delete.title"),
+            body_text=desc
+        )
+        if dialog.exec() != dialog.DialogCode.Accepted:
+            return
 
         ok = self.manager.delete_voice(voice_id)
         if ok:

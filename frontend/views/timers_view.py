@@ -169,15 +169,28 @@ class TimersView(BaseView):
             callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
         )
 
+        timer_name = timer_data.get("name", "")
         cell.add_button(
             icon_name="trash-filled.svg",
             color=COLOR_WHITE,
             role="action_danger_solid",
             tooltip=self.i18n.get("timer.table.tooltip_delete"),
-            callback=lambda checked=False, tid=timer_id: self.delete_requested.emit(tid)
+            callback=lambda checked=False, tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname)
         )
 
         return cell
+
+    def _confirm_delete_timer(self, timer_id: int, timer_name: str) -> None:
+        from frontend.dialogs import ModernConfirmDialog
+        desc = self.i18n.get("timer.confirm_delete.desc").replace("{name}", timer_name)
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("timer.confirm_delete.title"),
+            body_text=desc
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.delete_requested.emit(timer_id)
 
     def set_category_search_results(self, platform: str, results: list[dict]):
         if hasattr(self, "_active_timer_dialog") and self._active_timer_dialog:

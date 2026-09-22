@@ -301,10 +301,22 @@ class CommandView(BaseView):
             color=COLOR_WHITE, 
             role="action_danger_solid", 
             tooltip=self.i18n.get("command.table.tooltip_delete"),
-            callback=lambda checked=False, t=trigger_name: self.delete_requested.emit(t)
+            callback=lambda checked=False, t=trigger_name: self._confirm_delete_command(t)
         )
         
         return cell
+
+    def _confirm_delete_command(self, trigger_name: str) -> None:
+        from frontend.dialogs import ModernConfirmDialog
+        desc = self.i18n.get("command.confirm_delete.desc").replace("{trigger}", trigger_name)
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("command.confirm_delete.title"),
+            body_text=desc
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.delete_requested.emit(trigger_name)
 
     def show_add_dialog(self, connected_platforms: dict[str, bool] = None) -> dict | None:
         from frontend.dialogs import CommandConfigWizard

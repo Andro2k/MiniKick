@@ -183,6 +183,8 @@
             "title": "Usuarios Silenciados"
         },
         "commands": {
+            "skiptts_success": "@{user}, se ha detenido y limpiado el TTS actual.",
+            "skiptts_toast_title": "TTS Silenciado",
             "ttsblock_already": "@{user}, la palabra '{word}' ya está bloqueada en el TTS.",
             "ttsblock_success": "@{user}, la palabra '{word}' ha sido bloqueada en el TTS.",
             "ttsblock_usage": "@{user}, uso correcto: !ttsblock <palabra> o !ttsblock unblock <palabra>",
@@ -348,6 +350,10 @@
         }
     },
     "command": {
+        "confirm_delete": {
+            "desc": "¿Estás seguro de que deseas eliminar el comando '{trigger}'? Esta acción es irreversible.",
+            "title": "¿Eliminar Comando?"
+        },
         "dialog": {
             "active_checkbox": "Comando Activo",
             "aliases_label": "Alias Estándar (separados por coma):",
@@ -1014,16 +1020,17 @@
     },
     "piper_dialog": {
         "badge_custom": "LOCAL",
-        "badge_natural": "NATURAL",
-        "badge_stream": "STREAM",
         "btn_close": "Cerrar",
-        "btn_delete": "Eliminar",
         "btn_delete_tooltip": "Eliminar modelo del disco local",
         "btn_download": "Descargar",
         "btn_import": "Importar Modelo ONNX",
         "btn_import_tooltip": "Importar un modelo Piper local (.onnx y .onnx.json)",
         "btn_reset_synthesis": "Restablecer",
         "btn_reset_tooltip": "Restablecer los valores acústicos por defecto",
+        "confirm_delete": {
+            "desc": "¿Estás seguro de que deseas desinstalar la voz '{voice_name}'? Podrás volver a descargarla cuando lo desees.",
+            "title": "¿Desinstalar Modelo de Voz?"
+        },
         "empty_search": "No se encontraron modelos que coincidan con la búsqueda.",
         "import_filter": "Modelos Piper ONNX (*.onnx)",
         "import_missing_json": "No se encontró el archivo de configuración .onnx.json correspondiente en la misma carpeta.",
@@ -1049,6 +1056,10 @@
         "title": "Gestor de Voces Piper (TTS Local)"
     },
     "rewards": {
+        "confirm_delete": {
+            "desc": "¿Estás seguro de que deseas eliminar la recompensa '{title}'? Se desvincularán las acciones configuradas.",
+            "title": "¿Eliminar Recompensa?"
+        },
         "dialogs": {
             "visual": {
                 "desc": "Ubica tus alertas en el lienzo. Al moverlas, verás la posición exacta reflejada en tu OBS.",
@@ -1437,6 +1448,10 @@
         }
     },
     "timer": {
+        "confirm_delete": {
+            "desc": "Esta acción eliminará el temporizador '{name}' de forma permanente.",
+            "title": "¿Eliminar Temporizador?"
+        },
         "dialog": {
             "btn_add_message": "+ Agregar Mensaje",
             "categories_desc": "Envía este anuncio solo cuando estés transmitiendo en las categorías especificadas.",

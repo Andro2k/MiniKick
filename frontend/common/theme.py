@@ -249,7 +249,6 @@ QLabel[state="success"] {{ color: {COLOR_GREEN}; }}
 QLabel[state="info"] {{ color: {COLOR_BLUE}; }}
 QLabel[state="warning"] {{ color: {COLOR_AMBER}; }}
 QLabel[state="bold"] {{ font-weight: 600; }}
-QLabel[role="code"] {{ font-size: {text2}px; font-weight: 500; background-color: {COLOR_NEUTRAL_850}; padding: 2px 6px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; border: {BORDER_SUBTLE}; }}
 QLabel[role="category"] {{ font-weight: 600; color: {COLOR_GREEN}; margin-top: 6px; font-size: {text2}px; }}
 """
 
@@ -272,6 +271,12 @@ QPushButton[role="action_danger_solid"] {{ background-color: {COLOR_RED_SOLID}; 
 QPushButton[role="action_danger_solid"]:hover {{ background-color: {COLOR_RED_HOVER}; border-color: {COLOR_RED_HOVER}; }}
 QPushButton[role="action_danger_solid"]:pressed {{ background-color: {COLOR_RED_PRESSED}; border-color: {COLOR_RED_PRESSED}; }}
 QPushButton[role="action_danger_solid"]:focus {{ border: 1px solid {COLOR_PURE_WHITE}; }}
+
+/* Antigravity Outlined Danger Action Button */
+QPushButton[role="action_danger_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_RED}; font-size: {text1}px; font-weight: 500; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_danger_outlined"]:hover {{ background-color: {COLOR_RED_GLOW}; border: 1px solid {COLOR_RED}; color: {COLOR_PURE_WHITE}; }}
+QPushButton[role="action_danger_outlined"]:pressed {{ background-color: {COLOR_RED_PRESSED}; border: 1px solid {COLOR_RED_PRESSED}; }}
+QPushButton[role="action_danger_outlined"]:focus {{ border: 1px solid {COLOR_RED}; }}
 
 /* Antigravity Solid Accent Action Button */
 QPushButton[role="action_accent_solid"] {{ background-color: {COLOR_GREEN_SOLID}; color: {COLOR_PURE_WHITE}; font-size: {text1}px; font-weight: 600; border: 1px solid {COLOR_GREEN_SOLID}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
@@ -332,7 +337,7 @@ QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-l
 QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 8px 0px; }}
 
 /* Global Disabled Button States */
-QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; padding: {PADDING_BUTTON}; }}
+QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_danger_outlined"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; padding: {PADDING_BUTTON}; }}
 """
 
 def _build_input_qss(text1: int, text2: int) -> str:
@@ -534,6 +539,7 @@ QFrame[role="badge"][state="twitch"] QLabel {{ color: {COLOR_PURPLE}; }}
 
 QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_GREEN}; min-height: 18px; max-height: 22px; }}
 QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
+QLabel[role="tag_badge"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
 QLabel[role="channel_avatar"] {{ border-radius: 48px; background-color: {COLOR_NEUTRAL_800}; border: 2px solid {COLOR_NEUTRAL_700}; }}
 QLabel[role="rank_number"] {{ color: {COLOR_GREEN}; font-weight: 500; min-width: 20px; }}
 QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 12px; }}

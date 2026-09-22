@@ -28,6 +28,9 @@ class PiperTTSProvider:
         self._loaded_models: Dict[str, any] = {}
         self._models_lock = threading.Lock()
         self._warming_up_voices: set[str] = set()
+        self._current_player: QMediaPlayer | None = None
+        self._current_loop: QEventLoop | None = None
+        self._playback_lock = threading.Lock()
 
     def set_synthesis_params(self, length_scale: float = 1.0, noise_scale: float = 0.667, noise_w_scale: float = 0.8) -> None:
         self.length_scale = max(0.2, min(3.0, float(length_scale)))
@@ -70,6 +73,40 @@ class PiperTTSProvider:
             thread.start()
         else:
             _do_warm_up()
+
+    @staticmethod
+    def _normalize_peak_pcm(pcm_bytes: bytes, target_peak: int = 31500, max_gain: float = 3.0) -> bytes:
+        if not pcm_bytes:
+            return pcm_bytes
+        import array
+        samples = array.array('h')
+        samples.frombytes(pcm_bytes)
+        if not samples:
+            return pcm_bytes
+
+        max_val = 0
+        for s in samples:
+            val = abs(s)
+            if val > max_val:
+                max_val = val
+
+        if max_val <= 0 or max_val >= target_peak:
+            return pcm_bytes
+
+        gain = min(max_gain, float(target_peak) / float(max_val))
+        if gain <= 1.05:
+            return pcm_bytes
+
+        for i in range(len(samples)):
+            scaled = int(samples[i] * gain)
+            if scaled > 32767:
+                samples[i] = 32767
+            elif scaled < -32768:
+                samples[i] = -32768
+            else:
+                samples[i] = scaled
+
+        return samples.tobytes()
 
     @staticmethod
     def _is_speakable_text(text: str) -> bool:
@@ -191,12 +228,17 @@ class PiperTTSProvider:
                 noise_scale=self.noise_scale,
                 noise_w_scale=self.noise_w_scale
             )
+            raw_pcm = bytearray()
+            for chunk in voice.synthesize(text, syn_config=syn_config):
+                raw_pcm.extend(chunk.audio_int16_bytes)
+
+            normalized_pcm = self._normalize_peak_pcm(bytes(raw_pcm))
+
             with wave.open(temp_path, "wb") as wav_file:
                 wav_file.setnchannels(1)
                 wav_file.setsampwidth(2)
                 wav_file.setframerate(voice.config.sample_rate)
-                for chunk in voice.synthesize(text, syn_config=syn_config):
-                    wav_file.writeframes(chunk.audio_int16_bytes)
+                wav_file.writeframes(normalized_pcm)
             return temp_path
         except Exception as e:
             logger.error("Synthesis error for text '%s': %s", text[:30], e)
@@ -244,6 +286,8 @@ class PiperTTSProvider:
         try:
             player = QMediaPlayer()
             audio_output = QAudioOutput()
+            with self._playback_lock:
+                self._current_player = player
             try:
                 from PySide6.QtMultimedia import QMediaDevices
                 target_dev = None
@@ -266,14 +310,18 @@ class PiperTTSProvider:
             player.setSource(QUrl.fromLocalFile(os.path.abspath(wav_path)))
 
             loop = QEventLoop()
+            with self._playback_lock:
+                self._current_loop = loop
 
             def handle_state(state):
                 if state == QMediaPlayer.PlaybackState.StoppedState:
-                    loop.quit()
+                    if loop.isRunning():
+                        loop.quit()
 
             def handle_status(status):
                 if status in (QMediaPlayer.MediaStatus.InvalidMedia, QMediaPlayer.MediaStatus.NoMedia, QMediaPlayer.MediaStatus.EndOfMedia):
-                    loop.quit()
+                    if loop.isRunning():
+                        loop.quit()
 
             conn_state = player.playbackStateChanged.connect(handle_state)
             conn_status = player.mediaStatusChanged.connect(handle_status)
@@ -290,6 +338,9 @@ class PiperTTSProvider:
         except Exception as e:
             logger.error("[Piper TTS] Playback error (%s): %s", type(e).__name__, e, exc_info=True)
         finally:
+            with self._playback_lock:
+                self._current_player = None
+                self._current_loop = None
             if player:
                 try:
                     player.stop()
@@ -320,6 +371,22 @@ class PiperTTSProvider:
 
     def stop(self) -> None:
         self.clear_cache()
+        with self._playback_lock:
+            player = self._current_player
+            loop = self._current_loop
+
+        if player:
+            try:
+                player.stop()
+                player.setSource(QUrl())
+            except Exception:
+                pass
+
+        if loop and loop.isRunning():
+            try:
+                loop.quit()
+            except Exception:
+                pass
 
     def get_available_voices(self) -> List[Dict[str, str]]:
         installed = self.manager.get_installed_voices()

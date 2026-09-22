@@ -375,5 +375,9 @@ class ChatService:
     def stop_tts(self):
         self.tts.stop()
 
+    def set_speech_callbacks(self, on_started=None, on_finished=None):
+        self.tts.on_speech_started = on_started
+        self.tts.on_speech_finished = on_finished
+
     def shutdown(self):
         self.tts.shutdown()

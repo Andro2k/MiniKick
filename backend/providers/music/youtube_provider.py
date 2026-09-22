@@ -59,6 +59,8 @@ class YouTubeMusicProvider(QObject):
         self.auto_resume = True
         self._start_playing_current = True
         self._volume_gain = 1.0
+        self._is_ducked = False
+        self._duck_factor = 0.30
         self.loudness_normalization_enabled = True
 
         if self.db_manager:
@@ -256,29 +258,39 @@ class YouTubeMusicProvider(QObject):
         return True
 
     def _calculate_effective_volume(self) -> float:
-        base_vol = self._volume_gain
+        perceptual_vol = float(self._volume_gain) ** 3
+
+        if self._is_ducked:
+            perceptual_vol *= self._duck_factor
+
         if not getattr(self, "loudness_normalization_enabled", True):
-            return base_vol
+            return max(0.0, min(1.0, perceptual_vol))
 
         loudness = None
         if self.current_song:
             loudness = self.current_song.get("loudness")
 
         if loudness is None:
-            return base_vol
+            return max(0.0, min(1.0, perceptual_vol))
 
         try:
             gain_factor = 10.0 ** (-float(loudness) / 20.0)
             gain_factor = max(0.2, min(1.5, gain_factor))
-            effective   = max(0.0, min(1.0, base_vol * gain_factor))
+            effective = max(0.0, min(1.0, perceptual_vol * gain_factor))
             logger.debug(
-                "[YouTubeMusicProvider] Loudness normalization applied: %.2f dB → gain=%.3f, base=%.2f, effective=%.2f",
-                loudness, gain_factor, base_vol, effective
+                "[YouTubeMusicProvider] Loudness norm aplicada: %.2f dB → gain=%.3f, base=%.3f, eff=%.3f (ducked=%s)",
+                loudness, gain_factor, perceptual_vol, effective, self._is_ducked
             )
             return effective
         except Exception as e:
-            logger.debug("[YouTubeMusicProvider] Error calculating loudness gain: %s", e)
-            return base_vol
+            logger.debug("[YouTubeMusicProvider] Error calculando ganancia de sonoridad: %s", e)
+            return max(0.0, min(1.0, perceptual_vol))
+
+    def set_ducking(self, ducked: bool) -> None:
+        if self._is_ducked != ducked:
+            self._is_ducked = ducked
+            self.audio_output.setVolume(self._calculate_effective_volume())
+            logger.debug("[YouTubeMusicProvider] Ducking de música: %s", ducked)
 
     def set_loudness_normalization(self, enabled: bool) -> None:
         self.loudness_normalization_enabled = enabled

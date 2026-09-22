@@ -183,6 +183,8 @@
             "title": "Muted Users"
         },
         "commands": {
+            "skiptts_success": "@{user}, the current TTS has been stopped and cleared.",
+            "skiptts_toast_title": "TTS Silenced",
             "ttsblock_already": "@{user}, the word '{word}' is already blocked in TTS.",
             "ttsblock_success": "@{user}, the word '{word}' has been blocked in TTS.",
             "ttsblock_usage": "@{user}, correct usage: !ttsblock <word> or !ttsblock unblock <word>",
@@ -348,6 +350,10 @@
         }
     },
     "command": {
+        "confirm_delete": {
+            "desc": "Are you sure you want to delete command '{trigger}'? This action cannot be undone.",
+            "title": "Delete Command?"
+        },
         "dialog": {
             "active_checkbox": "Command Active",
             "aliases_label": "Standard Aliases (comma-separated):",
@@ -1014,16 +1020,17 @@
     },
     "piper_dialog": {
         "badge_custom": "LOCAL",
-        "badge_natural": "NATURAL",
-        "badge_stream": "STREAM",
         "btn_close": "Close",
-        "btn_delete": "Delete",
         "btn_delete_tooltip": "Delete model from local storage",
         "btn_download": "Download",
         "btn_import": "Import ONNX Model",
         "btn_import_tooltip": "Import a local Piper model (.onnx and .onnx.json)",
         "btn_reset_synthesis": "Reset",
         "btn_reset_tooltip": "Reset acoustic parameters to defaults",
+        "confirm_delete": {
+            "desc": "Are you sure you want to uninstall voice '{voice_name}'? You can download it again anytime.",
+            "title": "Uninstall Voice Model?"
+        },
         "empty_search": "No voice models found matching your search.",
         "import_filter": "Piper ONNX Models (*.onnx)",
         "import_missing_json": "The corresponding .onnx.json configuration file was not found in the same folder.",
@@ -1049,6 +1056,10 @@
         "title": "Piper Voice Manager (Local TTS)"
     },
     "rewards": {
+        "confirm_delete": {
+            "desc": "Are you sure you want to delete reward '{title}'? Any configured actions will be unlinked.",
+            "title": "Delete Reward?"
+        },
         "dialogs": {
             "visual": {
                 "desc": "Position your alerts on the canvas. Moving them will immediately mirror the exact position in OBS.",
@@ -1437,6 +1448,10 @@
         }
     },
     "timer": {
+        "confirm_delete": {
+            "desc": "This action will permanently delete timer '{name}'.",
+            "title": "Delete Timer?"
+        },
         "dialog": {
             "btn_add_message": "+ Add Message",
             "categories_desc": "Send this announcement only when streaming in specified categories.",

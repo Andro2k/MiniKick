@@ -107,6 +107,18 @@ _DEFAULT_MOD_COMMANDS: dict[str, dict] = {
         "apply_youtube": True,
         "apply_tiktok": True,
     },
+    "[PLUGIN_CHAT_TTS_SKIP]": {
+        "trigger": "!skiptts",
+        "response": "[PLUGIN_CHAT_TTS_SKIP]",
+        "cooldown": 2,
+        "aliases": "!stoptts,!ttsskip,!ttsstop,!silenciotts",
+        "is_regex": False,
+        "permission": "moderator",
+        "apply_kick": True,
+        "apply_twitch": True,
+        "apply_youtube": True,
+        "apply_tiktok": True,
+    },
     "[PLUGIN_CHAT_GIF]": {
         "trigger": "!gif",
         "response": "[PLUGIN_CHAT_GIF]",
@@ -159,6 +171,7 @@ class ChatController(QObject):
             "[PLUGIN_CHAT_SYSTTS]": self._handle_plugin_systts,
             "[PLUGIN_CHAT_TTS_MUTE]": self._handle_plugin_ttsmute,
             "[PLUGIN_CHAT_TTS_BLOCK]": self._handle_plugin_ttsblock,
+            "[PLUGIN_CHAT_TTS_SKIP]": self._handle_plugin_skiptts,
             "[PLUGIN_CHAT_GIF]": self._handle_plugin_gif,
         }
 
@@ -381,6 +394,7 @@ class ChatController(QObject):
 
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_MUTE]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_MUTE]"], active_override=settings.get("mod_mute_command_enabled", True))
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_BLOCK]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"], active_override=settings.get("mod_block_command_enabled", True))
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_SKIP]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_SKIP]"], active_override=True)
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_GIF]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"], active_override=True)
 
         for legacy_tag in ("[PLUGIN_CHAT_TTS_UNMUTE]", "[PLUGIN_CHAT_TTS_UNBLOCK]"):
@@ -576,6 +590,20 @@ class ChatController(QObject):
 
     def _handle_plugin_ttsunblock(self, dto: ChatMessageDTO, prefix: str = "!ttsunblock") -> None:
         self._handle_plugin_ttsblock(dto, prefix=prefix)
+
+    def _handle_plugin_skiptts(self, dto: ChatMessageDTO, _prefix: str = "!skiptts") -> None:
+        platform = getattr(dto, "platform", "kick")
+        self.service.stop_tts()
+        logger.info("[ChatController] TTS detenido/saltado por moderador @%s en %s", dto.user, platform)
+        msg = self.i18n.get("chat.commands.skiptts_success").replace("{user}", dto.user)
+        self.command_service.send_response(msg, platform=platform)
+        if self.toast:
+            self.toast.show_toast(
+                title=self.i18n.get("chat.commands.skiptts_toast_title"),
+                message=msg,
+                state="info",
+                tag="tts_skip"
+            )
 
     def _handle_plugin_gif(self, dto: ChatMessageDTO, prefix: str) -> None:
         raw_arg = dto.content[len(prefix):].strip()

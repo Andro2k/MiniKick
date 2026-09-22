@@ -464,7 +464,7 @@ class RewardsView(BaseView):
                 color=COLOR_WHITE, 
                 role="action_danger_solid", 
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
-                callback=lambda checked=False, k=key: self.delete_requested.emit(k)
+                callback=lambda checked=False, k=key, t=reward_name: self._confirm_delete_reward(k, t)
             )
             
             self.table_rewards.setCellWidget(row, 6, cell)
@@ -490,6 +490,18 @@ class RewardsView(BaseView):
             total_count=total_mappings_count,
             extra_suffix=extra_suffix
         )
+
+    def _confirm_delete_reward(self, key: str, reward_title: str) -> None:
+        from frontend.dialogs import ModernConfirmDialog
+        desc = self.i18n.get("rewards.confirm_delete.desc").replace("{title}", reward_title)
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("rewards.confirm_delete.title"),
+            body_text=desc
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.delete_requested.emit(key)
 
     @Slot()
     def _copy_obs_url(self):

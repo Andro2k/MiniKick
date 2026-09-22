@@ -13,6 +13,9 @@ class ChatFilterHandler:
     _TIKTOK_EMOTE_REGEX = re.compile(r"\[[a-zA-Z0-9_\-]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
     _TWITCH_GIF_REGEX = re.compile(r"\[.*? GIF by .*?\]", re.IGNORECASE)
+    _REPEAT_CHARS_REGEX = re.compile(r'(.)\1{3,}')
+    _REPEAT_WORDS_REGEX = re.compile(r'\b(\w+)(?:\s+\1){3,}\b', re.IGNORECASE)
+    MAX_TTS_TEXT_LENGTH = 250
     _DEFAULT_BOTS = frozenset({
         "botrix", "nightbot", "streamelements", "moobot", "streamlabs",
         "minikick", "@minikick", "wizebot", "kofi", "streamerbot",
@@ -99,7 +102,21 @@ class ChatFilterHandler:
                                 cleaned = re.sub(rf"\[{clean_em}\]|\b{clean_em}\b", "", cleaned)
                 except Exception:
                     pass
-        return self._SPACES_REGEX.sub(" ", cleaned).strip()
+                
+        cleaned = self._REPEAT_WORDS_REGEX.sub(r"\1 \1", cleaned)
+
+        cleaned = self._REPEAT_CHARS_REGEX.sub(r"\1\1\1", cleaned)
+
+        cleaned = self._SPACES_REGEX.sub(" ", cleaned).strip()
+
+        if len(cleaned) > self.MAX_TTS_TEXT_LENGTH:
+            cut_idx = cleaned.rfind(" ", 0, self.MAX_TTS_TEXT_LENGTH)
+            if cut_idx > 0:
+                cleaned = cleaned[:cut_idx] + "..."
+            else:
+                cleaned = cleaned[:self.MAX_TTS_TEXT_LENGTH] + "..."
+
+        return cleaned
 
     def add_bot(self, bot_name: str, view) -> bool:
         clean_name = bot_name.strip().lower()

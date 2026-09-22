@@ -215,6 +215,11 @@ class MainWindowCore(QMainWindow):
             music_storage=self.container.music_storage,
             music_provider=self.container.music_provider
         )
+        if hasattr(self.chat_service, "set_speech_callbacks"):
+            self.chat_service.set_speech_callbacks(
+                on_started=lambda: self.music_controller.set_ducking(True),
+                on_finished=lambda: self.music_controller.set_ducking(False)
+            )
         self.rewards_controller = RewardsController(
             view=None, 
             service=self.rewards_service,
