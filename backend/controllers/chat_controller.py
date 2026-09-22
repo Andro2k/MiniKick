@@ -635,10 +635,11 @@ class ChatController(QObject):
             self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
         gif_url = getattr(dto, "gif_url", "")
         if not gif_url and dto.content and ("http://" in dto.content or "https://" in dto.content):
-            resolved = self.giphy_service.resolve_gif(dto.content.strip())
-            if resolved:
-                gif_url = resolved
-                dto.gif_url = resolved
+            if not self.filter_handler.is_bot(dto.user, badges):
+                extracted = self.giphy_service.extract_gif_url(dto.content)
+                if extracted:
+                    gif_url = extracted
+                    dto.gif_url = extracted
 
         emotes_tag = getattr(dto, "emotes_tag", "")
         self.message_received.emit(dto.user, dto.content, dto.color, badges, platform, emotes_tag, gif_url)

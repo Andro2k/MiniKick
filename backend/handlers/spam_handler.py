@@ -13,7 +13,11 @@ class ChatFilterHandler:
     _TIKTOK_EMOTE_REGEX = re.compile(r"\[[a-zA-Z0-9_\-]+\]")
     _SPACES_REGEX = re.compile(r"\s+")
     _TWITCH_GIF_REGEX = re.compile(r"\[.*? GIF by .*?\]", re.IGNORECASE)
-    _DEFAULT_BOTS = frozenset({"botrix", "nightbot", "streamelements", "moobot", "@minikick"})
+    _DEFAULT_BOTS = frozenset({
+        "botrix", "nightbot", "streamelements", "moobot", "streamlabs",
+        "minikick", "@minikick", "wizebot", "kofi", "streamerbot",
+        "fossabot", "sery_bot", "blerp", "soundalerts", "songlistbot"
+    })
 
     def __init__(self, i18n, service):
         self.i18n = i18n or TranslationService()
@@ -24,7 +28,7 @@ class ChatFilterHandler:
 
     def initialize_from_settings(self, settings: dict, view) -> None:
         bots_str = settings.get("ignored_users", "")
-        self.muted_bots = {b.strip().lower() for b in bots_str.split(",") if b.strip()}
+        self.muted_bots = {b.strip().lstrip('@').lower() for b in bots_str.split(",") if b.strip()}
         
         if view is not None:
             view.clear_bots_list()
@@ -54,10 +58,17 @@ class ChatFilterHandler:
         return bool(self._banned_words_regex.search(msg))
 
     def is_bot(self, username: str, badges: list | None = None) -> bool:
-        u_lower = username.lower()
-        if u_lower in self._DEFAULT_BOTS or u_lower in self.muted_bots:
+        u_clean = (username or "").strip().lower()
+        u_stripped = u_clean.lstrip('@')
+        if u_clean in self._DEFAULT_BOTS or u_stripped in self._DEFAULT_BOTS:
             return True
-        return bool(badges and "bot" in badges)
+        if u_clean in self.muted_bots or u_stripped in self.muted_bots:
+            return True
+        if badges:
+            for b in badges:
+                if str(b).lower() == "bot":
+                    return True
+        return False
 
     def clean_message_for_tts(self, text: str, emotes_tag: str = "", gif_url: str = "") -> str:
         cleaned = self._TWITCH_GIF_REGEX.sub("", text)

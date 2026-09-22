@@ -19,6 +19,7 @@
 | **INC-007** | `RuntimeError: libshiboken: Internal C++ object (PySide6.QtWidgets.QWidget) already deleted` en `ModernTableCard.resizeEvent` | Log de Usuario `minikick.log` (Línea 794) | v1.6.0 | `✅ Solventado` | `frontend/widgets/table_widget.py`, `frontend/components/music/queue_panel.py` | v1.6.0 (`WT-1.6.0_21`) |
 | **INC-008** | Micro-ventana fantasma ('python' / 'pyt...') proyectada en segundo plano por precalentamiento prematuro de `QCalendarPopup` y falta de `parent` | Captura de Evidencia de Usuario / minikick.log | v1.6.0 | `✅ Solventado` | `frontend/widgets/no_wheel.py`, `frontend/components/schedule/schedule_form_panel.py`, `frontend/views/schedule_view.py`, `frontend/views/dashboard_view.py`, `frontend/components/dashboard/platform_card.py` | v1.6.0 (`WT-1.6.0_22`) |
 | **INC-009** | `TypeError: TranslationService.get() got an unexpected keyword argument 'version'` en arranque de `SystemTrayManager` | Log de Usuario `minikick.log` (Línea 2397) | v1.6.0 | `✅ Solventado` | `backend/services/system/translation_service.py`, `frontend/navigation/tray_menu_component.py` | v1.6.0 (`WT-1.6.0_23`) |
+| **INC-010** | `HTTP Error 414: URI Too Long` en `GiphyService` e Inclusión Indebida de Bots (`@MiniKick`) en Top Chatters | Log de Usuario `minikick.log` (Línea 555) / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/giphy_service.py`, `backend/controllers/chat_controller.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py` | v1.6.0 (`WT-1.6.0_25`) |
 
 ---
 
@@ -288,6 +289,38 @@
 * **Prueba Automatizada de Cobertura**:
   - `resources/tests/test_tray_and_slider_debouncing.py` (`test_system_tray_manager_playback_toggle_and_tooltip`)
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_23.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_23.md).
+
+---
+
+### INC-010: Error HTTP 414 en `GiphyService` por Enlaces Largos e Inclusión de Bots en Top Chatters
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Advertencias y peticiones HTTP 414 innecesarias en Giphy por auto-embed erróneo; distorsión del widget overlay de Top Chatters por mensajes de timers del bot).
+* **Reportes Asociados**:
+  - `minikick.log` (Líneas 555, 563, 574, 582): `[WARNING] [GiphyService] Error searching Giphy for query '🖤Aquí está el enlace de TikTok!: https://www.tiktok.com/...': HTTP Error 414: URI Too Long`
+  - Feedback de Usuario: Inclusión del bot `@MiniKick` en el ranking del widget OBS `assets/overlays/widgets/chatters.html`.
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. En `ChatController._step_ui_render`, al evaluar mensajes con `http://` o `https://`, se invocaba `self.giphy_service.resolve_gif(dto.content.strip())`. En `GiphyService`, al no coincidir con una URL directa de imagen, el método asumía que toda la cadena (incluyendo enlaces largos de TikTok y emojis) era una consulta de búsqueda de texto en la API de Giphy. Al codificar dicha URL con caracteres especiales y longitud excesiva, la API de Giphy retornaba `HTTP 414: URI Too Long`.
+  2. En `WidgetsController._record_chatter_message`, el conjunto `_IGNORED_CHATTER_BOTS` no contenía `"minikick"`, no se eliminaba el prefijo `@` (`user.lstrip('@')`) y no se comprobaba la presencia de `"bot"` en `badges`, permitiendo que `@MiniKick` se contabilizara en el ranking de chatters más activos.
+* **Solución Implementada**:
+  1. En [`backend/services/chat/giphy_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/chat/giphy_service.py):
+     - Se introdujo `extract_gif_url(self, text: str) -> Optional[str]` con complejidad $\mathcal{O}(N)$ sin llamadas de red para extraer URLs auténticas de GIFs (`.gif`, `.webp`) o páginas/medios canónicos de Giphy.
+     - Se blindó `resolve_gif` para rechazar URLs que no sean GIFs (como enlaces a TikTok o YouTube), limitar consultas a $\le 80$ caracteres y rechazar queries con esquemas `http`.
+  2. En [`backend/controllers/chat_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/chat_controller.py):
+     - En `_step_ui_render`, se omite el procesamiento de GIFs si el usuario es un bot (`not self.filter_handler.is_bot(dto.user, badges)`) y se invoca `extract_gif_url` en lugar de una búsqueda de texto.
+  3. En [`backend/controllers/widgets_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/widgets_controller.py):
+     - Retorno temprano si `badges` contiene `"bot"`.
+     - Normalización $\mathcal{O}(1)$ del nombre (`user.strip().lstrip('@').lower()`).
+     - Ampliación de `_IGNORED_CHATTER_BOTS` con `minikick`, `wizebot`, `kofi`, etc., y verificación cruzada contra `spam_service.storage` (`tts_ignored_users`).
+  4. En [`backend/handlers/spam_handler.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/handlers/spam_handler.py):
+     - Normalización en `is_bot` para evaluar nombres con o sin `@` contra `_DEFAULT_BOTS` y `muted_bots`.
+* **Pruebas Automatizadas de Cobertura**:
+  - `resources/tests/test_giphy_and_tts_filter.py`:
+    - `test_extract_gif_url_and_non_gif_rejection`
+    - `test_resolve_gif_blocks_long_queries_and_arbitrary_urls`
+    - `test_widgets_controller_ignores_minikick_and_bots_in_top_chatters`
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_25.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_25.md).
 
 ---
 
