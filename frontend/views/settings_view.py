@@ -71,7 +71,7 @@ class SettingsView(BaseView):
         browser_layout.setContentsMargins(*MARGIN_NONE)
         browser_layout.setSpacing(SPACING_SM)
 
-        self.combo_browser = NoWheelComboBox(browser_container)
+        self.combo_browser = NoWheelComboBox(parent=browser_container)
         self.combo_browser.setMinimumWidth(180)
         self.combo_browser.currentIndexChanged.connect(self._on_browser_combo_changed)
 
@@ -217,8 +217,8 @@ class SettingsView(BaseView):
         btn_backup_layout.setContentsMargins(*MARGIN_NONE) 
         btn_backup_layout.setSpacing(SPACING_MD)
         
-        self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_outlined")
-        self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_outlined")
+        self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_outlined", parent=self)
+        self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_outlined", parent=self)
         
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
@@ -239,7 +239,7 @@ class SettingsView(BaseView):
         header_support = SectionHeader(self.i18n.get("settings.sections.support"), parent=self)
         support_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
 
-        self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined")
+        self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined", parent=self)
         self.btn_update.clicked.connect(self.update_clicked.emit)
 
         row_update = SettingRow(
@@ -249,7 +249,7 @@ class SettingsView(BaseView):
             right_widget=self.btn_update
         )
 
-        self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined")
+        self.btn_release_notes = ModernButton(self.i18n.get("common.buttons.view_release_notes"), role="action_outlined", parent=self)
         self.btn_release_notes.clicked.connect(self.release_notes_clicked.emit)
 
         row_release_notes = SettingRow(
@@ -259,7 +259,7 @@ class SettingsView(BaseView):
             right_widget=self.btn_release_notes
         )
 
-        self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_outlined")
+        self.btn_feedback = ModernButton(self.i18n.get("common.buttons.report_bug"), role="action_outlined", parent=self)
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
 
         row_feedback = SettingRow(

@@ -20,14 +20,12 @@ COLOR_WHITE        = "#F4F4F6"
 COLOR_PURE_WHITE   = "#FFFFFF"
 COLOR_BLACK        = "#000000"
 
-# Surface & Interactive States (Antigravity Spec)
 COLOR_SURFACE_HOVER         = "#282A31"
 COLOR_SURFACE_ACTIVE        = "#26282E"
 COLOR_SURFACE_ACTIVE_HOVER  = "#2D3038"
 COLOR_SURFACE_PRESSED       = "#1A1B20"
 COLOR_NAV_HOVER             = "#1A1C22"
 
-# Borders & Highlights
 COLOR_BORDER_HOVER          = "#484C5A"
 COLOR_BORDER_FOCUS          = "#5A5E70"
 COLOR_BORDER_MUTED_FOCUS    = "#5E5C66"
@@ -36,12 +34,9 @@ COLOR_BORDER_TOP_FOCUS      = "#71717A"
 COLOR_BORDER_LIGHT          = "#4B4951"
 COLOR_BORDER_SUBTLE_GHOST   = "#313036"
 
-# Action Red States
 COLOR_RED_SOLID    = "#E03131"
 COLOR_RED_HOVER    = "#EF4444"
 COLOR_RED_PRESSED  = "#C92A2A"
-
-# Action Green (Accent) States
 COLOR_GREEN_SOLID   = "#16A34A"
 COLOR_GREEN_HOVER   = "#22C55E"
 COLOR_GREEN_PRESSED = "#15803D"
@@ -57,7 +52,6 @@ COLOR_BLUE_DARK    = "#2563EB"
 COLOR_PURPLE       = "#A855F7"
 COLOR_PURPLE_DARK  = "#9333EA"
 
-# Platform Borders & Focus Accents
 COLOR_KICK_BORDER               = "#1A7A42"
 COLOR_KICK_BORDER_BOTTOM        = "#125E31"
 COLOR_KICK_BORDER_HOVER         = "#1E8E4D"
@@ -553,6 +547,7 @@ QHeaderView, QHeaderView::section {{ background-color: transparent; border: none
 QHeaderView::section {{ color: {COLOR_NEUTRAL_400}; font-weight: 500; padding: {PADDING_INPUT}; border-bottom: 1.2px solid {COLOR_NEUTRAL_750}; text-align: left; }}
 QHeaderView::section:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QHeaderView::section:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
+QWidget[role="table_no_results"] {{ background-color: {COLOR_NEUTRAL_900}; }}
 
 /* Scrollbars */
 QScrollBar:vertical {{ border: none; background: transparent; width: 12px; margin: 4px 2px 4px 2px; }}

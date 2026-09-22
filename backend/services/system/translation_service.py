@@ -38,7 +38,7 @@ class TranslationService:
             self.current_lang = lang_code
             return False
 
-    def get(self, key: str) -> str:
+    def get(self, key: str, **kwargs) -> str:
         keys = key.split('.')
         val = self._texts
         for k in keys:
@@ -46,4 +46,11 @@ class TranslationService:
                 val = val[k]
             else:
                 return key
-        return str(val)
+        res = str(val)
+        if kwargs:
+            try:
+                res = res.format(**kwargs)
+            except Exception:
+                for k, v in kwargs.items():
+                    res = res.replace(f"{{{k}}}", str(v))
+        return res

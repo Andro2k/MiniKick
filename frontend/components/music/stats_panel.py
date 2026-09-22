@@ -79,7 +79,7 @@ class MusicStatsPanel(QWidget):
         icon_cmd.setPixmap(get_pixmap_colored("chat-square-code-filled.svg", COLOR_NEUTRAL_400, 18))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))
         lbl_cmd_title.setProperty("role", "h3")
-        self.sw_music_service = ModernSwitch()
+        self.sw_music_service = ModernSwitch(parent=self)
         self.sw_music_service.setChecked(True)
         self.sw_music_service.toggled.connect(self._on_service_switch_toggled)
 

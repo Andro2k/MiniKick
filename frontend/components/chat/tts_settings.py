@@ -292,9 +292,12 @@ class ChatTtsSettingsPanel(QWidget):
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
         self.chk_command.toggled.connect(self.txt_command.setEnabled)
 
+        self.slider_vol.sliderReleased.connect(self._on_setting_changed)
+        self.slider_speed.sliderReleased.connect(self._on_setting_changed)
+
         controls = [
             self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
-            self.combo_provider, self.slider_speed,
+            self.combo_provider,
             self.combo_voice_broadcaster, self.combo_voice_moderator,
             self.combo_voice_vip, self.combo_voice_subscriber,
             self.sw_role_everyone, self.sw_role_broadcaster,

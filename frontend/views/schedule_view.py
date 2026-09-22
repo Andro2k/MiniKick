@@ -48,29 +48,29 @@ class ScheduleView(BaseView):
         self.columns_layout.setContentsMargins(*MARGIN_NONE)
         self.columns_layout.setSpacing(SPACING_MD)
 
-        col1 = QWidget()
+        col1 = QWidget(self)
         self.col1_layout = QVBoxLayout(col1)
         self.col1_layout.setContentsMargins(*MARGIN_NONE)
         self.col1_layout.setSpacing(SPACING_NONE)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.tabs = QTabWidget()
+        self.tabs = QTabWidget(col1)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.quick_change_panel = ScheduleQuickChangePanel(self.i18n)
-        self.schedule_form_panel = ScheduleFormPanel(self.i18n)
+        self.quick_change_panel = ScheduleQuickChangePanel(self.i18n, parent=self)
+        self.schedule_form_panel = ScheduleFormPanel(self.i18n, parent=self)
 
         self.tabs.addTab(ModernScrollArea(self.quick_change_panel), self.i18n.get("stream_info.tabs.quick_change"))
         self.tabs.addTab(ModernScrollArea(self.schedule_form_panel), self.i18n.get("stream_info.tabs.schedule_form"))
 
         self.col1_layout.addWidget(self.tabs)
 
-        col2 = QWidget()
+        col2 = QWidget(self)
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(*MARGIN_NONE)
         self.col2_layout.setSpacing(SPACING_NONE)
 
-        self.table_panel = ScheduleTablePanel(self.i18n)
+        self.table_panel = ScheduleTablePanel(self.i18n, parent=self)
         self.col2_layout.addWidget(self.table_panel)
 
         self.columns_layout.addWidget(col1, stretch=3)

@@ -31,12 +31,12 @@ DEFAULT_DICTIONARY = {
         },
         "buttons": {
             "browse": "Browse...",
-            "discard": "Discard",
-            "duplicate": "Duplicate to another alert",
+            "discard_tooltip": "Discard unsaved changes",
             "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
-            "save": "Save Changes",
+            "save_short": "Save",
             "test": "Test Alert",
-            "test_sent": "Test alert sent to OBS."
+            "test_sent": "Test alert sent to OBS.",
+            "test_short": "Test"
         },
         "dialogs": {
             "duplicate": {
@@ -149,12 +149,13 @@ DEFAULT_DICTIONARY = {
         },
         "sections": {
             "appearance": "Design",
+            "appearance_desc": "Layout, background color, borders, and shadows.",
             "general": "General settings",
+            "general_desc": "Duration and entry/exit animation settings.",
             "media_sound": "Media and sound",
-            "text_speech": "Text and speech"
-        },
-        "sidebar": {
-            "title": "Alert Variants"
+            "media_sound_desc": "Image/video files, alert sound, and volume.",
+            "text_speech": "Text and speech",
+            "text_speech_desc": "Message template, typography, colors, and TTS."
         },
         "status": {
             "disabled_msg": "The '{event}' alert has been disabled.",
@@ -428,6 +429,7 @@ DEFAULT_DICTIONARY = {
             "back": "Back",
             "browse": "Browse",
             "cancel": "Cancel",
+            "clear_filters": "Clear Filters",
             "close": "Close",
             "continue": "Continue",
             "copy": "Copy Link",
@@ -441,7 +443,9 @@ DEFAULT_DICTIONARY = {
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
+        "filtered_count": "({count} of {total})",
         "no_results": "No results found",
+        "no_results_filter": "No results found matching the applied filters.",
         "status": {
             "error": "Error",
             "offline": "Offline",
@@ -705,7 +709,8 @@ DEFAULT_DICTIONARY = {
             "historical": "HISTORICAL"
         },
         "pagination": {
-            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
+            "info": "{showing_from}-{showing_to} of {total} row(s) shown.",
+            "info_filtered": "{showing_from}-{showing_to} of {total} row(s) shown (filtered from {total_all})"
         },
         "status": {
             "cleared_msg": "Log view cleared successfully.",
@@ -720,7 +725,8 @@ DEFAULT_DICTIONARY = {
         "table": {
             "col_level": "Log Level",
             "col_message": "Log Message",
-            "col_time": "Timestamp"
+            "col_time": "Timestamp",
+            "title": "Event Logs"
         }
     },
     "logs": {
@@ -844,9 +850,11 @@ DEFAULT_DICTIONARY = {
             "bg_title": "MiniKick in background",
             "close_app": "Close MiniKick",
             "open_panel": "Open Panel",
-            "play_pause": "Play / Pause Music",
+            "pause": "Pause Music",
+            "play": "Play Music",
             "read_chat": "Read chat out loud",
             "skip": "Skip Track",
+            "tooltip": "MiniKick v{version} | Active",
             "tts_msg": "Chat reading: {estado}",
             "tts_off": "Disabled",
             "tts_on": "Enabled",
@@ -1226,6 +1234,13 @@ DEFAULT_DICTIONARY = {
             "twitch_title": "Twitch Channel",
             "youtube_desc_connected": "Successfully connected to {channel} live stream.",
             "youtube_title": "YouTube Live Channel"
+        },
+        "sections": {
+            "audio": "Audio Devices",
+            "backup": "Backup & Restore",
+            "integrations": "Platforms & Connections",
+            "support": "Updates & Support",
+            "system": "System & Appearance"
         },
         "status": {
             "browser_changed": "Browser Updated",

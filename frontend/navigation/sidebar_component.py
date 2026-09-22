@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import (
-    COLOR_NEUTRAL_950, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_WHITE, COLOR_NEUTRAL_800,
+    COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_WHITE, COLOR_NEUTRAL_800,
     get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored,
     MARGIN_NONE, MARGIN_SM, MARGIN_MD, MARGIN_V_SM,
     SPACING_2XS, SPACING_SM, SPACING_MD
@@ -116,7 +116,7 @@ class Sidebar(QFrame):
 
         self.btn_collapsed_update = QPushButton()
         self.btn_collapsed_update.setProperty("role", "action_outlined")
-        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 18))
+        self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_400, 18))
         self.btn_collapsed_update.setIconSize(QSize(18, 18))
         self.btn_collapsed_update.setFixedSize(36, 36)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -184,7 +184,7 @@ class Sidebar(QFrame):
 
         self.btn_update_action = QPushButton(self.i18n.get("main.sidebar.update_card.btn"))
         self.btn_update_action.setProperty("role", "action_outlined")
-        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 16))
+        self.btn_update_action.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_400, 16))
         self.btn_update_action.setIconSize(QSize(16, 16))
         self.btn_update_action.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_update_action.clicked.connect(self._on_update_action_clicked)

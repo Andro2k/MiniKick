@@ -12,7 +12,7 @@ from .filter_header import FilterHeaderView
 from .search_bar import UnifiedSearchBar
 from .block_widget import ModernDivider
 from frontend.common import (
-    COLOR_NEUTRAL_900, get_icon_colored, get_assets_path,
+    get_icon_colored, get_assets_path,
     SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
     MARGIN_NONE, MARGIN_MD, MARGIN_XL, MARGIN_H_SM
 )
@@ -116,7 +116,7 @@ class ModernTableCard(QFrame):
         if not self._is_valid(self.table):
             return
         self.no_results_overlay = QWidget(self.table)
-        self.no_results_overlay.setStyleSheet(f"background-color: {COLOR_NEUTRAL_900};")
+        self.no_results_overlay.setProperty("role", "table_no_results")
         self.no_results_layout = QVBoxLayout(self.no_results_overlay)
         self.no_results_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.no_results_layout.setSpacing(SPACING_MD)

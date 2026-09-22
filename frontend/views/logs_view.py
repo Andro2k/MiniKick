@@ -98,7 +98,7 @@ class LogView(BaseView):
         if self.txt_search:
             self.txt_search.textChanged.connect(self.search_changed.emit)
 
-        self.combo_date = NoWheelComboBox()
+        self.combo_date = NoWheelComboBox(parent=self)
         self.combo_date.addItem(self.i18n.get("log.controls.date_all"), "")
         self.combo_date.addItem(self.i18n.get("log.controls.date_1d"), "1d")
         self.combo_date.addItem(self.i18n.get("log.controls.date_3d"), "3d")
@@ -124,7 +124,7 @@ class LogView(BaseView):
 
         self._action_buttons: list[ModernButton] = []
         for name, text, role, icon, color, slot, visible in specs:
-            btn = ModernButton(text, role=role)
+            btn = ModernButton(text, role=role, parent=self)
             btn.setIcon(get_icon_colored(icon, color, 14))
             btn.setIconSize(QSize(14, 14))
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)

@@ -17,6 +17,8 @@
 | **INC-005** | Reseteo a valores por defecto en Overlay de Chat OBS (`chat.html`) al arrancar la app | Reporte de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/chat_service.py`, `backend/controllers/chat_controller.py` | v1.6.0 (`WT-1.6.0_14`) |
 | **INC-006** | Ocultamiento indebido de tablas y visualización errónea del estado vacío (Empty State de creación) al filtrar 0 elementos | Reporte de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/widgets/table_widget.py`, `frontend/views/commands_view.py`, `frontend/views/rewards_view.py`, `frontend/components/schedule/schedule_table_panel.py` | v1.6.0 (`WT-1.6.0_21`) |
 | **INC-007** | `RuntimeError: libshiboken: Internal C++ object (PySide6.QtWidgets.QWidget) already deleted` en `ModernTableCard.resizeEvent` | Log de Usuario `minikick.log` (Línea 794) | v1.6.0 | `✅ Solventado` | `frontend/widgets/table_widget.py`, `frontend/components/music/queue_panel.py` | v1.6.0 (`WT-1.6.0_21`) |
+| **INC-008** | Micro-ventana fantasma ('python' / 'pyt...') proyectada en segundo plano por precalentamiento prematuro de `QCalendarPopup` y falta de `parent` | Captura de Evidencia de Usuario / minikick.log | v1.6.0 | `✅ Solventado` | `frontend/widgets/no_wheel.py`, `frontend/components/schedule/schedule_form_panel.py`, `frontend/views/schedule_view.py`, `frontend/views/dashboard_view.py`, `frontend/components/dashboard/platform_card.py` | v1.6.0 (`WT-1.6.0_22`) |
+| **INC-009** | `TypeError: TranslationService.get() got an unexpected keyword argument 'version'` en arranque de `SystemTrayManager` | Log de Usuario `minikick.log` (Línea 2397) | v1.6.0 | `✅ Solventado` | `backend/services/system/translation_service.py`, `frontend/navigation/tray_menu_component.py` | v1.6.0 (`WT-1.6.0_23`) |
 
 ---
 
@@ -227,6 +229,65 @@
   2. [`frontend/components/music/queue_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/music/queue_panel.py):
      - Se eliminó el flujo destructivo `old_table.deleteLater()`. Ahora `self.queue_table = DragDropQueueTable(...)` se instancia directamente y se inyecta como `custom_table` en `ModernTableCard(...)`.
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_21.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_21.md).
+
+---
+
+### INC-008: Micro-Ventana Fantasma ('python' / 'pyt...') por Precalentamiento de `QCalendarPopup` y Controles sin `parent`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (Anomalía visual/DWM: proyección fugaz de ventana nativa de nivel superior vacía con título de proceso `python` al precalentar o cambiar de vista).
+* **Reportes Asociados**:
+  - Evidencia visual capturada por usuario (v1.6.0, ventana de ~180x100 px con título `pyt...` sobre Dashboard/Stream Info).
+  - Traza de inicialización en `minikick.log` a los ~3.75 segundos de arranque (`_schedule_view_prewarming`).
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. **Invocación Prematura de `calendarWidget()`**:
+     En [`frontend/components/schedule/schedule_form_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/schedule/schedule_form_panel.py), la llamada ansiosa `cal = self.date_edit.calendarWidget()` durante el constructor forzaba a Qt a instanciar internamente `QCalendarPopup` (`qt_datetimedit_calendar`) y el menú `QMenu` del mes (`qt_calendar_monthbutton`).
+  2. **Creación de HWND Nativo sin Ancestro Mapeado**:
+     Al ejecutarse el precalentador (`_schedule_view_prewarming`) en segundo plano a los ~3.75s, `ScheduleView` no estaba mapeada en la pantalla. Qt asignó a estos popups banderas nativas `0x800f009` (`WindowTitleHint`, `WindowMinimizeButtonHint`, `WindowMaximizeButtonHint`, `WindowCloseButtonHint`). Windows DWM detectó el nuevo `HWND`, titulándolo con el nombre del ejecutable (`python`, truncado a `pyt...`) y proyectando brevemente su superficie gris vacía en pantalla.
+  3. **Widgets Huérfanos sin Parent**:
+     En `PlatformStatusCard` y `DashboardView`, varios botones (`btn_action`, `btn_tab_kick`, `btn_tab_twitch`) y marcos de banners se instanciaban sin `parent=self` antes de ser agregados a layouts.
+* **Solución Implementada**:
+  1. **Lazy Initialization en `NoWheelDateEdit`**:
+     En [`frontend/widgets/no_wheel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/no_wheel.py), la personalización de estilos del calendario se encapsuló en `_configure_calendar_widget()`, ejecutándose bajo demanda únicamente cuando el usuario despliega o interactúa con el selector de fechas.
+  2. **Eliminación de la llamada ansiosa**:
+     Se eliminó `cal = self.date_edit.calendarWidget()` en `ScheduleFormPanel`.
+  3. **Jerarquía Explícita (`parent=self`)**:
+     Se vincularon explícitamente como hijos `parent=self` todos los sub-controles en `ScheduleFormPanel`, `ScheduleView`, `PlatformStatusCard` y `DashboardView`.
+  4. **Herramienta Automatizada de Diagnóstico**:
+     Se creó [`resources/tools/window_audit_manager.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tools/window_audit_manager.py) para auditar tanto estáticamente (AST) como dinámicamente (Runtime) todas las vistas y el prewarming, garantizando 0 ventanas fantasma (`0 HWND leaks`).
+* **Archivos Modificados**:
+  - [`frontend/widgets/no_wheel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/no_wheel.py)
+  - [`frontend/components/schedule/schedule_form_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/schedule/schedule_form_panel.py)
+  - [`frontend/views/schedule_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/schedule_view.py)
+  - [`frontend/components/dashboard/platform_card.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/dashboard/platform_card.py)
+  - [`frontend/views/dashboard_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/dashboard_view.py)
+  - [`resources/tools/window_audit_manager.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tools/window_audit_manager.py)
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_22.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_22.md).
+
+---
+
+### INC-009: Excepción Fatal por kwargs Inesperados en `TranslationService.get()`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **CRÍTICA** (Cierre prematuro de la aplicación durante la inicialización de la bandeja del sistema en `MainWindowCore.__init__`).
+* **Reportes Asociados**:
+  - `minikick.log` (Línea 2397): `TypeError: TranslationService.get() got an unexpected keyword argument 'version'`
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  `SystemTrayManager._setup_ui()` invocaba `self.i18n.get("main.tray.tooltip", version="1.6.0")`. La firma original de `TranslationService.get(self, key: str) -> str` no aceptaba `**kwargs`, causando un `TypeError` no controlado durante el ciclo de arranque (`bootstrap`).
+* **Solución Implementada**:
+  1. En [`backend/services/system/translation_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/translation_service.py), se dotó a `TranslationService.get(self, key: str, **kwargs) -> str` de soporte para `**kwargs` con interpolación segura (`str.format(**kwargs)` y fallback defensivo con `replace`).
+  2. En [`frontend/navigation/tray_menu_component.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/tray_menu_component.py), se eliminó cualquier llamada a `setStyleSheet` y se aseguró el formateo seguro del tooltip.
+  3. En [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py), se reemplazó el uso ad-hoc de `setStyleSheet` por el rol formal `table_no_results` sincronizado con [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py).
+* **Archivos Modificados**:
+  - [`backend/services/system/translation_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/translation_service.py)
+  - [`frontend/navigation/tray_menu_component.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/tray_menu_component.py)
+  - [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py)
+  - [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py)
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_tray_and_slider_debouncing.py` (`test_system_tray_manager_playback_toggle_and_tooltip`)
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_23.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_23.md).
 
 ---
 

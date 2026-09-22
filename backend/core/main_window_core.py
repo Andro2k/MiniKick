@@ -310,6 +310,7 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.chat_overlay_config_changed.connect(self.overlay_server.trigger_chat_config_update)
         self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
+        self.music_controller.song_changed.connect(self._handle_tray_song_changed)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
         self.chat_controller.widget_plugin_triggered.connect(self.widgets_controller.handle_widget_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
@@ -329,7 +330,7 @@ class MainWindowCore(QMainWindow):
         settings = self.chat_service.get_settings()
         self.tray_manager.set_tts_state(settings.get("enabled", True))
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
-        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "local") == "web")
+        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "piper") == "web")
         autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
         self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_service.reload_cache()
@@ -1672,6 +1673,12 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "music_controller"):
             self.music_controller.handle_skip()
 
+    @Slot(object)
+    def _handle_tray_song_changed(self, song: dict):
+        if hasattr(self, "tray_manager"):
+            is_playing = bool(song.get("is_playing", False)) if isinstance(song, dict) else False
+            self.tray_manager.set_playback_state(is_playing)
+
     @Slot(bool)
     def _handle_tray_tts_use_command_toggle(self, enabled: bool):
         settings = self.chat_service.get_settings()
@@ -1682,7 +1689,7 @@ class MainWindowCore(QMainWindow):
     @Slot(bool)
     def _handle_tray_tts_voice_type_change(self, is_web: bool):
         settings = self.chat_service.get_settings()
-        settings["provider"] = "web" if is_web else "local"
+        settings["provider"] = "web" if is_web else "piper"
         self.chat_service.save_settings(settings)
         self.chat_controller.load_initial_data()
 
@@ -1691,7 +1698,7 @@ class MainWindowCore(QMainWindow):
         settings = self.chat_service.get_settings()
         self.tray_manager.set_tts_state(enabled)
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
-        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "local") == "web")
+        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "piper") == "web")
 
     @Slot(int)
     def _apply_dynamic_theme(self, base_size: int, immediate: bool = True):

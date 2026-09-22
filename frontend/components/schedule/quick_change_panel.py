@@ -205,7 +205,7 @@ class ScheduleQuickChangePanel(QWidget):
 
         kick_switch_box = QHBoxLayout()
         kick_switch_box.setSpacing(SPACING_MD)
-        self.switch_kick = ModernSwitch()
+        self.switch_kick = ModernSwitch(parent=self)
         self.switch_kick.setChecked(True)
         lbl_kick = QLabel("Kick")
         lbl_kick.setProperty("role", "body")
@@ -215,7 +215,7 @@ class ScheduleQuickChangePanel(QWidget):
 
         twitch_switch_box = QHBoxLayout()
         twitch_switch_box.setSpacing(SPACING_MD)
-        self.switch_twitch = ModernSwitch()
+        self.switch_twitch = ModernSwitch(parent=self)
         self.switch_twitch.setChecked(True)
         lbl_twitch = QLabel("Twitch")
         lbl_twitch.setProperty("role", "body")
@@ -230,7 +230,7 @@ class ScheduleQuickChangePanel(QWidget):
         lbl_title_field.setProperty("role", "h3")
         form_layout.addWidget(lbl_title_field)
 
-        self.txt_title = QLineEdit()
+        self.txt_title = QLineEdit(parent=self)
         self.txt_title.setPlaceholderText(self.i18n.get("stream_info.quick_change.title_placeholder"))
         form_layout.addWidget(self.txt_title)
 
@@ -251,7 +251,7 @@ class ScheduleQuickChangePanel(QWidget):
         action_row = QHBoxLayout()
         action_row.addStretch()
 
-        self.btn_apply = ModernButton(self.i18n.get("stream_info.quick_change.btn_update"), role="action_outlined")
+        self.btn_apply = ModernButton(self.i18n.get("stream_info.quick_change.btn_update"), role="action_outlined", parent=self)
         self.btn_apply.setFixedWidth(200)
         self.btn_apply.clicked.connect(self._on_update_clicked)
         action_row.addWidget(self.btn_apply)

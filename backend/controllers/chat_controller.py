@@ -747,8 +747,6 @@ class ChatController(QObject):
             "chat_overlay_show_platform": getattr(self.view, "overlay_show_platform", True)
         })
 
-        logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
-                    settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))
         self._tts_settings_cache = dict(settings)
         self._mod_mute_command_enabled = settings["mod_mute_command_enabled"]
         self._mod_block_command_enabled = settings["mod_block_command_enabled"]
@@ -834,6 +832,8 @@ class ChatController(QObject):
         if not self._tts_settings_cache:
             return
         settings = dict(self._tts_settings_cache)
+        logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
+                    settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))
         self.service.save_settings(settings)
         self.chat_overlay_config_changed.emit(self.get_active_overlay_config())
 

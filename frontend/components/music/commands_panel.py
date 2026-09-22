@@ -43,7 +43,7 @@ class MusicCommandsPanel(QWidget):
         for i, (cmd, icon, lbl_key, desc_key, attr_name) in enumerate(self._COMMANDS_CONFIG):
             if i > 0:
                 self.card_cmds.add_separator()
-            sw = ModernSwitch()
+            sw = ModernSwitch(parent=self)
             sw.toggled.connect(lambda val, c=cmd: self.command_toggled.emit(c, val))
             self.switches[cmd] = sw
             setattr(self, attr_name, sw)

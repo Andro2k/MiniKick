@@ -145,7 +145,7 @@ class RewardsView(BaseView):
     def _build_obs_card(self):
         obs_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
-        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined")
+        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(

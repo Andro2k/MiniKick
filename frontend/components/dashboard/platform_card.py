@@ -68,7 +68,7 @@ class PlatformStatusCard(QFrame):
         layout.addWidget(self.lbl_status)
 
         btn_key = self._BTN_CONNECT_KEYS.get(self.platform_id, "dashboard.connection.btn_connect_kick")
-        self.btn_action = ModernButton(self.i18n.get(btn_key), role=self.button_role)
+        self.btn_action = ModernButton(self.i18n.get(btn_key), role=self.button_role, parent=self)
         layout.addWidget(self.btn_action)
 
     def update_state(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):

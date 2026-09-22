@@ -53,18 +53,18 @@ class DashboardView(BaseView):
     def _setup_ui(self):
         self.main_layout.setSpacing(SPACING_MD)
 
-        self.banner_scopes_kick = QFrame()
+        self.banner_scopes_kick = QFrame(self)
         self.banner_scopes_kick.setProperty("role", "banner_scope_card")
         self.banner_scopes_kick.setProperty("state", "kick")
         self.banner_layout_kick = QHBoxLayout(self.banner_scopes_kick)
         self.banner_layout_kick.setContentsMargins(*MARGIN_LG)
         self.banner_layout_kick.setSpacing(SPACING_MD)
         self.banner_scopes_kick.setVisible(False)
-        self.lbl_warn_text_kick = QLabel()
+        self.lbl_warn_text_kick = QLabel(self.banner_scopes_kick)
         self.lbl_warn_text_kick.setWordWrap(True)
-        self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_kick")
+        self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_kick", parent=self.banner_scopes_kick)
         self.btn_reauth_kick.clicked.connect(self._on_reauth_kick_clicked)
-        lbl_kick_icon = QLabel()
+        lbl_kick_icon = QLabel(self.banner_scopes_kick)
         lbl_kick_icon.setPixmap(get_pixmap_colored("brand-kick.svg", COLOR_GREEN, 24))
         lbl_kick_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_kick.addWidget(lbl_kick_icon, 0, Qt.AlignmentFlag.AlignTop)
@@ -72,18 +72,18 @@ class DashboardView(BaseView):
         self.banner_layout_kick.addWidget(self.btn_reauth_kick, 0, Qt.AlignmentFlag.AlignVCenter)
         self.main_layout.addWidget(self.banner_scopes_kick)
 
-        self.banner_scopes_twitch = QFrame()
+        self.banner_scopes_twitch = QFrame(self)
         self.banner_scopes_twitch.setProperty("role", "banner_scope_card")
         self.banner_scopes_twitch.setProperty("state", "twitch")
         self.banner_layout_twitch = QHBoxLayout(self.banner_scopes_twitch)
         self.banner_layout_twitch.setContentsMargins(*MARGIN_LG)
         self.banner_layout_twitch.setSpacing(SPACING_MD)
         self.banner_scopes_twitch.setVisible(False)
-        self.lbl_warn_text_twitch = QLabel()
+        self.lbl_warn_text_twitch = QLabel(self.banner_scopes_twitch)
         self.lbl_warn_text_twitch.setWordWrap(True)
-        self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_twitch")
+        self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_twitch", parent=self.banner_scopes_twitch)
         self.btn_reauth_twitch.clicked.connect(self._on_reauth_twitch_clicked)
-        lbl_twitch_icon = QLabel()
+        lbl_twitch_icon = QLabel(self.banner_scopes_twitch)
         lbl_twitch_icon.setPixmap(get_pixmap_colored("brand-twitch.svg", COLOR_TWITCH, 24))
         lbl_twitch_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_twitch.addWidget(lbl_twitch_icon, 0, Qt.AlignmentFlag.AlignTop)
@@ -106,7 +106,7 @@ class DashboardView(BaseView):
     def _setup_platforms_hub(self):
         hub_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE)
 
-        self.sw_autostart = ModernSwitch()
+        self.sw_autostart = ModernSwitch(parent=self)
         self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
         
         row_autostart = SettingRow(
@@ -175,11 +175,11 @@ class DashboardView(BaseView):
         self.tabs_layout.setContentsMargins(*MARGIN_NONE)
         self.tabs_layout.setSpacing(SPACING_MD)
 
-        self.btn_tab_kick = ModernButton(self.i18n.get("dashboard.profile.tab_kick"), role="action_kick")
+        self.btn_tab_kick = ModernButton(self.i18n.get("dashboard.profile.tab_kick"), role="action_kick", parent=self.tabs_container)
         self.btn_tab_kick.set_icon("brand-kick.svg", size=14)
         self.btn_tab_kick.clicked.connect(lambda: self.channel_tab_changed.emit("kick"))
 
-        self.btn_tab_twitch = ModernButton(self.i18n.get("dashboard.profile.tab_twitch"), role="action_twitch")
+        self.btn_tab_twitch = ModernButton(self.i18n.get("dashboard.profile.tab_twitch"), role="action_twitch", parent=self.tabs_container)
         self.btn_tab_twitch.set_icon("brand-twitch.svg", size=14)
         self.btn_tab_twitch.clicked.connect(lambda: self.channel_tab_changed.emit("twitch"))
 
@@ -245,7 +245,7 @@ class DashboardView(BaseView):
         action_col = QVBoxLayout()
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
-        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined")
+        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined", parent=self)
         self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", COLOR_WHITE, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)
