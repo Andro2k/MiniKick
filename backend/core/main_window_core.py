@@ -341,7 +341,7 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.sync_settings_cache()
         if hasattr(self, "overlay_server") and self.overlay_server:
             self.overlay_server.trigger_chat_config_update(self.chat_controller.get_active_overlay_config())
-        self._apply_dynamic_theme(self.settings_service.get_font_size(), immediate=True)
+        self._apply_dynamic_theme(self.settings_service.get_font_size())
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
         self._evaluate_all_scopes()
@@ -872,7 +872,7 @@ class MainWindowCore(QMainWindow):
         self.kick_auth_worker.finished.connect(self.kick_auth_worker.deleteLater)
         self.kick_auth_worker.start()
 
-    def _on_auth_success(self, tokens):
+    def _on_auth_success(self, _tokens):
         self.kick_api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
         self._evaluate_all_scopes()
         
@@ -1065,7 +1065,7 @@ class MainWindowCore(QMainWindow):
         err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
         self.toast.show_toast(title=err_title, message=str(err), state="danger")
 
-    def _on_twitch_auth_success(self, tokens):
+    def _on_twitch_auth_success(self, _tokens):
         self.twitch_auth_worker = None
         logger.info("[Twitch Auth] Success callback received.")
         try:
@@ -1596,7 +1596,7 @@ class MainWindowCore(QMainWindow):
             self.schedule_worker.schedule_triggered.connect(self._on_schedule_triggered)
             self.schedule_worker.start()
 
-    def _on_schedule_triggered(self, schedule: dict, result: dict):
+    def _on_schedule_triggered(self, schedule: dict, _result: dict):
         name = schedule.get("name", "")
         title = self.i18n.get("stream_info.toasts.schedule_auto_applied")
         self.toast.show_toast(
@@ -1701,7 +1701,7 @@ class MainWindowCore(QMainWindow):
         self.tray_manager.set_tts_voice_type_state(settings.get("provider", "piper") == "web")
 
     @Slot(int)
-    def _apply_dynamic_theme(self, base_size: int, immediate: bool = True):
+    def _apply_dynamic_theme(self, base_size: int):
         current_size = getattr(self, "_applied_font_size", None)
         if current_size == base_size:
             return

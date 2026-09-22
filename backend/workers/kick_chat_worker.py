@@ -107,7 +107,6 @@ class KickChatWorker(QThread):
                 self.chat_manager.start_socket(
                     room_id,
                     channel_id=channel_id,
-                    initial_followers=followers_count,
                     on_message=self._dispatch_message,
                     on_poll_update=self._dispatch_poll_update,
                     on_poll_delete=self._dispatch_poll_delete,

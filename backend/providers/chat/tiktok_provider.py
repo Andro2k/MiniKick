@@ -87,7 +87,7 @@ class TikTokChatProvider:
         connected_at_holder: list[float] = [0.0]
 
         @client.on(ConnectEvent)
-        def _on_connect(event: ConnectEvent):
+        def _on_connect(_event: ConnectEvent):
             connected_at_holder[0] = time.time()
             room_id = getattr(client, "room_id", "")
             logger.info(
@@ -244,7 +244,7 @@ class TikTokChatProvider:
                     )
 
         @client.on(DisconnectEvent)
-        def _on_disconnect(event: DisconnectEvent):
+        def _on_disconnect(_event: DisconnectEvent):
             logger.info(
                 "[TikTokChatProvider] Desconectado de TikTok Live @%s", clean_user
             )

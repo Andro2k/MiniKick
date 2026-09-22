@@ -404,5 +404,5 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                 if client_queue in client_list:
                     client_list.remove(client_queue)
 
-    def log_message(self, format, *args):
+    def log_message(self, _format, *_args):
         pass

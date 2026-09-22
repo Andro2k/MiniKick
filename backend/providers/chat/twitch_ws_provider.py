@@ -213,7 +213,7 @@ class TwitchSocketManager:
                 logger.error("[TwitchWS] Error sending IRC message: %s", e)
         return False
 
-    def _on_error(self, ws: websocket.WebSocketApp, error: Exception) -> None:
+    def _on_error(self, _ws: websocket.WebSocketApp, error: Exception) -> None:
         is_routine_network_drop = isinstance(
             error,
             (websocket.WebSocketTimeoutException, TimeoutError, ConnectionResetError, BrokenPipeError)
@@ -226,7 +226,7 @@ class TwitchSocketManager:
             exc_info=not is_routine_network_drop and not isinstance(error, (KeyboardInterrupt, SystemExit))
         )
 
-    def _on_close(self, ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:
+    def _on_close(self, _ws: websocket.WebSocketApp, close_status_code, close_msg) -> None:
         meaning = RFC_6455_CLOSE_CODES.get(close_status_code, "Unknown/Unregistered") if close_status_code is not None else "Clean/No Code"
         logger.info("[TwitchWS] Connection closed: code=%s (%s), reason=%s", close_status_code, meaning, close_msg or "N/A")
         if self._on_disconnected:

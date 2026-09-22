@@ -383,7 +383,7 @@ class YouTubeMusicProvider(QObject):
             music_storage=self.music_storage
         )
 
-        def on_preload_resolved(title, path_or_url):
+        def on_preload_resolved(_title, path_or_url):
             if self.queue and self.queue[0]["url"] == self.preload_song_url:
                 self.queue[0]["resolved"] = True
                 self.queue[0]["stream_url"] = path_or_url
@@ -470,7 +470,7 @@ class YouTubeMusicProvider(QObject):
         self._preload_next_song()
 
     @Slot(str, str)
-    def _on_song_resolved(self, title: str, path_or_url: str):
+    def _on_song_resolved(self, _title: str, path_or_url: str):
         if not self.current_song:
             if path_or_url and not (path_or_url.startswith("http://") or path_or_url.startswith("https://")):
                 if os.path.exists(path_or_url):

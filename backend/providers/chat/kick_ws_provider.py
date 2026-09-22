@@ -67,7 +67,6 @@ class KickWebSocketManager:
         self,
         room_id: int,
         channel_id: int = 0,
-        initial_followers: int | None = None,
         on_message: Callable[[str, str, list, str, str, int], None] | None = None,
         on_poll_update: Callable[[dict], None] | None = None,
         on_poll_delete: Callable[[], None] | None = None,
@@ -103,7 +102,7 @@ class KickWebSocketManager:
             ping_timeout=20
         )
 
-    def _on_error(self, ws: websocket.WebSocketApp, err: Exception) -> None:
+    def _on_error(self, _ws: websocket.WebSocketApp, err: Exception) -> None:
         is_routine_network_drop = isinstance(
             err,
             (websocket.WebSocketTimeoutException, TimeoutError, ConnectionResetError, BrokenPipeError)
@@ -116,7 +115,7 @@ class KickWebSocketManager:
             exc_info=not is_routine_network_drop and not isinstance(err, (KeyboardInterrupt, SystemExit))
         )
 
-    def _on_close(self, ws: websocket.WebSocketApp, status: int | None, msg: str | None) -> None:
+    def _on_close(self, _ws: websocket.WebSocketApp, status: int | None, msg: str | None) -> None:
         meaning = RFC_6455_CLOSE_CODES.get(status, "Unknown/Unregistered") if status is not None else "Clean/No Code"
         logger.info("[KickWebSocket] WebSocket closed: code=%s (%s), reason=%s", status, meaning, msg or "N/A")
 
@@ -137,7 +136,7 @@ class KickWebSocketManager:
         except Exception as e:
             logger.debug("[KickWebSocket] Notice processing frame: %s", e)
 
-    def _handle_chat_message(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_chat_message(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         sender = inner.get("sender")
         if not isinstance(sender, dict):
             return
@@ -197,16 +196,16 @@ class KickWebSocketManager:
         if self._callback:
             self._callback(user, msg, badges, color, msg_id, sender_id)
 
-    def _handle_poll_update(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_poll_update(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         poll_data = inner.get("poll") or inner
         if poll_data and self._on_poll_update:
             self._on_poll_update(poll_data)
 
-    def _handle_poll_delete(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_poll_delete(self, _inner: dict, _ws: websocket.WebSocketApp) -> None:
         if self._on_poll_delete:
             self._on_poll_delete()
 
-    def _handle_pinned_created(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_pinned_created(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         pinned = inner.get("pinned_message") or inner
         if isinstance(pinned, dict):
             msg_obj = pinned.get("message")
@@ -228,11 +227,11 @@ class KickWebSocketManager:
             if self._on_pinned_created:
                 self._on_pinned_created(normalized)
 
-    def _handle_pinned_deleted(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_pinned_deleted(self, _inner: dict, _ws: websocket.WebSocketApp) -> None:
         if self._on_pinned_deleted:
             self._on_pinned_deleted()
 
-    def _handle_reward_redeemed(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_reward_redeemed(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         reward_title = inner.get("reward_title", "") or inner.get("reward", {}).get("title", "")
         username = inner.get("username", "") or inner.get("user", {}).get("username", "")
         user_input = inner.get("user_input", "") or inner.get("message", "") or ""
@@ -240,14 +239,14 @@ class KickWebSocketManager:
             logger.info("[KickWebSocket] Real-time reward redeemed: '%s' by %s (input: '%s')", reward_title, username, user_input)
             self._on_reward(username, reward_title, user_input)
 
-    def _handle_message_deleted(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_message_deleted(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         msg_id = inner.get("message", {}).get("id") or inner.get("id", "")
         if msg_id:
             logger.info("[KickWebSocket] Message deleted event received: %s", msg_id)
             if self._on_message_deleted:
                 self._on_message_deleted(msg_id)
 
-    def _handle_user_banned(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_user_banned(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         user = inner.get("user", {}) if isinstance(inner.get("user"), dict) else inner
         username = user.get("username") or inner.get("username", "")
         if username:
@@ -255,7 +254,7 @@ class KickWebSocketManager:
             if self._on_user_banned:
                 self._on_user_banned(username)
 
-    def _handle_connection_established(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_connection_established(self, _inner: dict, ws: websocket.WebSocketApp) -> None:
         logger.info("[KickWebSocket] Pusher connection established. Subscribing to room_id=%s, channel_id=%s", self._room_id, self._channel_id)
         channels = [
             f"chatrooms.{self._room_id}.v2",
@@ -273,7 +272,7 @@ class KickWebSocketManager:
                     "data": {"channel": ch}
                 }))
 
-    def _handle_ping(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+    def _handle_ping(self, _inner: dict, ws: websocket.WebSocketApp) -> None:
         if ws:
             ws.send('{"event":"pusher:pong"}')
 

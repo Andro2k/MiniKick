@@ -31,7 +31,7 @@ class LocalTTSProvider:
         factor = speed if speed <= 3.0 else (speed / 100.0)
         self.rate = max(50, min(400, int(150 * factor)))
 
-    def prepare(self, text: str, voice_id: str = None) -> None:
+    def prepare(self, _text: str, _voice_id: str = None) -> None:
         pass
 
     def speak(self, text: str, voice_id: str = None) -> None:
@@ -69,7 +69,7 @@ class LocalTTSProvider:
     def stop(self) -> None:
         pass
 
-    def warm_up(self, voice_id: str = None) -> None:
+    def warm_up(self, _voice_id: str = None) -> None:
         pass
 
     def get_available_voices(self) -> list[dict]:

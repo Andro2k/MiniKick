@@ -29,7 +29,7 @@ class TwitchRewardWorker(QThread):
 
         self._running = True
 
-        def on_message(ws, msg_str):
+        def on_message(_ws, msg_str):
             try:
                 msg = fast_loads(msg_str)
             except Exception:
@@ -164,11 +164,11 @@ class TwitchRewardWorker(QThread):
                     )
                     self.alert_received.emit(alert)
 
-        def on_error(ws, error):
+        def on_error(_ws, error):
             if self._running:
                 logger.debug("[TwitchRewardWorker] EventSub WebSocket error: %s", error)
 
-        def on_close(ws, close_code, close_msg):
+        def on_close(_ws, _close_code, _close_msg):
             pass
 
         while self._running:

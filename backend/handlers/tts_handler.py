@@ -65,7 +65,8 @@ class TTSVoiceHandler(QObject):
         self._voice_worker.start()
 
     @Slot(object, str, bool)
-    def _on_voices_fetched(self, voices: list, provider: str, is_initial: bool) -> None:
+    def _on_voices_fetched(self, voices: list, provider: str, is_initial: bool = False) -> None:
+        logger.debug("[TTSVoiceHandler] Voices fetched for '%s' (initial=%s): count=%d", provider, is_initial, len(voices) if voices else 0)
         self._all_voices = voices
         self._available_voice_ids = {v["id"] for v in voices}
         saved_voice_id = self.service.get_saved_voice_id(provider)
@@ -82,7 +83,7 @@ class TTSVoiceHandler(QObject):
 
         if self.view is not None:
             self.view.update_languages(langs, sel_prefix)
-            self.filter_voices_by_language(sel_prefix, select_id=saved_voice_id, play_test=(not is_initial))
+            self.filter_voices_by_language(sel_prefix, select_id=saved_voice_id)
 
         if self._voice_worker:
             w = self._voice_worker
@@ -136,7 +137,7 @@ class TTSVoiceHandler(QObject):
             )
 
     @Slot(str)
-    def filter_voices_by_language(self, lang_prefix: str = "", select_id: str = None, play_test: bool = False) -> None:
+    def filter_voices_by_language(self, _lang_prefix: str = "", select_id: str = None) -> None:
         provider = self.view.tts_provider if hasattr(self.view, "tts_provider") else ("web" if self.view.is_web_provider else "piper")
         filtered = [(v["id"], v["name"]) for v in self._all_voices]
             

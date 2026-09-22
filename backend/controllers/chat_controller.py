@@ -537,7 +537,7 @@ class ChatController(QObject):
             self.command_service.send_response(msg, platform=platform)
 
     def _handle_plugin_ttsunmute(self, dto: ChatMessageDTO, prefix: str = "!ttsunmute") -> None:
-        self._handle_plugin_ttsmute(dto, prefix="!unmutetts")
+        self._handle_plugin_ttsmute(dto, prefix=prefix)
 
     def _handle_plugin_ttsblock(self, dto: ChatMessageDTO, prefix: str) -> None:
         platform = getattr(dto, "platform", "kick")
@@ -576,7 +576,7 @@ class ChatController(QObject):
             self.command_service.send_response(msg, platform=platform)
 
     def _handle_plugin_ttsunblock(self, dto: ChatMessageDTO, prefix: str = "!ttsunblock") -> None:
-        self._handle_plugin_ttsblock(dto, prefix="!unblockword")
+        self._handle_plugin_ttsblock(dto, prefix=prefix)
 
     def _handle_plugin_gif(self, dto: ChatMessageDTO, prefix: str) -> None:
         raw_arg = dto.content[len(prefix):].strip()

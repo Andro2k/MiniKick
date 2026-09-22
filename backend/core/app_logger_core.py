@@ -22,7 +22,7 @@ class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
 
 logger = logging.getLogger("minikick.core.app_logger")
 
-def _qt_message_handler(mode: QtMsgType, context, message: str):
+def _qt_message_handler(mode: QtMsgType, _context, message: str):
     if not message or not message.strip():
         return
 

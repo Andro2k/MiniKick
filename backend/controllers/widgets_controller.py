@@ -369,7 +369,7 @@ class WidgetsController(QObject):
                 "title_text": title_text
             })
 
-    def _dispatch_score_command(self, user: str, args: str, action_word: str, prefix: str, platform: str = "kick") -> None:
+    def _dispatch_score_command(self, user: str, args: str, action_word: str, _prefix: str, platform: str = "kick") -> None:
         arg_clean = args.strip().lower()
 
         if arg_clean in _RESET_COMMANDS or action_word in _RESET_COMMANDS:
@@ -588,7 +588,7 @@ class WidgetsController(QObject):
                         "timeout_sec": timeout_sec
                     })
 
-    def _process_explosion_command(self, user: str, args: str, platform: str = "kick"):
+    def _process_explosion_command(self, user: str, _args: str, platform: str = "kick"):
         if self.overlay_server:
             sample_emotes = [
                 {"type": "text", "src": "🔥", "name": "🔥"},
@@ -603,7 +603,7 @@ class WidgetsController(QObject):
             msg = self.i18n.get("widgets.explosion.msg_explosion").replace("{user}", user)
             self.command_service.send_response(msg, platform=platform)
 
-    def _process_combo_command(self, user: str, args: str, platform: str = "kick"):
+    def _process_combo_command(self, _user: str, args: str, platform: str = "kick"):
         if self.overlay_server:
             emote = args.strip() if args.strip() else "KEKW"
             self.overlay_server.trigger_widget_event("emote_combo", {
