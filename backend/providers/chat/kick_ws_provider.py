@@ -67,7 +67,7 @@ class KickWebSocketManager:
         self,
         room_id: int,
         channel_id: int = 0,
-        on_message: Callable[[str, str, list, str, str, int], None] | None = None,
+        on_message: Callable[..., None] | None = None,
         on_poll_update: Callable[[dict], None] | None = None,
         on_poll_delete: Callable[[], None] | None = None,
         on_pinned_created: Callable[[dict], None] | None = None,
@@ -192,9 +192,13 @@ class KickWebSocketManager:
                                 badges.append(f"level_{lvl}")
 
         sender_id = sender.get("id", 0)
+        avatar_url = str(sender.get("profile_pic") or sender.get("profile_picture") or sender.get("profileimage") or sender.get("profile_image") or "")
 
         if self._callback:
-            self._callback(user, msg, badges, color, msg_id, sender_id)
+            try:
+                self._callback(user, msg, badges, color, msg_id, sender_id, avatar_url)
+            except TypeError:
+                self._callback(user, msg, badges, color, msg_id, sender_id)
 
     def _handle_poll_update(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         poll_data = inner.get("poll") or inner

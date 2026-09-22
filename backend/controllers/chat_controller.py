@@ -125,7 +125,7 @@ class ChatController(QObject):
     tts_state_changed = Signal(bool)
     spam_blocked = Signal()
     command_executed = Signal()
-    message_received = Signal(str, str, str, object, str, str, str)
+    message_received = Signal(str, str, str, object, str, str, str, str)
     music_plugin_triggered = Signal(str, str, str, str, str)
     widget_plugin_triggered = Signal(str, str, str, str, str)
     chat_overlay_config_changed = Signal(dict)
@@ -306,7 +306,6 @@ class ChatController(QObject):
             show_bots=overlay_settings.get("common", {}).get("show_bots", False),
             show_time=overlay_settings.get("common", {}).get("show_time", False),
             big_emotes=overlay_settings.get("common", {}).get("big_emotes", True),
-            edge_fade=overlay_settings.get("common", {}).get("edge_fade", True),
             show_gifs=overlay_settings.get("common", {}).get("show_gifs", True),
             hide_commands=overlay_settings.get("common", {}).get("hide_commands", False),
             show_badges=overlay_settings.get("common", {}).get("show_badges", True),
@@ -642,20 +641,23 @@ class ChatController(QObject):
                     dto.gif_url = extracted
 
         emotes_tag = getattr(dto, "emotes_tag", "")
-        self.message_received.emit(dto.user, dto.content, dto.color, badges, platform, emotes_tag, gif_url)
+        avatar_url = getattr(dto, "avatar_url", "")
+        self.message_received.emit(dto.user, dto.content, dto.color, badges, platform, emotes_tag, gif_url, avatar_url)
 
     def _handle_bot_response(self, text: str, platform: str = "kick") -> None:
         if not text or platform != "twitch":
             return
-        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = datetime.datetime.now().strftime("%H:%M")
         bot_user = "MiniKick"
         tw_worker = getattr(self.command_service, "twitch_worker", None)
         if tw_worker:
             bot_user = getattr(tw_worker, "bot_nick", "") or getattr(tw_worker, "channel_name", "") or "MiniKick"
         
+        bot_avatar = getattr(tw_worker, "_broadcaster_avatar", "") if tw_worker else ""
         dto = ChatMessageDTO(
             user=bot_user, content=text, badges=["broadcaster", "bot"], color="#9146FF",
-            msg_id="", sender_id=0, timestamp=now_str, platform="twitch", is_cancelled=False, is_command=False
+            msg_id="", sender_id=0, timestamp=now_str, platform="twitch", is_cancelled=False, is_command=False,
+            avatar_url=bot_avatar
         )
         self._step_ui_render(dto)
 
@@ -741,7 +743,6 @@ class ChatController(QObject):
             "chat_overlay_show_bots": self.view.overlay_show_bots,
             "chat_overlay_show_time": self.view.overlay_show_time,
             "chat_overlay_big_emotes": getattr(self.view, "overlay_big_emotes", True),
-            "chat_overlay_edge_fade": getattr(self.view, "overlay_edge_fade", True),
             "chat_overlay_show_gifs": getattr(self.view, "overlay_show_gifs", True),
             "chat_overlay_hide_commands": getattr(self.view, "overlay_hide_commands", False),
             "chat_overlay_show_badges": getattr(self.view, "overlay_show_badges", True),
@@ -803,7 +804,6 @@ class ChatController(QObject):
             "show_time": bool(settings.get("chat_overlay_show_time", False)),
             "show_gifs": bool(settings.get("chat_overlay_show_gifs", True)),
             "big_emotes": bool(settings.get("chat_overlay_big_emotes", True)),
-            "edge_fade": bool(settings.get("chat_overlay_edge_fade", True)),
             "hide_commands": bool(settings.get("chat_overlay_hide_commands", False)),
             "show_badges": bool(settings.get("chat_overlay_show_badges", True)),
             "show_platform": bool(settings.get("chat_overlay_show_platform", True)),
@@ -823,7 +823,6 @@ class ChatController(QObject):
             "show_time": common["show_time"],
             "show_gifs": common["show_gifs"],
             "big_emotes": common["big_emotes"],
-            "edge_fade": common["edge_fade"],
             "hide_commands": common["hide_commands"],
             "show_badges": common["show_badges"],
             "show_platform": common["show_platform"],

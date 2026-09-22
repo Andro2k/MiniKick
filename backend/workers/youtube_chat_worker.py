@@ -88,7 +88,7 @@ class YouTubeChatWorker(QThread):
             except Exception:
                 emotes_tag = ""
 
-        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = datetime.datetime.now().strftime("%H:%M")
         dto = ChatMessageDTO(
             user=user,
             content=msg,

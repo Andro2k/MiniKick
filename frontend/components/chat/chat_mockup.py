@@ -6,17 +6,43 @@ from PySide6.QtGui import (
     QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
 )
 
+VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})
+DEFAULT_CHAT_THEME = "dark"
+
 class ChatOverlayMockupWidget(QWidget):
+    _AVATAR_GRADIENTS = [
+        ("#6366f1", "#4f46e5"),
+        ("#8b5cf6", "#7c3aed"),
+        ("#ec4899", "#db2777"),
+        ("#f43f5e", "#e11d48"),
+        ("#f97316", "#ea580c"),
+        ("#eab308", "#ca8a04"),
+        ("#10b981", "#059669"),
+        ("#06b6d4", "#0891b2"),
+    ]
+
+    _BADGE_CONFIG = {
+        "twitch": ("\uf1e8", "#9146FF", "#772CE8", "#ffffff"),
+        "kick": ("\uf2f3", "#53FC18", "#3DB510", "#000000"),
+        "youtube": ("\uf16a", "#FF0000", "#DC2626", "#ffffff"),
+        "tiktok": ("\udb80\udf8c", "#00F2FE", "#FF0050", "#ffffff"),
+        "broadcaster": ("\uf130", "#EF4444", "#DC2626", "#ffffff"),
+        "streamer": ("\uf130", "#EF4444", "#DC2626", "#ffffff"),
+        "moderator": ("\ued25", "#2ECD70", "#16A34A", "#ffffff"),
+        "vip": ("\uedeb", "#EAB308", "#CA8A04", "#ffffff"),
+        "subscriber": ("\udb83\ude44", "#A855F7", "#9333EA", "#ffffff"),
+        "bot": ("\uee0d", "#3B82F6", "#2563EB", "#ffffff"),
+    }
+
     def __init__(self, i18n, parent=None):
         super().__init__(parent)
         self.i18n = i18n
-        self.theme_mode = "glass"
+        self.theme_mode = DEFAULT_CHAT_THEME
         self.orientation = "vertical"
         self.show_time = False
         self.show_bots = False
         self.show_badges = True
         self.show_platform = True
-        self.edge_fade = True
         self.hide_commands = False
         self.big_emotes = True
         self.show_gifs = True
@@ -31,12 +57,11 @@ class ChatOverlayMockupWidget(QWidget):
         show_bots: bool = False,
         show_badges: bool = True,
         show_platform: bool = True,
-        edge_fade: bool = True,
         hide_commands: bool = False,
         big_emotes: bool = True,
         show_gifs: bool = True
     ):
-        new_theme = theme or "glass"
+        new_theme = theme if theme in VALID_CHAT_THEMES else DEFAULT_CHAT_THEME
         new_orientation = orientation or "vertical"
         changed = (
             self.theme_mode != new_theme
@@ -45,7 +70,6 @@ class ChatOverlayMockupWidget(QWidget):
             or self.show_bots != show_bots
             or self.show_badges != show_badges
             or self.show_platform != show_platform
-            or self.edge_fade != edge_fade
             or self.hide_commands != hide_commands
             or self.big_emotes != big_emotes
             or self.show_gifs != show_gifs
@@ -57,7 +81,6 @@ class ChatOverlayMockupWidget(QWidget):
             self.show_bots = show_bots
             self.show_badges = show_badges
             self.show_platform = show_platform
-            self.edge_fade = edge_fade
             self.hide_commands = hide_commands
             self.big_emotes = big_emotes
             self.show_gifs = show_gifs
@@ -90,54 +113,58 @@ class ChatOverlayMockupWidget(QWidget):
 
         msg2_data = None
         if self.show_bots:
-            msg2_data = ("10:49:15", sample_bot_user, sample_bot_msg, "#A855F7", True, "bot", "kick")
+            msg2_data = ("10:49", sample_bot_user, sample_bot_msg, "#A855F7", True, "bot", "kick")
         elif not self.hide_commands:
-            msg2_data = ("10:49:20", sample_cmd_user, sample_cmd_msg, "#38BDF8", False, "subscriber", "kick")
+            msg2_data = ("10:49", sample_cmd_user, sample_cmd_msg, "#38BDF8", False, "subscriber", "kick")
 
         if self.orientation == "horizontal":
             self._draw_horizontal(p, w, h, sample_user, sample_msg_1, msg2_data)
         else:
             self._draw_vertical(p, w, h, sample_user, sample_msg_1, msg2_data)
 
-        if self.edge_fade:
-            self._draw_edge_fade(p, w, h)
+    def _get_avatar_gradient(self, user: str) -> tuple[str, str]:
+        if not user:
+            return self._AVATAR_GRADIENTS[0]
+        code = ord(user[0].upper())
+        idx = code % len(self._AVATAR_GRADIENTS)
+        return self._AVATAR_GRADIENTS[idx]
 
-    def _draw_edge_fade(self, p: QPainter, w: int, h: int):
+    def _draw_avatar(self, p: QPainter, x: float, y: float, size: float, user: str, platform: str = ""):
         p.save()
-        if self.orientation == "horizontal":
-            fade_w = 26.0
-            grad_l = QLinearGradient(0, 0, fade_w, 0)
-            grad_l.setColorAt(0.0, QColor(9, 9, 11, 230))
-            grad_l.setColorAt(1.0, QColor(9, 9, 11, 0))
-            p.fillRect(QRectF(1, 1, fade_w, h - 2), grad_l)
+        rect = QRectF(x, y, size, size)
+        c1_hex, c2_hex = self._get_avatar_gradient(user)
+        grad = QLinearGradient(x, y, x + size, y + size)
+        grad.setColorAt(0.0, QColor(c1_hex))
+        grad.setColorAt(1.0, QColor(c2_hex))
 
-            grad_r = QLinearGradient(w - fade_w, 0, w, 0)
-            grad_r.setColorAt(0.0, QColor(9, 9, 11, 0))
-            grad_r.setColorAt(1.0, QColor(9, 9, 11, 230))
-            p.fillRect(QRectF(w - fade_w - 1, 1, fade_w, h - 2), grad_r)
-        else:
-            fade_h = 24.0
-            grad_t = QLinearGradient(0, 0, 0, fade_h)
-            grad_t.setColorAt(0.0, QColor(9, 9, 11, 230))
-            grad_t.setColorAt(1.0, QColor(9, 9, 11, 0))
-            p.fillRect(QRectF(1, 1, w - 2, fade_h), grad_t)
+        p.setPen(Qt.PenStyle.NoPen)
+        p.setBrush(QBrush(grad))
+        p.drawEllipse(rect)
 
-            grad_b = QLinearGradient(0, h - fade_h, 0, h)
-            grad_b.setColorAt(0.0, QColor(9, 9, 11, 0))
-            grad_b.setColorAt(1.0, QColor(9, 9, 11, 230))
-            p.fillRect(QRectF(1, h - fade_h - 1, w - 2, fade_h), grad_b)
+        letter = user[0].upper() if user else "?"
+        font = QFont("Google Sans", int(size * 0.42), QFont.Weight.Bold)
+        p.setFont(font)
+        p.setPen(QColor("#FFFFFF"))
+        p.drawText(rect, Qt.AlignmentFlag.AlignCenter, letter)
+
+        if self.show_platform and platform:
+            b_size = size * 0.44
+            bx = x + size - b_size + 1.0
+            by = y + size - b_size + 1.0
+            self._draw_badge(p, bx, by, platform, size=b_size)
+
         p.restore()
 
     def _draw_horizontal(self, p: QPainter, w: int, h: int, user: str, msg1: str, msg2_data):
         p.save()
         p.setClipRect(QRectF(8, 8, w - 16, h - 16))
 
-        pill_h = 32.0
+        pill_h = 34.0
         pill_y = (h - pill_h) / 2.0
         start_x = 14.0
 
         m1_w = self._calculate_horizontal_width(user, msg1)
-        self._draw_horizontal_pill(p, start_x, pill_y, m1_w, pill_h, "10:49:05", user, msg1, "#FACC15", badge_type="broadcaster", platform="twitch")
+        self._draw_horizontal_pill(p, start_x, pill_y, m1_w, pill_h, "10:49", user, msg1, "#FACC15", badge_type="broadcaster", platform="twitch")
 
         if msg2_data and (start_x + m1_w + 12 < w):
             start_x2 = start_x + m1_w + 12
@@ -148,21 +175,19 @@ class ChatOverlayMockupWidget(QWidget):
         p.restore()
 
     def _calculate_horizontal_width(self, user: str, msg: str) -> float:
-        font_main = QFont("Google Sans", 8, QFont.Weight.Bold if self.theme_mode != "cyber" else QFont.Weight.ExtraBold)
+        font_main = QFont("Google Sans", 8, QFont.Weight.Bold)
         fm = QFontMetrics(font_main)
-        display_user = (user.upper() if self.theme_mode == "cyber" else user) + ":"
+        display_user = user + ":"
         user_w = fm.horizontalAdvance(display_user)
         msg_font = QFont("Google Sans", 9 if self.big_emotes else 8, QFont.Weight.Medium)
         fm_msg = QFontMetrics(msg_font)
         msg_w = fm_msg.horizontalAdvance(msg)
 
-        base = 20.0
+        base = 22.0 + 30.0
         if self.show_time:
-            base += 54.0
-        if self.show_platform:
-            base += 19.0
+            base += 44.0
         if self.show_badges:
-            base += 21.0
+            base += 19.0
         return base + user_w + msg_w + 10.0
 
     def _draw_horizontal_pill(self, p: QPainter, x: float, y: float, width: float, height: float,
@@ -173,24 +198,25 @@ class ChatOverlayMockupWidget(QWidget):
 
         self._apply_pill_theme(p, rect, color)
 
-        curr_x = x + 10.0
+        av_size = 24.0
+        av_y = y + (height - av_size) / 2.0
+        self._draw_avatar(p, x + 6.0, av_y, av_size, user, platform=platform)
+
+        curr_x = x + 36.0
         if self.show_time:
             p.setFont(QFont("Google Sans", 7, QFont.Weight.Medium))
-            p.setPen(QColor(255, 255, 255, 140))
-            time_rect = QRectF(curr_x, y, 54, height)
+            time_col = QColor("#64748B") if self.theme_mode == "light" else QColor(255, 255, 255, 140)
+            p.setPen(time_col)
+            time_rect = QRectF(curr_x, y, 42, height)
             p.drawText(time_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"[{time_str}]")
-            curr_x += 54.0
+            curr_x += 42.0
 
-        if self.show_platform:
-            self._draw_badge(p, curr_x, y + (height - 16) / 2, platform)
+        if self.show_badges and badge_type:
+            self._draw_badge(p, curr_x, y + (height - 16) / 2, badge_type)
             curr_x += 19.0
 
-        if self.show_badges:
-            self._draw_badge(p, curr_x, y + (height - 16) / 2, badge_type)
-            curr_x += 21.0
-
-        p.setFont(QFont("Google Sans", 8, QFont.Weight.Bold if self.theme_mode != "cyber" else QFont.Weight.ExtraBold))
-        display_user = (user.upper() if self.theme_mode == "cyber" else user) + ":"
+        p.setFont(QFont("Google Sans", 8, QFont.Weight.Bold))
+        display_user = user + ":"
         fm_user = QFontMetrics(p.font())
         user_w = fm_user.horizontalAdvance(display_user)
         p.setPen(color)
@@ -200,52 +226,33 @@ class ChatOverlayMockupWidget(QWidget):
         curr_x += user_w + 6.0
 
         p.setFont(QFont("Google Sans", 9 if self.big_emotes else 8, QFont.Weight.Medium))
-        p.setPen(QColor("#FFFFFF") if self.theme_mode != "card" else QColor("#F1F1F5"))
+        msg_col = QColor("#0F172A") if self.theme_mode == "light" else QColor("#FFFFFF")
+        p.setPen(msg_col)
         msg_rect = QRectF(curr_x, y, width - (curr_x - x) - 8, height)
         p.drawText(msg_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, msg)
 
-    def _apply_pill_theme(self, p: QPainter, rect: QRectF, accent_color: QColor):
-        if self.theme_mode == "neon":
-            p.setPen(QPen(accent_color, 1.75))
-            p.setBrush(QBrush(QColor(6, 6, 12, 235)))
-            p.drawRoundedRect(rect, 15, 15)
-            glow_pen = QPen(QColor(accent_color.red(), accent_color.green(), accent_color.blue(), 60), 3.5)
-            p.setPen(glow_pen)
-            p.setBrush(Qt.BrushStyle.NoBrush)
-            p.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 14, 14)
-
-        elif self.theme_mode == "glass":
-            p.setPen(QPen(QColor(255, 255, 255, 55), 1.25))
-            p.setBrush(QBrush(QColor(18, 18, 26, 175)))
+    def _apply_pill_theme(self, p: QPainter, rect: QRectF, _accent_color: QColor):
+        if self.theme_mode == "light":
+            p.setPen(QPen(QColor(255, 255, 255, 120), 1.0))
+            p.setBrush(QBrush(QColor(255, 255, 255, 170)))
             p.drawRoundedRect(rect, 16, 16)
-
-        elif self.theme_mode == "card":
-            p.setPen(QPen(QColor("#282A36"), 1.25))
-            p.setBrush(QBrush(QColor("#181920")))
-            p.drawRoundedRect(rect, 12, 12)
-
-        elif self.theme_mode == "cyber":
-            p.setPen(QPen(QColor(0, 240, 255, 120), 1.0))
-            p.setBrush(QBrush(QColor(8, 14, 20, 240)))
-            path = self._create_chamfered_path(rect, 8.0)
-            p.drawPath(path)
-            p.setPen(Qt.PenStyle.NoPen)
-            p.setBrush(QBrush(accent_color))
-            p.drawRect(QRectF(rect.x(), rect.y() + 6, 3, rect.height() - 12))
-
         elif self.theme_mode == "minimal":
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(Qt.BrushStyle.NoBrush)
+        else:
+            p.setPen(QPen(QColor(255, 255, 255, 30), 1.0))
+            p.setBrush(QBrush(QColor(18, 18, 26, 195)))
+            p.drawRoundedRect(rect, 16, 16)
 
     def _draw_vertical(self, p: QPainter, w: int, h: int, user: str, msg1: str, msg2_data):
         card_w = min(360.0, w - 28.0)
-        card_h = 58.0
+        card_h = 56.0
         card_x = (w - card_w) / 2.0
         gap = 8.0
 
         y1 = 12.0
         rect1 = QRectF(card_x, y1, card_w, card_h)
-        self._draw_vertical_card(p, rect1, "10:49:05", user, msg1, "#FACC15", badge_type="broadcaster", platform="twitch")
+        self._draw_vertical_card(p, rect1, "10:49", user, msg1, "#FACC15", badge_type="broadcaster", platform="twitch")
 
         if msg2_data:
             y2 = y1 + card_h + gap
@@ -262,113 +269,61 @@ class ChatOverlayMockupWidget(QWidget):
         w = rect.width()
         h = rect.height()
 
-        if self.theme_mode == "neon":
-            p.setPen(QPen(color, 1.75))
-            p.setBrush(QBrush(QColor(6, 6, 12, 235)))
-            p.drawRoundedRect(rect, 12, 12)
-            glow_pen = QPen(QColor(color.red(), color.green(), color.blue(), 50), 3)
-            p.setPen(glow_pen)
-            p.setBrush(Qt.BrushStyle.NoBrush)
-            p.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 11, 11)
-
-        elif self.theme_mode == "glass":
-            p.setPen(QPen(QColor(255, 255, 255, 45), 1.25))
-            p.setBrush(QBrush(QColor(18, 18, 26, 175)))
+        if self.theme_mode == "light":
+            p.setPen(QPen(QColor(255, 255, 255, 120), 1.0))
+            p.setBrush(QBrush(QColor(255, 255, 255, 170)))
             p.drawRoundedRect(rect, 14, 14)
-
-        elif self.theme_mode == "card":
-            p.setPen(QPen(QColor("#282A36"), 1.25))
-            p.setBrush(QBrush(QColor("#181920")))
-            p.drawRoundedRect(rect, 12, 12)
-
-        elif self.theme_mode == "cyber":
-            p.setPen(QPen(QColor(0, 240, 255, 110), 1.0))
-            p.setBrush(QBrush(QColor(8, 14, 20, 240)))
-            path = self._create_chamfered_path(rect, 10.0)
-            p.drawPath(path)
-            p.setPen(Qt.PenStyle.NoPen)
-            p.setBrush(QBrush(color))
-            p.drawRect(QRectF(x, y + 8, 3.5, h - 16))
-
         elif self.theme_mode == "minimal":
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(Qt.BrushStyle.NoBrush)
+        else:
+            p.setPen(QPen(QColor(255, 255, 255, 28), 1.0))
+            p.setBrush(QBrush(QColor(18, 18, 26, 195)))
+            p.drawRoundedRect(rect, 14, 14)
+        av_size = 38.0
+        av_x = x + 10.0
+        av_y = y + (h - av_size) / 2.0
+        self._draw_avatar(p, av_x, av_y, av_size, user, platform=platform)
 
-        curr_x = x + 12.0
+        content_x = av_x + av_size + 10.0
         header_y = y + 10.0
+        curr_x = content_x
+
+        if self.show_badges and badge_type:
+            self._draw_badge(p, curr_x, header_y, badge_type)
+            curr_x += 19.0
+
+        p.setFont(QFont("Google Sans", 8.5, QFont.Weight.Bold))
+        display_user = user
+        fm_user = QFontMetrics(p.font())
+        u_w = fm_user.horizontalAdvance(display_user)
+        p.setPen(color)
+        p.drawText(QRectF(curr_x, header_y - 2, u_w + 4, 18), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, display_user)
+        curr_x += u_w + 6.0
 
         if self.show_time:
             p.setFont(QFont("Google Sans", 7, QFont.Weight.Medium))
-            p.setPen(QColor(255, 255, 255, 130))
-            p.drawText(QRectF(curr_x, header_y - 2, 54, 16), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"[{time_str}]")
-            curr_x += 54.0
+            time_col = QColor("#64748B") if self.theme_mode == "light" else QColor(255, 255, 255, 130)
+            p.setPen(time_col)
+            p.drawText(QRectF(curr_x, header_y - 2, 44, 16), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"[{time_str}]")
 
-        if self.show_platform:
-            self._draw_badge(p, curr_x, header_y, platform)
-            curr_x += 19.0
-
-        if self.show_badges:
-            self._draw_badge(p, curr_x, header_y, badge_type)
-            curr_x += 21.0
-
-        p.setFont(QFont("Google Sans", 8.5, QFont.Weight.Bold if self.theme_mode != "cyber" else QFont.Weight.ExtraBold))
-        display_user = user.upper() if self.theme_mode == "cyber" else user
-        fm_user = QFontMetrics(p.font())
-        u_w = fm_user.horizontalAdvance(display_user)
-
-        if self.theme_mode == "card":
-            pill_rect = QRectF(curr_x, header_y - 2, u_w + 12, 18)
-            p.setPen(QPen(QColor(255, 255, 255, 20), 1))
-            p.setBrush(QBrush(QColor(255, 255, 255, 22)))
-            p.drawRoundedRect(pill_rect, 5, 5)
-            p.setPen(color)
-            p.drawText(pill_rect, Qt.AlignmentFlag.AlignCenter, display_user)
-        else:
-            p.setPen(color)
-            p.drawText(QRectF(curr_x, header_y - 2, u_w + 4, 18), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, display_user)
-
-        msg_y = y + 32.0
-        msg_x = x + 12.0
-        msg_w = w - 24.0
+        msg_y = y + 30.0
+        msg_w = w - (content_x - x) - 12.0
 
         p.setFont(QFont("Google Sans", 8.5 if self.big_emotes else 8, QFont.Weight.Medium))
-        p.setPen(QColor("#FFFFFF") if self.theme_mode != "card" else QColor("#F1F1F5"))
+        msg_col = QColor("#0F172A") if self.theme_mode == "light" else QColor("#FFFFFF")
+        p.setPen(msg_col)
         elided_msg = self._elide(msg, p.font(), msg_w)
-        p.drawText(QRectF(msg_x, msg_y, msg_w, 18), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_msg)
+        p.drawText(QRectF(content_x, msg_y, msg_w, 18), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_msg)
 
-    def _create_chamfered_path(self, rect: QRectF, cut: float) -> QPainterPath:
-        path = QPainterPath()
-        x, y, w, h = rect.x(), rect.y(), rect.width(), rect.height()
-        path.moveTo(x + cut, y)
-        path.lineTo(x + w, y)
-        path.lineTo(x + w, y + h - cut)
-        path.lineTo(x + w - cut, y + h)
-        path.lineTo(x, y + h)
-        path.lineTo(x, y + cut)
-        path.closeSubpath()
-        return path
-
-    _BADGE_CONFIG = {
-        "twitch": ("\uf1e8", "#9146FF", "#772CE8", "#ffffff"),
-        "kick": ("\uf2f3", "#53FC18", "#3DB510", "#000000"),
-        "youtube": ("\uf16a", "#FF0000", "#DC2626", "#ffffff"),
-        "tiktok": ("\udb80\udf8c", "#00F2FE", "#FF0050", "#ffffff"),
-        "broadcaster": ("\uf130", "#EF4444", "#DC2626", "#ffffff"),
-        "streamer": ("\uf130", "#EF4444", "#DC2626", "#ffffff"),
-        "moderator": ("\ued25", "#2ECD70", "#16A34A", "#ffffff"),
-        "vip": ("\uedeb", "#EAB308", "#CA8A04", "#ffffff"),
-        "subscriber": ("\udb83\ude44", "#A855F7", "#9333EA", "#ffffff"),
-        "bot": ("\uee0d", "#3B82F6", "#2563EB", "#ffffff"),
-    }
-
-    def _draw_badge(self, p: QPainter, x: float, y: float, badge_type: str):
-        size = 15.5
+    def _draw_badge(self, p: QPainter, x: float, y: float, badge_type: str, size: float = 15.5):
         rect = QRectF(x, y, size, size)
         p.save()
         p.setPen(Qt.PenStyle.NoPen)
 
+        radius = max(2.5, size * 0.25)
         clip_path = QPainterPath()
-        clip_path.addRoundedRect(rect, 4, 4)
+        clip_path.addRoundedRect(rect, radius, radius)
         p.setClipPath(clip_path)
 
         config = self._BADGE_CONFIG.get(badge_type.lower())
@@ -378,9 +333,9 @@ class ChatOverlayMockupWidget(QWidget):
             grad.setColorAt(0.0, QColor(col1))
             grad.setColorAt(1.0, QColor(col2))
             p.setBrush(QBrush(grad))
-            p.drawRoundedRect(rect, 4, 4)
+            p.drawRoundedRect(rect, radius, radius)
 
-            font = QFont("GoogleSansCode Nerd Font", 7.5)
+            font = QFont("GoogleSansCode Nerd Font", max(5.0, size * 0.48))
             font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
             p.setFont(font)
             p.setPen(QColor(fg_col))
@@ -392,7 +347,7 @@ class ChatOverlayMockupWidget(QWidget):
             p.drawText(QPointF(glyph_x, glyph_y), glyph)
         else:
             p.setBrush(QBrush(QColor("#4B5563")))
-            p.drawRoundedRect(rect, 4, 4)
+            p.drawRoundedRect(rect, radius, radius)
 
         p.restore()
 

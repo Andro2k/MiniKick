@@ -10,7 +10,9 @@ const token = urlParams.get('token') || '';
 const urlOrientation = urlParams.get('orientation');
 
 const MAX_SAFE_DOM_NODES = 50;
-let theme = urlParams.get('theme') || 'glass';
+const VALID_THEMES = new Set(['dark', 'light', 'minimal']);
+let rawTheme = urlParams.get('theme') || 'dark';
+let theme = VALID_THEMES.has(rawTheme) ? rawTheme : 'dark';
 let fadeTime = urlParams.get('fade') !== null ? parseInt(urlParams.get('fade'), 10) : 15;
 let fontSize = urlParams.get('size') || '14px';
 let showBots = urlParams.get('show_bots') !== 'false';
@@ -19,7 +21,6 @@ let orientation = urlOrientation || 'vertical';
 let defaultFlow = orientation === 'horizontal' ? 'right-to-left' : 'bottom-to-top';
 let flow = urlParams.get('flow') || defaultFlow;
 let bigEmotes = urlParams.get('big_emotes') !== 'false';
-let edgeFade = urlParams.get('edge_fade') !== 'false';
 let animIn = urlParams.get('anim_in') || 'fade';
 let showGifs = urlParams.get('show_gifs') !== 'false';
 let hideCommands = urlParams.get('hide_commands') === 'true';
@@ -36,9 +37,6 @@ document.documentElement.style.setProperty('--font-size', fontSize);
 const container = document.getElementById('chat-container');
 if (container) {
     container.classList.add(`orientation-${orientation}`, `flow-${flow}`);
-    if (edgeFade) {
-        container.classList.add('edge-fade');
-    }
 }
 
 /**
@@ -63,7 +61,9 @@ function applyLiveConfig(cfg) {
         : cfg;
 
     if (modeConfig.theme && !urlParams.has('theme')) {
-        theme = modeConfig.theme;
+        let newTheme = String(modeConfig.theme).trim().toLowerCase();
+        if (!VALID_THEMES.has(newTheme)) newTheme = 'dark';
+        theme = newTheme;
         if (themeStyle) themeStyle.href = `/css/${theme}.css`;
     }
 
@@ -97,10 +97,6 @@ function applyLiveConfig(cfg) {
         bigEmotes = Boolean(commonConfig.big_emotes);
     }
 
-    if (commonConfig.edge_fade !== undefined && !urlParams.has('edge_fade')) {
-        edgeFade = Boolean(commonConfig.edge_fade);
-    }
-
     if (commonConfig.show_gifs !== undefined && !urlParams.has('show_gifs')) {
         showGifs = Boolean(commonConfig.show_gifs);
     }
@@ -118,7 +114,7 @@ function applyLiveConfig(cfg) {
     }
 
     if (container) {
-        container.className = `orientation-${orientation} flow-${flow}${edgeFade ? ' edge-fade' : ''}`;
+        container.className = `orientation-${orientation} flow-${flow}`;
     }
 }
 
@@ -312,11 +308,25 @@ function formatChatMessage(data) {
 
     let safeMsg = '';
 
-    // Suppress Twitch GIF placeholder or redundant gif_url from text display if gif_url is present
+    // Suppress Twitch GIF placeholder, Giphy links, or redundant gif_url from text display if gif_url is present
     if (data.gif_url) {
         rawText = rawText.replace(/\[.*? GIF by .*?\]/gi, '').trim();
-        if (data.gif_url && rawText.includes(data.gif_url)) {
+        if (rawText.includes(data.gif_url)) {
             rawText = rawText.replace(data.gif_url, '').trim();
+        }
+        const giphyIdMatch = data.gif_url.match(/\/media\/([a-zA-Z0-9_-]+)/i);
+        if (giphyIdMatch && giphyIdMatch[1]) {
+            const gid = giphyIdMatch[1];
+            const gidRegex = new RegExp(`https?:\\/\\/[^\\s]*${gid}[^\\s]*`, 'gi');
+            rawText = rawText.replace(gidRegex, '').trim();
+        }
+        if (data.gif_url.includes('giphy.com')) {
+            rawText = rawText.replace(/https?:\/\/(www\.)?giphy\.com\/gifs\/[^\s]+/gi, '').trim();
+            rawText = rawText.replace(/https?:\/\/media[0-9]*\.giphy\.com\/[^\s]+/gi, '').trim();
+        }
+        const cleanBaseUrl = data.gif_url.split('?')[0];
+        if (cleanBaseUrl && rawText.includes(cleanBaseUrl)) {
+            rawText = rawText.replace(cleanBaseUrl, '').trim();
         }
     }
 
@@ -376,6 +386,67 @@ function getRoleClass(badges) {
     return 'default';
 }
 
+
+const AVATAR_GRADIENTS = [
+    'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+    'linear-gradient(135deg, #8b5cf6, #6d28d9)',
+    'linear-gradient(135deg, #ec4899, #be185d)',
+    'linear-gradient(135deg, #10b981, #047857)',
+    'linear-gradient(135deg, #f59e0b, #b45309)',
+    'linear-gradient(135deg, #06b6d4, #0e7490)',
+    'linear-gradient(135deg, #f43f5e, #be123c)',
+    'linear-gradient(135deg, #6366f1, #4338ca)'
+];
+
+function getAvatarGradient(user) {
+    if (!user) return AVATAR_GRADIENTS[0];
+    let hash = 0;
+    for (let i = 0; i < user.length; i++) {
+        hash = ((hash << 5) - hash) + user.charCodeAt(i);
+        hash |= 0;
+    }
+    return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+}
+
+function getAvatarPlatformBadgeSvg(platform) {
+    const plat = (platform || 'kick').toLowerCase();
+    const iconSvg = (typeof ICONS !== 'undefined' && ICONS[plat]) ? ICONS[plat] : (typeof ICONS !== 'undefined' ? ICONS.kick : '');
+    const title = plat.charAt(0).toUpperCase() + plat.slice(1);
+    return `<span class="avatar-badge avatar-platform-${plat}" title="${title}">${iconSvg}</span>`;
+}
+
+const clientAvatarCache = new Map();
+
+function resolveAvatarUrl(platform, username) {
+    if (!username) return Promise.resolve('');
+    const cleanUser = username.trim().toLowerCase();
+    const key = `${platform}:${cleanUser}`;
+    if (clientAvatarCache.has(key)) {
+        return Promise.resolve(clientAvatarCache.get(key));
+    }
+
+    if (platform === 'twitch') {
+        return fetch(`https://decapi.me/twitch/avatar/${encodeURIComponent(cleanUser)}`)
+            .then(res => res.ok ? res.text() : '')
+            .then(url => {
+                const clean = url && url.trim().startsWith('http') ? url.trim() : '';
+                if (clean) clientAvatarCache.set(key, clean);
+                return clean;
+            })
+            .catch(() => '');
+    } else if (platform === 'kick') {
+        return fetch(`https://kick.com/api/v1/channels/${encodeURIComponent(cleanUser)}`)
+            .then(res => res.ok ? res.json() : null)
+            .then(json => {
+                const pic = (json && json.user && json.user.profile_pic) ? json.user.profile_pic : '';
+                if (pic) clientAvatarCache.set(key, pic);
+                return pic;
+            })
+            .catch(() => '');
+    }
+    return Promise.resolve('');
+}
+
 // 4. DOM Construction & Message Rendering
 function addMessage(data) {
     if (!showBots && data.badges && data.badges.includes('bot')) {
@@ -397,48 +468,70 @@ function addMessage(data) {
     msgBox.className = `message-box theme-${theme} role-${roleClass} ${animClass}`;
     msgBox.style.fontSize = fontSize;
 
-    // Highlighted message support (Channel points, bits, special events)
     if (data.is_highlighted || data.highlighted) {
         msgBox.classList.add('highlighted');
     }
 
     const safeUsernameColor = ensureReadableColor(data.color);
 
-    // Theme-specific glow accents
-    const accentColor = safeUsernameColor || '#2ECD70';
-    if (theme === 'neon') {
-        msgBox.style.borderColor = accentColor;
-        msgBox.style.boxShadow = `0 0 10px ${accentColor}, inset 0 0 5px ${accentColor}`;
-    } else if (theme === 'minimal') {
-        msgBox.style.setProperty('--author-color', accentColor);
-    } else if (theme === 'cyber') {
-        msgBox.style.setProperty('--cyber-color', accentColor);
+    // 1. Avatar construction (image or initial letter fallback)
+    const avatarWrap = document.createElement('div');
+    avatarWrap.className = 'avatar-wrap';
+
+    const platform = (data.platform || 'kick').toLowerCase();
+    const cleanUser = (data.user || '').trim().toLowerCase();
+    const clientAvatarKey = `${platform}:${cleanUser}`;
+
+    let effectiveAvatarUrl = (data.avatar_url && typeof data.avatar_url === 'string') ? data.avatar_url.trim() : '';
+    if (!effectiveAvatarUrl && clientAvatarCache.has(clientAvatarKey)) {
+        effectiveAvatarUrl = clientAvatarCache.get(clientAvatarKey);
     }
+
+    const firstLetter = (data.user || '?').charAt(0).toUpperCase();
+    const fallbackBg = getAvatarGradient(data.user);
+    const avatarBadgeSvg = showPlatform ? getAvatarPlatformBadgeSvg(platform) : '';
+
+    if (effectiveAvatarUrl) {
+        clientAvatarCache.set(clientAvatarKey, effectiveAvatarUrl);
+        const escAvatar = escapeHtml(effectiveAvatarUrl);
+        avatarWrap.innerHTML = `
+            <img src="${escAvatar}" alt="${escapeHtml(data.user)}" class="avatar-img" onerror="this.outerHTML='<div class=\\'avatar-fallback\\' style=\\'background: ${fallbackBg}\\'>${firstLetter}</div>'"/>
+            ${avatarBadgeSvg}
+        `;
+    } else {
+        avatarWrap.innerHTML = `
+            <div class="avatar-fallback" style="background: ${fallbackBg}">${firstLetter}</div>
+            ${avatarBadgeSvg}
+        `;
+        if (cleanUser) {
+            resolveAvatarUrl(platform, data.user).then(resolvedUrl => {
+                if (resolvedUrl && avatarWrap && avatarWrap.isConnected) {
+                    const img = new Image();
+                    img.className = 'avatar-img';
+                    img.alt = escapeHtml(data.user);
+                    img.onload = () => {
+                        const fallbackEl = avatarWrap.querySelector('.avatar-fallback');
+                        if (fallbackEl && fallbackEl.parentNode === avatarWrap) {
+                            avatarWrap.replaceChild(img, fallbackEl);
+                        }
+                    };
+                    img.src = resolvedUrl;
+                }
+            });
+        }
+    }
+    msgBox.appendChild(avatarWrap);
+
+    // 2. Body wrapper
+    const bodyWrap = document.createElement('div');
+    bodyWrap.className = 'message-body-wrap';
 
     // Header construction
     const header = document.createElement('div');
     header.className = 'message-header';
 
-    if (showTime) {
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'timestamp';
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        timeSpan.innerText = `[${hh}:${mm}:${ss}]`;
-        header.appendChild(timeSpan);
-    }
-
-    // Platform badge
-    const platform = (data.platform || 'kick').toLowerCase();
-    if (showPlatform) {
-        const platformSpan = document.createElement('span');
-        platformSpan.className = `badge badge-platform badge-platform-${platform}`;
-        platformSpan.innerHTML = (typeof ICONS !== 'undefined' && ICONS[platform]) ? ICONS[platform] : (typeof ICONS !== 'undefined' ? ICONS.kick : '');
-        platformSpan.title = platform.charAt(0).toUpperCase() + platform.slice(1);
-        header.appendChild(platformSpan);
-    }
+    const headerLeft = document.createElement('div');
+    headerLeft.className = 'header-left';
 
     // Badges & Roles resolution (O(1) lookups via resolveBadge)
     if (showBadges && data.badges && Array.isArray(data.badges) && typeof resolveBadge === 'function') {
@@ -461,7 +554,7 @@ function addMessage(data) {
                 badgeSpan.innerHTML = resolved.html;
             }
             badgeSpan.title = resolved.title;
-            header.appendChild(badgeSpan);
+            headerLeft.appendChild(badgeSpan);
         }
     }
 
@@ -470,15 +563,21 @@ function addMessage(data) {
     nameSpan.className = 'username';
     nameSpan.style.color = safeUsernameColor;
     nameSpan.innerText = data.user || '';
-    if (theme === 'neon') {
-        nameSpan.style.textShadow = `0 0 8px ${accentColor}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
-    } else if (theme === 'cyber') {
-        nameSpan.style.textShadow = `0 0 8px ${accentColor}, 0 1px 2px rgba(0, 0, 0, 0.9)`;
-    } else if (theme === 'minimal') {
-        nameSpan.style.textShadow = `0 0 10px ${accentColor}, 0 1px 3px rgba(0, 0, 0, 0.95), 0 2px 6px rgba(0, 0, 0, 0.85)`;
+    headerLeft.appendChild(nameSpan);
+    header.appendChild(headerLeft);
+
+    // Timestamp without seconds: [HH:MM]
+    if (showTime) {
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'timestamp';
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        timeSpan.innerText = `[${hh}:${mm}]`;
+        header.appendChild(timeSpan);
     }
-    header.appendChild(nameSpan);
-    msgBox.appendChild(header);
+
+    bodyWrap.appendChild(header);
 
     // Content construction
     const { formattedHtml, isAction } = formatChatMessage(data);
@@ -506,7 +605,8 @@ function addMessage(data) {
         content.appendChild(gifWrapper);
     }
 
-    msgBox.appendChild(content);
+    bodyWrap.appendChild(content);
+    msgBox.appendChild(bodyWrap);
 
     if (bigEmotes && (!showGifs || !data.gif_url) && isOnlyEmotes(formattedHtml)) {
         msgBox.classList.add('only-emotes');

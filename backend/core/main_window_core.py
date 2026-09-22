@@ -909,6 +909,7 @@ class MainWindowCore(QMainWindow):
         username = user_data.get("username", "Kick")
         self._kick_connected = True
         self._kick_username = username
+        self._kick_avatar_url = user_data.get("avatar_url") or user_data.get("profile_pic", "")
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
 
@@ -973,7 +974,7 @@ class MainWindowCore(QMainWindow):
             state="success"
         )
         
-        current_time = datetime.now().strftime("%H:%M:%S")
+        current_time = datetime.now().strftime("%H:%M")
         
         msg_sistema = self._format_reward_message(reward_name)
         tag = self.i18n.get("main.chat.points_tag")
@@ -1122,6 +1123,7 @@ class MainWindowCore(QMainWindow):
         if isinstance(user_data, dict):
             username = user_data.get("username", "")
             broadcaster_id = user_data.get("broadcaster_id", "")
+            self._twitch_avatar_url = user_data.get("avatar_url", "")
         elif isinstance(user_data, str):
             username = user_data
             broadcaster_id = getattr(self.spam_service, "twitch_broadcaster_id", "")
@@ -1609,17 +1611,24 @@ class MainWindowCore(QMainWindow):
             self.schedule_controller.reload_schedules()
             self.schedule_controller.fetch_current_info()
 
-    def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0):
+    def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0, avatar_url: str = ""):
         self._increment_metric("messages_processed")
-        current_time = datetime.now().strftime("%H:%M:%S")
+        current_time = datetime.now().strftime("%H:%M")
         if isinstance(user_or_dto, ChatMessageDTO):
             dto = user_or_dto
             if not dto.timestamp:
                 dto.timestamp = current_time
             platform = getattr(dto, "platform", "kick") or "kick"
         else:
-            dto = ChatMessageDTO(user_or_dto, msg, badges or [], color, msg_id, sender_id, timestamp=current_time)
+            dto = ChatMessageDTO(user_or_dto, msg, badges or [], color, msg_id, sender_id, timestamp=current_time, avatar_url=avatar_url)
             platform = "kick"
+
+        if not getattr(dto, "avatar_url", ""):
+            user_lower = str(dto.user).lower()
+            if platform == "kick" and getattr(self, "_kick_username", "") and user_lower == self._kick_username.lower():
+                dto.avatar_url = getattr(self, "_kick_avatar_url", "")
+            elif platform == "twitch" and getattr(self, "_twitch_channel", "") and user_lower == self._twitch_channel.lower():
+                dto.avatar_url = getattr(self, "_twitch_avatar_url", "")
 
         if hasattr(self, "session_platform_messages") and platform in self.session_platform_messages:
             self.session_platform_messages[platform] += 1

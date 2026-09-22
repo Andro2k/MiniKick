@@ -74,6 +74,9 @@ class ChatFilterHandler:
         cleaned = self._TWITCH_GIF_REGEX.sub("", text)
         if gif_url:
             cleaned = cleaned.replace(gif_url, "")
+            if "giphy.com" in gif_url:
+                cleaned = re.sub(r"https?://(?:www\.)?giphy\.com/gifs/\S+", "", cleaned)
+                cleaned = re.sub(r"https?://media\S*\.giphy\.com/\S+", "", cleaned)
 
         web_link_label = self.i18n.get("chat.status.web_link")
         cleaned = self._URL_REGEX.sub(web_link_label, cleaned)

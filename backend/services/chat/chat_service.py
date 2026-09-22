@@ -119,7 +119,6 @@ class ChatService:
             "chat_overlay_show_time": self.storage.load_bool("chat_overlay_show_time", False),
             "chat_overlay_show_gifs": self.storage.load_bool("chat_overlay_show_gifs", True),
             "chat_overlay_big_emotes": self.storage.load_bool("chat_overlay_big_emotes", True),
-            "chat_overlay_edge_fade": self.storage.load_bool("chat_overlay_edge_fade", True),
             "chat_overlay_hide_commands": self.storage.load_bool("chat_overlay_hide_commands", False),
             "chat_overlay_show_badges": self.storage.load_bool("chat_overlay_show_badges", True),
             "chat_overlay_show_platform": self.storage.load_bool("chat_overlay_show_platform", True),
@@ -156,7 +155,6 @@ class ChatService:
         overlay_show_time = s.get("chat_overlay_show_time", False)
         overlay_show_gifs = s.get("chat_overlay_show_gifs", True)
         overlay_big_emotes = s.get("chat_overlay_big_emotes", True)
-        overlay_edge_fade = s.get("chat_overlay_edge_fade", True)
         overlay_hide_commands = s.get("chat_overlay_hide_commands", False)
         overlay_show_badges = s.get("chat_overlay_show_badges", True)
         overlay_show_platform = s.get("chat_overlay_show_platform", True)
@@ -190,7 +188,6 @@ class ChatService:
                 "show_time": overlay_show_time,
                 "show_gifs": overlay_show_gifs,
                 "big_emotes": overlay_big_emotes,
-                "edge_fade": overlay_edge_fade,
                 "hide_commands": overlay_hide_commands,
                 "show_badges": overlay_show_badges,
                 "show_platform": overlay_show_platform,
@@ -204,7 +201,6 @@ class ChatService:
             "show_time": overlay_show_time,
             "show_gifs": overlay_show_gifs,
             "big_emotes": overlay_big_emotes,
-            "edge_fade": overlay_edge_fade,
             "hide_commands": overlay_hide_commands,
             "show_badges": overlay_show_badges,
             "show_platform": overlay_show_platform,
@@ -286,8 +282,6 @@ class ChatService:
             batch["chat_overlay_show_bots"] = settings["chat_overlay_show_bots"]
         if "chat_overlay_big_emotes" in settings:
             batch["chat_overlay_big_emotes"] = settings["chat_overlay_big_emotes"]
-        if "chat_overlay_edge_fade" in settings:
-            batch["chat_overlay_edge_fade"] = settings["chat_overlay_edge_fade"]
         if "chat_overlay_hide_commands" in settings:
             batch["chat_overlay_hide_commands"] = settings["chat_overlay_hide_commands"]
         if "chat_overlay_show_badges" in settings:

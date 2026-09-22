@@ -79,7 +79,7 @@ class TikTokChatWorker(QThread):
         if self._is_stopped or self.isInterruptionRequested():
             return
 
-        now_str = timestamp or datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = timestamp or datetime.datetime.now().strftime("%H:%M")
         emotes_tag = ""
         if extra_data and isinstance(extra_data, dict):
             emotes_list = extra_data.get("emotes")
