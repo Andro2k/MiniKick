@@ -606,7 +606,7 @@ class ModernWizardPanel(ModernFramelessShell):
         except Exception as e:
             logger.exception("[ModernWizardPanel] Error in _go_next: %s", e)
 
-    def validate_step(self, step_index: int) -> bool:
+    def validate_step(self, _step_index: int) -> bool:
         return True
 
 class ModernConfirmDialog(ModernModal):

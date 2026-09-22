@@ -75,7 +75,7 @@ class AlertsOverlayCard(ModernCard):
         self.alerts_overlay_url = url
         self.edit_overlay_url.setText(url)
 
-    def set_responsive_direction(self, direction: QBoxLayout.Direction):
+    def set_responsive_direction(self, _direction: QBoxLayout.Direction):
         pass
 
     def minimumSizeHint(self) -> QSize:

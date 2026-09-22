@@ -21,7 +21,7 @@ class MusicOverlayMockupWidget(QWidget):
             self.theme_mode = theme or "dynamic"
             self.update()
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)

@@ -314,7 +314,7 @@ class ChatTtsSettingsPanel(QWidget):
             elif isinstance(control, NoWheelSlider):
                 control.valueChanged.connect(self._on_setting_changed)
 
-    def _on_provider_combo_changed(self, index: int):
+    def _on_provider_combo_changed(self, _index: int):
         provider = self.combo_provider.currentData() or "piper"
         self.btn_manage_piper.setVisible(provider == "piper")
         self.provider_changed.emit(provider)
@@ -398,7 +398,7 @@ class ChatTtsSettingsPanel(QWidget):
                 w.blockSignals(False)
             self.blockSignals(False)
 
-    def update_languages(self, langs: list[str], select_prefix: str = None):
+    def update_languages(self, _langs: list[str], _select_prefix: str = None):
         pass
 
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):

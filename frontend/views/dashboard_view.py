@@ -632,7 +632,7 @@ class DashboardView(BaseView):
             for i, card in enumerate(cards):
                 grid.addWidget(card, i // cols, i % cols)
 
-    def update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = ""):
+    def update_connection_status(self, is_connecting: bool, has_error: bool = False, _error_msg: str = ""):
         if is_connecting:
             self.set_kick_status(connecting=True)
         elif has_error:
@@ -642,7 +642,7 @@ class DashboardView(BaseView):
         self.lbl_username.setText(username)
         self.lbl_bio.setText(bio)
 
-    def update_stats(self, followers: str, room_id: str, category: str, affiliate_text: str, vods_text: str, created_at: str = "-", next_schedule: str = "-"):
+    def update_stats(self, followers: str, room_id: str, category: str, affiliate_text: str, _vods_text: str, created_at: str = "-", next_schedule: str = "-"):
         self.card_followers.set_value(followers)
         self.card_room.set_value(room_id)
         self.card_category.set_value(category)

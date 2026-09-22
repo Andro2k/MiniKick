@@ -92,7 +92,7 @@ class ScheduleView(BaseView):
         self.table_panel.toggle_schedule_requested.connect(self.toggle_schedule_requested.emit)
         self.tabs.currentChanged.connect(self._on_tab_changed)
 
-    def _on_tab_changed(self, index: int):
+    def _on_tab_changed(self, _index: int):
         if hasattr(self.quick_change_panel, "popup_suggestions"):
             self.quick_change_panel.popup_suggestions.hide()
         if hasattr(self.schedule_form_panel, "popup_kick"):
@@ -122,7 +122,7 @@ class ScheduleView(BaseView):
     def set_loading(self, is_loading: bool):
         self.quick_change_panel.set_loading(is_loading)
 
-    def on_update_completed(self, results: dict):
+    def on_update_completed(self, _results: dict):
         self.quick_change_panel.set_loading(False)
 
     def set_schedules(self, schedules: list[dict]):

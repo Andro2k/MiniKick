@@ -155,7 +155,7 @@ class ReleaseNotesDialog(ModernModal):
         
         self._center_on_parent()
 
-    def _on_error_occurred(self, err: str):
+    def _on_error_occurred(self, _err: str):
         error_msg = self.i18n.get('dialogs.release_notes.error')
         err_html = (
             f'<html><body style="font-family: \'Google Sans\', sans-serif; color: {COLOR_RED}; text-align: center; margin-top: 180px;">'

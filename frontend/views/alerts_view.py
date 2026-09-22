@@ -295,7 +295,7 @@ class AlertsView(BaseView):
         target_card = self._get_or_create_card(platform, alert_type)
         self.twitch_editor_stack.setCurrentWidget(target_card)
 
-    def _switch_platform(self, platform: str = "twitch"):
+    def _switch_platform(self, _platform: str = "twitch"):
         self.stack.setCurrentIndex(0)
         twitch_active = self.active_variant.get("twitch", "follow")
         self._select_variant("twitch", twitch_active)

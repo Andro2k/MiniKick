@@ -76,7 +76,7 @@ class ModernSwitch(QAbstractButton):
             return
         super().keyPressEvent(event)
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         

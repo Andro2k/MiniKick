@@ -143,7 +143,7 @@ class AlertOverlayMockupWidget(QWidget):
             self.card_height = new_card_h
             self.update()
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
         p.setRenderHint(QPainter.RenderHint.TextAntialiasing)
@@ -277,7 +277,7 @@ class AlertOverlayMockupWidget(QWidget):
 
         p.restore()
 
-    def _draw_above_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
+    def _draw_above_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, _user: str, full_text: str):
         card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 96.0)
         self._draw_card_container(p, card_rect, accent)
 
@@ -317,7 +317,7 @@ class AlertOverlayMockupWidget(QWidget):
         p.setPen(text_color)
         p.drawText(msg_rect, align_flag, self._elide(full_text, title_font, card_w - 16))
 
-    def _draw_below_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
+    def _draw_below_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, _user: str, full_text: str):
         card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 96.0)
         self._draw_card_container(p, card_rect, accent)
 
@@ -436,7 +436,7 @@ class AlertOverlayMockupWidget(QWidget):
         p.setPen(text_color)
         p.drawText(msg_rect, align_flag, self._elide(full_text, sub_font, text_w))
 
-    def _draw_overlay_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, user: str, full_text: str):
+    def _draw_overlay_layout(self, p: QPainter, cx: float, cy: float, side: float, glyph: str, accent: QColor, text_color: QColor, _user: str, full_text: str):
         card_x, card_y, card_w, card_h, card_rect = self._get_card_geometry(cx, cy, side, 120.0)
 
         r = max(0.0, float(self.border_radius) * (card_w / max(1.0, float(self.card_width))))
@@ -531,7 +531,7 @@ class AlertOverlayMockupWidget(QWidget):
         p.setPen(text_color)
         p.drawText(msg_rect, align_flag, self._elide(sample_msg, sub_font, card_w - 20.0))
 
-    def _draw_card_container(self, p: QPainter, rect: QRectF, accent: QColor):
+    def _draw_card_container(self, p: QPainter, rect: QRectF, _accent: QColor):
         opacity_alpha = int(max(0, min(100, self.bg_opacity)) * 2.55)
         r = max(0.0, float(self.border_radius) * (rect.width() / max(1.0, float(self.card_width))))
 

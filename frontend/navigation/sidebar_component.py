@@ -434,7 +434,7 @@ class Sidebar(QFrame):
             self.expanded_spacer.show()
             self._update_texts_and_styles(show=True)
 
-    def _update_icons(self, btn=None, checked=None):
+    def _update_icons(self, _btn=None, _checked=None):
         for b in self.button_group.buttons():
             icon = b.property("icon_active") if b.isChecked() else b.property("icon_inactive")
             if icon:

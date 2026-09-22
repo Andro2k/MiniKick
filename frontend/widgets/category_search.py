@@ -10,7 +10,7 @@ from frontend.common import (
 )
 
 class CategoryItemWidget(QWidget):
-    def __init__(self, platform: str, name: str, cat_id=None, parent=None):
+    def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(*MARGIN_SM)

@@ -218,7 +218,7 @@ class LogView(BaseView):
         self.current_page = 1
         self.update_page_display()
 
-    def _on_header_filter_changed(self, filters: dict):
+    def _on_header_filter_changed(self, _filters: dict):
         self.current_page = 1
         self.update_page_display()
 

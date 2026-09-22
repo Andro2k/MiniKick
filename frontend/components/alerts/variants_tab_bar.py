@@ -168,5 +168,5 @@ class AlertVariantsTabBar(ModernCard):
         if item is not None:
             item.set_enabled_state(enabled)
 
-    def set_responsive_mode(self, is_horizontal: bool):
+    def set_responsive_mode(self, _is_horizontal: bool):
         pass

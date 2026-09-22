@@ -317,13 +317,13 @@ class PiperVoicesDialog(ModernFramelessShell):
         worker.start()
 
     @Slot(str, int, float, float)
-    def _on_download_progress(self, voice_id: str, percent: int, down_mb: float, tot_mb: float):
+    def _on_download_progress(self, voice_id: str, percent: int, _down_mb: float, _tot_mb: float):
         item = self._item_widgets.get(voice_id)
         if item:
             item.set_downloading(True, percent)
 
     @Slot(str, bool, str)
-    def _on_download_finished(self, voice_id: str, success: bool, err_msg: str):
+    def _on_download_finished(self, voice_id: str, success: bool, _err_msg: str):
         if voice_id in self._active_workers:
             worker = self._active_workers.pop(voice_id)
             worker.deleteLater()

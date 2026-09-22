@@ -253,7 +253,7 @@ QLabel[role="category"] {{ font-weight: 600; color: {COLOR_GREEN}; margin-top: 6
 """
 
 
-def _build_button_qss(text1: int, text2: int) -> str:
+def _build_button_qss(text1: int) -> str:
     return f"""
 /* --- 3. Modern Figma Gradient Buttons --- */
 QPushButton {{ border: {BORDER_TRANSPARENT}; font-size: {text1}px; font-weight: 500; }}
@@ -466,7 +466,7 @@ QSlider::handle:horizontal:disabled {{ background-color: {COLOR_NEUTRAL_500}; bo
 """
 
 
-def _build_surface_qss(h1: int, h2: int, h3: int, text1: int, text2: int) -> str:
+def _build_surface_qss(text1: int, text2: int) -> str:
     return f"""
 /* --- 5. Surfaces, Containers & Badges --- */
 QFrame[role="canvas_container"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; }}
@@ -665,9 +665,9 @@ def get_global_qss(base: int = 13) -> str:
 
     sections = [
         _build_reset_and_typography_qss(size_h1, size_h2, size_h3, size_text1, size_text2),
-        _build_button_qss(size_text1, size_text2),
+        _build_button_qss(size_text1),
         _build_input_qss(size_text1, size_text2),
-        _build_surface_qss(size_h1, size_h2, size_h3, size_text1, size_text2),
+        _build_surface_qss(size_text1, size_text2),
         _build_complex_qss(size_text1, size_text2),
     ]
     return "\n".join(sections)

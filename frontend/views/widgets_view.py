@@ -112,7 +112,7 @@ class WidgetsView(BaseView):
         else:
             self.col2_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
-    def _handle_counter_action(self, w_id: str, action: str, data: dict):
+    def _handle_counter_action(self, _w_id: str, action: str, data: dict):
         if action == "set_death":
             self.death_count_changed.emit(data.get("count", 0))
         elif action == "set_score":
