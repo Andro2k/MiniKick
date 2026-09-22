@@ -17,7 +17,7 @@ from frontend.common import (
     MARGIN_MD
 )
 
-LOG_ILLUSTRATION_FILE = "illustration-result-no-found.svg"
+LOG_ILLUSTRATION_FILE = "illustration-empty-file.svg"
 _LEVEL_COLORS = {
     "DEBUG": COLOR_NEUTRAL_400,
     "INFO": COLOR_BLUE,

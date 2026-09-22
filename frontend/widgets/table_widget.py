@@ -78,6 +78,7 @@ class ModernTableCard(QFrame):
         self.footer_widget = None
         self.footer_divider = None
         self.no_results_overlay = None
+        self.lbl_no_results_illustration = None
         
         if title_text or search_placeholder or add_button_text:
             self._ensure_header()
@@ -122,6 +123,16 @@ class ModernTableCard(QFrame):
         self.no_results_layout.setSpacing(SPACING_MD)
         self.no_results_layout.setContentsMargins(*MARGIN_NONE)
 
+        illustration_path = get_assets_path(os.path.join("icons", "illustration-empty-box.svg"))
+        self.lbl_no_results_illustration = ScalableIllustration(
+            icon_path=illustration_path,
+            aspect_ratio=1.0,
+            min_size=90,
+            max_size=200,
+            size_offset=180,
+            parent=self.no_results_overlay
+        )
+
         self.lbl_no_results = QLabel(self.no_results_overlay)
         self.lbl_no_results.setProperty("role", "body")
         self.lbl_no_results.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -132,6 +143,7 @@ class ModernTableCard(QFrame):
         self.btn_clear_filters.clicked.connect(self.clear_filters)
 
         self.no_results_layout.addStretch(1)
+        self.no_results_layout.addWidget(self.lbl_no_results_illustration, alignment=Qt.AlignmentFlag.AlignCenter)
         self.no_results_layout.addWidget(self.lbl_no_results)
         self.no_results_layout.addWidget(self.btn_clear_filters, alignment=Qt.AlignmentFlag.AlignCenter)
         self.no_results_layout.addStretch(2)
@@ -317,6 +329,8 @@ class ModernTableCard(QFrame):
                 vp = self.table.viewport()
                 if self._is_valid(vp):
                     self.no_results_overlay.setGeometry(vp.geometry())
+                    if hasattr(self, "lbl_no_results_illustration") and self._is_valid(self.lbl_no_results_illustration):
+                        self.lbl_no_results_illustration.update_image(vp.height())
         except RuntimeError:
             pass
 

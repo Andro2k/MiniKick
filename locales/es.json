@@ -512,8 +512,6 @@
             "title_twitch": "Permisos pendientes en Twitch"
         },
         "connection": {
-            "autostart_desc": "Conecta automáticamente MiniKick al iniciar la aplicación.",
-            "autostart_title": "Conexión Automática",
             "btn_active_kick": "Kick Activo",
             "btn_active_tiktok": "TikTok Activo",
             "btn_active_twitch": "Twitch Activo",

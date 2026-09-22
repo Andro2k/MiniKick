@@ -302,7 +302,6 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
         self.dashboard_controller.youtube_connect_requested.connect(self._on_youtube_integration_button_clicked)
         self.dashboard_controller.tiktok_connect_requested.connect(self._on_tiktok_integration_button_clicked)
-        self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.dashboard_controller.reauth_kick_requested.connect(self._handle_reauth_kick)
         self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
@@ -332,8 +331,6 @@ class MainWindowCore(QMainWindow):
         self.tray_manager.set_tts_state(settings.get("enabled", True))
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
         self.tray_manager.set_tts_voice_type_state(settings.get("provider", "piper") == "web")
-        autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
-        self.view_dashboard.set_autostart_state(autostart_enabled)
         self.command_service.reload_cache()
         self.spam_controller.load_initial_data()
         self.timers_controller.load_initial_data()
@@ -347,35 +344,51 @@ class MainWindowCore(QMainWindow):
         self._refresh_sidebar_profile()
         self._evaluate_all_scopes()
 
-        self.logger.info("[AutoStart] Autostart configuration: enabled=%s", autostart_enabled)
-        if autostart_enabled:
-            if self.kick_auth_manager.is_authenticated():
-                try:
-                    self.logger.info("[AutoStart] Starting Kick integration...")
-                    self._handle_auth_process()
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting Kick integration: %s", e)
-            twitch_tokens = self.container.twitch_token_storage.load()
-            if twitch_tokens and twitch_tokens.get("access_token"):
-                try:
-                    self.logger.info("[AutoStart] Starting Twitch integration...")
-                    self._on_twitch_auth_success(twitch_tokens)
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting Twitch integration: %s", e)
-            yt_target = self.settings_storage.load_string("youtube_target_channel", "")
-            if yt_target:
-                try:
-                    self.logger.info("[AutoStart] Starting YouTube integration (target='%s')...", yt_target)
-                    self._handle_youtube_connect(yt_target)
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting YouTube integration: %s", e)
-            tk_target = self.settings_storage.load_string("tiktok_target_channel", "")
-            if tk_target:
-                try:
-                    self.logger.info("[AutoStart] Starting TikTok integration (target='%s')...", tk_target)
-                    self._handle_tiktok_connect(tk_target)
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting TikTok integration: %s", e)
+        if self.kick_auth_manager.is_authenticated():
+            try:
+                self.logger.info("[AutoStart] Starting Kick integration...")
+                self._handle_auth_process()
+            except Exception as e:
+                self.logger.error("[AutoStart] Error auto-starting Kick integration: %s", e)
+
+        twitch_tokens = self.container.twitch_token_storage.load()
+        if twitch_tokens and twitch_tokens.get("access_token"):
+            QTimer.singleShot(350, lambda: self._autostart_twitch(twitch_tokens))
+
+        yt_target = self.settings_storage.load_string("youtube_target_channel", "")
+        if yt_target:
+            QTimer.singleShot(700, lambda: self._autostart_youtube(yt_target))
+
+        tk_target = self.settings_storage.load_string("tiktok_target_channel", "")
+        if tk_target:
+            QTimer.singleShot(1000, lambda: self._autostart_tiktok(tk_target))
+
+    def _autostart_twitch(self, twitch_tokens: dict):
+        if getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.logger.info("[AutoStart] Starting Twitch integration...")
+            self._on_twitch_auth_success(twitch_tokens)
+        except Exception as e:
+            self.logger.error("[AutoStart] Error auto-starting Twitch integration: %s", e)
+
+    def _autostart_youtube(self, target: str):
+        if getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.logger.info("[AutoStart] Starting YouTube integration (target='%s')...", target)
+            self._handle_youtube_connect(target)
+        except Exception as e:
+            self.logger.error("[AutoStart] Error auto-starting YouTube integration: %s", e)
+
+    def _autostart_tiktok(self, target: str):
+        if getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.logger.info("[AutoStart] Starting TikTok integration (target='%s')...", target)
+            self._handle_tiktok_connect(target)
+        except Exception as e:
+            self.logger.error("[AutoStart] Error auto-starting TikTok integration: %s", e)
 
     def _handle_navigation(self, view_name: str):
         self.logger.info("[User Action] Navigated to view: '%s'", view_name)
@@ -1166,15 +1179,7 @@ class MainWindowCore(QMainWindow):
             self.twitch_reward_worker.start()
             self._fetch_twitch_rewards(broadcaster_id)
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-            if isinstance(user_data, dict) and user_data.get("followers") is not None and user_data.get("followers") > 0:
-                self.dashboard_controller.set_channel_profile("twitch", user_data)
-            elif self.spam_service.twitch_api and broadcaster_id:
-                try:
-                    full_info = self.spam_service.twitch_api.fetch_full_channel_info(broadcaster_id)
-                    self.dashboard_controller.set_channel_profile("twitch", full_info)
-                except Exception as e:
-                    logger.warning("[Twitch] Could not refresh full channel info: %s", e)
-            elif isinstance(user_data, dict):
+            if isinstance(user_data, dict) and user_data:
                 self.dashboard_controller.set_channel_profile("twitch", user_data)
 
         self._evaluate_all_scopes()
@@ -1190,17 +1195,7 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _fetch_twitch_rewards(self, broadcaster_id: str = ""):
         b_id = broadcaster_id or getattr(self.spam_service, "twitch_broadcaster_id", "")
-        if not b_id and self.container.twitch_auth_manager.is_authenticated():
-            try:
-                twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
-                user_info = twitch_api.fetch_user_data()
-                b_id = user_info.get("broadcaster_id", "")
-                if b_id:
-                    self.spam_service.twitch_broadcaster_id = b_id
-            except Exception as e:
-                logger.error("[Main] Error resolving broadcaster_id for Twitch rewards: %s", e)
-
-        if not b_id or not self.container.twitch_auth_manager.is_authenticated():
+        if not self.container.twitch_auth_manager.is_authenticated():
             return
 
         if self._is_worker_running(getattr(self, 'fetch_twitch_rewards_worker', None)):
@@ -1657,11 +1652,6 @@ class MainWindowCore(QMainWindow):
     def _on_pinned_deleted(self):
         if hasattr(self, 'overlay_server') and self.overlay_server:
             self.overlay_server.trigger_widget_event("pinned_deleted", {})
-
-    @Slot(bool)
-    def _handle_autostart_change(self, enabled: bool):
-        self.logger.info("[User Action] Toggled dashboard autostart setting: enabled=%s", enabled)
-        self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
 
     @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):

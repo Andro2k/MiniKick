@@ -15,8 +15,8 @@ from frontend.common import (
     MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_HERO, MARGIN_PLATFORMS_GRID, MARGIN_SETTING_ROW_COMPACT
 )
 from frontend.widgets import (
-    BaseView, StatCard, SettingRow, ModernCard,
-    ModernButton, ModernSwitch
+    BaseView, StatCard, ModernCard,
+    ModernButton
 )
 from frontend.components.dashboard import (
     SegmentedDistributionBar, PlatformStatusCard
@@ -27,7 +27,6 @@ class DashboardView(BaseView):
     twitch_connect_requested = Signal()
     youtube_connect_requested = Signal()
     tiktok_connect_requested = Signal()
-    autostart_toggled = Signal(bool)
     reauth_requested = Signal()
     reauth_kick_requested = Signal()
     reauth_twitch_requested = Signal()
@@ -105,19 +104,6 @@ class DashboardView(BaseView):
 
     def _setup_platforms_hub(self):
         hub_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE)
-
-        self.sw_autostart = ModernSwitch(parent=self)
-        self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
-        
-        row_autostart = SettingRow(
-            "plug-filled.svg", 
-            self.i18n.get("dashboard.connection.autostart_title"), 
-            self.i18n.get("dashboard.connection.autostart_desc"), 
-            self.sw_autostart,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
-        )
-        hub_card.addWidget(row_autostart)
-        hub_card.add_separator()
 
         platforms_container = QWidget(self)
         self.platforms_grid = QGridLayout(platforms_container)
@@ -615,11 +601,6 @@ class DashboardView(BaseView):
             self.lbl_meta_schedule_val.setText(schedule_text or "-")
         if hasattr(self, "card_next_schedule"):
             self.card_next_schedule.set_value(schedule_text or "-")
-
-    def set_autostart_state(self, enabled: bool):
-        self.sw_autostart.blockSignals(True)
-        self.sw_autostart.setChecked(enabled)
-        self.sw_autostart.blockSignals(False)
 
     @staticmethod
     def _fmt_metric(count: int, total: int) -> str:
