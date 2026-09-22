@@ -21,6 +21,7 @@
 | **INC-009** | `TypeError: TranslationService.get() got an unexpected keyword argument 'version'` en arranque de `SystemTrayManager` | Log de Usuario `minikick.log` (Línea 2397) | v1.6.0 | `✅ Solventado` | `backend/services/system/translation_service.py`, `frontend/navigation/tray_menu_component.py` | v1.6.0 (`WT-1.6.0_23`) |
 | **INC-010** | `HTTP Error 414: URI Too Long` en `GiphyService` e Inclusión Indebida de Bots (`@MiniKick`) en Top Chatters | Log de Usuario `minikick.log` (Línea 555) / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/giphy_service.py`, `backend/controllers/chat_controller.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py` | v1.6.0 (`WT-1.6.0_25`) |
 | **INC-011** | Recuadros blancos y popups desalineados en Windows Light Theme (`SearchableComboBox`, `VariableTextEdit`, `QCalendarWidget`) | Capturas de Evidencia de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/common/theme.py`, `main.py`, `frontend/widgets/searchable_combo_box.py`, `frontend/widgets/controls_widget.py`, `frontend/widgets/no_wheel.py` | v1.6.0 (`WT-1.6.0_33`) |
+| **INC-012** | Corrutinas huérfanas en loop de TikTokLive (`Task was destroyed but it is pending!`, `RuntimeError: no running event loop`) | Log de Usuario `minikick.log` (Líneas 668-1001) | v1.6.0 | `✅ Solventado` | `backend/providers/chat/tiktok_provider.py` | v1.6.0 (`WT-1.6.0_35`) |
 
 ---
 
@@ -354,6 +355,44 @@
 * **Prueba Automatizada de Cobertura**:
   - `resources/tests/test_antigravity_ui_theme.py` (`test_dark_palette_and_popup_translucency_standards`).
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_33.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_33.md).
+
+---
+
+### INC-012: Corrutinas Huérfanas y RuntimeError en el Teardown del Event Loop de TikTokLive
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA-ALTA** (Riesgo de fugas de recursos asíncronos y errores en consola/logs al detener el chat de TikTok o cerrar la aplicación: `Task was destroyed but it is pending!` y `RuntimeError: no running event loop`).
+* **Reportes Asociados**:
+  - `minikick.log` (Líneas 668-1001):
+    ```text
+    [ERROR] Task was destroyed but it is pending!
+    task: <Task pending coro=<WebSocketCommonProtocol.transfer_data()...>>
+    [ERROR] Task was destroyed but it is pending!
+    task: <Task pending coro=<WebSocketCommonProtocol.close_connection()...>>
+    [ERROR] Exception ignored while closing generator <coroutine object WebSocketCommonProtocol.close_connection...
+    RuntimeError: no running event loop
+    ```
+* **Fecha y Versión del Fallo**: 2026-09-22 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. La librería cliente `TikTokLive` ejecuta su propio bucle de eventos (`self._asyncio_loop`) en un hilo secundario y bloquea con `run_until_complete(connect_coro)`.
+  2. En el código interno de `TikTokLiveClient.run()`, el método de limpieza `self._clean_tasks()` estaba ubicado **únicamente** dentro del bloque `except KeyboardInterrupt:`.
+  3. Cuando la desconexión se producía de forma programática (vía `stop_chat()`, cierre de la aplicación o finalización natural), `run_until_complete` retornaba sin cancelar ni drenar las tareas en segundo plano creadas por `websockets` (`transfer_data()`, `close_connection()`, bucles de ping).
+  4. Al detenerse el bucle y ser recolectadas las corrutinas por el Garbage Collector en Python 3.14, el destructor de `close_connection` invocaba `async with asyncio.timeout(...)`, el cual llama a `events.get_running_loop()`. Al no haber ya ningún bucle ejecutándose en dicho hilo, Python lanzaba `RuntimeError: no running event loop` y emitía alertas de tareas destruidas pendientes.
+* **Solución Implementada**:
+  1. En [`backend/providers/chat/tiktok_provider.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/tiktok_provider.py):
+     - Se implementó el método estático `_drain_client_loop(client: Any) -> None` que comprueba si el loop sigue abierto y no está corriendo. Invoca `client._clean_tasks()` nativo si existe o ejecuta un drenado defensivo cancelando todas las tareas (`task.cancel()`) y ejecutando `loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))`.
+     - En `start_chat()`: Se envolvió la invocación `self._client.run(fetch_live_check=True)` dentro de una cláusula `try ... finally: self._drain_client_loop(self._client)`, garantizando que el drenado se ejecute siempre de forma síncrona en el hilo que posee el bucle.
+     - En `stop_chat()`: Se realiza la desconexión thread-safe mediante `asyncio.run_coroutine_threadsafe(client.disconnect(), loop)` si el bucle está en marcha, y drenado directo `_drain_client_loop` en caso de que ya estuviera detenido.
+     - Se eliminó el `import websockets.exceptions.InvalidStatusCode` deprecado reemplazándolo con duck-typing $\mathcal{O}(1)$ (`getattr(ex, 'status_code', None)` y evaluación del nombre de tipo).
+* **Pruebas Automatizadas de Cobertura**:
+  - `resources/tests/test_tiktok_provider.py`:
+    - `test_drain_client_loop_none_or_empty`
+    - `test_drain_client_loop_invokes_clean_tasks`
+    - `test_drain_client_loop_fallback_cancels_and_gathers_tasks`
+    - `test_stop_chat_when_loop_not_running`
+    - `test_mark_seen_and_deduplication`
+    - `test_extract_avatar_url`
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_35.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_35.md).
 
 ---
 
