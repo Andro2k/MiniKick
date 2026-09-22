@@ -73,6 +73,20 @@ class NoWheelDateEdit(QDateEdit):
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, neutral_fmt)
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, neutral_fmt)
             cal.setHeaderTextFormat(neutral_fmt)
+
+            from PySide6.QtWidgets import QTableView
+            from frontend.common import create_dark_palette
+            dark_pal = create_dark_palette()
+            cal.setPalette(dark_pal)
+            popup = cal.parent()
+            if popup:
+                popup.setPalette(dark_pal)
+            table = cal.findChild(QTableView, "qt_calendar_calendarview")
+            if table:
+                table.setPalette(dark_pal)
+                if table.viewport():
+                    table.viewport().setPalette(dark_pal)
+
             self._calendar_configured = True
 
     def calendarWidget(self):

@@ -5,6 +5,7 @@ import re
 import tempfile
 from functools import lru_cache
 from pathlib import Path
+from PySide6.QtGui import QPalette, QColor
 from .paths import get_assets_path, resolve_icon_path
 
 COLOR_NEUTRAL_950  = "#111215"
@@ -635,8 +636,9 @@ QFrame[role="segmented_pagination"] QPushButton:disabled {{ background-color: tr
 QFrame[role="segmented_pagination"] QLabel#lbl_page_status {{ background-color: transparent; color: {COLOR_WHITE}; font-size: {text1}px; font-weight: 500; padding: 0px 16px; min-height: 32px; max-height: 32px; border-left: 1px solid {COLOR_NEUTRAL_700}; }}
 
 /* Calendar Pop-up (QCalendarWidget) */
+QWidget#qt_datetimedit_calendar {{ background-color: {COLOR_NEUTRAL_900}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_LG}px; padding: 4px; }}
 QCalendarWidget {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; padding: 4px; }}
-QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: transparent; border: none; min-height: 36px; margin-bottom: 4px; }}
+QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: {COLOR_NEUTRAL_900}; border: none; min-height: 36px; margin-bottom: 4px; }}
 QCalendarWidget QToolButton {{ background-color: transparent; color: {COLOR_WHITE}; font-weight: 500; font-size: {text1}px; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_SM}px; padding: {PADDING_ITEM}; margin: 2px; }}
 QCalendarWidget QToolButton:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QCalendarWidget QToolButton:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
@@ -646,13 +648,28 @@ QCalendarWidget QToolButton#qt_calendar_monthbutton, QCalendarWidget QToolButton
 QCalendarWidget QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 4px; }}
 QCalendarWidget QSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_SM}px; padding: 2px 6px; font-weight: 500; }}
 QCalendarWidget QSpinBox:focus {{ border-color: {COLOR_BORDER_MUTED_FOCUS}; }}
-QCalendarWidget QTableView {{ background-color: transparent; border: none; gridline-color: transparent; selection-background-color: {COLOR_WHITE}; selection-color: {COLOR_NEUTRAL_950}; outline: none; }}
+QCalendarWidget QTableView {{ background-color: {COLOR_NEUTRAL_900}; border: none; gridline-color: transparent; selection-background-color: {COLOR_WHITE}; selection-color: {COLOR_NEUTRAL_950}; outline: none; }}
+QCalendarWidget QTableView QWidget {{ background-color: {COLOR_NEUTRAL_900}; }}
 QCalendarWidget QTableView:enabled {{ color: {COLOR_NEUTRAL_400}; }}
 QCalendarWidget QTableView:disabled {{ color: {COLOR_NEUTRAL_700}; }}
 QHeaderView, QCalendarWidget QHeaderView::section {{ background-color: transparent; color: {COLOR_NEUTRAL_400}; font-size: {text2}px; font-weight: 500; padding: 3px 0px; border: none; text-align: center; }}
 QCalendarWidget QTableView::item {{ border-radius: {RADIUS_MD}px; padding: 4px; margin: 2px; }}
 QCalendarWidget QTableView::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; border-radius: {RADIUS_MD}px; }}
 QCalendarWidget QTableView::item:selected {{ background-color: {COLOR_WHITE}; color: {COLOR_NEUTRAL_950}; font-weight: 700; border-radius: {RADIUS_MD}px; }}
+
+/* Autocomplete Pop-up (VariableTextEdit) */
+QListWidget[role="variable_autocomplete_popup"] {{ background-color: {COLOR_NEUTRAL_850}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: 4px; outline: none; color: {COLOR_WHITE}; }}
+QListWidget[role="variable_autocomplete_popup"]::item {{ height: 28px; padding: 4px 10px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; font-weight: 500; }}
+QListWidget[role="variable_autocomplete_popup"]::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
+QListWidget[role="variable_autocomplete_popup"]::item:selected {{ background-color: {COLOR_SURFACE_ACTIVE}; color: {COLOR_WHITE}; font-weight: 600; }}
+
+/* Global Context Menus & Tooltips */
+QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_WHITE}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: 4px; }}
+QMenu::item {{ padding: 6px 14px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; }}
+QMenu::item:selected {{ background-color: {COLOR_SURFACE_ACTIVE}; color: {COLOR_WHITE}; }}
+QMenu::separator {{ height: 1px; background-color: {COLOR_BORDER_SUBTLE_GHOST}; margin: 4px 6px; }}
+
+QToolTip {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; border: 1px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_SM}px; padding: 4px 8px; font-size: {text2}px; }}
 """
 
 @lru_cache(maxsize=16)
@@ -673,6 +690,36 @@ def get_global_qss(base: int = 13) -> str:
     return "\n".join(sections)
 
 GLOBAL_QSS = get_global_qss(13)
+
+def create_dark_palette() -> QPalette:
+    pal = QPalette()
+    dark_window = QColor(COLOR_NEUTRAL_900)
+    dark_base = QColor(COLOR_NEUTRAL_850)
+    dark_alt_base = QColor(COLOR_NEUTRAL_800)
+    text_white = QColor(COLOR_WHITE)
+    text_muted = QColor(COLOR_NEUTRAL_400)
+    text_disabled = QColor(COLOR_NEUTRAL_500)
+    accent = QColor(COLOR_BLUE)
+
+    pal.setColor(QPalette.ColorRole.Window, dark_window)
+    pal.setColor(QPalette.ColorRole.WindowText, text_white)
+    pal.setColor(QPalette.ColorRole.Base, dark_base)
+    pal.setColor(QPalette.ColorRole.AlternateBase, dark_alt_base)
+    pal.setColor(QPalette.ColorRole.ToolTipBase, dark_base)
+    pal.setColor(QPalette.ColorRole.ToolTipText, text_white)
+    pal.setColor(QPalette.ColorRole.Text, text_white)
+    pal.setColor(QPalette.ColorRole.Button, dark_base)
+    pal.setColor(QPalette.ColorRole.ButtonText, text_white)
+    pal.setColor(QPalette.ColorRole.BrightText, QColor(COLOR_RED))
+    pal.setColor(QPalette.ColorRole.Highlight, accent)
+    pal.setColor(QPalette.ColorRole.HighlightedText, text_white)
+    pal.setColor(QPalette.ColorRole.Link, accent)
+    pal.setColor(QPalette.ColorRole.LinkVisited, QColor(COLOR_PURPLE))
+
+    pal.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, text_disabled)
+    pal.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, text_disabled)
+    pal.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, text_disabled)
+    return pal
 
 def get_swatch_qss(bg_color: str, border_width: int = 1, radius: int = RADIUS_SM) -> str:
     return f"background-color: {bg_color}; border: {border_width}px solid {COLOR_NEUTRAL_700}; border-radius: {radius}px;"

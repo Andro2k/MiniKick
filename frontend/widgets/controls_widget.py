@@ -203,8 +203,12 @@ class VariableTextEdit(QTextEdit):
         self.highlighter = VariableHighlighter(self.document(), highlight_pattern, QColor(highlight_color), bg_qcolor)
         
         self.popup = QListWidget(self)
+        self.popup.setProperty("role", "variable_autocomplete_popup")
         self.popup.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.popup.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.popup.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.popup.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.popup.itemActivated.connect(self._insert_selected)
         self.popup.itemClicked.connect(self._insert_selected)
         
@@ -250,9 +254,9 @@ class VariableTextEdit(QTextEdit):
         cursor_rect = self.cursorRect()
         global_pos = self.mapToGlobal(cursor_rect.bottomLeft())
         max_len = max(len(item) for item in items)
-        popup_width = max(120, max_len * 7 + 24)
+        popup_width = max(130, max_len * 8 + 32)
         
-        self.popup.setGeometry(global_pos.x(), global_pos.y() + 4, popup_width, min(150, len(items) * 28 + 10))
+        self.popup.setGeometry(global_pos.x(), global_pos.y() + 4, popup_width, min(160, len(items) * 30 + 12))
         self.popup.show()
         
     def _insert_selected(self):

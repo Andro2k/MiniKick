@@ -43,6 +43,7 @@ from .theme import (
     PATH_ICON_CHEVRON_LEFT, PATH_ICON_CHEVRON_RIGHT, PATH_ICON_CHECK,
     PATH_ICON_CHECK_GREEN, PATH_ICON_CALENDAR,
     get_qss_colored_icon, get_global_qss, GLOBAL_QSS, get_swatch_qss,
+    create_dark_palette,
 )
 
 from .markdown import markdown_to_github_html
@@ -81,4 +82,5 @@ __all__ = [
     "PATH_ICON_CHEVRON_LEFT", "PATH_ICON_CHEVRON_RIGHT", "PATH_ICON_CHECK",
     "PATH_ICON_CHECK_GREEN", "PATH_ICON_CALENDAR",
     "get_qss_colored_icon", "get_global_qss", "GLOBAL_QSS", "get_swatch_qss",
+    "create_dark_palette",
 ]

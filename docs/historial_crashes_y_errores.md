@@ -20,6 +20,7 @@
 | **INC-008** | Micro-ventana fantasma ('python' / 'pyt...') proyectada en segundo plano por precalentamiento prematuro de `QCalendarPopup` y falta de `parent` | Captura de Evidencia de Usuario / minikick.log | v1.6.0 | `✅ Solventado` | `frontend/widgets/no_wheel.py`, `frontend/components/schedule/schedule_form_panel.py`, `frontend/views/schedule_view.py`, `frontend/views/dashboard_view.py`, `frontend/components/dashboard/platform_card.py` | v1.6.0 (`WT-1.6.0_22`) |
 | **INC-009** | `TypeError: TranslationService.get() got an unexpected keyword argument 'version'` en arranque de `SystemTrayManager` | Log de Usuario `minikick.log` (Línea 2397) | v1.6.0 | `✅ Solventado` | `backend/services/system/translation_service.py`, `frontend/navigation/tray_menu_component.py` | v1.6.0 (`WT-1.6.0_23`) |
 | **INC-010** | `HTTP Error 414: URI Too Long` en `GiphyService` e Inclusión Indebida de Bots (`@MiniKick`) en Top Chatters | Log de Usuario `minikick.log` (Línea 555) / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/giphy_service.py`, `backend/controllers/chat_controller.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py` | v1.6.0 (`WT-1.6.0_25`) |
+| **INC-011** | Recuadros blancos y popups desalineados en Windows Light Theme (`SearchableComboBox`, `VariableTextEdit`, `QCalendarWidget`) | Capturas de Evidencia de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/common/theme.py`, `main.py`, `frontend/widgets/searchable_combo_box.py`, `frontend/widgets/controls_widget.py`, `frontend/widgets/no_wheel.py` | v1.6.0 (`WT-1.6.0_33`) |
 
 ---
 
@@ -321,6 +322,38 @@
     - `test_resolve_gif_blocks_long_queries_and_arbitrary_urls`
     - `test_widgets_controller_ignores_minikick_and_bots_in_top_chatters`
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_25.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_25.md).
+
+---
+
+### INC-011: Bordes Blancos y Desincronización de Tema en Popups con Windows en Tema Claro
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Defectos visuales notorios, recuadros blancos rígidos y textos ilegibles en selectores de voces, autocompletado y calendario para usuarios con tema claro en Windows).
+* **Reportes Asociados**:
+  - Capturas de usuario de `SearchableComboBox`, `VariableTextEdit` y `QDateEdit` calendario.
+* **Fecha y Versión del Fallo**: 2026-09-22 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. MiniKick no asignaba una paleta nativa `QApplication.setPalette()`. Si Windows estaba en Tema Claro, Qt inicializaba `QPalette.Base` y `QPalette.Window` en `#ffffff` / `#f0f0f0`.
+  2. `SearchableComboPopup` fijaba explícitamente `WA_TranslucentBackground = False`. Al tener `border-radius: 8px` en un marco frameless, el fondo exterior de la ventana nativa se pintaba blanco (`#ffffff`).
+  3. `VariableTextEdit.popup` era un `QListWidget` sin rol ni estilos QSS, mostrándose como una ventana blanca nativa.
+  4. `QDateEdit` utiliza `QCalendarPopup` (`QWidget#qt_datetimedit_calendar`) y el viewport de `QTableView` con `autoFillBackground=True`. Ambos se pintaban con la paleta clara nativa, dejando el encabezado blanco sobre fondo blanco.
+* **Solución Implementada**:
+  1. En [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py):
+     - Creación de `create_dark_palette() -> QPalette` para forzar roles oscuros nativos en toda la aplicación.
+     - Reglas QSS para `QWidget#qt_datetimedit_calendar`, `QCalendarWidget QTableView QWidget`, `QListWidget[role="variable_autocomplete_popup"]`, `QMenu` y `QToolTip`.
+  2. En [`main.py`](file:///c:/Users/TheAn/Desktop/python/Kick/main.py):
+     - Inyección de `app.setPalette(create_dark_palette())` en el arranque de la app y en el manejador de crash global.
+  3. En [`frontend/widgets/searchable_combo_box.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/searchable_combo_box.py):
+     - Activación de `self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)`.
+  4. En [`frontend/widgets/controls_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/controls_widget.py):
+     - Asignación de rol `variable_autocomplete_popup`, `WA_TranslucentBackground = True` y políticas de scroll.
+  5. En [`frontend/widgets/category_search.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/category_search.py):
+     - Activación de `WA_TranslucentBackground = True` en `CategorySuggestionsPopup`.
+  6. En [`frontend/widgets/no_wheel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/no_wheel.py):
+     - Aplicación de `dark_pal` en `QCalendarWidget`, `popup` y `table.viewport()`.
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_antigravity_ui_theme.py` (`test_dark_palette_and_popup_translucency_standards`).
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_33.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_33.md).
 
 ---
 
