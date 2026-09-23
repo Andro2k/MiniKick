@@ -27,7 +27,8 @@ from .layout_helpers import (
     create_labeled_field, create_switch_field, create_box_layout,
     create_two_column_container, create_frameless_input,
     create_text_label, create_platform_switches,
-    create_error_label, sync_dual_platform_switches
+    create_error_label, sync_dual_platform_switches,
+    render_styled_frame_background
 )
 
 __all__ = [
@@ -43,6 +44,7 @@ __all__ = [
     "create_platform_switches",
     "create_error_label",
     "sync_dual_platform_switches",
+    "render_styled_frame_background",
     "InspectorPropertyRow",
     "BaseView",
     "ViewHeader",

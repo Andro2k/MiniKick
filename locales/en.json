@@ -728,14 +728,8 @@
         }
     },
     "logs": {
-        "app_container": {
-            "api_keys_not_found": "backend/config/api_keys.py file not found. Using empty credentials."
-        },
         "bootstrap": {
             "crash_dialog_failed": "[Bootstrap] Failed to display crash dialog: {error}"
-        },
-        "main_window": {
-            "twitch_auth_error": "[TwitchAuth] Twitch authentication error: {error}"
         },
         "tiktok": {
             "age_restricted": "The live stream for @{unique_id} has an age restriction (+18).",
@@ -778,9 +772,6 @@
             "api_offline": "Attempted to update rewards while offline from Kick.",
             "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
             "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
-            "shutdown_complete": "Thread shutdown sequence complete.",
-            "shutdown_init": "Initiating shutdown sequence...",
-            "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
             "worker_stopped": "{worker} stopped cleanly.",
             "worker_stopping": "Requesting stop for {worker}...",
             "worker_stuck": "{worker} stuck (possible network lock). Forcing termination..."
@@ -886,8 +877,8 @@
             "pause_success": "⏸️ Music paused successfully.",
             "playlist_empty_for_user": "❌ @{user}, you currently have no songs in the queue.",
             "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
-            "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
-            "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
+            "playlist_pos_info": "🎵 [Position #{pos}] │ \"{title}\"{artist} (requested by @{requester})",
+            "playlist_user_songs": "🎵 [My Songs] │ @{user} ({count} in queue): {songs}",
             "playlist_user_songs_more": "🎵 @{user} (remaining positions {page}/{total_pages}): {songs}",
             "queue_full": "❌ @{user}, the song queue is full ({max} songs maximum).",
             "resume_failed": "❌ Could not resume music.",
@@ -895,7 +886,7 @@
             "skip_failed": "❌ Could not skip song (Player paused or empty queue).",
             "skip_success": "⏩ Song skipped successfully.",
             "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing.",
-            "song_now_playing": "🎵 Now playing: {title} - {artist}",
+            "song_now_playing": "🎵 [Now Playing] │ {title} - {artist}",
             "song_paused_youtube": "🔇 YouTube is paused.",
             "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
             "sr_usage": "@{user} please enter a song name. (Ex: {trigger} Chayanne Torero)",
@@ -964,7 +955,7 @@
             "processing_link": "🔍 Processing YouTube link...",
             "remove_tooltip": "Remove from queue",
             "searching": "🔍 Searching '{query}' on YouTube...",
-            "success": "🎵 Added to queue: {track}",
+            "success": "🎵 [Queue] │ {track}",
             "title": "Playback Queue"
         },
         "stats": {

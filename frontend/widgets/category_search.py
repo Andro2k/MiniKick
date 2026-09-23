@@ -8,6 +8,7 @@ from frontend.common import (
     SPACING_NONE, SPACING_2XS, SPACING_MD,
     MARGIN_NONE, MARGIN_XS, MARGIN_SM
 )
+from .layout_helpers import render_styled_frame_background
 
 class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
@@ -60,6 +61,9 @@ class CategorySuggestionsPopup(QFrame):
         layout.addWidget(self.list_widget)
 
         self.target_input.installEventFilter(self)
+
+    def paintEvent(self, _event):
+        render_styled_frame_background(self)
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Type.KeyPress and self.isVisible():

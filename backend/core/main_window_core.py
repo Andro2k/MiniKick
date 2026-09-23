@@ -726,12 +726,12 @@ class MainWindowCore(QMainWindow):
             return
         self._is_shutting_down = True
         
-        self.logger.info(self.i18n.get("main.logs.shutdown_init"))
+        self.logger.info("[Shutdown] Initiating application shutdown sequence...")
         
         if hasattr(self, 'music_controller') and self.music_controller:
             self.music_controller.shutdown()
 
-        self.logger.info(self.i18n.get("main.logs.shutdown_tts_overlay"))
+        self.logger.info("[Shutdown] Stopping TTS worker and overlay HTTP server...")
         self.container.shutdown()
 
         self._stop_all_workers()
@@ -739,7 +739,7 @@ class MainWindowCore(QMainWindow):
         if hasattr(self.container, 'db_manager') and self.container.db_manager:
             self.container.db_manager.cleanup()
 
-        self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
+        self.logger.info("[Shutdown] Shutdown sequence completed successfully.")
 
     def _stop_workers_parallel(self, worker_map: list):
         active_workers = []
@@ -972,11 +972,11 @@ class MainWindowCore(QMainWindow):
         if recents is not None:
             dedup_key = f"{platform}:{user.lower()}:{reward_name.lower()}:{int(time.time() / 8)}"
             if dedup_key in recents:
-                self.logger.debug("[Reward] Ignorando canje duplicado: %s", dedup_key)
+                self.logger.debug("[Reward] Ignoring duplicate redemption: %s", dedup_key)
                 return
             recents.append(dedup_key)
 
-        self.logger.info("[Reward] Canje procesado: usuario='%s', recompensa='%s' (Plataforma: %s)", user, reward_name, platform.capitalize())
+        self.logger.info("[Reward] Redemption processed: user='%s', reward='%s' (Platform: %s)", user, reward_name, platform.capitalize())
         toast_template = self.i18n.get("main.toasts.reward_msg")
         self.toast.show_toast(
             title=self.i18n.get("main.toasts.reward_title"), 
@@ -1070,8 +1070,7 @@ class MainWindowCore(QMainWindow):
         self._twitch_connected = False
         self._twitch_channel = ""
         self._update_integrations_status_ui()
-        log_msg = self.container.i18n.get("logs.main_window.twitch_auth_error").replace("{error}", str(err))
-        logger.error(f"[Twitch Auth Error] {log_msg}")
+        logger.error("[TwitchAuth] Authentication error: %s", err)
         if getattr(self, "_is_window_closing", False):
             return
         err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")

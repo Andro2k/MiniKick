@@ -55,14 +55,14 @@ class TwitchAPIClient:
         resp = self.session.request(method, url, headers=headers, **kwargs)
 
         if resp.status_code == 401 and self.auth_provider and hasattr(self.auth_provider, "refresh_token"):
-            logger.info("[TwitchAPI] Token 401 recibido, intentando refrescar token...")
+            logger.info("[TwitchAPI] Received 401 Unauthorized, attempting to refresh token...")
             try:
                 new_tokens = self.auth_provider.refresh_token()
                 if new_tokens and new_tokens.get("access_token"):
                     headers = self._get_headers()
                     resp = self.session.request(method, url, headers=headers, **kwargs)
             except Exception as refresh_err:
-                logger.error("[TwitchAPI] Fallo al refrescar token tras 401: %s", refresh_err)
+                logger.error("[TwitchAPI] Failed to refresh token after 401: %s", refresh_err)
 
         return resp
 

@@ -728,14 +728,8 @@
         }
     },
     "logs": {
-        "app_container": {
-            "api_keys_not_found": "Archivo backend/config/api_keys.py no encontrado. Usando credenciales vacías."
-        },
         "bootstrap": {
             "crash_dialog_failed": "[Bootstrap] Falló la visualización del diálogo de crash: {error}"
-        },
-        "main_window": {
-            "twitch_auth_error": "[TwitchAuth] Error de autenticación en Twitch: {error}"
         },
         "tiktok": {
             "age_restricted": "La transmisión de @{unique_id} tiene restricción de edad (+18).",
@@ -778,9 +772,6 @@
             "api_offline": "Intento de actualizar recompensas sin estar conectado a Kick.",
             "reward_file_missing": "El archivo multimedia para la recompensa '{reward_name}' no fue encontrado en: {filepath}",
             "reward_no_rewards": "La recompensa '{reward_name}' no tiene una recompensa configurada.",
-            "shutdown_complete": "Secuencia de apagado de hilos completada.",
-            "shutdown_init": "Iniciando secuencia de apagado...",
-            "shutdown_tts_overlay": "Apagando TTS y Overlay...",
             "worker_stopped": "{worker} cerrado limpiamente.",
             "worker_stopping": "Solicitando parada de {worker}...",
             "worker_stuck": "{worker} atascado (posible bloqueo de red). Forzando terminación..."
@@ -886,8 +877,8 @@
             "pause_success": "⏸️ Música pausada con éxito.",
             "playlist_empty_for_user": "❌ @{user}, no tienes canciones en la cola actualmente.",
             "playlist_invalid_pos": "❌ @{user}, la posición #{pos} no es válida. Hay {total} canción(es) en la cola.",
-            "playlist_pos_info": "🎵 Canción #{pos}: \"{title}\"{artist} (pedida por @{requester})",
-            "playlist_user_songs": "🎵 @{user}, tienes {count} canción(es) en la cola: {songs}",
+            "playlist_pos_info": "🎵 [Puesto #{pos}] │ \"{title}\"{artist} (pedida por @{requester})",
+            "playlist_user_songs": "🎵 [Mis Canciones] │ @{user} ({count} en cola): {songs}",
             "playlist_user_songs_more": "🎵 @{user} (posiciones restantes {page}/{total_pages}): {songs}",
             "queue_full": "❌ @{user}, la cola de canciones está llena ({max} canciones máximo).",
             "resume_failed": "❌ No se pudo reanudar la música.",
@@ -895,7 +886,7 @@
             "skip_failed": "❌ No se pudo saltar la canción (Reproductor pausado o cola vacía).",
             "skip_success": "⏩ Canción saltada con éxito.",
             "song_empty_youtube": "🔇 La cola de YouTube está vacía o no hay música sonando.",
-            "song_now_playing": "🎵 Sonando ahora: {title} - {artist}",
+            "song_now_playing": "🎵 [En Reproducción] │ {title} - {artist}",
             "song_paused_youtube": "🔇 YouTube está en pausa.",
             "song_too_long": "❌ @{user}, esa canción supera la duración máxima permitida de {max} minutos.",
             "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
@@ -964,7 +955,7 @@
             "processing_link": "🔍 Procesando enlace de YouTube...",
             "remove_tooltip": "Eliminar de la cola",
             "searching": "🔍 Buscando '{query}' en YouTube...",
-            "success": "🎵 Añadida a la cola: {track}",
+            "success": "🎵 [Cola] │ {track}",
             "title": "Cola de Reproducción"
         },
         "stats": {

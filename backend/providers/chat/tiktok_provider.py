@@ -119,7 +119,7 @@ class TikTokChatProvider:
             connected_at_holder[0] = time.time()
             room_id = getattr(client, "room_id", "")
             logger.info(
-                "[TikTokChatProvider] Conectado a TikTok Live @%s (Room ID: %s)",
+                "[TikTokChatProvider] Connected to TikTok Live @%s (Room ID: %s)",
                 clean_user, room_id
             )
             if on_connected:
@@ -268,13 +268,13 @@ class TikTokChatProvider:
                     )
                 except Exception as cb_err:
                     logger.warning(
-                        "[TikTokChatProvider] Error en callback on_message: %s", cb_err
+                        "[TikTokChatProvider] Error in on_message callback: %s", cb_err
                     )
 
         @client.on(DisconnectEvent)
         def _on_disconnect(_event: DisconnectEvent):
             logger.info(
-                "[TikTokChatProvider] Desconectado de TikTok Live @%s", clean_user
+                "[TikTokChatProvider] Disconnected from TikTok Live @%s", clean_user
             )
             if on_disconnected:
                 on_disconnected()
@@ -301,7 +301,7 @@ class TikTokChatProvider:
         self._seen_msg_ids.clear()
         self._seen_ids_order.clear()
 
-        logger.info("[TikTokChatProvider] Iniciando conexión con TikTok Live de @%s", clean_user)
+        logger.info("[TikTokChatProvider] Initiating connection to TikTok Live for @%s", clean_user)
 
         try:
             from TikTokLive import TikTokLiveClient
@@ -365,11 +365,11 @@ class TikTokChatProvider:
                 break
 
             except KeyboardInterrupt:
-                logger.info("[TikTokChatProvider] Interrupción de teclado.")
+                logger.info("[TikTokChatProvider] Keyboard interruption received.")
                 break
 
             except TikTokLiveError as tle:
-                logger.error("[TikTokChatProvider] Error de TikTokLive: %s", tle)
+                logger.error("[TikTokChatProvider] TikTokLive error: %s", tle)
                 if on_error:
                     on_error(str(tle))
                 break
@@ -385,7 +385,7 @@ class TikTokChatProvider:
                 if is_ws_400 and attempt < self._WS_MAX_RETRIES and self._is_running:
                     warn_msg = self.i18n.get("logs.tiktok.ws_rejected_400")
                     logger.warning(
-                        "[TikTokChatProvider] HTTP 400 en intento %d/%d — %s",
+                        "[TikTokChatProvider] HTTP 400 on attempt %d/%d — %s",
                         attempt + 1, self._WS_MAX_RETRIES + 1, warn_msg
                     )
                     time.sleep(self._WS_RETRY_DELAY)
@@ -394,7 +394,7 @@ class TikTokChatProvider:
                 if is_ws_400:
                     err = self.i18n.get("logs.tiktok.ws_rejected_400_final")
                     logger.error(
-                        "[TikTokChatProvider] WebSocket rechazado definitivamente (HTTP 400) tras %d intento(s).",
+                        "[TikTokChatProvider] WebSocket permanently rejected (HTTP 400) after %d attempt(s).",
                         attempt + 1
                     )
                     if on_error:
@@ -406,7 +406,7 @@ class TikTokChatProvider:
                         "{code}", str(status_code if status_code is not None else "?")
                     )
                     logger.error(
-                        "[TikTokChatProvider] WebSocket rechazado (HTTP %s): %s",
+                        "[TikTokChatProvider] WebSocket rejected (HTTP %s): %s",
                         status_code if status_code is not None else "?", ex
                     )
                     if on_error:
@@ -415,7 +415,7 @@ class TikTokChatProvider:
 
                 if self._is_running:
                     logger.error(
-                        "[TikTokChatProvider] Excepción general de conexión (%s): %s",
+                        "[TikTokChatProvider] General connection exception (%s): %s",
                         type(ex).__name__, ex, exc_info=True
                     )
                     if on_error:

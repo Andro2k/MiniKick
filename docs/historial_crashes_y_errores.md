@@ -22,6 +22,7 @@
 | **INC-010** | `HTTP Error 414: URI Too Long` en `GiphyService` e Inclusión Indebida de Bots (`@MiniKick`) en Top Chatters | Log de Usuario `minikick.log` (Línea 555) / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/giphy_service.py`, `backend/controllers/chat_controller.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py` | v1.6.0 (`WT-1.6.0_25`) |
 | **INC-011** | Recuadros blancos y popups desalineados en Windows Light Theme (`SearchableComboBox`, `VariableTextEdit`, `QCalendarWidget`) | Capturas de Evidencia de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/common/theme.py`, `main.py`, `frontend/widgets/searchable_combo_box.py`, `frontend/widgets/controls_widget.py`, `frontend/widgets/no_wheel.py` | v1.6.0 (`WT-1.6.0_33`) |
 | **INC-012** | Corrutinas huérfanas en loop de TikTokLive (`Task was destroyed but it is pending!`, `RuntimeError: no running event loop`) | Log de Usuario `minikick.log` (Líneas 668-1001) | v1.6.0 | `✅ Solventado` | `backend/providers/chat/tiktok_provider.py` | v1.6.0 (`WT-1.6.0_35`) |
+| **INC-013** | Fondo transparente en popups de búsqueda (`CategorySuggestionsPopup`, `SearchableComboPopup`) tras activar `WA_TranslucentBackground` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/widgets/category_search.py`, `frontend/widgets/searchable_combo_box.py` | v1.6.0 (`WT-1.6.0_54`) |
 
 ---
 
@@ -393,6 +394,30 @@
     - `test_mark_seen_and_deduplication`
     - `test_extract_avatar_url`
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_35.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_35.md).
+
+---
+
+### INC-013: Fondo Transparente en Popups de Búsqueda (`CategorySuggestionsPopup` y `SearchableComboPopup`)
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Defecto visual de superposición UI: los elementos de fondo se transparentaban a través del menú desplegable).
+* **Reportes Asociados**:
+  - Captura de pantalla de usuario en `ScheduleView` (`CategorySearchComboBox` desplegando resultados transparentes sobre botones "Limpiar Formulario" y "Guardar Horario").
+* **Fecha y Versión del Fallo**: 2026-09-23 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. En `WT-1.6.0_33` se activó `self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)` en ventanas emergentes frameless derivadas de `QFrame` (`CategorySuggestionsPopup` y `SearchableComboPopup`) para posibilitar esquinas redondeadas sin bordes rectangulares de Windows.
+  2. En el motor de renderizado de Qt / PySide6, cuando un `QFrame` de nivel superior activa `WA_TranslucentBackground`, la implementación por defecto de `QFrame::paintEvent` **omite rellenar el fondo con el `background-color` del stylesheet**, asumiendo transparencia completa salvo que se despache explícitamente la primitiva `QStyle.PrimitiveElement.PE_Widget`.
+  3. Al carecer de `paintEvent` personalizado, el marco exterior del popup se renderizaba con $\text{Alpha} = 0$, volviendo el menú completamente translúcido y mostrando los controles subyacentes.
+* **Solución Implementada**:
+  1. En [`frontend/widgets/category_search.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/category_search.py):
+     - Se implementó `paintEvent` en `CategorySuggestionsPopup` despachando `QStyleOptionFrame` y `self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)`.
+  2. En [`frontend/widgets/searchable_combo_box.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/searchable_combo_box.py):
+     - Se implementó `paintEvent` idéntico en `SearchableComboPopup`.
+* **Pruebas de Validación de Renderizado**:
+  - Validación de pixel rendering:
+    - Centro del popup: $\text{Alpha} = 255$ (color sólido `#111215` / `#18191e`).
+    - Esquinas exteriores: $\text{Alpha} = 0$ (esquinas redondeadas anti-aliased sin marco rectangular).
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_54.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_54.md).
 
 ---
 

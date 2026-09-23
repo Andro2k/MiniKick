@@ -290,7 +290,7 @@ class YouTubeMusicProvider(QObject):
         if self._is_ducked != ducked:
             self._is_ducked = ducked
             self.audio_output.setVolume(self._calculate_effective_volume())
-            logger.debug("[YouTubeMusicProvider] Ducking de música: %s", ducked)
+            logger.debug("[YouTubeMusicProvider] Music ducking: %s", ducked)
 
     def set_loudness_normalization(self, enabled: bool) -> None:
         self.loudness_normalization_enabled = enabled

@@ -11,6 +11,7 @@ from frontend.common import (
     MARGIN_XS, MARGIN_H_MD, SPACING_XS, SPACING_2XS
 )
 from .no_wheel import NoWheelComboBox
+from .layout_helpers import render_styled_frame_background
 
 class _SearchLineEdit(QLineEdit):
     def __init__(self, popup: "SearchableComboPopup", parent=None):
@@ -84,6 +85,9 @@ class SearchableComboPopup(QFrame):
         self.lbl_empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.lbl_empty.setVisible(False)
         layout.addWidget(self.lbl_empty)
+
+    def paintEvent(self, _event):
+        render_styled_frame_background(self)
 
     def sync_items(self):
         self.list_widget.clear()

@@ -56,7 +56,7 @@ def _get_icon_colored_impl(name: str, color_str: str, size: int, dpr: float) -> 
             
         return QIcon(colored_pixmap)
     except Exception as e:
-        logger.exception("Error renderizando icono coloreado %s: %s", name, e)
+        logger.exception("Error rendering colored icon '%s': %s", name, e)
         return QIcon()
 
 def _get_default_dpr() -> float:

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit
+from PySide6.QtGui import QPainter
+from PySide6.QtWidgets import (
+    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit,
+    QStyleOptionFrame, QStyle
+)
 from frontend.common import MARGIN_NONE, MARGIN_LG, SPACING_LG, SPACING_MD, SPACING_SM, SPACING_XS
 
 def create_card_frame(
@@ -216,3 +220,10 @@ def create_platform_switches(
         switches_row.addStretch()
 
     return switches_row, switch_kick, switch_twitch
+
+def render_styled_frame_background(widget: QWidget) -> None:
+    opt = QStyleOptionFrame()
+    opt.initFrom(widget)
+    p = QPainter(widget)
+    widget.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, widget)
+    p.end()

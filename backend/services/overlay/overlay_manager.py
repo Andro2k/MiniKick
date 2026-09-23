@@ -153,7 +153,7 @@ class OverlayServerManager:
             "duration": config.get("duration", 5.0)
         }
 
-        logger.info("[Overlay] Emitiendo alerta multimedia de recompensa: '%s' (%s)", reward_name, os.path.basename(filepath))
+        logger.info("[Overlay] Emitting media reward alert: '%s' (%s)", reward_name, os.path.basename(filepath))
         self._broadcast("clients", "rewards", payload)
 
     def trigger_alert(self, payload: dict):
