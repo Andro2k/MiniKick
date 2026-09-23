@@ -797,6 +797,10 @@ class MainWindowCore(QMainWindow):
             except RuntimeError as e:
                 self.logger.debug("[Shutdown] Notice stopping worker '%s' (%s): %s", name, type(e).__name__, e)
 
+    def _nullify_worker_attributes(self, *attrs: str) -> None:
+        for attr in attrs:
+            setattr(self, attr, None)
+
     def _stop_kick_connection_workers(self):
         worker_map = [
             ("Worker_Kick_Chat_Socket", getattr(self, 'kick_chat_worker', None)),
@@ -805,10 +809,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
-        self.kick_chat_worker = None
-        self.kick_auth_worker = None
-        self.fetch_rewards_worker = None
-        self.timers_worker = None
+        self._nullify_worker_attributes('kick_chat_worker', 'kick_auth_worker', 'fetch_rewards_worker', 'timers_worker')
 
     def _stop_twitch_connection_workers(self):
         worker_map = [
@@ -818,10 +819,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_Fetch_Twitch_Rewards", getattr(self, 'fetch_twitch_rewards_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
-        self.twitch_chat_worker = None
-        self.twitch_auth_worker = None
-        self.twitch_reward_worker = None
-        self.fetch_twitch_rewards_worker = None
+        self._nullify_worker_attributes('twitch_chat_worker', 'twitch_auth_worker', 'twitch_reward_worker', 'fetch_twitch_rewards_worker')
 
     def _stop_all_workers(self):
         worker_map = [
@@ -840,17 +838,11 @@ class MainWindowCore(QMainWindow):
         ]
 
         self._stop_workers_parallel(worker_map)
-        self.kick_chat_worker = None
-        self.kick_auth_worker = None
-        self.fetch_rewards_worker = None
-        self.timers_worker = None
-        self.twitch_chat_worker = None
-        self.twitch_auth_worker = None
-        self.twitch_reward_worker = None
-        self.youtube_chat_worker = None
-        self.tiktok_chat_worker = None
-        self.schedule_worker = None
-        self.global_media_worker = None
+        self._nullify_worker_attributes(
+            'kick_chat_worker', 'kick_auth_worker', 'fetch_rewards_worker', 'timers_worker',
+            'twitch_chat_worker', 'twitch_auth_worker', 'twitch_reward_worker',
+            'youtube_chat_worker', 'tiktok_chat_worker', 'schedule_worker', 'global_media_worker'
+        )
         if hasattr(self, "chat_service") and self.chat_service and hasattr(self.chat_service, "shutdown"):
             try:
                 self.chat_service.shutdown()
@@ -1377,18 +1369,57 @@ class MainWindowCore(QMainWindow):
         self.youtube_chat_worker.message_received.connect(self._route_incoming_message)
         self.youtube_chat_worker.start()
 
-    def _on_youtube_connected(self, stream_info: dict):
-        self._youtube_connected = True
-        ch_name = stream_info.get("channel_name", "") or stream_info.get("title", "") or stream_info.get("channel", "") or "YouTube Live"
-        self._youtube_channel = ch_name
-        target = stream_info.get("channel", "")
-        if target:
-            self.settings_storage.save_string("youtube_target_channel", target)
-        self.logger.info("[YouTube] Connected to YouTube Live: '%s'.", ch_name)
+    def _handle_live_chat_connected(
+        self,
+        platform_id: str,
+        display_name: str,
+        target_setting: str,
+        setting_key: str,
+        log_msg: str,
+        toast_title_key: str,
+        toast_msg_key: str
+    ):
+        setattr(self, f"_{platform_id}_connected", True)
+        setattr(self, f"_{platform_id}_channel", display_name)
+        if target_setting:
+            self.settings_storage.save_string(setting_key, target_setting)
+        self.logger.info(log_msg)
         self._update_integrations_status_ui()
-        title = self.container.i18n.get("main.toast.youtube_connected_title")
-        msg = self.container.i18n.get("main.toast.youtube_connected_msg").replace("{target}", ch_name)
+        title = self.container.i18n.get(toast_title_key)
+        msg = self.container.i18n.get(toast_msg_key).replace("{target}", display_name)
         self.toast.show_toast(title=title, message=msg, state="success")
+
+    def _disconnect_live_chat_platform(
+        self,
+        platform_id: str,
+        log_platform: str,
+        worker_name: str,
+        setting_key: str,
+        toast_title_key: str,
+        toast_msg_key: str
+    ):
+        self.logger.info("[User Action] %s disconnected successfully", log_platform)
+        self._safe_stop_worker(worker_name, timeout_ms=1500)
+        setattr(self, f"_{platform_id}_connected", False)
+        setattr(self, f"_{platform_id}_channel", "")
+        self.settings_storage.save_string(setting_key, "")
+        self._update_integrations_status_ui()
+        title_disc = self.container.i18n.get(toast_title_key)
+        msg_disc = self.container.i18n.get(toast_msg_key)
+        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
+
+    def _on_youtube_connected(self, stream_info: dict):
+        ch_name = stream_info.get("channel_name", "") or stream_info.get("title", "") or stream_info.get("channel", "") or "YouTube Live"
+        target = stream_info.get("channel", "")
+        self._handle_live_chat_connected(
+            platform_id="youtube",
+            display_name=ch_name,
+            target_setting=target,
+            setting_key="youtube_target_channel",
+            log_msg=f"[YouTube] Connected to YouTube Live: '{ch_name}'.",
+            toast_title_key="main.toast.youtube_connected_title",
+            toast_msg_key="main.toast.youtube_connected_msg"
+        )
 
     def _on_youtube_disconnected(self):
         self._youtube_connected = False
@@ -1407,15 +1438,14 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_youtube_disconnect(self):
-        self.logger.info("[User Action] YouTube Live disconnected successfully")
-        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1500)
-        self._youtube_connected = False
-        self._youtube_channel = ""
-        self.settings_storage.save_string("youtube_target_channel", "")
-        self._update_integrations_status_ui()
-        title_disc = self.container.i18n.get("main.toast.youtube_disconnected_title")
-        msg_disc = self.container.i18n.get("main.toast.youtube_disconnected_msg")
-        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
+        self._disconnect_live_chat_platform(
+            platform_id="youtube",
+            log_platform="YouTube Live",
+            worker_name="youtube_chat_worker",
+            setting_key="youtube_target_channel",
+            toast_title_key="main.toast.youtube_disconnected_title",
+            toast_msg_key="main.toast.youtube_disconnected_msg"
+        )
 
     @Slot()
     def _on_tiktok_integration_button_clicked(self):
@@ -1468,16 +1498,16 @@ class MainWindowCore(QMainWindow):
         self.tiktok_chat_worker.start()
 
     def _on_tiktok_connected(self, stream_info: dict):
-        self._tiktok_connected = True
         unique_id = stream_info.get("unique_id", "") or stream_info.get("channel", "") or "TikTok Live"
-        self._tiktok_channel = unique_id
-        if unique_id:
-            self.settings_storage.save_string("tiktok_target_channel", unique_id)
-        self.logger.info("[TikTok] Connected to TikTok Live: '@%s'.", unique_id)
-        self._update_integrations_status_ui()
-        title = self.container.i18n.get("main.toast.tiktok_connected_title")
-        msg = self.container.i18n.get("main.toast.tiktok_connected_msg").replace("{target}", unique_id)
-        self.toast.show_toast(title=title, message=msg, state="success")
+        self._handle_live_chat_connected(
+            platform_id="tiktok",
+            display_name=unique_id,
+            target_setting=unique_id,
+            setting_key="tiktok_target_channel",
+            log_msg=f"[TikTok] Connected to TikTok Live: '@{unique_id}'.",
+            toast_title_key="main.toast.tiktok_connected_title",
+            toast_msg_key="main.toast.tiktok_connected_msg"
+        )
 
     def _on_tiktok_disconnected(self):
         self._tiktok_connected = False
@@ -1496,15 +1526,14 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_tiktok_disconnect(self):
-        self.logger.info("[User Action] TikTok Live disconnected successfully")
-        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1500)
-        self._tiktok_connected = False
-        self._tiktok_channel = ""
-        self.settings_storage.save_string("tiktok_target_channel", "")
-        self._update_integrations_status_ui()
-        title_disc = self.container.i18n.get("main.toast.tiktok_disconnected_title")
-        msg_disc = self.container.i18n.get("main.toast.tiktok_disconnected_msg")
-        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
+        self._disconnect_live_chat_platform(
+            platform_id="tiktok",
+            log_platform="TikTok Live",
+            worker_name="tiktok_chat_worker",
+            setting_key="tiktok_target_channel",
+            toast_title_key="main.toast.tiktok_disconnected_title",
+            toast_msg_key="main.toast.tiktok_disconnected_msg"
+        )
 
     @Slot()
     def _on_twitch_integration_button_clicked(self):

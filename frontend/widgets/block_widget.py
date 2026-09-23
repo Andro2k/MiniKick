@@ -13,6 +13,7 @@ from frontend.common import (
 )
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls_widget import ModernSwitch
+from .layout_helpers import create_platform_switches, create_row_layout
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, title_color: str = None, parent=None):
@@ -287,7 +288,7 @@ class FadingScrollArea(QScrollArea):
         painter.end()
 
 class ModernScrollArea(FadingScrollArea):
-    def __init__(self, widget: QWidget, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
+    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
         super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
 
 class ExpandableCard(QFrame):
@@ -421,28 +422,17 @@ class ExpandableSettingCard(ExpandableCard):
         lbl_platforms.setProperty("role", "body")
         platforms_layout.addWidget(lbl_platforms)
 
-        kick_layout = QHBoxLayout()
-        kick_layout.setSpacing(SPACING_SM)
-        lbl_kick = QLabel(self.i18n.get("spam.card.platform_kick"))
-        lbl_kick.setProperty("role", "body")
-        self.switch_kick = ModernSwitch()
-        self.switch_kick.setChecked(True)
-        self.switch_kick.toggled.connect(self._emit_update)
-        kick_layout.addWidget(lbl_kick)
-        kick_layout.addWidget(self.switch_kick)
-
-        twitch_layout = QHBoxLayout()
-        twitch_layout.setSpacing(SPACING_SM)
-        lbl_twitch = QLabel(self.i18n.get("spam.card.platform_twitch"))
-        lbl_twitch.setProperty("role", "body")
-        self.switch_twitch = ModernSwitch()
-        self.switch_twitch.setChecked(True)
-        self.switch_twitch.toggled.connect(self._emit_update)
-        twitch_layout.addWidget(lbl_twitch)
-        twitch_layout.addWidget(self.switch_twitch)
-
-        platforms_layout.addLayout(kick_layout)
-        platforms_layout.addLayout(twitch_layout)
+        switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
+            kick_label=self.i18n.get("spam.card.platform_kick"),
+            twitch_label=self.i18n.get("spam.card.platform_twitch"),
+            spacing=SPACING_XL,
+            field_spacing=SPACING_SM,
+            on_kick_toggled=self._emit_update,
+            on_twitch_toggled=self._emit_update,
+            add_stretch=False,
+            label_first=True
+        )
+        platforms_layout.addLayout(switches_row)
         platforms_layout.addStretch()
         b_layout.addLayout(platforms_layout)
         
@@ -586,18 +576,14 @@ class ExpandableSettingCard(ExpandableCard):
 
 def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
     container = QWidget(parent)
-    layout = QHBoxLayout(container)
-    layout.setContentsMargins(*MARGIN_H_MD)
-    layout.setSpacing(SPACING_NONE)
+    layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_H_MD, parent=container)
     layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
     tag = QFrame(container)
     tag.setProperty("role", "badge")
     tag.setProperty("state", state)
 
-    tag_layout = QHBoxLayout(tag)
-    tag_layout.setContentsMargins(*MARGIN_H_SM)
-    tag_layout.setSpacing(SPACING_NONE)
+    tag_layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_H_SM, parent=tag)
 
     lbl_txt = QLabel(text, tag)
     lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)

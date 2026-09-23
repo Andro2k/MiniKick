@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QCheckBox, QHBoxLayo
 from PySide6.QtCore import Qt
 
 from .base_dialog import ModernModal
-from frontend.widgets import ModernButton, create_row_layout, create_labeled_field
+from frontend.widgets import ModernButton, create_row_layout, create_labeled_field, create_error_label
 from frontend.common import get_assets_path, SPACING_SM, SPACING_MD, SPACING_XL, MARGIN_V_XS
 from frontend.components.dialogs import SeverityCard, ImageDropzone
 
@@ -107,10 +107,7 @@ class BugReportDialog(ModernModal):
         row2_layout.addLayout(desc_col, 1)
         row2_layout.addLayout(image_col, 1)
 
-        self.lbl_error = QLabel()
-        self.lbl_error.setProperty("state", "error")
-        self.lbl_error.setWordWrap(True)
-        self.lbl_error.hide()
+        self.lbl_error = create_error_label(self)
 
         self.content_layout.addWidget(lbl_sev_header)
         self.content_layout.addLayout(sev_layout)

@@ -7,6 +7,7 @@ from backend.providers.chat import TikTokChatProvider
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_dumps
+from backend.workers.worker_utils import stop_provider_chat_worker
 
 logger = logging.getLogger("minikick.workers.tiktok_chat")
 
@@ -103,8 +104,4 @@ class TikTokChatWorker(QThread):
         self.message_received.emit(dto)
 
     def stop(self):
-        logger.info("[TikTokChatWorker] Stopping TikTok chat worker for '@%s'...", self.target_channel)
-        self._is_stopped = True
-        self.requestInterruption()
-        self.provider.stop_chat()
-        self.quit()
+        stop_provider_chat_worker(self, self.provider, logger, "TikTokChatWorker", f"@{self.target_channel}")

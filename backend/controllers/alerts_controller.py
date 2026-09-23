@@ -1,36 +1,25 @@
 # backend\controllers\alerts_controller.py
 
 import logging
-from PySide6.QtCore import QObject, Slot, QUrl
+from PySide6.QtCore import Slot, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 from backend.models import AlertConfig
+from .base_controller import BaseController
 
 logger = logging.getLogger("minikick.controllers.alerts")
 
-class AlertsController(QObject):
+class AlertsController(BaseController):
     def __init__(self, view=None, service=None, toast_manager=None, i18n=None, browser_service=None):
-        super().__init__()
-        self.view = view
-        self.service = service
-        self.toast = toast_manager
-        self.i18n = i18n
+        super().__init__(view=view, service=service, toast_manager=toast_manager, i18n=i18n)
         self.browser_service = browser_service
-        self._view_connected = False
         self._previous_enabled: dict[tuple[str, str], bool] = {}
         if self.view is not None:
             self._connect_signals()
             self.load_initial_data()
 
-    def attach_view(self, view) -> None:
-        self.view = view
-        if self.view is not None:
-            self._connect_signals()
-            self.load_initial_data()
-
     def _connect_signals(self):
-        if not self.view or self._view_connected:
+        if not self._ensure_view_connected():
             return
-        self._view_connected = True
         self.view.config_changed.connect(self._handle_config_changed)
         self.view.test_alert_requested.connect(self._handle_test_alert)
         self.view.copy_url_requested.connect(self._handle_copy_url)

@@ -44,16 +44,18 @@ class CommandView(BaseView):
         self.view_shown.emit()
 
     def _setup_ui(self):
-        col_1 = self.i18n.get("command.table.col_command")
-        col_2 = self.i18n.get("command.table.col_type")
-        col_3 = self.i18n.get("command.table.col_permission")
-        col_4 = self.i18n.get("command.table.col_platforms")
-        col_5 = self.i18n.get("command.table.col_aliases")
-        col_6 = self.i18n.get("command.table.col_actions")
+        headers = [
+            self.i18n.get("command.table.col_command"),
+            self.i18n.get("command.table.col_type"),
+            self.i18n.get("command.table.col_permission"),
+            self.i18n.get("command.table.col_platforms"),
+            self.i18n.get("command.table.col_aliases"),
+            self.i18n.get("command.table.col_actions"),
+        ]
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("command.table.title"),
-            headers=[col_1, col_2, col_3, col_4, col_5, col_6],
+            headers=headers,
             search_placeholder=self.i18n.get("command.table.search_placeholder"),
             add_button_text=self.i18n.get("command.table.btn_new"),
             add_button_icon="plus-filled.svg",
@@ -87,7 +89,7 @@ class CommandView(BaseView):
         ]
         self.filter_header.set_column_filter(
             col_idx=1,
-            title=col_2,
+            title=headers[1],
             options=type_options,
             all_label=all_text,
             sort_asc_label=sort_asc_text,
@@ -99,7 +101,7 @@ class CommandView(BaseView):
         ]
         self.filter_header.set_column_filter(
             col_idx=2,
-            title=col_3,
+            title=headers[2],
             options=perm_options,
             all_label=all_text,
             sort_asc_label=sort_asc_text,

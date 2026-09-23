@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import (
     QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
 )
+from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})
 DEFAULT_CHAT_THEME = "dark"
@@ -88,17 +89,8 @@ class ChatOverlayMockupWidget(QWidget):
             self.update()
 
     def paintEvent(self, _event):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.setRenderHint(QPainter.RenderHint.TextAntialiasing)
-
-        w = self.width()
-        h = self.height()
-
-        canvas_rect = QRectF(0, 0, w, h)
-        p.setPen(QPen(QColor("#27272A"), 1, Qt.PenStyle.SolidLine))
-        p.setBrush(QBrush(QColor("#09090B")))
-        p.drawRoundedRect(canvas_rect.adjusted(0.5, 0.5, -0.5, -0.5), 10, 10)
+        p, w, h = init_mockup_painter(self)
+        canvas_rect = draw_mockup_canvas(p, w, h)
 
         sample_user = self.i18n.get("chat.overlay.preview_sample_user") if self.i18n else "TheAndro2K"
         sample_msg_1 = self.i18n.get("chat.overlay.preview_sample_msg_1") if self.i18n else "hola xd"

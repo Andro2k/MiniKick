@@ -1,9 +1,10 @@
 # frontend\components\chat\tts_settings.py
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
-from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
-                              NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader)
+                              NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader,
+                              create_col_layout, create_row_layout)
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
     COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
@@ -22,12 +23,8 @@ class VoiceSettingRow(QWidget):
         self.btn_test = None
         self.action_button = action_button
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_SETTING_ROW_COMPACT)
-        main_layout.setSpacing(SPACING_2XS)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_SM)
+        main_layout = create_col_layout(spacing=SPACING_2XS, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+        header_layout = create_row_layout(spacing=SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
@@ -41,8 +38,7 @@ class VoiceSettingRow(QWidget):
 
         main_layout.addLayout(header_layout)
 
-        controls_layout = QHBoxLayout()
-        controls_layout.setSpacing(SPACING_SM)
+        controls_layout = create_row_layout(spacing=SPACING_SM)
 
         if self.switch is not None:
             controls_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)

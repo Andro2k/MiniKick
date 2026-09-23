@@ -22,12 +22,18 @@ from .schedule import (
 from .widgets import (
     WidgetCard,
 )
+from .mockup_helpers import (
+    init_mockup_painter,
+    draw_mockup_canvas,
+)
 
 __all__ = [
     "chat",
     "music",
     "schedule",
     "widgets",
+    "init_mockup_painter",
+    "draw_mockup_canvas",
     "BotMutePanel",
     "ChatDisplayPanel",
     "ChatOverlaySettingsPanel",

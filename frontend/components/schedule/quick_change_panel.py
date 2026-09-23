@@ -3,7 +3,11 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel,
                                QLineEdit, QPushButton, QFrame)
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import ModernCard, ModernButton, ModernSwitch, CategorySearchComboBox
+from frontend.widgets import (
+    ModernCard, ModernButton, CategorySearchComboBox,
+    create_platform_switches, create_row_layout, create_col_layout, create_text_label,
+    sync_dual_platform_switches
+)
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_PURPLE,
     get_icon_colored, get_pixmap_colored,
@@ -184,46 +188,20 @@ class ScheduleQuickChangePanel(QWidget):
 
     def _setup_quick_change_card(self, parent_layout: QVBoxLayout):
         change_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD)
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_MD)
-
-        lbl_title = QLabel(self.i18n.get("stream_info.quick_change.title"))
-        lbl_title.setProperty("role", "h3")
+        header_layout = create_row_layout(spacing=SPACING_MD)
+        lbl_title = create_text_label(self.i18n.get("stream_info.quick_change.title"), role="h3", word_wrap=False)
         header_layout.addWidget(lbl_title)
         header_layout.addStretch()
         change_card.addLayout(header_layout)
 
-        form_layout = QVBoxLayout()
-        form_layout.setSpacing(SPACING_MD)
-
-        lbl_target = QLabel(self.i18n.get("stream_info.quick_change.target_platform"))
-        lbl_target.setProperty("role", "h3")
+        form_layout = create_col_layout(spacing=SPACING_MD)
+        lbl_target = create_text_label(self.i18n.get("stream_info.quick_change.target_platform"), role="h3", word_wrap=False)
         form_layout.addWidget(lbl_target)
 
-        switches_row = QHBoxLayout()
-        switches_row.setSpacing(SPACING_LG)
-
-        kick_switch_box = QHBoxLayout()
-        kick_switch_box.setSpacing(SPACING_MD)
-        self.switch_kick = ModernSwitch(parent=self)
-        self.switch_kick.setChecked(True)
-        lbl_kick = QLabel("Kick")
-        lbl_kick.setProperty("role", "body")
-        kick_switch_box.addWidget(self.switch_kick)
-        kick_switch_box.addWidget(lbl_kick)
-        switches_row.addLayout(kick_switch_box)
-
-        twitch_switch_box = QHBoxLayout()
-        twitch_switch_box.setSpacing(SPACING_MD)
-        self.switch_twitch = ModernSwitch(parent=self)
-        self.switch_twitch.setChecked(True)
-        lbl_twitch = QLabel("Twitch")
-        lbl_twitch.setProperty("role", "body")
-        twitch_switch_box.addWidget(self.switch_twitch)
-        twitch_switch_box.addWidget(lbl_twitch)
-        switches_row.addLayout(twitch_switch_box)
-        switches_row.addStretch()
-
+        switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
+            spacing=SPACING_LG,
+            parent=self
+        )
         form_layout.addLayout(switches_row)
 
         lbl_title_field = QLabel(self.i18n.get("stream_info.quick_change.stream_title"))
@@ -339,23 +317,8 @@ class ScheduleQuickChangePanel(QWidget):
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
         self.connected_platforms = connected_platforms or {}
-        kick_on = self.connected_platforms.get("kick", False)
-        twitch_on = self.connected_platforms.get("twitch", False)
         off_tip = self.i18n.get("stream_info.quick_change.platform_offline") if self.i18n else ""
-
-        self.switch_kick.setEnabled(kick_on)
-        self.switch_kick.setChecked(kick_on)
-        if not kick_on:
-            self.switch_kick.setToolTip(off_tip)
-        else:
-            self.switch_kick.setToolTip("")
-
-        self.switch_twitch.setEnabled(twitch_on)
-        self.switch_twitch.setChecked(twitch_on)
-        if not twitch_on:
-            self.switch_twitch.setToolTip(off_tip)
-        else:
-            self.switch_twitch.setToolTip("")
+        sync_dual_platform_switches(self.switch_kick, self.switch_twitch, self.connected_platforms, off_tip, auto_check=True)
 
         if hasattr(self, "btn_apply"):
-            self.btn_apply.setEnabled(kick_on or twitch_on)
+            self.btn_apply.setEnabled(self.switch_kick.isEnabled() or self.switch_twitch.isEnabled())

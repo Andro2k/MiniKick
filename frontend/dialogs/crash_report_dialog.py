@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
-from frontend.widgets import ModernButton
+from frontend.widgets import ModernButton, create_error_label
 from frontend.common import get_assets_path, COLOR_RED, COLOR_PURE_WHITE, MARGIN_LG, SPACING_MD, SPACING_XS
 
 _ACTIVE_CRASH_WORKERS = set()
@@ -95,10 +95,7 @@ class CrashReportDialog(ModernModal):
         self.txt_traceback.setReadOnly(True)
         self.txt_traceback.setPlainText(self.traceback_text)
 
-        self.lbl_error = QLabel()
-        self.lbl_error.setProperty("state", "error")
-        self.lbl_error.setWordWrap(True)
-        self.lbl_error.hide()
+        self.lbl_error = create_error_label(self)
 
         self.content_layout.addWidget(header_card)
         self.content_layout.addSpacing(SPACING_XS)

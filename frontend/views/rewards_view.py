@@ -161,17 +161,19 @@ class RewardsView(BaseView):
         self.main_layout.addWidget(obs_card)
 
     def _build_table_card(self):
-        col_0 = self.i18n.get("rewards.table.col_reward")
-        col_plat = self.i18n.get("rewards.table.col_platform")
-        col_cost = self.i18n.get("rewards.table.col_cost")
-        col_file = self.i18n.get("rewards.table.col_file")
-        col_pos = self.i18n.get("rewards.table.col_pos")
-        col_vol = self.i18n.get("rewards.table.col_volume")
-        col_actions = self.i18n.get("rewards.table.col_actions")
+        headers = [
+            self.i18n.get("rewards.table.col_reward"),
+            self.i18n.get("rewards.table.col_platform"),
+            self.i18n.get("rewards.table.col_cost"),
+            self.i18n.get("rewards.table.col_file"),
+            self.i18n.get("rewards.table.col_pos"),
+            self.i18n.get("rewards.table.col_volume"),
+            self.i18n.get("rewards.table.col_actions"),
+        ]
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("rewards.table.title"),
-            headers=[col_0, col_plat, col_cost, col_file, col_pos, col_vol, col_actions],
+            headers=headers,
             search_placeholder=self.i18n.get("rewards.table.search_placeholder"),
             add_button_text=self.i18n.get("rewards.table.btn_new"),
             add_button_icon="plus-filled.svg",
@@ -202,7 +204,7 @@ class RewardsView(BaseView):
 
         self.filter_header.set_column_filter(
             col_idx=0,
-            title=col_0,
+            title=headers[0],
             options=None,
             sort_asc_label=sort_asc_text,
             sort_desc_label=sort_desc_text
@@ -214,7 +216,7 @@ class RewardsView(BaseView):
         ]
         self.filter_header.set_column_filter(
             col_idx=1,
-            title=col_plat,
+            title=headers[1],
             options=plat_options,
             all_label=all_text,
             sort_asc_label=sort_asc_text,
@@ -223,7 +225,7 @@ class RewardsView(BaseView):
 
         self.filter_header.set_column_filter(
             col_idx=2,
-            title=col_cost,
+            title=headers[2],
             options=None,
             sort_asc_label=self.i18n.get("rewards.table.filter_cost_asc"),
             sort_desc_label=self.i18n.get("rewards.table.filter_cost_desc")

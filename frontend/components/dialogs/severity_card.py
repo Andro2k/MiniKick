@@ -1,8 +1,9 @@
 # frontend\components\dialogs\severity_card.py
 
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QFrame, QLabel
 from PySide6.QtCore import Qt, Signal
 from frontend.common import MARGIN_MD, MARGIN_NONE, SPACING_MD, SPACING_2XS
+from frontend.widgets import create_row_layout, create_col_layout
 
 class SeverityCard(QFrame):
     clicked = Signal(str)
@@ -13,13 +14,8 @@ class SeverityCard(QFrame):
         self.setProperty("role", "card")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_MD)
-        layout.setSpacing(SPACING_MD)
-
-        text_layout = QVBoxLayout()
-        text_layout.setSpacing(SPACING_2XS)
-        text_layout.setContentsMargins(*MARGIN_NONE)
+        layout = create_row_layout(spacing=SPACING_MD, margins=MARGIN_MD, parent=self)
+        text_layout = create_col_layout(spacing=SPACING_2XS, margins=MARGIN_NONE)
 
         self.lbl_title = QLabel(title)
         self.lbl_title.setProperty("role", "body")

@@ -1,8 +1,9 @@
 # frontend\widgets\clearable_line_edit.py
 
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLineEdit, QPushButton
+from PySide6.QtWidgets import QFrame, QPushButton
 from PySide6.QtCore import Qt, Signal, QSize, QEvent
 from frontend.common import get_icon_colored, MARGIN_NONE, SPACING_NONE
+from .layout_helpers import create_row_layout, create_frameless_input
 
 class ClearableLineEdit(QFrame):
     textChanged = Signal(str)
@@ -13,18 +14,16 @@ class ClearableLineEdit(QFrame):
         super().__init__(parent)
         self.setProperty("role", "search_bar")
         
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_NONE)
-        layout.setSpacing(SPACING_NONE)
+        layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_NONE, parent=self)
 
         self._icon_clear = get_icon_colored("x-filled.svg")
-
-        self.txt_input = QLineEdit(self)
-        self.txt_input.setPlaceholderText(placeholder)
-        self.txt_input.setFrame(False)
-        self.txt_input.textChanged.connect(self._on_text_changed)
-        self.txt_input.returnPressed.connect(self.returnPressed.emit)
-        self.txt_input.installEventFilter(self)
+        self.txt_input = create_frameless_input(
+            self,
+            placeholder=placeholder,
+            on_text_changed=self._on_text_changed,
+            on_return_pressed=self.returnPressed.emit,
+            event_filter_parent=self
+        )
 
         self.btn_clear = QPushButton(self)
         self.btn_clear.setIcon(self._icon_clear)

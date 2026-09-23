@@ -1,9 +1,9 @@
 # frontend\components\dashboard\platform_card.py
 
-from PySide6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
+from PySide6.QtWidgets import QFrame, QLabel, QSizePolicy
 from PySide6.QtCore import Qt
 from frontend.common import get_pixmap_colored, MARGIN_MD, SPACING_SM
-from frontend.widgets import ModernButton
+from frontend.widgets import ModernButton, create_col_layout, create_row_layout
 
 class PlatformStatusCard(QFrame):
     _BTN_CONNECT_KEYS = {
@@ -37,12 +37,8 @@ class PlatformStatusCard(QFrame):
         self._setup_ui(brand_name, icon_file)
 
     def _setup_ui(self, brand_name: str, icon_file: str):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_MD)
-        layout.setSpacing(SPACING_SM)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_SM)
+        layout = create_col_layout(spacing=SPACING_SM, margins=MARGIN_MD, parent=self)
+        header_layout = create_row_layout(spacing=SPACING_SM)
 
         self.lbl_icon = QLabel(self)
         self.lbl_icon.setPixmap(get_pixmap_colored(icon_file, self.brand_color, 20))

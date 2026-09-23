@@ -4,8 +4,8 @@ from PySide6.QtWidgets import (
     QHBoxLayout, QLabel, QCheckBox, QButtonGroup, QRadioButton
 )
 from frontend.dialogs.base_dialog import ModernModal
-from frontend.widgets import ModernButton, ModernCard
-from frontend.common import SPACING_SM, SPACING_MD, MARGIN_NONE
+from frontend.widgets import ModernCard
+from frontend.common import SPACING_SM, MARGIN_NONE
 
 class DuplicateAlertModal(ModernModal):
     def __init__(self, source_platform: str, source_event: str, available_events: list[tuple[str, str]], i18n, parent=None):
@@ -78,28 +78,11 @@ class DuplicateAlertModal(ModernModal):
 
         self.content_layout.addWidget(options_card)
 
-        actions_row = QHBoxLayout()
-        actions_row.setSpacing(SPACING_MD)
-
-        self.btn_cancel = ModernButton(
-            text=self.i18n.get("alerts.dialogs.duplicate.btn_cancel"),
-            role="action_outlined",
-            parent=self
+        _, self.btn_cancel, self.btn_confirm = self.create_action_row(
+            cancel_text=self.i18n.get("alerts.dialogs.duplicate.btn_cancel"),
+            confirm_text=self.i18n.get("alerts.dialogs.duplicate.btn_confirm"),
+            confirm_icon="copy-filled.svg"
         )
-        self.btn_cancel.clicked.connect(self.reject)
-
-        self.btn_confirm = ModernButton(
-            text=self.i18n.get("alerts.dialogs.duplicate.btn_confirm"),
-            role="action_outlined",
-            icon_name="copy-filled.svg",
-            icon_size=14,
-            parent=self
-        )
-        self.btn_confirm.clicked.connect(self.accept)
-
-        actions_row.addWidget(self.btn_cancel)
-        actions_row.addWidget(self.btn_confirm)
-        self.content_layout.addLayout(actions_row)
 
     def get_selection(self) -> tuple[list[str], bool, bool]:
         target_events = []

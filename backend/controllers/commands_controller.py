@@ -1,20 +1,15 @@
 # backend\controllers\commands_controller.py
 
 import logging
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import Slot
+from .base_controller import BaseController
 
 logger = logging.getLogger("minikick.controllers.commands")
 
-class CommandsController(QObject):
+class CommandsController(BaseController):
     def __init__(self, view, service, toast_manager=None, connected_platforms_provider=None, i18n=None):
-        super().__init__()
-        self.view = view
-        self.service = service
-        self.toast = toast_manager
-        self.connected_platforms_provider = connected_platforms_provider
-        self.i18n = i18n
+        super().__init__(view=view, service=service, toast_manager=toast_manager, connected_platforms_provider=connected_platforms_provider, i18n=i18n)
         self._needs_reload = False
-        self._view_connected = False
         self._is_internal_toggle = False
 
         if self.service and hasattr(self.service, "commands_changed"):
@@ -38,13 +33,13 @@ class CommandsController(QObject):
         return TranslationService()
 
     def _connect_signals(self):
-        if not self.view or self._view_connected:
+        if not self._connect_crud_signals(
+            on_add=self._handle_add,
+            on_edit=self._handle_edit,
+            on_delete=self._handle_delete,
+            on_status_toggle=self._handle_status_change,
+        ):
             return
-        self._view_connected = True
-        self.view.add_requested.connect(self._handle_add)
-        self.view.edit_requested.connect(self._handle_edit)
-        self.view.delete_requested.connect(self._handle_delete)
-        self.view.status_toggled.connect(self._handle_status_change)
         if hasattr(self.view, "view_shown"):
             self.view.view_shown.connect(self._on_view_shown)
 

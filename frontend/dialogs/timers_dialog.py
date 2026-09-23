@@ -1,13 +1,17 @@
 # frontend\dialogs\timer_dialog.py
 
 import logging
-from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
+from PySide6.QtWidgets import (QVBoxLayout, QHBoxLayout, QLineEdit,
                                QSpinBox, QWidget, QScrollArea, QFrame, QCheckBox, QSizePolicy)
 from PySide6.QtCore import Qt, Signal
 
 from .base_dialog import ModernWizardPanel
 from .message_dialog import MessageEditorDialog
-from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox, create_card_frame, create_col_layout
+from frontend.widgets import (
+    ModernButton, ModernSwitch, CategorySearchComboBox,
+    create_card_frame, create_col_layout, create_switch_field,
+    create_text_label, create_labeled_field
+)
 from frontend.common import (
     COLOR_WHITE, get_icon_colored,
     SPACING_MD, MARGIN_NONE, MARGIN_LG
@@ -69,31 +73,21 @@ class TimerConfigWizard(ModernWizardPanel):
         twitch_on = self.connected_platforms.get("twitch", False)
         off_tip = self.i18n.get("timer.dialog.platform_offline")
 
-        kick_switch_box = QHBoxLayout()
-        kick_switch_box.setSpacing(SPACING_MD)
         self.switch_kick = ModernSwitch()
         self.switch_kick.setEnabled(kick_on)
         self.switch_kick.setChecked(kick_on)
         if not kick_on:
             self.switch_kick.setToolTip(off_tip)
-        lbl_kick = QLabel("Kick")
-        lbl_kick.setProperty("role", "body")
-        kick_switch_box.addWidget(self.switch_kick)
-        kick_switch_box.addWidget(lbl_kick)
-        switches_row.addLayout(kick_switch_box)
+        kick_box, _ = create_switch_field(self.switch_kick, "Kick", spacing=SPACING_MD)
+        switches_row.addLayout(kick_box)
 
-        twitch_switch_box = QHBoxLayout()
-        twitch_switch_box.setSpacing(SPACING_MD)
         self.switch_twitch = ModernSwitch()
         self.switch_twitch.setEnabled(twitch_on)
         self.switch_twitch.setChecked(twitch_on)
         if not twitch_on:
             self.switch_twitch.setToolTip(off_tip)
-        lbl_twitch = QLabel("Twitch")
-        lbl_twitch.setProperty("role", "body")
-        twitch_switch_box.addWidget(self.switch_twitch)
-        twitch_switch_box.addWidget(lbl_twitch)
-        switches_row.addLayout(twitch_switch_box)
+        twitch_box, _ = create_switch_field(self.switch_twitch, "Twitch", spacing=SPACING_MD)
+        switches_row.addLayout(twitch_box)
         switches_row.addStretch()
         return switches_row
 
@@ -106,22 +100,21 @@ class TimerConfigWizard(ModernWizardPanel):
 
         top_card, top_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
 
-        lbl_name = QLabel(self.i18n.get("timer.dialog.name_label"))
-        lbl_name.setProperty("role", "h3")
         self.txt_name = QLineEdit()
         self.txt_name.setPlaceholderText(self.i18n.get("timer.dialog.name_placeholder"))
         self.txt_name.textChanged.connect(self._update_btn_next_state)
-        top_layout.addWidget(lbl_name)
-        top_layout.addWidget(self.txt_name)
+        name_field, _ = create_labeled_field(
+            self.i18n.get("timer.dialog.name_label"),
+            self.txt_name,
+            role="h3",
+            parent=self
+        )
+        top_layout.addLayout(name_field)
 
-        lbl_platform = QLabel(self.i18n.get("timer.dialog.platform_label"))
-        lbl_platform.setProperty("role", "h3")
-        top_layout.addWidget(lbl_platform)
+        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.platform_label"), role="h3", parent=self))
         top_layout.addLayout(self._build_platform_switches_row())
 
-        lbl_intervals = QLabel(self.i18n.get("timer.dialog.intervals_label"))
-        lbl_intervals.setProperty("role", "h3")
-        top_layout.addWidget(lbl_intervals)
+        top_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.intervals_label"), role="h3", parent=self))
 
         row_online = QHBoxLayout()
         self.chk_online = QCheckBox(self.i18n.get("timer.dialog.online_interval"))
@@ -169,21 +162,15 @@ class TimerConfigWizard(ModernWizardPanel):
         row_lines.addWidget(self.spin_lines)
         top_layout.addLayout(row_lines)
 
-        lbl_lines_desc = QLabel(self.i18n.get("timer.dialog.chat_lines_desc"))
-        lbl_lines_desc.setProperty("role", "caption")
-        lbl_lines_desc.setWordWrap(True)
+        lbl_lines_desc = create_text_label(self.i18n.get("timer.dialog.chat_lines_desc"), role="caption")
         top_layout.addWidget(lbl_lines_desc)
 
         basic_main_layout.addWidget(top_card)
 
         bottom_card, bottom_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
+        bottom_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.responses_title"), role="h3", parent=self))
 
-        lbl_msgs_title = QLabel(self.i18n.get("timer.dialog.responses_title"))
-        lbl_msgs_title.setProperty("role", "h3")
-        bottom_layout.addWidget(lbl_msgs_title)
-
-        lbl_msgs_desc = QLabel(self.i18n.get("timer.dialog.responses_desc"))
-        lbl_msgs_desc.setProperty("role", "caption")
+        lbl_msgs_desc = create_text_label(self.i18n.get("timer.dialog.responses_desc"), role="caption", parent=self)
         lbl_msgs_desc.setWordWrap(True)
         bottom_layout.addWidget(lbl_msgs_desc)
 
@@ -211,37 +198,32 @@ class TimerConfigWizard(ModernWizardPanel):
         filters_main_layout = create_col_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=self.tab_filters)
 
         help_card, help_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
-
-        lbl_help_title = QLabel(self.i18n.get("timer.dialog.help_title"))
-        lbl_help_title.setProperty("role", "h3")
-        lbl_help_desc = QLabel(self.i18n.get("timer.dialog.help_desc"))
+        lbl_help_desc = create_text_label(self.i18n.get("timer.dialog.help_desc"), role="body", parent=self)
         lbl_help_desc.setWordWrap(True)
-        lbl_help_desc.setProperty("role", "body")
 
-        help_layout.addWidget(lbl_help_title)
+        help_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.help_title"), role="h3", parent=self))
         help_layout.addWidget(lbl_help_desc)
         filters_main_layout.addWidget(help_card)
 
         filt_card, filt_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
 
-        lbl_keywords = QLabel(self.i18n.get("timer.dialog.keywords_label"))
-        lbl_keywords.setProperty("role", "h3")
-        filt_layout.addWidget(lbl_keywords)
-
         self.txt_keywords = QLineEdit()
         self.txt_keywords.setPlaceholderText(self.i18n.get("timer.dialog.keywords_placeholder"))
-        filt_layout.addWidget(self.txt_keywords)
+        kw_field, _ = create_labeled_field(
+            self.i18n.get("timer.dialog.keywords_label"),
+            self.txt_keywords,
+            role="h3",
+            parent=self
+        )
+        filt_layout.addLayout(kw_field)
 
-        lbl_keywords_desc = QLabel(self.i18n.get("timer.dialog.keywords_desc"))
-        lbl_keywords_desc.setProperty("role", "caption")
+        lbl_keywords_desc = create_text_label(self.i18n.get("timer.dialog.keywords_desc"), role="caption", parent=self)
         lbl_keywords_desc.setWordWrap(True)
         filt_layout.addWidget(lbl_keywords_desc)
 
         filt_layout.addSpacing(SPACING_MD)
 
-        lbl_categories = QLabel(self.i18n.get("timer.dialog.categories_label"))
-        lbl_categories.setProperty("role", "h3")
-        filt_layout.addWidget(lbl_categories)
+        filt_layout.addWidget(create_text_label(self.i18n.get("timer.dialog.categories_label"), role="h3", parent=self))
 
         self.search_category = CategorySearchComboBox(
             placeholder=self.i18n.get("stream_info.quick_change.category_placeholder"),
@@ -257,9 +239,7 @@ class TimerConfigWizard(ModernWizardPanel):
         self.txt_categories.setPlaceholderText(self.i18n.get("timer.dialog.categories_placeholder"))
         filt_layout.addWidget(self.txt_categories)
 
-        lbl_cat_desc = QLabel(self.i18n.get("timer.dialog.categories_desc"))
-        lbl_cat_desc.setProperty("role", "caption")
-        lbl_cat_desc.setWordWrap(True)
+        lbl_cat_desc = create_text_label(self.i18n.get("timer.dialog.categories_desc"), role="caption")
         filt_layout.addWidget(lbl_cat_desc)
 
         filters_main_layout.addWidget(filt_card)

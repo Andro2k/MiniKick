@@ -4,9 +4,10 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QLineEdit, QPushButton)
 from PySide6.QtCore import Qt, Signal, QDate, QTime
 from frontend.widgets import (
-    ModernCard, ModernButton, ModernSwitch,
+    ModernCard, ModernButton,
     NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox,
-    create_row_layout, create_labeled_field
+    create_row_layout, create_labeled_field, create_platform_switches,
+    sync_dual_platform_switches, create_text_label
 )
 from frontend.common import (
     SPACING_SM, SPACING_MD, SPACING_LG,
@@ -48,41 +49,21 @@ class ScheduleFormPanel(QWidget):
         form_layout = QVBoxLayout()
         form_layout.setSpacing(SPACING_MD)
 
-        lbl_name = QLabel(self.i18n.get("stream_info.schedule_dialog.name_label"))
-        lbl_name.setProperty("role", "h3")
         self.txt_name = QLineEdit(parent=self)
         self.txt_name.setPlaceholderText(self.i18n.get("stream_info.schedule_dialog.name_placeholder"))
-        form_layout.addWidget(lbl_name)
-        form_layout.addWidget(self.txt_name)
+        name_field, _ = create_labeled_field(
+            self.i18n.get("stream_info.schedule_dialog.name_label"),
+            self.txt_name,
+            role="h3",
+            parent=self
+        )
+        form_layout.addLayout(name_field)
+        form_layout.addWidget(create_text_label(self.i18n.get("stream_info.schedule_dialog.platform_label"), role="h3", parent=self))
 
-        lbl_target = QLabel(self.i18n.get("stream_info.schedule_dialog.platform_label"))
-        lbl_target.setProperty("role", "h3")
-        form_layout.addWidget(lbl_target)
-
-        switches_row = QHBoxLayout()
-        switches_row.setSpacing(SPACING_LG)
-
-        kick_switch_box = QHBoxLayout()
-        kick_switch_box.setSpacing(SPACING_MD)
-        self.switch_kick = ModernSwitch(parent=self)
-        self.switch_kick.setChecked(True)
-        lbl_kick = QLabel("Kick")
-        lbl_kick.setProperty("role", "body")
-        kick_switch_box.addWidget(self.switch_kick)
-        kick_switch_box.addWidget(lbl_kick)
-        switches_row.addLayout(kick_switch_box)
-
-        twitch_switch_box = QHBoxLayout()
-        twitch_switch_box.setSpacing(SPACING_MD)
-        self.switch_twitch = ModernSwitch(parent=self)
-        self.switch_twitch.setChecked(True)
-        lbl_twitch = QLabel("Twitch")
-        lbl_twitch.setProperty("role", "body")
-        twitch_switch_box.addWidget(self.switch_twitch)
-        twitch_switch_box.addWidget(lbl_twitch)
-        switches_row.addLayout(twitch_switch_box)
-        switches_row.addStretch()
-
+        switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
+            spacing=SPACING_LG,
+            parent=self
+        )
         form_layout.addLayout(switches_row)
 
         datetime_row = create_row_layout(spacing=SPACING_LG)
@@ -206,28 +187,13 @@ class ScheduleFormPanel(QWidget):
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
         self.connected_platforms = connected_platforms or {}
-        kick_on = self.connected_platforms.get("kick", False)
-        twitch_on = self.connected_platforms.get("twitch", False)
         off_tip = self.i18n.get("stream_info.quick_change.platform_offline") if self.i18n else ""
-
-        self.switch_kick.setEnabled(kick_on)
-        if not kick_on:
-            self.switch_kick.setChecked(False)
-            self.switch_kick.setToolTip(off_tip)
-        else:
-            self.switch_kick.setToolTip("")
-
-        self.switch_twitch.setEnabled(twitch_on)
-        if not twitch_on:
-            self.switch_twitch.setChecked(False)
-            self.switch_twitch.setToolTip(off_tip)
-        else:
-            self.switch_twitch.setToolTip("")
+        sync_dual_platform_switches(self.switch_kick, self.switch_twitch, self.connected_platforms, off_tip, auto_check=False)
 
         if hasattr(self, "search_kick_cat"):
-            self.search_kick_cat.setEnabled(kick_on)
+            self.search_kick_cat.setEnabled(self.switch_kick.isEnabled())
         if hasattr(self, "search_twitch_cat"):
-            self.search_twitch_cat.setEnabled(twitch_on)
+            self.search_twitch_cat.setEnabled(self.switch_twitch.isEnabled())
 
     def _trigger_category_search(self, platform: str, query: str):
         if query.strip():

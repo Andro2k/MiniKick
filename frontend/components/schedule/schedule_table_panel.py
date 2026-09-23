@@ -23,17 +23,17 @@ class ScheduleTablePanel(QWidget):
         main_layout.setContentsMargins(*MARGIN_NONE)
         main_layout.setSpacing(SPACING_NONE)
 
-        col_1 = self.i18n.get("stream_info.table.col_name")
-        col_2 = self.i18n.get("stream_info.table.col_date")
-        col_3 = self.i18n.get("stream_info.table.col_time")
-        col_4 = self.i18n.get("stream_info.table.col_platform")
-        col_5 = self.i18n.get("stream_info.table.col_title")
-        col_6 = self.i18n.get("stream_info.table.col_category")
-        col_7 = self.i18n.get("stream_info.table.col_actions")
-
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("stream_info.schedule_section.title"),
-            headers=[col_1, col_2, col_3, col_4, col_5, col_6, col_7],
+            headers=[
+                self.i18n.get("stream_info.table.col_name"),
+                self.i18n.get("stream_info.table.col_date"),
+                self.i18n.get("stream_info.table.col_time"),
+                self.i18n.get("stream_info.table.col_platform"),
+                self.i18n.get("stream_info.table.col_title"),
+                self.i18n.get("stream_info.table.col_category"),
+                self.i18n.get("stream_info.table.col_actions"),
+            ],
             search_placeholder=self.i18n.get("stream_info.table.search_placeholder"),
             add_button_text=self.i18n.get("stream_info.schedule_section.btn_new"),
             add_button_icon="plus-filled.svg",

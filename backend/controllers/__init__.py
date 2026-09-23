@@ -1,5 +1,6 @@
 # backend\controllers\__init__.py
 
+from .base_controller import BaseController
 from .alerts_controller import AlertsController
 from .chat_controller import ChatController
 from .commands_controller import CommandsController
@@ -15,6 +16,7 @@ from .updater_controller import UpdaterController
 from .widgets_controller import WidgetsController
 
 __all__ = [
+    "BaseController",
     "AlertsController",
     "ChatController",
     "CommandsController",

@@ -1,13 +1,14 @@
 # frontend\components\dialogs\piper_voice_item.py
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QProgressBar
+    QWidget, QLabel, QPushButton, QProgressBar
 )
 from PySide6.QtCore import Qt, QSize, Signal
 from frontend.common import (
     get_icon_colored, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_RED,
     SPACING_MD, SPACING_2XS, MARGIN_SETTING_ROW_COMPACT
 )
+from frontend.widgets import create_col_layout, create_row_layout
 
 class PiperVoiceItemWidget(QWidget):
     download_requested = Signal(str)
@@ -24,12 +25,8 @@ class PiperVoiceItemWidget(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_SETTING_ROW_COMPACT)
-        main_layout.setSpacing(SPACING_2XS)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_MD)
+        main_layout = create_col_layout(spacing=SPACING_2XS, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+        header_layout = create_row_layout(spacing=SPACING_MD)
 
         category = self.voice_meta.get("category", "natural")
         lang = self.voice_meta.get("lang", "es")
@@ -40,8 +37,7 @@ class PiperVoiceItemWidget(QWidget):
         self.badge_lbl.setMinimumWidth(56)
         self.badge_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        info_layout = QVBoxLayout()
-        info_layout.setSpacing(SPACING_2XS)
+        info_layout = create_col_layout(spacing=SPACING_2XS)
 
         self.lbl_name = QLabel(self.voice_meta.get("name", self.voice_id), self)
         self.lbl_name.setProperty("role", "body")

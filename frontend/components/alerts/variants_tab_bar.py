@@ -27,10 +27,10 @@ class AlertVariantTabPill(QFrame):
         parent: Optional[QWidget] = None
     ):
         super().__init__(parent=parent)
+        self.i18n = i18n
+        self.icon_name = icon_name
         self.platform = platform
         self.alert_type = alert_type
-        self.icon_name = icon_name
-        self.i18n = i18n
         self._is_selected = False
         self._is_enabled = True
 

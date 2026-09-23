@@ -460,6 +460,40 @@ class ModernModal(ModernFramelessShell):
         self.content_layout.addSpacing(SPACING_MD)
         self.content_layout.addLayout(btn_layout)
 
+    def create_action_row(
+        self,
+        cancel_text: str,
+        confirm_text: str,
+        confirm_icon: str = "",
+        on_cancel=None,
+        on_confirm=None,
+        spacing: int = SPACING_MD
+    ):
+        from frontend.widgets import ModernButton
+        actions_row = QHBoxLayout()
+        actions_row.setSpacing(spacing)
+
+        btn_cancel = ModernButton(
+            text=cancel_text,
+            role="action_outlined",
+            parent=self
+        )
+        btn_cancel.clicked.connect(on_cancel or self.reject)
+
+        btn_confirm = ModernButton(
+            text=confirm_text,
+            role="action_outlined",
+            icon_name=confirm_icon,
+            icon_size=14 if confirm_icon else 16,
+            parent=self
+        )
+        btn_confirm.clicked.connect(on_confirm or self.accept)
+
+        actions_row.addWidget(btn_cancel)
+        actions_row.addWidget(btn_confirm)
+        self.content_layout.addLayout(actions_row)
+        return actions_row, btn_cancel, btn_confirm
+
 class ModernWizardPanel(ModernFramelessShell):
     def __init__(
         self,

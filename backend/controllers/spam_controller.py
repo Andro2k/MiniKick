@@ -1,7 +1,6 @@
-# backend\controllers\spam_controller.py
-
 import logging
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import Slot
+from .base_controller import BaseController
 
 logger = logging.getLogger("minikick.controllers.spam")
 
@@ -14,29 +13,16 @@ _SPAM_FILTER_I18N_KEYS: dict[str, str] = {
     "repetition_protection": "spam.filters.repetition.title",
 }
 
-class SpamController(QObject):
+class SpamController(BaseController):
     def __init__(self, view, service, toast_manager=None, connected_platforms_provider=None, i18n=None):
-        super().__init__()
-        self.view = view
-        self.service = service
-        self.toast = toast_manager
-        self.connected_platforms_provider = connected_platforms_provider
-        self.i18n = i18n
-        self._view_connected = False
-        if self.view is not None:
-            self._connect_signals()
-            self.load_initial_data()
-
-    def attach_view(self, view) -> None:
-        self.view = view
+        super().__init__(view=view, service=service, toast_manager=toast_manager, connected_platforms_provider=connected_platforms_provider, i18n=i18n)
         if self.view is not None:
             self._connect_signals()
             self.load_initial_data()
 
     def _connect_signals(self):
-        if not self.view or self._view_connected:
+        if not self._ensure_view_connected():
             return
-        self._view_connected = True
         self.view.filter_updated.connect(self._handle_filter_update)
 
     def _get_i18n(self):

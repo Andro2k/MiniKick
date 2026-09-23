@@ -22,13 +22,27 @@ from .no_wheel import (
 from .category_search import CategorySearchComboBox, CategorySuggestionsPopup, CategoryItemWidget
 from .searchable_combo_box import SearchableComboBox, SearchableComboPopup
 from .inspector_widgets import InspectorPropertyRow
-from .layout_helpers import create_card_frame, create_row_layout, create_col_layout, create_labeled_field
+from .layout_helpers import (
+    create_card_frame, create_row_layout, create_col_layout,
+    create_labeled_field, create_switch_field, create_box_layout,
+    create_two_column_container, create_frameless_input,
+    create_text_label, create_platform_switches,
+    create_error_label, sync_dual_platform_switches
+)
 
 __all__ = [
     "create_card_frame",
     "create_row_layout",
     "create_col_layout",
     "create_labeled_field",
+    "create_switch_field",
+    "create_box_layout",
+    "create_two_column_container",
+    "create_frameless_input",
+    "create_text_label",
+    "create_platform_switches",
+    "create_error_label",
+    "sync_dual_platform_switches",
     "InspectorPropertyRow",
     "BaseView",
     "ViewHeader",

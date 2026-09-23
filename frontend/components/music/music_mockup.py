@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, QRectF, QPointF
 from PySide6.QtGui import (
     QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont
 )
+from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
 class MusicOverlayMockupWidget(QWidget):
     def __init__(self, i18n, parent=None):
@@ -22,17 +23,8 @@ class MusicOverlayMockupWidget(QWidget):
             self.update()
 
     def paintEvent(self, _event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)
-
-        w = self.width()
-        h = self.height()
-
-        canvas_rect = QRectF(0, 0, w, h)
-        painter.setPen(QPen(QColor("#27272A"), 1, Qt.PenStyle.SolidLine))
-        painter.setBrush(QBrush(QColor("#09090B")))
-        painter.drawRoundedRect(canvas_rect.adjusted(0.5, 0.5, -0.5, -0.5), 10, 10)
+        painter, w, h = init_mockup_painter(self)
+        canvas_rect = draw_mockup_canvas(painter, w, h)
 
         bg_brush, border_pen, accent_color, text_main, text_sub = self._get_theme_palette()
 
@@ -80,12 +72,32 @@ class MusicOverlayMockupWidget(QWidget):
 
         return bg_brush, border_pen, accent_color, text_main, text_sub
 
-    def _draw_floating_layout(self, p: QPainter, w: int, h: int, bg_brush, border_pen, accent_color, text_main, text_sub, title: str, artist: str):
-        card_w = min(340, w - 30)
-        card_h = 86
+    @staticmethod
+    def _compute_centered_card(w: int, h: int, max_w: int, card_h: int) -> tuple[QRectF, float, float, float, float]:
+        card_w = min(max_w, w - 30)
         card_x = (w - card_w) / 2
         card_y = (h - card_h) / 2
-        card_rect = QRectF(card_x, card_y, card_w, card_h)
+        return QRectF(card_x, card_y, card_w, card_h), card_x, card_y, card_w, card_h
+
+    def _draw_album_art_placeholder(self, p: QPainter, art_x: float, art_y: float, art_size: float, corner_radius: float, with_third_stop: bool = False):
+        art_grad = QLinearGradient(art_x, art_y, art_x + art_size, art_y + art_size)
+        art_grad.setColorAt(0.0, QColor("#F43F5E"))
+        if with_third_stop:
+            art_grad.setColorAt(0.5, QColor("#A855F7"))
+            art_grad.setColorAt(1.0, QColor("#6366F1"))
+        else:
+            art_grad.setColorAt(1.0, QColor("#A855F7"))
+        p.setPen(QPen(QColor(255, 255, 255, 50), 1))
+        p.setBrush(QBrush(art_grad))
+        p.drawRoundedRect(QRectF(art_x, art_y, art_size, art_size), corner_radius, corner_radius)
+
+    def _draw_mockup_text(self, p: QPainter, rect: QRectF, text: str, font: QFont, color: QColor, align=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter):
+        p.setFont(font)
+        p.setPen(color)
+        p.drawText(rect, align, self._elide(text, font, rect.width()))
+
+    def _draw_floating_layout(self, p: QPainter, w: int, h: int, bg_brush, border_pen, accent_color, text_main, text_sub, title: str, artist: str):
+        card_rect, card_x, card_y, card_w, card_h = self._compute_centered_card(w, h, 340, 86)
 
         p.setPen(border_pen)
         p.setBrush(bg_brush)
@@ -99,15 +111,8 @@ class MusicOverlayMockupWidget(QWidget):
         now_rect = QRectF(text_x, card_y + 10, text_w, 12)
         p.drawText(now_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, "NOW PLAYING")
 
-        p.setFont(QFont("Google Sans", 7, QFont.Weight.DemiBold))
-        p.setPen(text_sub)
-        artist_rect = QRectF(text_x, card_y + 26, text_w, 13)
-        p.drawText(artist_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._elide(artist.upper(), p.font(), text_w))
-
-        p.setFont(QFont("Google Sans", 10, QFont.Weight.Bold))
-        p.setPen(text_main)
-        title_rect = QRectF(text_x, card_y + 39, text_w, 17)
-        p.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._elide(title, p.font(), text_w))
+        self._draw_mockup_text(p, QRectF(text_x, card_y + 26, text_w, 13), artist.upper(), QFont("Google Sans", 7, QFont.Weight.DemiBold), text_sub)
+        self._draw_mockup_text(p, QRectF(text_x, card_y + 39, text_w, 17), title, QFont("Google Sans", 10, QFont.Weight.Bold), text_main)
 
         bars_x = text_x
         bars_y = card_y + 67
@@ -163,11 +168,7 @@ class MusicOverlayMockupWidget(QWidget):
         p.restore()
 
     def _draw_pill_layout(self, p: QPainter, w: int, h: int, bg_brush, border_pen, accent_color, text_main, text_sub, title: str, artist: str):
-        card_w = min(320, w - 30)
-        card_h = 42
-        card_x = (w - card_w) / 2
-        card_y = (h - card_h) / 2
-        card_rect = QRectF(card_x, card_y, card_w, card_h)
+        card_rect, card_x, card_y, card_w, card_h = self._compute_centered_card(w, h, 320, 42)
 
         p.setPen(border_pen)
         p.setBrush(bg_brush)
@@ -175,24 +176,12 @@ class MusicOverlayMockupWidget(QWidget):
         art_size = 28
         art_x = card_x + 7
         art_y = card_y + (card_h - art_size) / 2
-        art_grad = QLinearGradient(art_x, art_y, art_x + art_size, art_y + art_size)
-        art_grad.setColorAt(0.0, QColor("#F43F5E"))
-        art_grad.setColorAt(1.0, QColor("#A855F7"))
-        p.setPen(QPen(QColor(255, 255, 255, 50), 1))
-        p.setBrush(QBrush(art_grad))
-        p.drawRoundedRect(QRectF(art_x, art_y, art_size, art_size), 7, 7)
+        self._draw_album_art_placeholder(p, art_x, art_y, art_size, 7)
 
         text_x = art_x + art_size + 10
         text_w = card_w - art_size - 60
-        p.setFont(QFont("Google Sans", 9, QFont.Weight.Bold))
-        p.setPen(text_main)
-        title_rect = QRectF(text_x, card_y + 6, text_w, 15)
-        p.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._elide(title, p.font(), text_w))
-
-        p.setFont(QFont("Google Sans", 7, QFont.Weight.Medium))
-        p.setPen(text_sub)
-        artist_rect = QRectF(text_x, card_y + 21, text_w, 14)
-        p.drawText(artist_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._elide(artist, p.font(), text_w))
+        self._draw_mockup_text(p, QRectF(text_x, card_y + 6, text_w, 15), title, QFont("Google Sans", 9, QFont.Weight.Bold), text_main)
+        self._draw_mockup_text(p, QRectF(text_x, card_y + 21, text_w, 14), artist, QFont("Google Sans", 7, QFont.Weight.Medium), text_sub)
 
         play_x = card_x + card_w - 24
         play_y = card_y + card_h / 2
@@ -206,11 +195,7 @@ class MusicOverlayMockupWidget(QWidget):
         p.drawPath(path)
 
     def _draw_standard_layout(self, p: QPainter, w: int, h: int, bg_brush, border_pen, accent_color, text_main, text_sub, title: str, artist: str):
-        card_w = min(340, w - 30)
-        card_h = 76
-        card_x = (w - card_w) / 2
-        card_y = (h - card_h) / 2
-        card_rect = QRectF(card_x, card_y, card_w, card_h)
+        card_rect, card_x, card_y, card_w, card_h = self._compute_centered_card(w, h, 340, 76)
 
         p.setPen(border_pen)
         p.setBrush(bg_brush)
@@ -218,25 +203,13 @@ class MusicOverlayMockupWidget(QWidget):
         art_size = 54
         art_x = card_x + 10
         art_y = card_y + (card_h - art_size) / 2
-        art_grad = QLinearGradient(art_x, art_y, art_x + art_size, art_y + art_size)
-        art_grad.setColorAt(0.0, QColor("#F43F5E"))
-        art_grad.setColorAt(0.5, QColor("#A855F7"))
-        art_grad.setColorAt(1.0, QColor("#6366F1"))
-        p.setPen(QPen(QColor(255, 255, 255, 50), 1))
-        p.setBrush(QBrush(art_grad))
-        p.drawRoundedRect(QRectF(art_x, art_y, art_size, art_size), 12, 12)
+        self._draw_album_art_placeholder(p, art_x, art_y, art_size, 12, with_third_stop=True)
 
         text_x = art_x + art_size + 12
         text_w = card_w - art_size - 32
 
-        p.setFont(QFont("Google Sans", 7.5, QFont.Weight.Medium))
-        p.setPen(text_sub)
-        artist_rect = QRectF(text_x, card_y + 11, text_w, 14)
-        p.drawText(artist_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._elide(artist, p.font(), text_w))
-        p.setFont(QFont("Google Sans", 10, QFont.Weight.Bold))
-        p.setPen(text_main)
-        title_rect = QRectF(text_x, card_y + 25, text_w, 17)
-        p.drawText(title_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._elide(title, p.font(), text_w))
+        self._draw_mockup_text(p, QRectF(text_x, card_y + 11, text_w, 14), artist, QFont("Google Sans", 7.5, QFont.Weight.Medium), text_sub)
+        self._draw_mockup_text(p, QRectF(text_x, card_y + 25, text_w, 17), title, QFont("Google Sans", 10, QFont.Weight.Bold), text_main)
         prog_w = text_w
         prog_h = 3.5
         prog_y = card_y + 47

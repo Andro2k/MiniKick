@@ -18,29 +18,31 @@ from .chat_mockup import ChatOverlayMockupWidget
 VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})
 DEFAULT_CHAT_THEME = "dark"
 
+def _build_icon_text_row(parent: QWidget, icon_name: str, text: str, tooltip: str = "", margins=MARGIN_NONE, spacing=SPACING_XS, icon_size=14):
+    container = QWidget(parent) if parent else QWidget()
+    layout = QHBoxLayout(container)
+    layout.setContentsMargins(*margins)
+    layout.setSpacing(spacing)
+    if icon_name:
+        icon_lbl = QLabel(container)
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=icon_size))
+        icon_lbl.setFixedSize(icon_size + 2, icon_size + 2)
+        layout.addWidget(icon_lbl)
+    lbl = QLabel(text, container)
+    lbl.setProperty("role", "caption")
+    lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+    layout.addWidget(lbl, stretch=1)
+    if tooltip:
+        container.setToolTip(tooltip)
+        lbl.setToolTip(tooltip)
+    return container, layout, lbl
+
 class CompactToggleItem(QWidget):
     def __init__(self, icon_name: str, title: str, switch: ModernSwitch, tooltip: str = "", parent=None):
         super().__init__(parent)
         self.switch = switch
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_CHIP)
-        layout.setSpacing(SPACING_SM)
-
-        if icon_name:
-            icon_lbl = QLabel(self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=14))
-            icon_lbl.setFixedSize(16, 16)
-            layout.addWidget(icon_lbl)
-
-        lbl = QLabel(title, self)
-        lbl.setProperty("role", "caption")
-        lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout.addWidget(lbl, stretch=1)
-
+        _, layout, _ = _build_icon_text_row(self, icon_name, title, tooltip, margins=MARGIN_CHIP, spacing=SPACING_SM, icon_size=14)
         layout.addWidget(switch, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        if tooltip:
-            self.setToolTip(tooltip)
-            lbl.setToolTip(tooltip)
 
 class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
@@ -84,27 +86,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         return lbl
 
     def _create_metric_header(self, icon_name: str, text: str, tooltip: str = "") -> QWidget:
-        header_widget = QWidget(self)
-        layout = QHBoxLayout(header_widget)
-        layout.setContentsMargins(*MARGIN_NONE)
-        layout.setSpacing(SPACING_XS)
-
-        if icon_name:
-            icon_lbl = QLabel(header_widget)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=13))
-            icon_lbl.setFixedSize(14, 14)
-            layout.addWidget(icon_lbl)
-
-        lbl = QLabel(text, header_widget)
-        lbl.setProperty("role", "caption")
-        lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout.addWidget(lbl, stretch=1)
-
-        if tooltip:
-            header_widget.setToolTip(tooltip)
-            lbl.setToolTip(tooltip)
-
-        return header_widget
+        container, _, _ = _build_icon_text_row(self, icon_name, text, tooltip, margins=MARGIN_NONE, spacing=SPACING_XS, icon_size=13)
+        return container
 
     def _setup_ui(self):
         card_style = ModernCard(self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
