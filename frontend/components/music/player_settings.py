@@ -4,7 +4,7 @@ import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
-    COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK,
+    COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
     get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL,
     SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
@@ -430,13 +430,13 @@ class MusicPlayerSettingsPanel(QWidget):
         if requester:
             platform = (song_data.get("platform") or "kick").lower()
             if platform == "twitch":
-                color_hex = "#A970FF"
+                color_hex = COLOR_TWITCH_LIGHT
             elif platform == "youtube":
                 color_hex = COLOR_RED
             elif platform == "tiktok":
                 color_hex = COLOR_TIKTOK
             else:
-                color_hex = "#53FC18"
+                color_hex = COLOR_KICK
             safe_requester = html.escape(requester)
             user_styled = f"<span style='color:{color_hex}; font-weight:500;'>@{safe_requester}</span>"
             req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)

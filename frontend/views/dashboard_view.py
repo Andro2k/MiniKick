@@ -8,7 +8,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from frontend.common import (
     COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_500,
-    COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE,
     create_circular_pixmap, get_icon_colored, get_pixmap_colored,
     SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD,
@@ -699,9 +699,9 @@ class DashboardView(BaseView):
             desc = self.i18n.get("dashboard.banner.desc_kick")
             self.lbl_warn_text_kick.setText(
                 f"<div style='line-height: 135%;'>"
-                f"<div style='font-size: 13px; font-weight: 700; color: #FAFAFA; margin-bottom: 2px;'>{title}</div>"
-                f"<div style='font-size: 12px; color: #9D9AA8; margin-bottom: 5px;'>{desc}</div>"
-                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: #E4E3EA;'>"
+                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_WHITE}; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 12px; color: {COLOR_NEUTRAL_400}; margin-bottom: 5px;'>{desc}</div>"
+                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: {COLOR_NEUTRAL_200};'>"
                 f"{items_html}"
                 f"</ul>"
                 f"</div>"
@@ -716,9 +716,9 @@ class DashboardView(BaseView):
             desc = self.i18n.get("dashboard.banner.desc_twitch")
             self.lbl_warn_text_twitch.setText(
                 f"<div style='line-height: 135%;'>"
-                f"<div style='font-size: 13px; font-weight: 700; color: #FAFAFA; margin-bottom: 2px;'>{title}</div>"
-                f"<div style='font-size: 12px; color: #9D9AA8; margin-bottom: 5px;'>{desc}</div>"
-                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: #E4E3EA;'>"
+                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_WHITE}; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 12px; color: {COLOR_NEUTRAL_400}; margin-bottom: 5px;'>{desc}</div>"
+                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: {COLOR_NEUTRAL_200};'>"
                 f"{items_html}"
                 f"</ul>"
                 f"</div>"

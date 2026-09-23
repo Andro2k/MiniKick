@@ -4,7 +4,13 @@ import html
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy
 from frontend.widgets import ModernCard
-from frontend.common import COLOR_NEUTRAL_200, MARGIN_SM, SPACING_SM
+from frontend.common import (
+    COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE,
+    COLOR_BADGE_STREAMER, COLOR_BADGE_MODERATOR, COLOR_BADGE_VIP,
+    COLOR_BADGE_SUB, COLOR_BADGE_BG,
+    COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
+    MARGIN_SM, SPACING_SM
+)
 
 class ChatConsoleEdit(QTextEdit):
     def createMimeDataFromSelection(self):
@@ -16,34 +22,34 @@ class ChatConsoleEdit(QTextEdit):
 
 class ChatDisplayPanel(ModernCard):
     _MAX_CHAT_BLOCKS = 400
-    _PILL_BG = "#29315A"
+    _PILL_BG = COLOR_BADGE_BG
     _CAP_LEFT = "\ue0b6"
     _CAP_RIGHT = "\ue0b4"
     _FONT_FMT = "font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', 'Google Sans Code Nerd Font', 'Hack Nerd Font', monospace;"
 
     _ROLE_SYMBOLS = {
-        "Streamer": ("\uf130", "#E64747"),
-        "Broadcaster": ("\uf130", "#E64747"),
-        "Moderador": ("\ued25", "#3EC669"),
-        "Moderator": ("\ued25", "#3EC669"),
-        "VIP": ("\uedeb", "#E4F34A"),
-        "Suscriptor": ("\udb83\ude44", "#9B6BDF"),
-        "Subscriber": ("\udb83\ude44", "#9B6BDF"),
-        "Miembro": ("\udb83\ude44", "#43CCEA"),
-        "Member": ("\udb83\ude44", "#43CCEA"),
-        "Verified": ("\uf00c", "#AEA4BF"),
-        "Bot": ("\uee0d", "#43CCEA"),
-        "Sistema": ("\uf113", "#3EC669"),
-        "System": ("\uf113", "#3EC669"),
-        "Usuario": ("\ued35", "#AEA4BF"),
-        "User": ("\ued35", "#AEA4BF")
+        "Streamer": ("\uf130", COLOR_BADGE_STREAMER),
+        "Broadcaster": ("\uf130", COLOR_BADGE_STREAMER),
+        "Moderador": ("\ued25", COLOR_BADGE_MODERATOR),
+        "Moderator": ("\ued25", COLOR_BADGE_MODERATOR),
+        "VIP": ("\uedeb", COLOR_BADGE_VIP),
+        "Suscriptor": ("\udb83\ude44", COLOR_BADGE_SUB),
+        "Subscriber": ("\udb83\ude44", COLOR_BADGE_SUB),
+        "Miembro": ("\udb83\ude44", COLOR_BADGE_SUB),
+        "Member": ("\udb83\ude44", COLOR_BADGE_SUB),
+        "Verified": ("\uf00c", COLOR_NEUTRAL_400),
+        "Bot": ("\uee0d", COLOR_BLUE),
+        "Sistema": ("\uf113", COLOR_BADGE_MODERATOR),
+        "System": ("\uf113", COLOR_BADGE_MODERATOR),
+        "Usuario": ("\ued35", COLOR_NEUTRAL_400),
+        "User": ("\ued35", COLOR_NEUTRAL_400)
     }
 
     _PLATFORM_ICONS = {
-        "twitch": ("\uf1e8", "#9146FF", "Twitch"),
-        "kick": ("\uf2f3", "#53FC18", "Kick"),
-        "youtube": ("\uf16a", "#FF0000", "YouTube"),
-        "tiktok": ("\udb80\udf8c", "#00F2FE", "TikTok")
+        "twitch": ("\uf1e8", COLOR_TWITCH, "Twitch"),
+        "kick": ("\uf2f3", COLOR_KICK, "Kick"),
+        "youtube": ("\uf16a", COLOR_YOUTUBE, "YouTube"),
+        "tiktok": ("\udb80\udf8c", COLOR_TIKTOK, "TikTok")
     }
 
     def __init__(self, i18n, parent=None):
@@ -71,7 +77,7 @@ class ChatDisplayPanel(ModernCard):
         self.addWidget(self.chat_display)
 
     @classmethod
-    def _create_pill(cls, content_html: str, text_color: str = "#AEA4BF", pill_bg: str = _PILL_BG) -> str:
+    def _create_pill(cls, content_html: str, text_color: str = COLOR_NEUTRAL_400, pill_bg: str = _PILL_BG) -> str:
         return (
             f'<span style="{cls._FONT_FMT}">'
             f'<span style="color: {pill_bg};">{cls._CAP_LEFT}</span>'
@@ -87,7 +93,7 @@ class ChatDisplayPanel(ModernCard):
         
         pills = []
         plat_icon, plat_color, _ = self._PLATFORM_ICONS.get(
-            platform.lower() if platform else "kick", ("\uf2f3", "#53FC18", "Kick")
+            platform.lower() if platform else "kick", ("\uf2f3", COLOR_KICK, "Kick")
         )
         plat_span = f'<span style="color: {plat_color};">{plat_icon}</span>'
 
@@ -96,12 +102,12 @@ class ChatDisplayPanel(ModernCard):
         else:
             time_plat_content = plat_span
 
-        pills.append(self._create_pill(time_plat_content, text_color="#AEA4BF"))
+        pills.append(self._create_pill(time_plat_content, text_color=COLOR_NEUTRAL_400))
 
         if role:
-            symbol, role_color = self._ROLE_SYMBOLS.get(role, ("\ued35", "#AEA4BF"))
+            symbol, role_color = self._ROLE_SYMBOLS.get(role, ("\ued35", COLOR_NEUTRAL_400))
             role_content = f'<span style="color: {role_color};">{symbol}</span> {role}'
-            pills.append(self._create_pill(role_content, text_color="#E4E5E9"))
+            pills.append(self._create_pill(role_content, text_color=COLOR_NEUTRAL_200))
 
         pills.append(self._create_pill(safe_user, text_color=safe_color))
 

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QTextEdit, QCheckBox, QHBoxLayo
 from PySide6.QtCore import Qt
 
 from .base_dialog import ModernModal
-from frontend.widgets import ModernButton
+from frontend.widgets import ModernButton, create_row_layout, create_labeled_field
 from frontend.common import get_assets_path, SPACING_SM, SPACING_MD, SPACING_XL, MARGIN_V_XS
 from frontend.components.dialogs import SeverityCard, ImageDropzone
 
@@ -52,19 +52,18 @@ class BugReportDialog(ModernModal):
 
         self.severity_cards["Low"].set_selected(True)
 
-        row1_layout = QHBoxLayout()
-        row1_layout.setSpacing(SPACING_XL)
+        row1_layout = create_row_layout(spacing=SPACING_XL)
 
-        contact_col = QVBoxLayout()
-        contact_col.setSpacing(SPACING_SM)
-        lbl_username = QLabel(self.i18n.get("dialogs.bug_report.lbl_contact"))
-        lbl_username.setProperty("role", "body")
         self.txt_username = QLineEdit()
         self.txt_username.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_contact"))
         if self.initial_contact:
             self.txt_username.setText(self.initial_contact)
-        contact_col.addWidget(lbl_username)
-        contact_col.addWidget(self.txt_username)
+        contact_col, _ = create_labeled_field(
+            self.i18n.get("dialogs.bug_report.lbl_contact"),
+            self.txt_username,
+            role="body",
+            spacing=SPACING_SM
+        )
 
         logs_col = QVBoxLayout()
         logs_col.setSpacing(SPACING_SM)
@@ -85,26 +84,25 @@ class BugReportDialog(ModernModal):
         row1_layout.addLayout(contact_col, 1)
         row1_layout.addLayout(logs_col, 1)
 
-        row2_layout = QHBoxLayout()
-        row2_layout.setSpacing(SPACING_XL)
+        row2_layout = create_row_layout(spacing=SPACING_XL)
 
-        desc_col = QVBoxLayout()
-        desc_col.setSpacing(SPACING_SM)
-        lbl_desc = QLabel(self.i18n.get("dialogs.bug_report.lbl_description"))
-        lbl_desc.setProperty("role", "body")
         self.txt_desc = QTextEdit()
         self.txt_desc.setPlaceholderText(self.i18n.get("dialogs.bug_report.placeholder_desc"))
         self.txt_desc.setFixedHeight(140)
-        desc_col.addWidget(lbl_desc)
-        desc_col.addWidget(self.txt_desc)
+        desc_col, _ = create_labeled_field(
+            self.i18n.get("dialogs.bug_report.lbl_description"),
+            self.txt_desc,
+            role="body",
+            spacing=SPACING_SM
+        )
 
-        image_col = QVBoxLayout()
-        image_col.setSpacing(SPACING_SM)
-        lbl_image = QLabel(self.i18n.get("dialogs.bug_report.lbl_image"))
-        lbl_image.setProperty("role", "body")
         self.dropzone = ImageDropzone(self.i18n)
-        image_col.addWidget(lbl_image)
-        image_col.addWidget(self.dropzone)
+        image_col, _ = create_labeled_field(
+            self.i18n.get("dialogs.bug_report.lbl_image"),
+            self.dropzone,
+            role="body",
+            spacing=SPACING_SM
+        )
 
         row2_layout.addLayout(desc_col, 1)
         row2_layout.addLayout(image_col, 1)

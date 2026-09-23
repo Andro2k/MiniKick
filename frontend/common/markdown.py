@@ -4,7 +4,12 @@ import re
 from functools import lru_cache
 from frontend.common.theme import (
     COLOR_NEUTRAL_900, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800,
-    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_WHITE
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_WHITE,
+    COLOR_BLUE, COLOR_PURPLE, COLOR_AMBER, COLOR_GREEN, COLOR_RED,
+    COLOR_BLUE_GLOW, COLOR_PURPLE_GLOW, COLOR_AMBER_GLOW, COLOR_GREEN_GLOW, COLOR_RED_GLOW,
+    COLOR_CALLOUT_NOTE_LIGHT, COLOR_CALLOUT_IMPORTANT_LIGHT,
+    COLOR_CALLOUT_WARNING_LIGHT, COLOR_CALLOUT_TIP_LIGHT, COLOR_CALLOUT_CAUTION_LIGHT,
+    COLOR_CODE_LINK, COLOR_LATEX_MATH
 )
 
 _RE_LATEX_O     = re.compile(r'\$\\mathcal\{O\}\((.*?)\)\$')
@@ -18,13 +23,13 @@ _RE_CALLOUT     = re.compile(r'^>\s*\[!(NOTE|IMPORTANT|WARNING|TIP|CAUTION)\]', 
 _RE_TABLE_DIV   = re.compile(r'^[\s\-:]+$')
 _NERD_FONT_FAMILY = "'GoogleSansCode Nerd Font', 'GoogleSansCode NF', Consolas, monospace"
 _CALLOUT_STYLES = {
-    'NOTE': ('#3b82f6', '#60a5fa', '\udb80\udefc', 'Note', 'rgba(59, 130, 246, 0.08)'),
-    'IMPORTANT': ('#a855f7', '#c084fc', '\udb80\udf61', 'Important', 'rgba(168, 85, 247, 0.08)'),
-    'WARNING': ('#eab308', '#facc15', '\uf40c', 'Warning', 'rgba(234, 179, 8, 0.08)'),
-    'TIP': ('#22c55e', '#4ade80', '\udb81\udee8', 'Tip', 'rgba(34, 197, 94, 0.08)'),
-    'CAUTION': ('#ef4444', '#f87171', '\udb80\udc29', 'Caution', 'rgba(239, 68, 68, 0.08)')
+    'NOTE': (COLOR_BLUE, COLOR_CALLOUT_NOTE_LIGHT, '\udb80\udefc', 'Note', COLOR_BLUE_GLOW),
+    'IMPORTANT': (COLOR_PURPLE, COLOR_CALLOUT_IMPORTANT_LIGHT, '\udb80\udf61', 'Important', COLOR_PURPLE_GLOW),
+    'WARNING': (COLOR_AMBER, COLOR_CALLOUT_WARNING_LIGHT, '\uf40c', 'Warning', COLOR_AMBER_GLOW),
+    'TIP': (COLOR_GREEN, COLOR_CALLOUT_TIP_LIGHT, '\udb81\udee8', 'Tip', COLOR_GREEN_GLOW),
+    'CAUTION': (COLOR_RED, COLOR_CALLOUT_CAUTION_LIGHT, '\udb80\udc29', 'Caution', COLOR_RED_GLOW)
 }
-_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_800}; color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_800}; color: {COLOR_CODE_LINK}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
 _CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
 
 @lru_cache(maxsize=16)
@@ -32,10 +37,10 @@ def markdown_to_github_html(md: str) -> str:
     if not md:
         return ""
 
-    text = _RE_LATEX_O.sub(f'<span style="font-family: {_NERD_FONT_FAMILY}; color: #a5b4fc; font-weight: bold;">O(\\1)</span>', md)
-    text = _RE_LATEX_MATH.sub(f'<span style="font-family: {_NERD_FONT_FAMILY}; color: #a5b4fc;">\\1</span>', text)
+    text = _RE_LATEX_O.sub(f'<span style="font-family: {_NERD_FONT_FAMILY}; color: {COLOR_LATEX_MATH}; font-weight: bold;">O(\\1)</span>', md)
+    text = _RE_LATEX_MATH.sub(f'<span style="font-family: {_NERD_FONT_FAMILY}; color: {COLOR_LATEX_MATH};">\\1</span>', text)
     text = _RE_FILE_LINKS.sub(_CODE_SPAN, text)
-    text = _RE_HTTP_LINKS.sub(r'<a href="\2" style="color: #38bdf8; text-decoration: underline;">\1</a>', text)
+    text = _RE_HTTP_LINKS.sub(rf'<a href="\2" style="color: {COLOR_CODE_LINK}; text-decoration: underline;">\1</a>', text)
     text = _RE_INLINE_CODE.sub(_CODE_INLINE_SPAN, text)
     text = _RE_BOLD.sub(r'<b>\1</b>', text)
     text = _RE_ITALIC.sub(r'<i>\1</i>', text)

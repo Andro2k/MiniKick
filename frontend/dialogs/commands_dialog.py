@@ -2,8 +2,11 @@
 
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QCheckBox, QWidget, QSizePolicy
 from .base_dialog import ModernWizardPanel
-from frontend.widgets import VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge
-from frontend.common import validate_trigger_prefix, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
+from frontend.widgets import (
+    VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge,
+    create_row_layout, create_col_layout, create_labeled_field
+)
+from frontend.common import validate_trigger_prefix, COLOR_AMBER, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):
@@ -63,28 +66,15 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.addLayout(lbl_response_layout)
         basic_layout.addWidget(self.txt_response, stretch=1)
 
-        row_configs = QHBoxLayout()
-        row_configs.setSpacing(SPACING_LG)
-
-        col_cooldown = QVBoxLayout()
-        col_cooldown.setSpacing(SPACING_XS)
-        lbl_cooldown = QLabel(self.i18n.get("command.dialog.cooldown_label"))
-        lbl_cooldown.setProperty("role", "h3")
-        col_cooldown.addWidget(lbl_cooldown)
+        row_configs = create_row_layout(spacing=SPACING_LG)
 
         self.spin_cooldown = NoWheelSpinBox()
         self.spin_cooldown.setRange(0, 300)
         self.spin_cooldown.setValue(5)
         self.spin_cooldown.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        col_cooldown.addWidget(self.spin_cooldown)
+        col_cooldown, _ = create_labeled_field(self.i18n.get("command.dialog.cooldown_label"), self.spin_cooldown, role="h3")
         row_configs.addLayout(col_cooldown, stretch=1)
         
-        col_perm = QVBoxLayout()
-        col_perm.setSpacing(SPACING_XS)
-        lbl_perm = QLabel(self.i18n.get("command.dialog.permission_label"))
-        lbl_perm.setProperty("role", "h3")
-        col_perm.addWidget(lbl_perm)
-
         self.combo_perm = NoWheelComboBox()
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_everyone"), "everyone")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_subscriber"), "subscriber")
@@ -92,7 +82,7 @@ class CommandConfigWizard(ModernWizardPanel):
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_moderator"), "moderator")
         self.combo_perm.addItem(self.i18n.get("command.dialog.perm_broadcaster"), "broadcaster")
         self.combo_perm.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        col_perm.addWidget(self.combo_perm)
+        col_perm, _ = create_labeled_field(self.i18n.get("command.dialog.permission_label"), self.combo_perm, role="h3")
         row_configs.addLayout(col_perm, stretch=1)
         
         basic_layout.addLayout(row_configs)
@@ -102,14 +92,10 @@ class CommandConfigWizard(ModernWizardPanel):
         basic_layout.addWidget(self.chk_active)
 
         self.tab_adv = QWidget()
-        adv_main_layout = QHBoxLayout(self.tab_adv)
-        adv_main_layout.setContentsMargins(*MARGIN_NONE)
-        adv_main_layout.setSpacing(SPACING_LG)
+        adv_main_layout = create_row_layout(spacing=SPACING_LG, margins=MARGIN_NONE, parent=self.tab_adv)
 
         left_col = QWidget()
-        adv_layout = QVBoxLayout(left_col)
-        adv_layout.setContentsMargins(*MARGIN_NONE)
-        adv_layout.setSpacing(SPACING_LG)
+        adv_layout = create_col_layout(spacing=SPACING_LG, margins=MARGIN_NONE, parent=left_col)
 
         lbl_aliases = QLabel(self.i18n.get("command.dialog.aliases_label"))
         lbl_aliases.setProperty("role", "h3")
@@ -175,7 +161,7 @@ class CommandConfigWizard(ModernWizardPanel):
                 "(?:...) (Grupo sin captura)", "(?=...) (Lookahead positivo)", "(?!...) (Lookahead negativo)"
             ]},
             highlight_pattern=r"\\.|\[\^?[^\]]+\]|\(\?[^)]+\)|[*+?^$|]|\(|\)",
-            highlight_color="#F59E0B",
+            highlight_color=COLOR_AMBER,
             highlight_bg=None
         )
         self.txt_regex.setPlaceholderText(self.i18n.get("command.dialog.regex_placeholder"))

@@ -35,12 +35,14 @@ COLOR_BORDER_TOP_FOCUS      = "#71717A"
 COLOR_BORDER_LIGHT          = "#4B4951"
 COLOR_BORDER_SUBTLE_GHOST   = "#313036"
 
-COLOR_RED_SOLID    = "#E03131"
-COLOR_RED_HOVER    = "#EF4444"
-COLOR_RED_PRESSED  = "#C92A2A"
-COLOR_GREEN_SOLID   = "#16A34A"
-COLOR_GREEN_HOVER   = "#22C55E"
-COLOR_GREEN_PRESSED = "#15803D"
+COLOR_RED_SOLID        = "#E03131"
+COLOR_RED_HOVER        = "#EF4444"
+COLOR_RED_PRESSED      = "#C92A2A"
+COLOR_DANGER_SURFACE   = "#2D1215"
+COLOR_MEDIA_THUMB_BG   = "#1E293B"
+COLOR_GREEN_SOLID      = "#16A34A"
+COLOR_GREEN_HOVER      = "#22C55E"
+COLOR_GREEN_PRESSED    = "#15803D"
 
 COLOR_GREEN        = "#2ECD70"
 COLOR_GREEN_DARK   = "#23A55A"
@@ -79,8 +81,14 @@ COLOR_TIKTOK_BORDER_HOVER       = "#00B8C4"
 COLOR_TIKTOK_BORDER_TOP_HOVER   = "#5EF8FF"
 COLOR_TIKTOK_BORDER_BOTTOM_HOVER= "#008891"
 
+COLOR_KICK         = "#53FC18"
+COLOR_KICK_DARK    = "#1E8E4D"
+COLOR_KICK_GLOW    = "rgba(83, 252, 24, 0.12)"
+COLOR_KICK_REWARDS = "#00E701"
+
 COLOR_TWITCH       = "#9146FF"
 COLOR_TWITCH_DARK  = "#772CE8"
+COLOR_TWITCH_LIGHT = "#A970FF"
 COLOR_TWITCH_GLOW  = "rgba(145, 70, 255, 0.12)"
 COLOR_YOUTUBE      = "#FF0000"
 COLOR_YOUTUBE_DARK = "#CC0000"
@@ -88,6 +96,39 @@ COLOR_YOUTUBE_GLOW = "rgba(255, 0, 0, 0.12)"
 COLOR_TIKTOK       = "#00F2FE"
 COLOR_TIKTOK_DARK  = "#00B8C4"
 COLOR_TIKTOK_GLOW  = "rgba(0, 242, 254, 0.12)"
+
+# Tokens para Badges de Roles de Chat
+COLOR_BADGE_STREAMER  = "#E64747"
+COLOR_BADGE_MODERATOR = "#3EC669"
+COLOR_BADGE_VIP       = "#E08338"
+COLOR_BADGE_OG        = "#8A5BE2"
+COLOR_BADGE_SUB       = "#389CE0"
+COLOR_BADGE_BG        = "#29315A"
+
+# Tokens de Gradientes y Estados para Controles / Switches
+COLOR_SWITCH_TRACK_OFF_0 = "#18171C"
+COLOR_SWITCH_TRACK_OFF_1 = "#121115"
+COLOR_SWITCH_BORDER_OFF  = "#27262D"
+COLOR_SWITCH_TRACK_ON_0  = "#1E8E4D"
+COLOR_SWITCH_TRACK_ON_1  = "#15733C"
+COLOR_SWITCH_TRACK_DIS_0 = "#201E25"
+COLOR_SWITCH_TRACK_DIS_1 = "#2A2830"
+COLOR_SWITCH_THUMB_OFF_0 = "#6E6C78"
+COLOR_SWITCH_THUMB_OFF_1 = "#504E58"
+COLOR_SWITCH_THUMB_ON_0  = "#FFFFFF"
+COLOR_SWITCH_THUMB_ON_1  = "#E4E3EA"
+COLOR_SWITCH_THUMB_DIS_0 = "#D4D2DC"
+COLOR_SWITCH_THUMB_DIS_1 = "#9D9AA8"
+COLOR_SYNTAX_VARIABLE    = "#C084FC"
+
+# Tokens para Renderizado Markdown / Callouts / Código
+COLOR_CALLOUT_NOTE_LIGHT      = "#60A5FA"
+COLOR_CALLOUT_IMPORTANT_LIGHT = "#C084FC"
+COLOR_CALLOUT_WARNING_LIGHT   = "#FACC15"
+COLOR_CALLOUT_TIP_LIGHT       = "#4ADE80"
+COLOR_CALLOUT_CAUTION_LIGHT   = "#F87171"
+COLOR_CODE_LINK               = "#38BDF8"
+COLOR_LATEX_MATH              = "#A5B4FC"
 
 COLOR_WHITE_GLOW   = "rgba(250, 250, 250, 0.05)"
 COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.10)"
@@ -249,7 +290,6 @@ QLabel[state="success"] {{ color: {COLOR_GREEN}; }}
 QLabel[state="info"] {{ color: {COLOR_BLUE}; }}
 QLabel[state="warning"] {{ color: {COLOR_AMBER}; }}
 QLabel[state="bold"] {{ font-weight: 600; }}
-QLabel[role="category"] {{ font-weight: 600; color: {COLOR_GREEN}; margin-top: 6px; font-size: {text2}px; }}
 """
 
 
@@ -536,7 +576,7 @@ QFrame[role="badge"][state="kick"] {{ background-color: {COLOR_GREEN_GLOW}; bord
 QFrame[role="badge"][state="kick"] QLabel {{ color: {COLOR_GREEN}; }}
 QFrame[role="badge"][state="twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: {COLOR_PURPLE}; }}
 QFrame[role="badge"][state="twitch"] QLabel {{ color: {COLOR_PURPLE}; }}
-
+QLabel[role="badge"] {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_400}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: {BORDER_SUBTLE}; min-height: 18px; max-height: 22px; }}
 QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_GREEN}; min-height: 18px; max-height: 22px; }}
 QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
 QLabel[role="tag_badge"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}

@@ -3,8 +3,11 @@
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
                                QLineEdit, QPushButton)
 from PySide6.QtCore import Qt, Signal, QDate, QTime
-from frontend.widgets import (ModernCard, ModernButton, ModernSwitch,
-                              NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox)
+from frontend.widgets import (
+    ModernCard, ModernButton, ModernSwitch,
+    NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox,
+    create_row_layout, create_labeled_field
+)
 from frontend.common import (
     SPACING_SM, SPACING_MD, SPACING_LG,
     MARGIN_MD, MARGIN_TAB_PANEL
@@ -82,31 +85,29 @@ class ScheduleFormPanel(QWidget):
 
         form_layout.addLayout(switches_row)
 
-        datetime_row = QHBoxLayout()
-        datetime_row.setSpacing(SPACING_LG)
+        datetime_row = create_row_layout(spacing=SPACING_LG)
 
-        date_box = QVBoxLayout()
-        date_box.setSpacing(SPACING_SM)
-        lbl_date = QLabel(self.i18n.get("stream_info.schedule_dialog.date_label"))
-        lbl_date.setProperty("role", "h3")
         self.date_edit = NoWheelDateEdit(parent=self)
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         self.date_edit.setDate(QDate.currentDate())
-
-        date_box.addWidget(lbl_date)
-        date_box.addWidget(self.date_edit)
+        date_box, _ = create_labeled_field(
+            self.i18n.get("stream_info.schedule_dialog.date_label"),
+            self.date_edit,
+            role="h3",
+            spacing=SPACING_SM
+        )
         datetime_row.addLayout(date_box)
 
-        time_box = QVBoxLayout()
-        time_box.setSpacing(SPACING_SM)
-        lbl_time = QLabel(self.i18n.get("stream_info.schedule_dialog.time_label"))
-        lbl_time.setProperty("role", "h3")
         self.time_edit = NoWheelTimeEdit(parent=self)
         self.time_edit.setDisplayFormat("HH:mm")
         self.time_edit.setTime(QTime.currentTime())
-        time_box.addWidget(lbl_time)
-        time_box.addWidget(self.time_edit)
+        time_box, _ = create_labeled_field(
+            self.i18n.get("stream_info.schedule_dialog.time_label"),
+            self.time_edit,
+            role="h3",
+            spacing=SPACING_SM
+        )
         datetime_row.addLayout(time_box)
 
         now_box = QVBoxLayout()

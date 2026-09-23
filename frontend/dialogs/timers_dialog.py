@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, Signal
 
 from .base_dialog import ModernWizardPanel
 from .message_dialog import MessageEditorDialog
-from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox
+from frontend.widgets import ModernButton, ModernSwitch, CategorySearchComboBox, create_card_frame, create_col_layout
 from frontend.common import (
     COLOR_WHITE, get_icon_colored,
     SPACING_MD, MARGIN_NONE, MARGIN_LG
@@ -102,15 +102,9 @@ class TimerConfigWizard(ModernWizardPanel):
         suffix_lines = f" {self.i18n.get('timer.dialog.suffix_lines')}"
 
         self.tab_basic = QWidget()
-        basic_main_layout = QVBoxLayout(self.tab_basic)
-        basic_main_layout.setContentsMargins(*MARGIN_NONE)
-        basic_main_layout.setSpacing(SPACING_MD)
+        basic_main_layout = create_col_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=self.tab_basic)
 
-        top_card = QFrame()
-        top_card.setProperty("role", "card")
-        top_layout = QVBoxLayout(top_card)
-        top_layout.setContentsMargins(*MARGIN_LG)
-        top_layout.setSpacing(SPACING_MD)
+        top_card, top_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
 
         lbl_name = QLabel(self.i18n.get("timer.dialog.name_label"))
         lbl_name.setProperty("role", "h3")
@@ -182,11 +176,7 @@ class TimerConfigWizard(ModernWizardPanel):
 
         basic_main_layout.addWidget(top_card)
 
-        bottom_card = QFrame()
-        bottom_card.setProperty("role", "card")
-        bottom_layout = QVBoxLayout(bottom_card)
-        bottom_layout.setContentsMargins(*MARGIN_LG)
-        bottom_layout.setSpacing(SPACING_MD)
+        bottom_card, bottom_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
 
         lbl_msgs_title = QLabel(self.i18n.get("timer.dialog.responses_title"))
         lbl_msgs_title.setProperty("role", "h3")
@@ -218,15 +208,9 @@ class TimerConfigWizard(ModernWizardPanel):
     def _build_step2_filters(self):
         self.tab_filters = QWidget()
         self.tab_filters.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        filters_main_layout = QVBoxLayout(self.tab_filters)
-        filters_main_layout.setContentsMargins(*MARGIN_NONE)
-        filters_main_layout.setSpacing(SPACING_MD)
+        filters_main_layout = create_col_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=self.tab_filters)
 
-        help_card = QFrame()
-        help_card.setProperty("role", "card")
-        help_layout = QVBoxLayout(help_card)
-        help_layout.setContentsMargins(*MARGIN_LG)
-        help_layout.setSpacing(SPACING_MD)
+        help_card, help_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
 
         lbl_help_title = QLabel(self.i18n.get("timer.dialog.help_title"))
         lbl_help_title.setProperty("role", "h3")
@@ -238,11 +222,7 @@ class TimerConfigWizard(ModernWizardPanel):
         help_layout.addWidget(lbl_help_desc)
         filters_main_layout.addWidget(help_card)
 
-        filt_card = QFrame()
-        filt_card.setProperty("role", "card")
-        filt_layout = QVBoxLayout(filt_card)
-        filt_layout.setContentsMargins(*MARGIN_LG)
-        filt_layout.setSpacing(SPACING_MD)
+        filt_card, filt_layout = create_card_frame(role="card", margins=MARGIN_LG, spacing=SPACING_MD)
 
         lbl_keywords = QLabel(self.i18n.get("timer.dialog.keywords_label"))
         lbl_keywords.setProperty("role", "h3")

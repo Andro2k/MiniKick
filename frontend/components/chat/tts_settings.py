@@ -6,7 +6,8 @@ from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
                               NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader)
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
-    COLOR_NEUTRAL_400, COLOR_WHITE, MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
+    COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
+    MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
     SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
 )
 
@@ -183,10 +184,10 @@ class ChatTtsSettingsPanel(QWidget):
         self.sw_plat_tiktok = ModernSwitch(self)
         self.sw_plat_tiktok.setChecked(True)
 
-        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color="#53FC18", contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color="#9146FF", contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color="#FF0000", contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color="#00F2FE", contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color=COLOR_KICK, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color=COLOR_TWITCH, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color=COLOR_YOUTUBE, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color=COLOR_TIKTOK, contents_margins=MARGIN_SETTING_ROW_COMPACT)
 
         platforms_card.addWidget(row_plat_kick)
         platforms_card.add_separator()

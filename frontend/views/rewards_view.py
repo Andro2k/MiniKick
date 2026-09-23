@@ -6,7 +6,8 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common import (
-    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER, COLOR_WHITE,
+    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_NEUTRAL_500, COLOR_RED, COLOR_TWITCH, COLOR_AMBER, COLOR_WHITE,
+    COLOR_DANGER_SURFACE, COLOR_MEDIA_THUMB_BG,
     get_pixmap_colored, get_icon_colored,
     MARGIN_NONE, MARGIN_MD, SPACING_SM
 )
@@ -44,7 +45,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         rect = QRectF(0, 0, target_w, target_h)
         path = QPainterPath()
         path.addRoundedRect(rect, 6, 6)
-        painter.fillPath(path, QColor("#2d1215"))
+        painter.fillPath(path, QColor(COLOR_DANGER_SURFACE))
         painter.setPen(QColor(COLOR_RED))
         painter.drawPath(path)
         
@@ -65,7 +66,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         rect = QRectF(0, 0, target_w, target_h)
         path = QPainterPath()
         path.addRoundedRect(rect, 6, 6)
-        painter.fillPath(path, QColor("#1e293b"))
+        painter.fillPath(path, QColor(COLOR_MEDIA_THUMB_BG))
         
         icon_pixmap = get_pixmap_colored("volume-up-filled.svg", COLOR_GREEN, 18)
         if not icon_pixmap.isNull():
@@ -105,7 +106,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         path = QPainterPath()
         path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
-        painter.fillPath(path, QColor("#1e293b"))
+        painter.fillPath(path, QColor(COLOR_MEDIA_THUMB_BG))
         
         icon_pixmap = get_pixmap_colored("album-filled.svg", COLOR_NEUTRAL_400, 18)
         if not icon_pixmap.isNull():
@@ -379,8 +380,8 @@ class RewardsView(BaseView):
             if not is_plat_connected:
                 offline_tag = self.i18n.get("rewards.table.status_offline_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
-                item_plat.setIcon(get_icon_colored(icon_name, "#6E7681", 16))
-                item_plat.setForeground(QColor("#6E7681"))
+                item_plat.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_500, 16))
+                item_plat.setForeground(QColor(COLOR_NEUTRAL_500))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
