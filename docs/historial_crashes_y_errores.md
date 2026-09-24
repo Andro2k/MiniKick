@@ -23,6 +23,7 @@
 | **INC-011** | Recuadros blancos y popups desalineados en Windows Light Theme (`SearchableComboBox`, `VariableTextEdit`, `QCalendarWidget`) | Capturas de Evidencia de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/common/theme.py`, `main.py`, `frontend/widgets/searchable_combo_box.py`, `frontend/widgets/controls_widget.py`, `frontend/widgets/no_wheel.py` | v1.6.0 (`WT-1.6.0_33`) |
 | **INC-012** | Corrutinas huérfanas en loop de TikTokLive (`Task was destroyed but it is pending!`, `RuntimeError: no running event loop`) | Log de Usuario `minikick.log` (Líneas 668-1001) | v1.6.0 | `✅ Solventado` | `backend/providers/chat/tiktok_provider.py` | v1.6.0 (`WT-1.6.0_35`) |
 | **INC-013** | Fondo transparente en popups de búsqueda (`CategorySuggestionsPopup`, `SearchableComboPopup`) tras activar `WA_TranslucentBackground` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/widgets/category_search.py`, `frontend/widgets/searchable_combo_box.py` | v1.6.0 (`WT-1.6.0_54`) |
+| **INC-014** | Ocultamiento de interruptores en tarjeta "Elementos & Filtros" de `ChatOverlaySettingsPanel` por falta de layout en `CompactToggleItem` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/components/chat/overlay_settings.py` | v1.6.0 (`WT-1.6.0_57`) |
 
 ---
 
@@ -418,6 +419,32 @@
     - Centro del popup: $\text{Alpha} = 255$ (color sólido `#111215` / `#18191e`).
     - Esquinas exteriores: $\text{Alpha} = 0$ (esquinas redondeadas anti-aliased sin marco rectangular).
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_54.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_54.md).
+ 
+---
+
+### INC-014: Ocultamiento de Interruptores en Tarjeta "Elementos & Filtros" (`ChatOverlaySettingsPanel`)
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Defecto visual y funcional: los 7 switches de configuración de overlay no eran visibles ni accesibles).
+* **Reportes Asociados**:
+  - Captura de pantalla de usuario mostrando la tarjeta "Elementos & Filtros" vacía y colapsada en la pestaña de Chat.
+* **Fecha y Versión del Fallo**: 2026-09-23 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. En `frontend/components/chat/overlay_settings.py`, la clase `CompactToggleItem` (utilizada para los 7 interruptores de visibilidad del overlay: plataforma, insignias, hora, emotes gigantes, GIFs, comandos y bots) hereda de `QWidget`.
+  2. En su constructor `__init__`, invocaba la función auxiliar interna `_build_icon_text_row(self, ...)`.
+  3. Dicha función creaba un contenedor secundario `container = QWidget(parent)` y asignaba el `QHBoxLayout` a `container`, dejando a la instancia de `CompactToggleItem` (`self`) sin ningún layout asociado (`layout() is None`).
+  4. En PySide6/Qt, un widget contenedor sin layout y sin tamaño fijo tiene un `sizeHint()` de `QSize(-1, -1)`.
+  5. Al añadirse los 7 elementos a `grid_toggles` dentro de `card_visibility`, la cuadrícula colapsaba a altura 0, provocando que la tarjeta "Elementos & Filtros" se mostrara como un recuadro completamente plano y vacío.
+* **Solución Implementada**:
+  1. En [`frontend/components/chat/overlay_settings.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/overlay_settings.py):
+     - Se refactorizó la función a `_setup_icon_text_row(target_widget: QWidget, ...)` para asignar el `QHBoxLayout` directamente sobre el widget objetivo (`self`).
+     - Se fijó la política de tamaño `QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed` en `CompactToggleItem`.
+     - Se adaptó `_create_metric_header` para instanciar su contenedor y configurar el layout directamente sobre él.
+* **Pruebas de Validación de Geometría**:
+  - Validación de los 7 elementos `CompactToggleItem`:
+    - `layout() is not None` $\to$ `QHBoxLayout` activo en cada elemento.
+    - `sizeHint().height() > 0` $\to$ Dimensiones positivas y renderizado verificado.
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_57.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_57.md).
 
 ---
 

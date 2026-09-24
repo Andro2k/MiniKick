@@ -77,6 +77,7 @@
 - Eliminación de Transparencia en Desplegables de Búsqueda: Corregido el problema por el cual el menú de sugerencias al buscar categorías u opciones se mostraba con fondo transparente y se mezclaba con los botones del formulario.
 - Eliminación de Ventanas Fantasma en Segundo Plano: Subsanada la creación de micro-ventanas invisibles que aparecían en la barra de tareas al desplegar calendarios o selectores.
 - Estabilidad de la Configuración del Chat: Solucionado el reinicio involuntario de los estilos de la ventana de chat web al abrir la aplicación, preservando siempre la personalización guardada por el usuario.
+- Visualización de Opciones en Elementos y Filtros del Chat: Corregido el colapso visual que mostraba vacía la tarjeta de interruptores en los ajustes del chat, permitiendo activar o desactivar con normalidad la visualización de plataformas, insignias, hora, emotes, GIFs, comandos y bots.
 - Ajuste de Posición en Chat Horizontal: Corregido el anclaje de mensajes en el formato horizontal para asegurar que las intervenciones fluyan ordenadamente desde la parte inferior de la pantalla.
 
 ### Conectividad y Moderación
