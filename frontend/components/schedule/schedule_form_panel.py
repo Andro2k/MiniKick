@@ -1,13 +1,16 @@
 # frontend\components\schedule\schedule_form_panel.py
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                               QLineEdit, QPushButton, QCalendarWidget)
+                               QLineEdit, QPushButton)
 from PySide6.QtCore import Qt, Signal, QDate, QTime
-from PySide6.QtGui import QTextCharFormat, QColor
-from frontend.widgets import (ModernCard, ModernButton, ModernSwitch,
-                              NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox)
+from frontend.widgets import (
+    ModernCard, ModernButton,
+    NoWheelDateEdit, NoWheelTimeEdit, CategorySearchComboBox,
+    create_row_layout, create_labeled_field, create_platform_switches,
+    sync_dual_platform_switches, create_text_label
+)
 from frontend.common import (
-    COLOR_NEUTRAL_400, SPACING_SM, SPACING_MD, SPACING_LG,
+    SPACING_SM, SPACING_MD, SPACING_LG,
     MARGIN_MD, MARGIN_TAB_PANEL
 )
 
@@ -46,78 +49,46 @@ class ScheduleFormPanel(QWidget):
         form_layout = QVBoxLayout()
         form_layout.setSpacing(SPACING_MD)
 
-        lbl_name = QLabel(self.i18n.get("stream_info.schedule_dialog.name_label"))
-        lbl_name.setProperty("role", "h3")
-        self.txt_name = QLineEdit()
+        self.txt_name = QLineEdit(parent=self)
         self.txt_name.setPlaceholderText(self.i18n.get("stream_info.schedule_dialog.name_placeholder"))
-        form_layout.addWidget(lbl_name)
-        form_layout.addWidget(self.txt_name)
+        name_field, _ = create_labeled_field(
+            self.i18n.get("stream_info.schedule_dialog.name_label"),
+            self.txt_name,
+            role="h3",
+            parent=self
+        )
+        form_layout.addLayout(name_field)
+        form_layout.addWidget(create_text_label(self.i18n.get("stream_info.schedule_dialog.platform_label"), role="h3", parent=self))
 
-        lbl_target = QLabel(self.i18n.get("stream_info.schedule_dialog.platform_label"))
-        lbl_target.setProperty("role", "h3")
-        form_layout.addWidget(lbl_target)
-
-        switches_row = QHBoxLayout()
-        switches_row.setSpacing(SPACING_LG)
-
-        kick_switch_box = QHBoxLayout()
-        kick_switch_box.setSpacing(SPACING_MD)
-        self.switch_kick = ModernSwitch()
-        self.switch_kick.setChecked(True)
-        lbl_kick = QLabel("Kick")
-        lbl_kick.setProperty("role", "body")
-        kick_switch_box.addWidget(self.switch_kick)
-        kick_switch_box.addWidget(lbl_kick)
-        switches_row.addLayout(kick_switch_box)
-
-        twitch_switch_box = QHBoxLayout()
-        twitch_switch_box.setSpacing(SPACING_MD)
-        self.switch_twitch = ModernSwitch()
-        self.switch_twitch.setChecked(True)
-        lbl_twitch = QLabel("Twitch")
-        lbl_twitch.setProperty("role", "body")
-        twitch_switch_box.addWidget(self.switch_twitch)
-        twitch_switch_box.addWidget(lbl_twitch)
-        switches_row.addLayout(twitch_switch_box)
-        switches_row.addStretch()
-
+        switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
+            spacing=SPACING_LG,
+            parent=self
+        )
         form_layout.addLayout(switches_row)
 
-        datetime_row = QHBoxLayout()
-        datetime_row.setSpacing(SPACING_LG)
+        datetime_row = create_row_layout(spacing=SPACING_LG)
 
-        date_box = QVBoxLayout()
-        date_box.setSpacing(SPACING_SM)
-        lbl_date = QLabel(self.i18n.get("stream_info.schedule_dialog.date_label"))
-        lbl_date.setProperty("role", "h3")
-        self.date_edit = NoWheelDateEdit()
+        self.date_edit = NoWheelDateEdit(parent=self)
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         self.date_edit.setDate(QDate.currentDate())
-        
-        cal = self.date_edit.calendarWidget()
-        if cal:
-            cal.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
-            cal.setHorizontalHeaderFormat(QCalendarWidget.HorizontalHeaderFormat.ShortDayNames)
-            neutral_fmt = QTextCharFormat()
-            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_400))
-            cal.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, neutral_fmt)
-            cal.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, neutral_fmt)
-            cal.setHeaderTextFormat(neutral_fmt)
-
-        date_box.addWidget(lbl_date)
-        date_box.addWidget(self.date_edit)
+        date_box, _ = create_labeled_field(
+            self.i18n.get("stream_info.schedule_dialog.date_label"),
+            self.date_edit,
+            role="h3",
+            spacing=SPACING_SM
+        )
         datetime_row.addLayout(date_box)
 
-        time_box = QVBoxLayout()
-        time_box.setSpacing(SPACING_SM)
-        lbl_time = QLabel(self.i18n.get("stream_info.schedule_dialog.time_label"))
-        lbl_time.setProperty("role", "h3")
-        self.time_edit = NoWheelTimeEdit()
+        self.time_edit = NoWheelTimeEdit(parent=self)
         self.time_edit.setDisplayFormat("HH:mm")
         self.time_edit.setTime(QTime.currentTime())
-        time_box.addWidget(lbl_time)
-        time_box.addWidget(self.time_edit)
+        time_box, _ = create_labeled_field(
+            self.i18n.get("stream_info.schedule_dialog.time_label"),
+            self.time_edit,
+            role="h3",
+            spacing=SPACING_SM
+        )
         datetime_row.addLayout(time_box)
 
         now_box = QVBoxLayout()
@@ -127,7 +98,8 @@ class ScheduleFormPanel(QWidget):
         self.btn_now = ModernButton(
             self.i18n.get("stream_info.schedule_dialog.btn_now"),
             role="action_outlined",
-            icon_name="clock-filled.svg"
+            icon_name="clock-filled.svg",
+            parent=self
         )
         self.btn_now.setToolTip(self.i18n.get("stream_info.schedule_dialog.btn_now_tooltip"))
         self.btn_now.clicked.connect(self._set_current_datetime)
@@ -140,7 +112,7 @@ class ScheduleFormPanel(QWidget):
 
         lbl_stream_title = QLabel(self.i18n.get("stream_info.schedule_dialog.stream_title_label"))
         lbl_stream_title.setProperty("role", "h3")
-        self.txt_title = QLineEdit()
+        self.txt_title = QLineEdit(parent=self)
         self.txt_title.setPlaceholderText(self.i18n.get("stream_info.schedule_dialog.stream_title_placeholder"))
         form_layout.addWidget(lbl_stream_title)
         form_layout.addWidget(self.txt_title)
@@ -173,12 +145,12 @@ class ScheduleFormPanel(QWidget):
         action_row = QHBoxLayout()
         action_row.setSpacing(SPACING_MD)
 
-        self.btn_clear = QPushButton(self.i18n.get("stream_info.schedule_dialog.btn_clear"))
+        self.btn_clear = QPushButton(self.i18n.get("stream_info.schedule_dialog.btn_clear"), parent=self)
         self.btn_clear.setProperty("role", "action_outlined")
         self.btn_clear.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_clear.clicked.connect(self.clear_form)
 
-        self.btn_save = ModernButton(self.i18n.get("stream_info.schedule_dialog.btn_save"), role="action_outlined")
+        self.btn_save = ModernButton(self.i18n.get("stream_info.schedule_dialog.btn_save"), role="action_outlined", parent=self)
         self.btn_save.clicked.connect(self._on_save)
 
         action_row.addWidget(self.btn_clear)
@@ -215,28 +187,13 @@ class ScheduleFormPanel(QWidget):
 
     def set_connected_platforms(self, connected_platforms: dict[str, bool]):
         self.connected_platforms = connected_platforms or {}
-        kick_on = self.connected_platforms.get("kick", False)
-        twitch_on = self.connected_platforms.get("twitch", False)
         off_tip = self.i18n.get("stream_info.quick_change.platform_offline") if self.i18n else ""
-
-        self.switch_kick.setEnabled(kick_on)
-        if not kick_on:
-            self.switch_kick.setChecked(False)
-            self.switch_kick.setToolTip(off_tip)
-        else:
-            self.switch_kick.setToolTip("")
-
-        self.switch_twitch.setEnabled(twitch_on)
-        if not twitch_on:
-            self.switch_twitch.setChecked(False)
-            self.switch_twitch.setToolTip(off_tip)
-        else:
-            self.switch_twitch.setToolTip("")
+        sync_dual_platform_switches(self.switch_kick, self.switch_twitch, self.connected_platforms, off_tip, auto_check=False)
 
         if hasattr(self, "search_kick_cat"):
-            self.search_kick_cat.setEnabled(kick_on)
+            self.search_kick_cat.setEnabled(self.switch_kick.isEnabled())
         if hasattr(self, "search_twitch_cat"):
-            self.search_twitch_cat.setEnabled(twitch_on)
+            self.search_twitch_cat.setEnabled(self.switch_twitch.isEnabled())
 
     def _trigger_category_search(self, platform: str, query: str):
         if query.strip():

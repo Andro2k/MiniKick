@@ -15,29 +15,43 @@ from frontend.widgets import (
 )
 from .chat_mockup import ChatOverlayMockupWidget
 
+VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})
+DEFAULT_CHAT_THEME = "dark"
+
+def _setup_icon_text_row(
+    target_widget: QWidget,
+    icon_name: str,
+    text: str,
+    tooltip: str = "",
+    margins=MARGIN_NONE,
+    spacing=SPACING_XS,
+    icon_size=14
+) -> tuple[QHBoxLayout, QLabel]:
+    layout = QHBoxLayout(target_widget)
+    layout.setContentsMargins(*margins)
+    layout.setSpacing(spacing)
+    if icon_name:
+        icon_lbl = QLabel(target_widget)
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=icon_size))
+        icon_lbl.setFixedSize(icon_size + 2, icon_size + 2)
+        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(icon_lbl)
+    lbl = QLabel(text, target_widget)
+    lbl.setProperty("role", "caption")
+    lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+    layout.addWidget(lbl, stretch=1)
+    if tooltip:
+        target_widget.setToolTip(tooltip)
+        lbl.setToolTip(tooltip)
+    return layout, lbl
+
 class CompactToggleItem(QWidget):
     def __init__(self, icon_name: str, title: str, switch: ModernSwitch, tooltip: str = "", parent=None):
         super().__init__(parent)
         self.switch = switch
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_CHIP)
-        layout.setSpacing(SPACING_SM)
-
-        if icon_name:
-            icon_lbl = QLabel(self)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=14))
-            icon_lbl.setFixedSize(16, 16)
-            layout.addWidget(icon_lbl)
-
-        lbl = QLabel(title, self)
-        lbl.setProperty("role", "caption")
-        lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout.addWidget(lbl, stretch=1)
-
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=MARGIN_CHIP, spacing=SPACING_SM, icon_size=14)
         layout.addWidget(switch, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        if tooltip:
-            self.setToolTip(tooltip)
-            lbl.setToolTip(tooltip)
 
 class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
@@ -52,14 +66,14 @@ class ChatOverlaySettingsPanel(ModernCard):
 
         self._current_orientation = "vertical"
         self._vertical_config = {
-            "theme": "glass",
+            "theme": DEFAULT_CHAT_THEME,
             "size": 14,
             "fade": 15,
             "flow": "bottom-to-top",
             "anim_in": "fade",
         }
         self._horizontal_config = {
-            "theme": "glass",
+            "theme": DEFAULT_CHAT_THEME,
             "size": 14,
             "fade": 15,
             "flow": "right-to-left",
@@ -81,37 +95,17 @@ class ChatOverlaySettingsPanel(ModernCard):
         return lbl
 
     def _create_metric_header(self, icon_name: str, text: str, tooltip: str = "") -> QWidget:
-        header_widget = QWidget(self)
-        layout = QHBoxLayout(header_widget)
-        layout.setContentsMargins(*MARGIN_NONE)
-        layout.setSpacing(SPACING_XS)
-
-        if icon_name:
-            icon_lbl = QLabel(header_widget)
-            icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=13))
-            icon_lbl.setFixedSize(14, 14)
-            layout.addWidget(icon_lbl)
-
-        lbl = QLabel(text, header_widget)
-        lbl.setProperty("role", "caption")
-        lbl.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout.addWidget(lbl, stretch=1)
-
-        if tooltip:
-            header_widget.setToolTip(tooltip)
-            lbl.setToolTip(tooltip)
-
-        return header_widget
+        container = QWidget(self)
+        _setup_icon_text_row(container, icon_name, text, tooltip, margins=MARGIN_NONE, spacing=SPACING_XS, icon_size=13)
+        return container
 
     def _setup_ui(self):
         card_style = ModernCard(self, margin=MARGIN_MD, spacing=SPACING_SM, orientation="vertical")
         card_style.addWidget(self._create_section_header(self.i18n.get("chat.overlay.section_style")))
 
         self.combo_overlay_theme = NoWheelComboBox(self)
-        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_glass"), "glass")
-        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_neon"), "neon")
-        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_card"), "card")
-        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_cyber"), "cyber")
+        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_dark"), "dark")
+        self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_light"), "light")
         self.combo_overlay_theme.addItem(self.i18n.get("chat.overlay.theme_minimal"), "minimal")
 
         row_theme = InspectorPropertyRow(
@@ -209,9 +203,6 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_overlay_show_time = ModernSwitch(self)
         self.sw_overlay_show_time.setChecked(False)
 
-        self.sw_edge_fade = ModernSwitch(self)
-        self.sw_edge_fade.setChecked(True)
-
         self.sw_overlay_show_bots = ModernSwitch(self)
         self.sw_overlay_show_bots.setChecked(False)
 
@@ -230,23 +221,21 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_show_platform = ModernSwitch(self)
         self.sw_show_platform.setChecked(True)
 
-        item_time = CompactToggleItem("clock-filled.svg", self.i18n.get("chat.overlay.show_time_title"), self.sw_overlay_show_time, self.i18n.get("chat.overlay.show_time_desc"), self)
-        item_edge = CompactToggleItem("eye-filled.svg", self.i18n.get("chat.overlay.edge_fade_title"), self.sw_edge_fade, self.i18n.get("chat.overlay.edge_fade_desc"), self)
-        item_bots = CompactToggleItem("bot.svg", self.i18n.get("chat.overlay.show_bots_title"), self.sw_overlay_show_bots, self.i18n.get("chat.overlay.show_bots_desc"), self)
-        item_cmds = CompactToggleItem("bolt-circle-filled.svg", self.i18n.get("chat.overlay.hide_commands_title"), self.sw_hide_commands, self.i18n.get("chat.overlay.hide_commands_desc"), self)
-        item_emotes = CompactToggleItem("emoji-circle-filled.svg", self.i18n.get("chat.overlay.big_emotes_title"), self.sw_big_emotes, self.i18n.get("chat.overlay.big_emotes_desc"), self)
-        item_badges = CompactToggleItem("shield-user-filled.svg", self.i18n.get("chat.overlay.show_badges_title"), self.sw_show_badges, self.i18n.get("chat.overlay.show_badges_desc"), self)
-        item_gifs = CompactToggleItem("gift-filled.svg", self.i18n.get("chat.overlay.show_gifs_title"), self.sw_overlay_show_gifs, self.i18n.get("chat.overlay.show_gifs_desc"), self)
         item_plat = CompactToggleItem("brand-kick.svg", self.i18n.get("chat.overlay.show_platform_title"), self.sw_show_platform, self.i18n.get("chat.overlay.show_platform_desc"), self)
+        item_badges = CompactToggleItem("shield-user-filled.svg", self.i18n.get("chat.overlay.show_badges_title"), self.sw_show_badges, self.i18n.get("chat.overlay.show_badges_desc"), self)
+        item_time = CompactToggleItem("clock-filled.svg", self.i18n.get("chat.overlay.show_time_title"), self.sw_overlay_show_time, self.i18n.get("chat.overlay.show_time_desc"), self)
+        item_emotes = CompactToggleItem("emoji-circle-filled.svg", self.i18n.get("chat.overlay.big_emotes_title"), self.sw_big_emotes, self.i18n.get("chat.overlay.big_emotes_desc"), self)
+        item_gifs = CompactToggleItem("gift-filled.svg", self.i18n.get("chat.overlay.show_gifs_title"), self.sw_overlay_show_gifs, self.i18n.get("chat.overlay.show_gifs_desc"), self)
+        item_cmds = CompactToggleItem("bolt-circle-filled.svg", self.i18n.get("chat.overlay.hide_commands_title"), self.sw_hide_commands, self.i18n.get("chat.overlay.hide_commands_desc"), self)
+        item_bots = CompactToggleItem("bot.svg", self.i18n.get("chat.overlay.show_bots_title"), self.sw_overlay_show_bots, self.i18n.get("chat.overlay.show_bots_desc"), self)
 
-        grid_toggles.addWidget(item_time, 0, 0)
-        grid_toggles.addWidget(item_edge, 0, 1)
-        grid_toggles.addWidget(item_bots, 1, 0)
-        grid_toggles.addWidget(item_cmds, 1, 1)
-        grid_toggles.addWidget(item_emotes, 2, 0)
-        grid_toggles.addWidget(item_badges, 2, 1)
-        grid_toggles.addWidget(item_gifs, 3, 0)
-        grid_toggles.addWidget(item_plat, 3, 1)
+        grid_toggles.addWidget(item_plat, 0, 0)
+        grid_toggles.addWidget(item_badges, 0, 1)
+        grid_toggles.addWidget(item_time, 1, 0)
+        grid_toggles.addWidget(item_emotes, 1, 1)
+        grid_toggles.addWidget(item_gifs, 2, 0)
+        grid_toggles.addWidget(item_cmds, 2, 1)
+        grid_toggles.addWidget(item_bots, 3, 0)
 
         card_visibility.addLayout(grid_toggles)
         self.addWidget(card_visibility)
@@ -259,7 +248,7 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.mockup_widget = ChatOverlayMockupWidget(self.i18n, parent=self)
         card_preview.addWidget(self.mockup_widget)
 
-        self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined")
+        self.btn_copy_overlay_obs = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
         self.row_copy_obs = SettingRow(
             "link-filled.svg",
             self.i18n.get("chat.settings.obs_title"),
@@ -298,7 +287,6 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_overlay_show_bots.toggled.connect(self._on_common_setting_changed)
         self.sw_overlay_show_time.toggled.connect(self._on_common_setting_changed)
         self.sw_big_emotes.toggled.connect(self._on_common_setting_changed)
-        self.sw_edge_fade.toggled.connect(self._on_common_setting_changed)
         self.sw_overlay_show_gifs.toggled.connect(self._on_common_setting_changed)
         self.sw_hide_commands.toggled.connect(self._on_common_setting_changed)
         self.sw_show_badges.toggled.connect(self._on_common_setting_changed)
@@ -325,9 +313,14 @@ class ChatOverlaySettingsPanel(ModernCard):
         incoming_cfg = self._vertical_config if orientation == "vertical" else self._horizontal_config
         self._is_updating_ui = True
         try:
-            t_idx = self.combo_overlay_theme.findData(incoming_cfg.get("theme", "glass"))
+            t_val = incoming_cfg.get("theme", DEFAULT_CHAT_THEME)
+            if t_val not in VALID_CHAT_THEMES:
+                t_val = DEFAULT_CHAT_THEME
+            t_idx = self.combo_overlay_theme.findData(t_val)
             if t_idx != -1:
                 self.combo_overlay_theme.setCurrentIndex(t_idx)
+            else:
+                self.combo_overlay_theme.setCurrentIndex(0)
 
             self.spin_overlay_size.setValue(int(incoming_cfg.get("size", 14)))
             self.spin_overlay_fade.setValue(int(incoming_cfg.get("fade", 15)))
@@ -350,7 +343,8 @@ class ChatOverlaySettingsPanel(ModernCard):
         if self._is_updating_ui:
             return
         active_cfg = self._vertical_config if self._current_orientation == "vertical" else self._horizontal_config
-        active_cfg["theme"] = self.combo_overlay_theme.currentData() or "glass"
+        active_theme = self.combo_overlay_theme.currentData()
+        active_cfg["theme"] = active_theme if active_theme in VALID_CHAT_THEMES else DEFAULT_CHAT_THEME
         active_cfg["size"] = self.spin_overlay_size.value()
         active_cfg["fade"] = self.spin_overlay_fade.value()
         active_cfg["flow"] = self.seg_overlay_flow.current_value() or (
@@ -384,7 +378,8 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     @property
     def overlay_theme(self) -> str:
-        return self.combo_overlay_theme.currentData() or "glass"
+        theme = self.combo_overlay_theme.currentData()
+        return theme if theme in VALID_CHAT_THEMES else DEFAULT_CHAT_THEME
 
     @property
     def overlay_size(self) -> int:
@@ -421,10 +416,6 @@ class ChatOverlaySettingsPanel(ModernCard):
         self.sw_overlay_show_gifs.blockSignals(True)
         self.sw_overlay_show_gifs.setChecked(bool(value))
         self.sw_overlay_show_gifs.blockSignals(False)
-
-    @property
-    def overlay_edge_fade(self) -> bool:
-        return self.sw_edge_fade.isChecked()
 
     @property
     def overlay_hide_commands(self) -> bool:
@@ -477,19 +468,16 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     def set_overlay_settings_ui(
         self,
-        theme: str = "glass",
+        theme: str = "dark",
         size: int = 14,
         fade: int = 15,
         show_bots: bool = False,
         show_time: bool = False,
         orientation: str = "vertical",
         flow: str = "",
-        entry: str = "",
         big_emotes: bool = True,
-        edge_fade: bool = True,
         anim_in: str = "fade",
         show_gifs: bool = True,
-        max_messages: int = 15,
         hide_commands: bool = False,
         show_badges: bool = True,
         show_platform: bool = True,
@@ -499,8 +487,13 @@ class ChatOverlaySettingsPanel(ModernCard):
     ):
         self._is_updating_ui = True
         try:
+            if theme not in VALID_CHAT_THEMES:
+                theme = DEFAULT_CHAT_THEME
+
             if vertical_config and isinstance(vertical_config, dict):
                 self._vertical_config = dict(vertical_config)
+                if self._vertical_config.get("theme") not in VALID_CHAT_THEMES:
+                    self._vertical_config["theme"] = DEFAULT_CHAT_THEME
             else:
                 self._vertical_config = {
                     "theme": theme,
@@ -512,6 +505,8 @@ class ChatOverlaySettingsPanel(ModernCard):
 
             if horizontal_config and isinstance(horizontal_config, dict):
                 self._horizontal_config = dict(horizontal_config)
+                if self._horizontal_config.get("theme") not in VALID_CHAT_THEMES:
+                    self._horizontal_config["theme"] = DEFAULT_CHAT_THEME
             else:
                 self._horizontal_config = {
                     "theme": theme,
@@ -526,7 +521,6 @@ class ChatOverlaySettingsPanel(ModernCard):
                 c_show_time = common_config.get("show_time", show_time)
                 c_show_gifs = common_config.get("show_gifs", show_gifs)
                 c_big_emotes = common_config.get("big_emotes", big_emotes)
-                c_edge_fade = common_config.get("edge_fade", edge_fade)
                 c_hide_commands = common_config.get("hide_commands", hide_commands)
                 c_show_badges = common_config.get("show_badges", show_badges)
                 c_show_platform = common_config.get("show_platform", show_platform)
@@ -535,7 +529,6 @@ class ChatOverlaySettingsPanel(ModernCard):
                 c_show_time = show_time
                 c_show_gifs = show_gifs
                 c_big_emotes = big_emotes
-                c_edge_fade = edge_fade
                 c_hide_commands = hide_commands
                 c_show_badges = show_badges
                 c_show_platform = show_platform
@@ -550,7 +543,6 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.sw_overlay_show_time.blockSignals(True)
             self.sw_overlay_show_gifs.blockSignals(True)
             self.sw_big_emotes.blockSignals(True)
-            self.sw_edge_fade.blockSignals(True)
             self.sw_hide_commands.blockSignals(True)
             self.sw_show_badges.blockSignals(True)
             self.sw_show_platform.blockSignals(True)
@@ -559,7 +551,6 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.sw_overlay_show_time.setChecked(c_show_time)
             self.sw_overlay_show_gifs.setChecked(c_show_gifs)
             self.sw_big_emotes.setChecked(c_big_emotes)
-            self.sw_edge_fade.setChecked(c_edge_fade)
             self.sw_hide_commands.setChecked(c_hide_commands)
             self.sw_show_badges.setChecked(c_show_badges)
             self.sw_show_platform.setChecked(c_show_platform)
@@ -569,9 +560,14 @@ class ChatOverlaySettingsPanel(ModernCard):
             self._populate_flow_options(self._current_orientation)
 
             active_cfg = self._vertical_config if self._current_orientation == "vertical" else self._horizontal_config
-            t_idx = self.combo_overlay_theme.findData(active_cfg.get("theme", "glass"))
+            t_val = active_cfg.get("theme", DEFAULT_CHAT_THEME)
+            if t_val not in VALID_CHAT_THEMES:
+                t_val = DEFAULT_CHAT_THEME
+            t_idx = self.combo_overlay_theme.findData(t_val)
             if t_idx != -1:
                 self.combo_overlay_theme.setCurrentIndex(t_idx)
+            else:
+                self.combo_overlay_theme.setCurrentIndex(0)
 
             self.spin_overlay_size.setValue(int(active_cfg.get("size", 14)))
             self.spin_overlay_fade.setValue(int(active_cfg.get("fade", 15)))
@@ -595,7 +591,6 @@ class ChatOverlaySettingsPanel(ModernCard):
             self.sw_overlay_show_time.blockSignals(False)
             self.sw_overlay_show_gifs.blockSignals(False)
             self.sw_big_emotes.blockSignals(False)
-            self.sw_edge_fade.blockSignals(False)
             self.sw_hide_commands.blockSignals(False)
             self.sw_show_badges.blockSignals(False)
             self.sw_show_platform.blockSignals(False)
@@ -605,13 +600,14 @@ class ChatOverlaySettingsPanel(ModernCard):
         self._update_mockup_preview()
 
     def _update_mockup_preview(self, *args):
-        theme = self.combo_overlay_theme.currentData() or "glass"
+        theme = self.combo_overlay_theme.currentData()
+        if theme not in VALID_CHAT_THEMES:
+            theme = DEFAULT_CHAT_THEME
         orientation = self.seg_overlay_orientation.current_value() or "vertical"
         show_time = self.sw_overlay_show_time.isChecked()
         show_bots = self.sw_overlay_show_bots.isChecked()
         show_badges = self.sw_show_badges.isChecked()
         show_platform = self.sw_show_platform.isChecked()
-        edge_fade = self.sw_edge_fade.isChecked()
         hide_commands = self.sw_hide_commands.isChecked()
         big_emotes = self.sw_big_emotes.isChecked()
         show_gifs = self.sw_overlay_show_gifs.isChecked()
@@ -623,7 +619,6 @@ class ChatOverlaySettingsPanel(ModernCard):
                 show_bots=show_bots,
                 show_badges=show_badges,
                 show_platform=show_platform,
-                edge_fade=edge_fade,
                 hide_commands=hide_commands,
                 big_emotes=big_emotes,
                 show_gifs=show_gifs

@@ -10,6 +10,8 @@ __pycache__/
 api_keys.py
 .env
 MiniKick_Backup_*.json
+kick_api_config*.json
+*token_cache*.json
 # Archivos del sistema operativo
 *.exe
 *.log

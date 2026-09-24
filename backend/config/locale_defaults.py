@@ -31,12 +31,12 @@ DEFAULT_DICTIONARY = {
         },
         "buttons": {
             "browse": "Browse...",
-            "discard": "Discard",
-            "duplicate": "Duplicate to another alert",
+            "discard_tooltip": "Discard unsaved changes",
             "duplicate_tooltip": "Copy visual, media and audio settings to another alert",
-            "save": "Save Changes",
+            "save_short": "Save",
             "test": "Test Alert",
-            "test_sent": "Test alert sent to OBS."
+            "test_sent": "Test alert sent to OBS.",
+            "test_short": "Test"
         },
         "dialogs": {
             "duplicate": {
@@ -149,12 +149,13 @@ DEFAULT_DICTIONARY = {
         },
         "sections": {
             "appearance": "Design",
+            "appearance_desc": "Layout, background color, borders, and shadows.",
             "general": "General settings",
+            "general_desc": "Duration and entry/exit animation settings.",
             "media_sound": "Media and sound",
-            "text_speech": "Text and speech"
-        },
-        "sidebar": {
-            "title": "Alert Variants"
+            "media_sound_desc": "Image/video files, alert sound, and volume.",
+            "text_speech": "Text and speech",
+            "text_speech_desc": "Message template, typography, colors, and TTS."
         },
         "status": {
             "disabled_msg": "The '{event}' alert has been disabled.",
@@ -221,8 +222,6 @@ DEFAULT_DICTIONARY = {
             "anim_in_title": "Entrance Animation",
             "big_emotes_desc": "Enlarge emotes when a message contains only emotes.",
             "big_emotes_title": "Big Emotes (Bigmoji)",
-            "edge_fade_desc": "Adds top and bottom gradient fades to smoothly dissolve messages in OBS.",
-            "edge_fade_title": "Edge Fade (Gradient)",
             "fade_desc": "Seconds each message stays visible before fading out (0 = never hide).",
             "fade_never": "Never",
             "fade_title": "On-Screen Time",
@@ -261,12 +260,10 @@ DEFAULT_DICTIONARY = {
             "show_time_title": "Show Timestamp",
             "size_desc": "Adjust the chat text font size on screen.",
             "size_title": "Font Size",
-            "theme_card": "Solid Card",
-            "theme_cyber": "Retro Cyberpunk (Cyber)",
+            "theme_dark": "Messenger Dark",
             "theme_desc": "Choose the visual design that best fits your stream.",
-            "theme_glass": "Glassmorphism",
-            "theme_minimal": "Minimalist (Floating Glow)",
-            "theme_neon": "Neon Glow (Neon)",
+            "theme_light": "Messenger Light",
+            "theme_minimal": "Minimal",
             "theme_title": "Overlay Design"
         },
         "platforms": {
@@ -428,6 +425,7 @@ DEFAULT_DICTIONARY = {
             "back": "Back",
             "browse": "Browse",
             "cancel": "Cancel",
+            "clear_filters": "Clear Filters",
             "close": "Close",
             "continue": "Continue",
             "copy": "Copy Link",
@@ -441,7 +439,9 @@ DEFAULT_DICTIONARY = {
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
+        "filtered_count": "({count} of {total})",
         "no_results": "No results found",
+        "no_results_filter": "No results found matching the applied filters.",
         "status": {
             "error": "Error",
             "offline": "Offline",
@@ -514,8 +514,6 @@ DEFAULT_DICTIONARY = {
             "title_twitch": "Pending permissions on Twitch"
         },
         "connection": {
-            "autostart_desc": "Automatically connect MiniKick upon launching the application.",
-            "autostart_title": "Auto Connect",
             "btn_active_kick": "Kick Active",
             "btn_active_tiktok": "TikTok Active",
             "btn_active_twitch": "Twitch Active",
@@ -705,7 +703,8 @@ DEFAULT_DICTIONARY = {
             "historical": "HISTORICAL"
         },
         "pagination": {
-            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
+            "info": "{showing_from}-{showing_to} of {total} row(s) shown.",
+            "info_filtered": "{showing_from}-{showing_to} of {total} row(s) shown (filtered from {total_all})"
         },
         "status": {
             "cleared_msg": "Log view cleared successfully.",
@@ -720,7 +719,8 @@ DEFAULT_DICTIONARY = {
         "table": {
             "col_level": "Log Level",
             "col_message": "Log Message",
-            "col_time": "Timestamp"
+            "col_time": "Timestamp",
+            "title": "Event Logs"
         }
     },
     "logs": {
@@ -844,9 +844,11 @@ DEFAULT_DICTIONARY = {
             "bg_title": "MiniKick in background",
             "close_app": "Close MiniKick",
             "open_panel": "Open Panel",
-            "play_pause": "Play / Pause Music",
+            "pause": "Pause Music",
+            "play": "Play Music",
             "read_chat": "Read chat out loud",
             "skip": "Skip Track",
+            "tooltip": "MiniKick v{version} | Active",
             "tts_msg": "Chat reading: {estado}",
             "tts_off": "Disabled",
             "tts_on": "Enabled",
@@ -1013,28 +1015,39 @@ DEFAULT_DICTIONARY = {
         }
     },
     "piper_dialog": {
+        "badge_custom": "LOCAL",
+        "badge_natural": "NATURAL",
+        "badge_stream": "STREAM",
         "btn_close": "Close",
         "btn_delete": "Delete",
+        "btn_delete_tooltip": "Delete model from local storage",
         "btn_download": "Download",
         "btn_import": "Import ONNX Model",
         "btn_import_tooltip": "Import a local Piper model (.onnx and .onnx.json)",
         "btn_reset_synthesis": "Reset",
         "btn_reset_tooltip": "Reset acoustic parameters to defaults",
+        "empty_search": "No voice models found matching your search.",
         "import_filter": "Piper ONNX Models (*.onnx)",
         "import_missing_json": "The corresponding .onnx.json configuration file was not found in the same folder.",
         "import_title": "Select Piper ONNX Model",
+        "installed_count": "{installed} of {total} models installed",
         "param_length_scale": "Base Duration Scale",
         "param_length_scale_desc": "Base phoneme duration multiplier. Lower values increase speech rate.",
         "param_noise_scale": "Expressiveness (Noise Scale)",
         "param_noise_scale_desc": "Controls phoneme pitch and expressiveness variation (Recommended: 0.67).",
         "param_noise_w_scale": "Pacing / Cadence (Noise W)",
         "param_noise_w_scale_desc": "Controls rhythmic variation and pause duration between words (Recommended: 0.80).",
+        "search_placeholder": "Search voice or accent...",
         "status_downloading": "Downloading...",
         "status_installed": "Installed",
         "status_not_installed": "Available",
         "subtitle": "Download and manage local neural voices for offline speech synthesis without internet or API usage.",
         "synthesis_desc": "Fine-tune intonation, expressiveness, and cadence for the VITS neural acoustic generator.",
         "synthesis_title": "Acoustic & Synthesis Settings",
+        "tab_all": "All",
+        "tab_installed": "Installed",
+        "tab_natural": "Natural",
+        "tab_stream": "Characters & Retro",
         "title": "Piper Voice Manager (Local TTS)"
     },
     "rewards": {
@@ -1226,6 +1239,13 @@ DEFAULT_DICTIONARY = {
             "twitch_title": "Twitch Channel",
             "youtube_desc_connected": "Successfully connected to {channel} live stream.",
             "youtube_title": "YouTube Live Channel"
+        },
+        "sections": {
+            "audio": "Audio Devices",
+            "backup": "Backup & Restore",
+            "integrations": "Platforms & Connections",
+            "support": "Updates & Support",
+            "system": "System & Appearance"
         },
         "status": {
             "browser_changed": "Browser Updated",

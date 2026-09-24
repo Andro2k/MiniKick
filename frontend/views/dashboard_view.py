@@ -8,15 +8,15 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from frontend.common import (
     COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_500,
-    COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE,
     create_circular_pixmap, get_icon_colored, get_pixmap_colored,
     SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD,
     MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_HERO, MARGIN_PLATFORMS_GRID, MARGIN_SETTING_ROW_COMPACT
 )
 from frontend.widgets import (
-    BaseView, StatCard, SettingRow, ModernCard,
-    ModernButton, ModernSwitch
+    BaseView, StatCard, ModernCard,
+    ModernButton
 )
 from frontend.components.dashboard import (
     SegmentedDistributionBar, PlatformStatusCard
@@ -27,7 +27,6 @@ class DashboardView(BaseView):
     twitch_connect_requested = Signal()
     youtube_connect_requested = Signal()
     tiktok_connect_requested = Signal()
-    autostart_toggled = Signal(bool)
     reauth_requested = Signal()
     reauth_kick_requested = Signal()
     reauth_twitch_requested = Signal()
@@ -53,18 +52,18 @@ class DashboardView(BaseView):
     def _setup_ui(self):
         self.main_layout.setSpacing(SPACING_MD)
 
-        self.banner_scopes_kick = QFrame()
+        self.banner_scopes_kick = QFrame(self)
         self.banner_scopes_kick.setProperty("role", "banner_scope_card")
         self.banner_scopes_kick.setProperty("state", "kick")
         self.banner_layout_kick = QHBoxLayout(self.banner_scopes_kick)
         self.banner_layout_kick.setContentsMargins(*MARGIN_LG)
         self.banner_layout_kick.setSpacing(SPACING_MD)
         self.banner_scopes_kick.setVisible(False)
-        self.lbl_warn_text_kick = QLabel()
+        self.lbl_warn_text_kick = QLabel(self.banner_scopes_kick)
         self.lbl_warn_text_kick.setWordWrap(True)
-        self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_kick")
+        self.btn_reauth_kick = ModernButton(self.i18n.get("dashboard.banner.btn_update_kick"), role="action_kick", parent=self.banner_scopes_kick)
         self.btn_reauth_kick.clicked.connect(self._on_reauth_kick_clicked)
-        lbl_kick_icon = QLabel()
+        lbl_kick_icon = QLabel(self.banner_scopes_kick)
         lbl_kick_icon.setPixmap(get_pixmap_colored("brand-kick.svg", COLOR_GREEN, 24))
         lbl_kick_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_kick.addWidget(lbl_kick_icon, 0, Qt.AlignmentFlag.AlignTop)
@@ -72,18 +71,18 @@ class DashboardView(BaseView):
         self.banner_layout_kick.addWidget(self.btn_reauth_kick, 0, Qt.AlignmentFlag.AlignVCenter)
         self.main_layout.addWidget(self.banner_scopes_kick)
 
-        self.banner_scopes_twitch = QFrame()
+        self.banner_scopes_twitch = QFrame(self)
         self.banner_scopes_twitch.setProperty("role", "banner_scope_card")
         self.banner_scopes_twitch.setProperty("state", "twitch")
         self.banner_layout_twitch = QHBoxLayout(self.banner_scopes_twitch)
         self.banner_layout_twitch.setContentsMargins(*MARGIN_LG)
         self.banner_layout_twitch.setSpacing(SPACING_MD)
         self.banner_scopes_twitch.setVisible(False)
-        self.lbl_warn_text_twitch = QLabel()
+        self.lbl_warn_text_twitch = QLabel(self.banner_scopes_twitch)
         self.lbl_warn_text_twitch.setWordWrap(True)
-        self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_twitch")
+        self.btn_reauth_twitch = ModernButton(self.i18n.get("dashboard.banner.btn_update_twitch"), role="action_twitch", parent=self.banner_scopes_twitch)
         self.btn_reauth_twitch.clicked.connect(self._on_reauth_twitch_clicked)
-        lbl_twitch_icon = QLabel()
+        lbl_twitch_icon = QLabel(self.banner_scopes_twitch)
         lbl_twitch_icon.setPixmap(get_pixmap_colored("brand-twitch.svg", COLOR_TWITCH, 24))
         lbl_twitch_icon.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         self.banner_layout_twitch.addWidget(lbl_twitch_icon, 0, Qt.AlignmentFlag.AlignTop)
@@ -105,19 +104,6 @@ class DashboardView(BaseView):
 
     def _setup_platforms_hub(self):
         hub_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE)
-
-        self.sw_autostart = ModernSwitch()
-        self.sw_autostart.toggled.connect(self.autostart_toggled.emit)
-        
-        row_autostart = SettingRow(
-            "plug-filled.svg", 
-            self.i18n.get("dashboard.connection.autostart_title"), 
-            self.i18n.get("dashboard.connection.autostart_desc"), 
-            self.sw_autostart,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
-        )
-        hub_card.addWidget(row_autostart)
-        hub_card.add_separator()
 
         platforms_container = QWidget(self)
         self.platforms_grid = QGridLayout(platforms_container)
@@ -175,11 +161,11 @@ class DashboardView(BaseView):
         self.tabs_layout.setContentsMargins(*MARGIN_NONE)
         self.tabs_layout.setSpacing(SPACING_MD)
 
-        self.btn_tab_kick = ModernButton(self.i18n.get("dashboard.profile.tab_kick"), role="action_kick")
+        self.btn_tab_kick = ModernButton(self.i18n.get("dashboard.profile.tab_kick"), role="action_kick", parent=self.tabs_container)
         self.btn_tab_kick.set_icon("brand-kick.svg", size=14)
         self.btn_tab_kick.clicked.connect(lambda: self.channel_tab_changed.emit("kick"))
 
-        self.btn_tab_twitch = ModernButton(self.i18n.get("dashboard.profile.tab_twitch"), role="action_twitch")
+        self.btn_tab_twitch = ModernButton(self.i18n.get("dashboard.profile.tab_twitch"), role="action_twitch", parent=self.tabs_container)
         self.btn_tab_twitch.set_icon("brand-twitch.svg", size=14)
         self.btn_tab_twitch.clicked.connect(lambda: self.channel_tab_changed.emit("twitch"))
 
@@ -245,7 +231,7 @@ class DashboardView(BaseView):
         action_col = QVBoxLayout()
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
-        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined")
+        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined", parent=self)
         self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", COLOR_WHITE, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)
@@ -616,11 +602,6 @@ class DashboardView(BaseView):
         if hasattr(self, "card_next_schedule"):
             self.card_next_schedule.set_value(schedule_text or "-")
 
-    def set_autostart_state(self, enabled: bool):
-        self.sw_autostart.blockSignals(True)
-        self.sw_autostart.setChecked(enabled)
-        self.sw_autostart.blockSignals(False)
-
     @staticmethod
     def _fmt_metric(count: int, total: int) -> str:
         pct = (count / total * 100) if total > 0 else 0.0
@@ -632,7 +613,7 @@ class DashboardView(BaseView):
             for i, card in enumerate(cards):
                 grid.addWidget(card, i // cols, i % cols)
 
-    def update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = ""):
+    def update_connection_status(self, is_connecting: bool, has_error: bool = False, _error_msg: str = ""):
         if is_connecting:
             self.set_kick_status(connecting=True)
         elif has_error:
@@ -642,7 +623,7 @@ class DashboardView(BaseView):
         self.lbl_username.setText(username)
         self.lbl_bio.setText(bio)
 
-    def update_stats(self, followers: str, room_id: str, category: str, affiliate_text: str, vods_text: str, created_at: str = "-", next_schedule: str = "-"):
+    def update_stats(self, followers: str, room_id: str, category: str, affiliate_text: str, _vods_text: str, created_at: str = "-", next_schedule: str = "-"):
         self.card_followers.set_value(followers)
         self.card_room.set_value(room_id)
         self.card_category.set_value(category)
@@ -718,9 +699,9 @@ class DashboardView(BaseView):
             desc = self.i18n.get("dashboard.banner.desc_kick")
             self.lbl_warn_text_kick.setText(
                 f"<div style='line-height: 135%;'>"
-                f"<div style='font-size: 13px; font-weight: 700; color: #FAFAFA; margin-bottom: 2px;'>{title}</div>"
-                f"<div style='font-size: 12px; color: #9D9AA8; margin-bottom: 5px;'>{desc}</div>"
-                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: #E4E3EA;'>"
+                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_WHITE}; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 12px; color: {COLOR_NEUTRAL_400}; margin-bottom: 5px;'>{desc}</div>"
+                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: {COLOR_NEUTRAL_200};'>"
                 f"{items_html}"
                 f"</ul>"
                 f"</div>"
@@ -735,9 +716,9 @@ class DashboardView(BaseView):
             desc = self.i18n.get("dashboard.banner.desc_twitch")
             self.lbl_warn_text_twitch.setText(
                 f"<div style='line-height: 135%;'>"
-                f"<div style='font-size: 13px; font-weight: 700; color: #FAFAFA; margin-bottom: 2px;'>{title}</div>"
-                f"<div style='font-size: 12px; color: #9D9AA8; margin-bottom: 5px;'>{desc}</div>"
-                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: #E4E3EA;'>"
+                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_WHITE}; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 12px; color: {COLOR_NEUTRAL_400}; margin-bottom: 5px;'>{desc}</div>"
+                f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: {COLOR_NEUTRAL_200};'>"
                 f"{items_html}"
                 f"</ul>"
                 f"</div>"

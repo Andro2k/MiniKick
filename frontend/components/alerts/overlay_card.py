@@ -1,11 +1,11 @@
 # frontend\components\alerts\overlay_card.py
 
-from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QBoxLayout, QSizePolicy
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QBoxLayout, QSizePolicy
 from PySide6.QtCore import Signal, QSize, Qt
-from frontend.widgets import ModernCard, ModernButton
+from frontend.widgets import ModernCard, ModernButton, create_row_layout, create_col_layout
 from frontend.common import (
     get_pixmap_colored, COLOR_NEUTRAL_400,
-    MARGIN_NONE, MARGIN_MD, SPACING_2XS, SPACING_SM, SPACING_MD
+    MARGIN_MD, SPACING_2XS, SPACING_SM, SPACING_MD
 )
 
 class AlertsOverlayCard(ModernCard):
@@ -20,16 +20,12 @@ class AlertsOverlayCard(ModernCard):
         self._setup_ui()
 
     def _setup_ui(self):
-        main_row = QHBoxLayout()
-        main_row.setContentsMargins(*MARGIN_NONE)
-        main_row.setSpacing(SPACING_MD)
+        main_row = create_row_layout(spacing=SPACING_MD)
 
         icon_link = QLabel(parent=self)
         icon_link.setPixmap(get_pixmap_colored("link-filled.svg", COLOR_NEUTRAL_400, size=18))
 
-        text_col = QVBoxLayout()
-        text_col.setContentsMargins(*MARGIN_NONE)
-        text_col.setSpacing(SPACING_2XS)
+        text_col = create_col_layout(spacing=SPACING_2XS)
 
         lbl_obs_title = QLabel(self.i18n.get("alerts.overlay_card.title"), parent=self)
         lbl_obs_title.setProperty("role", "h3")
@@ -75,7 +71,7 @@ class AlertsOverlayCard(ModernCard):
         self.alerts_overlay_url = url
         self.edit_overlay_url.setText(url)
 
-    def set_responsive_direction(self, direction: QBoxLayout.Direction):
+    def set_responsive_direction(self, _direction: QBoxLayout.Direction):
         pass
 
     def minimumSizeHint(self) -> QSize:

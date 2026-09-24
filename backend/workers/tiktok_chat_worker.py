@@ -7,6 +7,7 @@ from backend.providers.chat import TikTokChatProvider
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_dumps
+from backend.workers.worker_utils import stop_provider_chat_worker
 
 logger = logging.getLogger("minikick.workers.tiktok_chat")
 
@@ -72,14 +73,14 @@ class TikTokChatWorker(QThread):
 
         except Exception as e:
             if not self._is_stopped and not self.isInterruptionRequested():
-                logger.error("[TikTokChatWorker] Error no controlado (%s): %s", type(e).__name__, e, exc_info=True)
+                logger.error("[TikTokChatWorker] Unhandled error (%s): %s", type(e).__name__, e, exc_info=True)
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, timestamp: str, msg_id: int, extra_data: dict):
         if self._is_stopped or self.isInterruptionRequested():
             return
 
-        now_str = timestamp or datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = timestamp or datetime.datetime.now().strftime("%H:%M")
         emotes_tag = ""
         if extra_data and isinstance(extra_data, dict):
             emotes_list = extra_data.get("emotes")
@@ -103,8 +104,4 @@ class TikTokChatWorker(QThread):
         self.message_received.emit(dto)
 
     def stop(self):
-        logger.info("[TikTokChatWorker] Stopping TikTok chat worker for '@%s'...", self.target_channel)
-        self._is_stopped = True
-        self.requestInterruption()
-        self.provider.stop_chat()
-        self.quit()
+        stop_provider_chat_worker(self, self.provider, logger, "TikTokChatWorker", f"@{self.target_channel}")

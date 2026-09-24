@@ -5,6 +5,7 @@ import re
 import tempfile
 from functools import lru_cache
 from pathlib import Path
+from PySide6.QtGui import QPalette, QColor
 from .paths import get_assets_path, resolve_icon_path
 
 COLOR_NEUTRAL_950  = "#111215"
@@ -20,14 +21,12 @@ COLOR_WHITE        = "#F4F4F6"
 COLOR_PURE_WHITE   = "#FFFFFF"
 COLOR_BLACK        = "#000000"
 
-# Surface & Interactive States (Antigravity Spec)
 COLOR_SURFACE_HOVER         = "#282A31"
 COLOR_SURFACE_ACTIVE        = "#26282E"
 COLOR_SURFACE_ACTIVE_HOVER  = "#2D3038"
 COLOR_SURFACE_PRESSED       = "#1A1B20"
 COLOR_NAV_HOVER             = "#1A1C22"
 
-# Borders & Highlights
 COLOR_BORDER_HOVER          = "#484C5A"
 COLOR_BORDER_FOCUS          = "#5A5E70"
 COLOR_BORDER_MUTED_FOCUS    = "#5E5C66"
@@ -36,15 +35,14 @@ COLOR_BORDER_TOP_FOCUS      = "#71717A"
 COLOR_BORDER_LIGHT          = "#4B4951"
 COLOR_BORDER_SUBTLE_GHOST   = "#313036"
 
-# Action Red States
-COLOR_RED_SOLID    = "#E03131"
-COLOR_RED_HOVER    = "#EF4444"
-COLOR_RED_PRESSED  = "#C92A2A"
-
-# Action Green (Accent) States
-COLOR_GREEN_SOLID   = "#16A34A"
-COLOR_GREEN_HOVER   = "#22C55E"
-COLOR_GREEN_PRESSED = "#15803D"
+COLOR_RED_SOLID        = "#E03131"
+COLOR_RED_HOVER        = "#EF4444"
+COLOR_RED_PRESSED      = "#C92A2A"
+COLOR_DANGER_SURFACE   = "#2D1215"
+COLOR_MEDIA_THUMB_BG   = "#1E293B"
+COLOR_GREEN_SOLID      = "#16A34A"
+COLOR_GREEN_HOVER      = "#22C55E"
+COLOR_GREEN_PRESSED    = "#15803D"
 
 COLOR_GREEN        = "#2ECD70"
 COLOR_GREEN_DARK   = "#23A55A"
@@ -57,7 +55,6 @@ COLOR_BLUE_DARK    = "#2563EB"
 COLOR_PURPLE       = "#A855F7"
 COLOR_PURPLE_DARK  = "#9333EA"
 
-# Platform Borders & Focus Accents
 COLOR_KICK_BORDER               = "#1A7A42"
 COLOR_KICK_BORDER_BOTTOM        = "#125E31"
 COLOR_KICK_BORDER_HOVER         = "#1E8E4D"
@@ -84,8 +81,14 @@ COLOR_TIKTOK_BORDER_HOVER       = "#00B8C4"
 COLOR_TIKTOK_BORDER_TOP_HOVER   = "#5EF8FF"
 COLOR_TIKTOK_BORDER_BOTTOM_HOVER= "#008891"
 
+COLOR_KICK         = "#53FC18"
+COLOR_KICK_DARK    = "#1E8E4D"
+COLOR_KICK_GLOW    = "rgba(83, 252, 24, 0.12)"
+COLOR_KICK_REWARDS = "#00E701"
+
 COLOR_TWITCH       = "#9146FF"
 COLOR_TWITCH_DARK  = "#772CE8"
+COLOR_TWITCH_LIGHT = "#A970FF"
 COLOR_TWITCH_GLOW  = "rgba(145, 70, 255, 0.12)"
 COLOR_YOUTUBE      = "#FF0000"
 COLOR_YOUTUBE_DARK = "#CC0000"
@@ -93,6 +96,36 @@ COLOR_YOUTUBE_GLOW = "rgba(255, 0, 0, 0.12)"
 COLOR_TIKTOK       = "#00F2FE"
 COLOR_TIKTOK_DARK  = "#00B8C4"
 COLOR_TIKTOK_GLOW  = "rgba(0, 242, 254, 0.12)"
+
+COLOR_BADGE_STREAMER  = "#E64747"
+COLOR_BADGE_MODERATOR = "#3EC669"
+COLOR_BADGE_VIP       = "#E08338"
+COLOR_BADGE_OG        = "#8A5BE2"
+COLOR_BADGE_SUB       = "#389CE0"
+COLOR_BADGE_BG        = "#29315A"
+
+COLOR_SWITCH_TRACK_OFF_0 = "#18171C"
+COLOR_SWITCH_TRACK_OFF_1 = "#121115"
+COLOR_SWITCH_BORDER_OFF  = "#27262D"
+COLOR_SWITCH_TRACK_ON_0  = "#1E8E4D"
+COLOR_SWITCH_TRACK_ON_1  = "#15733C"
+COLOR_SWITCH_TRACK_DIS_0 = "#201E25"
+COLOR_SWITCH_TRACK_DIS_1 = "#2A2830"
+COLOR_SWITCH_THUMB_OFF_0 = "#6E6C78"
+COLOR_SWITCH_THUMB_OFF_1 = "#504E58"
+COLOR_SWITCH_THUMB_ON_0  = "#FFFFFF"
+COLOR_SWITCH_THUMB_ON_1  = "#E4E3EA"
+COLOR_SWITCH_THUMB_DIS_0 = "#D4D2DC"
+COLOR_SWITCH_THUMB_DIS_1 = "#9D9AA8"
+COLOR_SYNTAX_VARIABLE    = "#C084FC"
+
+COLOR_CALLOUT_NOTE_LIGHT      = "#60A5FA"
+COLOR_CALLOUT_IMPORTANT_LIGHT = "#C084FC"
+COLOR_CALLOUT_WARNING_LIGHT   = "#FACC15"
+COLOR_CALLOUT_TIP_LIGHT       = "#4ADE80"
+COLOR_CALLOUT_CAUTION_LIGHT   = "#F87171"
+COLOR_CODE_LINK               = "#38BDF8"
+COLOR_LATEX_MATH              = "#A5B4FC"
 
 COLOR_WHITE_GLOW   = "rgba(250, 250, 250, 0.05)"
 COLOR_GREEN_GLOW   = "rgba(46, 205, 112, 0.10)"
@@ -254,12 +287,10 @@ QLabel[state="success"] {{ color: {COLOR_GREEN}; }}
 QLabel[state="info"] {{ color: {COLOR_BLUE}; }}
 QLabel[state="warning"] {{ color: {COLOR_AMBER}; }}
 QLabel[state="bold"] {{ font-weight: 600; }}
-QLabel[role="code"] {{ font-size: {text2}px; font-weight: 500; background-color: {COLOR_NEUTRAL_850}; padding: 2px 6px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; border: {BORDER_SUBTLE}; }}
-QLabel[role="category"] {{ font-weight: 600; color: {COLOR_GREEN}; margin-top: 6px; font-size: {text2}px; }}
 """
 
 
-def _build_button_qss(text1: int, text2: int) -> str:
+def _build_button_qss(text1: int) -> str:
     return f"""
 /* --- 3. Modern Figma Gradient Buttons --- */
 QPushButton {{ border: {BORDER_TRANSPARENT}; font-size: {text1}px; font-weight: 500; }}
@@ -277,6 +308,12 @@ QPushButton[role="action_danger_solid"] {{ background-color: {COLOR_RED_SOLID}; 
 QPushButton[role="action_danger_solid"]:hover {{ background-color: {COLOR_RED_HOVER}; border-color: {COLOR_RED_HOVER}; }}
 QPushButton[role="action_danger_solid"]:pressed {{ background-color: {COLOR_RED_PRESSED}; border-color: {COLOR_RED_PRESSED}; }}
 QPushButton[role="action_danger_solid"]:focus {{ border: 1px solid {COLOR_PURE_WHITE}; }}
+
+/* Antigravity Outlined Danger Action Button */
+QPushButton[role="action_danger_outlined"] {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_RED}; font-size: {text1}px; font-weight: 500; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
+QPushButton[role="action_danger_outlined"]:hover {{ background-color: {COLOR_RED_GLOW}; border: 1px solid {COLOR_RED}; color: {COLOR_PURE_WHITE}; }}
+QPushButton[role="action_danger_outlined"]:pressed {{ background-color: {COLOR_RED_PRESSED}; border: 1px solid {COLOR_RED_PRESSED}; }}
+QPushButton[role="action_danger_outlined"]:focus {{ border: 1px solid {COLOR_RED}; }}
 
 /* Antigravity Solid Accent Action Button */
 QPushButton[role="action_accent_solid"] {{ background-color: {COLOR_GREEN_SOLID}; color: {COLOR_PURE_WHITE}; font-size: {text1}px; font-weight: 600; border: 1px solid {COLOR_GREEN_SOLID}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; }}
@@ -337,7 +374,7 @@ QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-l
 QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 8px 0px; }}
 
 /* Global Disabled Button States */
-QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; padding: {PADDING_BUTTON}; }}
+QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_danger_outlined"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; padding: {PADDING_BUTTON}; }}
 """
 
 def _build_input_qss(text1: int, text2: int) -> str:
@@ -472,7 +509,7 @@ QSlider::handle:horizontal:disabled {{ background-color: {COLOR_NEUTRAL_500}; bo
 """
 
 
-def _build_surface_qss(h1: int, h2: int, h3: int, text1: int, text2: int) -> str:
+def _build_surface_qss(text1: int, text2: int) -> str:
     return f"""
 /* --- 5. Surfaces, Containers & Badges --- */
 QFrame[role="canvas_container"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; }}
@@ -536,9 +573,10 @@ QFrame[role="badge"][state="kick"] {{ background-color: {COLOR_GREEN_GLOW}; bord
 QFrame[role="badge"][state="kick"] QLabel {{ color: {COLOR_GREEN}; }}
 QFrame[role="badge"][state="twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: {COLOR_PURPLE}; }}
 QFrame[role="badge"][state="twitch"] QLabel {{ color: {COLOR_PURPLE}; }}
-
+QLabel[role="badge"] {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_400}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: {BORDER_SUBTLE}; min-height: 18px; max-height: 22px; }}
 QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_GREEN}; min-height: 18px; max-height: 22px; }}
 QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
+QLabel[role="tag_badge"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
 QLabel[role="channel_avatar"] {{ border-radius: 48px; background-color: {COLOR_NEUTRAL_800}; border: 2px solid {COLOR_NEUTRAL_700}; }}
 QLabel[role="rank_number"] {{ color: {COLOR_GREEN}; font-weight: 500; min-width: 20px; }}
 QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 12px; }}
@@ -553,6 +591,7 @@ QHeaderView, QHeaderView::section {{ background-color: transparent; border: none
 QHeaderView::section {{ color: {COLOR_NEUTRAL_400}; font-weight: 500; padding: {PADDING_INPUT}; border-bottom: 1.2px solid {COLOR_NEUTRAL_750}; text-align: left; }}
 QHeaderView::section:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QHeaderView::section:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
+QWidget[role="table_no_results"] {{ background-color: {COLOR_NEUTRAL_900}; }}
 
 /* Scrollbars */
 QScrollBar:vertical {{ border: none; background: transparent; width: 12px; margin: 4px 2px 4px 2px; }}
@@ -640,8 +679,9 @@ QFrame[role="segmented_pagination"] QPushButton:disabled {{ background-color: tr
 QFrame[role="segmented_pagination"] QLabel#lbl_page_status {{ background-color: transparent; color: {COLOR_WHITE}; font-size: {text1}px; font-weight: 500; padding: 0px 16px; min-height: 32px; max-height: 32px; border-left: 1px solid {COLOR_NEUTRAL_700}; }}
 
 /* Calendar Pop-up (QCalendarWidget) */
+QWidget#qt_datetimedit_calendar {{ background-color: {COLOR_NEUTRAL_900}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_LG}px; padding: 4px; }}
 QCalendarWidget {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; padding: 4px; }}
-QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: transparent; border: none; min-height: 36px; margin-bottom: 4px; }}
+QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: {COLOR_NEUTRAL_900}; border: none; min-height: 36px; margin-bottom: 4px; }}
 QCalendarWidget QToolButton {{ background-color: transparent; color: {COLOR_WHITE}; font-weight: 500; font-size: {text1}px; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_SM}px; padding: {PADDING_ITEM}; margin: 2px; }}
 QCalendarWidget QToolButton:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
 QCalendarWidget QToolButton:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
@@ -651,13 +691,28 @@ QCalendarWidget QToolButton#qt_calendar_monthbutton, QCalendarWidget QToolButton
 QCalendarWidget QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 4px; }}
 QCalendarWidget QSpinBox {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_SM}px; padding: 2px 6px; font-weight: 500; }}
 QCalendarWidget QSpinBox:focus {{ border-color: {COLOR_BORDER_MUTED_FOCUS}; }}
-QCalendarWidget QTableView {{ background-color: transparent; border: none; gridline-color: transparent; selection-background-color: {COLOR_WHITE}; selection-color: {COLOR_NEUTRAL_950}; outline: none; }}
+QCalendarWidget QTableView {{ background-color: {COLOR_NEUTRAL_900}; border: none; gridline-color: transparent; selection-background-color: {COLOR_WHITE}; selection-color: {COLOR_NEUTRAL_950}; outline: none; }}
+QCalendarWidget QTableView QWidget {{ background-color: {COLOR_NEUTRAL_900}; }}
 QCalendarWidget QTableView:enabled {{ color: {COLOR_NEUTRAL_400}; }}
 QCalendarWidget QTableView:disabled {{ color: {COLOR_NEUTRAL_700}; }}
 QHeaderView, QCalendarWidget QHeaderView::section {{ background-color: transparent; color: {COLOR_NEUTRAL_400}; font-size: {text2}px; font-weight: 500; padding: 3px 0px; border: none; text-align: center; }}
 QCalendarWidget QTableView::item {{ border-radius: {RADIUS_MD}px; padding: 4px; margin: 2px; }}
 QCalendarWidget QTableView::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; border-radius: {RADIUS_MD}px; }}
 QCalendarWidget QTableView::item:selected {{ background-color: {COLOR_WHITE}; color: {COLOR_NEUTRAL_950}; font-weight: 700; border-radius: {RADIUS_MD}px; }}
+
+/* Autocomplete Pop-up (VariableTextEdit) */
+QListWidget[role="variable_autocomplete_popup"] {{ background-color: {COLOR_NEUTRAL_850}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: 4px; outline: none; color: {COLOR_WHITE}; }}
+QListWidget[role="variable_autocomplete_popup"]::item {{ height: 28px; padding: 4px 10px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; font-weight: 500; }}
+QListWidget[role="variable_autocomplete_popup"]::item:hover {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_WHITE}; }}
+QListWidget[role="variable_autocomplete_popup"]::item:selected {{ background-color: {COLOR_SURFACE_ACTIVE}; color: {COLOR_WHITE}; font-weight: 600; }}
+
+/* Global Context Menus & Tooltips */
+QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_WHITE}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: 4px; }}
+QMenu::item {{ padding: 6px 14px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; }}
+QMenu::item:selected {{ background-color: {COLOR_SURFACE_ACTIVE}; color: {COLOR_WHITE}; }}
+QMenu::separator {{ height: 1px; background-color: {COLOR_BORDER_SUBTLE_GHOST}; margin: 4px 6px; }}
+
+QToolTip {{ background-color: {COLOR_NEUTRAL_850}; color: {COLOR_WHITE}; border: 1px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_SM}px; padding: 4px 8px; font-size: {text2}px; }}
 """
 
 @lru_cache(maxsize=16)
@@ -670,14 +725,44 @@ def get_global_qss(base: int = 13) -> str:
 
     sections = [
         _build_reset_and_typography_qss(size_h1, size_h2, size_h3, size_text1, size_text2),
-        _build_button_qss(size_text1, size_text2),
+        _build_button_qss(size_text1),
         _build_input_qss(size_text1, size_text2),
-        _build_surface_qss(size_h1, size_h2, size_h3, size_text1, size_text2),
+        _build_surface_qss(size_text1, size_text2),
         _build_complex_qss(size_text1, size_text2),
     ]
     return "\n".join(sections)
 
 GLOBAL_QSS = get_global_qss(13)
+
+def create_dark_palette() -> QPalette:
+    pal = QPalette()
+    dark_window = QColor(COLOR_NEUTRAL_900)
+    dark_base = QColor(COLOR_NEUTRAL_850)
+    dark_alt_base = QColor(COLOR_NEUTRAL_800)
+    text_white = QColor(COLOR_WHITE)
+    text_muted = QColor(COLOR_NEUTRAL_400)
+    text_disabled = QColor(COLOR_NEUTRAL_500)
+    accent = QColor(COLOR_BLUE)
+
+    pal.setColor(QPalette.ColorRole.Window, dark_window)
+    pal.setColor(QPalette.ColorRole.WindowText, text_white)
+    pal.setColor(QPalette.ColorRole.Base, dark_base)
+    pal.setColor(QPalette.ColorRole.AlternateBase, dark_alt_base)
+    pal.setColor(QPalette.ColorRole.ToolTipBase, dark_base)
+    pal.setColor(QPalette.ColorRole.ToolTipText, text_white)
+    pal.setColor(QPalette.ColorRole.Text, text_white)
+    pal.setColor(QPalette.ColorRole.Button, dark_base)
+    pal.setColor(QPalette.ColorRole.ButtonText, text_white)
+    pal.setColor(QPalette.ColorRole.BrightText, QColor(COLOR_RED))
+    pal.setColor(QPalette.ColorRole.Highlight, accent)
+    pal.setColor(QPalette.ColorRole.HighlightedText, text_white)
+    pal.setColor(QPalette.ColorRole.Link, accent)
+    pal.setColor(QPalette.ColorRole.LinkVisited, QColor(COLOR_PURPLE))
+
+    pal.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, text_disabled)
+    pal.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, text_disabled)
+    pal.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, text_disabled)
+    return pal
 
 def get_swatch_qss(bg_color: str, border_width: int = 1, radius: int = RADIUS_SM) -> str:
     return f"background-color: {bg_color}; border: {border_width}px solid {COLOR_NEUTRAL_700}; border-radius: {radius}px;"

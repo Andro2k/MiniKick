@@ -1,7 +1,7 @@
 # frontend\components\music\music_settings_panel.py
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtCore import Signal, Qt, QTimer, Slot
 from frontend.common import (
     MARGIN_NONE, MARGIN_TAB_PANEL, MARGIN_SETTING_ROW_COMPACT,
     SPACING_NONE, SPACING_MD
@@ -20,6 +20,11 @@ class MusicSettingsPanel(QWidget):
         super().__init__(parent)
         self.setProperty("role", "tab_panel")
         self.i18n = i18n
+        self._pending_slider_changes = {}
+        self._debounce_timer = QTimer(self)
+        self._debounce_timer.setSingleShot(True)
+        self._debounce_timer.setInterval(250)
+        self._debounce_timer.timeout.connect(self._flush_slider_changes)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -36,7 +41,7 @@ class MusicSettingsPanel(QWidget):
 
         self.card_settings = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
 
-        self.sw_auto_resume = ModernSwitch()
+        self.sw_auto_resume = ModernSwitch(parent=self)
         self.sw_auto_resume.toggled.connect(self.youtube_auto_resume_toggled.emit)
         self.row_auto_resume = SettingRow(
             icon_name="refresh-filled.svg",
@@ -48,7 +53,7 @@ class MusicSettingsPanel(QWidget):
         self.card_settings.addWidget(self.row_auto_resume)
         self.card_settings.add_separator()
 
-        self.sw_media_keys = ModernSwitch()
+        self.sw_media_keys = ModernSwitch(parent=self)
         self.sw_media_keys.setChecked(True)
         self.sw_media_keys.toggled.connect(self.media_keys_toggled.emit)
         self.row_media_keys = SettingRow(
@@ -75,6 +80,7 @@ class MusicSettingsPanel(QWidget):
             contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_max_user_songs.valueChanged.connect(self._on_max_user_songs_changed)
+        self.slider_max_user_songs.sliderReleased.connect(self._on_slider_released)
         self.card_settings.addWidget(self.row_max_user_songs)
         self.card_settings.add_separator()
 
@@ -92,6 +98,7 @@ class MusicSettingsPanel(QWidget):
             contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_user_cooldown.valueChanged.connect(self._on_user_cooldown_changed)
+        self.slider_user_cooldown.sliderReleased.connect(self._on_slider_released)
         self.card_settings.addWidget(self.row_user_cooldown)
         self.card_settings.add_separator()
 
@@ -109,6 +116,7 @@ class MusicSettingsPanel(QWidget):
             contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_max_queue.valueChanged.connect(self._on_max_queue_changed)
+        self.slider_max_queue.sliderReleased.connect(self._on_slider_released)
         self.card_settings.addWidget(self.row_max_queue)
         self.card_settings.add_separator()
 
@@ -126,25 +134,52 @@ class MusicSettingsPanel(QWidget):
             contents_margins=MARGIN_SETTING_ROW_COMPACT
         )
         self.slider_max_duration.valueChanged.connect(self._on_max_duration_changed)
+        self.slider_max_duration.sliderReleased.connect(self._on_slider_released)
         self.card_settings.addWidget(self.row_max_duration)
 
         self.panel_layout.addWidget(self.card_settings, alignment=Qt.AlignmentFlag.AlignTop)
 
-    def _on_max_user_songs_changed(self, val):
+    def _on_max_user_songs_changed(self, val: int):
         self.lbl_max_user_songs.setText(str(val))
-        self.max_user_songs_changed.emit(val)
+        self._pending_slider_changes["max_user_songs"] = val
+        self._debounce_timer.start()
 
-    def _on_user_cooldown_changed(self, val):
+    def _on_user_cooldown_changed(self, val: int):
         self.lbl_user_cooldown.setText(f"{val}s")
-        self.user_cooldown_changed.emit(val)
+        self._pending_slider_changes["user_cooldown"] = val
+        self._debounce_timer.start()
 
-    def _on_max_queue_changed(self, val):
+    def _on_max_queue_changed(self, val: int):
         self.lbl_max_queue.setText(str(val))
-        self.max_queue_size_changed.emit(val)
+        self._pending_slider_changes["max_queue"] = val
+        self._debounce_timer.start()
 
-    def _on_max_duration_changed(self, val):
+    def _on_max_duration_changed(self, val: int):
         self.lbl_max_duration.setText(f"{val}m")
-        self.max_song_duration_changed.emit(val)
+        self._pending_slider_changes["max_duration"] = val
+        self._debounce_timer.start()
+
+    @Slot()
+    def _on_slider_released(self):
+        if self._debounce_timer.isActive():
+            self._debounce_timer.stop()
+            self._flush_slider_changes()
+
+    @Slot()
+    def _flush_slider_changes(self):
+        if not self._pending_slider_changes:
+            return
+        changes = dict(self._pending_slider_changes)
+        self._pending_slider_changes.clear()
+
+        if "max_user_songs" in changes:
+            self.max_user_songs_changed.emit(changes["max_user_songs"])
+        if "user_cooldown" in changes:
+            self.user_cooldown_changed.emit(changes["user_cooldown"])
+        if "max_queue" in changes:
+            self.max_queue_size_changed.emit(changes["max_queue"])
+        if "max_duration" in changes:
+            self.max_song_duration_changed.emit(changes["max_duration"])
 
     def set_rate_limit_values(self, max_user_songs: int, user_cooldown: int, max_queue_size: int, max_song_duration: int):
         self.slider_max_user_songs.blockSignals(True)

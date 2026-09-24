@@ -24,7 +24,11 @@ _WIDGET_TITLE_KEYS: dict[str, str] = {
     "chatters": "widgets.chatters.title",
 }
 
-_IGNORED_CHATTER_BOTS: frozenset[str] = frozenset({"botrix", "streamelements", "nightbot", "moobot", "streamlabs"})
+_IGNORED_CHATTER_BOTS: frozenset[str] = frozenset({
+    "minikick", "botrix", "streamelements", "nightbot", "moobot", "streamlabs",
+    "wizebot", "kofi", "streamerbot", "fossabot", "sery_bot", "blerp",
+    "soundalerts", "songlistbot"
+})
 
 _RESET_COMMANDS: frozenset[str] = frozenset({"reset", "0", "reiniciar", "clear"})
 _SCORE_WIN_WORDS: frozenset[str] = frozenset({"win", "w", "victoria"})
@@ -52,7 +56,7 @@ class WidgetsController(QObject):
     _KICK_EMOTE_REGEX = re.compile(r"\[emote:(?:(\d+):)?([^\]]+)\]")
     _EMOJI_REGEX = re.compile(r"[\U00010000-\U0010ffff\u2600-\u27bf]")
 
-    def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None, toast_manager=None):
+    def __init__(self, view, widget_service: WidgetService, command_service: CommandService, overlay_server=None, i18n=None, toast_manager=None, spam_service=None):
         super().__init__()
         self.view = view
         self.widget_service = widget_service
@@ -61,6 +65,7 @@ class WidgetsController(QObject):
         from backend.services.system import TranslationService
         self.i18n = i18n or TranslationService()
         self.toast = toast_manager
+        self.spam_service = spam_service
 
         self._last_combo_emote = ""
         self._last_combo_time = 0.0
@@ -369,7 +374,7 @@ class WidgetsController(QObject):
                 "title_text": title_text
             })
 
-    def _dispatch_score_command(self, user: str, args: str, action_word: str, prefix: str, platform: str = "kick") -> None:
+    def _dispatch_score_command(self, user: str, args: str, action_word: str, _prefix: str, platform: str = "kick") -> None:
         arg_clean = args.strip().lower()
 
         if arg_clean in _RESET_COMMANDS or action_word in _RESET_COMMANDS:
@@ -492,7 +497,8 @@ class WidgetsController(QObject):
     @Slot(str, str, str, object)
     @Slot(str, str, str, object, str, str)
     @Slot(str, str, str, object, str, str, str)
-    def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick", emotes_tag: str = "", gif_url: str = ""):
+    @Slot(str, str, str, object, str, str, str, str)
+    def handle_chat_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick", emotes_tag: str = "", gif_url: str = "", _avatar_url: str = ""):
         if not content and not gif_url:
             return
 
@@ -588,7 +594,7 @@ class WidgetsController(QObject):
                         "timeout_sec": timeout_sec
                     })
 
-    def _process_explosion_command(self, user: str, args: str, platform: str = "kick"):
+    def _process_explosion_command(self, user: str, _args: str, platform: str = "kick"):
         if self.overlay_server:
             sample_emotes = [
                 {"type": "text", "src": "🔥", "name": "🔥"},
@@ -603,7 +609,7 @@ class WidgetsController(QObject):
             msg = self.i18n.get("widgets.explosion.msg_explosion").replace("{user}", user)
             self.command_service.send_response(msg, platform=platform)
 
-    def _process_combo_command(self, user: str, args: str, platform: str = "kick"):
+    def _process_combo_command(self, _user: str, args: str, platform: str = "kick"):
         if self.overlay_server:
             emote = args.strip() if args.strip() else "KEKW"
             self.overlay_server.trigger_widget_event("emote_combo", {
@@ -621,25 +627,43 @@ class WidgetsController(QObject):
             return
         if content.strip().startswith("!"):
             return
+        if badges:
+            for b in badges:
+                if str(b).lower() == "bot":
+                    return
+
         user_clean = user.strip()
         user_lower = user_clean.lower()
-        if user_lower in _IGNORED_CHATTER_BOTS:
+        user_stripped = user_lower.lstrip('@')
+        if user_lower in _IGNORED_CHATTER_BOTS or user_stripped in _IGNORED_CHATTER_BOTS:
             return
+
+        if self.spam_service and hasattr(self.spam_service, "storage"):
+            try:
+                ignored_str = self.spam_service.storage.load_string("tts_ignored_users", "")
+                if ignored_str:
+                    ignored_set = {u.strip().lstrip('@').lower() for u in ignored_str.split(",") if u.strip()}
+                    if user_lower in ignored_set or user_stripped in ignored_set:
+                        return
+            except Exception:
+                pass
+
         w_chatters = self.widget_service.get_widget("chatters")
         if not w_chatters.get("is_active", True):
             return
 
-        if user_lower not in self._chatters_counts:
-            self._chatters_counts[user_lower] = {
-                "user": user_clean,
+        lookup_key = user_stripped
+        if lookup_key not in self._chatters_counts:
+            self._chatters_counts[lookup_key] = {
+                "user": user_clean.lstrip('@'),
                 "count": 0,
                 "color": color or "#2ecd70",
                 "badges": badges or [],
                 "platform": platform
             }
-        self._chatters_counts[user_lower]["count"] += 1
-        if color and not self._chatters_counts[user_lower].get("color"):
-            self._chatters_counts[user_lower]["color"] = color
+        self._chatters_counts[lookup_key]["count"] += 1
+        if color and not self._chatters_counts[lookup_key].get("color"):
+            self._chatters_counts[lookup_key]["color"] = color
 
         if not self._chatters_debounce_timer.isActive():
             self._chatters_debounce_timer.start()

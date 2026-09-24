@@ -300,7 +300,7 @@ class TwitchAuthManager(BaseOAuthManager):
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException as e:
-            logger.warning("[TwitchAuth] Fallo al refrescar token de Twitch: %s", e)
+            logger.warning("[TwitchAuth] Failed to refresh Twitch token: %s", e)
             self.logout()
             raise e
 

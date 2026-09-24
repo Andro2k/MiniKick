@@ -1,11 +1,11 @@
 # frontend\dialogs\import_backup_dialog.py
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame, QScrollArea
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QFrame
 )
 from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernModal
-from frontend.widgets import ModernButton, ModernCard
+from frontend.widgets import ModernButton, ModernCard, ModernScrollArea
 from frontend.common import (
     SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_H_SM
 )
@@ -194,37 +194,16 @@ class ImportBackupModal(ModernModal):
         sections_layout.addWidget(card_sections)
         sections_layout.addStretch()
 
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area = ModernScrollArea(parent=self)
         scroll_area.setMaximumHeight(280)
         scroll_area.setWidget(sections_container)
         self.content_layout.addWidget(scroll_area)
 
-        actions_row = QHBoxLayout()
-        actions_row.setSpacing(SPACING_MD)
-
-        self.btn_cancel = ModernButton(
-            text=self.i18n.get("settings.dialogs.import_modal.btn_cancel"),
-            role="action_outlined",
-            parent=self
+        _, self.btn_cancel, self.btn_confirm = self.create_action_row(
+            cancel_text=self.i18n.get("settings.dialogs.import_modal.btn_cancel"),
+            confirm_text=self.i18n.get("settings.dialogs.import_modal.btn_confirm"),
+            confirm_icon="restart-filled.svg"
         )
-        self.btn_cancel.clicked.connect(self.reject)
-
-        self.btn_confirm = ModernButton(
-            text=self.i18n.get("settings.dialogs.import_modal.btn_confirm"),
-            role="action_outlined",
-            icon_name="restart-filled.svg",
-            icon_size=14,
-            parent=self
-        )
-        self.btn_confirm.clicked.connect(self.accept)
-
-        actions_row.addWidget(self.btn_cancel)
-        actions_row.addWidget(self.btn_confirm)
-        self.content_layout.addLayout(actions_row)
 
         self._update_confirm_state()
 

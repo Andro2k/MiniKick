@@ -21,6 +21,9 @@ class FetchRewardsWorker(QThread):
         logger.debug("[FetchRewardsWorker] Fetching rewards for platform: %s...", self.platform)
         try:
             if self.platform == "twitch":
+                if not self.broadcaster_id and hasattr(self.api_client, "fetch_user_data"):
+                    u_data = self.api_client.fetch_user_data()
+                    self.broadcaster_id = u_data.get("broadcaster_id", "")
                 resp = self.api_client.fetch_channel_rewards(self.broadcaster_id)
             else:
                 resp = self.api_client.fetch_channel_rewards()

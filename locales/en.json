@@ -155,9 +155,6 @@
             "text_speech": "Text and speech",
             "text_speech_desc": "Message template, typography, colors, and TTS."
         },
-        "sidebar": {
-            "title": "Alert Variants"
-        },
         "status": {
             "disabled_msg": "The '{event}' alert has been disabled.",
             "disabled_title": "Alert Disabled",
@@ -186,6 +183,8 @@
             "title": "Muted Users"
         },
         "commands": {
+            "skiptts_success": "@{user}, the current TTS has been stopped and cleared.",
+            "skiptts_toast_title": "TTS Silenced",
             "ttsblock_already": "@{user}, the word '{word}' is already blocked in TTS.",
             "ttsblock_success": "@{user}, the word '{word}' has been blocked in TTS.",
             "ttsblock_usage": "@{user}, correct usage: !ttsblock <word> or !ttsblock unblock <word>",
@@ -223,8 +222,6 @@
             "anim_in_title": "Entrance Animation",
             "big_emotes_desc": "Enlarge emotes when a message contains only emotes.",
             "big_emotes_title": "Big Emotes (Bigmoji)",
-            "edge_fade_desc": "Adds top and bottom gradient fades to smoothly dissolve messages in OBS.",
-            "edge_fade_title": "Edge Fade (Gradient)",
             "fade_desc": "Seconds each message stays visible before fading out (0 = never hide).",
             "fade_never": "Never",
             "fade_title": "On-Screen Time",
@@ -263,12 +260,10 @@
             "show_time_title": "Show Timestamp",
             "size_desc": "Adjust the chat text font size on screen.",
             "size_title": "Font Size",
-            "theme_card": "Solid Card",
-            "theme_cyber": "Retro Cyberpunk (Cyber)",
+            "theme_dark": "Messenger Dark",
             "theme_desc": "Choose the visual design that best fits your stream.",
-            "theme_glass": "Glassmorphism",
-            "theme_minimal": "Minimalist (Floating Glow)",
-            "theme_neon": "Neon Glow (Neon)",
+            "theme_light": "Messenger Light",
+            "theme_minimal": "Minimal",
             "theme_title": "Overlay Design"
         },
         "platforms": {
@@ -355,6 +350,10 @@
         }
     },
     "command": {
+        "confirm_delete": {
+            "desc": "Are you sure you want to delete command '{trigger}'? This action cannot be undone.",
+            "title": "Delete Command?"
+        },
         "dialog": {
             "active_checkbox": "Command Active",
             "aliases_label": "Standard Aliases (comma-separated):",
@@ -430,6 +429,7 @@
             "back": "Back",
             "browse": "Browse",
             "cancel": "Cancel",
+            "clear_filters": "Clear Filters",
             "close": "Close",
             "continue": "Continue",
             "copy": "Copy Link",
@@ -443,7 +443,9 @@
             "update": "Check for updates",
             "view_release_notes": "View Notes"
         },
+        "filtered_count": "({count} of {total})",
         "no_results": "No results found",
+        "no_results_filter": "No results found matching the applied filters.",
         "status": {
             "error": "Error",
             "offline": "Offline",
@@ -516,8 +518,6 @@
             "title_twitch": "Pending permissions on Twitch"
         },
         "connection": {
-            "autostart_desc": "Automatically connect MiniKick upon launching the application.",
-            "autostart_title": "Auto Connect",
             "btn_active_kick": "Kick Active",
             "btn_active_tiktok": "TikTok Active",
             "btn_active_twitch": "Twitch Active",
@@ -707,7 +707,8 @@
             "historical": "HISTORICAL"
         },
         "pagination": {
-            "info": "{showing_from}-{showing_to} of {total} row(s) shown."
+            "info": "{showing_from}-{showing_to} of {total} row(s) shown.",
+            "info_filtered": "{showing_from}-{showing_to} of {total} row(s) shown (filtered from {total_all})"
         },
         "status": {
             "cleared_msg": "Log view cleared successfully.",
@@ -722,18 +723,13 @@
         "table": {
             "col_level": "Log Level",
             "col_message": "Log Message",
-            "col_time": "Timestamp"
+            "col_time": "Timestamp",
+            "title": "Event Logs"
         }
     },
     "logs": {
-        "app_container": {
-            "api_keys_not_found": "backend/config/api_keys.py file not found. Using empty credentials."
-        },
         "bootstrap": {
             "crash_dialog_failed": "[Bootstrap] Failed to display crash dialog: {error}"
-        },
-        "main_window": {
-            "twitch_auth_error": "[TwitchAuth] Twitch authentication error: {error}"
         },
         "tiktok": {
             "age_restricted": "The live stream for @{unique_id} has an age restriction (+18).",
@@ -776,9 +772,6 @@
             "api_offline": "Attempted to update rewards while offline from Kick.",
             "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
             "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
-            "shutdown_complete": "Thread shutdown sequence complete.",
-            "shutdown_init": "Initiating shutdown sequence...",
-            "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
             "worker_stopped": "{worker} stopped cleanly.",
             "worker_stopping": "Requesting stop for {worker}...",
             "worker_stuck": "{worker} stuck (possible network lock). Forcing termination..."
@@ -846,9 +839,11 @@
             "bg_title": "MiniKick in background",
             "close_app": "Close MiniKick",
             "open_panel": "Open Panel",
-            "play_pause": "Play / Pause Music",
+            "pause": "Pause Music",
+            "play": "Play Music",
             "read_chat": "Read chat out loud",
             "skip": "Skip Track",
+            "tooltip": "MiniKick v{version} | Active",
             "tts_msg": "Chat reading: {estado}",
             "tts_off": "Disabled",
             "tts_on": "Enabled",
@@ -882,8 +877,8 @@
             "pause_success": "⏸️ Music paused successfully.",
             "playlist_empty_for_user": "❌ @{user}, you currently have no songs in the queue.",
             "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
-            "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
-            "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
+            "playlist_pos_info": "🎵 [Position #{pos}] │ \"{title}\"{artist} (requested by @{requester})",
+            "playlist_user_songs": "🎵 [My Songs] │ @{user} ({count} in queue): {songs}",
             "playlist_user_songs_more": "🎵 @{user} (remaining positions {page}/{total_pages}): {songs}",
             "queue_full": "❌ @{user}, the song queue is full ({max} songs maximum).",
             "resume_failed": "❌ Could not resume music.",
@@ -891,7 +886,7 @@
             "skip_failed": "❌ Could not skip song (Player paused or empty queue).",
             "skip_success": "⏩ Song skipped successfully.",
             "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing.",
-            "song_now_playing": "🎵 Now playing: {title} - {artist}",
+            "song_now_playing": "🎵 [Now Playing] │ {title} - {artist}",
             "song_paused_youtube": "🔇 YouTube is paused.",
             "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
             "sr_usage": "@{user} please enter a song name. (Ex: {trigger} Chayanne Torero)",
@@ -960,7 +955,7 @@
             "processing_link": "🔍 Processing YouTube link...",
             "remove_tooltip": "Remove from queue",
             "searching": "🔍 Searching '{query}' on YouTube...",
-            "success": "🎵 Added to queue: {track}",
+            "success": "🎵 [Queue] │ {track}",
             "title": "Playback Queue"
         },
         "stats": {
@@ -1015,31 +1010,47 @@
         }
     },
     "piper_dialog": {
+        "badge_custom": "LOCAL",
         "btn_close": "Close",
-        "btn_delete": "Delete",
+        "btn_delete_tooltip": "Delete model from local storage",
         "btn_download": "Download",
         "btn_import": "Import ONNX Model",
         "btn_import_tooltip": "Import a local Piper model (.onnx and .onnx.json)",
         "btn_reset_synthesis": "Reset",
         "btn_reset_tooltip": "Reset acoustic parameters to defaults",
+        "confirm_delete": {
+            "desc": "Are you sure you want to uninstall voice '{voice_name}'? You can download it again anytime.",
+            "title": "Uninstall Voice Model?"
+        },
+        "empty_search": "No voice models found matching your search.",
         "import_filter": "Piper ONNX Models (*.onnx)",
         "import_missing_json": "The corresponding .onnx.json configuration file was not found in the same folder.",
         "import_title": "Select Piper ONNX Model",
+        "installed_count": "{installed} of {total} models installed",
         "param_length_scale": "Base Duration Scale",
         "param_length_scale_desc": "Base phoneme duration multiplier. Lower values increase speech rate.",
         "param_noise_scale": "Expressiveness (Noise Scale)",
         "param_noise_scale_desc": "Controls phoneme pitch and expressiveness variation (Recommended: 0.67).",
         "param_noise_w_scale": "Pacing / Cadence (Noise W)",
         "param_noise_w_scale_desc": "Controls rhythmic variation and pause duration between words (Recommended: 0.80).",
+        "search_placeholder": "Search voice or accent...",
         "status_downloading": "Downloading...",
         "status_installed": "Installed",
         "status_not_installed": "Available",
         "subtitle": "Download and manage local neural voices for offline speech synthesis without internet or API usage.",
         "synthesis_desc": "Fine-tune intonation, expressiveness, and cadence for the VITS neural acoustic generator.",
         "synthesis_title": "Acoustic & Synthesis Settings",
+        "tab_all": "All",
+        "tab_installed": "Installed",
+        "tab_natural": "Natural",
+        "tab_stream": "Characters & Retro",
         "title": "Piper Voice Manager (Local TTS)"
     },
     "rewards": {
+        "confirm_delete": {
+            "desc": "Are you sure you want to delete reward '{title}'? Any configured actions will be unlinked.",
+            "title": "Delete Reward?"
+        },
         "dialogs": {
             "visual": {
                 "desc": "Position your alerts on the canvas. Moving them will immediately mirror the exact position in OBS.",
@@ -1428,6 +1439,10 @@
         }
     },
     "timer": {
+        "confirm_delete": {
+            "desc": "This action will permanently delete timer '{name}'.",
+            "title": "Delete Timer?"
+        },
         "dialog": {
             "btn_add_message": "+ Add Message",
             "categories_desc": "Send this announcement only when streaming in specified categories.",

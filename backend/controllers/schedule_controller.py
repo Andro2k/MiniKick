@@ -2,12 +2,13 @@
 
 import threading
 import logging
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import Signal, Slot
 from backend.services.schedule import ScheduleService
+from .base_controller import BaseController
 
 logger = logging.getLogger("minikick.schedule_controller")
 
-class ScheduleController(QObject):
+class ScheduleController(BaseController):
     info_refreshed = Signal(object)
     categories_found = Signal(str, object)
     update_completed = Signal(object)
@@ -16,25 +17,16 @@ class ScheduleController(QObject):
     toast_requested = Signal(str, str)
 
     def __init__(self, view=None, service: ScheduleService = None, toast_manager=None, i18n=None, connected_platforms_provider=None):
-        super().__init__()
-        self.view = view
-        self.service = service
-        self.toast = toast_manager
-        self.i18n = i18n
-        self.connected_platforms_provider = connected_platforms_provider
+        super().__init__(view=view, service=service, toast_manager=toast_manager, i18n=i18n, connected_platforms_provider=connected_platforms_provider)
         self.is_loading = False
-        self._view_connected = False
-
         self.toast_requested.connect(self._handle_toast_request)
-
         if self.view:
             self.attach_view(self.view)
 
     def attach_view(self, view) -> None:
         self.view = view
-        if not self.view or self._view_connected:
+        if not self._ensure_view_connected():
             return
-        self._view_connected = True
         if hasattr(self.view, "refresh_info_requested"):
             self.view.refresh_info_requested.connect(self.fetch_current_info)
         if hasattr(self.view, "update_stream_requested"):

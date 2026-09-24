@@ -1,14 +1,17 @@
 # frontend\components\music\player_settings.py
 
 import html
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication, QProgressBar
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
-    COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK,
-    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL, MARGIN_SETTING_ROW_COMPACT,
+    COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
+    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL,
     SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
-from frontend.widgets import ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider
+from frontend.widgets import (
+    ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider,
+    create_row_layout, create_col_layout, create_text_label
+)
 from .music_mockup import MusicOverlayMockupWidget
 
 def _format_time(ms: int) -> str:
@@ -142,13 +145,13 @@ class MusicPlayerSettingsPanel(QWidget):
         controls_layout.setContentsMargins(*MARGIN_NONE)
         controls_layout.setSpacing(SPACING_SM)
         
-        self.btn_play_pause = ModernButton("", role="action_outlined")
+        self.btn_play_pause = ModernButton("", role="action_outlined", parent=self)
         self.btn_play_pause.setFixedSize(36, 36)
         self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, 18))
         self.btn_play_pause.setIconSize(QSize(18, 18))
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
         
-        self.btn_skip = ModernButton("", role="action_outlined")
+        self.btn_skip = ModernButton("", role="action_outlined", parent=self)
         self.btn_skip.setFixedSize(36, 36)
         self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", COLOR_NEUTRAL_400, 18))
         self.btn_skip.setIconSize(QSize(18, 18))
@@ -233,15 +236,11 @@ class MusicPlayerSettingsPanel(QWidget):
         url_info.setSpacing(SPACING_2XS)
         lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
         lbl_title.setProperty("role", "h3")
-        lbl_desc = QLabel(self.i18n.get("music.overlay.url_desc"))
-        lbl_desc.setProperty("role", "body")
-        lbl_desc.setWordWrap(True)
+        lbl_desc = create_text_label(self.i18n.get("music.overlay.url_desc"), role="body")
         url_info.addWidget(lbl_title)
         url_info.addWidget(lbl_desc)
 
-        layout_setting_row = QHBoxLayout()
-        layout_setting_row.setContentsMargins(*MARGIN_NONE)
-        layout_setting_row.setSpacing(SPACING_MD)
+        layout_setting_row = create_row_layout(spacing=SPACING_MD)
         lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
         lbl_layout.setProperty("role", "body")
         self.combo_music_layout = NoWheelComboBox(self)
@@ -252,9 +251,7 @@ class MusicPlayerSettingsPanel(QWidget):
         layout_setting_row.addWidget(lbl_layout)
         layout_setting_row.addWidget(self.combo_music_layout)
 
-        theme_layout = QHBoxLayout()
-        theme_layout.setContentsMargins(*MARGIN_NONE)
-        theme_layout.setSpacing(SPACING_MD)
+        theme_layout = create_row_layout(spacing=SPACING_MD)
         lbl_theme = QLabel(self.i18n.get("music.overlay.theme_label"), parent=self)
         lbl_theme.setProperty("role", "body")
         self.combo_music_theme = NoWheelComboBox(self)
@@ -266,13 +263,9 @@ class MusicPlayerSettingsPanel(QWidget):
         theme_layout.addWidget(lbl_theme)
         theme_layout.addWidget(self.combo_music_theme)
 
-        preview_layout = QVBoxLayout()
-        preview_layout.setContentsMargins(*MARGIN_NONE)
-        preview_layout.setSpacing(SPACING_SM)
+        preview_layout = create_col_layout(spacing=SPACING_SM)
         
-        preview_header = QHBoxLayout()
-        preview_header.setContentsMargins(*MARGIN_NONE)
-        preview_header.setSpacing(SPACING_MD)
+        preview_header = create_row_layout(spacing=SPACING_MD)
         lbl_preview = QLabel(self.i18n.get("music.overlay.preview_title"), parent=self)
         lbl_preview.setProperty("role", "body")
         
@@ -293,7 +286,8 @@ class MusicPlayerSettingsPanel(QWidget):
 
         self.btn_copy_music_url = ModernButton(
             self.i18n.get("common.buttons.copy"),
-            role="action_outlined"
+            role="action_outlined",
+            parent=self
         )
         self.btn_copy_music_url.clicked.connect(self._copy_music_overlay_url)
 
@@ -429,13 +423,13 @@ class MusicPlayerSettingsPanel(QWidget):
         if requester:
             platform = (song_data.get("platform") or "kick").lower()
             if platform == "twitch":
-                color_hex = "#A970FF"
+                color_hex = COLOR_TWITCH_LIGHT
             elif platform == "youtube":
                 color_hex = COLOR_RED
             elif platform == "tiktok":
                 color_hex = COLOR_TIKTOK
             else:
-                color_hex = "#53FC18"
+                color_hex = COLOR_KICK
             safe_requester = html.escape(requester)
             user_styled = f"<span style='color:{color_hex}; font-weight:500;'>@{safe_requester}</span>"
             req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)

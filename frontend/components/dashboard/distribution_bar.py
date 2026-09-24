@@ -17,7 +17,7 @@ class SegmentedDistributionBar(QWidget):
         self._segments = data
         self.update()
 
-    def paintEvent(self, event):
+    def paintEvent(self, _event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         

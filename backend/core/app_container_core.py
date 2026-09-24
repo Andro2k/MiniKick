@@ -143,7 +143,7 @@ class AppContainerCore:
                 logger.debug("[AppContainer] Notice reading .install_lang: %s", e)
 
         if getattr(sys, "_api_keys_missing", False):
-            logger.warning(ts.get("logs.app_container.api_keys_not_found"))
+            logger.warning("[AppContainer] API keys configuration file not found, running with defaults.")
         return ts
 
     def shutdown(self):

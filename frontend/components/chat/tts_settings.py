@@ -1,12 +1,14 @@
 # frontend\components\chat\tts_settings.py
 
 from PySide6.QtCore import Qt, Signal, Slot, QTimer, QSize
-from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButton, QVBoxLayout
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
-                              NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader)
+                              NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader,
+                              create_col_layout, create_row_layout)
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
-    COLOR_NEUTRAL_400, COLOR_WHITE, MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
+    COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
+    MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
     SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
 )
 
@@ -21,12 +23,8 @@ class VoiceSettingRow(QWidget):
         self.btn_test = None
         self.action_button = action_button
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_SETTING_ROW_COMPACT)
-        main_layout.setSpacing(SPACING_2XS)
-
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_SM)
+        main_layout = create_col_layout(spacing=SPACING_2XS, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+        header_layout = create_row_layout(spacing=SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
@@ -40,8 +38,7 @@ class VoiceSettingRow(QWidget):
 
         main_layout.addLayout(header_layout)
 
-        controls_layout = QHBoxLayout()
-        controls_layout.setSpacing(SPACING_SM)
+        controls_layout = create_row_layout(spacing=SPACING_SM)
 
         if self.switch is not None:
             controls_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -183,10 +180,10 @@ class ChatTtsSettingsPanel(QWidget):
         self.sw_plat_tiktok = ModernSwitch(self)
         self.sw_plat_tiktok.setChecked(True)
 
-        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color="#53FC18", contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color="#9146FF", contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color="#FF0000", contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color="#00F2FE", contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color=COLOR_KICK, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color=COLOR_TWITCH, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color=COLOR_YOUTUBE, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color=COLOR_TIKTOK, contents_margins=MARGIN_SETTING_ROW_COMPACT)
 
         platforms_card.addWidget(row_plat_kick)
         platforms_card.add_separator()
@@ -292,9 +289,12 @@ class ChatTtsSettingsPanel(QWidget):
         self.txt_command.textChanged.connect(self._enforce_prefix_mask)
         self.chk_command.toggled.connect(self.txt_command.setEnabled)
 
+        self.slider_vol.sliderReleased.connect(self._on_setting_changed)
+        self.slider_speed.sliderReleased.connect(self._on_setting_changed)
+
         controls = [
             self.chk_tts, self.chk_name, self.chk_command, self.txt_command,
-            self.combo_provider, self.slider_speed,
+            self.combo_provider,
             self.combo_voice_broadcaster, self.combo_voice_moderator,
             self.combo_voice_vip, self.combo_voice_subscriber,
             self.sw_role_everyone, self.sw_role_broadcaster,
@@ -311,7 +311,7 @@ class ChatTtsSettingsPanel(QWidget):
             elif isinstance(control, NoWheelSlider):
                 control.valueChanged.connect(self._on_setting_changed)
 
-    def _on_provider_combo_changed(self, index: int):
+    def _on_provider_combo_changed(self, _index: int):
         provider = self.combo_provider.currentData() or "piper"
         self.btn_manage_piper.setVisible(provider == "piper")
         self.provider_changed.emit(provider)
@@ -395,7 +395,7 @@ class ChatTtsSettingsPanel(QWidget):
                 w.blockSignals(False)
             self.blockSignals(False)
 
-    def update_languages(self, langs: list[str], select_prefix: str = None):
+    def update_languages(self, _langs: list[str], _select_prefix: str = None):
         pass
 
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):

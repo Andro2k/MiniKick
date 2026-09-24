@@ -203,7 +203,8 @@ class MainWindowCore(QMainWindow):
             command_service=self.command_service,
             overlay_server=self.overlay_server,
             i18n=self.i18n,
-            toast_manager=self.toast
+            toast_manager=self.toast,
+            spam_service=self.spam_service
         )
         self.music_controller = MusicController(
             view=None,
@@ -214,6 +215,11 @@ class MainWindowCore(QMainWindow):
             music_storage=self.container.music_storage,
             music_provider=self.container.music_provider
         )
+        if hasattr(self.chat_service, "set_speech_callbacks"):
+            self.chat_service.set_speech_callbacks(
+                on_started=lambda: self.music_controller.set_ducking(True),
+                on_finished=lambda: self.music_controller.set_ducking(False)
+            )
         self.rewards_controller = RewardsController(
             view=None, 
             service=self.rewards_service,
@@ -301,7 +307,6 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
         self.dashboard_controller.youtube_connect_requested.connect(self._on_youtube_integration_button_clicked)
         self.dashboard_controller.tiktok_connect_requested.connect(self._on_tiktok_integration_button_clicked)
-        self.dashboard_controller.auto_start_toggled.connect(self._handle_autostart_change)
         self.dashboard_controller.reauth_requested.connect(self._force_reauth)
         self.dashboard_controller.reauth_kick_requested.connect(self._handle_reauth_kick)
         self.dashboard_controller.reauth_twitch_requested.connect(self._handle_reauth_twitch)
@@ -310,6 +315,7 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.chat_overlay_config_changed.connect(self.overlay_server.trigger_chat_config_update)
         self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
+        self.music_controller.song_changed.connect(self._handle_tray_song_changed)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
         self.chat_controller.widget_plugin_triggered.connect(self.widgets_controller.handle_widget_command)
         self.chat_controller.spam_blocked.connect(lambda: self._increment_metric("spam_blocked"))
@@ -329,9 +335,7 @@ class MainWindowCore(QMainWindow):
         settings = self.chat_service.get_settings()
         self.tray_manager.set_tts_state(settings.get("enabled", True))
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
-        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "local") == "web")
-        autostart_enabled = self.settings_storage.load_bool(self.SETTING_AUTOSTART, False)
-        self.view_dashboard.set_autostart_state(autostart_enabled)
+        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "piper") == "web")
         self.command_service.reload_cache()
         self.spam_controller.load_initial_data()
         self.timers_controller.load_initial_data()
@@ -340,40 +344,56 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.sync_settings_cache()
         if hasattr(self, "overlay_server") and self.overlay_server:
             self.overlay_server.trigger_chat_config_update(self.chat_controller.get_active_overlay_config())
-        self._apply_dynamic_theme(self.settings_service.get_font_size(), immediate=True)
+        self._apply_dynamic_theme(self.settings_service.get_font_size())
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
         self._evaluate_all_scopes()
 
-        self.logger.info("[AutoStart] Autostart configuration: enabled=%s", autostart_enabled)
-        if autostart_enabled:
-            if self.kick_auth_manager.is_authenticated():
-                try:
-                    self.logger.info("[AutoStart] Starting Kick integration...")
-                    self._handle_auth_process()
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting Kick integration: %s", e)
-            twitch_tokens = self.container.twitch_token_storage.load()
-            if twitch_tokens and twitch_tokens.get("access_token"):
-                try:
-                    self.logger.info("[AutoStart] Starting Twitch integration...")
-                    self._on_twitch_auth_success(twitch_tokens)
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting Twitch integration: %s", e)
-            yt_target = self.settings_storage.load_string("youtube_target_channel", "")
-            if yt_target:
-                try:
-                    self.logger.info("[AutoStart] Starting YouTube integration (target='%s')...", yt_target)
-                    self._handle_youtube_connect(yt_target)
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting YouTube integration: %s", e)
-            tk_target = self.settings_storage.load_string("tiktok_target_channel", "")
-            if tk_target:
-                try:
-                    self.logger.info("[AutoStart] Starting TikTok integration (target='%s')...", tk_target)
-                    self._handle_tiktok_connect(tk_target)
-                except Exception as e:
-                    self.logger.error("[AutoStart] Error auto-starting TikTok integration: %s", e)
+        if self.kick_auth_manager.is_authenticated():
+            try:
+                self.logger.info("[AutoStart] Starting Kick integration...")
+                self._handle_auth_process()
+            except Exception as e:
+                self.logger.error("[AutoStart] Error auto-starting Kick integration: %s", e)
+
+        twitch_tokens = self.container.twitch_token_storage.load()
+        if twitch_tokens and twitch_tokens.get("access_token"):
+            QTimer.singleShot(350, lambda: self._autostart_twitch(twitch_tokens))
+
+        yt_target = self.settings_storage.load_string("youtube_target_channel", "")
+        if yt_target:
+            QTimer.singleShot(700, lambda: self._autostart_youtube(yt_target))
+
+        tk_target = self.settings_storage.load_string("tiktok_target_channel", "")
+        if tk_target:
+            QTimer.singleShot(1000, lambda: self._autostart_tiktok(tk_target))
+
+    def _autostart_twitch(self, twitch_tokens: dict):
+        if getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.logger.info("[AutoStart] Starting Twitch integration...")
+            self._on_twitch_auth_success(twitch_tokens)
+        except Exception as e:
+            self.logger.error("[AutoStart] Error auto-starting Twitch integration: %s", e)
+
+    def _autostart_youtube(self, target: str):
+        if getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.logger.info("[AutoStart] Starting YouTube integration (target='%s')...", target)
+            self._handle_youtube_connect(target)
+        except Exception as e:
+            self.logger.error("[AutoStart] Error auto-starting YouTube integration: %s", e)
+
+    def _autostart_tiktok(self, target: str):
+        if getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.logger.info("[AutoStart] Starting TikTok integration (target='%s')...", target)
+            self._handle_tiktok_connect(target)
+        except Exception as e:
+            self.logger.error("[AutoStart] Error auto-starting TikTok integration: %s", e)
 
     def _handle_navigation(self, view_name: str):
         self.logger.info("[User Action] Navigated to view: '%s'", view_name)
@@ -706,12 +726,12 @@ class MainWindowCore(QMainWindow):
             return
         self._is_shutting_down = True
         
-        self.logger.info(self.i18n.get("main.logs.shutdown_init"))
+        self.logger.info("[Shutdown] Initiating application shutdown sequence...")
         
         if hasattr(self, 'music_controller') and self.music_controller:
             self.music_controller.shutdown()
 
-        self.logger.info(self.i18n.get("main.logs.shutdown_tts_overlay"))
+        self.logger.info("[Shutdown] Stopping TTS worker and overlay HTTP server...")
         self.container.shutdown()
 
         self._stop_all_workers()
@@ -719,7 +739,7 @@ class MainWindowCore(QMainWindow):
         if hasattr(self.container, 'db_manager') and self.container.db_manager:
             self.container.db_manager.cleanup()
 
-        self.logger.info(self.i18n.get("main.logs.shutdown_complete"))
+        self.logger.info("[Shutdown] Shutdown sequence completed successfully.")
 
     def _stop_workers_parallel(self, worker_map: list):
         active_workers = []
@@ -777,6 +797,10 @@ class MainWindowCore(QMainWindow):
             except RuntimeError as e:
                 self.logger.debug("[Shutdown] Notice stopping worker '%s' (%s): %s", name, type(e).__name__, e)
 
+    def _nullify_worker_attributes(self, *attrs: str) -> None:
+        for attr in attrs:
+            setattr(self, attr, None)
+
     def _stop_kick_connection_workers(self):
         worker_map = [
             ("Worker_Kick_Chat_Socket", getattr(self, 'kick_chat_worker', None)),
@@ -785,10 +809,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_Timers", getattr(self, 'timers_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
-        self.kick_chat_worker = None
-        self.kick_auth_worker = None
-        self.fetch_rewards_worker = None
-        self.timers_worker = None
+        self._nullify_worker_attributes('kick_chat_worker', 'kick_auth_worker', 'fetch_rewards_worker', 'timers_worker')
 
     def _stop_twitch_connection_workers(self):
         worker_map = [
@@ -798,10 +819,7 @@ class MainWindowCore(QMainWindow):
             ("Worker_Fetch_Twitch_Rewards", getattr(self, 'fetch_twitch_rewards_worker', None)),
         ]
         self._stop_workers_parallel(worker_map)
-        self.twitch_chat_worker = None
-        self.twitch_auth_worker = None
-        self.twitch_reward_worker = None
-        self.fetch_twitch_rewards_worker = None
+        self._nullify_worker_attributes('twitch_chat_worker', 'twitch_auth_worker', 'twitch_reward_worker', 'fetch_twitch_rewards_worker')
 
     def _stop_all_workers(self):
         worker_map = [
@@ -820,17 +838,11 @@ class MainWindowCore(QMainWindow):
         ]
 
         self._stop_workers_parallel(worker_map)
-        self.kick_chat_worker = None
-        self.kick_auth_worker = None
-        self.fetch_rewards_worker = None
-        self.timers_worker = None
-        self.twitch_chat_worker = None
-        self.twitch_auth_worker = None
-        self.twitch_reward_worker = None
-        self.youtube_chat_worker = None
-        self.tiktok_chat_worker = None
-        self.schedule_worker = None
-        self.global_media_worker = None
+        self._nullify_worker_attributes(
+            'kick_chat_worker', 'kick_auth_worker', 'fetch_rewards_worker', 'timers_worker',
+            'twitch_chat_worker', 'twitch_auth_worker', 'twitch_reward_worker',
+            'youtube_chat_worker', 'tiktok_chat_worker', 'schedule_worker', 'global_media_worker'
+        )
         if hasattr(self, "chat_service") and self.chat_service and hasattr(self.chat_service, "shutdown"):
             try:
                 self.chat_service.shutdown()
@@ -871,7 +883,7 @@ class MainWindowCore(QMainWindow):
         self.kick_auth_worker.finished.connect(self.kick_auth_worker.deleteLater)
         self.kick_auth_worker.start()
 
-    def _on_auth_success(self, tokens):
+    def _on_auth_success(self, _tokens):
         self.kick_api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
         self._evaluate_all_scopes()
         
@@ -907,6 +919,7 @@ class MainWindowCore(QMainWindow):
         username = user_data.get("username", "Kick")
         self._kick_connected = True
         self._kick_username = username
+        self._kick_avatar_url = user_data.get("avatar_url") or user_data.get("profile_pic", "")
         self._update_integrations_status_ui()
         self._refresh_sidebar_profile()
 
@@ -959,11 +972,11 @@ class MainWindowCore(QMainWindow):
         if recents is not None:
             dedup_key = f"{platform}:{user.lower()}:{reward_name.lower()}:{int(time.time() / 8)}"
             if dedup_key in recents:
-                self.logger.debug("[Reward] Ignorando canje duplicado: %s", dedup_key)
+                self.logger.debug("[Reward] Ignoring duplicate redemption: %s", dedup_key)
                 return
             recents.append(dedup_key)
 
-        self.logger.info("[Reward] Canje procesado: usuario='%s', recompensa='%s' (Plataforma: %s)", user, reward_name, platform.capitalize())
+        self.logger.info("[Reward] Redemption processed: user='%s', reward='%s' (Platform: %s)", user, reward_name, platform.capitalize())
         toast_template = self.i18n.get("main.toasts.reward_msg")
         self.toast.show_toast(
             title=self.i18n.get("main.toasts.reward_title"), 
@@ -971,7 +984,7 @@ class MainWindowCore(QMainWindow):
             state="success"
         )
         
-        current_time = datetime.now().strftime("%H:%M:%S")
+        current_time = datetime.now().strftime("%H:%M")
         
         msg_sistema = self._format_reward_message(reward_name)
         tag = self.i18n.get("main.chat.points_tag")
@@ -1057,14 +1070,13 @@ class MainWindowCore(QMainWindow):
         self._twitch_connected = False
         self._twitch_channel = ""
         self._update_integrations_status_ui()
-        log_msg = self.container.i18n.get("logs.main_window.twitch_auth_error").replace("{error}", str(err))
-        logger.error(f"[Twitch Auth Error] {log_msg}")
+        logger.error("[TwitchAuth] Authentication error: %s", err)
         if getattr(self, "_is_window_closing", False):
             return
         err_title = self.container.i18n.get("main.toast.twitch_auth_error_title")
         self.toast.show_toast(title=err_title, message=str(err), state="danger")
 
-    def _on_twitch_auth_success(self, tokens):
+    def _on_twitch_auth_success(self, _tokens):
         self.twitch_auth_worker = None
         logger.info("[Twitch Auth] Success callback received.")
         try:
@@ -1120,6 +1132,7 @@ class MainWindowCore(QMainWindow):
         if isinstance(user_data, dict):
             username = user_data.get("username", "")
             broadcaster_id = user_data.get("broadcaster_id", "")
+            self._twitch_avatar_url = user_data.get("avatar_url", "")
         elif isinstance(user_data, str):
             username = user_data
             broadcaster_id = getattr(self.spam_service, "twitch_broadcaster_id", "")
@@ -1162,15 +1175,7 @@ class MainWindowCore(QMainWindow):
             self.twitch_reward_worker.start()
             self._fetch_twitch_rewards(broadcaster_id)
         if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-            if isinstance(user_data, dict) and user_data.get("followers") is not None and user_data.get("followers") > 0:
-                self.dashboard_controller.set_channel_profile("twitch", user_data)
-            elif self.spam_service.twitch_api and broadcaster_id:
-                try:
-                    full_info = self.spam_service.twitch_api.fetch_full_channel_info(broadcaster_id)
-                    self.dashboard_controller.set_channel_profile("twitch", full_info)
-                except Exception as e:
-                    logger.warning("[Twitch] Could not refresh full channel info: %s", e)
-            elif isinstance(user_data, dict):
+            if isinstance(user_data, dict) and user_data:
                 self.dashboard_controller.set_channel_profile("twitch", user_data)
 
         self._evaluate_all_scopes()
@@ -1186,17 +1191,7 @@ class MainWindowCore(QMainWindow):
     @Slot()
     def _fetch_twitch_rewards(self, broadcaster_id: str = ""):
         b_id = broadcaster_id or getattr(self.spam_service, "twitch_broadcaster_id", "")
-        if not b_id and self.container.twitch_auth_manager.is_authenticated():
-            try:
-                twitch_api = self.spam_service.twitch_api or TwitchAPIClient(self.container.twitch_auth_manager, TWITCH_CLIENT_ID, i18n=self.container.i18n)
-                user_info = twitch_api.fetch_user_data()
-                b_id = user_info.get("broadcaster_id", "")
-                if b_id:
-                    self.spam_service.twitch_broadcaster_id = b_id
-            except Exception as e:
-                logger.error("[Main] Error resolving broadcaster_id for Twitch rewards: %s", e)
-
-        if not b_id or not self.container.twitch_auth_manager.is_authenticated():
+        if not self.container.twitch_auth_manager.is_authenticated():
             return
 
         if self._is_worker_running(getattr(self, 'fetch_twitch_rewards_worker', None)):
@@ -1373,18 +1368,57 @@ class MainWindowCore(QMainWindow):
         self.youtube_chat_worker.message_received.connect(self._route_incoming_message)
         self.youtube_chat_worker.start()
 
-    def _on_youtube_connected(self, stream_info: dict):
-        self._youtube_connected = True
-        ch_name = stream_info.get("channel_name", "") or stream_info.get("title", "") or stream_info.get("channel", "") or "YouTube Live"
-        self._youtube_channel = ch_name
-        target = stream_info.get("channel", "")
-        if target:
-            self.settings_storage.save_string("youtube_target_channel", target)
-        self.logger.info("[YouTube] Connected to YouTube Live: '%s'.", ch_name)
+    def _handle_live_chat_connected(
+        self,
+        platform_id: str,
+        display_name: str,
+        target_setting: str,
+        setting_key: str,
+        log_msg: str,
+        toast_title_key: str,
+        toast_msg_key: str
+    ):
+        setattr(self, f"_{platform_id}_connected", True)
+        setattr(self, f"_{platform_id}_channel", display_name)
+        if target_setting:
+            self.settings_storage.save_string(setting_key, target_setting)
+        self.logger.info(log_msg)
         self._update_integrations_status_ui()
-        title = self.container.i18n.get("main.toast.youtube_connected_title")
-        msg = self.container.i18n.get("main.toast.youtube_connected_msg").replace("{target}", ch_name)
+        title = self.container.i18n.get(toast_title_key)
+        msg = self.container.i18n.get(toast_msg_key).replace("{target}", display_name)
         self.toast.show_toast(title=title, message=msg, state="success")
+
+    def _disconnect_live_chat_platform(
+        self,
+        platform_id: str,
+        log_platform: str,
+        worker_name: str,
+        setting_key: str,
+        toast_title_key: str,
+        toast_msg_key: str
+    ):
+        self.logger.info("[User Action] %s disconnected successfully", log_platform)
+        self._safe_stop_worker(worker_name, timeout_ms=1500)
+        setattr(self, f"_{platform_id}_connected", False)
+        setattr(self, f"_{platform_id}_channel", "")
+        self.settings_storage.save_string(setting_key, "")
+        self._update_integrations_status_ui()
+        title_disc = self.container.i18n.get(toast_title_key)
+        msg_disc = self.container.i18n.get(toast_msg_key)
+        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
+
+    def _on_youtube_connected(self, stream_info: dict):
+        ch_name = stream_info.get("channel_name", "") or stream_info.get("title", "") or stream_info.get("channel", "") or "YouTube Live"
+        target = stream_info.get("channel", "")
+        self._handle_live_chat_connected(
+            platform_id="youtube",
+            display_name=ch_name,
+            target_setting=target,
+            setting_key="youtube_target_channel",
+            log_msg=f"[YouTube] Connected to YouTube Live: '{ch_name}'.",
+            toast_title_key="main.toast.youtube_connected_title",
+            toast_msg_key="main.toast.youtube_connected_msg"
+        )
 
     def _on_youtube_disconnected(self):
         self._youtube_connected = False
@@ -1403,15 +1437,14 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_youtube_disconnect(self):
-        self.logger.info("[User Action] YouTube Live disconnected successfully")
-        self._safe_stop_worker("youtube_chat_worker", timeout_ms=1500)
-        self._youtube_connected = False
-        self._youtube_channel = ""
-        self.settings_storage.save_string("youtube_target_channel", "")
-        self._update_integrations_status_ui()
-        title_disc = self.container.i18n.get("main.toast.youtube_disconnected_title")
-        msg_disc = self.container.i18n.get("main.toast.youtube_disconnected_msg")
-        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
+        self._disconnect_live_chat_platform(
+            platform_id="youtube",
+            log_platform="YouTube Live",
+            worker_name="youtube_chat_worker",
+            setting_key="youtube_target_channel",
+            toast_title_key="main.toast.youtube_disconnected_title",
+            toast_msg_key="main.toast.youtube_disconnected_msg"
+        )
 
     @Slot()
     def _on_tiktok_integration_button_clicked(self):
@@ -1464,16 +1497,16 @@ class MainWindowCore(QMainWindow):
         self.tiktok_chat_worker.start()
 
     def _on_tiktok_connected(self, stream_info: dict):
-        self._tiktok_connected = True
         unique_id = stream_info.get("unique_id", "") or stream_info.get("channel", "") or "TikTok Live"
-        self._tiktok_channel = unique_id
-        if unique_id:
-            self.settings_storage.save_string("tiktok_target_channel", unique_id)
-        self.logger.info("[TikTok] Connected to TikTok Live: '@%s'.", unique_id)
-        self._update_integrations_status_ui()
-        title = self.container.i18n.get("main.toast.tiktok_connected_title")
-        msg = self.container.i18n.get("main.toast.tiktok_connected_msg").replace("{target}", unique_id)
-        self.toast.show_toast(title=title, message=msg, state="success")
+        self._handle_live_chat_connected(
+            platform_id="tiktok",
+            display_name=unique_id,
+            target_setting=unique_id,
+            setting_key="tiktok_target_channel",
+            log_msg=f"[TikTok] Connected to TikTok Live: '@{unique_id}'.",
+            toast_title_key="main.toast.tiktok_connected_title",
+            toast_msg_key="main.toast.tiktok_connected_msg"
+        )
 
     def _on_tiktok_disconnected(self):
         self._tiktok_connected = False
@@ -1492,15 +1525,14 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def _handle_tiktok_disconnect(self):
-        self.logger.info("[User Action] TikTok Live disconnected successfully")
-        self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1500)
-        self._tiktok_connected = False
-        self._tiktok_channel = ""
-        self.settings_storage.save_string("tiktok_target_channel", "")
-        self._update_integrations_status_ui()
-        title_disc = self.container.i18n.get("main.toast.tiktok_disconnected_title")
-        msg_disc = self.container.i18n.get("main.toast.tiktok_disconnected_msg")
-        self.toast.show_toast(title=title_disc, message=msg_disc, state="info")
+        self._disconnect_live_chat_platform(
+            platform_id="tiktok",
+            log_platform="TikTok Live",
+            worker_name="tiktok_chat_worker",
+            setting_key="tiktok_target_channel",
+            toast_title_key="main.toast.tiktok_disconnected_title",
+            toast_msg_key="main.toast.tiktok_disconnected_msg"
+        )
 
     @Slot()
     def _on_twitch_integration_button_clicked(self):
@@ -1595,7 +1627,7 @@ class MainWindowCore(QMainWindow):
             self.schedule_worker.schedule_triggered.connect(self._on_schedule_triggered)
             self.schedule_worker.start()
 
-    def _on_schedule_triggered(self, schedule: dict, result: dict):
+    def _on_schedule_triggered(self, schedule: dict, _result: dict):
         name = schedule.get("name", "")
         title = self.i18n.get("stream_info.toasts.schedule_auto_applied")
         self.toast.show_toast(
@@ -1607,17 +1639,24 @@ class MainWindowCore(QMainWindow):
             self.schedule_controller.reload_schedules()
             self.schedule_controller.fetch_current_info()
 
-    def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0):
+    def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0, avatar_url: str = ""):
         self._increment_metric("messages_processed")
-        current_time = datetime.now().strftime("%H:%M:%S")
+        current_time = datetime.now().strftime("%H:%M")
         if isinstance(user_or_dto, ChatMessageDTO):
             dto = user_or_dto
             if not dto.timestamp:
                 dto.timestamp = current_time
             platform = getattr(dto, "platform", "kick") or "kick"
         else:
-            dto = ChatMessageDTO(user_or_dto, msg, badges or [], color, msg_id, sender_id, timestamp=current_time)
+            dto = ChatMessageDTO(user_or_dto, msg, badges or [], color, msg_id, sender_id, timestamp=current_time, avatar_url=avatar_url)
             platform = "kick"
+
+        if not getattr(dto, "avatar_url", ""):
+            user_lower = str(dto.user).lower()
+            if platform == "kick" and getattr(self, "_kick_username", "") and user_lower == self._kick_username.lower():
+                dto.avatar_url = getattr(self, "_kick_avatar_url", "")
+            elif platform == "twitch" and getattr(self, "_twitch_channel", "") and user_lower == self._twitch_channel.lower():
+                dto.avatar_url = getattr(self, "_twitch_avatar_url", "")
 
         if hasattr(self, "session_platform_messages") and platform in self.session_platform_messages:
             self.session_platform_messages[platform] += 1
@@ -1648,11 +1687,6 @@ class MainWindowCore(QMainWindow):
             self.overlay_server.trigger_widget_event("pinned_deleted", {})
 
     @Slot(bool)
-    def _handle_autostart_change(self, enabled: bool):
-        self.logger.info("[User Action] Toggled dashboard autostart setting: enabled=%s", enabled)
-        self.settings_storage.save_bool(self.SETTING_AUTOSTART, enabled)
-
-    @Slot(bool)
     def _handle_tray_tts_toggle(self, enabled: bool):
         settings = self.chat_service.get_settings()
         settings["enabled"] = enabled
@@ -1672,6 +1706,12 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "music_controller"):
             self.music_controller.handle_skip()
 
+    @Slot(object)
+    def _handle_tray_song_changed(self, song: dict):
+        if hasattr(self, "tray_manager"):
+            is_playing = bool(song.get("is_playing", False)) if isinstance(song, dict) else False
+            self.tray_manager.set_playback_state(is_playing)
+
     @Slot(bool)
     def _handle_tray_tts_use_command_toggle(self, enabled: bool):
         settings = self.chat_service.get_settings()
@@ -1682,7 +1722,7 @@ class MainWindowCore(QMainWindow):
     @Slot(bool)
     def _handle_tray_tts_voice_type_change(self, is_web: bool):
         settings = self.chat_service.get_settings()
-        settings["provider"] = "web" if is_web else "local"
+        settings["provider"] = "web" if is_web else "piper"
         self.chat_service.save_settings(settings)
         self.chat_controller.load_initial_data()
 
@@ -1691,10 +1731,10 @@ class MainWindowCore(QMainWindow):
         settings = self.chat_service.get_settings()
         self.tray_manager.set_tts_state(enabled)
         self.tray_manager.set_tts_use_command_state(settings.get("use_command", False))
-        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "local") == "web")
+        self.tray_manager.set_tts_voice_type_state(settings.get("provider", "piper") == "web")
 
     @Slot(int)
-    def _apply_dynamic_theme(self, base_size: int, immediate: bool = True):
+    def _apply_dynamic_theme(self, base_size: int):
         current_size = getattr(self, "_applied_font_size", None)
         if current_size == base_size:
             return

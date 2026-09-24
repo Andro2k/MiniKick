@@ -21,17 +21,17 @@ class TimersView(BaseView):
         self._setup_ui()
 
     def _setup_ui(self):
-        col_1 = self.i18n.get("timer.table.col_name")
-        col_2 = self.i18n.get("timer.table.col_message")
-        col_3 = self.i18n.get("timer.table.col_platforms")
-        col_4 = self.i18n.get("timer.table.col_interval_online")
-        col_5 = self.i18n.get("timer.table.col_interval_offline")
-        col_6 = self.i18n.get("timer.table.col_chat_lines")
-        col_7 = self.i18n.get("timer.table.col_actions")
-
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("timer.header.title"),
-            headers=[col_1, col_2, col_3, col_4, col_5, col_6, col_7],
+            headers=[
+                self.i18n.get("timer.table.col_name"),
+                self.i18n.get("timer.table.col_message"),
+                self.i18n.get("timer.table.col_platforms"),
+                self.i18n.get("timer.table.col_interval_online"),
+                self.i18n.get("timer.table.col_interval_offline"),
+                self.i18n.get("timer.table.col_chat_lines"),
+                self.i18n.get("timer.table.col_actions"),
+            ],
             search_placeholder=self.i18n.get("timer.table.search_placeholder"),
             add_button_text=self.i18n.get("timer.table.btn_new"),
             add_button_icon="plus-filled.svg"
@@ -169,15 +169,28 @@ class TimersView(BaseView):
             callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
         )
 
+        timer_name = timer_data.get("name", "")
         cell.add_button(
             icon_name="trash-filled.svg",
             color=COLOR_WHITE,
             role="action_danger_solid",
             tooltip=self.i18n.get("timer.table.tooltip_delete"),
-            callback=lambda checked=False, tid=timer_id: self.delete_requested.emit(tid)
+            callback=lambda checked=False, tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname)
         )
 
         return cell
+
+    def _confirm_delete_timer(self, timer_id: int, timer_name: str) -> None:
+        from frontend.dialogs import ModernConfirmDialog
+        desc = self.i18n.get("timer.confirm_delete.desc").replace("{name}", timer_name)
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("timer.confirm_delete.title"),
+            body_text=desc
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.delete_requested.emit(timer_id)
 
     def set_category_search_results(self, platform: str, results: list[dict]):
         if hasattr(self, "_active_timer_dialog") and self._active_timer_dialog:

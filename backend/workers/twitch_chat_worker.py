@@ -40,6 +40,7 @@ class TwitchChatWorker(QThread):
                     fetched_username = user_data.get("username")
                     if fetched_username:
                         self.channel_name = fetched_username
+                    self._broadcaster_avatar = user_data.get("avatar_url", "")
                 except Exception as api_err:
                     logger.debug("[TwitchChatWorker] Notice fetching initial user data: %s", api_err)
 
@@ -98,7 +99,10 @@ class TwitchChatWorker(QThread):
         if self._is_stopped:
             return
 
-        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = datetime.datetime.now().strftime("%H:%M")
+        avatar_url = ""
+        if self.channel_name and user.lower() == self.channel_name.lower():
+            avatar_url = getattr(self, "_broadcaster_avatar", "")
         logger.info("[TwitchChatWorker] [%s] Message dispatched from '%s': %s (id=%s, gif=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a", bool(gif_url))
         dto = ChatMessageDTO(
             user=user,
@@ -110,7 +114,8 @@ class TwitchChatWorker(QThread):
             timestamp=now_str,
             platform="twitch",
             emotes_tag=emotes_tag,
-            gif_url=gif_url
+            gif_url=gif_url,
+            avatar_url=avatar_url
         )
         self.message_received.emit(dto)
 

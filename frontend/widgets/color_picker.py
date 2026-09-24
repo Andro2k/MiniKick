@@ -3,18 +3,19 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLineEdit, QColorDialog
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
-from frontend.common import RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_SM, SPACING_XS
+from frontend.common import (
+    RADIUS_SM, get_swatch_qss, MARGIN_NONE, SPACING_SM, SPACING_XS,
+    COLOR_KICK_REWARDS, COLOR_TIKTOK, COLOR_TWITCH, COLOR_RED, COLOR_AMBER, COLOR_PURE_WHITE,
+)
 
-DEFAULT_PRESET_COLORS = [
-    "#00E701", "#00F0FF", "#9146FF", "#FF4655", "#FFB800", "#FFFFFF"
-]
+DEFAULT_PRESET_COLORS = [COLOR_KICK_REWARDS, COLOR_TIKTOK, COLOR_TWITCH, COLOR_RED, COLOR_AMBER, COLOR_PURE_WHITE]
 
 class ModernColorPicker(QWidget):
     color_changed = Signal(str)
 
     def __init__(
         self,
-        initial_color: str = "#00e701",
+        initial_color: str = COLOR_KICK_REWARDS,
         tooltip: str = "",
         presets: list[str] | None = None,
         is_vertical: bool = False,
@@ -22,7 +23,7 @@ class ModernColorPicker(QWidget):
         parent: QWidget | None = None
     ):
         super().__init__(parent)
-        self._current_color = initial_color if QColor.isValidColorName(initial_color) else "#00e701"
+        self._current_color = initial_color if QColor.isValidColorName(initial_color) else COLOR_KICK_REWARDS
         self._tooltip = tooltip
         self._presets = presets if (presets is not None and show_presets) else ([] if not show_presets else DEFAULT_PRESET_COLORS)
         self._is_vertical = is_vertical
@@ -90,7 +91,7 @@ class ModernColorPicker(QWidget):
         self._update_swatch_style(self._current_color)
 
     def _open_color_dialog(self):
-        title = self._tooltip or "Select Color"
+        title = self._tooltip
         color = QColorDialog.getColor(QColor(self._current_color), self, title)
         if color.isValid():
             self.set_color(color.name())

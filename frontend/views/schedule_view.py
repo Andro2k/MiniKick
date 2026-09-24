@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QTabWidget, QBoxLayout, QSizePolicy)
 from PySide6.QtCore import Qt, Signal
-from frontend.widgets import BaseView, ModernScrollArea
+from frontend.widgets import BaseView, ModernScrollArea, create_col_layout, create_box_layout
 from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
 from frontend.components.schedule import (
     ScheduleQuickChangePanel,
@@ -40,37 +40,30 @@ class ScheduleView(BaseView):
 
     def _setup_ui(self):
         self.body_container = QWidget()
-        self.body_layout = QVBoxLayout(self.body_container)
-        self.body_layout.setContentsMargins(*MARGIN_NONE)
-        self.body_layout.setSpacing(SPACING_MD)
+        self.body_layout = create_col_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=self.body_container)
+        self.columns_layout = create_box_layout(QBoxLayout.Direction.LeftToRight, spacing=SPACING_MD, margins=MARGIN_NONE)
 
-        self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.columns_layout.setContentsMargins(*MARGIN_NONE)
-        self.columns_layout.setSpacing(SPACING_MD)
-
-        col1 = QWidget()
-        self.col1_layout = QVBoxLayout(col1)
-        self.col1_layout.setContentsMargins(*MARGIN_NONE)
-        self.col1_layout.setSpacing(SPACING_NONE)
+        col1 = QWidget(self)
+        self.col1_layout = create_col_layout(spacing=SPACING_NONE, margins=MARGIN_NONE, parent=col1)
         self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.tabs = QTabWidget()
+        self.tabs = QTabWidget(col1)
         self.tabs.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        self.quick_change_panel = ScheduleQuickChangePanel(self.i18n)
-        self.schedule_form_panel = ScheduleFormPanel(self.i18n)
+        self.quick_change_panel = ScheduleQuickChangePanel(self.i18n, parent=self)
+        self.schedule_form_panel = ScheduleFormPanel(self.i18n, parent=self)
 
         self.tabs.addTab(ModernScrollArea(self.quick_change_panel), self.i18n.get("stream_info.tabs.quick_change"))
         self.tabs.addTab(ModernScrollArea(self.schedule_form_panel), self.i18n.get("stream_info.tabs.schedule_form"))
 
         self.col1_layout.addWidget(self.tabs)
 
-        col2 = QWidget()
+        col2 = QWidget(self)
         self.col2_layout = QVBoxLayout(col2)
         self.col2_layout.setContentsMargins(*MARGIN_NONE)
         self.col2_layout.setSpacing(SPACING_NONE)
 
-        self.table_panel = ScheduleTablePanel(self.i18n)
+        self.table_panel = ScheduleTablePanel(self.i18n, parent=self)
         self.col2_layout.addWidget(self.table_panel)
 
         self.columns_layout.addWidget(col1, stretch=3)
@@ -92,7 +85,7 @@ class ScheduleView(BaseView):
         self.table_panel.toggle_schedule_requested.connect(self.toggle_schedule_requested.emit)
         self.tabs.currentChanged.connect(self._on_tab_changed)
 
-    def _on_tab_changed(self, index: int):
+    def _on_tab_changed(self, _index: int):
         if hasattr(self.quick_change_panel, "popup_suggestions"):
             self.quick_change_panel.popup_suggestions.hide()
         if hasattr(self.schedule_form_panel, "popup_kick"):
@@ -122,7 +115,7 @@ class ScheduleView(BaseView):
     def set_loading(self, is_loading: bool):
         self.quick_change_panel.set_loading(is_loading)
 
-    def on_update_completed(self, results: dict):
+    def on_update_completed(self, _results: dict):
         self.quick_change_panel.set_loading(False)
 
     def set_schedules(self, schedules: list[dict]):

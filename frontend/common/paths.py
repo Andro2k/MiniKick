@@ -31,5 +31,5 @@ def resolve_icon_path(name: str) -> str | None:
     direct_path = get_assets_path(name)
     if os.path.exists(direct_path):
         return direct_path
-    logger.warning(f"No se encontró el archivo de ícono: '{name}' en {full_path}")
+    logger.warning("Icon file not found: '%s' in %s", name, full_path)
     return None

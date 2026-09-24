@@ -1,13 +1,12 @@
 # frontend\widgets\__init__.py
 
 from .block_widget import (
-    ViewHeader, SectionHeader, SettingRow, FormField, SliderRow, StatCard, 
+    ViewHeader, SectionHeader, SettingRow, SliderRow, StatCard, 
     ModernCard, ModernScrollArea, FadingScrollArea, ExpandableCard, ExpandableSettingCard, ModernDivider,
     create_badge
 )
 from .controls_widget import ModernButton, ModernSwitch, CompactSpinBox, VariableHighlighter, VariableTextEdit
 from .color_picker import ModernColorPicker
-from .platform_controls import PlatformSwitchGroup
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
 from .table_widget import ModernTable, ModernTableCard, TableActionCell, PlatformBadgeCell
@@ -22,20 +21,35 @@ from .no_wheel import (
 )
 from .category_search import CategorySearchComboBox, CategorySuggestionsPopup, CategoryItemWidget
 from .searchable_combo_box import SearchableComboBox, SearchableComboPopup
-from .inspector_widgets import (
-    InspectorPropertyRow, InspectorDualSpinBox, InspectorColorRow, InspectorFilePicker
+from .inspector_widgets import InspectorPropertyRow
+from .layout_helpers import (
+    create_card_frame, create_row_layout, create_col_layout,
+    create_labeled_field, create_switch_field, create_box_layout,
+    create_two_column_container, create_frameless_input,
+    create_text_label, create_platform_switches,
+    create_error_label, sync_dual_platform_switches,
+    render_styled_frame_background
 )
 
 __all__ = [
+    "create_card_frame",
+    "create_row_layout",
+    "create_col_layout",
+    "create_labeled_field",
+    "create_switch_field",
+    "create_box_layout",
+    "create_two_column_container",
+    "create_frameless_input",
+    "create_text_label",
+    "create_platform_switches",
+    "create_error_label",
+    "sync_dual_platform_switches",
+    "render_styled_frame_background",
     "InspectorPropertyRow",
-    "InspectorDualSpinBox",
-    "InspectorColorRow",
-    "InspectorFilePicker",
     "BaseView",
     "ViewHeader",
     "SectionHeader",
     "SettingRow",
-    "FormField",
     "SliderRow",
     "StatCard",
     "ModernCard",
@@ -51,7 +65,6 @@ __all__ = [
     "VariableHighlighter",
     "VariableTextEdit",
     "ModernColorPicker",
-    "PlatformSwitchGroup",
     "FlowLayout",
     "ScalableIllustration",
     "ModernTable",

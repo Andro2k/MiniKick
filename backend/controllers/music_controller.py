@@ -224,6 +224,10 @@ class MusicController(QObject):
         if self.settings_storage:
             self.settings_storage.save_string("music_volume", str(volume))
 
+    def set_ducking(self, ducked: bool):
+        if self.music_provider and hasattr(self.music_provider, "set_ducking"):
+            self.music_provider.set_ducking(ducked)
+
     def set_max_user_songs(self, val: int):
         self.max_user_songs = max(1, min(10, val))
         logger.info("[User Action] Changed music max user songs setting: %d", self.max_user_songs)

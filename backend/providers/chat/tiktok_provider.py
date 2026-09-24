@@ -10,10 +10,6 @@ from typing import Callable, Any
 from backend.services.system import TranslationService
 from backend.config import SIGN_API_KEY
 
-try:
-    from websockets.exceptions import InvalidStatusCode
-except ImportError:
-    InvalidStatusCode = None
 
 logger = logging.getLogger("minikick.providers.chat.tiktok")
 
@@ -63,6 +59,38 @@ class TikTokChatProvider:
                     return urls[0]
         return ""
 
+    @staticmethod
+    def _drain_client_loop(client: Any) -> None:
+        if not client:
+            return
+        try:
+            loop = getattr(client, "_asyncio_loop", None)
+            if not loop or loop.is_closed():
+                return
+
+            if not loop.is_running():
+                if hasattr(client, "_clean_tasks") and callable(client._clean_tasks):
+                    try:
+                        client._clean_tasks()
+                        return
+                    except Exception as clean_err:
+                        logger.debug("[TikTokChatProvider] Error ejecutando _clean_tasks nativo: %s", clean_err)
+
+                try:
+                    if hasattr(client, "disconnect") and getattr(client, "connected", False):
+                        loop.run_until_complete(client.disconnect())
+                except Exception:
+                    pass
+
+                pending = [t for t in asyncio.all_tasks(loop) if not t.done()]
+                for task in pending:
+                    task.cancel()
+
+                if pending:
+                    loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
+        except Exception as e:
+            logger.debug("[TikTokChatProvider] Error drenando tareas de loop: %s", e)
+
     def _build_client(
         self,
         TikTokLiveClient: Any,
@@ -87,11 +115,11 @@ class TikTokChatProvider:
         connected_at_holder: list[float] = [0.0]
 
         @client.on(ConnectEvent)
-        def _on_connect(event: ConnectEvent):
+        def _on_connect(_event: ConnectEvent):
             connected_at_holder[0] = time.time()
             room_id = getattr(client, "room_id", "")
             logger.info(
-                "[TikTokChatProvider] Conectado a TikTok Live @%s (Room ID: %s)",
+                "[TikTokChatProvider] Connected to TikTok Live @%s (Room ID: %s)",
                 clean_user, room_id
             )
             if on_connected:
@@ -240,13 +268,13 @@ class TikTokChatProvider:
                     )
                 except Exception as cb_err:
                     logger.warning(
-                        "[TikTokChatProvider] Error en callback on_message: %s", cb_err
+                        "[TikTokChatProvider] Error in on_message callback: %s", cb_err
                     )
 
         @client.on(DisconnectEvent)
-        def _on_disconnect(event: DisconnectEvent):
+        def _on_disconnect(_event: DisconnectEvent):
             logger.info(
-                "[TikTokChatProvider] Desconectado de TikTok Live @%s", clean_user
+                "[TikTokChatProvider] Disconnected from TikTok Live @%s", clean_user
             )
             if on_disconnected:
                 on_disconnected()
@@ -273,7 +301,7 @@ class TikTokChatProvider:
         self._seen_msg_ids.clear()
         self._seen_ids_order.clear()
 
-        logger.info("[TikTokChatProvider] Iniciando conexión con TikTok Live de @%s", clean_user)
+        logger.info("[TikTokChatProvider] Initiating connection to TikTok Live for @%s", clean_user)
 
         try:
             from TikTokLive import TikTokLiveClient
@@ -309,8 +337,11 @@ class TikTokChatProvider:
             )
 
             try:
-                self._client.run(fetch_live_check=True)
-                break
+                try:
+                    self._client.run(fetch_live_check=True)
+                    break
+                finally:
+                    self._drain_client_loop(self._client)
 
             except UserNotFoundError:
                 err = self.i18n.get("logs.tiktok.user_not_found").replace("{unique_id}", clean_user)
@@ -334,26 +365,27 @@ class TikTokChatProvider:
                 break
 
             except KeyboardInterrupt:
-                logger.info("[TikTokChatProvider] Interrupción de teclado.")
+                logger.info("[TikTokChatProvider] Keyboard interruption received.")
                 break
 
             except TikTokLiveError as tle:
-                logger.error("[TikTokChatProvider] Error de TikTokLive: %s", tle)
+                logger.error("[TikTokChatProvider] TikTokLive error: %s", tle)
                 if on_error:
                     on_error(str(tle))
                 break
 
             except Exception as ex:
-                is_ws_400 = (
-                    InvalidStatusCode is not None
-                    and isinstance(ex, InvalidStatusCode)
-                    and getattr(ex, "status_code", None) == 400
+                status_code = getattr(ex, "status_code", None)
+                is_invalid_status = (
+                    status_code is not None
+                    or "InvalidStatus" in type(ex).__name__
                 )
+                is_ws_400 = is_invalid_status and status_code == 400
 
                 if is_ws_400 and attempt < self._WS_MAX_RETRIES and self._is_running:
                     warn_msg = self.i18n.get("logs.tiktok.ws_rejected_400")
                     logger.warning(
-                        "[TikTokChatProvider] HTTP 400 en intento %d/%d — %s",
+                        "[TikTokChatProvider] HTTP 400 on attempt %d/%d — %s",
                         attempt + 1, self._WS_MAX_RETRIES + 1, warn_msg
                     )
                     time.sleep(self._WS_RETRY_DELAY)
@@ -362,20 +394,20 @@ class TikTokChatProvider:
                 if is_ws_400:
                     err = self.i18n.get("logs.tiktok.ws_rejected_400_final")
                     logger.error(
-                        "[TikTokChatProvider] WebSocket rechazado definitivamente (HTTP 400) tras %d intento(s).",
+                        "[TikTokChatProvider] WebSocket permanently rejected (HTTP 400) after %d attempt(s).",
                         attempt + 1
                     )
                     if on_error:
                         on_error(err)
                     break
 
-                if InvalidStatusCode is not None and isinstance(ex, InvalidStatusCode):
+                if is_invalid_status:
                     err = self.i18n.get("logs.tiktok.ws_rejected").replace(
-                        "{code}", str(getattr(ex, "status_code", "?"))
+                        "{code}", str(status_code if status_code is not None else "?")
                     )
                     logger.error(
-                        "[TikTokChatProvider] WebSocket rechazado (HTTP %s): %s",
-                        getattr(ex, "status_code", "?"), ex
+                        "[TikTokChatProvider] WebSocket rejected (HTTP %s): %s",
+                        status_code if status_code is not None else "?", ex
                     )
                     if on_error:
                         on_error(err)
@@ -383,31 +415,30 @@ class TikTokChatProvider:
 
                 if self._is_running:
                     logger.error(
-                        "[TikTokChatProvider] Excepción general de conexión (%s): %s",
+                        "[TikTokChatProvider] General connection exception (%s): %s",
                         type(ex).__name__, ex, exc_info=True
                     )
                     if on_error:
                         on_error(str(ex))
                 break
 
+        if self._client:
+            self._drain_client_loop(self._client)
         self._is_running = False
 
     def stop_chat(self) -> None:
         self._is_running = False
-        if self._client:
+        client = self._client
+        if client:
             try:
-                loop = getattr(self._client, "_asyncio_loop", None)
+                loop = getattr(client, "_asyncio_loop", None)
                 if loop and loop.is_running():
-                    fut = asyncio.run_coroutine_threadsafe(self._client.disconnect(), loop)
                     try:
-                        fut.result(timeout=1.5)
+                        asyncio.run_coroutine_threadsafe(client.disconnect(), loop)
                     except Exception:
                         pass
-                elif loop and not loop.is_closed():
-                    try:
-                        loop.run_until_complete(self._client.disconnect())
-                    except Exception:
-                        pass
+                else:
+                    self._drain_client_loop(client)
             except Exception as e:
                 logger.debug("[TikTokChatProvider] Error menor al desconectar cliente: %s", e)
         self._seen_msg_ids.clear()

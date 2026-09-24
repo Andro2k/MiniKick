@@ -107,6 +107,18 @@ _DEFAULT_MOD_COMMANDS: dict[str, dict] = {
         "apply_youtube": True,
         "apply_tiktok": True,
     },
+    "[PLUGIN_CHAT_TTS_SKIP]": {
+        "trigger": "!skiptts",
+        "response": "[PLUGIN_CHAT_TTS_SKIP]",
+        "cooldown": 2,
+        "aliases": "!stoptts,!ttsskip,!ttsstop,!silenciotts",
+        "is_regex": False,
+        "permission": "moderator",
+        "apply_kick": True,
+        "apply_twitch": True,
+        "apply_youtube": True,
+        "apply_tiktok": True,
+    },
     "[PLUGIN_CHAT_GIF]": {
         "trigger": "!gif",
         "response": "[PLUGIN_CHAT_GIF]",
@@ -125,7 +137,7 @@ class ChatController(QObject):
     tts_state_changed = Signal(bool)
     spam_blocked = Signal()
     command_executed = Signal()
-    message_received = Signal(str, str, str, object, str, str, str)
+    message_received = Signal(str, str, str, object, str, str, str, str)
     music_plugin_triggered = Signal(str, str, str, str, str)
     widget_plugin_triggered = Signal(str, str, str, str, str)
     chat_overlay_config_changed = Signal(dict)
@@ -159,6 +171,7 @@ class ChatController(QObject):
             "[PLUGIN_CHAT_SYSTTS]": self._handle_plugin_systts,
             "[PLUGIN_CHAT_TTS_MUTE]": self._handle_plugin_ttsmute,
             "[PLUGIN_CHAT_TTS_BLOCK]": self._handle_plugin_ttsblock,
+            "[PLUGIN_CHAT_TTS_SKIP]": self._handle_plugin_skiptts,
             "[PLUGIN_CHAT_GIF]": self._handle_plugin_gif,
         }
 
@@ -306,7 +319,6 @@ class ChatController(QObject):
             show_bots=overlay_settings.get("common", {}).get("show_bots", False),
             show_time=overlay_settings.get("common", {}).get("show_time", False),
             big_emotes=overlay_settings.get("common", {}).get("big_emotes", True),
-            edge_fade=overlay_settings.get("common", {}).get("edge_fade", True),
             show_gifs=overlay_settings.get("common", {}).get("show_gifs", True),
             hide_commands=overlay_settings.get("common", {}).get("hide_commands", False),
             show_badges=overlay_settings.get("common", {}).get("show_badges", True),
@@ -382,6 +394,7 @@ class ChatController(QObject):
 
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_MUTE]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_MUTE]"], active_override=settings.get("mod_mute_command_enabled", True))
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_BLOCK]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"], active_override=settings.get("mod_block_command_enabled", True))
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_SKIP]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_SKIP]"], active_override=True)
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_GIF]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"], active_override=True)
 
         for legacy_tag in ("[PLUGIN_CHAT_TTS_UNMUTE]", "[PLUGIN_CHAT_TTS_UNBLOCK]"):
@@ -537,7 +550,7 @@ class ChatController(QObject):
             self.command_service.send_response(msg, platform=platform)
 
     def _handle_plugin_ttsunmute(self, dto: ChatMessageDTO, prefix: str = "!ttsunmute") -> None:
-        self._handle_plugin_ttsmute(dto, prefix="!unmutetts")
+        self._handle_plugin_ttsmute(dto, prefix=prefix)
 
     def _handle_plugin_ttsblock(self, dto: ChatMessageDTO, prefix: str) -> None:
         platform = getattr(dto, "platform", "kick")
@@ -576,7 +589,21 @@ class ChatController(QObject):
             self.command_service.send_response(msg, platform=platform)
 
     def _handle_plugin_ttsunblock(self, dto: ChatMessageDTO, prefix: str = "!ttsunblock") -> None:
-        self._handle_plugin_ttsblock(dto, prefix="!unblockword")
+        self._handle_plugin_ttsblock(dto, prefix=prefix)
+
+    def _handle_plugin_skiptts(self, dto: ChatMessageDTO, _prefix: str = "!skiptts") -> None:
+        platform = getattr(dto, "platform", "kick")
+        self.service.stop_tts()
+        logger.info("[ChatController] TTS detenido/saltado por moderador @%s en %s", dto.user, platform)
+        msg = self.i18n.get("chat.commands.skiptts_success").replace("{user}", dto.user)
+        self.command_service.send_response(msg, platform=platform)
+        if self.toast:
+            self.toast.show_toast(
+                title=self.i18n.get("chat.commands.skiptts_toast_title"),
+                message=msg,
+                state="info",
+                tag="tts_skip"
+            )
 
     def _handle_plugin_gif(self, dto: ChatMessageDTO, prefix: str) -> None:
         raw_arg = dto.content[len(prefix):].strip()
@@ -635,26 +662,30 @@ class ChatController(QObject):
             self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
         gif_url = getattr(dto, "gif_url", "")
         if not gif_url and dto.content and ("http://" in dto.content or "https://" in dto.content):
-            resolved = self.giphy_service.resolve_gif(dto.content.strip())
-            if resolved:
-                gif_url = resolved
-                dto.gif_url = resolved
+            if not self.filter_handler.is_bot(dto.user, badges):
+                extracted = self.giphy_service.extract_gif_url(dto.content)
+                if extracted:
+                    gif_url = extracted
+                    dto.gif_url = extracted
 
         emotes_tag = getattr(dto, "emotes_tag", "")
-        self.message_received.emit(dto.user, dto.content, dto.color, badges, platform, emotes_tag, gif_url)
+        avatar_url = getattr(dto, "avatar_url", "")
+        self.message_received.emit(dto.user, dto.content, dto.color, badges, platform, emotes_tag, gif_url, avatar_url)
 
     def _handle_bot_response(self, text: str, platform: str = "kick") -> None:
         if not text or platform != "twitch":
             return
-        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = datetime.datetime.now().strftime("%H:%M")
         bot_user = "MiniKick"
         tw_worker = getattr(self.command_service, "twitch_worker", None)
         if tw_worker:
             bot_user = getattr(tw_worker, "bot_nick", "") or getattr(tw_worker, "channel_name", "") or "MiniKick"
         
+        bot_avatar = getattr(tw_worker, "_broadcaster_avatar", "") if tw_worker else ""
         dto = ChatMessageDTO(
             user=bot_user, content=text, badges=["broadcaster", "bot"], color="#9146FF",
-            msg_id="", sender_id=0, timestamp=now_str, platform="twitch", is_cancelled=False, is_command=False
+            msg_id="", sender_id=0, timestamp=now_str, platform="twitch", is_cancelled=False, is_command=False,
+            avatar_url=bot_avatar
         )
         self._step_ui_render(dto)
 
@@ -740,15 +771,12 @@ class ChatController(QObject):
             "chat_overlay_show_bots": self.view.overlay_show_bots,
             "chat_overlay_show_time": self.view.overlay_show_time,
             "chat_overlay_big_emotes": getattr(self.view, "overlay_big_emotes", True),
-            "chat_overlay_edge_fade": getattr(self.view, "overlay_edge_fade", True),
             "chat_overlay_show_gifs": getattr(self.view, "overlay_show_gifs", True),
             "chat_overlay_hide_commands": getattr(self.view, "overlay_hide_commands", False),
             "chat_overlay_show_badges": getattr(self.view, "overlay_show_badges", True),
             "chat_overlay_show_platform": getattr(self.view, "overlay_show_platform", True)
         })
 
-        logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
-                    settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))
         self._tts_settings_cache = dict(settings)
         self._mod_mute_command_enabled = settings["mod_mute_command_enabled"]
         self._mod_block_command_enabled = settings["mod_block_command_enabled"]
@@ -804,7 +832,6 @@ class ChatController(QObject):
             "show_time": bool(settings.get("chat_overlay_show_time", False)),
             "show_gifs": bool(settings.get("chat_overlay_show_gifs", True)),
             "big_emotes": bool(settings.get("chat_overlay_big_emotes", True)),
-            "edge_fade": bool(settings.get("chat_overlay_edge_fade", True)),
             "hide_commands": bool(settings.get("chat_overlay_hide_commands", False)),
             "show_badges": bool(settings.get("chat_overlay_show_badges", True)),
             "show_platform": bool(settings.get("chat_overlay_show_platform", True)),
@@ -824,7 +851,6 @@ class ChatController(QObject):
             "show_time": common["show_time"],
             "show_gifs": common["show_gifs"],
             "big_emotes": common["big_emotes"],
-            "edge_fade": common["edge_fade"],
             "hide_commands": common["hide_commands"],
             "show_badges": common["show_badges"],
             "show_platform": common["show_platform"],
@@ -834,6 +860,8 @@ class ChatController(QObject):
         if not self._tts_settings_cache:
             return
         settings = dict(self._tts_settings_cache)
+        logger.info("[User Action] Saved Chat/TTS settings: enabled=%s, read_name=%s, use_cmd=%s, cmd='%s', provider='%s'",
+                    settings.get("enabled"), settings.get("read_name"), settings.get("use_command"), settings.get("command"), settings.get("provider"))
         self.service.save_settings(settings)
         self.chat_overlay_config_changed.emit(self.get_active_overlay_config())
 

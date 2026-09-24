@@ -1,10 +1,9 @@
 # frontend\views\widgets_view.py
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QBoxLayout, QWidget, QVBoxLayout
-from frontend.widgets import BaseView
+from PySide6.QtWidgets import QBoxLayout
+from frontend.widgets import BaseView, create_two_column_container
 from frontend.components.widgets import WidgetCard
-from frontend.common import MARGIN_NONE, SPACING_MD
 
 class WidgetsView(BaseView):
     widget_saved = Signal(str, bool, str, int, str, object)
@@ -15,17 +14,19 @@ class WidgetsView(BaseView):
 
     def __init__(self, i18n, shoutout_overlay_url: str = "", death_overlay_url: str = "", score_overlay_url: str = "", explosion_overlay_url: str = "", combo_overlay_url: str = "", poll_overlay_url: str = "", pinned_overlay_url: str = "", chatters_overlay_url: str = "", clock_overlay_url: str = "", parent=None):
         super().__init__(i18n=i18n, title_key="widgets.header.title", subtitle_key="widgets.header.subtitle", parent=parent)
-        self.shoutout_overlay_url = shoutout_overlay_url
-        self.death_overlay_url = death_overlay_url
-        self.score_overlay_url = score_overlay_url
-        self.explosion_overlay_url = explosion_overlay_url
-        self.combo_overlay_url = combo_overlay_url
-        self.poll_overlay_url = poll_overlay_url
-        self.pinned_overlay_url = pinned_overlay_url
-        self.chatters_overlay_url = chatters_overlay_url
-        self.clock_overlay_url = clock_overlay_url
         self.cards: dict[str, WidgetCard] = {}
         self._is_compact_layout: bool | None = None
+        self.set_overlay_urls(
+            shoutout_url=shoutout_overlay_url,
+            death_url=death_overlay_url,
+            score_url=score_overlay_url,
+            explosion_url=explosion_overlay_url,
+            combo_url=combo_overlay_url,
+            poll_url=poll_overlay_url,
+            pinned_url=pinned_overlay_url,
+            chatters_url=chatters_overlay_url,
+            clock_url=clock_overlay_url,
+        )
         self._setup_ui()
 
     def showEvent(self, event):
@@ -33,31 +34,7 @@ class WidgetsView(BaseView):
         self.view_shown.emit()
 
     def _setup_ui(self):
-        self.body_container = QWidget()
-        self.body_layout = QVBoxLayout(self.body_container)
-        self.body_layout.setContentsMargins(*MARGIN_NONE)
-        self.body_layout.setSpacing(SPACING_MD)
-
-        self.columns_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.columns_layout.setContentsMargins(*MARGIN_NONE)
-        self.columns_layout.setSpacing(SPACING_MD)
-
-        col1 = QWidget()
-        self.col1_layout = QVBoxLayout(col1)
-        self.col1_layout.setContentsMargins(*MARGIN_NONE)
-        self.col1_layout.setSpacing(SPACING_MD)
-        self.col1_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-        col2 = QWidget()
-        self.col2_layout = QVBoxLayout(col2)
-        self.col2_layout.setContentsMargins(*MARGIN_NONE)
-        self.col2_layout.setSpacing(SPACING_MD)
-        self.col2_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-        self.columns_layout.addWidget(col1, stretch=1)
-        self.columns_layout.addWidget(col2, stretch=1)
-
-        self.body_layout.addLayout(self.columns_layout)
+        self.body_container, self.body_layout, self.columns_layout, self.col1_layout, self.col2_layout = create_two_column_container(self)
 
         self._add_card("clock", self.i18n.get("widgets.clock.title"), self.i18n.get("widgets.clock.desc"), "clock-filled.svg", column=1, obs_url=self.clock_overlay_url)
         self._add_card("poll", self.i18n.get("widgets.poll.title"), self.i18n.get("widgets.poll.desc"), "clipboard-filled.svg", column=1, obs_url=self.poll_overlay_url)
@@ -112,7 +89,7 @@ class WidgetsView(BaseView):
         else:
             self.col2_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
-    def _handle_counter_action(self, w_id: str, action: str, data: dict):
+    def _handle_counter_action(self, _w_id: str, action: str, data: dict):
         if action == "set_death":
             self.death_count_changed.emit(data.get("count", 0))
         elif action == "set_score":

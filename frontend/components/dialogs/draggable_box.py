@@ -108,7 +108,7 @@ class DraggableBox(QFrame):
             self.move(x, y)
             self._target_local_pos = QPoint(x, y)
 
-    def mouseReleaseEvent(self, event: QMouseEvent):
+    def mouseReleaseEvent(self, _event: QMouseEvent):
         self._drag_active = False
         self.setCursor(Qt.CursorShape.OpenHandCursor)
         obs_x, obs_y = self.get_obs_coordinates()

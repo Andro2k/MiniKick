@@ -59,7 +59,6 @@ class DashboardController(QObject):
         self.view.twitch_connect_requested.connect(self.twitch_connect_requested.emit)
         self.view.youtube_connect_requested.connect(self.youtube_connect_requested.emit)
         self.view.tiktok_connect_requested.connect(self.tiktok_connect_requested.emit)
-        self.view.autostart_toggled.connect(self.auto_start_toggled.emit)
         self.view.reauth_requested.connect(self.reauth_requested.emit)
         if hasattr(self.view, "reauth_kick_requested"):
             self.view.reauth_kick_requested.connect(self.reauth_kick_requested.emit)

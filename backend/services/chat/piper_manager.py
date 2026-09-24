@@ -3,6 +3,7 @@
 import os
 import logging
 import urllib.request
+import tarfile
 from typing import Dict, List, Optional, Tuple, Callable
 from PySide6.QtCore import QThread, Signal
 
@@ -17,8 +18,27 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
         "lang": "es_MX",
         "quality": "high",
         "size_mb": "115.0 MB",
+        "category": "natural",
         "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx",
         "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx.json"
+    },
+    "es_MX-alicia-medium": {
+        "id": "es_MX-alicia-medium",
+        "name": "Alicia (México - Suave)",
+        "lang": "es_MX",
+        "quality": "medium",
+        "size_mb": "60.2 MB",
+        "category": "natural",
+        "archive_url": "https://huggingface.co/AIHeaven/piper_unofficial_voices/resolve/main/es/es_MX-alicia-medium.tar.gz"
+    },
+    "es_MX-mario-medium": {
+        "id": "es_MX-mario-medium",
+        "name": "Mario (México - Masculina)",
+        "lang": "es_MX",
+        "quality": "medium",
+        "size_mb": "60.2 MB",
+        "category": "natural",
+        "archive_url": "https://huggingface.co/AIHeaven/piper_unofficial_voices/resolve/main/es/es_MX-mario-medium.tar.gz"
     },
     "es_ES-sharvard-medium": {
         "id": "es_ES-sharvard-medium",
@@ -26,8 +46,19 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
         "lang": "es_ES",
         "quality": "medium",
         "size_mb": "41.5 MB",
+        "category": "natural",
         "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx",
         "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx.json"
+    },
+    "es_ES-miro-high": {
+        "id": "es_ES-miro-high",
+        "name": "Miro (España - Alta Fidelidad)",
+        "lang": "es_ES",
+        "quality": "high",
+        "size_mb": "60.2 MB",
+        "category": "natural",
+        "onnx_url": "https://huggingface.co/csukuangfj/vits-piper-es_ES-miro-high/resolve/main/es_ES-miro-high.onnx",
+        "json_url": "https://huggingface.co/csukuangfj/vits-piper-es_ES-miro-high/resolve/main/es_ES-miro-high.onnx.json"
     },
     "es_ES-carlfm-high": {
         "id": "es_ES-carlfm-high",
@@ -35,6 +66,7 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
         "lang": "es_ES",
         "quality": "high",
         "size_mb": "115.0 MB",
+        "category": "natural",
         "onnx_url": "https://huggingface.co/friyin/vits-piper-es_ES-carlfm-high/resolve/main/es_ES-carlfm-high.onnx",
         "json_url": "https://huggingface.co/friyin/vits-piper-es_ES-carlfm-high/resolve/main/es_ES-carlfm-high.onnx.json"
     },
@@ -44,6 +76,7 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
         "lang": "es_ES",
         "quality": "medium",
         "size_mb": "60.3 MB",
+        "category": "natural",
         "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx",
         "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx.json"
     },
@@ -53,8 +86,37 @@ PIPER_VOICE_CATALOG: Dict[str, Dict[str, str]] = {
         "lang": "es_AR",
         "quality": "high",
         "size_mb": "108.9 MB",
+        "category": "natural",
         "onnx_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx",
         "json_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_AR/daniela/high/es_AR-daniela-high.onnx.json"
+    },
+    "es_ES-glados-medium": {
+        "id": "es_ES-glados-medium",
+        "name": "GLaDOS (Portal - Robótica)",
+        "lang": "es_ES",
+        "quality": "medium",
+        "size_mb": "60.2 MB",
+        "category": "stream",
+        "onnx_url": "https://huggingface.co/csukuangfj/vits-piper-es_ES-glados-medium/resolve/main/es_ES-glados-medium.onnx",
+        "json_url": "https://huggingface.co/csukuangfj/vits-piper-es_ES-glados-medium/resolve/main/es_ES-glados-medium.onnx.json"
+    },
+    "es-xp-medium": {
+        "id": "es-xp-medium",
+        "name": "Windows XP TTS (Retro / Synth)",
+        "lang": "es",
+        "quality": "medium",
+        "size_mb": "58.0 MB",
+        "category": "stream",
+        "archive_url": "https://huggingface.co/AIHeaven/piper_unofficial_voices/resolve/main/es/es-xp-medium.tar.gz"
+    },
+    "es_MX-santaclosrmc-medium": {
+        "id": "es_MX-santaclosrmc-medium",
+        "name": "Santa Claus (Navideña / Grave)",
+        "lang": "es_MX",
+        "quality": "medium",
+        "size_mb": "59.0 MB",
+        "category": "stream",
+        "archive_url": "https://huggingface.co/AIHeaven/piper_unofficial_voices/resolve/main/es/es_MX-santaclosrmc-medium.tar.gz"
     }
 }
 
@@ -206,15 +268,58 @@ class PiperVoiceManager:
         onnx_path, json_path = self.get_voice_file_paths(voice_id)
         os.makedirs(self._models_dir, exist_ok=True)
 
+        if meta.get("archive_url"):
+            archive_url = meta["archive_url"]
+            archive_tmp = os.path.join(self._models_dir, f"{voice_id}.tar.gz.tmp")
+            try:
+                req = urllib.request.Request(archive_url, headers={"User-Agent": "MiniKick/1.6"})
+                with urllib.request.urlopen(req, timeout=30) as resp, open(archive_tmp, "wb") as f:
+                    total_size = int(resp.headers.get("content-length", 0))
+                    downloaded = 0
+                    block_size = 1024 * 64
+                    while True:
+                        chunk = resp.read(block_size)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        downloaded += len(chunk)
+                        if progress_callback and total_size > 0:
+                            percent = int((downloaded / total_size) * 100)
+                            down_mb = downloaded / (1024 * 1024)
+                            tot_mb = total_size / (1024 * 1024)
+                            progress_callback(percent, down_mb, tot_mb)
+
+                with tarfile.open(archive_tmp, "r:*") as tar:
+                    for member in tar.getmembers():
+                        if member.name.endswith(".onnx"):
+                            with tar.extractfile(member) as src, open(onnx_path, "wb") as dst:
+                                dst.write(src.read())
+                        elif member.name.endswith(".onnx.json") or (member.name.endswith(".json") and "config" not in member.name):
+                            with tar.extractfile(member) as src, open(json_path, "wb") as dst:
+                                dst.write(src.read())
+
+                if os.path.exists(archive_tmp):
+                    os.remove(archive_tmp)
+                logger.info("Successfully downloaded and extracted Piper archive voice %s", voice_id)
+                return True
+            except Exception as e:
+                logger.error("Error downloading Piper archive voice %s: %s", voice_id, e)
+                if os.path.exists(archive_tmp):
+                    try:
+                        os.remove(archive_tmp)
+                    except Exception:
+                        pass
+                return False
+
         try:
-            req_json = urllib.request.Request(meta["json_url"], headers={"User-Agent": "MiniKick/1.5"})
+            req_json = urllib.request.Request(meta["json_url"], headers={"User-Agent": "MiniKick/1.6"})
             with urllib.request.urlopen(req_json, timeout=15) as resp, open(json_path + ".tmp", "wb") as f:
                 f.write(resp.read())
             if os.path.exists(json_path):
                 os.remove(json_path)
             os.rename(json_path + ".tmp", json_path)
 
-            req_onnx = urllib.request.Request(meta["onnx_url"], headers={"User-Agent": "MiniKick/1.5"})
+            req_onnx = urllib.request.Request(meta["onnx_url"], headers={"User-Agent": "MiniKick/1.6"})
             with urllib.request.urlopen(req_onnx, timeout=30) as resp, open(onnx_path + ".tmp", "wb") as f:
                 total_size = int(resp.headers.get("content-length", 0))
                 downloaded = 0

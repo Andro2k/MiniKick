@@ -20,6 +20,7 @@ class ChatMessageDTO:
     emotes_tag: str = ""
     is_command: bool = False
     gif_url: str = ""
+    avatar_url: str = ""
 
 class MessagePipeline:
     def __init__(self):

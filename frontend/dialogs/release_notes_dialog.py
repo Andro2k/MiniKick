@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QColor, QDesktopServices, QFont
 from .base_dialog import ModernModal
+from frontend.widgets import create_text_label
 from frontend.common import (
     get_assets_path, COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED,
     markdown_to_github_html, SPACING_MD, MARGIN_V_XS
@@ -32,10 +33,11 @@ class ReleaseNotesDialog(ModernModal):
         self._fetch_release_notes()
 
     def _setup_ui(self):
-        self.lbl_subtitle = QLabel(self.i18n.get("dialogs.release_notes.subtitle"))
-        self.lbl_subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_subtitle.setWordWrap(True)
-        self.lbl_subtitle.setProperty("role", "body")
+        self.lbl_subtitle = create_text_label(
+            self.i18n.get("dialogs.release_notes.subtitle"),
+            role="body",
+            alignment=Qt.AlignmentFlag.AlignCenter
+        )
         self.content_layout.addWidget(self.lbl_subtitle)
 
         self.meta_container = QWidget(self.container)
@@ -155,7 +157,7 @@ class ReleaseNotesDialog(ModernModal):
         
         self._center_on_parent()
 
-    def _on_error_occurred(self, err: str):
+    def _on_error_occurred(self, _err: str):
         error_msg = self.i18n.get('dialogs.release_notes.error')
         err_html = (
             f'<html><body style="font-family: \'Google Sans\', sans-serif; color: {COLOR_RED}; text-align: center; margin-top: 180px;">'

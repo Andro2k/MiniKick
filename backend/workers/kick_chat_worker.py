@@ -85,6 +85,7 @@ class KickChatWorker(QThread):
                 return 
 
             self.channel_slug = user_data.get("slug") or user_data.get("username") or ""
+            self._broadcaster_avatar = user_data.get("avatar_url") or user_data.get("profile_pic", "")
             room_id = user_data.get("room_id")
             channel_id = int(user_data.get("channel_id") or user_data.get("broadcaster_id") or 0)
             followers_count = int(user_data.get("followers") or 0)
@@ -107,7 +108,6 @@ class KickChatWorker(QThread):
                 self.chat_manager.start_socket(
                     room_id,
                     channel_id=channel_id,
-                    initial_followers=followers_count,
                     on_message=self._dispatch_message,
                     on_poll_update=self._dispatch_poll_update,
                     on_poll_delete=self._dispatch_poll_delete,
@@ -124,9 +124,11 @@ class KickChatWorker(QThread):
             if not self._is_stopped:
                 self.error_occurred.emit(str(e))
 
-    def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int):
+    def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, avatar_url: str = ""):
         if not self._is_stopped:
-            now_str = datetime.datetime.now().strftime("%H:%M:%S")
+            now_str = datetime.datetime.now().strftime("%H:%M")
+            if not avatar_url and self.channel_slug and user.lower() == self.channel_slug.lower():
+                avatar_url = getattr(self, "_broadcaster_avatar", "")
             logger.info("[KickChatWorker] [%s] Message dispatched from '%s': %s (id=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a")
             dto = ChatMessageDTO(
                 user=user,
@@ -136,7 +138,8 @@ class KickChatWorker(QThread):
                 msg_id=msg_id,
                 sender_id=sender_id,
                 timestamp=now_str,
-                platform="kick"
+                platform="kick",
+                avatar_url=avatar_url
             )
             self.message_received.emit(dto)
 

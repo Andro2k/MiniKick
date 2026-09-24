@@ -1,0 +1,187 @@
+/* assets/overlays/chat/css/light.css */
+/* MiniKick Messenger Style - Light Glass Theme */
+
+.message-box.theme-light {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 12px;
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 18px;
+    padding: 10px 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+    color: #1e293b;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.message-box.theme-light .message-body-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.message-box.theme-light .message-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+}
+
+.message-box.theme-light .header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.message-box.theme-light .username {
+    font-size: calc(var(--font-size) + 1px);
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.2px;
+}
+
+.message-box.theme-light .timestamp {
+    font-size: calc(var(--font-size) * 0.78);
+    font-weight: 600;
+    color: #64748b;
+    flex-shrink: 0;
+}
+
+.message-box.theme-light .message-content {
+    font-size: var(--font-size);
+    font-weight: 500;
+    line-height: 1.45;
+    color: #334155;
+    word-break: break-word;
+    margin-top: 1px;
+}
+
+/* Avatar Box & Badge */
+.message-box.theme-light .avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+}
+
+.message-box.theme-light .avatar-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.message-box.theme-light .avatar-fallback {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    font-weight: 800;
+    color: #ffffff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+    text-transform: uppercase;
+}
+
+.message-box.theme-light .avatar-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    border: 2px solid #ffffff;
+}
+
+.message-box.theme-light .avatar-badge svg {
+    width: 12px;
+    height: 12px;
+    display: block;
+}
+
+/* Role-specific Accents */
+.message-box.theme-light.role-broadcaster {
+    border-color: #a855f7;
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+.message-box.theme-light.role-moderator {
+    border-color: #f43f5e;
+    box-shadow: 0 0 18px rgba(244, 63, 94, 0.35);
+}
+
+.message-box.theme-light.role-vip {
+    border-color: #f59e0b;
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.35);
+}
+
+.message-box.theme-light.role-subscriber {
+    border-color: #38bdf8;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+}
+
+.message-box.theme-light.highlighted {
+    border-color: #0284c7;
+    box-shadow: 0 0 22px rgba(2, 132, 199, 0.45);
+}
+
+/* Horizontal pill adaptation */
+#chat-container.orientation-horizontal .message-box.theme-light {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    border-radius: 9999px !important;
+    padding: 6px 14px !important;
+    max-width: none !important;
+    width: auto !important;
+}
+
+#chat-container.orientation-horizontal .message-box.theme-light .avatar-wrap {
+    width: 32px;
+    height: 32px;
+}
+
+#chat-container.orientation-horizontal .message-box.theme-light .avatar-img,
+#chat-container.orientation-horizontal .message-box.theme-light .avatar-fallback {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+}
+
+#chat-container.orientation-horizontal .message-box.theme-light .avatar-badge {
+    width: 16px;
+    height: 16px;
+    bottom: -2px;
+    right: -2px;
+    border: 1.5px solid #ffffff;
+}
+
+#chat-container.orientation-horizontal .message-box.theme-light .avatar-badge svg {
+    width: 10px;
+    height: 10px;
+}
+
+#chat-container.orientation-horizontal .message-box.theme-light .message-body-wrap {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+}

@@ -6,7 +6,8 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common import (
-    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, COLOR_TWITCH, COLOR_AMBER, COLOR_WHITE,
+    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_NEUTRAL_500, COLOR_RED, COLOR_TWITCH, COLOR_AMBER, COLOR_WHITE,
+    COLOR_DANGER_SURFACE, COLOR_MEDIA_THUMB_BG,
     get_pixmap_colored, get_icon_colored,
     MARGIN_NONE, MARGIN_MD, SPACING_SM
 )
@@ -44,7 +45,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         rect = QRectF(0, 0, target_w, target_h)
         path = QPainterPath()
         path.addRoundedRect(rect, 6, 6)
-        painter.fillPath(path, QColor("#2d1215"))
+        painter.fillPath(path, QColor(COLOR_DANGER_SURFACE))
         painter.setPen(QColor(COLOR_RED))
         painter.drawPath(path)
         
@@ -65,7 +66,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         rect = QRectF(0, 0, target_w, target_h)
         path = QPainterPath()
         path.addRoundedRect(rect, 6, 6)
-        painter.fillPath(path, QColor("#1e293b"))
+        painter.fillPath(path, QColor(COLOR_MEDIA_THUMB_BG))
         
         icon_pixmap = get_pixmap_colored("volume-up-filled.svg", COLOR_GREEN, 18)
         if not icon_pixmap.isNull():
@@ -105,7 +106,7 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         path = QPainterPath()
         path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
-        painter.fillPath(path, QColor("#1e293b"))
+        painter.fillPath(path, QColor(COLOR_MEDIA_THUMB_BG))
         
         icon_pixmap = get_pixmap_colored("album-filled.svg", COLOR_NEUTRAL_400, 18)
         if not icon_pixmap.isNull():
@@ -145,7 +146,7 @@ class RewardsView(BaseView):
     def _build_obs_card(self):
         obs_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
 
-        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined")
+        self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
         
         obs_row = SettingRow(
@@ -160,20 +161,23 @@ class RewardsView(BaseView):
         self.main_layout.addWidget(obs_card)
 
     def _build_table_card(self):
-        col_0 = self.i18n.get("rewards.table.col_reward")
-        col_plat = self.i18n.get("rewards.table.col_platform")
-        col_cost = self.i18n.get("rewards.table.col_cost")
-        col_file = self.i18n.get("rewards.table.col_file")
-        col_pos = self.i18n.get("rewards.table.col_pos")
-        col_vol = self.i18n.get("rewards.table.col_volume")
-        col_actions = self.i18n.get("rewards.table.col_actions")
+        headers = [
+            self.i18n.get("rewards.table.col_reward"),
+            self.i18n.get("rewards.table.col_platform"),
+            self.i18n.get("rewards.table.col_cost"),
+            self.i18n.get("rewards.table.col_file"),
+            self.i18n.get("rewards.table.col_pos"),
+            self.i18n.get("rewards.table.col_volume"),
+            self.i18n.get("rewards.table.col_actions"),
+        ]
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("rewards.table.title"),
-            headers=[col_0, col_plat, col_cost, col_file, col_pos, col_vol, col_actions],
+            headers=headers,
             search_placeholder=self.i18n.get("rewards.table.search_placeholder"),
             add_button_text=self.i18n.get("rewards.table.btn_new"),
-            add_button_icon="plus-filled.svg"
+            add_button_icon="plus-filled.svg",
+            i18n=self.i18n
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("rewards.empty.title"),
@@ -200,7 +204,7 @@ class RewardsView(BaseView):
 
         self.filter_header.set_column_filter(
             col_idx=0,
-            title=col_0,
+            title=headers[0],
             options=None,
             sort_asc_label=sort_asc_text,
             sort_desc_label=sort_desc_text
@@ -212,7 +216,7 @@ class RewardsView(BaseView):
         ]
         self.filter_header.set_column_filter(
             col_idx=1,
-            title=col_plat,
+            title=headers[1],
             options=plat_options,
             all_label=all_text,
             sort_asc_label=sort_asc_text,
@@ -221,7 +225,7 @@ class RewardsView(BaseView):
 
         self.filter_header.set_column_filter(
             col_idx=2,
-            title=col_cost,
+            title=headers[2],
             options=None,
             sort_asc_label=self.i18n.get("rewards.table.filter_cost_asc"),
             sort_desc_label=self.i18n.get("rewards.table.filter_cost_desc")
@@ -378,8 +382,8 @@ class RewardsView(BaseView):
             if not is_plat_connected:
                 offline_tag = self.i18n.get("rewards.table.status_offline_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
-                item_plat.setIcon(get_icon_colored(icon_name, "#6E7681", 16))
-                item_plat.setForeground(QColor("#6E7681"))
+                item_plat.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_500, 16))
+                item_plat.setForeground(QColor(COLOR_NEUTRAL_500))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
@@ -463,22 +467,44 @@ class RewardsView(BaseView):
                 color=COLOR_WHITE, 
                 role="action_danger_solid", 
                 tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
-                callback=lambda checked=False, k=key: self.delete_requested.emit(k)
+                callback=lambda checked=False, k=key, t=reward_name: self._confirm_delete_reward(k, t)
             )
             
             self.table_rewards.setCellWidget(row, 6, cell)
 
         self.table_rewards.setUpdatesEnabled(True)
         total_mappings_count = len(self._raw_mappings)
-        self.table_card.set_empty(len(items) == 0)
+        filtered_count = len(items)
+        is_empty_system = (total_mappings_count == 0)
+        has_no_matches = (filtered_count == 0 and not is_empty_system)
 
-        if hasattr(self.table_card, "lbl_title") and self.table_card.lbl_title:
-            title_base = self.i18n.get("rewards.table.title")
-            if missing_count > 0:
-                warning_label = self.i18n.get("rewards.table.missing_files_warning")
-                self.table_card.lbl_title.setText(f"{title_base} ({total_mappings_count}) • {missing_count} {warning_label}")
-            else:
-                self.table_card.lbl_title.setText(f"{title_base} ({total_mappings_count})")
+        self.table_card.set_empty(is_empty_system)
+        self.table_card.set_no_results(has_no_matches)
+
+        title_base = self.i18n.get("rewards.table.title")
+        extra_suffix = ""
+        if missing_count > 0:
+            warning_label = self.i18n.get("rewards.table.missing_files_warning")
+            extra_suffix = f" • {missing_count} {warning_label}"
+
+        self.table_card.set_title_count(
+            title_base,
+            count=filtered_count,
+            total_count=total_mappings_count,
+            extra_suffix=extra_suffix
+        )
+
+    def _confirm_delete_reward(self, key: str, reward_title: str) -> None:
+        from frontend.dialogs import ModernConfirmDialog
+        desc = self.i18n.get("rewards.confirm_delete.desc").replace("{title}", reward_title)
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("rewards.confirm_delete.title"),
+            body_text=desc
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.delete_requested.emit(key)
 
     @Slot()
     def _copy_obs_url(self):

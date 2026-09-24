@@ -48,7 +48,7 @@ from backend.services.system import (
 from backend.config import APP_VERSION
 
 from frontend.dialogs import AlreadyRunningDialog, CrashReportDialog
-from frontend.common import GLOBAL_QSS, resource_path
+from frontend.common import GLOBAL_QSS, resource_path, create_dark_palette
 
 logger = logging.getLogger("minikick.main")
 
@@ -86,6 +86,7 @@ def global_crash_handler(exctype, value, tb):
         app = QApplication.instance()
         if not app:
             app = QApplication(sys.argv)
+            app.setPalette(create_dark_palette())
             app.setStyleSheet(GLOBAL_QSS)
             
             font_family = "Google Sans"
@@ -134,6 +135,7 @@ def bootstrap():
             logger.debug("[Bootstrap] Could not set AppUserModelID: %s", e)
 
     app = QApplication(sys.argv)
+    app.setPalette(create_dark_palette())
     font_family = "Google Sans"
 
     fonts_dir = resource_path(os.path.join("assets", "fonts"))

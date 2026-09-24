@@ -8,9 +8,10 @@ from frontend.common import (
     SPACING_NONE, SPACING_2XS, SPACING_MD,
     MARGIN_NONE, MARGIN_XS, MARGIN_SM
 )
+from .layout_helpers import render_styled_frame_background
 
 class CategoryItemWidget(QWidget):
-    def __init__(self, platform: str, name: str, cat_id=None, parent=None):
+    def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(*MARGIN_SM)
@@ -43,6 +44,7 @@ class CategorySuggestionsPopup(QFrame):
         self.target_input = target_input
         self.setProperty("role", "category_dropdown")
         self.setWindowFlags(Qt.WindowType.ToolTip | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
@@ -59,6 +61,9 @@ class CategorySuggestionsPopup(QFrame):
         layout.addWidget(self.list_widget)
 
         self.target_input.installEventFilter(self)
+
+    def paintEvent(self, _event):
+        render_styled_frame_background(self)
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.Type.KeyPress and self.isVisible():

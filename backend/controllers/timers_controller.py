@@ -2,31 +2,20 @@
 
 import threading
 import logging
-from PySide6.QtCore import QObject, Slot, Signal
+from PySide6.QtCore import Slot, Signal
+from .base_controller import BaseController
 
 logger = logging.getLogger("minikick.timers_controller")
 
-class TimersController(QObject):
+class TimersController(BaseController):
     metrics_update_requested = Signal()
     categories_found = Signal(str, object)
 
     def __init__(self, view, service, toast_manager=None, schedule_service=None, connected_platforms_provider=None, i18n=None):
-        super().__init__()
-        self.view = view
-        self.service = service
-        self.toast = toast_manager
+        super().__init__(view=view, service=service, toast_manager=toast_manager, connected_platforms_provider=connected_platforms_provider, i18n=i18n)
         self.schedule_service = schedule_service
-        self.connected_platforms_provider = connected_platforms_provider
-        self.i18n = i18n
-        self._view_connected = False
         if self.view is not None:
             self._connect_signals()
-
-    def attach_view(self, view) -> None:
-        self.view = view
-        if self.view is not None:
-            self._connect_signals()
-            self.load_initial_data()
 
     def _get_i18n(self):
         if self.i18n:
@@ -37,13 +26,13 @@ class TimersController(QObject):
         return TranslationService()
 
     def _connect_signals(self):
-        if not self.view or self._view_connected:
+        if not self._connect_crud_signals(
+            on_add=self._handle_add,
+            on_edit=self._handle_edit,
+            on_delete=self._handle_delete,
+            on_status_toggle=self._handle_status_change,
+        ):
             return
-        self._view_connected = True
-        self.view.add_requested.connect(self._handle_add)
-        self.view.edit_requested.connect(self._handle_edit)
-        self.view.delete_requested.connect(self._handle_delete)
-        self.view.status_toggled.connect(self._handle_status_change)
         self.view.search_text_changed.connect(self._handle_search)
         if hasattr(self.view, "search_category_requested"):
             self.view.search_category_requested.connect(self.search_categories)

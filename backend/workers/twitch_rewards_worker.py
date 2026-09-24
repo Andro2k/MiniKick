@@ -29,7 +29,7 @@ class TwitchRewardWorker(QThread):
 
         self._running = True
 
-        def on_message(ws, msg_str):
+        def on_message(_ws, msg_str):
             try:
                 msg = fast_loads(msg_str)
             except Exception:
@@ -81,7 +81,7 @@ class TwitchRewardWorker(QThread):
                     reward_title = event.get("reward", {}).get("title", "")
                     user_input = event.get("user_input", "")
                     if reward_title:
-                        logger.info("[TwitchRewardWorker] Canje detectado (Twitch): usuario='%s', recompensa='%s'", user_name, reward_title)
+                        logger.info("[TwitchRewardWorker] Redemption detected (Twitch): user='%s', reward='%s'", user_name, reward_title)
                         self.reward_redeemed.emit(user_name, reward_title, user_input)
                 elif sub_type == "channel.follow":
                     user = event.get("user_name") or event.get("user_login") or "Seguidor"
@@ -164,11 +164,11 @@ class TwitchRewardWorker(QThread):
                     )
                     self.alert_received.emit(alert)
 
-        def on_error(ws, error):
+        def on_error(_ws, error):
             if self._running:
                 logger.debug("[TwitchRewardWorker] EventSub WebSocket error: %s", error)
 
-        def on_close(ws, close_code, close_msg):
+        def on_close(_ws, _close_code, _close_msg):
             pass
 
         while self._running:

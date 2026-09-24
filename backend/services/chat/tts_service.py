@@ -21,7 +21,10 @@ class TTSManager:
         self._piper_noise_scale = 0.667
         self._piper_noise_w_scale = 0.8
         self.text_queue: queue.Queue[tuple[str, str | None] | None] = queue.Queue()
-        self.play_queue: queue.Queue[tuple[str, str | None, str] | None] = queue.Queue()       
+        self.play_queue: queue.Queue[tuple[str, str | None, str] | None] = queue.Queue()
+        self.on_speech_started = None
+        self.on_speech_finished = None
+        self._is_speaking = False       
         self._downloader_thread = threading.Thread(target=self._downloader_worker, daemon=True)
         self._downloader_thread.start()
         self._thread = threading.Thread(target=self._worker, daemon=True)
@@ -120,6 +123,14 @@ class TTSManager:
         if self._active_provider_key in self._providers:
             self._providers[self._active_provider_key].stop()
 
+        if self._is_speaking:
+            self._is_speaking = False
+            if self.on_speech_finished:
+                try:
+                    self.on_speech_finished()
+                except Exception as fin_err:
+                    logger.debug("[TTS Manager] on_speech_finished on stop error: %s", fin_err)
+
     def shutdown(self) -> None:
         self.stop()
         self.text_queue.put(None)
@@ -173,12 +184,27 @@ class TTSManager:
                     elif hasattr(active_provider, 'voice'):
                         active_provider.voice = target_voice
                 
+                if not self._is_speaking:
+                    self._is_speaking = True
+                    if self.on_speech_started:
+                        try:
+                            self.on_speech_started()
+                        except Exception as start_err:
+                            logger.debug("[TTS Manager] on_speech_started error: %s", start_err)
+
                 active_provider.speak(text, voice_id=target_voice)
                 
             except Exception as e:
                 logger.error("[TTS Manager] Critical engine failure avoided (%s): %s", type(e).__name__, e, exc_info=True)
             finally:
                 self.play_queue.task_done()
+                if self.play_queue.empty() and self._is_speaking:
+                    self._is_speaking = False
+                    if self.on_speech_finished:
+                        try:
+                            self.on_speech_finished()
+                        except Exception as fin_err:
+                            logger.debug("[TTS Manager] on_speech_finished error: %s", fin_err)
 
     def get_available_voices(self, provider_type: str) -> list[dict]:
         if provider_type in self._voices_cache and self._voices_cache[provider_type]:

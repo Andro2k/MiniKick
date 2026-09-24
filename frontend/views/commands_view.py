@@ -44,19 +44,22 @@ class CommandView(BaseView):
         self.view_shown.emit()
 
     def _setup_ui(self):
-        col_1 = self.i18n.get("command.table.col_command")
-        col_2 = self.i18n.get("command.table.col_type")
-        col_3 = self.i18n.get("command.table.col_permission")
-        col_4 = self.i18n.get("command.table.col_platforms")
-        col_5 = self.i18n.get("command.table.col_aliases")
-        col_6 = self.i18n.get("command.table.col_actions")
+        headers = [
+            self.i18n.get("command.table.col_command"),
+            self.i18n.get("command.table.col_type"),
+            self.i18n.get("command.table.col_permission"),
+            self.i18n.get("command.table.col_platforms"),
+            self.i18n.get("command.table.col_aliases"),
+            self.i18n.get("command.table.col_actions"),
+        ]
 
         self.table_card = ModernTableCard(
             title_text=self.i18n.get("command.table.title"),
-            headers=[col_1, col_2, col_3, col_4, col_5, col_6],
+            headers=headers,
             search_placeholder=self.i18n.get("command.table.search_placeholder"),
             add_button_text=self.i18n.get("command.table.btn_new"),
-            add_button_icon="plus-filled.svg"
+            add_button_icon="plus-filled.svg",
+            i18n=self.i18n
         )
         self.table_card.setup_empty_state(
             title=self.i18n.get("command.empty.title"),
@@ -86,7 +89,7 @@ class CommandView(BaseView):
         ]
         self.filter_header.set_column_filter(
             col_idx=1,
-            title=col_2,
+            title=headers[1],
             options=type_options,
             all_label=all_text,
             sort_asc_label=sort_asc_text,
@@ -98,7 +101,7 @@ class CommandView(BaseView):
         ]
         self.filter_header.set_column_filter(
             col_idx=2,
-            title=col_3,
+            title=headers[2],
             options=perm_options,
             all_label=all_text,
             sort_asc_label=sort_asc_text,
@@ -188,8 +191,16 @@ class CommandView(BaseView):
             self.table.setCellWidget(row, 4, self._create_aliases_cell(cmd))
             self.table.setCellWidget(row, 5, self._create_actions_cell(cmd))
         self.table.setUpdatesEnabled(True)
-        self.table_card.set_empty(len(commands) == 0)
-        self.table_card.set_title_count(self.i18n.get("command.table.title"), len(self._raw_commands))
+        is_empty_system = (len(self._raw_commands) == 0)
+        has_no_matches = (len(commands) == 0 and not is_empty_system)
+
+        self.table_card.set_empty(is_empty_system)
+        self.table_card.set_no_results(has_no_matches)
+        self.table_card.set_title_count(
+            self.i18n.get("command.table.title"),
+            count=len(commands),
+            total_count=len(self._raw_commands)
+        )
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
         container = QWidget()
@@ -292,10 +303,22 @@ class CommandView(BaseView):
             color=COLOR_WHITE, 
             role="action_danger_solid", 
             tooltip=self.i18n.get("command.table.tooltip_delete"),
-            callback=lambda checked=False, t=trigger_name: self.delete_requested.emit(t)
+            callback=lambda checked=False, t=trigger_name: self._confirm_delete_command(t)
         )
         
         return cell
+
+    def _confirm_delete_command(self, trigger_name: str) -> None:
+        from frontend.dialogs import ModernConfirmDialog
+        desc = self.i18n.get("command.confirm_delete.desc").replace("{trigger}", trigger_name)
+        dialog = ModernConfirmDialog(
+            self.i18n,
+            parent=self,
+            title_text=self.i18n.get("command.confirm_delete.title"),
+            body_text=desc
+        )
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.delete_requested.emit(trigger_name)
 
     def show_add_dialog(self, connected_platforms: dict[str, bool] = None) -> dict | None:
         from frontend.dialogs import CommandConfigWizard

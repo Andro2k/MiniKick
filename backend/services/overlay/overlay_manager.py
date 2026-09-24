@@ -153,7 +153,7 @@ class OverlayServerManager:
             "duration": config.get("duration", 5.0)
         }
 
-        logger.info("[Overlay] Emitiendo alerta multimedia de recompensa: '%s' (%s)", reward_name, os.path.basename(filepath))
+        logger.info("[Overlay] Emitting media reward alert: '%s' (%s)", reward_name, os.path.basename(filepath))
         self._broadcast("clients", "rewards", payload)
 
     def trigger_alert(self, payload: dict):
@@ -191,7 +191,7 @@ class OverlayServerManager:
         logger.info("[Overlay] Emitiendo alerta en vivo: '%s' (%s)", payload.get("formatted_text"), payload.get("id"))
         self._broadcast("alert_clients", "alerts", broadcast_payload)
 
-    def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = "", gif_url: str = ""):
+    def trigger_chat_message(self, user: str, message: str, color: str, badges: list = None, platform: str = "kick", emotes_tag: str = "", gif_url: str = "", avatar_url: str = ""):
         payload = {
             "user": user,
             "message": message,
@@ -199,7 +199,8 @@ class OverlayServerManager:
             "badges": badges or [],
             "platform": platform,
             "emotes_tag": emotes_tag,
-            "gif_url": gif_url
+            "gif_url": gif_url,
+            "avatar_url": avatar_url
         }
         self._broadcast("chat_clients", "chat", payload)
 

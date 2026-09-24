@@ -5,6 +5,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
+from frontend.widgets import create_text_label
 from frontend.common import (
     COLOR_NEUTRAL_950,
     COLOR_RED,
@@ -34,10 +35,11 @@ class UpdateDialog(ModernModal):
                 self.header_icon = lbl
                 break
 
-        self.lbl_subtitle = QLabel(self.i18n.get("dialogs.update.subtitle_connecting"))
-        self.lbl_subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_subtitle.setWordWrap(True)
-        self.lbl_subtitle.setProperty("role", "body")
+        self.lbl_subtitle = create_text_label(
+            self.i18n.get("dialogs.update.subtitle_connecting"),
+            role="body",
+            alignment=Qt.AlignmentFlag.AlignCenter
+        )
         self.content_layout.addWidget(self.lbl_subtitle)
 
         self.content_layout.addSpacing(SPACING_XL)

@@ -6,12 +6,14 @@ from PySide6.QtCore import Qt, Signal, QSize, QEvent
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
 from frontend.common import (
     get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_950,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG, SPACING_XL,
-    MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
+    COLOR_RED, COLOR_RED_HOVER, COLOR_GREEN, COLOR_GREEN_HOVER,
+    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_XL,
+    MARGIN_NONE, MARGIN_MD, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
     MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_SETTING_ROW
 )
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls_widget import ModernSwitch
+from .layout_helpers import create_platform_switches, create_row_layout
 
 class ViewHeader(QFrame):
     def __init__(self, title_text: str, subtitle_text: str, title_color: str = None, parent=None):
@@ -24,7 +26,7 @@ class ViewHeader(QFrame):
         title = QLabel(title_text, parent=self)
         title.setProperty("role", "h1")
         if title_color:
-            color_state = "danger" if title_color in ("#EF4444", "#ff4444", "red") else ("success" if title_color in ("#2EC570", "#22c55e", "green") else "normal")
+            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED_HOVER, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
             title.setProperty("state", color_state)
         
         subtitle = QLabel(subtitle_text, parent=self)
@@ -80,7 +82,7 @@ class SettingRow(QWidget):
         lbl_title.setProperty("role", "h3")
         lbl_title.setWordWrap(True)
         if title_color:
-            color_state = "danger" if title_color in ("#EF4444", "#ff4444", "red") else ("success" if title_color in ("#2EC570", "#22c55e", "green") else "normal")
+            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED_HOVER, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
             lbl_title.setProperty("state", color_state)
         
         self.lbl_desc = QLabel(desc_text, parent=self)
@@ -97,83 +99,6 @@ class SettingRow(QWidget):
     def set_description(self, text: str):
         if hasattr(self, 'lbl_desc') and self.lbl_desc:
             self.lbl_desc.setText(text)
-
-class FormField(QWidget):
-    def __init__(
-        self,
-        label_text: str,
-        control_widget: QWidget,
-        hint_text: str = "",
-        is_horizontal: bool = False,
-        parent: QWidget | None = None
-    ):
-        super().__init__(parent)
-        self.control_widget = control_widget
-        self._initial_hint = hint_text
-
-        if is_horizontal:
-            self.layout = QHBoxLayout(self)
-            self.layout.setContentsMargins(*MARGIN_NONE)
-            self.layout.setSpacing(SPACING_LG)
-
-            self.lbl_title = QLabel(label_text, parent=self)
-            self.lbl_title.setProperty("role", "h3")
-            self.layout.addWidget(self.lbl_title)
-            self.layout.addWidget(control_widget, stretch=1)
-            self.lbl_hint = None
-        else:
-            self.layout = QVBoxLayout(self)
-            self.layout.setContentsMargins(*MARGIN_NONE)
-            self.layout.setSpacing(SPACING_XS)
-
-            self.lbl_title = QLabel(label_text, parent=self)
-            self.lbl_title.setProperty("role", "h3")
-            self.layout.addWidget(self.lbl_title)
-            self.layout.addWidget(control_widget)
-
-            self.lbl_hint = QLabel(hint_text, parent=self) if hint_text else None
-            if self.lbl_hint:
-                self.lbl_hint.setProperty("role", "caption")
-                self.lbl_hint.setWordWrap(True)
-                self.layout.addWidget(self.lbl_hint)
-
-    def set_label(self, text: str):
-        self.lbl_title.setText(text)
-
-    def set_hint(self, text: str):
-        if not self.lbl_hint and text:
-            self.lbl_hint = QLabel(text, parent=self)
-            self.lbl_hint.setProperty("role", "caption")
-            self.lbl_hint.setWordWrap(True)
-            self.layout.addWidget(self.lbl_hint)
-        elif self.lbl_hint:
-            self.lbl_hint.setText(text)
-            self.lbl_hint.setVisible(bool(text))
-
-    def set_error(self, error_text: str):
-        if not self.lbl_hint:
-            self.lbl_hint = QLabel(parent=self)
-            self.lbl_hint.setWordWrap(True)
-            self.layout.addWidget(self.lbl_hint)
-        self.lbl_hint.setText(error_text)
-        self.lbl_hint.setProperty("role", "caption")
-        self.lbl_hint.setProperty("state", "danger")
-        self.lbl_hint.style().unpolish(self.lbl_hint)
-        self.lbl_hint.style().polish(self.lbl_hint)
-        self.lbl_hint.setVisible(bool(error_text))
-
-    def clear_error(self):
-        if self.lbl_hint:
-            if self._initial_hint:
-                self.lbl_hint.setText(self._initial_hint)
-                self.lbl_hint.setProperty("role", "caption")
-                self.lbl_hint.setProperty("state", "normal")
-                self.lbl_hint.style().unpolish(self.lbl_hint)
-                self.lbl_hint.style().polish(self.lbl_hint)
-                self.lbl_hint.setVisible(True)
-            else:
-                self.lbl_hint.setText("")
-                self.lbl_hint.setVisible(False)
 
 class ModernDivider(QFrame):
     def __init__(self, parent=None):
@@ -363,7 +288,7 @@ class FadingScrollArea(QScrollArea):
         painter.end()
 
 class ModernScrollArea(FadingScrollArea):
-    def __init__(self, widget: QWidget, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
+    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = COLOR_NEUTRAL_950):
         super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
 
 class ExpandableCard(QFrame):
@@ -497,28 +422,17 @@ class ExpandableSettingCard(ExpandableCard):
         lbl_platforms.setProperty("role", "body")
         platforms_layout.addWidget(lbl_platforms)
 
-        kick_layout = QHBoxLayout()
-        kick_layout.setSpacing(SPACING_SM)
-        lbl_kick = QLabel(self.i18n.get("spam.card.platform_kick"))
-        lbl_kick.setProperty("role", "body")
-        self.switch_kick = ModernSwitch()
-        self.switch_kick.setChecked(True)
-        self.switch_kick.toggled.connect(self._emit_update)
-        kick_layout.addWidget(lbl_kick)
-        kick_layout.addWidget(self.switch_kick)
-
-        twitch_layout = QHBoxLayout()
-        twitch_layout.setSpacing(SPACING_SM)
-        lbl_twitch = QLabel(self.i18n.get("spam.card.platform_twitch"))
-        lbl_twitch.setProperty("role", "body")
-        self.switch_twitch = ModernSwitch()
-        self.switch_twitch.setChecked(True)
-        self.switch_twitch.toggled.connect(self._emit_update)
-        twitch_layout.addWidget(lbl_twitch)
-        twitch_layout.addWidget(self.switch_twitch)
-
-        platforms_layout.addLayout(kick_layout)
-        platforms_layout.addLayout(twitch_layout)
+        switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
+            kick_label=self.i18n.get("spam.card.platform_kick"),
+            twitch_label=self.i18n.get("spam.card.platform_twitch"),
+            spacing=SPACING_XL,
+            field_spacing=SPACING_SM,
+            on_kick_toggled=self._emit_update,
+            on_twitch_toggled=self._emit_update,
+            add_stretch=False,
+            label_first=True
+        )
+        platforms_layout.addLayout(switches_row)
         platforms_layout.addStretch()
         b_layout.addLayout(platforms_layout)
         
@@ -662,18 +576,14 @@ class ExpandableSettingCard(ExpandableCard):
 
 def create_badge(text: str, state: str = "everyone", parent=None) -> QWidget:
     container = QWidget(parent)
-    layout = QHBoxLayout(container)
-    layout.setContentsMargins(*MARGIN_H_MD)
-    layout.setSpacing(SPACING_NONE)
+    layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_H_MD, parent=container)
     layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
     tag = QFrame(container)
     tag.setProperty("role", "badge")
     tag.setProperty("state", state)
 
-    tag_layout = QHBoxLayout(tag)
-    tag_layout.setContentsMargins(*MARGIN_H_SM)
-    tag_layout.setSpacing(SPACING_NONE)
+    tag_layout = create_row_layout(spacing=SPACING_NONE, margins=MARGIN_H_SM, parent=tag)
 
     lbl_txt = QLabel(text, tag)
     lbl_txt.setAlignment(Qt.AlignmentFlag.AlignCenter)

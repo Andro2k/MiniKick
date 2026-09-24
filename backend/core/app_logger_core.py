@@ -22,7 +22,7 @@ class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
 
 logger = logging.getLogger("minikick.core.app_logger")
 
-def _qt_message_handler(mode: QtMsgType, context, message: str):
+def _qt_message_handler(mode: QtMsgType, _context, message: str):
     if not message or not message.strip():
         return
 
@@ -42,7 +42,7 @@ def _threading_excepthook(args):
     tb_text = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
     thread_name = getattr(args.thread, 'name', 'UnknownThread')
     now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    logger.critical("[Thread Crash] Excepción no controlada en hilo '%s':\n%s", thread_name, tb_text)
+    logger.critical("[Thread Crash] Unhandled exception in thread '%s':\n%s", thread_name, tb_text)
     if _fault_file_handle:
         try:
             _fault_file_handle.write(f"\n[{now_str}] [THREAD_CRASH] Unhandled exception in thread '{thread_name}':\n{tb_text}\n")
@@ -150,13 +150,13 @@ def setup_application_logging():
         _fault_file_handle.flush()
         faulthandler.enable(file=_fault_file_handle, all_threads=True)
     except Exception as fh_err:
-        logger.warning("[Bootstrap] No se pudo habilitar faulthandler: %s", fh_err)
+        logger.warning("[Bootstrap] Failed to enable faulthandler: %s", fh_err)
 
     threading.excepthook = _threading_excepthook
 
     try:
         qInstallMessageHandler(_qt_message_handler)
     except Exception as q_err:
-        logger.warning("[Bootstrap] No se pudo instalar el MessageHandler de Qt: %s", q_err)
+        logger.warning("[Bootstrap] Failed to install Qt MessageHandler: %s", q_err)
     
     return logger, _q_log_handler_instance

@@ -22,7 +22,7 @@ class MusicCommandHandler:
             if api_client:
                 api_client.post_chat_message(message)
 
-    def _require_active_provider(self, api, provider, platform: str = "kick") -> bool:
+    def _require_active_provider(self, _api, provider, platform: str = "kick") -> bool:
         if provider:
             return True
         self.send_chat_message(self.i18n.get("music.chat.not_linked_youtube"), platform=platform)
@@ -49,7 +49,7 @@ class MusicCommandHandler:
         if executor:
             executor(self.controller.command_service, provider, user, message, prefix_used, platform=platform)
 
-    def _handle_plugin_playlist(self, api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_playlist(self, _api, provider, user, message, prefix_used, platform: str = "kick"):
         if not provider or not hasattr(provider, "get_queue"):
             msg = self.i18n.get("music.chat.no_queue_available").replace("{user}", user)
             self.send_chat_message(msg, platform=platform)
@@ -168,7 +168,7 @@ class MusicCommandHandler:
 
         self.controller._user_last_request_time[user_lower] = now
 
-        def on_complete(success, reply_msg):
+        def on_complete(_success, reply_msg):
             self.send_chat_message(reply_msg, platform=platform)
             if hasattr(self.controller, "_poll_now_playing"):
                 self.controller._poll_now_playing()
@@ -185,14 +185,14 @@ class MusicCommandHandler:
         if immediate_reply:
             self.send_chat_message(immediate_reply, platform=platform)
 
-    def _handle_plugin_skip(self, api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_skip(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
         if self._require_active_provider(api, provider, platform=platform):
             if provider.skip_current():
                 self.send_chat_message(self.i18n.get("music.chat.skip_success"), platform=platform)
             else:
                 self.send_chat_message(self.i18n.get("music.chat.skip_failed"), platform=platform)
 
-    def _handle_plugin_song(self, api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_song(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
         if self._require_active_provider(api, provider, platform=platform):
             song = provider.get_current_song()
             if song:
@@ -207,7 +207,7 @@ class MusicCommandHandler:
                 msg = self.i18n.get("music.chat.song_empty_youtube")
                 self.send_chat_message(msg, platform=platform)
 
-    def _handle_plugin_pause(self, api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_pause(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
         if self._require_active_provider(api, provider, platform=platform):
             if hasattr(provider, "pause_playback") and provider.pause_playback():
                 self.send_chat_message(self.i18n.get("music.chat.pause_success"), platform=platform)
@@ -215,7 +215,7 @@ class MusicCommandHandler:
             else:
                 self.send_chat_message(self.i18n.get("music.chat.pause_failed"), platform=platform)
 
-    def _handle_plugin_resume(self, api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_resume(self, api, provider, _user, _message, _prefix_used, platform: str = "kick"):
         if self._require_active_provider(api, provider, platform=platform):
             if hasattr(provider, "resume_playback") and provider.resume_playback():
                 self.send_chat_message(self.i18n.get("music.chat.resume_success"), platform=platform)
@@ -223,7 +223,7 @@ class MusicCommandHandler:
             else:
                 self.send_chat_message(self.i18n.get("music.chat.resume_failed"), platform=platform)
 
-    def _handle_plugin_volume(self, api, provider, user, message, prefix_used, platform: str = "kick"):
+    def _handle_plugin_volume(self, _api, _provider, user, message, prefix_used, platform: str = "kick"):
         query = message[len(prefix_used):].strip() if prefix_used else ""
         if not query:
             msg = self.i18n.get("music.chat.vol_usage").replace("{user}", user).replace("{trigger}", prefix_used)

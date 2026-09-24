@@ -15,6 +15,15 @@
 | **INC-003** | `sqlite3.OperationalError: database is locked` en `ScheduleWorker` | `minikick_crash_DeyDeyLove_v1.5.9.log` | v1.5.9 | `✅ Solventado` | `backend/services/schedule/schedule_service.py`, `backend/workers/schedule_worker.py`, `backend/database/database_manager.py` | v1.6.0 (`WT-1.6.0_12`) |
 | **INC-004** | `Windows fatal exception: access violation` en Garbage Collector / `yt_dlp` | `minikick_crash_DeyDeyLove_v1.5.9.log` | v1.5.9 (Dump 15/09) | `ℹ️ Mitigado / Monitoreado` | `backend/workers/music_worker.py` | CPython / yt-dlp low-level |
 | **INC-005** | Reseteo a valores por defecto en Overlay de Chat OBS (`chat.html`) al arrancar la app | Reporte de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/chat_service.py`, `backend/controllers/chat_controller.py` | v1.6.0 (`WT-1.6.0_14`) |
+| **INC-006** | Ocultamiento indebido de tablas y visualización errónea del estado vacío (Empty State de creación) al filtrar 0 elementos | Reporte de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/widgets/table_widget.py`, `frontend/views/commands_view.py`, `frontend/views/rewards_view.py`, `frontend/components/schedule/schedule_table_panel.py` | v1.6.0 (`WT-1.6.0_21`) |
+| **INC-007** | `RuntimeError: libshiboken: Internal C++ object (PySide6.QtWidgets.QWidget) already deleted` en `ModernTableCard.resizeEvent` | Log de Usuario `minikick.log` (Línea 794) | v1.6.0 | `✅ Solventado` | `frontend/widgets/table_widget.py`, `frontend/components/music/queue_panel.py` | v1.6.0 (`WT-1.6.0_21`) |
+| **INC-008** | Micro-ventana fantasma ('python' / 'pyt...') proyectada en segundo plano por precalentamiento prematuro de `QCalendarPopup` y falta de `parent` | Captura de Evidencia de Usuario / minikick.log | v1.6.0 | `✅ Solventado` | `frontend/widgets/no_wheel.py`, `frontend/components/schedule/schedule_form_panel.py`, `frontend/views/schedule_view.py`, `frontend/views/dashboard_view.py`, `frontend/components/dashboard/platform_card.py` | v1.6.0 (`WT-1.6.0_22`) |
+| **INC-009** | `TypeError: TranslationService.get() got an unexpected keyword argument 'version'` en arranque de `SystemTrayManager` | Log de Usuario `minikick.log` (Línea 2397) | v1.6.0 | `✅ Solventado` | `backend/services/system/translation_service.py`, `frontend/navigation/tray_menu_component.py` | v1.6.0 (`WT-1.6.0_23`) |
+| **INC-010** | `HTTP Error 414: URI Too Long` en `GiphyService` e Inclusión Indebida de Bots (`@MiniKick`) en Top Chatters | Log de Usuario `minikick.log` (Línea 555) / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `backend/services/chat/giphy_service.py`, `backend/controllers/chat_controller.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py` | v1.6.0 (`WT-1.6.0_25`) |
+| **INC-011** | Recuadros blancos y popups desalineados en Windows Light Theme (`SearchableComboBox`, `VariableTextEdit`, `QCalendarWidget`) | Capturas de Evidencia de Usuario / Feedback v1.6.0 | v1.6.0 | `✅ Solventado` | `frontend/common/theme.py`, `main.py`, `frontend/widgets/searchable_combo_box.py`, `frontend/widgets/controls_widget.py`, `frontend/widgets/no_wheel.py` | v1.6.0 (`WT-1.6.0_33`) |
+| **INC-012** | Corrutinas huérfanas en loop de TikTokLive (`Task was destroyed but it is pending!`, `RuntimeError: no running event loop`) | Log de Usuario `minikick.log` (Líneas 668-1001) | v1.6.0 | `✅ Solventado` | `backend/providers/chat/tiktok_provider.py` | v1.6.0 (`WT-1.6.0_35`) |
+| **INC-013** | Fondo transparente en popups de búsqueda (`CategorySuggestionsPopup`, `SearchableComboPopup`) tras activar `WA_TranslucentBackground` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/widgets/category_search.py`, `frontend/widgets/searchable_combo_box.py` | v1.6.0 (`WT-1.6.0_54`) |
+| **INC-014** | Ocultamiento de interruptores en tarjeta "Elementos & Filtros" de `ChatOverlaySettingsPanel` por falta de layout en `CompactToggleItem` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/components/chat/overlay_settings.py` | v1.6.0 (`WT-1.6.0_57`) |
 
 ---
 
@@ -167,6 +176,275 @@
     - `test_chat_service_get_settings_contains_overlay_keys`
     - `test_chat_controller_get_active_overlay_config_preserves_custom_settings_on_startup`
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_14.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_14.md).
+
+---
+
+### INC-006: Ocultamiento Indebido de Tablas y Disparo del Empty State Inicial al Filtrar Cero Resultados
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA / UX CRÍTICA** (La tabla, cabeceras y barra de búsqueda desaparecían al no haber coincidencias de filtro o búsqueda, impidiendo limpiar o ajustar los filtros).
+* **Reportes Asociados**:
+  - Reporte de Usuario en v1.6.0 ("cuando no existe nada que filtrar o digamos que el filtro es 0 la tabla desaparece y solo me sale la sugerencia de crear").
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  En `commands_view.py`, `rewards_view.py` y `schedule_table_panel.py`, la llamada `self.table_card.set_empty(...)` recibía la condición `len(filtered) == 0` en lugar de evaluar si el sistema contenía registros totales (`len(raw) == 0`). Al aplicar un filtro de columna o búsqueda que dejaba 0 coincidencias, `set_empty(True)` conmutaba el `QStackedWidget` al índice 1 (el estado vacío inicial con ilustración y botón `+ Crear`). Esto ocultaba la tabla completa con sus cabeceras interactivas, imposibilitando al usuario restablecer los filtros desde la UI.
+* **Archivos y Líneas Modificadas**:
+  1. [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py):
+     - Se incorporó `no_results_overlay` en `ModernTableCard` sobre el viewport de la tabla, con mensaje claro (`common.no_results_filter`) y botón de acción interactivo `[Limpiar filtros]` (`common.buttons.clear_filters`).
+     - Se agregó el método `clear_filters()` que resetea la barra de búsqueda y los filtros de columna mediante `reset_filters()`.
+     - Se agregó `set_no_results(show: bool)` para alternar la visualización del overlay sin ocultar la cabecera ni la tarjeta de la tabla.
+  2. [`frontend/widgets/filter_header.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/filter_header.py):
+     - Se añadieron `reset_filters()` y `has_active_filters()` a `FilterHeaderView` para restaurar todas las opciones activas y notificar a la vista reactivamente.
+  3. [`frontend/views/commands_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/commands_view.py), [`frontend/views/rewards_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/rewards_view.py), [`frontend/components/schedule/schedule_table_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/schedule/schedule_table_panel.py):
+     - `set_empty(is_empty_system)` ahora evalúa exclusivamente el total de elementos (`len(raw) == 0`).
+     - `set_no_results(has_no_matches)` activa el overlay con el botón `Limpiar filtros` cuando `len(filtered) == 0 and not is_empty_system`.
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_21.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_21.md).
+
+---
+
+### INC-007: Crash Fatal al Navegar a Música (`libshiboken: Internal C++ object already deleted` en `ModernTableCard.resizeEvent`)
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **CRÍTICA** (Cierre abrupto de la aplicación / Fatal Crash Handler al cambiar de pestaña).
+* **Reportes Asociados**:
+  - `minikick.log` (Línea 794, 2026-09-21 10:30:58)
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Traza de la Excepción**:
+  ```text
+  [CRITICAL] [FATAL CRASH] Unhandled exception caught by global excepthook:
+  Traceback (most recent call last):
+    File "backend/core/main_window_core.py", line 382, in _handle_navigation
+      self.content_stack.setCurrentWidget(target_view)
+    File "frontend/widgets/block_widget.py", line 329, in viewportEvent
+      res = super().viewportEvent(event)
+    File "frontend/widgets/table_widget.py", line 346, in resizeEvent
+      if hasattr(self, "no_results_overlay") and self.no_results_overlay.isVisible():
+  RuntimeError: Error calling Python override of QScrollArea::viewportEvent(): Error calling Python override of QScrollArea::viewportEvent(): Error calling Python override of QFrame::resizeEvent(): libshiboken: Internal C++ object (PySide6.QtWidgets.QWidget) already deleted.
+  ```
+* **Causa Raíz**:
+  1. En `ModernTableCard.__init__`, el widget de overlay `self.no_results_overlay = QWidget(self.table)` se asociaba como hijo de `self.table`.
+  2. En `frontend/components/music/queue_panel.py`, para implementar la tabla de cola con soporte drag-and-drop (`DragDropQueueTable`), el panel obtenía `old_table = self.card_queue.table` y ejecutaba `old_table.deleteLater()`, reemplazando la tabla por `self.queue_table`.
+  3. Al destruir `old_table` en C++, Qt eliminaba en cascada a todos sus hijos, incluyendo `self.no_results_overlay`.
+  4. Cuando el usuario navegaba a la pestaña de Música, el layout de la ventana disparaba `resizeEvent` sobre `card_queue`. En `table_widget.py:346`, la comprobación `hasattr(self, "no_results_overlay")` resultaba `True` (el wrapper de Python aún existía), pero al invocar `self.no_results_overlay.isVisible()`, Shiboken lanzaba `RuntimeError` por objeto C++ ya eliminado.
+* **Archivos y Líneas Modificadas**:
+  1. [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py):
+     - Se añadió soporte para `custom_table: QTableWidget = None` en el constructor de `ModernTableCard`, permitiendo inyectar tablas especializadas desde el inicio sin necesidad de destruir tablas predeterminadas.
+     - Se implementó la función helper `_is_valid_widget(widget)` utilizando `shiboken6.isValid()` y captura defensiva de `RuntimeError`.
+     - Se blindaron `resizeEvent`, `eventFilter`, `_update_no_results_geometry`, `set_empty` y `set_no_results` comprobando `self._is_valid(...)` y envolviendo en bloques `try ... except RuntimeError: pass`.
+  2. [`frontend/components/music/queue_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/music/queue_panel.py):
+     - Se eliminó el flujo destructivo `old_table.deleteLater()`. Ahora `self.queue_table = DragDropQueueTable(...)` se instancia directamente y se inyecta como `custom_table` en `ModernTableCard(...)`.
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_21.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_21.md).
+
+---
+
+### INC-008: Micro-Ventana Fantasma ('python' / 'pyt...') por Precalentamiento de `QCalendarPopup` y Controles sin `parent`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (Anomalía visual/DWM: proyección fugaz de ventana nativa de nivel superior vacía con título de proceso `python` al precalentar o cambiar de vista).
+* **Reportes Asociados**:
+  - Evidencia visual capturada por usuario (v1.6.0, ventana de ~180x100 px con título `pyt...` sobre Dashboard/Stream Info).
+  - Traza de inicialización en `minikick.log` a los ~3.75 segundos de arranque (`_schedule_view_prewarming`).
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. **Invocación Prematura de `calendarWidget()`**:
+     En [`frontend/components/schedule/schedule_form_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/schedule/schedule_form_panel.py), la llamada ansiosa `cal = self.date_edit.calendarWidget()` durante el constructor forzaba a Qt a instanciar internamente `QCalendarPopup` (`qt_datetimedit_calendar`) y el menú `QMenu` del mes (`qt_calendar_monthbutton`).
+  2. **Creación de HWND Nativo sin Ancestro Mapeado**:
+     Al ejecutarse el precalentador (`_schedule_view_prewarming`) en segundo plano a los ~3.75s, `ScheduleView` no estaba mapeada en la pantalla. Qt asignó a estos popups banderas nativas `0x800f009` (`WindowTitleHint`, `WindowMinimizeButtonHint`, `WindowMaximizeButtonHint`, `WindowCloseButtonHint`). Windows DWM detectó el nuevo `HWND`, titulándolo con el nombre del ejecutable (`python`, truncado a `pyt...`) y proyectando brevemente su superficie gris vacía en pantalla.
+  3. **Widgets Huérfanos sin Parent**:
+     En `PlatformStatusCard` y `DashboardView`, varios botones (`btn_action`, `btn_tab_kick`, `btn_tab_twitch`) y marcos de banners se instanciaban sin `parent=self` antes de ser agregados a layouts.
+* **Solución Implementada**:
+  1. **Lazy Initialization en `NoWheelDateEdit`**:
+     En [`frontend/widgets/no_wheel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/no_wheel.py), la personalización de estilos del calendario se encapsuló en `_configure_calendar_widget()`, ejecutándose bajo demanda únicamente cuando el usuario despliega o interactúa con el selector de fechas.
+  2. **Eliminación de la llamada ansiosa**:
+     Se eliminó `cal = self.date_edit.calendarWidget()` en `ScheduleFormPanel`.
+  3. **Jerarquía Explícita (`parent=self`)**:
+     Se vincularon explícitamente como hijos `parent=self` todos los sub-controles en `ScheduleFormPanel`, `ScheduleView`, `PlatformStatusCard` y `DashboardView`.
+  4. **Herramienta Automatizada de Diagnóstico**:
+     Se creó [`resources/tools/window_audit_manager.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tools/window_audit_manager.py) para auditar tanto estáticamente (AST) como dinámicamente (Runtime) todas las vistas y el prewarming, garantizando 0 ventanas fantasma (`0 HWND leaks`).
+* **Archivos Modificados**:
+  - [`frontend/widgets/no_wheel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/no_wheel.py)
+  - [`frontend/components/schedule/schedule_form_panel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/schedule/schedule_form_panel.py)
+  - [`frontend/views/schedule_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/schedule_view.py)
+  - [`frontend/components/dashboard/platform_card.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/dashboard/platform_card.py)
+  - [`frontend/views/dashboard_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/dashboard_view.py)
+  - [`resources/tools/window_audit_manager.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tools/window_audit_manager.py)
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_22.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_22.md).
+
+---
+
+### INC-009: Excepción Fatal por kwargs Inesperados en `TranslationService.get()`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **CRÍTICA** (Cierre prematuro de la aplicación durante la inicialización de la bandeja del sistema en `MainWindowCore.__init__`).
+* **Reportes Asociados**:
+  - `minikick.log` (Línea 2397): `TypeError: TranslationService.get() got an unexpected keyword argument 'version'`
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  `SystemTrayManager._setup_ui()` invocaba `self.i18n.get("main.tray.tooltip", version="1.6.0")`. La firma original de `TranslationService.get(self, key: str) -> str` no aceptaba `**kwargs`, causando un `TypeError` no controlado durante el ciclo de arranque (`bootstrap`).
+* **Solución Implementada**:
+  1. En [`backend/services/system/translation_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/translation_service.py), se dotó a `TranslationService.get(self, key: str, **kwargs) -> str` de soporte para `**kwargs` con interpolación segura (`str.format(**kwargs)` y fallback defensivo con `replace`).
+  2. En [`frontend/navigation/tray_menu_component.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/tray_menu_component.py), se eliminó cualquier llamada a `setStyleSheet` y se aseguró el formateo seguro del tooltip.
+  3. En [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py), se reemplazó el uso ad-hoc de `setStyleSheet` por el rol formal `table_no_results` sincronizado con [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py).
+* **Archivos Modificados**:
+  - [`backend/services/system/translation_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/translation_service.py)
+  - [`frontend/navigation/tray_menu_component.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/tray_menu_component.py)
+  - [`frontend/widgets/table_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/table_widget.py)
+  - [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py)
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_tray_and_slider_debouncing.py` (`test_system_tray_manager_playback_toggle_and_tooltip`)
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_23.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_23.md).
+
+---
+
+### INC-010: Error HTTP 414 en `GiphyService` por Enlaces Largos e Inclusión de Bots en Top Chatters
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Advertencias y peticiones HTTP 414 innecesarias en Giphy por auto-embed erróneo; distorsión del widget overlay de Top Chatters por mensajes de timers del bot).
+* **Reportes Asociados**:
+  - `minikick.log` (Líneas 555, 563, 574, 582): `[WARNING] [GiphyService] Error searching Giphy for query '🖤Aquí está el enlace de TikTok!: https://www.tiktok.com/...': HTTP Error 414: URI Too Long`
+  - Feedback de Usuario: Inclusión del bot `@MiniKick` en el ranking del widget OBS `assets/overlays/widgets/chatters.html`.
+* **Fecha y Versión del Fallo**: 2026-09-21 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. En `ChatController._step_ui_render`, al evaluar mensajes con `http://` o `https://`, se invocaba `self.giphy_service.resolve_gif(dto.content.strip())`. En `GiphyService`, al no coincidir con una URL directa de imagen, el método asumía que toda la cadena (incluyendo enlaces largos de TikTok y emojis) era una consulta de búsqueda de texto en la API de Giphy. Al codificar dicha URL con caracteres especiales y longitud excesiva, la API de Giphy retornaba `HTTP 414: URI Too Long`.
+  2. En `WidgetsController._record_chatter_message`, el conjunto `_IGNORED_CHATTER_BOTS` no contenía `"minikick"`, no se eliminaba el prefijo `@` (`user.lstrip('@')`) y no se comprobaba la presencia de `"bot"` en `badges`, permitiendo que `@MiniKick` se contabilizara en el ranking de chatters más activos.
+* **Solución Implementada**:
+  1. En [`backend/services/chat/giphy_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/chat/giphy_service.py):
+     - Se introdujo `extract_gif_url(self, text: str) -> Optional[str]` con complejidad $\mathcal{O}(N)$ sin llamadas de red para extraer URLs auténticas de GIFs (`.gif`, `.webp`) o páginas/medios canónicos de Giphy.
+     - Se blindó `resolve_gif` para rechazar URLs que no sean GIFs (como enlaces a TikTok o YouTube), limitar consultas a $\le 80$ caracteres y rechazar queries con esquemas `http`.
+  2. En [`backend/controllers/chat_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/chat_controller.py):
+     - En `_step_ui_render`, se omite el procesamiento de GIFs si el usuario es un bot (`not self.filter_handler.is_bot(dto.user, badges)`) y se invoca `extract_gif_url` en lugar de una búsqueda de texto.
+  3. En [`backend/controllers/widgets_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/widgets_controller.py):
+     - Retorno temprano si `badges` contiene `"bot"`.
+     - Normalización $\mathcal{O}(1)$ del nombre (`user.strip().lstrip('@').lower()`).
+     - Ampliación de `_IGNORED_CHATTER_BOTS` con `minikick`, `wizebot`, `kofi`, etc., y verificación cruzada contra `spam_service.storage` (`tts_ignored_users`).
+  4. En [`backend/handlers/spam_handler.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/handlers/spam_handler.py):
+     - Normalización en `is_bot` para evaluar nombres con o sin `@` contra `_DEFAULT_BOTS` y `muted_bots`.
+* **Pruebas Automatizadas de Cobertura**:
+  - `resources/tests/test_giphy_and_tts_filter.py`:
+    - `test_extract_gif_url_and_non_gif_rejection`
+    - `test_resolve_gif_blocks_long_queries_and_arbitrary_urls`
+    - `test_widgets_controller_ignores_minikick_and_bots_in_top_chatters`
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_25.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_25.md).
+
+---
+
+### INC-011: Bordes Blancos y Desincronización de Tema en Popups con Windows en Tema Claro
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Defectos visuales notorios, recuadros blancos rígidos y textos ilegibles en selectores de voces, autocompletado y calendario para usuarios con tema claro en Windows).
+* **Reportes Asociados**:
+  - Capturas de usuario de `SearchableComboBox`, `VariableTextEdit` y `QDateEdit` calendario.
+* **Fecha y Versión del Fallo**: 2026-09-22 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. MiniKick no asignaba una paleta nativa `QApplication.setPalette()`. Si Windows estaba en Tema Claro, Qt inicializaba `QPalette.Base` y `QPalette.Window` en `#ffffff` / `#f0f0f0`.
+  2. `SearchableComboPopup` fijaba explícitamente `WA_TranslucentBackground = False`. Al tener `border-radius: 8px` en un marco frameless, el fondo exterior de la ventana nativa se pintaba blanco (`#ffffff`).
+  3. `VariableTextEdit.popup` era un `QListWidget` sin rol ni estilos QSS, mostrándose como una ventana blanca nativa.
+  4. `QDateEdit` utiliza `QCalendarPopup` (`QWidget#qt_datetimedit_calendar`) y el viewport de `QTableView` con `autoFillBackground=True`. Ambos se pintaban con la paleta clara nativa, dejando el encabezado blanco sobre fondo blanco.
+* **Solución Implementada**:
+  1. En [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py):
+     - Creación de `create_dark_palette() -> QPalette` para forzar roles oscuros nativos en toda la aplicación.
+     - Reglas QSS para `QWidget#qt_datetimedit_calendar`, `QCalendarWidget QTableView QWidget`, `QListWidget[role="variable_autocomplete_popup"]`, `QMenu` y `QToolTip`.
+  2. En [`main.py`](file:///c:/Users/TheAn/Desktop/python/Kick/main.py):
+     - Inyección de `app.setPalette(create_dark_palette())` en el arranque de la app y en el manejador de crash global.
+  3. En [`frontend/widgets/searchable_combo_box.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/searchable_combo_box.py):
+     - Activación de `self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)`.
+  4. En [`frontend/widgets/controls_widget.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/controls_widget.py):
+     - Asignación de rol `variable_autocomplete_popup`, `WA_TranslucentBackground = True` y políticas de scroll.
+  5. En [`frontend/widgets/category_search.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/category_search.py):
+     - Activación de `WA_TranslucentBackground = True` en `CategorySuggestionsPopup`.
+  6. En [`frontend/widgets/no_wheel.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/no_wheel.py):
+     - Aplicación de `dark_pal` en `QCalendarWidget`, `popup` y `table.viewport()`.
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_antigravity_ui_theme.py` (`test_dark_palette_and_popup_translucency_standards`).
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_33.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_33.md).
+
+---
+
+### INC-012: Corrutinas Huérfanas y RuntimeError en el Teardown del Event Loop de TikTokLive
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA-ALTA** (Riesgo de fugas de recursos asíncronos y errores en consola/logs al detener el chat de TikTok o cerrar la aplicación: `Task was destroyed but it is pending!` y `RuntimeError: no running event loop`).
+* **Reportes Asociados**:
+  - `minikick.log` (Líneas 668-1001):
+    ```text
+    [ERROR] Task was destroyed but it is pending!
+    task: <Task pending coro=<WebSocketCommonProtocol.transfer_data()...>>
+    [ERROR] Task was destroyed but it is pending!
+    task: <Task pending coro=<WebSocketCommonProtocol.close_connection()...>>
+    [ERROR] Exception ignored while closing generator <coroutine object WebSocketCommonProtocol.close_connection...
+    RuntimeError: no running event loop
+    ```
+* **Fecha y Versión del Fallo**: 2026-09-22 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. La librería cliente `TikTokLive` ejecuta su propio bucle de eventos (`self._asyncio_loop`) en un hilo secundario y bloquea con `run_until_complete(connect_coro)`.
+  2. En el código interno de `TikTokLiveClient.run()`, el método de limpieza `self._clean_tasks()` estaba ubicado **únicamente** dentro del bloque `except KeyboardInterrupt:`.
+  3. Cuando la desconexión se producía de forma programática (vía `stop_chat()`, cierre de la aplicación o finalización natural), `run_until_complete` retornaba sin cancelar ni drenar las tareas en segundo plano creadas por `websockets` (`transfer_data()`, `close_connection()`, bucles de ping).
+  4. Al detenerse el bucle y ser recolectadas las corrutinas por el Garbage Collector en Python 3.14, el destructor de `close_connection` invocaba `async with asyncio.timeout(...)`, el cual llama a `events.get_running_loop()`. Al no haber ya ningún bucle ejecutándose en dicho hilo, Python lanzaba `RuntimeError: no running event loop` y emitía alertas de tareas destruidas pendientes.
+* **Solución Implementada**:
+  1. En [`backend/providers/chat/tiktok_provider.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/tiktok_provider.py):
+     - Se implementó el método estático `_drain_client_loop(client: Any) -> None` que comprueba si el loop sigue abierto y no está corriendo. Invoca `client._clean_tasks()` nativo si existe o ejecuta un drenado defensivo cancelando todas las tareas (`task.cancel()`) y ejecutando `loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))`.
+     - En `start_chat()`: Se envolvió la invocación `self._client.run(fetch_live_check=True)` dentro de una cláusula `try ... finally: self._drain_client_loop(self._client)`, garantizando que el drenado se ejecute siempre de forma síncrona en el hilo que posee el bucle.
+     - En `stop_chat()`: Se realiza la desconexión thread-safe mediante `asyncio.run_coroutine_threadsafe(client.disconnect(), loop)` si el bucle está en marcha, y drenado directo `_drain_client_loop` en caso de que ya estuviera detenido.
+     - Se eliminó el `import websockets.exceptions.InvalidStatusCode` deprecado reemplazándolo con duck-typing $\mathcal{O}(1)$ (`getattr(ex, 'status_code', None)` y evaluación del nombre de tipo).
+* **Pruebas Automatizadas de Cobertura**:
+  - `resources/tests/test_tiktok_provider.py`:
+    - `test_drain_client_loop_none_or_empty`
+    - `test_drain_client_loop_invokes_clean_tasks`
+    - `test_drain_client_loop_fallback_cancels_and_gathers_tasks`
+    - `test_stop_chat_when_loop_not_running`
+    - `test_mark_seen_and_deduplication`
+    - `test_extract_avatar_url`
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_35.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_35.md).
+
+---
+
+### INC-013: Fondo Transparente en Popups de Búsqueda (`CategorySuggestionsPopup` y `SearchableComboPopup`)
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Defecto visual de superposición UI: los elementos de fondo se transparentaban a través del menú desplegable).
+* **Reportes Asociados**:
+  - Captura de pantalla de usuario en `ScheduleView` (`CategorySearchComboBox` desplegando resultados transparentes sobre botones "Limpiar Formulario" y "Guardar Horario").
+* **Fecha y Versión del Fallo**: 2026-09-23 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. En `WT-1.6.0_33` se activó `self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)` en ventanas emergentes frameless derivadas de `QFrame` (`CategorySuggestionsPopup` y `SearchableComboPopup`) para posibilitar esquinas redondeadas sin bordes rectangulares de Windows.
+  2. En el motor de renderizado de Qt / PySide6, cuando un `QFrame` de nivel superior activa `WA_TranslucentBackground`, la implementación por defecto de `QFrame::paintEvent` **omite rellenar el fondo con el `background-color` del stylesheet**, asumiendo transparencia completa salvo que se despache explícitamente la primitiva `QStyle.PrimitiveElement.PE_Widget`.
+  3. Al carecer de `paintEvent` personalizado, el marco exterior del popup se renderizaba con $\text{Alpha} = 0$, volviendo el menú completamente translúcido y mostrando los controles subyacentes.
+* **Solución Implementada**:
+  1. En [`frontend/widgets/category_search.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/category_search.py):
+     - Se implementó `paintEvent` en `CategorySuggestionsPopup` despachando `QStyleOptionFrame` y `self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)`.
+  2. En [`frontend/widgets/searchable_combo_box.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/widgets/searchable_combo_box.py):
+     - Se implementó `paintEvent` idéntico en `SearchableComboPopup`.
+* **Pruebas de Validación de Renderizado**:
+  - Validación de pixel rendering:
+    - Centro del popup: $\text{Alpha} = 255$ (color sólido `#111215` / `#18191e`).
+    - Esquinas exteriores: $\text{Alpha} = 0$ (esquinas redondeadas anti-aliased sin marco rectangular).
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_54.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_54.md).
+ 
+---
+
+### INC-014: Ocultamiento de Interruptores en Tarjeta "Elementos & Filtros" (`ChatOverlaySettingsPanel`)
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Defecto visual y funcional: los 7 switches de configuración de overlay no eran visibles ni accesibles).
+* **Reportes Asociados**:
+  - Captura de pantalla de usuario mostrando la tarjeta "Elementos & Filtros" vacía y colapsada en la pestaña de Chat.
+* **Fecha y Versión del Fallo**: 2026-09-23 en MiniKick `v1.6.0`.
+* **Causa Raíz**:
+  1. En `frontend/components/chat/overlay_settings.py`, la clase `CompactToggleItem` (utilizada para los 7 interruptores de visibilidad del overlay: plataforma, insignias, hora, emotes gigantes, GIFs, comandos y bots) hereda de `QWidget`.
+  2. En su constructor `__init__`, invocaba la función auxiliar interna `_build_icon_text_row(self, ...)`.
+  3. Dicha función creaba un contenedor secundario `container = QWidget(parent)` y asignaba el `QHBoxLayout` a `container`, dejando a la instancia de `CompactToggleItem` (`self`) sin ningún layout asociado (`layout() is None`).
+  4. En PySide6/Qt, un widget contenedor sin layout y sin tamaño fijo tiene un `sizeHint()` de `QSize(-1, -1)`.
+  5. Al añadirse los 7 elementos a `grid_toggles` dentro de `card_visibility`, la cuadrícula colapsaba a altura 0, provocando que la tarjeta "Elementos & Filtros" se mostrara como un recuadro completamente plano y vacío.
+* **Solución Implementada**:
+  1. En [`frontend/components/chat/overlay_settings.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/components/chat/overlay_settings.py):
+     - Se refactorizó la función a `_setup_icon_text_row(target_widget: QWidget, ...)` para asignar el `QHBoxLayout` directamente sobre el widget objetivo (`self`).
+     - Se fijó la política de tamaño `QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed` en `CompactToggleItem`.
+     - Se adaptó `_create_metric_header` para instanciar su contenedor y configurar el layout directamente sobre él.
+* **Pruebas de Validación de Geometría**:
+  - Validación de los 7 elementos `CompactToggleItem`:
+    - `layout() is not None` $\to$ `QHBoxLayout` activo en cada elemento.
+    - `sizeHint().height() > 0` $\to$ Dimensiones positivas y renderizado verificado.
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_57.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_57.md).
 
 ---
 

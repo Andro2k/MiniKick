@@ -2,13 +2,19 @@
 
 import os
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox,
+    QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QSpinBox, QDoubleSpinBox,
     QFileDialog, QRadioButton, QButtonGroup
 )
 from PySide6.QtCore import Qt, QSize
 
-from frontend.widgets import ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker
-from frontend.common import get_icon_colored, SPACING_XS, SPACING_MD, MARGIN_NONE, MARGIN_LG
+from frontend.widgets import (
+    ModernButton, ModernSwitch, SliderRow, NoWheelComboBox, NoWheelSlider, ModernColorPicker,
+    create_row_layout, create_labeled_field
+)
+from frontend.common import (
+    get_icon_colored, SPACING_XS, SPACING_MD, MARGIN_NONE, MARGIN_LG,
+    COLOR_TWITCH, COLOR_KICK_REWARDS
+)
 from .base_dialog import ModernWizardPanel
 from .positioner_dialog import VisualPositionerDialog
 
@@ -79,7 +85,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_color_picker(self) -> QWidget:
         self.color_picker = ModernColorPicker(
-            initial_color="#00e701",
+            initial_color=COLOR_KICK_REWARDS,
             tooltip=self.i18n.get("rewards.dialogs.wizard.step1.color_pick_tooltip"),
             parent=self
         )
@@ -95,9 +101,7 @@ class RewardsConfigWizard(ModernWizardPanel):
 
     def _build_user_input_row(self) -> QWidget:
         container = QWidget()
-        row = QHBoxLayout(container)
-        row.setContentsMargins(*MARGIN_NONE)
-        row.setSpacing(SPACING_MD)
+        row = create_row_layout(spacing=SPACING_MD, margins=MARGIN_NONE, parent=container)
         
         lbl_sw = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.new_user_input_label"))
         lbl_sw.setProperty("role", "h3")
@@ -162,7 +166,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         layout.setSpacing(SPACING_MD)
         
         if not self.is_edit_mode and not self.kick_authenticated and not self.twitch_authenticated:
-            no_plat_box = QWidget()
+            no_plat_box = QFrame()
             no_plat_box.setProperty("role", "card")
             np_layout = QHBoxLayout(no_plat_box)
             np_layout.setContentsMargins(*MARGIN_LG)
@@ -221,7 +225,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         if self.is_edit_mode:
             is_platform_offline = (self.selected_platform == "kick" and not self.kick_authenticated) or (self.selected_platform == "twitch" and not self.twitch_authenticated)
             if is_platform_offline:
-                off_box = QWidget()
+                off_box = QFrame()
                 off_box.setProperty("role", "card")
                 off_layout = QHBoxLayout(off_box)
                 off_layout.setContentsMargins(*MARGIN_LG)
@@ -331,7 +335,7 @@ class RewardsConfigWizard(ModernWizardPanel):
                 if "description" in details and hasattr(self, "txt_new_desc"):
                     self.txt_new_desc.setText(str(details.get("description") or ""))
                 if "background_color" in details and hasattr(self, "txt_new_color"):
-                    default_color = "#9146FF" if plat == "twitch" else "#00e701"
+                    default_color = COLOR_TWITCH if plat == "twitch" else COLOR_KICK_REWARDS
                     self._set_color(str(details.get("background_color") or default_color))
                 if "is_user_input_required" in details and hasattr(self, "chk_user_input"):
                     self.chk_user_input.setChecked(bool(details.get("is_user_input_required", False)))
@@ -387,27 +391,16 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.btn_visual.clicked.connect(self._open_visual_editor)
         v_layout.addWidget(self.btn_visual)
         
-        row_xy = QHBoxLayout()
-        row_xy.setSpacing(SPACING_MD)
+        row_xy = create_row_layout(spacing=SPACING_MD)
 
-        col_x = QVBoxLayout()
-        col_x.setSpacing(SPACING_XS)
-        lbl_x = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.coord_x"))
-        lbl_x.setProperty("role", "h3")
         self.spin_x = QSpinBox()
         self.spin_x.setRange(-5000, 5000)
-        col_x.addWidget(lbl_x)
-        col_x.addWidget(self.spin_x)
+        col_x, _ = create_labeled_field(self.i18n.get("rewards.dialogs.wizard.step2.coord_x"), self.spin_x, role="h3")
         row_xy.addLayout(col_x, stretch=1)
 
-        col_y = QVBoxLayout()
-        col_y.setSpacing(SPACING_XS)
-        lbl_y = QLabel(self.i18n.get("rewards.dialogs.wizard.step2.coord_y"))
-        lbl_y.setProperty("role", "h3")
         self.spin_y = QSpinBox()
         self.spin_y.setRange(-5000, 5000)
-        col_y.addWidget(lbl_y)
-        col_y.addWidget(self.spin_y)
+        col_y, _ = create_labeled_field(self.i18n.get("rewards.dialogs.wizard.step2.coord_y"), self.spin_y, role="h3")
         row_xy.addLayout(col_y, stretch=1)
 
         v_layout.addLayout(row_xy)
@@ -428,7 +421,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.selected_platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
         self._filter_rewards_by_platform()
         if hasattr(self, 'rb_create') and self.rb_create.isChecked():
-            default_color = "#9146FF" if self.selected_platform == "twitch" else "#00e701"
+            default_color = COLOR_TWITCH if self.selected_platform == "twitch" else COLOR_KICK_REWARDS
             self._set_color(default_color)
 
     def _filter_rewards_by_platform(self):
@@ -551,7 +544,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             self.chk_random_pos.setChecked(config.get("is_random_pos", False))
             
             details = self.rewards_details_map.get(f"{plat}:{self.existing_reward}") or self.rewards_details_map.get(self.existing_reward, {})
-            default_color = "#9146FF" if plat == "twitch" else "#00e701"
+            default_color = COLOR_TWITCH if plat == "twitch" else COLOR_KICK_REWARDS
             color_val = config.get("background_color") or config.get("new_reward_data", {}).get("background_color") or details.get("background_color", default_color)
             self._set_color(color_val)
             
@@ -603,7 +596,7 @@ class RewardsConfigWizard(ModernWizardPanel):
         self.chk_random_pos.setChecked(source_config.get("is_random_pos", False))
 
         target_plat = self.selected_platform
-        default_color = "#9146FF" if target_plat == "twitch" else "#00e701"
+        default_color = COLOR_TWITCH if target_plat == "twitch" else COLOR_KICK_REWARDS
         color_val = source_config.get("background_color") or default_color
         self._set_color(color_val)
 
@@ -626,7 +619,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             platform = self.existing_config.get("platform") or self.selected_platform or "kick"
         else:
             platform = "twitch" if (hasattr(self, 'rb_plat_twitch') and self.rb_plat_twitch.isChecked()) else "kick"
-        default_color = "#9146FF" if platform == "twitch" else "#00e701"
+        default_color = COLOR_TWITCH if platform == "twitch" else COLOR_KICK_REWARDS
 
         if self.is_edit_mode:
             reward_title = self.txt_edit_title.text().strip()

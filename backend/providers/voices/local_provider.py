@@ -31,7 +31,7 @@ class LocalTTSProvider:
         factor = speed if speed <= 3.0 else (speed / 100.0)
         self.rate = max(50, min(400, int(150 * factor)))
 
-    def prepare(self, text: str, voice_id: str = None) -> None:
+    def prepare(self, _text: str, _voice_id: str = None) -> None:
         pass
 
     def speak(self, text: str, voice_id: str = None) -> None:
@@ -45,6 +45,7 @@ class LocalTTSProvider:
                 engine = pyttsx3.init()
                 engine.setProperty("rate", self.rate)
                 engine.setProperty("volume", self.volume)
+                self._engine = engine
                 if target_voice:
                     try:
                         engine.setProperty("voice", target_voice)
@@ -56,6 +57,7 @@ class LocalTTSProvider:
             except Exception as e:
                 logger.error("[Local TTS] Speech error: %s", e)
             finally:
+                self._engine = None
                 if engine is not None:
                     try:
                         engine.stop()
@@ -67,9 +69,14 @@ class LocalTTSProvider:
                         pass
 
     def stop(self) -> None:
-        pass
+        eng = self._engine
+        if eng is not None:
+            try:
+                eng.stop()
+            except Exception:
+                pass
 
-    def warm_up(self, voice_id: str = None) -> None:
+    def warm_up(self, _voice_id: str = None) -> None:
         pass
 
     def get_available_voices(self) -> list[dict]:

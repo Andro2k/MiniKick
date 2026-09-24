@@ -130,7 +130,7 @@ class WebTTSProvider:
             return self.voice
         return "es-ES-AlvaroNeural"
 
-    def warm_up(self, voice_id: str = None) -> None:
+    def warm_up(self, _voice_id: str = None) -> None:
         pass
 
     def prepare(self, text: str, voice_id: str = None) -> None:

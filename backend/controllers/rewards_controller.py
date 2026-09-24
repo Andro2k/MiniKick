@@ -268,6 +268,38 @@ class RewardsController(QObject):
 
         return all_rewards if all_rewards else [self.view.i18n.get("rewards.dialogs.wizard.step1.no_available")] if self.view else ["No rewards available"]
 
+    def _resolve_reward_entry(self, reward_name: str) -> tuple[str | None, dict | None, str | None]:
+        mappings = self.service.get_mappings()
+        target_key = reward_name
+        if target_key not in mappings:
+            for k, v in mappings.items():
+                if k == reward_name or (isinstance(v, dict) and (v.get("name") == reward_name or v.get("reward_name") == reward_name)):
+                    target_key = k
+                    break
+            if target_key not in mappings:
+                return None, None, None
+
+        source_config = mappings[target_key]
+        source_name = source_config.get("name") or source_config.get("reward_name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
+        return target_key, source_config, source_name
+
+    def _process_reward_result(self, res, action_name: str) -> bool:
+        if not res:
+            return False
+
+        reward, config = res
+        if not config.get("filepath"):
+            return False
+
+        target_platform = config.get("platform", "kick")
+        logger.info("[User Action] %s custom reward trigger: name='%s', platform=%s, is_new=%s", action_name, reward, target_platform, config.get("is_new_reward"))
+
+        if config.get("is_new_reward") and config.get("new_reward_data"):
+            self._dispatch_create_reward_worker(target_platform, config["new_reward_data"], config)
+        else:
+            self._save_reward_mapping(reward, config)
+        return True
+
     @Slot()
     def _handle_add(self):
         logger.info("[User Action] Opened Add Reward dialog")
@@ -275,20 +307,7 @@ class RewardsController(QObject):
         kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False
         twitch_auth = self.twitch_auth_manager.is_authenticated() if self.twitch_auth_manager else False
         res = self.view.show_add_dialog(available_rewards, self.rewards_details_map, kick_authenticated=kick_auth, twitch_authenticated=twitch_auth)
-        if not res:
-            return
-
-        reward, config = res
-        if not config.get("filepath"):
-            return
-
-        target_platform = config.get("platform", "kick")
-        logger.info("[User Action] Added custom reward trigger: name='%s', platform=%s, is_new=%s", reward, target_platform, config.get("is_new_reward"))
-
-        if config.get("is_new_reward") and config.get("new_reward_data"):
-            self._dispatch_create_reward_worker(target_platform, config["new_reward_data"], config)
-        else:
-            self._save_reward_mapping(reward, config)
+        self._process_reward_result(res, "Added")
 
     def _on_reward_created_api(self, api_response: dict, config: dict):
         created_title = api_response.get("title", "")
@@ -366,18 +385,10 @@ class RewardsController(QObject):
 
     @Slot(str)
     def _handle_duplicate(self, reward_name: str):
-        mappings = self.service.get_mappings()
-        target_key = reward_name
-        if target_key not in mappings:
-            for k, v in mappings.items():
-                if k == reward_name or (isinstance(v, dict) and (v.get("name") == reward_name or v.get("reward_name") == reward_name)):
-                    target_key = k
-                    break
-            if target_key not in mappings:
-                return
+        target_key, source_config, source_name = self._resolve_reward_entry(reward_name)
+        if not source_config:
+            return
 
-        source_config = mappings[target_key]
-        source_name = source_config.get("name") or source_config.get("reward_name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
         logger.info("[User Action] Opened Duplicate Reward dialog: source='%s'", source_name)
         available_rewards = self._get_available_rewards()
         kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False
@@ -390,35 +401,14 @@ class RewardsController(QObject):
             kick_authenticated=kick_auth,
             twitch_authenticated=twitch_auth
         )
-        if not res:
-            return
-
-        reward, config = res
-        if not config.get("filepath"):
-            return
-
-        target_platform = config.get("platform", "kick")
-        logger.info("[User Action] Duplicating reward trigger: name='%s', platform=%s, is_new=%s", reward, target_platform, config.get("is_new_reward"))
-
-        if config.get("is_new_reward") and config.get("new_reward_data"):
-            self._dispatch_create_reward_worker(target_platform, config["new_reward_data"], config)
-        else:
-            self._save_reward_mapping(reward, config)
+        self._process_reward_result(res, "Duplicating")
 
     @Slot(str)
     def _handle_edit(self, reward_name: str):
-        mappings = self.service.get_mappings()
-        target_key = reward_name
-        if target_key not in mappings:
-            for k, v in mappings.items():
-                if k == reward_name or (isinstance(v, dict) and (v.get("name") == reward_name or v.get("reward_name") == reward_name)):
-                    target_key = k
-                    break
-            if target_key not in mappings:
-                return
-            
-        source_config = mappings[target_key]
-        r_name = source_config.get("name") or source_config.get("reward_name") or (target_key.split(":", 1)[1] if ":" in target_key else target_key)
+        target_key, source_config, r_name = self._resolve_reward_entry(reward_name)
+        if not source_config:
+            return
+
         logger.info("[User Action] Opened Edit Reward dialog: name='%s'", r_name)
         available_rewards = self._get_available_rewards(ignore_reward=r_name)
         kick_auth = self.kick_auth_manager.is_authenticated() if self.kick_auth_manager else False

@@ -4,14 +4,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QH
 from PySide6.QtCore import Signal, Qt, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common import (
-    COLOR_RED,
-    COLOR_NEUTRAL_400,
-    COLOR_GREEN,
-    COLOR_TIKTOK,
-    get_icon_colored,
-    MARGIN_NONE,
-    SPACING_NONE,
-    SPACING_XS,
+    COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
+    get_icon_colored, MARGIN_NONE, SPACING_NONE, SPACING_XS,
 )
 from frontend.widgets import ModernTable, ModernTableCard
 
@@ -109,8 +103,8 @@ class MusicQueuePanel(QWidget):
         
         self._icon_delete = get_icon_colored("trash-filled.svg", COLOR_RED, 14)
         self._icon_grip = get_icon_colored("grip-vertical.svg", COLOR_NEUTRAL_400, 14)
-        self._icon_kick = get_icon_colored("brand-kick.svg", "#53FC18", 14)
-        self._icon_twitch = get_icon_colored("brand-twitch.svg", "#A970FF", 14)
+        self._icon_kick = get_icon_colored("brand-kick.svg", COLOR_KICK, 14)
+        self._icon_twitch = get_icon_colored("brand-twitch.svg", COLOR_TWITCH_LIGHT, 14)
         self._icon_youtube = get_icon_colored("brand-youtube.svg", COLOR_RED, 14)
         self._icon_tiktok = get_icon_colored("brand-tiktok.svg", COLOR_TIKTOK, 14)
         
@@ -130,21 +124,13 @@ class MusicQueuePanel(QWidget):
             self.i18n.get("music.queue.col_actions")
         ]
 
+        self.queue_table = DragDropQueueTable(headers, parent=self)
         self.card_queue = ModernTableCard(
             title_text=self.i18n.get("music.queue.title"),
             headers=headers,
-            parent=self
+            parent=self,
+            custom_table=self.queue_table
         )
-        
-        old_table = self.card_queue.table
-        old_table.hide()
-        self.card_queue.stack.removeWidget(old_table)
-        old_table.deleteLater()
-
-        self.queue_table = DragDropQueueTable(headers, parent=self.card_queue)
-        self.card_queue.table = self.queue_table
-        self.card_queue.stack.insertWidget(0, self.queue_table)
-        self.card_queue.stack.setCurrentIndex(0)
 
         self.queue_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.queue_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -280,7 +266,7 @@ class MusicQueuePanel(QWidget):
                 requester_text = f" {requester}" if requester else "-"
                 
                 if platform == "twitch":
-                    req_color = QColor("#A970FF")
+                    req_color = QColor(COLOR_TWITCH_LIGHT)
                     req_icon = self._icon_twitch
                 elif platform == "youtube":
                     req_color = QColor(COLOR_RED)
@@ -289,7 +275,7 @@ class MusicQueuePanel(QWidget):
                     req_color = QColor(COLOR_TIKTOK)
                     req_icon = self._icon_tiktok
                 elif requester:
-                    req_color = QColor("#53FC18")
+                    req_color = QColor(COLOR_KICK)
                     req_icon = self._icon_kick
                 else:
                     req_color = None

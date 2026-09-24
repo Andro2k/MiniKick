@@ -7,6 +7,7 @@ from backend.providers.chat import YouTubeChatProvider
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_dumps
+from backend.workers.worker_utils import stop_provider_chat_worker
 
 logger = logging.getLogger("minikick.workers.youtube_chat")
 
@@ -88,7 +89,7 @@ class YouTubeChatWorker(QThread):
             except Exception:
                 emotes_tag = ""
 
-        now_str = datetime.datetime.now().strftime("%H:%M:%S")
+        now_str = datetime.datetime.now().strftime("%H:%M")
         dto = ChatMessageDTO(
             user=user,
             content=msg,
@@ -103,8 +104,4 @@ class YouTubeChatWorker(QThread):
         self.message_received.emit(dto)
 
     def stop(self):
-        logger.info("[YouTubeChatWorker] Stopping YouTube chat worker for '%s'...", self.target_channel)
-        self._is_stopped = True
-        self.requestInterruption()
-        self.provider.stop_chat()
-        self.quit()
+        stop_provider_chat_worker(self, self.provider, logger, "YouTubeChatWorker", self.target_channel)

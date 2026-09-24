@@ -272,7 +272,7 @@ class WidgetCard(ExpandableCard):
             self._config_data["losses"] = losses
             self._is_loading = False
 
-    def _on_switch_toggled(self, checked: bool):
+    def _on_switch_toggled(self, _checked: bool):
         if self._is_loading:
             return
         self._change_timer.stop()

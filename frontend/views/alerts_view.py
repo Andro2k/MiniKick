@@ -5,11 +5,12 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QBoxLayout, QSizePol
 from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
-from frontend.common import get_pixmap_colored, COLOR_AMBER, SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
+from frontend.common import (
+    get_pixmap_colored, COLOR_AMBER, COLOR_PURE_WHITE, COLOR_NEUTRAL_950,
+    SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
+)
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
-    AlertVariantListItem,
-    AlertsSidebarPanel,
     AlertVariantsTabBar,
     AlertVariantTabPill,
     AlertEventCard,
@@ -20,8 +21,6 @@ from frontend.dialogs import DuplicateAlertModal
 __all__ = [
     "AlertsView",
     "AlertEventCard",
-    "AlertVariantListItem",
-    "AlertsSidebarPanel",
     "AlertVariantsTabBar",
     "AlertVariantTabPill",
     "AlertsOverlayCard",
@@ -263,7 +262,7 @@ class AlertsView(BaseView):
                 tts_read=source_cfg.tts_read,
                 layout=getattr(source_cfg, "layout", "above"),
                 style=getattr(source_cfg, "style", "compact"),
-                text_color=getattr(source_cfg, "text_color", "#FFFFFF"),
+                text_color=getattr(source_cfg, "text_color", COLOR_PURE_WHITE),
                 highlight_color=getattr(source_cfg, "highlight_color", ""),
                 font_family=getattr(source_cfg, "font_family", "Outfit"),
                 font_size=getattr(source_cfg, "font_size", 24),
@@ -272,7 +271,7 @@ class AlertsView(BaseView):
                 animation_in_duration=getattr(source_cfg, "animation_in_duration", 1.0),
                 animation_out=getattr(source_cfg, "animation_out", "fade_out"),
                 animation_out_duration=getattr(source_cfg, "animation_out_duration", 1.0),
-                bg_color=getattr(source_cfg, "bg_color", "#121317"),
+                bg_color=getattr(source_cfg, "bg_color", COLOR_NEUTRAL_950),
                 bg_opacity=getattr(source_cfg, "bg_opacity", 88),
                 border_radius=getattr(source_cfg, "border_radius", 20),
                 padding_px=getattr(source_cfg, "padding_px", 24),
@@ -299,7 +298,7 @@ class AlertsView(BaseView):
         target_card = self._get_or_create_card(platform, alert_type)
         self.twitch_editor_stack.setCurrentWidget(target_card)
 
-    def _switch_platform(self, platform: str = "twitch"):
+    def _switch_platform(self, _platform: str = "twitch"):
         self.stack.setCurrentIndex(0)
         twitch_active = self.active_variant.get("twitch", "follow")
         self._select_variant("twitch", twitch_active)

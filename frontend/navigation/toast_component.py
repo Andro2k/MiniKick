@@ -1,12 +1,13 @@
 # frontend\navigation\toast_component.py
 
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QSizePolicy
+from PySide6.QtWidgets import QFrame, QVBoxLayout, QLabel, QPushButton, QSizePolicy
 from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, Signal, QObject, QEvent, QSize
 from frontend.common import (
     COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_400, COLOR_AMBER,
     get_icon_colored, get_pixmap_colored,
     MARGIN_LG, SPACING_MD, SPACING_2XS
 )
+from frontend.widgets import create_row_layout
 
 class ModernToast(QFrame):
     expired = Signal(object)
@@ -26,9 +27,7 @@ class ModernToast(QFrame):
         self.setProperty("role", "toast")
         self.setProperty("state", state)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_LG)
-        layout.setSpacing(SPACING_MD)
+        layout = create_row_layout(spacing=SPACING_MD, margins=MARGIN_LG, parent=self)
         
         self.icon_lbl = QLabel(self)
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignTop)

@@ -236,10 +236,6 @@ class ChatView(BaseView):
         return self.overlay_settings_panel.sw_big_emotes.isChecked()
 
     @property
-    def overlay_edge_fade(self) -> bool:
-        return self.overlay_settings_panel.overlay_edge_fade
-
-    @property
     def overlay_anim_in(self) -> str:
         return self.overlay_settings_panel.overlay_anim_in
 
@@ -295,12 +291,9 @@ class ChatView(BaseView):
         show_time: bool = False,
         orientation: str = "vertical",
         flow: str = "",
-        entry: str = "",
         big_emotes: bool = True,
-        edge_fade: bool = True,
         anim_in: str = "fade",
         show_gifs: bool = True,
-        max_messages: int = 15,
         hide_commands: bool = False,
         show_badges: bool = True,
         show_platform: bool = True,
@@ -316,12 +309,9 @@ class ChatView(BaseView):
             show_time=show_time,
             orientation=orientation,
             flow=flow,
-            entry=entry,
             big_emotes=big_emotes,
-            edge_fade=edge_fade,
             anim_in=anim_in,
             show_gifs=show_gifs,
-            max_messages=max_messages,
             hide_commands=hide_commands,
             show_badges=show_badges,
             show_platform=show_platform,
