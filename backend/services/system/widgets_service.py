@@ -188,3 +188,15 @@ class WidgetService:
         cfg["losses"] = losses
         self.save_widget("score", w.get("is_active", True), w.get("command", "!score"), w.get("cooldown", 3), w.get("permission", "everyone"), cfg, defer_disk=defer_disk)
         return wins, losses
+
+    def load_daily_chatters(self, date_str: str) -> dict[str, dict]:
+        return self.storage.load_daily_chatters(date_str)
+
+    def save_daily_chatters_batch(self, date_str: str, chatters_map: dict[str, dict]) -> None:
+        self.storage.save_daily_chatters_batch(date_str, chatters_map)
+
+    def clear_daily_chatters(self, date_str: str) -> None:
+        self.storage.clear_daily_chatters(date_str)
+
+    def prune_old_chatters(self, keep_days: int = 7) -> None:
+        self.storage.prune_old_chatters(keep_days=keep_days)

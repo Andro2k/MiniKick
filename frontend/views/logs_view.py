@@ -27,7 +27,12 @@ _LEVEL_COLORS = {
     "CRASH": COLOR_RED,
     "FATAL_CRASH": COLOR_RED,
     "THREAD_CRASH": COLOR_RED,
-    "BOOTSTRAP": COLOR_BLUE
+    "BOOTSTRAP": COLOR_BLUE,
+    "DBG": COLOR_NEUTRAL_400,
+    "INF": COLOR_BLUE,
+    "WRN": COLOR_AMBER,
+    "ERR": COLOR_RED,
+    "CRI": COLOR_RED,
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code-square-filled.svg",
@@ -38,7 +43,24 @@ _LEVEL_ICON_NAMES = {
     "CRASH": "bolt-circle-filled.svg",
     "FATAL_CRASH": "bolt-circle-filled.svg",
     "THREAD_CRASH": "bolt-circle-filled.svg",
-    "BOOTSTRAP": "circle-info-filled.svg"
+    "BOOTSTRAP": "circle-info-filled.svg",
+    "DBG": "code-square-filled.svg",
+    "INF": "circle-info-filled.svg",
+    "WRN": "alert-triangle-filled.svg",
+    "ERR": "bug-filled.svg",
+    "CRI": "bolt-circle-filled.svg",
+}
+_CANONICAL_LEVELS = {
+    "DBG": "DEBUG",
+    "INF": "INFO",
+    "WRN": "WARNING",
+    "ERR": "ERROR",
+    "CRI": "CRITICAL",
+    "DEBUG": "DEBUG",
+    "INFO": "INFO",
+    "WARNING": "WARNING",
+    "ERROR": "ERROR",
+    "CRITICAL": "CRITICAL",
 }
 _LEVEL_ICONS: dict[str, QIcon] = {}
 
@@ -176,7 +198,7 @@ class LogView(BaseView):
         self.filter_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.table.setColumnWidth(0, 150)
-        self.table.setColumnWidth(1, 160)
+        self.table.setColumnWidth(1, 230)
 
         self.table_card.setup_empty_state(
             title=self.i18n.get("log.empty.title"),
@@ -232,19 +254,27 @@ class LogView(BaseView):
             return self.all_logs
 
         active_filters = self.filter_header.get_active_filters()
-        level_active = active_filters.get(0, {"INFO", "DEBUG", "WARNING", "ERROR"})
+        level_active = active_filters.get(0, None)
 
         filtered = []
         for item in self.all_logs:
             lvl, t_str, txt = item
-            if level_active and lvl.upper() not in level_active:
-                continue
+            canonical = _CANONICAL_LEVELS.get(lvl.upper(), lvl.upper())
+            if level_active:
+                if canonical not in level_active and lvl.upper() not in level_active:
+                    continue
             filtered.append(item)
 
         if hasattr(self, "_current_sort") and self._current_sort:
             col_idx, order = self._current_sort
             reverse = (order == "desc")
-            level_ranks = {"DEBUG": 0, "INFO": 1, "WARNING": 2, "ERROR": 3}
+            level_ranks = {
+                "DEBUG": 0, "DBG": 0,
+                "INFO": 1, "INF": 1,
+                "WARNING": 2, "WRN": 2,
+                "ERROR": 3, "ERR": 3,
+                "CRITICAL": 4, "CRI": 4
+            }
             def sort_key(item):
                 if col_idx == 0:
                     return level_ranks.get(item[0].upper(), 0)
@@ -426,7 +456,8 @@ class LogView(BaseView):
             item_level = QTableWidgetItem()
             item_level.setFlags(item_level.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 0, item_level)
-        item_level.setText(f"  {level.capitalize()}")
+        display_level = _CANONICAL_LEVELS.get(level.upper(), level).capitalize()
+        item_level.setText(f"  {display_level}")
         item_level.setForeground(QColor(hex_color))
         item_level.setIcon(icon)
 

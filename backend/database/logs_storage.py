@@ -89,8 +89,25 @@ class SQLiteSystemLogStorage:
                 params = []
                 
                 if filter_level != all_label:
-                    query += " AND level = ?"
-                    params.append(filter_level)
+                    level_pairs = {
+                        "INFO": ("INFO", "INF"),
+                        "DEBUG": ("DEBUG", "DBG"),
+                        "WARNING": ("WARNING", "WRN"),
+                        "ERROR": ("ERROR", "ERR"),
+                        "CRITICAL": ("CRITICAL", "CRI"),
+                        "INF": ("INFO", "INF"),
+                        "DBG": ("DEBUG", "DBG"),
+                        "WRN": ("WARNING", "WRN"),
+                        "ERR": ("ERROR", "ERR"),
+                        "CRI": ("CRITICAL", "CRI"),
+                    }
+                    if filter_level in level_pairs:
+                        p1, p2 = level_pairs[filter_level]
+                        query += " AND (level = ? OR level = ?)"
+                        params.extend([p1, p2])
+                    else:
+                        query += " AND level = ?"
+                        params.append(filter_level)
                     
                 if date_threshold:
                     query += " AND timestamp >= ?"

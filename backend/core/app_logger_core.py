@@ -9,7 +9,7 @@ import traceback
 from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
 from PySide6.QtCore import qInstallMessageHandler, QtMsgType
-from backend.handlers import QLogHandler, StreamToLogger
+from backend.handlers import QLogHandler, StreamToLogger, StructuredLogFormatter
 
 _fault_file_handle = None
 _q_log_handler_instance = None
@@ -118,10 +118,7 @@ def setup_application_logging():
         encoding='utf-8'
     )
     
-    file_formatter = logging.Formatter(
-        '[%(asctime)s] [%(levelname)s] %(message)s', 
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+    file_formatter = StructuredLogFormatter()
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logging.DEBUG)   
     logger.addHandler(file_handler)

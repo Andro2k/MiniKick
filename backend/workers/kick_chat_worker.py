@@ -129,7 +129,7 @@ class KickChatWorker(QThread):
             now_str = datetime.datetime.now().strftime("%H:%M")
             if not avatar_url and self.channel_slug and user.lower() == self.channel_slug.lower():
                 avatar_url = getattr(self, "_broadcaster_avatar", "")
-            logger.info("[KickChatWorker] [%s] Message dispatched from '%s': %s (id=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a")
+            logger.debug("[KickChatWorker] Message dispatched from '%s': %s (id=%s)", user, msg, msg_id[:8] if msg_id else "n/a")
             dto = ChatMessageDTO(
                 user=user,
                 content=msg,

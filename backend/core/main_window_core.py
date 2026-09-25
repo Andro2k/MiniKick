@@ -731,6 +731,10 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, 'music_controller') and self.music_controller:
             self.music_controller.shutdown()
 
+        if hasattr(self, 'widgets_controller') and self.widgets_controller:
+            if hasattr(self.widgets_controller, 'cleanup'):
+                self.widgets_controller.cleanup()
+
         self.logger.info("[Shutdown] Stopping TTS worker and overlay HTTP server...")
         self.container.shutdown()
 

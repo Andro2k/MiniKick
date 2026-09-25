@@ -9,7 +9,23 @@ from PySide6.QtGui import QDesktopServices
 
 logger = logging.getLogger("minikick.controllers.logs")
 
-_LOG_LINE_RE = re.compile(r"^\[(.*?)\] \[(.*?)\] (.*)", re.DOTALL)
+_LOG_LINE_RE = re.compile(
+    r"^\[(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{3}\s+[+-]\d{2}:\d{2})?)\]\s+\[(?P<level>[A-Za-z0-9_]+)\]\s+(?P<msg>.*)",
+    re.DOTALL
+)
+
+_LEVEL_ALIASES = {
+    "INFO": ("INFO", "INF"),
+    "DEBUG": ("DEBUG", "DBG"),
+    "WARNING": ("WARNING", "WRN"),
+    "ERROR": ("ERROR", "ERR"),
+    "CRITICAL": ("CRITICAL", "CRI"),
+    "INF": ("INFO", "INF"),
+    "DBG": ("DEBUG", "DBG"),
+    "WRN": ("WARNING", "WRN"),
+    "ERR": ("ERROR", "ERR"),
+    "CRI": ("CRITICAL", "CRI"),
+}
 
 class LogsController(QObject):
     log_processed = Signal(bool, str, str, str)
@@ -91,7 +107,8 @@ class LogsController(QObject):
         is_all = (self._current_filter == self.view.str_all)
         threshold = self._date_threshold
         for lvl, t_str, txt in self._historical_logs:
-            if not is_all and lvl != self._current_filter:
+            level_matches = is_all or (lvl == self._current_filter) or (lvl.upper() in _LEVEL_ALIASES.get(self._current_filter, ()))
+            if not level_matches:
                 continue
             if threshold and t_str < threshold:
                 continue
@@ -229,7 +246,9 @@ class LogsController(QObject):
     def process_incoming_log(self, level: str, message: str):
         match = _LOG_LINE_RE.match(message)
         if match:
-            time_str, real_level, text_str = match.groups()
+            time_str = match.group("time")
+            real_level = match.group("level")
+            text_str = match.group("msg")
         else:
             time_str, real_level, text_str = "-", level, message
 
@@ -238,7 +257,8 @@ class LogsController(QObject):
 
         if not self._is_historical and self._logs_streaming_visible:
             is_all = (self._current_filter == self.view.str_all)
-            if (is_all or real_level == self._current_filter) and self._matches_search(real_level, time_str, text_str):
+            level_matches = is_all or (real_level == self._current_filter) or (real_level.upper() in _LEVEL_ALIASES.get(self._current_filter, ()))
+            if level_matches and self._matches_search(real_level, time_str, text_str):
                 threshold = self._date_threshold
                 if not threshold or time_str >= threshold:
                     self.view.append_log(is_grouped, real_level, time_str, text_str)

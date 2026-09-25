@@ -3,7 +3,7 @@
 from .spam_handler import ChatFilterHandler
 from .tts_handler import TTSVoiceHandler
 from .music_handler import MusicCommandHandler
-from .logs_handler import LogEmitter, QLogHandler, StreamToLogger
+from .logs_handler import LogEmitter, QLogHandler, StreamToLogger, StructuredLogFormatter
 
 __all__ = [
     "ChatFilterHandler",
@@ -11,5 +11,6 @@ __all__ = [
     "MusicCommandHandler",
     "LogEmitter",
     "QLogHandler",
-    "StreamToLogger"
+    "StreamToLogger",
+    "StructuredLogFormatter"
 ]

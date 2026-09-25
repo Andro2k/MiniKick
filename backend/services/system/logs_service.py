@@ -8,7 +8,9 @@ from backend.database import SQLiteSystemLogStorage
 
 logger = logging.getLogger("minikick.services.logs")
 
-_LOG_FILE_LINE_RE = re.compile(r"^\[(.*?)\] \[(.*?)\] (.*)")
+_LOG_FILE_LINE_RE = re.compile(
+    r"^\[(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{3}\s+[+-]\d{2}:\d{2})?)\]\s+\[(?P<level>[A-Za-z0-9_]+)\]\s+(?P<msg>.*)"
+)
 
 class LogService:
     def __init__(self, log_storage: SQLiteSystemLogStorage = None, db_manager=None):
@@ -86,9 +88,22 @@ class LogService:
         filtered = []
         threshold = self._get_date_threshold(date_filter) if date_filter else ""
         search_lower = search_term.strip().lower()
+        level_pairs = {
+            "INFO": ("INFO", "INF"),
+            "DEBUG": ("DEBUG", "DBG"),
+            "WARNING": ("WARNING", "WRN"),
+            "ERROR": ("ERROR", "ERR"),
+            "CRITICAL": ("CRITICAL", "CRI"),
+            "INF": ("INFO", "INF"),
+            "DBG": ("DEBUG", "DBG"),
+            "WRN": ("WARNING", "WRN"),
+            "ERR": ("ERROR", "ERR"),
+            "CRI": ("CRITICAL", "CRI"),
+        }
         for lvl, t_str, txt in self._live_history:
             is_all = (filter_level == all_label)
-            if (is_all or lvl == filter_level):
+            level_matches = is_all or (lvl == filter_level) or (lvl.upper() in level_pairs.get(filter_level, ()))
+            if level_matches:
                 if not threshold or t_str >= threshold:
                     if not search_lower or (search_lower in lvl.lower() or search_lower in t_str.lower() or search_lower in txt.lower()):
                         filtered.append((lvl, t_str, txt))
@@ -117,7 +132,7 @@ class LogService:
                 if match:
                     if current_entry:
                         parsed_history.append(current_entry)
-                    current_entry = (match.group(2), match.group(1), match.group(3))
+                    current_entry = (match.group("level"), match.group("time"), match.group("msg"))
                 else:
                     if current_entry:
                         current_entry = (current_entry[0], current_entry[1], f"{current_entry[2]}\n{line}")

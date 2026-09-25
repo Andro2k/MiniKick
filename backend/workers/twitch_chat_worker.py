@@ -103,7 +103,7 @@ class TwitchChatWorker(QThread):
         avatar_url = ""
         if self.channel_name and user.lower() == self.channel_name.lower():
             avatar_url = getattr(self, "_broadcaster_avatar", "")
-        logger.info("[TwitchChatWorker] [%s] Message dispatched from '%s': %s (id=%s, gif=%s)", now_str, user, msg, msg_id[:8] if msg_id else "n/a", bool(gif_url))
+        logger.debug("[TwitchChatWorker] Message dispatched from '%s': %s (id=%s, gif=%s)", user, msg, msg_id[:8] if msg_id else "n/a", bool(gif_url))
         dto = ChatMessageDTO(
             user=user,
             content=msg,

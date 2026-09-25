@@ -235,6 +235,18 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS daily_top_chatters (
+                    chatter_date TEXT NOT NULL,
+                    username TEXT NOT NULL,
+                    message_count INTEGER NOT NULL DEFAULT 1,
+                    color TEXT DEFAULT '#2ecd70',
+                    badges_json TEXT DEFAULT '[]',
+                    platform TEXT DEFAULT 'kick',
+                    last_seen TEXT NOT NULL,
+                    PRIMARY KEY (chatter_date, username)
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
@@ -369,6 +381,7 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name ON reward_redemptions(reward_name)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_platform ON reward_redemptions(platform)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name_ts ON reward_redemptions(reward_name, timestamp DESC)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_daily_chatters_date_count ON daily_top_chatters(chatter_date, message_count DESC)")
 
             try:
                 cursor.execute("""
