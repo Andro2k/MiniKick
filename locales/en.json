@@ -380,7 +380,9 @@
             "subtitle": "Set up automated bot commands and custom responses for your community.",
             "tab_advanced": "Advanced",
             "title": "Configure Command",
-            "trigger_label": "Command trigger (Ex: !discord):"
+            "trigger_label": "Command trigger (Ex: !discord):",
+            "trigger_placeholder": "!my_command",
+            "trigger_invalid_hint": "Command must start with '!' and cannot contain spaces. Spaces are converted to '_'."
         },
         "empty": {
             "btn": "Create Command",
@@ -419,7 +421,8 @@
             "tooltip_delete": "Permanently delete command",
             "tooltip_edit": "Modify command settings",
             "type_custom": "Custom",
-            "type_plugin": "Plugin"
+            "type_plugin": "Plugin",
+            "warning_legacy_format": "Command has non-standard format (contains spaces or uppercase). Edit it to normalize."
         }
     },
     "common": {

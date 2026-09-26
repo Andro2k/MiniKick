@@ -380,7 +380,9 @@
             "subtitle": "Configura comandos automáticos y respuestas personalizadas para tu comunidad.",
             "tab_advanced": "Avanzado",
             "title": "Configurar Comando",
-            "trigger_label": "Nombre del comando (Ej: !discord):"
+            "trigger_label": "Nombre del comando (Ej: !discord):",
+            "trigger_placeholder": "!mi_comando",
+            "trigger_invalid_hint": "El comando debe empezar con '!' y no puede contener espacios. Los espacios se sustituyen por '_'."
         },
         "empty": {
             "btn": "Crear Comando",
@@ -419,7 +421,8 @@
             "tooltip_delete": "Eliminar comando permanentemente",
             "tooltip_edit": "Modificar configuración del comando",
             "type_custom": "Personalizado",
-            "type_plugin": "Plugin"
+            "type_plugin": "Plugin",
+            "warning_legacy_format": "Comando con formato no estándar (contiene espacios o mayúsculas). Edítalo para normalizarlo."
         }
     },
     "common": {

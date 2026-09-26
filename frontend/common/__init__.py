@@ -13,6 +13,8 @@ from .icons import (
 
 from .validators import (
     validate_trigger_prefix,
+    sanitize_command_trigger,
+    is_complete_valid_trigger,
 )
 
 from .theme import (

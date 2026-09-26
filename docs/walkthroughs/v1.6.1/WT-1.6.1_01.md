@@ -1,13 +1,17 @@
-# Walkthrough WT-1.6.1_01 — Persistencia Diaria de Top Chatters y Logs Estructurados de Alta Precisión
+# Walkthrough WT-1.6.1_01 — Persistencia Diaria de Top Chatters, Logs Estructurados y Normalización de Comandos
 
 ## Resumen de la Versión
 * **Versión:** `v1.6.1`
-* **Tipo:** Mejora de Arquitectura, Persistencia Diaria, Logs Estructurados y Auditoría de Telemetría
+* **Tipo:** Mejora de Arquitectura, Persistencia Diaria, Logs Estructurados, Normalización de Comandos y Auditoría de Telemetría
 * **Módulos Afectados:**
   * [`backend/database/database_manager.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/database_manager.py)
   * [`backend/database/widgets_storage.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/widgets_storage.py)
+  * [`backend/database/commands_storage.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/commands_storage.py)
   * [`backend/services/system/widgets_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/widgets_service.py)
+  * [`backend/services/chat/commands_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/chat/commands_service.py)
+  * [`backend/utils/command_utils.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/utils/command_utils.py)
   * [`backend/controllers/widgets_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/widgets_controller.py)
+  * [`backend/controllers/commands_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/commands_controller.py)
   * [`backend/core/main_window_core.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/core/main_window_core.py)
   * [`backend/handlers/logs_handler.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/handlers/logs_handler.py)
   * [`backend/handlers/__init__.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/handlers/__init__.py)
@@ -19,9 +23,15 @@
   * [`backend/providers/chat/kick_ws_provider.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/kick_ws_provider.py)
   * [`backend/workers/kick_chat_worker.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/kick_chat_worker.py)
   * [`backend/workers/twitch_chat_worker.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/twitch_chat_worker.py)
+  * [`frontend/common/validators.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/validators.py)
+  * [`frontend/dialogs/commands_dialog.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/commands_dialog.py)
+  * [`frontend/views/commands_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/commands_view.py)
   * [`frontend/views/logs_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/logs_view.py)
+  * [`locales/es.json`](file:///c:/Users/TheAn/Desktop/python/Kick/locales/es.json)
+  * [`locales/en.json`](file:///c:/Users/TheAn/Desktop/python/Kick/locales/en.json)
   * [`resources/tests/test_daily_top_chatters.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/test_daily_top_chatters.py)
   * [`resources/tests/test_structured_logging.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/test_structured_logging.py)
+  * [`resources/tests/test_commands_sanitization.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/test_commands_sanitization.py)
 
 ---
 
@@ -47,6 +57,12 @@
   Mapeo uniforme de niveles de severidad: `DBG` (Debug), `INF` (Info), `WRN` (Warning), `ERR` (Error) y `CRI` (Critical).
 * **Nombres de Módulos Limpios con Notación de Puntos:**
   Transformación y normalización en tiempo real (`MiniKick.Workers.KickChat`, `MiniKick.Services.Audio`, `MiniKick.Database.SystemLogs`) con caché de resolución $\mathcal{O}(1)$.
+
+### 3. Normalización Interactiva y Validación Estricta de Comandos
+* **Conversión Fluida a Formato de Chat (`sanitize_command_trigger`):**
+  Se implementó en [`backend/utils/command_utils.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/utils/command_utils.py#L8-L38) la lógica de saneamiento de triggers. Al teclear en [`CommandConfigWizard`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/dialogs/commands_dialog.py#L196-L215), los espacios se convierten automáticamente a guiones bajos (`_`), las mayúsculas a minúsculas y se remueven caracteres conflictivos, garantizando que el comando siempre sea ejecutable en Kick y Twitch (ej: `!categoria 1` $\to$ `!categoria_1`).
+* **Validación en Tiempo Real y Bloqueo Seguro:**
+  El diálogo valida que el comando comience con `!` y contenga al menos un carácter válido antes de habilitar el botón "Siguiente" o "Guardar".
 
 ---
 
@@ -78,10 +94,25 @@
 * **Telemetría Granular Protegida en Nivel `DEBUG`:**
   Las trazas de capa de red y despacho de workers ([`KickWsProvider`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/kick_ws_provider.py#L170), [`KickChatWorker`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/kick_chat_worker.py#L132), [`TwitchChatWorker`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/twitch_chat_worker.py#L106)) se migraron a `logger.debug`, preservando la latencia del servidor de Kick y los IDs de mensaje (`id=b25cf2f7`) para auditoría técnica sin saturar los logs de uso diario.
 
-### 4. Auditoría Técnica de Telemetría y Latencia de Chat
+### 4. Ajuste Ergonómico de la Tabla de Comandos y Ancho de Columna
+* **Ampliación de Columna "Comando" a 190px Interactivos:**
+  En [`CommandView`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/commands_view.py#L114-L121), se cambió el modo de redimensionamiento de la columna 0 a `Interactive` con un ancho de `190px`, permitiendo visualizar comandos largos como `!topchatters` o `!categoria_1` en su totalidad sin cortes.
+* **Indicador Visual de Advertencia para Formatos Heredados:**
+  En [`CommandView._create_command_cell`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/commands_view.py#L218-L223), si un comando posee espacios o formato no estándar, se muestra un icono de alerta ámbar con tooltip informativo (`command.table.warning_legacy_format`).
+
+### 5. Migración Automática de Comandos Legacy en Base de Datos
+* **Actualización Segura en Inicialización:**
+  En [`CommandService.reload_cache`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/chat/commands_service.py#L42-L60), al cargar comandos se detectan automáticamente triggers heredados con espacios o mayúsculas y se actualizan en SQLite mediante [`SQLiteCommandsStorage.update_command_trigger`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/commands_storage.py#L90-L113), renombrando tanto el comando como sus registros de ejecución de forma transparente.
+
+### 6. Auditoría Técnica de Telemetría y Latencia de Chat
 * Se analizó el reporte de log `minikick_JosueGMN_v1.6.0.log` (533 mensajes de chat recibidos durante 3 horas):
   * **Procesamiento interno:** $< 0.001\text{ s}$ en MiniKick (pipeline WebSocket $\to$ Worker $\to$ Controller $\to$ UI/Overlay).
   * **Diagnóstico de picos de latencia externa:** Se determinó que los desfases de hasta 20 segundos detectados en el log correspondieron a congestión temporal en el clúster de Pusher/Kick previo a la entrega por socket TCP al cliente local, o roundtrip de transmisión de video, y no a lentitud interna de la aplicación.
+
+### 7. Verificación de Cero Deuda Técnica y Calidad AST
+* **Auditoría de Código Muerto (`dead_code_manager.py`):** 215 archivos escaneados con 0 módulos huérfanos, 0 clases/funciones huérfanas y 0 importaciones innecesarias.
+* **Auditoría de Duplicación AST (`dry_duplication_auditor.py`):** 2,118 funciones analizadas con 0 bloques clonados o duplicados tras la extracción de helpers de renderizado de celdas en [`CommandView`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/commands_view.py).
+* **Auditoría de Parámetros (`unused_parameter_manager.py`):** 0 parámetros huérfanos en todo el proyecto.
 
 ---
 
@@ -98,3 +129,7 @@
 ### 3. Registro Triple y Ruido Repetitivo en Mensajes de Chat
 * **Causa Raíz:** Los mensajes de chat se registraban simultáneamente a nivel `INFO` en la capa de WebSocket (`KickWsProvider`), en la capa de Worker (`KickChatWorker`/`TwitchChatWorker`) y en el controlador de interfaz (`ChatController`), repitiendo además etiquetas redundantes (`[Chat]` y la hora ya presente en el encabezado estructurado).
 * **Solución:** Consolidación de un único registro `[INF]` limpio en [`ChatController`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/chat_controller.py#L660) y migración de las trazas de transporte con ID y latencias al nivel `DEBUG`.
+
+### 4. Inejecutabilidad de Comandos con Espacios y Truncamiento en Tabla
+* **Causa Raíz:** La creación de comandos no validaba la presencia de espacios ni normalizaba mayúsculas, impidiendo que el despachador de chat (`split(maxsplit=1)[0]`) hiciera coincidir el comando. Adicionalmente, el modo `ResizeToContents` en una tabla con `cellWidget` calculaba incorrectamente el ancho, cortando nombres como `!topchatters`.
+* **Solución:** Saneamiento automático en tiempo real (`_` para espacios, minúsculas forzadas), ampliación de la columna a `190px Interactive`, migración automática de triggers legacy en SQLite y badge de advertencia para comandos no estándar.
