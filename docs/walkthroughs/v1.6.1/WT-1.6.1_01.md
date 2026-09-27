@@ -47,7 +47,7 @@
 * **Purga Asíncrona de Historial Antiguo:**
   En segundo plano y sin bloquear el hilo principal ni la base de datos, [`SQLiteWidgetsStorage.prune_old_chatters`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/database/widgets_storage.py#L162-L171) limpia registros de chatters con más de 7 días de antigüedad.
 
-### 2. Formato Estructurado de Logs de Alta Precisión (Estilo Jellyfin)
+### 2. Formato Estructurado de Logs de Alta Precisión
 * **Nuevo Formateador Estructurado (`StructuredLogFormatter`):**
   Se implementó en [`backend/handlers/logs_handler.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/handlers/logs_handler.py#L42-L75) el formateador de grado producción que estandariza todas las líneas de registro en disco (`minikick.log`):
   `[YYYY-MM-DD HH:mm:ss.fff ±HH:MM] [LVL] [ThreadName] LoggerName: Mensaje`

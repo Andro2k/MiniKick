@@ -2,6 +2,7 @@
 
 import json
 import logging
+import socket
 import struct
 import threading
 
@@ -138,6 +139,8 @@ class WebSocketClient:
             else:
                 return None
 
+        except (TimeoutError, socket.timeout):
+            return None
         except Exception:
             self.closed = True
             return None
