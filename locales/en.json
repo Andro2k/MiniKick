@@ -381,9 +381,9 @@
             "subtitle": "Set up automated bot commands and custom responses for your community.",
             "tab_advanced": "Advanced",
             "title": "Configure Command",
+            "trigger_invalid_hint": "Command must start with '!' and cannot contain spaces. Spaces are converted to '_'.",
             "trigger_label": "Command trigger (Ex: !discord):",
-            "trigger_placeholder": "!my_command",
-            "trigger_invalid_hint": "Command must start with '!' and cannot contain spaces. Spaces are converted to '_'."
+            "trigger_placeholder": "!my_command"
         },
         "empty": {
             "btn": "Create Command",
@@ -1512,6 +1512,19 @@
             "tooltip_edit": "Edit timer",
             "unit_lines": "Lines",
             "unit_minutes": "Minutes"
+        }
+    },
+    "whats_new": {
+        "badge": {
+            "tooltip": "New in this update!"
+        },
+        "dialog": {
+            "btn_got_it": "Got it!",
+            "btn_start": "Start Exploring",
+            "subtitle_update": "Discover the latest features and optimizations designed to level up your stream.",
+            "subtitle_welcome": "Your unified all-in-one assistant for Kick, Twitch, YouTube, and TikTok.",
+            "title_update": "What's New in MiniKick v{version}",
+            "title_welcome": "Welcome to MiniKick!"
         }
     },
     "widgets": {

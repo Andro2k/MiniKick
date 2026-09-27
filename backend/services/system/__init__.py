@@ -8,6 +8,7 @@ from .logs_service import LogService
 from .settings_service import SettingsService
 from .translation_service import TranslationService
 from .updater_service import GithubUpdateProvider, WindowsInstaller, UpdateManager
+from .whats_new_service import WhatsNewService
 from .widgets_service import WidgetService
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "SocketInstanceProvider",
     "TranslationService",
     "UpdateManager",
+    "WhatsNewService",
     "WidgetService",
     "WindowsInstaller",
 ]

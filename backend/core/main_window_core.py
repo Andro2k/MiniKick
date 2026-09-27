@@ -17,7 +17,7 @@ from .app_container_core import AppContainerCore
 from .app_logger_core import setup_application_logging
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
-    LogService, SettingsService, SpamService, TimerService
+    LogService, SettingsService, SpamService, TimerService, WhatsNewService
 )
 from backend.controllers import (
     RewardsController, ChatController, CommandsController, DashboardController,
@@ -37,7 +37,9 @@ from frontend.views import (
     LogView, MusicView, SettingsView, WidgetsView,
     ScheduleView, AlertsView
 )
-from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog
+from frontend.dialogs import (
+    ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog, WhatsNewDialog
+)
 
 try:
     from backend.config import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
@@ -88,6 +90,7 @@ class MainWindowCore(QMainWindow):
         self.kick_auth_manager = self.container.kick_auth_manager
         self.tts_manager = self.container.tts_manager
         self.overlay_server = self.container.overlay_server
+        self.whats_new_service = WhatsNewService(self.settings_storage, self.app_version)
         
         title_template = self.i18n.get("main.window.title")
         self.setWindowTitle(title_template.replace("{version}", app_version))
@@ -287,6 +290,7 @@ class MainWindowCore(QMainWindow):
         self.main_layout.addWidget(self.content_stack)
 
         self._update_dashboard_metrics()
+        self._init_feature_badges()
 
     def _setup_tray(self):
         self.tray_manager = SystemTrayManager(self.i18n, self)
@@ -302,6 +306,7 @@ class MainWindowCore(QMainWindow):
     def _connect_signals(self):
         self.settings_controller.style_reload_requested.connect(self._apply_dynamic_theme)
         self.sidebar.view_selected.connect(self._handle_navigation)
+        self.sidebar.section_viewed.connect(self._on_section_viewed)
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
         self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
         self.dashboard_controller.youtube_connect_requested.connect(self._on_youtube_integration_button_clicked)
@@ -503,6 +508,43 @@ class MainWindowCore(QMainWindow):
         ]
         self._prewarm_queue = deque(views_to_warm)
         QTimer.singleShot(2500, self._prewarm_next_view)
+        QTimer.singleShot(750, self._check_whats_new_dialog)
+
+    def _init_feature_badges(self):
+        try:
+            unseen = self.whats_new_service.get_unseen_badges()
+            for section in unseen:
+                self.sidebar.set_tab_badge(section, True)
+        except Exception as e:
+            self.logger.warning("[WhatsNew] Error initializing feature badges: %s", e)
+
+    def _on_section_viewed(self, section_name: str):
+        try:
+            self.whats_new_service.mark_section_seen(section_name)
+        except Exception as e:
+            self.logger.warning("[WhatsNew] Error marking section '%s' as seen: %s", section_name, e)
+
+    def _check_whats_new_dialog(self):
+        if self._is_shutting_down or getattr(self, "_is_window_closing", False):
+            return
+        try:
+            if not self.whats_new_service.should_show_modal():
+                return
+            is_first = self.whats_new_service.is_first_launch()
+            highlights = self.whats_new_service.get_highlights()
+            if not highlights:
+                return
+            dialog = WhatsNewDialog(
+                i18n=self.i18n,
+                highlights=highlights,
+                is_first_launch=is_first,
+                app_version=self.app_version,
+                parent=self
+            )
+            dialog.exec()
+            self.whats_new_service.mark_version_seen()
+        except Exception as e:
+            self.logger.error("[WhatsNew] Error displaying What's New dialog: %s", e)
 
     def _prewarm_next_view(self):
         if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:

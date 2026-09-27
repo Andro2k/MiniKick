@@ -10,12 +10,13 @@ La versión 1.6.1 de MiniKick introduce mejoras sustanciales en la persistencia 
 
 A continuación se resumen las nuevas funcionalidades incorporadas en esta actualización:
 
-| Característica | Descripción | Beneficio para el Usuario |
-|---|---|---|
-| Persistencia Diaria de Top Chatters | Almacenamiento continuo del ranking de espectadores más activos particionado por día. | Si la aplicación se cierra, se reinicia o se pierde la conexión durante el directo, el ranking de chatters del día actual no se reinicia ni se pierde, restaurándose de inmediato en la interfaz y en el overlay de OBS. |
-| Normalización Automática de Comandos | Formateo predictivo al crear o editar comandos: reemplazo automático de espacios por guiones bajos y conversión a minúsculas. | Garantiza que todos los comandos creados por el streamer se reconozcan y ejecuten siempre en el chat sin fallos por espacios o mayúsculas involuntarias. |
-| Auditoría en Vivo de Overlays en OBS | Registro transparente y estructurado de las conexiones y desconexiones de fuentes de navegador de OBS (Chat, Música, Widgets, Alertas). | Permite al streamer verificar con certeza si OBS mantiene conectadas sus fuentes de overlay o si alguna escena las suspendió o reinició. |
-| Integración de Filtros Anti-Spam en el Chat | Nueva pestaña dedicada para la configuración de moderación automática dentro de la vista principal del chat. | Permite ajustar mayúsculas, enlaces, emotes excesivos y repeticiones directamente en el chat, eliminando la necesidad de cambiar a otra sección. |
+| Sección | Característica | Descripción | Beneficio para el Usuario |
+|---|---|---|---|
+| Widgets | Persistencia Diaria de Top Chatters | Almacenamiento continuo del ranking de espectadores más activos particionado por día. | Si la aplicación se cierra, se reinicia o se pierde la conexión durante el directo, el ranking de chatters del día actual no se reinicia ni se pierde, restaurándose de inmediato en la interfaz y en el overlay de OBS. |
+| Comandos | Normalización Automática de Comandos | Formateo predictivo al crear o editar comandos: reemplazo automático de espacios por guiones bajos y conversión a minúsculas. | Garantiza que todos los comandos creados por el streamer se reconozcan y ejecuten siempre en el chat sin fallos por espacios o mayúsculas involuntarias. |
+| Chat | Integración de Filtros Anti-Spam en el Chat | Nueva pestaña dedicada para la configuración de moderación automática dentro de la vista principal del chat. | Permite ajustar mayúsculas, enlaces, emotes excesivos y repeticiones directamente en el chat, eliminando la necesidad de cambiar a otra sección. |
+| Developer | Auditoría en Vivo de Overlays en OBS | Registro transparente y estructurado de las conexiones y desconexiones de fuentes de navegador de OBS (Chat, Música, Widgets, Alertas). | Permite al streamer verificar con certeza si OBS mantiene conectadas sus fuentes de overlay o si alguna escena las suspendió o reinició. |
+| Dashboard | Sistema de Bienvenida e Insignias de Novedades | Ventana interactiva al actualizar o instalar la app, complementada con insignias naranjas reactivas en la navegación. | Al ingresar tras una actualización o por primera vez, el usuario conoce de inmediato las mejoras añadidas. Las secciones con novedades se identifican con una insignia naranja que desaparece al explorarlas. |
 
 > [!NOTE]
 > Al iniciar la aplicación, si existen comandos creados en versiones anteriores que contengan espacios, la tabla de comandos alertará amablemente al usuario indicando el formato recomendado para mantener su correcto funcionamiento.
@@ -38,6 +39,9 @@ A continuación se resumen las nuevas funcionalidades incorporadas en esta actua
 
 * **Ajuste Visual Responsivo en la Tabla de Comandos:**
   La columna de comandos en la lista principal ahora se adapta dinámicamente al ancho del texto, permitiendo visualizar comandos con nombres extensos sin que se recorten o queden ilegibles.
+
+* **Sincronización Directa de Novedades y Optimización de Almacenamiento:**
+  El diálogo de bienvenida y las insignias de navegación ahora leen de forma automática el registro oficial de novedades de cada versión, manteniendo la base de datos interna limpia y ligera sin acumulación de datos residuales entre actualizaciones sucesivas.
 
 > [!TIP]
 > Para garantizar que los overlays no experimenten demoras al cambiar de escena en OBS Studio, se aconseja mantener desmarcada la opción "Apagar la fuente cuando no sea visible" en las propiedades de la fuente de navegador de OBS.

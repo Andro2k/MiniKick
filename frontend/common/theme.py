@@ -54,6 +54,10 @@ COLOR_BLUE         = "#3B82F6"
 COLOR_BLUE_DARK    = "#2563EB"
 COLOR_PURPLE       = "#A855F7"
 COLOR_PURPLE_DARK  = "#9333EA"
+COLOR_ORANGE       = "#FF6B35"
+COLOR_ORANGE_DARK  = "#E0481D"
+COLOR_ORANGE_HOVER = "#FF7E47"
+COLOR_ORANGE_GLOW  = "rgba(255, 107, 53, 0.25)"
 
 COLOR_KICK_BORDER               = "#1A7A42"
 COLOR_KICK_BORDER_BOTTOM        = "#125E31"
@@ -579,6 +583,10 @@ QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {CO
 QLabel[role="tag_badge"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
 QLabel[role="channel_avatar"] {{ border-radius: 48px; background-color: {COLOR_NEUTRAL_800}; border: 2px solid {COLOR_NEUTRAL_700}; }}
 QLabel[role="rank_number"] {{ color: {COLOR_GREEN}; font-weight: 500; min-width: 20px; }}
+QLabel[role="badge_new"] {{ background-color: {COLOR_ORANGE}; color: {COLOR_PURE_WHITE}; font-weight: 700; border-radius: 9px; min-width: 18px; max-width: 18px; min-height: 18px; max-height: 18px; font-size: 10px; qproperty-alignment: AlignCenter; }}
+QLabel[role="badge_new"][state="collapsed"] {{ border-radius: 6px; min-width: 12px; max-width: 12px; min-height: 12px; max-height: 12px; font-size: 7px; font-weight: 800; }}
+QFrame[role="whats_new_card"] {{ background-color: {COLOR_NEUTRAL_850}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_LG}px; }}
+QFrame[role="whats_new_card"]:hover {{ background-color: {COLOR_SURFACE_HOVER}; border: {BORDER_DEFAULT}; }}
 QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 12px; }}
 
 /* Table Widget */

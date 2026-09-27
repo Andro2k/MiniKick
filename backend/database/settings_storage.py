@@ -63,3 +63,13 @@ class SQLiteSettingsStorage:
             logger.debug("[SettingsStorage] Batch saved %d settings", len(data))
         except Exception as e:
             logger.error("[SettingsStorage] Error batch saving settings: %s", e)
+
+    def delete_key_prefix(self, prefix: str) -> None:
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM settings WHERE key LIKE ?", (f"{prefix}%",))
+                conn.commit()
+            logger.debug("[SettingsStorage] Deleted settings matching prefix '%s'", prefix)
+        except Exception as e:
+            logger.error("[SettingsStorage] Error deleting settings matching prefix '%s': %s", prefix, e)
