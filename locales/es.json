@@ -346,7 +346,8 @@
         "tabs": {
             "muted": "Silenciados",
             "overlay": "Overlay (OBS)",
-            "settings": "Ajustes de Voz"
+            "settings": "Ajustes de Voz",
+            "spam": "Filtros Anti-Spam"
         }
     },
     "command": {

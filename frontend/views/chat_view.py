@@ -1,6 +1,9 @@
 # frontend\views\chat_view.py
 
-from frontend.components.chat import ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel, ChatTtsSettingsPanel
+from frontend.components.chat import (
+    ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel,
+    ChatTtsSettingsPanel, ChatSpamPanel
+)
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBoxLayout
 from PySide6.QtCore import Signal
 from .base_view import BaseView
@@ -35,6 +38,10 @@ class ChatView(BaseView):
         if hasattr(self, "bot_panel") and hasattr(self.bot_panel, "set_command_toggles"):
             self.bot_panel.set_command_toggles(mute_enabled, block_enabled)
 
+    def set_connected_platforms(self, connected_platforms: dict[str, bool]) -> None:
+        if hasattr(self, "spam_panel") and hasattr(self.spam_panel, "set_connected_platforms"):
+            self.spam_panel.set_connected_platforms(connected_platforms)
+
     def _setup_ui(self):
         self.main_layout.setSpacing(SPACING_MD)
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
@@ -46,6 +53,7 @@ class ChatView(BaseView):
 
         self.tts_settings_panel = ChatTtsSettingsPanel(self.i18n)
         self.bot_panel = BotMutePanel(self.i18n)
+        self.spam_panel = ChatSpamPanel(self.i18n)
         self.overlay_settings_panel = ChatOverlaySettingsPanel(self.i18n)
         self.chat_display_panel = ChatDisplayPanel(self.i18n)
 
@@ -54,6 +62,7 @@ class ChatView(BaseView):
         self.chat_display = self.chat_display_panel.chat_display
         self.tabs.addTab(ModernScrollArea(self.tts_settings_panel), self.i18n.get("chat.tabs.settings"))
         self.tabs.addTab(ModernScrollArea(self.bot_panel), self.i18n.get("chat.tabs.muted"))
+        self.tabs.addTab(ModernScrollArea(self.spam_panel), self.i18n.get("chat.tabs.spam"))
         self.tabs.addTab(ModernScrollArea(self.overlay_settings_panel), self.i18n.get("chat.tabs.overlay"))
 
         self.left_container = QWidget()

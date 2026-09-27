@@ -34,7 +34,7 @@ from frontend.common import COLOR_GREEN, get_global_qss
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
-    LogView, MusicView, SettingsView, SpamView, WidgetsView,
+    LogView, MusicView, SettingsView, WidgetsView,
     ScheduleView, AlertsView
 )
 from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog
@@ -57,7 +57,6 @@ class MainWindowCore(QMainWindow):
         ("Dashboard", "element-filled.svg", "top"),
         ("Chat", "dialog-filled.svg", "top"),
         ("Stream Info", "calendar-days-filled.svg", "top"),
-        ("Spam Filters", "shield-filled.svg", "top"),
         ("Comandos", "chat-square-code-filled.svg", "top"),
         ("Timers", "alarm-filled.svg", "top"),
         ("Music", "music-notes-filled.svg", "top"),
@@ -422,6 +421,8 @@ class MainWindowCore(QMainWindow):
             self.content_stack.addWidget(self.view_chat)
             self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
             self.chat_controller.attach_view(self.view_chat)
+            if hasattr(self.view_chat, "spam_panel"):
+                self.spam_controller.attach_view(self.view_chat.spam_panel)
             view_widget = self.view_chat
         elif view_name == "Music":
             self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self.content_stack)
@@ -456,11 +457,6 @@ class MainWindowCore(QMainWindow):
             self.content_stack.addWidget(self.view_widgets)
             self.widgets_controller.attach_view(self.view_widgets)
             view_widget = self.view_widgets
-        elif view_name == "Spam Filters":
-            self.view_spam = SpamView(self.i18n, parent=self.content_stack)
-            self.content_stack.addWidget(self.view_spam)
-            self.spam_controller.attach_view(self.view_spam)
-            view_widget = self.view_spam
         elif view_name == "Timers":
             self.view_timers = TimersView(self.i18n, parent=self.content_stack)
             self.content_stack.addWidget(self.view_timers)
@@ -502,7 +498,7 @@ class MainWindowCore(QMainWindow):
     def _schedule_view_prewarming(self):
         views_to_warm = [
             "Chat", "Alerts", "Widgets", "Settings", "Triggers",
-            "Stream Info", "Comandos", "Timers", "Spam Filters",
+            "Stream Info", "Comandos", "Timers",
             "Music", "Developer"
         ]
         self._prewarm_queue = deque(views_to_warm)
@@ -1305,12 +1301,12 @@ class MainWindowCore(QMainWindow):
             )
 
         conn_dict = self.get_connected_platforms()
+        if hasattr(self, "view_chat") and self.view_chat and hasattr(self.view_chat, "set_connected_platforms"):
+            self.view_chat.set_connected_platforms(conn_dict)
         if hasattr(self, "view_commands") and self.view_commands and hasattr(self.view_commands, "set_connected_platforms"):
             self.view_commands.set_connected_platforms(conn_dict)
         if hasattr(self, "view_schedule") and self.view_schedule and hasattr(self.view_schedule, "set_connected_platforms"):
             self.view_schedule.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_spam") and self.view_spam and hasattr(self.view_spam, "set_connected_platforms"):
-            self.view_spam.set_connected_platforms(conn_dict)
         if hasattr(self, "view_rewards") and self.view_rewards and hasattr(self.view_rewards, "set_connected_platforms"):
             self.view_rewards.set_connected_platforms(conn_dict)
         if hasattr(self, "view_timers") and self.view_timers and hasattr(self.view_timers, "set_connected_platforms"):
