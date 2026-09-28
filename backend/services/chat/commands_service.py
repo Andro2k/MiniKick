@@ -16,6 +16,10 @@ class CommandService(QObject):
         "everyone": 0, "subscriber": 1,
         "vip": 2, "moderator": 3, "broadcaster": 4
     }
+    _DEFAULT_BOT_NAMES = frozenset({
+        "minikick", "botrix", "nightbot", "streamelements", "moobot", "streamlabs",
+        "wizebot", "fossabot", "kofi", "streamerbot", "sery_bot", "blerp", "soundalerts", "songlistbot"
+    })
 
     def __init__(self, commands_storage, api_client=None):
         super().__init__()
@@ -179,6 +183,12 @@ class CommandService(QObject):
 
     def process_incoming_message(self, user: str, message: str, badges: list, platform: str = "kick") -> tuple[bool, str, dict, str]:
         if not message or not message.strip():
+            return False, "", {}, ""
+
+        u_clean = (user or "").strip().lower().lstrip("@")
+        if u_clean in self._DEFAULT_BOT_NAMES:
+            return False, "", {}, ""
+        if badges and any(str(b).lower() == "bot" for b in badges):
             return False, "", {}, ""
 
         parts = message.strip().split(maxsplit=1)

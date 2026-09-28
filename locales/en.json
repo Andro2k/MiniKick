@@ -198,6 +198,18 @@
             "ttsunmute_success": "@{user}, user @{target} has been unmuted in TTS.",
             "ttsunmute_usage": "@{user}, correct usage: !ttsunmute <username>"
         },
+        "commands_help": {
+            "active_header": "📖 Active commands:",
+            "active_tag": "Active",
+            "empty_category": "No commands available in {category}.",
+            "empty_general": "No commands currently configured.",
+            "inactive_tag": "Inactive",
+            "sec_chat": "💬 Chat",
+            "sec_moderation": "🛡️ Moderation",
+            "sec_music": "🎵 Music",
+            "sec_widgets": "🎮 Widgets",
+            "status_header": "📋 Commands status:"
+        },
         "display": {
             "title": "Chat History"
         },

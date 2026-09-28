@@ -20,6 +20,7 @@ A continuación se resumen las nuevas funcionalidades incorporadas en esta actua
 | Dashboard | Sistema de Bienvenida e Insignias de Novedades | Ventana interactiva al actualizar o instalar la app, complementada con insignias naranjas reactivas en la navegación. | Al ingresar tras una actualización o por primera vez, el usuario conoce de inmediato las mejoras añadidas. Las secciones con novedades se identifican con una insignia naranja que desaparece al explorarlas. |
 | Dashboard | Activación y Actualización en Vivo de Top Chatters | Aviso inteligente en la tabla cuando el módulo está inactivo con botón de encendido en un clic y actualización automática de posiciones sin recargar. | Si el módulo está apagado, la aplicación te sugiere activarlo directamente desde la pantalla principal sin tener que navegar a otra pestaña. Al estar activo, las posiciones y mensajes del día se actualizan en vivo en la pantalla conforme los espectadores van participando en el chat. |
 | Widgets | Conteo Opcional de Comandos en Top Chatters | Nueva casilla en la configuración del widget para decidir si los comandos de chat se contabilizan o se descartan del ranking. | Otorga al streamer la libertad de elegir si desea premiar únicamente la conversación habitual o incluir la participación interactiva por comandos y minijuegos en el podio. |
+| Chat | Comando de Ayuda y Listado por Categorías | Nuevo comando nativo en el chat con desglose temático (Chat, Música, Widgets, Moderación) y partición inteligente multimensaje. | Permite a cualquier espectador conocer los comandos disponibles en el canal sin saturar el chat y sin que los mensajes se corten por límites de caracteres en Kick o Twitch. |
 
 > [!NOTE]
 > Al iniciar la aplicación, si existen comandos creados en versiones anteriores que contengan espacios, la tabla de comandos alertará amablemente al usuario indicando el formato recomendado para mantener su correcto funcionamiento.
@@ -58,6 +59,12 @@ A continuación se resumen las nuevas funcionalidades incorporadas en esta actua
 * **Actualización en Tiempo Real de Espectadores Participativos:**
   La lista de los miembros más activos ahora reacciona de forma inmediata a los mensajes que ingresan durante la sesión. El sistema consolida y refresca los porcentajes y medallas en pantalla automáticamente, eliminando la necesidad de cambiar de fecha para consultar el estado actual.
 
+* **Partición Multimensaje Adaptada a Plataformas:**
+  El listado de comandos respeta estrictamente los límites de longitud de Kick y Twitch (máximo 380 caracteres seguros). Si la cantidad de comandos activos excede la capacidad de un solo mensaje, el sistema divide automáticamente el contenido por secciones temáticas o bloques correlativos y los envía de manera secuencial sin bloquear la transmisión.
+
+* **Privacidad y Filtro Automático por Rangos:**
+  Los comandos de moderación y control interno se ocultan automáticamente para la audiencia regular, mostrándose únicamente cuando la solicitud proviene del streamer o de sus moderadores autorizados.
+
 > [!TIP]
 > Para garantizar que los overlays no experimenten demoras al cambiar de escena en OBS Studio, se aconseja mantener desmarcada la opción "Apagar la fuente cuando no sea visible" en las propiedades de la fuente de navegador de OBS.
 
@@ -79,3 +86,12 @@ A continuación se resumen las nuevas funcionalidades incorporadas en esta actua
 
 * **Transparencia en el Estado de Registro de Chat:**
   Se solucionó la falta de aviso cuando el seguimiento de mensajes se encontraba pausado, ofreciendo una indicación visible y una vía rápida para encenderlo inmediatamente.
+
+* **Prevención de Truncamiento en Respuestas de Chat:**
+  Se eliminó el riesgo de que respuestas extensas de comandos sean cortadas o rechazadas silenciosamente por los servidores de Kick o Twitch, asegurando entrega completa y ordenada.
+
+* **Eliminación de Auto-respuestas y Bucles de Bot en Kick:**
+  Se solventó el problema por el cual los mensajes enviados por el bot eran interpretados por el propio sistema como mensajes de espectadores, evitando que el bot ejecute comandos sobre sus propias respuestas al listar enlaces o comandos del canal.
+
+* **Sincronización Inmediata de Comandos en el Primer Arranque:**
+  Se corrigió la falta de actualización en la tabla de comandos al iniciar la aplicación tras una actualización, garantizando que todos los comandos nuevos del sistema aparezcan reflejados de inmediato en pantalla sin requerir un reinicio posterior.
