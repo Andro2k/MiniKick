@@ -521,6 +521,25 @@
             "title_kick": "Permisos pendientes en Kick",
             "title_twitch": "Permisos pendientes en Twitch"
         },
+        "chatters": {
+            "btn_activate": "Activar Top Chatters",
+            "col_messages": "Mensajes",
+            "col_platform": "Plataforma",
+            "col_rank": "#",
+            "col_share": "Participación",
+            "col_user": "Usuario",
+            "empty_desc": "No se encontraron mensajes registrados para la fecha seleccionada.",
+            "empty_inactive_desc": "El widget de Top Chatters está apagado. Actívalo para comenzar a recopilar y visualizar la actividad del chat en tiempo real.",
+            "empty_title": "Sin actividad en esta fecha",
+            "filter_date_placeholder": "Seleccionar fecha...",
+            "filter_today": "Hoy",
+            "filter_yesterday": "Ayer",
+            "inactive_suggestion": "El widget de Top Chatters está desactivado. ¿Deseas activarlo para comenzar a recopilar las estadísticas del chat en tiempo real?",
+            "subtitle": "Ranking de espectadores más participativos",
+            "title": "Top Chatters de la Comunidad",
+            "toast_activated_desc": "El widget de Top Chatters ha sido activado y comenzará a registrar la actividad del chat.",
+            "toast_activated_title": "Top Chatters Activado"
+        },
         "connection": {
             "btn_active_kick": "Kick Activo",
             "btn_active_tiktok": "TikTok Activo",
@@ -546,6 +565,9 @@
             "disconnected": "Desconectado",
             "kick_title": "Kick",
             "messages_session": "{count} msgs",
+            "status_connecting": "Conectando...",
+            "status_offline": "Inactivo",
+            "status_online": "En línea",
             "tiktok_title": "TikTok",
             "twitch_title": "Twitch",
             "youtube_title": "YouTube"
@@ -1530,6 +1552,7 @@
     "widgets": {
         "chatters": {
             "desc": "Muestra en tiempo real el ranking de los 5 usuarios más activos del chat en tu stream.",
+            "include_commands_label": "Incluir comandos en el conteo (!)",
             "msg_empty": "🏆 Aún no hay mensajes registrados en este stream.",
             "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
             "msg_reset": "🔄 @{user} ha reiniciado el ranking de Top Chatters.",

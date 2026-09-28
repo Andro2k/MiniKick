@@ -200,3 +200,6 @@ class WidgetService:
 
     def prune_old_chatters(self, keep_days: int = 7) -> None:
         self.storage.prune_old_chatters(keep_days=keep_days)
+
+    def get_available_chatter_dates(self) -> list[str]:
+        return self.storage.get_available_chatter_dates()

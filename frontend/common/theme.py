@@ -534,6 +534,7 @@ QFrame[role="dialog"][state="info"] {{ border-color: {COLOR_BLUE}; }}
 QFrame[role="dialog"][state="neutral"] {{ border-color: {COLOR_NEUTRAL_700}; }}
 
 QFrame[role="banner_danger"] {{ background-color: {COLOR_RED_GLOW}; border: 1.2px solid {COLOR_RED_DARK}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="banner_warning"] {{ background-color: {COLOR_AMBER_GLOW}; border: 1.2px solid {COLOR_AMBER_DARK}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_scope_card"] {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; }}
 QFrame[role="banner_scope_card"][state="kick"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_GREEN}; }}
 QFrame[role="banner_scope_card"][state="twitch"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_PURPLE}; }}
@@ -583,6 +584,14 @@ QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {CO
 QLabel[role="tag_badge"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
 QLabel[role="channel_avatar"] {{ border-radius: 48px; background-color: {COLOR_NEUTRAL_800}; border: 2px solid {COLOR_NEUTRAL_700}; }}
 QLabel[role="rank_number"] {{ color: {COLOR_GREEN}; font-weight: 500; min-width: 20px; }}
+QLabel[role="rank_number"][state="gold"] {{ color: {COLOR_AMBER}; font-weight: 700; font-size: 13px; }}
+QLabel[role="rank_number"][state="silver"] {{ color: {COLOR_NEUTRAL_400}; font-weight: 700; font-size: 13px; }}
+QLabel[role="rank_number"][state="bronze"] {{ color: {COLOR_AMBER_DARK}; font-weight: 700; font-size: 13px; }}
+QLabel[role="rank_number"][state="normal"] {{ color: {COLOR_NEUTRAL_500}; font-weight: 500; }}
+QLabel[role="status_pill"] {{ border-radius: 9px; padding: 2px 8px; font-size: 11px; font-weight: 500; }}
+QLabel[role="status_pill"][state="online"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; border: 1px solid {COLOR_GREEN}; font-weight: 600; }}
+QLabel[role="status_pill"][state="connecting"] {{ background-color: {COLOR_AMBER_GLOW}; color: {COLOR_AMBER}; border: 1px solid {COLOR_AMBER}; font-weight: 600; }}
+QLabel[role="status_pill"][state="offline"] {{ background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; }}
 QLabel[role="badge_new"] {{ background-color: {COLOR_ORANGE}; color: {COLOR_PURE_WHITE}; font-weight: 700; border-radius: 9px; min-width: 18px; max-width: 18px; min-height: 18px; max-height: 18px; font-size: 10px; qproperty-alignment: AlignCenter; }}
 QLabel[role="badge_new"][state="collapsed"] {{ border-radius: 6px; min-width: 12px; max-width: 12px; min-height: 12px; max-height: 12px; font-size: 7px; font-weight: 800; }}
 QFrame[role="whats_new_card"] {{ background-color: {COLOR_NEUTRAL_850}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_LG}px; }}

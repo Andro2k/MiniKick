@@ -187,8 +187,8 @@ def bootstrap():
         t_win_ready = time.perf_counter()
         logger.debug("[Perf/Bootstrap] MainWindowCore instantiated in %.2f ms", (t_win_ready - t_win_start) * 1000)
 
-        logger.info("[Bootstrap] Displaying main window...")
-        window.show()
+        logger.info("[Bootstrap] Displaying main window (restoring state)...")
+        window.restore_window_state()
         t_show_ready = time.perf_counter()
         logger.info(
             "[Perf/Bootstrap] Window displayed in %.2f ms (Total bootstrap: %.2f ms)",

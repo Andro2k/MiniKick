@@ -521,6 +521,25 @@
             "title_kick": "Pending permissions on Kick",
             "title_twitch": "Pending permissions on Twitch"
         },
+        "chatters": {
+            "btn_activate": "Enable Top Chatters",
+            "col_messages": "Messages",
+            "col_platform": "Platform",
+            "col_rank": "#",
+            "col_share": "Share",
+            "col_user": "User",
+            "empty_desc": "No chat messages were recorded for the selected date.",
+            "empty_inactive_desc": "The Top Chatters widget is turned off. Enable it to start tracking and viewing chat activity in real time.",
+            "empty_title": "No activity on this date",
+            "filter_date_placeholder": "Select date...",
+            "filter_today": "Today",
+            "filter_yesterday": "Yesterday",
+            "inactive_suggestion": "The Top Chatters widget is disabled. Would you like to enable it to start collecting chat statistics in real time?",
+            "subtitle": "Ranking of most active stream viewers",
+            "title": "Community Top Chatters",
+            "toast_activated_desc": "The Top Chatters widget has been enabled and will start recording chat activity.",
+            "toast_activated_title": "Top Chatters Enabled"
+        },
         "connection": {
             "btn_active_kick": "Kick Active",
             "btn_active_tiktok": "TikTok Active",
@@ -546,6 +565,9 @@
             "disconnected": "Disconnected",
             "kick_title": "Kick",
             "messages_session": "{count} msgs",
+            "status_connecting": "Connecting...",
+            "status_offline": "Offline",
+            "status_online": "Online",
             "tiktok_title": "TikTok",
             "twitch_title": "Twitch",
             "youtube_title": "YouTube"
@@ -1530,6 +1552,7 @@
     "widgets": {
         "chatters": {
             "desc": "Displays a real-time leaderboard of the 5 most active chatters during your stream.",
+            "include_commands_label": "Include commands in message count (!)",
             "msg_empty": "🏆 No chat messages recorded yet in this stream session.",
             "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
             "msg_reset": "🔄 @{user} has reset the Top Chatters leaderboard.",

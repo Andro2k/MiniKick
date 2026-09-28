@@ -30,6 +30,19 @@ class NoWheelComboBox(QComboBox):
         super().__init__(parent)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContentsOnFirstShow)
+        f = self.font()
+        if f.pointSize() <= 0:
+            f.setPointSize(10)
+            self.setFont(f)
+
+    def showPopup(self):
+        v = self.view()
+        if v:
+            vf = v.font()
+            if vf.pointSize() <= 0:
+                vf.setPointSize(10)
+                v.setFont(vf)
+        super().showPopup()
 
     def wheelEvent(self, event):
         if not self.hasFocus():

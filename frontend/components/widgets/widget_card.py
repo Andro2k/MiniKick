@@ -3,7 +3,7 @@
 from frontend.widgets import ExpandableCard, FlowLayout
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-                               QLineEdit, QSpinBox, QPushButton, QApplication)
+                               QLineEdit, QSpinBox, QPushButton, QApplication, QCheckBox)
 from frontend.common import (
     MARGIN_NONE, SPACING_NONE, SPACING_MD, SPACING_LG
 )
@@ -182,6 +182,10 @@ class WidgetCard(ExpandableCard):
 
         elif self.widget_id == "chatters":
             flow = FlowLayout(margin=SPACING_NONE, hspacing=SPACING_LG, vspacing=SPACING_MD)
+            self.chk_include_commands = QCheckBox(self.i18n.get("widgets.chatters.include_commands_label"))
+            self.chk_include_commands.toggled.connect(self._on_input_changed)
+            flow.addWidget(self.chk_include_commands)
+
             btn_reset = QPushButton(self.i18n.get("widgets.chatters.reset_btn"))
             btn_reset.setProperty("role", "action_outlined")
             btn_reset.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -247,6 +251,10 @@ class WidgetCard(ExpandableCard):
             self.spn_timeout_sec.setValue(int(cfg.get("timeout_sec", 5)))
             self.spn_min_combo.blockSignals(False)
             self.spn_timeout_sec.blockSignals(False)
+        elif self.widget_id == "chatters" and hasattr(self, "chk_include_commands"):
+            self.chk_include_commands.blockSignals(True)
+            self.chk_include_commands.setChecked(bool(cfg.get("include_commands", False)))
+            self.chk_include_commands.blockSignals(False)
 
         self._is_loading = False
 
@@ -297,6 +305,8 @@ class WidgetCard(ExpandableCard):
         elif self.widget_id == "combo" and hasattr(self, "spn_min_combo"):
             self._config_data["min_combo"] = self.spn_min_combo.value()
             self._config_data["timeout_sec"] = self.spn_timeout_sec.value()
+        elif self.widget_id == "chatters" and hasattr(self, "chk_include_commands"):
+            self._config_data["include_commands"] = self.chk_include_commands.isChecked()
 
         self.widget_changed.emit(self.widget_id, is_active, self._command, self._cooldown, self._permission, self._config_data)
 

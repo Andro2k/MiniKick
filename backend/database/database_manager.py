@@ -19,15 +19,18 @@ class AutoCloseConnection(sqlite3.Connection):
             self.close()
 
 class DatabaseManager:
+    _initialized_dbs = set()
+
     def __init__(self, db_name="minikick.db"):
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         self.db_dir = os.path.join(app_data_dir, '.Minikick')
         os.makedirs(self.db_dir, exist_ok=True)
         self.db_name = os.path.join(self.db_dir, db_name)
         
-        t0 = time.perf_counter()
-        self._initialize_database()
-        logger.debug("[Perf/DB] Database initialization completed in %.2f ms", (time.perf_counter() - t0) * 1000)
+        if self.db_name not in self._initialized_dbs:
+            t0 = time.perf_counter()
+            self._initialize_database()
+            logger.debug("[Perf/DB] Database initialization completed in %.2f ms", (time.perf_counter() - t0) * 1000)
 
     def _initialize_database(self) -> None:
         try:
@@ -54,6 +57,7 @@ class DatabaseManager:
                     conn.execute(f"PRAGMA user_version = {CURRENT_SCHEMA_VERSION}")
             else:
                 logger.debug("[DatabaseManager] Schema up-to-date (version %d). Skipping DDL re-runs.", user_ver)
+            self._initialized_dbs.add(self.db_name)
         except sqlite3.DatabaseError as e:
             if "malformed" in str(e).lower() or "corrupt" in str(e).lower() or "integrity" in str(e).lower() or "quick check" in str(e).lower():
                 logger.error("Database file is malformed at startup, recreating: %s", e)
@@ -970,6 +974,7 @@ class DatabaseManager:
 
     def cleanup(self) -> None:
         try:
+            self._initialized_dbs.discard(self.db_name)
             with self.get_connection() as conn:
                 conn.execute("PRAGMA optimize")
                 conn.commit()

@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
     QSystemTrayIcon, QApplication
 )
-from PySide6.QtCore import Qt, Slot, QEvent, QTimer
+from PySide6.QtCore import Qt, Slot, QEvent, QTimer, QByteArray
 
 from .app_container_core import AppContainerCore
 from .app_logger_core import setup_application_logging
@@ -54,6 +54,8 @@ class MainWindowCore(QMainWindow):
     _recent_reward_redemptions: deque | None = None
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
+    SETTING_WINDOW_MAXIMIZED = "window_is_maximized"
+    SETTING_WINDOW_GEOMETRY = "window_geometry"
 
     _NAV_CONFIG = (
         ("Dashboard", "element-filled.svg", "top"),
@@ -76,6 +78,7 @@ class MainWindowCore(QMainWindow):
         self.resize(1200, 800)
         
         self._is_shutting_down = False
+        self._was_maximized_before_tray = True
         self.updater_manager = updater_manager
         self.app_version = app_version
         
@@ -188,7 +191,10 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller = DashboardController(
             view=self.view_dashboard, 
             avatar_service=self.avatar_service,
-            db_manager=self.container.db_manager
+            db_manager=self.container.db_manager,
+            widget_service=self.container.widget_service,
+            toast_manager=self.toast,
+            i18n=self.i18n
         )
         self.chat_controller = ChatController(
             view=None, 
@@ -208,6 +214,7 @@ class MainWindowCore(QMainWindow):
             toast_manager=self.toast,
             spam_service=self.spam_service
         )
+        self.dashboard_controller.widgets_controller = self.widgets_controller
         self.music_controller = MusicController(
             view=None,
             command_service=self.command_service,
@@ -560,18 +567,54 @@ class MainWindowCore(QMainWindow):
         if self._prewarm_queue and not self._is_shutting_down:
             QTimer.singleShot(250, self._prewarm_next_view)
 
+    def restore_window_state(self):
+        geom_hex = self.settings_storage.load_string(self.SETTING_WINDOW_GEOMETRY, "")
+        if geom_hex:
+            try:
+                self.restoreGeometry(QByteArray.fromHex(geom_hex.encode("ascii")))
+            except Exception as e:
+                self.logger.warning("[MainWindow] Failed to restore window geometry: %s", e)
+
+        is_max = self.settings_storage.load_bool(self.SETTING_WINDOW_MAXIMIZED, True)
+        self._was_maximized_before_tray = is_max
+        if is_max:
+            self.showMaximized()
+        else:
+            self.show()
+
+    def _save_window_state(self):
+        try:
+            if self.isMinimized() and hasattr(self, "_was_maximized_before_tray"):
+                is_max = self._was_maximized_before_tray
+            else:
+                is_max = self.isMaximized()
+
+            self.settings_storage.save_bool(self.SETTING_WINDOW_MAXIMIZED, is_max)
+            if not is_max and not self.isMinimized():
+                geom_hex = bytes(self.saveGeometry()).hex()
+                self.settings_storage.save_string(self.SETTING_WINDOW_GEOMETRY, geom_hex)
+            self.logger.debug("[MainWindow] Saved window state: maximized=%s", is_max)
+        except Exception as e:
+            self.logger.error("[MainWindow] Failed to save window state: %s", e)
+
     @Slot()
     def _restore_from_tray(self):
         self.logger.info("[User Action] Window restored from system tray")
-        self.showNormal()
+        if getattr(self, "_was_maximized_before_tray", False):
+            self.showMaximized()
+        else:
+            self.showNormal()
         self.activateWindow()
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.WindowStateChange:
-            if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
-                self.logger.info("[User Action] Window minimized to system tray")
-                self.hide()
-                self._notify_background()
+            if self.isMinimized():
+                old_state = event.oldState()
+                self._was_maximized_before_tray = bool(old_state & Qt.WindowState.WindowMaximized)
+                if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+                    self.logger.info("[User Action] Window minimized to system tray")
+                    self.hide()
+                    self._notify_background()
         super().changeEvent(event)
 
     def closeEvent(self, event):
@@ -582,6 +625,7 @@ class MainWindowCore(QMainWindow):
         minimize_tray = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.logger.info("[User Action] Window close triggered (minimize_tray=%s)", minimize_tray)
         if minimize_tray:
+            self._save_window_state()
             self.hide()
             self._notify_background()
             event.ignore() 
@@ -755,6 +799,7 @@ class MainWindowCore(QMainWindow):
         )
 
     def _force_quit(self):
+        self._save_window_state()
         self.hide()
         self._cleanup()
         QApplication.quit()
@@ -1050,7 +1095,7 @@ class MainWindowCore(QMainWindow):
                     )
         else:
             no_rewards_template = self.i18n.get("main.logs.reward_no_rewards")
-            self.logger.debug(no_rewards_template.replace("{reward_name}", reward_name))
+            self.logger.debug("[Reward] %s", no_rewards_template.replace("{reward_name}", reward_name))
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:

@@ -241,9 +241,9 @@ class MusicCommandHandler:
 
         self.controller.set_volume(vol_val)
         if hasattr(self.controller.view, "slider_vol"):
-            self.controller.view.blockSignals(True)
+            self.controller.view.slider_vol.blockSignals(True)
             self.controller.view.slider_vol.setValue(vol_val)
-            self.controller.view.blockSignals(False)
+            self.controller.view.slider_vol.blockSignals(False)
             self.controller.view.lbl_vol_perc.setText(f"{vol_val}%")
 
         msg = self.i18n.get("music.chat.vol_success").replace("{user}", user).replace("{volume}", str(vol_val)).replace("{vol}", str(vol_val))

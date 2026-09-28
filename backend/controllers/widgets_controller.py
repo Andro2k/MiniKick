@@ -47,6 +47,8 @@ class WidgetsController(QObject):
     death_count_updated = Signal(int)
     score_updated = Signal(int, int)
     widgets_reloaded = Signal(object)
+    chatters_updated = Signal()
+    widget_status_changed = Signal(str, bool)
 
     PLUGIN_TAGS = {
         "shoutout": "[PLUGIN_WIDGET_SO]", "death": "[PLUGIN_WIDGET_DEATH]", "score": "[PLUGIN_WIDGET_SCORE]",
@@ -361,7 +363,23 @@ class WidgetsController(QObject):
                     "is_active": is_active
                 })
 
+            self.widget_status_changed.emit(widget_id, is_active)
+
         self._trigger_deferred_save(widget_id)
+
+    def set_widget_active(self, widget_id: str, is_active: bool) -> bool:
+        widget_data = self.widget_service.get_widget(widget_id)
+        if not widget_data:
+            return False
+        self.handle_widget_save(
+            widget_id=widget_id,
+            is_active=is_active,
+            command=widget_data.get("command", ""),
+            cooldown=int(widget_data.get("cooldown", 3)),
+            permission=widget_data.get("permission", "everyone"),
+            config=widget_data.get("config", {})
+        )
+        return True
 
     @Slot(int)
     def handle_death_count_change(self, new_val: int):
@@ -645,8 +663,15 @@ class WidgetsController(QObject):
     def _record_chatter_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick"):
         if not user or not content:
             return
-        if content.strip().startswith("!"):
+
+        w_chatters = self.widget_service.get_widget("chatters")
+        if not w_chatters.get("is_active", True):
             return
+
+        include_commands = bool(w_chatters.get("config", {}).get("include_commands", False))
+        if not include_commands and content.strip().startswith("!"):
+            return
+
         if badges:
             for b in badges:
                 if str(b).lower() == "bot":
@@ -667,10 +692,6 @@ class WidgetsController(QObject):
                         return
             except Exception:
                 pass
-
-        w_chatters = self.widget_service.get_widget("chatters")
-        if not w_chatters.get("is_active", True):
-            return
 
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         if today_str != self._current_chatters_date:
@@ -701,7 +722,7 @@ class WidgetsController(QObject):
 
     def _flush_top_chatters_update(self, force: bool = False):
         w_chatters = self.widget_service.get_widget("chatters")
-        if not w_chatters.get("is_active", True) or not self.overlay_server:
+        if not w_chatters.get("is_active", True):
             return
         top_count = int(w_chatters.get("config", {}).get("top_count", 5))
         top_5 = heapq.nlargest(top_count, self._chatters_counts.values(), key=lambda x: x["count"])
@@ -711,15 +732,18 @@ class WidgetsController(QObject):
         if force or current_sig != self._last_chatters_signature:
             self._last_chatters_signature = current_sig
             self._last_emitted_top_chatters = list(top_5)
-            self.overlay_server.trigger_widget_event("top_chatters_update", {
-                "top": top_5,
-                "total_messages": total_msgs,
-                "is_active": w_chatters.get("is_active", True)
-            })
+            if self.overlay_server:
+                self.overlay_server.trigger_widget_event("top_chatters_update", {
+                    "top": top_5,
+                    "total_messages": total_msgs,
+                    "is_active": w_chatters.get("is_active", True)
+                })
 
         if self._chatters_dirty:
             self.widget_service.save_daily_chatters_batch(self._current_chatters_date, self._chatters_counts)
             self._chatters_dirty = False
+
+        self.chatters_updated.emit()
 
     def _process_topchatters_command(self, user: str, args: str, platform: str = "kick"):
         if args and args.strip().lower() in _RESET_COMMANDS:

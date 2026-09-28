@@ -657,9 +657,6 @@ class ChatController(QObject):
             "role": role_name, "platform": platform
         }
         self._message_buffer.append(item)
-        logger.info("[%s] %s: %s", platform.upper(), dto.user, dto.content)
-        if self.view is not None:
-            self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
         gif_url = getattr(dto, "gif_url", "")
         if not gif_url and dto.content and ("http://" in dto.content or "https://" in dto.content):
             if not self.filter_handler.is_bot(dto.user, badges):
@@ -667,6 +664,11 @@ class ChatController(QObject):
                 if extracted:
                     gif_url = extracted
                     dto.gif_url = extracted
+
+        display_content = dto.content if dto.content else (f"[GIF: {gif_url}]" if gif_url else "")
+        logger.info("[%s] %s: %s", platform.upper(), dto.user, display_content)
+        if self.view is not None:
+            self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
 
         emotes_tag = getattr(dto, "emotes_tag", "")
         avatar_url = getattr(dto, "avatar_url", "")

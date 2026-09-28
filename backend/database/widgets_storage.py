@@ -112,6 +112,20 @@ class SQLiteWidgetsStorage:
             logger.error("[WidgetsStorage] Error loading daily chatters for %s: %s", date_str, e)
         return result
 
+    def get_available_chatter_dates(self) -> list[str]:
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT DISTINCT chatter_date
+                    FROM daily_top_chatters
+                    ORDER BY chatter_date DESC
+                """)
+                return [row[0] for row in cursor.fetchall() if row[0]]
+        except Exception as e:
+            logger.error("[WidgetsStorage] Error getting available chatter dates: %s", e)
+            return []
+
     def save_daily_chatters_batch(self, date_str: str, chatters_map: dict[str, dict]) -> None:
         if not chatters_map:
             return
