@@ -6,8 +6,9 @@ from frontend.widgets import (
     BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
 )
 from frontend.common import (
-    COLOR_WHITE,
-    MARGIN_H_MD, SPACING_MD
+    COLOR_WHITE, COLOR_AMBER,
+    MARGIN_H_MD, SPACING_MD, SPACING_SM,
+    get_pixmap_colored, is_complete_valid_trigger
 )
 
 class CommandView(BaseView):
@@ -111,13 +112,14 @@ class CommandView(BaseView):
         self.filter_header.filter_changed.connect(self._apply_filters)
         self.filter_header.sort_requested.connect(self._on_sort_requested)
 
-        self.filter_header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.filter_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
         self.filter_header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
         self.filter_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
         
+        self.table.setColumnWidth(0, 190)
         self.table.setColumnWidth(1, 140)
         self.table.setColumnWidth(2, 140)
         self.table.setColumnWidth(5, 130)
@@ -202,14 +204,28 @@ class CommandView(BaseView):
             total_count=len(self._raw_commands)
         )
 
-    def _create_command_cell(self, cmd_data: dict) -> QWidget:
+    @staticmethod
+    def _create_cell_container(spacing=SPACING_SM) -> tuple[QWidget, QHBoxLayout]:
         container = QWidget()
         layout = QHBoxLayout(container)
         layout.setContentsMargins(*MARGIN_H_MD)
+        layout.setSpacing(spacing)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        lbl_trigger = QLabel(cmd_data["trigger"])
+        return container, layout
+
+    def _create_command_cell(self, cmd_data: dict) -> QWidget:
+        container, layout = self._create_cell_container(SPACING_SM)
+        trigger_val = cmd_data.get("trigger", "")
+        lbl_trigger = QLabel(trigger_val)
         lbl_trigger.setProperty("role", "body")
         layout.addWidget(lbl_trigger)
+
+        if not is_complete_valid_trigger(trigger_val):
+            warn_icon = QLabel()
+            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, 14))
+            warn_icon.setToolTip(self.i18n.get("command.table.warning_legacy_format"))
+            layout.addWidget(warn_icon)
+
         layout.addStretch()
         return container
 
@@ -246,11 +262,7 @@ class CommandView(BaseView):
         return PlatformBadgeCell(active_plats)
 
     def _create_aliases_cell(self, cmd_data: dict) -> QWidget:
-        container = QWidget()
-        layout = QHBoxLayout(container)
-        layout.setContentsMargins(*MARGIN_H_MD)
-        layout.setSpacing(SPACING_MD)
-        layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        container, layout = self._create_cell_container(SPACING_MD)
         raw_aliases = cmd_data.get("aliases", "").strip()
         is_regex = cmd_data.get("is_regex", False)
 

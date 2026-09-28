@@ -19,7 +19,7 @@ from frontend.widgets import (
     ModernButton
 )
 from frontend.components.dashboard import (
-    SegmentedDistributionBar, PlatformStatusCard
+    SegmentedDistributionBar, PlatformStatusCard, DashboardChattersTable
 )
 
 class DashboardView(BaseView):
@@ -31,6 +31,8 @@ class DashboardView(BaseView):
     reauth_kick_requested = Signal()
     reauth_twitch_requested = Signal()
     channel_tab_changed = Signal(str)
+    top_chatters_date_changed = Signal(str)
+    activate_chatters_requested = Signal()
     
     _STATS_CARDS_ATTR = "_stats_cols"
     _SESSION_CARDS_ATTR = "_session_cols"
@@ -94,7 +96,7 @@ class DashboardView(BaseView):
         self.lbl_warn_text = self.lbl_warn_text_kick
         self.btn_reauth = self.btn_reauth_kick
         self.banner_layout = self.banner_layout_kick
-        
+
         self._setup_platforms_hub()
         
         self._setup_channel_profile_section()
@@ -388,6 +390,16 @@ class DashboardView(BaseView):
         self.bottom_analytics_layout = QHBoxLayout()
         self.bottom_analytics_layout.setSpacing(SPACING_MD)
 
+        self.chatters_table = DashboardChattersTable(self.i18n, parent=self)
+        self.chatters_table.date_selected.connect(self.top_chatters_date_changed.emit)
+        self.chatters_table.activate_widget_requested.connect(self.activate_chatters_requested.emit)
+        self.bottom_analytics_layout.addWidget(self.chatters_table, stretch=3)
+
+        right_col_widget = QWidget(self)
+        right_col_layout = QVBoxLayout(right_col_widget)
+        right_col_layout.setContentsMargins(*MARGIN_NONE)
+        right_col_layout.setSpacing(SPACING_MD)
+
         self.top_commands_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         self.top_commands_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         lbl_top_cmds = QLabel(self.i18n.get("dashboard.analytics.top_commands_title"))
@@ -400,6 +412,7 @@ class DashboardView(BaseView):
         self.lbl_no_commands.setProperty("role", "body")
         self.top_commands_container.addWidget(self.lbl_no_commands)
         self.top_commands_card.addLayout(self.top_commands_container)
+        right_col_layout.addWidget(self.top_commands_card)
 
         self.modules_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
         self.modules_card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
@@ -433,12 +446,24 @@ class DashboardView(BaseView):
         self.modules_grid.addWidget(lbl_active_rewards_text, 1, 2)
 
         self.modules_card.addLayout(self.modules_grid)
+        right_col_layout.addWidget(self.modules_card)
 
-        self.bottom_analytics_layout.addWidget(self.top_commands_card, stretch=3)
-        self.bottom_analytics_layout.addWidget(self.modules_card, stretch=2)
+        self.bottom_analytics_layout.addWidget(right_col_widget, stretch=2)
 
         analytics_layout.addLayout(self.bottom_analytics_layout)
         self.main_layout.addWidget(analytics_container)
+
+    def render_top_chatters(self, chatters: list[dict], total_messages: int = 0):
+        if hasattr(self, "chatters_table"):
+            self.chatters_table.set_chatters(chatters, total_messages=total_messages)
+
+    def populate_chatter_dates(self, dates: list[str]):
+        if hasattr(self, "chatters_table"):
+            self.chatters_table.populate_available_dates(dates)
+
+    def set_chatters_widget_active(self, is_active: bool):
+        if hasattr(self, "chatters_table"):
+            self.chatters_table.set_widget_active(is_active)
 
     def set_kick_status(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
         self.card_kick.update_state(connected=connected, channel=channel, connecting=connecting, msg_count=msg_count)
@@ -759,6 +784,6 @@ class DashboardView(BaseView):
             self._relayout_grid(self.metadata_grid, self.metadata_cols_list, meta_cols, "_metadata_cols")
 
         if hasattr(self, 'bottom_analytics_layout'):
-            bottom_dir = QBoxLayout.Direction.TopToBottom if width < 750 else QBoxLayout.Direction.LeftToRight
+            bottom_dir = QBoxLayout.Direction.TopToBottom if width < 1000 else QBoxLayout.Direction.LeftToRight
             if self.bottom_analytics_layout.direction() != bottom_dir:
                 self.bottom_analytics_layout.setDirection(bottom_dir)

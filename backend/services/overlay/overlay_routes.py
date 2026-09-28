@@ -2,7 +2,7 @@
 
 import base64
 import hashlib
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import logging
 import mimetypes
 import os
@@ -191,6 +191,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             return
 
         topic = query.get("topic", [query.get("type", ["rewards"])[0]])[0]
+        client_ip = self.client_address[0] if getattr(self, "client_address", None) else "127.0.0.1"
+        logger.info('WS "%s" request (topic: %s)', client_ip, topic)
 
         accept_src = (sec_key.strip() + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").encode("utf-8")
         accept_key = base64.b64encode(hashlib.sha1(accept_src).digest()).decode("utf-8")
@@ -201,8 +203,16 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Sec-WebSocket-Accept", accept_key)
         self.end_headers()
 
+        try:
+            if hasattr(self, "connection") and self.connection:
+                self.connection.settimeout(30.0)
+        except Exception:
+            pass
+
         ws_client = WebSocketClient(self, topic=topic, token=token)
         self.server.manager.register_ws_client(ws_client)
+        active_count = self.server.manager.get_ws_clients_count(topic)
+        logger.info('WS "%s" connected (topic: %s, active: %d)', client_ip, topic, active_count)
 
         try:
             if topic == "music" and self.server.manager._last_song is not None:
@@ -239,7 +249,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     break
                 if msg and isinstance(msg, str):
                     try:
-                        data = json.loads(msg)
+                        data = fast_loads(msg)
                         if data.get("type") == "alert_finished":
                             cb = getattr(self.server.manager, "on_alert_finished", None)
                             if cb:
@@ -248,6 +258,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                         pass
         finally:
             self.server.manager.unregister_ws_client(ws_client)
+            remaining_count = self.server.manager.get_ws_clients_count(topic)
+            logger.info('WS "%s" closed (topic: %s, remaining: %d)', client_ip, topic, remaining_count)
 
     def _serve_file(self, filepath: str):
         file_size = os.path.getsize(filepath)
@@ -390,7 +402,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     msg = client_queue.get(timeout=2.0)
                     if msg is None:
                         break
-                    self.wfile.write(f"data: {json.dumps(msg)}\n\n".encode("utf-8"))
+                    self.wfile.write(f"data: {fast_dumps(msg)}\n\n".encode("utf-8"))
                     self.wfile.flush()
                 except queue.Empty:
                     self.wfile.write(b": keep-alive\n\n")

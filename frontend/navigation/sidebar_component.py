@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton, 
                                QLabel, QSizePolicy, QWidget, QButtonGroup, QScrollArea)
-from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property
+from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_WHITE, COLOR_NEUTRAL_800,
@@ -13,6 +13,7 @@ from frontend.common import (
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
+    section_viewed = Signal(str)
     update_requested = Signal()
 
     def __init__(self, i18n, app_version: str = "", parent=None):
@@ -67,6 +68,14 @@ class Sidebar(QFrame):
         self.btn_toggle.setFixedSize(36, 36)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
+
+        self.toggle_badge = QLabel("N", self.btn_toggle)
+        self.toggle_badge.setProperty("role", "badge_new")
+        self.toggle_badge.setProperty("state", "collapsed")
+        self.toggle_badge.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        self.toggle_badge.setFixedSize(12, 12)
+        self.toggle_badge.move(22, 2)
+        self.toggle_badge.setVisible(False)
         
         self.header_layout.addWidget(self.logo_btn)
         self.header_layout.addWidget(self.title_label)
@@ -347,6 +356,15 @@ class Sidebar(QFrame):
         if is_active:
             btn.setChecked(True)
             
+        badge = QLabel("N", btn)
+        badge.setProperty("role", "badge_new")
+        badge.setProperty("state", "normal")
+        badge.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
+        badge.setToolTip(self.i18n.get("whats_new.badge.tooltip"))
+        badge.setVisible(False)
+        btn.badge_label = badge
+        btn.installEventFilter(self)
+
         self.button_group.addButton(btn)
         self.nav_buttons.append(btn)
 
@@ -354,6 +372,61 @@ class Sidebar(QFrame):
             self.bottom_nav_layout.addWidget(btn)
         else:
             self.top_nav_layout.addWidget(btn)
+
+    def set_tab_badge(self, tab_name: str, show: bool = True):
+        for btn in self.nav_buttons:
+            if btn.property("view_name") == tab_name:
+                if hasattr(btn, "badge_label"):
+                    btn.badge_label.setVisible(show)
+                    self._position_badge(btn)
+                break
+        self._update_toggle_badge()
+
+    def clear_tab_badge(self, tab_name: str):
+        self.set_tab_badge(tab_name, False)
+
+    def _position_badge(self, btn):
+        if not hasattr(btn, "badge_label") or not btn.badge_label.isVisible():
+            return
+        if not self.is_expanded:
+            btn.badge_label.setProperty("state", "collapsed")
+            btn.badge_label.style().unpolish(btn.badge_label)
+            btn.badge_label.style().polish(btn.badge_label)
+            btn.badge_label.setFixedSize(12, 12)
+            btn_w = btn.width() if btn.width() > 10 else self.collapsed_width
+            btn.badge_label.move(btn_w - 14, 2)
+        else:
+            btn.badge_label.setProperty("state", "normal")
+            btn.badge_label.style().unpolish(btn.badge_label)
+            btn.badge_label.style().polish(btn.badge_label)
+            btn.badge_label.setFixedSize(18, 18)
+            btn_w = btn.width() if btn.width() > 60 else (self.expanded_width - 16)
+            btn_h = btn.height() if btn.height() > 10 else 36
+            btn.badge_label.move(btn_w - 28, (btn_h - 18) // 2)
+        btn.badge_label.raise_()
+
+    def _update_toggle_badge(self):
+        has_any_unseen = any(
+            hasattr(b, "badge_label") and b.badge_label.isVisible()
+            for b in self.nav_buttons
+        )
+        self.toggle_badge.setVisible(has_any_unseen and not self.is_expanded)
+
+    def eventFilter(self, watched, event):
+        if event.type() == QEvent.Type.Resize and watched in self.nav_buttons:
+            self._position_badge(watched)
+        return super().eventFilter(watched, event)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        for btn in self.nav_buttons:
+            self._position_badge(btn)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        for btn in self.nav_buttons:
+            self._position_badge(btn)
+        self._update_toggle_badge()
 
     def _get_sidebar_width(self) -> int:
         return self.width()
@@ -403,6 +476,7 @@ class Sidebar(QFrame):
                 btn.setFixedSize(36, 36)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
+            self._position_badge(btn)
 
         if show:
             self.top_nav_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -415,6 +489,7 @@ class Sidebar(QFrame):
         self.lbl_more_header.setVisible(show)
         self.lbl_version.setVisible(show)
         self._update_notification_visibility()
+        self._update_toggle_badge()
             
         self.profile_text_widget.setVisible(show)
         if show:
@@ -433,6 +508,10 @@ class Sidebar(QFrame):
             self.title_label.show()
             self.expanded_spacer.show()
             self._update_texts_and_styles(show=True)
+        else:
+            for btn in self.nav_buttons:
+                self._position_badge(btn)
+            self._update_toggle_badge()
 
     def _update_icons(self, _btn=None, _checked=None):
         for b in self.button_group.buttons():
@@ -441,4 +520,9 @@ class Sidebar(QFrame):
                 b.setIcon(icon)
 
     def _on_tab_clicked(self, btn):
-        self.view_selected.emit(btn.property("view_name"))
+        view_name = btn.property("view_name")
+        if hasattr(btn, "badge_label") and btn.badge_label.isVisible():
+            btn.badge_label.setVisible(False)
+            self._update_toggle_badge()
+            self.section_viewed.emit(view_name)
+        self.view_selected.emit(view_name)

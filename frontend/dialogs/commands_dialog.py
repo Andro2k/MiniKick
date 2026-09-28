@@ -6,7 +6,10 @@ from frontend.widgets import (
     VariableTextEdit, NoWheelComboBox, NoWheelSpinBox, create_badge,
     create_row_layout, create_col_layout, create_labeled_field
 )
-from frontend.common import validate_trigger_prefix, COLOR_AMBER, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
+from frontend.common import (
+    validate_trigger_prefix, sanitize_command_trigger, is_complete_valid_trigger,
+    COLOR_AMBER, SPACING_SM, SPACING_MD, SPACING_LG, MARGIN_NONE
+)
 
 class CommandConfigWizard(ModernWizardPanel):
     def __init__(self, i18n, parent=None, existing_config=None, connected_platforms: dict[str, bool] = None):
@@ -42,6 +45,9 @@ class CommandConfigWizard(ModernWizardPanel):
         lbl_trigger = QLabel(self.i18n.get("command.dialog.trigger_label"))
         lbl_trigger.setProperty("role", "h3")
         self.txt_trigger = QLineEdit()
+        self.txt_trigger.setPlaceholderText(self.i18n.get("command.dialog.trigger_placeholder"))
+        self.txt_trigger.textEdited.connect(self._on_trigger_edited)
+        self.txt_trigger.editingFinished.connect(self._on_trigger_editing_finished)
         self.txt_trigger.textChanged.connect(self._validate_trigger_prefix)
         self.txt_trigger.textChanged.connect(self._update_btn_next_state)
         basic_layout.addWidget(lbl_trigger)
@@ -187,17 +193,39 @@ class CommandConfigWizard(ModernWizardPanel):
         self.txt_regex.setEnabled(checked)
         self.txt_aliases.setEnabled(not checked)
 
+    def _on_trigger_edited(self, text: str):
+        if " " in text or any(c.isupper() for c in text):
+            pos = self.txt_trigger.cursorPosition()
+            formatted = sanitize_command_trigger(text)
+            self.txt_trigger.blockSignals(True)
+            self.txt_trigger.setText(formatted)
+            self.txt_trigger.setCursorPosition(min(pos, len(formatted)))
+            self.txt_trigger.blockSignals(False)
+            self._validate_trigger_prefix(formatted)
+            self._update_btn_next_state()
+
+    def _on_trigger_editing_finished(self):
+        text = self.txt_trigger.text().strip()
+        if text:
+            formatted = sanitize_command_trigger(text)
+            if formatted != text:
+                self.txt_trigger.setText(formatted)
+        self._validate_trigger_prefix(self.txt_trigger.text())
+        self._update_btn_next_state()
+
     def validate_step(self, step_index: int) -> bool:
         if step_index == 0:
-            trigger_text = self.txt_trigger.text().strip()
+            trigger_text = sanitize_command_trigger(self.txt_trigger.text())
+            self.txt_trigger.setText(trigger_text)
             response_text = self.txt_response.toPlainText().strip()
-            if not trigger_text.startswith("!") or not response_text:
+            if not is_complete_valid_trigger(trigger_text) or not response_text:
                 return False
         return True
 
     def _load_existing(self):
         resp = self.existing_config.get("response", "")
-        self.txt_trigger.setText(self.existing_config.get("trigger", ""))
+        raw_trigger = self.existing_config.get("trigger", "")
+        self.txt_trigger.setText(sanitize_command_trigger(raw_trigger) if raw_trigger else "")
         self.txt_response.setText(resp)
         self.spin_cooldown.setValue(self.existing_config.get("cooldown", 5))
         self.chk_active.setChecked(self.existing_config.get("is_active", True))
@@ -229,10 +257,11 @@ class CommandConfigWizard(ModernWizardPanel):
     def get_command_data(self):
         is_regex = self.chk_regex.isChecked()
         aliases_val = self.txt_regex.toPlainText().strip() if is_regex else self.txt_aliases.text().strip()
+        clean_trigger = sanitize_command_trigger(self.txt_trigger.text())
         
         return {
             "original_trigger": self.original_trigger,
-            "trigger": self.txt_trigger.text().strip(),
+            "trigger": clean_trigger,
             "response": self.txt_response.toPlainText().strip(),
             "cooldown": self.spin_cooldown.value(),
             "aliases": aliases_val,
@@ -245,11 +274,13 @@ class CommandConfigWizard(ModernWizardPanel):
             "apply_tiktok": self.chk_tiktok.isChecked()
         }
 
-
-
     def _validate_trigger_prefix(self, text: str):
         is_valid = validate_trigger_prefix(text)
         self.txt_trigger.setProperty("state", "normal" if is_valid else "error")
+        if not is_valid:
+            self.txt_trigger.setToolTip(self.i18n.get("command.dialog.trigger_invalid_hint"))
+        else:
+            self.txt_trigger.setToolTip("")
         self.txt_trigger.style().unpolish(self.txt_trigger)
         self.txt_trigger.style().polish(self.txt_trigger)
 
@@ -267,13 +298,14 @@ class CommandConfigWizard(ModernWizardPanel):
                 self.badge_plugin.setVisible(is_plugin)
             self.txt_response.setReadOnly(is_plugin)
             
+            is_trigger_valid = is_complete_valid_trigger(trigger_text)
             if is_plugin:
                 self.txt_response.setProperty("state", "plugin")
-                is_valid = bool(trigger_text.startswith("!") and response_text)
+                is_valid = bool(is_trigger_valid and response_text)
             else:
                 is_over_limit = len(response_text) > 492
                 self.txt_response.setProperty("state", "error" if is_over_limit else "normal")
-                is_valid = not is_over_limit and bool(trigger_text.startswith("!") and response_text)
+                is_valid = not is_over_limit and bool(is_trigger_valid and response_text)
                 
             self.txt_response.style().unpolish(self.txt_response)
             self.txt_response.style().polish(self.txt_response)

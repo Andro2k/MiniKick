@@ -2,6 +2,7 @@
 
 from .overlay_routes import OverlayRequestHandler
 from .overlay_ws_client import WebSocketClient
+from backend.utils.json_utils import fast_dumps
 import logging
 import secrets
 import threading
@@ -109,6 +110,10 @@ class OverlayServerManager:
     def get_alerts_overlay_url(self) -> str:
         return f"http://localhost:{self.port}/alerts?token={self.session_token}"
 
+    def get_ws_clients_count(self, topic: str) -> int:
+        with self.ws_lock:
+            return len(self.ws_clients.get(topic, set()))
+
     def start(self):
         try:
             self.server = ThreadingHTTPServer(("127.0.0.1", self.port), OverlayRequestHandler)
@@ -116,7 +121,7 @@ class OverlayServerManager:
 
             self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
             self.thread.start()
-            logger.info("Overlay server active: %s", self.get_overlay_url())
+            logger.info("Overlay server active on http://127.0.0.1:%s (session token secured)", self.port)
         except OSError as e:
             logger.error("[OverlayServer] Could not start Overlay server on port %s: %s", self.port, e)
 
@@ -129,8 +134,10 @@ class OverlayServerManager:
 
         with self.ws_lock:
             ws_copy = list(self.ws_clients.get(ws_topic, []))
-        for ws_client in ws_copy:
-            ws_client.send_json(payload)
+        if ws_copy:
+            encoded_msg = fast_dumps(payload)
+            for ws_client in ws_copy:
+                ws_client.send_text(encoded_msg)
 
     def trigger_rewards(self, reward_name: str, config: dict):
         if isinstance(config, str):

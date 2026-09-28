@@ -1,7 +1,8 @@
 # backend\services\overlay\websocket_client.py
 
-import json
+from backend.utils.json_utils import fast_dumps
 import logging
+import socket
 import struct
 import threading
 
@@ -21,7 +22,7 @@ class WebSocketClient:
         if self.closed:
             return
         try:
-            msg = json.dumps(data)
+            msg = fast_dumps(data)
             self.send_text(msg)
         except Exception as e:
             logger.debug("[WebSocketClient] Error serializing JSON: %s", e)
@@ -138,6 +139,8 @@ class WebSocketClient:
             else:
                 return None
 
+        except (TimeoutError, socket.timeout):
+            return None
         except Exception:
             self.closed = True
             return None

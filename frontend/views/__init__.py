@@ -8,7 +8,6 @@ from .logs_view import LogView
 from .music_view import MusicView
 from .rewards_view import RewardsView
 from .settings_view import SettingsView
-from .spam_view import SpamView
 from .timers_view import TimersView
 from .widgets_view import WidgetsView
 from .schedule_view import ScheduleView
@@ -23,7 +22,6 @@ __all__ = [
     "MusicView",
     "RewardsView",
     "SettingsView",
-    "SpamView",
     "TimersView",
     "WidgetsView",
     "ScheduleView",

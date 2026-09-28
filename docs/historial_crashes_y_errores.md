@@ -24,6 +24,7 @@
 | **INC-012** | Corrutinas huérfanas en loop de TikTokLive (`Task was destroyed but it is pending!`, `RuntimeError: no running event loop`) | Log de Usuario `minikick.log` (Líneas 668-1001) | v1.6.0 | `✅ Solventado` | `backend/providers/chat/tiktok_provider.py` | v1.6.0 (`WT-1.6.0_35`) |
 | **INC-013** | Fondo transparente en popups de búsqueda (`CategorySuggestionsPopup`, `SearchableComboPopup`) tras activar `WA_TranslucentBackground` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/widgets/category_search.py`, `frontend/widgets/searchable_combo_box.py` | v1.6.0 (`WT-1.6.0_54`) |
 | **INC-014** | Ocultamiento de interruptores en tarjeta "Elementos & Filtros" de `ChatOverlaySettingsPanel` por falta de layout en `CompactToggleItem` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/components/chat/overlay_settings.py` | v1.6.0 (`WT-1.6.0_57`) |
+| **INC-015** | Auto-respuesta del bot en Kick por falta de filtro de bots en `ChatController._step_commands` y desincronización inicial de tabla de comandos | Log de Usuario `minikick.log` (Línea 222) / Feedback v1.6.1 | v1.6.1 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/commands_service.py` | v1.6.1 (`WT-1.6.1_12`) |
 
 ---
 
@@ -445,6 +446,28 @@
     - `layout() is not None` $\to$ `QHBoxLayout` activo en cada elemento.
     - `sizeHint().height() > 0` $\to$ Dimensiones positivas y renderizado verificado.
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.0/WT-1.6.0_57.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.0/WT-1.6.0_57.md).
+
+### INC-015: Auto-respuesta de Comandos en Kick por Mensajes de Bot (@MiniKick) y Desincronización de Tabla
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (Bucle no deseado donde el bot responde a sus propios mensajes en Kick, y omisión temporal del comando en la tabla de UI durante el primer arranque).
+* **Reportes Asociados**:
+  - `minikick.log` (Línea 222: `[CommandService] Command executed — trigger='!discord', user='@MiniKick', platform='kick'`).
+* **Fecha y Versión del Fallo**: 2026-09-27 en MiniKick `v1.6.1`.
+* **Causa Raíz**:
+  1. En Kick, a diferencia de Twitch IRC, los mensajes emitidos por el bot a través de la API REST son retransmitidos de vuelta por los WebSockets de Pusher a la sala de chat bajo el usuario `@MiniKick`.
+  2. En `ChatController._step_commands`, no se filtraba si el remitente era un bot conocido (`self.filter_handler.is_bot(dto.user, dto.badges)`).
+  3. Al enviar la respuesta de `!commands`, el mensaje contenía la palabra `!discord`, la cual activó el comando de regex de `!discord` al ser recibido de vuelta, provocando que el bot se auto-respondiera a sí mismo en el chat.
+  4. Durante el primer arranque, `_register_system_commands` bloqueaba las señales de `CommandService` sin emitir `commands_changed` al finalizar el registro, impidiendo que `CommandsController` detectara la inserción de comandos nuevos del sistema hasta reiniciar la aplicación.
+* **Archivos y Líneas Modificadas**:
+  1. [`backend/controllers/chat_controller.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/chat_controller.py):
+     - Se añadió guarda `if self.filter_handler.is_bot(dto.user, dto.badges): return` en `_step_commands`.
+     - Se emite `self.command_service.commands_changed.emit()` al finalizar `_register_system_commands`.
+  2. [`backend/services/chat/commands_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/chat/commands_service.py):
+     - Se agregó lista de bots maestros y bloqueo defensivo en `process_incoming_message` para bots conocidos y badge `bot`.
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_commands_help.py` (`test_bot_messages_do_not_trigger_commands_or_autoresponses`, `test_command_service_rejects_bots`, `test_register_system_commands_emits_commands_changed`).
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.1/WT-1.6.1_12.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.1/WT-1.6.1_12.md).
 
 ---
 

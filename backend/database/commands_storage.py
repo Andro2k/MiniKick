@@ -88,6 +88,30 @@ class SQLiteCommandsStorage:
         except Exception as e:
             logger.error("[CommandsStorage] Error deleting command '%s': %s", trigger, e)
 
+    def update_command_trigger(self, old_trigger: str, new_trigger: str) -> bool:
+        if not old_trigger or not new_trigger or old_trigger == new_trigger:
+            return False
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT 1 FROM chat_commands WHERE trigger = ?", (new_trigger,))
+                if cursor.fetchone():
+                    logger.warning("[CommandsStorage] Cannot rename trigger '%s' -> '%s': target already exists", old_trigger, new_trigger)
+                    return False
+
+                try:
+                    cursor.execute("UPDATE command_execution_logs SET command_trigger = ? WHERE command_trigger = ?", (new_trigger, old_trigger))
+                except Exception:
+                    pass
+
+                cursor.execute("UPDATE chat_commands SET trigger = ? WHERE trigger = ?", (new_trigger, old_trigger))
+                conn.commit()
+            logger.info("[CommandsStorage] Renamed command trigger '%s' -> '%s'", old_trigger, new_trigger)
+            return True
+        except Exception as e:
+            logger.error("[CommandsStorage] Error renaming command trigger '%s' -> '%s': %s", old_trigger, new_trigger, e)
+            return False
+
     def search_commands(self, query: str) -> list[dict]:
         try:
             with self.db_manager.get_connection() as conn:

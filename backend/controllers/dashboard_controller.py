@@ -1,5 +1,6 @@
 # backend\controllers\dashboard_controller.py
 
+import datetime
 import logging
 from PySide6.QtCore import QObject, Signal, Slot
 
@@ -17,11 +18,17 @@ class DashboardController(QObject):
     reauth_kick_requested = Signal()
     reauth_twitch_requested = Signal()
 
-    def __init__(self, view, avatar_service, db_manager=None):
+    def __init__(self, view, avatar_service, db_manager=None, widget_service=None, widgets_controller=None, toast_manager=None, i18n=None):
         super().__init__()
         self.view = view
         self.avatar_service = avatar_service
         self.db_manager = db_manager
+        self.widget_service = widget_service
+        self.toast = toast_manager
+        from backend.services.system import TranslationService
+        self.i18n = i18n or TranslationService()
+        self._widgets_controller = None
+        self._current_chatters_date = datetime.date.today().strftime("%Y-%m-%d")
         if self.db_manager is None and avatar_service and hasattr(avatar_service, "storage"):
             self.db_manager = getattr(avatar_service.storage, "db_manager", None)
 
@@ -31,16 +38,42 @@ class DashboardController(QObject):
         self._view_connected = False
         self._service_connected = False
 
+        self.widgets_controller = widgets_controller
         self._connect_service_signals()
         if self.view is not None:
             self._connect_signals()
         self._load_cached_profiles_from_db()
+        self._init_top_chatters()
+
+    @property
+    def widgets_controller(self):
+        return self._widgets_controller
+
+    @widgets_controller.setter
+    def widgets_controller(self, controller):
+        if self._widgets_controller == controller:
+            return
+        if self._widgets_controller:
+            try:
+                if hasattr(self._widgets_controller, "chatters_updated"):
+                    self._widgets_controller.chatters_updated.disconnect(self._on_chatters_updated)
+                if hasattr(self._widgets_controller, "widget_status_changed"):
+                    self._widgets_controller.widget_status_changed.disconnect(self._on_widget_status_changed)
+            except Exception:
+                pass
+        self._widgets_controller = controller
+        if self._widgets_controller:
+            if hasattr(self._widgets_controller, "chatters_updated"):
+                self._widgets_controller.chatters_updated.connect(self._on_chatters_updated)
+            if hasattr(self._widgets_controller, "widget_status_changed"):
+                self._widgets_controller.widget_status_changed.connect(self._on_widget_status_changed)
 
     def attach_view(self, view) -> None:
         self.view = view
         if self.view is not None:
             self._connect_signals()
             self._sync_view_profile()
+            self._init_top_chatters()
 
     def _connect_service_signals(self):
         if self._service_connected or not self.avatar_service:
@@ -66,6 +99,86 @@ class DashboardController(QObject):
             self.view.reauth_twitch_requested.connect(self.reauth_twitch_requested.emit)
         if hasattr(self.view, "channel_tab_changed"):
             self.view.channel_tab_changed.connect(self._on_channel_tab_changed)
+        if hasattr(self.view, "top_chatters_date_changed"):
+            self.view.top_chatters_date_changed.connect(self._on_top_chatters_date_changed)
+        if hasattr(self.view, "activate_chatters_requested"):
+            self.view.activate_chatters_requested.connect(self._on_activate_chatters_requested)
+
+    def _sync_widget_active_state(self):
+        is_active = True
+        if self.widget_service and hasattr(self.widget_service, "get_widget"):
+            w = self.widget_service.get_widget("chatters")
+            is_active = bool(w.get("is_active", True)) if w else True
+        if self.view and hasattr(self.view, "set_chatters_widget_active"):
+            self.view.set_chatters_widget_active(is_active)
+
+    def _init_top_chatters(self):
+        if not self.view:
+            return
+        dates = self.get_available_chatter_dates()
+        if hasattr(self.view, "populate_chatter_dates"):
+            self.view.populate_chatter_dates(dates)
+        today_str = datetime.date.today().strftime("%Y-%m-%d")
+        self._current_chatters_date = today_str
+        self._sync_widget_active_state()
+        self.load_top_chatters(today_str)
+
+    def get_available_chatter_dates(self) -> list[str]:
+        if self.widget_service and hasattr(self.widget_service, "get_available_chatter_dates"):
+            return self.widget_service.get_available_chatter_dates()
+        return []
+
+    def load_top_chatters(self, date_str: str | None = None) -> list[dict]:
+        if not date_str:
+            date_str = datetime.date.today().strftime("%Y-%m-%d")
+        today_str = datetime.date.today().strftime("%Y-%m-%d")
+
+        chatters_list: list[dict] = []
+        if (
+            date_str == today_str
+            and self.widgets_controller
+            and hasattr(self.widgets_controller, "_chatters_counts")
+            and self.widgets_controller._chatters_counts
+        ):
+            chatters_dict = self.widgets_controller._chatters_counts
+            chatters_list = sorted(chatters_dict.values(), key=lambda x: int(x.get("count", 0)), reverse=True)
+        elif self.widget_service and hasattr(self.widget_service, "load_daily_chatters"):
+            chatters_dict = self.widget_service.load_daily_chatters(date_str)
+            chatters_list = list(chatters_dict.values())
+
+        total_messages = sum(int(c.get("count", 0)) for c in chatters_list)
+        if self.view and hasattr(self.view, "render_top_chatters"):
+            self.view.render_top_chatters(chatters_list, total_messages=total_messages)
+        return chatters_list
+
+    def _on_top_chatters_date_changed(self, date_str: str):
+        self._current_chatters_date = date_str
+        self.load_top_chatters(date_str)
+
+    def _on_chatters_updated(self):
+        today_str = datetime.date.today().strftime("%Y-%m-%d")
+        if self._current_chatters_date == today_str:
+            self.load_top_chatters(today_str)
+
+    def _on_widget_status_changed(self, widget_id: str, is_active: bool):
+        if widget_id == "chatters":
+            if self.view and hasattr(self.view, "set_chatters_widget_active"):
+                self.view.set_chatters_widget_active(is_active)
+
+    def _on_activate_chatters_requested(self):
+        if self.widgets_controller and hasattr(self.widgets_controller, "set_widget_active"):
+            success = self.widgets_controller.set_widget_active("chatters", True)
+            if success:
+                self._sync_widget_active_state()
+                today_str = datetime.date.today().strftime("%Y-%m-%d")
+                self.load_top_chatters(today_str)
+                if self.toast:
+                    self.toast.show_toast(
+                        title=self.i18n.get("dashboard.chatters.toast_activated_title"),
+                        message=self.i18n.get("dashboard.chatters.toast_activated_desc"),
+                        state="success",
+                        tag="widget_chatters_activated"
+                    )
 
     def _load_cached_profiles_from_db(self):
         if not self.db_manager:

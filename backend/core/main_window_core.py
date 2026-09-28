@@ -11,13 +11,13 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
     QSystemTrayIcon, QApplication
 )
-from PySide6.QtCore import Qt, Slot, QEvent, QTimer
+from PySide6.QtCore import Qt, Slot, QEvent, QTimer, QByteArray
 
 from .app_container_core import AppContainerCore
 from .app_logger_core import setup_application_logging
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
-    LogService, SettingsService, SpamService, TimerService
+    LogService, SettingsService, SpamService, TimerService, WhatsNewService
 )
 from backend.controllers import (
     RewardsController, ChatController, CommandsController, DashboardController,
@@ -34,10 +34,12 @@ from frontend.common import COLOR_GREEN, get_global_qss
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
-    LogView, MusicView, SettingsView, SpamView, WidgetsView,
+    LogView, MusicView, SettingsView, WidgetsView,
     ScheduleView, AlertsView
 )
-from frontend.dialogs import ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog
+from frontend.dialogs import (
+    ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog, WhatsNewDialog
+)
 
 try:
     from backend.config import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
@@ -52,12 +54,13 @@ class MainWindowCore(QMainWindow):
     _recent_reward_redemptions: deque | None = None
     SETTING_MINIMIZE_TRAY = "minimize_to_tray"
     SETTING_AUTOSTART = "dashboard_autostart"
+    SETTING_WINDOW_MAXIMIZED = "window_is_maximized"
+    SETTING_WINDOW_GEOMETRY = "window_geometry"
 
     _NAV_CONFIG = (
         ("Dashboard", "element-filled.svg", "top"),
         ("Chat", "dialog-filled.svg", "top"),
         ("Stream Info", "calendar-days-filled.svg", "top"),
-        ("Spam Filters", "shield-filled.svg", "top"),
         ("Comandos", "chat-square-code-filled.svg", "top"),
         ("Timers", "alarm-filled.svg", "top"),
         ("Music", "music-notes-filled.svg", "top"),
@@ -75,6 +78,7 @@ class MainWindowCore(QMainWindow):
         self.resize(1200, 800)
         
         self._is_shutting_down = False
+        self._was_maximized_before_tray = True
         self.updater_manager = updater_manager
         self.app_version = app_version
         
@@ -89,6 +93,7 @@ class MainWindowCore(QMainWindow):
         self.kick_auth_manager = self.container.kick_auth_manager
         self.tts_manager = self.container.tts_manager
         self.overlay_server = self.container.overlay_server
+        self.whats_new_service = WhatsNewService(self.settings_storage, self.app_version)
         
         title_template = self.i18n.get("main.window.title")
         self.setWindowTitle(title_template.replace("{version}", app_version))
@@ -186,7 +191,10 @@ class MainWindowCore(QMainWindow):
         self.dashboard_controller = DashboardController(
             view=self.view_dashboard, 
             avatar_service=self.avatar_service,
-            db_manager=self.container.db_manager
+            db_manager=self.container.db_manager,
+            widget_service=self.container.widget_service,
+            toast_manager=self.toast,
+            i18n=self.i18n
         )
         self.chat_controller = ChatController(
             view=None, 
@@ -206,6 +214,7 @@ class MainWindowCore(QMainWindow):
             toast_manager=self.toast,
             spam_service=self.spam_service
         )
+        self.dashboard_controller.widgets_controller = self.widgets_controller
         self.music_controller = MusicController(
             view=None,
             command_service=self.command_service,
@@ -288,6 +297,7 @@ class MainWindowCore(QMainWindow):
         self.main_layout.addWidget(self.content_stack)
 
         self._update_dashboard_metrics()
+        self._init_feature_badges()
 
     def _setup_tray(self):
         self.tray_manager = SystemTrayManager(self.i18n, self)
@@ -303,6 +313,7 @@ class MainWindowCore(QMainWindow):
     def _connect_signals(self):
         self.settings_controller.style_reload_requested.connect(self._apply_dynamic_theme)
         self.sidebar.view_selected.connect(self._handle_navigation)
+        self.sidebar.section_viewed.connect(self._on_section_viewed)
         self.dashboard_controller.request_connection.connect(self._handle_auth_process)
         self.dashboard_controller.twitch_connect_requested.connect(self._on_twitch_integration_button_clicked)
         self.dashboard_controller.youtube_connect_requested.connect(self._on_youtube_integration_button_clicked)
@@ -422,6 +433,8 @@ class MainWindowCore(QMainWindow):
             self.content_stack.addWidget(self.view_chat)
             self.view_chat.chat_overlay_url = self.overlay_server.get_chat_overlay_url()
             self.chat_controller.attach_view(self.view_chat)
+            if hasattr(self.view_chat, "spam_panel"):
+                self.spam_controller.attach_view(self.view_chat.spam_panel)
             view_widget = self.view_chat
         elif view_name == "Music":
             self.view_music = MusicView(self.i18n, music_overlay_url=self.overlay_server.get_music_overlay_url(), parent=self.content_stack)
@@ -456,11 +469,6 @@ class MainWindowCore(QMainWindow):
             self.content_stack.addWidget(self.view_widgets)
             self.widgets_controller.attach_view(self.view_widgets)
             view_widget = self.view_widgets
-        elif view_name == "Spam Filters":
-            self.view_spam = SpamView(self.i18n, parent=self.content_stack)
-            self.content_stack.addWidget(self.view_spam)
-            self.spam_controller.attach_view(self.view_spam)
-            view_widget = self.view_spam
         elif view_name == "Timers":
             self.view_timers = TimersView(self.i18n, parent=self.content_stack)
             self.content_stack.addWidget(self.view_timers)
@@ -502,11 +510,48 @@ class MainWindowCore(QMainWindow):
     def _schedule_view_prewarming(self):
         views_to_warm = [
             "Chat", "Alerts", "Widgets", "Settings", "Triggers",
-            "Stream Info", "Comandos", "Timers", "Spam Filters",
+            "Stream Info", "Comandos", "Timers",
             "Music", "Developer"
         ]
         self._prewarm_queue = deque(views_to_warm)
         QTimer.singleShot(2500, self._prewarm_next_view)
+        QTimer.singleShot(750, self._check_whats_new_dialog)
+
+    def _init_feature_badges(self):
+        try:
+            unseen = self.whats_new_service.get_unseen_badges()
+            for section in unseen:
+                self.sidebar.set_tab_badge(section, True)
+        except Exception as e:
+            self.logger.warning("[WhatsNew] Error initializing feature badges: %s", e)
+
+    def _on_section_viewed(self, section_name: str):
+        try:
+            self.whats_new_service.mark_section_seen(section_name)
+        except Exception as e:
+            self.logger.warning("[WhatsNew] Error marking section '%s' as seen: %s", section_name, e)
+
+    def _check_whats_new_dialog(self):
+        if self._is_shutting_down or getattr(self, "_is_window_closing", False):
+            return
+        try:
+            if not self.whats_new_service.should_show_modal():
+                return
+            is_first = self.whats_new_service.is_first_launch()
+            highlights = self.whats_new_service.get_highlights()
+            if not highlights:
+                return
+            dialog = WhatsNewDialog(
+                i18n=self.i18n,
+                highlights=highlights,
+                is_first_launch=is_first,
+                app_version=self.app_version,
+                parent=self
+            )
+            dialog.exec()
+            self.whats_new_service.mark_version_seen()
+        except Exception as e:
+            self.logger.error("[WhatsNew] Error displaying What's New dialog: %s", e)
 
     def _prewarm_next_view(self):
         if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:
@@ -522,18 +567,54 @@ class MainWindowCore(QMainWindow):
         if self._prewarm_queue and not self._is_shutting_down:
             QTimer.singleShot(250, self._prewarm_next_view)
 
+    def restore_window_state(self):
+        geom_hex = self.settings_storage.load_string(self.SETTING_WINDOW_GEOMETRY, "")
+        if geom_hex:
+            try:
+                self.restoreGeometry(QByteArray.fromHex(geom_hex.encode("ascii")))
+            except Exception as e:
+                self.logger.warning("[MainWindow] Failed to restore window geometry: %s", e)
+
+        is_max = self.settings_storage.load_bool(self.SETTING_WINDOW_MAXIMIZED, True)
+        self._was_maximized_before_tray = is_max
+        if is_max:
+            self.showMaximized()
+        else:
+            self.show()
+
+    def _save_window_state(self):
+        try:
+            if self.isMinimized() and hasattr(self, "_was_maximized_before_tray"):
+                is_max = self._was_maximized_before_tray
+            else:
+                is_max = self.isMaximized()
+
+            self.settings_storage.save_bool(self.SETTING_WINDOW_MAXIMIZED, is_max)
+            if not is_max and not self.isMinimized():
+                geom_hex = bytes(self.saveGeometry()).hex()
+                self.settings_storage.save_string(self.SETTING_WINDOW_GEOMETRY, geom_hex)
+            self.logger.debug("[MainWindow] Saved window state: maximized=%s", is_max)
+        except Exception as e:
+            self.logger.error("[MainWindow] Failed to save window state: %s", e)
+
     @Slot()
     def _restore_from_tray(self):
         self.logger.info("[User Action] Window restored from system tray")
-        self.showNormal()
+        if getattr(self, "_was_maximized_before_tray", False):
+            self.showMaximized()
+        else:
+            self.showNormal()
         self.activateWindow()
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.WindowStateChange:
-            if self.isMinimized() and self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
-                self.logger.info("[User Action] Window minimized to system tray")
-                self.hide()
-                self._notify_background()
+            if self.isMinimized():
+                old_state = event.oldState()
+                self._was_maximized_before_tray = bool(old_state & Qt.WindowState.WindowMaximized)
+                if self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False):
+                    self.logger.info("[User Action] Window minimized to system tray")
+                    self.hide()
+                    self._notify_background()
         super().changeEvent(event)
 
     def closeEvent(self, event):
@@ -544,6 +625,7 @@ class MainWindowCore(QMainWindow):
         minimize_tray = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.logger.info("[User Action] Window close triggered (minimize_tray=%s)", minimize_tray)
         if minimize_tray:
+            self._save_window_state()
             self.hide()
             self._notify_background()
             event.ignore() 
@@ -717,6 +799,7 @@ class MainWindowCore(QMainWindow):
         )
 
     def _force_quit(self):
+        self._save_window_state()
         self.hide()
         self._cleanup()
         QApplication.quit()
@@ -730,6 +813,10 @@ class MainWindowCore(QMainWindow):
         
         if hasattr(self, 'music_controller') and self.music_controller:
             self.music_controller.shutdown()
+
+        if hasattr(self, 'widgets_controller') and self.widgets_controller:
+            if hasattr(self.widgets_controller, 'cleanup'):
+                self.widgets_controller.cleanup()
 
         self.logger.info("[Shutdown] Stopping TTS worker and overlay HTTP server...")
         self.container.shutdown()
@@ -1008,7 +1095,7 @@ class MainWindowCore(QMainWindow):
                     )
         else:
             no_rewards_template = self.i18n.get("main.logs.reward_no_rewards")
-            self.logger.debug(no_rewards_template.replace("{reward_name}", reward_name))
+            self.logger.debug("[Reward] %s", no_rewards_template.replace("{reward_name}", reward_name))
 
         settings = self.chat_service.get_settings()
         if settings.get("enabled", False) and message:
@@ -1301,12 +1388,12 @@ class MainWindowCore(QMainWindow):
             )
 
         conn_dict = self.get_connected_platforms()
+        if hasattr(self, "view_chat") and self.view_chat and hasattr(self.view_chat, "set_connected_platforms"):
+            self.view_chat.set_connected_platforms(conn_dict)
         if hasattr(self, "view_commands") and self.view_commands and hasattr(self.view_commands, "set_connected_platforms"):
             self.view_commands.set_connected_platforms(conn_dict)
         if hasattr(self, "view_schedule") and self.view_schedule and hasattr(self.view_schedule, "set_connected_platforms"):
             self.view_schedule.set_connected_platforms(conn_dict)
-        if hasattr(self, "view_spam") and self.view_spam and hasattr(self.view_spam, "set_connected_platforms"):
-            self.view_spam.set_connected_platforms(conn_dict)
         if hasattr(self, "view_rewards") and self.view_rewards and hasattr(self.view_rewards, "set_connected_platforms"):
             self.view_rewards.set_connected_platforms(conn_dict)
         if hasattr(self, "view_timers") and self.view_timers and hasattr(self.view_timers, "set_connected_platforms"):

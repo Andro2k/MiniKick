@@ -185,6 +185,8 @@ DEFAULT_DICTIONARY = {
             "title": "Muted Users"
         },
         "commands": {
+            "skiptts_success": "@{user}, the current TTS has been stopped and cleared.",
+            "skiptts_toast_title": "TTS Silenced",
             "ttsblock_already": "@{user}, the word '{word}' is already blocked in TTS.",
             "ttsblock_success": "@{user}, the word '{word}' has been blocked in TTS.",
             "ttsblock_usage": "@{user}, correct usage: !ttsblock <word> or !ttsblock unblock <word>",
@@ -197,6 +199,18 @@ DEFAULT_DICTIONARY = {
             "ttsunmute_not_found": "@{user}, user @{target} was not muted in TTS.",
             "ttsunmute_success": "@{user}, user @{target} has been unmuted in TTS.",
             "ttsunmute_usage": "@{user}, correct usage: !ttsunmute <username>"
+        },
+        "commands_help": {
+            "active_header": "📖 Active commands:",
+            "active_tag": "Active",
+            "empty_category": "No commands available in {category}.",
+            "empty_general": "No commands currently configured.",
+            "inactive_tag": "Inactive",
+            "sec_chat": "💬 Chat",
+            "sec_moderation": "🛡️ Moderation",
+            "sec_music": "🎵 Music",
+            "sec_widgets": "🎮 Widgets",
+            "status_header": "📋 Commands status:"
         },
         "display": {
             "title": "Chat History"
@@ -346,10 +360,15 @@ DEFAULT_DICTIONARY = {
         "tabs": {
             "muted": "Muted Users",
             "overlay": "Overlay (OBS)",
-            "settings": "Voice Settings"
+            "settings": "Voice Settings",
+            "spam": "Anti-Spam Filters"
         }
     },
     "command": {
+        "confirm_delete": {
+            "desc": "Are you sure you want to delete command '{trigger}'? This action cannot be undone.",
+            "title": "Delete Command?"
+        },
         "dialog": {
             "active_checkbox": "Command Active",
             "aliases_label": "Standard Aliases (comma-separated):",
@@ -376,7 +395,9 @@ DEFAULT_DICTIONARY = {
             "subtitle": "Set up automated bot commands and custom responses for your community.",
             "tab_advanced": "Advanced",
             "title": "Configure Command",
-            "trigger_label": "Command trigger (Ex: !discord):"
+            "trigger_invalid_hint": "Command must start with '!' and cannot contain spaces. Spaces are converted to '_'.",
+            "trigger_label": "Command trigger (Ex: !discord):",
+            "trigger_placeholder": "!my_command"
         },
         "empty": {
             "btn": "Create Command",
@@ -415,7 +436,8 @@ DEFAULT_DICTIONARY = {
             "tooltip_delete": "Permanently delete command",
             "tooltip_edit": "Modify command settings",
             "type_custom": "Custom",
-            "type_plugin": "Plugin"
+            "type_plugin": "Plugin",
+            "warning_legacy_format": "Command has non-standard format (contains spaces or uppercase). Edit it to normalize."
         }
     },
     "common": {
@@ -513,6 +535,25 @@ DEFAULT_DICTIONARY = {
             "title_kick": "Pending permissions on Kick",
             "title_twitch": "Pending permissions on Twitch"
         },
+        "chatters": {
+            "btn_activate": "Enable Top Chatters",
+            "col_messages": "Messages",
+            "col_platform": "Platform",
+            "col_rank": "#",
+            "col_share": "Share",
+            "col_user": "User",
+            "empty_desc": "No chat messages were recorded for the selected date.",
+            "empty_inactive_desc": "The Top Chatters widget is turned off. Enable it to start tracking and viewing chat activity in real time.",
+            "empty_title": "No activity on this date",
+            "filter_date_placeholder": "Select date...",
+            "filter_today": "Today",
+            "filter_yesterday": "Yesterday",
+            "inactive_suggestion": "The Top Chatters widget is disabled. Would you like to enable it to start collecting chat statistics in real time?",
+            "subtitle": "Ranking of most active stream viewers",
+            "title": "Community Top Chatters",
+            "toast_activated_desc": "The Top Chatters widget has been enabled and will start recording chat activity.",
+            "toast_activated_title": "Top Chatters Enabled"
+        },
         "connection": {
             "btn_active_kick": "Kick Active",
             "btn_active_tiktok": "TikTok Active",
@@ -538,6 +579,9 @@ DEFAULT_DICTIONARY = {
             "disconnected": "Disconnected",
             "kick_title": "Kick",
             "messages_session": "{count} msgs",
+            "status_connecting": "Connecting...",
+            "status_offline": "Offline",
+            "status_online": "Online",
             "tiktok_title": "TikTok",
             "twitch_title": "Twitch",
             "youtube_title": "YouTube"
@@ -724,14 +768,8 @@ DEFAULT_DICTIONARY = {
         }
     },
     "logs": {
-        "app_container": {
-            "api_keys_not_found": "backend/config/api_keys.py file not found. Using empty credentials."
-        },
         "bootstrap": {
             "crash_dialog_failed": "[Bootstrap] Failed to display crash dialog: {error}"
-        },
-        "main_window": {
-            "twitch_auth_error": "[TwitchAuth] Twitch authentication error: {error}"
         },
         "tiktok": {
             "age_restricted": "The live stream for @{unique_id} has an age restriction (+18).",
@@ -774,9 +812,6 @@ DEFAULT_DICTIONARY = {
             "api_offline": "Attempted to update rewards while offline from Kick.",
             "reward_file_missing": "Media file for reward '{reward_name}' was not found at: {filepath}",
             "reward_no_rewards": "Reward '{reward_name}' has no reward configured.",
-            "shutdown_complete": "Thread shutdown sequence complete.",
-            "shutdown_init": "Initiating shutdown sequence...",
-            "shutdown_tts_overlay": "Shutting down TTS and Overlay...",
             "worker_stopped": "{worker} stopped cleanly.",
             "worker_stopping": "Requesting stop for {worker}...",
             "worker_stuck": "{worker} stuck (possible network lock). Forcing termination..."
@@ -882,8 +917,8 @@ DEFAULT_DICTIONARY = {
             "pause_success": "⏸️ Music paused successfully.",
             "playlist_empty_for_user": "❌ @{user}, you currently have no songs in the queue.",
             "playlist_invalid_pos": "❌ @{user}, position #{pos} is invalid. There are {total} song(s) in queue.",
-            "playlist_pos_info": "🎵 Song #{pos}: \"{title}\"{artist} (requested by @{requester})",
-            "playlist_user_songs": "🎵 @{user}, you have {count} song(s) in queue: {songs}",
+            "playlist_pos_info": "🎵 [Position #{pos}] │ \"{title}\"{artist} (requested by @{requester})",
+            "playlist_user_songs": "🎵 [My Songs] │ @{user} ({count} in queue): {songs}",
             "playlist_user_songs_more": "🎵 @{user} (remaining positions {page}/{total_pages}): {songs}",
             "queue_full": "❌ @{user}, the song queue is full ({max} songs maximum).",
             "resume_failed": "❌ Could not resume music.",
@@ -891,7 +926,7 @@ DEFAULT_DICTIONARY = {
             "skip_failed": "❌ Could not skip song (Player paused or empty queue).",
             "skip_success": "⏩ Song skipped successfully.",
             "song_empty_youtube": "🔇 YouTube queue is empty or no music is playing.",
-            "song_now_playing": "🎵 Now playing: {title} - {artist}",
+            "song_now_playing": "🎵 [Now Playing] │ {title} - {artist}",
             "song_paused_youtube": "🔇 YouTube is paused.",
             "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
             "sr_usage": "@{user} please enter a song name. (Ex: {trigger} Chayanne Torero)",
@@ -960,7 +995,7 @@ DEFAULT_DICTIONARY = {
             "processing_link": "🔍 Processing YouTube link...",
             "remove_tooltip": "Remove from queue",
             "searching": "🔍 Searching '{query}' on YouTube...",
-            "success": "🎵 Added to queue: {track}",
+            "success": "🎵 [Queue] │ {track}",
             "title": "Playback Queue"
         },
         "stats": {
@@ -1016,16 +1051,17 @@ DEFAULT_DICTIONARY = {
     },
     "piper_dialog": {
         "badge_custom": "LOCAL",
-        "badge_natural": "NATURAL",
-        "badge_stream": "STREAM",
         "btn_close": "Close",
-        "btn_delete": "Delete",
         "btn_delete_tooltip": "Delete model from local storage",
         "btn_download": "Download",
         "btn_import": "Import ONNX Model",
         "btn_import_tooltip": "Import a local Piper model (.onnx and .onnx.json)",
         "btn_reset_synthesis": "Reset",
         "btn_reset_tooltip": "Reset acoustic parameters to defaults",
+        "confirm_delete": {
+            "desc": "Are you sure you want to uninstall voice '{voice_name}'? You can download it again anytime.",
+            "title": "Uninstall Voice Model?"
+        },
         "empty_search": "No voice models found matching your search.",
         "import_filter": "Piper ONNX Models (*.onnx)",
         "import_missing_json": "The corresponding .onnx.json configuration file was not found in the same folder.",
@@ -1051,6 +1087,10 @@ DEFAULT_DICTIONARY = {
         "title": "Piper Voice Manager (Local TTS)"
     },
     "rewards": {
+        "confirm_delete": {
+            "desc": "Are you sure you want to delete reward '{title}'? Any configured actions will be unlinked.",
+            "title": "Delete Reward?"
+        },
         "dialogs": {
             "visual": {
                 "desc": "Position your alerts on the canvas. Moving them will immediately mirror the exact position in OBS.",
@@ -1439,6 +1479,10 @@ DEFAULT_DICTIONARY = {
         }
     },
     "timer": {
+        "confirm_delete": {
+            "desc": "This action will permanently delete timer '{name}'.",
+            "title": "Delete Timer?"
+        },
         "dialog": {
             "btn_add_message": "+ Add Message",
             "categories_desc": "Send this announcement only when streaming in specified categories.",
@@ -1506,9 +1550,23 @@ DEFAULT_DICTIONARY = {
             "unit_minutes": "Minutes"
         }
     },
+    "whats_new": {
+        "badge": {
+            "tooltip": "New in this update!"
+        },
+        "dialog": {
+            "btn_got_it": "Got it!",
+            "btn_start": "Start Exploring",
+            "subtitle_update": "Discover the latest features and optimizations designed to level up your stream.",
+            "subtitle_welcome": "Your unified all-in-one assistant for Kick, Twitch, YouTube, and TikTok.",
+            "title_update": "What's New in MiniKick v{version}",
+            "title_welcome": "Welcome to MiniKick!"
+        }
+    },
     "widgets": {
         "chatters": {
             "desc": "Displays a real-time leaderboard of the 5 most active chatters during your stream.",
+            "include_commands_label": "Include commands in message count (!)",
             "msg_empty": "🏆 No chat messages recorded yet in this stream session.",
             "msg_leaderboard": "🏆 Top 5 Chatters: {list}",
             "msg_reset": "🔄 @{user} has reset the Top Chatters leaderboard.",

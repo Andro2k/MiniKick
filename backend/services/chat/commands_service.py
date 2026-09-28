@@ -5,6 +5,7 @@ import re
 import time
 
 from PySide6.QtCore import QObject, Signal
+from backend.utils.command_utils import sanitize_command_trigger
 
 logger = logging.getLogger("minikick.services.chat.commands")
 
@@ -15,6 +16,10 @@ class CommandService(QObject):
         "everyone": 0, "subscriber": 1,
         "vip": 2, "moderator": 3, "broadcaster": 4
     }
+    _DEFAULT_BOT_NAMES = frozenset({
+        "minikick", "botrix", "nightbot", "streamelements", "moobot", "streamlabs",
+        "wizebot", "fossabot", "kofi", "streamerbot", "sery_bot", "blerp", "soundalerts", "songlistbot"
+    })
 
     def __init__(self, commands_storage, api_client=None):
         super().__init__()
@@ -37,7 +42,26 @@ class CommandService(QObject):
 
     def reload_cache(self):
         self._all_commands_cache = self.storage.load_all()
+        self._sanitize_legacy_commands()
         self._rebuild_dispatch_table_from_cache()
+
+    def _sanitize_legacy_commands(self):
+        migrated = False
+        for cmd in self._all_commands_cache:
+            raw_trigger = cmd.get("trigger", "")
+            if not raw_trigger:
+                continue
+            clean_trigger = sanitize_command_trigger(raw_trigger)
+            if clean_trigger and clean_trigger != raw_trigger:
+                success = False
+                if hasattr(self.storage, "update_command_trigger"):
+                    success = self.storage.update_command_trigger(raw_trigger, clean_trigger)
+                if success:
+                    logger.info("[CommandService] Migrated legacy command trigger: '%s' -> '%s'", raw_trigger, clean_trigger)
+                    cmd["trigger"] = clean_trigger
+                    migrated = True
+        if migrated:
+            self._all_commands_cache = self.storage.load_all()
 
     def _rebuild_dispatch_table_from_cache(self):
         self._dispatch_table.clear()
@@ -99,7 +123,7 @@ class CommandService(QObject):
         ]
 
     def save_command(self, trigger: str, response: str, is_active: bool, cooldown: int, aliases: str, is_regex: bool, permission: str, apply_kick: bool = None, apply_twitch: bool = None, apply_youtube: bool = None, apply_tiktok: bool = None):
-        trigger_clean = trigger.strip()
+        trigger_clean = sanitize_command_trigger(trigger)
         existing = self.get_command_by_trigger(trigger_clean)
         
         final_kick = apply_kick if apply_kick is not None else (existing.get("apply_kick", True) if existing else True)
@@ -159,6 +183,12 @@ class CommandService(QObject):
 
     def process_incoming_message(self, user: str, message: str, badges: list, platform: str = "kick") -> tuple[bool, str, dict, str]:
         if not message or not message.strip():
+            return False, "", {}, ""
+
+        u_clean = (user or "").strip().lower().lstrip("@")
+        if u_clean in self._DEFAULT_BOT_NAMES:
+            return False, "", {}, ""
+        if badges and any(str(b).lower() == "bot" for b in badges):
             return False, "", {}, ""
 
         parts = message.strip().split(maxsplit=1)

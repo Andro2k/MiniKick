@@ -17,6 +17,7 @@ from .youtube_dialog import YouTubeConnectDialog
 from .tiktok_dialog import TikTokConnectDialog
 from .duplicate_alert_dialog import DuplicateAlertModal
 from .import_backup_dialog import ImportBackupModal
+from .whats_new_dialog import WhatsNewDialog
 
 __all__ = [
     "ModernFramelessShell",
@@ -38,5 +39,6 @@ __all__ = [
     "YouTubeConnectDialog",
     "TikTokConnectDialog",
     "DuplicateAlertModal",
-    "ImportBackupModal"
+    "ImportBackupModal",
+    "WhatsNewDialog",
 ]

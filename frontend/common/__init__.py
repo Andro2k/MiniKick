@@ -13,6 +13,8 @@ from .icons import (
 
 from .validators import (
     validate_trigger_prefix,
+    sanitize_command_trigger,
+    is_complete_valid_trigger,
 )
 
 from .theme import (
@@ -25,6 +27,7 @@ from .theme import (
     COLOR_DANGER_SURFACE, COLOR_MEDIA_THUMB_BG,
     COLOR_AMBER, COLOR_AMBER_DARK,
     COLOR_BLUE, COLOR_BLUE_DARK, COLOR_PURPLE, COLOR_PURPLE_DARK,
+    COLOR_ORANGE, COLOR_ORANGE_DARK, COLOR_ORANGE_HOVER, COLOR_ORANGE_GLOW,
     COLOR_KICK, COLOR_KICK_REWARDS, COLOR_KICK_BORDER,
     COLOR_TWITCH, COLOR_TWITCH_DARK, COLOR_TWITCH_LIGHT, COLOR_TWITCH_GLOW,
     COLOR_YOUTUBE, COLOR_YOUTUBE_DARK, COLOR_YOUTUBE_GLOW,

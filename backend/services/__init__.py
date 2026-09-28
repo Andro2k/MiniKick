@@ -25,6 +25,7 @@ from .system import (
     SocketInstanceProvider,
     TranslationService,
     UpdateManager,
+    WhatsNewService,
     WidgetService,
     WindowsInstaller,
 )
@@ -58,6 +59,7 @@ __all__ = [
     "SocketInstanceProvider",
     "TranslationService",
     "UpdateManager",
+    "WhatsNewService",
     "WidgetService",
     "WindowsInstaller",
 ]

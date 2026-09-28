@@ -131,6 +131,18 @@ _DEFAULT_MOD_COMMANDS: dict[str, dict] = {
         "apply_youtube": True,
         "apply_tiktok": True,
     },
+    "[PLUGIN_CHAT_COMMANDS]": {
+        "trigger": "!commands",
+        "response": "[PLUGIN_CHAT_COMMANDS]",
+        "cooldown": 5,
+        "aliases": "!comandos,!help,!ayuda",
+        "is_regex": False,
+        "permission": "everyone",
+        "apply_kick": True,
+        "apply_twitch": True,
+        "apply_youtube": True,
+        "apply_tiktok": True,
+    },
 }
 
 class ChatController(QObject):
@@ -173,6 +185,7 @@ class ChatController(QObject):
             "[PLUGIN_CHAT_TTS_BLOCK]": self._handle_plugin_ttsblock,
             "[PLUGIN_CHAT_TTS_SKIP]": self._handle_plugin_skiptts,
             "[PLUGIN_CHAT_GIF]": self._handle_plugin_gif,
+            "[PLUGIN_CHAT_COMMANDS]": self._handle_plugin_commands,
         }
 
         self._save_timer = QTimer(self)
@@ -396,6 +409,7 @@ class ChatController(QObject):
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_BLOCK]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_BLOCK]"], active_override=settings.get("mod_block_command_enabled", True))
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_TTS_SKIP]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_TTS_SKIP]"], active_override=True)
         self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_GIF]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_GIF]"], active_override=True)
+        self._upsert_system_command(cmd_map, "[PLUGIN_CHAT_COMMANDS]", _DEFAULT_MOD_COMMANDS["[PLUGIN_CHAT_COMMANDS]"], active_override=True)
 
         for legacy_tag in ("[PLUGIN_CHAT_TTS_UNMUTE]", "[PLUGIN_CHAT_TTS_UNBLOCK]"):
             legacy_cmd = cmd_map.get(legacy_tag)
@@ -404,6 +418,8 @@ class ChatController(QObject):
                     self.command_service.delete_command(legacy_cmd["trigger"])
                 except Exception as ex:
                     logger.warning("[ChatController] Could not remove legacy command %s: %s", legacy_tag, ex)
+
+        self.command_service.commands_changed.emit()
 
     def sync_settings_cache(self) -> None:
         self._tts_settings_cache = self.service.get_settings()
@@ -430,6 +446,8 @@ class ChatController(QObject):
             self.spam_blocked.emit()
 
     def _step_commands(self, dto: ChatMessageDTO) -> None:
+        if self.filter_handler.is_bot(dto.user, dto.badges):
+            return
         platform = getattr(dto, "platform", "kick")
         handled, plugin_tag, cmd_info, prefix = self.command_service.process_incoming_message(dto.user, dto.content, dto.badges, platform=platform)
         if not handled:
@@ -632,6 +650,164 @@ class ChatController(QObject):
                 warn_msg = self.i18n.get("chat.status.giphy_key_required").replace("{user}", dto.user)
                 self.command_service.send_response(warn_msg, platform=platform)
 
+    def _send_chunked_command_responses(self, header: str, sections: list[str], platform: str = "kick", max_chars: int = 380) -> None:
+        if not sections:
+            return
+
+        full_candidate = f"{header} " + " | ".join(sections)
+        if len(full_candidate) <= max_chars:
+            self.command_service.send_response(full_candidate, platform=platform)
+            return
+
+        chunks: list[str] = []
+        current = header
+        for sec in sections:
+            candidate = f"{current} | {sec}" if current != header else f"{header} {sec}"
+            if len(candidate) <= max_chars:
+                current = candidate
+            else:
+                if current != header:
+                    chunks.append(current)
+                if len(f"{header} {sec}") <= max_chars:
+                    current = f"{header} {sec}"
+                else:
+                    current = header
+                    sub_items = sec.split(", ")
+                    sub_accum = ""
+                    for item in sub_items:
+                        sub_cand = f"{sub_accum}, {item}" if sub_accum else item
+                        if len(f"{header} {sub_cand}") <= max_chars:
+                            sub_accum = sub_cand
+                        else:
+                            if sub_accum:
+                                chunks.append(f"{header} {sub_accum}")
+                            sub_accum = item
+                    if sub_accum:
+                        current = f"{header} {sub_accum}"
+        if current and current != header:
+            chunks.append(current)
+
+        for idx, chunk in enumerate(chunks):
+            if idx == 0:
+                self.command_service.send_response(chunk, platform=platform)
+            else:
+                QTimer.singleShot(idx * 400, lambda c=chunk: self.command_service.send_response(c, platform=platform))
+
+    def _handle_plugin_commands(self, dto: ChatMessageDTO, prefix: str) -> None:
+        raw_args = dto.content[len(prefix):].strip().lower()
+        platform = getattr(dto, "platform", "kick")
+        user_badges = [str(b).lower() for b in (dto.badges or [])]
+        is_mod = any(b in ("moderator", "broadcaster") for b in user_badges)
+
+        all_commands = self.command_service.get_all_commands()
+        if not all_commands:
+            msg = self.i18n.get("chat.commands_help.empty_general")
+            self.command_service.send_response(msg, platform=platform)
+            return
+
+        categories = {
+            "chat": {"active": [], "inactive": []},
+            "music": {"active": [], "inactive": []},
+            "widgets": {"active": [], "inactive": []},
+            "moderation": {"active": [], "inactive": []},
+        }
+
+        for cmd in all_commands:
+            trig = cmd.get("trigger", "").strip()
+            if not trig:
+                continue
+            resp = cmd.get("response", "")
+            is_active = bool(cmd.get("is_active", True))
+            perm = cmd.get("permission", "everyone").lower()
+
+            if resp.startswith("[PLUGIN_MUSIC_"):
+                cat = "music"
+            elif resp.startswith("[PLUGIN_WIDGET_"):
+                cat = "widgets"
+            elif resp in ("[PLUGIN_CHAT_TTS_MUTE]", "[PLUGIN_CHAT_TTS_BLOCK]", "[PLUGIN_CHAT_TTS_SKIP]") or perm in ("moderator", "broadcaster"):
+                cat = "moderation"
+            else:
+                cat = "chat"
+
+            if is_active:
+                categories[cat]["active"].append(trig)
+            else:
+                categories[cat]["inactive"].append(trig)
+
+        for cat in categories:
+            categories[cat]["active"].sort()
+            categories[cat]["inactive"].sort()
+
+        labels = {
+            "chat": self.i18n.get("chat.commands_help.sec_chat"),
+            "music": self.i18n.get("chat.commands_help.sec_music"),
+            "widgets": self.i18n.get("chat.commands_help.sec_widgets"),
+            "moderation": self.i18n.get("chat.commands_help.sec_moderation"),
+        }
+
+        sec_alias_map = {
+            "chat": "chat", "general": "chat",
+            "musica": "music", "music": "music", "cancion": "music",
+            "widgets": "widgets", "widget": "widgets",
+            "mod": "moderation", "moderacion": "moderation", "moderator": "moderation"
+        }
+        target_cat = sec_alias_map.get(raw_args)
+        if target_cat:
+            if target_cat == "moderation" and not is_mod:
+                return
+            act = categories[target_cat]["active"]
+            inact = categories[target_cat]["inactive"]
+            cat_label = labels[target_cat]
+            if not act and not inact:
+                msg = self.i18n.get("chat.commands_help.empty_category").replace("{category}", cat_label)
+                self.command_service.send_response(msg, platform=platform)
+                return
+
+            act_tag = self.i18n.get("chat.commands_help.active_tag")
+            inact_tag = self.i18n.get("chat.commands_help.inactive_tag")
+            parts = []
+            if act:
+                parts.append(f"{act_tag}: {', '.join(act)}")
+            if inact:
+                parts.append(f"{inact_tag}: {', '.join(inact)}")
+
+            header = f"{cat_label}:"
+            self._send_chunked_command_responses(header, parts, platform=platform)
+            return
+
+        is_all_mode = raw_args in ("all", "todos", "status", "estado", "full")
+        header = self.i18n.get("chat.commands_help.status_header") if is_all_mode else self.i18n.get("chat.commands_help.active_header")
+        sections_to_show = ["chat", "music", "widgets"]
+        if is_mod:
+            sections_to_show.append("moderation")
+
+        section_strings = []
+        for cat_key in sections_to_show:
+            act = categories[cat_key]["active"]
+            inact = categories[cat_key]["inactive"]
+            cat_label = labels[cat_key]
+
+            if is_all_mode:
+                if not act and not inact:
+                    continue
+                inner_parts = []
+                if act:
+                    inner_parts.append(f"✅ {', '.join(act)}")
+                if inact:
+                    inner_parts.append(f"❌ {', '.join(inact)}")
+                section_strings.append(f"{cat_label}: [{' | '.join(inner_parts)}]")
+            else:
+                if not act:
+                    continue
+                section_strings.append(f"{cat_label}: {', '.join(act)}")
+
+        if not section_strings:
+            msg = self.i18n.get("chat.commands_help.empty_general")
+            self.command_service.send_response(msg, platform=platform)
+            return
+
+        self._send_chunked_command_responses(header, section_strings, platform=platform)
+
     def _resolve_user_role(self, badges: list, user: str) -> str:
         badge_set = set(badges) if badges else set()
         if "broadcaster" in badge_set:
@@ -657,9 +833,6 @@ class ChatController(QObject):
             "role": role_name, "platform": platform
         }
         self._message_buffer.append(item)
-        logger.info("[Chat] [%s] [%s] %s: %s", platform.upper(), dto.timestamp, dto.user, dto.content)
-        if self.view is not None:
-            self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
         gif_url = getattr(dto, "gif_url", "")
         if not gif_url and dto.content and ("http://" in dto.content or "https://" in dto.content):
             if not self.filter_handler.is_bot(dto.user, badges):
@@ -667,6 +840,11 @@ class ChatController(QObject):
                 if extracted:
                     gif_url = extracted
                     dto.gif_url = extracted
+
+        display_content = dto.content if dto.content else (f"[GIF: {gif_url}]" if gif_url else "")
+        logger.info("[%s] %s: %s", platform.upper(), dto.user, display_content)
+        if self.view is not None:
+            self.view.append_message(dto.user, dto.content, dto.color, timestamp=dto.timestamp, role=role_name, platform=platform)
 
         emotes_tag = getattr(dto, "emotes_tag", "")
         avatar_url = getattr(dto, "avatar_url", "")

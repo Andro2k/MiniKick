@@ -1,7 +1,7 @@
 # backend\database\database_manager.py
 
 import os
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import time
 import sqlite3
 import logging
@@ -19,15 +19,18 @@ class AutoCloseConnection(sqlite3.Connection):
             self.close()
 
 class DatabaseManager:
+    _initialized_dbs = set()
+
     def __init__(self, db_name="minikick.db"):
         app_data_dir = os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))
         self.db_dir = os.path.join(app_data_dir, '.Minikick')
         os.makedirs(self.db_dir, exist_ok=True)
         self.db_name = os.path.join(self.db_dir, db_name)
         
-        t0 = time.perf_counter()
-        self._initialize_database()
-        logger.debug("[Perf/DB] Database initialization completed in %.2f ms", (time.perf_counter() - t0) * 1000)
+        if self.db_name not in self._initialized_dbs:
+            t0 = time.perf_counter()
+            self._initialize_database()
+            logger.debug("[Perf/DB] Database initialization completed in %.2f ms", (time.perf_counter() - t0) * 1000)
 
     def _initialize_database(self) -> None:
         try:
@@ -54,6 +57,7 @@ class DatabaseManager:
                     conn.execute(f"PRAGMA user_version = {CURRENT_SCHEMA_VERSION}")
             else:
                 logger.debug("[DatabaseManager] Schema up-to-date (version %d). Skipping DDL re-runs.", user_ver)
+            self._initialized_dbs.add(self.db_name)
         except sqlite3.DatabaseError as e:
             if "malformed" in str(e).lower() or "corrupt" in str(e).lower() or "integrity" in str(e).lower() or "quick check" in str(e).lower():
                 logger.error("Database file is malformed at startup, recreating: %s", e)
@@ -235,6 +239,18 @@ class DatabaseManager:
                 )
             """)
             cursor.execute("""
+                CREATE TABLE IF NOT EXISTS daily_top_chatters (
+                    chatter_date TEXT NOT NULL,
+                    username TEXT NOT NULL,
+                    message_count INTEGER NOT NULL DEFAULT 1,
+                    color TEXT DEFAULT '#2ecd70',
+                    badges_json TEXT DEFAULT '[]',
+                    platform TEXT DEFAULT 'kick',
+                    last_seen TEXT NOT NULL,
+                    PRIMARY KEY (chatter_date, username)
+                )
+            """)
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS spam_violations (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT NOT NULL,
@@ -369,6 +385,7 @@ class DatabaseManager:
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name ON reward_redemptions(reward_name)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_platform ON reward_redemptions(platform)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_reward_redemptions_name_ts ON reward_redemptions(reward_name, timestamp DESC)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_daily_chatters_date_count ON daily_top_chatters(chatter_date, message_count DESC)")
 
             try:
                 cursor.execute("""
@@ -883,7 +900,7 @@ class DatabaseManager:
                     str(profile_data.get("broadcaster_type") or ("affiliate" if profile_data.get("is_affiliate") else "")),
                     1 if profile_data.get("vod_enabled") else 0,
                     profile_data.get("created_at", "-"),
-                    json.dumps(profile_data)
+                    fast_dumps(profile_data)
                 ))
                 conn.commit()
         except Exception as e:
@@ -898,7 +915,7 @@ class DatabaseManager:
                 cursor.execute("SELECT raw_json FROM channel_profiles WHERE platform = ?", (platform.lower().strip(),))
                 row = cursor.fetchone()
                 if row and row[0]:
-                    return json.loads(row[0])
+                    return fast_loads(row[0])
         except Exception as e:
             logger.error("[DatabaseManager] Error loading channel profile for %s: %s", platform, e)
         return None
@@ -912,7 +929,7 @@ class DatabaseManager:
                 for plat, raw in cursor.fetchall():
                     if raw:
                         try:
-                            results[plat] = json.loads(raw)
+                            results[plat] = fast_loads(raw)
                         except Exception:
                             pass
         except Exception as e:
@@ -957,6 +974,7 @@ class DatabaseManager:
 
     def cleanup(self) -> None:
         try:
+            self._initialized_dbs.discard(self.db_name)
             with self.get_connection() as conn:
                 conn.execute("PRAGMA optimize")
                 conn.commit()

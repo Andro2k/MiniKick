@@ -1,4 +1,4 @@
-# backend\workers\worker_utils.py
+# backend\utils\worker_utils.py
 
 import logging
 

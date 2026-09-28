@@ -119,10 +119,10 @@ class PiperTTSProvider:
 
     @staticmethod
     def _prepare_compatible_config(json_path: str) -> str:
-        import json
+        from backend.utils.json_utils import fast_load, fast_dump
         try:
             with open(json_path, "r", encoding="utf-8") as f:
-                cfg = json.load(f)
+                cfg = fast_load(f)
             
             modified = False
             if "num_symbols" not in cfg:
@@ -167,7 +167,7 @@ class PiperTTSProvider:
 
             if modified:
                 temp_cfg = tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w", encoding="utf-8")
-                json.dump(cfg, temp_cfg, ensure_ascii=False, indent=2)
+                fast_dump(cfg, temp_cfg, indent=2)
                 temp_cfg.close()
                 return temp_cfg.name
         except Exception as e:

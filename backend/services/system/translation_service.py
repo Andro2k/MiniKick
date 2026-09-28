@@ -1,6 +1,6 @@
 # backend\services\system\translation_service.py
 
-import json
+from backend.utils.json_utils import fast_load, fast_dump
 import logging
 import os
 import sys
@@ -25,14 +25,14 @@ class TranslationService:
         filepath = os.path.join(self.locales_dir, f"{lang_code}.json")
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
-                self._texts = json.load(f)
+                self._texts = fast_load(f)
             self.current_lang = lang_code
             return True
         except FileNotFoundError:
             logger.warning("[i18n] File %s.json not found. Auto-repairing...", lang_code)
             fallback_data = DEFAULT_DICTIONARY if lang_code == "en" else {}          
             with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(fallback_data, f, indent=4, ensure_ascii=False)
+                fast_dump(fallback_data, f, indent=4)
             
             self._texts = fallback_data
             self.current_lang = lang_code

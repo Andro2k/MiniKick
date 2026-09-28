@@ -1,7 +1,7 @@
 # backend\services\system\backup_service.py
 
 import base64
-import json
+from backend.utils.json_utils import fast_load, fast_dump
 import logging
 import os
 from datetime import datetime, timezone
@@ -72,7 +72,7 @@ class BackupService:
             sanitized_data = self._sanitize_for_json(data)
 
             with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(sanitized_data, f, indent=4, ensure_ascii=False)
+                fast_dump(sanitized_data, f, indent=4)
             self.logger.info("Successfully exported configuration to %s (sensitive keys excluded)", filepath)
             return True
         except Exception as e:
@@ -85,7 +85,7 @@ class BackupService:
             return None
         try:
             with open(filepath, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                data = fast_load(f)
 
             if not isinstance(data, dict):
                 self.logger.error("[BackupService] Root element is not a JSON object.")
@@ -142,7 +142,7 @@ class BackupService:
                 return True
 
             with open(filepath, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                data = fast_load(f)
 
             if not isinstance(data, dict):
                 self.logger.error("Invalid backup file format: Root is not a JSON object.")

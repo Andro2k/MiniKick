@@ -167,7 +167,7 @@ class KickWebSocketManager:
             except Exception:
                 pass
 
-        logger.info("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
+        logger.debug("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
 
         identity = sender.get("identity")
         badges = []
