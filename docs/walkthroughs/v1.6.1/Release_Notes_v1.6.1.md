@@ -1,8 +1,8 @@
 # Notas de la Versión — MiniKick v1.6.1
 
-Fecha de Publicación: 26 de Septiembre de 2026
+Fecha de Publicación: 27 de Septiembre de 2026
 
-La versión 1.6.1 de MiniKick introduce mejoras sustanciales en la persistencia de métricas de transmisión, integración y limpieza del área de trabajo del chat, estabilidad de comandos interactivos, optimización en el servidor de overlays para OBS Studio y un sistema avanzado de registro de actividad estructurado de alta precisión.
+La versión 1.6.1 de MiniKick introduce mejoras sustanciales en la persistencia de métricas de transmisión, integración y limpieza del área de trabajo del chat, estabilidad y partición multimensaje en comandos interactivos, aceleración de ultra alta velocidad en el servidor de overlays para OBS Studio, y una suite integral de trece herramientas de auditoría y diagnóstico para garantizar máxima estabilidad durante directos prolongados.
 
 ---
 
@@ -21,6 +21,8 @@ A continuación se resumen las nuevas funcionalidades incorporadas en esta actua
 | Dashboard | Activación y Actualización en Vivo de Top Chatters | Aviso inteligente en la tabla cuando el módulo está inactivo con botón de encendido en un clic y actualización automática de posiciones sin recargar. | Si el módulo está apagado, la aplicación te sugiere activarlo directamente desde la pantalla principal sin tener que navegar a otra pestaña. Al estar activo, las posiciones y mensajes del día se actualizan en vivo en la pantalla conforme los espectadores van participando en el chat. |
 | Widgets | Conteo Opcional de Comandos en Top Chatters | Nueva casilla en la configuración del widget para decidir si los comandos de chat se contabilizan o se descartan del ranking. | Otorga al streamer la libertad de elegir si desea premiar únicamente la conversación habitual o incluir la participación interactiva por comandos y minijuegos en el podio. |
 | Chat | Comando de Ayuda y Listado por Categorías | Nuevo comando nativo en el chat con desglose temático (Chat, Música, Widgets, Moderación) y partición inteligente multimensaje. | Permite a cualquier espectador conocer los comandos disponibles en el canal sin saturar el chat y sin que los mensajes se corten por límites de caracteres en Kick o Twitch. |
+| Developer | Motor de Aceleración de Procesamiento y Overlays | Procesamiento de eventos y deserialización de ultra alta velocidad con motores C compilados. | Los mensajes de chat, medallas, alertas y widgets se despachan de forma instantánea hacia OBS Studio con menor consumo de procesador, evitando microcortes o demoras durante transmisiones de alto tráfico. |
+| Developer | Suite de Diagnóstico y Salud del Sistema | Conjunto de trece herramientas de inspección continua integradas en la consola de mantenimiento. | Permite auditar en segundos la salud completa de la app, asegurando cero fugas de memoria, paridad de diseño y máxima estabilidad durante transmisiones prolongadas. |
 
 > [!NOTE]
 > Al iniciar la aplicación, si existen comandos creados en versiones anteriores que contengan espacios, la tabla de comandos alertará amablemente al usuario indicando el formato recomendado para mantener su correcto funcionamiento.
