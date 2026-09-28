@@ -2,7 +2,7 @@
 
 import base64
 import hashlib
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import logging
 import mimetypes
 import os
@@ -249,7 +249,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     break
                 if msg and isinstance(msg, str):
                     try:
-                        data = json.loads(msg)
+                        data = fast_loads(msg)
                         if data.get("type") == "alert_finished":
                             cb = getattr(self.server.manager, "on_alert_finished", None)
                             if cb:
@@ -402,7 +402,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
                     msg = client_queue.get(timeout=2.0)
                     if msg is None:
                         break
-                    self.wfile.write(f"data: {json.dumps(msg)}\n\n".encode("utf-8"))
+                    self.wfile.write(f"data: {fast_dumps(msg)}\n\n".encode("utf-8"))
                     self.wfile.flush()
                 except queue.Empty:
                     self.wfile.write(b": keep-alive\n\n")

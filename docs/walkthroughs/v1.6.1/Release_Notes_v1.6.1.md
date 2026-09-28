@@ -65,6 +65,15 @@ A continuación se resumen las nuevas funcionalidades incorporadas en esta actua
 * **Privacidad y Filtro Automático por Rangos:**
   Los comandos de moderación y control interno se ocultan automáticamente para la audiencia regular, mostrándose únicamente cuando la solicitud proviene del streamer o de sus moderadores autorizados.
 
+* **Optimización Global de Procesamiento de Datos y Overlays:**
+  Se estandarizó la serialización y lectura de datos en tiempo real mediante motores de ultra alta velocidad. El envío de eventos masivos hacia OBS Studio (mensajes de chat, medallas, alertas, widgets) y el acceso a la base de datos ahora se procesan hasta 20 veces más rápido, reduciendo al mínimo el uso de recursos del procesador durante transmisiones con chats muy activos.
+
+* **Estructura Interna y Organización del Motor Central:**
+  Se reorganizó la arquitectura del núcleo de procesamiento de tareas en segundo plano en módulos dedicados y ordenados. Esto asegura que la gestión de conexiones a plataformas de streaming y el apagado seguro de procesos operen con máxima estabilidad y sin interrupciones durante la transmisión.
+
+* **Suite de Auditoría y Verificación de Estabilidad del Sistema:**
+  Se amplió la suite de control de calidad interno a trece herramientas automatizadas de inspección continua. Este mecanismo vigila de forma exhaustiva que los módulos de la aplicación permanezcan organizados y aislados, garantizando que el rendimiento de la interfaz visual no interfiera con la persistencia de datos ni con las conexiones activas durante el directo.
+
 > [!TIP]
 > Para garantizar que los overlays no experimenten demoras al cambiar de escena en OBS Studio, se aconseja mantener desmarcada la opción "Apagar la fuente cuando no sea visible" en las propiedades de la fuente de navegador de OBS.
 

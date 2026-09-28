@@ -1,7 +1,7 @@
 # backend\database\database_manager.py
 
 import os
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import time
 import sqlite3
 import logging
@@ -900,7 +900,7 @@ class DatabaseManager:
                     str(profile_data.get("broadcaster_type") or ("affiliate" if profile_data.get("is_affiliate") else "")),
                     1 if profile_data.get("vod_enabled") else 0,
                     profile_data.get("created_at", "-"),
-                    json.dumps(profile_data)
+                    fast_dumps(profile_data)
                 ))
                 conn.commit()
         except Exception as e:
@@ -915,7 +915,7 @@ class DatabaseManager:
                 cursor.execute("SELECT raw_json FROM channel_profiles WHERE platform = ?", (platform.lower().strip(),))
                 row = cursor.fetchone()
                 if row and row[0]:
-                    return json.loads(row[0])
+                    return fast_loads(row[0])
         except Exception as e:
             logger.error("[DatabaseManager] Error loading channel profile for %s: %s", platform, e)
         return None
@@ -929,7 +929,7 @@ class DatabaseManager:
                 for plat, raw in cursor.fetchall():
                     if raw:
                         try:
-                            results[plat] = json.loads(raw)
+                            results[plat] = fast_loads(raw)
                         except Exception:
                             pass
         except Exception as e:

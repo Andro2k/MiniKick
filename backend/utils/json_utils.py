@@ -16,8 +16,11 @@ try:
             return _decoder.decode(payload.encode("utf-8"))
         return _decoder.decode(payload)
 
-    def fast_dumps(obj: Any) -> str:
-        return _encoder.encode(obj).decode("utf-8")
+    def fast_dumps(obj: Any, indent: int | None = None) -> str:
+        encoded = _encoder.encode(obj)
+        if indent is not None:
+            return msgspec.json.format(encoded, indent=indent).decode("utf-8")
+        return encoded.decode("utf-8")
 
     BACKEND_ENGINE = "msgspec"
 
@@ -30,7 +33,9 @@ except ImportError:
                 return orjson.loads(payload.encode("utf-8"))
             return orjson.loads(payload)
 
-        def fast_dumps(obj: Any) -> str:
+        def fast_dumps(obj: Any, indent: int | None = None) -> str:
+            if indent is not None:
+                return orjson.dumps(obj, option=orjson.OPT_INDENT_2).decode("utf-8")
             return orjson.dumps(obj).decode("utf-8")
 
         BACKEND_ENGINE = "orjson"
@@ -41,12 +46,25 @@ except ImportError:
         def fast_loads(payload: str | bytes | bytearray) -> Any:
             return json.loads(payload)
 
-        def fast_dumps(obj: Any) -> str:
-            return json.dumps(obj, ensure_ascii=False)
+        def fast_dumps(obj: Any, indent: int | None = None) -> str:
+            return json.dumps(obj, indent=indent, ensure_ascii=False)
 
         BACKEND_ENGINE = "json"
 
 logger.debug("[JsonUtils] Fast JSON parser initialized with engine: %s", BACKEND_ENGINE)
+
+
+def fast_load(fp: Any) -> Any:
+    content = fp.read()
+    if isinstance(content, bytes):
+        return fast_loads(content)
+    return fast_loads(str(content))
+
+
+def fast_dump(obj: Any, fp: Any, indent: int | None = None) -> None:
+    serialized = fast_dumps(obj, indent=indent)
+    fp.write(serialized)
+
 
 def parse_kick_payload(raw: str | bytes | bytearray) -> tuple[str, dict]:
     if not raw:

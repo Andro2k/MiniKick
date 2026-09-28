@@ -1,6 +1,6 @@
 # backend/services/system/whats_new_service.py
 
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import logging
 import re
 from pathlib import Path
@@ -146,7 +146,7 @@ class WhatsNewService:
                 seen_list = []
                 if legacy_badges:
                     try:
-                        data = json.loads(legacy_badges)
+                        data = fast_loads(legacy_badges)
                         if isinstance(data, dict):
                             seen_list = data.get("seen", [])
                         elif isinstance(data, list):
@@ -163,7 +163,7 @@ class WhatsNewService:
                 return state
             return {}
         try:
-            data = json.loads(raw)
+            data = fast_loads(raw)
             if isinstance(data, dict):
                 return data
         except Exception:
@@ -172,7 +172,7 @@ class WhatsNewService:
 
     def _save_state(self, state: Dict[str, Any]) -> None:
         try:
-            self._set_setting(self.SETTING_STATE, json.dumps(state))
+            self._set_setting(self.SETTING_STATE, fast_dumps(state))
         except Exception as e:
             logger.error("[WhatsNew] Failed to save state: %s", e)
 

@@ -2,7 +2,7 @@
 
 from .overlay_routes import OverlayRequestHandler
 from .overlay_ws_client import WebSocketClient
-import json
+from backend.utils.json_utils import fast_dumps
 import logging
 import secrets
 import threading
@@ -135,7 +135,7 @@ class OverlayServerManager:
         with self.ws_lock:
             ws_copy = list(self.ws_clients.get(ws_topic, []))
         if ws_copy:
-            encoded_msg = json.dumps(payload)
+            encoded_msg = fast_dumps(payload)
             for ws_client in ws_copy:
                 ws_client.send_text(encoded_msg)
 

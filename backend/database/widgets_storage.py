@@ -1,6 +1,6 @@
 # backend\database\widgets_storage.py
 
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import logging
 from .database_manager import DatabaseManager
 
@@ -22,8 +22,8 @@ class SQLiteWidgetsStorage:
                 for row in cursor.fetchall():
                     widget_id, is_active, command, cooldown, permission, config_raw = row
                     try:
-                        config_data = json.loads(config_raw) if config_raw else {}
-                    except json.JSONDecodeError:
+                        config_data = fast_loads(config_raw) if config_raw else {}
+                    except Exception:
                         config_data = {}
                     result[widget_id] = {
                         "widget_id": widget_id,
@@ -49,8 +49,8 @@ class SQLiteWidgetsStorage:
                 if row:
                     widget_id, is_active, command, cooldown, permission, config_raw = row
                     try:
-                        config_data = json.loads(config_raw) if config_raw else {}
-                    except json.JSONDecodeError:
+                        config_data = fast_loads(config_raw) if config_raw else {}
+                    except Exception:
                         config_data = {}
                     return {
                         "widget_id": widget_id,
@@ -66,7 +66,7 @@ class SQLiteWidgetsStorage:
 
     def save_widget(self, widget_id: str, is_active: bool, command: str, cooldown: int, permission: str, config: dict) -> None:
         try:
-            config_raw = json.dumps(config, ensure_ascii=False)
+            config_raw = fast_dumps(config)
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
@@ -97,7 +97,7 @@ class SQLiteWidgetsStorage:
                 for row in cursor.fetchall():
                     uname, count, color, badges_raw, plat = row
                     try:
-                        badges_list = json.loads(badges_raw) if badges_raw else []
+                        badges_list = fast_loads(badges_raw) if badges_raw else []
                     except Exception:
                         badges_list = []
                     lookup_key = uname.lower().lstrip('@')
@@ -139,7 +139,7 @@ class SQLiteWidgetsStorage:
             count = int(item.get("count", 0))
             color = str(item.get("color", "#2ecd70"))
             badges = item.get("badges", [])
-            badges_json = json.dumps(badges, ensure_ascii=False) if isinstance(badges, list) else "[]"
+            badges_json = fast_dumps(badges) if isinstance(badges, list) else "[]"
             platform = str(item.get("platform", "kick"))
             records.append((date_str, uname, count, color, badges_json, platform, now_iso))
 

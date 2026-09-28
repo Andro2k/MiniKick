@@ -2,7 +2,7 @@
 
 import datetime
 import heapq
-import json
+from backend.utils.json_utils import fast_loads
 import logging
 import re
 import threading
@@ -563,7 +563,7 @@ class WidgetsController(QObject):
 
         if platform in ("youtube", "tiktok") and emotes_tag:
             try:
-                custom_emotes = json.loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
+                custom_emotes = fast_loads(emotes_tag) if isinstance(emotes_tag, str) and emotes_tag.startswith("[") else []
                 for em in custom_emotes:
                     if isinstance(em, dict) and em.get("url"):
                         emotes_list.append({

@@ -1,6 +1,6 @@
 # backend\database\timers_storage.py
 
-import json
+from backend.utils.json_utils import fast_loads, fast_dumps
 import logging
 from .database_manager import DatabaseManager
 
@@ -10,9 +10,9 @@ def _parse_json_list(raw_value: str | None) -> list:
     if not raw_value:
         return []
     try:
-        data = json.loads(raw_value)
+        data = fast_loads(raw_value)
         return data if isinstance(data, list) else [data]
-    except (json.JSONDecodeError, TypeError):
+    except Exception:
         return [k.strip() for k in raw_value.split(",") if k.strip()]
 
 class SQLiteTimersStorage:
@@ -78,9 +78,9 @@ class SQLiteTimersStorage:
         try:
             with self.db_manager.get_connection() as conn:
                 cursor = conn.cursor()
-                messages_json = json.dumps(messages)
-                keywords_json = json.dumps(keywords)
-                categories_json = json.dumps(categories)
+                messages_json = fast_dumps(messages)
+                keywords_json = fast_dumps(keywords)
+                categories_json = fast_dumps(categories)
                 ak = int(bool(apply_kick if apply_kick is not None else True))
                 at = int(bool(apply_twitch if apply_twitch is not None else True))
                 ay = int(bool(apply_youtube if apply_youtube is not None else True))

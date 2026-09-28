@@ -229,7 +229,7 @@ class PiperVoiceManager:
 
     def import_local_voice(self, onnx_source: str, json_source: str) -> Optional[dict]:
         import shutil
-        import json
+        from backend.utils.json_utils import fast_load
         if not os.path.exists(onnx_source) or not os.path.exists(json_source):
             return None
         base_name = os.path.splitext(os.path.basename(onnx_source))[0]
@@ -241,7 +241,7 @@ class PiperVoiceManager:
             lang = "es"
             try:
                 with open(dest_json, "r", encoding="utf-8") as f:
-                    cfg = json.load(f)
+                    cfg = fast_load(f)
                     lang = cfg.get("language", {}).get("code", "es")
             except Exception:
                 pass
