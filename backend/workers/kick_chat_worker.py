@@ -5,6 +5,7 @@ import datetime
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import KickAPIClient, KickWebSocketManager
 from backend.services.chat import ChatMessageDTO
+from backend.utils.worker_utils import ExponentialBackoff
 
 logger = logging.getLogger("minikick.workers.kick_chat")
 
@@ -76,6 +77,7 @@ class KickChatWorker(QThread):
         self.chat_manager = KickWebSocketManager(cluster, key)
         self._is_stopped = False
         self._poll_sync_worker: KickPollSyncWorker | None = None
+        self._backoff = ExponentialBackoff(initial=1.5, max_backoff=30.0, factor=1.5, jitter=0.2)
 
     def run(self):
         logger.info("[KickChatWorker] Starting Kick chat worker thread...")
@@ -116,8 +118,9 @@ class KickChatWorker(QThread):
                     on_reward_redeemed=self._dispatch_reward,
                 )
                 if not self._is_stopped:
-                    logger.debug("[KickChatWorker] Socket disconnected. Reconnecting in 5s...")
-                    self.msleep(5000)
+                    delay_sec = self._backoff.next_delay()
+                    logger.debug("[KickChatWorker] Socket disconnected. Reconnecting in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
+                    self.msleep(int(delay_sec * 1000))
 
         except Exception as e:
             logger.error("[KickChatWorker] Unhandled error (%s) in worker thread: %s", type(e).__name__, e, exc_info=True)
@@ -125,6 +128,7 @@ class KickChatWorker(QThread):
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, avatar_url: str = ""):
+        self._backoff.reset()
         if not self._is_stopped:
             now_str = datetime.datetime.now().strftime("%H:%M")
             if not avatar_url and self.channel_slug and user.lower() == self.channel_slug.lower():

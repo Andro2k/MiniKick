@@ -7,7 +7,7 @@ from backend.providers.chat import TikTokChatProvider
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
 from backend.utils.json_utils import fast_dumps
-from backend.utils.worker_utils import stop_provider_chat_worker
+from backend.utils.worker_utils import stop_provider_chat_worker, ExponentialBackoff
 
 logger = logging.getLogger("minikick.workers.tiktok_chat")
 
@@ -26,6 +26,7 @@ class TikTokChatWorker(QThread):
         self.provider = provider or TikTokChatProvider(i18n=self.i18n, sign_api_key=sign_api_key)
         self._is_stopped = False
         self._has_connected_once = False
+        self._backoff = ExponentialBackoff(initial=2.0, max_backoff=30.0, factor=1.5, jitter=0.2)
 
     def run(self):
         logger.info("[TikTokChatWorker] Starting TikTok chat worker for channel: '@%s'...", self.target_channel)
@@ -37,6 +38,7 @@ class TikTokChatWorker(QThread):
                 return
 
             def _on_connected(conn_data: dict):
+                self._backoff.reset()
                 if not self._has_connected_once:
                     self._has_connected_once = True
                     logger.info("[TikTokChatWorker] Connected to TikTok Live: '@%s'.", self.target_channel)
@@ -66,7 +68,10 @@ class TikTokChatWorker(QThread):
                 )
                 if not self._has_connected_once or self._is_stopped or self.isInterruptionRequested():
                     break
-                for _ in range(100):
+                delay_sec = self._backoff.next_delay()
+                logger.debug("[TikTokChatWorker] Reconnecting in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
+                steps = max(1, int(delay_sec * 10))
+                for _ in range(steps):
                     if self._is_stopped or self.isInterruptionRequested():
                         break
                     self.msleep(100)
@@ -77,6 +82,7 @@ class TikTokChatWorker(QThread):
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, timestamp: str, msg_id: int, extra_data: dict):
+        self._backoff.reset()
         if self._is_stopped or self.isInterruptionRequested():
             return
 

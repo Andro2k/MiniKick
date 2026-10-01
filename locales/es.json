@@ -460,6 +460,7 @@
             "view_release_notes": "Ver Novedades"
         },
         "filtered_count": "({count} de {total})",
+        "follower": "Seguidor",
         "no_results": "No se encontraron resultados",
         "no_results_filter": "No se encontraron resultados que coincidan con los filtros aplicados.",
         "status": {
@@ -467,7 +468,9 @@
             "offline": "Desconectado",
             "online": "En Línea",
             "warning": "Advertencia"
-        }
+        },
+        "streamer": "Streamer",
+        "subscriber": "Suscriptor"
     },
     "crash": {
         "action_label": "**¿Qué hacía el usuario?:**",
@@ -1389,6 +1392,16 @@
             "warn_msg": "@{user} por favor evita el spam en el chat."
         }
     },
+    "splash": {
+        "check_instance": "Verificando instancia única...",
+        "init_app": "Inicializando entorno de la aplicación...",
+        "init_services": "Iniciando servicios principales...",
+        "init_ui": "Construyendo interfaz y espacios de trabajo...",
+        "loading": "Cargando MiniKick...",
+        "ready": "¡Todo listo! Iniciando...",
+        "subtitle": "Suite de Herramientas para Streamers",
+        "title": "MiniKick"
+    },
     "stream_info": {
         "confirm_delete": {
             "desc": "Esta acción eliminará el horario seleccionado de forma permanente.",
@@ -1640,15 +1653,5 @@
             "deactivated": "Widget Desactivado",
             "deactivated_msg": "El widget '{widget_name}' ahora está inactivo."
         }
-    },
-    "splash": {
-        "check_instance": "Verificando instancia única...",
-        "init_app": "Inicializando entorno de la aplicación...",
-        "init_services": "Iniciando servicios principales...",
-        "init_ui": "Construyendo interfaz y espacios de trabajo...",
-        "loading": "Cargando MiniKick...",
-        "ready": "¡Todo listo! Iniciando...",
-        "subtitle": "Suite de Herramientas para Streamers",
-        "title": "MiniKick"
     }
 }

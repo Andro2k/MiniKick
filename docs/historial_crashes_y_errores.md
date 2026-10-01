@@ -480,6 +480,7 @@
 * **Severidad**: **ALTA** (Congelamiento del socket de chat de Kick durante periodos de inactividad, omisión de lectura de mensajes entrantes y widget de Top Chatters estático en OBS hasta que ocurría un crash de socket 7 minutos después).
 * **Reportes Asociados**:
   - `minikick_JosueGMN_v1.6.1.log` (Líneas 185-188)
+  - `minikick_DeyDeyLove_v1.6.1.log` (Líneas 757-758, 890, 1524, 1735, 2363 - Desconexiones 10054 periódicas acumulando delay en TTS y comandos de música)
 * **Fecha y Versión del Fallo**: 2026-09-30 en MiniKick `v1.6.1`.
 * **Traza del Error**:
   ```text

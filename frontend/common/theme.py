@@ -533,6 +533,7 @@ QFrame[role="dialog"][state="warning"] {{ border-color: {COLOR_AMBER}; }}
 QFrame[role="dialog"][state="info"] {{ border-color: {COLOR_BLUE}; }}
 QFrame[role="dialog"][state="neutral"] {{ border-color: {COLOR_NEUTRAL_700}; }}
 QFrame[role="splash_card"] {{ background-color: transparent; border: none; }}
+QWidget[role="splash_window"] {{ background-color: {COLOR_NEUTRAL_950}; }}
 
 QFrame[role="banner_danger"] {{ background-color: {COLOR_RED_GLOW}; border: 1.2px solid {COLOR_RED_DARK}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_warning"] {{ background-color: {COLOR_AMBER_GLOW}; border: 1.2px solid {COLOR_AMBER_DARK}; border-radius: {RADIUS_MD}px; }}
