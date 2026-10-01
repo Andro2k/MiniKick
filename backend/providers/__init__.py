@@ -1,10 +1,12 @@
 # backend\providers\__init__.py
 
 from .chat import (
+    BaseChatSocketProvider,
     KickAPIClient,
     KickWebSocketManager,
     TwitchAPIClient,
     TwitchSocketManager,
+    TwitchEventSubProvider,
     YouTubeChatProvider,
     TikTokChatProvider,
     ScraperFactory,
@@ -18,10 +20,12 @@ from .voices import (
 )
 
 __all__ = [
+    "BaseChatSocketProvider",
     "KickAPIClient",
     "KickWebSocketManager",
     "TwitchAPIClient",
     "TwitchSocketManager",
+    "TwitchEventSubProvider",
     "YouTubeChatProvider",
     "TikTokChatProvider",
     "ScraperFactory",

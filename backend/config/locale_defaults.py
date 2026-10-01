@@ -462,6 +462,7 @@ DEFAULT_DICTIONARY = {
             "view_release_notes": "View Notes"
         },
         "filtered_count": "({count} of {total})",
+        "follower": "Follower",
         "no_results": "No results found",
         "no_results_filter": "No results found matching the applied filters.",
         "status": {
@@ -469,7 +470,9 @@ DEFAULT_DICTIONARY = {
             "offline": "Offline",
             "online": "Online",
             "warning": "Warning"
-        }
+        },
+        "streamer": "Streamer",
+        "subscriber": "Subscriber"
     },
     "crash": {
         "action_label": "**What was the user doing?:**",

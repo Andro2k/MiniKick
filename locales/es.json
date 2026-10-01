@@ -460,6 +460,7 @@
             "view_release_notes": "Ver Novedades"
         },
         "filtered_count": "({count} de {total})",
+        "follower": "Seguidor",
         "no_results": "No se encontraron resultados",
         "no_results_filter": "No se encontraron resultados que coincidan con los filtros aplicados.",
         "status": {
@@ -467,7 +468,9 @@
             "offline": "Desconectado",
             "online": "En Línea",
             "warning": "Advertencia"
-        }
+        },
+        "streamer": "Streamer",
+        "subscriber": "Suscriptor"
     },
     "crash": {
         "action_label": "**¿Qué hacía el usuario?:**",
