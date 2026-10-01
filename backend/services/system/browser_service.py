@@ -2,6 +2,7 @@
 
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import webbrowser
@@ -186,7 +187,8 @@ class BrowserService:
 
         try:
             logger.info("[BrowserService] Launching URL with browser '%s': %s", browser_path, url)
-            subprocess.Popen([browser_path, url])
+            popen_kwargs = {"start_new_session": True} if sys.platform != "win32" else {}
+            subprocess.Popen([browser_path, url], **popen_kwargs)
             return True
         except Exception as e:
             logger.error(
@@ -198,9 +200,62 @@ class BrowserService:
 
     @staticmethod
     def _open_default(url: str) -> bool:
-        try:
-            logger.info("[BrowserService] Opening URL with system default browser: %s", url)
-            return webbrowser.open(url)
-        except Exception as e:
-            logger.error("[BrowserService] Failed to open default browser: %s", e)
+        if not url:
             return False
+
+        logger.info("[BrowserService] Opening URL with resilient system default launcher: %s", url)
+
+        if sys.platform == "win32":
+            try:
+                os.startfile(url)
+                logger.debug("[BrowserService] Launched successfully via os.startfile")
+                return True
+            except Exception as e:
+                logger.debug("[BrowserService] os.startfile failed: %s", e)
+
+        try:
+            from PySide6.QtGui import QDesktopServices
+            from PySide6.QtCore import QUrl
+            qurl = QUrl(url)
+            if qurl.isValid():
+                if QDesktopServices.openUrl(qurl):
+                    logger.debug("[BrowserService] Launched successfully via QDesktopServices.openUrl")
+                    return True
+        except Exception as e:
+            logger.debug("[BrowserService] QDesktopServices.openUrl attempt failed: %s", e)
+
+        if sys.platform.startswith("linux") or "bsd" in sys.platform:
+            for opener in ("xdg-open", "gio"):
+                bin_path = shutil.which(opener)
+                if bin_path:
+                    try:
+                        cmd = [bin_path, "open", url] if opener == "gio" else [bin_path, url]
+                        subprocess.Popen(
+                            cmd,
+                            start_new_session=True,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                        )
+                        logger.info("[BrowserService] Launched successfully via '%s' (detached session)", opener)
+                        return True
+                    except Exception as e:
+                        logger.debug("[BrowserService] '%s' execution failed: %s", opener, e)
+
+        if sys.platform == "darwin":
+            bin_path = shutil.which("open")
+            if bin_path:
+                try:
+                    subprocess.Popen([bin_path, url], start_new_session=True)
+                    logger.info("[BrowserService] Launched successfully via macOS 'open'")
+                    return True
+                except Exception as e:
+                    logger.debug("[BrowserService] macOS 'open' failed: %s", e)
+
+        try:
+            if webbrowser.open(url):
+                logger.info("[BrowserService] Launched successfully via standard webbrowser module")
+                return True
+        except Exception as e:
+            logger.error("[BrowserService] Standard webbrowser.open failed: %s", e)
+
+        return False

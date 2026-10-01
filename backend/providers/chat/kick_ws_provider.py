@@ -2,6 +2,8 @@
 
 import logging
 import socket
+import threading
+import time
 from datetime import datetime, timezone
 from backend.utils.json_utils import parse_kick_payload, fast_dumps
 from collections import deque
@@ -46,6 +48,11 @@ class KickWebSocketManager:
         self._on_reward: Callable[[str, str, str], None] | None = None
         self._on_message_deleted: Callable[[str], None] | None = None
         self._on_user_banned: Callable[[str], None] | None = None
+        self._last_activity_time: float = 0.0
+        self._pending_ping_time: float = 0.0
+        self._activity_timeout: int = 120
+        self._heartbeat_thread: threading.Thread | None = None
+        self._stop_heartbeat_event: threading.Event = threading.Event()
         self._dispatch_table: dict[str, Callable[[dict, websocket.WebSocketApp], None]] = {
             "App\\Events\\ChatMessageEvent": self._handle_chat_message,
             "App\\Events\\PollUpdateEvent": self._handle_poll_update,
@@ -61,6 +68,7 @@ class KickWebSocketManager:
             "UserBannedEvent": self._handle_user_banned,
             "pusher:connection_established": self._handle_connection_established,
             "pusher:ping": self._handle_ping,
+            "pusher:pong": self._handle_pong,
         }
 
     def start_socket(
@@ -96,8 +104,12 @@ class KickWebSocketManager:
             on_error=self._on_error,
             on_close=self._on_close
         )
+        sockopts = [
+            (socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+        ]
         self.ws.run_forever(
-            sockopt=((socket.IPPROTO_TCP, socket.TCP_NODELAY, 1),),
+            sockopt=tuple(sockopts),
             ping_interval=30,
             ping_timeout=20
         )
@@ -116,12 +128,16 @@ class KickWebSocketManager:
         )
 
     def _on_close(self, _ws: websocket.WebSocketApp, status: int | None, msg: str | None) -> None:
+        self._stop_heartbeat_watchdog()
         meaning = RFC_6455_CLOSE_CODES.get(status, "Unknown/Unregistered") if status is not None else "Clean/No Code"
         logger.info("[KickWebSocket] WebSocket closed: code=%s (%s), reason=%s", status, meaning, msg or "N/A")
 
     def _on_raw_frame(self, ws: websocket.WebSocketApp, raw: str) -> None:
         if not self._running:
             return
+
+        self._last_activity_time = time.time()
+        self._pending_ping_time = 0.0
 
         try:
             event, inner = parse_kick_payload(raw)
@@ -258,8 +274,23 @@ class KickWebSocketManager:
             if self._on_user_banned:
                 self._on_user_banned(username)
 
-    def _handle_connection_established(self, _inner: dict, ws: websocket.WebSocketApp) -> None:
-        logger.info("[KickWebSocket] Pusher connection established. Subscribing to room_id=%s, channel_id=%s", self._room_id, self._channel_id)
+    def _handle_connection_established(self, inner: dict, ws: websocket.WebSocketApp) -> None:
+        raw_timeout = inner.get("activity_timeout") if isinstance(inner, dict) else None
+        try:
+            self._activity_timeout = max(30, int(raw_timeout)) if raw_timeout is not None else 120
+        except (ValueError, TypeError):
+            self._activity_timeout = 120
+
+        self._last_activity_time = time.time()
+        self._pending_ping_time = 0.0
+        self._start_heartbeat_watchdog(ws)
+
+        logger.info(
+            "[KickWebSocket] Pusher connection established (activity_timeout=%ss). Subscribing to room_id=%s, channel_id=%s",
+            self._activity_timeout,
+            self._room_id,
+            self._channel_id
+        )
         channels = [
             f"chatrooms.{self._room_id}.v2",
             f"chatroom_{self._room_id}",
@@ -276,12 +307,73 @@ class KickWebSocketManager:
                     "data": {"channel": ch}
                 }))
 
+    def _start_heartbeat_watchdog(self, ws: websocket.WebSocketApp) -> None:
+        self._stop_heartbeat_watchdog()
+        self._stop_heartbeat_event.clear()
+        self._heartbeat_thread = threading.Thread(
+            target=self._heartbeat_watchdog_loop,
+            args=(ws,),
+            name="KickPusherHeartbeatWatchdog",
+            daemon=True
+        )
+        self._heartbeat_thread.start()
+
+    def _stop_heartbeat_watchdog(self) -> None:
+        self._stop_heartbeat_event.set()
+        if self._heartbeat_thread and self._heartbeat_thread.is_alive():
+            if threading.current_thread() != self._heartbeat_thread:
+                self._heartbeat_thread.join(timeout=1.0)
+        self._heartbeat_thread = None
+
+    def _heartbeat_watchdog_loop(self, ws: websocket.WebSocketApp) -> None:
+        ping_interval = min(self._activity_timeout // 2, 60)
+        pong_timeout = 30.0
+
+        while not self._stop_heartbeat_event.is_set() and self._running:
+            if self._stop_heartbeat_event.wait(timeout=5.0):
+                break
+            if not self._running or not ws:
+                break
+
+            now = time.time()
+
+            if self._pending_ping_time > 0.0 and (now - self._pending_ping_time) > pong_timeout:
+                logger.warning(
+                    "[KickWebSocket] Pusher heartbeat timeout! Sin respuesta 'pusher:pong' tras %.1fs. Forzando cierre del socket zombie para reconexión.",
+                    now - self._pending_ping_time
+                )
+                try:
+                    if ws.sock and ws.sock.connected:
+                        ws.sock.close()
+                    ws.close()
+                except Exception:
+                    pass
+                break
+
+            if self._pending_ping_time == 0.0 and (now - self._last_activity_time) >= ping_interval:
+                try:
+                    self._pending_ping_time = now
+                    ws.send(fast_dumps({"event": "pusher:ping", "data": {}}))
+                    logger.debug("[KickWebSocket] Despachado pusher:ping proactivo (inactivo %.1fs)", now - self._last_activity_time)
+                except Exception as e:
+                    logger.debug("[KickWebSocket] Error enviando pusher:ping proactivo: %s", e)
+
     def _handle_ping(self, _inner: dict, ws: websocket.WebSocketApp) -> None:
+        self._last_activity_time = time.time()
         if ws:
-            ws.send('{"event":"pusher:pong"}')
+            try:
+                ws.send(fast_dumps({"event": "pusher:pong", "data": {}}))
+            except Exception as e:
+                logger.debug("[KickWebSocket] Error enviando pusher:pong: %s", e)
+
+    def _handle_pong(self, _inner: dict, _ws: websocket.WebSocketApp) -> None:
+        self._pending_ping_time = 0.0
+        self._last_activity_time = time.time()
+        logger.debug("[KickWebSocket] Pusher heartbeat verificado (pusher:pong recibido)")
 
     def stop_socket(self) -> None:
         self._running = False
+        self._stop_heartbeat_watchdog()
         logger.info("[KickWebSocket] Stopping Pusher socket...")
         if self.ws:
             self.ws.keep_running = False

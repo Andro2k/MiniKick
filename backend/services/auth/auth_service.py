@@ -85,10 +85,12 @@ class OAuthCallbackServer:
         httpd.success_html_path = success_html_path
         httpd.provider = provider
         
+        opened = False
         if browser_service and hasattr(browser_service, "open_url"):
-            browser_service.open_url(url)
-        else:
-            webbrowser.open(url)
+            opened = browser_service.open_url(url)
+        if not opened:
+            from backend.services.system.browser_service import BrowserService
+            BrowserService._open_default(url)
         start_time = time.time()
         
         while httpd.auth_code is None:
