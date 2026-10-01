@@ -5,7 +5,6 @@ import hashlib
 import logging
 import os
 import time
-import webbrowser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
