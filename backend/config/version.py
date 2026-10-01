@@ -1,3 +1,3 @@
 # backend\config\version.py
 
-APP_VERSION = "v1.6.2"
+APP_VERSION = "v1.6.3"
