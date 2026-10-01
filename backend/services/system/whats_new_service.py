@@ -1,11 +1,13 @@
 # backend/services/system/whats_new_service.py
 
-from backend.utils.json_utils import fast_loads, fast_dumps
 import logging
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
+
 from backend.config.version import APP_VERSION
+from backend.utils.json_utils import fast_dumps, fast_loads
 
 logger = logging.getLogger("minikick.system.whats_new")
 
@@ -37,23 +39,38 @@ def _resolve_feature_icon(section: str, feature: str) -> str:
     return _SECTION_DEFAULT_ICONS.get(section, "star-filled.svg")
 
 
-def parse_release_notes(version_str: str, base_dir: Optional[Path] = None) -> List[Dict[str, str]]:
+def _resolve_release_notes_path(version_str: str, base_dir: Optional[Path] = None) -> Optional[Path]:
     norm_ver = version_str.strip().lstrip("vV") if version_str else ""
     if not norm_ver:
-        return []
+        return None
 
-    if base_dir is None:
-        base_dir = Path(__file__).resolve().parents[3]
+    rel_doc = Path("docs") / "walkthroughs" / f"v{norm_ver}" / f"Release_Notes_v{norm_ver}.md"
 
-    rn_path = base_dir / "docs" / "walkthroughs" / f"v{norm_ver}" / f"Release_Notes_v{norm_ver}.md"
-    if not rn_path.is_file():
-        logger.debug("[WhatsNew] Release notes not found at %s", rn_path)
-        return []
+    if base_dir is not None:
+        p = base_dir / rel_doc
+        if p.is_file():
+            return p
+    if hasattr(sys, "_MEIPASS"):
+        meipass_p = Path(sys._MEIPASS) / rel_doc
+        if meipass_p.is_file():
+            return meipass_p
+    exe_dir = Path(sys.executable).resolve().parent
+    exe_p = exe_dir / rel_doc
+    if exe_p.is_file():
+        return exe_p
+    internal_p = exe_dir / "_internal" / rel_doc
+    if internal_p.is_file():
+        return internal_p
+    repo_root = Path(__file__).resolve().parents[3]
+    repo_p = repo_root / rel_doc
+    if repo_p.is_file():
+        return repo_p
 
-    try:
-        content = rn_path.read_text(encoding="utf-8")
-    except Exception as e:
-        logger.error("[WhatsNew] Failed to read release notes at %s: %s", rn_path, e)
+    return None
+
+
+def parse_release_notes_content(content: str) -> List[Dict[str, str]]:
+    if not content or not content.strip():
         return []
 
     match = re.search(r"##\s+Novedades\s*\n(.*?)(?=\n##\s+|\Z)", content, re.DOTALL | re.IGNORECASE)
@@ -96,6 +113,24 @@ def parse_release_notes(version_str: str, base_dir: Optional[Path] = None) -> Li
     return highlights
 
 
+def parse_release_notes(version_str: str, base_dir: Optional[Path] = None) -> List[Dict[str, str]]:
+    norm_ver = version_str.strip().lstrip("vV") if version_str else ""
+    if not norm_ver:
+        return []
+
+    rn_path = _resolve_release_notes_path(norm_ver, base_dir)
+    if not rn_path or not rn_path.is_file():
+        logger.debug("[WhatsNew] Release notes not found for v%s", norm_ver)
+        return []
+
+    try:
+        content = rn_path.read_text(encoding="utf-8")
+        return parse_release_notes_content(content)
+    except Exception as e:
+        logger.error("[WhatsNew] Failed to read release notes at %s: %s", rn_path, e)
+        return []
+
+
 class WhatsNewService:
     SETTING_STATE = "whats_new_state"
     SETTING_LEGACY_BADGES_PREFIX = "seen_badges_v"
@@ -111,6 +146,15 @@ class WhatsNewService:
         self.app_version = self._normalize_version(self.raw_app_version)
         self.base_dir = base_dir
         self._parsed_highlights = parse_release_notes(self.app_version, self.base_dir)
+
+        state = self._load_state()
+        if not self._parsed_highlights:
+            if state.get("version") == self.app_version and state.get("highlights"):
+                self._parsed_highlights = state.get("highlights", [])
+        elif self._parsed_highlights and not state.get("highlights"):
+            state["highlights"] = self._parsed_highlights
+            self._save_state(state)
+
         self._purge_legacy_keys()
 
     @staticmethod
@@ -181,8 +225,6 @@ class WhatsNewService:
         return not bool(state.get("version"))
 
     def should_show_modal(self) -> bool:
-        if not self.get_highlights():
-            return False
         state = self._load_state()
         stored_ver = self._normalize_version(state.get("version", ""))
         if not stored_ver:
@@ -198,6 +240,20 @@ class WhatsNewService:
 
     def get_highlights(self) -> List[Dict[str, str]]:
         return self.get_all_highlights()
+
+    def set_highlights(self, highlights: List[Dict[str, str]]) -> None:
+        if highlights:
+            self._parsed_highlights = list(highlights)
+            state = self._load_state()
+            state["version"] = self.app_version
+            state["highlights"] = self._parsed_highlights
+            self._save_state(state)
+
+    def load_highlights_from_content(self, content: str) -> List[Dict[str, str]]:
+        highlights = parse_release_notes_content(content)
+        if highlights:
+            self.set_highlights(highlights)
+        return highlights
 
     def get_unseen_badges(self) -> Set[str]:
         seen = self._get_seen_badges()
@@ -219,6 +275,8 @@ class WhatsNewService:
         state["version"] = self.app_version
         state["modal_seen"] = modal_seen
         state["seen"] = sorted(seen)
+        if self._parsed_highlights and "highlights" not in state:
+            state["highlights"] = self._parsed_highlights
         self._save_state(state)
 
     def mark_version_seen(self) -> None:
@@ -231,6 +289,8 @@ class WhatsNewService:
         state["version"] = self.app_version
         state["modal_seen"] = True
         state["seen"] = seen
+        if self._parsed_highlights and "highlights" not in state:
+            state["highlights"] = self._parsed_highlights
         self._save_state(state)
 
     def _get_seen_badges(self) -> Set[str]:

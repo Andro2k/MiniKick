@@ -532,6 +532,7 @@ QFrame[role="dialog"][state="error"] {{ border-color: {COLOR_RED}; }}
 QFrame[role="dialog"][state="warning"] {{ border-color: {COLOR_AMBER}; }}
 QFrame[role="dialog"][state="info"] {{ border-color: {COLOR_BLUE}; }}
 QFrame[role="dialog"][state="neutral"] {{ border-color: {COLOR_NEUTRAL_700}; }}
+QFrame[role="splash_card"] {{ background-color: transparent; border: none; }}
 
 QFrame[role="banner_danger"] {{ background-color: {COLOR_RED_GLOW}; border: 1.2px solid {COLOR_RED_DARK}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_warning"] {{ background-color: {COLOR_AMBER_GLOW}; border: 1.2px solid {COLOR_AMBER_DARK}; border-radius: {RADIUS_MD}px; }}
@@ -635,6 +636,8 @@ QProgressBar[role="wizard_progress"] {{ background-color: {COLOR_NEUTRAL_750}; b
 QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_GREEN}; border-radius: {RADIUS_XS}px; }}
 QProgressBar[role="top_command_progress"] {{ background-color: {COLOR_NEUTRAL_750}; border: none; border-radius: 4px; height: 8px; }}
 QProgressBar[role="top_command_progress"]::chunk {{ background-color: {COLOR_BLUE}; border-radius: 4px; }}
+QProgressBar[role="splash_progress"] {{ background-color: {COLOR_NEUTRAL_800}; border: none; border-radius: 2px; height: 4px; text-align: center; }}
+QProgressBar[role="splash_progress"]::chunk {{ background-color: {COLOR_GREEN}; border-radius: 2px; }}
 
 /* Tab Widget */
 QTabWidget::pane {{ border: {BORDER_SUBTLE}; border-radius: {RADIUS_LG}px; border-top-left-radius: 0px; background-color: {COLOR_NEUTRAL_900}; padding: 0px; }}

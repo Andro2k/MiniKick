@@ -79,3 +79,38 @@ class ReleaseNotesWorker(QThread):
         except Exception as e:
             logger.error("[ReleaseNotesWorker] Exception fetching release notes: %s", e)
             self.error_occurred.emit(str(e))
+
+class WhatsNewWorker(QThread):
+    highlights_fetched = Signal(list)
+    error_occurred = Signal(str)
+
+    def __init__(
+        self,
+        app_version: str,
+        repo_owner: str = "Andro2k",
+        repo_name: str = "MiniKick",
+        parent=None
+    ):
+        super().__init__(parent)
+        self.setObjectName("Worker_Whats_New")
+        self.app_version = app_version
+        from backend.services.system import GithubUpdateProvider
+        from backend.services.system.whats_new_service import parse_release_notes_content
+        self.provider = GithubUpdateProvider(repo_owner, repo_name)
+        self.parse_content = parse_release_notes_content
+
+    def run(self):
+        logger.debug("[WhatsNewWorker] Fetching release notes from GitHub for v%s...", self.app_version)
+        try:
+            data = self.provider.fetch_release_for_version(self.app_version)
+            if data and data.get("body"):
+                highlights = self.parse_content(data["body"])
+                if highlights:
+                    logger.info("[WhatsNewWorker] Successfully parsed %d highlights from GitHub release", len(highlights))
+                    self.highlights_fetched.emit(highlights)
+                    return
+            logger.debug("[WhatsNewWorker] No highlights parsed from GitHub release")
+            self.error_occurred.emit("No highlights parsed from GitHub release")
+        except Exception as e:
+            logger.error("[WhatsNewWorker] Exception fetching release from GitHub: %s", e)
+            self.error_occurred.emit(str(e))

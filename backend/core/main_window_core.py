@@ -113,6 +113,7 @@ class MainWindowCore(QMainWindow):
         self.tiktok_chat_worker = None
         self._tiktok_connected = False
         self._tiktok_channel = ""
+        self._whats_new_worker = None
         self._retiring_workers: set = set()
 
         self._cached_total_usages = None
@@ -540,6 +541,7 @@ class MainWindowCore(QMainWindow):
             is_first = self.whats_new_service.is_first_launch()
             highlights = self.whats_new_service.get_highlights()
             if not highlights:
+                self._fetch_remote_whats_new_if_needed()
                 return
             dialog = WhatsNewDialog(
                 i18n=self.i18n,
@@ -552,6 +554,28 @@ class MainWindowCore(QMainWindow):
             self.whats_new_service.mark_version_seen()
         except Exception as e:
             self.logger.error("[WhatsNew] Error displaying What's New dialog: %s", e)
+
+    def _fetch_remote_whats_new_if_needed(self):
+        if self._is_shutting_down or getattr(self, "_is_window_closing", False):
+            return
+        if hasattr(self, "_whats_new_worker") and self._whats_new_worker and self._whats_new_worker.isRunning():
+            return
+        from backend.workers import WhatsNewWorker
+        self._whats_new_worker = WhatsNewWorker(self.app_version, parent=self)
+        self._whats_new_worker.highlights_fetched.connect(self._on_remote_whats_new_fetched)
+        self._whats_new_worker.finished.connect(self._whats_new_worker.deleteLater)
+        self._whats_new_worker.start()
+
+    def _on_remote_whats_new_fetched(self, highlights: list):
+        if self._is_shutting_down or getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.whats_new_service.set_highlights(highlights)
+            self._init_feature_badges()
+            if self.whats_new_service.should_show_modal():
+                self._check_whats_new_dialog()
+        except Exception as e:
+            self.logger.warning("[WhatsNew] Error handling remote highlights: %s", e)
 
     def _prewarm_next_view(self):
         if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:

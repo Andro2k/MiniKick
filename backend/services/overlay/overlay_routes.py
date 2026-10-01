@@ -116,10 +116,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             css_path = get_resource_path(os.path.join("assets", "overlays", "chat", "css", css_filename))
             content = get_cached_asset(css_path)
             if content is not None:
-                self.send_response(200)
-                self.send_header("Content-Type", "text/css; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(content)
+                try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/css; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(content)
+                except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
+                    return
             else:
                 self.send_error(404, f"CSS file not found at: {css_path}")
             return
@@ -129,10 +132,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             js_path = get_resource_path(os.path.join("assets", "overlays", "chat", "js", js_filename))
             content = get_cached_asset(js_path)
             if content is not None:
-                self.send_response(200)
-                self.send_header("Content-Type", "application/javascript; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(content)
+                try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(content)
+                except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
+                    return
             else:
                 self.send_error(404, f"JS file not found at: {js_path}")
             return

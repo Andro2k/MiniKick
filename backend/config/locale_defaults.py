@@ -1642,5 +1642,15 @@ DEFAULT_DICTIONARY = {
             "deactivated": "Widget Disabled",
             "deactivated_msg": "Widget '{widget_name}' is now inactive."
         }
+    },
+    "splash": {
+        "check_instance": "Verifying single instance...",
+        "init_app": "Initializing application environment...",
+        "init_services": "Starting core background services...",
+        "init_ui": "Building user interface & workspaces...",
+        "loading": "Loading MiniKick...",
+        "ready": "Ready! Launching...",
+        "subtitle": "Streamer Companion Suite",
+        "title": "MiniKick"
     }
 }

@@ -1640,5 +1640,15 @@
             "deactivated": "Widget Desactivado",
             "deactivated_msg": "El widget '{widget_name}' ahora está inactivo."
         }
+    },
+    "splash": {
+        "check_instance": "Verificando instancia única...",
+        "init_app": "Inicializando entorno de la aplicación...",
+        "init_services": "Iniciando servicios principales...",
+        "init_ui": "Construyendo interfaz y espacios de trabajo...",
+        "loading": "Cargando MiniKick...",
+        "ready": "¡Todo listo! Iniciando...",
+        "subtitle": "Suite de Herramientas para Streamers",
+        "title": "MiniKick"
     }
 }
