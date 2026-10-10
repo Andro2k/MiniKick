@@ -462,6 +462,7 @@ DEFAULT_DICTIONARY = {
             "view_release_notes": "View Notes"
         },
         "filtered_count": "({count} of {total})",
+        "follower": "Follower",
         "no_results": "No results found",
         "no_results_filter": "No results found matching the applied filters.",
         "status": {
@@ -469,7 +470,9 @@ DEFAULT_DICTIONARY = {
             "offline": "Offline",
             "online": "Online",
             "warning": "Warning"
-        }
+        },
+        "streamer": "Streamer",
+        "subscriber": "Subscriber"
     },
     "crash": {
         "action_label": "**What was the user doing?:**",
@@ -1391,6 +1394,16 @@ DEFAULT_DICTIONARY = {
             "warn_msg": "@{user} please avoid spamming in chat."
         }
     },
+    "splash": {
+        "check_instance": "Verifying single instance...",
+        "init_app": "Initializing application environment...",
+        "init_services": "Starting core background services...",
+        "init_ui": "Building user interface & workspaces...",
+        "loading": "Loading MiniKick...",
+        "ready": "Ready! Launching...",
+        "subtitle": "Streamer Companion Suite",
+        "title": "MiniKick"
+    },
     "stream_info": {
         "confirm_delete": {
             "desc": "This action will permanently delete the selected schedule.",
@@ -1642,15 +1655,5 @@ DEFAULT_DICTIONARY = {
             "deactivated": "Widget Disabled",
             "deactivated_msg": "Widget '{widget_name}' is now inactive."
         }
-    },
-    "splash": {
-        "check_instance": "Verifying single instance...",
-        "init_app": "Initializing application environment...",
-        "init_services": "Starting core background services...",
-        "init_ui": "Building user interface & workspaces...",
-        "loading": "Loading MiniKick...",
-        "ready": "Ready! Launching...",
-        "subtitle": "Streamer Companion Suite",
-        "title": "MiniKick"
     }
 }
