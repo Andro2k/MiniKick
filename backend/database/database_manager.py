@@ -143,8 +143,8 @@ class DatabaseManager:
             for stale_path in grouped[stale_base]:
                 try:
                     os.remove(stale_path)
-                except OSError:
-                    pass
+                except OSError as e:
+                    logger.debug("[DatabaseManager] Could not remove old corrupt backup '%s': %s", stale_path, e)
 
     def _create_tables(self) -> None:
         with self.get_connection() as conn:
@@ -556,10 +556,13 @@ class DatabaseManager:
             if version <= current_version:
                 continue
             logger.info("[DatabaseManager] Applying schema migration %d...", version)
-            with self.get_connection() as conn:
-                migration(conn)
-                conn.execute(f"PRAGMA user_version = {version}")
-                conn.commit()
+            self._run_migration(version, migration)
+
+    def _run_migration(self, version: int, migration) -> None:
+        with self.get_connection() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            migration(conn)
+            conn.execute(f"PRAGMA user_version = {version}")
 
     def log_spam_violation(self, username: str, sender_id: str | int, filter_id: str, message_content: str, penalty_type: str, duration: int, platform: str = "kick") -> None:
         try:

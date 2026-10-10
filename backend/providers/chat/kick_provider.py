@@ -310,7 +310,7 @@ class KickAPIClient:
                 if cid > 0:
                     payload["category_id"] = cid
             except (ValueError, TypeError):
-                pass
+                logger.warning("[KickAPIClient] Ignoring invalid category_id: %r", category_id)
         if stream_title is not None and str(stream_title).strip():
             payload["stream_title"] = str(stream_title).strip()
         if custom_tags is not None:

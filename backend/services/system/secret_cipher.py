@@ -37,8 +37,8 @@ class DPAPISecretCipher:
     CRYPTPROTECT_UI_FORBIDDEN = 0x1
 
     def __init__(self) -> None:
-        self._crypt32 = ctypes.windll.crypt32
-        self._kernel32 = ctypes.windll.kernel32
+        self._crypt32 = ctypes.WinDLL("crypt32", use_last_error=True)
+        self._kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
         self._crypt32.CryptProtectData.argtypes = [
             ctypes.POINTER(_DataBlob), ctypes.c_wchar_p, ctypes.c_void_p,
             ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32, ctypes.POINTER(_DataBlob),

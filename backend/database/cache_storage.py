@@ -92,8 +92,8 @@ class MusicCacheManager:
                         os.remove(fpath)
                         freed_bytes += fsize
                         deleted_files += 1
-                    except Exception:
-                        pass
+                    except OSError as e:
+                        logger.debug("[CacheStorage] Could not remove cached file '%s': %s", fpath, e)
             except Exception as e:
                 logger.error("[MusicCacheManager] Error cleaning orphan files: %s", e)
 
@@ -112,8 +112,8 @@ class MusicCacheManager:
                         try:
                             os.remove(fpath)
                             deleted += 1
-                        except Exception:
-                            pass
+                        except OSError as e:
+                            logger.debug("[CacheStorage] Could not remove cached file '%s': %s", fpath, e)
         except Exception as e:
             logger.error("[MusicCacheManager] Error clearing all cache: %s", e)
         return deleted

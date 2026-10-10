@@ -30,12 +30,30 @@ def _is_within(base: str, target: str) -> bool:
     except ValueError:
         return False
 
+def canonical_media_path(path: str) -> str:
+    return os.path.normcase(os.path.realpath(path))
+
+def _is_allowed_media_file(manager, target: str) -> bool:
+    return canonical_media_path(target) in getattr(manager, "allowed_media_files", ())
+
+def _is_allowed_media_dir(manager, root_dir: str) -> bool:
+    return canonical_media_path(root_dir) in getattr(manager, "allowed_media_dirs", ())
+
 def _is_allowed_media(manager, target: str) -> bool:
-    roots = getattr(manager, "allowed_media_roots", None)
+    if _is_allowed_media_file(manager, target):
+        return True
+
+    roots = getattr(manager, "allowed_media_roots", ())
     if not roots:
         return False
-    real_target = os.path.realpath(target)
-    return any(_is_within(root, real_target) for root in roots)
+
+    abs_target = os.path.realpath(target)
+    for root in roots:
+        abs_root = os.path.realpath(root)
+        if _is_within(abs_root, abs_target):
+            return True
+
+    return False
 
 STATIC_ENDPOINTS_MAP: dict[str, tuple[str, str]] = {
     "/overlay": (os.path.join("assets", "overlays", "rewards", "rewards.html"), "Overlay HTML"),
@@ -363,8 +381,8 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         if not os.path.isfile(filepath):
             self.send_error(404, "Media file not found")
             return
-        if not _is_allowed_media(self.server.manager, filepath):
-            self.send_error(403, "Forbidden: media path is not in an allowed root")
+        if not _is_allowed_media_file(self.server.manager, filepath):
+            self.send_error(403, "Forbidden: media file is not registered")
             return
 
         self._serve_file(filepath)
@@ -391,19 +409,14 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             self.send_error(400, "Invalid directory encoding")
             return
 
-        if not _is_allowed_media(self.server.manager, root_dir):
-            self.send_error(403, "Forbidden: directory is not an allowed media root")
+        if not _is_allowed_media_dir(self.server.manager, root_dir):
+            self.send_error(403, "Forbidden: directory is not a registered media bundle")
             return
 
-        abs_root = os.path.abspath(root_dir)
-        target_path = os.path.normpath(os.path.join(abs_root, rel_path))
-        abs_target = os.path.abspath(target_path)
+        abs_root = os.path.realpath(root_dir)
+        abs_target = os.path.realpath(os.path.join(abs_root, rel_path))
 
-        try:
-            if os.path.commonpath([abs_root, abs_target]) != abs_root:
-                self.send_error(403, "Access denied")
-                return
-        except ValueError:
+        if not _is_within(abs_root, abs_target):
             self.send_error(403, "Access denied")
             return
 

@@ -2,7 +2,7 @@
 
 import logging
 
-from backend.interfaces import SecretCipher
+from backend.interfaces import SecretCipher, TokenEncryptionError, TokenStorage
 
 logger = logging.getLogger("minikick.database.encrypted_token_storage")
 
@@ -11,18 +11,16 @@ _ENCRYPTED_PREFIX = "enc:v1:"
 class EncryptedTokenStorage:
     _SENSITIVE_FIELDS = ("access_token", "refresh_token")
 
-    def __init__(self, inner, cipher: SecretCipher) -> None:
+    def __init__(self, inner: TokenStorage, cipher: SecretCipher) -> None:
         self._inner = inner
         self._cipher = cipher
 
-    def _encrypt_field(self, value: str) -> str:
+    def _encrypt_field(self, field: str, value: str) -> str:
         try:
             return _ENCRYPTED_PREFIX + self._cipher.encrypt(value)
         except Exception as e:
-            logger.error(
-                "[EncryptedTokenStorage] Could not encrypt token field; storing it unencrypted: %s", e
-            )
-            return value
+            logger.error("[EncryptedTokenStorage] Could not encrypt '%s'; nothing was saved: %s", field, e)
+            raise TokenEncryptionError(f"Could not encrypt '{field}'") from e
 
     def load(self) -> dict | None:
         tokens = self._inner.load()
@@ -61,7 +59,7 @@ class EncryptedTokenStorage:
         for field in self._SENSITIVE_FIELDS:
             value = encrypted.get(field)
             if value:
-                encrypted[field] = self._encrypt_field(value)
+                encrypted[field] = self._encrypt_field(field, value)
         self._inner.save(encrypted)
 
     def clear(self) -> None:

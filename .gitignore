@@ -25,5 +25,4 @@ build/
 dist/
 resources/
 .agents/
-tests/
 tools/

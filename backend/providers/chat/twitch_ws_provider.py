@@ -58,7 +58,7 @@ class TwitchSocketManager(BaseChatSocketProvider):
                             start, end = map(int, r.split("-"))
                             ranges.append((start, end))
                         except ValueError:
-                            pass
+                            logger.debug("[TwitchWS] Ignoring malformed emote range '%s'", r)
         if not ranges:
             return text
 
