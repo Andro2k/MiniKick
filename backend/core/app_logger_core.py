@@ -14,10 +14,19 @@ from backend.handlers import QLogHandler, StreamToLogger, StructuredLogFormatter
 _fault_file_handle = None
 _q_log_handler_instance = None
 
+_DEFAULT_LOG_LEVEL = logging.INFO
+
+def _resolve_log_level() -> int:
+    raw_level = os.environ.get("MINIKICK_LOG_LEVEL", "").strip().upper()
+    if not raw_level:
+        return _DEFAULT_LOG_LEVEL
+    resolved = logging.getLevelName(raw_level)
+    return resolved if isinstance(resolved, int) else _DEFAULT_LOG_LEVEL
+
 class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
     def emit(self, record: logging.LogRecord) -> None:
         super().emit(record)
-        if record.levelno >= logging.WARNING:
+        if record.levelno >= logging.INFO:
             self.flush()
 
 logger = logging.getLogger("minikick.core.app_logger")
@@ -98,8 +107,9 @@ def setup_application_logging():
     if _q_log_handler_instance is not None:
         return logging.getLogger(), _q_log_handler_instance
 
+    log_level = _resolve_log_level()
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG) 
+    logger.setLevel(log_level)
     
     for handler in list(logger.handlers):
         logger.removeHandler(handler)
@@ -120,8 +130,10 @@ def setup_application_logging():
     
     file_formatter = StructuredLogFormatter()
     file_handler.setFormatter(file_formatter)
-    file_handler.setLevel(logging.DEBUG)   
+    file_handler.setLevel(log_level)
     logger.addHandler(file_handler)
+    
+    logger.info("[Bootstrap] Application logging initialized at level %s", logging.getLevelName(log_level))
     
     for lib_name in (
         "urllib3", "cloudscraper", "comtypes", "piper", "onnxruntime",

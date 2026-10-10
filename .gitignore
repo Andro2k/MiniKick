@@ -18,6 +18,8 @@ kick_api_config*.json
 *.iss
 *.spec
 *.txt
+!requirements.txt
+!requirements-build.txt
 # Archivos de configuración de IDEs
 build/
 dist/

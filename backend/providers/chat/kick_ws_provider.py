@@ -45,6 +45,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._channel_id = 0
         self._seen_message_ids = deque(maxlen=1000)
         self._seen_message_ids_set = set()
+        self._warned_frame_events: set[str] = set()
         self._callback: Callable | None = None
         self._on_poll_update: Callable[[dict], None] | None = None
         self._on_poll_delete: Callable[[], None] | None = None
@@ -144,6 +145,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._last_activity_time = time.time()
         self._pending_ping_time = 0.0
 
+        event = ""
         try:
             event, inner = parse_kick_payload(raw)
             if not event:
@@ -155,7 +157,12 @@ class KickWebSocketManager(BaseChatSocketProvider):
                 logger.debug("[KickWebSocket] Pusher unhandled event: %s | data: %s", event, str(inner)[:200])
 
         except Exception as e:
-            logger.debug("[KickWebSocket] Notice processing frame: %s", e)
+            event_key = event or type(e).__name__
+            if event_key not in self._warned_frame_events:
+                self._warned_frame_events.add(event_key)
+                logger.warning("[KickWebSocket] Error processing frame for event '%s': %s", event_key, e)
+            else:
+                logger.debug("[KickWebSocket] Frame processing error (already reported for '%s'): %s", event_key, e)
 
     def _handle_chat_message(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
         sender = inner.get("sender")
@@ -177,18 +184,18 @@ class KickWebSocketManager(BaseChatSocketProvider):
             self._seen_message_ids.append(msg_id)
             self._seen_message_ids_set.add(msg_id)
 
-        created_at = inner.get("created_at", "")
-        latency_info = ""
-        if created_at:
-            try:
-                created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-                now_utc = datetime.now(timezone.utc)
-                latency = (now_utc - created_dt).total_seconds()
-                latency_info = f" (server latency: {latency:.3f}s)"
-            except Exception:
-                pass
-
-        logger.debug("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
+        if logger.isEnabledFor(logging.DEBUG):
+            created_at = inner.get("created_at", "")
+            latency_info = ""
+            if created_at:
+                try:
+                    created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                    now_utc = datetime.now(timezone.utc)
+                    latency = (now_utc - created_dt).total_seconds()
+                    latency_info = f" (server latency: {latency:.3f}s)"
+                except Exception as latency_err:
+                    logger.debug("[KickWebSocket] Could not compute server latency: %s", latency_err)
+            logger.debug("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
 
         identity = sender.get("identity")
         badges = []

@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger("minikick.schedule_service")
 
 class ScheduleService:
+    _NEXT_SCHEDULE_TTL = 30.0
+
     def __init__(self, schedule_storage: SQLiteScheduleStorage,
                  kick_client: KickAPIClient | None = None,
                  twitch_client: TwitchAPIClient | None = None,
@@ -28,6 +30,8 @@ class ScheduleService:
         self._cache_ttl = 120.0
         self._schedules_cache: list[dict] | None = None
         self._schedules_cache_lock = threading.Lock()
+        self._cached_next_schedule_text: str | None = None
+        self._cached_next_schedule_text_time: float = 0.0
 
     def set_kick_client(self, kick_client: KickAPIClient | None) -> None:
         self.kick_client = kick_client
@@ -232,6 +236,8 @@ class ScheduleService:
     def invalidate_schedules_cache(self) -> None:
         with self._schedules_cache_lock:
             self._schedules_cache = None
+            self._cached_next_schedule_text = None
+            self._cached_next_schedule_text_time = 0.0
 
     def get_all_schedules(self, force_reload: bool = False) -> list[dict]:
         with self._schedules_cache_lock:
@@ -295,16 +301,25 @@ class ScheduleService:
         return res
 
     def get_next_schedule_text(self) -> str:
+        with self._schedules_cache_lock:
+            if (self._cached_next_schedule_text is not None
+                    and (time.time() - self._cached_next_schedule_text_time) < self._NEXT_SCHEDULE_TTL):
+                return self._cached_next_schedule_text
         try:
             schedules = self.get_all_schedules()
             active_schedules = [s for s in schedules if s.get("is_active", True)]
             if not active_schedules:
-                return "-"
-            active_schedules.sort(key=lambda s: s.get("time_str", "99:99"))
-            first = active_schedules[0]
-            name = first.get("name", "")
-            time_str = first.get("time_str", "")
-            return f"{name} ({time_str})" if name else time_str
+                result = "-"
+            else:
+                active_schedules.sort(key=lambda s: s.get("time_str", "99:99"))
+                first = active_schedules[0]
+                name = first.get("name", "")
+                time_str = first.get("time_str", "")
+                result = f"{name} ({time_str})" if name else time_str
+            with self._schedules_cache_lock:
+                self._cached_next_schedule_text = result
+                self._cached_next_schedule_text_time = time.time()
+            return result
         except Exception as e:
             logger.error("[ScheduleService] Error getting next schedule text: %s", e)
             return "-"

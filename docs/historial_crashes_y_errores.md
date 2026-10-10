@@ -28,6 +28,11 @@
 | **INC-016** | Pérdida silenciosa de chat Kick, Top Chatters estático y desconexión TCP `ConnectionResetError: [WinError 10054]` por falta de Heartbeat Watchdog en Pusher Protocol 7 | Log de Usuario `minikick_JosueGMN_v1.6.1.log` (Líneas 185-188) / Feedback v1.6.1 | v1.6.1 | `✅ Solventado` | `backend/providers/chat/kick_ws_provider.py`, `backend/services/overlay/overlay_routes.py` | v1.6.2 (`WT-1.6.2_01`) |
 | **INC-017** | Ausencia de `WhatsNewDialog` en ejecutable exportado (`MiniKick.exe`) por omisión en `MiniKick.spec`, resolución rígida de rutas y falta de consulta a GitHub Releases | Reporte de Usuario / Feedback v1.6.2 | v1.6.2 | `✅ Solventado` | `MiniKick.spec`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `backend/workers/updater_worker.py`, `backend/core/main_window_core.py` | v1.6.2 (`WT-1.6.2_02`) |
 | **INC-018** | Crash fatal `TypeError: update_connection_status()` por discrepancia de parámetro `error_msg` y fallo de apertura de navegador en Linux | `minikick_crash_anonymous_v1.6.1.log` (Línea 17) | v1.6.1 | `✅ Solventado` | `frontend/views/dashboard_view.py`, `backend/services/system/browser_service.py`, `backend/services/auth/auth_service.py`, `frontend/navigation/toast_component.py` | v1.6.2 (`WT-1.6.2_04`) |
+| **INC-019** | Pérdida de líneas `[INF]` en log ante cierre abrupto por umbral de flush excesivamente alto (`WARNING`) en `AutoFlushTimedRotatingFileHandler` | `minikick_JosueGMN_v1.6.2.log` / `minikick_Pipe_Cabrales_v1.6.2.log` — Análisis post-crash | v1.6.2 | `✅ Solventado` | `backend/core/app_logger_core.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-020** | `requests.exceptions.Timeout` no capturado en `KickAPIClient._request`, propagando excepción no manejada en worker de chat | `minikick_JosueGMN_v1.6.2.log` — Análisis de red | v1.6.2 | `✅ Solventado` | `backend/providers/chat/kick_provider.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-021** | `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running` — Crash de sesión por destrucción prematura de `KickPollSyncWorker` vía GC de Python al usar `wait(1000)` bloqueante | `minikick_JosueGMN_v1.6.2.log` (Líneas 726, 2087) / `minikick_Pipe_Cabrales_v1.6.2.log` | v1.6.2 | `✅ Solventado` | `backend/workers/kick_chat_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-022** | Señales stale (`resolved`/`error`) emitidas por `YouTubeResolveWorker` tras cancelación, causando reproducción fantasma o errores de estado | Análisis de código durante diagnóstico v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/workers/music_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-023** | Saturación del hilo GUI y sobrecarga de I/O en la ruta de recepción de mensajes (consulta SQLite por mensaje, repintado de dashboard por mensaje, ordenamiento de horarios por mensaje, cálculo de latencia incondicional y logging fijo en DEBUG) | Auditoría de rendimiento del backend v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py` | v1.6.3 (`WT-1.6.3_02`) |
 
 ---
 
@@ -577,6 +582,78 @@
 * **Prueba Automatizada de Cobertura**:
   - `resources/tests/test_dashboard_controller_error.py`, `resources/tests/test_browser_service.py` y `resources/tests/test_toast_component.py`.
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.2/WT-1.6.2_04.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.2/WT-1.6.2_04.md).
+
+---
+
+### INC-019: Pérdida de Líneas `[INF]` en Log ante Cierre Abrupto
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: `minikick_JosueGMN_v1.6.2.log` — Análisis post-crash
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: `AutoFlushTimedRotatingFileHandler.emit` solo hacía `flush()` cuando el nivel era `WARNING` o superior. Al cerrar la aplicación abruptamente (crash de Qt, señal OS, kill), todos los registros `[INF]` y `[DBG]` pendientes en el buffer del SO se perdían, imposibilitando la reconstrucción de la secuencia de eventos previa al fallo.
+* **Archivos Afectados**: `backend/core/app_logger_core.py`
+* **Solución**: El umbral se redujo a `logging.INFO`, garantizando que toda entrada de nivel INFO o superior sea persistida al disco inmediatamente.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-020: `requests.exceptions.Timeout` No Capturado en `KickAPIClient._request`
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: `minikick_JosueGMN_v1.6.2.log` — Análisis de red
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: La tupla de excepciones recuperables en `_request` no incluía `requests.exceptions.Timeout`. Un timeout durante el polling de la API de Kick propagaba la excepción directamente al worker de chat, potencialmente causando desconexión silenciosa.
+* **Archivos Afectados**: `backend/providers/chat/kick_provider.py`
+* **Solución**: Se añadió `requests.exceptions.Timeout` a la tupla de red en `_request`. El cliente ahora recrea el scraper y reintenta hasta 2 veces antes de propagar.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-021: `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running`
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: `minikick_JosueGMN_v1.6.2.log` (Líneas 726, 2087) / `minikick_Pipe_Cabrales_v1.6.2.log`
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: `KickChatWorker._stop_poll_sync_worker` usaba `worker.wait(1000)` bloqueante. Si `fetch_active_poll` tardaba más de 1000 ms (timeout de red), el método liberaba la referencia al worker y Python's GC destruía el objeto `QThread` mientras el hilo OS seguía corriendo — generando el mensaje `[CRI]` de Qt y terminando la sesión.
+* **Secuencia observada**:
+  - Run 2: `[INF] CommandService: !skip` → `[CRI] QThread: Destroyed while thread '' is still running`
+  - Run 3: `[INF] TTS Manager: Enqueued text` → `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running`
+* **Archivos Afectados**: `backend/workers/kick_chat_worker.py`
+* **Solución**:
+  1. `KickPollSyncWorker.run`: Verificación de `isInterruptionRequested()` en cada punto del bucle.
+  2. `KickChatWorker._stop_poll_sync_worker`: Retiro asíncrono vía `worker.finished` + `deleteLater()`. Las señales se desconectan inmediatamente al inicio del retiro.
+  3. `KickChatWorker.__init__`: Set `_retiring_poll_workers` para mantener referencias vivas hasta que el worker finalice.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-022: Señales Stale en `YouTubeResolveWorker` tras Cancelación
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Análisis de código durante diagnóstico v1.6.3
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: `YouTubeResolveWorker` no verificaba `isInterruptionRequested()` en su pipeline de extracción/descarga. Al cancelar el worker (cambio de canción, shutdown), el worker continuaba en segundo plano y podía emitir `resolved` o `error` con datos de una canción ya descartada, causando reproducción de audio fantasma o estado desincronizado.
+* **Archivos Afectados**: `backend/workers/music_worker.py`
+* **Solución**: 8 checkpoints `isInterruptionRequested()` en el flujo completo. El sleep de backoff se fragmentó en iteraciones de 0.1s. Se añadió `progress_hook` de yt-dlp que levanta excepción al detectar interrupción durante descarga activa.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-023: Saturación del Hilo GUI y Sobrecarga de I/O en la Ruta de Recepción de Mensajes
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Auditoría de rendimiento del backend (streams de alto tráfico, especialmente Kick)
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: La ruta de recepción ejecutaba trabajo síncrono pesado en el hilo de la GUI por cada mensaje: (1) lectura SQLite (`SELECT`) de `tts_ignored_users` en cada mensaje; (2) repintado de 4 tarjetas de dashboard y de la barra de plataformas por mensaje; (3) ordenamiento O(k log k) de horarios por mensaje; (4) cálculo de latencia ISO incondicional en la ruta del socket; y (5) logging forzado a nivel DEBUG sin posibilidad de configuración, invalidando cualquier guarda de depuración.
+* **Archivos Afectados**: `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/controllers/chat_controller.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py`
+* **Solución**: (1) Nivel de log configurable vía `MINIKICK_LOG_LEVEL` (por defecto INFO). (2) Cálculo de latencia protegido con `logger.isEnabledFor(logging.DEBUG)`. (3) Caché en memoria O(1) del set de bots ignorados con invalidación mediante la nueva señal `tts_ignored_users_changed`. (4) Coalescencia del refresco de dashboard con `QTimer` de 300 ms y ruta única `_refresh_dashboard_view()`. (5) Memoización con TTL (30 s) de `get_next_schedule_text()`. (6) Memoización por mensaje del texto limpio en `SpamService` (máximo 2 cómputos por mensaje en lugar de 4).
+* **Pruebas Asociadas**: `resources/tests/test_message_path_performance.py`
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_02.md`
 
 ---
 

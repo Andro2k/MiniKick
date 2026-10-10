@@ -58,6 +58,15 @@ class SpamService:
         from backend.providers.chat import TwitchSocketManager
         twitch_emotes = TwitchSocketManager.count_twitch_emotes(emotes_tag)
 
+        clean_text_cache: dict[bool, str] = {}
+
+        def _clean(strip_urls: bool) -> str:
+            cached = clean_text_cache.get(strip_urls)
+            if cached is None:
+                cached = self._get_clean_text(message, emotes_tag=emotes_tag, strip_urls=strip_urls)
+                clean_text_cache[strip_urls] = cached
+            return cached
+
         for f_id, config in self.filters.items():
             if not config.get("is_active"):
                 continue
@@ -76,7 +85,7 @@ class SpamService:
             is_violation = False
 
             if f_id == "caps_protection":
-                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag, strip_urls=True)
+                clean_msg = _clean(True)
                 caps_count = sum(1 for c in clean_msg if c.isupper())
                 if len(clean_msg.strip()) > 5 and caps_count > max_amount:
                     is_violation = True
@@ -90,7 +99,7 @@ class SpamService:
                     is_violation = True
                     
             elif f_id == "symbol_protection":
-                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag)
+                clean_msg = _clean(False)
                 strange_chars = self._ALLOWED_LATIN_PATTERN.sub('', clean_msg)
                 symbols_only = re.findall(r'[^a-zA-Z0-9\s\u00C0-\u024F]', clean_msg)
                 threshold = max_amount if max_amount > 0 else 15
@@ -98,7 +107,7 @@ class SpamService:
                     is_violation = True
 
             elif f_id == "paragraph_protection":
-                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag)
+                clean_msg = _clean(False)
                 threshold = max_amount if max_amount > 0 else 300
                 if len(clean_msg) > threshold or clean_msg.count('\n') >= 5:
                     is_violation = True
@@ -117,7 +126,7 @@ class SpamService:
                             break
 
             elif f_id == "repetition_protection":
-                clean_msg = self._get_clean_text(message, emotes_tag=emotes_tag, strip_urls=True)
+                clean_msg = _clean(True)
                 words = clean_msg.lower().split()
                 if words:
                     word_counts = {}

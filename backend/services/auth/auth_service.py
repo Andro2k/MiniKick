@@ -2,13 +2,16 @@
 
 import base64
 import hashlib
+import hmac
+import html
 import logging
 import os
+import secrets
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
-from backend.interfaces import TokenStorage
+from backend.interfaces import TokenStorage, TransientAuthError
 
 logger = logging.getLogger("minikick.services.auth")
 
@@ -22,39 +25,57 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
         query = parse_qs(urlparse(self.path).query)
         code = query.get("code", [None])[0]
         error = query.get("error", [None])[0]
-        
+        received_state = query.get("state", [None])[0]
+        expected_state = getattr(self.server, "expected_state", None)
+
         if code or error:
-            if code:
-                self.server.auth_code = code
-            else:
-                self.server.auth_code = ""
-                
+            state_ok = True
+            if expected_state:
+                state_ok = bool(received_state) and hmac.compare_digest(str(received_state), str(expected_state))
+                if not state_ok:
+                    logger.warning(
+                        "[OAuthCallback] Rejected %s callback: invalid or missing OAuth state (possible CSRF).",
+                        getattr(self.server, "provider", "kick"),
+                    )
+
+            self.server.auth_code = code if (code and state_ok) else ""
+
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=utf-8")
             self.end_headers()
-            
+
             html_path = getattr(self.server, "success_html_path", "")
             provider = getattr(self.server, "provider", "kick")
-            status = "success" if code else "error"
-            error_msg = query.get("error_description", [error])[0] if error else ""
-            
+            success = bool(code and state_ok)
+            status = "success" if success else "error"
+            if error:
+                error_msg = query.get("error_description", [error])[0] if query.get("error_description") else error
+            elif not state_ok:
+                error_msg = "Invalid OAuth state parameter."
+            else:
+                error_msg = ""
+
+            provider_safe = html.escape(str(provider))
+            status_safe = html.escape(str(status))
+            error_msg_safe = html.escape(str(error_msg))
+
             content = None
             if html_path and os.path.exists(html_path):
                 try:
                     with open(html_path, "r", encoding="utf-8") as f:
                         template = f.read()
-                    content = template.replace("{{PROVIDER}}", provider)
-                    content = content.replace("{{STATUS}}", status)
-                    content = content.replace("{{ERROR_MSG}}", error_msg)
+                    content = template.replace("{{PROVIDER}}", provider_safe)
+                    content = content.replace("{{STATUS}}", status_safe)
+                    content = content.replace("{{ERROR_MSG}}", error_msg_safe)
                 except Exception as e:
                     logger.warning("[OAuthCallback] Error reading auth template '%s': %s", html_path, e)
 
             if not content:
-                status_text = "exitosa" if code else "fallida"
-                status_en = "successful" if code else "failed"
+                status_text = "exitosa" if success else "fallida"
+                status_en = "successful" if success else "failed"
                 content = f"<h1>Autenticación {status_text} / Authentication {status_en}.</h1>"
-                if error_msg:
-                    content += f"<p>Error: {error_msg}</p>"
+                if error_msg_safe:
+                    content += f"<p>Error: {error_msg_safe}</p>"
 
             try:
                 self.wfile.write(content.encode("utf-8"))
@@ -73,9 +94,10 @@ class OAuthCallbackServer:
         timeout_seconds: int = 120,
         provider: str = "kick",
         browser_service=None,
+        expected_state: str | None = None,
     ) -> str | None:
         try:
-            httpd = HTTPServer(("", port), _OAuthCallbackHandler)
+            httpd = HTTPServer(("127.0.0.1", port), _OAuthCallbackHandler)
         except OSError as e:
             logger.error("[OAuthCallbackServer] Cannot bind port %d for %s auth: %s", port, provider, e)
             raise OSError(f"Port {port} is already in use by another authentication process.") from e
@@ -83,6 +105,7 @@ class OAuthCallbackServer:
         httpd.auth_code = None
         httpd.success_html_path = success_html_path
         httpd.provider = provider
+        httpd.expected_state = expected_state
         
         opened = False
         if browser_service and hasattr(browser_service, "open_url"):
@@ -102,6 +125,12 @@ class OAuthCallbackServer:
 
 class BaseOAuthManager:
     REQUIRED_SCOPES: dict[str, str] = {}
+
+    @staticmethod
+    def _classify_refresh_error(error: requests.exceptions.RequestException) -> str:
+        if isinstance(error, requests.exceptions.HTTPError) and error.response is not None:
+            return "invalid" if error.response.status_code in (400, 401) else "transient"
+        return "transient"
 
     def __init__(
         self,
@@ -196,16 +225,23 @@ class KickAuthManager(BaseOAuthManager):
             new_tokens = response.json()
             self.storage.save(new_tokens)
             return new_tokens
-        except requests.exceptions.RequestException:
-            return {}
+        except requests.exceptions.RequestException as e:
+            if self._classify_refresh_error(e) == "invalid":
+                logger.warning("[KickAuth] Refresh token rejected (invalid/expired). Clearing session: %s", e)
+                self.logout()
+                return {}
+            logger.warning("[KickAuth] Transient error refreshing token; keeping session: %s", e)
+            raise TransientAuthError(str(e)) from e
 
     def _new_login(self) -> dict:
         verifier, challenge = self._pkce_pair()
-        auth_url = self._build_auth_url(challenge)
+        state = secrets.token_urlsafe(32)
+        auth_url = self._build_auth_url(challenge, state)
 
         port = int(urlparse(self.redirect_uri).port or 8080)
         auth_code = OAuthCallbackServer.capture_auth_code(
-            auth_url, port, self.success_html_path, provider="kick", browser_service=self.browser_service
+            auth_url, port, self.success_html_path, provider="kick",
+            browser_service=self.browser_service, expected_state=state
         )
 
         if not auth_code:
@@ -221,7 +257,7 @@ class KickAuthManager(BaseOAuthManager):
         challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).decode().rstrip("=")
         return verifier, challenge
 
-    def _build_auth_url(self, challenge: str) -> str:
+    def _build_auth_url(self, challenge: str, state: str) -> str:
         scopes = "user:read channel:read channel:write channel:rewards:read channel:rewards:write chat:write moderation:ban moderation:chat_message:manage"
         return (
             f"{KICK_AUTH_URL}?response_type=code"
@@ -230,7 +266,7 @@ class KickAuthManager(BaseOAuthManager):
             f"&scope={scopes}"
             f"&code_challenge={challenge}"
             f"&code_challenge_method=S256"
-            f"&state=random"
+            f"&state={state}"
         )
 
     def _exchange_code(self, code: str, verifier: str) -> dict:
@@ -301,24 +337,29 @@ class TwitchAuthManager(BaseOAuthManager):
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException as e:
-            logger.warning("[TwitchAuth] Failed to refresh Twitch token: %s", e)
-            self.logout()
-            raise e
+            if self._classify_refresh_error(e) == "invalid":
+                logger.warning("[TwitchAuth] Refresh token rejected (invalid/expired). Clearing session: %s", e)
+                self.logout()
+                return {}
+            logger.warning("[TwitchAuth] Transient error refreshing token; keeping session: %s", e)
+            raise TransientAuthError(str(e)) from e
 
     def _new_login(self, force: bool = False) -> dict:
         scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers"
         force_param = "&force_verify=true" if force else ""
+        state = secrets.token_urlsafe(32)
         auth_url = (
             f"{TWITCH_AUTH_URL}?response_type=code"
             f"&client_id={self.client_id}"
             f"&redirect_uri={self.redirect_uri}"
             f"&scope={scopes}"
-            f"&state=random"
+            f"&state={state}"
             f"{force_param}"
         )
         port = int(urlparse(self.redirect_uri).port or 8080)
         auth_code = OAuthCallbackServer.capture_auth_code(
-            auth_url, port, self.success_html_path, provider="twitch", browser_service=self.browser_service
+            auth_url, port, self.success_html_path, provider="twitch",
+            browser_service=self.browser_service, expected_state=state
         )
 
         if not auth_code:

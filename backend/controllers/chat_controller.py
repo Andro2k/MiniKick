@@ -153,6 +153,7 @@ class ChatController(QObject):
     music_plugin_triggered = Signal(str, str, str, str, str)
     widget_plugin_triggered = Signal(str, str, str, str, str)
     chat_overlay_config_changed = Signal(dict)
+    tts_ignored_users_changed = Signal()
 
     def __init__(self, view, service, command_service, spam_service, i18n, timer_service=None, toast_manager=None, giphy_service=None):
         super().__init__()
@@ -165,7 +166,9 @@ class ChatController(QObject):
         self.toast = toast_manager
         self._message_buffer = deque(maxlen=200)
 
-        self.filter_handler = ChatFilterHandler(i18n, service)
+        self.filter_handler = ChatFilterHandler(
+            i18n, service, on_ignored_users_changed=self.tts_ignored_users_changed.emit
+        )
         self.voice_handler = TTSVoiceHandler(self, view, service, toast_manager, i18n)
         self.giphy_service = giphy_service or GiphyService()
 

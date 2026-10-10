@@ -101,8 +101,8 @@ class SQLiteCommandsStorage:
 
                 try:
                     cursor.execute("UPDATE command_execution_logs SET command_trigger = ? WHERE command_trigger = ?", (new_trigger, old_trigger))
-                except Exception:
-                    pass
+                except Exception as log_err:
+                    logger.debug("[CommandsStorage] Could not update execution logs on rename: %s", log_err)
 
                 cursor.execute("UPDATE chat_commands SET trigger = ? WHERE trigger = ?", (new_trigger, old_trigger))
                 conn.commit()

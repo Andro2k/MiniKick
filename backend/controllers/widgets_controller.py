@@ -80,6 +80,8 @@ class WidgetsController(QObject):
         self._last_chatters_signature = None
         self._last_emitted_top_chatters: list[dict] = []
         self._chatters_dirty = False
+        self._cached_ignored_bots_set: set[str] | None = None
+        self._last_ignored_bots_fetch: float = 0.0
         self._chatters_debounce_timer = QTimer(self)
         self._chatters_debounce_timer.setSingleShot(True)
         self._chatters_debounce_timer.setInterval(1000)
@@ -660,6 +662,27 @@ class WidgetsController(QObject):
             msg = self.i18n.get("widgets.combo.msg_combo").replace("{count}", "5").replace("{emote}", emote)
             self.command_service.send_response(msg, platform=platform)
 
+    def invalidate_ignored_bots_cache(self) -> None:
+        self._cached_ignored_bots_set = None
+        self._last_ignored_bots_fetch = 0.0
+
+    def _get_ignored_bots(self) -> set[str]:
+        now = time.time()
+        if self._cached_ignored_bots_set is not None and (now - self._last_ignored_bots_fetch) < 30.0:
+            return self._cached_ignored_bots_set
+
+        ignored_set: set[str] = set()
+        if self.spam_service and hasattr(self.spam_service, "storage"):
+            try:
+                ignored_str = self.spam_service.storage.load_string("tts_ignored_users", "")
+                if ignored_str:
+                    ignored_set = {u.strip().lstrip('@').lower() for u in ignored_str.split(",") if u.strip()}
+            except Exception:
+                pass
+        self._cached_ignored_bots_set = ignored_set
+        self._last_ignored_bots_fetch = now
+        return self._cached_ignored_bots_set
+
     def _record_chatter_message(self, user: str, content: str, color: str = "", badges: list = None, platform: str = "kick"):
         if not user or not content:
             return
@@ -683,15 +706,9 @@ class WidgetsController(QObject):
         if user_lower in _IGNORED_CHATTER_BOTS or user_stripped in _IGNORED_CHATTER_BOTS:
             return
 
-        if self.spam_service and hasattr(self.spam_service, "storage"):
-            try:
-                ignored_str = self.spam_service.storage.load_string("tts_ignored_users", "")
-                if ignored_str:
-                    ignored_set = {u.strip().lstrip('@').lower() for u in ignored_str.split(",") if u.strip()}
-                    if user_lower in ignored_set or user_stripped in ignored_set:
-                        return
-            except Exception:
-                pass
+        ignored_bots = self._get_ignored_bots()
+        if ignored_bots and (user_lower in ignored_bots or user_stripped in ignored_bots):
+            return
 
         today_str = datetime.datetime.now().strftime("%Y-%m-%d")
         if today_str != self._current_chatters_date:
