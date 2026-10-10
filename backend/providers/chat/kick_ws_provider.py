@@ -30,15 +30,24 @@ RFC_6455_CLOSE_CODES: dict[int, str] = {
 }
 
 DEFAULT_KICK_COLOR = "#2ECD70"
+PUSHER_KEY_REJECTED_CODES = frozenset({4001, 4003, 4009})
 
 class KickWebSocketManager(BaseChatSocketProvider):
     @property
     def is_running(self) -> bool:
         return self._running
 
-    def __init__(self, cluster: str, key: str) -> None:
+    @property
+    def key(self) -> str:
+        return self._keys[self._key_index]
+
+    def __init__(self, cluster: str, keys: tuple[str, ...]) -> None:
+        if not keys:
+            raise ValueError("KickWebSocketManager requiere al menos una clave Pusher")
         self.cluster = cluster
-        self.key = key
+        self._keys = tuple(keys)
+        self._key_index = 0
+        self._pusher_error_code: int | None = None
         self._running = False
         self.ws: websocket.WebSocketApp | None = None
         self._room_id = 0
@@ -75,6 +84,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
             "pusher:connection_established": self._handle_connection_established,
             "pusher:ping": self._handle_ping,
             "pusher:pong": self._handle_pong,
+            "pusher:error": self._handle_pusher_error,
         }
 
     def start_socket(
@@ -103,7 +113,11 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._running = True
         
         url = f"wss://ws-{self.cluster}.pusher.com/app/{self.key}?protocol=7&client=js&version=7.6.0"
-        logger.info("[KickWebSocket] Connecting to Pusher WebSocket for room_id=%s...", room_id)
+        self._pusher_error_code = None
+        logger.info(
+            "[KickWebSocket] Connecting to Pusher WebSocket for room_id=%s (Pusher key %d/%d)...",
+            room_id, self._key_index + 1, len(self._keys),
+        )
         self.ws = websocket.WebSocketApp(
             url,
             on_message=self._on_raw_frame,
@@ -137,6 +151,27 @@ class KickWebSocketManager(BaseChatSocketProvider):
         self._stop_heartbeat_watchdog()
         meaning = RFC_6455_CLOSE_CODES.get(status, "Unknown/Unregistered") if status is not None else "Clean/No Code"
         logger.info("[KickWebSocket] WebSocket closed: code=%s (%s), reason=%s", status, meaning, msg or "N/A")
+        self._rotate_key_if_rejected(status)
+
+    def _handle_pusher_error(self, inner: dict, _ws: websocket.WebSocketApp) -> None:
+        data = inner if isinstance(inner, dict) else {}
+        code = data.get("code")
+        self._pusher_error_code = code if isinstance(code, int) else None
+        logger.error("[KickWebSocket] pusher:error code=%s message=%s", code, data.get("message"))
+
+    def _rotate_key_if_rejected(self, close_status: int | None) -> None:
+        code = self._pusher_error_code if self._pusher_error_code is not None else close_status
+        self._pusher_error_code = None
+        if code not in PUSHER_KEY_REJECTED_CODES:
+            return
+        if self._key_index + 1 < len(self._keys):
+            self._key_index += 1
+            logger.warning(
+                "[KickWebSocket] Pusher key rejected (code %s); switching to key %d/%d.",
+                code, self._key_index + 1, len(self._keys),
+            )
+        else:
+            logger.error("[KickWebSocket] Pusher key rejected (code %s) and there are no more keys to try.", code)
 
     def _on_raw_frame(self, ws: websocket.WebSocketApp, raw: str) -> None:
         if not self._running:
@@ -385,6 +420,7 @@ class KickWebSocketManager(BaseChatSocketProvider):
 
     def stop_socket(self) -> None:
         self._running = False
+        self._key_index = 0
         self._stop_heartbeat_watchdog()
         logger.info("[KickWebSocket] Stopping Pusher socket...")
         if self.ws:

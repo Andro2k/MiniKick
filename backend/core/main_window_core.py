@@ -41,12 +41,7 @@ from frontend.dialogs import (
     ModernConfirmDialog, YouTubeConnectDialog, TikTokConnectDialog, WhatsNewDialog
 )
 
-try:
-    from backend.config import KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY, TWITCH_CLIENT_ID
-except ImportError:
-    KICK_PUSHER_CLUSTER = "us2"
-    KICK_PUSHER_KEY = "32cbd69e4b950bf97679"
-    TWITCH_CLIENT_ID = ""
+from backend.config import KICK_PUSHER, TWITCH_CLIENT_ID
 
 logger = logging.getLogger("minikick.core")
 
@@ -1016,7 +1011,7 @@ class MainWindowCore(QMainWindow):
         if hasattr(self, "schedule_controller") and self.schedule_controller:
             self.schedule_controller.fetch_current_info()
 
-        self.kick_chat_worker = KickChatWorker(self.i18n, self.kick_api_client, KICK_PUSHER_CLUSTER, KICK_PUSHER_KEY)
+        self.kick_chat_worker = KickChatWorker(self.i18n, self.kick_api_client, KICK_PUSHER.cluster, KICK_PUSHER.keys)
         self.kick_chat_worker.connection_success.connect(self._on_web_socket_connected)
         self.kick_chat_worker.message_received.connect(self._route_incoming_message)
         self.kick_chat_worker.poll_updated.connect(self._on_poll_updated)
