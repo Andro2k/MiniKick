@@ -12,7 +12,6 @@ from PySide6.QtSvg import QSvgRenderer
 
 from frontend.common import (
     resolve_icon_path, resource_path,
-    COLOR_NEUTRAL_950,
     MARGIN_NONE, SPACING_SM
 )
 
@@ -25,9 +24,6 @@ class SplashScreen(QWidget):
         self.i18n = i18n
         self.app_version = app_version
         self._is_finished = False
-
-        self.setObjectName("splash_screen")
-        self.setStyleSheet(f"QWidget#splash_screen {{ background-color: {COLOR_NEUTRAL_950}; }}")
 
         title = self.i18n.get("splash.title") if hasattr(self.i18n, "get") else "MiniKick"
         self.setWindowTitle(title)

@@ -17,7 +17,7 @@ _q_log_handler_instance = None
 class AutoFlushTimedRotatingFileHandler(TimedRotatingFileHandler):
     def emit(self, record: logging.LogRecord) -> None:
         super().emit(record)
-        if record.levelno >= logging.WARNING:
+        if record.levelno >= logging.INFO:
             self.flush()
 
 logger = logging.getLogger("minikick.core.app_logger")

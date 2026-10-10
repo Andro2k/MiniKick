@@ -43,6 +43,7 @@ class YouTubeResolveWorker(QThread):
 
     def __init__(self, query_or_url: str, expected_title: str = "", i18n=None, music_storage=None):
         super().__init__()
+        self.setObjectName("Worker_YouTube_Resolve")
         self.query_or_url = query_or_url
         self.expected_title = expected_title
         self.loudness: float | None = None
@@ -51,6 +52,8 @@ class YouTubeResolveWorker(QThread):
         self.i18n = i18n or TranslationService()
 
     def run(self):
+        if self.isInterruptionRequested():
+            return
         try:
             import yt_dlp
             
@@ -114,7 +117,11 @@ class YouTubeResolveWorker(QThread):
 
             max_retries = 3
             for attempt in range(max_retries):
+                if self.isInterruptionRequested():
+                    return
                 for clients in client_strategies:
+                    if self.isInterruptionRequested():
+                        return
                     try:
                         attempt_opts = dict(ydl_opts)
                         attempt_opts['extractor_args'] = {'youtube': {'player_client': clients}}
@@ -129,7 +136,7 @@ class YouTubeResolveWorker(QThread):
                         logger.debug("[YouTubeResolveWorker] Strategy %s failed on attempt %d: %s", clients, attempt + 1, e)
                         continue
 
-                if info:
+                if info or self.isInterruptionRequested():
                     break
 
                 if attempt < max_retries - 1:
@@ -138,8 +145,15 @@ class YouTubeResolveWorker(QThread):
                         "[YouTubeResolveWorker] Extraction attempt %d failed (%s). Retrying in %.2fs with backoff...",
                         attempt + 1, last_err, backoff_sec
                     )
-                    time.sleep(backoff_sec)
+                    steps = max(1, int(backoff_sec * 10))
+                    for _ in range(steps):
+                        if self.isInterruptionRequested():
+                            return
+                        time.sleep(0.1)
                     client_strategies.append(client_strategies.pop(0))
+
+            if self.isInterruptionRequested():
+                return
 
             if not info:
                 if last_err:
@@ -163,7 +177,8 @@ class YouTubeResolveWorker(QThread):
             except (ValueError, TypeError):
                 self.loudness = None
 
-
+            if self.isInterruptionRequested():
+                return
 
             if raw_id:
                 matching_files = [
@@ -190,10 +205,20 @@ class YouTubeResolveWorker(QThread):
 
             best_stream_url = _extract_best_audio_url(info)
 
+            if self.isInterruptionRequested():
+                return
+
             logger.info("[YouTubeResolveWorker] Downloading audio stream for '%s' (ID %s)...", title, raw_id)
 
             download_opts = dict(ydl_opts)
             download_opts['format'] = 'bestaudio/best'
+
+            def _interruption_hook(d):
+                if self.isInterruptionRequested():
+                    raise Exception("Worker download interrupted by user")
+
+            download_opts['progress_hooks'] = [_interruption_hook]
+
             with yt_dlp.YoutubeDL(download_opts) as ydl:
                 try:
                     ydl.process_info(info)
@@ -201,23 +226,26 @@ class YouTubeResolveWorker(QThread):
                 except Exception as download_err:
                     local_path = ydl.prepare_filename(info)
                     part_file = local_path + ".part"
-                    if os.path.exists(part_file):
-                        try:
-                            os.remove(part_file)
-                        except Exception:
-                            pass
-                    if os.path.exists(local_path):
-                        try:
-                            os.remove(local_path)
-                        except Exception:
-                            pass
-                    
+                    for p in (part_file, local_path):
+                        if os.path.exists(p):
+                            try:
+                                os.remove(p)
+                            except Exception:
+                                pass
+
+                    if self.isInterruptionRequested():
+                        logger.debug("[YouTubeResolveWorker] Download aborted via interruption request.")
+                        return
+
                     if best_stream_url:
                         self.resolved.emit(title, best_stream_url)
                         return
                     else:
                         raise download_err
                 
+                if self.isInterruptionRequested():
+                    return
+
                 if os.path.exists(local_path) and os.path.getsize(local_path) > 0:
                     self.resolved.emit(title, local_path)
                 elif best_stream_url:
@@ -226,6 +254,9 @@ class YouTubeResolveWorker(QThread):
                     raise Exception("Stream URL not found in metadata")
             
         except Exception as e:
+            if self.isInterruptionRequested():
+                logger.debug("[YouTubeResolveWorker] Interrupted worker cleanly exiting: %s", e)
+                return
             self.error.emit(str(e))
 
 class YouTubeSearchWorker(QThread):
@@ -233,6 +264,7 @@ class YouTubeSearchWorker(QThread):
 
     def __init__(self, search_query: str, query_raw: str, i18n, max_duration_min: int = 10):
         super().__init__()
+        self.setObjectName("Worker_YouTube_Search")
         self.search_query = search_query
         self.query_raw = query_raw
         self.i18n = i18n

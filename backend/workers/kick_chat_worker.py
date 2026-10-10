@@ -26,14 +26,14 @@ class KickPollSyncWorker(QThread):
 
     def run(self):
         logger.info("[KickPollSyncWorker] Started poll reconciliation worker for '%s'", self.channel_slug)
-        while not self._is_stopped:
+        while not self._is_stopped and not self.isInterruptionRequested():
             self.msleep(self.interval_ms)
-            if self._is_stopped:
+            if self._is_stopped or self.isInterruptionRequested():
                 break
 
             try:
                 poll = self.api_client.fetch_active_poll(self.channel_slug)
-                if self._is_stopped:
+                if self._is_stopped or self.isInterruptionRequested():
                     break
 
                 if not poll:
@@ -76,6 +76,7 @@ class KickChatWorker(QThread):
         self.chat_manager = KickWebSocketManager(cluster, key)
         self._is_stopped = False
         self._poll_sync_worker: KickPollSyncWorker | None = None
+        self._retiring_poll_workers: set = set()
 
     def run(self):
         logger.info("[KickChatWorker] Starting Kick chat worker thread...")
@@ -168,10 +169,36 @@ class KickChatWorker(QThread):
             self._stop_poll_sync_worker()
 
     def _stop_poll_sync_worker(self):
-        if self._poll_sync_worker:
-            self._poll_sync_worker.stop()
-            self._poll_sync_worker.wait(1000)
-            self._poll_sync_worker = None
+        worker = self._poll_sync_worker
+        if not worker:
+            return
+        self._poll_sync_worker = None
+        for sig_name in ("poll_updated", "poll_deleted"):
+            sig = getattr(worker, sig_name, None)
+            if sig:
+                try:
+                    sig.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+
+        try:
+            worker.stop()
+            worker.requestInterruption()
+            if worker.isRunning():
+                self._retiring_poll_workers.add(worker)
+
+                def _on_retired(w=worker):
+                    self._retiring_poll_workers.discard(w)
+                    try:
+                        w.deleteLater()
+                    except RuntimeError:
+                        pass
+
+                worker.finished.connect(_on_retired)
+            else:
+                worker.deleteLater()
+        except RuntimeError:
+            pass
 
     def _dispatch_poll_delete(self):
         self._stop_poll_sync_worker()

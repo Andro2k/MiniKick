@@ -72,9 +72,9 @@ class KickAPIClient:
                 response = self.scraper.request(method, url, headers=headers, **kwargs)
                 response.raise_for_status()
                 return response
-            except (requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError, ConnectionResetError) as e:
+            except (requests.exceptions.ConnectionError, requests.exceptions.ChunkedEncodingError, ConnectionResetError, requests.exceptions.Timeout) as e:
                 logger.warning(
-                    "[KickAPIClient] Network connection dropped/reset (%s) on %s %s. Recreating scraper session and retrying (attempt %d/%d)...",
+                    "[KickAPIClient] Network connection dropped/reset/timeout (%s) on %s %s. Recreating scraper session and retrying (attempt %d/%d)...",
                     e, method, url, attempt + 1, max_attempts
                 )
                 try:

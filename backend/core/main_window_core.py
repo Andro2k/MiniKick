@@ -1625,13 +1625,18 @@ class MainWindowCore(QMainWindow):
 
     def _on_tiktok_error(self, error_msg: str):
         self._tiktok_connected = False
-        self.logger.error("[TikTok] Error in TikTok Live worker: %s", error_msg)
+        msg_lower = error_msg.lower()
+        is_offline = "no está transmitiendo" in msg_lower or "offline" in msg_lower or "not live" in msg_lower
+        if is_offline:
+            self.logger.warning("[TikTok] TikTok Live worker offline status: %s", error_msg)
+        else:
+            self.logger.error("[TikTok] Error in TikTok Live worker: %s", error_msg)
         self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
-            title=self.container.i18n.get("common.status.error"),
+            title=self.container.i18n.get("common.status.offline" if is_offline else "common.status.error"),
             message=error_msg,
-            state="danger"
+            state="warning" if is_offline else "danger"
         )
 
     @Slot()
