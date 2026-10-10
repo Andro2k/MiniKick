@@ -2,6 +2,8 @@
 
 import logging
 
+from backend.interfaces import SecretCipher
+
 logger = logging.getLogger("minikick.database.encrypted_token_storage")
 
 _ENCRYPTED_PREFIX = "enc:v1:"
@@ -9,7 +11,7 @@ _ENCRYPTED_PREFIX = "enc:v1:"
 class EncryptedTokenStorage:
     _SENSITIVE_FIELDS = ("access_token", "refresh_token")
 
-    def __init__(self, inner, cipher) -> None:
+    def __init__(self, inner, cipher: SecretCipher) -> None:
         self._inner = inner
         self._cipher = cipher
 

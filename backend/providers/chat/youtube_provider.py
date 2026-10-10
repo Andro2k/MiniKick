@@ -52,8 +52,8 @@ class YouTubeChatProvider:
                     v_details = p_data.get("videoDetails", {})
                     if (v_details.get("isLive") or v_details.get("isLiveContent")) and v_details.get("videoId"):
                         return v_details.get("videoId")
-                except Exception:
-                    pass
+                except Exception as parse_err:
+                    logger.debug("[YouTubeChatProvider] Could not parse player response: %s", parse_err)
         except Exception as e:
             logger.warning("[YouTubeChatProvider] Failed to resolve live video ID for %s (%s): %s", target, type(e).__name__, e)
 

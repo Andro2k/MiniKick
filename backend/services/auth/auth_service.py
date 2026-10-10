@@ -11,7 +11,7 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 import requests
-from backend.interfaces import TokenStorage
+from backend.interfaces import TokenStorage, TransientAuthError
 
 logger = logging.getLogger("minikick.services.auth")
 
@@ -126,6 +126,12 @@ class OAuthCallbackServer:
 class BaseOAuthManager:
     REQUIRED_SCOPES: dict[str, str] = {}
 
+    @staticmethod
+    def _classify_refresh_error(error: requests.exceptions.RequestException) -> str:
+        if isinstance(error, requests.exceptions.HTTPError) and error.response is not None:
+            return "invalid" if error.response.status_code in (400, 401) else "transient"
+        return "transient"
+
     def __init__(
         self,
         client_id: str,
@@ -219,8 +225,13 @@ class KickAuthManager(BaseOAuthManager):
             new_tokens = response.json()
             self.storage.save(new_tokens)
             return new_tokens
-        except requests.exceptions.RequestException:
-            return {}
+        except requests.exceptions.RequestException as e:
+            if self._classify_refresh_error(e) == "invalid":
+                logger.warning("[KickAuth] Refresh token rejected (invalid/expired). Clearing session: %s", e)
+                self.logout()
+                return {}
+            logger.warning("[KickAuth] Transient error refreshing token; keeping session: %s", e)
+            raise TransientAuthError(str(e)) from e
 
     def _new_login(self) -> dict:
         verifier, challenge = self._pkce_pair()
@@ -326,9 +337,12 @@ class TwitchAuthManager(BaseOAuthManager):
             self.storage.save(new_tokens)
             return new_tokens
         except requests.exceptions.RequestException as e:
-            logger.warning("[TwitchAuth] Failed to refresh Twitch token: %s", e)
-            self.logout()
-            raise e
+            if self._classify_refresh_error(e) == "invalid":
+                logger.warning("[TwitchAuth] Refresh token rejected (invalid/expired). Clearing session: %s", e)
+                self.logout()
+                return {}
+            logger.warning("[TwitchAuth] Transient error refreshing token; keeping session: %s", e)
+            raise TransientAuthError(str(e)) from e
 
     def _new_login(self, force: bool = False) -> dict:
         scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers"

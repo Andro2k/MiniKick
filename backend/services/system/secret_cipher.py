@@ -5,6 +5,8 @@ import ctypes
 import logging
 import sys
 
+from backend.interfaces import SecretCipher
+
 logger = logging.getLogger("minikick.services.system.secret_cipher")
 
 
@@ -92,7 +94,7 @@ class DPAPISecretCipher:
         return plain.decode("utf-8")
 
 
-def create_secret_cipher():
+def create_secret_cipher() -> SecretCipher:
     if sys.platform == "win32":
         try:
             return DPAPISecretCipher()

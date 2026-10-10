@@ -86,6 +86,11 @@ línea justificando el motivo. Casos destacados:
    el encabezado del auditor), en lugar de renombrar el módulo. Queda constancia aquí para revisión.
 2. **Nueva prueba de arquitectura en rojo por diseño controlado.** Tras aplicar (1), `test_architecture_and_placement_auditors`
    vuelve a pasar sin tocar la aserción de la prueba.
+3. **Archivo huérfano detectado por `dead_code_manager`.** `backend/interfaces/i_secrets.py` aparecía como huérfano
+   ("solo importado en su `__init__.py`") porque `SecretCipher` no se usaba como tipo en ningún consumidor. Se cableó la
+   interfaz de verdad: `create_secret_cipher()` devuelve `SecretCipher` y `EncryptedTokenStorage.__init__` tipa su cifrador
+   con `SecretCipher`. Además, `TransientAuthError` recibió un cuerpo explícito (`pass`). Tras el cambio,
+   `dead_code_manager` reporta 0 huérfanos.
 
 ---
 
@@ -121,6 +126,8 @@ línea justificando el motivo. Casos destacados:
 
 - `resources/tests/test_auth_refresh_classification.py` (3 casos): 400/401 → inválido; 5xx/red → transitorio; `TransientAuthError` es `Exception`.
 - `resources/tests/test_db_migrations.py` (3 casos): migraciones ordenadas y versionadas; BD nueva alcanza `CURRENT_SCHEMA_VERSION`; migración 1 idempotente.
+- Auditores del repo (post-cambios): `dead_code_manager` 0 huérfanos, `unused_parameter_manager` 0, `architecture_boundary_auditor` 0,
+  `file_placement_auditor` 0, `anti_hardcode_auditor` 0, `design_token_auditor` 0, `dry_duplication_auditor` 0, `qt_signal_leak_auditor` 0.
 - Regresión completa: `resources/tests` en **186 pruebas superadas**. Los 2 fallos restantes
   (`test_sqlite_widgets_storage_pruning` por fecha hardcodeada y `test_modern_toast_dynamic_geometry_scaling`
   por geometría de fuente) son **preexistentes y ajenos** a esta fase.

@@ -4,7 +4,7 @@ import logging
 import time
 import cloudscraper
 import requests
-from backend.interfaces import TokenProvider
+from backend.interfaces import TokenProvider, TransientAuthError
 
 logger = logging.getLogger("minikick.providers.kick_provider")
 
@@ -86,7 +86,12 @@ class KickAPIClient:
                     raise e
             except requests.exceptions.HTTPError as e:
                 if e.response is not None and e.response.status_code == 401 and hasattr(self.auth_provider, "refresh_token"):
-                    self.auth_provider.refresh_token()
+                    try:
+                        self.auth_provider.refresh_token()
+                    except TransientAuthError as refresh_err:
+                        logger.warning(
+                            "[KickAPIClient] Token refresh skipped (transient failure); keeping session: %s", refresh_err
+                        )
                     tokens = self._get_tokens()
                     if tokens.get("access_token"):
                         headers["Authorization"] = f"Bearer {tokens.get('access_token', '')}"

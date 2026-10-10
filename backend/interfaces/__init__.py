@@ -1,6 +1,6 @@
 # backend\interfaces\__init__.py
 
-from .i_auth import TokenStorage, TokenProvider
+from .i_auth import TokenStorage, TokenProvider, TransientAuthError
 from .i_secrets import SecretCipher
 from .i_settings import SettingsStorage
 from .i_tts import ITTSProvider
@@ -11,6 +11,7 @@ from .i_alerts import AlertStorageProtocol
 __all__ = [
     "TokenStorage",
     "TokenProvider",
+    "TransientAuthError",
     "SecretCipher",
     "SettingsStorage",
     "ITTSProvider",

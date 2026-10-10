@@ -111,8 +111,8 @@ class TwitchSocketManager:
         if self._on_connected:
             try:
                 self._on_connected()
-            except Exception:
-                pass
+            except Exception as cb_err:
+                logger.debug("[TwitchWS] on_connected callback failed: %s", cb_err)
 
     def _on_message(self, ws: websocket.WebSocketApp, raw_data: str) -> None:
         if not self._running:
@@ -232,8 +232,8 @@ class TwitchSocketManager:
         if self._on_disconnected:
             try:
                 self._on_disconnected()
-            except Exception:
-                pass
+            except Exception as cb_err:
+                logger.debug("[TwitchWS] on_disconnected callback failed: %s", cb_err)
 
     def stop_socket(self) -> None:
         self._running = False

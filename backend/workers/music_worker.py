@@ -369,8 +369,8 @@ class YouTubeSearchWorker(QThread):
                 try:
                     m, s = divmod(int(duration_sec), 60)
                     duration_str = f"{m:02d}:{s:02d}"
-                except Exception:
-                    pass
+                except Exception as fmt_err:
+                    logger.debug("[YouTubeResolveWorker] Could not format duration '%s': %s", duration_sec, fmt_err)
             elif item.get('duration_string'):
                 duration_str = item.get('duration_string')
 
