@@ -435,8 +435,8 @@ class TikTokChatProvider:
                 if loop and loop.is_running():
                     try:
                         asyncio.run_coroutine_threadsafe(client.disconnect(), loop)
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.debug("[TikTokChatProvider] Error scheduling client disconnect: %s", e)
                 else:
                     self._drain_client_loop(client)
             except Exception as e:

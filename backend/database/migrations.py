@@ -121,6 +121,7 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
                         cursor.execute(f"ALTER TABLE {table} ADD COLUMN {col_name} {col_type}")
                     except sqlite3.OperationalError as alter_err:
                         logger.error("Error adding column %s to table %s: %s", col_name, table, alter_err)
+                        raise
 
         cursor.execute("PRAGMA table_info(obs_rewards)")
         obs_cols = cursor.fetchall()
@@ -182,9 +183,9 @@ def _migration_001_add_missing_columns_and_constraints(conn: sqlite3.Connection)
             cursor.execute("DROP TABLE reward_redemptions")
             cursor.execute("ALTER TABLE reward_redemptions_new RENAME TO reward_redemptions")
 
-        conn.commit()
     except Exception as e:
         logger.error("Error executing database schema upgrade: %s", e)
+        raise
 
 MIGRATIONS: list[tuple[int, Callable[[sqlite3.Connection], None]]] = [
     (1, _migration_001_add_missing_columns_and_constraints),

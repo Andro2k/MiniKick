@@ -29,16 +29,13 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
         expected_state = getattr(self.server, "expected_state", None)
 
         if code or error:
-            state_ok = True
-            if expected_state:
-                state_ok = bool(received_state) and hmac.compare_digest(str(received_state), str(expected_state))
-                if not state_ok:
-                    logger.warning(
-                        "[OAuthCallback] Rejected %s callback: invalid or missing OAuth state (possible CSRF).",
-                        getattr(self.server, "provider", "kick"),
-                    )
+            if expected_state and not self._state_matches(received_state, expected_state):
+                logger.warning("[OAuthCallback] Ignored %s callback: invalid or missing OAuth state (possible CSRF).",
+                               getattr(self.server, "provider", "kick"))
+                self._reject_invalid_state()
+                return
 
-            self.server.auth_code = code if (code and state_ok) else ""
+            self.server.auth_code = code or ""
 
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=utf-8")
@@ -46,12 +43,10 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
 
             html_path = getattr(self.server, "success_html_path", "")
             provider = getattr(self.server, "provider", "kick")
-            success = bool(code and state_ok)
+            success = bool(code)
             status = "success" if success else "error"
             if error:
                 error_msg = query.get("error_description", [error])[0] if query.get("error_description") else error
-            elif not state_ok:
-                error_msg = "Invalid OAuth state parameter."
             else:
                 error_msg = ""
 
@@ -84,6 +79,19 @@ class _OAuthCallbackHandler(BaseHTTPRequestHandler):
 
     def log_message(self, *args) -> None:
         pass
+
+    @staticmethod
+    def _state_matches(received: str | None, expected: str) -> bool:
+        return bool(received) and hmac.compare_digest(str(received), str(expected))
+
+    def _reject_invalid_state(self) -> None:
+        self.send_response(400)
+        self.send_header("Content-type", "text/plain; charset=utf-8")
+        self.end_headers()
+        try:
+            self.wfile.write(b"Invalid OAuth state parameter.")
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
 class OAuthCallbackServer:
     @staticmethod

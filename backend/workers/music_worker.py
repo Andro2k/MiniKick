@@ -230,8 +230,8 @@ class YouTubeResolveWorker(QThread):
                         if os.path.exists(p):
                             try:
                                 os.remove(p)
-                            except Exception:
-                                pass
+                            except OSError as e:
+                                logger.debug("[MusicWorker] Could not remove partial download '%s': %s", p, e)
 
                     if self.isInterruptionRequested():
                         logger.debug("[YouTubeResolveWorker] Download aborted via interruption request.")

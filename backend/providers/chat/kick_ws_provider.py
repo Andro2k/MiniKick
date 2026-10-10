@@ -353,8 +353,8 @@ class KickWebSocketManager:
                     if ws.sock and ws.sock.connected:
                         ws.sock.close()
                     ws.close()
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.debug("[KickWebSocket] Error closing zombie socket: %s", e)
                 break
 
             if self._pending_ping_time == 0.0 and (now - self._last_activity_time) >= ping_interval:

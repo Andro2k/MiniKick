@@ -1,5 +1,7 @@
 # backend\services\schedule\schedule_service.py
 
+from __future__ import annotations
+
 import time
 import logging
 import threading

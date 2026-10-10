@@ -1,6 +1,6 @@
 # backend\services\overlay\overlay_manager.py
 
-from .overlay_routes import OverlayRequestHandler
+from .overlay_routes import OverlayRequestHandler, canonical_media_path
 from .overlay_ws_client import WebSocketClient
 from backend.utils.json_utils import fast_dumps
 import logging
@@ -57,18 +57,25 @@ class OverlayServerManager:
             if self.settings_storage:
                 self.settings_storage.save_string("overlay_session_token", self.session_token)
 
-        self.allowed_media_roots: set[str] = set()
+        self.allowed_media_files: set[str] = set()
+        self.allowed_media_dirs: set[str] = set()
 
-    def register_media_root(self, path: str) -> None:
+    def register_media_file(self, path: str) -> None:
         if not path:
             return
         try:
-            real_path = os.path.realpath(path)
-            root = real_path if os.path.isdir(real_path) else os.path.realpath(os.path.dirname(real_path))
-            if root and os.path.isdir(root):
-                self.allowed_media_roots.add(root)
+            self.allowed_media_files.add(canonical_media_path(path))
         except OSError as e:
-            logger.warning("[OverlayServer] Could not register media root for '%s': %s", path, e)
+            logger.warning("[OverlayServer] Could not register media file '%s': %s", path, e)
+
+    def register_media_dir(self, path: str) -> None:
+        if not path:
+            return
+        try:
+            if os.path.isdir(path):
+                self.allowed_media_dirs.add(canonical_media_path(path))
+        except OSError as e:
+            logger.warning("[OverlayServer] Could not register media dir '%s': %s", path, e)
 
     def regenerate_token(self) -> str:
         new_token = secrets.token_hex(16)
@@ -170,7 +177,7 @@ class OverlayServerManager:
 
         filepath = config.get("filepath", "")
         if filepath:
-            self.register_media_root(filepath)
+            self.register_media_file(filepath)
         safe_path = urllib.parse.quote(filepath)
         import os
         _, ext = os.path.splitext(filepath.lower())
@@ -194,13 +201,10 @@ class OverlayServerManager:
         import os
         sound_path = payload.get("sound_path", "")
         media_path = payload.get("media_path", "")
-        if sound_path:
-            self.register_media_root(sound_path)
-        if media_path:
-            self.register_media_root(media_path)
 
         sound_url = ""
         if sound_path and os.path.exists(sound_path):
+            self.register_media_file(sound_path)
             safe_sound = urllib.parse.quote(sound_path)
             sound_url = f"http://localhost:{self.port}/media?path={safe_sound}&token={self.session_token}"
 
@@ -213,11 +217,13 @@ class OverlayServerManager:
                 import base64
                 norm_media = os.path.normpath(media_path)
                 root_dir = os.path.dirname(norm_media)
+                self.register_media_dir(root_dir)
                 file_name = os.path.basename(norm_media)
                 b64_dir = base64.urlsafe_b64encode(root_dir.encode("utf-8")).decode("ascii")
                 safe_file = urllib.parse.quote(file_name)
                 media_url = f"http://localhost:{self.port}/user_media/{self.session_token}/{b64_dir}/{safe_file}"
             else:
+                self.register_media_file(media_path)
                 safe_media = urllib.parse.quote(media_path)
                 media_url = f"http://localhost:{self.port}/media?path={safe_media}&token={self.session_token}"
 
