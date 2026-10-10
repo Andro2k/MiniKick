@@ -9,6 +9,7 @@ from backend.utils.json_utils import parse_kick_payload, fast_dumps
 from collections import deque
 import websocket
 from typing import Callable
+from .base_chat_provider import BaseChatSocketProvider
 
 logger = logging.getLogger("minikick.providers.kick_ws_provider")
 
@@ -30,7 +31,11 @@ RFC_6455_CLOSE_CODES: dict[int, str] = {
 
 DEFAULT_KICK_COLOR = "#2ECD70"
 
-class KickWebSocketManager:
+class KickWebSocketManager(BaseChatSocketProvider):
+    @property
+    def is_running(self) -> bool:
+        return self._running
+
     def __init__(self, cluster: str, key: str) -> None:
         self.cluster = cluster
         self.key = key

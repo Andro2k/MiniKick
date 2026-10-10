@@ -6,6 +6,7 @@ from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import TwitchSocketManager
 from backend.services.chat import ChatMessageDTO
 from backend.services.system import TranslationService
+from backend.utils.worker_utils import ExponentialBackoff
 
 logger = logging.getLogger("minikick.workers.twitch_chat")
 
@@ -26,6 +27,7 @@ class TwitchChatWorker(QThread):
         self.i18n = i18n or TranslationService()
         self.socket_manager = TwitchSocketManager(token=oauth_token, nick=self.bot_nick, i18n=self.i18n)
         self._is_stopped = False
+        self._backoff = ExponentialBackoff(initial=1.5, max_backoff=30.0, factor=1.5, jitter=0.2)
 
     def run(self):
         logger.info("[TwitchChatWorker] Starting Twitch chat worker thread...")
@@ -66,6 +68,7 @@ class TwitchChatWorker(QThread):
 
             def _on_connected():
                 nonlocal initial_notified
+                self._backoff.reset()
                 if not initial_notified:
                     initial_notified = True
                     logger.info("[TwitchChatWorker] Connected to Twitch IRC channel: #%s", self.channel_name)
@@ -87,8 +90,9 @@ class TwitchChatWorker(QThread):
                     on_disconnected=_on_disconnected
                 )
                 if not self._is_stopped:
-                    logger.debug("[TwitchChatWorker] Socket loop finished. Retrying in 5s...")
-                    self.msleep(5000)
+                    delay_sec = self._backoff.next_delay()
+                    logger.debug("[TwitchChatWorker] Socket loop finished. Retrying in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
+                    self.msleep(int(delay_sec * 1000))
 
         except Exception as e:
             logger.error("[TwitchChatWorker] Unhandled error (%s) in Twitch chat worker: %s", type(e).__name__, e, exc_info=True)
@@ -96,6 +100,7 @@ class TwitchChatWorker(QThread):
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, emotes_tag: str = "", gif_url: str = ""):
+        self._backoff.reset()
         if self._is_stopped:
             return
 

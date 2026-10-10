@@ -42,7 +42,7 @@
 * **Internacionalización Integral y Cero Hardcoding (i18n)**:
   Todos los textos visibles de la pantalla de carga se obtienen de manera estricta mediante el servicio de traducciones [`TranslationService`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/translation_service.py). Se integraron las claves del espacio de nombres `splash.*` (`title`, `subtitle`, `loading`, `init_app`, `check_instance`, `init_services`, `init_ui`, `ready`) con 100% de paridad en inglés y español y valores por defecto en [`locale_defaults.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/config/locale_defaults.py).
 * **Integración Canónica en el Sistema de Diseño QSS**:
-  Se incorporaron los selectores `QFrame[role="splash_card"]` y `QProgressBar[role="splash_progress"]` en [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py), validados y certificados al 100% por el auditor de roles y estados (`role_manager.py`).
+  Se incorporaron los selectores `QFrame[role="splash_card"]`, `QWidget[role="splash_window"]` y `QProgressBar[role="splash_progress"]` en [`frontend/common/theme.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/common/theme.py), validados y certificados al 100% por el auditor de roles y estados (`role_manager.py`).
 * **Suite de Pruebas Unitarias Automatizadas**:
   Se añadieron pruebas unitarias especializadas en [`resources/tests/test_splash_screen.py`](file:///c:/Users/TheAn/Desktop/python/Kick/resources/tests/test_splash_screen.py) validando inicialización, sujeción de rangos porcentuales `[0, 100]` y ciclo de vida de cierre con `finish()`, sumando 155 pruebas automatizadas pasando con éxito.
 

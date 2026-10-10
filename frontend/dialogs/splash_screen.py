@@ -25,6 +25,9 @@ class SplashScreen(QWidget):
         self.app_version = app_version
         self._is_finished = False
 
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.setProperty("role", "splash_window")
+
         title = self.i18n.get("splash.title") if hasattr(self.i18n, "get") else "MiniKick"
         self.setWindowTitle(title)
 
