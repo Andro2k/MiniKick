@@ -62,6 +62,8 @@ class ModernToast(QFrame):
         
         layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignTop)
 
+        self._adjust_geometry()
+
         self._is_dismissing = False
         self.anim = QPropertyAnimation(self, b"pos")
         self.anim.finished.connect(self._on_anim_finished)
@@ -71,6 +73,24 @@ class ModernToast(QFrame):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.dismiss)
         self.timer.start()
+
+    def _adjust_geometry(self):
+        self.setFixedWidth(340)
+        available_text_w = 250
+        
+        fm_title = self.lbl_title.fontMetrics()
+        title_rect = fm_title.boundingRect(0, 0, available_text_w, 1000, int(Qt.TextFlag.TextWordWrap), self.title_text)
+        title_h = max(20, title_rect.height())
+
+        msg_h = 0
+        if self.message_text:
+            fm_msg = self.lbl_msg.fontMetrics()
+            msg_rect = fm_msg.boundingRect(0, 0, available_text_w, 1000, int(Qt.TextFlag.TextWordWrap), self.message_text)
+            msg_h = msg_rect.height() + 8
+
+        spacing = 4 if self.message_text else 0
+        total_h = 14 + title_h + spacing + msg_h + 14
+        self.setFixedHeight(max(58, total_h))
 
     def _update_icon(self, state: str):
         if state not in ModernToast._pixmap_cache:
@@ -98,6 +118,8 @@ class ModernToast(QFrame):
             self.style().unpolish(self)
             self.style().polish(self)
 
+        self._adjust_geometry()
+
         if self._is_dismissing:
             self._is_dismissing = False
             self.anim.stop()
@@ -105,7 +127,6 @@ class ModernToast(QFrame):
         self.timer.stop()
         self.timer.setInterval(duration_ms)
         self.timer.start()
-        self.adjustSize()
 
     def _on_anim_finished(self):
         if self._is_dismissing:
@@ -170,7 +191,6 @@ class ToastManager(QObject):
         self._stack.append(toast)
         toast.expired.connect(self._on_toast_expired)
         toast.show()
-        toast.adjustSize()
         toast.raise_()
         self._calculate_positions()
 
@@ -187,8 +207,8 @@ class ToastManager(QObject):
         margin_y = 24
         spacing = 10
         current_bottom = self.main_window.height() - margin_y
-        target_x = self.main_window.width() - 330 - margin_x
         for toast in reversed(self._stack):
+            target_x = self.main_window.width() - toast.width() - margin_x
             target_y = current_bottom - toast.height()
             toast.move_to_target(QPoint(target_x, target_y))
             current_bottom = target_y - spacing

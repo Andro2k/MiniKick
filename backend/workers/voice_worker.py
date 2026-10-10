@@ -21,8 +21,8 @@ class VoiceFetcherWorker(QThread):
             try:
                 import pythoncom
                 pythoncom.CoInitialize()
-            except Exception:
-                pass
+            except Exception as com_err:
+                logger.debug("[VoiceFetcherWorker] COM initialization failed: %s", com_err)
         if self.isInterruptionRequested():
             return
         logger.debug("[VoiceFetcherWorker] Fetching available voices for provider: %s...", self.provider_type)

@@ -25,6 +25,14 @@
 | **INC-013** | Fondo transparente en popups de búsqueda (`CategorySuggestionsPopup`, `SearchableComboPopup`) tras activar `WA_TranslucentBackground` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/widgets/category_search.py`, `frontend/widgets/searchable_combo_box.py` | v1.6.0 (`WT-1.6.0_54`) |
 | **INC-014** | Ocultamiento de interruptores en tarjeta "Elementos & Filtros" de `ChatOverlaySettingsPanel` por falta de layout en `CompactToggleItem` | Captura de Pantalla de Usuario (Feedback v1.6.0) | v1.6.0 | `✅ Solventado` | `frontend/components/chat/overlay_settings.py` | v1.6.0 (`WT-1.6.0_57`) |
 | **INC-015** | Auto-respuesta del bot en Kick por falta de filtro de bots en `ChatController._step_commands` y desincronización inicial de tabla de comandos | Log de Usuario `minikick.log` (Línea 222) / Feedback v1.6.1 | v1.6.1 | `✅ Solventado` | `backend/controllers/chat_controller.py`, `backend/services/chat/commands_service.py` | v1.6.1 (`WT-1.6.1_12`) |
+| **INC-016** | Pérdida silenciosa de chat Kick, Top Chatters estático y desconexión TCP `ConnectionResetError: [WinError 10054]` por falta de Heartbeat Watchdog en Pusher Protocol 7 | Log de Usuario `minikick_JosueGMN_v1.6.1.log` (Líneas 185-188) / Feedback v1.6.1 | v1.6.1 | `✅ Solventado` | `backend/providers/chat/kick_ws_provider.py`, `backend/services/overlay/overlay_routes.py` | v1.6.2 (`WT-1.6.2_01`) |
+| **INC-017** | Ausencia de `WhatsNewDialog` en ejecutable exportado (`MiniKick.exe`) por omisión en `MiniKick.spec`, resolución rígida de rutas y falta de consulta a GitHub Releases | Reporte de Usuario / Feedback v1.6.2 | v1.6.2 | `✅ Solventado` | `MiniKick.spec`, `backend/services/system/whats_new_service.py`, `backend/services/system/updater_service.py`, `backend/workers/updater_worker.py`, `backend/core/main_window_core.py` | v1.6.2 (`WT-1.6.2_02`) |
+| **INC-018** | Crash fatal `TypeError: update_connection_status()` por discrepancia de parámetro `error_msg` y fallo de apertura de navegador en Linux | `minikick_crash_anonymous_v1.6.1.log` (Línea 17) | v1.6.1 | `✅ Solventado` | `frontend/views/dashboard_view.py`, `backend/services/system/browser_service.py`, `backend/services/auth/auth_service.py`, `frontend/navigation/toast_component.py` | v1.6.2 (`WT-1.6.2_04`) |
+| **INC-019** | Pérdida de líneas `[INF]` en log ante cierre abrupto por umbral de flush excesivamente alto (`WARNING`) en `AutoFlushTimedRotatingFileHandler` | `minikick_JosueGMN_v1.6.2.log` / `minikick_Pipe_Cabrales_v1.6.2.log` — Análisis post-crash | v1.6.2 | `✅ Solventado` | `backend/core/app_logger_core.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-020** | `requests.exceptions.Timeout` no capturado en `KickAPIClient._request`, propagando excepción no manejada en worker de chat | `minikick_JosueGMN_v1.6.2.log` — Análisis de red | v1.6.2 | `✅ Solventado` | `backend/providers/chat/kick_provider.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-021** | `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running` — Crash de sesión por destrucción prematura de `KickPollSyncWorker` vía GC de Python al usar `wait(1000)` bloqueante | `minikick_JosueGMN_v1.6.2.log` (Líneas 726, 2087) / `minikick_Pipe_Cabrales_v1.6.2.log` | v1.6.2 | `✅ Solventado` | `backend/workers/kick_chat_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-022** | Señales stale (`resolved`/`error`) emitidas por `YouTubeResolveWorker` tras cancelación, causando reproducción fantasma o errores de estado | Análisis de código durante diagnóstico v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/workers/music_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-023** | Saturación del hilo GUI y sobrecarga de I/O en la ruta de recepción de mensajes (consulta SQLite por mensaje, repintado de dashboard por mensaje, ordenamiento de horarios por mensaje, cálculo de latencia incondicional y logging fijo en DEBUG) | Auditoría de rendimiento del backend v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py` | v1.6.3 (`WT-1.6.3_02`) |
 
 ---
 
@@ -468,6 +476,184 @@
 * **Prueba Automatizada de Cobertura**:
   - `resources/tests/test_commands_help.py` (`test_bot_messages_do_not_trigger_commands_or_autoresponses`, `test_command_service_rejects_bots`, `test_register_system_commands_emits_commands_changed`).
 * **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.1/WT-1.6.1_12.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.1/WT-1.6.1_12.md).
+
+---
+
+### INC-016: Desconexión TCP de Pusher (WinError 10054), Pérdida de Chat y Top Chatters Estático por Falta de Heartbeat Watchdog
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **ALTA** (Congelamiento del socket de chat de Kick durante periodos de inactividad, omisión de lectura de mensajes entrantes y widget de Top Chatters estático en OBS hasta que ocurría un crash de socket 7 minutos después).
+* **Reportes Asociados**:
+  - `minikick_JosueGMN_v1.6.1.log` (Líneas 185-188)
+  - `minikick_DeyDeyLove_v1.6.1.log` (Líneas 757-758, 890, 1524, 1735, 2363 - Desconexiones 10054 periódicas acumulando delay en TTS y comandos de música)
+* **Fecha y Versión del Fallo**: 2026-09-30 en MiniKick `v1.6.1`.
+* **Traza del Error**:
+  ```text
+  [2026-09-30 13:08:37.137] [WRN] [KickWebSocket] WebSocket error (ConnectionResetError): [WinError 10054] Se ha forzado la interrupción de una conexión existente por el host remoto
+  [2026-09-30 13:08:37.138] [ERR] Websocket: [WinError 10054] Se ha forzado la interrupción de una conexión existente por el host remoto - goodbye
+  [2026-09-30 13:08:37.138] [INF] [KickWebSocket] WebSocket closed: code=None (Clean/No Code), reason=N/A
+  [2026-09-30 13:08:37.139] [DBG] [KickChatWorker] Socket disconnected. Reconnecting in 5s...
+  [2026-09-30 13:08:42.145] [INF] [KickWebSocket] Connecting to Pusher WebSocket for room_id=89137556...
+  ```
+* **Causa Raíz**:
+  1. **Ausencia de Heartbeat en Capa de Aplicación**: En Pusher Protocol 7, el servidor negocia un `activity_timeout` (por defecto 120s). Si no hay tráfico en el canal, la especificación exige que el **cliente** despache eventos JSON `{"event": "pusher:ping", "data": {}}` periódicamente.
+  2. **Incompatibilidad de Nivel de Red**: `KickWebSocketManager` confiaba ciegamente en `ping_interval=30` de `websocket-client`, el cual envía marcos RFC 6455 opcode 0x9. Los balanceadores de Pusher y Cloudflare no interpretan opcodes 0x9 como actividad de aplicación, considerando la sesión inactiva tras 120s y descartando el socket silenciosamente.
+  3. **Socket Half-Open / Zombie**: El cliente permanecía esperando mensajes en un socket ya muerto en el extremo remoto. No se leían mensajes y el widget de Top Chatters permanecía completamente congelado ("estático") por falta de eventos entrantes. Al cabo de 7 minutos, el choque de sondeos nativos de Windows disparaba `WinError 10054`, reconectando el socket y haciendo que el chat "solito se restableciera".
+  4. **Falta de `SO_KEEPALIVE`**: La conexión TCP no configuraba la opción de socket `SO_KEEPALIVE`.
+  5. **Omisión de `data: {}` en Pong**: `_handle_ping` enviaba `{"event":"pusher:pong"}` sin el payload `data` exigido por el esquema de Pusher.
+  6. **Traza no capturada en `OverlayRequestHandler.do_GET`**: `ConnectionAbortedError [WinError 10053]` al cancelar OBS peticiones HTTP de CSS/JS estáticos.
+* **Archivos y Líneas Modificadas**:
+  1. [`backend/providers/chat/kick_ws_provider.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/providers/chat/kick_ws_provider.py):
+     - Incorporación de `KickPusherHeartbeatWatchdog` en segundo plano.
+     - Extracción dinámica de `activity_timeout` desde `pusher:connection_established` y cálculo de intervalo de ping ($\le 60\text{ s}$).
+     - Despacho proactivo de `{"event": "pusher:ping", "data": {}}` ante inactividad.
+     - Registro de `_pending_ping_time` y detección reactiva de sockets zombies: si transcurren $> 30\text{ s}$ sin `pusher:pong`, se aborta el socket inmediatamente (`ws.close()`), forzando la reconexión limpia en 5 segundos sin esperar 7 minutos.
+     - Mapeo de `"pusher:pong"` en `_dispatch_table` para resetear el watchdog $\mathcal{O}(1)$.
+     - Formato canónico estricto en respuesta a pings del servidor: `{"event": "pusher:pong", "data": {}}`.
+     - Inyección de `(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)` en `sockopts`.
+  2. [`backend/services/overlay/overlay_routes.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/overlay/overlay_routes.py):
+     - Captura defensiva de `(ConnectionResetError, ConnectionAbortedError, BrokenPipeError)` en rutas `/css/` y `/js/`.
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_kick_ws_heartbeat.py` (9 pruebas pasando al 100% en 1.1s).
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.2/WT-1.6.2_01.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.2/WT-1.6.2_01.md).
+
+---
+
+### INC-017: Ausencia de WhatsNewDialog en Versiones Distribuidas por Falta de Empaquetado y Consulta a GitHub
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (Funcionalidad de onboarding y presentación de novedades desactivada en versiones empaquetadas).
+* **Reportes Asociados**:
+  - Reporte y Feedback de Usuario v1.6.2.
+* **Fecha y Versión del Fallo**: 2026-09-30 en MiniKick `v1.6.2`.
+* **Síntoma Reportado**:
+  El diálogo `WhatsNewDialog` se muestra con normalidad al ejecutar la aplicación desde el entorno de desarrollo (`python main.py`), pero al generar el ejecutable exportado (`MiniKick.exe` con PyInstaller), el modal no se despliega nunca al arrancar la aplicación ni refleja las notas de versión publicadas en GitHub.
+* **Causa Raíz**:
+  1. **Omisión en `MiniKick.spec`**: La directiva `all_datas` de PyInstaller únicamente empaquetaba `assets` y `locales`. La carpeta `docs/walkthroughs` no era incluida en el bundle, por lo que los archivos Markdown de notas de versión no existían físicamente dentro del ejecutable ni en la carpeta `_internal`.
+  2. **Resolución Rígida de Rutas**: `WhatsNewService.parse_release_notes` resolvía la ubicación mediante `Path(__file__).resolve().parents[3]`. En entornos congelados (`sys.frozen`), `__file__` se sitúa en subdirectorios internos de librerías, apuntando a una ruta inexistente y devolviendo una lista vacía de novedades (`highlights = []`), lo que cancelaba la apertura del diálogo.
+  3. **Falta de Consulta Remota a GitHub Releases**: `WhatsNewService` dependía de manera exclusiva del sistema de archivos local y no contaba con capacidad para consultar la API de GitHub (`GitHub Releases`) ante la ausencia de documentación local o para descargas directas de instaladores.
+  4. **Ausencia de Caché $\mathcal{O}(1)$ de Novedades**: El estado `whats_new_state` en SQLite no persistía la lista de aspectos destacados parseados, obligando a reanalizar el archivo o la red en cada inicio.
+* **Archivos y Líneas Modificadas**:
+  1. [`MiniKick.spec`](file:///c:/Users/TheAn/Desktop/python/Kick/MiniKick.spec):
+     - Inclusión obligatoria de `('docs/walkthroughs', 'docs/walkthroughs')` en `all_datas` para garantizar disponibilidad offline inmediata en el paquete distribuible.
+  2. [`backend/services/system/whats_new_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/whats_new_service.py):
+     - Implementación de `_resolve_release_notes_path` con soporte exhaustivo para `base_dir`, `sys._MEIPASS`, directorio del ejecutable `sys.executable`, subcarpeta `_internal` y raíz del repositorio.
+     - Extracción de la lógica de análisis a la función pura `parse_release_notes_content(content: str)` con parseo en una pasada $\mathcal{O}(N)$.
+     - Incorporación de persistencia y caché $\mathcal{O}(1)$ de novedades en `whats_new_state` (`SQLiteSettingsStorage`).
+     - Métodos `load_highlights_from_content` y `set_highlights`.
+  3. [`backend/services/system/updater_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/updater_service.py):
+     - Incorporación de `fetch_release_by_tag(tag)` y `fetch_release_for_version(version)` en `GithubUpdateProvider` con unificación DRY de parseo de payloads.
+  4. [`backend/workers/updater_worker.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/updater_worker.py) y [`backend/workers/__init__.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/workers/__init__.py):
+     - Implementación de `WhatsNewWorker(QThread)` para consultar y parsear de forma asíncrona la release de GitHub sin bloquear el hilo principal de la interfaz ni retrasar el arranque.
+  5. [`backend/core/main_window_core.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/core/main_window_core.py):
+     - Conexión de `_fetch_remote_whats_new_if_needed` y `_on_remote_whats_new_fetched` en `_check_whats_new_dialog` para actualizar dinámicamente insignias e invocar `WhatsNewDialog` cuando finaliza la consulta remota.
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_whats_new_system.py` (`test_parse_release_notes_content_pure`, `test_resolve_release_notes_path_with_meipass`, `test_whats_new_service_sqlite_highlight_caching`, `test_whats_new_service_load_highlights_from_content`, `test_github_update_provider_fetch_release_by_tag_and_version`).
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.2/WT-1.6.2_02.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.2/WT-1.6.2_02.md).
+
+### INC-018: Crash Fatal por TypeError en DashboardView al Fallar Autenticación en Linux e Incompatibilidad de Navegador
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **CRÍTICA** (Cierre abrupto de la aplicación al producirse un fallo o timeout de autenticación OAuth, aunado al fallo silencioso de apertura de navegador en Linux / Wayland).
+* **Reportes Asociados**:
+  - `minikick_crash_anonymous_v1.6.1.log` (Línea 17: `TypeError: DashboardView.update_connection_status() got an unexpected keyword argument 'error_msg'. Did you mean '_error_msg'?`)
+* **Fecha y Versión del Fallo**: 2026-09-30 en MiniKick `v1.6.1` / `v1.6.2`.
+* **Traza del Error**:
+  ```text
+  [2026-09-27 23:14:23] [FATAL_CRASH] Unhandled exception caught by global excepthook:
+  Traceback (most recent call last):
+    File "/home/andro/Documentos/MiniKick/backend/controllers/dashboard_controller.py", line 325, in handle_error_state
+      self.view.update_connection_status(is_connecting=False, has_error=True, error_msg=error_msg)
+  TypeError: DashboardView.update_connection_status() got an unexpected keyword argument 'error_msg'. Did you mean '_error_msg'?
+  ```
+* **Causa Raíz**:
+  1. **Discrepancia de Parámetro en `DashboardView.update_connection_status`**: En [`frontend/views/dashboard_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/dashboard_view.py), el argumento de error había sido renombrado con guion bajo (`_error_msg`), mientras que [`DashboardController.handle_error_state`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/controllers/dashboard_controller.py) lo invocaba explícitamente por palabra clave (`error_msg=error_msg`). Al capturar cualquier error de conexión o autenticación, Python abortaba la aplicación con `TypeError`.
+  2. **Fallo Silencioso del Navegador en Linux (`webbrowser.open`)**: En distribuciones Linux modernas con Wayland, XDG Desktop Portals o invocaciones desde hilos de trabajo secundarios (`Worker_Auth`), `webbrowser.open(url)` no crea una sesión desacoplada (`start_new_session=True`), provocando que el navegador no abra y el servidor de autenticación agote su tiempo de espera (`timeout`), desencadenando el flujo hacia `handle_error_state`.
+  3. **Recorte de Texto en Notificaciones Toast**: Al reintentar la autenticación mientras el worker previo esperaba el timeout, se mostraba la advertencia *"Autenticación en curso"* en `ModernToast`. Debido a un cálculo rígido de geometría en `QFrame` bajo `GLOBAL_QSS`, los mensajes de 3 o más líneas se recortaban en la línea inferior.
+* **Archivos y Líneas Modificadas**:
+  1. [`frontend/views/dashboard_view.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/views/dashboard_view.py):
+     - Restauración de la firma canónica `update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = "")` y registro defensivo del error.
+  2. [`backend/services/system/browser_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/system/browser_service.py):
+     - Implementación de cascada multi-nivel de ejecución: `QDesktopServices.openUrl` (portal nativo D-Bus en Linux/Qt) $\to$ `xdg-open` / `gio open` con `start_new_session=True` $\to$ `os.startfile` en Windows $\to$ `open` en macOS $\to$ `webbrowser.open` como fallback.
+  3. [`backend/services/auth/auth_service.py`](file:///c:/Users/TheAn/Desktop/python/Kick/backend/services/auth/auth_service.py):
+     - Integración de `BrowserService._open_default(url)` como mecanismo resiliente de apertura de enlaces OAuth.
+  4. [`frontend/navigation/toast_component.py`](file:///c:/Users/TheAn/Desktop/python/Kick/frontend/navigation/toast_component.py):
+     - Implementación de auto-ajuste dinámico de altura mediante `QFontMetrics.boundingRect` en `ModernToast` y posicionamiento reactivo en `ToastManager`.
+* **Prueba Automatizada de Cobertura**:
+  - `resources/tests/test_dashboard_controller_error.py`, `resources/tests/test_browser_service.py` y `resources/tests/test_toast_component.py`.
+* **Walkthrough de Referencia**: [`docs/walkthroughs/v1.6.2/WT-1.6.2_04.md`](file:///c:/Users/TheAn/Desktop/python/Kick/docs/walkthroughs/v1.6.2/WT-1.6.2_04.md).
+
+---
+
+### INC-019: Pérdida de Líneas `[INF]` en Log ante Cierre Abrupto
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: `minikick_JosueGMN_v1.6.2.log` — Análisis post-crash
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: `AutoFlushTimedRotatingFileHandler.emit` solo hacía `flush()` cuando el nivel era `WARNING` o superior. Al cerrar la aplicación abruptamente (crash de Qt, señal OS, kill), todos los registros `[INF]` y `[DBG]` pendientes en el buffer del SO se perdían, imposibilitando la reconstrucción de la secuencia de eventos previa al fallo.
+* **Archivos Afectados**: `backend/core/app_logger_core.py`
+* **Solución**: El umbral se redujo a `logging.INFO`, garantizando que toda entrada de nivel INFO o superior sea persistida al disco inmediatamente.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-020: `requests.exceptions.Timeout` No Capturado en `KickAPIClient._request`
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: `minikick_JosueGMN_v1.6.2.log` — Análisis de red
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: La tupla de excepciones recuperables en `_request` no incluía `requests.exceptions.Timeout`. Un timeout durante el polling de la API de Kick propagaba la excepción directamente al worker de chat, potencialmente causando desconexión silenciosa.
+* **Archivos Afectados**: `backend/providers/chat/kick_provider.py`
+* **Solución**: Se añadió `requests.exceptions.Timeout` a la tupla de red en `_request`. El cliente ahora recrea el scraper y reintenta hasta 2 veces antes de propagar.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-021: `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running`
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: `minikick_JosueGMN_v1.6.2.log` (Líneas 726, 2087) / `minikick_Pipe_Cabrales_v1.6.2.log`
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: `KickChatWorker._stop_poll_sync_worker` usaba `worker.wait(1000)` bloqueante. Si `fetch_active_poll` tardaba más de 1000 ms (timeout de red), el método liberaba la referencia al worker y Python's GC destruía el objeto `QThread` mientras el hilo OS seguía corriendo — generando el mensaje `[CRI]` de Qt y terminando la sesión.
+* **Secuencia observada**:
+  - Run 2: `[INF] CommandService: !skip` → `[CRI] QThread: Destroyed while thread '' is still running`
+  - Run 3: `[INF] TTS Manager: Enqueued text` → `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running`
+* **Archivos Afectados**: `backend/workers/kick_chat_worker.py`
+* **Solución**:
+  1. `KickPollSyncWorker.run`: Verificación de `isInterruptionRequested()` en cada punto del bucle.
+  2. `KickChatWorker._stop_poll_sync_worker`: Retiro asíncrono vía `worker.finished` + `deleteLater()`. Las señales se desconectan inmediatamente al inicio del retiro.
+  3. `KickChatWorker.__init__`: Set `_retiring_poll_workers` para mantener referencias vivas hasta que el worker finalice.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-022: Señales Stale en `YouTubeResolveWorker` tras Cancelación
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Análisis de código durante diagnóstico v1.6.3
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: `YouTubeResolveWorker` no verificaba `isInterruptionRequested()` en su pipeline de extracción/descarga. Al cancelar el worker (cambio de canción, shutdown), el worker continuaba en segundo plano y podía emitir `resolved` o `error` con datos de una canción ya descartada, causando reproducción de audio fantasma o estado desincronizado.
+* **Archivos Afectados**: `backend/workers/music_worker.py`
+* **Solución**: 8 checkpoints `isInterruptionRequested()` en el flujo completo. El sleep de backoff se fragmentó en iteraciones de 0.1s. Se añadió `progress_hook` de yt-dlp que levanta excepción al detectar interrupción durante descarga activa.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-023: Saturación del Hilo GUI y Sobrecarga de I/O en la Ruta de Recepción de Mensajes
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Auditoría de rendimiento del backend (streams de alto tráfico, especialmente Kick)
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: La ruta de recepción ejecutaba trabajo síncrono pesado en el hilo de la GUI por cada mensaje: (1) lectura SQLite (`SELECT`) de `tts_ignored_users` en cada mensaje; (2) repintado de 4 tarjetas de dashboard y de la barra de plataformas por mensaje; (3) ordenamiento O(k log k) de horarios por mensaje; (4) cálculo de latencia ISO incondicional en la ruta del socket; y (5) logging forzado a nivel DEBUG sin posibilidad de configuración, invalidando cualquier guarda de depuración.
+* **Archivos Afectados**: `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/controllers/chat_controller.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py`
+* **Solución**: (1) Nivel de log configurable vía `MINIKICK_LOG_LEVEL` (por defecto INFO). (2) Cálculo de latencia protegido con `logger.isEnabledFor(logging.DEBUG)`. (3) Caché en memoria O(1) del set de bots ignorados con invalidación mediante la nueva señal `tts_ignored_users_changed`. (4) Coalescencia del refresco de dashboard con `QTimer` de 300 ms y ruta única `_refresh_dashboard_view()`. (5) Memoización con TTL (30 s) de `get_next_schedule_text()`. (6) Memoización por mensaje del texto limpio en `SpamService` (máximo 2 cómputos por mensaje en lugar de 4).
+* **Pruebas Asociadas**: `resources/tests/test_message_path_performance.py`
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_02.md`
 
 ---
 

@@ -5,6 +5,7 @@ import datetime
 from PySide6.QtCore import QThread, Signal
 from backend.providers.chat import KickAPIClient, KickWebSocketManager
 from backend.services.chat import ChatMessageDTO
+from backend.utils.worker_utils import ExponentialBackoff
 
 logger = logging.getLogger("minikick.workers.kick_chat")
 
@@ -26,14 +27,14 @@ class KickPollSyncWorker(QThread):
 
     def run(self):
         logger.info("[KickPollSyncWorker] Started poll reconciliation worker for '%s'", self.channel_slug)
-        while not self._is_stopped:
+        while not self._is_stopped and not self.isInterruptionRequested():
             self.msleep(self.interval_ms)
-            if self._is_stopped:
+            if self._is_stopped or self.isInterruptionRequested():
                 break
 
             try:
                 poll = self.api_client.fetch_active_poll(self.channel_slug)
-                if self._is_stopped:
+                if self._is_stopped or self.isInterruptionRequested():
                     break
 
                 if not poll:
@@ -76,6 +77,7 @@ class KickChatWorker(QThread):
         self.chat_manager = KickWebSocketManager(cluster, key)
         self._is_stopped = False
         self._poll_sync_worker: KickPollSyncWorker | None = None
+        self._backoff = ExponentialBackoff(initial=1.5, max_backoff=30.0, factor=1.5, jitter=0.2)
 
     def run(self):
         logger.info("[KickChatWorker] Starting Kick chat worker thread...")
@@ -116,8 +118,9 @@ class KickChatWorker(QThread):
                     on_reward_redeemed=self._dispatch_reward,
                 )
                 if not self._is_stopped:
-                    logger.debug("[KickChatWorker] Socket disconnected. Reconnecting in 5s...")
-                    self.msleep(5000)
+                    delay_sec = self._backoff.next_delay()
+                    logger.debug("[KickChatWorker] Socket disconnected. Reconnecting in %.1fs (attempt #%s)...", delay_sec, self._backoff.attempts)
+                    self.msleep(int(delay_sec * 1000))
 
         except Exception as e:
             logger.error("[KickChatWorker] Unhandled error (%s) in worker thread: %s", type(e).__name__, e, exc_info=True)
@@ -125,6 +128,7 @@ class KickChatWorker(QThread):
                 self.error_occurred.emit(str(e))
 
     def _dispatch_message(self, user: str, msg: str, badges: list, color: str, msg_id: str, sender_id: int, avatar_url: str = ""):
+        self._backoff.reset()
         if not self._is_stopped:
             now_str = datetime.datetime.now().strftime("%H:%M")
             if not avatar_url and self.channel_slug and user.lower() == self.channel_slug.lower():
@@ -168,10 +172,36 @@ class KickChatWorker(QThread):
             self._stop_poll_sync_worker()
 
     def _stop_poll_sync_worker(self):
-        if self._poll_sync_worker:
-            self._poll_sync_worker.stop()
-            self._poll_sync_worker.wait(1000)
-            self._poll_sync_worker = None
+        worker = self._poll_sync_worker
+        if not worker:
+            return
+        self._poll_sync_worker = None
+        for sig_name in ("poll_updated", "poll_deleted"):
+            sig = getattr(worker, sig_name, None)
+            if sig:
+                try:
+                    sig.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+
+        try:
+            worker.stop()
+            worker.requestInterruption()
+            if worker.isRunning():
+                self._retiring_poll_workers.add(worker)
+
+                def _on_retired(w=worker):
+                    self._retiring_poll_workers.discard(w)
+                    try:
+                        w.deleteLater()
+                    except RuntimeError:
+                        pass
+
+                worker.finished.connect(_on_retired)
+            else:
+                worker.deleteLater()
+        except RuntimeError:
+            pass
 
     def _dispatch_poll_delete(self):
         self._stop_poll_sync_worker()

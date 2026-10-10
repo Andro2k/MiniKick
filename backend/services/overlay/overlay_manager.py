@@ -4,6 +4,7 @@ from .overlay_routes import OverlayRequestHandler
 from .overlay_ws_client import WebSocketClient
 from backend.utils.json_utils import fast_dumps
 import logging
+import os
 import secrets
 import threading
 import time
@@ -55,6 +56,30 @@ class OverlayServerManager:
             self.session_token = secrets.token_hex(16)
             if self.settings_storage:
                 self.settings_storage.save_string("overlay_session_token", self.session_token)
+
+        self.allowed_media_roots: set[str] = set()
+
+    def register_media_root(self, path: str) -> None:
+        if not path:
+            return
+        try:
+            real_path = os.path.realpath(path)
+            root = real_path if os.path.isdir(real_path) else os.path.realpath(os.path.dirname(real_path))
+            if root and os.path.isdir(root):
+                self.allowed_media_roots.add(root)
+        except OSError as e:
+            logger.warning("[OverlayServer] Could not register media root for '%s': %s", path, e)
+
+    def regenerate_token(self) -> str:
+        new_token = secrets.token_hex(16)
+        self.session_token = new_token
+        if self.settings_storage:
+            try:
+                self.settings_storage.save_string("overlay_session_token", new_token)
+            except Exception as e:
+                logger.warning("[OverlayServer] Could not persist regenerated session token: %s", e)
+        logger.info("[OverlayServer] Session token regenerated.")
+        return new_token
 
     def register_ws_client(self, ws_client: WebSocketClient):
         with self.ws_lock:
@@ -144,6 +169,8 @@ class OverlayServerManager:
             config = {"filepath": config, "volume": 1.0, "scale": 1.0, "pos_x": 0, "pos_y": 0}
 
         filepath = config.get("filepath", "")
+        if filepath:
+            self.register_media_root(filepath)
         safe_path = urllib.parse.quote(filepath)
         import os
         _, ext = os.path.splitext(filepath.lower())
@@ -167,6 +194,10 @@ class OverlayServerManager:
         import os
         sound_path = payload.get("sound_path", "")
         media_path = payload.get("media_path", "")
+        if sound_path:
+            self.register_media_root(sound_path)
+        if media_path:
+            self.register_media_root(media_path)
 
         sound_url = ""
         if sound_path and os.path.exists(sound_path):

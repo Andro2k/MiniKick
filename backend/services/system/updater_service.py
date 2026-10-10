@@ -10,7 +10,25 @@ logger = logging.getLogger("minikick.services.updater")
 
 class GithubUpdateProvider:
     def __init__(self, repo_owner: str, repo_name: str):
+        self.repo_owner = repo_owner
+        self.repo_name = repo_name
         self.api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+
+    @staticmethod
+    def _parse_release_payload(data: dict) -> dict:
+        author_login = ""
+        if isinstance(data.get("author"), dict):
+            author_login = data.get("author", {}).get("login", "")
+
+        return {
+            "tag_name": data.get("tag_name", ""),
+            "name": data.get("name", "") or data.get("tag_name", ""),
+            "published_at": data.get("published_at", ""),
+            "body": data.get("body", ""),
+            "html_url": data.get("html_url", ""),
+            "author": author_login,
+            "assets": data.get("assets", [])
+        }
 
     def get_latest_version_info(self) -> dict | None:
         try:
@@ -40,23 +58,41 @@ class GithubUpdateProvider:
             headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "MiniKick-App"}
             response = requests.get(self.api_url, headers=headers, timeout=10)
             response.raise_for_status()
-            data = response.json()
-            author_login = ""
-            if isinstance(data.get("author"), dict):
-                author_login = data.get("author", {}).get("login", "")
-
-            return {
-                "tag_name": data.get("tag_name", ""),
-                "name": data.get("name", "") or data.get("tag_name", ""),
-                "published_at": data.get("published_at", ""),
-                "body": data.get("body", ""),
-                "html_url": data.get("html_url", ""),
-                "author": author_login,
-                "assets": data.get("assets", [])
-            }
+            return self._parse_release_payload(response.json())
         except Exception as e:
-            logger.error("[GithubUpdateProvider] Error fetching release notes: %s", e)
+            logger.error("[GithubUpdateProvider] Error fetching latest release: %s", e)
             return None
+
+    def fetch_release_by_tag(self, tag: str) -> dict | None:
+        try:
+            import requests
+            headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "MiniKick-App"}
+            url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/releases/tags/{tag}"
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            return self._parse_release_payload(response.json())
+        except Exception as e:
+            logger.debug("[GithubUpdateProvider] Error fetching release for tag '%s': %s", tag, e)
+            return None
+
+    def fetch_release_for_version(self, version: str) -> dict | None:
+        clean_ver = version.strip().lstrip("vV") if version else ""
+        if not clean_ver:
+            return self.fetch_latest_release()
+
+        release = self.fetch_release_by_tag(f"v{clean_ver}")
+        if release:
+            return release
+
+        release = self.fetch_release_by_tag(clean_ver)
+        if release:
+            return release
+
+        latest = self.fetch_latest_release()
+        if latest and latest.get("tag_name", "").strip().lstrip("vV") == clean_ver:
+            return latest
+
+        return latest
 
     def download_file(self, url: str, destination_path: str, progress_callback=None) -> bool:
         try:

@@ -113,6 +113,7 @@ class MainWindowCore(QMainWindow):
         self.tiktok_chat_worker = None
         self._tiktok_connected = False
         self._tiktok_channel = ""
+        self._whats_new_worker = None
         self._retiring_workers: set = set()
 
         self._cached_total_usages = None
@@ -129,6 +130,10 @@ class MainWindowCore(QMainWindow):
             "tiktok": 0
         }
         self._recent_reward_redemptions = deque(maxlen=100)
+        self._dashboard_metrics_timer = QTimer(self)
+        self._dashboard_metrics_timer.setSingleShot(True)
+        self._dashboard_metrics_timer.setInterval(300)
+        self._dashboard_metrics_timer.timeout.connect(self._flush_dashboard_metrics_update)
 
         self.logger, self.q_log_handler = setup_application_logging()  
         self.logger.info("[MainWindow] Initializing main window components and UI shell...")
@@ -324,7 +329,9 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.tts_state_changed.connect(self._handle_chat_tts_state_changed)
         self.chat_controller.message_received.connect(self.overlay_server.trigger_chat_message)
         self.chat_controller.chat_overlay_config_changed.connect(self.overlay_server.trigger_chat_config_update)
+        self.chat_controller.tts_ignored_users_changed.connect(self.widgets_controller.invalidate_ignored_bots_cache)
         self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
+        self.schedule_controller.schedules_updated.connect(self._on_schedules_updated)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.music_controller.song_changed.connect(self._handle_tray_song_changed)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
@@ -540,6 +547,7 @@ class MainWindowCore(QMainWindow):
             is_first = self.whats_new_service.is_first_launch()
             highlights = self.whats_new_service.get_highlights()
             if not highlights:
+                self._fetch_remote_whats_new_if_needed()
                 return
             dialog = WhatsNewDialog(
                 i18n=self.i18n,
@@ -552,6 +560,28 @@ class MainWindowCore(QMainWindow):
             self.whats_new_service.mark_version_seen()
         except Exception as e:
             self.logger.error("[WhatsNew] Error displaying What's New dialog: %s", e)
+
+    def _fetch_remote_whats_new_if_needed(self):
+        if self._is_shutting_down or getattr(self, "_is_window_closing", False):
+            return
+        if hasattr(self, "_whats_new_worker") and self._whats_new_worker and self._whats_new_worker.isRunning():
+            return
+        from backend.workers import WhatsNewWorker
+        self._whats_new_worker = WhatsNewWorker(self.app_version, parent=self)
+        self._whats_new_worker.highlights_fetched.connect(self._on_remote_whats_new_fetched)
+        self._whats_new_worker.finished.connect(self._whats_new_worker.deleteLater)
+        self._whats_new_worker.start()
+
+    def _on_remote_whats_new_fetched(self, highlights: list):
+        if self._is_shutting_down or getattr(self, "_is_window_closing", False):
+            return
+        try:
+            self.whats_new_service.set_highlights(highlights)
+            self._init_feature_badges()
+            if self.whats_new_service.should_show_modal():
+                self._check_whats_new_dialog()
+        except Exception as e:
+            self.logger.warning("[WhatsNew] Error handling remote highlights: %s", e)
 
     def _prewarm_next_view(self):
         if not hasattr(self, "_prewarm_queue") or not self._prewarm_queue or self._is_shutting_down:
@@ -1601,13 +1631,18 @@ class MainWindowCore(QMainWindow):
 
     def _on_tiktok_error(self, error_msg: str):
         self._tiktok_connected = False
-        self.logger.error("[TikTok] Error in TikTok Live worker: %s", error_msg)
+        msg_lower = error_msg.lower()
+        is_offline = "no está transmitiendo" in msg_lower or "offline" in msg_lower or "not live" in msg_lower
+        if is_offline:
+            self.logger.warning("[TikTok] TikTok Live worker offline status: %s", error_msg)
+        else:
+            self.logger.error("[TikTok] Error in TikTok Live worker: %s", error_msg)
         self._safe_stop_worker("tiktok_chat_worker", timeout_ms=1000)
         self._update_integrations_status_ui()
         self.toast.show_toast(
-            title=self.container.i18n.get("common.status.error"),
+            title=self.container.i18n.get("common.status.offline" if is_offline else "common.status.error"),
             message=error_msg,
-            state="danger"
+            state="warning" if is_offline else "danger"
         )
 
     @Slot()
@@ -1727,7 +1762,8 @@ class MainWindowCore(QMainWindow):
             self.schedule_controller.fetch_current_info()
 
     def _route_incoming_message(self, user_or_dto, msg: str = None, badges: list = None, color: str = "", msg_id: str = "", sender_id: int = 0, avatar_url: str = ""):
-        self._increment_metric("messages_processed")
+        if hasattr(self, 'session_metrics') and "messages_processed" in self.session_metrics:
+            self.session_metrics["messages_processed"] += 1
         current_time = datetime.now().strftime("%H:%M")
         if isinstance(user_or_dto, ChatMessageDTO):
             dto = user_or_dto
@@ -1747,13 +1783,9 @@ class MainWindowCore(QMainWindow):
 
         if hasattr(self, "session_platform_messages") and platform in self.session_platform_messages:
             self.session_platform_messages[platform] += 1
-            if hasattr(self, "dashboard_controller") and self.dashboard_controller:
-                self.dashboard_controller.update_platform_messages(
-                    kick=self.session_platform_messages["kick"],
-                    twitch=self.session_platform_messages["twitch"],
-                    youtube=self.session_platform_messages["youtube"],
-                    tiktok=self.session_platform_messages["tiktok"]
-                )
+
+        if hasattr(self, "_dashboard_metrics_timer") and not self._dashboard_metrics_timer.isActive():
+            self._dashboard_metrics_timer.start(300)
 
         self.chat_controller.process_message(dto)
 
@@ -1846,7 +1878,39 @@ class MainWindowCore(QMainWindow):
     def _increment_metric(self, name: str):
         if hasattr(self, 'session_metrics') and name in self.session_metrics:
             self.session_metrics[name] += 1
-        self._update_dashboard_metrics(force_db_query=False)
+        if hasattr(self, "_dashboard_metrics_timer") and not self._dashboard_metrics_timer.isActive():
+            self._dashboard_metrics_timer.start(300)
+
+    @Slot()
+    def _flush_dashboard_metrics_update(self):
+        self._refresh_dashboard_view()
+
+    @Slot(object)
+    def _on_schedules_updated(self, _schedules=None):
+        self._sync_next_schedule_label()
+
+    def _refresh_dashboard_view(self) -> None:
+        if getattr(self, "_is_shutting_down", False):
+            return
+        if hasattr(self, "view_dashboard") and self.view_dashboard and hasattr(self, "session_metrics"):
+            self.view_dashboard.update_session_metrics(
+                msg_count=self.session_metrics.get("messages_processed", 0),
+                cmd_count=self._cached_total_usages or 0,
+                timer_count=self._cached_active_timers or 0,
+                spam_count=self.session_metrics.get("spam_blocked", 0)
+            )
+        if hasattr(self, "dashboard_controller") and self.dashboard_controller and hasattr(self, "session_platform_messages"):
+            self.dashboard_controller.update_platform_messages(
+                kick=self.session_platform_messages.get("kick", 0),
+                twitch=self.session_platform_messages.get("twitch", 0),
+                youtube=self.session_platform_messages.get("youtube", 0),
+                tiktok=self.session_platform_messages.get("tiktok", 0)
+            )
+
+    def _sync_next_schedule_label(self) -> None:
+        if (hasattr(self, "schedule_service") and self.schedule_service
+                and hasattr(self, "dashboard_controller") and self.dashboard_controller):
+            self.dashboard_controller.update_next_schedule(self.schedule_service.get_next_schedule_text())
 
     @Slot()
     def _update_dashboard_metrics(self, force_db_query=False):
@@ -1862,13 +1926,5 @@ class MainWindowCore(QMainWindow):
                 self._cached_total_usages = self._cached_total_usages or 0
                 self._cached_active_timers = self._cached_active_timers or 0
 
-        self.view_dashboard.update_session_metrics(
-            msg_count=self.session_metrics["messages_processed"],
-            cmd_count=self._cached_total_usages,
-            timer_count=self._cached_active_timers,
-            spam_count=self.session_metrics["spam_blocked"]
-        )
-
-        if hasattr(self, "schedule_service") and hasattr(self, "dashboard_controller"):
-            next_sched = self.schedule_service.get_next_schedule_text()
-            self.dashboard_controller.update_next_schedule(next_sched)
+        self._refresh_dashboard_view()
+        self._sync_next_schedule_label()

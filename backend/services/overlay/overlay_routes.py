@@ -2,6 +2,7 @@
 
 import base64
 import hashlib
+import hmac
 from backend.utils.json_utils import fast_loads, fast_dumps
 import logging
 import mimetypes
@@ -21,6 +22,20 @@ def get_resource_path(relative_path: str) -> str:
     else:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+
+def _is_within(base: str, target: str) -> bool:
+    try:
+        return os.path.commonpath([base, target]) == base
+    except ValueError:
+        return False
+
+def _is_allowed_media(manager, target: str) -> bool:
+    roots = getattr(manager, "allowed_media_roots", None)
+    if not roots:
+        return False
+    real_target = os.path.realpath(target)
+    return any(_is_within(root, real_target) for root in roots)
 
 STATIC_ENDPOINTS_MAP: dict[str, tuple[str, str]] = {
     "/overlay": (os.path.join("assets", "overlays", "rewards", "rewards.html"), "Overlay HTML"),
@@ -85,10 +100,9 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         query = parse_qs(parsed.query)
         token = query.get("token", [None])[0]
 
-        expected_token = getattr(self.server.manager, "session_token", None)
         is_user_media = path.startswith("/user_media/")
         is_static_asset = path.endswith((".css", ".js")) or "/css/" in path or "/js/" in path
-        if expected_token and not is_static_asset and not is_user_media and token != expected_token:
+        if not is_static_asset and not is_user_media and not self._token_ok(token):
             self.send_error(403, "Forbidden: Invalid session token")
             return
 
@@ -116,10 +130,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             css_path = get_resource_path(os.path.join("assets", "overlays", "chat", "css", css_filename))
             content = get_cached_asset(css_path)
             if content is not None:
-                self.send_response(200)
-                self.send_header("Content-Type", "text/css; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(content)
+                try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/css; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(content)
+                except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
+                    return
             else:
                 self.send_error(404, f"CSS file not found at: {css_path}")
             return
@@ -129,10 +146,13 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             js_path = get_resource_path(os.path.join("assets", "overlays", "chat", "js", js_filename))
             content = get_cached_asset(js_path)
             if content is not None:
-                self.send_response(200)
-                self.send_header("Content-Type", "application/javascript; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(content)
+                try:
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/javascript; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(content)
+                except (ConnectionResetError, BrokenPipeError, ConnectionAbortedError):
+                    return
             else:
                 self.send_error(404, f"JS file not found at: {js_path}")
             return
@@ -168,7 +188,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         if os.path.isfile(file_path):
             abs_base = os.path.abspath(get_resource_path(os.path.join("assets", "overlays")))
             abs_target = os.path.abspath(file_path)
-            if abs_target.startswith(abs_base):
+            if _is_within(abs_base, abs_target):
                 mime_type, _ = mimetypes.guess_type(file_path)
                 content = get_cached_asset(file_path)
                 if content is not None:
@@ -326,6 +346,14 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             except Exception:
                 pass
 
+    def _token_ok(self, token: str | None) -> bool:
+        expected_token = getattr(self.server.manager, "session_token", None)
+        if not expected_token:
+            return True
+        if not token:
+            return False
+        return hmac.compare_digest(str(token), str(expected_token))
+
     def _handle_media_request(self, query: dict):
         if "path" not in query:
             self.send_error(400, "Path not specified")
@@ -334,6 +362,9 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         filepath = os.path.normpath(query["path"][0])
         if not os.path.isfile(filepath):
             self.send_error(404, "Media file not found")
+            return
+        if not _is_allowed_media(self.server.manager, filepath):
+            self.send_error(403, "Forbidden: media path is not in an allowed root")
             return
 
         self._serve_file(filepath)
@@ -348,8 +379,7 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
         b64_dir = parts[3]
         rel_path = unquote(parts[4])
 
-        expected_token = getattr(self.server.manager, "session_token", "")
-        if not expected_token or token != expected_token:
+        if not self._token_ok(token):
             self.send_error(403, "Invalid or missing token")
             return
 
@@ -359,6 +389,10 @@ class OverlayRequestHandler(BaseHTTPRequestHandler):
             root_dir = root_dir_bytes.decode("utf-8")
         except Exception:
             self.send_error(400, "Invalid directory encoding")
+            return
+
+        if not _is_allowed_media(self.server.manager, root_dir):
+            self.send_error(403, "Forbidden: directory is not an allowed media root")
             return
 
         abs_root = os.path.abspath(root_dir)

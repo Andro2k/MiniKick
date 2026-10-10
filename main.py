@@ -47,7 +47,7 @@ from backend.services.system import (
 )
 from backend.config import APP_VERSION
 
-from frontend.dialogs import AlreadyRunningDialog, CrashReportDialog
+from frontend.dialogs import AlreadyRunningDialog, CrashReportDialog, SplashScreen
 from frontend.common import GLOBAL_QSS, resource_path, create_dark_palette
 
 logger = logging.getLogger("minikick.main")
@@ -157,18 +157,25 @@ def bootstrap():
     t_app_ready = time.perf_counter()
     logger.debug("[Perf/Bootstrap] Qt Application & Fonts initialized in %.2f ms", (t_app_ready - t_boot_start) * 1000)
 
+    safe_i18n = _get_safe_i18n()
+    splash = SplashScreen(i18n=safe_i18n, app_version=APP_VERSION)
+    splash.showMaximized()
+    splash.set_progress(15, safe_i18n.get("splash.init_app"))
+
     logger.debug("[Bootstrap] Checking single-instance socket on port 45678...")
+    splash.set_progress(30, safe_i18n.get("splash.check_instance"))
     instance_provider = SocketInstanceProvider(port=45678)
     if instance_provider.is_already_running():
         logger.warning("[Bootstrap] Duplicate instance detected. Presenting AlreadyRunningDialog.")
-        i18n_engine = _get_safe_i18n()
-        dialog = AlreadyRunningDialog(i18n=i18n_engine)
+        splash.close()
+        dialog = AlreadyRunningDialog(i18n=safe_i18n)
         dialog.exec()
         sys.exit(1)
     logger.debug("[Bootstrap] Single-instance lock acquired successfully.")
 
     try:
         app.setQuitOnLastWindowClosed(False)
+        splash.set_progress(50, safe_i18n.get("splash.init_services"))
         github_provider = GithubUpdateProvider(repo_owner="Andro2k", repo_name="MiniKick")
         windows_installer = WindowsInstaller()    
         updater = UpdateManager(
@@ -182,13 +189,16 @@ def bootstrap():
         app.setWindowIcon(QIcon(icon_path))
         
         logger.info("[Bootstrap] Initializing MainWindowCore...")
+        splash.set_progress(75, safe_i18n.get("splash.init_ui"))
         t_win_start = time.perf_counter()
         window = MainWindowCore(updater_manager=updater, app_version=APP_VERSION)
         t_win_ready = time.perf_counter()
         logger.debug("[Perf/Bootstrap] MainWindowCore instantiated in %.2f ms", (t_win_ready - t_win_start) * 1000)
 
         logger.info("[Bootstrap] Displaying main window (restoring state)...")
+        splash.set_progress(100, safe_i18n.get("splash.ready"))
         window.restore_window_state()
+        splash.finish(window)
         t_show_ready = time.perf_counter()
         logger.info(
             "[Perf/Bootstrap] Window displayed in %.2f ms (Total bootstrap: %.2f ms)",

@@ -18,6 +18,7 @@ from .tiktok_dialog import TikTokConnectDialog
 from .duplicate_alert_dialog import DuplicateAlertModal
 from .import_backup_dialog import ImportBackupModal
 from .whats_new_dialog import WhatsNewDialog
+from .splash_screen import SplashScreen
 
 __all__ = [
     "ModernFramelessShell",
@@ -41,4 +42,5 @@ __all__ = [
     "DuplicateAlertModal",
     "ImportBackupModal",
     "WhatsNewDialog",
+    "SplashScreen",
 ]

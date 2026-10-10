@@ -21,6 +21,7 @@ _EXPORTS = {
     "UpdateCheckWorker": ".updater_worker",
     "UpdateDownloadWorker": ".updater_worker",
     "ReleaseNotesWorker": ".updater_worker",
+    "WhatsNewWorker": ".updater_worker",
     "VoiceFetcherWorker": ".voice_worker",
     "ScheduleWorker": ".schedule_worker",
     "GlobalMediaWorker": ".global_media_worker",
@@ -50,7 +51,7 @@ if TYPE_CHECKING:
     from .twitch_rewards_worker import TwitchRewardWorker
     from .rewards_worker import FetchRewardsWorker, CreateRewardWorker, UpdateRewardWorker
     from .timers_worker import TimerWorker
-    from .updater_worker import UpdateCheckWorker, UpdateDownloadWorker, ReleaseNotesWorker
+    from .updater_worker import UpdateCheckWorker, UpdateDownloadWorker, ReleaseNotesWorker, WhatsNewWorker
     from .voice_worker import VoiceFetcherWorker
     from .schedule_worker import ScheduleWorker
     from .global_media_worker import GlobalMediaWorker

@@ -1,5 +1,6 @@
 # frontend\views\dashboard_view.py
 
+import logging
 from PySide6.QtWidgets import (
     QBoxLayout, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame,
     QGridLayout, QSizePolicy, QProgressBar
@@ -21,6 +22,9 @@ from frontend.widgets import (
 from frontend.components.dashboard import (
     SegmentedDistributionBar, PlatformStatusCard, DashboardChattersTable
 )
+
+logger = logging.getLogger("minikick.views.dashboard")
+
 
 class DashboardView(BaseView):
     connect_requested = Signal()
@@ -638,11 +642,13 @@ class DashboardView(BaseView):
             for i, card in enumerate(cards):
                 grid.addWidget(card, i // cols, i % cols)
 
-    def update_connection_status(self, is_connecting: bool, has_error: bool = False, _error_msg: str = ""):
+    def update_connection_status(self, is_connecting: bool, has_error: bool = False, error_msg: str = ""):
         if is_connecting:
             self.set_kick_status(connecting=True)
         elif has_error:
             self.set_kick_status(connected=False)
+            if error_msg:
+                logger.warning("[DashboardView] Connection error: %s", error_msg)
 
     def update_profile_info(self, username: str, bio: str):
         self.lbl_username.setText(username)

@@ -40,6 +40,7 @@ class YouTubeMusicProvider(QObject):
         self._search_workers = []
         self.preload_worker = None
         self.preload_song_url: str | None = None
+        self._retiring_workers: set = set()
 
         self.player = QMediaPlayer(self)
         self.audio_output = QAudioOutput(self)
@@ -353,24 +354,48 @@ class YouTubeMusicProvider(QObject):
             return True
         return False
 
+    def _retire_worker(self, worker):
+        if not worker:
+            return
+        for sig_name in ("resolved", "error"):
+            sig = getattr(worker, sig_name, None)
+            if sig:
+                try:
+                    sig.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+
+        try:
+            if worker.isRunning():
+                worker.requestInterruption()
+                worker.quit()
+                self._retiring_workers.add(worker)
+
+                def _on_retired(w=worker):
+                    self._retiring_workers.discard(w)
+                    try:
+                        w.deleteLater()
+                    except RuntimeError:
+                        pass
+
+                worker.finished.connect(_on_retired)
+            else:
+                worker.deleteLater()
+        except RuntimeError:
+            pass
+
     def _cancel_worker(self, worker_attr: str):
         worker = getattr(self, worker_attr, None)
         if worker:
-            try:
-                if worker.isRunning():
-                    worker.requestInterruption()
-                    worker.quit()
-                    worker.wait(300)
-                worker.deleteLater()
-            except RuntimeError:
-                pass
             setattr(self, worker_attr, None)
+            self._retire_worker(worker)
 
     def shutdown(self):
         self.player.stop()
         self.player.setSource(QUrl())
         self.current_local_file = None
         self._cancel_worker("preload_worker")
+        self._cancel_worker("resolve_worker")
         self.preload_song_url = None
 
     def _preload_next_song(self):
@@ -407,15 +432,17 @@ class YouTubeMusicProvider(QObject):
                         except Exception:
                             pass
             if self.preload_worker:
-                self.preload_worker.deleteLater()
+                old_w = self.preload_worker
                 self.preload_worker = None
+                self._retire_worker(old_w)
             self.preload_song_url = None
 
         def on_preload_error(error_msg):
             logger.error("[YouTubeMusicProvider] Preload error: %s", error_msg)
             if self.preload_worker:
-                self.preload_worker.deleteLater()
+                old_w = self.preload_worker
                 self.preload_worker = None
+                self._retire_worker(old_w)
             self.preload_song_url = None
 
         self.preload_worker.resolved.connect(on_preload_resolved)
