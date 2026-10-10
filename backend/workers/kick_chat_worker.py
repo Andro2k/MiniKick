@@ -66,15 +66,15 @@ class KickChatWorker(QThread):
     pinned_deleted = Signal()
     reward_redeemed = Signal(str, str, str)
     
-    def __init__(self, i18n, api_client: KickAPIClient, cluster: str, key: str, parent=None):
+    def __init__(self, i18n, api_client: KickAPIClient, cluster: str, keys: tuple[str, ...], parent=None):
         super().__init__(parent)
         self.i18n = i18n
         self.setObjectName("Worker_Kick_Chat_Socket")
         self.api_client = api_client 
         self.cluster = cluster
-        self.key = key
+        self.keys = keys
         self.channel_slug = ""
-        self.chat_manager = KickWebSocketManager(cluster, key)
+        self.chat_manager = KickWebSocketManager(cluster, keys)
         self._is_stopped = False
         self._poll_sync_worker: KickPollSyncWorker | None = None
         self._backoff = ExponentialBackoff(initial=1.5, max_backoff=30.0, factor=1.5, jitter=0.2)
