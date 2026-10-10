@@ -213,7 +213,7 @@ class YouTubeResolveWorker(QThread):
             download_opts = dict(ydl_opts)
             download_opts['format'] = 'bestaudio/best'
 
-            def _interruption_hook(d):
+            def _interruption_hook(_d):
                 if self.isInterruptionRequested():
                     raise Exception("Worker download interrupted by user")
 

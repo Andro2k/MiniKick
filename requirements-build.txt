@@ -1,0 +1,2 @@
+# MiniKick - dependencias de compilación (solo para generar el ejecutable)
+pyinstaller>=6.22.3

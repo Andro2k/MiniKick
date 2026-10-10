@@ -22,9 +22,10 @@ class ChatFilterHandler:
         "fossabot", "sery_bot", "blerp", "soundalerts", "songlistbot"
     })
 
-    def __init__(self, i18n, service):
+    def __init__(self, i18n, service, on_ignored_users_changed=None):
         self.i18n = i18n or TranslationService()
         self.service = service
+        self.on_ignored_users_changed = on_ignored_users_changed
         self.muted_bots: set[str] = set()
         self.banned_words: set[str] = set()
         self._banned_words_regex: re.Pattern | None = None
@@ -37,6 +38,7 @@ class ChatFilterHandler:
             view.clear_bots_list()
             for bot in self.muted_bots:
                 view.add_bot_tag(bot)
+        self._notify_ignored_users_changed()
 
         words_str = settings.get("banned_words", "")
         self.banned_words = {w.strip().lower() for w in words_str.split(",") if w.strip()}
@@ -54,6 +56,14 @@ class ChatFilterHandler:
             sorted_words = sorted(self.banned_words, key=len, reverse=True)
             pattern = r'\b(?:' + '|'.join(re.escape(w) for w in sorted_words) + r')\b'
             self._banned_words_regex = re.compile(pattern, re.IGNORECASE)
+
+    def _notify_ignored_users_changed(self) -> None:
+        if not self.on_ignored_users_changed:
+            return
+        try:
+            self.on_ignored_users_changed()
+        except Exception as e:
+            logger.debug("[ChatFilterHandler] ignored-users change callback failed: %s", e)
 
     def is_message_banned(self, msg: str) -> bool:
         if not self._banned_words_regex:
@@ -125,6 +135,7 @@ class ChatFilterHandler:
             if view is not None:
                 view.add_bot_tag(clean_name)
             self._save_bot_list()
+            self._notify_ignored_users_changed()
             return True
         return False
 
@@ -133,6 +144,7 @@ class ChatFilterHandler:
         if clean_name in self.muted_bots:
             self.muted_bots.remove(clean_name)
             self._save_bot_list()
+            self._notify_ignored_users_changed()
             return True
         return False
 

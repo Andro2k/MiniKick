@@ -10,6 +10,11 @@ from datetime import datetime
 logger = logging.getLogger("minikick.database")
 
 CURRENT_SCHEMA_VERSION = 1
+_CORRUPTION_KEYWORDS = ("malformed", "corrupt", "integrity", "quick check", "not a database")
+
+def _is_corruption_error(error: Exception) -> bool:
+    message = str(error).lower()
+    return any(keyword in message for keyword in _CORRUPTION_KEYWORDS)
 
 class AutoCloseConnection(sqlite3.Connection):
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -42,7 +47,7 @@ class DatabaseManager:
                     if not res or res[0] != "ok":
                         raise sqlite3.DatabaseError(f"Database quick check failed: {res}")
             
-            with sqlite3.connect(self.db_name, timeout=10.0) as conn:
+            with sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection) as conn:
                 conn.execute("PRAGMA journal_mode=WAL")
                 cursor = conn.cursor()
                 cursor.execute("PRAGMA user_version")
@@ -53,57 +58,99 @@ class DatabaseManager:
                 logger.info("[DatabaseManager] Schema version %d < %d. Upgrading schema...", user_ver, CURRENT_SCHEMA_VERSION)
                 self._upgrade_schema()
                 self._create_indexes_and_views()
-                with sqlite3.connect(self.db_name, timeout=10.0) as conn:
+                with sqlite3.connect(self.db_name, timeout=10.0, factory=AutoCloseConnection) as conn:
                     conn.execute(f"PRAGMA user_version = {CURRENT_SCHEMA_VERSION}")
             else:
                 logger.debug("[DatabaseManager] Schema up-to-date (version %d). Skipping DDL re-runs.", user_ver)
             self._initialized_dbs.add(self.db_name)
         except sqlite3.DatabaseError as e:
-            if "malformed" in str(e).lower() or "corrupt" in str(e).lower() or "integrity" in str(e).lower() or "quick check" in str(e).lower():
-                logger.error("Database file is malformed at startup, recreating: %s", e)
+            if _is_corruption_error(e):
+                logger.error("Database file is malformed at startup, recovering (corrupt copy preserved): %s", e)
                 self._handle_corrupt_database()
+                self._initialized_dbs.add(self.db_name)
             else:
                 logger.error("Database initialization error: %s", e)
                 raise e
 
-    def get_connection(self) -> sqlite3.Connection:
-        conn = None
+    def _open_connection(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(self.db_name, timeout=30.0, factory=AutoCloseConnection)
         try:
-            conn = sqlite3.connect(self.db_name, timeout=30.0, factory=AutoCloseConnection)
             conn.execute("PRAGMA busy_timeout=30000")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute("PRAGMA cache_size=-20000")
             conn.execute("PRAGMA foreign_keys=ON")
-            return conn
+        except Exception:
+            try:
+                conn.close()
+            except Exception:
+                pass
+            raise
+        return conn
+
+    def get_connection(self) -> sqlite3.Connection:
+        try:
+            return self._open_connection()
         except sqlite3.DatabaseError as e:
-            if conn:
-                try:
-                    conn.close()
-                except Exception:
-                    pass
-            if "malformed" in str(e).lower() or "corrupt" in str(e).lower():
-                logger.error("Database error in get_connection, recreating database: %s", e)
+            if _is_corruption_error(e):
+                logger.error("Database error in get_connection, recovering (corrupt copy preserved): %s", e)
                 self._handle_corrupt_database()
-                return sqlite3.connect(self.db_name, timeout=30.0, factory=AutoCloseConnection)
+                return self._open_connection()
             raise e
 
     def _handle_corrupt_database(self) -> None:
-        for ext in ("", "-wal", "-shm"):
-            file_path = self.db_name + ext
-            if os.path.exists(file_path):
-                try:
-                    os.remove(file_path)
-                    logger.info("Deleted corrupt database file: %s", file_path)
-                except Exception as del_err:
-                    logger.warning("Could not delete database file %s: %s", file_path, del_err)
+        self._backup_corrupt_database()
         self._create_tables()
         self._upgrade_schema()
         self._create_indexes_and_views()
         try:
-            with sqlite3.connect(self.db_name, timeout=10.0) as conn:
+            with self._open_connection() as conn:
                 conn.execute(f"PRAGMA user_version = {CURRENT_SCHEMA_VERSION}")
-        except Exception:
-            pass
+        except Exception as stamp_err:
+            logger.warning("[DatabaseManager] Could not stamp schema version after recovery: %s", stamp_err)
+
+    def _backup_corrupt_database(self) -> None:
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        base_backup = f"{self.db_name}.corrupt-{timestamp}"
+        backed_up: list[str] = []
+        for ext in ("", "-wal", "-shm"):
+            file_path = self.db_name + ext
+            if not os.path.exists(file_path):
+                continue
+            backup_path = base_backup + ext
+            try:
+                os.replace(file_path, backup_path)
+                backed_up.append(backup_path)
+            except OSError as rename_err:
+                logger.warning("[DatabaseManager] Could not move corrupt file %s aside: %s", file_path, rename_err)
+        if backed_up:
+            logger.error(
+                "[DatabaseManager] Corrupt database preserved for recovery (not deleted): %s",
+                ", ".join(backed_up),
+            )
+            self._prune_corrupt_backups()
+        else:
+            logger.error("[DatabaseManager] Corrupt database detected but no files could be moved aside.")
+
+    def _prune_corrupt_backups(self, keep: int = 3) -> None:
+        prefix = os.path.basename(self.db_name) + ".corrupt-"
+        try:
+            names = [name for name in os.listdir(self.db_dir) if name.startswith(prefix)]
+        except OSError:
+            return
+        grouped: dict[str, list[str]] = {}
+        for name in names:
+            base = name
+            for ext in ("-wal", "-shm"):
+                if base.endswith(ext):
+                    base = base[: -len(ext)]
+                    break
+            grouped.setdefault(base, []).append(os.path.join(self.db_dir, name))
+        for stale_base in sorted(grouped.keys(), reverse=True)[keep:]:
+            for stale_path in grouped[stale_base]:
+                try:
+                    os.remove(stale_path)
+                except OSError:
+                    pass
 
     def _create_tables(self) -> None:
         with self.get_connection() as conn:

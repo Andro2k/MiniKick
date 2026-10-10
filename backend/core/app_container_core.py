@@ -27,8 +27,9 @@ from backend.database import (
     DatabaseManager, SQLiteCommandsStorage, SQLiteTokenStorage, SQLiteSettingsStorage, 
     SQLiteRewardsStorage, SQLiteSpamStorage, SQLiteTimersStorage, SQLiteWidgetsStorage,
     SQLiteAvatarStorage, SQLiteSystemLogStorage, SQLiteMusicStorage, SQLiteScheduleStorage,
-    SQLiteAlertStorage
+    SQLiteAlertStorage, EncryptedTokenStorage
 )
+from backend.services.system import create_secret_cipher
 from backend.services import (
     BackupService, TranslationService, KickAuthManager, TwitchAuthManager, 
     SettingsService, AvatarService, WidgetService, ScheduleService,
@@ -41,8 +42,13 @@ class AppContainerCore:
         logger.debug("[AppContainer] Initializing database manager and SQLite storage layers...")
         self.db_manager = DatabaseManager()
         self.commands_storage = SQLiteCommandsStorage(self.db_manager)
-        self.kick_token_storage = SQLiteTokenStorage(self.db_manager, provider="kick")
-        self.twitch_token_storage = SQLiteTokenStorage(self.db_manager, provider="twitch")
+        self.secret_cipher = create_secret_cipher()
+        self.kick_token_storage = EncryptedTokenStorage(
+            SQLiteTokenStorage(self.db_manager, provider="kick"), self.secret_cipher
+        )
+        self.twitch_token_storage = EncryptedTokenStorage(
+            SQLiteTokenStorage(self.db_manager, provider="twitch"), self.secret_cipher
+        )
         self.settings_storage = SQLiteSettingsStorage(self.db_manager)
         self.rewards_storage = SQLiteRewardsStorage(self.db_manager)
         self.spam_storage = SQLiteSpamStorage(self.db_manager)

@@ -172,18 +172,18 @@ class KickWebSocketManager:
             self._seen_message_ids.append(msg_id)
             self._seen_message_ids_set.add(msg_id)
 
-        created_at = inner.get("created_at", "")
-        latency_info = ""
-        if created_at:
-            try:
-                created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-                now_utc = datetime.now(timezone.utc)
-                latency = (now_utc - created_dt).total_seconds()
-                latency_info = f" (server latency: {latency:.3f}s)"
-            except Exception:
-                pass
-
-        logger.debug("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
+        if logger.isEnabledFor(logging.DEBUG):
+            created_at = inner.get("created_at", "")
+            latency_info = ""
+            if created_at:
+                try:
+                    created_dt = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+                    now_utc = datetime.now(timezone.utc)
+                    latency = (now_utc - created_dt).total_seconds()
+                    latency_info = f" (server latency: {latency:.3f}s)"
+                except Exception:
+                    pass
+            logger.debug("[KickWebSocket] Chat message received: '%s' from '%s'%s", msg, user, latency_info)
 
         identity = sender.get("identity")
         badges = []

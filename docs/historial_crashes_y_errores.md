@@ -32,6 +32,7 @@
 | **INC-020** | `requests.exceptions.Timeout` no capturado en `KickAPIClient._request`, propagando excepción no manejada en worker de chat | `minikick_JosueGMN_v1.6.2.log` — Análisis de red | v1.6.2 | `✅ Solventado` | `backend/providers/chat/kick_provider.py` | v1.6.3 (`WT-1.6.3_01`) |
 | **INC-021** | `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running` — Crash de sesión por destrucción prematura de `KickPollSyncWorker` vía GC de Python al usar `wait(1000)` bloqueante | `minikick_JosueGMN_v1.6.2.log` (Líneas 726, 2087) / `minikick_Pipe_Cabrales_v1.6.2.log` | v1.6.2 | `✅ Solventado` | `backend/workers/kick_chat_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
 | **INC-022** | Señales stale (`resolved`/`error`) emitidas por `YouTubeResolveWorker` tras cancelación, causando reproducción fantasma o errores de estado | Análisis de código durante diagnóstico v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/workers/music_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
+| **INC-023** | Saturación del hilo GUI y sobrecarga de I/O en la ruta de recepción de mensajes (consulta SQLite por mensaje, repintado de dashboard por mensaje, ordenamiento de horarios por mensaje, cálculo de latencia incondicional y logging fijo en DEBUG) | Auditoría de rendimiento del backend v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py` | v1.6.3 (`WT-1.6.3_02`) |
 
 ---
 
@@ -638,6 +639,20 @@
 * **Archivos Afectados**: `backend/workers/music_worker.py`
 * **Solución**: 8 checkpoints `isInterruptionRequested()` en el flujo completo. El sleep de backoff se fragmentó en iteraciones de 0.1s. Se añadió `progress_hook` de yt-dlp que levanta excepción al detectar interrupción durante descarga activa.
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_01.md`
+
+---
+
+### INC-023: Saturación del Hilo GUI y Sobrecarga de I/O en la Ruta de Recepción de Mensajes
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Auditoría de rendimiento del backend (streams de alto tráfico, especialmente Kick)
+* **Versión Reportada**: v1.6.2
+* **Versión Corregida**: v1.6.3
+* **Causa Raíz**: La ruta de recepción ejecutaba trabajo síncrono pesado en el hilo de la GUI por cada mensaje: (1) lectura SQLite (`SELECT`) de `tts_ignored_users` en cada mensaje; (2) repintado de 4 tarjetas de dashboard y de la barra de plataformas por mensaje; (3) ordenamiento O(k log k) de horarios por mensaje; (4) cálculo de latencia ISO incondicional en la ruta del socket; y (5) logging forzado a nivel DEBUG sin posibilidad de configuración, invalidando cualquier guarda de depuración.
+* **Archivos Afectados**: `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/controllers/chat_controller.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py`
+* **Solución**: (1) Nivel de log configurable vía `MINIKICK_LOG_LEVEL` (por defecto INFO). (2) Cálculo de latencia protegido con `logger.isEnabledFor(logging.DEBUG)`. (3) Caché en memoria O(1) del set de bots ignorados con invalidación mediante la nueva señal `tts_ignored_users_changed`. (4) Coalescencia del refresco de dashboard con `QTimer` de 300 ms y ruta única `_refresh_dashboard_view()`. (5) Memoización con TTL (30 s) de `get_next_schedule_text()`. (6) Memoización por mensaje del texto limpio en `SpamService` (máximo 2 cómputos por mensaje en lugar de 4).
+* **Pruebas Asociadas**: `resources/tests/test_message_path_performance.py`
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_02.md`
 
 ---
 
