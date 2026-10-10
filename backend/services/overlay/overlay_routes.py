@@ -39,6 +39,22 @@ def _is_allowed_media_file(manager, target: str) -> bool:
 def _is_allowed_media_dir(manager, root_dir: str) -> bool:
     return canonical_media_path(root_dir) in getattr(manager, "allowed_media_dirs", ())
 
+def _is_allowed_media(manager, target: str) -> bool:
+    if _is_allowed_media_file(manager, target):
+        return True
+
+    roots = getattr(manager, "allowed_media_roots", ())
+    if not roots:
+        return False
+
+    abs_target = os.path.realpath(target)
+    for root in roots:
+        abs_root = os.path.realpath(root)
+        if _is_within(abs_root, abs_target):
+            return True
+
+    return False
+
 STATIC_ENDPOINTS_MAP: dict[str, tuple[str, str]] = {
     "/overlay": (os.path.join("assets", "overlays", "rewards", "rewards.html"), "Overlay HTML"),
     "/chat": (os.path.join("assets", "overlays", "chat", "chat.html"), "Chat Overlay HTML"),
