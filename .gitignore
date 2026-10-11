@@ -23,6 +23,7 @@ kick_api_config*.json
 # Archivos de configuración de IDEs
 build/
 dist/
+tests/
 resources/
 .agents/
 tools/
