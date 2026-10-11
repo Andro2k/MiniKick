@@ -24,7 +24,7 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
-testpaths = ["resources/tests/backend", "resources/tests/frontend"]
+testpaths = ["resources/tests"]
 addopts = "-v -s -p resources.tests.conftest --timeout=30"
 
 [dependency-groups]

@@ -2,16 +2,10 @@
 
 import logging
 import os
-import sys
+
+from backend.utils.paths import resource_path  # reexportado: la implementación vive en el backend
 
 logger = logging.getLogger("minikick.paths")
-
-def resource_path(relative_path: str) -> str:
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    return os.path.join(base_path, relative_path)
 
 def get_assets_path(subfolder: str = "") -> str:
     path = resource_path("assets")

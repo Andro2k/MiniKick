@@ -1,4 +1,4 @@
-# backend\core\main_window_core.py
+# frontend\main_window.py
 
 import sys
 import html
@@ -13,8 +13,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, Slot, QEvent, QTimer, QByteArray
 
-from .app_container_core import AppContainerCore
-from .app_logger_core import setup_application_logging
+from backend.core.app_container_core import AppContainerCore
+from backend.core.app_logger_core import setup_application_logging
 from backend.services import (
     ChatMessageDTO, RewardsService, ChatService, CommandService, AvatarService,
     LogService, SettingsService, SpamService, TimerService, WhatsNewService
@@ -31,6 +31,7 @@ from backend.workers import (
     FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
 )
 from frontend.common import COLOR_GREEN, get_global_qss
+from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import (
     RewardsView, CommandView, DashboardView, TimersView, ChatView,
@@ -853,6 +854,16 @@ class MainWindowCore(QMainWindow):
 
         self.logger.info("[Shutdown] Shutdown sequence completed successfully.")
 
+    def _retire_stuck_worker(self, worker) -> None:
+        self._retiring_workers.add(worker)
+        def _on_retired():
+            self._retiring_workers.discard(worker)
+            try:
+                worker.deleteLater()
+            except RuntimeError:
+                pass
+        worker.finished.connect(_on_retired)
+
     def _stop_workers_parallel(self, worker_map: list):
         active_workers = []
         for name, instance in worker_map:
@@ -898,14 +909,7 @@ class MainWindowCore(QMainWindow):
                     elapsed_ms = (time.perf_counter() - start_t) * 1000.0
                     stuck_msg = stuck_template.replace("{worker}", name)
                     self.logger.warning("%s (%.1f ms)", stuck_msg, elapsed_ms)
-                    self._retiring_workers.add(instance)
-                    def _on_retired(inst=instance):
-                        self._retiring_workers.discard(inst)
-                        try:
-                            inst.deleteLater()
-                        except RuntimeError:
-                            pass
-                    instance.finished.connect(_on_retired)
+                    self._retire_stuck_worker(instance)
             except RuntimeError as e:
                 self.logger.debug("[Shutdown] Notice stopping worker '%s' (%s): %s", name, type(e).__name__, e)
 
@@ -1077,7 +1081,7 @@ class MainWindowCore(QMainWindow):
         safe_reward_name = html.escape(reward_name)
         canje_template = self.i18n.get("main.chat.reward_redeemed")
         texto_canje = canje_template.replace("{reward_name}", safe_reward_name)
-        return f'<span style="color: #00e701;">{texto_canje}</span>'
+        return f'<span style="color: {COLOR_GREEN};">{texto_canje}</span>'
 
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str, platform: str = "kick"):
         recents = getattr(self, "_recent_reward_redemptions", None)
@@ -1868,7 +1872,7 @@ class MainWindowCore(QMainWindow):
 
     @Slot()
     def handle_update_check(self):
-        self.updater_controller.show_update_dialog(self, self.i18n, on_restart_callback=self._force_quit)
+        present_update_dialog(self.updater_controller, self, self.i18n, on_restart_callback=self._force_quit)
 
     def _increment_metric(self, name: str):
         if hasattr(self, 'session_metrics') and name in self.session_metrics:

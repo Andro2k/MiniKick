@@ -13,16 +13,9 @@ import time
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse, unquote
 from .overlay_ws_client import WebSocketClient
+from backend.utils.paths import resource_path as get_resource_path
 
 logger = logging.getLogger("minikick.services.overlay.routes")
-
-def get_resource_path(relative_path: str) -> str:
-    if hasattr(sys, "_MEIPASS"):
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
-
 
 def _is_within(base: str, target: str) -> bool:
     try:

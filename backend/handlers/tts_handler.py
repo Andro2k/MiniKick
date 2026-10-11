@@ -212,17 +212,15 @@ class TTSVoiceHandler(QObject):
             )
 
     def open_piper_voices_dialog(self) -> None:
-        from frontend.dialogs import PiperVoicesDialog
         from backend.services.chat import PiperVoiceManager, PiperVoiceDownloadWorker
-        dialog = PiperVoicesDialog(
-            self.i18n,
+        if self.view is None:
+            return
+        self.view.show_piper_voices_dialog(
             self.service,
-            parent=self.controller.view if hasattr(self.controller, "view") else None,
-            manager=PiperVoiceManager(),
-            worker_class=PiperVoiceDownloadWorker
+            PiperVoiceManager(),
+            PiperVoiceDownloadWorker,
+            on_voices_updated=lambda: self.load_voices("piper"),
         )
-        dialog.voices_updated.connect(lambda: self.load_voices("piper"))
-        dialog.exec()
 
     def handle_voice_test(self, voice_id: str) -> None:
         if voice_id:
