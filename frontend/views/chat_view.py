@@ -356,6 +356,13 @@ class ChatView(BaseView):
     def update_languages(self, langs: list[str], select_prefix: str = None):
         self.tts_settings_panel.update_languages(langs, select_prefix)
 
+    def show_piper_voices_dialog(self, tts_service, manager, worker_class, on_voices_updated=None) -> None:
+        from frontend.dialogs import PiperVoicesDialog
+        dialog = PiperVoicesDialog(self.i18n, tts_service, parent=self, manager=manager, worker_class=worker_class)
+        if on_voices_updated:
+            dialog.voices_updated.connect(on_voices_updated)
+        dialog.exec()
+
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):
         self.tts_settings_panel.update_voices(voices, select_id, role_voices, all_voices)
 

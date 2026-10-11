@@ -39,7 +39,8 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-from backend.core import setup_application_logging, flush_all_logs, MainWindowCore
+from backend.core import setup_application_logging, flush_all_logs
+from frontend.main_window import MainWindowCore
 setup_application_logging()
 
 from backend.services.system import (
