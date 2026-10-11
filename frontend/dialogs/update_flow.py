@@ -6,9 +6,7 @@ from .updater_dialog import UpdateDialog
 
 logger = logging.getLogger("minikick.dialogs.update_flow")
 
-
 def present_update_dialog(updater_controller, parent_window, i18n, on_restart_callback=None) -> None:
-    """Muestra el diálogo modal de actualización conectado al UpdaterController (solo señales y slots)."""
     logger.debug("[UpdateFlow] Presenting UpdateDialog modal to user.")
     dialog = UpdateDialog(i18n, parent=parent_window)
     update_info = {"url": ""}

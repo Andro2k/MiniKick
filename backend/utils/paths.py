@@ -3,9 +3,7 @@
 import os
 import sys
 
-
 def resource_path(relative_path: str) -> str:
-    """Ruta a un recurso empaquetado (PyInstaller) o del proyecto, sin depender del directorio de trabajo."""
     try:
         base_path = sys._MEIPASS
     except Exception:

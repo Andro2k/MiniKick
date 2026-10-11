@@ -2,10 +2,9 @@
 
 import logging
 import os
+from backend.utils.paths import resource_path
 
 from backend.utils.paths import resource_path  # reexportado: la implementación vive en el backend
-
-logger = logging.getLogger("minikick.paths")
 
 def get_assets_path(subfolder: str = "") -> str:
     path = resource_path("assets")

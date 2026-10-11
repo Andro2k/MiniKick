@@ -8,7 +8,6 @@ import logging
 import mimetypes
 import os
 import queue
-import sys
 import time
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse, unquote
