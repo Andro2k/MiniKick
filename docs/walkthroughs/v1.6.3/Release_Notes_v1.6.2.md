@@ -1,6 +1,6 @@
 # Notas de la Versión — MiniKick v1.6.3
 
-Fecha de Publicación: 9 de Octubre de 2026
+Fecha de Publicación: 10 de Octubre de 2026
 
 La versión 1.6.3 de MiniKick se enfoca en reforzar la estabilidad global del sistema, elevar la seguridad en el almacenamiento de credenciales y maximizar el rendimiento del procesamiento de mensajes durante transmisiones de alta concurrencia. Esta actualización introduce cifrado transparente en reposo para los tokens de acceso, optimiza la fluidez de la interfaz limitando el consumo de recursos en ráfagas de chat, añade un mecanismo de recuperación de base de datos con respaldos automáticos fechados y garantiza la continuidad de las conexiones de chat y música incluso ante parpadeos de red o cancelaciones de canciones en reproducción.
 
