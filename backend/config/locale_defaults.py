@@ -213,6 +213,9 @@ DEFAULT_DICTIONARY = {
             "status_header": "📋 Commands status:"
         },
         "display": {
+            "detach": "Detach",
+            "reattach": "Return to chat view",
+            "window_title": "Live Chat",
             "title": "Chat History"
         },
         "header": {

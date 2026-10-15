@@ -2,7 +2,8 @@
 
 import html
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QLabel, QTextEdit, QSizePolicy, QPushButton, QHBoxLayout
 from frontend.widgets import ModernCard
 from frontend.common import (
     COLOR_NEUTRAL_200, COLOR_NEUTRAL_400, COLOR_BLUE,
@@ -21,6 +22,8 @@ class ChatConsoleEdit(QTextEdit):
         return mime
 
 class ChatDisplayPanel(ModernCard):
+    detach_requested = Signal()
+    reattach_requested = Signal()
     _MAX_CHAT_BLOCKS = 400
     _PILL_BG = COLOR_BADGE_BG
     _CAP_LEFT = "\ue0b6"
@@ -62,8 +65,23 @@ class ChatDisplayPanel(ModernCard):
         self.setMinimumHeight(400) 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
+        header_layout = QHBoxLayout()
         lbl_chat_title = QLabel(self.i18n.get("chat.display.title"))
         lbl_chat_title.setProperty("role", "h3")
+
+        self.btn_detach = QPushButton(self.i18n.get("chat.display.detach"))
+        self.btn_detach.setProperty("role", "action_outlined")
+        self.btn_detach.clicked.connect(self.detach_requested.emit)
+
+        self.btn_reattach = QPushButton(self.i18n.get("chat.display.reattach"))
+        self.btn_reattach.setProperty("role", "action_outlined")
+        self.btn_reattach.hide()
+        self.btn_reattach.clicked.connect(self.reattach_requested.emit)
+
+        header_layout.addWidget(lbl_chat_title)
+        header_layout.addStretch(1)
+        header_layout.addWidget(self.btn_detach)
+        header_layout.addWidget(self.btn_reattach)
         
         self.chat_display = ChatConsoleEdit()
         self.chat_display.setReadOnly(True)
@@ -73,8 +91,12 @@ class ChatDisplayPanel(ModernCard):
         self.chat_display.setFont(chat_font)
         self.chat_display.document().setDocumentMargin(2)
 
-        self.addWidget(lbl_chat_title)
+        self.addLayout(header_layout)
         self.addWidget(self.chat_display)
+
+    def set_detached(self, detached: bool) -> None:
+        self.btn_detach.setVisible(not detached)
+        self.btn_reattach.setVisible(detached)
 
     @classmethod
     def _create_pill(cls, content_html: str, text_color: str = COLOR_NEUTRAL_400, pill_bg: str = _PILL_BG) -> str:

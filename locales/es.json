@@ -211,6 +211,9 @@
             "status_header": "📋 Estado de comandos:"
         },
         "display": {
+            "detach": "Desacoplar",
+            "reattach": "Volver al chat",
+            "window_title": "Chat en vivo",
             "title": "Historial del Chat"
         },
         "header": {
