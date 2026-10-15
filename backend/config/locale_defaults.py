@@ -939,6 +939,7 @@ DEFAULT_DICTIONARY = {
             "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
             "sr_usage": "@{user} please enter a song name. (Ex: {trigger} Chayanne Torero)",
             "user_limit_reached": "❌ @{user}, you already have {count} song(s) in queue (maximum allowed: {max}).",
+            "vol_current": "🔊 @{user}, the current music volume is {volume}%.",
             "vol_success": "🔊 @{user}, music volume changed to {volume}%.",
             "vol_usage": "❌ @{user}, please specify a volume level between 0 and 100. (Ex: {trigger} 50)"
         },

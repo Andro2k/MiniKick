@@ -48,6 +48,7 @@ class MusicController(QObject):
             }
         self.music_provider = music_provider
         self.provider_type = "youtube"
+        self.current_volume = 100
         self._last_song: dict | None = None
         self.music_service_enabled = True
         self._user_last_request_time: dict[str, float] = {}
@@ -192,6 +193,7 @@ class MusicController(QObject):
                 vol = int(self.settings_storage.load_string("music_volume", "100"))
             except ValueError:
                 vol = 100
+        self.current_volume = vol
         self.music_provider.set_volume(vol)
 
         if not self.polling_timer.isActive():
@@ -209,6 +211,7 @@ class MusicController(QObject):
                 vol = int(self.settings_storage.load_string("music_volume", "100"))
             except ValueError:
                 vol = 100
+        self.current_volume = vol
 
         self.view.slider_vol.blockSignals(True)
         self.view.slider_vol.setValue(vol)
@@ -218,6 +221,7 @@ class MusicController(QObject):
         self._poll_now_playing()
 
     def set_volume(self, volume: int):
+        self.current_volume = volume
         logger.info("[User Action] Changed music player volume: %d%%", volume)
         if self.music_provider:
             self.music_provider.set_volume(volume)
