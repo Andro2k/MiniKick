@@ -525,6 +525,8 @@
                 "twitch_channel_manage_redemptions": "Create and manage rewards on Twitch",
                 "twitch_channel_moderate": "Channel moderation actions on Twitch",
                 "twitch_channel_read_redemptions": "Read channel point redemptions on Twitch",
+                "twitch_channel_read_subscriptions": "Read subscriptions on Twitch",
+                "twitch_bits_read": "Read Bits cheers on Twitch",
                 "twitch_chat_edit": "Send messages to Twitch chat",
                 "twitch_chat_read": "Read Twitch chat messages",
                 "twitch_moderation_ban": "Ban/Timeout violating users on Twitch",
