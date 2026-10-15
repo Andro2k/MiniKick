@@ -12,7 +12,7 @@ dependencies = [
     "pyttsx3",
     "PySide6",
     "pyinstaller",
-    "edge-tts",
+    "edge-tts>=7.3.1",
     "asyncio",
     "yt-dlp",
     "piper-tts",

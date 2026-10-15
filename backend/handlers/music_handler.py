@@ -226,7 +226,11 @@ class MusicCommandHandler:
     def _handle_plugin_volume(self, _api, _provider, user, message, prefix_used, platform: str = "kick"):
         query = message[len(prefix_used):].strip() if prefix_used else ""
         if not query:
-            msg = self.i18n.get("music.chat.vol_usage").replace("{user}", user).replace("{trigger}", prefix_used)
+            msg = (
+                self.i18n.get("music.chat.vol_current")
+                .replace("{user}", user)
+                .replace("{volume}", str(self.controller.current_volume))
+            )
             self.send_chat_message(msg, platform=platform)
             return
 

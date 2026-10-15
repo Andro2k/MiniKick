@@ -5,10 +5,35 @@ from frontend.components.chat import (
     ChatTtsSettingsPanel, ChatSpamPanel
 )
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBoxLayout
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QEvent, Qt, Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
 from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
+
+
+class _FloatingChatWindow(QWidget):
+    def __init__(self, title: str, on_close, parent=None):
+        super().__init__(parent, Qt.WindowType.Window)
+        self._on_close = on_close
+        self._return_requested = False
+        self.setWindowTitle(title)
+        self.setMinimumSize(480, 420)
+        self.resize(640, 720)
+
+    def _return_to_chat(self) -> None:
+        if self._return_requested:
+            return
+        self._return_requested = True
+        self._on_close()
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange and self.isMinimized():
+            self._return_to_chat()
+
+    def closeEvent(self, event):
+        self._return_to_chat()
+        event.accept()
 
 class ChatView(BaseView):
     volume_changed = Signal(int)
@@ -27,6 +52,9 @@ class ChatView(BaseView):
     def __init__(self, i18n, parent=None):
         super().__init__(i18n=i18n, title_key="chat.header.title", subtitle_key="chat.header.subtitle", parent=parent)
         self._last_body_dir = None
+        self._floating_chat_dialog = None
+        self._chat_layout_index = None
+        self._chat_layout_stretch = None
         self._setup_ui()
         self._connect_internal_signals()
 
@@ -77,6 +105,8 @@ class ChatView(BaseView):
 
         self.body_layout.addWidget(self.left_container, stretch=4)
         self.body_layout.addWidget(self.chat_display_panel, stretch=5)
+        self.chat_display_panel.detach_requested.connect(self._detach_chat_display)
+        self.chat_display_panel.reattach_requested.connect(self._reattach_chat_display)
         
         self.main_layout.addLayout(self.body_layout, stretch=1)
 
@@ -89,6 +119,48 @@ class ChatView(BaseView):
             self.body_layout.setDirection(direction)
             self.body_layout.setStretch(0, 1)
             self.body_layout.setStretch(1, 1)
+
+    def _detach_chat_display(self) -> None:
+        if self._floating_chat_dialog is not None:
+            self._floating_chat_dialog.raise_()
+            self._floating_chat_dialog.activateWindow()
+            return
+
+        self._chat_layout_index = self.body_layout.indexOf(self.chat_display_panel)
+        self._chat_layout_stretch = self.body_layout.stretch(self._chat_layout_index)
+        self.body_layout.removeWidget(self.chat_display_panel)
+        self._floating_chat_dialog = _FloatingChatWindow(
+            self.i18n.get("chat.display.window_title"),
+            self._reattach_chat_display,
+            parent=self.window(),
+        )
+        floating_layout = QVBoxLayout(self._floating_chat_dialog)
+        floating_layout.addWidget(self.chat_display_panel)
+        self.chat_display_panel.set_detached(True)
+        self._floating_chat_dialog.show()
+
+    def _reattach_chat_display(self) -> None:
+        floating_dialog = self._floating_chat_dialog
+        if floating_dialog is None:
+            return
+
+        floating_layout = floating_dialog.layout()
+        if floating_layout is not None:
+            floating_layout.removeWidget(self.chat_display_panel)
+        layout_index = self._chat_layout_index
+        if layout_index is None or layout_index < 0:
+            layout_index = self.body_layout.count()
+        layout_index = min(layout_index, self.body_layout.count())
+        self.body_layout.insertWidget(
+            layout_index,
+            self.chat_display_panel,
+            stretch=self._chat_layout_stretch or 0,
+        )
+        self.chat_display_panel.set_detached(False)
+        self._floating_chat_dialog = None
+        self._chat_layout_index = None
+        self._chat_layout_stretch = None
+        floating_dialog.deleteLater()
 
     def _connect_internal_signals(self):
         self.tts_settings_panel.provider_changed.connect(self.provider_changed.emit)

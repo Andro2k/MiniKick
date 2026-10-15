@@ -211,6 +211,9 @@
             "status_header": "📋 Estado de comandos:"
         },
         "display": {
+            "detach": "Desacoplar",
+            "reattach": "Volver al chat",
+            "window_title": "Chat en vivo",
             "title": "Historial del Chat"
         },
         "header": {
@@ -525,6 +528,8 @@
                 "twitch_channel_manage_redemptions": "Crear y gestionar recompensas de canal en Twitch",
                 "twitch_channel_moderate": "Acciones de moderación en Twitch",
                 "twitch_channel_read_redemptions": "Leer canjes de puntos de canal en Twitch",
+                "twitch_channel_read_subscriptions": "Leer suscripciones en Twitch",
+                "twitch_bits_read": "Leer Cheers de Bits en Twitch",
                 "twitch_chat_edit": "Enviar mensajes al chat de Twitch",
                 "twitch_chat_read": "Leer mensajes del chat de Twitch",
                 "twitch_moderation_ban": "Banear/Timeout usuarios infractores en Twitch",
@@ -932,6 +937,7 @@
             "song_too_long": "❌ @{user}, esa canción supera la duración máxima permitida de {max} minutos.",
             "sr_usage": "@{user} por favor escribe el nombre de una canción. (Ej: {trigger} Torero Chayanne)",
             "user_limit_reached": "❌ @{user}, ya tienes {count} canción(es) en la cola (máximo permitido: {max}).",
+            "vol_current": "🔊 @{user}, el volumen actual de la música es {volume}%.",
             "vol_success": "🔊 @{user}, el volumen de la música se ha cambiado a {volume}%.",
             "vol_usage": "❌ @{user}, por favor especifica un nivel de volumen entre 0 y 100. (Ej: {trigger} 50)"
         },

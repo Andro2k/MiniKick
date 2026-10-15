@@ -307,6 +307,8 @@ class TwitchAuthManager(BaseOAuthManager):
         "channel:read:redemptions": "dashboard.banner.scope.twitch_channel_read_redemptions",
         "channel:manage:redemptions": "dashboard.banner.scope.twitch_channel_manage_redemptions",
         "moderator:read:followers": "dashboard.banner.scope.twitch_moderator_read_followers",
+        "channel:read:subscriptions": "dashboard.banner.scope.twitch_channel_read_subscriptions",
+        "bits:read": "dashboard.banner.scope.twitch_bits_read",
     }
     REQUIRED_TWITCH_SCOPES = REQUIRED_SCOPES
 
@@ -353,7 +355,7 @@ class TwitchAuthManager(BaseOAuthManager):
             raise TransientAuthError(str(e)) from e
 
     def _new_login(self, force: bool = False) -> dict:
-        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers"
+        scopes = "chat:read chat:edit user:read:chat user:write:chat channel:moderate moderator:manage:chat_messages moderator:manage:banned_users channel:manage:broadcast channel:read:redemptions channel:manage:redemptions moderator:read:followers channel:read:subscriptions bits:read"
         force_param = "&force_verify=true" if force else ""
         state = secrets.token_urlsafe(32)
         auth_url = (

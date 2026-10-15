@@ -33,6 +33,9 @@
 | **INC-021** | `[CRI] QThread: Destroyed while thread 'Worker_Kick_Poll_Sync' is still running` — Crash de sesión por destrucción prematura de `KickPollSyncWorker` vía GC de Python al usar `wait(1000)` bloqueante | `minikick_JosueGMN_v1.6.2.log` (Líneas 726, 2087) / `minikick_Pipe_Cabrales_v1.6.2.log` | v1.6.2 | `✅ Solventado` | `backend/workers/kick_chat_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
 | **INC-022** | Señales stale (`resolved`/`error`) emitidas por `YouTubeResolveWorker` tras cancelación, causando reproducción fantasma o errores de estado | Análisis de código durante diagnóstico v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/workers/music_worker.py` | v1.6.3 (`WT-1.6.3_01`) |
 | **INC-023** | Saturación del hilo GUI y sobrecarga de I/O en la ruta de recepción de mensajes (consulta SQLite por mensaje, repintado de dashboard por mensaje, ordenamiento de horarios por mensaje, cálculo de latencia incondicional y logging fijo en DEBUG) | Auditoría de rendimiento del backend v1.6.3 | v1.6.2 | `✅ Solventado` | `backend/core/app_logger_core.py`, `backend/core/main_window_core.py`, `backend/controllers/widgets_controller.py`, `backend/handlers/spam_handler.py`, `backend/services/chat/spam_service.py`, `backend/services/schedule/schedule_service.py` | v1.6.3 (`WT-1.6.3_02`) |
+| **INC-024** | Pyrefly `unknown-name`: `logger` no definido en `resolve_icon_path` | Diagnóstico estático de Pyrefly en `frontend/common/paths.py:24` | v1.6.4 | `✅ Solventado` | `frontend/common/paths.py` | v1.6.4 (`WT-1.6.4_04`) |
+| **INC-025** | Respuesta de `!sr` sin nombre cuando la búsqueda asíncrona rechaza una canción por duración | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/providers/music/youtube_provider.py`, `backend/workers/music_worker.py` | v1.6.4 (`WT-1.6.4_06`) |
+| **INC-026** | `!vol` sin argumento muestra instrucciones en vez del volumen actual | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/handlers/music_handler.py`, `backend/controllers/music_controller.py` | v1.6.4 (`WT-1.6.4_06`) |
 
 ---
 
@@ -654,6 +657,48 @@
 * **Solución**: (1) Nivel de log configurable vía `MINIKICK_LOG_LEVEL` (por defecto INFO). (2) Cálculo de latencia protegido con `logger.isEnabledFor(logging.DEBUG)`. (3) Caché en memoria O(1) del set de bots ignorados con invalidación mediante la nueva señal `tts_ignored_users_changed`. (4) Coalescencia del refresco de dashboard con `QTimer` de 300 ms y ruta única `_refresh_dashboard_view()`. (5) Memoización con TTL (30 s) de `get_next_schedule_text()`. (6) Memoización por mensaje del texto limpio en `SpamService` (máximo 2 cómputos por mensaje en lugar de 4).
 * **Pruebas Asociadas**: `resources/tests/test_message_path_performance.py`
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.3/WT-1.6.3_02.md`
+
+---
+
+### INC-024: Pyrefly `unknown-name` por `logger` no definido en `paths.py`
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Diagnóstico estático de Pyrefly, `frontend/common/paths.py:24`
+* **Versión Reportada**: v1.6.4
+* **Versión Corregida**: v1.6.4
+* **Causa Raíz**: `resolve_icon_path` registraba una advertencia cuando no encontraba un icono, pero el módulo no importaba `logging` ni declaraba `logger`. Pyrefly detectó el nombre no definido y esa ruta también podía lanzar `NameError` al ejecutarse.
+* **Archivos Afectados**: `frontend/common/paths.py`
+* **Solución**: Se importó `logging` y se declaró el logger del módulo (`minikick.paths`) siguiendo el patrón utilizado en `frontend/common/icons.py`.
+* **Verificación**: Revisión estática del módulo; no se ejecutaron pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.4/WT-1.6.4_04.md`
+
+---
+
+### INC-025: Respuesta de `!sr` sin nombre ante rechazo por duración
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Chat del módulo Music; al pedir una canción que excede el límite, el bot respondía `@, esa canción supera...`
+* **Versión Reportada**: v1.6.4
+* **Versión Corregida**: v1.6.4
+* **Causa Raíz**: La búsqueda de canciones se ejecuta en `YouTubeSearchWorker`. Al detectar una duración superior al límite, el worker formateaba el texto reemplazando `{user}` por una cadena vacía porque no recibía el solicitante.
+* **Archivos Afectados**: `backend/providers/music/youtube_provider.py`, `backend/workers/music_worker.py`
+* **Solución**: El proveedor pasa el nombre del solicitante al worker y este lo inserta en la respuesta localizada de rechazo por duración.
+* **Verificación**: Revisión estática del paso del solicitante desde el manejador hasta el mensaje del worker; no se ejecutaron pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.4/WT-1.6.4_06.md`
+
+---
+
+### INC-026: `!vol` no permite consultar el volumen actual
+
+* **Estado**: `✅ Solventado`
+* **Reportado en**: Chat del módulo Music; `!vol` sin argumento solo mostraba el formato de uso.
+* **Versión Reportada**: v1.6.4
+* **Versión Corregida**: v1.6.4
+* **Causa Raíz**: El manejador trataba una consulta sin valor como entrada inválida. El controlador no exponía explícitamente el volumen actual al manejador.
+* **Archivos Afectados**: `backend/handlers/music_handler.py`, `backend/controllers/music_controller.py`, `backend/config/locale_defaults.py`, `locales/en.json`, `locales/es.json`
+* **Solución**: El controlador mantiene el valor actual de volumen, sincronizado al inicializar y al cambiar el volumen. `!vol` sin argumento responde con ese valor; la forma `!vol 0-100` conserva la función de ajuste.
+* **Verificación**: Revisión estática de los caminos de inicialización, cambio y consulta; no se ejecutaron pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.4/WT-1.6.4_06.md`
 
 ---
 

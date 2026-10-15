@@ -213,6 +213,9 @@ DEFAULT_DICTIONARY = {
             "status_header": "📋 Commands status:"
         },
         "display": {
+            "detach": "Detach",
+            "reattach": "Return to chat view",
+            "window_title": "Live Chat",
             "title": "Chat History"
         },
         "header": {
@@ -527,6 +530,8 @@ DEFAULT_DICTIONARY = {
                 "twitch_channel_manage_redemptions": "Create and manage rewards on Twitch",
                 "twitch_channel_moderate": "Channel moderation actions on Twitch",
                 "twitch_channel_read_redemptions": "Read channel point redemptions on Twitch",
+                "twitch_channel_read_subscriptions": "Read subscriptions on Twitch",
+                "twitch_bits_read": "Read Bits cheers on Twitch",
                 "twitch_chat_edit": "Send messages to Twitch chat",
                 "twitch_chat_read": "Read Twitch chat messages",
                 "twitch_moderation_ban": "Ban/Timeout violating users on Twitch",
@@ -934,6 +939,7 @@ DEFAULT_DICTIONARY = {
             "song_too_long": "❌ @{user}, that song exceeds the maximum allowed duration of {max} minutes.",
             "sr_usage": "@{user} please enter a song name. (Ex: {trigger} Chayanne Torero)",
             "user_limit_reached": "❌ @{user}, you already have {count} song(s) in queue (maximum allowed: {max}).",
+            "vol_current": "🔊 @{user}, the current music volume is {volume}%.",
             "vol_success": "🔊 @{user}, music volume changed to {volume}%.",
             "vol_usage": "❌ @{user}, please specify a volume level between 0 and 100. (Ex: {trigger} 50)"
         },
