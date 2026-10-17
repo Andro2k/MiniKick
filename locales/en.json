@@ -963,19 +963,13 @@
             "title": "Music Player"
         },
         "overlay": {
-            "layout_floating": "Vinyl Record Spin",
+            "layout_classic": "Classic Player",
             "layout_label": "Overlay Layout:",
-            "layout_pill": "Minimal Pill Bar",
-            "layout_standard": "Standard Card",
+            "layout_vinyl": "Vinyl Record",
             "preview_sample_artist": "Tame Impala",
             "preview_sample_title": "Tame Impala - The Less I Know The Better",
             "preview_title": "Overlay Live Preview",
             "recommended_dim": "Recommended OBS source size: {dim}",
-            "theme_card": "Satin Card",
-            "theme_dynamic": "Dynamic (Album Auto-Color)",
-            "theme_glass": "Glassmorphism (Frosted Glass)",
-            "theme_label": "Visual Theme:",
-            "theme_neon": "Neon Glow",
             "url_desc": "Copy this URL and add it as a browser source in OBS to show cover art and track details on stream.",
             "url_title": "Music Overlay (OBS)"
         },

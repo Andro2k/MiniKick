@@ -11,8 +11,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet">
-    <!-- Dynamic Theme Stylesheet -->
-    <link id="theme-style" rel="stylesheet" href="">
+    <!-- Single supported music overlay style -->
+    <link id="theme-style" rel="stylesheet" href="/music/css/glass.css">
     <style>
         /* ==========================================================================
            1. CSS Variables & Reset
@@ -30,6 +30,8 @@
             --dynamic-bg-start: rgba(20, 24, 33, 0.85);
             --dynamic-bg-end: rgba(10, 12, 18, 0.95);
             --dynamic-glow: rgba(59, 130, 246, 0.4);
+            --classic-surface: #f2e5cf;
+            --classic-border: #d5c2a7;
         }
 
         body {
@@ -76,6 +78,136 @@
             -webkit-backdrop-filter: blur(16px);
             color: #FFFFFF;
         }
+
+        #player.theme-dynamic.layout-classic {
+            background: var(--classic-surface);
+            border: 1px solid var(--classic-border);
+            box-shadow: 0 12px 30px rgba(53, 39, 43, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+            color: #35272b;
+        }
+
+        #player.theme-dynamic.layout-classic .cover-art-wrap {
+            border: 1px solid rgba(75, 50, 61, 0.24);
+            box-shadow: 0 5px 12px rgba(53, 39, 43, 0.18);
+        }
+
+        #player.theme-dynamic.layout-classic .now-playing-tag,
+        #player.theme-dynamic.layout-classic .artist,
+        #player.theme-dynamic.layout-classic .progress-time {
+            color: rgba(53, 39, 43, 0.68);
+            text-shadow: none;
+        }
+
+        #player.theme-dynamic.layout-classic .title {
+            color: #35272b;
+            text-shadow: none;
+        }
+
+        #player.theme-dynamic.layout-classic .progress-bar-wrap {
+            background: rgba(53, 39, 43, 0.2);
+        }
+
+        #player.theme-dynamic.layout-classic .label-now-badge {
+            background: rgba(255, 255, 255, 0.45);
+            color: #35272b;
+            border: 1px solid var(--classic-border);
+        }
+
+        #player.theme-dynamic.layout-vinyl {
+            background: linear-gradient(135deg, var(--dynamic-bg-start), var(--dynamic-bg-end));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.36), 0 0 28px var(--dynamic-glow);
+            color: #fff;
+        }
+
+        #player.theme-dynamic .progress-bar-fill,
+        #player.theme-dynamic .pill-progress-fill,
+        #player.theme-dynamic .eq span,
+        #player.theme-dynamic .soundwave-bars span {
+            background: var(--dynamic-accent);
+            box-shadow: 0 0 10px var(--dynamic-glow);
+        }
+
+        #player.theme-dynamic.layout-vinyl .vinyl-center {
+            border-color: var(--dynamic-accent);
+            box-shadow: 0 0 14px var(--dynamic-glow);
+        }
+
+        /* --- Classic player model --- */
+        #player.layout-classic {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px;
+            border-radius: 18px;
+            width: clamp(400px, 94vw, 580px);
+            min-height: 150px;
+        }
+
+        #player.layout-classic .cover-art-wrap {
+            width: 118px;
+            height: 118px;
+            flex-shrink: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #player.layout-classic .player-main {
+            gap: 8px;
+            min-width: 0;
+        }
+
+        #player.layout-classic .now-playing-tag {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        #player.layout-classic .header-row { gap: 8px; }
+        #player.layout-classic .artist { font-size: 13px; font-weight: 600; }
+        #player.layout-classic .title { font-size: clamp(18px, 3vw, 25px); }
+        #player.layout-classic .soundwave-bars { display: none; }
+
+        #player.layout-vinyl {
+            width: clamp(520px, 94vw, 780px);
+            min-height: 340px;
+            padding: 28px 38px;
+            border-radius: 42px;
+        }
+
+        #player.layout-vinyl .turntable-deck {
+            width: 310px;
+            height: 310px;
+        }
+
+        #player.layout-vinyl .vinyl-disc {
+            width: 280px;
+            height: 280px;
+        }
+
+        #player.layout-vinyl .vinyl-center {
+            width: 142px;
+            height: 142px;
+        }
+
+        #player.layout-vinyl .tonearm {
+            width: 86px;
+            height: 172px;
+            top: 8px;
+            right: 4px;
+            transform-origin: 62px 28px;
+        }
+
+        #player.layout-vinyl:not(.playing) .tonearm { transform: rotate(-30deg); }
+        #player.layout-vinyl .now-playing-tag { font-size: 18px; margin-bottom: 28px; }
+        #player.layout-vinyl .artist { font-size: 23px; text-transform: none; }
+        #player.layout-vinyl .title { font-size: clamp(26px, 4vw, 42px); }
 
         #player.theme-dynamic .progress-bar-fill {
             background: var(--dynamic-accent);
@@ -708,6 +840,141 @@
             from { height: 3px; opacity: 0.55; }
             to { height: 16px; opacity: 1.0; }
         }
+
+        #player.theme-dynamic.layout-classic .progress-bar-fill {
+            background: var(--dynamic-accent);
+            box-shadow: 0 0 8px var(--dynamic-glow);
+        }
+
+        #player.theme-dynamic.layout-vinyl .player-main {
+            max-width: 390px;
+        }
+
+        #player.theme-dynamic.layout-vinyl .now-playing-tag {
+            color: rgba(255, 255, 255, 0.68);
+            margin-bottom: 20px;
+        }
+
+        #player.theme-dynamic.layout-vinyl .title {
+            font-size: clamp(26px, 4vw, 40px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        #player.theme-dynamic.layout-vinyl .artist {
+            font-size: 20px;
+            text-transform: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+        }
+
+        #player.theme-dynamic.layout-vinyl .turntable-deck {
+            width: 310px;
+            height: 310px;
+        }
+
+        #player.theme-dynamic.layout-vinyl .vinyl-disc {
+            width: 280px;
+            height: 280px;
+        }
+
+        #player.theme-dynamic.layout-vinyl .vinyl-center {
+            width: 142px;
+            height: 142px;
+        }
+
+        #player.theme-dynamic.layout-vinyl .tonearm {
+            width: 86px;
+            height: 172px;
+            top: 8px;
+            right: 4px;
+            transform-origin: 62px 28px;
+        }
+
+        #player.theme-dynamic.layout-vinyl:not(.playing) .tonearm {
+            transform: rotate(-30deg);
+        }
+
+        #player.theme-dynamic.layout-classic {
+            width: min(580px, calc(100vw - 16px));
+            max-width: calc(100vw - 16px);
+            max-height: calc(100vh - 16px);
+            min-height: 0;
+            padding: clamp(6px, 2.4vw, 14px);
+            gap: clamp(8px, 2.75vw, 16px);
+        }
+
+        #player.theme-dynamic.layout-classic .cover-art-wrap {
+            width: min(118px, 20vw, max(48px, calc(100vh - 48px)));
+            height: auto;
+            aspect-ratio: 1;
+        }
+
+        #player.theme-dynamic.layout-classic .player-main {
+            flex: 1 1 0;
+            max-width: min(390px, 68%);
+        }
+
+        #player.theme-dynamic.layout-vinyl {
+            --vinyl-deck-size: clamp(110px, min(40vw, calc(100vh - 64px)), 310px);
+            --vinyl-disc-size: clamp(100px, min(36vw, calc(100vh - 78px)), 280px);
+            width: min(780px, calc(100vw - 16px));
+            max-width: calc(100vw - 16px);
+            max-height: calc(100vh - 16px);
+            min-height: 0;
+            padding: clamp(8px, min(3vh, 28px), 28px) clamp(8px, min(4.8vw, 38px), 38px);
+            gap: clamp(6px, 2.5vw, 20px);
+            border-radius: clamp(18px, 5vw, 42px);
+        }
+
+        #player.theme-dynamic.layout-vinyl .player-main {
+            flex: 1 1 0;
+            width: 60%;
+            max-width: min(390px, 60%);
+            min-width: 0;
+        }
+
+        #player.theme-dynamic.layout-vinyl .turntable-deck {
+            flex: 0 1 var(--vinyl-deck-size);
+            width: var(--vinyl-deck-size);
+            height: var(--vinyl-deck-size);
+        }
+
+        #player.theme-dynamic.layout-vinyl .vinyl-disc {
+            width: var(--vinyl-disc-size);
+            height: var(--vinyl-disc-size);
+        }
+
+        #player.theme-dynamic.layout-vinyl .vinyl-center {
+            width: 50%;
+            height: auto;
+            aspect-ratio: 1;
+        }
+
+        #player.theme-dynamic.layout-vinyl .tonearm {
+            width: clamp(38px, min(11vw, 10vh), 86px);
+            height: auto;
+            aspect-ratio: 1 / 2;
+            top: clamp(2px, 1vh, 8px);
+            right: 2px;
+            transform-origin: 72% 16%;
+        }
+
+        @media (max-height: 250px) {
+            #player.theme-dynamic.layout-vinyl {
+                --vinyl-deck-size: max(64px, calc(100vh - 48px));
+                --vinyl-disc-size: max(58px, calc(100vh - 58px));
+                padding-top: 6px;
+                padding-bottom: 6px;
+            }
+
+            #player.theme-dynamic.layout-vinyl .now-playing-tag { margin-bottom: 6px; }
+            #player.theme-dynamic.layout-vinyl .artist { font-size: clamp(12px, 3vh, 20px); }
+            #player.theme-dynamic.layout-vinyl .title { font-size: clamp(14px, 5vh, 32px); }
+        }
     </style>
 </head>
 
@@ -807,6 +1074,7 @@
                     <span id="time-total">0:00</span>
                 </div>
             </div>
+
         </div>
 
         <!-- Pill Layout Container -->
@@ -873,24 +1141,19 @@
         // ==========================================================================
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || '';
-        const theme = urlParams.get('theme') || 'glass';
-        const layout = urlParams.get('layout') || 'standard';
+        const theme = 'dynamic';
+        const requestedLayout = urlParams.get('layout') || 'classic';
+        const supportedLayouts = new Set(['classic', 'vinyl']);
+        const layout = supportedLayouts.has(requestedLayout) ? requestedLayout : 'classic';
 
-        if (theme !== 'dynamic' && DOM.themeStyle) {
-            DOM.themeStyle.href = `/music/css/${theme}.css`;
+        if (DOM.themeStyle) {
+            DOM.themeStyle.href = '/music/css/glass.css';
         }
         DOM.player.classList.add(`theme-${theme}`, `layout-${layout}`);
 
         // Layout-specific DOM adjustments
-        if (layout === 'pill') {
-            if (DOM.elPlayerMain) DOM.elPlayerMain.style.display = 'none';
+        if (layout === 'vinyl') {
             if (DOM.elCoverWrap) DOM.elCoverWrap.style.display = 'none';
-            if (DOM.elPillExtra) DOM.elPillExtra.style.display = 'flex';
-        } else if (layout === 'vinyl' || layout === 'floating') {
-            if (DOM.elCoverWrap) DOM.elCoverWrap.style.display = 'none';
-        } else if (layout === 'standard' || layout === 'card') {
-            if (DOM.elCardPlay) DOM.elCardPlay.style.display = 'flex';
-            if (DOM.elBadgesWrap) DOM.elBadgesWrap.style.display = 'none';
         }
 
         let hideTimer = null;
@@ -942,11 +1205,19 @@
                 const bgStart = `rgba(${Math.round(avgR * 0.35)}, ${Math.round(avgG * 0.35)}, ${Math.round(avgB * 0.35)}, 0.9)`;
                 const bgEnd = `rgba(${Math.round(avgR * 0.15)}, ${Math.round(avgG * 0.15)}, ${Math.round(avgB * 0.15)}, 0.96)`;
                 const glow = `rgba(${avgR}, ${avgG}, ${avgB}, 0.4)`;
+                const classicR = Math.round(244 * 0.78 + avgR * 0.22);
+                const classicG = Math.round(233 * 0.78 + avgG * 0.22);
+                const classicB = Math.round(215 * 0.78 + avgB * 0.22);
+                const borderR = Math.round(178 * 0.55 + avgR * 0.45);
+                const borderG = Math.round(155 * 0.55 + avgG * 0.45);
+                const borderB = Math.round(142 * 0.55 + avgB * 0.45);
 
                 DOM.player.style.setProperty('--dynamic-accent', accent);
                 DOM.player.style.setProperty('--dynamic-bg-start', bgStart);
                 DOM.player.style.setProperty('--dynamic-bg-end', bgEnd);
                 DOM.player.style.setProperty('--dynamic-glow', glow);
+                DOM.player.style.setProperty('--classic-surface', `rgb(${classicR}, ${classicG}, ${classicB})`);
+                DOM.player.style.setProperty('--classic-border', `rgb(${borderR}, ${borderG}, ${borderB})`);
             } catch (e) {
                 // Fallback default on CORS restricted images
                 DOM.player.style.setProperty('--dynamic-accent', '#3B82F6');
