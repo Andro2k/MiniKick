@@ -14,6 +14,12 @@ from frontend.widgets import (
 )
 from .music_mockup import MusicOverlayMockupWidget
 
+_MUSIC_OVERLAY_LAYOUTS = {
+    "classic": "music.overlay.layout_classic",
+    "vinyl": "music.overlay.layout_vinyl",
+}
+_DEFAULT_MUSIC_OVERLAY_LAYOUT = "classic"
+
 def _format_time(ms: int) -> str:
     if ms <= 0:
         return "00:00"
@@ -244,24 +250,11 @@ class MusicPlayerSettingsPanel(QWidget):
         lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
         lbl_layout.setProperty("role", "body")
         self.combo_music_layout = NoWheelComboBox(self)
-        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_floating"), "floating")
-        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_pill"), "pill")
-        self.combo_music_layout.addItem(self.i18n.get("music.overlay.layout_standard"), "standard")
+        for layout_id, translation_key in _MUSIC_OVERLAY_LAYOUTS.items():
+            self.combo_music_layout.addItem(self.i18n.get(translation_key), layout_id)
 
         layout_setting_row.addWidget(lbl_layout)
         layout_setting_row.addWidget(self.combo_music_layout)
-
-        theme_layout = create_row_layout(spacing=SPACING_MD)
-        lbl_theme = QLabel(self.i18n.get("music.overlay.theme_label"), parent=self)
-        lbl_theme.setProperty("role", "body")
-        self.combo_music_theme = NoWheelComboBox(self)
-        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_dynamic"), "dynamic")
-        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_glass"), "glass")
-        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_neon"), "neon")
-        self.combo_music_theme.addItem(self.i18n.get("music.overlay.theme_card"), "card")
-        
-        theme_layout.addWidget(lbl_theme)
-        theme_layout.addWidget(self.combo_music_theme)
 
         preview_layout = create_col_layout(spacing=SPACING_SM)
         
@@ -281,7 +274,6 @@ class MusicPlayerSettingsPanel(QWidget):
         preview_layout.addWidget(self.mockup_widget)
 
         self.combo_music_layout.currentIndexChanged.connect(self._update_mockup_preview)
-        self.combo_music_theme.currentIndexChanged.connect(self._update_mockup_preview)
         self._update_mockup_preview()
 
         self.btn_copy_music_url = ModernButton(
@@ -293,39 +285,38 @@ class MusicPlayerSettingsPanel(QWidget):
 
         self.card_overlay_url.addLayout(url_info)
         self.card_overlay_url.addLayout(layout_setting_row)
-        self.card_overlay_url.addLayout(theme_layout)
         self.card_overlay_url.addLayout(preview_layout)
         self.card_overlay_url.addWidget(self.btn_copy_music_url)
         self.panel_layout.addWidget(self.card_overlay_url, alignment=Qt.AlignmentFlag.AlignTop)
 
     _RECOMMENDED_DIMENSIONS = {
-        "floating": "580 × 280",
-        "vinyl": "580 × 280",
-        "standard": "580 × 180",
-        "pill": "580 × 80"
+        "classic": "580 × 190",
+        "vinyl": "780 × 380",
     }
 
     def _update_mockup_preview(self):
-        layout = self.combo_music_layout.currentData() or "floating"
-        theme = self.combo_music_theme.currentData() or "dynamic"
-        self.mockup_widget.set_configuration(layout, theme)
+        layout = self._selected_music_layout()
+        self.mockup_widget.set_configuration(layout)
         dim = self._RECOMMENDED_DIMENSIONS.get(layout, "580 × 180")
         self.lbl_recommended_dim.setText(
             self.i18n.get("music.overlay.recommended_dim").replace("{dim}", dim)
         )
 
     def _copy_music_overlay_url(self):
-        layout = self.combo_music_layout.currentData() or "standard"
-        theme = self.combo_music_theme.currentData() or "glass"
+        layout = self._selected_music_layout()
         url = self._music_overlay_url
         if url:
             sep = "&" if "?" in url else "?"
-            url += f"{sep}layout={layout}&theme={theme}"
+            url += f"{sep}layout={layout}"
             QApplication.clipboard().setText(url)
             original = self.btn_copy_music_url.text()
             self.btn_copy_music_url.setText(self.i18n.get("rewards.obs.copied"))
             self.btn_copy_music_url.setEnabled(False)
             QTimer.singleShot(2000, lambda: self._reset_copy_btn(original))
+
+    def _selected_music_layout(self) -> str:
+        layout = self.combo_music_layout.currentData()
+        return layout if layout in _MUSIC_OVERLAY_LAYOUTS else _DEFAULT_MUSIC_OVERLAY_LAYOUT
 
     def _reset_copy_btn(self, original_text: str):
         self.btn_copy_music_url.setText(original_text)

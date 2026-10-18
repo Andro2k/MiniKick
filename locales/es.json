@@ -963,19 +963,13 @@
             "title": "Reproductor de Música"
         },
         "overlay": {
-            "layout_floating": "Disco de Vinilo (Vinyl Spin)",
+            "layout_classic": "Reproductor Clásico",
             "layout_label": "Diseño del Overlay:",
-            "layout_pill": "Cápsula Minimal (Pill Bar)",
-            "layout_standard": "Tarjeta Estándar (Card)",
+            "layout_vinyl": "Disco de Vinilo",
             "preview_sample_artist": "Tame Impala",
             "preview_sample_title": "Tame Impala - The Less I Know The Better",
             "preview_title": "Vista Previa del Overlay",
             "recommended_dim": "Tamaño recomendado en OBS: {dim}",
-            "theme_card": "Tarjeta Satinada (Card)",
-            "theme_dynamic": "Dinámico (Auto-Color de Álbum)",
-            "theme_glass": "Glassmorphism (Frosted Glass)",
-            "theme_label": "Tema Visual:",
-            "theme_neon": "Brillo Neón",
             "url_desc": "Copia esta URL y agrégala como fuente de navegador en OBS para mostrar la portada y detalles del tema en pantalla.",
             "url_title": "Overlay de Música (OBS)"
         },

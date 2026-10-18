@@ -46,7 +46,6 @@ __all__ = [
     "sync_dual_platform_switches",
     "render_styled_frame_background",
     "InspectorPropertyRow",
-    "BaseView",
     "ViewHeader",
     "SectionHeader",
     "SettingRow",
@@ -86,13 +85,12 @@ __all__ = [
     "CategorySuggestionsPopup",
     "CategoryItemWidget",
     "SearchableComboBox",
-    "SearchableComboPopup"
+    "SearchableComboPopup",
 ]
+
 
 def __getattr__(name: str):
     if name == "BaseView":
         from frontend.views.base_view import BaseView
         return BaseView
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
-

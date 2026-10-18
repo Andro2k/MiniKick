@@ -8,9 +8,12 @@ from .chat import (
     ChatMessageDTO,
     MessagePipeline,
     PiperVoiceManager,
+    PiperVoiceDownloadWorker,
+    DEFAULT_PIPER_VOICE_ID,
     SpamService,
     TimerService,
     TTSManager,
+    GiphyService,
 )
 from .overlay import OverlayServerManager, WebSocketClient
 from .rewards import RewardsService, generate_media_thumbnail
@@ -42,9 +45,12 @@ __all__ = [
     "ChatMessageDTO",
     "MessagePipeline",
     "PiperVoiceManager",
+    "PiperVoiceDownloadWorker",
+    "DEFAULT_PIPER_VOICE_ID",
     "SpamService",
     "TimerService",
     "TTSManager",
+    "GiphyService",
     "OverlayServerManager",
     "WebSocketClient",
     "RewardsService",

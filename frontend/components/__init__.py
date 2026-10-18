@@ -7,7 +7,7 @@ from . import widgets
 
 from .chat import (BotMutePanel, ChatDisplayPanel,
     ChatOverlaySettingsPanel, ChatOverlayMockupWidget,
-    ChatTtsSettingsPanel, VoiceSettingRow,
+    ChatTtsSettingsPanel, VoiceSettingRow, ChatSpamPanel,
 )
 from .music import (MusicStatsPanel,MusicPlayerSettingsPanel,
     MusicSettingsPanel,MusicCommandsPanel,
@@ -40,6 +40,7 @@ __all__ = [
     "ChatOverlayMockupWidget",
     "ChatTtsSettingsPanel",
     "VoiceSettingRow",
+    "ChatSpamPanel",
     "MusicStatsPanel",
     "MusicPlayerSettingsPanel",
     "MusicSettingsPanel",
