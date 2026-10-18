@@ -30,7 +30,7 @@ class MusicOverlayMockupWidget(QWidget):
         sample_artist = self.i18n.get("music.overlay.preview_sample_artist")
 
         if self.layout_mode == "vinyl":
-            self._draw_floating_layout(painter, w, h, bg_brush, border_pen, accent_color, text_main, text_sub, sample_title, sample_artist)
+            self._draw_floating_layout(painter, w, h, bg_brush, border_pen, text_main, text_sub, sample_title, sample_artist)
         else:
             self._draw_standard_layout(painter, w, h, bg_brush, border_pen, accent_color, text_main, text_sub, sample_title, sample_artist)
 
@@ -61,6 +61,13 @@ class MusicOverlayMockupWidget(QWidget):
         card_y = (h - card_h) / 2
         return QRectF(card_x, card_y, card_w, card_h), card_x, card_y, card_w, card_h
 
+    def _draw_card_background(self, p: QPainter, w: int, h: int, bg_brush, border_pen, card_h: int, corner_radius: int) -> tuple[float, float, float, float]:
+        card_rect, card_x, card_y, card_w, card_h = self._compute_centered_card(w, h, 440, card_h)
+        p.setPen(border_pen)
+        p.setBrush(bg_brush)
+        p.drawRoundedRect(card_rect, corner_radius, corner_radius)
+        return card_x, card_y, card_w, card_h
+
     def _draw_album_art_placeholder(self, p: QPainter, art_x: float, art_y: float, art_size: float, corner_radius: float, with_third_stop: bool = False):
         art_grad = QLinearGradient(art_x, art_y, art_x + art_size, art_y + art_size)
         art_grad.setColorAt(0.0, QColor("#F43F5E"))
@@ -78,12 +85,8 @@ class MusicOverlayMockupWidget(QWidget):
         p.setPen(color)
         p.drawText(rect, align, self._elide(text, font, rect.width()))
 
-    def _draw_floating_layout(self, p: QPainter, w: int, h: int, bg_brush, border_pen, accent_color, text_main, text_sub, title: str, artist: str):
-        card_rect, card_x, card_y, card_w, card_h = self._compute_centered_card(w, h, 440, 144)
-
-        p.setPen(border_pen)
-        p.setBrush(bg_brush)
-        p.drawRoundedRect(card_rect, 28, 28)
+    def _draw_floating_layout(self, p: QPainter, w: int, h: int, bg_brush, border_pen, text_main, text_sub, title: str, artist: str):
+        card_x, card_y, card_w, card_h = self._draw_card_background(p, w, h, bg_brush, border_pen, 144, 28)
 
         scale = min(card_w / 440, card_h / 144)
         pad = 22 * scale
@@ -161,11 +164,7 @@ class MusicOverlayMockupWidget(QWidget):
         p.restore()
 
     def _draw_standard_layout(self, p: QPainter, w: int, h: int, bg_brush, border_pen, accent_color, text_main, text_sub, title: str, artist: str):
-        card_rect, card_x, card_y, card_w, card_h = self._compute_centered_card(w, h, 440, 132)
-
-        p.setPen(border_pen)
-        p.setBrush(bg_brush)
-        p.drawRoundedRect(card_rect, 20, 20)
+        card_x, card_y, card_w, card_h = self._draw_card_background(p, w, h, bg_brush, border_pen, 132, 20)
         scale = min(card_w / 440, card_h / 132)
         art_size = min(94 * scale, card_h - 20 * scale, card_w * 0.25)
         art_x = card_x + 12 * scale

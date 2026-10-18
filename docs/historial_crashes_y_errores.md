@@ -36,6 +36,7 @@
 | **INC-024** | Pyrefly `unknown-name`: `logger` no definido en `resolve_icon_path` | Diagnóstico estático de Pyrefly en `frontend/common/paths.py:24` | v1.6.4 | `✅ Solventado` | `frontend/common/paths.py` | v1.6.4 (`WT-1.6.4_04`) |
 | **INC-025** | Respuesta de `!sr` sin nombre cuando la búsqueda asíncrona rechaza una canción por duración | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/providers/music/youtube_provider.py`, `backend/workers/music_worker.py` | v1.6.4 (`WT-1.6.4_06`) |
 | **INC-026** | `!vol` sin argumento muestra instrucciones en vez del volumen actual | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/handlers/music_handler.py`, `backend/controllers/music_controller.py` | v1.6.4 (`WT-1.6.4_06`) |
+| **INC-027** | Dos pruebas de `ParameterUsageVisitor` fallaban al pasar una ruta de tipo `str` | Reporte de pruebas del proyecto (`resources/tests/test_unused_parameter_manager.py`) | v1.6.5 | `✅ Solventado` | `resources/tools/unused_parameter_manager.py` | v1.6.5 (`WT-1.6.5_06`) |
 
 ---
 
@@ -699,6 +700,25 @@
 * **Solución**: El controlador mantiene el valor actual de volumen, sincronizado al inicializar y al cambiar el volumen. `!vol` sin argumento responde con ese valor; la forma `!vol 0-100` conserva la función de ajuste.
 * **Verificación**: Revisión estática de los caminos de inicialización, cambio y consulta; no se ejecutaron pruebas automatizadas.
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.4/WT-1.6.4_06.md`
+
+---
+
+### INC-027: Pruebas de `ParameterUsageVisitor` fallan con rutas de tipo `str`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA**
+* **Reportes Asociados**: Salida de `pytest resources/tests -q` compartida por el usuario; dos casos fallaban en `resources/tests/test_unused_parameter_manager.py`.
+* **Fecha y Versión del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza de la Excepción**:
+  ```text
+  AttributeError: 'str' object has no attribute 'relative_to'
+  resources/tools/unused_parameter_manager.py, ParameterUsageVisitor.__init__
+  ```
+* **Causa Raíz**: El visitante esperaba un objeto `Path` y llamaba `relative_to` directamente. Las pruebas le pasan una cadena de ruta, que no implementa ese método.
+* **Archivos y Módulos Modificados**: `resources/tools/unused_parameter_manager.py`.
+* **Solución Implementada**: Convertir la entrada a `Path` al inicializar el visitante y, si la ruta no está dentro de la raíz del proyecto, conservarla en formato POSIX en vez de propagar `ValueError`.
+* **Pruebas y Verificación**: Las dos pruebas de `resources/tests/test_unused_parameter_manager.py` pasan. La suite completa obtuvo 241 aprobadas y 2 fallidas por bloqueo de red (`WinError 10013`) en pruebas de búsqueda de GIF no relacionadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_06.md`.
 
 ---
 

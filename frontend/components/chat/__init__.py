@@ -4,7 +4,7 @@ from .bot_mute import BotMutePanel
 from .chat_display import ChatDisplayPanel
 from .overlay_settings import ChatOverlaySettingsPanel
 from .chat_mockup import ChatOverlayMockupWidget
-from .tts_settings import ChatTtsSettingsPanel, VoiceSettingRow
+from .tts_settings import ChatTtsSettingsPanel, VoiceSettingRow, PlatformToggleItem
 from .spam_panel import ChatSpamPanel
 
 __all__ = [
@@ -14,5 +14,6 @@ __all__ = [
     "ChatOverlayMockupWidget",
     "ChatTtsSettingsPanel",
     "ChatSpamPanel",
-    "VoiceSettingRow"
+    "VoiceSettingRow",
+    "PlatformToggleItem",
 ]
