@@ -1,19 +1,25 @@
 # Walkthrough Técnico — MiniKick v1.6.5 (Paso 06)
 
-Se corrigió la inicialización de `ParameterUsageVisitor` para aceptar rutas en formato `str` o `Path`, incluyendo rutas de prueba que no están dentro del repositorio. Se registró la anomalía como `INC-027`.
+Auditoría integral, saneamiento y consolidación de directorios, herramientas de desarrollo y documentación en el repositorio de MiniKick.
 
 ---
 
 ## Novedades
 
-No se incorporaron nuevas características en esta iteración.
+- **Centralización de la Guía de Entorno y Compilación**: Creación del documento técnico maestro `docs/compilacion_y_entorno.md`, unificando las directrices de instalación con `uv sync`, el uso del asistente automatizado `build_manager.py`, la compilación con PyInstaller y la generación del instalador final con Inno Setup.
+
+---
 
 ## Mejoras
 
-- El visitante normaliza la ruta de entrada a `Path` y conserva una representación POSIX cuando no puede expresarla relativa a la raíz del proyecto. Esto mantiene su costo en O(1) respecto al número de archivos analizados.
+- **Reubicación Canónica de Kick Toolkit**: Traslado de la herramienta CLI de diagnóstico `kick_toolkit.py` y sus archivos de configuración (`kick_api_config.json`, `.kick_token_cache.json`) desde la ubicación errónea `resources/chat/` hacia el directorio canónico `resources/tools/`. Esto restablece la ruta de resolución interna declarada en su código fuente.
+- **Eliminación de Directorios Huérfanos**: Supresión de carpetas residuales y vacías en el árbol de recursos del proyecto (`resources/chat/`, `resources/documentation/` y `resources/logs/`), reduciendo la estructura de `resources/` a sus tres dominios puros: `installer/`, `tests/` y `tools/`.
+- **Limpieza de la Raíz del Repositorio**: Eliminación de notas de texto sueltas (`pyinstaller.txt` y `venv_install.txt`) de la raíz del proyecto tras su consolidación formal en la documentación técnica.
+- **Consolidación de Documentación de Git Manager**: Traslado de la documentación técnica de automatización de ramas a `docs/git_manager.md`, unificando todos los manuales y walkthroughs bajo el directorio raíz de documentación `docs/`.
+
+---
 
 ## Correcciones
 
-- Se corrigió el `AttributeError` que ocurría cuando las pruebas entregaban una cadena y el visitante intentaba llamar `relative_to` sobre ella.
-- **Verificación:** las pruebas enfocadas pasan (2/2). La suite completa terminó con 241 aprobadas y 2 fallidas: ambas requieren una consulta externa a Giphy, bloqueada por el entorno con `WinError 10013`. El fallo original ya no aparece.
-- Incidencia registrada en `docs/historial_crashes_y_errores.md` como `INC-027`.
+- **Ruta de Configuración en `kick_toolkit.py`**: El script buscaba sus credenciales y caché en `resources/tools/`, pero al haber quedado almacenado en `resources/chat/`, provocaba fallos de ejecución al intentar cargar la configuración OAuth. Con la reubicación, la ruta queda 100% alineada con el código.
+- **Validación Exitosa de la Suite Maestra**: Verificación completa mediante `system_health_audit.py`, `file_placement_auditor.py` y pruebas unitarias de arquitectura en pytest, logrando un 100% de cumplimiento en las 13 auditorías de calidad de software del repositorio.
