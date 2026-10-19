@@ -37,6 +37,8 @@
 | **INC-025** | Respuesta de `!sr` sin nombre cuando la búsqueda asíncrona rechaza una canción por duración | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/providers/music/youtube_provider.py`, `backend/workers/music_worker.py` | v1.6.4 (`WT-1.6.4_06`) |
 | **INC-026** | `!vol` sin argumento muestra instrucciones en vez del volumen actual | Reporte de usuario en el chat de música | v1.6.4 | `✅ Solventado` | `backend/handlers/music_handler.py`, `backend/controllers/music_controller.py` | v1.6.4 (`WT-1.6.4_06`) |
 | **INC-027** | Dos pruebas de `ParameterUsageVisitor` fallaban al pasar una ruta de tipo `str` | Reporte de pruebas del proyecto (`resources/tests/test_unused_parameter_manager.py`) | v1.6.5 | `✅ Solventado` | `resources/tools/unused_parameter_manager.py` | v1.6.5 (`WT-1.6.5_06`) |
+| **INC-028** | ImportError por token de color no exportado desde `frontend.common` | Reporte de usuario al iniciar la aplicacion | v1.6.5 | `✅ Solventado` | `frontend/common/__init__.py` | v1.6.5 (`WT-1.6.5_08`) |
+| **INC-029** | `role_manager.py` calculaba mal la raiz del proyecto al ejecutarse desde `resources/tools/frontend` | Reporte de usuario al ejecutar la auditoria de roles | v1.6.5 | `✅ Solventado` | `resources/tools/frontend/role_manager.py` | v1.6.5 (`WT-1.6.5_09`) |
 
 ---
 
@@ -730,3 +732,41 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 3. Si es un fallo no registrado o nuevo:
    - Diagnosticar y resolver bajo el flujo estricto (Plan de Implementación $\to$ Pruebas $\to$ Walkthrough).
    - **Agregar obligatoriamente una nueva entrada `INC-XXX` en este archivo** detallando la causa raíz, archivos modificados y pruebas asociadas.
+
+
+---
+
+### INC-028: Tokens de tema no exportados por `frontend.common`
+
+* **Estado**: Solventado
+* **Severidad**: BAJA (bloqueaba el arranque de la aplicacion).
+* **Reporte Asociado**: Traza de usuario al ejecutar `uv run .\main.py`.
+* **Fecha y Version del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza de la Excepcion**:
+  ```text
+  ImportError: cannot import name 'COLOR_CALLOUT_WARNING_LIGHT' from 'frontend.common'
+  ```
+* **Causa Raiz**: Los tokens estaban definidos en `frontend/common/theme.py`, pero no reexportados por `frontend/common/__init__.py`, aunque `chat_mockup.py` los importaba desde la fachada `frontend.common`. La comprobacion posterior encontro tambien ausentes `COLOR_CODE_LINK` y `COLOR_LATEX_MATH`.
+* **Archivos Afectados**: `frontend/common/__init__.py`.
+* **Solucion**: Se reexportaron los cinco tokens `COLOR_CALLOUT_*` y los tokens `COLOR_CODE_LINK` y `COLOR_LATEX_MATH`, manteniendo sus definiciones centralizadas en `theme.py`.
+* **Verificacion**: `import frontend.main_window` correcto. `resources/tools/system_health_audit.py --quick --verbose`: 12/12 PASS. No se ejecuto la suite de pruebas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_08.md`.
+
+
+---
+
+### INC-029: Ruta incorrecta de `theme.py` en el auditor de roles
+
+* **Estado**: `\u2705 Solventado`
+* **Severidad**: **MEDIA** (la herramienta daba un falso aprobado con cero roles analizados).
+* **Reporte Asociado**: Salida de `uv run .\\role_manager.py` desde `resources/tools/frontend`; intentaba abrir `resources/frontend/common/theme.py`.
+* **Fecha y Version del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  [ERROR] theme.py no fue encontrado en: ...\resources\frontend\common\theme.py
+  ```
+* **Causa Raiz**: La raiz se calculaba subiendo dos directorios desde un script ubicado bajo `resources/tools/frontend`, por lo que apuntaba a `resources` en lugar de a la raiz del repositorio. Ademas, el parser devolvia colecciones vacias ante la ruta inexistente y podia informar un aprobado falso.
+* **Archivos y Modulos Modificados**: `resources/tools/frontend/role_manager.py`.
+* **Solucion Implementada**: Se localiza la raiz buscando `frontend/common/theme.py` entre los directorios ascendentes. Las rutas faltantes ahora generan un error no cero y un mensaje claro.
+* **Pruebas y Verificacion**: Ejecutado desde la carpeta del auditor con `--strict`: 74 roles y 27 estados definidos/en uso, sin faltantes ni elementos sin uso. La auditoria rapida de salud aprobo 12/12 herramientas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_09.md`.

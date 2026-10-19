@@ -4,8 +4,10 @@ from PySide6.QtWidgets import (QWidget, QHBoxLayout, QLabel, QLineEdit, QListWid
                                QFrame, QPushButton, QListWidgetItem, QVBoxLayout)
 from PySide6.QtCore import Qt, Signal, QEvent, QSize
 from frontend.widgets import ModernButton, ModernCard, ModernSwitch, SettingRow, SectionHeader
+from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     COLOR_RED, get_icon_colored,
+    ICON_BUTTON_SIZE_COMPACT,
     MARGIN_NONE, MARGIN_MD, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAG_BADGE, MARGIN_TAB_PANEL,
     SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
 )
@@ -179,14 +181,14 @@ class BotMutePanel(QWidget):
             fm = lbl_name.fontMetrics()
             font_height = fm.height()
             icon_size = max(14, int(font_height * 0.75))
-            btn_size = max(22, font_height + 4)
+            btn_size = ICON_BUTTON_SIZE_COMPACT
             
             if icon_size not in self._trash_icon_cache:
                 self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", COLOR_RED, size=icon_size)
             
             btn_delete.setIcon(self._trash_icon_cache[icon_size])
             btn_delete.setIconSize(QSize(icon_size, icon_size))
-            btn_delete.setFixedSize(btn_size, btn_size)
+            configure_icon_only_button(btn_delete, size=btn_size)
             
             text_width = fm.horizontalAdvance(lbl_name.text())
             total_width = btn_size + text_width + 20

@@ -5,9 +5,11 @@ from PySide6.QtCore import Signal, Qt, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common import (
     COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
-    get_icon_colored, MARGIN_NONE, SPACING_NONE, SPACING_XS,
+    ICON_BUTTON_SIZE_COMPACT,
+    get_icon_colored, get_qcolor_with_alpha, MARGIN_NONE, SPACING_NONE, SPACING_XS,
 )
 from frontend.widgets import ModernTable, ModernTableCard
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class DragDropQueueTable(ModernTable):
     row_moved = Signal(int, int)
@@ -83,7 +85,7 @@ class DragDropQueueTable(ModernTable):
             if not row_rect.isEmpty():
                 painter = QPainter(self.viewport())
                 painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-                painter.fillRect(row_rect, QColor(46, 205, 112, 22))
+                painter.fillRect(row_rect, get_qcolor_with_alpha(COLOR_GREEN, 22))
                 pen = QPen(QColor(COLOR_GREEN), 2, Qt.PenStyle.DashLine)
                 painter.setPen(pen)
                 painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -189,7 +191,7 @@ class MusicQueuePanel(QWidget):
         btn_delete.setIconSize(QSize(14, 14))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
-        btn_delete.setFixedSize(QSize(24, 24))
+        configure_icon_only_button(btn_delete, size=ICON_BUTTON_SIZE_COMPACT)
         btn_delete.clicked.connect(lambda *args, idx=index: self.remove_queue_item_requested.emit(idx))
 
         cell_layout.addWidget(btn_delete)

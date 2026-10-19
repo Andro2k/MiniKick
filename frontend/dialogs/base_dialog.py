@@ -9,6 +9,7 @@ from frontend.common import (
     COLOR_RED, COLOR_AMBER, COLOR_BLUE, COLOR_GREEN,
     COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
     COLOR_WHITE, PATH_ICON_HELP,
+    get_qcolor_with_alpha,
     SPACING_2XS, SPACING_MD, SPACING_LG,
     MARGIN_NONE, MARGIN_XL
 )
@@ -94,7 +95,7 @@ class ModernFramelessShell(QDialog):
         self.glow = QGraphicsDropShadowEffect(self)
         self.glow.setBlurRadius(30)
         self.glow.setOffset(0, 0)
-        self.glow.setColor(QColor(0, 0, 0, 0))
+        self.glow.setColor(QColor(Qt.GlobalColor.transparent))
         self.container.setGraphicsEffect(self.glow)
 
         self.main_layout.addWidget(self.container)
@@ -104,13 +105,14 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell = QPushButton(self.container)
         self.btn_close_shell.setProperty("role", "btn_ghost")
         self.btn_close_shell.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.btn_close_shell.setFixedSize(28, 28)
         self.btn_close_shell.setAutoDefault(False)
         self.btn_close_shell.setDefault(False)
         if ModernFramelessShell._icon_close is None:
             ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg", size=14)
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
         self.btn_close_shell.setIconSize(QSize(14, 14))
+        from frontend.widgets.controls_widget import configure_icon_only_button
+        configure_icon_only_button(self.btn_close_shell)
         self.btn_close_shell.clicked.connect(self.reject)
         self.btn_close_shell.move(init_w - 36, 8)
         self.btn_close_shell.raise_()
@@ -179,7 +181,7 @@ class ModernFramelessShell(QDialog):
         self.container.setProperty("state", state)
         self.container.style().unpolish(self.container)
         self.container.style().polish(self.container)
-        self.glow.setColor(glow_color if glow_color else QColor(0, 0, 0, 0))
+        self.glow.setColor(glow_color if glow_color else QColor(Qt.GlobalColor.transparent))
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -646,7 +648,7 @@ class ModernWizardPanel(ModernFramelessShell):
 class ModernConfirmDialog(ModernModal):
     def __init__(self, i18n, parent=None, title_text="", body_text=""):
         super().__init__(title=title_text, icon_path=PATH_ICON_HELP, icon_bg_color=COLOR_RED, width=420, parent=parent)
-        self.set_dialog_state("danger", QColor(239, 68, 68, 60))
+        self.set_dialog_state("danger", get_qcolor_with_alpha(COLOR_RED, 60))
         
         body_label = QLabel(body_text)
         body_label.setProperty("role", "body")

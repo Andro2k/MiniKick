@@ -10,6 +10,7 @@ from frontend.common import (
     MARGIN_NONE, MARGIN_SM, MARGIN_MD, MARGIN_V_SM,
     SPACING_2XS, SPACING_SM, SPACING_MD
 )
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class Sidebar(QFrame):
     view_selected = Signal(str)
@@ -53,6 +54,7 @@ class Sidebar(QFrame):
         self.logo_btn = QPushButton()
         self.logo_btn.setIcon(get_icon("logo.svg")) 
         self.logo_btn.setIconSize(QSize(32, 32))
+        configure_icon_only_button(self.logo_btn)
         self.logo_btn.setProperty("role", "btn_ghost")
         
         self.title_label = QLabel("MiniKick")
@@ -65,7 +67,7 @@ class Sidebar(QFrame):
         self.btn_toggle.setProperty("role", "btn_ghost")
         self.btn_toggle.setIcon(get_icon_colored("chevron-left-pipe.svg", COLOR_NEUTRAL_400, 20)) 
         self.btn_toggle.setIconSize(QSize(24, 24))
-        self.btn_toggle.setFixedSize(36, 36)
+        configure_icon_only_button(self.btn_toggle)
         self.btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_toggle.clicked.connect(self.toggle_sidebar)
 
@@ -127,7 +129,7 @@ class Sidebar(QFrame):
         self.btn_collapsed_update.setProperty("role", "action_outlined")
         self.btn_collapsed_update.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_400, 18))
         self.btn_collapsed_update.setIconSize(QSize(18, 18))
-        self.btn_collapsed_update.setFixedSize(36, 36)
+        configure_icon_only_button(self.btn_collapsed_update)
         self.btn_collapsed_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_collapsed_update.clicked.connect(self._on_update_action_clicked)
         self.btn_collapsed_update.setVisible(False)
@@ -174,6 +176,7 @@ class Sidebar(QFrame):
         self.btn_dismiss_update.setProperty("role", "btn_dismiss")
         self.btn_dismiss_update.setIcon(get_icon_colored("x-filled.svg", COLOR_NEUTRAL_400, 14))
         self.btn_dismiss_update.setIconSize(QSize(14, 14))
+        configure_icon_only_button(self.btn_dismiss_update)
         self.btn_dismiss_update.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_dismiss_update.setToolTip(self.i18n.get("main.sidebar.update_card.tooltip_dismiss"))
         self.btn_dismiss_update.clicked.connect(self._dismiss_update_card)
@@ -469,11 +472,12 @@ class Sidebar(QFrame):
             btn.setToolTip("" if show else btn.property("original_text"))
             btn.setProperty("collapsed", not show)
             if show:
+                btn.setProperty("icon_only", False)
                 btn.setMinimumWidth(0)
                 btn.setMaximumWidth(16777215)
                 btn.setFixedHeight(36)
             else:
-                btn.setFixedSize(36, 36)
+                configure_icon_only_button(btn)
             btn.style().unpolish(btn)
             btn.style().polish(btn)
             self._position_badge(btn)

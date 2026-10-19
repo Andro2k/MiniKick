@@ -4,13 +4,15 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QPushButton, QButtonGroup, QS
 from PySide6.QtCore import Qt, Signal, QSize
 from frontend.common import (
     get_icon_colored, COLOR_WHITE, COLOR_NEUTRAL_400,
+    ICON_BUTTON_SIZE,
     SPACING_2XS, MARGIN_2XS
 )
+from .controls_widget import configure_icon_only_button
 
 class ModernSegmentedControl(QFrame):
     value_changed = Signal(str)
 
-    def __init__(self, parent=None, button_size: QSize = QSize(32, 28), icon_size: QSize = QSize(16, 16)):
+    def __init__(self, parent=None, button_size: QSize = QSize(ICON_BUTTON_SIZE, ICON_BUTTON_SIZE), icon_size: QSize = QSize(16, 16)):
         super().__init__(parent)
         self.setProperty("role", "segmented_control")
         self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
@@ -32,7 +34,7 @@ class ModernSegmentedControl(QFrame):
         btn.setProperty("role", "segmented_item")
         btn.setCheckable(True)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn.setFixedSize(self._button_size)
+        configure_icon_only_button(btn, size=self._button_size)
         btn.setIconSize(self._icon_size)
         if tooltip:
             btn.setToolTip(tooltip)

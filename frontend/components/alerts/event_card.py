@@ -570,7 +570,6 @@ class AlertEventCard(QWidget):
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
-        btn_browse_media.setFixedSize(30, 30)
         btn_browse_media.clicked.connect(self._browse_media)
 
         l_mp.addWidget(self.edit_media, 1)
@@ -600,7 +599,6 @@ class AlertEventCard(QWidget):
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))
-        btn_browse_sound.setFixedSize(30, 30)
         btn_browse_sound.clicked.connect(self._browse_sound)
 
         l_sp.addWidget(self.edit_sound, 1)

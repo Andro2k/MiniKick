@@ -5,11 +5,11 @@ from PySide6.QtWidgets import (
     QWidget, QSizePolicy, QApplication
 )
 from PySide6.QtCore import Qt, QUrl
-from PySide6.QtGui import QColor, QDesktopServices, QFont
+from PySide6.QtGui import QDesktopServices, QFont
 from .base_dialog import ModernModal
 from frontend.widgets import create_text_label
 from frontend.common import (
-    get_assets_path, COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED,
+    get_assets_path, COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, get_qcolor_with_alpha,
     markdown_to_github_html, SPACING_MD, MARGIN_V_XS
 )
 
@@ -25,7 +25,7 @@ class ReleaseNotesDialog(ModernModal):
             width=700,
             parent=parent
         )
-        self.set_dialog_state("accent", QColor(46, 205, 112, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_GREEN, 60))
         self._release_url = "https://github.com/Andro2k/MiniKick/releases/latest"
         self._worker = None
 

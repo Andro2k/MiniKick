@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButt
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
                               NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader,
                               create_col_layout, create_row_layout)
+from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
     COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
@@ -84,7 +85,7 @@ class VoiceSettingRow(QWidget):
             self.btn_test = QPushButton()
             self.btn_test.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, size=14))
             self.btn_test.setIconSize(QSize(14, 14))
-            self.btn_test.setFixedSize(28, 28)
+            configure_icon_only_button(self.btn_test)
             self.btn_test.setToolTip(tooltip_text)
             self.btn_test.setProperty("role", "action_outlined")
 

@@ -6,11 +6,10 @@ from PySide6.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QFrame
 )
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QColor
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_error_label
-from frontend.common import get_assets_path, COLOR_RED, COLOR_PURE_WHITE, MARGIN_LG, SPACING_MD, SPACING_XS
+from frontend.common import get_assets_path, COLOR_RED, COLOR_PURE_WHITE, get_qcolor_with_alpha, MARGIN_LG, SPACING_MD, SPACING_XS
 
 _ACTIVE_CRASH_WORKERS = set()
 
@@ -46,7 +45,7 @@ class CrashReportDialog(ModernModal):
 
         icon_path = get_assets_path("icons/bug-filled.svg")
         super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=COLOR_RED, width=580, parent=parent)
-        self.set_dialog_state("danger", QColor(239, 68, 68, 80))
+        self.set_dialog_state("danger", get_qcolor_with_alpha(COLOR_RED, 80))
         self._setup_crash_form()
 
     def _setup_crash_form(self):

@@ -14,6 +14,7 @@ from frontend.common import (
     SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
     MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL
 )
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ScheduleQuickChangePanel(QWidget):
     refresh_info_requested = Signal()
@@ -54,7 +55,7 @@ class ScheduleQuickChangePanel(QWidget):
         self.btn_refresh = QPushButton()
         self.btn_refresh.setProperty("role", "action_outlined")
         self.btn_refresh.setIcon(self._icon_refresh)
-        self.btn_refresh.setFixedSize(32, 32)
+        configure_icon_only_button(self.btn_refresh)
         self.btn_refresh.setToolTip(self.i18n.get("stream_info.status.refresh_tooltip"))
         self.btn_refresh.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_refresh.clicked.connect(self.refresh_info_requested.emit)

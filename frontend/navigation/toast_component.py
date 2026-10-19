@@ -8,6 +8,7 @@ from frontend.common import (
     MARGIN_LG, SPACING_MD, SPACING_2XS
 )
 from frontend.widgets import create_row_layout
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ModernToast(QFrame):
     expired = Signal(object)
@@ -57,6 +58,7 @@ class ModernToast(QFrame):
         btn_close.setProperty("role", "btn_ghost")
         btn_close.setIcon(ModernToast._pixmap_cache["close"])
         btn_close.setIconSize(QSize(14, 14))
+        configure_icon_only_button(btn_close)
         btn_close.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_close.clicked.connect(self.dismiss)
         

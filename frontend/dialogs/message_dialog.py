@@ -1,9 +1,8 @@
 # frontend\dialogs\message_editor_dialog.py
 
-from PySide6.QtGui import QColor
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, VariableTextEdit
-from frontend.common import get_assets_path, COLOR_GREEN
+from frontend.common import get_assets_path, COLOR_GREEN, get_qcolor_with_alpha
 
 class MessageEditorDialog(ModernModal):
     def __init__(self, current_text: str, i18n, parent=None):
@@ -15,7 +14,7 @@ class MessageEditorDialog(ModernModal):
             parent=parent
         )
         self.i18n = i18n
-        self.set_dialog_state("accent", QColor(46, 205, 112, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_GREEN, 60))
 
         self.text_edit = VariableTextEdit()
         self.text_edit.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))
