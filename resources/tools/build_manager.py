@@ -2,6 +2,7 @@
 
 import os
 import re
+import shutil
 import sys
 import subprocess
 
@@ -128,6 +129,49 @@ def build_executable():
     generate_version_info()
     return run_cmd(["uv", "run", "python", "-m", "PyInstaller", "--clean", "--noconfirm", "MiniKick.spec"], "Compilando MiniKick con PyInstaller")
 
+def compile_installer():
+    """Compila el instalador Inno Setup disponible en este equipo."""
+    print("\n--- Compilación del instalador Inno Setup ---")
+    iscc_path = shutil.which("ISCC.exe") or shutil.which("ISCC")
+    if not iscc_path:
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        candidates = [
+            os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), "Inno Setup 6", "ISCC.exe"),
+            os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "Inno Setup 6", "ISCC.exe"),
+            os.path.join(local_app_data, "Programs", "Inno Setup 7", "ISCC.exe"),
+            os.path.join(local_app_data, "Programs", "Inno Setup 6", "ISCC.exe"),
+        ]
+        iscc_path = next((path for path in candidates if os.path.isfile(path)), None)
+
+    if not iscc_path:
+        print("[ERROR] No se encontró ISCC.exe. Instala Inno Setup 6/7 o agrega ISCC.exe a PATH.")
+        return False
+
+    installer_script = os.path.join(BASE_DIR, "instalador.iss")
+    executable = os.path.join(BASE_DIR, "dist", "MiniKick", "MiniKick.exe")
+    if not os.path.isfile(installer_script):
+        print(f"[ERROR] No se encontró el script Inno Setup: {installer_script}")
+        return False
+    if not os.path.isfile(executable):
+        print("[ERROR] Falta dist/MiniKick/MiniKick.exe. Ejecuta primero la compilación PyInstaller.")
+        return False
+    if not run_cmd([iscc_path, installer_script], "Compilando instalador MiniKick"):
+        return False
+
+    output_name = f"MiniKick_Installer_v{get_current_app_version()}.exe"
+    output_path = os.path.join(BASE_DIR, "Output", output_name)
+    if not os.path.isfile(output_path):
+        print(f"[ERROR] No se generó el instalador esperado: {output_path}")
+        return False
+    print(f"[OK] Instalador listo: {os.path.relpath(output_path, BASE_DIR)}")
+    return True
+
+def package_installer():
+    """Build the application executable and its distributable installer."""
+    if not build_executable():
+        return False
+    return compile_installer()
+
 def full_pipeline():
     print("\n=======================================================")
     print("      PIPELINE COMPLETO DE ACTUALIZACIÓN Y COMPILACIÓN")
@@ -224,10 +268,12 @@ def show_menu():
         print("4. Actualizar todas las librerías (uv lock --upgrade + uv sync)")
         print("5. Compilar ejecutable (PyInstaller MiniKick.spec)")
         print("6. Pipeline completo (Actualizar + Versionar + Compilar)")
-        print("7. Salir")
+        print("7. Compilar instalador Inno Setup (requiere build previo)")
+        print("8. Empaquetar ejecutable e instalador")
+        print("9. Salir")
         print("=======================================================")
         try:
-            choice = input("Selecciona una opción (1-7): ").strip()
+            choice = input("Selecciona una opción (1-9): ").strip()
         except (KeyboardInterrupt, EOFError):
             print("\n")
             break
@@ -245,7 +291,11 @@ def show_menu():
             build_executable()
         elif choice == "6":
             full_pipeline()
-        elif choice in ("7", "q", "exit"):
+        elif choice == "7":
+            compile_installer()
+        elif choice == "8":
+            package_installer()
+        elif choice in ("9", "q", "exit"):
             print("Saliendo...")
             break
         else:
@@ -261,6 +311,8 @@ def main():
     parser.add_argument("--install-venv", "-i", action="store_true", help="Instalar y sincronizar .venv con uv sync")
     parser.add_argument("--upgrade", "-u", action="store_true", help="Actualizar dependencias con uv lock --upgrade")
     parser.add_argument("--build", "-b", action="store_true", help="Compilar ejecutable con PyInstaller")
+    parser.add_argument("--installer", action="store_true", help="Compilar instalador Inno Setup desde dist/MiniKick")
+    parser.add_argument("--package", action="store_true", help="Compilar ejecutable y luego el instalador distribuible")
     parser.add_argument("--all", "-a", action="store_true", help="Ejecutar pipeline completo de build")
     parser.add_argument("--json", action="store_true", help="Exportar reporte de verificación en formato JSON")
 
@@ -283,6 +335,10 @@ def main():
         upgrade_dependencies()
     elif args.build:
         build_executable()
+    elif args.installer:
+        sys.exit(0 if compile_installer() else 1)
+    elif args.package:
+        sys.exit(0 if package_installer() else 1)
     elif args.all:
         full_pipeline()
     else:
