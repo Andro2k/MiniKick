@@ -1,57 +1,64 @@
-# Guía de Compilación, Entorno y Empaquetado — MiniKick
+# Guía de compilación, entorno e instalación de MiniKick
 
-Esta guía centraliza los procedimientos de configuración del entorno virtual de desarrollo y la compilación/empaquetado del ejecutable oficial de MiniKick.
+Esta guía resume la preparación del entorno, la generación del instalador de Windows y los métodos de distribución para usuarios.
 
----
-
-## 1. Configuración del Entorno Virtual (Venv)
-
-### Opción Recomendada (UV):
-MiniKick utiliza `uv` como gestor de paquetes de alto rendimiento:
+## 1. Preparar el entorno de desarrollo
 
 ```powershell
-# Sincronizar e instalar dependencias completas del lockfile
 uv sync
 ```
 
-### Opción Automatizada (Build Manager):
-También puedes emplear el asistente interactivo de desarrollo:
-
-```powershell
-# Asistente de compilación y entorno
-uv run python .\resources\tools\build_manager.py
-```
-
----
-
-## 2. Compilación del Ejecutable de MiniKick
-
-### Opción Automatizada (Recomendada):
-El gestor unificado se encarga de validar la versión semántica en `version.py`, actualizar `version_info.txt`, generar los artefactos de PyInstaller y compilar el instalador Inno Setup:
+Para abrir el administrador interactivo:
 
 ```powershell
 uv run python .\resources\tools\build_manager.py
 ```
 
-### Compilación Directa con PyInstaller:
-Si requieres compilar únicamente los binarios sin generar el instalador:
+## 2. Compilar el ejecutable y el instalador
+
+Instala Inno Setup 6 o 7 y ejecuta desde la raíz del repositorio:
 
 ```powershell
-uv run pyinstaller --clean --noconfirm MiniKick.spec
+uv run python .\resources\tools\build_manager.py --package
 ```
 
-Los binarios empaquetados se ubicarán en `dist/MiniKick/`.
-
----
-
-## 3. Generación del Instalador (Inno Setup)
-
-Para compilar el asistente de instalación final de Windows:
+El comando genera el ejecutable con PyInstaller y luego compila Inno Setup. El instalador versionado queda en `Output/MiniKick_Installer_v<VERSION>.exe`. Para compilar solo el instalador desde un ejecutable ya generado:
 
 ```powershell
-# Compilar instalador con Inno Setup Compiler (ISCC)
+uv run python .\resources\tools\build_manager.py --installer
+```
+
+El administrador busca `ISCC.exe` en `PATH` y en las ubicaciones comunes de Inno Setup 6/7. También se puede compilar directamente:
+
+```powershell
 & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" instalador.iss
 ```
 
-El instalador compilado se generará en la carpeta `Output/`.
+## 3. Distribuir e instalar desde PowerShell
 
+Publica `scripts/install.ps1` en la rama `main` y adjunta el instalador generado como asset de una release de GitHub. El comando de instalación interactiva será:
+
+```powershell
+irm https://raw.githubusercontent.com/Andro2k/MiniKick/main/scripts/install.ps1 | iex
+```
+
+El script consulta la última release, busca el instalador cuyo nombre coincide con la versión, descarga el asset, compara su SHA-256 con el digest de GitHub y solo entonces ejecuta el instalador. Si falta el asset o el digest, se detiene.
+
+Para inspeccionar el script antes de ejecutarlo y usar instalación silenciosa:
+
+```powershell
+$installerScript = Join-Path $env:TEMP 'minikick-install.ps1'
+Invoke-RestMethod https://raw.githubusercontent.com/Andro2k/MiniKick/main/scripts/install.ps1 -OutFile $installerScript
+Get-Content $installerScript
+& $installerScript -Silent
+```
+
+## 4. Distribuir mediante Winget
+
+Winget requiere una release pública con URL HTTPS directa al instalador y SHA-256 correspondiente a esa versión. Después de publicar el asset, prepara y envía el manifiesto `Andro2k.MiniKick` al repositorio comunitario `microsoft/winget-pkgs`. El paquete se podrá instalar cuando el manifiesto pase la validación y el pull request sea aceptado:
+
+```powershell
+winget install --id Andro2k.MiniKick --exact
+```
+
+Cada release nueva necesita un manifiesto actualizado con la versión, URL y hash de ese instalador. No reutilices el hash de versiones anteriores.
