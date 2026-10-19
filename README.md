@@ -183,7 +183,7 @@ uv run python main.py
 uv run pytest resources/tests
 
 # 5. Ejecutar la auditoría maestra de calidad (11 herramientas)
-uv run python resources/tools/system_health_audit.py --all
+uv run python resources/tools/project_quality_suite.py --all
 
 # 6. Compilar el ejecutable de producción
 uv run pyinstaller --clean --noconfirm MiniKick.spec
