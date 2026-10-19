@@ -39,6 +39,7 @@
 | **INC-027** | Dos pruebas de `ParameterUsageVisitor` fallaban al pasar una ruta de tipo `str` | Reporte de pruebas del proyecto (`resources/tests/test_unused_parameter_manager.py`) | v1.6.5 | `✅ Solventado` | `resources/tools/unused_parameter_manager.py` | v1.6.5 (`WT-1.6.5_06`) |
 | **INC-028** | ImportError por token de color no exportado desde `frontend.common` | Reporte de usuario al iniciar la aplicacion | v1.6.5 | `✅ Solventado` | `frontend/common/__init__.py` | v1.6.5 (`WT-1.6.5_08`) |
 | **INC-029** | `role_manager.py` calculaba mal la raiz del proyecto al ejecutarse desde `resources/tools/frontend` | Reporte de usuario al ejecutar la auditoria de roles | v1.6.5 | `✅ Solventado` | `resources/tools/frontend/role_manager.py` | v1.6.5 (`WT-1.6.5_09`) |
+| **INC-030** | Pruebas de tema conservaban colores literales anteriores a la paleta actual | Salida compartida de `pytest resources/tests -q` | v1.6.5 | `✅ Solventado` | `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 (`WT-1.6.5_11`) |
 
 ---
 
@@ -770,3 +771,23 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Solucion Implementada**: Se localiza la raiz buscando `frontend/common/theme.py` entre los directorios ascendentes. Las rutas faltantes ahora generan un error no cero y un mensaje claro.
 * **Pruebas y Verificacion**: Ejecutado desde la carpeta del auditor con `--strict`: 74 roles y 27 estados definidos/en uso, sin faltantes ni elementos sin uso. La auditoria rapida de salud aprobo 12/12 herramientas.
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_09.md`.
+
+
+---
+
+### INC-030: Pruebas de tema con colores anteriores a la paleta actual
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (fallaban dos aserciones, sin afectar la ejecucion de la aplicacion).
+* **Reportes Asociados**: Salida compartida de `pytest resources/tests -q`; fallaron `test_global_qss_contains_antigravity_tokens` y `test_combobox_and_segmented_action_outlined_style`.
+* **Fecha y Version del Fallo**: 2026-10-18 en MiniKick `v1.6.5`.
+* **Traza de la Excepcion**:
+  ```text
+  AssertionError: '#111215' in qss
+  AssertionError: ... background-color: #141519 ... in GLOBAL_QSS
+  ```
+* **Causa Raiz**: Las pruebas mantenian colores hexadecimales literales de una paleta anterior. Los tokens actuales de `theme.py` ya contienen los valores esperados, pero las aserciones no se habian actualizado.
+* **Archivos y Modulos Modificados**: `resources/tests/test_antigravity_ui_theme.py`, `.vscode/tasks.json`.
+* **Solucion Implementada**: Las aserciones comparan ahora contra los tokens `COLOR_WINDOW_BG`, `COLOR_CARD_BG` y `COLOR_NEUTRAL_900`. Se agregaron tareas de VS Code para ejecutar pytest y el preflight y compilacion del build manager.
+* **Pruebas y Verificacion**: `resources/tests/test_antigravity_ui_theme.py`: 16 aprobadas. `resources/tools/system_health_audit.py --quick --verbose`: 12/12 aprobadas. `build_manager.py --check`: preflight aprobado.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_11.md`.
