@@ -5,7 +5,10 @@ from .block_widget import (
     ModernCard, ModernScrollArea, FadingScrollArea, ExpandableCard, ExpandableSettingCard, ModernDivider,
     create_badge
 )
-from .controls_widget import ModernButton, ModernSwitch, CompactSpinBox, VariableHighlighter, VariableTextEdit
+from .controls_widget import (
+    ModernButton, ModernSwitch, CompactSpinBox, VariableHighlighter,
+    VariableTextEdit, configure_icon_only_button
+)
 from .color_picker import ModernColorPicker
 from .flow_layout import FlowLayout
 from .scalable_illustration import ScalableIllustration
@@ -59,6 +62,7 @@ __all__ = [
     "ModernDivider",
     "create_badge",
     "ModernButton",
+    "configure_icon_only_button",
     "ModernSwitch",
     "CompactSpinBox",
     "VariableHighlighter",

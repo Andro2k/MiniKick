@@ -458,7 +458,6 @@ class TableActionCell(QWidget):
         
     def add_button(self, icon_name: str, color: str, role: str, tooltip: str, callback) -> ModernButton:
         btn = ModernButton("", role=role, parent=self)
-        btn.setFixedSize(24, 24)
         btn.setIcon(get_icon_colored(icon_name, color, size=16))
         btn.setIconSize(QSize(16, 16))
         btn.setToolTip(tooltip)

@@ -12,7 +12,7 @@ from frontend.common import (
     MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_SETTING_ROW
 )
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
-from .controls_widget import ModernSwitch
+from .controls_widget import ModernSwitch, configure_icon_only_button
 from .layout_helpers import create_platform_switches, create_row_layout
 
 class ViewHeader(QFrame):
@@ -347,7 +347,7 @@ class ExpandableCard(QFrame):
         self.btn_expand = QPushButton(self.header_widget)
         self.btn_expand.setIcon(self._icon_down)
         self.btn_expand.setIconSize(QSize(20, 20))
-        self.btn_expand.setFixedSize(30, 30)
+        configure_icon_only_button(self.btn_expand)
         self.btn_expand.setProperty("role", "btn_ghost")
         self.btn_expand.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_expand.clicked.connect(self.toggle_expand)

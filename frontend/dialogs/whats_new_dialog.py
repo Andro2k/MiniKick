@@ -5,13 +5,12 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QScrollArea, QFrame
 )
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
 
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard
 from frontend.common import (
     get_assets_path, get_pixmap_colored,
-    COLOR_ORANGE, COLOR_WHITE,
+    COLOR_ORANGE, COLOR_WHITE, get_qcolor_with_alpha,
     MARGIN_NONE, MARGIN_MD, SPACING_XS, SPACING_SM
 )
 
@@ -47,7 +46,7 @@ class WhatsNewDialog(ModernModal):
             width=540,
             parent=parent
         )
-        self.set_dialog_state("accent", QColor(255, 107, 53, 50))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_ORANGE, 50))
         self._setup_content()
 
     def _setup_content(self):

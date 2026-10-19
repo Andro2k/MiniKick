@@ -8,7 +8,9 @@ from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QLinearGradient
                            QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon)
 from frontend.common import (
     get_icon_colored, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_BLACK,
+    ICON_BUTTON_SIZE,
     COLOR_GREEN, COLOR_KICK_BORDER, COLOR_BORDER_MUTED_FOCUS, COLOR_BORDER_TOP_SHINE,
+    get_qcolor_with_alpha,
     COLOR_SWITCH_TRACK_OFF_0, COLOR_SWITCH_TRACK_OFF_1, COLOR_SWITCH_BORDER_OFF,
     COLOR_SWITCH_TRACK_ON_0, COLOR_SWITCH_TRACK_ON_1,
     COLOR_SWITCH_TRACK_DIS_0, COLOR_SWITCH_TRACK_DIS_1,
@@ -21,6 +23,16 @@ from frontend.common import (
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
 _REGEX_VAR_START = re.compile(r"^\{[a-zA-Z_]+\}")
 
+def configure_icon_only_button(button: QPushButton, size: int | QSize = ICON_BUTTON_SIZE) -> None:
+    button.setProperty("icon_only", True)
+    if isinstance(size, QSize):
+        button.setFixedSize(size)
+    else:
+        button.setFixedSize(size, size)
+    button.style().unpolish(button)
+    button.style().polish(button)
+
+
 class ModernButton(QPushButton):
     def __init__(self, text: str = "", role: str = "action_outlined", icon_name: str = "", 
                  icon_color: str | None = None, icon_size: int = 16, parent=None):
@@ -30,6 +42,13 @@ class ModernButton(QPushButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         if icon_name:
             self.set_icon(icon_name, color=icon_color, size=icon_size)
+
+    def setIcon(self, icon: QIcon):
+        super().setIcon(icon)
+        if icon.isNull() or self.text():
+            self.setProperty("icon_only", False)
+            return
+        configure_icon_only_button(self)
 
     @staticmethod
     def _resolve_role_color(role: str) -> str:
@@ -128,7 +147,7 @@ class ModernSwitch(QAbstractButton):
         if is_enabled:
             shadow_rect = QRectF(handle_x, handle_y + 1.0, handle_size, handle_size)
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QColor(0, 0, 0, 60))
+            painter.setBrush(get_qcolor_with_alpha(COLOR_BLACK, 60))
             painter.drawEllipse(shadow_rect)
 
         thumb_grad = QLinearGradient(handle_x, handle_y, handle_x, handle_y + handle_size)
@@ -143,7 +162,7 @@ class ModernSwitch(QAbstractButton):
             thumb_grad.setColorAt(1.0, QColor(COLOR_SWITCH_THUMB_DIS_1))
 
         painter.setBrush(thumb_grad)
-        painter.setPen(QPen(QColor(0, 0, 0, 30), 0.8))
+        painter.setPen(QPen(get_qcolor_with_alpha(COLOR_BLACK, 30), 0.8))
         painter.drawEllipse(handle_rect)
 
         painter.end()

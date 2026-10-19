@@ -2,9 +2,8 @@
 
 from PySide6.QtWidgets import QLabel, QPushButton
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor
 from .base_dialog import ModernModal
-from frontend.common import get_assets_path, COLOR_GREEN, MARGIN_XL, SPACING_LG
+from frontend.common import get_assets_path, COLOR_GREEN, get_qcolor_with_alpha, MARGIN_XL, SPACING_LG
 
 class AlreadyRunningDialog(ModernModal):
     def __init__(self, i18n, parent=None):
@@ -18,7 +17,7 @@ class AlreadyRunningDialog(ModernModal):
             width=440,
             parent=parent
         )
-        self.set_dialog_state("accent", QColor(46, 205, 112, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_GREEN, 60))
         self.content_layout.setContentsMargins(*MARGIN_XL)
         self.content_layout.setSpacing(SPACING_LG)
 

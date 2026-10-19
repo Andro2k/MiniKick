@@ -10,8 +10,10 @@ from frontend.common import (
     COLOR_NEUTRAL_950,
     COLOR_RED,
     COLOR_GREEN,
+    COLOR_KICK,
     get_icon_colored,
     get_assets_path,
+    get_qcolor_with_alpha,
     SPACING_XL,
     SPACING_MD,
     MARGIN_NONE,
@@ -28,7 +30,7 @@ class UpdateDialog(ModernModal):
             icon_bg_color=COLOR_GREEN, width=400, parent=parent
         )
         self.version = ""
-        self.set_dialog_state("accent", QColor(46, 205, 112, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_GREEN, 60))
         self.header_icon = None
         for lbl in self.container.findChildren(QLabel):
             if lbl.pixmap():
@@ -121,7 +123,7 @@ class UpdateDialog(ModernModal):
         self.lbl_prog_val.setText(f"{percentage}%")
 
     def show_complete(self):
-        self.set_dialog_state("accent", QColor(83, 252, 24, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_KICK, 60))
         if self.header_icon:
             self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
             
@@ -143,7 +145,7 @@ class UpdateDialog(ModernModal):
         self.btn_secondary.show()
 
     def show_no_update(self):
-        self.set_dialog_state("neutral", QColor(0, 0, 0, 0))
+        self.set_dialog_state("neutral", QColor(Qt.GlobalColor.transparent))
         if self.header_icon:
             self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
             
@@ -156,7 +158,7 @@ class UpdateDialog(ModernModal):
         self.btn_secondary.show()
 
     def show_error(self, message: str):
-        self.set_dialog_state("danger", QColor(239, 68, 68, 60))
+        self.set_dialog_state("danger", get_qcolor_with_alpha(COLOR_RED, 60))
         if self.header_icon:
             self.header_icon.setPixmap(get_icon_colored("alert-triangle-filled.svg", COLOR_RED, 48).pixmap(48, 48))
             

@@ -10,6 +10,7 @@ from frontend.common import (
     get_icon_colored, COLOR_WHITE, COLOR_GREEN,
     MARGIN_MD, MARGIN_NONE, MARGIN_XS, SPACING_XS
 )
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class ImageDropzone(QFrame):
     image_selected = Signal(str)
@@ -65,7 +66,7 @@ class ImageDropzone(QFrame):
         self.btn_remove = QPushButton()
         self.btn_remove.setIcon(get_icon_colored("x-filled.svg", COLOR_WHITE, size=16))
         self.btn_remove.setIconSize(QSize(16, 16))
-        self.btn_remove.setFixedSize(28, 28)
+        configure_icon_only_button(self.btn_remove)
         self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_remove.setProperty("role", "action_danger_solid")
         self.btn_remove.setToolTip(self.i18n.get("dialogs.bug_report.remove_image_tooltip"))

@@ -20,6 +20,10 @@ La versión 1.6.5 renueva el overlay de música con dos diseños inspirados en r
 
 * **Ajuste al tamaño de la fuente:** la portada, el disco y el brazo reducen su tamaño para ajustarse a la ventana de OBS. Los títulos y nombres largos se acortan con puntos para evitar que invadan el diseño; el reproductor Classic aprovecha ese espacio sin la fila de controles decorativos.
 
+* **Mejor legibilidad del tema oscuro:** las etiquetas secundarias y los estados de foco destacan mejor sobre los fondos oscuros, y el texto de los botones principales conserva una lectura más clara al interactuar.
+
+* **Botones más simples:** las acciones tienen superficies planas y estados más claros al pasar el cursor o presionarlas, con colores y textos más legibles.
+
 ## Correcciones
 
 * **Diseños no reconocidos en la URL del overlay:** si una URL contiene un modelo que ya no está disponible, el reproductor abre con el diseño Classic para mantener visible la música.

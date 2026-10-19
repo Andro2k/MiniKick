@@ -5,12 +5,39 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy, QWidget, QPushButt
 from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
                               NoWheelComboBox, NoWheelSlider, SearchableComboBox, SectionHeader,
                               create_col_layout, create_row_layout)
+from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
     COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
     MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
     SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
 )
+
+class PlatformToggleItem(QWidget):
+    def __init__(self, icon_name: str, brand_name: str, switch: ModernSwitch,
+                 icon_color: str, tooltip: str = "", parent=None):
+        super().__init__(parent)
+        self.switch = switch
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        layout = create_row_layout(spacing=SPACING_SM, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+
+        icon_lbl = QLabel(parent=self)
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
+        icon_lbl.setFixedSize(18, 18)
+        icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+        lbl = QLabel(brand_name, parent=self)
+        lbl.setProperty("role", "body")
+        layout.addWidget(lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+        layout.addStretch()
+        layout.addWidget(switch, alignment=Qt.AlignmentFlag.AlignVCenter)
+
+        if tooltip:
+            self.setToolTip(tooltip)
+            lbl.setToolTip(tooltip)
+            icon_lbl.setToolTip(tooltip)
 
 class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
@@ -58,7 +85,7 @@ class VoiceSettingRow(QWidget):
             self.btn_test = QPushButton()
             self.btn_test.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, size=14))
             self.btn_test.setIconSize(QSize(14, 14))
-            self.btn_test.setFixedSize(28, 28)
+            configure_icon_only_button(self.btn_test)
             self.btn_test.setToolTip(tooltip_text)
             self.btn_test.setProperty("role", "action_outlined")
 
@@ -113,6 +140,46 @@ class ChatTtsSettingsPanel(QWidget):
         self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
         self.panel_layout.setSpacing(SPACING_MD)
 
+        header_platforms = SectionHeader(self.i18n.get("chat.platforms.title"), parent=self)
+        self.panel_layout.addWidget(header_platforms)
+
+        platforms_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="horizontal")
+        self.sw_plat_kick = ModernSwitch(self)
+        self.sw_plat_kick.setChecked(True)
+        self.sw_plat_twitch = ModernSwitch(self)
+        self.sw_plat_twitch.setChecked(True)
+        self.sw_plat_youtube = ModernSwitch(self)
+        self.sw_plat_youtube.setChecked(True)
+        self.sw_plat_tiktok = ModernSwitch(self)
+        self.sw_plat_tiktok.setChecked(True)
+
+        item_plat_kick = PlatformToggleItem(
+            "brand-kick.svg", self.i18n.get("chat.platforms.kick_title"),
+            self.sw_plat_kick, icon_color=COLOR_KICK,
+            tooltip=self.i18n.get("chat.platforms.kick_desc"), parent=self
+        )
+        item_plat_twitch = PlatformToggleItem(
+            "brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"),
+            self.sw_plat_twitch, icon_color=COLOR_TWITCH,
+            tooltip=self.i18n.get("chat.platforms.twitch_desc"), parent=self
+        )
+        item_plat_youtube = PlatformToggleItem(
+            "brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"),
+            self.sw_plat_youtube, icon_color=COLOR_YOUTUBE,
+            tooltip=self.i18n.get("chat.platforms.youtube_desc"), parent=self
+        )
+        item_plat_tiktok = PlatformToggleItem(
+            "brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"),
+            self.sw_plat_tiktok, icon_color=COLOR_TIKTOK,
+            tooltip=self.i18n.get("chat.platforms.tiktok_desc"), parent=self
+        )
+
+        platforms_card.addWidget(item_plat_kick, stretch=1)
+        platforms_card.addWidget(item_plat_twitch, stretch=1)
+        platforms_card.addWidget(item_plat_youtube, stretch=1)
+        platforms_card.addWidget(item_plat_tiktok, stretch=1)
+        self.panel_layout.addWidget(platforms_card)
+
         self.chk_tts = ModernSwitch(self)
         self.chk_name = ModernSwitch(self)
         self.combo_provider = NoWheelComboBox(self)
@@ -166,33 +233,6 @@ class ChatTtsSettingsPanel(QWidget):
         card_general.add_separator()
         card_general.addWidget(row_speed)
         self.panel_layout.addWidget(card_general)
-
-        header_platforms = SectionHeader(self.i18n.get("chat.platforms.title"), parent=self)
-        self.panel_layout.addWidget(header_platforms)
-
-        platforms_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
-        self.sw_plat_kick = ModernSwitch(self)
-        self.sw_plat_kick.setChecked(True)
-        self.sw_plat_twitch = ModernSwitch(self)
-        self.sw_plat_twitch.setChecked(True)
-        self.sw_plat_youtube = ModernSwitch(self)
-        self.sw_plat_youtube.setChecked(True)
-        self.sw_plat_tiktok = ModernSwitch(self)
-        self.sw_plat_tiktok.setChecked(True)
-
-        row_plat_kick = SettingRow("brand-kick.svg", self.i18n.get("chat.platforms.kick_title"), self.i18n.get("chat.platforms.kick_desc"), self.sw_plat_kick, icon_color=COLOR_KICK, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_twitch = SettingRow("brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"), self.i18n.get("chat.platforms.twitch_desc"), self.sw_plat_twitch, icon_color=COLOR_TWITCH, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_youtube = SettingRow("brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"), self.i18n.get("chat.platforms.youtube_desc"), self.sw_plat_youtube, icon_color=COLOR_YOUTUBE, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_plat_tiktok = SettingRow("brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"), self.i18n.get("chat.platforms.tiktok_desc"), self.sw_plat_tiktok, icon_color=COLOR_TIKTOK, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-
-        platforms_card.addWidget(row_plat_kick)
-        platforms_card.add_separator()
-        platforms_card.addWidget(row_plat_twitch)
-        platforms_card.add_separator()
-        platforms_card.addWidget(row_plat_youtube)
-        platforms_card.add_separator()
-        platforms_card.addWidget(row_plat_tiktok)
-        self.panel_layout.addWidget(platforms_card)
 
         header_roles = SectionHeader(self.i18n.get("chat.roles.title"), parent=self)
         self.panel_layout.addWidget(header_roles)

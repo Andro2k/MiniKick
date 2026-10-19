@@ -9,6 +9,7 @@ from frontend.common import (
     SPACING_MD, SPACING_2XS, MARGIN_SETTING_ROW_COMPACT
 )
 from frontend.widgets import create_col_layout, create_row_layout
+from frontend.widgets.controls_widget import configure_icon_only_button
 
 class PiperVoiceItemWidget(QWidget):
     download_requested = Signal(str)
@@ -62,7 +63,7 @@ class PiperVoiceItemWidget(QWidget):
         self.btn_test = QPushButton(self)
         self.btn_test.setIcon(get_icon_colored("volume-up-filled.svg", COLOR_WHITE, size=14))
         self.btn_test.setIconSize(QSize(14, 14))
-        self.btn_test.setFixedSize(30, 30)
+        configure_icon_only_button(self.btn_test)
         self.btn_test.setProperty("role", "action_outlined")
         self.btn_test.setToolTip(self.i18n.get("chat.status.test_btn_tooltip"))
         self.btn_test.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -73,7 +74,7 @@ class PiperVoiceItemWidget(QWidget):
         self.btn_delete = QPushButton(self)
         self.btn_delete.setIcon(get_icon_colored("trash-filled.svg", COLOR_RED, size=13))
         self.btn_delete.setIconSize(QSize(13, 13))
-        self.btn_delete.setFixedSize(30, 30)
+        configure_icon_only_button(self.btn_delete)
         self.btn_delete.setProperty("role", "action_danger_outlined")
         self.btn_delete.setToolTip(self.i18n.get("piper_dialog.btn_delete_tooltip"))
         self.btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
