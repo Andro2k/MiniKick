@@ -6,7 +6,7 @@ from frontend.widgets import (
     BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
 )
 from frontend.common import (
-    COLOR_WHITE, COLOR_AMBER,
+    COLOR_NEUTRAL_050, COLOR_AMBER,
     MARGIN_H_MD, SPACING_MD, SPACING_SM,
     get_pixmap_colored, is_complete_valid_trigger
 )
@@ -304,7 +304,7 @@ class CommandView(BaseView):
         
         cell.add_button(
             icon_name="edit-filled.svg", 
-            color=COLOR_WHITE, 
+            color=COLOR_NEUTRAL_050,
             role="action_accent_solid", 
             tooltip=self.i18n.get("command.table.tooltip_edit"),
             callback=lambda checked=False, t=trigger_name: self.edit_requested.emit(t)
@@ -312,7 +312,7 @@ class CommandView(BaseView):
         
         cell.add_button(
             icon_name="trash-filled.svg", 
-            color=COLOR_WHITE, 
+            color=COLOR_NEUTRAL_050,
             role="action_danger_solid", 
             tooltip=self.i18n.get("command.table.tooltip_delete"),
             callback=lambda checked=False, t=trigger_name: self._confirm_delete_command(t)

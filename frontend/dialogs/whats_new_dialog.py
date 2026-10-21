@@ -10,7 +10,7 @@ from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard
 from frontend.common import (
     get_assets_path, get_pixmap_colored,
-    COLOR_ORANGE, COLOR_WHITE, get_qcolor_with_alpha,
+    COLOR_ORANGE, COLOR_NEUTRAL_050, get_qcolor_with_alpha,
     MARGIN_NONE, MARGIN_MD, SPACING_XS, SPACING_SM
 )
 
@@ -79,7 +79,7 @@ class WhatsNewDialog(ModernModal):
             self._btn_text,
             role="action_accent_solid",
             icon_name="check-filled.svg",
-            icon_color=COLOR_WHITE,
+            icon_color=COLOR_NEUTRAL_050,
             parent=self.container
         )
         btn_action.setFixedHeight(40)

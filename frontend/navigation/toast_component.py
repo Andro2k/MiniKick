@@ -5,7 +5,7 @@ from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint,
 from frontend.common import (
     COLOR_GREEN, COLOR_RED, COLOR_BLUE, COLOR_NEUTRAL_400, COLOR_AMBER,
     get_icon_colored, get_pixmap_colored,
-    MARGIN_LG, SPACING_MD, SPACING_2XS
+    MARGIN_LG, SPACING_MD, SPACING_XS
 )
 from frontend.widgets import create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
@@ -36,7 +36,7 @@ class ModernToast(QFrame):
         layout.addWidget(self.icon_lbl)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setSpacing(SPACING_XS)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.lbl_title = QLabel(title, self)

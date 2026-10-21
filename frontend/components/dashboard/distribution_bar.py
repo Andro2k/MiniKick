@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import QRectF
 from PySide6.QtGui import QPainter, QColor, QPainterPath
-from frontend.common import COLOR_NEUTRAL_800
+from frontend.common import COLOR_NEUTRAL_950
 
 class SegmentedDistributionBar(QWidget):
     def __init__(self, parent=None):
@@ -31,7 +31,7 @@ class SegmentedDistributionBar(QWidget):
         
         total_p = sum(p for p, _ in self._segments)
         if total_p <= 0:
-            painter.fillRect(rect, QColor(COLOR_NEUTRAL_800))
+            painter.fillRect(rect, QColor(COLOR_NEUTRAL_950))
             return
             
         current_x = 0.0

@@ -6,8 +6,8 @@ from PySide6.QtCore import Qt, Signal, QSize, QEvent
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
 from frontend.common import (
     get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_950,
-    COLOR_RED, COLOR_RED_HOVER, COLOR_GREEN, COLOR_GREEN_HOVER,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_XL,
+    COLOR_RED, COLOR_RED, COLOR_GREEN, COLOR_GREEN_HOVER,
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_XL,
     MARGIN_NONE, MARGIN_MD, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
     MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_SETTING_ROW
 )
@@ -26,7 +26,7 @@ class ViewHeader(QFrame):
         title = QLabel(title_text, parent=self)
         title.setProperty("role", "h1")
         if title_color:
-            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED_HOVER, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
+            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
             title.setProperty("state", color_state)
         
         subtitle = QLabel(subtitle_text, parent=self)
@@ -76,13 +76,13 @@ class SettingRow(QWidget):
             layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignTop)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setSpacing(SPACING_XS)
         
         lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
         lbl_title.setWordWrap(True)
         if title_color:
-            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED_HOVER, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
+            color_state = "danger" if title_color in (COLOR_RED, COLOR_RED, "red") else ("success" if title_color in (COLOR_GREEN, COLOR_GREEN_HOVER, "green") else "normal")
             lbl_title.setProperty("state", color_state)
         
         self.lbl_desc = QLabel(desc_text, parent=self)
@@ -136,7 +136,7 @@ class SliderRow(QWidget):
         header_layout.setSpacing(SPACING_SM)
 
         text_layout = QVBoxLayout()
-        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setSpacing(SPACING_XS)
 
         lbl_title = QLabel(title_text, parent=self)
         lbl_title.setProperty("role", "h3")
@@ -322,7 +322,7 @@ class ExpandableCard(QFrame):
 
         text_layout = QVBoxLayout()
         text_layout.setContentsMargins(*MARGIN_NONE)
-        text_layout.setSpacing(SPACING_2XS)
+        text_layout.setSpacing(SPACING_XS)
         text_layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         self.lbl_title = QLabel(title, self.header_widget)

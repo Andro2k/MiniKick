@@ -8,9 +8,9 @@ from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
 from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
-    COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
-    MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
-    SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
+    MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_MD,
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD
 )
 
 class PlatformToggleItem(QWidget):
@@ -50,7 +50,7 @@ class VoiceSettingRow(QWidget):
         self.btn_test = None
         self.action_button = action_button
 
-        main_layout = create_col_layout(spacing=SPACING_2XS, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+        main_layout = create_col_layout(spacing=SPACING_XS, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
         header_layout = create_row_layout(spacing=SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
@@ -137,7 +137,7 @@ class ChatTtsSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setContentsMargins(*MARGIN_MD)
         self.panel_layout.setSpacing(SPACING_MD)
 
         header_platforms = SectionHeader(self.i18n.get("chat.platforms.title"), parent=self)
@@ -189,7 +189,7 @@ class ChatTtsSettingsPanel(QWidget):
         self.chk_command = ModernSwitch(self)
 
         self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
-        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_WHITE, size=14))
+        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=14))
         self.btn_manage_piper.setIconSize(QSize(14, 14))
         self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
         self.btn_manage_piper.setProperty("role", "action_accent_solid")

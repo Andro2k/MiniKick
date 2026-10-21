@@ -11,7 +11,7 @@ from frontend.widgets import (
 )
 from frontend.common import (
     SPACING_SM, SPACING_MD, SPACING_LG,
-    MARGIN_MD, MARGIN_TAB_PANEL
+    MARGIN_MD
 )
 
 class ScheduleFormPanel(QWidget):
@@ -31,7 +31,7 @@ class ScheduleFormPanel(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        main_layout.setContentsMargins(*MARGIN_MD)
         main_layout.setSpacing(SPACING_MD)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 

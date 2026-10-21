@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplic
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
-    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL,
-    SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD,
+    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
 )
 from frontend.widgets import (
     ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider,
@@ -89,7 +89,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setContentsMargins(*MARGIN_MD)
         self.panel_layout.setSpacing(SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -129,7 +129,7 @@ class MusicPlayerSettingsPanel(QWidget):
         
         info_layout = QVBoxLayout()
         info_layout.setContentsMargins(*MARGIN_NONE)
-        info_layout.setSpacing(SPACING_2XS)
+        info_layout.setSpacing(SPACING_XS)
 
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
         self.lbl_song_title.setProperty("role", "h3")
@@ -237,7 +237,7 @@ class MusicPlayerSettingsPanel(QWidget):
 
         url_info = QVBoxLayout()
         url_info.setContentsMargins(*MARGIN_NONE)
-        url_info.setSpacing(SPACING_2XS)
+        url_info.setSpacing(SPACING_XS)
         lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
         lbl_title.setProperty("role", "h3")
         lbl_desc = create_text_label(self.i18n.get("music.overlay.url_desc"), role="body")

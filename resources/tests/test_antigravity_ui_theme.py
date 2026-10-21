@@ -2,8 +2,8 @@
 
 from PySide6.QtWidgets import QLabel, QPushButton
 from frontend.common import (
-    COLOR_CARD_BG,
-    COLOR_WINDOW_BG,
+    COLOR_NEUTRAL_900,
+    COLOR_NEUTRAL_900,
     GLOBAL_QSS,
     get_global_qss,
 )
@@ -19,8 +19,8 @@ def test_global_qss_contains_antigravity_tokens():
     assert 'role="action_danger_solid"' in qss
     assert 'role="card"' in qss
     assert 'role="nav_button"' in qss
-    assert COLOR_WINDOW_BG in qss
-    assert COLOR_CARD_BG in qss
+    assert COLOR_NEUTRAL_900 in qss
+    assert COLOR_NEUTRAL_900 in qss
 
 def test_section_header_and_setting_row(qapp):
     header = SectionHeader("Test Section")
@@ -351,20 +351,20 @@ def test_combobox_and_segmented_action_outlined_style(qapp):
     from frontend.common.theme import (
         GLOBAL_QSS,
         COLOR_NEUTRAL_900,
-        COLOR_NEUTRAL_850,
+        COLOR_NEUTRAL_950,
         COLOR_NEUTRAL_700,
-        COLOR_SURFACE_HOVER,
+        COLOR_NEUTRAL_750,
         COLOR_BORDER_HOVER,
     )
 
-    assert f"QComboBox {{ background-color: {COLOR_NEUTRAL_850};" in GLOBAL_QSS
+    assert f"QComboBox {{ background-color: {COLOR_NEUTRAL_950};" in GLOBAL_QSS
     assert f"border: 1px solid {COLOR_NEUTRAL_700};" in GLOBAL_QSS
-    assert f"QComboBox:hover {{ background-color: {COLOR_SURFACE_HOVER}; border: 1px solid {COLOR_BORDER_HOVER};" in GLOBAL_QSS
+    assert f"QComboBox:hover {{ background-color: {COLOR_NEUTRAL_750}; border: 1px solid {COLOR_BORDER_HOVER};" in GLOBAL_QSS
 
     assert f'QFrame[role="segmented_control"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {COLOR_NEUTRAL_850}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
 
-    assert f'QFrame[role="segmented_pagination"] {{ background-color: {COLOR_NEUTRAL_850}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_pagination"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
     assert f'border-left: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
 
 def test_dark_palette_and_popup_translucency_standards(qapp):
@@ -372,7 +372,7 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtCore import Qt
     from frontend.common import (
         create_dark_palette, GLOBAL_QSS,
-        COLOR_NEUTRAL_900, COLOR_NEUTRAL_850, COLOR_WHITE
+        COLOR_NEUTRAL_900, COLOR_NEUTRAL_950, COLOR_NEUTRAL_50
     )
     from frontend.widgets import SearchableComboBox, VariableTextEdit, NoWheelDateEdit
     from frontend.widgets.category_search import CategorySuggestionsPopup
@@ -380,8 +380,8 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
     pal = create_dark_palette()
     assert isinstance(pal, QPalette)
     assert pal.color(QPalette.ColorRole.Window).name().lower() == COLOR_NEUTRAL_900.lower()
-    assert pal.color(QPalette.ColorRole.Base).name().lower() == COLOR_NEUTRAL_850.lower()
-    assert pal.color(QPalette.ColorRole.WindowText).name().lower() == COLOR_WHITE.lower()
+    assert pal.color(QPalette.ColorRole.Base).name().lower() == COLOR_NEUTRAL_950.lower()
+    assert pal.color(QPalette.ColorRole.WindowText).name().lower() == COLOR_NEUTRAL_50.lower()
 
     combo = SearchableComboBox()
     assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True

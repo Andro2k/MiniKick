@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QTableWidgetItem, QHeaderVie
 from PySide6.QtCore import Qt, Signal
 from frontend.widgets import ModernTableCard, TableActionCell
 from frontend.dialogs import ModernConfirmDialog
-from frontend.common import COLOR_WHITE, MARGIN_NONE, SPACING_NONE
+from frontend.common import COLOR_NEUTRAL_050, MARGIN_NONE, SPACING_NONE
 
 class ScheduleTablePanel(QWidget):
     new_schedule_clicked = Signal()
@@ -144,7 +144,7 @@ class ScheduleTablePanel(QWidget):
 
         cell.add_button(
             icon_name="edit-filled.svg",
-            color=COLOR_WHITE,
+            color=COLOR_NEUTRAL_050,
             role="action_accent_solid",
             tooltip=self.i18n.get("stream_info.schedule_dialog.title_edit"),
             callback=lambda _, s=sched: self.edit_schedule_clicked.emit(s)
@@ -152,7 +152,7 @@ class ScheduleTablePanel(QWidget):
 
         cell.add_button(
             icon_name="trash-filled.svg",
-            color=COLOR_WHITE,
+            color=COLOR_NEUTRAL_050,
             role="action_danger_solid",
             tooltip=self.i18n.get("stream_info.confirm_delete.title"),
             callback=lambda _, s_id=sched_id: self._confirm_delete_schedule(s_id)

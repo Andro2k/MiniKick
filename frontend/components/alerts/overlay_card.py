@@ -5,7 +5,7 @@ from PySide6.QtCore import Signal, QSize, Qt
 from frontend.widgets import ModernCard, ModernButton, create_row_layout, create_col_layout
 from frontend.common import (
     get_pixmap_colored, COLOR_NEUTRAL_400,
-    MARGIN_MD, SPACING_2XS, SPACING_SM, SPACING_MD
+    MARGIN_MD, SPACING_XS, SPACING_SM, SPACING_MD
 )
 
 class AlertsOverlayCard(ModernCard):
@@ -25,7 +25,7 @@ class AlertsOverlayCard(ModernCard):
         icon_link = QLabel(parent=self)
         icon_link.setPixmap(get_pixmap_colored("link-filled.svg", COLOR_NEUTRAL_400, size=18))
 
-        text_col = create_col_layout(spacing=SPACING_2XS)
+        text_col = create_col_layout(spacing=SPACING_XS)
 
         lbl_obs_title = QLabel(self.i18n.get("alerts.overlay_card.title"), parent=self)
         lbl_obs_title.setProperty("role", "h3")

@@ -5,10 +5,10 @@ from PySide6.QtWidgets import (QFrame, QVBoxLayout, QHBoxLayout, QPushButton,
 from PySide6.QtCore import Qt, QPropertyAnimation, QSize, Signal, QEasingCurve, Property, QEvent
 from PySide6.QtGui import QPainter, QPixmap, QColor
 from frontend.common import (
-    COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_WHITE, COLOR_NEUTRAL_800,
+    COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_NEUTRAL_050, COLOR_NEUTRAL_950,
     get_icon, get_icon_colored, create_circular_pixmap, get_pixmap_colored,
     MARGIN_NONE, MARGIN_SM, MARGIN_MD, MARGIN_V_SM,
-    SPACING_2XS, SPACING_SM, SPACING_MD
+    SPACING_XS, SPACING_SM, SPACING_MD
 )
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -104,7 +104,7 @@ class Sidebar(QFrame):
         
         self.top_nav_layout = QVBoxLayout()
         self.top_nav_layout.setContentsMargins(*MARGIN_NONE)
-        self.top_nav_layout.setSpacing(SPACING_2XS)
+        self.top_nav_layout.setSpacing(SPACING_XS)
         scroll_layout.addLayout(self.top_nav_layout)
         scroll_layout.addStretch(1)
 
@@ -115,7 +115,7 @@ class Sidebar(QFrame):
 
         self.bottom_nav_layout = QVBoxLayout()
         self.bottom_nav_layout.setContentsMargins(*MARGIN_NONE)
-        self.bottom_nav_layout.setSpacing(SPACING_2XS)
+        self.bottom_nav_layout.setSpacing(SPACING_XS)
         scroll_layout.addLayout(self.bottom_nav_layout)
 
         self.scroll_area.setWidget(scroll_content)
@@ -221,7 +221,7 @@ class Sidebar(QFrame):
         self.profile_text_widget = QWidget()
         self.profile_text_layout = QVBoxLayout(self.profile_text_widget)
         self.profile_text_layout.setContentsMargins(*MARGIN_NONE)
-        self.profile_text_layout.setSpacing(SPACING_2XS)
+        self.profile_text_layout.setSpacing(SPACING_XS)
         
         self.profile_name_lbl = QLabel()
         self.profile_name_lbl.setProperty("role", "profile_name")
@@ -290,7 +290,7 @@ class Sidebar(QFrame):
         painter = QPainter(circle_pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
-        painter.setBrush(QColor(COLOR_NEUTRAL_800))
+        painter.setBrush(QColor(COLOR_NEUTRAL_950))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(0, 0, logical_size, logical_size)
         
@@ -346,7 +346,7 @@ class Sidebar(QFrame):
         btn.setProperty("view_name", name)
         btn.setProperty("icon_name", icon_name)        
         
-        icon_active = get_icon_colored(icon_name, COLOR_WHITE, 20)
+        icon_active = get_icon_colored(icon_name, COLOR_NEUTRAL_050, 20)
         icon_inactive = get_icon_colored(icon_name, COLOR_NEUTRAL_400, 20)
         btn.setProperty("icon_active", icon_active)
         btn.setProperty("icon_inactive", icon_inactive)

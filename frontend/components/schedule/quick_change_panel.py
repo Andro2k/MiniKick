@@ -12,7 +12,7 @@ from frontend.common import (
     COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_PURPLE,
     get_icon_colored, get_pixmap_colored,
     SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
-    MARGIN_NONE, MARGIN_MD, MARGIN_TAB_PANEL
+    MARGIN_NONE, MARGIN_MD
 )
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -34,7 +34,7 @@ class ScheduleQuickChangePanel(QWidget):
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        layout.setContentsMargins(*MARGIN_MD)
         layout.setSpacing(SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 

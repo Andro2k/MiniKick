@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPus
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent, QSize
 from frontend.common import (
     get_icon_colored, COLOR_NEUTRAL_400,
-    SPACING_NONE, SPACING_2XS, SPACING_MD,
+    SPACING_NONE, SPACING_XS, SPACING_MD,
     MARGIN_NONE, MARGIN_XS, MARGIN_SM
 )
 from .layout_helpers import render_styled_frame_background
@@ -51,7 +51,7 @@ class CategorySuggestionsPopup(QFrame):
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(*MARGIN_XS)
-        layout.setSpacing(SPACING_2XS)
+        layout.setSpacing(SPACING_XS)
 
         self.list_widget = QListWidget(self)
         self.list_widget.setProperty("role", "category_list")

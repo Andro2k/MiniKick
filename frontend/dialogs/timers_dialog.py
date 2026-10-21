@@ -13,7 +13,7 @@ from frontend.widgets import (
     create_text_label, create_labeled_field
 )
 from frontend.common import (
-    COLOR_WHITE, get_icon_colored,
+    COLOR_NEUTRAL_050, get_icon_colored,
     SPACING_MD, MARGIN_NONE, MARGIN_LG
 )
 
@@ -49,8 +49,8 @@ class TimerConfigWizard(ModernWizardPanel):
         self.timer_id = existing_config.get("id") if existing_config else None
         self.message_rows = []
 
-        self._icon_edit = get_icon_colored("edit-filled.svg", COLOR_WHITE, 14)
-        self._icon_trash = get_icon_colored("trash-filled.svg", COLOR_WHITE, 14)
+        self._icon_edit = get_icon_colored("edit-filled.svg", COLOR_NEUTRAL_050, 14)
+        self._icon_trash = get_icon_colored("trash-filled.svg", COLOR_NEUTRAL_050, 14)
 
         self._setup_ui()
         if self.existing_config:

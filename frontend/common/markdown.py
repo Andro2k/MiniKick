@@ -3,11 +3,11 @@
 import re
 from functools import lru_cache
 from frontend.common.theme import (
-    COLOR_NEUTRAL_900, COLOR_NEUTRAL_850, COLOR_NEUTRAL_800,
-    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_WHITE,
+    COLOR_NEUTRAL_900, COLOR_NEUTRAL_950, COLOR_NEUTRAL_950,
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_NEUTRAL_050,
     COLOR_BLUE, COLOR_PURPLE, COLOR_AMBER, COLOR_GREEN, COLOR_RED,
     COLOR_BLUE_GLOW, COLOR_PURPLE_GLOW, COLOR_AMBER_GLOW, COLOR_GREEN_GLOW, COLOR_RED_GLOW,
-    COLOR_CALLOUT_NOTE_LIGHT, COLOR_CALLOUT_IMPORTANT_LIGHT,
+    COLOR_CALLOUT_NOTE_LIGHT, COLOR_PURPLE_LIGHT,
     COLOR_CALLOUT_WARNING_LIGHT, COLOR_CALLOUT_TIP_LIGHT, COLOR_CALLOUT_CAUTION_LIGHT,
     COLOR_CODE_LINK, COLOR_LATEX_MATH
 )
@@ -24,13 +24,13 @@ _RE_TABLE_DIV   = re.compile(r'^[\s\-:]+$')
 _NERD_FONT_FAMILY = "'GoogleSansCode Nerd Font', 'GoogleSansCode NF', Consolas, monospace"
 _CALLOUT_STYLES = {
     'NOTE': (COLOR_BLUE, COLOR_CALLOUT_NOTE_LIGHT, '\udb80\udefc', 'Note', COLOR_BLUE_GLOW),
-    'IMPORTANT': (COLOR_PURPLE, COLOR_CALLOUT_IMPORTANT_LIGHT, '\udb80\udf61', 'Important', COLOR_PURPLE_GLOW),
+    'IMPORTANT': (COLOR_PURPLE, COLOR_PURPLE_LIGHT, '\udb80\udf61', 'Important', COLOR_PURPLE_GLOW),
     'WARNING': (COLOR_AMBER, COLOR_CALLOUT_WARNING_LIGHT, '\uf40c', 'Warning', COLOR_AMBER_GLOW),
     'TIP': (COLOR_GREEN, COLOR_CALLOUT_TIP_LIGHT, '\udb81\udee8', 'Tip', COLOR_GREEN_GLOW),
     'CAUTION': (COLOR_RED, COLOR_CALLOUT_CAUTION_LIGHT, '\udb80\udc29', 'Caution', COLOR_RED_GLOW)
 }
-_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_800}; color: {COLOR_CODE_LINK}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
-_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_800}; color: {COLOR_NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_CODE_LINK}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
 
 @lru_cache(maxsize=16)
 def markdown_to_github_html(md: str) -> str:
@@ -76,13 +76,13 @@ def markdown_to_github_html(md: str) -> str:
         if in_table and table_rows:
             html_out.append('<table style="border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 12px;">')
             for r_idx, row in enumerate(table_rows):
-                bg_row = COLOR_NEUTRAL_850 if r_idx == 0 else COLOR_NEUTRAL_900
+                bg_row = COLOR_NEUTRAL_950 if r_idx == 0 else COLOR_NEUTRAL_900
                 html_out.append(f'<tr style="background-color: {bg_row};">')
                 cell_tag = 'th' if r_idx == 0 else 'td'
                 cell_color = COLOR_NEUTRAL_400 if r_idx == 0 else COLOR_NEUTRAL_200
                 weight = "font-weight: bold;" if r_idx == 0 else ""
                 for cell in row:
-                    html_out.append(f'<{cell_tag} style="border: 1px solid {COLOR_NEUTRAL_800}; padding: 7px 10px; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>')
+                    html_out.append(f'<{cell_tag} style="border: 1px solid {COLOR_NEUTRAL_950}; padding: 7px 10px; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>')
                 html_out.append('</tr>')
             html_out.append('</table>')
         in_table = False
@@ -120,13 +120,13 @@ def markdown_to_github_html(md: str) -> str:
             continue
 
         if stripped.startswith('# '):
-            html_out.append(f'<h1 style="color: {COLOR_WHITE}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_800}; padding-bottom: 6px; margin: 16px 0 10px 0;">{stripped[2:]}</h1>')
+            html_out.append(f'<h1 style="color: {COLOR_NEUTRAL_050}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_950}; padding-bottom: 6px; margin: 16px 0 10px 0;">{stripped[2:]}</h1>')
         elif stripped.startswith('## '):
-            html_out.append(f'<h2 style="color: {COLOR_WHITE}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_800}; padding-bottom: 4px; margin: 14px 0 8px 0;">{stripped[3:]}</h2>')
+            html_out.append(f'<h2 style="color: {COLOR_NEUTRAL_050}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {COLOR_NEUTRAL_950}; padding-bottom: 4px; margin: 14px 0 8px 0;">{stripped[3:]}</h2>')
         elif stripped.startswith('### '):
             html_out.append(f'<h3 style="color: {COLOR_NEUTRAL_200}; font-size: 14px; font-weight: bold; margin: 10px 0 6px 0;">{stripped[4:]}</h3>')
         elif stripped in ('---', '***'):
-            html_out.append(f'<hr style="border: none; border-top: 1px solid {COLOR_NEUTRAL_800}; margin: 14px 0;" />')
+            html_out.append(f'<hr style="border: none; border-top: 1px solid {COLOR_NEUTRAL_950}; margin: 14px 0;" />')
         elif stripped.startswith(('- ', '* ')):
             html_out.append(f'<div style="color: {COLOR_NEUTRAL_200}; font-size: 13px; margin: 4px 0 4px 16px; line-height: 1.5;">• {stripped[2:]}</div>')
         elif stripped.startswith(('• ', '◦ ')):

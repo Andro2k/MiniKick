@@ -7,10 +7,10 @@ from PySide6.QtCore import Qt, QSize, QSettings, QEvent
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
 from frontend.common import (
     COLOR_RED, COLOR_AMBER, COLOR_BLUE, COLOR_GREEN,
-    COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_BLACK,
-    COLOR_WHITE, PATH_ICON_HELP,
+    COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_NEUTRAL_1000,
+    COLOR_NEUTRAL_050, PATH_ICON_HELP,
     get_qcolor_with_alpha,
-    SPACING_2XS, SPACING_MD, SPACING_LG,
+    SPACING_XS, SPACING_MD, SPACING_LG,
     MARGIN_NONE, MARGIN_XL
 )
 
@@ -412,17 +412,17 @@ class ModernModal(ModernFramelessShell):
         icon_container.setFixedSize(52, 52)
         
         role_dispatch = {
-            COLOR_RED: ("danger_icon", COLOR_WHITE),
-            COLOR_AMBER: ("warning_icon", COLOR_BLACK),
-            COLOR_BLUE: ("info_icon", COLOR_WHITE),
-            COLOR_GREEN: ("accent_icon", COLOR_BLACK),
-            COLOR_TWITCH: ("twitch_icon", COLOR_WHITE),
-            COLOR_YOUTUBE: ("youtube_icon", COLOR_WHITE),
-            COLOR_TIKTOK: ("tiktok_icon", COLOR_BLACK),
-            COLOR_BLACK: ("black_icon", COLOR_WHITE),
+            COLOR_RED: ("danger_icon", COLOR_NEUTRAL_050),
+            COLOR_AMBER: ("warning_icon", COLOR_NEUTRAL_1000),
+            COLOR_BLUE: ("info_icon", COLOR_NEUTRAL_050),
+            COLOR_GREEN: ("accent_icon", COLOR_NEUTRAL_1000),
+            COLOR_TWITCH: ("twitch_icon", COLOR_NEUTRAL_050),
+            COLOR_YOUTUBE: ("youtube_icon", COLOR_NEUTRAL_050),
+            COLOR_TIKTOK: ("tiktok_icon", COLOR_NEUTRAL_1000),
+            COLOR_NEUTRAL_1000: ("black_icon", COLOR_NEUTRAL_050),
         }
         
-        resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", COLOR_BLACK))
+        resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", COLOR_NEUTRAL_1000))
         final_role = icon_role or resolved_role
         final_fg = icon_color or default_fg
         
@@ -540,7 +540,7 @@ class ModernWizardPanel(ModernFramelessShell):
         self.progress_bar.setValue(0)
         self.progress_bar.setProperty("role", "wizard_progress")
         self.panel_layout.addWidget(self.progress_bar)
-        self.panel_layout.addSpacing(SPACING_2XS)
+        self.panel_layout.addSpacing(SPACING_XS)
         
         self.lbl_title = QLabel()
         self.lbl_title.setProperty("role", "h2")

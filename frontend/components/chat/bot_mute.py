@@ -8,8 +8,8 @@ from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     COLOR_RED, get_icon_colored,
     ICON_BUTTON_SIZE_COMPACT,
-    MARGIN_NONE, MARGIN_MD, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAG_BADGE, MARGIN_TAB_PANEL,
-    SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
+    MARGIN_NONE, MARGIN_MD, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAG_BADGE,
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD
 )
 
 class BotMutePanel(QWidget):
@@ -37,7 +37,7 @@ class BotMutePanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setContentsMargins(*MARGIN_MD)
         self.panel_layout.setSpacing(SPACING_MD)
 
         header_commands = SectionHeader(self.i18n.get("chat.mod_commands.section_title"), parent=self, first=True)
@@ -95,7 +95,7 @@ class BotMutePanel(QWidget):
         self.list_bots.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_bots.setProperty("role", "transparent_list")
         self.list_bots.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_bots.setSpacing(SPACING_2XS)
+        self.list_bots.setSpacing(SPACING_XS)
         bots_card.addWidget(self.list_bots)
         self.panel_layout.addWidget(bots_card)
 
@@ -126,7 +126,7 @@ class BotMutePanel(QWidget):
         self.list_words.setResizeMode(QListView.ResizeMode.Adjust)
         self.list_words.setProperty("role", "transparent_list")
         self.list_words.setFrameShape(QFrame.Shape.NoFrame)
-        self.list_words.setSpacing(SPACING_2XS)
+        self.list_words.setSpacing(SPACING_XS)
         words_card.addWidget(self.list_words)
         self.panel_layout.addWidget(words_card)
 
@@ -217,7 +217,7 @@ class BotMutePanel(QWidget):
         tag_widget.setProperty("role", "bot_tag")
         layout = QHBoxLayout(tag_widget)
         layout.setContentsMargins(*MARGIN_TAG_BADGE)
-        layout.setSpacing(SPACING_2XS)
+        layout.setSpacing(SPACING_XS)
         layout.setSizeConstraint(QHBoxLayout.SizeConstraint.SetFixedSize)
         
         lbl_name = QLabel(text)

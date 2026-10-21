@@ -14,9 +14,9 @@ from frontend.widgets import (
     create_col_layout, create_row_layout, ModernScrollArea
 )
 from frontend.common import (
-    get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_GREEN,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_MD, SPACING_LG,
-    MARGIN_NONE, MARGIN_2XS, MARGIN_SM, MARGIN_XL, MARGIN_H_MD, MARGIN_SETTING_ROW
+    get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, COLOR_GREEN,
+    SPACING_NONE, SPACING_XS, SPACING_MD, SPACING_LG,
+    MARGIN_NONE, MARGIN_XS, MARGIN_SM, MARGIN_XL, MARGIN_H_MD, MARGIN_SETTING_ROW
 )
 from frontend.components.dialogs import PiperVoiceItemWidget
 
@@ -60,7 +60,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         header_layout.addWidget(icon_lbl, alignment=Qt.AlignmentFlag.AlignVCenter)
 
         title_layout = QVBoxLayout()
-        title_layout.setSpacing(SPACING_2XS)
+        title_layout.setSpacing(SPACING_XS)
 
         lbl_title = QLabel(self.i18n.get("piper_dialog.title"), self)
         lbl_title.setProperty("role", "h2")
@@ -136,7 +136,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.btn_import = QPushButton(self.i18n.get("piper_dialog.btn_import"), params_container)
         self.btn_import.setProperty("role", "action_outlined")
         self.btn_import.setToolTip(self.i18n.get("piper_dialog.btn_import_tooltip"))
-        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_WHITE, size=14))
+        self.btn_import.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=14))
         self.btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_import.clicked.connect(self._on_import_model_clicked)
         actions_layout.addWidget(self.btn_import)
@@ -160,8 +160,8 @@ class PiperVoicesDialog(ModernFramelessShell):
         cat_frame = QFrame(self)
         cat_frame.setProperty("role", "segmented_control")
         cat_layout = QHBoxLayout(cat_frame)
-        cat_layout.setContentsMargins(*MARGIN_2XS)
-        cat_layout.setSpacing(SPACING_2XS)
+        cat_layout.setContentsMargins(*MARGIN_XS)
+        cat_layout.setSpacing(SPACING_XS)
 
         self.cat_group = QButtonGroup(self)
         self.cat_group.setExclusive(True)

@@ -3,7 +3,7 @@
 from PySide6.QtCore import Qt, QRectF
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor
 from PySide6.QtWidgets import QWidget
-from frontend.common import COLOR_NEUTRAL_800, COLOR_NEUTRAL_950
+from frontend.common import COLOR_NEUTRAL_950, COLOR_NEUTRAL_950
 
 def init_mockup_painter(widget: QWidget) -> tuple[QPainter, float, float]:
     painter = QPainter(widget)
@@ -15,7 +15,7 @@ def draw_mockup_canvas(
     painter: QPainter,
     w: float,
     h: float,
-    border_color: str = COLOR_NEUTRAL_800,
+    border_color: str = COLOR_NEUTRAL_950,
     bg_color: str = COLOR_NEUTRAL_950,
     radius: float = 10.0
 ) -> QRectF:
