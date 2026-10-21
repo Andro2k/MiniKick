@@ -8,21 +8,19 @@ from pathlib import Path
 from PySide6.QtGui import QPalette, QColor
 from .paths import get_assets_path, resolve_icon_path
 
-COLOR_NEUTRAL_1000 = "#000000"
-COLOR_NEUTRAL_950  = "#171717"
-COLOR_NEUTRAL_900  = "#101010"
-COLOR_NEUTRAL_750  = "#282A32"
-COLOR_NEUTRAL_700  = "#343741"
-COLOR_NEUTRAL_600  = "#4B5563"
-COLOR_NEUTRAL_500  = "#6E7382"
-COLOR_NEUTRAL_400  = "#9CA3AF"
-COLOR_NEUTRAL_200  = "#E4E5E9"
-COLOR_NEUTRAL_050  = "#F4F4F6"
-COLOR_NEUTRAL_000  = "#FFFFFF"
+COLOR_NEUTRAL_999   = "#000000"
+COLOR_NEUTRAL_950   = "#171717"
+COLOR_NEUTRAL_900   = "#101010"
+COLOR_NEUTRAL_750   = "#282A32"
+COLOR_NEUTRAL_700   = "#343741"
+COLOR_NEUTRAL_600   = "#4B5563"
+COLOR_NEUTRAL_500   = "#6E7382"
+COLOR_NEUTRAL_400   = "#9CA3AF"
+COLOR_NEUTRAL_200   = "#E4E5E9"
+COLOR_NEUTRAL_050   = "#F4F4F6"
+COLOR_NEUTRAL_000   = "#FFFFFF"
 
-COLOR_SURFACE_ACTIVE_HOVER = "#2D3038"
-COLOR_SURFACE_PRESSED      = "#1A1B20"
-COLOR_NAV_HOVER            = "#1A1C22"
+COLOR_SURFACE      = "#1A1B20"
 
 COLOR_BORDER_HOVER        = "#484C5A"
 COLOR_BORDER_TOP_SHINE    = "#38363E"
@@ -134,10 +132,11 @@ COLOR_AMBER_GLOW  = "rgba(245, 158, 11, 0.10)"
 COLOR_BLUE_GLOW   = "rgba(59, 130, 246, 0.10)"
 COLOR_PURPLE_GLOW = "rgba(168, 85, 247, 0.10)"
 
-FONT_FAMILY              = "'Google Sans', 'Inter', 'Segoe UI', 'Roboto', -apple-system, sans-serif"
-ICON_BUTTON_SIZE         = 32
-ICON_BUTTON_SIZE_COMPACT = 24
+FONT_FAMILY              = "'Google Sans', 'Inter', -apple-system"
+ICON_BUTTON_NORMAL      = 32
+ICON_BUTTON_COMPACT     = 24
 
+RADIUS_XS   = 2
 RADIUS_SM   = 4
 RADIUS_MD   = 6
 RADIUS_LG   = 10
@@ -175,6 +174,7 @@ MARGIN_TAG_BADGE            = (4, 4, 8, 4)
 PADDING_INPUT     = "6px 10px"
 PADDING_BUTTON    = "6px 14px"
 PADDING_SPINBOX   = "4px 20px 4px 10px"
+PADDING_COMPACT   = "4px"
 PADDING_ITEM      = "4px 6px"
 PADDING_BADGE     = "2px 8px"
 PADDING_CHIP      = "4px 12px"
@@ -182,11 +182,22 @@ PADDING_TAB       = "6px 16px"
 PADDING_MENU_ITEM = "5px 12px 5px 18px"
 
 BORDER_DEFAULT     = f"1.2px solid {COLOR_NEUTRAL_750}"
-BORDER_SUBTLE      = f"1.5px solid {COLOR_NEUTRAL_950}"
+BORDER_SUBTLE      = f"1.2px solid {COLOR_NEUTRAL_950}"
 BORDER_MUTED       = f"1.2px solid {COLOR_NEUTRAL_700}"
 BORDER_TRANSPARENT = "1.2px solid transparent"
+BORDER_THIN_TRANSPARENT = "1px solid transparent"
+BORDER_HOVER       = f"1px solid {COLOR_BORDER_HOVER}"
+BORDER_GREEN_THIN  = f"1px solid {COLOR_GREEN}"
+BORDER_GREEN_MEDIUM = f"1.5px solid {COLOR_GREEN}"
+BORDER_LIGHT       = f"1.2px solid {COLOR_BORDER_LIGHT}"
+BORDER_KICK        = f"1.2px solid {COLOR_KICK_BORDER}"
+BORDER_PURPLE_MEDIUM = f"1.5px solid {COLOR_PURPLE}"
 BORDER_FOCUS       = f"1.2px solid {COLOR_GREEN}"
 BORDER_ERROR       = f"1.2px solid {COLOR_RED}"
+BORDER_TOP_SHINE   = f"1.2px solid {COLOR_BORDER_TOP_SHINE}"
+
+BADGE_MIN_HEIGHT = 18
+BADGE_MAX_HEIGHT = 22
 
 GRADIENT_ACCENT_FILL    = "qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #1E8E4D, stop:1 #15733C)"
 GRADIENT_ACCENT_HOVER   = "qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #23A55A, stop:1 #188546)"
@@ -260,50 +271,50 @@ QLabel[role="section_header"] {{ font-size: {h3}px; font-weight: 600; color: {CO
 QLabel[role="sidebar_section_header"] {{ font-size: 11px; font-weight: 600; color: {COLOR_NEUTRAL_400}; padding: 6px 8px 2px 8px; letter-spacing: 0.5px; background: transparent; }}
 QLabel[role="profile_name"] {{ font-size: {text1}px; font-weight: 600; color: {COLOR_NEUTRAL_050}; background: transparent; }}
 QLabel[role="profile_role"] {{ font-size: {text2}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; background: transparent; }}
-QLabel[role="body"] {{ font-size: {text1}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; }}
-QLabel[role="caption"] {{ font-size: {text2}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; }}
-QLabel[role="monospace"] {{ font-size: {text2}px; color: {COLOR_NEUTRAL_400}; }}
-QLabel[state="normal"] {{ color: {COLOR_NEUTRAL_400}; }}
-QLabel[state="white"] {{ color: {COLOR_NEUTRAL_050}; }}
-QLabel[state="error"] {{ color: {COLOR_RED}; }}
-QLabel[state="danger"] {{ color: {COLOR_RED}; }}
+QLabel[role="body"]     {{ font-size: {text1}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; }}
+QLabel[role="caption"]  {{ font-size: {text2}px; font-weight: 400; color: {COLOR_NEUTRAL_400}; }}
+QLabel[role="monospace"]{{ font-size: {text2}px; color: {COLOR_NEUTRAL_400}; }}
+QLabel[state="normal"]  {{ color: {COLOR_NEUTRAL_400}; }}
+QLabel[state="white"]   {{ color: {COLOR_NEUTRAL_050}; }}
+QLabel[state="error"]   {{ color: {COLOR_RED}; }}
 QLabel[state="success"] {{ color: {COLOR_GREEN}; }}
-QLabel[state="info"] {{ color: {COLOR_BLUE}; }}
+QLabel[state="info"]    {{ color: {COLOR_BLUE}; }}
 QLabel[state="warning"] {{ color: {COLOR_AMBER}; }}
-QLabel[state="bold"] {{ font-weight: 600; }}
+QLabel[state="bold"]    {{ font-weight: 600; }}
 """
 
 
 def _build_button_qss(text1: int) -> str:
     return f"""
 /* --- 3. Flat Buttons --- */
-QPushButton {{ background-color: transparent; color: {COLOR_NEUTRAL_000}; border: 1px solid transparent; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; font-size: {text1}px; font-weight: 500; }}
-QPushButton[icon_only="true"] {{ padding: 0; }}
-QPushButton:focus {{ border-color: transparent; }}
-QPushButton:default {{ border-color: transparent; }}
+QPushButton                     {{ background-color: transparent; color: {COLOR_NEUTRAL_000}; border: {BORDER_THIN_TRANSPARENT}; border-radius: {RADIUS_MD}px; padding: {PADDING_BUTTON}; font-size: {text1}px; font-weight: 500; }}
+QPushButton[icon_only="true"]   {{ padding: 0; }}
+QPushButton:focus               {{ border-color: transparent; }}
+QPushButton:default             {{ border-color: transparent; }}
 
 /* Neutral Action */
-QPushButton[role="action_outlined"] {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_NEUTRAL_750}; }}
-QPushButton[role="action_outlined"]:hover {{ background-color: {COLOR_NEUTRAL_750}; border-color: {COLOR_BORDER_HOVER}; }}
-QPushButton[role="action_outlined"]:pressed {{ background-color: {COLOR_SURFACE_PRESSED}; border-color: {COLOR_NEUTRAL_750}; }}
-QPushButton[role="action_outlined"]:focus {{ border-color: transparent; }}
+QPushButton[role="action_outlined"]         {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_NEUTRAL_750}; }}
+QPushButton[role="action_outlined"]:hover   {{ background-color: {COLOR_NEUTRAL_750}; border-color: {COLOR_BORDER_HOVER}; }}
+QPushButton[role="action_outlined"]:pressed {{ background-color: {COLOR_SURFACE}; border-color: {COLOR_NEUTRAL_750}; }}
+QPushButton[role="action_outlined"]:focus   {{ border-color: transparent; }}
 
 /* Destructive Action */
-QPushButton[role="action_danger_solid"] {{ background-color: {COLOR_RED_DARK}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_RED_DARK}; font-weight: 600; }}
-QPushButton[role="action_danger_solid"]:hover {{ background-color: {COLOR_RED_PRESSED}; border-color: {COLOR_RED_PRESSED}; }}
+QPushButton[role="action_danger_solid"]         {{ background-color: {COLOR_RED_DARK}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_RED_DARK}; font-weight: 600; }}
+QPushButton[role="action_danger_solid"]:hover   {{ background-color: {COLOR_RED_PRESSED}; border-color: {COLOR_RED_PRESSED}; }}
 QPushButton[role="action_danger_solid"]:pressed {{ background-color: {COLOR_RED_SOLID}; border-color: {COLOR_RED_SOLID}; }}
-QPushButton[role="action_danger_solid"]:focus {{ border-color: {COLOR_RED_DARK}; }}
+QPushButton[role="action_danger_solid"]:focus   {{ border-color: {COLOR_RED_DARK}; }}
 
-QPushButton[role="action_danger_outlined"] {{ background-color: transparent; color: {COLOR_RED}; border-color: {COLOR_RED_DARK}; }}
-QPushButton[role="action_danger_outlined"]:hover {{ background-color: {COLOR_DANGER_SURFACE}; border-color: {COLOR_RED}; }}
-QPushButton[role="action_danger_outlined"]:pressed {{ background-color: {COLOR_RED_DARK}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_RED_DARK}; }}
-QPushButton[role="action_danger_outlined"]:focus {{ border-color: {COLOR_RED_DARK}; }}
+QPushButton[role="action_danger_outlined"]          {{ background-color: transparent; color: {COLOR_RED}; border-color: {COLOR_RED_DARK}; }}
+QPushButton[role="action_danger_outlined"]:hover    {{ background-color: {COLOR_DANGER_SURFACE}; border-color: {COLOR_RED}; }}
+QPushButton[role="action_danger_outlined"]:pressed  {{ background-color: {COLOR_RED_DARK}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_RED_DARK}; }}
+QPushButton[role="action_danger_outlined"]:focus    {{ border-color: {COLOR_RED_DARK}; }}
 
 /* Primary Action */
-QPushButton[role="action_accent_solid"] {{ background-color: {COLOR_GREEN_SOLID}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_GREEN_SOLID}; font-weight: 600; }}
-QPushButton[role="action_accent_solid"]:hover {{ background-color: {COLOR_GREEN_HOVER}; border-color: {COLOR_GREEN_HOVER}; }}
-QPushButton[role="action_accent_solid"]:pressed {{ background-color: {COLOR_GREEN_PRESSED}; border-color: {COLOR_GREEN_PRESSED}; }}
-QPushButton[role="action_accent_solid"]:focus {{ border-color: {COLOR_GREEN_SOLID}; }}
+QPushButton[role="action_accent_solid"]             {{ background-color: {COLOR_GREEN_SOLID}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_GREEN_SOLID}; font-weight: 600; }}
+QPushButton[role="action_accent_solid"]:hover       {{ background-color: {COLOR_GREEN_HOVER}; border-color: {COLOR_GREEN_HOVER}; }}
+QPushButton[role="action_accent_solid"]:pressed     {{ background-color: {COLOR_GREEN_PRESSED}; border-color: {COLOR_GREEN_PRESSED}; }}
+QPushButton[role="action_accent_solid"]:focus       {{ border-color: {COLOR_GREEN_SOLID}; }}
+
 QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border: {BORDER_SUBTLE}; }}
 
 /* Platform actions use their brand color without gradients or bevels. */
@@ -316,25 +327,26 @@ QPushButton[role="action_twitch"]:pressed {{ background-color: {COLOR_PURPLE_DAR
 QPushButton[role="action_youtube"] {{ background-color: {COLOR_YOUTUBE_DARK}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_YOUTUBE_DARK}; }}
 QPushButton[role="action_youtube"]:hover {{ background-color: {COLOR_RED_DARK}; border-color: {COLOR_RED_DARK}; }}
 QPushButton[role="action_youtube"]:pressed {{ background-color: {COLOR_RED_PRESSED}; border-color: {COLOR_RED_PRESSED}; }}
-QPushButton[role="action_tiktok"] {{ background-color: {COLOR_TIKTOK_DARK}; color: {COLOR_NEUTRAL_1000}; border-color: {COLOR_TIKTOK_DARK}; }}
+QPushButton[role="action_tiktok"] {{ background-color: {COLOR_TIKTOK_DARK}; color: {COLOR_NEUTRAL_999}; border-color: {COLOR_TIKTOK_DARK}; }}
 QPushButton[role="action_tiktok"]:hover {{ background-color: {COLOR_TIKTOK}; border-color: {COLOR_TIKTOK}; }}
 QPushButton[role="action_tiktok"]:pressed {{ background-color: {COLOR_TIKTOK_PRESSED}; color: {COLOR_NEUTRAL_000}; border-color: {COLOR_TIKTOK_PRESSED}; }}
+
 QPushButton[role="action_kick"]:focus, QPushButton[role="action_twitch"]:focus, QPushButton[role="action_youtube"]:focus, QPushButton[role="action_tiktok"]:focus {{ border-color: transparent; }}
 
 /* Utility and navigation buttons */
 QPushButton[role="btn_ghost"], QPushButton[role="btn_dismiss"] {{ background-color: transparent; border-color: transparent; border-radius: {RADIUS_SM}px; padding: 2px 6px; }}
 QPushButton[role="btn_ghost"]:hover, QPushButton[role="btn_dismiss"]:hover {{ background-color: {COLOR_NEUTRAL_750}; }}
-QPushButton[role="btn_ghost"]:pressed, QPushButton[role="btn_dismiss"]:pressed {{ background-color: {COLOR_SURFACE_PRESSED}; }}
+QPushButton[role="btn_ghost"]:pressed, QPushButton[role="btn_dismiss"]:pressed {{ background-color: {COLOR_SURFACE}; }}
 QPushButton[role="btn_ghost"]:focus, QPushButton[role="btn_dismiss"]:focus {{ border-color: transparent; }}
 QPushButton[icon_only="true"][role="btn_ghost"], QPushButton[icon_only="true"][role="btn_dismiss"] {{ padding: 0; }}
 
-QPushButton[role="nav_button"] {{ background-color: transparent; border-radius: {RADIUS_MD}px; padding: 8px 12px; text-align: left; color: {COLOR_NEUTRAL_400}; font-size: {text1}px; font-weight: 500; border: 1px solid transparent; }}
+QPushButton[role="nav_button"] {{ background-color: transparent; border-radius: {RADIUS_MD}px; padding: 8px 12px; text-align: left; color: {COLOR_NEUTRAL_400}; font-size: {text1}px; font-weight: 500; border: {BORDER_THIN_TRANSPARENT}; }}
 QPushButton[role="nav_button"]:hover {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_000}; }}
 QPushButton[role="nav_button"]:focus {{ border-color: transparent; }}
-QPushButton[role="nav_button"]:pressed {{ background-color: {COLOR_SURFACE_PRESSED}; }}
+QPushButton[role="nav_button"]:pressed {{ background-color: {COLOR_SURFACE}; }}
 QPushButton[role="nav_button"]:checked {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_NEUTRAL_000}; font-weight: 600; }}
-QPushButton[role="nav_button"]:checked:hover {{ background-color: {COLOR_SURFACE_ACTIVE_HOVER}; color: {COLOR_NEUTRAL_000}; }}
-QPushButton[role="nav_button"]:checked:pressed {{ background-color: {COLOR_SURFACE_PRESSED}; }}
+QPushButton[role="nav_button"]:checked:hover {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_NEUTRAL_000}; }}
+QPushButton[role="nav_button"]:checked:pressed {{ background-color: {COLOR_SURFACE}; }}
 QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-left: 12px; }}
 QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 0; }}
 QPushButton[icon_only="true"][role="nav_button"] {{ padding: 0; }}
@@ -347,49 +359,49 @@ QPushButton[icon_only="true"]:disabled {{ padding: 0; }}
 def _build_input_qss(text1: int, text2: int) -> str:
     return f"""
 /* Form Controls & Inputs */
-QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: {BORDER_DEFAULT}; border-top: 1.2px solid {COLOR_BORDER_TOP_SHINE}; }}
+QLineEdit, QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_INPUT}; border: {BORDER_DEFAULT}; border-top: {BORDER_TOP_SHINE}; }}
 QTextEdit, QPlainTextEdit {{ background-color: {COLOR_NEUTRAL_900}; }}
 QLineEdit:hover, QTextEdit:hover, QPlainTextEdit:hover {{ border-color: {COLOR_NEUTRAL_700}; }}
-QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{ border: {BORDER_FOCUS}; border-top: 1.2px solid {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{ border: {BORDER_FOCUS}; border-top: {BORDER_FOCUS}; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
 QLineEdit:read-only, QTextEdit:read-only, QPlainTextEdit:read-only {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; }}
 QLineEdit:read-only:focus, QTextEdit:read-only:focus, QPlainTextEdit:read-only:focus {{ border: {BORDER_SUBTLE}; background-color: {COLOR_NEUTRAL_900}; }}
 QLineEdit[state="error"], QTextEdit[state="error"], QPlainTextEdit[state="error"] {{ border: {BORDER_ERROR}; }}
 QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled, QComboBox:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_750}; padding: {PADDING_INPUT}; }}
 QLineEdit[state="plugin"], QTextEdit[state="plugin"], QPlainTextEdit[state="plugin"] {{ border: 1.2px solid {COLOR_PURPLE}; color: {COLOR_PURPLE}; font-weight: 500; background-color: {COLOR_NEUTRAL_900}; }}
-QTextEdit[role="ConsoleDisplay"] {{ font-family: 'GoogleSansCode Nerd Font', 'GoogleSansCode NF', Consolas, monospace; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 2px 4px; }}
+QTextEdit[role="ConsoleDisplay"] {{ font-family: 'GoogleSansCode Nerd Font'; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; padding: 2px 4px; }}
 
 /* ComboBox */
 QComboBox {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; font-size: {text1}px; font-weight: 500; border: 1px solid {COLOR_NEUTRAL_700}; border-radius: {RADIUS_MD}px; padding: 6px 28px 6px 14px; combobox-popup: 0; min-width: 120px; }}
-QComboBox:hover {{ background-color: {COLOR_NEUTRAL_750}; border: 1px solid {COLOR_BORDER_HOVER}; color: {COLOR_NEUTRAL_000}; }}
-QComboBox:focus {{ border: 1px solid {COLOR_GREEN}; }}
-QComboBox:pressed {{ background-color: {COLOR_SURFACE_PRESSED}; border: 1px solid {COLOR_NEUTRAL_750}; }}
-QComboBox:on, QComboBox[state="active"], QComboBox[state="active"]:hover, QComboBox[state="active"]:focus {{ background-color: {COLOR_NEUTRAL_750}; border: 1px solid {COLOR_GREEN}; color: {COLOR_NEUTRAL_000}; }}
+QComboBox:hover {{ background-color: {COLOR_NEUTRAL_750}; border: {BORDER_HOVER}; color: {COLOR_NEUTRAL_000}; }}
+QComboBox:focus {{ border: {BORDER_GREEN_THIN}; }}
+QComboBox:pressed {{ background-color: {COLOR_SURFACE}; border: 1px solid {COLOR_NEUTRAL_750}; }}
+QComboBox:on, QComboBox[state="active"], QComboBox[state="active"]:hover, QComboBox[state="active"]:focus {{ background-color: {COLOR_NEUTRAL_750}; border: {BORDER_GREEN_THIN}; color: {COLOR_NEUTRAL_000}; }}
 QComboBox::drop-down {{ subcontrol-origin: padding; subcontrol-position: center right; width: 24px; border-left: none; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
 QComboBox::drop-down:hover, QComboBox::drop-down:focus {{ background-color: transparent; border-color: transparent; }}
 QComboBox::drop-down:disabled {{ border-color: transparent; }}
 QComboBox::down-arrow {{ image: url("{PATH_ICON_CHEVRON_DOWN}"); width: 14px; height: 14px; }}
 QComboBox::down-arrow:on, QComboBox[state="active"]::down-arrow {{ image: url("{PATH_ICON_CHEVRON_UP}"); }}
 QComboBox:disabled::down-arrow {{ opacity: 0.4; }}
-QComboBox QAbstractItemView {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-size: {text1}px; border: 1px solid {COLOR_NEUTRAL_700}; border-radius: {RADIUS_MD}px; selection-background-color: {COLOR_NEUTRAL_750}; selection-color: {COLOR_NEUTRAL_050}; padding: 4px; }}
+QComboBox QAbstractItemView {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-size: {text1}px; border: 1px solid {COLOR_NEUTRAL_700}; border-radius: {RADIUS_MD}px; selection-background-color: {COLOR_NEUTRAL_750}; selection-color: {COLOR_NEUTRAL_050}; padding: {PADDING_COMPACT}; }}
 QComboBox QAbstractItemView::item {{ font-size: {text1}px; border-radius: {RADIUS_SM}px; padding: {PADDING_ITEM}; margin: 1px 2px; }}
 QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover, QComboBox QListView::item:selected, QComboBox QListView::item:hover {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_NEUTRAL_050}; border: none; }}
 
 /* Searchable ComboBox Popup */
-QFrame[role="searchable_combo_popup"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; }}
-QFrame[role="searchable_combo_search_bar"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-top: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="searchable_combo_popup"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="searchable_combo_search_bar"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-top: {BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; }}
 QLineEdit[role="searchable_combo_input"] {{ background-color: transparent; border: none; color: {COLOR_NEUTRAL_050}; font-size: {text1}px; font-weight: 400; padding: 0px 4px; }}
 QLineEdit[role="searchable_combo_input"]:focus {{ border: none; background-color: transparent; }}
 QListWidget[role="searchable_combo_list"] {{ background-color: {COLOR_NEUTRAL_950}; border: none; outline: none; }}
 QListWidget[role="searchable_combo_list"]::item {{ color: {COLOR_NEUTRAL_200}; font-size: {text1}px; font-weight: 400; padding: 6px 10px; border-radius: {RADIUS_SM}px; border: none; outline: none; }}
 QListWidget[role="searchable_combo_list"]::item:hover, QListWidget[role="searchable_combo_list"]::item:selected {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_NEUTRAL_050}; border: none; outline: none; }}
-QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {COLOR_NEUTRAL_950}; width: 10px; margin: 4px 2px 4px 0px; border-radius: 2px; }}
-QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical {{ background: {COLOR_NEUTRAL_700}; min-height: 20px; border-radius: 2px; }}
+QListWidget[role="searchable_combo_list"] QScrollBar:vertical {{ background: {COLOR_NEUTRAL_950}; width: 10px; margin: 4px 2px 4px 0px; border-radius: {RADIUS_XS}px; }}
+QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical {{ background: {COLOR_NEUTRAL_700}; min-height: 20px; border-radius: {RADIUS_XS}px; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::handle:vertical:hover {{ background: {COLOR_NEUTRAL_950}; }}
 QListWidget[role="searchable_combo_list"] QScrollBar::add-line:vertical, QListWidget[role="searchable_combo_list"] QScrollBar::sub-line:vertical {{ height: 0px; background: none; }}
 QLabel[role="searchable_combo_empty"] {{ color: {COLOR_NEUTRAL_500}; font-size: {text2}px; padding: 16px 8px; }}
 
 /* Context Menus */
-QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: 4px; }}
+QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_200}; border: {BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: {PADDING_COMPACT}; }}
 QMenu::item {{ padding: 5px 12px; margin: 1px 2px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; font-size: {text2}px; font-weight: 500; }}
 QMenu::item:disabled {{ color: {COLOR_NEUTRAL_500}; background-color: transparent; }}
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; border: 1.2px solid {COLOR_BORDER_SUBTLE_GHOST}; }}
@@ -401,8 +413,8 @@ QMenu::indicator:unchecked {{ image: none; }}
 QMenu::separator {{ height: 1px; background-color: {COLOR_NEUTRAL_950}; margin: 1px 2px; }}
 
 /* SpinBoxes */
-QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; border-top: 1.2px solid {COLOR_BORDER_TOP_SHINE}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_050}; }}
-QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus {{ border: {BORDER_FOCUS}; border-top: 1.2px solid {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
+QSpinBox, QDoubleSpinBox, QTimeEdit {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; border-top: {BORDER_TOP_SHINE}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_050}; }}
+QSpinBox:focus, QDoubleSpinBox:focus, QTimeEdit:focus {{ border: {BORDER_FOCUS}; border-top: {BORDER_FOCUS}; background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
 QSpinBox:hover, QDoubleSpinBox:hover, QTimeEdit:hover {{ background-color: {COLOR_NEUTRAL_950}; border-color: {COLOR_NEUTRAL_700}; }}
 QSpinBox:read-only, QDoubleSpinBox:read-only, QTimeEdit:read-only {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; }}
 QSpinBox::up-button, QDoubleSpinBox::up-button, QTimeEdit::up-button {{ subcontrol-origin: border; subcontrol-position: center right; width: 22px; height: 22px; right: 26px; border: none; background-color: transparent; }}
@@ -418,8 +430,8 @@ QSpinBox::down-arrow, QDoubleSpinBox::down-arrow, QTimeEdit::down-arrow {{ image
 QSpinBox:disabled, QDoubleSpinBox:disabled, QTimeEdit:disabled, QDateEdit:disabled {{ background-color: {COLOR_WHITE_GLOW}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_750}; padding: {PADDING_SPINBOX}; }}
 
 /* DateEdit */
-QDateEdit {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; border-top: 1.2px solid {COLOR_BORDER_TOP_SHINE}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_050}; }}
-QDateEdit:focus {{ border: {BORDER_FOCUS}; border-top: 1.2px solid {COLOR_GREEN}; background-color: {COLOR_NEUTRAL_950}; }}
+QDateEdit {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_200}; font-weight: 400; border-radius: {RADIUS_MD}px; padding: {PADDING_SPINBOX}; border: {BORDER_DEFAULT}; border-top: {BORDER_TOP_SHINE}; selection-background-color: transparent; selection-color: {COLOR_NEUTRAL_050}; }}
+QDateEdit:focus {{ border: {BORDER_FOCUS}; border-top: {BORDER_FOCUS}; background-color: {COLOR_NEUTRAL_950}; }}
 QDateEdit:hover {{ background-color: {COLOR_NEUTRAL_950}; }}
 QDateEdit:read-only {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; }}
 QDateEdit::up-button, QDateEdit::down-button {{ width: 0px; height: 0px; border: none; background: transparent; }}
@@ -433,14 +445,14 @@ QDateEdit::down-arrow {{ image: url("{PATH_ICON_CALENDAR}"); width: 16px; height
 QCheckBox {{ spacing: 8px; color: {COLOR_NEUTRAL_400}; background-color: transparent; }}
 QCheckBox:hover {{ color: {COLOR_NEUTRAL_050}; }}
 QCheckBox:focus {{ color: {COLOR_NEUTRAL_050}; }}
-QCheckBox::indicator {{ width: 14px; height: 14px; border-radius: {RADIUS_SM}px; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-top: 1.2px solid {COLOR_BORDER_LIGHT}; background-color: {COLOR_NEUTRAL_950}; }}
+QCheckBox::indicator {{ width: 14px; height: 14px; border-radius: {RADIUS_SM}px; border: {BORDER_TOP_SHINE}; border-top: {BORDER_LIGHT}; background-color: {COLOR_NEUTRAL_950}; }}
 QCheckBox::indicator:focus, QCheckBox:focus::indicator {{ border-color: {COLOR_GREEN}; }}
 QCheckBox::indicator:unchecked:hover {{ border-color: {COLOR_NEUTRAL_700}; background-color: {COLOR_NEUTRAL_950}; }}
 QCheckBox::indicator:unchecked:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
-QCheckBox::indicator:checked {{ border: 1.2px solid {COLOR_KICK_BORDER}; border-top: 1.2px solid {COLOR_GREEN}; background-color: {GRADIENT_ACCENT_FILL}; image: url("{PATH_ICON_CHECK}"); }}
+QCheckBox::indicator:checked {{ border: {BORDER_KICK}; border-top: {BORDER_FOCUS}; background-color: {GRADIENT_ACCENT_FILL}; image: url("{PATH_ICON_CHECK}"); }}
 QCheckBox::indicator:checked:hover {{ background-color: {GRADIENT_ACCENT_HOVER}; }}
 QCheckBox::indicator:checked:pressed {{ background-color: {GRADIENT_ACCENT_PRESSED}; }}
-QCheckBox::indicator:indeterminate {{ border: 1.2px solid {COLOR_KICK_BORDER}; border-top: 1.2px solid {COLOR_GREEN}; background-color: {GRADIENT_ACCENT_FILL}; image: url("{PATH_ICON_MINUS}"); }}
+QCheckBox::indicator:indeterminate {{ border: {BORDER_KICK}; border-top: {BORDER_FOCUS}; background-color: {GRADIENT_ACCENT_FILL}; image: url("{PATH_ICON_MINUS}"); }}
 QCheckBox::indicator:indeterminate:hover {{ background-color: {GRADIENT_ACCENT_HOVER}; }}
 QCheckBox::indicator:indeterminate:pressed {{ background-color: {GRADIENT_ACCENT_PRESSED}; }}
 QCheckBox:disabled {{ color: {COLOR_NEUTRAL_500}; }}
@@ -452,11 +464,11 @@ QCheckBox::indicator:indeterminate:disabled {{ border-color: {COLOR_NEUTRAL_750}
 QRadioButton {{ spacing: 8px; color: {COLOR_NEUTRAL_400}; background-color: transparent; }}
 QRadioButton:hover {{ color: {COLOR_NEUTRAL_050}; }}
 QRadioButton:focus {{ color: {COLOR_NEUTRAL_050}; }}
-QRadioButton::indicator {{ width: 14px; height: 14px; border-radius: 8px; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-top: 1.2px solid {COLOR_BORDER_LIGHT}; background-color: {COLOR_NEUTRAL_950}; }}
+QRadioButton::indicator {{ width: 14px; height: 14px; border-radius: 8px; border: {BORDER_TOP_SHINE}; border-top: {BORDER_LIGHT}; background-color: {COLOR_NEUTRAL_950}; }}
 QRadioButton::indicator:focus, QRadioButton:focus::indicator {{ border-color: {COLOR_GREEN}; }}
 QRadioButton::indicator:unchecked:hover {{ border-color: {COLOR_NEUTRAL_700}; background-color: {COLOR_NEUTRAL_950}; }}
 QRadioButton::indicator:unchecked:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
-QRadioButton::indicator:checked {{ border: 1.2px solid {COLOR_KICK_BORDER}; border-top: 1.2px solid {COLOR_GREEN}; background-color: {GRADIENT_ACCENT_FILL}; image: url("{PATH_ICON_RADIO_DOT}"); }}
+QRadioButton::indicator:checked {{ border: {BORDER_KICK}; border-top: {BORDER_FOCUS}; background-color: {GRADIENT_ACCENT_FILL}; image: url("{PATH_ICON_RADIO_DOT}"); }}
 QRadioButton::indicator:checked:hover {{ background-color: {GRADIENT_ACCENT_HOVER}; }}
 QRadioButton::indicator:checked:pressed {{ background-color: {GRADIENT_ACCENT_PRESSED}; }}
 QRadioButton:disabled {{ color: {COLOR_NEUTRAL_500}; }}
@@ -466,8 +478,8 @@ QRadioButton::indicator:checked:disabled {{ border-color: {COLOR_NEUTRAL_750}; b
 /* Slider */
 QSlider::groove:horizontal {{ border: none; height: 6px; background: {COLOR_NEUTRAL_950}; border-radius: 3px; }}
 QSlider::sub-page:horizontal {{ background: {COLOR_GREEN}; border-radius: 3px; }}
-QSlider::handle:horizontal {{ background: {COLOR_NEUTRAL_050}; width: 14px; height: 14px; margin-top: -4px; margin-bottom: -4px; border-radius: 7px; border: 1.2px solid {COLOR_BORDER_LIGHT}; }}
-QSlider::handle:horizontal:hover {{ background-color: {COLOR_NEUTRAL_050}; border: 1.2px solid {COLOR_GREEN}; }}
+QSlider::handle:horizontal {{ background: {COLOR_NEUTRAL_050}; width: 14px; height: 14px; margin-top: -4px; margin-bottom: -4px; border-radius: 7px; border: {BORDER_LIGHT}; }}
+QSlider::handle:horizontal:hover {{ background-color: {COLOR_NEUTRAL_050}; border: {BORDER_FOCUS}; }}
 QSlider::handle:horizontal:pressed {{ background-color: {COLOR_NEUTRAL_200}; border: 1.2px solid {COLOR_GREEN_DARK}; }}
 QSlider:disabled {{ opacity: 0.5; }}
 QSlider::groove:horizontal:disabled {{ background: {COLOR_NEUTRAL_750}; }}
@@ -481,11 +493,11 @@ def _build_surface_qss(text1: int, text2: int) -> str:
 /* --- 5. Surfaces, Containers & Badges --- */
 QFrame[role="canvas_container"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="sidebar"] {{ background-color: {COLOR_NEUTRAL_900}; border-right: 1px solid {COLOR_NEUTRAL_750}; }}
-QFrame[role="profile_card"] {{ background-color: transparent; border-radius: {RADIUS_MD}px; border: 1px solid transparent; }}
-QFrame[role="profile_card"]:hover {{ background-color: {COLOR_NAV_HOVER}; border: 1px solid {COLOR_NEUTRAL_750}; }}
+QFrame[role="profile_card"] {{ background-color: transparent; border-radius: {RADIUS_MD}px; border: {BORDER_THIN_TRANSPARENT}; }}
+QFrame[role="profile_card"]:hover {{ background-color: {COLOR_SURFACE}; border: 1px solid {COLOR_NEUTRAL_750}; }}
 QFrame[role="update_banner_card"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_750}; border-radius: {RADIUS_LG}px; }}
 QFrame[role="update_banner_card"]:hover {{ border-color: {COLOR_NEUTRAL_700}; }}
-QFrame[role="update_icon_box"] {{ background-color: {COLOR_GREEN_GLOW}; border: 1.2px solid {COLOR_GREEN}; border-radius: {RADIUS_MD}px; }}
+QFrame[role="update_icon_box"] {{ background-color: {COLOR_GREEN_GLOW}; border: {BORDER_FOCUS}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="card"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1px solid {COLOR_NEUTRAL_750}; border-radius: {RADIUS_LG}px; }}
 QFrame[role="dialog"] {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_XL}px; }}
 QFrame[role="dialog"][state="accent"] {{ border-color: {COLOR_GREEN}; }}
@@ -501,8 +513,8 @@ QWidget[role="splash_window"] {{ background-color: {COLOR_NEUTRAL_950}; }}
 QFrame[role="banner_danger"] {{ background-color: {COLOR_RED_GLOW}; border: 1.2px solid {COLOR_RED_DARK}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_warning"] {{ background-color: {COLOR_AMBER_GLOW}; border: 1.2px solid {COLOR_AMBER_DARK}; border-radius: {RADIUS_MD}px; }}
 QFrame[role="banner_scope_card"] {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; }}
-QFrame[role="banner_scope_card"][state="kick"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_GREEN}; }}
-QFrame[role="banner_scope_card"][state="twitch"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1.5px solid {COLOR_PURPLE}; }}
+QFrame[role="banner_scope_card"][state="kick"] {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_GREEN_MEDIUM}; }}
+QFrame[role="banner_scope_card"][state="twitch"] {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_PURPLE_MEDIUM}; }}
 QFrame[role="danger_icon"] {{ background-color: {COLOR_RED}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="warning_icon"] {{ background-color: {COLOR_AMBER}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="info_icon"] {{ background-color: {COLOR_BLUE}; border-radius: {RADIUS_PILL}px; }}
@@ -510,7 +522,7 @@ QFrame[role="accent_icon"] {{ background-color: {COLOR_GREEN}; border-radius: {R
 QFrame[role="tiktok_icon"] {{ background-color: {COLOR_TIKTOK}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="youtube_icon"] {{ background-color: {COLOR_YOUTUBE}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="twitch_icon"] {{ background-color: {COLOR_TWITCH}; border-radius: {RADIUS_PILL}px; }}
-QFrame[role="black_icon"] {{ background-color: {COLOR_NEUTRAL_1000}; border-radius: {RADIUS_PILL}px; }}
+QFrame[role="black_icon"] {{ background-color: {COLOR_NEUTRAL_999}; border-radius: {RADIUS_PILL}px; }}
 QFrame[role="divider"] {{ background-color: {COLOR_NEUTRAL_750}; min-height: 1px; max-height: 1px; border: none; margin: 0px; padding: 0px; }}
 
 QFrame[role="bot_tag"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; }}
@@ -523,7 +535,7 @@ QFrame[role="toast"][state="warning"] {{ border-color: {COLOR_AMBER}; }}
 QFrame[role="toast"][state="info"] {{ border-color: {COLOR_BLUE}; }}
 
 /* Badges & Tags */
-QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; min-height: 20px; max-height: 22px; }}
+QFrame[role="badge"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_MD}px; min-height: 20px; max-height: {BADGE_MAX_HEIGHT}px; }}
 QFrame[role="badge"] QLabel {{ font-size: {text2}px; font-weight: 500; color: {COLOR_NEUTRAL_400}; background: transparent; }}
 QFrame[role="badge"][state="everyone"] {{ background-color: {COLOR_GREEN_GLOW}; border-color: {COLOR_GREEN}; }}
 QFrame[role="badge"][state="everyone"] QLabel {{ color: {COLOR_GREEN}; }}
@@ -543,10 +555,10 @@ QFrame[role="badge"][state="kick"] {{ background-color: {COLOR_GREEN_GLOW}; bord
 QFrame[role="badge"][state="kick"] QLabel {{ color: {COLOR_GREEN}; }}
 QFrame[role="badge"][state="twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; border-color: {COLOR_PURPLE}; }}
 QFrame[role="badge"][state="twitch"] QLabel {{ color: {COLOR_PURPLE}; }}
-QLabel[role="badge"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: {BORDER_SUBTLE}; min-height: 18px; max-height: 22px; }}
-QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_GREEN}; min-height: 18px; max-height: 22px; }}
-QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
-QLabel[role="tag_badge"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: 1.5px solid {COLOR_PURPLE}; min-height: 18px; max-height: 22px; }}
+QLabel[role="badge"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: {BORDER_SUBTLE}; min-height: {BADGE_MIN_HEIGHT}px; max-height: {BADGE_MAX_HEIGHT}px; }}
+QLabel[role="badge_kick"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: {BORDER_GREEN_MEDIUM}; min-height: {BADGE_MIN_HEIGHT}px; max-height: {BADGE_MAX_HEIGHT}px; }}
+QLabel[role="badge_twitch"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 500; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: {BORDER_PURPLE_MEDIUM}; min-height: {BADGE_MIN_HEIGHT}px; max-height: {BADGE_MAX_HEIGHT}px; }}
+QLabel[role="tag_badge"] {{ background-color: {COLOR_PURPLE_GLOW}; color: {COLOR_PURPLE}; font-weight: 600; border-radius: {RADIUS_MD}px; padding: {PADDING_BADGE}; font-size: {text2}px; border: {BORDER_PURPLE_MEDIUM}; min-height: {BADGE_MIN_HEIGHT}px; max-height: {BADGE_MAX_HEIGHT}px; }}
 QLabel[role="channel_avatar"] {{ border-radius: 48px; background-color: {COLOR_NEUTRAL_950}; border: 2px solid {COLOR_NEUTRAL_700}; }}
 QLabel[role="rank_number"] {{ color: {COLOR_GREEN}; font-weight: 500; min-width: 20px; }}
 QLabel[role="rank_number"][state="gold"] {{ color: {COLOR_AMBER}; font-weight: 700; font-size: 13px; }}
@@ -554,10 +566,10 @@ QLabel[role="rank_number"][state="silver"] {{ color: {COLOR_NEUTRAL_400}; font-w
 QLabel[role="rank_number"][state="bronze"] {{ color: {COLOR_AMBER_DARK}; font-weight: 700; font-size: 13px; }}
 QLabel[role="rank_number"][state="normal"] {{ color: {COLOR_NEUTRAL_500}; font-weight: 500; }}
 QLabel[role="status_pill"] {{ border-radius: 9px; padding: 2px 8px; font-size: 11px; font-weight: 500; }}
-QLabel[role="status_pill"][state="online"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; border: 1px solid {COLOR_GREEN}; font-weight: 600; }}
+QLabel[role="status_pill"][state="online"] {{ background-color: {COLOR_GREEN_GLOW}; color: {COLOR_GREEN}; border: {BORDER_GREEN_THIN}; font-weight: 600; }}
 QLabel[role="status_pill"][state="connecting"] {{ background-color: {COLOR_AMBER_GLOW}; color: {COLOR_AMBER}; border: 1px solid {COLOR_AMBER}; font-weight: 600; }}
 QLabel[role="status_pill"][state="offline"] {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; }}
-QLabel[role="badge_new"] {{ background-color: {COLOR_ORANGE}; color: {COLOR_NEUTRAL_000}; font-weight: 700; border-radius: 9px; min-width: 18px; max-width: 18px; min-height: 18px; max-height: 18px; font-size: 10px; qproperty-alignment: AlignCenter; }}
+QLabel[role="badge_new"] {{ background-color: {COLOR_ORANGE}; color: {COLOR_NEUTRAL_000}; font-weight: 700; border-radius: 9px; min-width: {BADGE_MIN_HEIGHT}px; max-width: {BADGE_MIN_HEIGHT}px; min-height: {BADGE_MIN_HEIGHT}px; max-height: {BADGE_MIN_HEIGHT}px; font-size: 10px; qproperty-alignment: AlignCenter; }}
 QLabel[role="badge_new"][state="collapsed"] {{ border-radius: 6px; min-width: 12px; max-width: 12px; min-height: 12px; max-height: 12px; font-size: 7px; font-weight: 800; }}
 QFrame[role="whats_new_card"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_SUBTLE}; border-radius: {RADIUS_LG}px; }}
 QFrame[role="whats_new_card"]:hover {{ background-color: {COLOR_NEUTRAL_750}; border: {BORDER_DEFAULT}; }}
@@ -565,12 +577,12 @@ QTextBrowser[role="release_notes_browser"] {{ background-color: {COLOR_NEUTRAL_9
 
 /* Table Widget */
 QTableWidget {{ background-color: {COLOR_NEUTRAL_950}; border: none; gridline-color: transparent; border-bottom-left-radius: {RADIUS_LG}px; border-bottom-right-radius: {RADIUS_LG}px; }}
-QTableWidget::item {{ padding: 2px 8px; border-bottom: 1.2px solid {COLOR_NEUTRAL_950}; }}
+QTableWidget::item {{ padding: 2px 8px; border-bottom: {BORDER_SUBTLE}; }}
 QTableWidget::item:hover:!selected {{ background-color: {COLOR_NEUTRAL_900}; }}
 QTableWidget::item:selected {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
 QTableWidget::item:disabled {{ color: {COLOR_NEUTRAL_500}; }}
 QHeaderView, QHeaderView::section {{ background-color: transparent; border: none; }}
-QHeaderView::section {{ color: {COLOR_NEUTRAL_400}; font-weight: 500; padding: {PADDING_INPUT}; border-bottom: 1.2px solid {COLOR_NEUTRAL_750}; text-align: left; }}
+QHeaderView::section {{ color: {COLOR_NEUTRAL_400}; font-weight: 500; padding: {PADDING_INPUT}; border-bottom: {BORDER_DEFAULT}; text-align: left; }}
 QHeaderView::section:hover {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
 QHeaderView::section:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
 QWidget[role="table_no_results"] {{ background-color: {COLOR_NEUTRAL_900}; }}
@@ -600,17 +612,17 @@ QProgressBar[role="wizard_progress"] {{ background-color: {COLOR_NEUTRAL_750}; b
 QProgressBar[role="wizard_progress"]::chunk {{ background-color: {COLOR_GREEN}; border-radius: {RADIUS_SM}px; }}
 QProgressBar[role="top_command_progress"] {{ background-color: {COLOR_NEUTRAL_750}; border: none; border-radius: 4px; height: 8px; }}
 QProgressBar[role="top_command_progress"]::chunk {{ background-color: {COLOR_BLUE}; border-radius: 4px; }}
-QProgressBar[role="splash_progress"] {{ background-color: {COLOR_NEUTRAL_950}; border: none; border-radius: 2px; height: 4px; text-align: center; }}
-QProgressBar[role="splash_progress"]::chunk {{ background-color: {COLOR_GREEN}; border-radius: 2px; }}
+QProgressBar[role="splash_progress"] {{ background-color: {COLOR_NEUTRAL_950}; border: none; border-radius: {RADIUS_XS}px; height: 4px; text-align: center; }}
+QProgressBar[role="splash_progress"]::chunk {{ background-color: {COLOR_GREEN}; border-radius: {RADIUS_XS}px; }}
 
 /* Tab Widget */
-QTabWidget::pane {{ border: {BORDER_SUBTLE}; border-radius: {RADIUS_LG}px; border-top-left-radius: 0px; background-color: {COLOR_NEUTRAL_900}; padding: 0px; }}
-QTabBar::tab {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_SUBTLE}; border-bottom-color: transparent; border-top-left-radius: 0px; border-top-right-radius: {RADIUS_MD}px; padding: {PADDING_TAB}; margin-right: 4px; font-weight: 500; }}
-QTabBar::tab:selected {{ color: {COLOR_NEUTRAL_050}; background-color: {COLOR_NEUTRAL_900}; border-color: {COLOR_NEUTRAL_750}; border-bottom-color: {COLOR_NEUTRAL_900}; }}
-QTabBar::tab:hover:!selected {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
-QTabBar::tab:pressed:!selected {{ background-color: {COLOR_NEUTRAL_750}; }}
-QTabBar::tab:focus {{ border-color: {COLOR_NEUTRAL_700}; }}
-QTabBar::tab:disabled {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_950}; }}
+QTabWidget::pane                    {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; border-top-left-radius: 0px;  padding: 0px; }}
+QTabBar::tab                        {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-bottom-color: transparent; border-top-left-radius: 0px; border-top-right-radius: {RADIUS_MD}px; padding: {PADDING_TAB}; margin-right: 4px; font-weight: 500; }}
+QTabBar::tab:selected               {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_050}; border-color: {COLOR_NEUTRAL_750}; border-bottom-color: {COLOR_NEUTRAL_900}; }}
+QTabBar::tab:hover:!selected        {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
+QTabBar::tab:pressed:!selected      {{ background-color: {COLOR_NEUTRAL_750}; }}
+QTabBar::tab:focus                  {{ border-color: {COLOR_NEUTRAL_700}; }}
+QTabBar::tab:disabled               {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_500}; border-color: {COLOR_NEUTRAL_950}; }}
 QTabWidget QFrame[role="tab_panel"] {{ background-color: transparent; border: none; }}
 
 /* ToolTip */
@@ -625,11 +637,11 @@ def _build_complex_qss(text1: int, text2: int) -> str:
 /* --- 6. Complex Composite Widgets --- */
 
 /* Search Bar */
-QFrame[role="search_bar"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-top: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; min-height: 34px; }}
+QFrame[role="search_bar"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_DEFAULT}; border-top: {BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; min-height: 34px; }}
 QFrame[role="search_bar"]:hover {{ border-color: {COLOR_NEUTRAL_700}; }}
-QFrame[role="search_bar"]:focus, QFrame[role="search_bar"][state="focused"] {{ border: {BORDER_FOCUS}; border-top: 1.2px solid {COLOR_GREEN}; }}
+QFrame[role="search_bar"]:focus, QFrame[role="search_bar"][state="focused"] {{ border: {BORDER_FOCUS}; border-top: {BORDER_FOCUS}; }}
 QFrame[role="search_bar"] QLineEdit {{ background: transparent; border: none; padding: {PADDING_INPUT}; color: {COLOR_NEUTRAL_050}; font-size: {text1}px; }}
-QFrame[role="search_bar"] QPushButton {{ background: transparent; border: none; border-left: 1.2px solid {COLOR_NEUTRAL_750}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; margin: 1px; padding: 0; min-width: {ICON_BUTTON_SIZE}px; max-width: {ICON_BUTTON_SIZE}px; min-height: {ICON_BUTTON_SIZE}px; max-height: {ICON_BUTTON_SIZE}px; }}
+QFrame[role="search_bar"] QPushButton {{ background: transparent; border: none; border-left: {BORDER_DEFAULT}; border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; margin: 1px; padding: 0; min-width: {ICON_BUTTON_NORMAL}px; max-width: {ICON_BUTTON_NORMAL}px; min-height: {ICON_BUTTON_NORMAL}px; max-height: {ICON_BUTTON_NORMAL}px; }}
 QFrame[role="search_bar"] QPushButton:hover {{ background-color: {COLOR_NEUTRAL_950}; }}
 QFrame[role="search_bar"] QPushButton:focus {{ background-color: {COLOR_NEUTRAL_750}; }}
 QFrame[role="search_bar"] QPushButton:pressed {{ background-color: {COLOR_NEUTRAL_700}; }}
@@ -641,31 +653,31 @@ QListWidget[role="category_list"]::item {{ background: transparent; border-radiu
 QListWidget[role="category_list"]::item:hover, QListWidget[role="category_list"]::item:selected {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
 
 /* Segmented Control */
-QFrame[role="segmented_control"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1px solid {COLOR_NEUTRAL_700}; border-radius: {RADIUS_MD}px; padding: 2px; }}
-QPushButton[role="segmented_item"] {{ background-color: transparent; border: 1px solid transparent; border-radius: {RADIUS_SM}px; padding: 4px 8px; color: {COLOR_NEUTRAL_400}; }}
-QPushButton[role="segmented_item"]:hover {{ background-color: {COLOR_NEUTRAL_750}; border: 1px solid {COLOR_BORDER_HOVER}; color: {COLOR_NEUTRAL_000}; }}
+QFrame     [role="segmented_control"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1px solid {COLOR_NEUTRAL_700}; border-radius: {RADIUS_MD}px; padding: 2px; }}
+QPushButton[role="segmented_item"] {{ background-color: transparent; border: {BORDER_THIN_TRANSPARENT}; border-radius: {RADIUS_SM}px; padding: 4px 8px; color: {COLOR_NEUTRAL_400}; }}
+QPushButton[role="segmented_item"]:hover {{ background-color: {COLOR_NEUTRAL_750}; border: {BORDER_HOVER}; color: {COLOR_NEUTRAL_000}; }}
 QPushButton[role="segmented_item"]:focus {{ border-color: transparent; }}
 QPushButton[role="segmented_item"]:checked {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_700}; color: {COLOR_NEUTRAL_050}; font-weight: 500; }}
-QPushButton[role="segmented_item"]:checked:hover {{ background-color: {COLOR_NEUTRAL_750}; border: 1px solid {COLOR_BORDER_HOVER}; color: {COLOR_NEUTRAL_000}; }}
-QPushButton[role="segmented_item"]:checked:pressed {{ background-color: {COLOR_SURFACE_PRESSED}; border: 1px solid {COLOR_NEUTRAL_750}; }}
-QPushButton[role="segmented_item"]:pressed {{ background-color: {COLOR_SURFACE_PRESSED}; border: 1px solid {COLOR_NEUTRAL_750}; }}
+QPushButton[role="segmented_item"]:checked:hover {{ background-color: {COLOR_NEUTRAL_750}; border: {BORDER_HOVER}; color: {COLOR_NEUTRAL_000}; }}
+QPushButton[role="segmented_item"]:checked:pressed {{ background-color: {COLOR_SURFACE}; border: 1px solid {COLOR_NEUTRAL_750}; }}
+QPushButton[role="segmented_item"]:pressed {{ background-color: {COLOR_SURFACE}; border: 1px solid {COLOR_NEUTRAL_750}; }}
 QPushButton[icon_only="true"][role="segmented_item"] {{ padding: 0; }}
 QPushButton[role="segmented_item"]:disabled {{ color: {COLOR_NEUTRAL_500}; opacity: 0.4; }}
 
 /* Segmented Pagination */
 QFrame[role="segmented_pagination"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_700}; border-radius: {RADIUS_MD}px; }}
-QFrame[role="segmented_pagination"] QPushButton {{ background: transparent; border: none; border-left: 1px solid {COLOR_NEUTRAL_700}; min-width: {ICON_BUTTON_SIZE}px; max-width: {ICON_BUTTON_SIZE}px; min-height: {ICON_BUTTON_SIZE}px; max-height: {ICON_BUTTON_SIZE}px; }}
+QFrame[role="segmented_pagination"] QPushButton {{ background: transparent; border: none; border-left: 1px solid {COLOR_NEUTRAL_700}; min-width: {ICON_BUTTON_NORMAL}px; max-width: {ICON_BUTTON_NORMAL}px; min-height: {ICON_BUTTON_NORMAL}px; max-height: {ICON_BUTTON_NORMAL}px; }}
 QFrame[role="segmented_pagination"] QPushButton#btn_first {{ border-left: none; border-top-left-radius: {RADIUS_MD}px; border-bottom-left-radius: {RADIUS_MD}px; }}
 QFrame[role="segmented_pagination"] QPushButton#btn_last {{ border-top-right-radius: {RADIUS_MD}px; border-bottom-right-radius: {RADIUS_MD}px; }}
 QFrame[role="segmented_pagination"] QPushButton:hover:enabled {{ background-color: {COLOR_NEUTRAL_750}; }}
 QFrame[role="segmented_pagination"] QPushButton:focus:enabled {{ border-color: transparent; }}
-QFrame[role="segmented_pagination"] QPushButton:pressed:enabled {{ background-color: {COLOR_SURFACE_PRESSED}; }}
+QFrame[role="segmented_pagination"] QPushButton:pressed:enabled {{ background-color: {COLOR_SURFACE}; }}
 QFrame[role="segmented_pagination"] QPushButton:disabled {{ background-color: transparent; opacity: 0.35; color: {COLOR_NEUTRAL_500}; }}
 QFrame[role="segmented_pagination"] QLabel#lbl_page_status {{ background-color: transparent; color: {COLOR_NEUTRAL_050}; font-size: {text1}px; font-weight: 500; padding: 0px 16px; min-height: 32px; max-height: 32px; border-left: 1px solid {COLOR_NEUTRAL_700}; }}
 
 /* Calendar Pop-up (QCalendarWidget) */
-QWidget#qt_datetimedit_calendar {{ background-color: {COLOR_NEUTRAL_900}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_LG}px; padding: 4px; }}
-QCalendarWidget {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; padding: 4px; }}
+QWidget#qt_datetimedit_calendar {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_TOP_SHINE}; border-radius: {RADIUS_LG}px; padding: {PADDING_COMPACT}; }}
+QCalendarWidget {{ background-color: {COLOR_NEUTRAL_900}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_LG}px; padding: {PADDING_COMPACT}; }}
 QCalendarWidget QWidget#qt_calendar_navigationbar {{ background-color: {COLOR_NEUTRAL_900}; border: none; min-height: 36px; margin-bottom: 4px; }}
 QCalendarWidget QToolButton {{ background-color: transparent; color: {COLOR_NEUTRAL_050}; font-weight: 500; font-size: {text1}px; border: {BORDER_TRANSPARENT}; border-radius: {RADIUS_SM}px; padding: {PADDING_ITEM}; margin: 2px; }}
 QCalendarWidget QToolButton:hover {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
@@ -673,7 +685,7 @@ QCalendarWidget QToolButton:pressed {{ background-color: {COLOR_NEUTRAL_750}; }}
 QCalendarWidget QToolButton#qt_calendar_prevmonth {{ qproperty-icon: url("{PATH_ICON_CHEVRON_LEFT}"); icon-size: 16px; width: 26px; height: 26px; }}
 QCalendarWidget QToolButton#qt_calendar_nextmonth {{ qproperty-icon: url("{PATH_ICON_CHEVRON_RIGHT}"); icon-size: 16px; width: 26px; height: 26px; }}
 QCalendarWidget QToolButton#qt_calendar_monthbutton, QCalendarWidget QToolButton#qt_calendar_yearbutton {{ color: {COLOR_NEUTRAL_050}; font-size: {text1 + 1}px; font-weight: 500; padding: {PADDING_ITEM}; }}
-QCalendarWidget QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: 4px; }}
+QCalendarWidget QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_400}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_MD}px; padding: {PADDING_COMPACT}; }}
 QCalendarWidget QSpinBox {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; border: {BORDER_DEFAULT}; border-radius: {RADIUS_SM}px; padding: 2px 6px; font-weight: 500; }}
 QCalendarWidget QSpinBox:focus {{ border-color: {COLOR_GREEN}; }}
 QCalendarWidget QTableView {{ background-color: {COLOR_NEUTRAL_900}; border: none; gridline-color: transparent; selection-background-color: {COLOR_NEUTRAL_050}; selection-color: {COLOR_NEUTRAL_950}; outline: none; }}
@@ -681,18 +693,18 @@ QCalendarWidget QTableView QWidget {{ background-color: {COLOR_NEUTRAL_900}; }}
 QCalendarWidget QTableView:enabled {{ color: {COLOR_NEUTRAL_400}; }}
 QCalendarWidget QTableView:disabled {{ color: {COLOR_NEUTRAL_700}; }}
 QHeaderView, QCalendarWidget QHeaderView::section {{ background-color: transparent; color: {COLOR_NEUTRAL_400}; font-size: {text2}px; font-weight: 500; padding: 3px 0px; border: none; text-align: center; }}
-QCalendarWidget QTableView::item {{ border-radius: {RADIUS_MD}px; padding: 4px; margin: 2px; }}
+QCalendarWidget QTableView::item {{ border-radius: {RADIUS_MD}px; padding: {PADDING_COMPACT}; margin: 2px; }}
 QCalendarWidget QTableView::item:hover {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; border-radius: {RADIUS_MD}px; }}
 QCalendarWidget QTableView::item:selected {{ background-color: {COLOR_NEUTRAL_050}; color: {COLOR_NEUTRAL_950}; font-weight: 700; border-radius: {RADIUS_MD}px; }}
 
 /* Autocomplete Pop-up (VariableTextEdit) */
-QListWidget[role="variable_autocomplete_popup"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: 4px; outline: none; color: {COLOR_NEUTRAL_050}; }}
+QListWidget[role="variable_autocomplete_popup"] {{ background-color: {COLOR_NEUTRAL_950}; border: {BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: {PADDING_COMPACT}; outline: none; color: {COLOR_NEUTRAL_050}; }}
 QListWidget[role="variable_autocomplete_popup"]::item {{ height: 28px; padding: 4px 10px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; font-weight: 500; }}
 QListWidget[role="variable_autocomplete_popup"]::item:hover {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; }}
 QListWidget[role="variable_autocomplete_popup"]::item:selected {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_NEUTRAL_050}; font-weight: 600; }}
 
 /* Global Context Menus & Tooltips */
-QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_050}; border: 1.2px solid {COLOR_BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: 4px; }}
+QMenu {{ background-color: {COLOR_NEUTRAL_900}; color: {COLOR_NEUTRAL_050}; border: {BORDER_TOP_SHINE}; border-radius: {RADIUS_MD}px; padding: {PADDING_COMPACT}; }}
 QMenu::item {{ padding: 6px 14px; border-radius: {RADIUS_SM}px; color: {COLOR_NEUTRAL_200}; }}
 QMenu::item:selected {{ background-color: {COLOR_NEUTRAL_750}; color: {COLOR_NEUTRAL_050}; }}
 QMenu::separator {{ height: 1px; background-color: {COLOR_BORDER_SUBTLE_GHOST}; margin: 4px 6px; }}
@@ -702,18 +714,18 @@ QToolTip {{ background-color: {COLOR_NEUTRAL_950}; color: {COLOR_NEUTRAL_050}; b
 
 @lru_cache(maxsize=16)
 def get_global_qss(base: int = 13) -> str:
-    size_h1 = base + 12
-    size_h2 = base + 9
-    size_h3 = base + 3
+    size_head1 = base + 12
+    size_head2 = base + 9
+    size_head3 = base + 3
     size_text1 = base
     size_text2 = max(10, base - 1)
 
     sections = [
-        _build_reset_and_typography_qss(size_h1, size_h2, size_h3, size_text1, size_text2),
-        _build_button_qss(size_text1),
-        _build_input_qss(size_text1, size_text2),
-        _build_surface_qss(size_text1, size_text2),
-        _build_complex_qss(size_text1, size_text2),
+        _build_reset_and_typography_qss(size_head1, size_head2, size_head3, size_text1, size_text2),
+        _build_button_qss   (size_text1),
+        _build_input_qss    (size_text1, size_text2),
+        _build_surface_qss  (size_text1, size_text2),
+        _build_complex_qss  (size_text1, size_text2),
     ]
     return "\n".join(sections)
 

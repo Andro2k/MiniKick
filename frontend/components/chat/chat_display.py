@@ -61,7 +61,7 @@ class ChatDisplayPanel(ModernCard):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setMinimumWidth(380)
+        self.setMinimumWidth(280)
         self.setMinimumHeight(400) 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
