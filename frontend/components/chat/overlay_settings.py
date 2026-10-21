@@ -97,7 +97,7 @@ class ChatOverlaySettingsPanel(ModernCard):
 
     def _create_metric_header(self, icon_name: str, text: str, tooltip: str = "") -> QWidget:
         container = QWidget(self)
-        _setup_icon_text_row(container, icon_name, text, tooltip, margins=MARGIN_NONE, spacing=SPACING_XS, icon_size=13)
+        _setup_icon_text_row(container, icon_name, text, tooltip, margins=MARGIN_NONE, spacing=SPACING_XS, icon_size=14)
         return container
 
     def _setup_ui(self):

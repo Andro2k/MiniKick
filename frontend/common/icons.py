@@ -11,12 +11,6 @@ from .theme import COLOR_NEUTRAL_400
 
 logger = logging.getLogger("minikick.icons")
 
-ICON_SIZE_XS = 12
-ICON_SIZE_SM = 14
-ICON_SIZE_MD = 16
-ICON_SIZE_LG = 20
-ICON_SIZE_XL = 24
-
 @lru_cache(maxsize=128)
 def _load_svg_raw(full_path: str) -> str:
     with open(full_path, "r", encoding="utf-8", errors="ignore") as f:

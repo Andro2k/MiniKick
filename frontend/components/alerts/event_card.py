@@ -121,7 +121,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="x-filled.svg",
-            icon_size=13,
+            icon_size=14,
             parent=self
         )
         self.btn_discard.setToolTip(self.i18n.get("alerts.buttons.discard_tooltip"))
@@ -132,7 +132,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="copy-filled.svg",
-            icon_size=13,
+            icon_size=14,
             parent=self
         )
         self.btn_duplicate.setToolTip(self.i18n.get("alerts.buttons.duplicate_tooltip"))
@@ -566,7 +566,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=13,
+            icon_size=14,
             parent=self
         )
         btn_browse_media.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -595,7 +595,7 @@ class AlertEventCard(QWidget):
             text="",
             role="action_outlined",
             icon_name="folder-open-filled.svg",
-            icon_size=13,
+            icon_size=14,
             parent=self
         )
         btn_browse_sound.setToolTip(self.i18n.get("alerts.buttons.browse"))
@@ -646,7 +646,7 @@ class AlertEventCard(QWidget):
         sec_prev_header.setContentsMargins(*MARGIN_MD)
         sec_prev_header.setSpacing(SPACING_SM)
         lbl_sec_prev_icon = QLabel(parent=self)
-        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", COLOR_NEUTRAL_400, size=16))
+        lbl_sec_prev_icon.setPixmap(get_pixmap_colored("eye-filled.svg", COLOR_NEUTRAL_400, size=14))
         lbl_sec_prev_title = QLabel(self.i18n.get("alerts.preview.title"), parent=self)
         lbl_sec_prev_title.setProperty("role", "h3")
         sec_prev_header.addWidget(lbl_sec_prev_icon)

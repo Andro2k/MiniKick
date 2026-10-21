@@ -139,7 +139,7 @@ class ModernTableCard(QFrame):
         self.lbl_no_results.setWordWrap(True)
 
         self.btn_clear_filters = ModernButton("", role="action_outlined", parent=self.no_results_overlay)
-        self.btn_clear_filters.set_icon("filter-filled.svg", size=14)
+        self.btn_clear_filters.set_icon("filter-filled.svg", size=16)
         self.btn_clear_filters.clicked.connect(self.clear_filters)
 
         self.no_results_layout.addStretch(1)

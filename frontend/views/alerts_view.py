@@ -107,7 +107,7 @@ class AlertsView(BaseView):
         self.notice_layout.setSpacing(SPACING_MD)
 
         self.lbl_notice_icon = QLabel(parent=self)
-        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, size=20))
+        self.lbl_notice_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, size=24))
 
         notice_text_col = QVBoxLayout()
         notice_text_col.setContentsMargins(*MARGIN_NONE)
@@ -128,7 +128,7 @@ class AlertsView(BaseView):
             text=self.i18n.get("alerts.notice.connect_btn").replace("{platform}", "Twitch"),
             role="action_outlined",
             icon_name="plug-filled.svg",
-            icon_size=15,
+            icon_size=14,
             parent=self
         )
         self.btn_notice_connect.clicked.connect(self._on_notice_connect_clicked)

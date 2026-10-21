@@ -33,7 +33,7 @@ class InspectorPropertyRow(QWidget):
 
         if icon_name:
             self.lbl_icon = QLabel(self)
-            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=14))
+            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=16))
             self.lbl_icon.setFixedSize(16, 16)
             self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(self.lbl_icon)
