@@ -108,7 +108,7 @@ class ModernFramelessShell(QDialog):
         self.btn_close_shell.setAutoDefault(False)
         self.btn_close_shell.setDefault(False)
         if ModernFramelessShell._icon_close is None:
-            ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg", size=14)
+            ModernFramelessShell._icon_close = get_icon_colored("x-filled.svg", size=16)
         self.btn_close_shell.setIcon(ModernFramelessShell._icon_close)
         self.btn_close_shell.setIconSize(QSize(14, 14))
         from frontend.widgets.controls_widget import configure_icon_only_button
@@ -486,7 +486,7 @@ class ModernModal(ModernFramelessShell):
             text=confirm_text,
             role="action_outlined",
             icon_name=confirm_icon,
-            icon_size=14 if confirm_icon else 16,
+            icon_size=16 if confirm_icon else 16,
             parent=self
         )
         btn_confirm.clicked.connect(on_confirm or self.accept)

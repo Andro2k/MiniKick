@@ -645,16 +645,16 @@ QPushButton[role="btn_ghost"]:pressed, QPushButton[role="btn_dismiss"]:pressed {
 QPushButton[role="btn_ghost"]:focus, QPushButton[role="btn_dismiss"]:focus {{ border-color: transparent; }}
 QPushButton[icon_only="true"][role="btn_ghost"], QPushButton[icon_only="true"][role="btn_dismiss"] {{ padding: 0; }}
 
-QPushButton[role="nav_button"] {{ background-color: transparent; border-radius: {Size.Radius.MD}px; padding: 8px 12px; text-align: left; color: {Semantic.NEUTRAL_400}; font-size: {text1}px; font-weight: 500; border: {Borders.THIN_TRANSPARENT}; }}
-QPushButton[role="nav_button"]:hover {{ background-color: {Semantic.NEUTRAL_950}; color: {Semantic.NEUTRAL_000}; }}
-QPushButton[role="nav_button"]:focus {{ border-color: transparent; }}
-QPushButton[role="nav_button"]:pressed {{ background-color: {Semantic.SURFACE}; }}
-QPushButton[role="nav_button"]:checked {{ background-color: {Semantic.NEUTRAL_750}; color: {Semantic.NEUTRAL_000}; font-weight: 600; }}
-QPushButton[role="nav_button"]:checked:hover {{ background-color: {Semantic.NEUTRAL_750}; color: {Semantic.NEUTRAL_000}; }}
-QPushButton[role="nav_button"]:checked:pressed {{ background-color: {Semantic.SURFACE}; }}
-QPushButton[role="nav_button"][collapsed="false"] {{ text-align: left; padding-left: 12px; }}
-QPushButton[role="nav_button"][collapsed="true"] {{ text-align: center; padding: 0; }}
-QPushButton[icon_only="true"][role="nav_button"] {{ padding: 0; }}
+QPushButton[role="nav_button"]                      {{ background-color: transparent; border-radius: {Size.Radius.MD}px; padding: 8px 12px; text-align: left; color: {Semantic.NEUTRAL_400}; font-size: {text1}px; font-weight: 500; border: {Borders.THIN_TRANSPARENT}; }}
+QPushButton[role="nav_button"]:hover                {{ background-color: {Semantic.NEUTRAL_950}; color: {Semantic.NEUTRAL_000}; }}
+QPushButton[role="nav_button"]:focus                {{ border-color: transparent; }}
+QPushButton[role="nav_button"]:pressed              {{ background-color: {Semantic.SURFACE}; }}
+QPushButton[role="nav_button"]:checked              {{ background-color: {Semantic.NEUTRAL_750}; color: {Semantic.NEUTRAL_000}; font-weight: 600; }}
+QPushButton[role="nav_button"]:checked:hover        {{ background-color: {Semantic.NEUTRAL_750}; color: {Semantic.NEUTRAL_000}; }}
+QPushButton[role="nav_button"]:checked:pressed      {{ background-color: {Semantic.SURFACE}; }}
+QPushButton[role="nav_button"][collapsed="false"]   {{ text-align: left; padding-left: 12px; }}
+QPushButton[role="nav_button"][collapsed="true"]    {{ text-align: center; padding: 0; }}
+QPushButton[icon_only="true"][role="nav_button"]    {{ padding: 0; }}
 
 /* Global Disabled Button States */
 QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_danger_outlined"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Semantic.NEUTRAL_500}; border: {Borders.SUBTLE}; padding: {Size.Padding.BUTTON}; }}

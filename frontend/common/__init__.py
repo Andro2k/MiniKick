@@ -6,7 +6,6 @@ from .paths import (
 )
 
 from .icons import (
-    ICON_SIZE_XS, ICON_SIZE_SM, ICON_SIZE_MD, ICON_SIZE_LG, ICON_SIZE_XL,
     get_icon, get_icon_colored, 
     get_pixmap, get_pixmap_colored, 
     create_circular_pixmap,
@@ -58,8 +57,7 @@ from .theme import (
 from .markdown import markdown_to_github_html
 
 __all__ = [
-    'resource_path', 'get_assets_path', 'resolve_icon_path', 'ICON_SIZE_XS',
-    'ICON_SIZE_SM', 'ICON_SIZE_MD', 'ICON_SIZE_LG', 'ICON_SIZE_XL',
+    'resource_path', 'get_assets_path', 'resolve_icon_path',
     'get_icon', 'get_icon_colored', 'get_pixmap_colored', 'get_pixmap',
     'create_circular_pixmap', 'validate_trigger_prefix', 'sanitize_command_trigger', 'is_complete_valid_trigger',
     'markdown_to_github_html', 'COLOR_CALLOUT_NOTE_LIGHT', 'COLOR_PURPLE_LIGHT', 'COLOR_CALLOUT_WARNING_LIGHT',

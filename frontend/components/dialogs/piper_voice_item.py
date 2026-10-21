@@ -72,10 +72,10 @@ class PiperVoiceItemWidget(QWidget):
         header_layout.addWidget(self.btn_test)
 
         self.btn_delete = QPushButton(self)
-        self.btn_delete.setIcon(get_icon_colored("trash-filled.svg", COLOR_RED, size=13))
+        self.btn_delete.setIcon(get_icon_colored("trash-filled.svg", COLOR_NEUTRAL_050, size=14))
         self.btn_delete.setIconSize(QSize(13, 13))
         configure_icon_only_button(self.btn_delete)
-        self.btn_delete.setProperty("role", "action_danger_outlined")
+        self.btn_delete.setProperty("role", "action_danger_solid")
         self.btn_delete.setToolTip(self.i18n.get("piper_dialog.btn_delete_tooltip"))
         self.btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_delete.clicked.connect(lambda: self.delete_requested.emit(self.voice_id))
@@ -86,7 +86,7 @@ class PiperVoiceItemWidget(QWidget):
         self.btn_download.setFixedHeight(30)
         self.btn_download.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
-        self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=13))
+        self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=14))
         self.btn_download.setProperty("role", "action_outlined")
         self.btn_download.clicked.connect(lambda: self.download_requested.emit(self.voice_id))
         self.btn_download.setVisible(not self.is_installed and self._can_download())
@@ -140,7 +140,7 @@ class PiperVoiceItemWidget(QWidget):
             self.btn_download.setVisible(not is_installed and self._can_download())
             self.btn_download.setEnabled(True)
             self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
-            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=13))
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=14))
 
     def set_downloading(self, downloading: bool, percent: int = 0):
         self.progress_bar.setVisible(downloading)
@@ -148,11 +148,11 @@ class PiperVoiceItemWidget(QWidget):
         self.btn_download.setEnabled(not downloading)
         if downloading:
             self.btn_download.setText(f"{percent}%")
-            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_400, size=13))
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_400, size=14))
             self.lbl_status.setText(self.i18n.get("piper_dialog.status_downloading"))
             self.lbl_status.setProperty("state", "info")
             self.lbl_status.style().unpolish(self.lbl_status)
             self.lbl_status.style().polish(self.lbl_status)
         else:
             self.btn_download.setText(self.i18n.get("piper_dialog.btn_download"))
-            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=13))
+            self.btn_download.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=14))

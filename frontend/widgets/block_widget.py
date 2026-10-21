@@ -176,7 +176,7 @@ class StatCard(QFrame):
         header_layout.setSpacing(SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
-        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=14))
+        icon_lbl.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=18))
 
         self.lbl_title = QLabel(title_text, parent=self)
         self.lbl_title.setProperty("role", "h3")
