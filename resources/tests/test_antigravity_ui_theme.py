@@ -86,12 +86,12 @@ def test_theme_tokens_clean_and_complete():
     import re
     import inspect
     from frontend.common import (
-        MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST,
+        MARGIN_SECTION_HEADER, MARGIN_H_XS,
         MARGIN_MD, MARGIN_TAB_BAR,
         MARGIN_SCROLL_CONTENT, MARGIN_XS, MARGIN_TAG_BADGE,
         theme
     )
-    for m in (MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_MD, MARGIN_TAB_BAR, MARGIN_SCROLL_CONTENT, MARGIN_XS, MARGIN_TAG_BADGE):
+    for m in (MARGIN_SECTION_HEADER, MARGIN_H_XS, MARGIN_MD, MARGIN_TAB_BAR, MARGIN_SCROLL_CONTENT, MARGIN_XS, MARGIN_TAG_BADGE):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)

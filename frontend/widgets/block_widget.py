@@ -9,7 +9,7 @@ from frontend.common import (
     COLOR_RED, COLOR_RED, COLOR_GREEN, COLOR_GREEN_HOVER,
     SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_XL,
     MARGIN_NONE, MARGIN_MD, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
-    MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_LG
+    MARGIN_HEADER, MARGIN_H_XS, MARGIN_LG
 )
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls_widget import ModernSwitch, configure_icon_only_button
@@ -41,7 +41,7 @@ class SectionHeader(QWidget):
     def __init__(self, text: str = "", parent=None, first: bool = False):
         super().__init__(parent)
         layout = QVBoxLayout(self)
-        margins = MARGIN_SECTION_HEADER_FIRST if first else MARGIN_SECTION_HEADER
+        margins = MARGIN_H_XS if first else MARGIN_HEADER
         layout.setContentsMargins(*margins)
         layout.setSpacing(SPACING_NONE)
         self.lbl = QLabel(text, parent=self)

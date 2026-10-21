@@ -161,59 +161,59 @@ class Semantic:
     PURPLE_GLOW = "rgba(168, 85, 247, 0.10)"
 
 class BrandColors:
-    INDIGO = Palette.INDIGO
-    INDIGO_DARK = Palette.INDIGO_DARK
-    PINK = Palette.PINK
-    EMERALD = Palette.EMERALD
-    GREEN = Palette.GREEN
-    PURPLE_LIGHT = Palette.PURPLE_LIGHT
-    RED_SOLID = Palette.RED_SOLID
-    RED = Palette.RED
-    RED_PRESSED = Palette.RED_PRESSED
-    GREEN_SOLID = Palette.GREEN_SOLID
-    GREEN_HOVER = Palette.GREEN_HOVER
-    GREEN_PRESSED = Palette.GREEN_PRESSED
-    GREEN_DARK = Palette.GREEN_DARK
-    RED_DARK = Palette.RED_DARK
-    AMBER = Palette.AMBER
-    AMBER_DARK = Palette.AMBER_DARK
-    BLUE = Palette.BLUE
-    BLUE_DARK = Palette.BLUE_DARK
-    PURPLE = Palette.PURPLE
-    PURPLE_DARK = Palette.PURPLE_DARK
-    ORANGE = Palette.ORANGE
-    ORANGE_DARK = Palette.ORANGE_DARK
-    ORANGE_HOVER = Palette.ORANGE_HOVER
-    KICK_BORDER = Palette.KICK_BORDER
-    TIKTOK_ACCENT = Palette.TIKTOK_ACCENT
-    TIKTOK_PRESSED = Palette.TIKTOK_PRESSED
-    KICK = Palette.KICK
-    KICK_REWARDS = Palette.KICK_REWARDS
-    TWITCH = Palette.TWITCH
-    TWITCH_DARK = Palette.TWITCH_DARK
-    TWITCH_LIGHT = Palette.TWITCH_LIGHT
-    YOUTUBE = Palette.YOUTUBE
-    YOUTUBE_DARK = Palette.YOUTUBE_DARK
-    TIKTOK = Palette.TIKTOK
-    TIKTOK_DARK = Palette.TIKTOK_DARK
+    INDIGO          = Palette.INDIGO
+    INDIGO_DARK     = Palette.INDIGO_DARK
+    PINK            = Palette.PINK
+    EMERALD         = Palette.EMERALD
+    GREEN           = Palette.GREEN
+    PURPLE_LIGHT    = Palette.PURPLE_LIGHT
+    RED_SOLID       = Palette.RED_SOLID
+    RED             = Palette.RED
+    RED_PRESSED     = Palette.RED_PRESSED
+    GREEN_SOLID     = Palette.GREEN_SOLID
+    GREEN_HOVER     = Palette.GREEN_HOVER
+    GREEN_PRESSED   = Palette.GREEN_PRESSED
+    GREEN_DARK      = Palette.GREEN_DARK
+    RED_DARK        = Palette.RED_DARK
+    AMBER           = Palette.AMBER
+    AMBER_DARK      = Palette.AMBER_DARK
+    BLUE            = Palette.BLUE
+    BLUE_DARK       = Palette.BLUE_DARK
+    PURPLE          = Palette.PURPLE
+    PURPLE_DARK     = Palette.PURPLE_DARK
+    ORANGE          = Palette.ORANGE
+    ORANGE_DARK     = Palette.ORANGE_DARK
+    ORANGE_HOVER    = Palette.ORANGE_HOVER
+    KICK_BORDER     = Palette.KICK_BORDER
+    TIKTOK_ACCENT   = Palette.TIKTOK_ACCENT
+    TIKTOK_PRESSED  = Palette.TIKTOK_PRESSED
+    KICK            = Palette.KICK
+    KICK_REWARDS    = Palette.KICK_REWARDS
+    TWITCH          = Palette.TWITCH
+    TWITCH_DARK     = Palette.TWITCH_DARK
+    TWITCH_LIGHT    = Palette.TWITCH_LIGHT
+    YOUTUBE         = Palette.YOUTUBE
+    YOUTUBE_DARK    = Palette.YOUTUBE_DARK
+    TIKTOK          = Palette.TIKTOK
+    TIKTOK_DARK     = Palette.TIKTOK_DARK
 
 class MusicTheme:
-    MUSIC_VINYL_BG_TOP = Palette.MUSIC_VINYL_BG_TOP
-    MUSIC_VINYL_BG_BOTTOM = Palette.MUSIC_VINYL_BG_BOTTOM
-    MUSIC_VINYL_ACCENT = Palette.MUSIC_VINYL_ACCENT
-    MUSIC_CARD_LIGHT = Palette.MUSIC_CARD_LIGHT
-    MUSIC_CARD_BORDER = Palette.MUSIC_CARD_BORDER
-    MUSIC_CARD_ACCENT = Palette.MUSIC_CARD_ACCENT
-    MUSIC_CARD_TEXT = Palette.MUSIC_CARD_TEXT
-    MUSIC_CARD_TEXT_SUB = Palette.MUSIC_CARD_TEXT_SUB
-    MUSIC_ART_ACCENT = Palette.MUSIC_ART_ACCENT
-    MUSIC_VINYL_BLACK = Palette.MUSIC_VINYL_BLACK
-    MUSIC_VINYL_HOLE = Palette.MUSIC_VINYL_HOLE
-    MUSIC_METAL_DARK = Palette.MUSIC_METAL_DARK
-    MUSIC_TONEARM = Palette.MUSIC_TONEARM
-    MUSIC_HEAD_BORDER = Palette.MUSIC_HEAD_BORDER
-    MUSIC_HEAD_BG = Palette.MUSIC_HEAD_BG
-    MUSIC_GROOVE = Palette.MUSIC_GROOVE
+    MUSIC_VINYL_BG_TOP      = Palette.MUSIC_VINYL_BG_TOP
+    MUSIC_VINYL_BG_BOTTOM   = Palette.MUSIC_VINYL_BG_BOTTOM
+    MUSIC_VINYL_ACCENT      = Palette.MUSIC_VINYL_ACCENT
+    MUSIC_CARD_LIGHT        = Palette.MUSIC_CARD_LIGHT
+    MUSIC_CARD_BORDER       = Palette.MUSIC_CARD_BORDER
+    MUSIC_CARD_ACCENT       = Palette.MUSIC_CARD_ACCENT
+    MUSIC_CARD_TEXT         = Palette.MUSIC_CARD_TEXT
+    MUSIC_CARD_TEXT_SUB     = Palette.MUSIC_CARD_TEXT_SUB
+    MUSIC_ART_ACCENT        = Palette.MUSIC_ART_ACCENT
+    MUSIC_VINYL_BLACK       = Palette.MUSIC_VINYL_BLACK
+    MUSIC_VINYL_HOLE        = Palette.MUSIC_VINYL_HOLE
+    MUSIC_METAL_DARK        = Palette.MUSIC_METAL_DARK
+    MUSIC_TONEARM           = Palette.MUSIC_TONEARM
+    MUSIC_HEAD_BORDER       = Palette.MUSIC_HEAD_BORDER
+    MUSIC_HEAD_BG           = Palette.MUSIC_HEAD_BG
+    MUSIC_GROOVE            = Palette.MUSIC_GROOVE
 
 class AlertTheme:
     ALERT_PREVIEW_BG = Palette.ALERT_PREVIEW_BG
@@ -235,65 +235,65 @@ class ChatTheme:
 CHAT_PREVIEW_AVATAR_GRADIENTS = ChatTheme.AVATAR_GRADIENTS
 
 class BadgeTheme:
-    BADGE_STREAMER = Palette.BADGE_STREAMER
+    BADGE_STREAMER  = Palette.BADGE_STREAMER
     BADGE_MODERATOR = Palette.BADGE_MODERATOR
-    BADGE_VIP = Palette.BADGE_VIP
-    BADGE_OG = Palette.BADGE_OG
-    BADGE_SUB = Palette.BADGE_SUB
-    BADGE_BG = Palette.BADGE_BG
+    BADGE_VIP       = Palette.BADGE_VIP
+    BADGE_OG        = Palette.BADGE_OG
+    BADGE_SUB       = Palette.BADGE_SUB
+    BADGE_BG        = Palette.BADGE_BG
 
 class SwitchTheme:
-    SWITCH_TRACK_ON_0 = Palette.SWITCH_TRACK_ON_0
-    SWITCH_TRACK_ON_1 = Palette.SWITCH_TRACK_ON_1
-    SWITCH_TRACK_DIS_0 = Palette.SWITCH_TRACK_DIS_0
-    SWITCH_TRACK_DIS_1 = Palette.SWITCH_TRACK_DIS_1
-    SWITCH_THUMB_OFF_0 = Palette.SWITCH_THUMB_OFF_0
-    SWITCH_THUMB_OFF_1 = Palette.SWITCH_THUMB_OFF_1
-    SWITCH_THUMB_ON_1 = Palette.SWITCH_THUMB_ON_1
-    SWITCH_THUMB_DIS_0 = Palette.SWITCH_THUMB_DIS_0
-    SWITCH_THUMB_DIS_1 = Palette.SWITCH_THUMB_DIS_1
+    SWITCH_TRACK_ON_0   = Palette.SWITCH_TRACK_ON_0
+    SWITCH_TRACK_ON_1   = Palette.SWITCH_TRACK_ON_1
+    SWITCH_TRACK_DIS_0  = Palette.SWITCH_TRACK_DIS_0
+    SWITCH_TRACK_DIS_1  = Palette.SWITCH_TRACK_DIS_1
+    SWITCH_THUMB_OFF_0  = Palette.SWITCH_THUMB_OFF_0
+    SWITCH_THUMB_OFF_1  = Palette.SWITCH_THUMB_OFF_1
+    SWITCH_THUMB_ON_1   = Palette.SWITCH_THUMB_ON_1
+    SWITCH_THUMB_DIS_0  = Palette.SWITCH_THUMB_DIS_0
+    SWITCH_THUMB_DIS_1  = Palette.SWITCH_THUMB_DIS_1
 
 class Radius:
     XS = 2
-    SM = 4
-    MD = 6
-    LG = 10
-    XL = 14
+    SM = 6
+    MD = 8
+    LG = 12
+    XL = 16
     PILL = 26
 
 class Margin:
-    NONE = (0, 0, 0, 0)
-    XS = (2, 2, 2, 2)
-    SM = (6, 6, 6, 6)
-    MD = (8, 8, 8, 8)
-    LG = (12, 12, 12, 12)
-    XL = (16, 16, 16, 16)
+    NONE= (0, 0, 0, 0)
+    XS  = (2, 2, 2, 2)
+    SM  = (6, 6, 6, 6)
+    MD  = (8, 8, 8, 8)
+    LG  = (12, 12, 12, 12)
+    XL  = (16, 16, 16, 16)
+
     H_XS = (2, 0, 2, 0)
     H_SM = (6, 0, 6, 0)
     H_MD = (8, 0, 8, 0)
+    
     V_XS = (0, 2, 0, 2)
     V_SM = (0, 6, 0, 6)
-    V_MD = (0, 8, 0, 8)
-    SECTION_HEADER = (2, 12, 2, 4)
-    SECTION_HEADER_FIRST = (2, 0, 2, 4)
-    TAB_BAR = (12, 4, 12, 4)
-    SCROLL_CONTENT = (2, 2, 8, 2)
-    TAG_BADGE = (4, 4, 8, 4)
+    
+    SECTION_HEADER  = (2, 12, 2, 4)
+    TAB_BAR         = (12, 4, 12, 4)
+    SCROLL_CONTENT  = (2, 2, 8, 2)
+    TAG_BADGE       = (4, 4, 8, 4)
 
-class Padding:
-    INPUT = "6px 10px"
-    BUTTON = "6px 14px"
-    SPINBOX = "4px 20px 4px 10px"
-    COMPACT = "4px"
-    ITEM = "4px 6px"
-    BADGE = "2px 8px"
-    CHIP = "4px 12px"
-    TAB = "6px 16px"
-    MENU_ITEM = "5px 12px 5px 18px"
+class Padding:    
+    BADGE       = "2px 8px"
+    COMPACT     = "4px"
+    SPINBOX     = "4px 20px 4px 10px" 
+    ITEM        = "4px 6px"
+    CHIP        = "4px 12px"
+    MENU_ITEM   = "5px 12px 5px 18px"
+    INPUT       = "6px 10px"
+    BUTTON      = "6px 14px"
+    TAB         = "6px 16px"
 
 class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
-    FAMILY      = FONT_FAMILY
 
 class Size:
     Radius = Radius
@@ -358,11 +358,7 @@ COLOR_NEUTRAL_400 = Semantic.NEUTRAL_400
 COLOR_NEUTRAL_200 = Semantic.NEUTRAL_200
 COLOR_NEUTRAL_050 = Semantic.NEUTRAL_050
 COLOR_NEUTRAL_000 = Semantic.NEUTRAL_000
-COLOR_SURFACE     = Semantic.SURFACE_900
-COLOR_BORDER_HOVER = Semantic.BORDER_HOVER
 COLOR_BORDER_TOP_SHINE = Semantic.BORDER_TOP_SHINE
-COLOR_BORDER_LIGHT = Semantic.BORDER_LIGHT
-COLOR_BORDER_SUBTLE_GHOST = Semantic.BORDER_SUBTLE_GHOST
 COLOR_INDIGO = BrandColors.INDIGO
 COLOR_INDIGO_DARK = BrandColors.INDIGO_DARK
 COLOR_PINK = BrandColors.PINK
@@ -455,18 +451,16 @@ COLOR_PURPLE_GLOW = Semantic.PURPLE_GLOW
 FONT_FAMILY = Typography.FONT_FAMILY
 ICON_BUTTON_NORMAL = Size.ICON_BUTTON_NORMAL
 ICON_BUTTON_COMPACT = Size.ICON_BUTTON_COMPACT
-RADIUS_XS = Radius.XS
+
 RADIUS_SM = Radius.SM
-RADIUS_MD = Radius.MD
-RADIUS_LG = Radius.LG
-RADIUS_XL = Radius.XL
-RADIUS_PILL = Radius.PILL
+
 SPACING_NONE = Size.SPACING_NONE
 SPACING_XS = Size.SPACING_XS
 SPACING_SM = Size.SPACING_SM
 SPACING_MD = Size.SPACING_MD
 SPACING_LG = Size.SPACING_LG
 SPACING_XL = Size.SPACING_XL
+
 MARGIN_NONE = Margin.NONE
 MARGIN_XS = Margin.XS
 MARGIN_SM = Margin.SM
@@ -478,34 +472,14 @@ MARGIN_H_SM = Margin.H_SM
 MARGIN_H_MD = Margin.H_MD
 MARGIN_V_XS = Margin.V_XS
 MARGIN_V_SM = Margin.V_SM
-MARGIN_V_MD = Margin.V_MD
-MARGIN_SECTION_HEADER = Margin.SECTION_HEADER
-MARGIN_SECTION_HEADER_FIRST = Margin.SECTION_HEADER_FIRST
+MARGIN_HEADER = Margin.SECTION_HEADER
 MARGIN_TAB_BAR = Margin.TAB_BAR
 MARGIN_SCROLL_CONTENT = Margin.SCROLL_CONTENT
 MARGIN_TAG_BADGE = Margin.TAG_BADGE
-PADDING_INPUT = Padding.INPUT
-PADDING_BUTTON = Padding.BUTTON
-PADDING_SPINBOX = Padding.SPINBOX
-PADDING_COMPACT = Padding.COMPACT
-PADDING_ITEM = Padding.ITEM
-PADDING_BADGE = Padding.BADGE
-PADDING_CHIP = Padding.CHIP
-PADDING_TAB = Padding.TAB
-PADDING_MENU_ITEM = Padding.MENU_ITEM
-BORDER_DEFAULT = Borders.DEFAULT
+
 BORDER_SUBTLE = Borders.SUBTLE
-BORDER_MUTED = Borders.MUTED
-BORDER_TRANSPARENT = Borders.TRANSPARENT
-BORDER_THIN_TRANSPARENT = Borders.THIN_TRANSPARENT
 BORDER_HOVER = Borders.HOVER
-BORDER_GREEN_THIN = Borders.GREEN_THIN
-BORDER_GREEN_MEDIUM = Borders.GREEN_MEDIUM
 BORDER_LIGHT = Borders.LIGHT
-BORDER_KICK = Borders.KICK
-BORDER_PURPLE_MEDIUM = Borders.PURPLE_MEDIUM
-BORDER_FOCUS = Borders.FOCUS
-BORDER_ERROR = Borders.ERROR
 BORDER_TOP_SHINE = Borders.TOP_SHINE
 BADGE_MIN_HEIGHT = Size.BADGE_MIN_HEIGHT
 BADGE_MAX_HEIGHT = Size.BADGE_MAX_HEIGHT
@@ -550,16 +524,17 @@ def get_qss_colored_icon(icon_name_or_rel_path: str, color_hex: str = COLOR_NEUT
 def _get_qss_icon_url(relative_path: str) -> str:
     return get_assets_path(relative_path).replace('\\', '/')
 
-PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg",  COLOR_NEUTRAL_050)
-PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg", COLOR_NEUTRAL_400)
-PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg",   COLOR_NEUTRAL_400)
-PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg", COLOR_NEUTRAL_400)
-PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg",COLOR_NEUTRAL_400)
+PATH_ICON_HELP          = get_qss_colored_icon("icons/circle-info-filled.svg"   ,COLOR_NEUTRAL_050)
+PATH_ICON_CHEVRON_DW    = get_qss_colored_icon("icons/chevron-down-filled.svg"  ,COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_UP    = get_qss_colored_icon("icons/chevron-up-filled.svg"    ,COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_LF    = get_qss_colored_icon("icons/chevron-left-filled.svg"  ,COLOR_NEUTRAL_400)
+PATH_ICON_CHEVRON_RT    = get_qss_colored_icon("icons/chevron-right-filled.svg" ,COLOR_NEUTRAL_400)
+PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg" ,COLOR_NEUTRAL_400)
+PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg"         ,COLOR_GREEN)
 PATH_ICON_CHECK         = _get_qss_icon_url("icons/check-filled.svg")
-PATH_ICON_CHECK_GREEN   = get_qss_colored_icon("icons/check-filled.svg",        COLOR_GREEN)
 PATH_ICON_MINUS         = _get_qss_icon_url("icons/minus-filled.svg")
 PATH_ICON_RADIO_DOT     = _get_qss_icon_url("icons/radio-dot.svg")
-PATH_ICON_CALENDAR      = get_qss_colored_icon("icons/calendar-days-filled.svg",COLOR_NEUTRAL_400)
+
 
 def _build_reset_and_typography_qss(h1: int, h2: int, h3: int, text1: int, text2: int) -> str:
     return f"""
@@ -623,18 +598,18 @@ QPushButton[role="action_accent_solid"]:focus       {{ border-color: {BrandColor
 QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Semantic.NEUTRAL_500}; border: {Borders.SUBTLE}; }}
 
 /* Platform actions use their brand color without gradients or bevels. */
-QPushButton[role="action_kick"] {{ background-color: {BrandColors.GREEN_SOLID}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.GREEN_SOLID}; }}
-QPushButton[role="action_kick"]:hover {{ background-color: {BrandColors.GREEN_HOVER}; border-color: {BrandColors.GREEN_HOVER}; }}
-QPushButton[role="action_kick"]:pressed {{ background-color: {BrandColors.GREEN_PRESSED}; border-color: {BrandColors.GREEN_PRESSED}; }}
-QPushButton[role="action_twitch"] {{ background-color: {BrandColors.TWITCH_DARK}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.TWITCH_DARK}; }}
-QPushButton[role="action_twitch"]:hover {{ background-color: {BrandColors.TWITCH}; border-color: {BrandColors.TWITCH}; }}
-QPushButton[role="action_twitch"]:pressed {{ background-color: {BrandColors.PURPLE_DARK}; border-color: {BrandColors.PURPLE_DARK}; }}
-QPushButton[role="action_youtube"] {{ background-color: {BrandColors.YOUTUBE_DARK}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.YOUTUBE_DARK}; }}
-QPushButton[role="action_youtube"]:hover {{ background-color: {BrandColors.RED_DARK}; border-color: {BrandColors.RED_DARK}; }}
-QPushButton[role="action_youtube"]:pressed {{ background-color: {BrandColors.RED_PRESSED}; border-color: {BrandColors.RED_PRESSED}; }}
-QPushButton[role="action_tiktok"] {{ background-color: {BrandColors.TIKTOK_DARK}; color: {Semantic.NEUTRAL_999}; border-color: {BrandColors.TIKTOK_DARK}; }}
-QPushButton[role="action_tiktok"]:hover {{ background-color: {BrandColors.TIKTOK}; border-color: {BrandColors.TIKTOK}; }}
-QPushButton[role="action_tiktok"]:pressed {{ background-color: {BrandColors.TIKTOK_PRESSED}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.TIKTOK_PRESSED}; }}
+QPushButton[role="action_kick"]             {{ background-color: {BrandColors.GREEN_SOLID}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.GREEN_SOLID}; }}
+QPushButton[role="action_kick"]:hover       {{ background-color: {BrandColors.GREEN_HOVER}; border-color: {BrandColors.GREEN_HOVER}; }}
+QPushButton[role="action_kick"]:pressed     {{ background-color: {BrandColors.GREEN_PRESSED}; border-color: {BrandColors.GREEN_PRESSED}; }}
+QPushButton[role="action_twitch"]           {{ background-color: {BrandColors.TWITCH_DARK}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.TWITCH_DARK}; }}
+QPushButton[role="action_twitch"]:hover     {{ background-color: {BrandColors.TWITCH}; border-color: {BrandColors.TWITCH}; }}
+QPushButton[role="action_twitch"]:pressed   {{ background-color: {BrandColors.PURPLE_DARK}; border-color: {BrandColors.PURPLE_DARK}; }}
+QPushButton[role="action_youtube"]          {{ background-color: {BrandColors.YOUTUBE_DARK}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.YOUTUBE_DARK}; }}
+QPushButton[role="action_youtube"]:hover    {{ background-color: {BrandColors.RED_DARK}; border-color: {BrandColors.RED_DARK}; }}
+QPushButton[role="action_youtube"]:pressed  {{ background-color: {BrandColors.RED_PRESSED}; border-color: {BrandColors.RED_PRESSED}; }}
+QPushButton[role="action_tiktok"]           {{ background-color: {BrandColors.TIKTOK_DARK}; color: {Semantic.NEUTRAL_999}; border-color: {BrandColors.TIKTOK_DARK}; }}
+QPushButton[role="action_tiktok"]:hover     {{ background-color: {BrandColors.TIKTOK}; border-color: {BrandColors.TIKTOK}; }}
+QPushButton[role="action_tiktok"]:pressed   {{ background-color: {BrandColors.TIKTOK_PRESSED}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.TIKTOK_PRESSED}; }}
 
 QPushButton[role="action_kick"]:focus, QPushButton[role="action_twitch"]:focus, QPushButton[role="action_youtube"]:focus, QPushButton[role="action_tiktok"]:focus {{ border-color: transparent; }}
 
