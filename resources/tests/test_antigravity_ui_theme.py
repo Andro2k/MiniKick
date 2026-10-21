@@ -86,12 +86,12 @@ def test_theme_tokens_clean_and_complete():
     import re
     import inspect
     from frontend.common import (
-        MARGIN_SETTING_ROW, MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST,
-        MARGIN_TAB_PANEL, MARGIN_TAB_BAR,
-        MARGIN_SCROLL_CONTENT, MARGIN_CHIP, MARGIN_TAG_BADGE,
+        MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST,
+        MARGIN_MD, MARGIN_TAB_BAR,
+        MARGIN_SCROLL_CONTENT, MARGIN_XS, MARGIN_TAG_BADGE,
         theme
     )
-    for m in (MARGIN_SETTING_ROW, MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_TAB_PANEL, MARGIN_TAB_BAR, MARGIN_SCROLL_CONTENT, MARGIN_CHIP, MARGIN_TAG_BADGE):
+    for m in (MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_MD, MARGIN_TAB_BAR, MARGIN_SCROLL_CONTENT, MARGIN_XS, MARGIN_TAG_BADGE):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -110,8 +110,8 @@ def test_theme_tokens_clean_and_complete():
 
 def test_dashboard_view_seamless_dividers_and_margins(qapp):
     from frontend.views.dashboard_view import DashboardView
-    from frontend.common import MARGIN_HERO, MARGIN_PLATFORMS_GRID, MARGIN_SETTING_ROW_COMPACT
-    for m in (MARGIN_HERO, MARGIN_PLATFORMS_GRID, MARGIN_SETTING_ROW_COMPACT):
+    from frontend.common import MARGIN_LG
+    for m in (MARGIN_LG, MARGIN_LG):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -207,7 +207,7 @@ def test_music_view_and_subpanels_antigravity_standard(qapp):
     from frontend.components.music import (
         MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicSettingsPanel
     )
-    from frontend.common import SPACING_MD, MARGIN_TAB_PANEL
+    from frontend.common import SPACING_MD, MARGIN_MD
     from frontend.widgets import ModernDivider
 
     i18n = TranslationService(default_lang="es")
@@ -220,7 +220,7 @@ def test_music_view_and_subpanels_antigravity_standard(qapp):
     for panel in (music_view.player_panel, music_view.commands_panel, music_view.settings_panel):
         assert panel.property("role") == "tab_panel"
         m = panel.panel_layout.contentsMargins()
-        assert (m.left(), m.top(), m.right(), m.bottom()) == MARGIN_TAB_PANEL
+        assert (m.left(), m.top(), m.right(), m.bottom()) == MARGIN_MD
         assert panel.panel_layout.spacing() == SPACING_MD
 
     cmd_dividers = [music_view.commands_panel.card_cmds.card_layout.itemAt(i).widget()
@@ -287,7 +287,7 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
 
 def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.schedule_view import ScheduleView
-    from frontend.common import SPACING_MD, MARGIN_TAB_PANEL, MARGIN_MD
+    from frontend.common import SPACING_MD, MARGIN_MD, MARGIN_MD
 
     i18n = TranslationService(default_lang="es")
     schedule_view = ScheduleView(i18n)
@@ -298,7 +298,7 @@ def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     qc = schedule_view.quick_change_panel
     assert qc.property("role") == "tab_panel"
     m_qc = qc.layout().contentsMargins()
-    assert (m_qc.left(), m_qc.top(), m_qc.right(), m_qc.bottom()) == MARGIN_TAB_PANEL
+    assert (m_qc.left(), m_qc.top(), m_qc.right(), m_qc.bottom()) == MARGIN_MD
     assert qc.layout().spacing() == SPACING_MD
     m_kick = qc.kick_card.card_layout.contentsMargins()
     assert (m_kick.left(), m_kick.top(), m_kick.right(), m_kick.bottom()) == MARGIN_MD
@@ -308,7 +308,7 @@ def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     form = schedule_view.schedule_form_panel
     assert form.property("role") == "tab_panel"
     m_form = form.layout().contentsMargins()
-    assert (m_form.left(), m_form.top(), m_form.right(), m_form.bottom()) == MARGIN_TAB_PANEL
+    assert (m_form.left(), m_form.top(), m_form.right(), m_form.bottom()) == MARGIN_MD
     assert form.layout().spacing() == SPACING_MD
 
 def test_table_cards_and_edge_to_edge_alignment(qapp):
@@ -372,7 +372,7 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtCore import Qt
     from frontend.common import (
         create_dark_palette, GLOBAL_QSS,
-        COLOR_NEUTRAL_900, COLOR_NEUTRAL_950, COLOR_NEUTRAL_50
+        COLOR_NEUTRAL_900, COLOR_NEUTRAL_950, COLOR_NEUTRAL_050
     )
     from frontend.widgets import SearchableComboBox, VariableTextEdit, NoWheelDateEdit
     from frontend.widgets.category_search import CategorySuggestionsPopup
@@ -381,7 +381,7 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
     assert isinstance(pal, QPalette)
     assert pal.color(QPalette.ColorRole.Window).name().lower() == COLOR_NEUTRAL_900.lower()
     assert pal.color(QPalette.ColorRole.Base).name().lower() == COLOR_NEUTRAL_950.lower()
-    assert pal.color(QPalette.ColorRole.WindowText).name().lower() == COLOR_NEUTRAL_50.lower()
+    assert pal.color(QPalette.ColorRole.WindowText).name().lower() == COLOR_NEUTRAL_050.lower()
 
     combo = SearchableComboBox()
     assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
