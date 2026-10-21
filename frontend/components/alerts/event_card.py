@@ -18,7 +18,7 @@ from frontend.widgets import (
 )
 from frontend.common import (
     get_pixmap_colored, COLOR_GREEN, COLOR_PURPLE, COLOR_NEUTRAL_400,
-    COLOR_PURE_WHITE, COLOR_NEUTRAL_950, COLOR_KICK, COLOR_TWITCH,
+    COLOR_NEUTRAL_000, COLOR_NEUTRAL_950, COLOR_KICK, COLOR_TWITCH,
     SPACING_NONE, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
 )
 from .alert_mockup import AlertOverlayMockupWidget
@@ -36,7 +36,7 @@ class AlertConfigData:
     tts_read: bool = False
     layout: str = "above"
     style: str = "compact"
-    text_color: str = COLOR_PURE_WHITE
+    text_color: str = COLOR_NEUTRAL_000
     highlight_color: str = ""
     font_family: str = "Outfit"
     font_size: int = 24
@@ -489,7 +489,7 @@ class AlertEventCard(QWidget):
         ))
 
         self.picker_text_color = ModernColorPicker(
-            initial_color=COLOR_PURE_WHITE,
+            initial_color=COLOR_NEUTRAL_000,
             tooltip=self.i18n.get("alerts.fields.text_color"),
             show_presets=False,
             parent=self
@@ -761,7 +761,7 @@ class AlertEventCard(QWidget):
         font_weight = self.combo_font_weight.currentData() or "bold"
         font_size = self.spin_font_size.value()
         text_align = self.seg_align.current_value() or "center"
-        text_color = self.picker_text_color.color() or COLOR_PURE_WHITE
+        text_color = self.picker_text_color.color() or COLOR_NEUTRAL_000
         highlight_color = self.picker_highlight_color.color() or ""
         bg_color = self.picker_bg_color.color() or COLOR_NEUTRAL_950
         bg_opacity = self.slider_bg_opacity.value()
@@ -820,7 +820,7 @@ class AlertEventCard(QWidget):
             tts_read=cfg.tts_read,
             layout=getattr(cfg, "layout", "above") or "above",
             style=getattr(cfg, "style", "compact") or "compact",
-            text_color=getattr(cfg, "text_color", COLOR_PURE_WHITE) or COLOR_PURE_WHITE,
+            text_color=getattr(cfg, "text_color", COLOR_NEUTRAL_000) or COLOR_NEUTRAL_000,
             highlight_color=getattr(cfg, "highlight_color", "") or "",
             font_family=getattr(cfg, "font_family", "Outfit") or "Outfit",
             font_size=int(getattr(cfg, "font_size", 24) or 24),
@@ -891,7 +891,7 @@ class AlertEventCard(QWidget):
         align_val = getattr(cfg, "text_align", "center") or "center"
         self.seg_align.set_current_value(align_val)
 
-        self.picker_text_color.set_color(getattr(cfg, "text_color", COLOR_PURE_WHITE) or COLOR_PURE_WHITE)
+        self.picker_text_color.set_color(getattr(cfg, "text_color", COLOR_NEUTRAL_000) or COLOR_NEUTRAL_000)
 
         default_hl = COLOR_KICK if self.platform == "kick" else COLOR_TWITCH
         self.picker_highlight_color.set_color(getattr(cfg, "highlight_color", "") or default_hl)
@@ -961,7 +961,7 @@ class AlertEventCard(QWidget):
                 cfg.sound_volume != self._saved_config.sound_volume or
                 cfg.tts_read != self._saved_config.tts_read or
                 cfg.layout != getattr(self._saved_config, "layout", "above") or
-                cfg.text_color != getattr(self._saved_config, "text_color", COLOR_PURE_WHITE) or
+                cfg.text_color != getattr(self._saved_config, "text_color", COLOR_NEUTRAL_000) or
                 cfg.highlight_color != getattr(self._saved_config, "highlight_color", "") or
                 cfg.font_family != getattr(self._saved_config, "font_family", "Outfit") or
                 cfg.font_size != getattr(self._saved_config, "font_size", 24) or

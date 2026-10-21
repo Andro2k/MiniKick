@@ -5,7 +5,8 @@ from PySide6.QtWidgets import (
     QApplication, QLabel, QHBoxLayout, QGridLayout, QWidget, QSizePolicy
 )
 from frontend.common import (
-    MARGIN_NONE, MARGIN_MD, MARGIN_CHIP, MARGIN_TAB_PANEL, SPACING_XS, SPACING_SM, SPACING_MD,
+    MARGIN_NONE, MARGIN_MD, MARGIN_XS, 
+    SPACING_SM, SPACING_MD, SPACING_XS, 
     COLOR_NEUTRAL_400, get_pixmap_colored
 )
 from frontend.widgets import (
@@ -50,14 +51,14 @@ class CompactToggleItem(QWidget):
         super().__init__(parent)
         self.switch = switch
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=MARGIN_CHIP, spacing=SPACING_SM, icon_size=14)
+        layout, _ = _setup_icon_text_row(self, icon_name, title, tooltip, margins=MARGIN_XS, spacing=SPACING_SM, icon_size=14)
         layout.addWidget(switch, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
 class ChatOverlaySettingsPanel(ModernCard):
     settings_changed = Signal()
 
     def __init__(self, i18n, parent=None):
-        super().__init__(parent, margin=MARGIN_TAB_PANEL, spacing=SPACING_MD, orientation="vertical")
+        super().__init__(parent, margin=MARGIN_MD, spacing=SPACING_MD, orientation="vertical")
         self.setProperty("role", "tab_panel")
         self.i18n = i18n
         self._chat_overlay_url = ""

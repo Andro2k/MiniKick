@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QHeaderView, QTableW
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from frontend.widgets import BaseView, ModernTableCard, TableActionCell, create_badge
-from frontend.common import COLOR_WHITE, COLOR_NEUTRAL_400, MARGIN_H_MD
+from frontend.common import COLOR_NEUTRAL_050, COLOR_NEUTRAL_400, MARGIN_H_MD
 
 class TimersView(BaseView):
     add_requested = Signal()
@@ -163,7 +163,7 @@ class TimersView(BaseView):
 
         cell.add_button(
             icon_name="edit-filled.svg",
-            color=COLOR_WHITE,
+            color=COLOR_NEUTRAL_050,
             role="action_accent_solid",
             tooltip=self.i18n.get("timer.table.tooltip_edit"),
             callback=lambda checked=False, tid=timer_id: self.edit_requested.emit(tid)
@@ -172,7 +172,7 @@ class TimersView(BaseView):
         timer_name = timer_data.get("name", "")
         cell.add_button(
             icon_name="trash-filled.svg",
-            color=COLOR_WHITE,
+            color=COLOR_NEUTRAL_050,
             role="action_danger_solid",
             tooltip=self.i18n.get("timer.table.tooltip_delete"),
             callback=lambda checked=False, tid=timer_id, tname=timer_name: self._confirm_delete_timer(tid, tname)

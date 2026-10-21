@@ -7,17 +7,17 @@ from PySide6.QtCore import QRectF, Qt, QSize
 from PySide6.QtGui import (QColor, QPainter, QPainterPath, QPen, QLinearGradient, 
                            QSyntaxHighlighter, QTextCharFormat, QFont, QKeyEvent, QIcon)
 from frontend.common import (
-    get_icon_colored, COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_BLACK,
+    get_icon_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, COLOR_NEUTRAL_1000,
     ICON_BUTTON_SIZE,
-    COLOR_GREEN, COLOR_KICK_BORDER, COLOR_BORDER_MUTED_FOCUS, COLOR_BORDER_TOP_SHINE,
+    COLOR_GREEN, COLOR_KICK_BORDER, COLOR_GREEN, COLOR_BORDER_TOP_SHINE,
     get_qcolor_with_alpha,
-    COLOR_SWITCH_TRACK_OFF_0, COLOR_SWITCH_TRACK_OFF_1, COLOR_SWITCH_BORDER_OFF,
+    COLOR_NEUTRAL_950, COLOR_NEUTRAL_900, COLOR_NEUTRAL_750,
     COLOR_SWITCH_TRACK_ON_0, COLOR_SWITCH_TRACK_ON_1,
     COLOR_SWITCH_TRACK_DIS_0, COLOR_SWITCH_TRACK_DIS_1,
     COLOR_SWITCH_THUMB_OFF_0, COLOR_SWITCH_THUMB_OFF_1,
-    COLOR_SWITCH_THUMB_ON_0, COLOR_SWITCH_THUMB_ON_1,
+    COLOR_NEUTRAL_000, COLOR_SWITCH_THUMB_ON_1,
     COLOR_SWITCH_THUMB_DIS_0, COLOR_SWITCH_THUMB_DIS_1,
-    COLOR_SYNTAX_VARIABLE
+    COLOR_PURPLE_LIGHT
 )
 
 _REGEX_VAR_END = re.compile(r"\{[a-zA-Z_]+\}$")
@@ -53,17 +53,17 @@ class ModernButton(QPushButton):
     @staticmethod
     def _resolve_role_color(role: str) -> str:
         role_map = {
-            "action_outlined": COLOR_WHITE,
-            "action_kick": COLOR_WHITE,
-            "action_twitch": COLOR_WHITE,
-            "action_youtube": COLOR_WHITE,
-            "action_tiktok": COLOR_BLACK,
-            "action_danger_solid": COLOR_WHITE,
-            "action_accent_solid": COLOR_WHITE,
+            "action_outlined": COLOR_NEUTRAL_050,
+            "action_kick": COLOR_NEUTRAL_050,
+            "action_twitch": COLOR_NEUTRAL_050,
+            "action_youtube": COLOR_NEUTRAL_050,
+            "action_tiktok": COLOR_NEUTRAL_1000,
+            "action_danger_solid": COLOR_NEUTRAL_050,
+            "action_accent_solid": COLOR_NEUTRAL_050,
             "btn_ghost": COLOR_NEUTRAL_400,
             "nav_button": COLOR_NEUTRAL_400,
         }
-        return role_map.get(role, COLOR_WHITE)
+        return role_map.get(role, COLOR_NEUTRAL_050)
 
     def set_icon(self, icon_name: str, color: str | None = None, size: int = 16):
         if not icon_name:
@@ -119,9 +119,9 @@ class ModernSwitch(QAbstractButton):
 
         track_grad = QLinearGradient(0, 0, 0, h)
         if not is_enabled:
-            track_grad.setColorAt(0.0, QColor(COLOR_SWITCH_TRACK_OFF_0))
-            track_grad.setColorAt(1.0, QColor(COLOR_SWITCH_TRACK_OFF_1))
-            border_color = QColor(COLOR_SWITCH_BORDER_OFF)
+            track_grad.setColorAt(0.0, QColor(COLOR_NEUTRAL_950))
+            track_grad.setColorAt(1.0, QColor(COLOR_NEUTRAL_900))
+            border_color = QColor(COLOR_NEUTRAL_750)
         elif is_checked:
             track_grad.setColorAt(0.0, QColor(COLOR_SWITCH_TRACK_ON_0))
             track_grad.setColorAt(1.0, QColor(COLOR_SWITCH_TRACK_ON_1))
@@ -129,7 +129,7 @@ class ModernSwitch(QAbstractButton):
         else:
             track_grad.setColorAt(0.0, QColor(COLOR_SWITCH_TRACK_DIS_0))
             track_grad.setColorAt(1.0, QColor(COLOR_SWITCH_TRACK_DIS_1))
-            border_color = QColor(COLOR_BORDER_MUTED_FOCUS) if has_focus else QColor(COLOR_BORDER_TOP_SHINE)
+            border_color = QColor(COLOR_GREEN) if has_focus else QColor(COLOR_BORDER_TOP_SHINE)
 
         path = QPainterPath()
         path.addRoundedRect(rect, radius, radius)
@@ -147,7 +147,7 @@ class ModernSwitch(QAbstractButton):
         if is_enabled:
             shadow_rect = QRectF(handle_x, handle_y + 1.0, handle_size, handle_size)
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(get_qcolor_with_alpha(COLOR_BLACK, 60))
+            painter.setBrush(get_qcolor_with_alpha(COLOR_NEUTRAL_1000, 60))
             painter.drawEllipse(shadow_rect)
 
         thumb_grad = QLinearGradient(handle_x, handle_y, handle_x, handle_y + handle_size)
@@ -155,14 +155,14 @@ class ModernSwitch(QAbstractButton):
             thumb_grad.setColorAt(0.0, QColor(COLOR_SWITCH_THUMB_OFF_0))
             thumb_grad.setColorAt(1.0, QColor(COLOR_SWITCH_THUMB_OFF_1))
         elif is_checked:
-            thumb_grad.setColorAt(0.0, QColor(COLOR_SWITCH_THUMB_ON_0))
+            thumb_grad.setColorAt(0.0, QColor(COLOR_NEUTRAL_000))
             thumb_grad.setColorAt(1.0, QColor(COLOR_SWITCH_THUMB_ON_1))
         else:
             thumb_grad.setColorAt(0.0, QColor(COLOR_SWITCH_THUMB_DIS_0))
             thumb_grad.setColorAt(1.0, QColor(COLOR_SWITCH_THUMB_DIS_1))
 
         painter.setBrush(thumb_grad)
-        painter.setPen(QPen(get_qcolor_with_alpha(COLOR_BLACK, 30), 0.8))
+        painter.setPen(QPen(get_qcolor_with_alpha(COLOR_NEUTRAL_1000, 30), 0.8))
         painter.drawEllipse(handle_rect)
 
         painter.end()
@@ -198,7 +198,7 @@ class VariableHighlighter(QSyntaxHighlighter):
         super().__init__(parent)
         self.pattern = pattern
         self._regex = re.compile(pattern)
-        self.color = color if color is not None else QColor(COLOR_SYNTAX_VARIABLE)
+        self.color = color if color is not None else QColor(COLOR_PURPLE_LIGHT)
         self.bg_color = bg_color
         
     def highlightBlock(self, text):
@@ -213,7 +213,7 @@ class VariableHighlighter(QSyntaxHighlighter):
             self.setFormat(start, end - start, fmt)
 
 class VariableTextEdit(QTextEdit):
-    def __init__(self, autocomplete_data=None, highlight_pattern=r"\{[a-zA-Z_]+\}", highlight_color=COLOR_SYNTAX_VARIABLE, highlight_bg=None, parent=None):
+    def __init__(self, autocomplete_data=None, highlight_pattern=r"\{[a-zA-Z_]+\}", highlight_color=COLOR_PURPLE_LIGHT, highlight_bg=None, parent=None):
         super().__init__(parent)
         
         if autocomplete_data is None:

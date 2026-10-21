@@ -8,12 +8,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from frontend.common import (
-    COLOR_WHITE, COLOR_RED, COLOR_NEUTRAL_500,
+    COLOR_NEUTRAL_050, COLOR_RED, COLOR_NEUTRAL_500,
     COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_GREEN, COLOR_BLUE, COLOR_PURPLE,
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE,
     create_circular_pixmap, get_icon_colored, get_pixmap_colored,
-    SPACING_NONE, SPACING_2XS, SPACING_XS, SPACING_SM, SPACING_MD,
-    MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_HERO, MARGIN_PLATFORMS_GRID, MARGIN_SETTING_ROW_COMPACT
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD,
+    MARGIN_NONE, MARGIN_MD, MARGIN_LG,
 )
 from frontend.widgets import (
     BaseView, StatCard, ModernCard,
@@ -113,7 +113,7 @@ class DashboardView(BaseView):
 
         platforms_container = QWidget(self)
         self.platforms_grid = QGridLayout(platforms_container)
-        self.platforms_grid.setContentsMargins(*MARGIN_PLATFORMS_GRID)
+        self.platforms_grid.setContentsMargins(*MARGIN_MD)
         self.platforms_grid.setSpacing(SPACING_MD)
 
         self.card_kick = PlatformStatusCard(
@@ -192,7 +192,7 @@ class DashboardView(BaseView):
         hero_container = QWidget(self)
         top_hero_layout = QHBoxLayout(hero_container)
         top_hero_layout.setSpacing(SPACING_MD)
-        top_hero_layout.setContentsMargins(*MARGIN_HERO)
+        top_hero_layout.setContentsMargins(*MARGIN_LG)
 
         self.lbl_avatar = QLabel()
         self.lbl_avatar.setFixedSize(96, 96)
@@ -238,7 +238,7 @@ class DashboardView(BaseView):
         action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
 
         self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined", parent=self)
-        self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", COLOR_WHITE, 14))
+        self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", COLOR_NEUTRAL_050, 14))
         self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
         action_col.addWidget(self.btn_open_channel)
 
@@ -249,7 +249,7 @@ class DashboardView(BaseView):
 
         meta_container = QWidget(self)
         meta_layout = QVBoxLayout(meta_container)
-        meta_layout.setContentsMargins(*MARGIN_SETTING_ROW_COMPACT)
+        meta_layout.setContentsMargins(*MARGIN_LG)
         meta_layout.setSpacing(SPACING_NONE)
 
         self.metadata_grid = QGridLayout()
@@ -284,7 +284,7 @@ class DashboardView(BaseView):
             col_widget = QWidget(self)
             col_layout = QVBoxLayout(col_widget)
             col_layout.setContentsMargins(*MARGIN_NONE)
-            col_layout.setSpacing(SPACING_2XS)
+            col_layout.setSpacing(SPACING_XS)
             col_layout.addWidget(title_lbl)
             col_layout.addWidget(val_lbl)
             return col_widget
@@ -505,12 +505,12 @@ class DashboardView(BaseView):
             is_twitch = (platform == "twitch")
 
             self.btn_tab_kick.setProperty("role", "action_kick" if is_kick else "action_outlined")
-            self.btn_tab_kick.set_icon("brand-kick.svg", color=COLOR_WHITE if is_kick else COLOR_NEUTRAL_400, size=14)
+            self.btn_tab_kick.set_icon("brand-kick.svg", color=COLOR_NEUTRAL_050 if is_kick else COLOR_NEUTRAL_400, size=14)
             self.btn_tab_kick.style().unpolish(self.btn_tab_kick)
             self.btn_tab_kick.style().polish(self.btn_tab_kick)
 
             self.btn_tab_twitch.setProperty("role", "action_twitch" if is_twitch else "action_outlined")
-            self.btn_tab_twitch.set_icon("brand-twitch.svg", color=COLOR_WHITE if is_twitch else COLOR_NEUTRAL_400, size=14)
+            self.btn_tab_twitch.set_icon("brand-twitch.svg", color=COLOR_NEUTRAL_050 if is_twitch else COLOR_NEUTRAL_400, size=14)
             self.btn_tab_twitch.style().unpolish(self.btn_tab_twitch)
             self.btn_tab_twitch.style().polish(self.btn_tab_twitch)
         else:
@@ -730,7 +730,7 @@ class DashboardView(BaseView):
             desc = self.i18n.get("dashboard.banner.desc_kick")
             self.lbl_warn_text_kick.setText(
                 f"<div style='line-height: 135%;'>"
-                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_WHITE}; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_NEUTRAL_050}; margin-bottom: 2px;'>{title}</div>"
                 f"<div style='font-size: 12px; color: {COLOR_NEUTRAL_400}; margin-bottom: 5px;'>{desc}</div>"
                 f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: {COLOR_NEUTRAL_200};'>"
                 f"{items_html}"
@@ -747,7 +747,7 @@ class DashboardView(BaseView):
             desc = self.i18n.get("dashboard.banner.desc_twitch")
             self.lbl_warn_text_twitch.setText(
                 f"<div style='line-height: 135%;'>"
-                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_WHITE}; margin-bottom: 2px;'>{title}</div>"
+                f"<div style='font-size: 13px; font-weight: 700; color: {COLOR_NEUTRAL_050}; margin-bottom: 2px;'>{title}</div>"
                 f"<div style='font-size: 12px; color: {COLOR_NEUTRAL_400}; margin-bottom: 5px;'>{desc}</div>"
                 f"<ul style='margin-top: 0px; margin-bottom: 2px; padding-left: 18px; font-size: 12px; color: {COLOR_NEUTRAL_200};'>"
                 f"{items_html}"

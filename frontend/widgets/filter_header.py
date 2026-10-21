@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QHeaderView, QMenu, QStyleOptionHeader, QStyle
 from PySide6.QtCore import Qt, Signal, QRect, QPoint, QSize
 from PySide6.QtGui import QPainter, QAction, QColor, QFont
-from frontend.common import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_WHITE, get_icon_colored
+from frontend.common import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, get_icon_colored
 
 class FilterHeaderView(QHeaderView):
     filter_changed = Signal(object)
@@ -116,7 +116,7 @@ class FilterHeaderView(QHeaderView):
         )
 
         is_hover_or_pressed = bool(opt.state & (QStyle.StateFlag.State_MouseOver | QStyle.StateFlag.State_Sunken))
-        text_color = QColor(COLOR_WHITE) if is_hover_or_pressed else QColor(COLOR_NEUTRAL_400)
+        text_color = QColor(COLOR_NEUTRAL_050) if is_hover_or_pressed else QColor(COLOR_NEUTRAL_400)
 
         painter.save()
         painter.setPen(text_color)

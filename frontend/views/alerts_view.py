@@ -6,8 +6,8 @@ from PySide6.QtCore import Qt, Signal
 from backend.models import AlertConfig
 from frontend.widgets import BaseView, ModernButton, ModernCard
 from frontend.common import (
-    get_pixmap_colored, COLOR_AMBER, COLOR_PURE_WHITE, COLOR_NEUTRAL_950,
-    SPACING_2XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
+    get_pixmap_colored, COLOR_AMBER, COLOR_NEUTRAL_000, COLOR_NEUTRAL_950,
+    SPACING_XS, SPACING_SM, SPACING_MD, MARGIN_NONE, MARGIN_MD
 )
 from frontend.components.alerts import (
     ResponsiveStackedWidget,
@@ -111,7 +111,7 @@ class AlertsView(BaseView):
 
         notice_text_col = QVBoxLayout()
         notice_text_col.setContentsMargins(*MARGIN_NONE)
-        notice_text_col.setSpacing(SPACING_2XS)
+        notice_text_col.setSpacing(SPACING_XS)
 
         self.lbl_notice_title = QLabel(self.i18n.get("alerts.notice.disconnected_title"), parent=self)
         self.lbl_notice_title.setProperty("role", "h3")
@@ -262,7 +262,7 @@ class AlertsView(BaseView):
                 tts_read=source_cfg.tts_read,
                 layout=getattr(source_cfg, "layout", "above"),
                 style=getattr(source_cfg, "style", "compact"),
-                text_color=getattr(source_cfg, "text_color", COLOR_PURE_WHITE),
+                text_color=getattr(source_cfg, "text_color", COLOR_NEUTRAL_000),
                 highlight_color=getattr(source_cfg, "highlight_color", ""),
                 font_family=getattr(source_cfg, "font_family", "Outfit"),
                 font_size=getattr(source_cfg, "font_size", 24),

@@ -8,9 +8,9 @@ from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
 from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
-    COLOR_NEUTRAL_400, COLOR_WHITE, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
-    MARGIN_NONE, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAB_PANEL,
-    SPACING_NONE, SPACING_2XS, SPACING_SM, SPACING_MD
+    COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
+    MARGIN_NONE, MARGIN_LG, MARGIN_MD,
+    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD
 )
 
 class PlatformToggleItem(QWidget):
@@ -19,7 +19,7 @@ class PlatformToggleItem(QWidget):
         super().__init__(parent)
         self.switch = switch
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout = create_row_layout(spacing=SPACING_SM, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+        layout = create_row_layout(spacing=SPACING_SM, margins=MARGIN_LG, parent=self)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
@@ -50,7 +50,7 @@ class VoiceSettingRow(QWidget):
         self.btn_test = None
         self.action_button = action_button
 
-        main_layout = create_col_layout(spacing=SPACING_2XS, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+        main_layout = create_col_layout(spacing=SPACING_XS, margins=MARGIN_LG, parent=self)
         header_layout = create_row_layout(spacing=SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
@@ -137,7 +137,7 @@ class ChatTtsSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_TAB_PANEL)
+        self.panel_layout.setContentsMargins(*MARGIN_MD)
         self.panel_layout.setSpacing(SPACING_MD)
 
         header_platforms = SectionHeader(self.i18n.get("chat.platforms.title"), parent=self)
@@ -189,7 +189,7 @@ class ChatTtsSettingsPanel(QWidget):
         self.chk_command = ModernSwitch(self)
 
         self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
-        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_WHITE, size=14))
+        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=14))
         self.btn_manage_piper.setIconSize(QSize(14, 14))
         self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
         self.btn_manage_piper.setProperty("role", "action_accent_solid")
@@ -209,17 +209,17 @@ class ChatTtsSettingsPanel(QWidget):
         self.lbl_speed_perc.setProperty("role", "monospace")
 
         card_general = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
-        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts, contents_margins=MARGIN_LG)
+        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name, contents_margins=MARGIN_LG)
+        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command, contents_margins=MARGIN_LG)
 
         self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
-        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=MARGIN_SETTING_ROW_COMPACT)
-        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command, contents_margins=MARGIN_LG)
+        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=MARGIN_LG)
+        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc, contents_margins=MARGIN_LG)
 
         card_general.addWidget(row_tts)
         card_general.add_separator()
