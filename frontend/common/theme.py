@@ -293,6 +293,7 @@ class Padding:
 
 class Typography:
     FONT_FAMILY = "'Google Sans', 'Inter', -apple-system"
+    FAMILY      = FONT_FAMILY
 
 class Size:
     Radius = Radius

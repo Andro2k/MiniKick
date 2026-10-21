@@ -41,6 +41,7 @@
 | **INC-029** | `role_manager.py` calculaba mal la raiz del proyecto al ejecutarse desde `resources/tools/frontend` | Reporte de usuario al ejecutar la auditoria de roles | v1.6.5 | `✅ Solventado` | `resources/tools/frontend/role_manager.py` | v1.6.5 (`WT-1.6.5_09`) |
 | **INC-030** | Pruebas de tema conservaban colores literales anteriores a la paleta actual | Salida compartida de `pytest resources/tests -q` | v1.6.5 | `✅ Solventado` | `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 (`WT-1.6.5_11`) |
 | **INC-031** | Pyrefly `unknown-name` para gradientes de acento no definidos en `theme.py` | Diagnosticos Pyrefly compartidos desde VS Code | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_16`) |
+| **INC-032** | `AttributeError: type object 'Typography' has no attribute 'FAMILY'` al importar el tema | Traza de usuario al iniciar MiniKick | v1.6.5 | `? Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_17`) |
 
 ---
 
@@ -816,3 +817,22 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Solucion Implementada**: Se agruparon los tres degradados en `Gradients`, usando colores de `Palette`; se conservaron alias globales. Se corrigieron los accesos de tipografia, borde y dimensiones para usar los nombres declarados por sus clases.
 * **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; importacion del modulo con dobles de PySide6 y generacion completa de `GLOBAL_QSS`; auditoria rapida de salud del proyecto: 12/12. No se ejecuto la suite de pruebas automatizadas.
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_16.md`.
+
+
+---
+
+### INC-032: Alias de familia tipografica ausente en `Typography`
+
+* **Estado**: `? Solventado`
+* **Severidad**: **MEDIA** (impedia importar el tema durante el arranque).
+* **Reportes Asociados**: Traza de usuario al iniciar MiniKick.
+* **Fecha y Version del Fallo**: 2026-10-20 en MiniKick `v1.6.5`.
+* **Traza de la Excepcion**:
+  ```text
+  AttributeError: type object 'Typography' has no attribute 'FAMILY'
+  ```
+* **Causa Raiz**: La refactorizacion expuso el token tipografico como `FONT_FAMILY`, pero una referencia existente accedia al nombre anterior `FAMILY`.
+* **Archivos y Modulos Modificados**: `frontend/common/theme.py`.
+* **Solucion Implementada**: Se agrego `Typography.FAMILY` como alias de `Typography.FONT_FAMILY`, manteniendo una unica fuente del valor. Tambien se retiro texto accidental insertado en el QSS del tema.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; comprobacion de los alias y del texto QSS.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_17.md`.
