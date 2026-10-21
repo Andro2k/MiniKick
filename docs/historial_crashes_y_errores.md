@@ -40,6 +40,7 @@
 | **INC-028** | ImportError por token de color no exportado desde `frontend.common` | Reporte de usuario al iniciar la aplicacion | v1.6.5 | `✅ Solventado` | `frontend/common/__init__.py` | v1.6.5 (`WT-1.6.5_08`) |
 | **INC-029** | `role_manager.py` calculaba mal la raiz del proyecto al ejecutarse desde `resources/tools/frontend` | Reporte de usuario al ejecutar la auditoria de roles | v1.6.5 | `✅ Solventado` | `resources/tools/frontend/role_manager.py` | v1.6.5 (`WT-1.6.5_09`) |
 | **INC-030** | Pruebas de tema conservaban colores literales anteriores a la paleta actual | Salida compartida de `pytest resources/tests -q` | v1.6.5 | `✅ Solventado` | `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 (`WT-1.6.5_11`) |
+| **INC-031** | Pyrefly `unknown-name` para gradientes de acento no definidos en `theme.py` | Diagnosticos Pyrefly compartidos desde VS Code | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_16`) |
 
 ---
 
@@ -791,3 +792,27 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Solucion Implementada**: Las aserciones comparan ahora contra los tokens `COLOR_WINDOW_BG`, `COLOR_CARD_BG` y `COLOR_NEUTRAL_900`. Se agregaron tareas de VS Code para ejecutar pytest y el preflight y compilacion del build manager.
 * **Pruebas y Verificacion**: `resources/tests/test_antigravity_ui_theme.py`: 16 aprobadas. `resources/tools/system_health_audit.py --quick --verbose`: 12/12 aprobadas. `build_manager.py --check`: preflight aprobado.
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_11.md`.
+
+
+---
+
+### INC-031: Tokens de gradiente de acento no definidos en `theme.py`
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (los nombres invalidos imped?an importar el modulo y generar el QSS global).
+* **Reportes Asociados**: Diagnosticos Pyrefly compartidos desde VS Code para `GRADIENT_ACCENT_FILL`, `GRADIENT_ACCENT_HOVER` y `GRADIENT_ACCENT_PRESSED`.
+* **Fecha y Version del Fallo**: 2026-10-20 en MiniKick `v1.6.5`.
+* **Traza / Mensaje**:
+  ```text
+  Pyrefly: Could not find name `GRADIENT_ACCENT_FILL`
+  Pyrefly: Could not find name `GRADIENT_ACCENT_HOVER`
+  Pyrefly: Could not find name `GRADIENT_ACCENT_PRESSED`
+  AttributeError: type object 'Typography' has no attribute 'FAMILY'
+  AttributeError: type object 'Semantic' has no attribute 'Borders'
+  AttributeError: type object 'Size' has no attribute 'MAX_HEIGHT'
+  ```
+* **Causa Raiz**: La refactorizacion de tokens omitio el namespace de gradientes y genero referencias a atributos con nombres que no existen en `Typography`, `Semantic` y `Size`.
+* **Archivos y Modulos Modificados**: `frontend/common/theme.py`.
+* **Solucion Implementada**: Se agruparon los tres degradados en `Gradients`, usando colores de `Palette`; se conservaron alias globales. Se corrigieron los accesos de tipografia, borde y dimensiones para usar los nombres declarados por sus clases.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; importacion del modulo con dobles de PySide6 y generacion completa de `GLOBAL_QSS`; auditoria rapida de salud del proyecto: 12/12. No se ejecuto la suite de pruebas automatizadas.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_16.md`.
