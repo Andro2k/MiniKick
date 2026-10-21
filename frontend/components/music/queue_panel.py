@@ -5,7 +5,7 @@ from PySide6.QtCore import Signal, Qt, QSize, QRectF
 from PySide6.QtGui import QPainter, QPen, QColor
 from frontend.common import (
     COLOR_RED, COLOR_NEUTRAL_400, COLOR_GREEN, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
-    ICON_BUTTON_SIZE_COMPACT,
+    ICON_BUTTON_COMPACT,
     get_icon_colored, get_qcolor_with_alpha, MARGIN_NONE, SPACING_NONE, SPACING_XS,
 )
 from frontend.widgets import ModernTable, ModernTableCard
@@ -191,7 +191,7 @@ class MusicQueuePanel(QWidget):
         btn_delete.setIconSize(QSize(14, 14))
         btn_delete.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_delete.setToolTip(self.i18n.get("music.queue.remove_tooltip"))
-        configure_icon_only_button(btn_delete, size=ICON_BUTTON_SIZE_COMPACT)
+        configure_icon_only_button(btn_delete, size=ICON_BUTTON_COMPACT)
         btn_delete.clicked.connect(lambda *args, idx=index: self.remove_queue_item_requested.emit(idx))
 
         cell_layout.addWidget(btn_delete)

@@ -15,7 +15,7 @@ from frontend.common import (
     COLOR_MUSIC_GROOVE, COLOR_NEUTRAL_600,
     COLOR_MUSIC_METAL_DARK, COLOR_MUSIC_TONEARM,
     COLOR_MUSIC_HEAD_BORDER, COLOR_MUSIC_HEAD_BG,
-    COLOR_NEUTRAL_000, COLOR_NEUTRAL_1000, get_qcolor_with_alpha,
+    COLOR_NEUTRAL_000, COLOR_NEUTRAL_999, get_qcolor_with_alpha,
 )
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
@@ -133,7 +133,7 @@ class MusicOverlayMockupWidget(QWidget):
         vinyl_cx = disc_cx
         vinyl_cy = disc_cy
         vinyl_r = disc_size / 2
-        p.setPen(QPen(QColor(COLOR_NEUTRAL_1000), 1))
+        p.setPen(QPen(QColor(COLOR_NEUTRAL_999), 1))
         p.setBrush(QBrush(QColor(COLOR_MUSIC_VINYL_BLACK)))
         p.drawEllipse(QPointF(vinyl_cx, vinyl_cy), vinyl_r, vinyl_r)
         p.setBrush(Qt.BrushStyle.NoBrush)

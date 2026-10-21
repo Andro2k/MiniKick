@@ -7,7 +7,7 @@ from PySide6.QtCore import Qt, QSize, QSettings, QEvent
 from PySide6.QtGui import QIcon, QColor, QMouseEvent, QKeyEvent
 from frontend.common import (
     COLOR_RED, COLOR_AMBER, COLOR_BLUE, COLOR_GREEN,
-    COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_NEUTRAL_1000,
+    COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK, COLOR_NEUTRAL_999,
     COLOR_NEUTRAL_050, PATH_ICON_HELP,
     get_qcolor_with_alpha,
     SPACING_XS, SPACING_MD, SPACING_LG,
@@ -413,16 +413,16 @@ class ModernModal(ModernFramelessShell):
         
         role_dispatch = {
             COLOR_RED: ("danger_icon", COLOR_NEUTRAL_050),
-            COLOR_AMBER: ("warning_icon", COLOR_NEUTRAL_1000),
+            COLOR_AMBER: ("warning_icon", COLOR_NEUTRAL_999),
             COLOR_BLUE: ("info_icon", COLOR_NEUTRAL_050),
-            COLOR_GREEN: ("accent_icon", COLOR_NEUTRAL_1000),
+            COLOR_GREEN: ("accent_icon", COLOR_NEUTRAL_999),
             COLOR_TWITCH: ("twitch_icon", COLOR_NEUTRAL_050),
             COLOR_YOUTUBE: ("youtube_icon", COLOR_NEUTRAL_050),
-            COLOR_TIKTOK: ("tiktok_icon", COLOR_NEUTRAL_1000),
-            COLOR_NEUTRAL_1000: ("black_icon", COLOR_NEUTRAL_050),
+            COLOR_TIKTOK: ("tiktok_icon", COLOR_NEUTRAL_999),
+            COLOR_NEUTRAL_999: ("black_icon", COLOR_NEUTRAL_050),
         }
         
-        resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", COLOR_NEUTRAL_1000))
+        resolved_role, default_fg = role_dispatch.get(bg_color, ("accent_icon", COLOR_NEUTRAL_999))
         final_role = icon_role or resolved_role
         final_fg = icon_color or default_fg
         

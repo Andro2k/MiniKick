@@ -173,7 +173,7 @@ class RewardsConfigWizard(ModernWizardPanel):
             lbl_no_p = QLabel(self.i18n.get("rewards.dialogs.wizard.step1.no_platforms_connected"))
             lbl_no_p.setWordWrap(True)
             lbl_no_p.setProperty("role", "caption")
-            lbl_no_p.setProperty("state", "danger")
+            lbl_no_p.setProperty("state", "error")
             np_layout.addWidget(lbl_no_p)
             layout.addWidget(no_plat_box)
 

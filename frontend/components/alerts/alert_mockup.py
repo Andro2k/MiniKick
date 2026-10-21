@@ -10,7 +10,7 @@ from PySide6.QtGui import (
 from frontend.common import (
     COLOR_CODE_LINK, COLOR_AMBER, COLOR_INDIGO, COLOR_PINK, COLOR_EMERALD,
     COLOR_INDIGO_DARK, COLOR_TWITCH, COLOR_KICK, COLOR_NEUTRAL_000,
-    COLOR_NEUTRAL_1000, COLOR_ALERT_PREVIEW_BG, COLOR_ALERT_PREVIEW_TILE_A,
+    COLOR_NEUTRAL_999, COLOR_ALERT_PREVIEW_BG, COLOR_ALERT_PREVIEW_TILE_A,
     COLOR_ALERT_PREVIEW_TILE_B, COLOR_ALERT_PREVIEW_BORDER,
     COLOR_ALERT_PREVIEW_MEDIA, COLOR_ALERT_PREVIEW_MEDIA_TOP,
     get_qcolor_with_alpha,
@@ -286,7 +286,7 @@ class AlertOverlayMockupWidget(QWidget):
         badge_h = 14.0
         badge_rect = QRectF(card_x + (card_w - badge_w) / 2.0, card_y + 8.0, badge_w, badge_h)
         badge_bg = QColor(COLOR_TWITCH) if self.platform == "twitch" else QColor(COLOR_KICK)
-        badge_fg = QColor(COLOR_NEUTRAL_000) if self.platform == "twitch" else QColor(COLOR_NEUTRAL_1000)
+        badge_fg = QColor(COLOR_NEUTRAL_000) if self.platform == "twitch" else QColor(COLOR_NEUTRAL_999)
         p.setBrush(QBrush(badge_bg))
         p.setPen(Qt.PenStyle.NoPen)
         p.drawRoundedRect(badge_rect, 7.0, 7.0)
@@ -298,7 +298,7 @@ class AlertOverlayMockupWidget(QWidget):
     def _draw_text_with_shadow(self, p: QPainter, rect: QRectF, text: str, font: QFont, text_color: QColor, align_flag, max_w: float):
         elided = self._elide(text, font, max_w)
         if self.text_shadow:
-            p.setPen(get_qcolor_with_alpha(COLOR_NEUTRAL_1000, 220))
+            p.setPen(get_qcolor_with_alpha(COLOR_NEUTRAL_999, 220))
             p.drawText(rect.adjusted(1.2, 1.2, 1.2, 1.2), align_flag, elided)
         p.setPen(text_color)
         p.drawText(rect, align_flag, elided)
@@ -424,7 +424,7 @@ class AlertOverlayMockupWidget(QWidget):
 
         badge_text = self.platform.upper()
         badge_bg = QColor(COLOR_TWITCH) if self.platform == "twitch" else QColor(COLOR_KICK)
-        badge_fg = QColor(COLOR_NEUTRAL_000) if self.platform == "twitch" else QColor(COLOR_NEUTRAL_1000)
+        badge_fg = QColor(COLOR_NEUTRAL_000) if self.platform == "twitch" else QColor(COLOR_NEUTRAL_999)
         badge_w = 64.0
         badge_h = 18.0
 
@@ -459,7 +459,7 @@ class AlertOverlayMockupWidget(QWidget):
         p.setFont(title_font)
 
         if self.text_shadow:
-            p.setPen(get_qcolor_with_alpha(COLOR_NEUTRAL_1000, 220))
+            p.setPen(get_qcolor_with_alpha(COLOR_NEUTRAL_999, 220))
             p.drawText(t_rect.adjusted(1.2, 1.2, 1.2, 1.2), align_flag, self._elide(full_text, title_font, card_w - 20.0))
 
         p.setPen(accent)
@@ -472,7 +472,7 @@ class AlertOverlayMockupWidget(QWidget):
         sample_msg = '"¡Hola a todos!"'
 
         if self.text_shadow:
-            p.setPen(get_qcolor_with_alpha(COLOR_NEUTRAL_1000, 220))
+            p.setPen(get_qcolor_with_alpha(COLOR_NEUTRAL_999, 220))
             p.drawText(msg_rect.adjusted(1.0, 1.0, 1.0, 1.0), align_flag, self._elide(sample_msg, sub_font, card_w - 20.0))
 
         p.setPen(text_color)
@@ -485,7 +485,7 @@ class AlertOverlayMockupWidget(QWidget):
         if self.box_shadow:
             p.save()
             p.setPen(Qt.PenStyle.NoPen)
-            p.setBrush(QBrush(get_qcolor_with_alpha(COLOR_NEUTRAL_1000, 100)))
+            p.setBrush(QBrush(get_qcolor_with_alpha(COLOR_NEUTRAL_999, 100)))
             p.drawRoundedRect(rect.translated(0, 4), r, r)
             p.restore()
 

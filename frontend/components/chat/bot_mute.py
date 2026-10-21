@@ -7,7 +7,7 @@ from frontend.widgets import ModernButton, ModernCard, ModernSwitch, SettingRow,
 from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     COLOR_RED, get_icon_colored,
-    ICON_BUTTON_SIZE_COMPACT,
+    ICON_BUTTON_COMPACT,
     MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_TAG_BADGE,
     SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD
 )
@@ -181,7 +181,7 @@ class BotMutePanel(QWidget):
             fm = lbl_name.fontMetrics()
             font_height = fm.height()
             icon_size = max(14, int(font_height * 0.75))
-            btn_size = ICON_BUTTON_SIZE_COMPACT
+            btn_size = ICON_BUTTON_COMPACT
             
             if icon_size not in self._trash_icon_cache:
                 self._trash_icon_cache[icon_size] = get_icon_colored("trash-filled.svg", COLOR_RED, size=icon_size)
