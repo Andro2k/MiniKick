@@ -16,7 +16,7 @@ from frontend.widgets import (
 from frontend.common import (
     get_icon_colored, get_pixmap_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, COLOR_GREEN,
     SPACING_NONE, SPACING_XS, SPACING_MD, SPACING_LG,
-    MARGIN_NONE, MARGIN_XS, MARGIN_SM, MARGIN_XL, MARGIN_H_MD, MARGIN_SETTING_ROW
+    MARGIN_NONE, MARGIN_XS, MARGIN_SM, MARGIN_XL, MARGIN_H_MD, MARGIN_LG
 )
 from frontend.components.dialogs import PiperVoiceItemWidget
 
@@ -223,7 +223,7 @@ class PiperVoicesDialog(ModernFramelessShell):
         self.lbl_empty_state = QLabel(self.i18n.get("piper_dialog.empty_search"), scroll_content)
         self.lbl_empty_state.setProperty("role", "caption")
         self.lbl_empty_state.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_empty_state.setContentsMargins(*MARGIN_SETTING_ROW)
+        self.lbl_empty_state.setContentsMargins(*MARGIN_LG)
         self.lbl_empty_state.hide()
         self.scroll_layout.addWidget(self.lbl_empty_state)
 

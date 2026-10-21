@@ -13,7 +13,7 @@ from frontend.common import (
     COLOR_TIKTOK, COLOR_TWITCH, COLOR_YOUTUBE,
     create_circular_pixmap, get_icon_colored, get_pixmap_colored,
     SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD,
-    MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_HERO, MARGIN_PLATFORMS_GRID, MARGIN_SETTING_ROW_COMPACT
+    MARGIN_NONE, MARGIN_MD, MARGIN_LG,
 )
 from frontend.widgets import (
     BaseView, StatCard, ModernCard,
@@ -113,7 +113,7 @@ class DashboardView(BaseView):
 
         platforms_container = QWidget(self)
         self.platforms_grid = QGridLayout(platforms_container)
-        self.platforms_grid.setContentsMargins(*MARGIN_PLATFORMS_GRID)
+        self.platforms_grid.setContentsMargins(*MARGIN_MD)
         self.platforms_grid.setSpacing(SPACING_MD)
 
         self.card_kick = PlatformStatusCard(
@@ -192,7 +192,7 @@ class DashboardView(BaseView):
         hero_container = QWidget(self)
         top_hero_layout = QHBoxLayout(hero_container)
         top_hero_layout.setSpacing(SPACING_MD)
-        top_hero_layout.setContentsMargins(*MARGIN_HERO)
+        top_hero_layout.setContentsMargins(*MARGIN_LG)
 
         self.lbl_avatar = QLabel()
         self.lbl_avatar.setFixedSize(96, 96)
@@ -249,7 +249,7 @@ class DashboardView(BaseView):
 
         meta_container = QWidget(self)
         meta_layout = QVBoxLayout(meta_container)
-        meta_layout.setContentsMargins(*MARGIN_SETTING_ROW_COMPACT)
+        meta_layout.setContentsMargins(*MARGIN_LG)
         meta_layout.setSpacing(SPACING_NONE)
 
         self.metadata_grid = QGridLayout()

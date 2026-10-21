@@ -8,7 +8,7 @@ from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
     COLOR_RED, get_icon_colored,
     ICON_BUTTON_SIZE_COMPACT,
-    MARGIN_NONE, MARGIN_MD, MARGIN_SETTING_ROW_COMPACT, MARGIN_TAG_BADGE,
+    MARGIN_NONE, MARGIN_MD, MARGIN_LG, MARGIN_TAG_BADGE,
     SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD
 )
 
@@ -54,14 +54,14 @@ class BotMutePanel(QWidget):
             self.i18n.get("chat.mod_commands.mute_cmd_title"),
             self.i18n.get("chat.mod_commands.mute_cmd_desc"),
             self.sw_cmd_mute,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=MARGIN_LG
         )
         row_cmd_block = SettingRow(
             "shield-filled.svg",
             self.i18n.get("chat.mod_commands.block_cmd_title"),
             self.i18n.get("chat.mod_commands.block_cmd_desc"),
             self.sw_cmd_block,
-            contents_margins=MARGIN_SETTING_ROW_COMPACT
+            contents_margins=MARGIN_LG
         )
         commands_card.addWidget(row_cmd_mute)
         commands_card.add_separator()

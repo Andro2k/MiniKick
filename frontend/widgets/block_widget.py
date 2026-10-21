@@ -9,7 +9,7 @@ from frontend.common import (
     COLOR_RED, COLOR_RED, COLOR_GREEN, COLOR_GREEN_HOVER,
     SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD, SPACING_XL,
     MARGIN_NONE, MARGIN_MD, MARGIN_H_SM, MARGIN_H_MD, MARGIN_XS,
-    MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_SETTING_ROW
+    MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_LG
 )
 from .no_wheel import NoWheelComboBox, NoWheelSpinBox
 from .controls_widget import ModernSwitch, configure_icon_only_button
@@ -60,7 +60,7 @@ class SettingRow(QWidget):
         right_widget: QWidget = None,
         icon_color: str = COLOR_NEUTRAL_400,
         title_color: str = None,
-        contents_margins: tuple = MARGIN_SETTING_ROW,
+        contents_margins: tuple = MARGIN_LG,
         parent=None
     ):
         super().__init__(parent)
@@ -115,7 +115,7 @@ class SliderRow(QWidget):
         value_label: QLabel,
         icon_color: str = COLOR_NEUTRAL_400,
         parent=None,
-        contents_margins: tuple = MARGIN_SETTING_ROW
+        contents_margins: tuple = MARGIN_LG
     ):
         super().__init__(parent)
         main_layout = QHBoxLayout(self)

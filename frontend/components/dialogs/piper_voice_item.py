@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize, Signal
 from frontend.common import (
     get_icon_colored, COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, COLOR_RED,
-    SPACING_MD, SPACING_XS, MARGIN_SETTING_ROW_COMPACT
+    SPACING_MD, SPACING_XS, MARGIN_LG
 )
 from frontend.widgets import create_col_layout, create_row_layout
 from frontend.widgets.controls_widget import configure_icon_only_button
@@ -26,7 +26,7 @@ class PiperVoiceItemWidget(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        main_layout = create_col_layout(spacing=SPACING_XS, margins=MARGIN_SETTING_ROW_COMPACT, parent=self)
+        main_layout = create_col_layout(spacing=SPACING_XS, margins=MARGIN_LG, parent=self)
         header_layout = create_row_layout(spacing=SPACING_MD)
 
         category = self.voice_meta.get("category", "natural")

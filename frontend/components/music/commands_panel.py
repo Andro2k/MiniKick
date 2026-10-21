@@ -3,7 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Signal, Qt
 from frontend.common import (
-    MARGIN_NONE, MARGIN_MD, MARGIN_SETTING_ROW_COMPACT,
+    MARGIN_NONE, MARGIN_MD, MARGIN_LG,
     SPACING_NONE, SPACING_MD
 )
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SectionHeader
@@ -47,7 +47,7 @@ class MusicCommandsPanel(QWidget):
             sw.toggled.connect(lambda val, c=cmd: self.command_toggled.emit(c, val))
             self.switches[cmd] = sw
             setattr(self, attr_name, sw)
-            row = SettingRow(icon, self.i18n.get(lbl_key), self.i18n.get(desc_key), sw, contents_margins=MARGIN_SETTING_ROW_COMPACT)
+            row = SettingRow(icon, self.i18n.get(lbl_key), self.i18n.get(desc_key), sw, contents_margins=MARGIN_LG)
             self.card_cmds.addWidget(row)
 
         self.panel_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)
