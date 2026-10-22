@@ -273,7 +273,7 @@ class AlertsView(BaseView):
                 animation_in_duration=getattr(source_cfg, "animation_in_duration", 1.0),
                 animation_out=getattr(source_cfg, "animation_out", "fade_out"),
                 animation_out_duration=getattr(source_cfg, "animation_out_duration", 1.0),
-                bg_color=getattr(source_cfg, "bg_color", Palette.NEUTRAL_950),
+                bg_color=getattr(source_cfg, "bg_color", Palette.NEUTRAL_900),
                 bg_opacity=getattr(source_cfg, "bg_opacity", 88),
                 border_radius=getattr(source_cfg, "border_radius", 20),
                 padding_px=getattr(source_cfg, "padding_px", 24),

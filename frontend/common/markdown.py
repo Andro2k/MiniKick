@@ -25,8 +25,8 @@ _CALLOUT_STYLES = {
     'TIP': (BrandColors.GREEN, Semantic.CALLOUT_TIP_LIGHT, '\udb81\udee8', 'Tip', Semantic.GREEN_GLOW),
     'CAUTION': (BrandColors.RED, Semantic.CALLOUT_CAUTION_LIGHT, '\udb80\udc29', 'Caution', Semantic.RED_GLOW)
 }
-_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_950}; color: {Semantic.CODE_LINK}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
-_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_950}; color: {Palette.NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Semantic.CODE_LINK}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
+_CODE_INLINE_SPAN = f'<code style="font-family: {_NERD_FONT_FAMILY}; background-color: {Palette.NEUTRAL_900}; color: {Palette.NEUTRAL_200}; padding: 2px 6px; border-radius: 4px; font-size: 11px;">\\1</code>'
 
 
 def _render_callout(callout_type: str, lines: list[str]) -> str:
@@ -45,14 +45,14 @@ def _render_table(rows: list[list[str]]) -> str:
     output = ['<table style="border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 12px;">']
     for row_index, row in enumerate(rows):
         is_header = row_index == 0
-        background = Palette.NEUTRAL_950 if is_header else Palette.NEUTRAL_900
+        background = Palette.NEUTRAL_900 if is_header else Palette.NEUTRAL_950
         cell_tag = 'th' if is_header else 'td'
         cell_color = Palette.NEUTRAL_400 if is_header else Palette.NEUTRAL_200
         weight = "font-weight: bold;" if is_header else ""
         output.append(f'<tr style="background-color: {background};">')
         for cell in row:
             output.append(
-                f'<{cell_tag} style="border: 1px solid {Palette.NEUTRAL_950}; padding: 7px 10px; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>'
+                f'<{cell_tag} style="border: 1px solid {Palette.NEUTRAL_900}; padding: 7px 10px; color: {cell_color}; text-align: left; {weight}">{cell}</{cell_tag}>'
             )
         output.append('</tr>')
     output.append('</table>')
@@ -61,13 +61,13 @@ def _render_table(rows: list[list[str]]) -> str:
 
 def _render_block(line: str) -> str:
     if line.startswith('# '):
-        return f'<h1 style="color: {Palette.NEUTRAL_050}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_950}; padding-bottom: 6px; margin: 16px 0 10px 0;">{line[2:]}</h1>'
+        return f'<h1 style="color: {Palette.NEUTRAL_050}; font-size: 18px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: 6px; margin: 16px 0 10px 0;">{line[2:]}</h1>'
     if line.startswith('## '):
-        return f'<h2 style="color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_950}; padding-bottom: 4px; margin: 14px 0 8px 0;">{line[3:]}</h2>'
+        return f'<h2 style="color: {Palette.NEUTRAL_050}; font-size: 16px; font-weight: bold; border-bottom: 1px solid {Palette.NEUTRAL_900}; padding-bottom: 4px; margin: 14px 0 8px 0;">{line[3:]}</h2>'
     if line.startswith('### '):
         return f'<h3 style="color: {Palette.NEUTRAL_200}; font-size: 14px; font-weight: bold; margin: 10px 0 6px 0;">{line[4:]}</h3>'
     if line in ('---', '***'):
-        return f'<hr style="border: none; border-top: 1px solid {Palette.NEUTRAL_950}; margin: 14px 0;" />'
+        return f'<hr style="border: none; border-top: 1px solid {Palette.NEUTRAL_900}; margin: 14px 0;" />'
     if line.startswith(('- ', '* ')):
         return f'<div style="color: {Palette.NEUTRAL_200}; font-size: 13px; margin: 4px 0 4px 16px; line-height: 1.5;">• {line[2:]}</div>'
     if line.startswith(('• ', '◦ ')):

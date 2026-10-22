@@ -229,7 +229,7 @@ class ModernCard(QFrame):
         self.card_layout.addStretch(stretch)
 
 class FadingScrollArea(QScrollArea):
-    def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_950):
+    def __init__(self, widget: QWidget = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
         super().__init__(parent)
         self.fade_height = fade_height
         self._fade_color = QColor(fade_color) if isinstance(fade_color, str) else fade_color
@@ -288,7 +288,7 @@ class FadingScrollArea(QScrollArea):
         painter.end()
 
 class ModernScrollArea(FadingScrollArea):
-    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_950):
+    def __init__(self, widget: QWidget | None = None, parent=None, fade_height: int = 28, fade_color: str | QColor = Palette.NEUTRAL_900):
         super().__init__(widget=widget, parent=parent, fade_height=fade_height, fade_color=fade_color)
 
 class ExpandableCard(QFrame):

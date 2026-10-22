@@ -17,8 +17,8 @@ def draw_mockup_canvas(
     painter: QPainter,
     w: float,
     h: float,
-    border_color: str = Palette.NEUTRAL_950,
-    bg_color: str = Palette.NEUTRAL_950,
+    border_color: str = Palette.NEUTRAL_900,
+    bg_color: str = Palette.NEUTRAL_900,
     radius: float = 10.0
 ) -> QRectF:
     canvas_rect = QRectF(0, 0, w, h)

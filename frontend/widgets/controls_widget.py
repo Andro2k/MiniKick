@@ -115,8 +115,8 @@ class ModernSwitch(QAbstractButton):
 
         track_grad = QLinearGradient(0, 0, 0, h)
         if not is_enabled:
-            track_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_950))
-            track_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_900))
+            track_grad.setColorAt(0.0, QColor(Palette.NEUTRAL_900))
+            track_grad.setColorAt(1.0, QColor(Palette.NEUTRAL_950))
             border_color = QColor(Palette.NEUTRAL_750)
         elif is_checked:
             track_grad.setColorAt(0.0, QColor(SwitchTheme.SWITCH_TRACK_ON_0))
