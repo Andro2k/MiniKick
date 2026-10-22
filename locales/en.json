@@ -513,7 +513,6 @@
             "active_timers": "Running Timers",
             "modules_summary_title": "Active Modules & Services",
             "no_commands_used": "No commands have been executed yet.",
-            "title": "Activity & Interactions",
             "top_commands_title": "Top 5 Most Used Commands",
             "usages": "uses"
         },
