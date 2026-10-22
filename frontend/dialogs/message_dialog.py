@@ -2,19 +2,23 @@
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, VariableTextEdit
-from frontend.common import get_assets_path, COLOR_GREEN, get_qcolor_with_alpha
+from frontend.common import (
+    get_assets_path,
+    get_qcolor_with_alpha,
+    BrandColors,
+)
 
 class MessageEditorDialog(ModernModal):
     def __init__(self, current_text: str, i18n, parent=None):
         super().__init__(
             title=i18n.get("timer.dialog.editor_title"),
             icon_path=get_assets_path("icons/clock-filled.svg"),
-            icon_bg_color=COLOR_GREEN,
+            icon_bg_color=BrandColors.GREEN,
             width=500,
             parent=parent
         )
         self.i18n = i18n
-        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_GREEN, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 60))
 
         self.text_edit = VariableTextEdit()
         self.text_edit.setPlaceholderText(self.i18n.get("timer.dialog.response_placeholder"))

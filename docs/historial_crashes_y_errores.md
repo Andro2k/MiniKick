@@ -44,6 +44,7 @@
 | **INC-032** | `AttributeError: type object 'Typography' has no attribute 'FAMILY'` al importar el tema | Traza de usuario al iniciar MiniKick | v1.6.5 | `? Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_17`) |
 | **INC-033** | Pausa visible al cambiar el tamaño de texto por reinstalación global del QSS | Reporte de usuario en Ajustes | v1.6.5 | `Mitigado; validación visual pendiente` | `frontend/main_window.py` | v1.6.5 (`WT-1.6.5_18`) |
 | **INC-034** | Tema QSS sin punto de extensión cacheable para estilos personalizados | Solicitud de mejora del sistema visual | v1.6.5 | `Implementado; validación visual pendiente` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_19`) |
+| **INC-035** | Ventana desacoplada del chat no disponible para Snap Layouts de Windows | Reporte de usuario | v1.6.5 | `✅ Solventado` | `frontend/views/chat_view.py`, `resources/tests/test_chat_detached_window.py` | v1.6.5 |
 
 ---
 
@@ -868,3 +869,17 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Solucion Implementada**: `get_global_qss()` acepta una tupla ordenada de reglas QSS, que se añaden al final del tema y forman parte de su clave de caché. Se cachean también estilos de swatches repetidos y se elimina el rol QSS sin consumidores.
 * **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; `git diff --check`; comprobación aislada con dobles para generar el QSS base y personalizado, verificar el orden y confirmar reutilización de caché. La suite `project_quality_suite.py --quick --verbose` aprobó 12/12. PySide6 no está instalado, así que no se pudo comprobar el renderizado real.
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_19.md`.
+
+
+---
+
+### INC-035: Ventana desacoplada del chat no disponible para Snap Layouts de Windows
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **BAJA** (limitación de organización de ventanas; el chat seguía siendo redimensionable).
+* **Reportes Asociados**: Reporte de usuario sobre no poder acomodar individualmente la ventana usando Snap de Windows, 2026-10-21.
+* **Fecha y Versión del Fallo**: 2026-10-21 en MiniKick `v1.6.5`.
+* **Causa Raíz**: La ventana flotante no declaraba explícitamente todos los hints del marco de ventana estándar de Windows, incluyendo maximizar y el menú del sistema, necesarios para exponer los controles de Snap de forma consistente.
+* **Archivos y Módulos Modificados**: `frontend/views/chat_view.py`; `resources/tests/test_chat_detached_window.py`.
+* **Solución Implementada**: Se habilitaron explícitamente las decoraciones estándar de título, menú del sistema, minimizar, maximizar y cerrar en la ventana desacoplada.
+* **Pruebas y Verificación**: Se agregó una prueba para los hints de ventana y se mantiene la prueba del tirador de redimensionado. `python -m py_compile frontend/views/chat_view.py resources/tests/test_chat_detached_window.py` y la suite de calidad rápida aprobaron; las pruebas de Qt no pudieron ejecutarse en el entorno actual porque PySide6 y pytest no están instalados.

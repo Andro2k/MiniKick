@@ -1,12 +1,12 @@
 # frontend\widgets\category_search.py
 
-from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton, 
+from PySide6.QtWidgets import (QFrame, QHBoxLayout, QVBoxLayout, QLineEdit, QPushButton,
                                QListWidget, QListWidgetItem, QLabel, QWidget, QSizePolicy)
 from PySide6.QtCore import Qt, Signal, QTimer, QPoint, QEvent, QSize
 from frontend.common import (
-    get_icon_colored, COLOR_NEUTRAL_400,
-    SPACING_NONE, SPACING_XS, SPACING_MD,
-    MARGIN_NONE, MARGIN_XS, MARGIN_SM
+    get_icon_colored,
+    Palette,
+    Size,
 )
 from .layout_helpers import render_styled_frame_background
 from .controls_widget import configure_icon_only_button
@@ -15,14 +15,14 @@ class CategoryItemWidget(QWidget):
     def __init__(self, platform: str, name: str, _cat_id=None, parent=None):
         super().__init__(parent)
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_SM)
-        layout.setSpacing(SPACING_MD)
+        layout.setContentsMargins(*Size.Margin.SM)
+        layout.setSpacing(Size.SPACING_MD)
         layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
 
         plat_upper = platform.upper()
         self.badge = QLabel(plat_upper)
         self.badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         if plat_upper == "KICK":
             self.badge.setProperty("role", "badge_kick")
         elif plat_upper == "TWITCH":
@@ -50,8 +50,8 @@ class CategorySuggestionsPopup(QFrame):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_XS)
-        layout.setSpacing(SPACING_XS)
+        layout.setContentsMargins(*Size.Margin.XS)
+        layout.setSpacing(Size.SPACING_XS)
 
         self.list_widget = QListWidget(self)
         self.list_widget.setProperty("role", "category_list")
@@ -152,11 +152,11 @@ class CategorySearchComboBox(QFrame):
         self.setProperty("role", "search_bar")
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_NONE)
-        layout.setSpacing(SPACING_NONE)
+        layout.setContentsMargins(*Size.Margin.NONE)
+        layout.setSpacing(Size.SPACING_NONE)
 
-        self._icon_search = get_icon_colored("search-filled.svg", COLOR_NEUTRAL_400, 16)
-        self._icon_clear = get_icon_colored("x-filled.svg", COLOR_NEUTRAL_400, 16)
+        self._icon_search = get_icon_colored("search-filled.svg", Palette.NEUTRAL_400, 16)
+        self._icon_clear = get_icon_colored("x-filled.svg", Palette.NEUTRAL_400, 16)
 
         self.txt_input = QLineEdit(self)
         self.txt_input.setPlaceholderText(placeholder)

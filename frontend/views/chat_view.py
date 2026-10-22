@@ -10,7 +10,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QEvent, Qt, Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
-from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
+from frontend.common import (
+    Size,
+)
 
 
 class _FloatingChatWindow(QWidget):
@@ -90,9 +92,9 @@ class ChatView(BaseView):
             self.spam_panel.set_connected_platforms(connected_platforms)
 
     def _setup_ui(self):
-        self.main_layout.setSpacing(SPACING_MD)
+        self.main_layout.setSpacing(Size.SPACING_MD)
         self.body_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
-        self.body_layout.setSpacing(SPACING_MD)
+        self.body_layout.setSpacing(Size.SPACING_MD)
 
         self.tabs = QTabWidget()
         self.tabs.setMinimumWidth(320)
@@ -114,8 +116,8 @@ class ChatView(BaseView):
 
         self.left_container = QWidget()
         left_layout = QVBoxLayout(self.left_container)
-        left_layout.setContentsMargins(*MARGIN_NONE)
-        left_layout.setSpacing(SPACING_NONE)
+        left_layout.setContentsMargins(*Size.Margin.NONE)
+        left_layout.setSpacing(Size.SPACING_NONE)
         left_layout.addWidget(self.tabs)
         self.left_container.setMinimumWidth(320)
         self.left_container.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
@@ -126,7 +128,7 @@ class ChatView(BaseView):
         self.body_layout.addWidget(self.chat_display_panel, stretch=5)
         self.chat_display_panel.detach_requested.connect(self._detach_chat_display)
         self.chat_display_panel.reattach_requested.connect(self._reattach_chat_display)
-        
+
         self.main_layout.addLayout(self.body_layout, stretch=1)
 
     def resizeEvent(self, event):
@@ -465,9 +467,9 @@ class ChatView(BaseView):
     def set_tts_command_configuration(self, use_command: bool, command_trigger: str):
         self.blockSignals(True)
         self.chk_command.blockSignals(True)
-        self.txt_command.blockSignals(True)           
+        self.txt_command.blockSignals(True)
         self.chk_command.setChecked(use_command)
-        self.txt_command.setText(command_trigger)            
+        self.txt_command.setText(command_trigger)
         self.txt_command.setEnabled(use_command)
         self.chk_command.blockSignals(False)
         self.txt_command.blockSignals(False)

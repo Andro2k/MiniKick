@@ -6,15 +6,11 @@ from PySide6.QtGui import (
     QPainter, QColor, QBrush, QPen, QPainterPath, QLinearGradient, QFont, QFontMetrics
 )
 from frontend.common import (
-    CHAT_PREVIEW_AVATAR_GRADIENTS, COLOR_TWITCH, COLOR_TWITCH_DARK,
-    COLOR_KICK, COLOR_YOUTUBE, COLOR_RED_DARK,
-    COLOR_TIKTOK, COLOR_TIKTOK_ACCENT,
-    COLOR_RED, COLOR_GREEN, COLOR_GREEN_SOLID, COLOR_AMBER,
-    COLOR_AMBER_DARK, COLOR_PURPLE, COLOR_PURPLE_DARK,
-    COLOR_BLUE, COLOR_BLUE_DARK, COLOR_NEUTRAL_050, COLOR_NEUTRAL_000,
-    COLOR_NEUTRAL_999, COLOR_LIGHT_TEXT_PRIMARY, COLOR_LIGHT_TEXT_MUTED,
-    COLOR_CHAT_PREVIEW_SURFACE, COLOR_NEUTRAL_600,
-    COLOR_CALLOUT_WARNING_LIGHT, COLOR_CODE_LINK, get_qcolor_with_alpha,
+    get_qcolor_with_alpha,
+    Palette,
+    Semantic,
+    BrandColors,
+    ChatTheme,
 )
 from frontend.components.mockup_helpers import init_mockup_painter, draw_mockup_canvas
 
@@ -22,19 +18,19 @@ VALID_CHAT_THEMES = frozenset({"dark", "light", "minimal"})
 DEFAULT_CHAT_THEME = "dark"
 
 class ChatOverlayMockupWidget(QWidget):
-    _AVATAR_GRADIENTS = CHAT_PREVIEW_AVATAR_GRADIENTS
+    _AVATAR_GRADIENTS = ChatTheme.AVATAR_GRADIENTS
 
     _BADGE_CONFIG = {
-        "twitch": ("\uf1e8", COLOR_TWITCH, COLOR_TWITCH_DARK, COLOR_NEUTRAL_000),
-        "kick": ("\uf2f3", COLOR_KICK, COLOR_GREEN_SOLID, COLOR_NEUTRAL_999),
-        "youtube": ("\uf16a", COLOR_YOUTUBE, COLOR_RED_DARK, COLOR_NEUTRAL_000),
-        "tiktok": ("\udb80\udf8c", COLOR_TIKTOK, COLOR_TIKTOK_ACCENT, COLOR_NEUTRAL_000),
-        "broadcaster": ("\uf130", COLOR_RED, COLOR_RED_DARK, COLOR_NEUTRAL_000),
-        "streamer": ("\uf130", COLOR_RED, COLOR_RED_DARK, COLOR_NEUTRAL_000),
-        "moderator": ("\ued25", COLOR_GREEN, COLOR_GREEN_SOLID, COLOR_NEUTRAL_000),
-        "vip": ("\uedeb", COLOR_AMBER, COLOR_AMBER_DARK, COLOR_NEUTRAL_000),
-        "subscriber": ("\udb83\ude44", COLOR_PURPLE, COLOR_PURPLE_DARK, COLOR_NEUTRAL_000),
-        "bot": ("\uee0d", COLOR_BLUE, COLOR_BLUE_DARK, COLOR_NEUTRAL_000),
+        "twitch": ("\uf1e8", BrandColors.TWITCH, BrandColors.TWITCH_DARK, Palette.NEUTRAL_000),
+        "kick": ("\uf2f3", BrandColors.KICK, BrandColors.GREEN_SOLID, Palette.NEUTRAL_999),
+        "youtube": ("\uf16a", BrandColors.YOUTUBE, BrandColors.RED_DARK, Palette.NEUTRAL_000),
+        "tiktok": ("\udb80\udf8c", BrandColors.TIKTOK, BrandColors.TIKTOK_ACCENT, Palette.NEUTRAL_000),
+        "broadcaster": ("\uf130", BrandColors.RED, BrandColors.RED_DARK, Palette.NEUTRAL_000),
+        "streamer": ("\uf130", BrandColors.RED, BrandColors.RED_DARK, Palette.NEUTRAL_000),
+        "moderator": ("\ued25", BrandColors.GREEN, BrandColors.GREEN_SOLID, Palette.NEUTRAL_000),
+        "vip": ("\uedeb", BrandColors.AMBER, BrandColors.AMBER_DARK, Palette.NEUTRAL_000),
+        "subscriber": ("\udb83\ude44", BrandColors.PURPLE, BrandColors.PURPLE_DARK, Palette.NEUTRAL_000),
+        "bot": ("\uee0d", BrandColors.BLUE, BrandColors.BLUE_DARK, Palette.NEUTRAL_000),
     }
 
     def __init__(self, i18n, parent=None):
@@ -107,9 +103,9 @@ class ChatOverlayMockupWidget(QWidget):
 
         msg2_data = None
         if self.show_bots:
-            msg2_data = ("10:49", sample_bot_user, sample_bot_msg, COLOR_PURPLE, True, "bot", "kick")
+            msg2_data = ("10:49", sample_bot_user, sample_bot_msg, BrandColors.PURPLE, True, "bot", "kick")
         elif not self.hide_commands:
-            msg2_data = ("10:49", sample_cmd_user, sample_cmd_msg, COLOR_CODE_LINK, False, "subscriber", "kick")
+            msg2_data = ("10:49", sample_cmd_user, sample_cmd_msg, Semantic.CODE_LINK, False, "subscriber", "kick")
 
         if self.orientation == "horizontal":
             self._draw_horizontal(p, w, h, sample_user, sample_msg_1, msg2_data)
@@ -138,7 +134,7 @@ class ChatOverlayMockupWidget(QWidget):
         letter = user[0].upper() if user else "?"
         font = QFont("Google Sans", int(size * 0.42), QFont.Weight.Bold)
         p.setFont(font)
-        p.setPen(QColor(COLOR_NEUTRAL_000))
+        p.setPen(QColor(Palette.NEUTRAL_000))
         p.drawText(rect, Qt.AlignmentFlag.AlignCenter, letter)
 
         if self.show_platform and platform:
@@ -158,7 +154,7 @@ class ChatOverlayMockupWidget(QWidget):
         start_x = 14.0
 
         m1_w = self._calculate_horizontal_width(user, msg1)
-        self._draw_horizontal_pill(p, start_x, pill_y, m1_w, pill_h, "10:49", user, msg1, COLOR_CALLOUT_WARNING_LIGHT, badge_type="broadcaster", platform="twitch")
+        self._draw_horizontal_pill(p, start_x, pill_y, m1_w, pill_h, "10:49", user, msg1, Semantic.CALLOUT_WARNING_LIGHT, badge_type="broadcaster", platform="twitch")
 
         if msg2_data and (start_x + m1_w + 12 < w):
             start_x2 = start_x + m1_w + 12
@@ -199,7 +195,7 @@ class ChatOverlayMockupWidget(QWidget):
         curr_x = x + 36.0
         if self.show_time:
             p.setFont(QFont("Google Sans", 7, QFont.Weight.Medium))
-            time_col = QColor(COLOR_LIGHT_TEXT_MUTED) if self.theme_mode == "light" else get_qcolor_with_alpha(COLOR_NEUTRAL_050, 140)
+            time_col = QColor(Semantic.LIGHT_TEXT_MUTED) if self.theme_mode == "light" else get_qcolor_with_alpha(Palette.NEUTRAL_050, 140)
             p.setPen(time_col)
             time_rect = QRectF(curr_x, y, 42, height)
             p.drawText(time_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"[{time_str}]")
@@ -220,22 +216,22 @@ class ChatOverlayMockupWidget(QWidget):
         curr_x += user_w + 6.0
 
         p.setFont(QFont("Google Sans", 9 if self.big_emotes else 8, QFont.Weight.Medium))
-        msg_col = QColor(COLOR_LIGHT_TEXT_PRIMARY) if self.theme_mode == "light" else QColor(COLOR_NEUTRAL_000)
+        msg_col = QColor(Semantic.LIGHT_TEXT_PRIMARY) if self.theme_mode == "light" else QColor(Palette.NEUTRAL_000)
         p.setPen(msg_col)
         msg_rect = QRectF(curr_x, y, width - (curr_x - x) - 8, height)
         p.drawText(msg_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, msg)
 
     def _apply_pill_theme(self, p: QPainter, rect: QRectF, _accent_color: QColor):
         if self.theme_mode == "light":
-            p.setPen(QPen(get_qcolor_with_alpha(COLOR_NEUTRAL_000, 120), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(COLOR_NEUTRAL_000, 170)))
+            p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 120), 1.0))
+            p.setBrush(QBrush(get_qcolor_with_alpha(Palette.NEUTRAL_000, 170)))
             p.drawRoundedRect(rect, 16, 16)
         elif self.theme_mode == "minimal":
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(Qt.BrushStyle.NoBrush)
         else:
-            p.setPen(QPen(get_qcolor_with_alpha(COLOR_NEUTRAL_000, 30), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(COLOR_CHAT_PREVIEW_SURFACE, 195)))
+            p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 30), 1.0))
+            p.setBrush(QBrush(get_qcolor_with_alpha(ChatTheme.CHAT_PREVIEW_SURFACE, 195)))
             p.drawRoundedRect(rect, 16, 16)
 
     def _draw_vertical(self, p: QPainter, w: int, h: int, user: str, msg1: str, msg2_data):
@@ -246,7 +242,7 @@ class ChatOverlayMockupWidget(QWidget):
 
         y1 = 12.0
         rect1 = QRectF(card_x, y1, card_w, card_h)
-        self._draw_vertical_card(p, rect1, "10:49", user, msg1, COLOR_CALLOUT_WARNING_LIGHT, badge_type="broadcaster", platform="twitch")
+        self._draw_vertical_card(p, rect1, "10:49", user, msg1, Semantic.CALLOUT_WARNING_LIGHT, badge_type="broadcaster", platform="twitch")
 
         if msg2_data:
             y2 = y1 + card_h + gap
@@ -264,15 +260,15 @@ class ChatOverlayMockupWidget(QWidget):
         h = rect.height()
 
         if self.theme_mode == "light":
-            p.setPen(QPen(get_qcolor_with_alpha(COLOR_NEUTRAL_000, 120), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(COLOR_NEUTRAL_000, 170)))
+            p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 120), 1.0))
+            p.setBrush(QBrush(get_qcolor_with_alpha(Palette.NEUTRAL_000, 170)))
             p.drawRoundedRect(rect, 14, 14)
         elif self.theme_mode == "minimal":
             p.setPen(Qt.PenStyle.NoPen)
             p.setBrush(Qt.BrushStyle.NoBrush)
         else:
-            p.setPen(QPen(get_qcolor_with_alpha(COLOR_NEUTRAL_000, 28), 1.0))
-            p.setBrush(QBrush(get_qcolor_with_alpha(COLOR_CHAT_PREVIEW_SURFACE, 195)))
+            p.setPen(QPen(get_qcolor_with_alpha(Palette.NEUTRAL_000, 28), 1.0))
+            p.setBrush(QBrush(get_qcolor_with_alpha(ChatTheme.CHAT_PREVIEW_SURFACE, 195)))
             p.drawRoundedRect(rect, 14, 14)
         av_size = 38.0
         av_x = x + 10.0
@@ -297,7 +293,7 @@ class ChatOverlayMockupWidget(QWidget):
 
         if self.show_time:
             p.setFont(QFont("Google Sans", 7, QFont.Weight.Medium))
-            time_col = QColor(COLOR_LIGHT_TEXT_MUTED) if self.theme_mode == "light" else get_qcolor_with_alpha(COLOR_NEUTRAL_050, 130)
+            time_col = QColor(Semantic.LIGHT_TEXT_MUTED) if self.theme_mode == "light" else get_qcolor_with_alpha(Palette.NEUTRAL_050, 130)
             p.setPen(time_col)
             p.drawText(QRectF(curr_x, header_y - 2, 44, 16), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, f"[{time_str}]")
 
@@ -305,7 +301,7 @@ class ChatOverlayMockupWidget(QWidget):
         msg_w = w - (content_x - x) - 12.0
 
         p.setFont(QFont("Google Sans", 8.5 if self.big_emotes else 8, QFont.Weight.Medium))
-        msg_col = QColor(COLOR_LIGHT_TEXT_PRIMARY) if self.theme_mode == "light" else QColor(COLOR_NEUTRAL_000)
+        msg_col = QColor(Semantic.LIGHT_TEXT_PRIMARY) if self.theme_mode == "light" else QColor(Palette.NEUTRAL_000)
         p.setPen(msg_col)
         elided_msg = self._elide(msg, p.font(), msg_w)
         p.drawText(QRectF(content_x, msg_y, msg_w, 18), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, elided_msg)
@@ -340,7 +336,7 @@ class ChatOverlayMockupWidget(QWidget):
             glyph_y = rect.center().y() - tb.y() - tb.height() / 2.0
             p.drawText(QPointF(glyph_x, glyph_y), glyph)
         else:
-            p.setBrush(QBrush(QColor(COLOR_NEUTRAL_600)))
+            p.setBrush(QBrush(QColor(Palette.NEUTRAL_600)))
             p.drawRoundedRect(rect, radius, radius)
 
         p.restore()

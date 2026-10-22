@@ -10,8 +10,7 @@ from frontend.widgets import (
     sync_dual_platform_switches, create_text_label
 )
 from frontend.common import (
-    SPACING_SM, SPACING_MD, SPACING_LG,
-    MARGIN_MD
+    Size,
 )
 
 class ScheduleFormPanel(QWidget):
@@ -31,15 +30,15 @@ class ScheduleFormPanel(QWidget):
 
     def _setup_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(*MARGIN_MD)
-        main_layout.setSpacing(SPACING_MD)
+        main_layout.setContentsMargins(*Size.Margin.MD)
+        main_layout.setSpacing(Size.SPACING_MD)
         main_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD)
+        card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_MD)
         card.card_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         header_layout = QHBoxLayout()
-        header_layout.setSpacing(SPACING_MD)
+        header_layout.setSpacing(Size.SPACING_MD)
         self.lbl_title = QLabel(self.i18n.get("stream_info.schedule_dialog.title_new"))
         self.lbl_title.setProperty("role", "h2")
         header_layout.addWidget(self.lbl_title)
@@ -47,7 +46,7 @@ class ScheduleFormPanel(QWidget):
         card.addLayout(header_layout)
 
         form_layout = QVBoxLayout()
-        form_layout.setSpacing(SPACING_MD)
+        form_layout.setSpacing(Size.SPACING_MD)
 
         self.txt_name = QLineEdit(parent=self)
         self.txt_name.setPlaceholderText(self.i18n.get("stream_info.schedule_dialog.name_placeholder"))
@@ -61,12 +60,12 @@ class ScheduleFormPanel(QWidget):
         form_layout.addWidget(create_text_label(self.i18n.get("stream_info.schedule_dialog.platform_label"), role="h3", parent=self))
 
         switches_row, self.switch_kick, self.switch_twitch = create_platform_switches(
-            spacing=SPACING_LG,
+            spacing=Size.SPACING_LG,
             parent=self
         )
         form_layout.addLayout(switches_row)
 
-        datetime_row = create_row_layout(spacing=SPACING_LG)
+        datetime_row = create_row_layout(spacing=Size.SPACING_LG)
 
         self.date_edit = NoWheelDateEdit(parent=self)
         self.date_edit.setCalendarPopup(True)
@@ -76,7 +75,7 @@ class ScheduleFormPanel(QWidget):
             self.i18n.get("stream_info.schedule_dialog.date_label"),
             self.date_edit,
             role="h3",
-            spacing=SPACING_SM
+            spacing=Size.SPACING_SM
         )
         datetime_row.addLayout(date_box)
 
@@ -87,12 +86,12 @@ class ScheduleFormPanel(QWidget):
             self.i18n.get("stream_info.schedule_dialog.time_label"),
             self.time_edit,
             role="h3",
-            spacing=SPACING_SM
+            spacing=Size.SPACING_SM
         )
         datetime_row.addLayout(time_box)
 
         now_box = QVBoxLayout()
-        now_box.setSpacing(SPACING_SM)
+        now_box.setSpacing(Size.SPACING_SM)
         lbl_now_spacer = QLabel("")
         lbl_now_spacer.setProperty("role", "h3")
         self.btn_now = ModernButton(
@@ -141,9 +140,9 @@ class ScheduleFormPanel(QWidget):
         form_layout.addWidget(lbl_cat_twitch)
         form_layout.addWidget(self.search_twitch_cat)
 
-        form_layout.addSpacing(SPACING_SM)
+        form_layout.addSpacing(Size.SPACING_SM)
         action_row = QHBoxLayout()
-        action_row.setSpacing(SPACING_MD)
+        action_row.setSpacing(Size.SPACING_MD)
 
         self.btn_clear = QPushButton(self.i18n.get("stream_info.schedule_dialog.btn_clear"), parent=self)
         self.btn_clear.setProperty("role", "action_outlined")
@@ -217,7 +216,7 @@ class ScheduleFormPanel(QWidget):
 
         self.txt_name.setText(schedule_data.get("name", ""))
         self._set_target_platform(schedule_data.get("target_platform", "all"))
-        
+
         date_str = schedule_data.get("date_str", "")
         if date_str:
             qdate = QDate.fromString(date_str, "yyyy-MM-dd")

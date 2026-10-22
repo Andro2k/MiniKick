@@ -9,7 +9,13 @@ from PySide6.QtCore import Qt, Slot
 
 from .base_dialog import ModernModal
 from frontend.widgets import ModernButton, create_error_label
-from frontend.common import get_assets_path, COLOR_RED, COLOR_NEUTRAL_000, get_qcolor_with_alpha, MARGIN_LG, SPACING_MD, SPACING_XS
+from frontend.common import (
+    get_assets_path,
+    get_qcolor_with_alpha,
+    Palette,
+    BrandColors,
+    Size,
+)
 
 _ACTIVE_CRASH_WORKERS = set()
 
@@ -44,15 +50,15 @@ class CrashReportDialog(ModernModal):
         self.subtitle_text = self.i18n.get("crash.subtitle")
 
         icon_path = get_assets_path("icons/bug-filled.svg")
-        super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=COLOR_RED, width=580, parent=parent)
-        self.set_dialog_state("danger", get_qcolor_with_alpha(COLOR_RED, 80))
+        super().__init__(title=self.title_text, icon_path=icon_path, icon_bg_color=BrandColors.RED, width=580, parent=parent)
+        self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 80))
         self._setup_crash_form()
 
     def _setup_crash_form(self):
         header_card = QFrame()
         header_card.setProperty("role", "banner_danger")
         card_layout = QVBoxLayout(header_card)
-        card_layout.setContentsMargins(*MARGIN_LG)
+        card_layout.setContentsMargins(*Size.Margin.LG)
 
         lbl_subtitle = QLabel(self.subtitle_text)
         lbl_subtitle.setProperty("role", "body")
@@ -60,7 +66,7 @@ class CrashReportDialog(ModernModal):
         card_layout.addWidget(lbl_subtitle)
 
         form_layout = QVBoxLayout()
-        form_layout.setSpacing(SPACING_MD)
+        form_layout.setSpacing(Size.SPACING_MD)
 
         lbl_contact = QLabel(self.lbl_contact_text)
         lbl_contact.setProperty("role", "body")
@@ -83,7 +89,7 @@ class CrashReportDialog(ModernModal):
         lbl_traceback = QLabel(self.lbl_traceback_text)
         lbl_traceback.setProperty("role", "body")
 
-        self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="clipboard-filled.svg", icon_color=COLOR_NEUTRAL_000, icon_size=16)
+        self.btn_copy_tb = ModernButton(self.btn_copy_text, role="action_outlined", icon_name="clipboard-filled.svg", icon_color=Palette.NEUTRAL_000, icon_size=16)
         self.btn_copy_tb.clicked.connect(self._copy_traceback)
 
         tb_header_layout.addWidget(lbl_traceback)
@@ -97,9 +103,9 @@ class CrashReportDialog(ModernModal):
         self.lbl_error = create_error_label(self)
 
         self.content_layout.addWidget(header_card)
-        self.content_layout.addSpacing(SPACING_XS)
+        self.content_layout.addSpacing(Size.SPACING_XS)
         self.content_layout.addLayout(form_layout)
-        self.content_layout.addSpacing(SPACING_XS)
+        self.content_layout.addSpacing(Size.SPACING_XS)
         self.content_layout.addLayout(tb_header_layout)
         self.content_layout.addWidget(self.txt_traceback)
         self.content_layout.addWidget(self.lbl_error)
@@ -144,7 +150,7 @@ class CrashReportDialog(ModernModal):
         QApplication.restoreOverrideCursor()
         self.btn_send.setEnabled(True)
         self.btn_send.setText(self.btn_send_text)
-        
+
         if self.worker and self.worker.isRunning():
             self.worker.wait(1000)
 

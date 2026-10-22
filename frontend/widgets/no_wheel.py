@@ -77,12 +77,14 @@ class NoWheelDateEdit(QDateEdit):
         if cal:
             from PySide6.QtWidgets import QCalendarWidget
             from PySide6.QtGui import QTextCharFormat, QColor
-            from frontend.common import COLOR_NEUTRAL_400
+            from frontend.common import (
+                Palette,
+            )
 
             cal.setVerticalHeaderFormat(QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader)
             cal.setHorizontalHeaderFormat(QCalendarWidget.HorizontalHeaderFormat.ShortDayNames)
             neutral_fmt = QTextCharFormat()
-            neutral_fmt.setForeground(QColor(COLOR_NEUTRAL_400))
+            neutral_fmt.setForeground(QColor(Palette.NEUTRAL_400))
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Saturday, neutral_fmt)
             cal.setWeekdayTextFormat(Qt.DayOfWeek.Sunday, neutral_fmt)
             cal.setHeaderTextFormat(neutral_fmt)

@@ -2,7 +2,10 @@
 
 from PySide6.QtWidgets import QFrame, QLabel, QSizePolicy
 from PySide6.QtCore import Qt
-from frontend.common import get_pixmap_colored, MARGIN_MD, SPACING_XS, SPACING_SM
+from frontend.common import (
+    get_pixmap_colored,
+    Size,
+)
 from frontend.widgets import ModernButton, create_col_layout, create_row_layout
 
 class PlatformStatusCard(QFrame):
@@ -37,8 +40,8 @@ class PlatformStatusCard(QFrame):
         self._setup_ui(brand_name, icon_file)
 
     def _setup_ui(self, brand_name: str, icon_file: str):
-        layout = create_col_layout(spacing=SPACING_SM, margins=MARGIN_MD, parent=self)
-        top_row = create_row_layout(spacing=SPACING_XS)
+        layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MD, parent=self)
+        top_row = create_row_layout(spacing=Size.SPACING_XS)
 
         self.lbl_icon = QLabel(self)
         self.lbl_icon.setPixmap(get_pixmap_colored(icon_file, self.brand_color, 20))
@@ -57,7 +60,7 @@ class PlatformStatusCard(QFrame):
         top_row.addStretch(1)
         top_row.addWidget(self.lbl_status_pill)
         layout.addLayout(top_row)
-        mid_row = create_row_layout(spacing=SPACING_XS)
+        mid_row = create_row_layout(spacing=Size.SPACING_XS)
 
         self.lbl_channel = QLabel(self.i18n.get("dashboard.platforms.disconnected"), self)
         self.lbl_channel.setProperty("role", "body")

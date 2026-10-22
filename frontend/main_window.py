@@ -8,7 +8,7 @@ import warnings
 from collections import deque
 from datetime import datetime
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QHBoxLayout, QStackedWidget, 
+    QMainWindow, QWidget, QHBoxLayout, QStackedWidget,
     QSystemTrayIcon, QApplication
 )
 from PySide6.QtCore import Qt, Slot, QEvent, QTimer, QByteArray
@@ -30,7 +30,10 @@ from backend.workers import (
     KickAuthWorker, TwitchAuthWorker, KickChatWorker, TwitchChatWorker,
     FetchRewardsWorker, TwitchRewardWorker, TimerWorker, ScheduleWorker, GlobalMediaWorker
 )
-from frontend.common import COLOR_GREEN, get_global_qss
+from frontend.common import (
+    get_global_qss,
+    BrandColors,
+)
 from frontend.dialogs.update_flow import present_update_dialog
 from frontend.navigation import Sidebar, ToastManager, SystemTrayManager
 from frontend.views import (
@@ -72,14 +75,14 @@ class MainWindowCore(QMainWindow):
         super().__init__()
         self.setUpdatesEnabled(False)
         self.resize(1200, 800)
-        
+
         self._is_shutting_down = False
         self._was_maximized_before_tray = True
         self.updater_manager = updater_manager
         self.app_version = app_version
-        
+
         self.container = AppContainerCore()
-        self.settings_storage = self.container.settings_storage 
+        self.settings_storage = self.container.settings_storage
         self.rewards_storage = self.container.rewards_storage
         self.commands_storage = self.container.commands_storage
         self.spam_storage = self.container.spam_storage
@@ -90,10 +93,10 @@ class MainWindowCore(QMainWindow):
         self.tts_manager = self.container.tts_manager
         self.overlay_server = self.container.overlay_server
         self.whats_new_service = WhatsNewService(self.settings_storage, self.app_version)
-        
+
         title_template = self.i18n.get("main.window.title")
         self.setWindowTitle(title_template.replace("{version}", app_version))
-        
+
         self.kick_chat_worker = None
         self.kick_api_client = None
         self.kick_auth_worker = None
@@ -131,20 +134,20 @@ class MainWindowCore(QMainWindow):
         self._dashboard_metrics_timer.setInterval(300)
         self._dashboard_metrics_timer.timeout.connect(self._flush_dashboard_metrics_update)
 
-        self.logger, self.q_log_handler = setup_application_logging()  
+        self.logger, self.q_log_handler = setup_application_logging()
         self.logger.info("[MainWindow] Initializing main window components and UI shell...")
         self.toast = ToastManager(self)
         self._setup_ui()
         self.logger.debug("[MainWindow] Setting up system tray...")
-        self._setup_tray() 
-        
+        self._setup_tray()
+
         self.logger.debug("[MainWindow] Checking background silent updates...")
         self.updater_controller = UpdaterController(self.updater_manager)
         self.updater_controller.update_found_silent.connect(self._on_silent_update_found)
         self.updater_controller.check_updates_silently()
-        
+
         self.logger.debug("[MainWindow] Connecting signal handlers...")
-        self._connect_signals()     
+        self._connect_signals()
         self.logger.info("[MainWindow] Hydrating views and loading stored settings into UI...")
         self._load_settings_into_ui()
         self.setUpdatesEnabled(True)
@@ -167,7 +170,7 @@ class MainWindowCore(QMainWindow):
         self.chat_service = ChatService(self.tts_manager, self.settings_storage)
         self.settings_service = SettingsService(self.settings_storage, self.backup_service)
         self.rewards_service = RewardsService(self.rewards_storage, self.overlay_server)
-        
+
         self.command_service = CommandService(self.commands_storage, api_client=None)
         self.spam_service = SpamService(self.spam_storage, api_client=None, i18n=self.i18n)
         self.timer_service = TimerService(self.timers_storage, api_client=None)
@@ -190,7 +193,7 @@ class MainWindowCore(QMainWindow):
         self._instantiated_views = {"Dashboard": self.view_dashboard}
 
         self.dashboard_controller = DashboardController(
-            view=self.view_dashboard, 
+            view=self.view_dashboard,
             avatar_service=self.avatar_service,
             db_manager=self.container.db_manager,
             widget_service=self.container.widget_service,
@@ -198,7 +201,7 @@ class MainWindowCore(QMainWindow):
             i18n=self.i18n
         )
         self.chat_controller = ChatController(
-            view=None, 
+            view=None,
             service=self.chat_service,
             command_service=self.command_service,
             spam_service=self.spam_service,
@@ -231,20 +234,20 @@ class MainWindowCore(QMainWindow):
                 on_finished=lambda: self.music_controller.set_ducking(False)
             )
         self.rewards_controller = RewardsController(
-            view=None, 
+            view=None,
             service=self.rewards_service,
             toast_manager=self.toast,
             kick_auth_manager=self.kick_auth_manager,
             twitch_auth_manager=getattr(self.container, "twitch_auth_manager", None)
         )
         self.commands_controller = CommandsController(
-            None, 
+            None,
             self.command_service,
             toast_manager=self.toast,
             connected_platforms_provider=self.get_connected_platforms
         )
         self.spam_controller = SpamController(
-            None, 
+            None,
             self.spam_service,
             toast_manager=self.toast,
             connected_platforms_provider=self.get_connected_platforms
@@ -257,7 +260,7 @@ class MainWindowCore(QMainWindow):
             connected_platforms_provider=self.get_connected_platforms
         )
         self.settings_controller = SettingsController(
-            view=None, 
+            view=None,
             service=self.settings_service,
             toast_manager=self.toast,
             music_provider=self.container.music_provider,
@@ -265,7 +268,7 @@ class MainWindowCore(QMainWindow):
             browser_service=self.container.browser_service
         )
         self.logs_controller = LogsController(
-            view=None, 
+            view=None,
             service=self.log_service,
             toast_manager=self.toast
         )
@@ -647,26 +650,26 @@ class MainWindowCore(QMainWindow):
         if self._is_shutting_down:
             event.accept()
             return
-            
+
         minimize_tray = self.settings_storage.load_bool(self.SETTING_MINIMIZE_TRAY, False)
         self.logger.info("[User Action] Window close triggered (minimize_tray=%s)", minimize_tray)
         if minimize_tray:
             self._save_window_state()
             self.hide()
             self._notify_background()
-            event.ignore() 
+            event.ignore()
         else:
             dialog = ModernConfirmDialog(
                 self.i18n,
-                parent=None, 
-                title_text=self.i18n.get("dialogs.close.title"), 
+                parent=None,
+                title_text=self.i18n.get("dialogs.close.title"),
                 body_text=self.i18n.get("dialogs.close.desc")
             )
             if dialog.exec() == dialog.DialogCode.Accepted:
                 self.logger.info("[User Action] App exit confirmed by user")
                 self.hide()
-                event.accept() 
-                self._force_quit() 
+                event.accept()
+                self._force_quit()
             else:
                 self.logger.info("[User Action] App exit cancelled by user")
                 event.ignore()
@@ -834,9 +837,9 @@ class MainWindowCore(QMainWindow):
         if self._is_shutting_down:
             return
         self._is_shutting_down = True
-        
+
         self.logger.info("[Shutdown] Initiating application shutdown sequence...")
-        
+
         if hasattr(self, 'music_controller') and self.music_controller:
             self.music_controller.shutdown()
 
@@ -1002,11 +1005,11 @@ class MainWindowCore(QMainWindow):
     def _on_auth_success(self, _tokens):
         self.kick_api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
         self._evaluate_all_scopes()
-        
+
         self.command_service.api_client = self.kick_api_client
         self.spam_service.api_client = self.kick_api_client
         self.timer_service.api_client = self.kick_api_client
-        
+
         self.command_service.reload_cache()
         self.spam_service.reload_filters()
 
@@ -1024,14 +1027,14 @@ class MainWindowCore(QMainWindow):
         self.kick_chat_worker.pinned_deleted.connect(self._on_pinned_deleted)
         self.kick_chat_worker.reward_redeemed.connect(lambda u, r, m: self._on_reward_redeemed(u, r, m, platform="kick"))
         self.kick_chat_worker.error_occurred.connect(self.dashboard_controller.handle_error_state)
-        
+
         self.kick_chat_worker.start()
         self.kick_auth_worker = None
 
     def _on_web_socket_connected(self, user_data):
         self.spam_service.broadcaster_id = user_data.get("broadcaster_id", 0)
         self.dashboard_controller.handle_connection_success(user_data)
-        
+
         username = user_data.get("username", "Kick")
         self._kick_connected = True
         self._kick_username = username
@@ -1046,7 +1049,7 @@ class MainWindowCore(QMainWindow):
             message=msg,
             state="success"
         )
-        
+
         slug = username.replace("_", "-").replace(" ", "")
         self._start_timers_worker(slug)
         self._fetch_api_rewards()
@@ -1081,7 +1084,7 @@ class MainWindowCore(QMainWindow):
         safe_reward_name = html.escape(reward_name)
         canje_template = self.i18n.get("main.chat.reward_redeemed")
         texto_canje = canje_template.replace("{reward_name}", safe_reward_name)
-        return f'<span style="color: {COLOR_GREEN};">{texto_canje}</span>'
+        return f'<span style="color: {BrandColors.GREEN};">{texto_canje}</span>'
 
     def _on_reward_redeemed(self, user: str, reward_name: str, message: str, platform: str = "kick"):
         recents = getattr(self, "_recent_reward_redemptions", None)
@@ -1095,18 +1098,18 @@ class MainWindowCore(QMainWindow):
         self.logger.info("[Reward] Redemption processed: user='%s', reward='%s' (Platform: %s)", user, reward_name, platform.capitalize())
         toast_template = self.i18n.get("main.toasts.reward_msg")
         self.toast.show_toast(
-            title=self.i18n.get("main.toasts.reward_title"), 
-            message=toast_template.replace("{user}", user).replace("{reward_name}", reward_name), 
+            title=self.i18n.get("main.toasts.reward_title"),
+            message=toast_template.replace("{user}", user).replace("{reward_name}", reward_name),
             state="success"
         )
-        
+
         current_time = datetime.now().strftime("%H:%M")
-        
+
         msg_sistema = self._format_reward_message(reward_name)
         tag = self.i18n.get("main.chat.points_tag")
         if self.view_chat is not None:
-            self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, COLOR_GREEN, timestamp=current_time, is_html=True, platform=platform)
-        
+            self.view_chat.append_message(f"[{tag}] {user}", msg_sistema, BrandColors.GREEN, timestamp=current_time, is_html=True, platform=platform)
+
         config = self.rewards_service.get_reward_config(reward_name, platform=platform)
         if config:
             if self.rewards_service.is_file_valid(config):
@@ -1137,7 +1140,7 @@ class MainWindowCore(QMainWindow):
 
     def _start_timers_worker(self, channel_slug: str):
         self._stop_workers_parallel([("Worker_Timers", getattr(self, 'timers_worker', None))])
-        
+
         api_client = KickAPIClient(auth_provider=self.kick_auth_manager)
         self.timers_worker = TimerWorker(self.timer_service, api_client, channel_slug)
         self.timers_worker.post_message_requested.connect(self._send_timer_message)
@@ -1705,11 +1708,11 @@ class MainWindowCore(QMainWindow):
             self.logger.info("[User Action] Requested unlinking Kick account")
             dialog = ModernConfirmDialog(
                 self.i18n,
-                self, 
-                title_text=self.i18n.get("dialogs.unlink.title"), 
+                self,
+                title_text=self.i18n.get("dialogs.unlink.title"),
                 body_text=self.i18n.get("dialogs.unlink.desc")
             )
-            
+
             if dialog.exec() == dialog.DialogCode.Accepted:
                 self.logger.info("[User Action] Kick account unlinked successfully")
                 self.toast.show_toast(
@@ -1811,7 +1814,7 @@ class MainWindowCore(QMainWindow):
         self.chat_service.save_settings(settings)
         self.chat_controller.load_initial_data()
         estado = (self.i18n.get("main.tray.tts_on") if enabled else self.i18n.get("main.tray.tts_off"))
-        msg_template = self.i18n.get("main.tray.tts_msg")       
+        msg_template = self.i18n.get("main.tray.tts_msg")
         self.tray_manager.showMessage("MiniKick", msg_template.replace("{estado}", estado), QSystemTrayIcon.MessageIcon.Information, 2000)
 
     @Slot()

@@ -3,8 +3,9 @@
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel
 from PySide6.QtCore import Signal
 from frontend.common import (
-    COLOR_NEUTRAL_400, get_pixmap_colored,
-    MARGIN_NONE, MARGIN_MD, SPACING_SM, SPACING_MD
+    get_pixmap_colored,
+    Palette,
+    Size,
 )
 from frontend.widgets import ModernCard, ModernSwitch
 
@@ -22,15 +23,15 @@ class MusicStatsPanel(QWidget):
 
     def _setup_ui(self):
         self.stats_grid = QGridLayout(self)
-        self.stats_grid.setContentsMargins(*MARGIN_NONE)
-        self.stats_grid.setSpacing(SPACING_MD)
+        self.stats_grid.setContentsMargins(*Size.Margin.NONE)
+        self.stats_grid.setSpacing(Size.SPACING_MD)
 
-        self.card_stat_queue = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
-        
+        self.card_stat_queue = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
+
         queue_header = QHBoxLayout()
-        queue_header.setSpacing(SPACING_MD)
+        queue_header.setSpacing(Size.SPACING_MD)
         icon_queue = QLabel()
-        icon_queue.setPixmap(get_pixmap_colored("music-notes-filled.svg", COLOR_NEUTRAL_400, 18))
+        icon_queue.setPixmap(get_pixmap_colored("music-notes-filled.svg", Palette.NEUTRAL_400, 18))
         lbl_queue_title = QLabel(self.i18n.get("music.stats.queue_title"))
         lbl_queue_title.setProperty("role", "h3")
         queue_header.addWidget(icon_queue)
@@ -39,7 +40,7 @@ class MusicStatsPanel(QWidget):
 
         self.lbl_stat_queue_count = QLabel("0")
         self.lbl_stat_queue_count.setProperty("role", "h2")
-        
+
         lbl_queue_desc = QLabel(self.i18n.get("music.stats.queue_desc"))
         lbl_queue_desc.setProperty("role", "body")
         lbl_queue_desc.setWordWrap(True)
@@ -48,12 +49,12 @@ class MusicStatsPanel(QWidget):
         self.card_stat_queue.addWidget(self.lbl_stat_queue_count)
         self.card_stat_queue.addWidget(lbl_queue_desc)
 
-        self.card_stat_duration = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
+        self.card_stat_duration = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
 
         dur_header = QHBoxLayout()
-        dur_header.setSpacing(SPACING_MD)
+        dur_header.setSpacing(Size.SPACING_MD)
         icon_dur = QLabel()
-        icon_dur.setPixmap(get_pixmap_colored("clock-filled.svg", COLOR_NEUTRAL_400, 18))
+        icon_dur.setPixmap(get_pixmap_colored("clock-filled.svg", Palette.NEUTRAL_400, 18))
         lbl_dur_title = QLabel(self.i18n.get("music.stats.duration_title"))
         lbl_dur_title.setProperty("role", "h3")
         dur_header.addWidget(icon_dur)
@@ -62,7 +63,7 @@ class MusicStatsPanel(QWidget):
 
         self.lbl_stat_duration_sum = QLabel("00:00:00")
         self.lbl_stat_duration_sum.setProperty("role", "h2")
-        
+
         lbl_dur_desc = QLabel(self.i18n.get("music.stats.duration_desc"))
         lbl_dur_desc.setProperty("role", "body")
         lbl_dur_desc.setWordWrap(True)
@@ -71,12 +72,12 @@ class MusicStatsPanel(QWidget):
         self.card_stat_duration.addWidget(self.lbl_stat_duration_sum)
         self.card_stat_duration.addWidget(lbl_dur_desc)
 
-        self.card_stat_service = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
+        self.card_stat_service = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
 
         service_header = QHBoxLayout()
-        service_header.setSpacing(SPACING_MD)
+        service_header.setSpacing(Size.SPACING_MD)
         icon_cmd = QLabel()
-        icon_cmd.setPixmap(get_pixmap_colored("chat-square-code-filled.svg", COLOR_NEUTRAL_400, 18))
+        icon_cmd.setPixmap(get_pixmap_colored("chat-square-code-filled.svg", Palette.NEUTRAL_400, 18))
         lbl_cmd_title = QLabel(self.i18n.get("music.stats.cmd_title"))
         lbl_cmd_title.setProperty("role", "h3")
         self.sw_music_service = ModernSwitch(parent=self)
@@ -90,7 +91,7 @@ class MusicStatsPanel(QWidget):
 
         self.lbl_stat_service_value = QLabel(self.i18n.get("music.stats.service_active"))
         self.lbl_stat_service_value.setProperty("role", "h2")
-        
+
         lbl_cmd_desc = QLabel(self.i18n.get("music.stats.cmd_desc"))
         lbl_cmd_desc.setProperty("role", "body")
         lbl_cmd_desc.setWordWrap(True)

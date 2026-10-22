@@ -3,7 +3,11 @@
 from PySide6.QtWidgets import QHeaderView, QMenu, QStyleOptionHeader, QStyle
 from PySide6.QtCore import Qt, Signal, QRect, QPoint, QSize
 from PySide6.QtGui import QPainter, QAction, QColor, QFont
-from frontend.common import COLOR_GREEN, COLOR_NEUTRAL_500, COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, get_icon_colored
+from frontend.common import (
+    get_icon_colored,
+    Palette,
+    BrandColors,
+)
 
 class FilterHeaderView(QHeaderView):
     filter_changed = Signal(object)
@@ -12,8 +16,8 @@ class FilterHeaderView(QHeaderView):
     def __init__(self, orientation=Qt.Orientation.Horizontal, parent=None):
         super().__init__(orientation, parent)
         self._column_filters: dict[int, dict] = {}
-        self._icon_filtered = get_icon_colored("filter-filled.svg", COLOR_GREEN, 16)
-        self._icon_unfiltered = get_icon_colored("filter-filled.svg", COLOR_NEUTRAL_500, 16)
+        self._icon_filtered = get_icon_colored("filter-filled.svg", BrandColors.GREEN, 16)
+        self._icon_unfiltered = get_icon_colored("filter-filled.svg", Palette.NEUTRAL_500, 16)
         self.setSectionsClickable(True)
         self.setSectionsMovable(False)
         self.sectionClicked.connect(self._on_section_clicked)
@@ -116,7 +120,7 @@ class FilterHeaderView(QHeaderView):
         )
 
         is_hover_or_pressed = bool(opt.state & (QStyle.StateFlag.State_MouseOver | QStyle.StateFlag.State_Sunken))
-        text_color = QColor(COLOR_NEUTRAL_050) if is_hover_or_pressed else QColor(COLOR_NEUTRAL_400)
+        text_color = QColor(Palette.NEUTRAL_050) if is_hover_or_pressed else QColor(Palette.NEUTRAL_400)
 
         painter.save()
         painter.setPen(text_color)
@@ -139,9 +143,9 @@ class FilterHeaderView(QHeaderView):
         has_sort = bool(config.get("sort_asc_label") or config.get("sort_desc_label"))
 
         if config.get("sort_asc_label"):
-            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-filled.svg", COLOR_NEUTRAL_400, 14), config["sort_asc_label"])
+            action_sort_asc = menu.addAction(get_icon_colored("chevron-up-filled.svg", Palette.NEUTRAL_400, 14), config["sort_asc_label"])
         if config.get("sort_desc_label"):
-            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-filled.svg", COLOR_NEUTRAL_400, 14), config["sort_desc_label"])
+            action_sort_desc = menu.addAction(get_icon_colored("chevron-down-filled.svg", Palette.NEUTRAL_400, 14), config["sort_desc_label"])
 
         action_all = None
         action_map: dict[QAction, str] = {}

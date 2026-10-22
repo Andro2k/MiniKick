@@ -2,10 +2,12 @@
 
 from PySide6.QtWidgets import QLayout
 from PySide6.QtCore import Qt, QSize, QRect
-from frontend.common import MARGIN_NONE, SPACING_MD
+from frontend.common import (
+    Size,
+)
 
 class FlowLayout(QLayout):
-    def __init__(self, parent=None, margin=MARGIN_NONE, hspacing=SPACING_MD, vspacing=SPACING_MD):
+    def __init__(self, parent=None, margin=Size.Margin.NONE, hspacing=Size.SPACING_MD, vspacing=Size.SPACING_MD):
         super().__init__(parent)
         self._item_list = []
         self._hspacing = hspacing
@@ -63,14 +65,14 @@ class FlowLayout(QLayout):
     def _do_layout(self, rect, test_only):
         left, top, right, bottom = self.getContentsMargins()
         effective_rect = rect.adjusted(left, top, -right, -bottom)
-        
+
         h_space = self._hspacing
         v_space = self._vspacing
-        
+
         lines = []
         current_line = []
         x = effective_rect.x()
-        
+
         for item in self._item_list:
             item_w = item.sizeHint().width()
             if x + item_w > effective_rect.right() and len(current_line) > 0:
@@ -80,18 +82,18 @@ class FlowLayout(QLayout):
             else:
                 current_line.append(item)
                 x += item_w + h_space
-                
+
         if current_line:
             lines.append(current_line)
-            
+
         y = effective_rect.y()
         max_n = max(len(line) for line in lines) if lines else 1
-        
+
         is_single_line = (len(lines) == 1)
         for line in lines:
             n = len(line)
             w = (effective_rect.width() - (max_n - 1) * h_space) / max_n
-            
+
             line_height = 0
             for item in line:
                 h = item.sizeHint().height()
@@ -113,14 +115,14 @@ class FlowLayout(QLayout):
                         item_w = wid.maximumWidth()
                     if wid.maximumHeight() < h:
                         h = wid.maximumHeight()
-                        
+
                 if not test_only:
                     item.setGeometry(QRect(int(x), int(y), int(item_w), int(h)))
-                    
+
                 x += w + h_space
-                
+
             y += line_height + v_space
-            
+
         if lines:
             return y - v_space - effective_rect.y() + top + bottom
         return top + bottom

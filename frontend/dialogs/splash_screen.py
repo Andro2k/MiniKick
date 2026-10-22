@@ -11,8 +11,9 @@ from PySide6.QtGui import QPixmap, QPainter, QIcon
 from PySide6.QtSvg import QSvgRenderer
 
 from frontend.common import (
-    resolve_icon_path, resource_path,
-    MARGIN_NONE, SPACING_SM
+    resolve_icon_path,
+    resource_path,
+    Size,
 )
 
 logger = logging.getLogger("minikick.splash")
@@ -42,7 +43,7 @@ class SplashScreen(QWidget):
 
     def _setup_ui(self):
         outer_layout = QVBoxLayout(self)
-        outer_layout.setContentsMargins(*MARGIN_NONE)
+        outer_layout.setContentsMargins(*Size.Margin.NONE)
         outer_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.card = QFrame(self)
@@ -50,12 +51,12 @@ class SplashScreen(QWidget):
         self.card.setFixedWidth(440)
 
         card_layout = QVBoxLayout(self.card)
-        card_layout.setContentsMargins(*MARGIN_NONE)
+        card_layout.setContentsMargins(*Size.Margin.NONE)
         card_layout.setSpacing(0)
         card_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         logo_row = QHBoxLayout()
-        logo_row.setContentsMargins(*MARGIN_NONE)
+        logo_row.setContentsMargins(*Size.Margin.NONE)
         logo_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_logo = QLabel(self.card)
@@ -67,8 +68,8 @@ class SplashScreen(QWidget):
         card_layout.addSpacing(20)
 
         title_row = QHBoxLayout()
-        title_row.setContentsMargins(*MARGIN_NONE)
-        title_row.setSpacing(SPACING_SM)
+        title_row.setContentsMargins(*Size.Margin.NONE)
+        title_row.setSpacing(Size.SPACING_SM)
         title_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_title = QLabel(self.i18n.get("splash.title"), parent=self.card)
@@ -100,7 +101,7 @@ class SplashScreen(QWidget):
         self.progress_bar.setFixedWidth(340)
 
         progress_row = QHBoxLayout()
-        progress_row.setContentsMargins(*MARGIN_NONE)
+        progress_row.setContentsMargins(*Size.Margin.NONE)
         progress_row.setAlignment(Qt.AlignmentFlag.AlignCenter)
         progress_row.addWidget(self.progress_bar)
         card_layout.addLayout(progress_row)

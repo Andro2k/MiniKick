@@ -6,9 +6,11 @@ from frontend.widgets import (
     BaseView, ModernTableCard, TableActionCell, create_badge, PlatformBadgeCell
 )
 from frontend.common import (
-    COLOR_NEUTRAL_050, COLOR_AMBER,
-    MARGIN_H_MD, SPACING_MD, SPACING_SM,
-    get_pixmap_colored, is_complete_valid_trigger
+    get_pixmap_colored,
+    is_complete_valid_trigger,
+    Palette,
+    BrandColors,
+    Size,
 )
 
 class CommandView(BaseView):
@@ -70,7 +72,7 @@ class CommandView(BaseView):
             on_button_clicked=self.add_requested.emit
         )
         self.table_card.setMinimumHeight(400)
-        
+
         self.table = self.table_card.table
         self.txt_search = self.table_card.txt_search
         self.btn_new_add = self.table_card.btn_add
@@ -79,7 +81,7 @@ class CommandView(BaseView):
         self.btn_new_add.clicked.connect(self.add_requested.emit)
 
         self.filter_header = self.table_card.enable_filter_header()
-        
+
         sort_asc_text = self.i18n.get("command.table.filter_sort_asc")
         sort_desc_text = self.i18n.get("command.table.filter_sort_desc")
         all_text = self.i18n.get("command.table.filter_all")
@@ -118,13 +120,13 @@ class CommandView(BaseView):
         self.filter_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
         self.filter_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
-        
+
         self.table.setColumnWidth(0, 190)
         self.table.setColumnWidth(1, 140)
         self.table.setColumnWidth(2, 140)
         self.table.setColumnWidth(5, 130)
-        
-        self.main_layout.addWidget(self.table_card, stretch=1) 
+
+        self.main_layout.addWidget(self.table_card, stretch=1)
 
     def _on_sort_requested(self, col_idx: int, order: str):
         self._current_sort = (col_idx, order)
@@ -205,16 +207,16 @@ class CommandView(BaseView):
         )
 
     @staticmethod
-    def _create_cell_container(spacing=SPACING_SM) -> tuple[QWidget, QHBoxLayout]:
+    def _create_cell_container(spacing=Size.SPACING_SM) -> tuple[QWidget, QHBoxLayout]:
         container = QWidget()
         layout = QHBoxLayout(container)
-        layout.setContentsMargins(*MARGIN_H_MD)
+        layout.setContentsMargins(*Size.Margin.H_MD)
         layout.setSpacing(spacing)
         layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         return container, layout
 
     def _create_command_cell(self, cmd_data: dict) -> QWidget:
-        container, layout = self._create_cell_container(SPACING_SM)
+        container, layout = self._create_cell_container(Size.SPACING_SM)
         trigger_val = cmd_data.get("trigger", "")
         lbl_trigger = QLabel(trigger_val)
         lbl_trigger.setProperty("role", "body")
@@ -222,7 +224,7 @@ class CommandView(BaseView):
 
         if not is_complete_valid_trigger(trigger_val):
             warn_icon = QLabel()
-            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", COLOR_AMBER, 14))
+            warn_icon.setPixmap(get_pixmap_colored("alert-triangle-filled.svg", BrandColors.AMBER, 14))
             warn_icon.setToolTip(self.i18n.get("command.table.warning_legacy_format"))
             layout.addWidget(warn_icon)
 
@@ -262,7 +264,7 @@ class CommandView(BaseView):
         return PlatformBadgeCell(active_plats)
 
     def _create_aliases_cell(self, cmd_data: dict) -> QWidget:
-        container, layout = self._create_cell_container(SPACING_MD)
+        container, layout = self._create_cell_container(Size.SPACING_MD)
         raw_aliases = cmd_data.get("aliases", "").strip()
         is_regex = cmd_data.get("is_regex", False)
 
@@ -289,7 +291,7 @@ class CommandView(BaseView):
     def _create_actions_cell(self, cmd_data: dict) -> QWidget:
         trigger_name = cmd_data["trigger"]
         cell = TableActionCell()
-        
+
         def _on_toggled(checked: bool, t: str = trigger_name):
             for cmd in self._raw_commands:
                 if cmd.get("trigger") == t:
@@ -301,23 +303,23 @@ class CommandView(BaseView):
             checked=cmd_data.get("is_active", True),
             callback=_on_toggled
         )
-        
+
         cell.add_button(
-            icon_name="edit-filled.svg", 
-            color=COLOR_NEUTRAL_050,
-            role="action_accent_solid", 
+            icon_name="edit-filled.svg",
+            color=Palette.NEUTRAL_050,
+            role="action_accent_solid",
             tooltip=self.i18n.get("command.table.tooltip_edit"),
             callback=lambda checked=False, t=trigger_name: self.edit_requested.emit(t)
         )
-        
+
         cell.add_button(
-            icon_name="trash-filled.svg", 
-            color=COLOR_NEUTRAL_050,
-            role="action_danger_solid", 
+            icon_name="trash-filled.svg",
+            color=Palette.NEUTRAL_050,
+            role="action_danger_solid",
             tooltip=self.i18n.get("command.table.tooltip_delete"),
             callback=lambda checked=False, t=trigger_name: self._confirm_delete_command(t)
         )
-        
+
         return cell
 
     def _confirm_delete_command(self, trigger_name: str) -> None:

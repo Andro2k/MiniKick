@@ -3,8 +3,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import Signal, Qt
 from frontend.common import (
-    MARGIN_NONE, MARGIN_MD, MARGIN_LG,
-    SPACING_NONE, SPACING_MD
+    Size,
 )
 from frontend.widgets import ModernCard, ModernSwitch, SettingRow, SectionHeader
 
@@ -30,14 +29,14 @@ class MusicCommandsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_MD)
-        self.panel_layout.setSpacing(SPACING_MD)
+        self.panel_layout.setContentsMargins(*Size.Margin.MD)
+        self.panel_layout.setSpacing(Size.SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         header_cmds = SectionHeader(self.i18n.get("music.cmds.title"), first=True, parent=self)
         self.panel_layout.addWidget(header_cmds)
 
-        self.card_cmds = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
+        self.card_cmds = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
         self.card_cmds.setEnabled(False)
 
         for i, (cmd, icon, lbl_key, desc_key, attr_name) in enumerate(self._COMMANDS_CONFIG):
@@ -47,7 +46,7 @@ class MusicCommandsPanel(QWidget):
             sw.toggled.connect(lambda val, c=cmd: self.command_toggled.emit(c, val))
             self.switches[cmd] = sw
             setattr(self, attr_name, sw)
-            row = SettingRow(icon, self.i18n.get(lbl_key), self.i18n.get(desc_key), sw, contents_margins=MARGIN_LG)
+            row = SettingRow(icon, self.i18n.get(lbl_key), self.i18n.get(desc_key), sw, contents_margins=Size.Margin.LG)
             self.card_cmds.addWidget(row)
 
         self.panel_layout.addWidget(self.card_cmds, alignment=Qt.AlignmentFlag.AlignTop)

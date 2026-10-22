@@ -7,30 +7,26 @@ from PySide6.QtGui import QColor
 from .base_dialog import ModernModal
 from frontend.widgets import create_text_label
 from frontend.common import (
-    COLOR_NEUTRAL_950,
-    COLOR_RED,
-    COLOR_GREEN,
-    COLOR_KICK,
     get_icon_colored,
     get_assets_path,
     get_qcolor_with_alpha,
-    SPACING_XL,
-    SPACING_MD,
-    MARGIN_NONE,
+    Palette,
+    BrandColors,
+    Size,
 )
 
 class UpdateDialog(ModernModal):
-    download_requested = Signal() 
+    download_requested = Signal()
     restart_requested = Signal()
 
     def __init__(self, i18n, parent=None):
         self.i18n = i18n
         super().__init__(
-            title=self.i18n.get("dialogs.update.title_default"), icon_path=get_assets_path("icons/cloud-download-filled.svg"), 
-            icon_bg_color=COLOR_GREEN, width=400, parent=parent
+            title=self.i18n.get("dialogs.update.title_default"), icon_path=get_assets_path("icons/cloud-download-filled.svg"),
+            icon_bg_color=BrandColors.GREEN, width=400, parent=parent
         )
         self.version = ""
-        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_GREEN, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 60))
         self.header_icon = None
         for lbl in self.container.findChildren(QLabel):
             if lbl.pixmap():
@@ -44,12 +40,12 @@ class UpdateDialog(ModernModal):
         )
         self.content_layout.addWidget(self.lbl_subtitle)
 
-        self.content_layout.addSpacing(SPACING_XL)
+        self.content_layout.addSpacing(Size.SPACING_XL)
 
         self.progress_container = QWidget()
         progress_layout = QVBoxLayout(self.progress_container)
-        progress_layout.setContentsMargins(*MARGIN_NONE)
-        progress_layout.setSpacing(SPACING_MD)
+        progress_layout.setContentsMargins(*Size.Margin.NONE)
+        progress_layout.setSpacing(Size.SPACING_MD)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
@@ -63,21 +59,21 @@ class UpdateDialog(ModernModal):
         self.lbl_prog_text.setProperty("role", "body")
         self.lbl_prog_val = QLabel("0%")
         self.lbl_prog_val.setProperty("role", "body")
-        
+
         labels_layout.addWidget(self.lbl_prog_text)
         labels_layout.addStretch()
         labels_layout.addWidget(self.lbl_prog_val)
         progress_layout.addLayout(labels_layout)
-        
+
         self.content_layout.addWidget(self.progress_container)
-        self.progress_container.hide() 
+        self.progress_container.hide()
 
         self.content_layout.addStretch()
 
         self.btn_primary = QPushButton(self.i18n.get("dialogs.update.btn_restart"))
         self.btn_primary.setProperty("role", "action_outlined")
         self.btn_primary.hide()
-        
+
         self.btn_secondary = QPushButton(self.i18n.get("dialogs.update.btn_close"))
         self.btn_secondary.setProperty("role", "action_outlined")
         self.btn_secondary.clicked.connect(self.reject)
@@ -88,83 +84,83 @@ class UpdateDialog(ModernModal):
     def show_update_available(self, version: str):
         self.version = version
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
-            
+            self.header_icon.setPixmap(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_950, 36).pixmap(36, 36))
+
         self.title_lbl.setText(self.i18n.get("dialogs.update.top_available").replace("{version}", version))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_available"))
         self.progress_container.hide()
-        
+
         self.btn_primary.setText(self.i18n.get("dialogs.update.btn_download"))
         self.btn_primary.show()
         self.btn_primary.setEnabled(True)
-        
+
         if self._primary_connection:
             self.btn_primary.clicked.disconnect(self._primary_connection)
-            
+
         self._primary_connection = self.btn_primary.clicked.connect(self.download_requested.emit)
-        
+
         self.btn_secondary.show()
-    
+
     def show_downloading(self):
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_default"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_downloading"))
-        
+
         self.progress_bar.setValue(0)
         self.lbl_prog_val.setText("0%")
         self.progress_container.show()
-        
+
         self.btn_primary.setText(self.i18n.get("dialogs.update.btn_downloading"))
         self.btn_primary.setEnabled(False)
         self.btn_primary.show()
-        self.btn_secondary.hide() 
+        self.btn_secondary.hide()
 
     def update_progress(self, percentage: int):
         self.progress_bar.setValue(percentage)
         self.lbl_prog_val.setText(f"{percentage}%")
 
     def show_complete(self):
-        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_KICK, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.KICK, 60))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
-            
+            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", Palette.NEUTRAL_950, 36).pixmap(36, 36))
+
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_completed"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_restart_req"))
-        
+
         self.progress_bar.setValue(100)
         self.lbl_prog_val.setText("100%")
-        
+
         self.btn_primary.setText(self.i18n.get("dialogs.update.btn_restart"))
         self.btn_primary.setEnabled(True)
         self.btn_primary.show()
 
         if self._primary_connection:
             self.btn_primary.clicked.disconnect(self._primary_connection)
-            
+
         self._primary_connection = self.btn_primary.clicked.connect(self.restart_requested.emit)
-        
+
         self.btn_secondary.show()
 
     def show_no_update(self):
         self.set_dialog_state("neutral", QColor(Qt.GlobalColor.transparent))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", COLOR_NEUTRAL_950, 36).pixmap(36, 36))
-            
+            self.header_icon.setPixmap(get_icon_colored("cloud-check-filled.svg", Palette.NEUTRAL_950, 36).pixmap(36, 36))
+
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_up_to_date"))
         self.lbl_subtitle.setText(self.i18n.get("dialogs.update.subtitle_up_to_date"))
         self.progress_container.hide()
-        
+
         self.btn_primary.hide()
         self.btn_secondary.setText(self.i18n.get("dialogs.update.btn_close"))
         self.btn_secondary.show()
 
     def show_error(self, message: str):
-        self.set_dialog_state("danger", get_qcolor_with_alpha(COLOR_RED, 60))
+        self.set_dialog_state("danger", get_qcolor_with_alpha(BrandColors.RED, 60))
         if self.header_icon:
-            self.header_icon.setPixmap(get_icon_colored("alert-triangle-filled.svg", COLOR_RED, 48).pixmap(48, 48))
-            
+            self.header_icon.setPixmap(get_icon_colored("alert-triangle-filled.svg", BrandColors.RED, 48).pixmap(48, 48))
+
         self.title_lbl.setText(self.i18n.get("dialogs.update.title_error"))
         self.lbl_subtitle.setText(message)
         self.progress_container.hide()
-        
+
         self.btn_primary.hide()
         self.btn_secondary.show()

@@ -9,9 +9,12 @@ from PySide6.QtCore import Qt
 from frontend.dialogs.base_dialog import ModernModal
 from frontend.widgets import ModernButton, ModernCard
 from frontend.common import (
-    get_assets_path, get_pixmap_colored,
-    COLOR_ORANGE, COLOR_NEUTRAL_050, get_qcolor_with_alpha,
-    MARGIN_NONE, MARGIN_MD, SPACING_XS, SPACING_SM
+    get_assets_path,
+    get_pixmap_colored,
+    get_qcolor_with_alpha,
+    Palette,
+    BrandColors,
+    Size,
 )
 
 class WhatsNewDialog(ModernModal):
@@ -42,11 +45,11 @@ class WhatsNewDialog(ModernModal):
         super().__init__(
             title=dialog_title,
             icon_path=get_assets_path("icons/star-filled.svg"),
-            icon_bg_color=COLOR_ORANGE,
+            icon_bg_color=BrandColors.ORANGE,
             width=540,
             parent=parent
         )
-        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_ORANGE, 50))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.ORANGE, 50))
         self._setup_content()
 
     def _setup_content(self):
@@ -65,8 +68,8 @@ class WhatsNewDialog(ModernModal):
 
         cards_container = QWidget()
         cards_layout = QVBoxLayout(cards_container)
-        cards_layout.setContentsMargins(*MARGIN_NONE)
-        cards_layout.setSpacing(SPACING_SM)
+        cards_layout.setContentsMargins(*Size.Margin.NONE)
+        cards_layout.setSpacing(Size.SPACING_SM)
 
         for item in self.highlights:
             card = self._create_highlight_card(item, parent=cards_container)
@@ -79,7 +82,7 @@ class WhatsNewDialog(ModernModal):
             self._btn_text,
             role="action_accent_solid",
             icon_name="check-filled.svg",
-            icon_color=COLOR_NEUTRAL_050,
+            icon_color=Palette.NEUTRAL_050,
             parent=self.container
         )
         btn_action.setFixedHeight(40)
@@ -87,19 +90,19 @@ class WhatsNewDialog(ModernModal):
         self.content_layout.addWidget(btn_action)
 
     def _create_highlight_card(self, item: Dict[str, str], parent: QWidget) -> ModernCard:
-        card = ModernCard(parent=parent, margin=MARGIN_MD, spacing=SPACING_SM, orientation="horizontal")
+        card = ModernCard(parent=parent, margin=Size.Margin.MD, spacing=Size.SPACING_SM, orientation="horizontal")
         card.setProperty("role", "whats_new_card")
 
         icon_name = item.get("icon", "star-filled.svg")
         lbl_icon = QLabel(parent=card)
-        lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_ORANGE, size=24))
+        lbl_icon.setPixmap(get_pixmap_colored(icon_name, BrandColors.ORANGE, size=24))
         lbl_icon.setFixedSize(28, 28)
         lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         card.addWidget(lbl_icon)
 
         text_col = QVBoxLayout()
-        text_col.setContentsMargins(*MARGIN_NONE)
-        text_col.setSpacing(SPACING_XS)
+        text_col.setContentsMargins(*Size.Margin.NONE)
+        text_col.setSpacing(Size.SPACING_XS)
 
         title_key = item.get("title_key", "")
         desc_key = item.get("desc_key", "")

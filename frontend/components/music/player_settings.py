@@ -4,9 +4,11 @@ import html
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QApplication
 from PySide6.QtCore import Signal, Qt, QSize, QTimer
 from frontend.common import (
-    COLOR_NEUTRAL_400, COLOR_RED, COLOR_TIKTOK, COLOR_KICK, COLOR_TWITCH_LIGHT,
-    get_icon_colored, get_pixmap, MARGIN_NONE, MARGIN_MD,
-    SPACING_XS, SPACING_SM, SPACING_MD, SPACING_LG,
+    get_icon_colored,
+    get_pixmap,
+    Palette,
+    BrandColors,
+    Size,
 )
 from frontend.widgets import (
     ModernCard, ModernButton, SliderRow, NoWheelComboBox, NoWheelSlider,
@@ -89,8 +91,8 @@ class MusicPlayerSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_MD)
-        self.panel_layout.setSpacing(SPACING_MD)
+        self.panel_layout.setContentsMargins(*Size.Margin.MD)
+        self.panel_layout.setSpacing(Size.SPACING_MD)
         self.panel_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self._setup_status_card()
@@ -99,17 +101,17 @@ class MusicPlayerSettingsPanel(QWidget):
         self._setup_overlay_url_card()
 
     def _setup_status_card(self):
-        card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
+        card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
 
         status_layout = QHBoxLayout()
-        status_layout.setContentsMargins(*MARGIN_NONE)
-        status_layout.setSpacing(SPACING_MD)
-        
+        status_layout.setContentsMargins(*Size.Margin.NONE)
+        status_layout.setSpacing(Size.SPACING_MD)
+
         self.lbl_auth_status = QLabel(self.i18n.get("music.status.youtube_active"))
         self.lbl_auth_status.setProperty("role", "h3")
-        
+
         provider_info = QVBoxLayout()
-        provider_info.setContentsMargins(*MARGIN_NONE)
+        provider_info.setContentsMargins(*Size.Margin.NONE)
         provider_info.addWidget(self.lbl_auth_status)
 
         status_layout.addLayout(provider_info, stretch=1)
@@ -117,24 +119,24 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_now_playing_card(self):
-        self.card_player = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD, orientation="vertical")
+        self.card_player = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_MD, orientation="vertical")
         self.card_player.setVisible(True)
 
         top_layout = QHBoxLayout()
-        top_layout.setContentsMargins(*MARGIN_NONE)
-        top_layout.setSpacing(SPACING_LG)
+        top_layout.setContentsMargins(*Size.Margin.NONE)
+        top_layout.setSpacing(Size.SPACING_LG)
 
         self.icon_music = QLabel()
         self.icon_music.setPixmap(get_pixmap("youtube.svg", 56))
-        
+
         info_layout = QVBoxLayout()
-        info_layout.setContentsMargins(*MARGIN_NONE)
-        info_layout.setSpacing(SPACING_XS)
+        info_layout.setContentsMargins(*Size.Margin.NONE)
+        info_layout.setSpacing(Size.SPACING_XS)
 
         self.lbl_song_title = QLabel(self.i18n.get("music.player.not_playing"))
         self.lbl_song_title.setProperty("role", "h3")
         self.lbl_song_title.setWordWrap(True)
-        
+
         self.lbl_song_artist = QLabel("-")
         self.lbl_song_artist.setProperty("role", "body")
         self.lbl_song_artist.setWordWrap(True)
@@ -148,19 +150,19 @@ class MusicPlayerSettingsPanel(QWidget):
         info_layout.addWidget(self.lbl_song_requester)
 
         controls_layout = QHBoxLayout()
-        controls_layout.setContentsMargins(*MARGIN_NONE)
-        controls_layout.setSpacing(SPACING_SM)
-        
+        controls_layout.setContentsMargins(*Size.Margin.NONE)
+        controls_layout.setSpacing(Size.SPACING_SM)
+
         self.btn_play_pause = ModernButton("", role="action_outlined", parent=self)
-        self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, 18))
+        self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, 18))
         self.btn_play_pause.setIconSize(QSize(18, 18))
         self.btn_play_pause.clicked.connect(self.play_pause_requested.emit)
-        
+
         self.btn_skip = ModernButton("", role="action_outlined", parent=self)
-        self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", COLOR_NEUTRAL_400, 18))
+        self.btn_skip.setIcon(get_icon_colored("skip-next-filled.svg", Palette.NEUTRAL_400, 18))
         self.btn_skip.setIconSize(QSize(18, 18))
         self.btn_skip.clicked.connect(self.skip_requested.emit)
-        
+
         controls_layout.addWidget(self.btn_play_pause)
         controls_layout.addWidget(self.btn_skip)
 
@@ -170,8 +172,8 @@ class MusicPlayerSettingsPanel(QWidget):
         top_layout.addLayout(controls_layout)
 
         progress_layout = QVBoxLayout()
-        progress_layout.setContentsMargins(*MARGIN_NONE)
-        progress_layout.setSpacing(SPACING_XS)
+        progress_layout.setContentsMargins(*Size.Margin.NONE)
+        progress_layout.setSpacing(Size.SPACING_XS)
 
         self.slider_progress = MusicScrubberSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_progress.setRange(0, 100)
@@ -184,8 +186,8 @@ class MusicPlayerSettingsPanel(QWidget):
         self.slider_progress.sliderReleased.connect(self._on_scrubber_released)
 
         time_layout = QHBoxLayout()
-        time_layout.setContentsMargins(*MARGIN_NONE)
-        time_layout.setSpacing(SPACING_MD)
+        time_layout.setContentsMargins(*Size.Margin.NONE)
+        time_layout.setSpacing(Size.SPACING_MD)
         self.lbl_time_elapsed = QLabel("00:00")
         self.lbl_time_elapsed.setProperty("role", "caption")
 
@@ -204,21 +206,21 @@ class MusicPlayerSettingsPanel(QWidget):
         self.panel_layout.addWidget(self.card_player, alignment=Qt.AlignmentFlag.AlignTop)
 
     def _setup_volume_card(self):
-        self.card_volume = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
+        self.card_volume = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
 
         self.slider_vol = NoWheelSlider(Qt.Orientation.Horizontal, parent=self)
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(100)
         self.lbl_vol_perc = QLabel("100%")
         self.lbl_vol_perc.setProperty("role", "body")
-        
+
         self.row_vol = SliderRow(
             icon_name="volume-up-filled.svg",
             title_text=self.i18n.get("music.player.volume_title"),
             desc_text=self.i18n.get("music.player.volume_desc"),
             slider_widget=self.slider_vol,
             value_label=self.lbl_vol_perc,
-            contents_margins=MARGIN_NONE
+            contents_margins=Size.Margin.NONE
         )
         self.slider_vol.valueChanged.connect(self._on_volume_slider_changed)
         self.card_volume.addWidget(self.row_vol)
@@ -233,18 +235,18 @@ class MusicPlayerSettingsPanel(QWidget):
         self.volume_changed.emit(self._pending_volume)
 
     def _setup_overlay_url_card(self):
-        self.card_overlay_url = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_MD)
+        self.card_overlay_url = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_MD)
 
         url_info = QVBoxLayout()
-        url_info.setContentsMargins(*MARGIN_NONE)
-        url_info.setSpacing(SPACING_XS)
+        url_info.setContentsMargins(*Size.Margin.NONE)
+        url_info.setSpacing(Size.SPACING_XS)
         lbl_title = QLabel(self.i18n.get("music.overlay.url_title"))
         lbl_title.setProperty("role", "h3")
         lbl_desc = create_text_label(self.i18n.get("music.overlay.url_desc"), role="body")
         url_info.addWidget(lbl_title)
         url_info.addWidget(lbl_desc)
 
-        layout_setting_row = create_row_layout(spacing=SPACING_MD)
+        layout_setting_row = create_row_layout(spacing=Size.SPACING_MD)
         lbl_layout = QLabel(self.i18n.get("music.overlay.layout_label"), parent=self)
         lbl_layout.setProperty("role", "body")
         self.combo_music_layout = NoWheelComboBox(self)
@@ -254,15 +256,15 @@ class MusicPlayerSettingsPanel(QWidget):
         layout_setting_row.addWidget(lbl_layout)
         layout_setting_row.addWidget(self.combo_music_layout)
 
-        preview_layout = create_col_layout(spacing=SPACING_SM)
-        
-        preview_header = create_row_layout(spacing=SPACING_MD)
+        preview_layout = create_col_layout(spacing=Size.SPACING_SM)
+
+        preview_header = create_row_layout(spacing=Size.SPACING_MD)
         lbl_preview = QLabel(self.i18n.get("music.overlay.preview_title"), parent=self)
         lbl_preview.setProperty("role", "body")
-        
+
         self.lbl_recommended_dim = QLabel(parent=self)
         self.lbl_recommended_dim.setProperty("role", "caption")
-        
+
         preview_header.addWidget(lbl_preview)
         preview_header.addStretch()
         preview_header.addWidget(self.lbl_recommended_dim)
@@ -391,7 +393,7 @@ class MusicPlayerSettingsPanel(QWidget):
             self.lbl_song_title.setText(self.i18n.get("music.player.not_playing"))
             self.lbl_song_artist.setText("-")
             self.lbl_song_requester.setText("-")
-            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, 18))
+            self.btn_play_pause.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, 18))
             self._is_playing = False
             self._duration_ms = 0
             self._current_progress_ms = 0
@@ -412,13 +414,13 @@ class MusicPlayerSettingsPanel(QWidget):
         if requester:
             platform = (song_data.get("platform") or "kick").lower()
             if platform == "twitch":
-                color_hex = COLOR_TWITCH_LIGHT
+                color_hex = BrandColors.TWITCH_LIGHT
             elif platform == "youtube":
-                color_hex = COLOR_RED
+                color_hex = BrandColors.RED
             elif platform == "tiktok":
-                color_hex = COLOR_TIKTOK
+                color_hex = BrandColors.TIKTOK
             else:
-                color_hex = COLOR_KICK
+                color_hex = BrandColors.KICK
             safe_requester = html.escape(requester)
             user_styled = f"<span style='color:{color_hex}; font-weight:500;'>@{safe_requester}</span>"
             req_text = self.i18n.get("music.player.requested_by").replace("{user}", user_styled)
@@ -427,7 +429,7 @@ class MusicPlayerSettingsPanel(QWidget):
         self.lbl_song_requester.setText(req_text)
 
         icon_name = "pause-filled.svg" if is_playing else "play-filled.svg"
-        self.btn_play_pause.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_400, 18))
+        self.btn_play_pause.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_400, 18))
 
         self._duration_ms = duration
         self._current_progress_ms = progress

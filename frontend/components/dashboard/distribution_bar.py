@@ -3,7 +3,9 @@
 from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import QRectF
 from PySide6.QtGui import QPainter, QColor, QPainterPath
-from frontend.common import COLOR_NEUTRAL_950
+from frontend.common import (
+    Palette,
+)
 
 class SegmentedDistributionBar(QWidget):
     def __init__(self, parent=None):
@@ -20,20 +22,20 @@ class SegmentedDistributionBar(QWidget):
     def paintEvent(self, _event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+
         rect = self.rect()
         if self._cached_rect != rect:
             self._cached_rect = rect
             self._cached_clip_path = QPainterPath()
             self._cached_clip_path.addRoundedRect(QRectF(rect), 8, 8)
-            
+
         painter.setClipPath(self._cached_clip_path)
-        
+
         total_p = sum(p for p, _ in self._segments)
         if total_p <= 0:
-            painter.fillRect(rect, QColor(COLOR_NEUTRAL_950))
+            painter.fillRect(rect, QColor(Palette.NEUTRAL_950))
             return
-            
+
         current_x = 0.0
         w = float(self.width())
         h = float(self.height())

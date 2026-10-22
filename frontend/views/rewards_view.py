@@ -6,10 +6,12 @@ from PySide6.QtCore import QTimer, Qt, Signal, Slot, QSize, QRectF
 from PySide6.QtGui import QIcon, QPixmap, QImage, QPainter, QColor, QPainterPath
 from frontend.widgets import BaseView, SettingRow, ModernCard, ModernTableCard, TableActionCell, ModernButton
 from frontend.common import (
-    COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_NEUTRAL_500, COLOR_RED, COLOR_TWITCH, COLOR_AMBER, COLOR_NEUTRAL_050,
-    COLOR_DANGER_SURFACE, COLOR_MEDIA_THUMB_BG,
-    get_pixmap_colored, get_icon_colored,
-    MARGIN_NONE, MARGIN_MD, SPACING_SM
+    get_pixmap_colored,
+    get_icon_colored,
+    Palette,
+    Semantic,
+    BrandColors,
+    Size,
 )
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
@@ -35,21 +37,21 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         return _REWARD_ICON_CACHE[cache_key]
 
     target_w, target_h = 48, 32
-    
+
     if not is_valid_file:
         pixmap = QPixmap(target_w, target_h)
         pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+
         rect = QRectF(0, 0, target_w, target_h)
         path = QPainterPath()
         path.addRoundedRect(rect, 6, 6)
-        painter.fillPath(path, QColor(COLOR_DANGER_SURFACE))
-        painter.setPen(QColor(COLOR_RED))
+        painter.fillPath(path, QColor(Semantic.DANGER_SURFACE))
+        painter.setPen(QColor(BrandColors.RED))
         painter.drawPath(path)
-        
-        icon_pixmap = get_pixmap_colored("alert-triangle-filled.svg", COLOR_RED, 18)
+
+        icon_pixmap = get_pixmap_colored("alert-triangle-filled.svg", BrandColors.RED, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -59,21 +61,21 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
     elif ext in AUDIO_EXTENSIONS:
         pixmap = QPixmap(target_w, target_h)
         pixmap.fill(Qt.GlobalColor.transparent)
-        
+
         painter = QPainter(pixmap)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        
+
         rect = QRectF(0, 0, target_w, target_h)
         path = QPainterPath()
         path.addRoundedRect(rect, 6, 6)
-        painter.fillPath(path, QColor(COLOR_MEDIA_THUMB_BG))
-        
-        icon_pixmap = get_pixmap_colored("volume-up-filled.svg", COLOR_GREEN, 18)
+        painter.fillPath(path, QColor(Semantic.MEDIA_THUMB_BG))
+
+        icon_pixmap = get_pixmap_colored("volume-up-filled.svg", BrandColors.GREEN, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
             painter.drawPixmap(int(x), int(y), icon_pixmap)
-            
+
         painter.end()
         icon = QIcon(pixmap)
     elif thumb_bytes:
@@ -81,17 +83,17 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         icon = None
         if img.loadFromData(thumb_bytes):
             scaled = img.scaled(target_w, target_h, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
-            
+
             final_pix = QPixmap(target_w, target_h)
             final_pix.fill(Qt.GlobalColor.transparent)
-            
+
             painter = QPainter(final_pix)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            
+
             path = QPainterPath()
             path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
             painter.setClipPath(path)
-            
+
             x = (target_w - scaled.width()) / 2
             y = (target_h - scaled.height()) / 2
             painter.drawImage(int(x), int(y), scaled)
@@ -106,9 +108,9 @@ def _create_reward_icon(config: dict, filepath: str, is_valid_file: bool = True)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         path = QPainterPath()
         path.addRoundedRect(QRectF(0, 0, target_w, target_h), 6, 6)
-        painter.fillPath(path, QColor(COLOR_MEDIA_THUMB_BG))
-        
-        icon_pixmap = get_pixmap_colored("album-filled.svg", COLOR_NEUTRAL_400, 18)
+        painter.fillPath(path, QColor(Semantic.MEDIA_THUMB_BG))
+
+        icon_pixmap = get_pixmap_colored("album-filled.svg", Palette.NEUTRAL_400, 18)
         if not icon_pixmap.isNull():
             x = (target_w - 18) / 2
             y = (target_h - 18) / 2
@@ -144,19 +146,19 @@ class RewardsView(BaseView):
         self._build_table_card()
 
     def _build_obs_card(self):
-        obs_card = ModernCard(parent=self, margin=MARGIN_MD, spacing=SPACING_SM)
+        obs_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
 
         self.btn_copy_url = ModernButton(self.i18n.get("common.buttons.copy"), role="action_outlined", parent=self)
         self.btn_copy_url.clicked.connect(self._copy_obs_url)
-        
+
         obs_row = SettingRow(
             icon_name="link-filled.svg",
             title_text=self.i18n.get("rewards.obs.title"),
             desc_text=self.i18n.get("rewards.obs.desc"),
             right_widget=self.btn_copy_url,
-            contents_margins=MARGIN_NONE
+            contents_margins=Size.Margin.NONE
         )
-        
+
         obs_card.addWidget(obs_row)
         self.main_layout.addWidget(obs_card)
 
@@ -187,12 +189,12 @@ class RewardsView(BaseView):
             on_button_clicked=self.add_requested.emit
         )
         self.table_card.setMinimumHeight(300)
-        
+
         self.table_rewards = self.table_card.table
         self.table_rewards.setIconSize(QSize(48, 32))
         self.btn_new_rewards = self.table_card.btn_add
         self.btn_new_rewards.clicked.connect(self.add_requested.emit)
-        
+
         self.txt_search = self.table_card.txt_search
         if self.txt_search:
             self.txt_search.textChanged.connect(self._apply_filters)
@@ -242,15 +244,15 @@ class RewardsView(BaseView):
         self.filter_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
         self.filter_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)
-        
+
         self.table_rewards.setColumnWidth(0, 180)
         self.table_rewards.setColumnWidth(1, 115)
         self.table_rewards.setColumnWidth(2, 95)
         self.table_rewards.setColumnWidth(4, 115)
         self.table_rewards.setColumnWidth(5, 85)
         self.table_rewards.setColumnWidth(6, 175)
-        
-        self.main_layout.addWidget(self.table_card, stretch=1) 
+
+        self.main_layout.addWidget(self.table_card, stretch=1)
 
     def _on_sort_requested(self, col_idx: int, order: str):
         self._current_sort = (col_idx, order)
@@ -286,9 +288,9 @@ class RewardsView(BaseView):
             if query:
                 filepath = config if isinstance(config, str) else conf_dict.get("filepath", "")
                 cost_str = str(conf_dict.get("cost", 0))
-                if (query not in reward_name.lower() and 
-                    query not in filepath.lower() and 
-                    query not in plat and 
+                if (query not in reward_name.lower() and
+                    query not in filepath.lower() and
+                    query not in plat and
                     query not in cost_str):
                     continue
 
@@ -333,35 +335,35 @@ class RewardsView(BaseView):
         missing_tag = self.i18n.get("rewards.table.file_not_found_tag")
         missing_tooltip_base = self.i18n.get("rewards.table.file_not_found_tooltip")
         missing_count = 0
-        
+
         for key, conf_dict in items:
             row = self.table_rewards.rowCount()
             self.table_rewards.insertRow(row)
-            
+
             reward_name = conf_dict.get("name") or conf_dict.get("reward_name") or (key.split(":", 1)[1] if isinstance(key, str) and ":" in key else str(key))
             filepath = conf_dict.get("filepath", str_unknown)
-            
+
             is_valid_file = bool(filepath) and filepath != str_unknown and os.path.exists(filepath) and os.path.isfile(filepath)
             if not is_valid_file:
                 missing_count += 1
-            
+
             item_reward = QTableWidgetItem(reward_name)
             item_reward.setIcon(_create_reward_icon(conf_dict, filepath, is_valid_file=is_valid_file))
             item_reward.setFlags(item_reward.flags() & ~Qt.ItemFlag.ItemIsEditable)
             if not is_valid_file:
                 item_reward.setToolTip(f"{reward_name}\n⚠️ {missing_tooltip_base}")
             self.table_rewards.setItem(row, 0, item_reward)
-            
+
             plat = conf_dict.get("platform", "kick")
             is_twitch = plat.lower() == "twitch"
             plat_name = "Twitch" if is_twitch else "Kick"
-            plat_color = COLOR_TWITCH if is_twitch else COLOR_GREEN
+            plat_color = BrandColors.TWITCH if is_twitch else BrandColors.GREEN
             icon_name = "brand-twitch.svg" if is_twitch else "brand-kick.svg"
 
             is_plat_connected = self.connected_platforms.get(plat.lower(), False)
             is_remote_loaded = self.remote_loaded.get(plat.lower(), False)
             has_remote_id = bool(conf_dict.get("id"))
-            
+
             plat_key = f"{plat.lower()}:{reward_name}"
             id_key = f"id:{conf_dict.get('id')}" if has_remote_id else None
 
@@ -382,20 +384,20 @@ class RewardsView(BaseView):
             if not is_plat_connected:
                 offline_tag = self.i18n.get("rewards.table.status_offline_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({offline_tag})")
-                item_plat.setIcon(get_icon_colored(icon_name, COLOR_NEUTRAL_500, 16))
-                item_plat.setForeground(QColor(COLOR_NEUTRAL_500))
+                item_plat.setIcon(get_icon_colored(icon_name, Palette.NEUTRAL_500, 16))
+                item_plat.setForeground(QColor(Palette.NEUTRAL_500))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_offline_tooltip").replace("{platform}", plat_name))
             elif is_remote_loaded and not exists_remotely and has_remote_id:
                 unlinked_tag = self.i18n.get("rewards.table.status_unlinked_tag")
                 item_plat = QTableWidgetItem(f"{plat_name} ({unlinked_tag})")
-                item_plat.setIcon(get_icon_colored("alert-triangle-filled.svg", COLOR_AMBER, 16))
-                item_plat.setForeground(QColor(COLOR_AMBER))
+                item_plat.setIcon(get_icon_colored("alert-triangle-filled.svg", BrandColors.AMBER, 16))
+                item_plat.setForeground(QColor(BrandColors.AMBER))
                 item_plat.setToolTip(self.i18n.get("rewards.table.status_unlinked_tooltip").replace("{platform}", plat_name))
             else:
                 item_plat = QTableWidgetItem(plat_name)
                 item_plat.setIcon(get_icon_colored(icon_name, plat_color, 16))
                 item_plat.setForeground(QColor(plat_color))
-            
+
             item_plat.setFlags(item_plat.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 1, item_plat)
 
@@ -413,15 +415,15 @@ class RewardsView(BaseView):
             file_basename = os.path.basename(filepath) if filepath else str_unknown
             if not is_valid_file:
                 item_file = QTableWidgetItem(f"{file_basename} ({missing_tag})")
-                item_file.setIcon(get_icon_colored("alert-triangle-filled.svg", COLOR_RED, 16))
-                item_file.setForeground(QColor(COLOR_RED))
+                item_file.setIcon(get_icon_colored("alert-triangle-filled.svg", BrandColors.RED, 16))
+                item_file.setForeground(QColor(BrandColors.RED))
                 item_file.setToolTip(f"⚠️ {missing_tooltip_base}:\n{filepath}")
             else:
                 item_file = QTableWidgetItem(file_basename)
                 item_file.setToolTip(filepath)
             item_file.setFlags(item_file.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 3, item_file)
-            
+
             is_random = conf_dict.get("is_random_pos", False)
             if is_random:
                 pos_str = self.i18n.get("rewards.table.pos_random")
@@ -432,44 +434,44 @@ class RewardsView(BaseView):
             item_pos = QTableWidgetItem(pos_str)
             item_pos.setFlags(item_pos.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 4, item_pos)
-            
+
             vol = conf_dict.get("volume", 1.0)
             vol_pct = int(round(vol * 100)) if isinstance(vol, (int, float)) else 100
             item_vol = QTableWidgetItem(f"{vol_pct}%")
             item_vol.setFlags(item_vol.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table_rewards.setItem(row, 5, item_vol)
-            
+
             cell = TableActionCell()
             play_tooltip = self.i18n.get("rewards.table.tooltip_play") if is_valid_file else self.i18n.get("rewards.table.tooltip_play_missing")
             cell.add_button(
-                icon_name="play-filled.svg", 
-                color=COLOR_NEUTRAL_400 if is_valid_file else COLOR_NEUTRAL_050,
-                role="action_outlined" if is_valid_file else "action_danger_solid", 
-                tooltip=play_tooltip, 
+                icon_name="play-filled.svg",
+                color=Palette.NEUTRAL_400 if is_valid_file else Palette.NEUTRAL_050,
+                role="action_outlined" if is_valid_file else "action_danger_solid",
+                tooltip=play_tooltip,
                 callback=lambda checked=False, k=key: self.preview_requested.emit(k)
             )
             cell.add_button(
-                icon_name="edit-filled.svg", 
-                color=COLOR_NEUTRAL_050,
-                role="action_accent_solid", 
-                tooltip=self.i18n.get("rewards.table.tooltip_edit"), 
+                icon_name="edit-filled.svg",
+                color=Palette.NEUTRAL_050,
+                role="action_accent_solid",
+                tooltip=self.i18n.get("rewards.table.tooltip_edit"),
                 callback=lambda checked=False, k=key: self.edit_requested.emit(k)
             )
             cell.add_button(
-                icon_name="copy-filled.svg", 
-                color=COLOR_TWITCH, 
-                role="action_outlined", 
-                tooltip=self.i18n.get("rewards.table.tooltip_duplicate"), 
+                icon_name="copy-filled.svg",
+                color=BrandColors.TWITCH,
+                role="action_outlined",
+                tooltip=self.i18n.get("rewards.table.tooltip_duplicate"),
                 callback=lambda checked=False, k=key: self.duplicate_requested.emit(k)
             )
             cell.add_button(
-                icon_name="trash-filled.svg", 
-                color=COLOR_NEUTRAL_050,
-                role="action_danger_solid", 
-                tooltip=self.i18n.get("rewards.table.tooltip_delete"), 
+                icon_name="trash-filled.svg",
+                color=Palette.NEUTRAL_050,
+                role="action_danger_solid",
+                tooltip=self.i18n.get("rewards.table.tooltip_delete"),
                 callback=lambda checked=False, k=key, t=reward_name: self._confirm_delete_reward(k, t)
             )
-            
+
             self.table_rewards.setCellWidget(row, 6, cell)
 
         self.table_rewards.setUpdatesEnabled(True)
@@ -521,8 +523,8 @@ class RewardsView(BaseView):
     def show_add_dialog(self, available_rewards: list, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
         from frontend.dialogs import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
-            self.i18n, 
-            parent=self, 
+            self.i18n,
+            parent=self,
             rewards_list=available_rewards,
             rewards_details_map=rewards_details_map,
             kick_authenticated=kick_authenticated,
@@ -538,11 +540,11 @@ class RewardsView(BaseView):
     def show_edit_dialog(self, available_rewards: list, existing_config: dict, existing_reward: str, rewards_details_map: dict = None, kick_authenticated: bool = True, twitch_authenticated: bool = True) -> tuple[str, dict] | None:
         from frontend.dialogs import RewardsConfigWizard
         self._active_dialog = RewardsConfigWizard(
-            self.i18n, 
-            parent=self, 
-            rewards_list=available_rewards, 
+            self.i18n,
+            parent=self,
+            rewards_list=available_rewards,
             rewards_details_map=rewards_details_map,
-            existing_config=existing_config, 
+            existing_config=existing_config,
             existing_reward=existing_reward,
             kick_authenticated=kick_authenticated,
             twitch_authenticated=twitch_authenticated
