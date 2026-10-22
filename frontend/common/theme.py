@@ -584,11 +584,6 @@ QPushButton[role="action_danger_solid"]:hover   {{ background-color: {BrandColor
 QPushButton[role="action_danger_solid"]:pressed {{ background-color: {BrandColors.RED_SOLID}; border-color: {BrandColors.RED_SOLID}; }}
 QPushButton[role="action_danger_solid"]:focus   {{ border-color: {BrandColors.RED_DARK}; }}
 
-QPushButton[role="action_danger_outlined"]          {{ background-color: transparent; color: {BrandColors.RED}; border-color: {BrandColors.RED_DARK}; }}
-QPushButton[role="action_danger_outlined"]:hover    {{ background-color: {Semantic.DANGER_SURFACE}; border-color: {BrandColors.RED}; }}
-QPushButton[role="action_danger_outlined"]:pressed  {{ background-color: {BrandColors.RED_DARK}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.RED_DARK}; }}
-QPushButton[role="action_danger_outlined"]:focus    {{ border-color: {BrandColors.RED_DARK}; }}
-
 /* Primary Action */
 QPushButton[role="action_accent_solid"]             {{ background-color: {BrandColors.GREEN_SOLID}; color: {Semantic.NEUTRAL_000}; border-color: {BrandColors.GREEN_SOLID}; font-weight: 600; }}
 QPushButton[role="action_accent_solid"]:hover       {{ background-color: {BrandColors.GREEN_HOVER}; border-color: {BrandColors.GREEN_HOVER}; }}
@@ -632,7 +627,7 @@ QPushButton[role="nav_button"][collapsed="true"]    {{ text-align: center; paddi
 QPushButton[icon_only="true"][role="nav_button"]    {{ padding: 0; }}
 
 /* Global Disabled Button States */
-QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_danger_outlined"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Semantic.NEUTRAL_500}; border: {Borders.SUBTLE}; padding: {Size.Padding.BUTTON}; }}
+QPushButton:disabled, QPushButton[role="action_outlined"]:disabled, QPushButton[role="action_danger_solid"]:disabled, QPushButton[role="action_accent_solid"]:disabled, QPushButton[role="btn_ghost"]:disabled, QPushButton[role="btn_dismiss"]:disabled, QPushButton[role="nav_button"]:disabled {{ background-color: {Semantic.WHITE_GLOW}; color: {Semantic.NEUTRAL_500}; border: {Borders.SUBTLE}; padding: {Size.Padding.BUTTON}; }}
 QPushButton[icon_only="true"]:disabled {{ padding: 0; }}
 """
 
@@ -867,32 +862,32 @@ QHeaderView::section:pressed {{ background-color: {Semantic.NEUTRAL_750}; }}
 QWidget[role="table_no_results"] {{ background-color: {Semantic.NEUTRAL_900}; }}
 
 /* Scrollbars */
-QScrollBar:vertical {{ border: none; background: transparent; width: 12px; margin: 4px 2px 4px 2px; }}
-QScrollBar::handle:vertical {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {Size.Radius.SM}px; min-height: 28px; }}
-QScrollBar::handle:vertical:hover {{ background-color: rgba(255, 255, 255, 0.32); }}
+QScrollBar:vertical                 {{ border: none; background: transparent; width: 9px; margin: 4px 1px 4px 1px; }}
+QScrollBar::handle:vertical         {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {Size.Radius.XS}px; min-height: 24px; }}
+QScrollBar::handle:vertical:hover   {{ background-color: rgba(255, 255, 255, 0.32); }}
 QScrollBar::handle:vertical:pressed {{ background-color: rgba(255, 255, 255, 0.48); }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical, QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ height: 0px; background: none; }}
 
-QScrollBar:horizontal {{ border: none; background: transparent; height: 10px; margin: 2px 4px 2px 4px; }}
-QScrollBar::handle:horizontal {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {Size.Radius.SM}px; min-width: 28px; }}
-QScrollBar::handle:horizontal:hover {{ background-color: rgba(255, 255, 255, 0.32); }}
-QScrollBar::handle:horizontal:pressed {{ background-color: rgba(255, 255, 255, 0.48); }}
+QScrollBar:horizontal                   {{ border: none; background: transparent; height: 9px; margin: 1px 4px 1px 4px; }}
+QScrollBar::handle:horizontal           {{ background-color: rgba(255, 255, 255, 0.16); border-radius: {Size.Radius.XS}px; min-width: 24px; }}
+QScrollBar::handle:horizontal:hover     {{ background-color: rgba(255, 255, 255, 0.32); }}
+QScrollBar::handle:horizontal:pressed   {{ background-color: rgba(255, 255, 255, 0.48); }}
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal, QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{ width: 0px; background: none; }}
 QScrollArea, QScrollArea > QWidget > QWidget {{ background-color: transparent; border: none; }}
 
 /* Progress Bars */
-QProgressBar {{ background-color: {Semantic.NEUTRAL_950}; border: {Borders.SUBTLE}; border-radius: {Size.Radius.SM}px; height: 6px; text-align: center; }}
-QProgressBar::chunk {{ background-color: {BrandColors.GREEN}; border-radius: 3px; }}
-QProgressBar:disabled {{ background-color: {Semantic.WHITE_GLOW}; border-color: {Semantic.NEUTRAL_950}; }}
-QProgressBar::chunk:disabled {{ background-color: {Semantic.NEUTRAL_700}; }}
-QProgressBar[role="update_progress"] {{ background-color: {Semantic.NEUTRAL_900}; border: none; border-radius: {Size.Radius.SM}px; }}
-QProgressBar[role="update_progress"]::chunk {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.SM}px; }}
-QProgressBar[role="wizard_progress"] {{ background-color: {Semantic.NEUTRAL_750}; border: none; border-radius: {Size.Radius.SM}px; }}
-QProgressBar[role="wizard_progress"]::chunk {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.SM}px; }}
-QProgressBar[role="top_command_progress"] {{ background-color: {Semantic.NEUTRAL_750}; border: none; border-radius: 4px; height: 8px; }}
-QProgressBar[role="top_command_progress"]::chunk {{ background-color: {BrandColors.BLUE}; border-radius: 4px; }}
-QProgressBar[role="splash_progress"] {{ background-color: {Semantic.NEUTRAL_950}; border: none; border-radius: {Size.Radius.XS}px; height: 4px; text-align: center; }}
-QProgressBar[role="splash_progress"]::chunk {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.XS}px; }}
+QProgressBar                                        {{ background-color: {Semantic.NEUTRAL_950}; border: {Borders.SUBTLE}; border-radius: {Size.Radius.SM}px; height: 6px; text-align: center; }}
+QProgressBar::chunk                                 {{ background-color: {BrandColors.GREEN}; border-radius: 3px; }}
+QProgressBar:disabled                               {{ background-color: {Semantic.WHITE_GLOW}; border-color: {Semantic.NEUTRAL_950}; }}
+QProgressBar::chunk:disabled                        {{ background-color: {Semantic.NEUTRAL_700}; }}
+QProgressBar[role="update_progress"]                {{ background-color: {Semantic.NEUTRAL_900}; border: none; border-radius: {Size.Radius.SM}px; }}
+QProgressBar[role="update_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.SM}px; }}
+QProgressBar[role="wizard_progress"]                {{ background-color: {Semantic.NEUTRAL_750}; border: none; border-radius: {Size.Radius.SM}px; }}
+QProgressBar[role="wizard_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.SM}px; }}
+QProgressBar[role="top_command_progress"]           {{ background-color: {Semantic.NEUTRAL_750}; border: none; border-radius: 4px; height: 8px; }}
+QProgressBar[role="top_command_progress"]::chunk    {{ background-color: {BrandColors.BLUE}; border-radius: 4px; }}
+QProgressBar[role="splash_progress"]                {{ background-color: {Semantic.NEUTRAL_950}; border: none; border-radius: {Size.Radius.XS}px; height: 4px; text-align: center; }}
+QProgressBar[role="splash_progress"]::chunk         {{ background-color: {BrandColors.GREEN}; border-radius: {Size.Radius.XS}px; }}
 
 /* Tab Widget */
 QTabWidget::pane                    {{ background-color: {Semantic.NEUTRAL_900}; border: {Borders.DEFAULT}; border-radius: {Size.Radius.LG}px; border-top-left-radius: 0px;  padding: 0px; }}
@@ -991,7 +986,7 @@ QToolTip {{ background-color: {Semantic.NEUTRAL_950}; color: {Semantic.NEUTRAL_0
 """
 
 @lru_cache(maxsize=16)
-def get_global_qss(base: int = 13) -> str:
+def get_global_qss(base: int = 13, custom_qss: tuple[str, ...] = ()) -> str:
     size_head1 = base + 12
     size_head2 = base + 9
     size_head3 = base + 3
@@ -1005,6 +1000,7 @@ def get_global_qss(base: int = 13) -> str:
         _build_surface_qss  (size_text1, size_text2),
         _build_complex_qss  (size_text1, size_text2),
     ]
+    sections.extend(rule.strip() for rule in custom_qss if rule and rule.strip())
     return "\n".join(sections)
 
 GLOBAL_QSS = get_global_qss(13)
@@ -1037,5 +1033,6 @@ def create_dark_palette() -> QPalette:
     palette.setColor(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, text_disabled)
     return palette
 
+@lru_cache(maxsize=128)
 def get_swatch_qss(bg_color: str, border_width: int = 1, radius: int = RADIUS_SM) -> str:
     return f"background-color: {bg_color}; border: {get_border(Semantic.NEUTRAL_700, border_width)}; border-radius: {radius}px;"

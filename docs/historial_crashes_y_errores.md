@@ -42,6 +42,8 @@
 | **INC-030** | Pruebas de tema conservaban colores literales anteriores a la paleta actual | Salida compartida de `pytest resources/tests -q` | v1.6.5 | `✅ Solventado` | `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 (`WT-1.6.5_11`) |
 | **INC-031** | Pyrefly `unknown-name` para gradientes de acento no definidos en `theme.py` | Diagnosticos Pyrefly compartidos desde VS Code | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_16`) |
 | **INC-032** | `AttributeError: type object 'Typography' has no attribute 'FAMILY'` al importar el tema | Traza de usuario al iniciar MiniKick | v1.6.5 | `? Solventado` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_17`) |
+| **INC-033** | Pausa visible al cambiar el tamaño de texto por reinstalación global del QSS | Reporte de usuario en Ajustes | v1.6.5 | `Mitigado; validación visual pendiente` | `frontend/main_window.py` | v1.6.5 (`WT-1.6.5_18`) |
+| **INC-034** | Tema QSS sin punto de extensión cacheable para estilos personalizados | Solicitud de mejora del sistema visual | v1.6.5 | `Implementado; validación visual pendiente` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_19`) |
 
 ---
 
@@ -836,3 +838,33 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Solucion Implementada**: Se agrego `Typography.FAMILY` como alias de `Typography.FONT_FAMILY`, manteniendo una unica fuente del valor. Tambien se retiro texto accidental insertado en el QSS del tema.
 * **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; comprobacion de los alias y del texto QSS.
 * **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_17.md`.
+
+
+---
+
+### INC-033: Pausa visible al cambiar el tamaño de texto en Ajustes
+
+* **Estado**: Mitigado; validacion visual y de rendimiento pendiente.
+* **Severidad**: BAJA (el cambio se aplicaba, pero podia bloquear brevemente la interfaz).
+* **Reportes Asociados**: Reporte de usuario en Ajustes, 2026-10-21.
+* **Fecha y Version del Fallo**: 2026-10-21 en MiniKick `v1.6.5`.
+* **Causa Raiz**: El controlador emite el nuevo tamaño y la ventana reinstalaba la hoja QSS en `QApplication`. Esto solicita a Qt reevaluar el estilo en el ámbito de toda la aplicación desde el hilo de interfaz. La generación del QSS ya está memoizada, por lo que esa generación no era la operación que se repetía en cada selección.
+* **Archivos y Modulos Modificados**: `frontend/main_window.py`; `docs/walkthroughs/v1.6.5/WT-1.6.5_18.md`.
+* **Solucion Implementada**: La hoja QSS dinámica ahora se asigna a la ventana principal y se propaga a su árbol de widgets, acotando el ámbito de actualización. No se cambió la hoja QSS compartida ni sus roles.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/main_window.py` y `git diff --check` correctos. La suite de calidad rápida detectó un rol QSS existente sin uso (`action_danger_outlined`); los otros 11 controles aprobaron. No se ejecutaron pruebas automatizadas ni una comprobación visual o medición de tiempo en ejecución.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_18.md`.
+
+
+---
+
+### INC-034: Extensión cacheable para estilos QSS personalizados
+
+* **Estado**: Implementado; validacion visual pendiente.
+* **Severidad**: BAJA (mejora de mantenibilidad y composición del tema).
+* **Reportes Asociados**: Solicitud de usuario para optimizar y facilitar los estilos personalizados, 2026-10-21.
+* **Fecha y Version del Cambio**: 2026-10-21 en MiniKick `v1.6.5`.
+* **Causa Raiz**: `get_global_qss()` componía los bloques internos del tema y guardaba el resultado, pero no permitía añadir reglas personalizadas conservando el mismo punto de composición y caché. Además, había reglas de un rol destructivo que no se asignaba en el frontend.
+* **Archivos y Modulos Modificados**: `frontend/common/theme.py`; `docs/walkthroughs/v1.6.5/WT-1.6.5_19.md`.
+* **Solucion Implementada**: `get_global_qss()` acepta una tupla ordenada de reglas QSS, que se añaden al final del tema y forman parte de su clave de caché. Se cachean también estilos de swatches repetidos y se elimina el rol QSS sin consumidores.
+* **Pruebas y Verificacion**: `python -m py_compile frontend/common/theme.py`; `git diff --check`; comprobación aislada con dobles para generar el QSS base y personalizado, verificar el orden y confirmar reutilización de caché. La suite `project_quality_suite.py --quick --verbose` aprobó 12/12. PySide6 no está instalado, así que no se pudo comprobar el renderizado real.
+* **Walkthrough de Referencia**: `docs/walkthroughs/v1.6.5/WT-1.6.5_19.md`.

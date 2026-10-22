@@ -4,7 +4,9 @@ from frontend.components.chat import (
     ChatDisplayPanel, ChatOverlaySettingsPanel, BotMutePanel,
     ChatTtsSettingsPanel, ChatSpamPanel
 )
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QSizePolicy, QTabWidget, QBoxLayout
+from PySide6.QtWidgets import (
+    QWidget, QVBoxLayout, QHBoxLayout, QSizeGrip, QSizePolicy, QTabWidget, QBoxLayout
+)
 from PySide6.QtCore import QEvent, Qt, Signal
 from .base_view import BaseView
 from frontend.widgets import ModernScrollArea
@@ -13,12 +15,29 @@ from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD
 
 class _FloatingChatWindow(QWidget):
     def __init__(self, title: str, on_close, parent=None):
-        super().__init__(parent, Qt.WindowType.Window)
+        window_flags = (
+            Qt.WindowType.Window
+            | Qt.WindowType.WindowTitleHint
+            | Qt.WindowType.WindowSystemMenuHint
+            | Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowMaximizeButtonHint
+            | Qt.WindowType.WindowCloseButtonHint
+        )
+        super().__init__(parent, window_flags)
         self._on_close = on_close
         self._return_requested = False
         self.setWindowTitle(title)
-        self.setMinimumSize(480, 420)
+        self.setMinimumSize(305, 420)
         self.resize(640, 720)
+        self._layout = QVBoxLayout(self)
+        self._resize_grip = QSizeGrip(self)
+        resize_layout = QHBoxLayout()
+        resize_layout.addStretch(1)
+        resize_layout.addWidget(self._resize_grip)
+        self._layout.addLayout(resize_layout)
+
+    def add_chat_display(self, chat_display: QWidget) -> None:
+        self._layout.insertWidget(0, chat_display, stretch=1)
 
     def _return_to_chat(self) -> None:
         if self._return_requested:
@@ -134,8 +153,7 @@ class ChatView(BaseView):
             self._reattach_chat_display,
             parent=self.window(),
         )
-        floating_layout = QVBoxLayout(self._floating_chat_dialog)
-        floating_layout.addWidget(self.chat_display_panel)
+        self._floating_chat_dialog.add_chat_display(self.chat_display_panel)
         self.chat_display_panel.set_detached(True)
         self._floating_chat_dialog.show()
 

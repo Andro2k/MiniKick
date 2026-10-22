@@ -1859,7 +1859,7 @@ class MainWindowCore(QMainWindow):
         self._applied_font_size = base_size
         app = QApplication.instance()
         if app:
-            app.setStyleSheet(get_global_qss(base_size))
+            self.setStyleSheet(get_global_qss(base_size))
 
     @Slot(object)
     def _on_silent_update_found(self, info):
