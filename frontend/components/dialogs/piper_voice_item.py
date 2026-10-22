@@ -7,7 +7,6 @@ from PySide6.QtCore import Qt, QSize, Signal
 from frontend.common import (
     get_icon_colored,
     Palette,
-    BrandColors,
     Size,
 )
 from frontend.widgets import create_col_layout, create_row_layout

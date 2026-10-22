@@ -1,11 +1,11 @@
 # frontend\components\dashboard\__init__.py
 
-from .distribution_bar import SegmentedDistributionBar
+from .platform_distribution_ring import PlatformDistributionRing
 from .platform_card import PlatformStatusCard
 from .chatters_table import DashboardChattersTable
 
 __all__ = [
-    "SegmentedDistributionBar",
+    "PlatformDistributionRing",
     "PlatformStatusCard",
     "DashboardChattersTable",
 ]

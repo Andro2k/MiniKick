@@ -499,11 +499,18 @@
         "version_label": "**Versión de MiniKick:**"
     },
     "dashboard": {
+        "welcome": {
+            "title": "\u00a1Bienvenido a MiniKick!",
+            "subtitle": "Administra tus conexiones y revisa la actividad de tus plataformas desde un solo lugar.",
+            "unlinked_channel": "Conecta tu canal",
+            "unlinked_description": "El perfil del canal aparecer\u00e1 aqu\u00ed cuando inicies sesi\u00f3n.",
+            "channel_description_unavailable": "Sin descripci\u00f3n disponible.",
+            "switch_account": "Intercambiar entre las cuentas de Kick y Twitch"
+        },
         "analytics": {
             "active_commands": "Comandos Activos",
             "active_rewards": "Recompensas Vinculadas",
             "active_timers": "Timers en Ejecución",
-            "distribution_title": "Distribución Multi-Plataforma",
             "modules_summary_title": "Módulos y Servicios Activos",
             "no_commands_used": "Aún no se han ejecutado comandos.",
             "title": "Actividad e Interacciones",
@@ -572,8 +579,7 @@
             "btn_connecting_kick": "Conectando Kick...",
             "btn_connecting_tiktok": "Conectando TikTok...",
             "btn_connecting_twitch": "Conectando Twitch...",
-            "btn_connecting_youtube": "Conectando YouTube...",
-            "status_waiting": "Estado: Esperando conexión..."
+            "btn_connecting_youtube": "Conectando YouTube..."
         },
         "header": {
             "subtitle": "Monitorea la conexión del bot, revisa tus estadísticas en vivo y gestiona tu sesión.",
@@ -584,7 +590,7 @@
             "connecting": "Conectando...",
             "disconnected": "Desconectado",
             "kick_title": "Kick",
-            "messages_session": "{count} msgs",
+            "messages_share": "{count} msgs \u00b7 {percentage}%",
             "status_connecting": "Conectando...",
             "status_offline": "Inactivo",
             "status_online": "En línea",
@@ -594,12 +600,7 @@
         },
         "profile": {
             "followers_count": "{count} seguidores",
-            "no_channel_desc": "Conecta tu cuenta de Kick o Twitch en el panel superior para visualizar los detalles de tu canal.",
-            "no_channel_title": "Sin canales de transmisión vinculados",
-            "open_channel": "Abrir Canal",
-            "streaming_channel": "Canal de Streaming",
-            "tab_kick": "Canal Kick",
-            "tab_twitch": "Canal Twitch"
+            "open_channel": "Abrir Canal"
         },
         "session": {
             "commands": "Ejecuciones Comandos",
@@ -611,7 +612,7 @@
             "broadcaster_id": "ID de Emisor",
             "category": "Última Categoría",
             "created_at": "Fecha de Creación",
-            "next_schedule": "Próximo Horario",
+            "followers": "Seguidores",
             "room_id": "ID de ChatRoom"
         }
     },
@@ -801,12 +802,7 @@
             "points_tag": "PUNTOS",
             "reward_redeemed": "canjeó {reward_name}"
         },
-        "controllers": {
-            "dashboard": {
-                "affiliate": "Afiliado",
-                "not_affiliate": "No Afiliado"
-            },
-            "log": {
+        "controllers": {            "log": {
                 "error_title": "Error de Registro de Logs",
                 "folder_error": "No se pudo abrir la carpeta: {error}",
                 "read_error": "No se pudo leer el archivo: {error}"

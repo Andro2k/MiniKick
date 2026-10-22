@@ -330,7 +330,6 @@ class MainWindowCore(QMainWindow):
         self.chat_controller.chat_overlay_config_changed.connect(self.overlay_server.trigger_chat_config_update)
         self.chat_controller.tts_ignored_users_changed.connect(self.widgets_controller.invalidate_ignored_bots_cache)
         self.chat_controller.message_received.connect(self.widgets_controller.handle_chat_message)
-        self.schedule_controller.schedules_updated.connect(self._on_schedules_updated)
         self.music_controller.song_changed.connect(self.overlay_server.trigger_music_change)
         self.music_controller.song_changed.connect(self._handle_tray_song_changed)
         self.chat_controller.music_plugin_triggered.connect(self.music_controller.handle_music_plugin_command)
@@ -1887,10 +1886,6 @@ class MainWindowCore(QMainWindow):
     def _flush_dashboard_metrics_update(self):
         self._refresh_dashboard_view()
 
-    @Slot(object)
-    def _on_schedules_updated(self, _schedules=None):
-        self._sync_next_schedule_label()
-
     def _refresh_dashboard_view(self) -> None:
         if getattr(self, "_is_shutting_down", False):
             return
@@ -1909,11 +1904,6 @@ class MainWindowCore(QMainWindow):
                 tiktok=self.session_platform_messages.get("tiktok", 0)
             )
 
-    def _sync_next_schedule_label(self) -> None:
-        if (hasattr(self, "schedule_service") and self.schedule_service
-                and hasattr(self, "dashboard_controller") and self.dashboard_controller):
-            self.dashboard_controller.update_next_schedule(self.schedule_service.get_next_schedule_text())
-
     @Slot()
     def _update_dashboard_metrics(self, force_db_query=False):
         if self._cached_total_usages is None or self._cached_active_timers is None or force_db_query:
@@ -1929,4 +1919,3 @@ class MainWindowCore(QMainWindow):
                 self._cached_active_timers = self._cached_active_timers or 0
 
         self._refresh_dashboard_view()
-        self._sync_next_schedule_label()

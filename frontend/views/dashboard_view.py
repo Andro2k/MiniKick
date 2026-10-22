@@ -6,21 +6,15 @@ from PySide6.QtWidgets import (
     QGridLayout, QSizePolicy, QProgressBar
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPixmap
 from frontend.common import (
-    create_circular_pixmap,
-    get_icon_colored,
-    get_pixmap_colored,
-    Palette,
-    BrandColors,
-    Size,
+    create_circular_pixmap, get_pixmap_colored,
+    Palette, BrandColors, Size,
 )
 from frontend.widgets import (
-    BaseView, StatCard, ModernCard,
-    ModernButton
+    BaseView, StatCard, ModernCard, ModernButton
 )
 from frontend.components.dashboard import (
-    SegmentedDistributionBar, PlatformStatusCard, DashboardChattersTable
+    PlatformDistributionRing, PlatformStatusCard, DashboardChattersTable
 )
 
 logger = logging.getLogger("minikick.views.dashboard")
@@ -37,26 +31,27 @@ class DashboardView(BaseView):
     channel_tab_changed = Signal(str)
     top_chatters_date_changed = Signal(str)
     activate_chatters_requested = Signal()
-
-    _STATS_CARDS_ATTR = "_stats_cols"
     _SESSION_CARDS_ATTR = "_session_cols"
     _PLATFORM_CARDS_ATTR = "_platform_cols"
+    _CHANNEL_BADGES_ATTR = "_channel_badge_cols"
 
     def __init__(self, i18n, browser_service=None, parent=None):
         super().__init__(i18n=i18n, title_key="dashboard.header.title", subtitle_key="dashboard.header.subtitle", parent=parent)
         self.browser_service = browser_service
-        self._stats_cols = 4
         self._session_cols = 4
         self._platform_cols = 4
-        self._metadata_cols = 4
         self._last_top_row_dir = None
         self._current_profile_platform = "kick"
         self._current_avatar_bytes = None
+        self._channel_badge_cols = -1
         self._rendered_top_commands = None
         self._setup_ui()
 
     def _setup_ui(self):
         self.main_layout.setSpacing(Size.SPACING_MD)
+
+        self._setup_platforms_hub()
+        self._setup_welcome_section()
 
         self.banner_scopes_kick = QFrame(self)
         self.banner_scopes_kick.setProperty("role", "banner_scope_card")
@@ -101,276 +96,171 @@ class DashboardView(BaseView):
         self.btn_reauth = self.btn_reauth_kick
         self.banner_layout = self.banner_layout_kick
 
-        self._setup_platforms_hub()
-
-        self._setup_channel_profile_section()
-
         self._setup_global_analytics_section()
         self.main_layout.addStretch()
 
-    def _setup_platforms_hub(self):
-        hub_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
+    def _setup_welcome_section(self):
+        self.welcome_card = QFrame(self)
+        self.welcome_card.setProperty("role", "dashboard_welcome")
+        welcome_layout = QVBoxLayout(self.welcome_card)
+        welcome_layout.setContentsMargins(*Size.Margin.MD)
+        welcome_layout.setSpacing(Size.SPACING_MD)
 
-        platforms_container = QWidget(self)
-        self.platforms_grid = QGridLayout(platforms_container)
-        self.platforms_grid.setContentsMargins(*Size.Margin.MD)
-        self.platforms_grid.setSpacing(Size.SPACING_MD)
+        self.lbl_welcome_title = QLabel(self.i18n.get("dashboard.welcome.title"), self.welcome_card)
+        self.lbl_welcome_title.setProperty("role", "h2")
+        welcome_layout.addWidget(self.lbl_welcome_title)
+
+        self.lbl_welcome_subtitle = QLabel(self.i18n.get("dashboard.welcome.subtitle"), self.welcome_card)
+        self.lbl_welcome_subtitle.setProperty("role", "body")
+        self.lbl_welcome_subtitle.setWordWrap(True)
+        welcome_layout.addWidget(self.lbl_welcome_subtitle)
+
+        self.welcome_content_layout = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.welcome_content_layout.setContentsMargins(*Size.Margin.NONE)
+        self.welcome_content_layout.setSpacing(Size.SPACING_SM)
+        welcome_layout.addLayout(self.welcome_content_layout)
+
+        self.distribution_panel = QFrame(self.welcome_card)
+        self.distribution_panel.setProperty("role", "dashboard_distribution_panel")
+        profile_layout = QVBoxLayout(self.distribution_panel)
+        profile_layout.setContentsMargins(*Size.Margin.MD)
+        profile_layout.setSpacing(Size.SPACING_XS)
+
+        self.avatar_container = QWidget(self.distribution_panel)
+        avatar_layout = QGridLayout(self.avatar_container)
+        avatar_layout.setContentsMargins(*Size.Margin.NONE)
+        self.platform_distribution_ring = PlatformDistributionRing(self.avatar_container)
+        avatar_layout.addWidget(self.platform_distribution_ring, 0, 0)
+        self.btn_switch_channel = ModernButton(
+            "",
+            role="action_outlined",
+            icon_name="repeat-filled.svg",
+            icon_size=14,
+            parent=self.avatar_container,
+        )
+        self.btn_switch_channel.setFixedSize(30, 30)
+        self.btn_switch_channel.setToolTip(self.i18n.get("dashboard.welcome.switch_account"))
+        self.btn_switch_channel.clicked.connect(self._switch_channel_account)
+        avatar_layout.addWidget(
+            self.btn_switch_channel,
+            0,
+            0,
+            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+        )
+        self.btn_switch_channel.setVisible(False)
+        profile_layout.addWidget(self.avatar_container, 0, Qt.AlignmentFlag.AlignHCenter)
+
+        self.channel_identity_row = QHBoxLayout()
+        self.channel_identity_row.setSpacing(Size.SPACING_SM)
+        self.lbl_welcome_channel_name = QLabel(
+            self.i18n.get("dashboard.welcome.unlinked_channel"), self.distribution_panel
+        )
+        self.lbl_welcome_channel_name.setProperty("role", "dashboard_channel_name")
+        self.lbl_welcome_channel_name.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self.lbl_welcome_channel_name.setWordWrap(True)
+        self.channel_identity_row.addStretch(1)
+        self.channel_identity_row.addWidget(self.lbl_welcome_channel_name)
+
+        self.btn_open_channel = ModernButton(
+            "",
+            role="btn_ghost",
+            icon_name="link-filled.svg",
+            icon_size=14,
+            parent=self.distribution_panel,
+        )
+        self.btn_open_channel.setToolTip(self.i18n.get("dashboard.profile.open_channel"))
+        self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
+        self.btn_open_channel.setFixedSize(28, 28)
+        self.btn_open_channel.setVisible(False)
+        self.channel_identity_row.addWidget(self.btn_open_channel)
+        self.channel_identity_row.addStretch(1)
+        profile_layout.addLayout(self.channel_identity_row)
+
+        self.lbl_welcome_channel_description = QLabel(
+            self.i18n.get("dashboard.welcome.unlinked_description"), self.distribution_panel
+        )
+        self.lbl_welcome_channel_description.setProperty("role", "dashboard_channel_description")
+        self.lbl_welcome_channel_description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.lbl_welcome_channel_description.setWordWrap(True)
+        profile_layout.addWidget(self.lbl_welcome_channel_description)
+
+        self.channel_badges_container = QWidget(self)
+        self.channel_badges_grid = QGridLayout(self.channel_badges_container)
+        self.channel_badges_grid.setContentsMargins(*Size.Margin.NONE)
+        self.channel_badges_grid.setSpacing(Size.SPACING_MD)
+        self.channel_badges = {}
+        badge_specs = (
+            ("followers", "dashboard.stats.followers", "users-filled.svg"),
+            ("created", "dashboard.stats.created_at", "calendar-days-filled.svg"),
+            ("category", "dashboard.stats.category", "globe-filled.svg"),
+            ("identifier", "dashboard.stats.room_id", "hashtag-filled.svg"),
+        )
+        for badge_key, title_key, icon_name in badge_specs:
+            badge = StatCard(self.i18n.get(title_key), icon_name, "-", self.channel_badges_container)
+            self.channel_badges[badge_key] = {
+                "title": badge.lbl_title,
+                "value": badge,
+            }
+        self.channel_badge_cards = [badge["value"] for badge in self.channel_badges.values()]
+        self._relayout_grid(
+            self.channel_badges_grid,
+            self.channel_badge_cards,
+            self._channel_badge_cols,
+            self._CHANNEL_BADGES_ATTR,
+        )
+        self.channel_badges_container.setVisible(False)
+
+        self.welcome_content_layout.addWidget(self.distribution_panel, 1)
+        self.welcome_content_layout.addWidget(self.platforms_container, 2)
+        self.main_layout.addWidget(self.welcome_card)
+        self.main_layout.addWidget(self.channel_badges_container)
+
+    def _setup_platforms_hub(self):
+        self.platforms_container = QWidget(self)
+        self.platforms_grid = QGridLayout(self.platforms_container)
+        self.platforms_grid.setContentsMargins(*Size.Margin.NONE)
+        self.platforms_grid.setSpacing(Size.SPACING_SM)
 
         self.card_kick = PlatformStatusCard(
             self.i18n, "kick", self.i18n.get("dashboard.platforms.kick_title"),
-            "brand-kick.svg", BrandColors.GREEN, "action_kick", parent=self
+            "brand-kick.svg", "action_kick", parent=self
         )
         self.card_kick.btn_action.clicked.connect(self.connect_requested.emit)
         self.btn_connect = self.card_kick.btn_action
 
         self.card_twitch = PlatformStatusCard(
             self.i18n, "twitch", self.i18n.get("dashboard.platforms.twitch_title"),
-            "brand-twitch.svg", BrandColors.TWITCH, "action_twitch", parent=self
+            "brand-twitch.svg", "action_twitch", parent=self
         )
         self.card_twitch.btn_action.clicked.connect(self.twitch_connect_requested.emit)
         self.btn_connect_twitch = self.card_twitch.btn_action
 
         self.card_youtube = PlatformStatusCard(
             self.i18n, "youtube", self.i18n.get("dashboard.platforms.youtube_title"),
-            "brand-youtube.svg", BrandColors.YOUTUBE, "action_youtube", parent=self
+            "brand-youtube.svg", "action_youtube", parent=self
         )
         self.card_youtube.btn_action.clicked.connect(self.youtube_connect_requested.emit)
         self.btn_connect_youtube = self.card_youtube.btn_action
 
         self.card_tiktok = PlatformStatusCard(
             self.i18n, "tiktok", self.i18n.get("dashboard.platforms.tiktok_title"),
-            "brand-tiktok.svg", BrandColors.TIKTOK, "action_tiktok", parent=self
+            "brand-tiktok.svg", "action_tiktok", parent=self
         )
         self.card_tiktok.btn_action.clicked.connect(self.tiktok_connect_requested.emit)
         self.btn_connect_tiktok = self.card_tiktok.btn_action
 
         self.platform_cards = [self.card_kick, self.card_twitch, self.card_youtube, self.card_tiktok]
-        for i, card in enumerate(self.platform_cards):
-            self.platforms_grid.addWidget(card, 0, i)
+        self._relayout_grid(self.platforms_grid, self.platform_cards, 2, self._PLATFORM_CARDS_ATTR)
+        for card in self.platform_cards:
+            card.update_message_share(0, 0)
 
-        hub_card.addWidget(platforms_container)
-
-        self.status_label = QLabel(self.i18n.get("dashboard.connection.status_waiting"))
-        self.status_label.setVisible(False)
-        hub_card.addWidget(self.status_label)
-
-        self.main_layout.addWidget(hub_card)
-
-    def _setup_channel_profile_section(self):
-        self.profile_wrapper = QWidget(self)
-        self.profile_wrapper_layout = QVBoxLayout(self.profile_wrapper)
-        self.profile_wrapper_layout.setContentsMargins(*Size.Margin.NONE)
-        self.profile_wrapper_layout.setSpacing(Size.SPACING_MD)
-
-        self.tabs_container = QWidget(self)
-        self.tabs_layout = QHBoxLayout(self.tabs_container)
-        self.tabs_layout.setContentsMargins(*Size.Margin.NONE)
-        self.tabs_layout.setSpacing(Size.SPACING_MD)
-
-        self.btn_tab_kick = ModernButton(self.i18n.get("dashboard.profile.tab_kick"), role="action_kick", parent=self.tabs_container)
-        self.btn_tab_kick.set_icon("brand-kick.svg", size=14)
-        self.btn_tab_kick.clicked.connect(lambda: self.channel_tab_changed.emit("kick"))
-
-        self.btn_tab_twitch = ModernButton(self.i18n.get("dashboard.profile.tab_twitch"), role="action_twitch", parent=self.tabs_container)
-        self.btn_tab_twitch.set_icon("brand-twitch.svg", size=14)
-        self.btn_tab_twitch.clicked.connect(lambda: self.channel_tab_changed.emit("twitch"))
-
-        self.tabs_layout.addWidget(self.btn_tab_kick)
-        self.tabs_layout.addWidget(self.btn_tab_twitch)
-        self.tabs_layout.addStretch(1)
-        self.tabs_container.setVisible(False)
-        self.profile_wrapper_layout.addWidget(self.tabs_container)
-
-        self.profile_container = QWidget(self)
-        profile_layout = QVBoxLayout(self.profile_container)
-        profile_layout.setContentsMargins(*Size.Margin.NONE)
-        profile_layout.setSpacing(Size.SPACING_NONE)
-
-        self.card_channel_profile = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
-        self.card_channel_profile.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-
-        hero_container = QWidget(self)
-        top_hero_layout = QHBoxLayout(hero_container)
-        top_hero_layout.setSpacing(Size.SPACING_MD)
-        top_hero_layout.setContentsMargins(*Size.Margin.LG)
-
-        self.lbl_avatar = QLabel()
-        self.lbl_avatar.setFixedSize(96, 96)
-        self.lbl_avatar.setScaledContents(True)
-        self.lbl_avatar.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.lbl_avatar.setText("?")
-        self.lbl_avatar.setProperty("role", "channel_avatar")
-        top_hero_layout.addWidget(self.lbl_avatar, alignment=Qt.AlignmentFlag.AlignTop)
-
-        identity_col = QVBoxLayout()
-        identity_col.setSpacing(Size.SPACING_XS)
-
-        self.lbl_profile_caption = QLabel(self.i18n.get("dashboard.profile.streaming_channel").upper())
-        self.lbl_profile_caption.setProperty("role", "caption")
-        identity_col.addWidget(self.lbl_profile_caption)
-
-        name_row = QHBoxLayout()
-        name_row.setSpacing(Size.SPACING_MD)
-
-        self.lbl_username = QLabel("-")
-        self.lbl_username.setProperty("role", "h1")
-        name_row.addWidget(self.lbl_username)
-
-        self.lbl_platform_badge = QLabel("Kick")
-        self.lbl_platform_badge.setProperty("role", "badge_kick")
-        name_row.addWidget(self.lbl_platform_badge)
-        name_row.addStretch(1)
-
-        identity_col.addLayout(name_row)
-
-        self.lbl_followers_hero = QLabel(self.i18n.get("dashboard.profile.followers_count").replace("{count}", "0"))
-        self.lbl_followers_hero.setProperty("role", "body")
-        identity_col.addWidget(self.lbl_followers_hero)
-
-        self.lbl_bio = QLabel("-")
-        self.lbl_bio.setProperty("role", "body")
-        self.lbl_bio.setWordWrap(True)
-        identity_col.addWidget(self.lbl_bio)
-
-        top_hero_layout.addLayout(identity_col, stretch=1)
-
-        action_col = QVBoxLayout()
-        action_col.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
-
-        self.btn_open_channel = ModernButton(self.i18n.get("dashboard.profile.open_channel"), role="action_outlined", parent=self)
-        self.btn_open_channel.setIcon(get_icon_colored("link-filled.svg", Palette.NEUTRAL_050, 14))
-        self.btn_open_channel.clicked.connect(self._on_open_channel_clicked)
-        action_col.addWidget(self.btn_open_channel)
-
-        top_hero_layout.addLayout(action_col)
-        self.card_channel_profile.addWidget(hero_container)
-
-        self.card_channel_profile.add_separator()
-
-        meta_container = QWidget(self)
-        meta_layout = QVBoxLayout(meta_container)
-        meta_layout.setContentsMargins(*Size.Margin.LG)
-        meta_layout.setSpacing(Size.SPACING_NONE)
-
-        self.metadata_grid = QGridLayout()
-        self.metadata_grid.setContentsMargins(*Size.Margin.NONE)
-        self.metadata_grid.setSpacing(Size.SPACING_MD)
-
-        self.lbl_meta_created_title = QLabel(self.i18n.get("dashboard.stats.created_at").upper())
-        self.lbl_meta_created_title.setProperty("role", "caption")
-        self.lbl_meta_created_val = QLabel("-")
-        self.lbl_meta_created_val.setProperty("role", "body")
-        self.lbl_meta_created_val.setProperty("state", "white")
-
-        self.lbl_meta_category_title = QLabel(self.i18n.get("dashboard.stats.category").upper())
-        self.lbl_meta_category_title.setProperty("role", "caption")
-        self.lbl_meta_category_val = QLabel("-")
-        self.lbl_meta_category_val.setProperty("role", "body")
-        self.lbl_meta_category_val.setProperty("state", "white")
-
-        self.lbl_meta_id_title = QLabel(self.i18n.get("dashboard.stats.room_id").upper())
-        self.lbl_meta_id_title.setProperty("role", "caption")
-        self.lbl_meta_id_val = QLabel("-")
-        self.lbl_meta_id_val.setProperty("role", "body")
-        self.lbl_meta_id_val.setProperty("state", "white")
-
-        self.lbl_meta_schedule_title = QLabel(self.i18n.get("dashboard.stats.next_schedule").upper())
-        self.lbl_meta_schedule_title.setProperty("role", "caption")
-        self.lbl_meta_schedule_val = QLabel("-")
-        self.lbl_meta_schedule_val.setProperty("role", "body")
-        self.lbl_meta_schedule_val.setProperty("state", "white")
-
-        def _create_meta_col(title_lbl, val_lbl):
-            col_widget = QWidget(self)
-            col_layout = QVBoxLayout(col_widget)
-            col_layout.setContentsMargins(*Size.Margin.NONE)
-            col_layout.setSpacing(Size.SPACING_XS)
-            col_layout.addWidget(title_lbl)
-            col_layout.addWidget(val_lbl)
-            return col_widget
-
-        self.col_created = _create_meta_col(self.lbl_meta_created_title, self.lbl_meta_created_val)
-        self.col_category = _create_meta_col(self.lbl_meta_category_title, self.lbl_meta_category_val)
-        self.col_id = _create_meta_col(self.lbl_meta_id_title, self.lbl_meta_id_val)
-        self.col_schedule = _create_meta_col(self.lbl_meta_schedule_title, self.lbl_meta_schedule_val)
-
-        self.metadata_cols_list = [self.col_created, self.col_category, self.col_id, self.col_schedule]
-        for i, col_widget in enumerate(self.metadata_cols_list):
-            self.metadata_grid.addWidget(col_widget, 0, i)
-
-        meta_layout.addLayout(self.metadata_grid)
-        self.card_channel_profile.addWidget(meta_container)
-
-        profile_layout.addWidget(self.card_channel_profile)
-
-        class _StatCardAdapter:
-            def __init__(self, lbl_val, lbl_title=None):
-                self.lbl_value = lbl_val
-                self.lbl_title = lbl_title or lbl_val
-            def set_value(self, val):
-                self.lbl_value.setText(str(val))
-
-        self.card_followers = _StatCardAdapter(self.lbl_followers_hero)
-        self.card_room = _StatCardAdapter(self.lbl_meta_id_val, self.lbl_meta_id_title)
-        self.card_category = _StatCardAdapter(self.lbl_meta_category_val, self.lbl_meta_category_title)
-        self.card_affiliate = _StatCardAdapter(self.lbl_platform_badge)
-        self.card_created = _StatCardAdapter(self.lbl_meta_created_val, self.lbl_meta_created_title)
-        self.card_next_schedule = _StatCardAdapter(self.lbl_meta_schedule_val, self.lbl_meta_schedule_title)
-
-        self.profile_container.setVisible(False)
-        self.profile_wrapper_layout.addWidget(self.profile_container)
-
-        self.disconnected_container = ModernCard(parent=self, margin=Size.Margin.LG, spacing=Size.SPACING_SM)
-        self.disconnected_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-
-        empty_header = QHBoxLayout()
-        empty_header.setSpacing(Size.SPACING_MD)
-
-        lbl_empty_icon = QLabel(self)
-        lbl_empty_icon.setPixmap(get_pixmap_colored("users-filled.svg", Palette.NEUTRAL_500, 28))
-        lbl_empty_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        empty_text_layout = QVBoxLayout()
-        empty_text_layout.setSpacing(Size.SPACING_XS)
-
-        self.lbl_empty_title = QLabel(self.i18n.get("dashboard.profile.no_channel_title"), self)
-        self.lbl_empty_title.setProperty("role", "h3")
-
-        self.lbl_empty_desc = QLabel(self.i18n.get("dashboard.profile.no_channel_desc"), self)
-        self.lbl_empty_desc.setProperty("role", "body")
-        self.lbl_empty_desc.setWordWrap(True)
-
-        empty_text_layout.addWidget(self.lbl_empty_title)
-        empty_text_layout.addWidget(self.lbl_empty_desc)
-
-        empty_header.addWidget(lbl_empty_icon)
-        empty_header.addLayout(empty_text_layout, stretch=1)
-        self.disconnected_container.addLayout(empty_header)
-
-        self.lbl_disconnected_title = self.lbl_empty_title
-        self.lbl_disconnected_desc = self.lbl_empty_desc
-
-        self.profile_wrapper_layout.addWidget(self.disconnected_container)
-        self.main_layout.addWidget(self.profile_wrapper)
+        self.platforms_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def _setup_global_analytics_section(self):
         analytics_container = QWidget(self)
         analytics_layout = QVBoxLayout(analytics_container)
         analytics_layout.setContentsMargins(*Size.Margin.NONE)
         analytics_layout.setSpacing(Size.SPACING_MD)
-
-        lbl_activity_title = QLabel(self.i18n.get("dashboard.analytics.title"))
-        lbl_activity_title.setProperty("role", "h2")
-        analytics_layout.addWidget(lbl_activity_title)
-
-        bar_card = ModernCard(parent=self, margin=Size.Margin.MD, spacing=Size.SPACING_XS)
-        lbl_dist_title = QLabel(self.i18n.get("dashboard.analytics.distribution_title"))
-        lbl_dist_title.setProperty("role", "caption")
-        bar_card.addWidget(lbl_dist_title)
-
-        self.session_bar = SegmentedDistributionBar()
-        bar_card.addWidget(self.session_bar)
-        analytics_layout.addWidget(bar_card)
 
         session_stats_container = QWidget(self)
         self.session_grid = QGridLayout(session_stats_container)
@@ -482,95 +372,90 @@ class DashboardView(BaseView):
         self.card_tiktok.update_state(connected=connected, channel=channel, connecting=connecting, msg_count=msg_count)
 
     def update_platform_messages(self, kick: int = 0, twitch: int = 0, youtube: int = 0, tiktok: int = 0):
+        message_counts = {
+            "kick": max(0, int(kick)),
+            "twitch": max(0, int(twitch)),
+            "youtube": max(0, int(youtube)),
+            "tiktok": max(0, int(tiktok)),
+        }
+        total_messages = sum(message_counts.values())
         segments = []
-        if kick > 0:
-            segments.append((kick, BrandColors.GREEN))
-        if twitch > 0:
-            segments.append((twitch, BrandColors.TWITCH))
-        if youtube > 0:
-            segments.append((youtube, BrandColors.RED))
-        if tiktok > 0:
-            segments.append((tiktok, BrandColors.TIKTOK))
-        self.session_bar.set_data(segments)
+        platform_styles = (
+            ("kick", BrandColors.GREEN, self.card_kick),
+            ("twitch", BrandColors.TWITCH, self.card_twitch),
+            ("youtube", BrandColors.RED, self.card_youtube),
+            ("tiktok", BrandColors.TIKTOK, self.card_tiktok),
+        )
+        for platform_id, color, card in platform_styles:
+            count = message_counts[platform_id]
+            if count:
+                segments.append((count, color))
+            card.update_message_share(count, total_messages)
+        self.platform_distribution_ring.set_data(segments)
 
     def render_channel_profile(self, platform: str, profile_data: dict | None, connected_platforms: list[str], avatar_bytes: bytes | None = None):
         self._current_profile_platform = platform
-
-        if len(connected_platforms) > 1:
-            self.tabs_container.setVisible(True)
-            self.btn_tab_kick.setVisible("kick" in connected_platforms)
-            self.btn_tab_twitch.setVisible("twitch" in connected_platforms)
-
-            is_kick = (platform == "kick")
-            is_twitch = (platform == "twitch")
-
-            self.btn_tab_kick.setProperty("role", "action_kick" if is_kick else "action_outlined")
-            self.btn_tab_kick.set_icon("brand-kick.svg", color=Palette.NEUTRAL_050 if is_kick else Palette.NEUTRAL_400, size=14)
-            self.btn_tab_kick.style().unpolish(self.btn_tab_kick)
-            self.btn_tab_kick.style().polish(self.btn_tab_kick)
-
-            self.btn_tab_twitch.setProperty("role", "action_twitch" if is_twitch else "action_outlined")
-            self.btn_tab_twitch.set_icon("brand-twitch.svg", color=Palette.NEUTRAL_050 if is_twitch else Palette.NEUTRAL_400, size=14)
-            self.btn_tab_twitch.style().unpolish(self.btn_tab_twitch)
-            self.btn_tab_twitch.style().polish(self.btn_tab_twitch)
-        else:
-            self.tabs_container.setVisible(False)
+        self.btn_switch_channel.setVisible("kick" in connected_platforms and "twitch" in connected_platforms)
 
         if not profile_data:
-            self.profile_container.setVisible(False)
-            self.disconnected_container.setVisible(True)
+            self._current_channel_username = ""
+            self.lbl_welcome_channel_name.setText(self.i18n.get("dashboard.welcome.unlinked_channel"))
+            self.lbl_welcome_channel_description.setText(self.i18n.get("dashboard.welcome.unlinked_description"))
+            self.btn_open_channel.setEnabled(False)
+            self.btn_open_channel.setVisible(False)
+            self.channel_badges_container.setVisible(False)
+            self._current_avatar_bytes = None
+            self.platform_distribution_ring.set_avatar(None)
+            self._clear_channel_badges()
             return
-
-        self.disconnected_container.setVisible(False)
-        self.profile_container.setVisible(True)
 
         raw_user = profile_data.get("username", "-")
         self._current_channel_username = raw_user
         username = profile_data.get("display_name") or raw_user
         if profile_data.get("is_verified", False):
-            username += " ✓"
-        bio = profile_data.get("bio", "-") or "-"
-        self.lbl_username.setText(username)
-        self.lbl_bio.setText(bio)
+            username += " \u2713"
+        bio = profile_data.get("bio") or self.i18n.get("dashboard.welcome.channel_description_unavailable")
+        self.lbl_welcome_channel_name.setText(username)
+        self.lbl_welcome_channel_description.setText(bio)
+        self.btn_open_channel.setEnabled(bool(raw_user and raw_user != "-"))
+        self.btn_open_channel.setVisible(True)
+        self.channel_badges_container.setVisible(True)
 
-        followers_num = profile_data.get("followers", 0)
-        followers_tpl = self.i18n.get("dashboard.profile.followers_count")
-        followers_str = followers_tpl.replace("{count}", f"{followers_num:,}")
-        self.lbl_followers_hero.setText(followers_str)
-
-        room_str = str(profile_data.get("room_id") or profile_data.get("broadcaster_id") or "-")
+        followers = profile_data.get("followers", 0)
+        followers_text = self.i18n.get("dashboard.profile.followers_count").replace(
+            "{count}", f"{followers:,}"
+        )
+        identifier = profile_data.get("room_id") or profile_data.get("broadcaster_id") or "-"
         category = profile_data.get("last_category") or profile_data.get("category") or "-"
-        created_str = profile_data.get("created_at", "-") or "-"
-        next_schedule = profile_data.get("next_schedule", "-") or "-"
+        created = profile_data.get("created_at") or "-"
+        identifier_title_key = "dashboard.stats.broadcaster_id" if platform == "twitch" else "dashboard.stats.room_id"
+        self.channel_badges["identifier"]["title"].setText(self.i18n.get(identifier_title_key))
 
-        if platform == "twitch":
-            self.lbl_meta_id_title.setText(self.i18n.get("dashboard.stats.broadcaster_id").upper())
-            broadcaster_type = profile_data.get("broadcaster_type", "")
-            badge_text = f"Twitch {broadcaster_type.capitalize()}" if broadcaster_type else "Twitch"
-            self.lbl_platform_badge.setText(badge_text)
-            self.lbl_platform_badge.setProperty("role", "badge_twitch")
-        else:
-            self.lbl_meta_id_title.setText(self.i18n.get("dashboard.stats.room_id").upper())
-            is_affiliate = profile_data.get("is_affiliate", False)
-            affiliate_text = self.i18n.get("main.controllers.dashboard.affiliate") if is_affiliate else self.i18n.get("main.controllers.dashboard.not_affiliate")
-            self.lbl_platform_badge.setText(f"Kick {affiliate_text}")
-            self.lbl_platform_badge.setProperty("role", "badge_kick")
-
-        self.lbl_platform_badge.style().unpolish(self.lbl_platform_badge)
-        self.lbl_platform_badge.style().polish(self.lbl_platform_badge)
-
-        self.lbl_meta_created_val.setText(created_str)
-        self.lbl_meta_category_val.setText(category)
-        self.lbl_meta_id_val.setText(room_str)
-        self.lbl_meta_schedule_val.setText(next_schedule)
+        self._set_channel_badge("followers", followers_text)
+        self._set_channel_badge("created", created)
+        self._set_channel_badge("category", category)
+        self._set_channel_badge("identifier", str(identifier))
 
         if avatar_bytes:
             self.set_avatar_from_bytes(avatar_bytes)
         else:
             self._current_avatar_bytes = None
-            self.lbl_avatar.setPixmap(QPixmap())
-            self.lbl_avatar.setProperty("has_image", False)
-            self.lbl_avatar.setText("?")
+            self.platform_distribution_ring.set_avatar(None)
+
+    def _set_channel_badge(self, badge_key: str, value: str):
+        badge = self.channel_badges[badge_key]
+        normalized_value = str(value or "-")
+        badge["value"].set_value(normalized_value)
+
+    def _clear_channel_badges(self):
+        for badge in self.channel_badges.values():
+            badge["value"].set_value("-")
+
+    def _switch_channel_account(self):
+        if not self.btn_switch_channel.isVisible():
+            return
+        target_platform = "twitch" if self._current_profile_platform == "kick" else "kick"
+        self.channel_tab_changed.emit(target_platform)
 
     def update_analytics_summary(self, analytics: dict):
         if not analytics:
@@ -625,12 +510,6 @@ class DashboardView(BaseView):
         self.lbl_active_timers_val.setText(str(analytics.get("active_timers", 0)))
         self.lbl_active_rewards_val.setText(str(analytics.get("total_rewards", 0)))
 
-    def update_next_schedule(self, schedule_text: str):
-        if hasattr(self, "lbl_meta_schedule_val"):
-            self.lbl_meta_schedule_val.setText(schedule_text or "-")
-        if hasattr(self, "card_next_schedule"):
-            self.card_next_schedule.set_value(schedule_text or "-")
-
     @staticmethod
     def _fmt_metric(count: int, total: int) -> str:
         pct = (count / total * 100) if total > 0 else 0.0
@@ -651,16 +530,14 @@ class DashboardView(BaseView):
                 logger.warning("[DashboardView] Connection error: %s", error_msg)
 
     def update_profile_info(self, username: str, bio: str):
-        self.lbl_username.setText(username)
-        self.lbl_bio.setText(bio)
+        self.lbl_welcome_channel_name.setText(username)
+        self.lbl_welcome_channel_description.setText(bio)
 
-    def update_stats(self, followers: str, room_id: str, category: str, affiliate_text: str, _vods_text: str, created_at: str = "-", next_schedule: str = "-"):
-        self.card_followers.set_value(followers)
-        self.card_room.set_value(room_id)
-        self.card_category.set_value(category)
-        self.card_affiliate.set_value(affiliate_text)
-        self.card_created.set_value(created_at)
-        self.card_next_schedule.set_value(next_schedule)
+    def update_stats(self, followers: str, room_id: str, category: str, _affiliate_text: str, _vods_text: str, created_at: str = "-"):
+        self._set_channel_badge("followers", followers)
+        self._set_channel_badge("identifier", room_id)
+        self._set_channel_badge("category", category)
+        self._set_channel_badge("created", created_at)
 
     def update_session_metrics(self, msg_count: int, cmd_count: int, timer_count: int, spam_count: int):
         total = msg_count + cmd_count + timer_count + spam_count
@@ -674,22 +551,25 @@ class DashboardView(BaseView):
             card.set_value(self._fmt_metric(count, total))
 
     def set_avatar_from_bytes(self, image_data: bytes):
-        if getattr(self, "_current_avatar_bytes", None) == image_data and self.lbl_avatar.property("has_image"):
+        if getattr(self, "_current_avatar_bytes", None) == image_data:
             return
         self._current_avatar_bytes = image_data
-        pixmap = create_circular_pixmap(image_data, target_size=96)
+        pixmap = create_circular_pixmap(
+            image_data, target_size=PlatformDistributionRing.DEFAULT_AVATAR_SIZE
+        )
         if not pixmap.isNull():
-            self.lbl_avatar.setPixmap(pixmap)
-            self.lbl_avatar.setProperty("has_image", True)
-            self.lbl_avatar.style().unpolish(self.lbl_avatar)
-            self.lbl_avatar.style().polish(self.lbl_avatar)
+            self.platform_distribution_ring.set_avatar(pixmap)
 
     def reset_to_disconnected(self):
         self._current_avatar_bytes = None
         self.set_kick_status(connected=False)
-        self.lbl_avatar.setPixmap(QPixmap())
-        self.lbl_avatar.setProperty("has_image", False)
-        self.lbl_avatar.setText("?")
+        self.platform_distribution_ring.set_avatar(None)
+        self.lbl_welcome_channel_name.setText(self.i18n.get("dashboard.welcome.unlinked_channel"))
+        self.lbl_welcome_channel_description.setText(self.i18n.get("dashboard.welcome.unlinked_description"))
+        self.btn_switch_channel.setVisible(False)
+        self.btn_open_channel.setEnabled(False)
+        self.btn_open_channel.setVisible(False)
+        self._clear_channel_badges()
 
     def _on_reauth_kick_clicked(self):
         self.reauth_kick_requested.emit()
@@ -762,6 +642,14 @@ class DashboardView(BaseView):
         super().resizeEvent(event)
         width = self.width()
 
+        if hasattr(self, "welcome_content_layout"):
+            welcome_direction = (
+                QBoxLayout.Direction.TopToBottom if width < 900
+                else QBoxLayout.Direction.LeftToRight
+            )
+            if self.welcome_content_layout.direction() != welcome_direction:
+                self.welcome_content_layout.setDirection(welcome_direction)
+
         banner_dir = QBoxLayout.Direction.TopToBottom if width < 480 else QBoxLayout.Direction.LeftToRight
         align = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop if width < 480 else Qt.AlignmentFlag.AlignVCenter
 
@@ -778,16 +666,21 @@ class DashboardView(BaseView):
                 self.lbl_warn_text_twitch.setAlignment(align)
 
         if hasattr(self, 'platforms_grid') and hasattr(self, 'platform_cards'):
-            plat_cols = 1 if width < 550 else (2 if width < 900 else 4)
+            plat_cols = 1 if width < 620 else 2
             self._relayout_grid(self.platforms_grid, self.platform_cards, plat_cols, self._PLATFORM_CARDS_ATTR)
 
         if hasattr(self, 'session_grid') and hasattr(self, 'session_cards'):
             session_cols = 1 if width < 650 else (2 if width < 950 else 4)
             self._relayout_grid(self.session_grid, self.session_cards, session_cols, self._SESSION_CARDS_ATTR)
 
-        if hasattr(self, 'metadata_grid') and hasattr(self, 'metadata_cols_list'):
-            meta_cols = 2 if width < 600 else 4
-            self._relayout_grid(self.metadata_grid, self.metadata_cols_list, meta_cols, "_metadata_cols")
+        if hasattr(self, "channel_badges_grid") and hasattr(self, "channel_badge_cards"):
+            badge_cols = 1 if width < 650 else (2 if width < 950 else 4)
+            self._relayout_grid(
+                self.channel_badges_grid,
+                self.channel_badge_cards,
+                badge_cols,
+                self._CHANNEL_BADGES_ATTR,
+            )
 
         if hasattr(self, 'bottom_analytics_layout'):
             bottom_dir = QBoxLayout.Direction.TopToBottom if width < 1000 else QBoxLayout.Direction.LeftToRight

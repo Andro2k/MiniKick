@@ -613,7 +613,6 @@ DEFAULT_DICTIONARY = {
             "broadcaster_id": "Broadcaster ID",
             "category": "Last Category",
             "created_at": "Creation Date",
-            "next_schedule": "Next Schedule",
             "room_id": "ChatRoom ID"
         }
     },
@@ -804,10 +803,6 @@ DEFAULT_DICTIONARY = {
             "reward_redeemed": "redeemed {reward_name}"
         },
         "controllers": {
-            "dashboard": {
-                "affiliate": "Affiliate",
-                "not_affiliate": "Not Affiliate"
-            },
             "log": {
                 "error_title": "Log Recording Error",
                 "folder_error": "Could not open folder: {error}",

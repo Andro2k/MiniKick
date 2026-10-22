@@ -105,7 +105,7 @@ def test_theme_tokens_clean_and_complete():
         matches = hex_pattern.findall(source)
         assert len(matches) == 0, f"Raw hex codes found in {fn.__name__}: {matches}"
 
-def test_dashboard_view_seamless_dividers_and_margins(qapp):
+def test_dashboard_view_profile_cards_and_margins(qapp):
     from frontend.views.dashboard_view import DashboardView
     from frontend.common import (
         Size,
@@ -118,15 +118,18 @@ def test_dashboard_view_seamless_dividers_and_margins(qapp):
     i18n = TranslationService(default_lang="es")
     view = DashboardView(i18n=i18n)
 
-    assert hasattr(view, "card_channel_profile")
-    assert hasattr(view, "disconnected_container")
+    assert hasattr(view, "welcome_card")
+    assert hasattr(view, "distribution_panel")
+    assert hasattr(view, "channel_badges_container")
+    assert len(view.channel_badge_cards) == 4
+    assert view.channel_badges_container.parentWidget() is view.scroll_content
     assert hasattr(view, "card_kick")
     assert hasattr(view, "card_twitch")
     assert hasattr(view, "card_youtube")
     assert hasattr(view, "card_tiktok")
 
-    margins = view.card_channel_profile.card_layout.contentsMargins()
-    assert margins.left() == 0 and margins.right() == 0
+    margins = view.distribution_panel.layout().contentsMargins()
+    assert (margins.left(), margins.top(), margins.right(), margins.bottom()) == Size.Margin.MD
 
 def test_chat_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.chat_view import ChatView

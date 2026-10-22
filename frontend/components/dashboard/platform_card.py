@@ -2,10 +2,7 @@
 
 from PySide6.QtWidgets import QFrame, QLabel, QSizePolicy
 from PySide6.QtCore import Qt
-from frontend.common import (
-    get_pixmap_colored,
-    Size,
-)
+from frontend.common import Size
 from frontend.widgets import ModernButton, create_col_layout, create_row_layout
 
 class PlatformStatusCard(QFrame):
@@ -28,11 +25,10 @@ class PlatformStatusCard(QFrame):
         "tiktok": "dashboard.connection.btn_connecting_tiktok",
     }
 
-    def __init__(self, i18n, platform_id: str, brand_name: str, icon_file: str, brand_color: str, button_role: str, parent=None):
+    def __init__(self, i18n, platform_id: str, brand_name: str, icon_file: str, button_role: str, parent=None):
         super().__init__(parent)
         self.i18n = i18n
         self.platform_id = platform_id
-        self.brand_color = brand_color
         self.button_role = button_role
         self.setProperty("role", "card")
         self.setFrameShape(QFrame.Shape.StyledPanel)
@@ -40,12 +36,8 @@ class PlatformStatusCard(QFrame):
         self._setup_ui(brand_name, icon_file)
 
     def _setup_ui(self, brand_name: str, icon_file: str):
-        layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.MD, parent=self)
+        layout = create_col_layout(spacing=Size.SPACING_SM, margins=Size.Margin.SM, parent=self)
         top_row = create_row_layout(spacing=Size.SPACING_XS)
-
-        self.lbl_icon = QLabel(self)
-        self.lbl_icon.setPixmap(get_pixmap_colored(icon_file, self.brand_color, 20))
-        self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_brand = QLabel(brand_name, self)
         self.lbl_brand.setProperty("role", "h3")
@@ -55,7 +47,6 @@ class PlatformStatusCard(QFrame):
         self.lbl_status_pill.setProperty("role", "status_pill")
         self._apply_pill_style("offline")
 
-        top_row.addWidget(self.lbl_icon)
         top_row.addWidget(self.lbl_brand)
         top_row.addStretch(1)
         top_row.addWidget(self.lbl_status_pill)
@@ -69,7 +60,8 @@ class PlatformStatusCard(QFrame):
 
         self.lbl_status = self.lbl_channel
 
-        initial_msg_text = self.i18n.get("dashboard.platforms.messages_session").replace("{count}", "0")
+        initial_msg_text = self.i18n.get("dashboard.platforms.messages_share")
+        initial_msg_text = initial_msg_text.replace("{count}", "0").replace("{percentage}", "0")
         self.lbl_msgs = QLabel(initial_msg_text, self)
         self.lbl_msgs.setProperty("role", "caption")
         self.lbl_msgs.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -79,7 +71,13 @@ class PlatformStatusCard(QFrame):
         layout.addLayout(mid_row)
 
         btn_key = self._BTN_CONNECT_KEYS.get(self.platform_id, "dashboard.connection.btn_connect_kick")
-        self.btn_action = ModernButton(self.i18n.get(btn_key), role=self.button_role, parent=self)
+        self.btn_action = ModernButton(
+            self.i18n.get(btn_key),
+            role=self.button_role,
+            icon_name=icon_file,
+            icon_size=16,
+            parent=self,
+        )
         self.btn_action.setFixedHeight(28)
         layout.addWidget(self.btn_action)
 
@@ -97,8 +95,7 @@ class PlatformStatusCard(QFrame):
         self.lbl_status_pill.style().polish(self.lbl_status_pill)
 
     def update_state(self, connected: bool = False, channel: str = "", connecting: bool = False, msg_count: int = 0):
-        tpl = self.i18n.get("dashboard.platforms.messages_session")
-        self.lbl_msgs.setText(tpl.replace("{count}", str(msg_count)))
+        self._message_count = max(0, int(msg_count))
 
         if connecting:
             self._apply_pill_style("connecting")
@@ -125,3 +122,11 @@ class PlatformStatusCard(QFrame):
 
         self.lbl_channel.style().unpolish(self.lbl_channel)
         self.lbl_channel.style().polish(self.lbl_channel)
+
+    def update_message_share(self, count: int, total: int):
+        count = max(0, int(count))
+        percentage = round(count * 100 / total) if total > 0 else 0
+        template = self.i18n.get("dashboard.platforms.messages_share")
+        self.lbl_msgs.setText(
+            template.replace("{count}", str(count)).replace("{percentage}", str(percentage))
+        )

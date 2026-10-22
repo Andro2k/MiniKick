@@ -45,6 +45,7 @@
 | **INC-033** | Pausa visible al cambiar el tamaño de texto por reinstalación global del QSS | Reporte de usuario en Ajustes | v1.6.5 | `Mitigado; validación visual pendiente` | `frontend/main_window.py` | v1.6.5 (`WT-1.6.5_18`) |
 | **INC-034** | Tema QSS sin punto de extensión cacheable para estilos personalizados | Solicitud de mejora del sistema visual | v1.6.5 | `Implementado; validación visual pendiente` | `frontend/common/theme.py` | v1.6.5 (`WT-1.6.5_19`) |
 | **INC-035** | Ventana desacoplada del chat no disponible para Snap Layouts de Windows | Reporte de usuario | v1.6.5 | `✅ Solventado` | `frontend/views/chat_view.py`, `resources/tests/test_chat_detached_window.py` | v1.6.5 |
+| **INC-036** | Pruebas del dashboard obsoletas y selector QSS de control segmentado no aplicado | Salida de `pytest resources/tests/` | v1.6.5 | `✅ Solventado` | `frontend/common/theme.py`, `resources/tests/test_antigravity_ui_theme.py` | v1.6.5 |
 
 ---
 
@@ -883,3 +884,22 @@ Siempre que se reciba un nuevo reporte de fallo (`.log`), crash dump o issue de 
 * **Archivos y Módulos Modificados**: `frontend/views/chat_view.py`; `resources/tests/test_chat_detached_window.py`.
 * **Solución Implementada**: Se habilitaron explícitamente las decoraciones estándar de título, menú del sistema, minimizar, maximizar y cerrar en la ventana desacoplada.
 * **Pruebas y Verificación**: Se agregó una prueba para los hints de ventana y se mantiene la prueba del tirador de redimensionado. `python -m py_compile frontend/views/chat_view.py resources/tests/test_chat_detached_window.py` y la suite de calidad rápida aprobaron; las pruebas de Qt no pudieron ejecutarse en el entorno actual porque PySide6 y pytest no están instalados.
+
+
+---
+
+### INC-036: Pruebas del dashboard obsoletas y selector QSS de control segmentado no aplicado
+
+* **Estado**: `✅ Solventado`
+* **Severidad**: **MEDIA** (una regla visual no aplicaba y dos pruebas fallaban).
+* **Reportes Asociados**: Salida de `pytest resources/tests/` del usuario: 2 fallidas y 246 aprobadas, 2026-10-22.
+* **Fecha y Versión del Fallo**: 2026-10-22 en MiniKick `v1.6.5`.
+* **Traza de la Excepción**:
+  ```text
+  AssertionError: assert hasattr(view, "card_channel_profile")
+  AssertionError: QFrame[role="segmented_control"] ... no aparece en GLOBAL_QSS
+  ```
+* **Causa Raíz**: La prueba del dashboard aún requería atributos de una estructura anterior (`card_channel_profile`, `disconnected_container`) que fue sustituida por el panel de perfil y tarjetas actuales. En el QSS, espacios entre `QFrame` y el selector de propiedad convertían la regla en un selector descendiente, por lo que no aplicaba al propio frame.
+* **Archivos y Módulos Modificados**: `frontend/common/theme.py`; `resources/tests/test_antigravity_ui_theme.py`.
+* **Solución Implementada**: Se actualizó la prueba para comprobar el panel de perfil, las tarjetas y márgenes actuales; se corrigió el selector a `QFrame[role="segmented_control"]`.
+* **Pruebas y Verificación**: `python -m py_compile frontend/common/theme.py resources/tests/test_antigravity_ui_theme.py` y `git diff --check` correctos. El usuario reportó 246 pruebas aprobadas antes de la corrección; no fue posible reejecutar pytest en el entorno de trabajo actual porque no está instalado. La auditoría de calidad rápida aprobó 11/12; el único aviso es la clave `dashboard.analytics.title` marcada como sin uso, ajena a esta corrección.
