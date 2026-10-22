@@ -7,12 +7,14 @@ from PySide6.QtWidgets import (
     QWidget, QFrame, QVBoxLayout, QHBoxLayout, QBoxLayout, QLabel, QLineEdit,
     QStyleOptionFrame, QStyle
 )
-from frontend.common import MARGIN_NONE, MARGIN_LG, SPACING_LG, SPACING_MD, SPACING_SM, SPACING_XS
+from frontend.common import (
+    Size,
+)
 
 def create_card_frame(
     role: str = "card",
-    margins: tuple[int, int, int, int] = MARGIN_LG,
-    spacing: int = SPACING_MD,
+    margins: tuple[int, int, int, int] = Size.Margin.LG,
+    spacing: int = Size.SPACING_MD,
     parent: QWidget | None = None
 ) -> tuple[QFrame, QVBoxLayout]:
     card = QFrame(parent) if parent else QFrame()
@@ -25,8 +27,8 @@ def create_card_frame(
 
 
 def create_row_layout(
-    spacing: int = SPACING_MD,
-    margins: tuple[int, int, int, int] = MARGIN_NONE,
+    spacing: int = Size.SPACING_MD,
+    margins: tuple[int, int, int, int] = Size.Margin.NONE,
     parent: QWidget | None = None
 ) -> QHBoxLayout:
     layout = QHBoxLayout(parent) if parent else QHBoxLayout()
@@ -36,8 +38,8 @@ def create_row_layout(
 
 
 def create_col_layout(
-    spacing: int = SPACING_SM,
-    margins: tuple[int, int, int, int] = MARGIN_NONE,
+    spacing: int = Size.SPACING_SM,
+    margins: tuple[int, int, int, int] = Size.Margin.NONE,
     parent: QWidget | None = None
 ) -> QVBoxLayout:
     layout = QVBoxLayout(parent) if parent else QVBoxLayout()
@@ -70,7 +72,7 @@ def create_labeled_field(
     label_text: str,
     widget: QWidget,
     role: str = "h3",
-    spacing: int = SPACING_XS,
+    spacing: int = Size.SPACING_XS,
     parent: QWidget | None = None
 ) -> tuple[QVBoxLayout, QLabel]:
     col = create_col_layout(spacing=spacing)
@@ -81,7 +83,7 @@ def create_switch_field(
     switch: QWidget,
     label_text: str,
     role: str = "body",
-    spacing: int = SPACING_SM,
+    spacing: int = Size.SPACING_SM,
     parent: QWidget | None = None,
     label_first: bool = False
 ) -> tuple[QHBoxLayout, QLabel]:
@@ -91,8 +93,8 @@ def create_switch_field(
 
 def create_box_layout(
     direction: QBoxLayout.Direction = QBoxLayout.Direction.LeftToRight,
-    spacing: int = SPACING_MD,
-    margins: tuple[int, int, int, int] = MARGIN_NONE,
+    spacing: int = Size.SPACING_MD,
+    margins: tuple[int, int, int, int] = Size.Margin.NONE,
     parent: QWidget | None = None
 ) -> QBoxLayout:
     layout = QBoxLayout(direction, parent) if parent else QBoxLayout(direction)
@@ -103,8 +105,8 @@ def create_box_layout(
 
 def create_two_column_container(
     parent: QWidget | None = None,
-    spacing: int = SPACING_MD,
-    margins: tuple[int, int, int, int] = MARGIN_NONE
+    spacing: int = Size.SPACING_MD,
+    margins: tuple[int, int, int, int] = Size.Margin.NONE
 ) -> tuple[QWidget, QVBoxLayout, QBoxLayout, QVBoxLayout, QVBoxLayout]:
     body_container = QWidget(parent) if parent else QWidget()
     body_layout = create_col_layout(spacing=spacing, margins=margins, parent=body_container)
@@ -191,8 +193,8 @@ def create_platform_switches(
     kick_label: str = "Kick",
     twitch_label: str = "Twitch",
     checked_default: bool = True,
-    spacing: int = SPACING_LG,
-    field_spacing: int = SPACING_MD,
+    spacing: int = Size.SPACING_LG,
+    field_spacing: int = Size.SPACING_MD,
     parent: QWidget | None = None,
     on_kick_toggled=None,
     on_twitch_toggled=None,
@@ -201,7 +203,7 @@ def create_platform_switches(
 ):
     from frontend.widgets.controls_widget import ModernSwitch
     switches_row = create_row_layout(spacing=spacing)
-    
+
     switch_kick = ModernSwitch(parent=parent)
     switch_kick.setChecked(checked_default)
     if on_kick_toggled:
@@ -215,7 +217,7 @@ def create_platform_switches(
         switch_twitch.toggled.connect(on_twitch_toggled)
     twitch_box, _ = create_switch_field(switch_twitch, twitch_label, spacing=field_spacing, label_first=label_first)
     switches_row.addLayout(twitch_box)
-    
+
     if add_stretch:
         switches_row.addStretch()
 

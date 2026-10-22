@@ -7,10 +7,12 @@ from frontend.widgets import (ModernCard, SettingRow, SliderRow, ModernSwitch,
                               create_col_layout, create_row_layout)
 from frontend.widgets.controls_widget import configure_icon_only_button
 from frontend.common import (
-    validate_trigger_prefix, get_icon_colored, get_pixmap_colored,
-    COLOR_NEUTRAL_400, COLOR_NEUTRAL_050, COLOR_KICK, COLOR_TWITCH, COLOR_YOUTUBE, COLOR_TIKTOK,
-    MARGIN_NONE, MARGIN_LG, MARGIN_MD,
-    SPACING_NONE, SPACING_XS, SPACING_SM, SPACING_MD
+    validate_trigger_prefix,
+    get_icon_colored,
+    get_pixmap_colored,
+    Palette,
+    BrandColors,
+    Size,
 )
 
 class PlatformToggleItem(QWidget):
@@ -19,7 +21,7 @@ class PlatformToggleItem(QWidget):
         super().__init__(parent)
         self.switch = switch
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout = create_row_layout(spacing=SPACING_SM, margins=MARGIN_LG, parent=self)
+        layout = create_row_layout(spacing=Size.SPACING_SM, margins=Size.Margin.LG, parent=self)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
@@ -43,15 +45,15 @@ class VoiceSettingRow(QWidget):
     def __init__(self, icon_name: str, title_text: str, combo: NoWheelComboBox,
                  switch: ModernSwitch = None, test_signal=None, tooltip_text="",
                  action_button: QPushButton = None,
-                 icon_color=COLOR_NEUTRAL_400, parent=None):
+                 icon_color=Palette.NEUTRAL_400, parent=None):
         super().__init__(parent)
         self.switch = switch
         self.combo = combo
         self.btn_test = None
         self.action_button = action_button
 
-        main_layout = create_col_layout(spacing=SPACING_XS, margins=MARGIN_LG, parent=self)
-        header_layout = create_row_layout(spacing=SPACING_SM)
+        main_layout = create_col_layout(spacing=Size.SPACING_XS, margins=Size.Margin.LG, parent=self)
+        header_layout = create_row_layout(spacing=Size.SPACING_SM)
 
         icon_lbl = QLabel(parent=self)
         icon_lbl.setPixmap(get_pixmap_colored(icon_name, icon_color, size=16))
@@ -65,7 +67,7 @@ class VoiceSettingRow(QWidget):
 
         main_layout.addLayout(header_layout)
 
-        controls_layout = create_row_layout(spacing=SPACING_SM)
+        controls_layout = create_row_layout(spacing=Size.SPACING_SM)
 
         if self.switch is not None:
             controls_layout.addWidget(self.switch, alignment=Qt.AlignmentFlag.AlignVCenter)
@@ -83,7 +85,7 @@ class VoiceSettingRow(QWidget):
 
         if test_signal is not None:
             self.btn_test = QPushButton()
-            self.btn_test.setIcon(get_icon_colored("play-filled.svg", COLOR_NEUTRAL_400, size=14))
+            self.btn_test.setIcon(get_icon_colored("play-filled.svg", Palette.NEUTRAL_400, size=14))
             self.btn_test.setIconSize(QSize(14, 14))
             configure_icon_only_button(self.btn_test)
             self.btn_test.setToolTip(tooltip_text)
@@ -137,13 +139,13 @@ class ChatTtsSettingsPanel(QWidget):
 
     def _setup_ui(self):
         self.panel_layout = QVBoxLayout(self)
-        self.panel_layout.setContentsMargins(*MARGIN_MD)
-        self.panel_layout.setSpacing(SPACING_MD)
+        self.panel_layout.setContentsMargins(*Size.Margin.MD)
+        self.panel_layout.setSpacing(Size.SPACING_MD)
 
         header_platforms = SectionHeader(self.i18n.get("chat.platforms.title"), parent=self)
         self.panel_layout.addWidget(header_platforms)
 
-        platforms_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="horizontal")
+        platforms_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="horizontal")
         self.sw_plat_kick = ModernSwitch(self)
         self.sw_plat_kick.setChecked(True)
         self.sw_plat_twitch = ModernSwitch(self)
@@ -155,22 +157,22 @@ class ChatTtsSettingsPanel(QWidget):
 
         item_plat_kick = PlatformToggleItem(
             "brand-kick.svg", self.i18n.get("chat.platforms.kick_title"),
-            self.sw_plat_kick, icon_color=COLOR_KICK,
+            self.sw_plat_kick, icon_color=BrandColors.KICK,
             tooltip=self.i18n.get("chat.platforms.kick_desc"), parent=self
         )
         item_plat_twitch = PlatformToggleItem(
             "brand-twitch.svg", self.i18n.get("chat.platforms.twitch_title"),
-            self.sw_plat_twitch, icon_color=COLOR_TWITCH,
+            self.sw_plat_twitch, icon_color=BrandColors.TWITCH,
             tooltip=self.i18n.get("chat.platforms.twitch_desc"), parent=self
         )
         item_plat_youtube = PlatformToggleItem(
             "brand-youtube.svg", self.i18n.get("chat.platforms.youtube_title"),
-            self.sw_plat_youtube, icon_color=COLOR_YOUTUBE,
+            self.sw_plat_youtube, icon_color=BrandColors.YOUTUBE,
             tooltip=self.i18n.get("chat.platforms.youtube_desc"), parent=self
         )
         item_plat_tiktok = PlatformToggleItem(
             "brand-tiktok.svg", self.i18n.get("chat.platforms.tiktok_title"),
-            self.sw_plat_tiktok, icon_color=COLOR_TIKTOK,
+            self.sw_plat_tiktok, icon_color=BrandColors.TIKTOK,
             tooltip=self.i18n.get("chat.platforms.tiktok_desc"), parent=self
         )
 
@@ -189,7 +191,7 @@ class ChatTtsSettingsPanel(QWidget):
         self.chk_command = ModernSwitch(self)
 
         self.btn_manage_piper = QPushButton(self.i18n.get("chat.settings.manage_piper_btn"), self)
-        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", COLOR_NEUTRAL_050, size=14))
+        self.btn_manage_piper.setIcon(get_icon_colored("cloud-download-filled.svg", Palette.NEUTRAL_050, size=14))
         self.btn_manage_piper.setIconSize(QSize(14, 14))
         self.btn_manage_piper.setToolTip(self.i18n.get("chat.settings.manage_piper_tooltip"))
         self.btn_manage_piper.setProperty("role", "action_accent_solid")
@@ -208,18 +210,18 @@ class ChatTtsSettingsPanel(QWidget):
         self.lbl_speed_perc = QLabel("100%", parent=self)
         self.lbl_speed_perc.setProperty("role", "monospace")
 
-        card_general = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
-        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts, contents_margins=MARGIN_LG)
-        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name, contents_margins=MARGIN_LG)
-        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command, contents_margins=MARGIN_LG)
+        card_general = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
+        row_tts = SettingRow("voice-cricle-filled.svg", self.i18n.get("chat.settings.tts_title"), self.i18n.get("chat.settings.tts_desc"), self.chk_tts, contents_margins=Size.Margin.LG)
+        row_read_name = SettingRow("user-filled.svg", self.i18n.get("chat.settings.name_title"), self.i18n.get("chat.settings.name_desc"), self.chk_name, contents_margins=Size.Margin.LG)
+        row_cmd = SettingRow("chat-square-code-filled.svg", self.i18n.get("chat.settings.cmd_title"), self.i18n.get("chat.settings.cmd_desc"), self.chk_command, contents_margins=Size.Margin.LG)
 
         self.txt_command = QLineEdit(parent=self)
         self.txt_command.setPlaceholderText(self.i18n.get("chat.settings.prefix_placeholder"))
         self.txt_command.setFixedWidth(80)
         self.txt_command.setEnabled(self.chk_command.isChecked())
-        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command, contents_margins=MARGIN_LG)
-        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=MARGIN_LG)
-        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc, contents_margins=MARGIN_LG)
+        row_prefix = SettingRow("hashtag-filled.svg", self.i18n.get("chat.settings.prefix_title"), self.i18n.get("chat.settings.prefix_desc"), self.txt_command, contents_margins=Size.Margin.LG)
+        row_volume = SliderRow("volume-up-filled.svg", self.i18n.get("chat.settings.vol_title"), self.i18n.get("chat.settings.vol_desc"), self.slider_vol, self.lbl_vol_perc, contents_margins=Size.Margin.LG)
+        row_speed = SliderRow("fast-forward-filled.svg", self.i18n.get("chat.settings.speed_title"), self.i18n.get("chat.settings.speed_desc"), self.slider_speed, self.lbl_speed_perc, contents_margins=Size.Margin.LG)
 
         card_general.addWidget(row_tts)
         card_general.add_separator()
@@ -237,7 +239,7 @@ class ChatTtsSettingsPanel(QWidget):
         header_roles = SectionHeader(self.i18n.get("chat.roles.title"), parent=self)
         self.panel_layout.addWidget(header_roles)
 
-        voices_card = ModernCard(parent=self, margin=MARGIN_NONE, spacing=SPACING_NONE, orientation="vertical")
+        voices_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE, orientation="vertical")
 
         row_provider = VoiceSettingRow(
             "globe-filled.svg",
@@ -440,7 +442,7 @@ class ChatTtsSettingsPanel(QWidget):
 
     def update_voices(self, voices: list[tuple[str, str]], select_id: str = None, role_voices: dict = None, all_voices: list[tuple[str, str]] = None):
         is_loading = (len(voices) == 1 and voices[0][0] == "loading")
-        
+
         self.combo_voice.blockSignals(True)
         self.combo_voice.clear()
 

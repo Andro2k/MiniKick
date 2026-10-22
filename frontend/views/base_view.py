@@ -2,7 +2,9 @@
 
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFrame
 from PySide6.QtCore import Qt
-from frontend.common import MARGIN_NONE, MARGIN_XL, SPACING_LG
+from frontend.common import (
+    Size,
+)
 from frontend.widgets.block_widget import ViewHeader, FadingScrollArea
 
 class BaseView(QWidget):
@@ -11,7 +13,7 @@ class BaseView(QWidget):
         self.i18n = i18n
 
         base_layout = QVBoxLayout(self)
-        base_layout.setContentsMargins(*MARGIN_NONE)
+        base_layout.setContentsMargins(*Size.Margin.NONE)
 
         self.scroll_area = FadingScrollArea(parent=self)
         self.scroll_area.setWidgetResizable(True)
@@ -20,8 +22,8 @@ class BaseView(QWidget):
 
         self.scroll_content = QWidget()
         self.main_layout = QVBoxLayout(self.scroll_content)
-        self.main_layout.setContentsMargins(*MARGIN_XL)
-        self.main_layout.setSpacing(SPACING_LG)
+        self.main_layout.setContentsMargins(*Size.Margin.XL)
+        self.main_layout.setSpacing(Size.SPACING_LG)
         title_text = self.i18n.get(title_key) if hasattr(self.i18n, "get") else title_key
         subtitle_text = self.i18n.get(subtitle_key) if hasattr(self.i18n, "get") else subtitle_key
 

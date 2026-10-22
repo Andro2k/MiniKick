@@ -9,8 +9,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from frontend.common import (
-    get_pixmap_colored, COLOR_NEUTRAL_400,
-    SPACING_SM, MARGIN_V_XS
+    get_pixmap_colored,
+    Palette,
+    Size,
 )
 
 class InspectorPropertyRow(QWidget):
@@ -28,12 +29,12 @@ class InspectorPropertyRow(QWidget):
         self.setMinimumHeight(36)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(*MARGIN_V_XS)
-        layout.setSpacing(SPACING_SM)
+        layout.setContentsMargins(*Size.Margin.V_XS)
+        layout.setSpacing(Size.SPACING_SM)
 
         if icon_name:
             self.lbl_icon = QLabel(self)
-            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, COLOR_NEUTRAL_400, size=16))
+            self.lbl_icon.setPixmap(get_pixmap_colored(icon_name, Palette.NEUTRAL_400, size=16))
             self.lbl_icon.setFixedSize(16, 16)
             self.lbl_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(self.lbl_icon)

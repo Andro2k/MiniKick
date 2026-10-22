@@ -7,8 +7,10 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtGui import QPixmap, QDragEnterEvent, QDropEvent
 from frontend.common import (
-    get_icon_colored, COLOR_NEUTRAL_050, COLOR_GREEN,
-    MARGIN_MD, MARGIN_NONE, MARGIN_XS, SPACING_XS
+    get_icon_colored,
+    Palette,
+    BrandColors,
+    Size,
 )
 from frontend.widgets.controls_widget import configure_icon_only_button
 
@@ -28,17 +30,17 @@ class ImageDropzone(QFrame):
 
     def _setup_ui(self):
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(*MARGIN_MD)
+        self.layout.setContentsMargins(*Size.Margin.MD)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.empty_container = QWidget()
         empty_layout = QVBoxLayout(self.empty_container)
-        empty_layout.setContentsMargins(*MARGIN_NONE)
-        empty_layout.setSpacing(SPACING_XS)
+        empty_layout.setContentsMargins(*Size.Margin.NONE)
+        empty_layout.setSpacing(Size.SPACING_XS)
         empty_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.icon_lbl = QLabel()
-        self.icon_lbl.setPixmap(get_icon_colored("file-text-filled.svg", COLOR_GREEN, size=24).pixmap(QSize(24, 24)))
+        self.icon_lbl.setPixmap(get_icon_colored("file-text-filled.svg", BrandColors.GREEN, size=24).pixmap(QSize(24, 24)))
         self.icon_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.title_lbl = QLabel(self.i18n.get("dialogs.bug_report.dropzone_title"))
@@ -57,14 +59,14 @@ class ImageDropzone(QFrame):
 
         self.preview_container = QWidget()
         preview_layout = QHBoxLayout(self.preview_container)
-        preview_layout.setContentsMargins(*MARGIN_XS)
-        preview_layout.setSpacing(SPACING_XS)
+        preview_layout.setContentsMargins(*Size.Margin.XS)
+        preview_layout.setSpacing(Size.SPACING_XS)
 
         self.img_lbl = QLabel()
         self.img_lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.btn_remove = QPushButton()
-        self.btn_remove.setIcon(get_icon_colored("x-filled.svg", COLOR_NEUTRAL_050, size=16))
+        self.btn_remove.setIcon(get_icon_colored("x-filled.svg", Palette.NEUTRAL_050, size=16))
         self.btn_remove.setIconSize(QSize(16, 16))
         configure_icon_only_button(self.btn_remove)
         self.btn_remove.setCursor(Qt.CursorShape.PointingHandCursor)

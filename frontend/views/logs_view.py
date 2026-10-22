@@ -7,32 +7,32 @@ from PySide6.QtWidgets import (
     QWidget, QSizePolicy
 )
 from frontend.widgets import (
-    BaseView, ModernTableCard, ModernButton, 
+    BaseView, ModernTableCard, ModernButton,
     SegmentedPagination, NoWheelComboBox
 )
 from frontend.common import (
-    COLOR_NEUTRAL_400, COLOR_NEUTRAL_200, COLOR_BLUE, COLOR_AMBER, COLOR_RED,
     get_icon_colored,
-    SPACING_SM,
-    MARGIN_MD
+    Palette,
+    BrandColors,
+    Size,
 )
 
 LOG_ILLUSTRATION_FILE = "illustration-empty-file.svg"
 _LEVEL_COLORS = {
-    "DEBUG": COLOR_NEUTRAL_400,
-    "INFO": COLOR_BLUE,
-    "WARNING": COLOR_AMBER,
-    "ERROR": COLOR_RED,
-    "CRITICAL": COLOR_RED,
-    "CRASH": COLOR_RED,
-    "FATAL_CRASH": COLOR_RED,
-    "THREAD_CRASH": COLOR_RED,
-    "BOOTSTRAP": COLOR_BLUE,
-    "DBG": COLOR_NEUTRAL_400,
-    "INF": COLOR_BLUE,
-    "WRN": COLOR_AMBER,
-    "ERR": COLOR_RED,
-    "CRI": COLOR_RED,
+    "DEBUG": Palette.NEUTRAL_400,
+    "INFO": BrandColors.BLUE,
+    "WARNING": BrandColors.AMBER,
+    "ERROR": BrandColors.RED,
+    "CRITICAL": BrandColors.RED,
+    "CRASH": BrandColors.RED,
+    "FATAL_CRASH": BrandColors.RED,
+    "THREAD_CRASH": BrandColors.RED,
+    "BOOTSTRAP": BrandColors.BLUE,
+    "DBG": Palette.NEUTRAL_400,
+    "INF": BrandColors.BLUE,
+    "WRN": BrandColors.AMBER,
+    "ERR": BrandColors.RED,
+    "CRI": BrandColors.RED,
 }
 _LEVEL_ICON_NAMES = {
     "DEBUG": "code-square-filled.svg",
@@ -66,7 +66,7 @@ _LEVEL_ICONS: dict[str, QIcon] = {}
 
 def _get_level_icon(level: str) -> QIcon:
     if level not in _LEVEL_ICONS:
-        hex_color = _LEVEL_COLORS.get(level, COLOR_NEUTRAL_200)
+        hex_color = _LEVEL_COLORS.get(level, Palette.NEUTRAL_200)
         icon_name = _LEVEL_ICON_NAMES.get(level, "dialog-filled.svg")
         _LEVEL_ICONS[level] = get_icon_colored(icon_name, hex_color, 16)
     return _LEVEL_ICONS[level]
@@ -91,14 +91,14 @@ class LogView(BaseView):
         self.current_page = 1
         self.all_logs: list[tuple[str, str, str]] = []
         self._current_sort: tuple[int, str] | None = None
-        
+
         self._flush_timer = QTimer(self)
         self._flush_timer.setSingleShot(True)
         self._flush_timer.setInterval(120)
         self._flush_timer.timeout.connect(self._flush_pending_ui)
         self._page_btn_pool: list[ModernButton] = []
         self._page_label_pool: list[QLabel] = []
-        
+
         self._setup_ui()
 
     def _setup_ui(self):
@@ -131,17 +131,17 @@ class LogView(BaseView):
 
         specs = [
             ("btn_open_folder", self.i18n.get("log.controls.btn_folder"), "action_outlined",
-             "folder-open-filled.svg", COLOR_NEUTRAL_400, self.open_folder_requested.emit, True),
+             "folder-open-filled.svg", Palette.NEUTRAL_400, self.open_folder_requested.emit, True),
             ("btn_load_file", self.i18n.get("log.controls.btn_load"), "action_outlined",
-             "file-text-filled.svg", COLOR_NEUTRAL_400, self.load_requested.emit, True),
+             "file-text-filled.svg", Palette.NEUTRAL_400, self.load_requested.emit, True),
             ("btn_toggle_view", self.i18n.get("log.controls.btn_show_logs"), "action_outlined",
-             "eye-filled.svg", COLOR_NEUTRAL_400, self.view_toggle_requested.emit, True),
+             "eye-filled.svg", Palette.NEUTRAL_400, self.view_toggle_requested.emit, True),
             ("btn_live", self.i18n.get("log.controls.btn_live"), "action_outlined",
-             "play-filled.svg", COLOR_NEUTRAL_400, self.live_requested.emit, False),
+             "play-filled.svg", Palette.NEUTRAL_400, self.live_requested.emit, False),
             ("btn_clear", self.i18n.get("log.controls.btn_clear"), "action_outlined",
-             "trash-filled.svg", COLOR_NEUTRAL_400, self.clear_requested.emit, True),
+             "trash-filled.svg", Palette.NEUTRAL_400, self.clear_requested.emit, True),
             ("btn_report", self.i18n.get("log.controls.btn_report"), "action_outlined",
-             "bug-filled.svg", COLOR_NEUTRAL_400, self.report_requested.emit, True),
+             "bug-filled.svg", Palette.NEUTRAL_400, self.report_requested.emit, True),
         ]
 
         self._action_buttons: list[ModernButton] = []
@@ -211,8 +211,8 @@ class LogView(BaseView):
 
         self.pagination_bar = QWidget()
         self.pagination_layout = QHBoxLayout(self.pagination_bar)
-        self.pagination_layout.setContentsMargins(*MARGIN_MD)
-        self.pagination_layout.setSpacing(SPACING_SM)
+        self.pagination_layout.setContentsMargins(*Size.Margin.MD)
+        self.pagination_layout.setSpacing(Size.SPACING_SM)
 
         self.segmented_pagination = SegmentedPagination(self)
         self.segmented_pagination.first_requested.connect(self.first_page)
@@ -334,9 +334,9 @@ class LogView(BaseView):
 
     def ask_open_log_file(self, default_dir: str) -> str:
         file_path, _ = QFileDialog.getOpenFileName(
-            self, 
-            self.i18n.get("log.dialogs.select_history"), 
-            default_dir, 
+            self,
+            self.i18n.get("log.dialogs.select_history"),
+            default_dir,
             self.i18n.get("log.dialogs.file_filter")
         )
         return file_path
@@ -449,7 +449,7 @@ class LogView(BaseView):
             scrollbar.setValue(scrollbar.maximum())
 
     def _populate_row_at(self, row: int, level: str, time_str: str, text: str):
-        hex_color = _LEVEL_COLORS.get(level, COLOR_NEUTRAL_200)
+        hex_color = _LEVEL_COLORS.get(level, Palette.NEUTRAL_200)
         icon = _get_level_icon(level)
         item_level = self.table.item(row, 0)
         if not item_level:
@@ -467,7 +467,7 @@ class LogView(BaseView):
             item_time.setFlags(item_time.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, 1, item_time)
         item_time.setText(time_str)
-        item_time.setForeground(QColor(COLOR_NEUTRAL_400))
+        item_time.setForeground(QColor(Palette.NEUTRAL_400))
 
         item_msg = self.table.item(row, 2)
         if not item_msg:

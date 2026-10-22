@@ -501,14 +501,20 @@ DEFAULT_DICTIONARY = {
         "version_label": "**MiniKick Version:**"
     },
     "dashboard": {
+        "welcome": {
+            "title": "Welcome to MiniKick",
+            "subtitle": "Manage your connections and review activity across your platforms in one place.",
+            "unlinked_channel": "Connect your channel",
+            "unlinked_description": "Your channel profile will appear here after you sign in.",
+            "channel_description_unavailable": "No description available.",
+            "switch_account": "Switch between Kick and Twitch accounts"
+        },
         "analytics": {
             "active_commands": "Active Commands",
             "active_rewards": "Linked Rewards",
             "active_timers": "Running Timers",
-            "distribution_title": "Multi-Platform Distribution",
             "modules_summary_title": "Active Modules & Services",
             "no_commands_used": "No commands have been executed yet.",
-            "title": "Activity & Interactions",
             "top_commands_title": "Top 5 Most Used Commands",
             "usages": "uses"
         },
@@ -574,8 +580,7 @@ DEFAULT_DICTIONARY = {
             "btn_connecting_kick": "Connecting Kick...",
             "btn_connecting_tiktok": "Connecting TikTok...",
             "btn_connecting_twitch": "Connecting Twitch...",
-            "btn_connecting_youtube": "Connecting YouTube...",
-            "status_waiting": "Status: Waiting for connection..."
+            "btn_connecting_youtube": "Connecting YouTube..."
         },
         "header": {
             "subtitle": "Monitor bot connectivity, review live stats, and manage your streaming session.",
@@ -586,7 +591,7 @@ DEFAULT_DICTIONARY = {
             "connecting": "Connecting...",
             "disconnected": "Disconnected",
             "kick_title": "Kick",
-            "messages_session": "{count} msgs",
+            "messages_share": "{count} msgs \u00b7 {percentage}%",
             "status_connecting": "Connecting...",
             "status_offline": "Offline",
             "status_online": "Online",
@@ -596,12 +601,7 @@ DEFAULT_DICTIONARY = {
         },
         "profile": {
             "followers_count": "{count} followers",
-            "no_channel_desc": "Connect your Kick or Twitch account in the top panel to view your channel details.",
-            "no_channel_title": "No streaming channels linked",
-            "open_channel": "Open Channel",
-            "streaming_channel": "Streaming Channel",
-            "tab_kick": "Kick Channel",
-            "tab_twitch": "Twitch Channel"
+            "open_channel": "Open Channel"
         },
         "session": {
             "commands": "Executed Commands",
@@ -613,7 +613,7 @@ DEFAULT_DICTIONARY = {
             "broadcaster_id": "Broadcaster ID",
             "category": "Last Category",
             "created_at": "Creation Date",
-            "next_schedule": "Next Schedule",
+            "followers": "Followers",
             "room_id": "ChatRoom ID"
         }
     },
@@ -803,12 +803,7 @@ DEFAULT_DICTIONARY = {
             "points_tag": "POINTS",
             "reward_redeemed": "redeemed {reward_name}"
         },
-        "controllers": {
-            "dashboard": {
-                "affiliate": "Affiliate",
-                "not_affiliate": "Not Affiliate"
-            },
-            "log": {
+        "controllers": {            "log": {
                 "error_title": "Log Recording Error",
                 "folder_error": "Could not open folder: {error}",
                 "read_error": "Could not read file: {error}"
@@ -965,19 +960,13 @@ DEFAULT_DICTIONARY = {
             "title": "Music Player"
         },
         "overlay": {
-            "layout_floating": "Vinyl Record Spin",
+            "layout_classic": "Classic Player",
             "layout_label": "Overlay Layout:",
-            "layout_pill": "Minimal Pill Bar",
-            "layout_standard": "Standard Card",
+            "layout_vinyl": "Vinyl Record",
             "preview_sample_artist": "Tame Impala",
             "preview_sample_title": "Tame Impala - The Less I Know The Better",
             "preview_title": "Overlay Live Preview",
             "recommended_dim": "Recommended OBS source size: {dim}",
-            "theme_card": "Satin Card",
-            "theme_dynamic": "Dynamic (Album Auto-Color)",
-            "theme_glass": "Glassmorphism (Frosted Glass)",
-            "theme_label": "Visual Theme:",
-            "theme_neon": "Neon Glow",
             "url_desc": "Copy this URL and add it as a browser source in OBS to show cover art and track details on stream.",
             "url_title": "Music Overlay (OBS)"
         },

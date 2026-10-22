@@ -5,7 +5,9 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QFileDialog, QHBoxLayout, QWidget
 from frontend.widgets import BaseView, SectionHeader, SettingRow, ModernCard, ModernButton, ModernSwitch, NoWheelComboBox
-from frontend.common import MARGIN_NONE, SPACING_NONE, SPACING_MD, SPACING_SM
+from frontend.common import (
+    Size,
+)
 
 class SettingsView(BaseView):
     font_size_changed = Signal(int)
@@ -31,7 +33,7 @@ class SettingsView(BaseView):
 
     def _setup_ui(self):
         header_system = SectionHeader(self.i18n.get("settings.sections.system"), parent=self, first=True)
-        card_system = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
+        card_system = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
 
         self.combo_lang = NoWheelComboBox(self)
         self.combo_lang.addItem("Español", "es")
@@ -39,9 +41,9 @@ class SettingsView(BaseView):
         self.combo_lang.currentIndexChanged.connect(self._on_language_changed)
 
         row_lang = SettingRow(
-            icon_name="globe-filled.svg", 
-            title_text=self.i18n.get("settings.system.lang_title"), 
-            desc_text=self.i18n.get("settings.system.lang_desc"), 
+            icon_name="globe-filled.svg",
+            title_text=self.i18n.get("settings.system.lang_title"),
+            desc_text=self.i18n.get("settings.system.lang_desc"),
             right_widget=self.combo_lang
         )
 
@@ -57,9 +59,9 @@ class SettingsView(BaseView):
         self.combo_font.currentIndexChanged.connect(self._on_font_changed)
 
         row_font = SettingRow(
-            icon_name="file-text-filled.svg", 
-            title_text=self.i18n.get("settings.system.font_title"), 
-            desc_text=self.i18n.get("settings.system.font_desc"), 
+            icon_name="file-text-filled.svg",
+            title_text=self.i18n.get("settings.system.font_title"),
+            desc_text=self.i18n.get("settings.system.font_desc"),
             right_widget=self.combo_font
         )
 
@@ -68,8 +70,8 @@ class SettingsView(BaseView):
 
         browser_container = QWidget(parent=self)
         browser_layout = QHBoxLayout(browser_container)
-        browser_layout.setContentsMargins(*MARGIN_NONE)
-        browser_layout.setSpacing(SPACING_SM)
+        browser_layout.setContentsMargins(*Size.Margin.NONE)
+        browser_layout.setSpacing(Size.SPACING_SM)
 
         self.combo_browser = NoWheelComboBox(parent=browser_container)
         self.combo_browser.setMinimumWidth(180)
@@ -99,9 +101,9 @@ class SettingsView(BaseView):
         self.sw_start_bg.toggled.connect(self.minimize_tray_toggled.emit)
 
         row_tray = SettingRow(
-            icon_name="minimize-filled.svg", 
-            title_text=self.i18n.get("settings.system.tray_title"), 
-            desc_text=self.i18n.get("settings.system.tray_desc"), 
+            icon_name="minimize-filled.svg",
+            title_text=self.i18n.get("settings.system.tray_title"),
+            desc_text=self.i18n.get("settings.system.tray_desc"),
             right_widget=self.sw_start_bg
         )
 
@@ -116,7 +118,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_system)
 
         header_audio = SectionHeader(self.i18n.get("settings.sections.audio"), parent=self)
-        card_audio = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
+        card_audio = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
 
         self.combo_music_audio_device = NoWheelComboBox(self)
         self.combo_music_audio_device.setMinimumWidth(160)
@@ -156,7 +158,7 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_audio)
 
         header_integrations = SectionHeader(self.i18n.get("settings.sections.integrations"), parent=self)
-        integrations_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
+        integrations_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
 
         self.btn_kick_integration = ModernButton(self.i18n.get("settings.integrations.btn_connect_kick"), role="action_outlined", parent=self)
         self.btn_kick_integration.clicked.connect(self.unlink_clicked.emit)
@@ -210,16 +212,16 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(integrations_card)
 
         header_backup = SectionHeader(self.i18n.get("settings.sections.backup"), parent=self)
-        card_backup = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
+        card_backup = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
 
         btn_backup_container = QWidget()
         btn_backup_layout = QHBoxLayout(btn_backup_container)
-        btn_backup_layout.setContentsMargins(*MARGIN_NONE) 
-        btn_backup_layout.setSpacing(SPACING_MD)
-        
+        btn_backup_layout.setContentsMargins(*Size.Margin.NONE)
+        btn_backup_layout.setSpacing(Size.SPACING_MD)
+
         self.btn_export = ModernButton(self.i18n.get("common.buttons.export"), role="action_outlined", parent=self)
         self.btn_import = ModernButton(self.i18n.get("common.buttons.import"), role="action_outlined", parent=self)
-        
+
         self.btn_export.clicked.connect(self.export_clicked.emit)
         self.btn_import.clicked.connect(self.import_clicked.emit)
 
@@ -227,9 +229,9 @@ class SettingsView(BaseView):
         btn_backup_layout.addWidget(self.btn_import)
 
         row_backup = SettingRow(
-            icon_name="restart-filled.svg", 
-            title_text=self.i18n.get("settings.backup.title"), 
-            desc_text=self.i18n.get("settings.backup.desc"), 
+            icon_name="restart-filled.svg",
+            title_text=self.i18n.get("settings.backup.title"),
+            desc_text=self.i18n.get("settings.backup.desc"),
             right_widget=btn_backup_container
         )
         card_backup.addWidget(row_backup)
@@ -237,15 +239,15 @@ class SettingsView(BaseView):
         self.main_layout.addWidget(card_backup)
 
         header_support = SectionHeader(self.i18n.get("settings.sections.support"), parent=self)
-        support_card = ModernCard(parent=self, margin=SPACING_NONE, spacing=SPACING_NONE)
+        support_card = ModernCard(parent=self, margin=Size.Margin.NONE, spacing=Size.SPACING_NONE)
 
         self.btn_update = ModernButton(self.i18n.get("common.buttons.update"), role="action_outlined", parent=self)
         self.btn_update.clicked.connect(self.update_clicked.emit)
 
         row_update = SettingRow(
-            icon_name="cloud-download-filled.svg", 
-            title_text=self.i18n.get("settings.system.update_title"), 
-            desc_text=self.i18n.get("settings.system.update_desc"), 
+            icon_name="cloud-download-filled.svg",
+            title_text=self.i18n.get("settings.system.update_title"),
+            desc_text=self.i18n.get("settings.system.update_desc"),
             right_widget=self.btn_update
         )
 
@@ -263,9 +265,9 @@ class SettingsView(BaseView):
         self.btn_feedback.clicked.connect(self.feedback_clicked.emit)
 
         row_feedback = SettingRow(
-            icon_name="bug-filled.svg", 
-            title_text=self.i18n.get("settings.feedback.title"), 
-            desc_text=self.i18n.get("settings.feedback.desc"), 
+            icon_name="bug-filled.svg",
+            title_text=self.i18n.get("settings.feedback.title"),
+            desc_text=self.i18n.get("settings.feedback.desc"),
             right_widget=self.btn_feedback
         )
 
@@ -276,7 +278,7 @@ class SettingsView(BaseView):
         support_card.addWidget(row_feedback)
         self.main_layout.addWidget(header_support)
         self.main_layout.addWidget(support_card)
-        
+
         self.main_layout.addStretch()
 
     def set_minimize_tray_enabled(self, enabled: bool):

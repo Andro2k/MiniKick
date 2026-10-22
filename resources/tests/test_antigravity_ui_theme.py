@@ -1,11 +1,10 @@
-# resources\tests\test_antigravity_ui_theme.py
+﻿# resources\tests\test_antigravity_ui_theme.py
 
 from PySide6.QtWidgets import QLabel, QPushButton
 from frontend.common import (
-    COLOR_NEUTRAL_900,
-    COLOR_NEUTRAL_900,
     GLOBAL_QSS,
     get_global_qss,
+    Palette,
 )
 from frontend.widgets import SectionHeader, SettingRow, ModernCard, ModernDivider
 from frontend.views.settings_view import SettingsView
@@ -19,8 +18,8 @@ def test_global_qss_contains_antigravity_tokens():
     assert 'role="action_danger_solid"' in qss
     assert 'role="card"' in qss
     assert 'role="nav_button"' in qss
-    assert COLOR_NEUTRAL_900 in qss
-    assert COLOR_NEUTRAL_900 in qss
+    assert Palette.NEUTRAL_900 in qss
+    assert Palette.NEUTRAL_900 in qss
 
 def test_section_header_and_setting_row(qapp):
     header = SectionHeader("Test Section")
@@ -43,7 +42,7 @@ def test_section_header_and_setting_row(qapp):
 def test_modern_card_separators(qapp):
     card = ModernCard()
     assert card.property("role") == "card"
-    
+
     widget1 = QLabel("Widget 1")
     widget2 = QLabel("Widget 2")
     card.addWidget(widget1)
@@ -86,12 +85,10 @@ def test_theme_tokens_clean_and_complete():
     import re
     import inspect
     from frontend.common import (
-        MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST,
-        MARGIN_MD, MARGIN_TAB_BAR,
-        MARGIN_SCROLL_CONTENT, MARGIN_XS, MARGIN_TAG_BADGE,
-        theme
+        theme,
+        Size,
     )
-    for m in (MARGIN_SECTION_HEADER, MARGIN_SECTION_HEADER_FIRST, MARGIN_MD, MARGIN_TAB_BAR, MARGIN_SCROLL_CONTENT, MARGIN_XS, MARGIN_TAG_BADGE):
+    for m in (Size.Margin.SECTION_HEADER, Size.Margin.H_XS, Size.Margin.MD, Size.Margin.TAB_BAR, Size.Margin.SCROLL_CONTENT, Size.Margin.XS, Size.Margin.TAG_BADGE):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -108,10 +105,12 @@ def test_theme_tokens_clean_and_complete():
         matches = hex_pattern.findall(source)
         assert len(matches) == 0, f"Raw hex codes found in {fn.__name__}: {matches}"
 
-def test_dashboard_view_seamless_dividers_and_margins(qapp):
+def test_dashboard_view_profile_cards_and_margins(qapp):
     from frontend.views.dashboard_view import DashboardView
-    from frontend.common import MARGIN_LG
-    for m in (MARGIN_LG, MARGIN_LG):
+    from frontend.common import (
+        Size,
+    )
+    for m in (Size.Margin.LG, Size.Margin.LG):
         assert isinstance(m, tuple)
         assert len(m) == 4
         assert all(isinstance(v, int) for v in m)
@@ -119,24 +118,29 @@ def test_dashboard_view_seamless_dividers_and_margins(qapp):
     i18n = TranslationService(default_lang="es")
     view = DashboardView(i18n=i18n)
 
-    assert hasattr(view, "card_channel_profile")
-    assert hasattr(view, "disconnected_container")
+    assert hasattr(view, "welcome_card")
+    assert hasattr(view, "distribution_panel")
+    assert hasattr(view, "channel_badges_container")
+    assert len(view.channel_badge_cards) == 4
+    assert view.channel_badges_container.parentWidget() is view.scroll_content
     assert hasattr(view, "card_kick")
     assert hasattr(view, "card_twitch")
     assert hasattr(view, "card_youtube")
     assert hasattr(view, "card_tiktok")
 
-    margins = view.card_channel_profile.card_layout.contentsMargins()
-    assert margins.left() == 0 and margins.right() == 0
+    margins = view.distribution_panel.layout().contentsMargins()
+    assert (margins.left(), margins.top(), margins.right(), margins.bottom()) == Size.Margin.MD
 
 def test_chat_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.chat_view import ChatView
-    from frontend.common import SPACING_MD
+    from frontend.common import (
+        Size,
+    )
 
     i18n = TranslationService(default_lang="es")
     chat_view = ChatView(i18n=i18n)
 
-    assert chat_view.body_layout.spacing() == SPACING_MD
+    assert chat_view.body_layout.spacing() == Size.SPACING_MD
     assert chat_view.tts_settings_panel.property("role") == "tab_panel"
     assert chat_view.bot_panel.property("role") == "tab_panel"
     assert chat_view.overlay_settings_panel.property("role") == "tab_panel"
@@ -161,7 +165,9 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
     from frontend.components.widgets import WidgetCard
     from frontend.views.widgets_view import WidgetsView
     from frontend.components.chat.spam_panel import ChatSpamPanel
-    from frontend.common import SPACING_MD
+    from frontend.common import (
+        Size,
+    )
 
     card = ExpandableCard("Title", "Description", "star-filled.svg")
     assert isinstance(card.divider, ModernDivider)
@@ -196,32 +202,34 @@ def test_expandable_card_unification_and_seamless_dividers(qapp):
     assert not spam_card.divider.isHidden()
 
     w_view = WidgetsView(i18n)
-    assert w_view.body_layout.spacing() == SPACING_MD
-    assert w_view.columns_layout.spacing() == SPACING_MD
+    assert w_view.body_layout.spacing() == Size.SPACING_MD
+    assert w_view.columns_layout.spacing() == Size.SPACING_MD
 
     s_panel = ChatSpamPanel(i18n)
-    assert s_panel.panel_layout.spacing() == SPACING_MD
+    assert s_panel.panel_layout.spacing() == Size.SPACING_MD
 
 def test_music_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.music_view import MusicView
     from frontend.components.music import (
         MusicStatsPanel, MusicPlayerSettingsPanel, MusicCommandsPanel, MusicSettingsPanel
     )
-    from frontend.common import SPACING_MD, MARGIN_MD
+    from frontend.common import (
+        Size,
+    )
     from frontend.widgets import ModernDivider
 
     i18n = TranslationService(default_lang="es")
     music_view = MusicView(i18n)
 
-    assert music_view.body_layout.spacing() == SPACING_MD
-    assert music_view.columns_layout.spacing() == SPACING_MD
-    assert music_view.stats_panel.stats_grid.spacing() == SPACING_MD
+    assert music_view.body_layout.spacing() == Size.SPACING_MD
+    assert music_view.columns_layout.spacing() == Size.SPACING_MD
+    assert music_view.stats_panel.stats_grid.spacing() == Size.SPACING_MD
 
     for panel in (music_view.player_panel, music_view.commands_panel, music_view.settings_panel):
         assert panel.property("role") == "tab_panel"
         m = panel.panel_layout.contentsMargins()
-        assert (m.left(), m.top(), m.right(), m.bottom()) == MARGIN_MD
-        assert panel.panel_layout.spacing() == SPACING_MD
+        assert (m.left(), m.top(), m.right(), m.bottom()) == Size.Margin.MD
+        assert panel.panel_layout.spacing() == Size.SPACING_MD
 
     cmd_dividers = [music_view.commands_panel.card_cmds.card_layout.itemAt(i).widget()
                     for i in range(music_view.commands_panel.card_cmds.card_layout.count())
@@ -237,16 +245,18 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
     from frontend.views.alerts_view import AlertsView
     from frontend.components.alerts.event_card import AlertEventCard
     from frontend.widgets import ExpandableCard, ModernDivider
-    from frontend.common import SPACING_MD, MARGIN_MD
+    from frontend.common import (
+        Size,
+    )
 
     i18n = TranslationService(default_lang="es")
     alerts_view = AlertsView(i18n)
 
     m_overlay = alerts_view.overlay_card.card_layout.contentsMargins()
-    assert (m_overlay.left(), m_overlay.top(), m_overlay.right(), m_overlay.bottom()) == MARGIN_MD
+    assert (m_overlay.left(), m_overlay.top(), m_overlay.right(), m_overlay.bottom()) == Size.Margin.MD
 
     m_banner = alerts_view.notice_banner.card_layout.contentsMargins()
-    assert (m_banner.left(), m_banner.top(), m_banner.right(), m_banner.bottom()) == MARGIN_MD
+    assert (m_banner.left(), m_banner.top(), m_banner.right(), m_banner.bottom()) == Size.Margin.MD
 
     card = alerts_view._get_or_create_card("twitch", "follow")
     assert isinstance(card, AlertEventCard)
@@ -259,7 +269,7 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
     assert card.card_design.is_expanded() is False
     assert card.card_typography.is_expanded() is True
     assert card.card_media.is_expanded() is False
-    assert card.body_box.spacing() == SPACING_MD
+    assert card.body_box.spacing() == Size.SPACING_MD
 
     card.card_design.toggle_expand()
     assert card.card_design.is_expanded() is True
@@ -287,29 +297,31 @@ def test_alerts_view_and_expandable_cards_standard(qapp):
 
 def test_schedule_view_and_subpanels_antigravity_standard(qapp):
     from frontend.views.schedule_view import ScheduleView
-    from frontend.common import SPACING_MD, MARGIN_MD, MARGIN_MD
+    from frontend.common import (
+        Size,
+    )
 
     i18n = TranslationService(default_lang="es")
     schedule_view = ScheduleView(i18n)
 
-    assert schedule_view.body_layout.spacing() == SPACING_MD
-    assert schedule_view.columns_layout.spacing() == SPACING_MD
+    assert schedule_view.body_layout.spacing() == Size.SPACING_MD
+    assert schedule_view.columns_layout.spacing() == Size.SPACING_MD
 
     qc = schedule_view.quick_change_panel
     assert qc.property("role") == "tab_panel"
     m_qc = qc.layout().contentsMargins()
-    assert (m_qc.left(), m_qc.top(), m_qc.right(), m_qc.bottom()) == MARGIN_MD
-    assert qc.layout().spacing() == SPACING_MD
+    assert (m_qc.left(), m_qc.top(), m_qc.right(), m_qc.bottom()) == Size.Margin.MD
+    assert qc.layout().spacing() == Size.SPACING_MD
     m_kick = qc.kick_card.card_layout.contentsMargins()
-    assert (m_kick.left(), m_kick.top(), m_kick.right(), m_kick.bottom()) == MARGIN_MD
+    assert (m_kick.left(), m_kick.top(), m_kick.right(), m_kick.bottom()) == Size.Margin.MD
     m_twitch = qc.twitch_card.card_layout.contentsMargins()
-    assert (m_twitch.left(), m_twitch.top(), m_twitch.right(), m_twitch.bottom()) == MARGIN_MD
+    assert (m_twitch.left(), m_twitch.top(), m_twitch.right(), m_twitch.bottom()) == Size.Margin.MD
 
     form = schedule_view.schedule_form_panel
     assert form.property("role") == "tab_panel"
     m_form = form.layout().contentsMargins()
-    assert (m_form.left(), m_form.top(), m_form.right(), m_form.bottom()) == MARGIN_MD
-    assert form.layout().spacing() == SPACING_MD
+    assert (m_form.left(), m_form.top(), m_form.right(), m_form.bottom()) == Size.Margin.MD
+    assert form.layout().spacing() == Size.SPACING_MD
 
 def test_table_cards_and_edge_to_edge_alignment(qapp):
     from frontend.widgets import ModernTableCard, ModernDivider
@@ -350,38 +362,36 @@ def test_table_cards_and_edge_to_edge_alignment(qapp):
 def test_combobox_and_segmented_action_outlined_style(qapp):
     from frontend.common.theme import (
         GLOBAL_QSS,
-        COLOR_NEUTRAL_900,
-        COLOR_NEUTRAL_950,
-        COLOR_NEUTRAL_700,
-        COLOR_NEUTRAL_750,
-        COLOR_BORDER_HOVER,
+        Semantic,
+        Palette,
     )
 
-    assert f"QComboBox {{ background-color: {COLOR_NEUTRAL_950};" in GLOBAL_QSS
-    assert f"border: 1px solid {COLOR_NEUTRAL_700};" in GLOBAL_QSS
-    assert f"QComboBox:hover {{ background-color: {COLOR_NEUTRAL_750}; border: 1px solid {COLOR_BORDER_HOVER};" in GLOBAL_QSS
+    assert f"QComboBox {{ background-color: {Palette.NEUTRAL_950};" in GLOBAL_QSS
+    assert f"border: 1px solid {Palette.NEUTRAL_700};" in GLOBAL_QSS
+    assert f"QComboBox:hover {{ background-color: {Palette.NEUTRAL_750}; border: 1px solid {Semantic.BORDER_HOVER};" in GLOBAL_QSS
 
-    assert f'QFrame[role="segmented_control"] {{ background-color: {COLOR_NEUTRAL_900}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
-    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_control"] {{ background-color: {Palette.NEUTRAL_900}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QPushButton[role="segmented_item"]:checked {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
 
-    assert f'QFrame[role="segmented_pagination"] {{ background-color: {COLOR_NEUTRAL_950}; border: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
-    assert f'border-left: 1px solid {COLOR_NEUTRAL_700};' in GLOBAL_QSS
+    assert f'QFrame[role="segmented_pagination"] {{ background-color: {Palette.NEUTRAL_950}; border: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
+    assert f'border-left: 1px solid {Palette.NEUTRAL_700};' in GLOBAL_QSS
 
 def test_dark_palette_and_popup_translucency_standards(qapp):
     from PySide6.QtGui import QPalette
     from PySide6.QtCore import Qt
     from frontend.common import (
-        create_dark_palette, GLOBAL_QSS,
-        COLOR_NEUTRAL_900, COLOR_NEUTRAL_950, COLOR_NEUTRAL_050
+        create_dark_palette,
+        GLOBAL_QSS,
+        Palette,
     )
     from frontend.widgets import SearchableComboBox, VariableTextEdit, NoWheelDateEdit
     from frontend.widgets.category_search import CategorySuggestionsPopup
 
     pal = create_dark_palette()
     assert isinstance(pal, QPalette)
-    assert pal.color(QPalette.ColorRole.Window).name().lower() == COLOR_NEUTRAL_900.lower()
-    assert pal.color(QPalette.ColorRole.Base).name().lower() == COLOR_NEUTRAL_950.lower()
-    assert pal.color(QPalette.ColorRole.WindowText).name().lower() == COLOR_NEUTRAL_050.lower()
+    assert pal.color(QPalette.ColorRole.Window).name().lower() == Palette.NEUTRAL_900.lower()
+    assert pal.color(QPalette.ColorRole.Base).name().lower() == Palette.NEUTRAL_950.lower()
+    assert pal.color(QPalette.ColorRole.WindowText).name().lower() == Palette.NEUTRAL_050.lower()
 
     combo = SearchableComboBox()
     assert combo._popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground) is True
@@ -402,7 +412,7 @@ def test_dark_palette_and_popup_translucency_standards(qapp):
     date_edit = NoWheelDateEdit()
     date_edit.setCalendarPopup(True)
     cal = date_edit.calendarWidget()
-    assert cal.palette().color(QPalette.ColorRole.Window).name().lower() == COLOR_NEUTRAL_900.lower()
+    assert cal.palette().color(QPalette.ColorRole.Window).name().lower() == Palette.NEUTRAL_900.lower()
 
 def test_piper_voices_dialog_modern_structure_and_catalog(qapp):
     from unittest.mock import MagicMock

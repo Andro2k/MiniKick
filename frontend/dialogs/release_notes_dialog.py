@@ -1,7 +1,7 @@
 # frontend\dialogs\release_notes_dialog.py
 
 from PySide6.QtWidgets import (
-    QLabel, QTextBrowser, QPushButton, QHBoxLayout, 
+    QLabel, QTextBrowser, QPushButton, QHBoxLayout,
     QWidget, QSizePolicy, QApplication
 )
 from PySide6.QtCore import Qt, QUrl
@@ -9,8 +9,12 @@ from PySide6.QtGui import QDesktopServices, QFont
 from .base_dialog import ModernModal
 from frontend.widgets import create_text_label
 from frontend.common import (
-    get_assets_path, COLOR_GREEN, COLOR_NEUTRAL_400, COLOR_RED, get_qcolor_with_alpha,
-    markdown_to_github_html, SPACING_MD, MARGIN_V_XS
+    get_assets_path,
+    get_qcolor_with_alpha,
+    markdown_to_github_html,
+    Palette,
+    BrandColors,
+    Size,
 )
 
 class ReleaseNotesDialog(ModernModal):
@@ -21,11 +25,11 @@ class ReleaseNotesDialog(ModernModal):
         super().__init__(
             title=self.i18n.get("dialogs.release_notes.title"),
             icon_path=get_assets_path("icons/file-text-filled.svg"),
-            icon_bg_color=COLOR_GREEN,
+            icon_bg_color=BrandColors.GREEN,
             width=700,
             parent=parent
         )
-        self.set_dialog_state("accent", get_qcolor_with_alpha(COLOR_GREEN, 60))
+        self.set_dialog_state("accent", get_qcolor_with_alpha(BrandColors.GREEN, 60))
         self._release_url = "https://github.com/Andro2k/MiniKick/releases/latest"
         self._worker = None
 
@@ -42,8 +46,8 @@ class ReleaseNotesDialog(ModernModal):
 
         self.meta_container = QWidget(self.container)
         meta_layout = QHBoxLayout(self.meta_container)
-        meta_layout.setContentsMargins(*MARGIN_V_XS)
-        meta_layout.setSpacing(SPACING_MD)
+        meta_layout.setContentsMargins(*Size.Margin.V_XS)
+        meta_layout.setSpacing(Size.SPACING_MD)
         meta_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.lbl_tag_badge = QLabel("", parent=self.meta_container)
@@ -76,7 +80,7 @@ class ReleaseNotesDialog(ModernModal):
 
         loading_msg = self.i18n.get('dialogs.release_notes.loading')
         self.txt_content.setHtml(
-            f'<html><body style="font-family: \'Google Sans\', sans-serif; color: {COLOR_NEUTRAL_400}; text-align: center; margin-top: 180px;">'
+            f'<html><body style="font-family: \'Google Sans\', sans-serif; color: {Palette.NEUTRAL_400}; text-align: center; margin-top: 180px;">'
             f'<i>{loading_msg}</i></body></html>'
         )
         self.content_layout.addWidget(self.txt_content)
@@ -154,13 +158,13 @@ class ReleaseNotesDialog(ModernModal):
         if body_text:
             cleaned_html = markdown_to_github_html(body_text)
             self.txt_content.setHtml(cleaned_html)
-        
+
         self._center_on_parent()
 
     def _on_error_occurred(self, _err: str):
         error_msg = self.i18n.get('dialogs.release_notes.error')
         err_html = (
-            f'<html><body style="font-family: \'Google Sans\', sans-serif; color: {COLOR_RED}; text-align: center; margin-top: 180px;">'
+            f'<html><body style="font-family: \'Google Sans\', sans-serif; color: {BrandColors.RED}; text-align: center; margin-top: 180px;">'
             f'⚠️ <i>{error_msg}</i></body></html>'
         )
         self.txt_content.setHtml(err_html)

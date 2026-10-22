@@ -4,8 +4,9 @@ from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QBoxLayout, QSizeP
 from PySide6.QtCore import Signal, QSize, Qt
 from frontend.widgets import ModernCard, ModernButton, create_row_layout, create_col_layout
 from frontend.common import (
-    get_pixmap_colored, COLOR_NEUTRAL_400,
-    MARGIN_MD, SPACING_XS, SPACING_SM, SPACING_MD
+    get_pixmap_colored,
+    Palette,
+    Size,
 )
 
 class AlertsOverlayCard(ModernCard):
@@ -13,19 +14,19 @@ class AlertsOverlayCard(ModernCard):
     open_browser_requested = Signal()
 
     def __init__(self, alerts_overlay_url: str, i18n, parent=None):
-        super().__init__(parent=parent, margin=MARGIN_MD, spacing=SPACING_SM)
+        super().__init__(parent=parent, margin=Size.Margin.MD, spacing=Size.SPACING_SM)
         self.alerts_overlay_url = alerts_overlay_url
         self.i18n = i18n
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
         self._setup_ui()
 
     def _setup_ui(self):
-        main_row = create_row_layout(spacing=SPACING_MD)
+        main_row = create_row_layout(spacing=Size.SPACING_MD)
 
         icon_link = QLabel(parent=self)
-        icon_link.setPixmap(get_pixmap_colored("link-filled.svg", COLOR_NEUTRAL_400, size=18))
+        icon_link.setPixmap(get_pixmap_colored("link-filled.svg", Palette.NEUTRAL_400, size=18))
 
-        text_col = create_col_layout(spacing=SPACING_XS)
+        text_col = create_col_layout(spacing=Size.SPACING_XS)
 
         lbl_obs_title = QLabel(self.i18n.get("alerts.overlay_card.title"), parent=self)
         lbl_obs_title.setProperty("role", "h3")
